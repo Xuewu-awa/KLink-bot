@@ -437,6 +437,38 @@ internal static class SelfTest
         new("★ 全卡池烟雾测试台：同种子跑两次逐位相同（3 张样本卡 × 各自入口）",
             SmokeDeterminism),
         new("★ 全卡池烟雾测试台：前 40 张卡不抛异常、不撞步数上限", SmokeNoCrash),
+
+        // ---- ★★ 2026-10-03：`PersistCustomFields` 持久化的是**第 0 参那张卡**，不是接收者 ----
+        // 权威签名 `0: cardID`、`1: refreshEffectBar`（`BP_CardFunctions.g.cs:27828-27834`），
+        // 蓝图体把这个 cardID 喂给 `GetCardFromID` 再取它的 `customJson`。
+        // 而 `recv` 在 IR 里 **489/489 恒为 `cardFunction`**（= `ctx.Self`，见
+        // `KismetVm.Frame` 的 `_locals["cardFunction"] = ctx.Self`）⇒
+        // 旧实现 `AsCard(r)` **恒持久化施法者自己**。
+        // 全卡池扫描：489 个调用点里 **30 个**的 `a[0]` 是**别人卡的 cardID**
+        // （`{"var":"cardID","ctx":{"var":"K2Node_Event_targetCard"}}` 这类形状）。
+        new("★ `PersistCustomFields` 持久化的是 `a[0]` 那张卡（旧实现恒持久化施法者）",
+            PersistCustomFieldsTargetsArgCard),
+
+        // ---- ★★ 2026-10-03：`DrawCardsFromDeckBySide` 的**出参** `cardsIDs` 必须写入 ----
+        // 权威签名（`BP_CardFunctions.g.cs:12298-12310`）：
+        //   `0: instigatorID`、`1: side`、`2: numCards`、`3: cardSeen`、`4: OpponentDraw`、
+        //   `5: cardsIDs*`（**出参**）、`6: drawDelay`。
+        // 蓝图体循环里把 `DrawTopCardFromDeck` 的 `drawnCard` 逐个 `Array_Add` 进
+        // `drawnCards`，循环后 `cardsIDs = drawnCards`（`g.cs:12386`）并
+        // `__out_cardsIDs?.Invoke(…)`（`g.cs:12400`）。
+        // 派发表旧实现 `DrawCards(...); return null;` ⇒ VM 不写出参（`KismetVm.cs:669`）
+        // ⇒ **9 张真的读它的卡**整段恒空。
+        new("★ `DrawCardsFromDeckBySide` 的出参 `cardsIDs` 必须写入抽到的卡 ID（旧实现 `return null`）",
+            DrawCardsFromDeckBySideWritesCardsIDs),
+
+        // ---- ★★ 2026-10-03：`DamageCard` 的第 3 参是**整数 `damagerCardID`**，不是卡对象 ----
+        // 权威签名（`BP_CardFunctions.g.cs:11606-11618`）：`2: damagerCardID`，
+        // 蓝图体 `GetCardFromID(damagerCardID)`（`g.cs:11624`）。
+        // 派发表旧实现 `AsCard(a[2]) ?? c.Self` —— 整数形状恒 null ⇒ **伤害来源记成施法者**。
+        // 全卡池 271 个调用点里 **9 个**的 `a[2]` 不是自己（7 个别人卡的 `cardID` +
+        // 2 个 `spawnedCardID`），`ZActionDamageCard.attackerCardID` 因此填错。
+        new("★ `DamageCard` 的第 3 参（`damagerCardID`，int）必须解析成来源卡（旧实现退回施法者）",
+            DamageCardResolvesIntDamagerCardId),
     };
 
     public static int Run(CardDatabase db)
@@ -10157,6 +10189,284 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// `PersistCustomFields` —— 「持久化**哪张卡**」由**第 0 个实参**决定，不是由接收者决定。
+    ///
+    /// 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:27828-27849`）：
+    /// <code>
+    /// L["cardID"]           = args[0];   // ← 要持久化的那张卡
+    /// L["refreshEffectBar"] = args[1];
+    /// … GetCardFromID(cardID) … NotifyPersistCustomFields(card.customJson …)
+    /// </code>
+    /// 而 `recv` 在 IR 里 **489/489 恒为 `{"var":"cardFunction"}`**，即
+    /// `KismetVm.Frame` 的 `_locals["cardFunction"] = ctx.Self`（施法的那张牌自己）。
+    /// 旧实现 `AsCard(r)` ⇒ **永远持久化施法者**，`a[0]` 指的别人那张卡的
+    /// 临时字段（`customJson`）根本没被写进子动作。
+    ///
+    /// 影响面（`docs/card-ir.json` 扫描，2026-10-03）：489 个调用点里 **30 个**
+    /// 的 `a[0]` 不是自己 —— 形状是 `{"var":"cardID","ctx":{"var":"K2Node_Event_targetCard"}}`
+    /// 这类**别人卡的 cardID**（`card_event_no_retreat` / `card_event_maginot_line` /
+    /// `card_event_seize_the_initiative` 的 `spawnedCard` / `card_unit_obice_da_75_13` 的
+    /// `K2Node_Event_cardLeaving` …）。剩下 459 个的 `a[0]` 是裸 `cardID`
+    /// （= `ctx.Self.CardId`）⇒ 新旧解析结果**逐位相同**，不许改坏。
+    /// </summary>
+    private static string? PersistCustomFieldsTargetsArgCard(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        if (unitName is null)
+        {
+            return "卡库里没有 infantry（无法测）";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var caster = state.CreateWithId(unitName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var other = state.CreateWithId(unitName, Side.Right, 21, CardLocation.BoardHqRight, 2);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = caster, Controller = Side.Left };
+
+        // ① 目标形状：`a[0]` 是**别人卡的整数 cardID**（IR 里那 30 个调用点的形状）。
+        engine.Api.InvokeByName("PersistCustomFields", caster,
+            new object?[] { other.CardId, false }, ctx, out _);
+
+        int persisted = LastPersistedCardId(state);
+        if (persisted != other.CardId)
+        {
+            return $"`a[0]` 是 #{other.CardId}（别人那张卡）的 cardID，子动作里 `cardID` 却是 #{persisted}"
+                 + " —— 旧实现 `AsCard(r)` 恒命中接收者（`cardFunction` = 施法者自己）"
+                 + Dump(state,
+                        ("施法者", $"#{caster.CardId}"),
+                        ("a[0]", $"#{other.CardId}"),
+                        ("子动作 cardID", $"#{persisted}"));
+        }
+
+        // ② 对照：459/489 个调用点的 `a[0]` 是裸 `cardID`（= `ctx.Self.CardId`），
+        //    解析结果必须**逐位不变** —— 否则会把本来正确的那 459 处改坏。
+        engine.Api.InvokeByName("PersistCustomFields", caster,
+            new object?[] { caster.CardId, false }, ctx, out _);
+
+        int persistedSelf = LastPersistedCardId(state);
+        if (persistedSelf != caster.CardId)
+        {
+            return $"`a[0]` = 自己的 cardID（459/489 个调用点的形状）必须仍然持久化自己，实际 #{persistedSelf}";
+        }
+
+        return null;
+    }
+
+    /// <summary>取 `ActionLog` 里最后一条 `ZActionPersistCustomFields` 子动作的 `cardID`。</summary>
+    private static int LastPersistedCardId(GameState state)
+    {
+        for (int i = state.ActionLog.Count - 1; i >= 0; i--)
+        {
+            foreach (var s in state.ActionLog[i].SubActions)
+            {
+                if (s.Name != "ZActionPersistCustomFields")
+                {
+                    continue;
+                }
+
+                foreach (var v in s.Values)
+                {
+                    if (v.Name == "cardID")
+                    {
+                        return v.Value;
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// `DrawCardsFromDeckBySide` 的**出参** `cardsIDs`（`TArray&lt;int&gt;`）必须真的写出去。
+    ///
+    /// 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:12298-12402`）：
+    /// <code>
+    /// L["instigatorID"] = args[0]; L["side"] = args[1]; L["numCards"] = args[2];
+    /// L["cardSeen"] = args[3];     L["OpponentDraw"] = args[4];
+    /// var __out_cardsIDs = args[5].As&lt;Action&lt;Val&gt;&gt;();     // ← 出参
+    /// L["drawDelay"] = args[6];
+    /// loop: drawnCard = DrawTopCardFromDeck(…);
+    ///       if (drawnCard &gt; 0) { Array_Add(drawnCards, drawnCard); … }
+    /// L_021B: L["cardsIDs"] = GetLocal(L, "drawnCards");   // g.cs:12386
+    /// __halt: __out_cardsIDs?.Invoke(L["cardsIDs"]);       // g.cs:12400
+    /// </code>
+    /// 派发表旧实现是 `{ DrawCards(...); return null; }` ⇒ `KismetVm.cs:669` 那条
+    /// 「`result is not null` 才写 out 槽」直接跳过 ⇒ **出参永远是 null**。
+    ///
+    /// 影响面（`docs/card-ir.json` 扫描，2026-10-03）：**9 张卡**真的读这个出参 ——
+    /// `card_event_detailed_recon`（`Array_Length` + `Array_Get` 的循环）、
+    /// `card_event_pact_of_steel`（`Array_Get(cardsIDs, 0)` → `GetCardFromID`）、
+    /// `card_event_ijn_akagi`、`card_event_prolonged_siege`、`card_event_spring_offensive`、
+    /// `card_event_top_deck_play_test`、`card_unit_289th_gatchina`、
+    /// `card_unit_34th_infantry_regiment`、`card_unit_me_bf_109_fin`。
+    /// </summary>
+    private static string? DrawCardsFromDeckBySideWritesCardsIDs(CardDatabase db)
+    {
+        const int first = 6001;
+        const int second = 6002;
+
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId(InfRange1, Side.Left, first, CardLocation.DeckLeft, 0);
+        state.CreateWithId(InfRange1, Side.Left, second, CardLocation.DeckLeft, 1);
+
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        object? raw = engine.Api.InvokeByName("DrawCardsFromDeckBySide", null,
+            new object?[] { 20, (int)Side.Left, 2, false, false, null, 0.4f }, ctx, out bool handled);
+
+        if (!handled)
+        {
+            return "DrawCardsFromDeckBySide 没进派发表";
+        }
+
+        if (raw is not System.Collections.IList list)
+        {
+            return $"返回 {raw?.GetType().Name ?? "null"} —— 蓝图出参 `cardsIDs` 是 TArray<int>，"
+                 + "旧实现 `DrawCards(...); return null;` ⇒ `KismetVm.cs:669` 不写出参 ⇒ "
+                 + "读它的 9 张卡（`card_event_detailed_recon` 的 `Array_Length(cardsIDs)` 循环、"
+                 + "`card_event_pact_of_steel` 的 `Array_Get(cardsIDs, 0)`）整段恒空";
+        }
+
+        if (list.Count != 2)
+        {
+            return $"抽了 2 张，出参里却只有 {list.Count} 个元素";
+        }
+
+        var values = list.Cast<object?>().ToList();
+        if (values[0] is not int || values[1] is not int)
+        {
+            return $"出参元素是 {values[0]?.GetType().Name ?? "null"} —— 蓝图 `drawnCards` 是 "
+                 + "TArray<int>，元素直接喂 `GetCardFromID`（`card_event_pact_of_steel` i=151）"
+                 + "⇒ 必须是**整数 cardID**，不能是卡实例（`AsInt(实例)=0`）";
+        }
+
+        var got = values.Select(v => (int)v!).ToHashSet();
+        if (!got.SetEquals(new[] { first, second }))
+        {
+            return $"出参 = {{{string.Join(",", got)}}}，应当是 {{{first},{second}}}";
+        }
+
+        foreach (int id in new[] { first, second })
+        {
+            if (state.ById(id)?.Location != CardLocation.HandLeft)
+            {
+                return $"#{id} 抽完之后不在左手（{state.ById(id)?.Location}）—— 抽牌本身没生效";
+            }
+        }
+
+        // 对照：出参必须与「牌库真的少了这两张」一致（不是凭空造一个数组）。
+        if (state.Deck(Side.Left).Any())
+        {
+            return $"牌库里还剩 {state.Deck(Side.Left).Count()} 张，出参却是 2 个";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `DamageCard` 的**第 3 个实参是整数 `damagerCardID`**，不是卡对象。
+    ///
+    /// 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:11606-11618`）：
+    /// <code>
+    /// L["card"] = args[0]; L["amount"] = args[1]; L["damagerCardID"] = args[2];  // ← int
+    /// L["isRedirected"] = args[3]; L["fromFight"] = args[4]; …
+    /// GetCardFromID(damagerCardID) → damageDealer                          // g.cs:11624-11626
+    /// ExecuteOnDealDamageAddDamage(card, damageDealer, …)                  // g.cs:11636
+    /// </code>
+    /// 派发表旧实现 `var source = AsCard(a.ElementAtOrDefault(2)) ?? c.Self;` ——
+    /// `AsCard(整数) = null` ⇒ **整数形状一律退回 `c.Self`（施法者自己）**，
+    /// 于是「伤害来源」记成施法者。可观测点：`ZActionDamageCard` 子动作的
+    /// `attackerCardID`（`CardApi.ApplyCalculatedDamage` → `CardApi.cs:1067`）。
+    ///
+    /// 影响面（`docs/card-ir.json` 扫描，2026-10-03）：271 个调用点里 **9 个**的 `a[2]`
+    /// 不是自己 —— 7 个别人卡的 `{"var":"cardID","ctx":{…}}`
+    /// （`card_event_infiltrate` / `card_unit_halifax` / `card_event_yamato` /
+    ///  `card_event_jungle_warfare` / `card_event_special_attack` /
+    ///  `card_event_sunny2_heatwave3` / `card_event_sunny4_scorching_sun3`）
+    /// + 2 个 `spawnedCardID`（`card_event_audacity` / `card_location_soviet_scen4`）。
+    /// 剩下 262 个的 `a[2]` 是裸 `cardID`（= `ctx.Self.CardId`）⇒ 新旧解析结果**逐位相同**。
+    /// </summary>
+    private static string? DamageCardResolvesIntDamagerCardId(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        if (unitName is null)
+        {
+            return "卡库里没有 infantry（无法测）";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var caster = state.CreateWithId(unitName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var victim = state.CreateWithId(unitName, Side.Right, 21, CardLocation.BoardHqRight, 2);
+        var damager = state.CreateWithId(unitName, Side.Right, 22, CardLocation.BoardHqRight, 3);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = caster, Controller = Side.Left };
+
+        // ① 目标形状：`a[2]` 是**别人卡的整数 cardID**（IR 里那 9 个调用点的形状）。
+        engine.Api.InvokeByName("DamageCard", caster,
+            new object?[] { victim, 1, damager.CardId, false, false, false, null }, ctx, out _);
+
+        int source = LastDamageSourceId(state);
+        if (source != damager.CardId)
+        {
+            return $"`a[2]` 是 #{damager.CardId}（别人那张卡）的 cardID，"
+                 + $"`ZActionDamageCard.attackerCardID` 却是 #{source}"
+                 + " —— 旧实现 `AsCard(a[2]) ?? c.Self` 对整数形状恒 null ⇒ 退回施法者"
+                 + Dump(state,
+                        ("施法者", $"#{caster.CardId}"),
+                        ("a[2]", $"#{damager.CardId}"),
+                        ("attackerCardID", $"#{source}"));
+        }
+
+        if (victim.Defense >= 8)
+        {
+            return $"前置不成立：伤害没落地（{victim.Name}#{victim.CardId} 防御 {victim.Defense}）";
+        }
+
+        // ② 对照：262/271 个调用点的 `a[2]` 是裸 `cardID`（= `ctx.Self.CardId`），
+        //    解析结果必须**逐位不变** —— 否则会把本来正确的那 262 处改坏。
+        int before = victim.Defense;
+        engine.Api.InvokeByName("DamageCard", caster,
+            new object?[] { victim, 1, caster.CardId, false, false, false, null }, ctx, out _);
+
+        int sourceSelf = LastDamageSourceId(state);
+        if (sourceSelf != caster.CardId)
+        {
+            return $"`a[2]` = 自己的 cardID（262/271 个调用点的形状）必须仍然解析成自己，"
+                 + $"实际 #{sourceSelf}";
+        }
+
+        if (victim.Defense != before - 1)
+        {
+            return $"对照组伤害没落地（{before} → {victim.Defense}）";
+        }
+
+        return null;
+    }
+
+    /// <summary>取 `ActionLog` 里最后一条 `ZActionDamageCard` 子动作的 `attackerCardID`。</summary>
+    private static int LastDamageSourceId(GameState state)
+    {
+        for (int i = state.ActionLog.Count - 1; i >= 0; i--)
+        {
+            foreach (var s in state.ActionLog[i].SubActions)
+            {
+                if (s.Name != "ZActionDamageCard")
+                {
+                    continue;
+                }
+
+                foreach (var v in s.Values)
+                {
+                    if (v.Name == "attackerCardID")
+                    {
+                        return v.Value;
+                    }
+                }
+            }
+        }
+
+        return -1;
     }
 
     private static string Dump(GameState state, params (string Label, string Value)[] extras)

@@ -396,7 +396,15 @@ public sealed partial class CardApi
             ["AddAttackUntilEndOfTurn"] = (c, r, a) => DoAddAttackUntilEndOfTurn(c, a),
             ["HealCard"] = (c, r, a) => DoHealCard(c, r, a),
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
-            ["DrawCardsFromDeckBySide"] = (c, r, a) => { DrawCards(SideArg(r, a, 1, c.Controller), IntArg(a, 2, 1)); return null; },
+            // ⚠️ 第 5 参 `cardsIDs` 是**出参**（权威签名 `BP_CardFunctions.g.cs:12298-12310`），
+            //    蓝图体把循环里抽到的每张牌的 cardID 攒成 `drawnCards` 再 `Invoke` 出去
+            //    （`g.cs:12386` / `g.cs:12400`）。旧实现 `DrawCards(...); return null;`
+            //    ⇒ `KismetVm.cs:669` 不写出参 ⇒ 读它的 **9 张卡**整段恒空
+            //    （`card_event_detailed_recon` 的 `Array_Length(cardsIDs)` 循环、
+            //      `card_event_pact_of_steel` 的 `Array_Get(cardsIDs, 0)` …）。
+            //    改成返回 `List<int>`（抽到的 cardID）⇒ VM 写进第一个 out 槽；
+            //    先例见 `GetDeckByside`（同族 `TArray<int>` 出参，已有自测守着）。
+            ["DrawCardsFromDeckBySide"] = (c, r, a) => DrawCardsAndCollect(SideArg(r, a, 1, c.Controller), IntArg(a, 2, 1)),
             ["DrawCardFromDeck"] = (c, r, a) => { DrawCards(SideArg(r, a, 0, c.Controller), IntArg(a, 1, 1)); return null; },
             ["SpawnCardInHandBySide"] = (c, r, a) => DoSpawnInHand(c, r, a),
             ["SpawnCardOnBattlefield"] = (c, r, a) => DoSpawnOnBattlefield(c, r, a),
@@ -410,7 +418,28 @@ public sealed partial class CardApi
             ["GainKreditSlot"] = (c, r, a) => { GainKreditSlot(SideArg(r, a, 1, c.Controller), 1); return null; },
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
             ["CustomAbilityRemove"] = (c, r, a) => DoCustomAbilityRemove(c, r, a),
-            ["PersistCustomFields"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },
+            // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`
+            //    只认接收者，而 `r` 恒为 `cardFunction`（= `ctx.Self`，施法的那张牌自己）
+            //    ⇒ **永远持久化施法者，`a[0]` 指的别人那张卡的临时字段从没被写出去**。
+            //
+            // 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:27828-27849`）：
+            //    `0: cardID`、`1: refreshEffectBar` —— 蓝图体把 `args[0]` 喂给
+            //    `GetCardFromID`（`g.cs:27840`），再取那张卡的 `customJson` 通知客户端。
+            //
+            // IR 实测（`docs/card-ir.json` 扫描，2026-10-03）：489 个调用点，`recv` =
+            //    `{"var":"cardFunction"}` **489/489**；`a[0]` =
+            //      · 裸 `{"var":"cardID"}`（= `ctx.Self.CardId`）×459 —— 旧写法在这 459 处
+            //        **碰巧等价**（`AsCardOrId(自己的 cardID)` ≡ 旧 `AsCard(r)`）；
+            //      · `{"var":"cardID","ctx":{…}}` = **别人卡的 cardID** ×22
+            //        （`K2Node_Event_targetCard` / `spawnedCard` / `CallFunc_Array_Get_Item` …）
+            //      · 别的整数 cardID 形状（数组元素、`spawnedCardID` 变量…）×8
+            //    ⇒ 那 **30 处 / 21 张卡**持久化的是**错卡**（`card_event_no_retreat`、
+            //      `card_event_maginot_line`、`card_event_seize_the_initiative`、
+            //      `card_unit_obice_da_75_13`、`card_event_carrier_battle` …）。
+            //
+            // 用 `AsCardOrId(c, a[0]) ?? AsCard(r)`（实参优先、接收者兜底）后，459 处 self
+            // 形状解析结果**逐位不变**，30 处修正。同族先例见下面的 `MakeVeteran`。
+            ["PersistCustomFields"] = (c, r, a) => { if ((AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r)) is { } x) PersistCustomFields(x); return null; },
             // ⚠️ 同形「接收者优先」bug（2026-10-02）：旧写法 `if (AsCard(r) is {} x) MakeVeteran(x)`
             //    只认接收者，而 `r` 恒为 `cardFunction`（= `ctx.Self`，施法的那张牌自己）
             //    ⇒ **永远把施法者自己变成老兵，目标从没被命中过**。
@@ -2880,14 +2909,26 @@ public sealed partial class CardApi
         // （`ref/kards-sim/KardsTranspiler/BlueprintSignatures.cs` 的取法），
         // 调用点互证 `out/bp-cardfn.json` → `DamageCard` si=690。
         //
-        // ⚠️ 第 3 参在蓝图里是 **cardID（int）**，不是卡对象；内核以前只认对象
-        //    （`AsCard` 拿到 null ⇒ 退回 `c.Self`）。对绝大多数调用点等价
-        //    （全卡池 15 处 `DamageCard` 里 11 处传的就是自己的 `cardID`），
-        //    但 `OnOtherCardDealDamageAddDamageAfterCalc` 那 4 处传的是
-        //    `cardDealingDamage.cardID`（**原始伤害来源**）—— 那条链内核还没做，
-        //    这里如实保留旧行为，不猜一个来源出来。
+        // ⚠️ 第 3 参在蓝图里是 **cardID（int）**，不是卡对象（权威签名
+        //    `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:11606-11618`：
+        //    `L["damagerCardID"] = args[2]` → `GetCardFromID(damagerCardID)` 得
+        //    `damageDealer`，见 `g.cs:11624-11626`）。
+        //
+        // ★ 2026-10-03 修：旧写法 `AsCard(a[2]) ?? c.Self` —— `AsCard(整数) = null`
+        //   ⇒ **整数形状一律退回施法者**，伤害来源记成施法者自己。改成 `AsCardOrId`
+        //   （同族先例：`DestroyCard` 的 `destroyer`、`DiscardCard` 的 `discarder`）。
+        //
+        // IR 实测（`docs/card-ir.json` 扫描，2026-10-03）：271 个调用点，`a[2]` =
+        //   · 裸 `{"var":"cardID"}`（= `ctx.Self.CardId`）×262 —— 新旧解析**逐位相同**；
+        //   · `{"var":"cardID","ctx":{…}}` = **别人卡的 cardID** ×7
+        //     （`card_event_infiltrate`、`card_unit_halifax`、`card_event_yamato`、
+        //      `card_event_jungle_warfare`、`card_event_special_attack`、
+        //      `card_event_sunny2_heatwave3`、`card_event_sunny4_scorching_sun3`）；
+        //   · `spawnedCardID` ×2（`card_event_audacity`、`card_location_soviet_scen4`）。
+        //   ⇒ 那 9 处的「伤害来源」此前记成施法者（影响 `ZActionDamageCard.attackerCardID`
+        //     与 `OnCardDealDamage` / `OnOtherCardDealDamage` 的 `damageDealer` 事件参数）。
         int amount = IntArg(a, 1);
-        var source = AsCard(a.ElementAtOrDefault(2)) ?? c.Self;
+        var source = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
 
         // si=149 `JumpIfNot(isRedirected) -> si=690`：重定向伤害**跳过**修正链。
         // si=690 `ExecuteOnDealDamageAddDamage(damageDealer, card, amount, False, fromFight, False, …)`

@@ -1635,12 +1635,61 @@ public sealed partial class CardApi
                 ["isNegativeGain"] = count < 0,
             });
 
-    public void DrawCards(Side side, int count)
+    public void DrawCards(Side side, int count) => DrawCardsAndCollect(side, count);
+
+    /// <summary>
+    /// 抽 <paramref name="count"/> 张牌，**并把抽到的那几张的 cardID 收集起来返回** ——
+    /// 对应蓝图 `DrawCardsFromDeckBySide` 的**出参** `cardsIDs`。
+    ///
+    /// ## 为什么必须单独有一个"收集版"
+    ///
+    /// 蓝图体（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:12298-12402`）：
+    /// <code>
+    /// L["instigatorID"] = args[0]; L["side"] = args[1]; L["numCards"] = args[2];
+    /// L["cardSeen"] = args[3];     L["OpponentDraw"] = args[4];
+    /// var __out_cardsIDs = args[5].As&lt;Action&lt;Val&gt;&gt;();      // ← 出参（第 5 参）
+    /// L["drawDelay"] = args[6];
+    /// loop: drawnCard = DrawTopCardFromDeck(side, instigatorID, OpponentDraw, cardSeen, …);
+    ///       if (drawnCard &gt; 0) { Array_Add(drawnCards, drawnCard); … }
+    /// L_021B: L["cardsIDs"] = GetLocal(L, "drawnCards");     // g.cs:12386
+    /// __halt: __out_cardsIDs?.Invoke(L["cardsIDs"]);         // g.cs:12400
+    /// </code>
+    /// 派发表旧实现只调 `DrawCards(...)` 然后 `return null` ⇒ `KismetVm.cs:669` 那条
+    /// 「`result is not null` 才写 out 槽」直接跳过 ⇒ **出参永远是 null**。
+    ///
+    /// 影响面（`docs/card-ir.json` 扫描，2026-10-03）：**9 张卡**真的读这个出参 ——
+    /// `card_event_detailed_recon`（`Array_Length(cardsIDs)` + `Array_Get` 的整段循环）、
+    /// `card_event_pact_of_steel`（`Array_Get(cardsIDs, 0)` → `GetCardFromID`）、
+    /// `card_event_ijn_akagi`、`card_event_prolonged_siege`、`card_event_spring_offensive`、
+    /// `card_event_top_deck_play_test`、`card_unit_289th_gatchina`、
+    /// `card_unit_34th_infantry_regiment`、`card_unit_me_bf_109_fin`。
+    ///
+    /// ## 两个口径
+    /// <list type="bullet">
+    /// <item>元素是**整数 cardID**，不是卡实例 —— 蓝图的 `drawnCards` 是 `TArray&lt;int&gt;`，
+    ///       元素直接喂 `GetCardFromID`（`card_event_pact_of_steel` i=151）。
+    ///       口径与 <see cref="GetDeckBySide"/> 一致；返回卡实例会让 `AsInt(实例)=0`。</item>
+    /// <item><c>DrawCard</c> 返回 null 的两条路径（牌库空 → 疲劳伤害 / 手牌满 → 烧牌）
+    ///       **都不入列**，对应蓝图 `if (drawnCard &gt; 0)` 那道门。
+    ///       ⚠️ 已知偏差：蓝图的 `DrawTopCardFromDeck` 在**手牌满**时仍返回 `drawnCardID`
+    ///       （`g.cs:12558` 的 `L["drawnCard"] = drawnCardID` 在 `isHandFull` 分支汇合之后），
+    ///       也就是"烧掉的那张"也进 `drawnCards`；而 `MatchEngine.DrawCard` 在烧牌时返回 null
+    ///       （`MatchEngine.cs:713-726`），这里就收不到。要完全对齐需要引擎给出"被烧的是哪张"，
+    ///       本轮**不改** `MatchEngine.cs`（它同时被另一处改动占用）。</item>
+    /// </list>
+    /// </summary>
+    public List<int> DrawCardsAndCollect(Side side, int count)
     {
+        var drawn = new List<int>();
         for (int i = 0; i < count; i++)
         {
-            _engine.DrawCard(side);
+            if (_engine.DrawCard(side) is { } card)
+            {
+                drawn.Add(card.CardId);
+            }
         }
+
+        return drawn;
     }
 
     /// <summary>把一张卡生成到手牌（对应 SpawnCardInHandBySide / doSpawnCardInHand）。</summary>
