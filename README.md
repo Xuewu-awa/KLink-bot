@@ -5,16 +5,16 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
 ![C#](https://img.shields.io/badge/C%23-net10.0-239120)
 ![Python](https://img.shields.io/badge/Python-3-3776AB)
-![License](https://img.shields.io/badge/license-TBD%20(origin%20repo%20is%20GPL--3.0)-lightgrey)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![CI](https://img.shields.io/badge/CI-none%20(all%20numbers%20measured%20locally)-lightgrey)
 
 > ⚠️ **本仓库没有 CI**，所以上面没有构建徽章。本文里所有数字都是**本机手工跑出来的**，
 > 每条都附了命令或文件行号。凡是**没有独立核实**的，文中会明确标注「未独立复核」。
 >
 > 📦 **出处**：本仓库是开源项目 **KLink**（[`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet)，
-> 启动器 + 私服，**GPL-3.0**）中**规则内核 + AI** 这一部分的独立抽取版。
+> 启动器 + 私服）中**规则内核 + AI** 这一部分的独立抽取版。
 > 启动器与私服**不在本仓库里，但都是开源的** —— 见 §5.6。
-> ⚠️ 抽取时**没有带上 `LICENSE` 文件**；来源仓库是 GPL-3.0，详见 §10.5。
+> **许可：GPL-3.0**（与来源仓库逐字节一致），详见 §10.5。
 >
 > 本文档核实时间：**2026-10-02**（提交 `d2d0f5c` 的工作树）。
 > 作者的内部追踪文档在 [`klink bot/docs/内部现状与路线图.md`](klink%20bot/docs/内部现状与路线图.md)。
@@ -993,30 +993,31 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 
 ### 10.5 许可（License）
 
-**当前状态：本仓库没有 `LICENSE` 文件**（已核实：`git ls-files` 中不存在
-`LICENSE` / `COPYING` / `NOTICE`）。但**来源仓库的许可已经查清**，这是决定时最关键的一条事实：
+**GNU General Public License v3.0（GPL-3.0）** —— 全文见仓库根的 [`LICENSE`](LICENSE)。
 
-> **本仓库是从 [`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet) 的
-> `src/KLink.Bot` 逐字节抽取出来的**（证据：`src/KLink.Bot/Engine/UeRandomStream.cs` 两边
-> SHA-256 相同，`55BD6F19…`），而那个仓库的 `src/LICENSE` 是
-> **GNU GPL v3.0 全文**，覆盖 `src/` 下的 `KLink.App` / `KLink.Server` / **`KLink.Bot`**。
+选它的理由是**与来源仓库保持一致**：
 
-⇒ 因此「License TBD」其实是个**待确认**状态而不是「从来没有过许可」：
-**如果本仓库被视为同一作品的延续，最自然的选择是沿用 GPL-3.0**（并补一份 `LICENSE`）。
-⚠️ **本文不替作者决定**，最终由作者选择。下面是三个候选及各自含义：
+> 本仓库是从 [`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet) 的
+> `src/KLink.Bot` **逐字节抽取**出来的（证据：`src/KLink.Bot/Engine/UeRandomStream.cs` 两边
+> SHA-256 相同，`55BD6F19…`），而那个仓库的 `src/LICENSE` 就是 **GNU GPL v3.0 全文**，
+> 覆盖 `src/` 下的 `KLink.App` / `KLink.Server` / **`KLink.Bot`**。
+> 本仓库的 `LICENSE` 与该文件**逐字节相同**（SHA-256 `230184F6…`）。
 
-| 候选 | 含义 | 影响 |
-|---|---|---|
-| **GPL-3.0**（与来源仓库一致） | 强 copyleft：衍生作品必须同样以 GPL 开源 | **与来源仓库许可一致、无冲突**；但它会传导到链接它的宿主（`KLink.Bot.dll` 被宿主进程加载时，宿主侧也要满足 GPL 的相应义务） |
-| **MIT** | 最宽松：允许任意使用、修改、再分发（含闭源商用），只需保留版权与许可声明 | 最容易被他人复用；⚠️ 但**从 GPL-3.0 代码改许可需要版权持有者同意**，若作者即版权持有者则可行 |
-| **Apache-2.0** | 与 MIT 接近，但**显式包含专利授权**，并要求标注修改过的文件 | 同上：与来源许可的兼容性需要作者确认 |
+**这对使用者意味着什么**（客观陈述，不构成法律意见）：
 
-⚠️ **另外两个必须注意的点**（无论选哪个）：
+- 你可以自由地**使用、研究、修改、再分发**本作品，甚至用于商业目的；
+- 但**衍生作品必须同样以 GPL-3.0 开源**，并保留版权与许可声明、标注你修改过的地方；
+- 它是 **copyleft（传染性）** 的：把 `KLink.Bot.dll` 作为库**链接进你的宿主**（例如
+  `fyserver`）时，宿主侧也要满足 GPL 的相应义务 —— 这一点在 §5.6 的宿主集成场景里
+  需要特别注意；
+- GPL-3.0 第 11 节还包含**明示的专利授权**。
+
+⚠️ **两个必须注意的点**：
 
 1. **许可只能覆盖作者自己的代码。** 仓库里从游戏数据提取的产物（卡牌数据、IR、
-   回放动作流）可能仍受游戏发行商的权利约束，**开源许可不能替你解决这部分**。
-2. 文档（`*.md`）如果想单独授权，通常用 CC BY 4.0 之类；但**软件许可不要用 CC 系列**
-   （Creative Commons 明确不建议用于软件）。
+   回放动作流）可能仍受游戏发行商的权利约束，**GPL-3.0 不能替你解决这部分**。
+2. 文档（`*.md`）如果作者想单独授权，通常用 CC BY 4.0 之类；但**软件许可不要用 CC 系列**
+   （Creative Commons 明确不建议用于软件）。目前 `*.md` 与代码同受 GPL-3.0 覆盖。
 
 ### 10.6 免责
 
@@ -1095,6 +1096,7 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 ```
 <仓库根>/
 ├── README.md                       ← 你正在读的文件
+├── LICENSE                         ← GNU GPL v3.0 全文（与来源仓库 KLink-dotnet 逐字节相同）
 ├── KLink.slnx                      ← 仓库根标记（工具靠它定位数据目录）+ 5 个工程
 ├── NuGet.config / .gitignore / .gitattributes
 ├── goal.txt                        ← 项目最初的设想（作者原话）
