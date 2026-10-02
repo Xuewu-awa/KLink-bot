@@ -915,15 +915,23 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 **为什么过期**：那个「102 张」是**候选池修复之前**的旧口径数字，而「客户端游标 = 88」
 正是从它反推出来的。
 
-#### 9.1.3 已定位的根因：两个**缺失的随机消费点**
+#### 9.1.3 曾怀疑的两个「缺失的随机消费点」——**现已双双排除**（2026-10-02 凌晨六 更正）
 
 | # | 缺失点 | 蓝图出处 | 内核现状 |
 |---|---|---|---|
-| ① | `selectCardToDraw` 的**候选表洗牌** | `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:33750` 判 `keepOrder`，假时 `:33783` 执行 `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)` ⇒ **消费 = 候选表长度**；`card_event_pams` **硬编码 `keepOrder = false`**（`ref/kards-sim/.../card_event_pams.g.cs:245`） | `src/KLink.Bot/Effects/CardApiDispatch.cs:1197-1209` **有意不执行**这次消费（当年实现过一次，人类失败 13 → 22 所以回退） |
-| ② | `SetCardsSeenByCipher` | `BP_CardFunctions.g.cs:6056-6058`（`IsGotcha` 为假）→ `:6175` 调用 ⇒ **每张非 Gotcha 出牌都调**；该函数（`:34037`）对「对手手牌里 `cardSeen == false` 的那些」做 `Array_ShuffleFromStream`（`:34166`）⇒ 每次消费 **k 次** | **完全没有这个子系统**（`grep -rn "SetCardsSeenByCipher" src/` ⇒ **0 命中**） |
+| ① | `selectCardToDraw` 的**候选表洗牌** | `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:33750` 判 `keepOrder`，假时 `:33783` 执行 `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)` ⇒ **消费 = 候选表长度**；`card_event_pams` **硬编码 `keepOrder = false`**（`ref/kards-sim/.../card_event_pams.g.cs:245`） | `src/KLink.Bot/Effects/CardApiDispatch.cs:1197-1209` **有意不执行**这次消费（当年实现过一次，人类失败 13 → 22 所以回退）。⚠️ **现已用穷举否证「该补这次洗牌」** —— 见 §9.1.7 |
+| ② | `SetCardsSeenByCipher` | ⚠️ **本条已更正**：调用门是**三重** —— `:6050` `IsActionProcess` → `:6052/:6054` **`cipher > 0`** → `:6058` `IsGotcha` 为假，才在 `:6175` 调用。原文写「每张非 Gotcha 出牌都调」**漏了 `cipher > 0` 这道门**。消费公式 = 对手手牌里 `cardSeen == false` 的**张数**（`:34137` 过滤 → `:34166` 前向 Fisher-Yates 跑满 n 次），**与 cipher 无关**；cipher 只决定置位几张（`:34170/:34172/:34174`），数组为空则 0 消费（`:34150`） | **完全没有这个子系统**（`grep -rn "SetCardsSeenByCipher" src/` ⇒ **0 命中**）。但 **`508065` 上它消费 0**：该局 44 条 `PC` **无一 cipher>0**（全池 cipher>0 仅 25 张；唯一写方 `AddIntelToCard`（`:382-386`）的 3 个调用点**全在 `card_unit_lublin_r_xiii`**，该卡本局出现 0 次）⇒ 实现它对这一局的游标是 **no-op** |
 
-⇒ 两者叠加 ⇒ 内核在 `#36` **至少落后 41 + 13 = 54 次**，**比 46 还多**
-（`#36` 之前有 **13 条 `PC`**，逐条数 `out/_server-replays/replay-508065.actions.json`）。
+⇒ ~~两者叠加 ⇒ 内核在 `#36` 至少落后 41 + 13 = 54 次~~ —— **该推算已作废（2026-10-02 凌晨六）**：
+② 在 `508065` 上消费 **0**（见上表），所以只剩 ①；而 ① 的「洗牌 + 取第 k 张」模型
+已在**池口径 × 排序键 × 全局偏移 K × 洗牌消耗次数 × 不洗牌**五个维度上被**穷举否证**（见 §9.1.7）。
+
+⇒ **没有任何可归因的缺失消费点。**「内核落后 46 次」这个结论本身应作废 ——
+它的客户端游标 `88` 是用**修复前的 102 张池**反推出来的（见 §9.1.2 / §9.1.4）。
+
+⇒ **给 508065 的 16 条人类失败另找原因**：四判据里 ⑤b 的首漂开是
+`#54 t13 PC：打不出`（**内核拒绝打出一张客户端打出的牌**）—— 那是**合法性/候选**问题，
+不是随机流问题。这条与 `CanSelectAsTarget` 接攻击路径（§9.3）是同一类。
 
 **「46」这个数本身也不可靠**：同一个「游标 → 下标」模型对第二张牌失效
 （游标 89 → idx 6，而客户端第二张是 `card_unit_p40_warhawk`，池内 idx 82）；
@@ -973,6 +981,29 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 
 **完整依据**（逐条 `文件:行号` + 可复跑命令）：`klink bot/docs/内核补全队列.md` 的
 「2026-10-02（凌晨四）：RNG 游标失同步」一节。
+
+#### 9.1.7 ★ 「补 pams 洗牌」已被**穷举否证**（2026-10-02 凌晨六）
+
+模型：「客户端 `selectCardToDraw` 在洗牌（前向 Fisher-Yates，消耗 n=41）之后取
+`shuffled[候选下标]`」。判据用 **6 局各自的第一次 pams**（种子 = 该局 `match_id`），
+**6 个独立约束对 1 个未知量** ⇒ 只有**全中**才算证据（偶然全中概率见下）。
+
+| 维度 | 试过的取值 | 全中 |
+|---|---|---|
+| **池口径** | 41（卡集 ∧ 排除预备）/ 71 / 54 / 84 | 只有 54 那档出现 **1 个孤立解**（期望 0.26，P(≥1)≈23%，**噪声**） |
+| **排序键** | 资产名 Ordinal / 忽略大小写、显示名 `title` Ordinal / 忽略大小写、`cards.live.json` 插入顺序、两种逆序 | **全无解** |
+| **全局起始偏移 K** | `0..2000` | **无解**（偶然全中 ≈ 2001×(1/41)⁶ ≈ **4.2×10⁻⁷**） |
+| **洗牌消耗次数** | `n` / `n−1` | **全无解** |
+| **不洗牌模型**（取排序表第 k 张） | 7 种排序键 | **全 0/6** |
+| **消费顺序** | 已从蓝图定死：`OnPlayedFromHand`→`selectCardToDraw`（洗牌）→ `CS` → `OnHandTargetSelected` 的 `RandomIntFromRangeWithStream`；`OnPlayedFromHand` **整条链只有这一个消费点** | 不是顺序造成的（起点几何自洽） |
+
+另外两条**读不到**的事实（所以只能穷举测试）：
+- `SortCardsByName` 在随附转译源码里**只有调用点、没有函数体**（`BP_Logic.g.cs:24086`，全树 grep 只此一处）
+  ⇒ **排序键是原生实现**；`GetAllStaticCardsSortedByName`（`BP_GameState_Battle.g.cs:1615`）只是返回缓存成员。
+- `CardDatabase.cs:209` 已核实 `"Britain" => 2`，与 pams 蓝图 `:212` 的 `faction == 2` 一致 ⇒ 阵营不是问题。
+
+⇒ **结论：「补上这次洗牌」不是修复方案，作者当年那次回归（人类失败 13 → 22）不是偶然。**
+⇒ 连同 §9.1.3 的 ② 在该局消费 0 ⇒ **没有可归因的缺失消费点**。
 
 ### 9.2 费用 / kredit 结算的剩余缺口
 
