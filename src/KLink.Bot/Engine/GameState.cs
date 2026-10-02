@@ -316,6 +316,38 @@ public sealed class GameState
     public List<CardInstance> Deck(Side s) => Cards(s, s.DeckOf());
     public List<CardInstance> Hand(Side s) => Cards(s, s.HandOf());
     public List<CardInstance> Board(Side s) => Cards(s).FindAll(c => c.Location.IsBoard() && !c.IsHq);
+
+    /// <summary>
+    /// 该方**场上**的卡，按**进入战斗的顺序**（**不是** `LocationNumber` 顺序）。
+    ///
+    /// ★ 为什么需要它（2026-10-02，从蓝图定案）：
+    /// 客户端所有「遍历场上」的函数都走 `GetAllCardInBattle()`
+    ///（`ref/kards-sim/…/_deps/BP_GameState_Battle.g.cs:1571`），而它**只有一句**
+    /// `Map_Values(self.AllCardsInBattle)` ⇒ 顺序 = **这个 `TMap` 的迭代顺序**。
+    /// 而 `AddCardToAllCardsInBattle`（同文件 `:301-319`）是
+    /// 「`cardID &gt; 0` 且 `Map_Find` 查不到 ⇒ `Map_Add`」——
+    /// **全树 0 处 `Map_Remove`** ⇒ 该映射**只增不删**、永不出现 swap-remove 的洞
+    /// ⇒ **`Map_Values` 的顺序就是插入顺序**（= 卡进入战斗的顺序）。
+    ///
+    /// ⚠️ `Board(s)` 是按 `LocationNumber` **排序**的（见 <see cref="Cards"/>），
+    /// 与客户端的插入序**不是一回事**。而「随机挑一张」这类效果的候选集顺序
+    /// 直接决定抽到谁（同一次消费、同一个下标，排列不同就取到不同的卡 ——
+    /// 见 `CardApi.GetRandomCard` 的注释），所以**随机族必须用本方法**。
+    /// </summary>
+    public List<CardInstance> BoardInBattleOrder(Side s)
+        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard() && !c.IsHq);
+
+    /// <summary>
+    /// 该方**在战场上**的**全部**卡（**含 HQ**），按**进入战斗的顺序**。
+    ///
+    /// 客户端 `AllCardsInBattle` 装的是**所有进过战斗的卡**（含双方 HQ），
+    /// 而 HQ 是**开局就创建**的 ⇒ 在「只增不删」的插入序里它排在**最前**。
+    /// 所以「`unitsOnly=false`」的候选集**不能**把 HQ 追加到末尾
+    ///（内核原先正是 `Board(side).Concat([HQ])`，把 HQ 放在最后一位）。
+    /// 详见 <see cref="BoardInBattleOrder"/> 里那段蓝图依据。
+    /// </summary>
+    public List<CardInstance> BattleCardsInOrder(Side s)
+        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard());
     public List<CardInstance> Discard(Side s) => Cards(s, CardLocation.Discard);
 
     public CardInstance Hq(Side s) => _cardsBySide[(int)s].First(c => c.IsHq);

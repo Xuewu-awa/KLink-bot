@@ -211,9 +211,15 @@ public sealed partial class CardApi
                         c.State.UnimplementedCalls.GetValueOrDefault("GetCardsOnBoardBySide<includeCovertCards>") + 1;
                 }
 
+                // ⚠️ `unitsOnly=false` 时 **HQ 要留在它自己的插入位置（= 最前）**，
+                //    **不能**追加到末尾：客户端 `AllCardsInBattle` 是「只增不删」的映射，
+                //    而 HQ 是**开局就创建**的 ⇒ 它排在**最前**。
+                //    旧实现是 `Board(side).Concat([HQ])` ⇒ HQ 落到最后一位
+                //    ⇒ 同一次消费、同一个下标会取到不同的卡。
+                //    见 `GameState.BattleCardsInOrder` 与 `BoardInBattleOrder` 里的蓝图依据。
                 return TruthyArg(a, 1)
                     ? GetCardsOnBoardBySide(side).ToList()
-                    : GetCardsOnBoardBySide(side).Concat(new[] { c.State.Hq(side) }).ToList();
+                    : c.State.BattleCardsInOrder(side).ToList();
             },
             ["GetCardsInHandBySide"] = (c, r, a) => GetCardsInHandBySide(SideArg(r, a, 0)).ToList(),
             // ⚠️ 出参是 `TArray<int> deckCardIDs`（卡 **ID**），不是卡实例 ——

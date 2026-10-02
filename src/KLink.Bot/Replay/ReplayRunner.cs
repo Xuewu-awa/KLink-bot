@@ -350,12 +350,31 @@ public sealed class ReplayRunner
         state.TrackGeneratedCardTrust = true;
         engine.EnforceGeneratedCardTrust = false;
 
+        // ---- 0) **HQ 卡必须先建**（2026-10-02 修正）----
+        //
+        // ★★ 为什么顺序要紧：客户端所有「遍历场上」的函数都走 `GetAllCardInBattle()`
+        //    = `Map_Values(AllCardsInBattle)`（`_deps/BP_GameState_Battle.g.cs:1571`），
+        //    而那个映射由 `AddCardToAllCardsInBattle`（`:301-319`）**只增不删**
+        //    （全树 0 处 `Map_Remove`）⇒ **顺序 = 卡进入战斗的顺序**。
+        //    客户端那边 **HQ 是开局就存在的** ⇒ 它在映射里排**最前**。
+        //
+        //    ⚠️ 旧实现把 HQ 放在**主循环之后**建（见下面那段的旧址）⇒ 内核的插入序里
+        //    HQ 落到**最后** ⇒ 「随机挑一张敌方场上的卡」这类效果（`unitsOnly=false`
+        //    含 HQ）**同一次消费、同一个下标会取到不同的卡**。
+        //    实测（回放 854099 `#39`）：内核池 `[111th_indian_brigade, 5th_parachute_brigade,
+        //    85_pioneer_company, card_location_london]`（HQ 在末），
+        //    而客户端那一刻打的是 **HQ** ⇒ 两边下标语义不一致。
+        foreach (var c in replay.Cards.Where(c => c.Location.IsBoard()))
+        {
+            state.CreateWithId(c.Name, c.Owner, c.CardId, c.Location, c.LocationNumber, c.IsGold);
+        }
+
         int known = 0, skipped = 0;
         foreach (var c in replay.Cards)
         {
             if (c.Location.IsBoard())
             {
-                continue;   // HQ 单独处理
+                continue;   // HQ 已在上面建过
             }
 
             if (_db.Find(c.Name) is null)
@@ -407,11 +426,8 @@ public sealed class ReplayRunner
             known++;
         }
 
-        // HQ 卡：快照里的 board_hqleft / board_hqright
-        foreach (var c in replay.Cards.Where(c => c.Location.IsBoard()))
-        {
-            state.CreateWithId(c.Name, c.Owner, c.CardId, c.Location, c.LocationNumber, c.IsGold);
-        }
+        // HQ 卡：**已在主循环之前建过**（见那段注释 —— 顺序要匹配客户端
+        // `AllCardsInBattle` 的插入序，HQ 必须最先）。
 
         // HQ 初始防御 20（已由实测确认）
         foreach (var side in new[] { Side.Left, Side.Right })

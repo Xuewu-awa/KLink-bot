@@ -2503,7 +2503,20 @@ public sealed partial class CardApi
     public CardInstance? GetCardFromID(int cardId) => State.ById(cardId);
     public CardInstance? GetLocationCardBySide(Side s) => State.Hq(s);
 
-    public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.Board(s);
+    /// <summary>
+    /// 客户端 `GetCardsOnBoardBySide(side, unitsOnly, includeCovertCards)` 的候选集。
+    ///
+    /// ★★ **顺序必须是「进入战斗的顺序」**（2026-10-02 从蓝图定案）。
+    /// 客户端遍历场上一律走 `GetAllCardInBattle()` = `Map_Values(AllCardsInBattle)`
+    ///（`_deps/BP_GameState_Battle.g.cs:1571`），而那个映射**只增不删**
+    ///（全树 0 处 `Map_Remove`，见 `AddCardToAllCardsInBattle` `:301-319`）
+    /// ⇒ 顺序 = **插入顺序**。详见 <see cref="GameState.BoardInBattleOrder"/>。
+    ///
+    /// ⚠️ 以前这里用的是 `State.Board(s)`（按 `LocationNumber` 排序）——
+    /// 同一次消费、同一个下标会**取到不同的卡**，这正是「随机效果与客户端不一致」
+    /// 的第三个成因（`GetRandomCard` 的注释里写过）。
+    /// </summary>
+    public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.BoardInBattleOrder(s);
     public IEnumerable<CardInstance> GetAllUnitsOnBoard() => State.Board(Side.Left).Concat(State.Board(Side.Right));
     public IEnumerable<CardInstance> GetAllCardsOnBoard() => GetAllUnitsOnBoard().Concat(new[] { State.Hq(Side.Left), State.Hq(Side.Right) });
     public IEnumerable<CardInstance> GetAllCards() => State.AllCards;
