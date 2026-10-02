@@ -1,161 +1,156 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
-> **`klink bot` 是 KARDS 卡牌游戏的离线规则内核 + AI 项目。**
-> 它现在物理上住在 `klink` 仓库里（那个仓库同时含启动器与私有服务器），
-> **但本项目的设计目标是【可独立存在】**：不依赖启动器、不依赖游戏客户端，
-> 就能 **跑规则、自对弈、训神经网络、审计真实对局回放、对全卡池做烟雾测试**。
-> 与服务器的对接（`ServerBotService` / 部署脚本 / `BotData` 数据目录）只是**一种宿主方式**，
-> 不是本项目的前提。
+> **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
+
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
+![C#](https://img.shields.io/badge/C%23-net10.0-239120)
+![Python](https://img.shields.io/badge/Python-3-3776AB)
+![License](https://img.shields.io/badge/license-TBD-lightgrey)
+![CI](https://img.shields.io/badge/CI-none%20(all%20numbers%20measured%20locally)-lightgrey)
+
+> ⚠️ **本仓库没有 CI**，所以上面没有构建徽章。本文里所有数字都是**本机手工跑出来的**，
+> 每条都附了命令或文件行号。凡是**没有独立核实**的，文中会明确标注「未独立复核」。
 >
-> 读者：项目作者本人（真人玩家「雪雾」）。
-> 本文里每一个数字都标注了**来源**（文件:行号 / 命令 / 对局号），凡是我没能核实的都**明确写了"未核实"**。
->
-> 最后核实时间：2026-10-02 傍晚（源码工作树状态，见 §4.2「构建对齐」）。
-
-### 关于这份 README 所在的仓库
-
-本文所在目录是 **`klink bot` 独立仓库的根**。它是从 `klink` 仓库里**挑出来的 bot 部分**
-（`klink` 那个仓库同时含启动器与私有服务器）。
-
-**仓库布局（`klink bot/` 是嵌套目录，不是笔误）**：
-
-```
-<仓库根>/
-├── README.md / .gitignore / .gitattributes / KLink.slnx / NuGet.config
-├── src/KLink.Bot/**            规则内核 + AI
-├── klink bot/docs/**           数据（IR / 卡库 / 卡向量 / 卡组码）+ 全部报告
-├── klink bot/tools/**          Python 生成器与训练脚本（约 140 个）
-├── tools/BotSim/**             selftest / smoke-all-cards / dispatch-gap
-├── tools/ServerBridgeTest/**   --audit-replay 全套审计
-├── tools/NNTrain/**            自对弈产数据 + 训练
-├── tools/NNPlay/**             让训练好的 NN 下场打一局
-├── tools/AotProbe/**           在"反射式序列化被关掉"的宿主里跑内核全路径
-├── out/audit/**                审计脚本 + 取证报告
-├── goal.txt                    作者最初的原始设想
-└── 评估与实施路线图.md          立项时的评估（含被推翻的结论）
-```
-
-⚠️ **为什么 `docs/` 与 `tools/` 被套在 `klink bot/` 里面**：
-内核与工具的源码把数据路径**硬编码**成了 `klink bot/docs/...` ——
-C# 里约 15 处运行时回退路径（`tools/BotSim/Program.cs`、`tools/ServerBridgeTest/*.cs`、
-`tools/NNTrain`、`tools/NNPlay`、`tools/AotProbe`），加上 `KLink.Bot.csproj` 里 4 处
-`CopyToOutputDirectory`。**保持这个相对路径 ⇒ 不需要改任何构建文件**，
-独立仓库与上游行为逐字节一致（构建文件可用 `git diff` 与上游对照，零差异）。
-如果你想要扁平的 `docs/`，需要改那 ~15 处路径字面量。
-
-**脱敏**：仓库里所有本机绝对路径已替换成 `<repo-root>`（原 `E:\项目\klink-dotnet`）
-与 `<user-home>`（原 `C:\Users\Administrator`）。
-**未纳入**的（见 `.gitignore` 与 §11）：`kards-Windows.pak`（7.1 GB）、`.jmap`（249 MB）、
-`key.txt`（pak 密钥）、NN 训练数据（最大 7.5 GB）、宿主侧目录（`rel/`、`tem/`）、
-构建产物、可能含账号的日志与配置、以及可重新生成的批量审计转储（`.tsv`、>256 KB 的 JSON）。
-
-**✅ 独立可跑已实测**（在独立仓库里从零构建，2026-10-02）：
-
-```
-dotnet build "src\KLink.Bot\KLink.Bot.csproj" -c Release   ⇒ 0 error（1 个可空性 warning）
-dotnet build "tools\BotSim\BotSim.csproj"     -c Release   ⇒ 0 error
-dotnet run --project "tools\BotSim" -c Release --no-build -- selftest
-   ⇒ 卡牌数据: 2021 张，卡组码映射: 2499 条 / 蓝图 IR: 1735 张卡可解释
-   ⇒ 1/120 项失败（与上游完全相同的那一项 gordon_highlanders）
-& "out\audit\audit-all-replays.ps1"                        ⇒ 588/632（93.0%）、人类失败 30
-   （与上游逐局逐数字相同：214436 59/61 · 389594 95/97 · 508065 124/141 ·
-     542091 75/78 · 773639 134/137 · 854099 101/118）
-dotnet build tools\{ServerBridgeTest,NNTrain,NNPlay,AotProbe} -c Release ⇒ 全部 0 error
-```
-
-⇒ **自测与六局审计在独立仓库里逐位复现**，说明数据路径、IR、卡库、回放语料都齐了。
+> 本文档核实时间：**2026-10-02**（提交 `d2d0f5c` 的工作树）。
+> 作者的内部追踪文档在 [`klink bot/docs/内部现状与路线图.md`](klink%20bot/docs/内部现状与路线图.md)。
 
 ---
 
 ## 目录
 
-1. [这是什么、为什么这么做](#1-这是什么为什么这么做)
-2. [核心难题：逐位复刻](#2-核心难题逐位复刻这是整个项目的地基)
-3. [数据流水线](#3-数据流水线pak--蓝图--ir--解释器--内核--ai)
-4. [架构](#4-架构每个模块做什么)
-5. [目录归属：哪些属于 bot、哪些属于宿主](#5-目录归属哪些属于-bot哪些属于宿主)
-6. [当前状态](#6-当前状态)
-7. [将要做的（路线图）](#7-将要做的路线图)
-8. [方法论（踩过的坑）](#8-方法论这一节最值钱)
-9. [怎么上手（命令）](#9-怎么上手命令)
-10. [怎么接回服务器（宿主集成）](#10-怎么接回服务器宿主集成)
-11. [如何发布到 GitHub](#11-如何发布到-github)
-12. [没做成 / 没验证 / 已知缺口](#12-没做成--没验证--已知缺口如实说)
-13. [附录：本次核实到的与既有说法不一致之处](#13-附录本次核实到的与既有说法不一致之处)
+1. [这是什么 / 解决什么问题](#1-这是什么--解决什么问题)
+2. [核心难题：确定性锁步下的逐位复刻](#2-核心难题确定性锁步下的逐位复刻)
+3. [数据流水线](#3-数据流水线)
+4. [架构](#4-架构)
+5. [能做什么（能力清单）](#5-能做什么能力清单)
+6. [快速开始](#6-快速开始)
+7. [度量与验证方法](#7-度量与验证方法)
+8. [当前状态（实测数字）](#8-当前状态实测数字)
+9. [路线图 / 已知缺口](#9-路线图--已知缺口)
+10. [法律与伦理](#10-法律与伦理)
+11. [贡献指南](#11-贡献指南)
+12. [致谢](#12-致谢)
+13. [目录结构](#13-目录结构)
+14. [内部文档指路](#14-内部文档指路)
 
 ---
 
-## 1. 这是什么、为什么这么做
+## 1. 这是什么 / 解决什么问题
 
 ### 1.1 一句话
 
-**把游戏 pak 里的蓝图变成一份可离线执行的规则内核，用它做 AI 的决策器，再接回服务器当真人对手。**
+**KARDS 是一个二战题材的卡牌游戏。本项目不需要启动游戏客户端，就能在本地把它的规则完整跑起来。**
+
+具体来说：游戏里每张卡的效果不是写死在代码里的 `if/else`，而是**蓝图（Blueprint）**编译出来的
+**Kismet 字节码**。本项目把那些字节码从游戏数据包里抽出来、压成一份中间表示（IR，Intermediate
+Representation），然后写了一个**字节码解释器**去执行它。于是：
+
+- 一张卡的效果 = 一段可解释执行的 IR；
+- 加一张新卡的支持，通常**不需要写 C#**，只需要把原语（primitive）层补全；
+- 整个对局可以**离线、无客户端、可重复**地跑。
+
+### 1.2 它到底做了什么
 
 ```
-游戏 pak 里的蓝图
-      │  反编译（UAssetCLI dump-batch --full）
-      ▼
-   cards.full.json（原始 Kismet 字节码）
-      │  gen-kismet-ir.py（压成可解释的 IR）
-      ▼
-   card-ir.json（IR）
-      │  KismetVm.cs（Kismet 字节码解释器）
-      ▼
-   可离线跑对局的「内核」
-      ├──► 自对弈 → 训练神经网络 → 当作 AI 的决策器
-      └──► 接回服务器当对手（真人对局时用）
+游戏 pak（7.1 GB，AES-256 加密索引）
+   │  解包 + 反编译蓝图
+   ▼
+蓝图字节码 JSON
+   │  压成 IR
+   ▼
+card-ir.json（9.4 MiB / 1735 条）
+   │  Kismet 字节码解释器（KismetVm）
+   ▼
+原语派发表（CardApiDispatch）+ 原语实现（CardApi）
+   ▼
+可离线跑对局的「规则内核」
+   ├──► 自对弈  →  产出训练数据
+   ├──► 训练神经网络  →  当 AI 的决策器
+   └──► 重放真实对局的动作流  →  逐条与客户端对拍（审计）
 ```
 
-**关键设计选择**：不给 1700+ 张卡手写 C# 效果脚本，而是**直接解释蓝图编译出来的 IR**。
-理由：字节码里天然带着数据流（`CallFunc_<函数名>_<参数名>` 就是那个调用的输出槽），
-一张卡的效果就是「一串有输入输出的步骤」。**覆盖率随原语层完善自动提升，不需要为每张卡写代码。**
+### 1.3 为什么非 KARDS 玩家也可能觉得有意思
 
-### 1.2 为什么可以独立跑（这是"为什么要单独一个项目"的核心理由）
+这个项目的核心不是「做一个 KARDS 机器人」，而是**解决了一个具体的、可验证的工程问题**：
 
-下面四件事**全都不需要启动器、不需要游戏客户端**：
+> **把一个商业游戏的蓝图字节码逆向成一个可离线执行、逐位可复现的规则内核。**
 
-| 能力 | 怎么跑 | 证据 |
-|---|---|---|
-| **跑规则 / 自对弈** | `tools/BotSim` 的 `play` 模式；`NNTrain dump` 内部就是自对弈产数据 | `tools/BotSim/Program.cs:51`；`tools/NNTrain/Program.cs:127`（「自对弈 N 局；每局从 22 套元卡组里随机抽 2 套不同的」） |
-| **训练神经网络** | `tools/NNTrain` 的 `dump` / `train` / `verify` 三个命令，**手写 MLP，不依赖 numpy/torch** | `tools/NNTrain/Program.cs:22-26` |
-| **回放审计** | `tools/ServerBridgeTest --audit-replay <前缀>`，拿真实对局的动作流重放、逐条与客户端对拍 | `tools/ServerBridgeTest/Program.cs:42-50` |
-| **全卡池烟雾测试** | `tools/BotSim smoke-all-cards`，**脱离一切对局**，直接按 `(卡, 入口, 摆位)` 跑蓝图 | `tools/BotSim/Program.cs:59-73` |
+这件事有意思的地方在于它的**判据是硬的**：
 
-所有卡牌数据（`cards.json` / `card-ir.json` / `card-vectors.json` / `deck_code_ids.json`）
-都在 `klink bot/docs/` 里**离线生成、随仓库携带**，运行时不需要游戏本体
-（`src/KLink.Bot/README.md:124-138`）。
+- 游戏的网络模型是**确定性锁步**（deterministic lockstep）：服务端**不保存棋盘、不做合法性校验**，
+  每个客户端**在本地自己结算效果**，服务端只转发动作。
+- 因此，**只要拿到「开局数据 + 全部动作流」，就一定能还原出客户端那个棋盘** ——
+  游戏自己的重连机制就是这么做的。
+- 于是：**内核重建不出客户端那个棋盘，就一定是内核的 bug，不是「数据不够」。**
+
+这是一个**可以被逐位证伪**的目标，而不是一个模糊的「效果大致对上了」。
+
+此外项目里还有几块单独拿出来看也成立的工程内容：
+
+| 主题 | 内容 |
+|---|---|
+| **确定性随机数的逐位复刻** | 用反汇编得到的 LCG 常数，逐位复刻虚幻引擎 `FRandomStream`，并用一组公开测试向量钉死（见 §2.3） |
+| **字节码解释器** | 一个 1273 行的 Kismet 字节码解释器，带步数预算、局部函数体兜底、事件变量槽位解析 |
+| **大规模差分测试** | 4088 个 (卡, 入口, 摆位) 用例的全卡池烟雾测试，同时检查崩溃 / 未实现原语 / 步数上限 / 非确定性 / 零状态变化 |
+| **带指纹的防回归守卫** | 用集合指纹（而不是总数）冻结「未实现原语」缺口，防止「修一个坏一个」互相抵消 |
+| **对拍方法论** | 明确区分「哪些判据可靠、哪些只是弱约束」，并记录了一次「两个错互相抵消」的真实案例（见 §7.3） |
 
 ---
 
-## 2. 核心难题：逐位复刻（这是整个项目的地基）
+## 2. 核心难题：确定性锁步下的逐位复刻
 
-### 2.1 游戏是「确定性锁步」的
+这一节是整个项目的地基。理解了它，才能理解为什么后面所有的工程决策长成那样。
 
-**服务端没有棋盘状态、不做合法性校验。** 每个客户端**本地结算效果**，服务端只转发 `action_data`。
+### 2.1 服务端没有棋盘状态
 
-**重连的做法证明了「动作流足以还原状态」**：
-`tem/fyserver/Endpoints/MatchEndpoints.cs` 的 `/matches/v2/reconnect` 是把
-「开局数据 + 全部动作流」发回，**客户端自己重放还原棋盘**。
+KARDS 用的是**确定性锁步**网络模型：
 
-> ⇒ **内核重建不出客户端那个棋盘，就一定是我们的 bug。**
+- 服务端**不保存棋盘状态**；
+- 服务端**不做合法性校验**（谁能不能出这张牌，是客户端自己判的）；
+- 每个客户端收到动作后，**在本地把效果结算一遍**；
+- 服务端只负责**转发动作**（`action_data`）。
 
-### 2.2 随机数也是确定性的
+这和「服务端权威（server-authoritative）」模型完全相反。它带来一个直接推论：
 
-客户端的随机效果用 UE 引擎自带的 `FRandomStream`（`cardsRandomStream`），**算法与常数完全公开**。
-所以内核不需要"猜"，只要用同一个种子、按同一个顺序消耗同样多次，就能**逐位复现**客户端抽到的那张卡。
+> **只要动作流一样、初始状态一样、双方的结算逻辑一样，双方棋盘就必然一样。**
 
-实现见 `src/KLink.Bot/Engine/UeRandomStream.cs`：
+### 2.2 重连机制证明了「动作流足以还原状态」
+
+游戏自己的**重连**实现就是这条推论的应用：服务端把
+**「开局数据（starting_data）+ 全部动作流」**发回客户端，**客户端自己重放还原棋盘**。
+
+> ⇒ **内核重建不出客户端那个棋盘，就一定是内核的 bug。**
+
+这是本项目所有工作的**判据来源**：不需要猜、不需要「大致对」，
+只需要拿真实对局的快照 + 动作流，在内核里重放，然后逐条比。
+
+### 2.3 随机数也是确定性可复现的
+
+卡牌游戏里「随机抽一张牌」看起来是内核最不可能复现的部分。但客户端用的随机数来自
+**虚幻引擎自带的 `FRandomStream`**（蓝图里的 `cardsRandomStream`），
+它的**算法和常数完全公开**，而且已经在游戏二进制里被反汇编确认过。
+
+所以内核不需要「猜」，只要：**用同一个种子、按同一个顺序、消耗同样多次**，
+就能逐位复现客户端抽到的那张卡。
+
+实现在 [`src/KLink.Bot/Engine/UeRandomStream.cs`](src/KLink.Bot/Engine/UeRandomStream.cs)：
 
 | 细节 | 值 | 出处 |
 |---|---|---|
-| LCG 步进 | `Seed = Seed*196314165 + 907633515 (mod 2^32)` | `UeRandomStream.cs:56-59,99-105`；反编译 `RandomIntegerInRangeFromStream` @ IDA `0x143ddce50` |
-| `GetFraction()` | 取变换后种子的**高 23 位**，`(s>>9)\|0x3F800000` 当 `[1,2)` 的 float 再减 1 | `UeRandomStream.cs:114-119` |
-| `RandRange(min,max)` | **两端闭**：`min + floor(GetFraction()*(max-min+1))` | `UeRandomStream.cs:129-138` |
-| 播种 | 开局用 `match_id` 播一次；**2026-08-25 后不再逐动作重播种** | `UeRandomStream.cs:25-32` |
-| `Array_ShuffleFromStream` | **前向** Fisher-Yates，消耗 **n** 次（不是 n-1） | `UeRandomStream.cs:146-168` |
+| LCG 步进 | `Seed = Seed * 196314165 + 907633515 (mod 2^32)` | `UeRandomStream.cs:56,59,99-105` |
+| `GetFraction()` | 取变换后种子的**高 23 位**，`(s >> 9) \| 0x3F800000` 当作 `[1,2)` 的 float 再减 1 | `UeRandomStream.cs:114-119` |
+| `RandRange(min, max)` | **两端闭区间**：`min + floor(GetFraction() * (max - min + 1))` | `UeRandomStream.cs:129-138` |
+| 播种 | 开局用 `match_id` 播种**一次**，之后连续推进（不再逐动作重播种） | `UeRandomStream.cs:25-32, 86-93` |
+| `Array_ShuffleFromStream` | **前向** Fisher-Yates，循环跑满 **n** 次（不是 n−1 次） | `UeRandomStream.cs:157-168` |
+| 保真度探针 | `ConsumedCount`：本局已消耗多少个随机数 | `UeRandomStream.cs:80` |
 
-**逐位验证**（最硬的一条证据）：报告 `Kards_RNG_report` 的 `Weather.md` §4.2.1 给了一组可复算测试向量
-（`match_id=1000000000`、重播种 `CurrentActionId=10` ⇒ `seed=1000193900`，连抽三次 `RandomIntFromRangeWithStream(0,2)`）：
+**为什么 `ConsumedCount` 是个强判据**：随机流是一条**游标**。内核漏掉一个消费点（某原语没实现），
+游标就**落后**；多消费一次，游标就**超前**。两种情况都会让之后所有取数全部错位。
+所以「游标位置对得上」几乎等价于「我们的执行路径与客户端一致」。
+
+**逐位验证**（最硬的一条证据）：一份第三方逆向报告给出了一组可复算的测试向量
+（`match_id = 1000000000`，重播种用 `CurrentActionId = 10` ⇒ `seed = 1000193900`，
+连抽三次 `RandomIntFromRangeWithStream(0, 2)`）：
 
 | 第几次 | 变换前 Seed | 变换后 Seed | 返回 |
 |---|---|---|---|
@@ -163,229 +158,559 @@ dotnet build tools\{ServerBridgeTest,NNTrain,NNPlay,AotProbe} -c Release ⇒ 全
 | 2 | 1626977479 | 4280773790 | 2 |
 | 3 | 4280773790 | 431904801 | 0 |
 
-本内核**逐位命中**（自测 `UeRandomStreamMatchesReportVector`）。这三行同时钉住了
-**LCG 常数、高 23 位变换、闭区间**三件事 —— 旧的 splitmix64 实现在算法上**不可能**命中。
-出处：`out/audit/idfix/README.md:9-29`；`src/KLink.Bot/Engine/UeRandomStream.cs:36-45`。
+本内核**逐位命中**这三行（自测用例 `UeRandomStreamMatchesReportVector`）。
+这三行同时钉住了**LCG 常数**、**高 23 位变换**、**闭区间**三件事 ——
+任何一处写错都不可能命中。
 
-### 2.3 为什么这件事难
+### 2.4 ⇒ 项目本质是一场「逐位对拍」的长期工程
 
-内核要**逐位复刻**客户端的结算行为，任何一处不一致都会**逐渐漂开**，
-最后表现为玩家可见的症状：
+把上面三节合起来看：
 
-| 症状 | 已定位的根因 | 出处 |
-|---|---|---|
-| **AI 移动虚空单位 / 卡牌悬空** | ① 生成卡发号规则错（客户端认不出我们发的卡号） | §6.3 C、§6.3 D |
-| 同上 | ② `MakeCardsFight`（互斗）没实现 ⇒ 本该战死的单位没死 | §6.3 D |
-| 同上 | ③ bot 的目标没发到客户端（槽位 `1` vs `2`） | §6.3 C |
-| AI 空过 | ④ `FrontlineOwner` 死亡不重置 ⇒ 前线互斥门把 AI 自己锁死 | §6.3 D |
-| 效果算错 | ⑤ 随机效果的"选卡"不一致（最大的一块，未修） | §7 第 1 条 |
+1. 动作流 + 开局数据 **足以**还原棋盘（§2.2）；
+2. 随机数**可以**逐位复现（§2.3）；
+3. 所以**任何不一致都是内核的 bug**（§2.1）。
+
+于是项目的工作方式不是「实现功能」，而是**不断缩小与真实客户端的差异**：
+
+```
+拿真实对局的动作流 → 在内核里重放 → 找到第一个漂开点
+   → 定位根因（某个原语没实现 / 某个语义写错 / 某个消费点漏了）
+   → 修 → 重跑全部回放，确认没有回归、且漂开点后移
+```
+
+这也是为什么本仓库里有一整套**审计脚本**和**冻结基线**（见 §7、§8）——
+没有它们，就无法判断一次改动到底是「变好了」还是「只是换了个地方错」。
 
 ---
 
-## 3. 数据流水线：pak → 蓝图 → IR → 解释器 → 内核 → AI
+## 3. 数据流水线
 
 ```
-kards-Windows.pak（7.1 GB，AES-256 加密索引，密钥在 klink bot/key.txt）
-   │  klink bot/UAssetCLI 的 pak-extract / dump-batch --full
+kards-Windows.pak（7.1 GB，AES-256 加密索引）
+   │  ① 解包 + 反编译蓝图（需要 pak 解密密钥；密钥【不在本仓库】）
    ▼
 cards.full.json（原始 Kismet 字节码 JSON）
-   │  klink bot/tools/gen-kismet-ir.py
+   │  ② klink bot/tools/gen-kismet-ir.py
    ▼
-klink bot/docs/card-ir.json（IR；运行时就解释它）
-   │  src/KLink.Bot/Effects/Blueprint/KismetVm.cs
+klink bot/docs/card-ir.json（IR —— 运行时就解释它）
+   │  ③ src/KLink.Bot/Effects/Blueprint/KismetVm.cs（字节码解释器）
    ▼
 src/KLink.Bot/Effects/CardApiDispatch.cs（名字派发：IR 里的调用名 → C# 原语）
    ▼
-src/KLink.Bot/Effects/CardApi.cs（原语实现：伤害/触发/关键字/压制/老兵…）
+src/KLink.Bot/Effects/CardApi.cs（原语实现：伤害 / 触发 / 关键字 / 压制 / 老兵 / 生成卡 …）
    ▼
-src/KLink.Bot/Engine/MatchEngine.cs（对局引擎：回合/部署/移动/攻击/摧毁/前线）
-   ├──► tools/BotSim（自对弈 / selftest / smoke-all-cards）
+src/KLink.Bot/Engine/MatchEngine.cs（对局引擎：回合 / 部署 / 移动 / 攻击 / 摧毁 / 前线）
+   ├──► tools/BotSim（自对弈 / selftest / 全卡池烟雾测试 / 缺口统计）
    ├──► src/KLink.Bot/NN/StateEncoder.cs + NnModel.cs（局面编码 → 打分）
    │        └── tools/NNTrain（自对弈产数据 → 训练 → 导出 nn-model.bin）
    │        └── src/KLink.Bot/Server/NnPolicy.cs（候选枚举 → 打分 → 产出动作）
-   └──► src/KLink.Bot/Server/BotTurnService.cs → tem/fyserver 的 ServerBotService.cs（接回真人对局）
+   └──► src/KLink.Bot/Server/BotTurnService.cs（接回真实对局：宿主侧见 §5.6）
 ```
 
-**IR 生成器的已知边界**（重要，别高估）：
+### 3.1 关键设计选择：解释 IR，而不是给每张卡写脚本
 
-| 事实 | 数字 | 来源 |
+不给 1700+ 张卡手写 C# 效果脚本，而是**直接解释蓝图编译出来的 IR**。理由：
+
+- 字节码里天然带着**数据流**：`CallFunc_<函数名>_<参数名>` 这种局部变量名就是那个调用的输出槽；
+- 一张卡的效果因此就是「一串有输入输出的步骤」，配合 `JumpIfNot` 给出的控制流就能完整还原；
+- **覆盖率随原语层完善自动提升**，不需要为每张卡单独写代码。
+
+IR 的形状（生成器文档串，[`klink bot/tools/gen-kismet-ir.py`](klink%20bot/tools/gen-kismet-ir.py)）：
+
+```jsonc
+{
+  "card_event_aans": {
+    "programs": {
+      "OnPlayedFromHand": { "entry": 10, "steps": [ /* ... */ ] }
+    },
+    "locals": { "CanPlayFromHand": { "entry": 3, "steps": [ /* ... */ ] } }
+  }
+}
+```
+
+单个步骤：
+
+```jsonc
+{"i":10,  "op":"call",      "fn":"GainKreditSlot", "args":[...], "outs":[]}
+{"i":119, "op":"set",       "dst":"tempCard",      "src":{...}}
+{"i":167, "op":"jumpIfNot", "cond":{...},          "to":252}
+{"i":252, "op":"return"}
+```
+
+表达式：`{"var":"tempCard"}` / `{"int":3}` / `{"bool":true}` / `{"str":"x"}` /
+`{"obj":"/Script/..."}` / `{"self":true}` / `{"none":true}` /
+`{"call":"IsValid","args":[...]}` / `{"math":"Add_IntInt","args":[...]}` /
+`{"unknown":"EX_Foo"}`（未支持的指令会被 VM 记录并跳过，不中断整局）。
+
+### 3.2 ⚠️ 流水线的第 ①② 步在本仓库里**跑不了**
+
+这是一个必须说清楚的事实，别高估仓库的自包含程度：
+
+| 步骤 | 需要什么 | 在本仓库里吗 |
 |---|---|---|
-| IR 条目总数 | **1735**（其中 1707 个 `card_*` + 24 个 `BP_*` + 2 个 `WBP_*` + 1 个 `BPI_*` + 1 个 `createCard_*`） | 我实测：`python` 读 `klink bot/docs/card-ir.json` 的 `len(d)`；与 `out/audit/semantic-reconcile-report.md:32`「IR 条目 1735（含 26 个非卡蓝图）」一致 |
-| 卡池（`cards.live.json` / `cards.json`） | **2021 张** | 我实测 `len(json.load(...))`；`tools/BotSim` 启动横幅也打「卡牌数据: 2021 张」 |
-| IR 里注册的**不同入口名** | **449 个** | 我实测（聚合所有卡的 `entrypoints` 键）；与 `out/audit/semantic-reconcile-report.md:145` 一致 |
-| 入口注册总数 | **3608 条** | 我实测（各卡 `entrypoints` 条数求和） |
-| `locals`（卡内私有函数体） | **881 个** | 我实测 |
-| `CanPlayFromHand` 作为卡内私有函数 | **438 张卡** | 我实测；`out/audit/semantic-reconcile-report.md` 与自测「IR 里必须带卡自己的 `CanPlayFromHand`（`card-ir.json` 重生成守卫）」互相印证 |
-| IR 里出现过的**不同调用名** | **1026 个** | 我实测（`call`/`math`/`set.src` 三种位置一起算） |
+| ① pak → 蓝图字节码 | `kards-Windows.pak`（7.1 GB）、pak 解密密钥 `key.txt`、解包 / 反编译 CLI | ❌ **都不在**（见 §10.2） |
+| ② 字节码 → IR | `cards.full.json`（反编译产物）、`gen-kismet-ir.py` | 脚本 ✅ 在；**输入 ❌ 不在** |
+| ③ IR → 对局 | `card-ir.json` + 内核源码 | ✅ **全在**（这是本项目可独立运行的部分） |
+
+**也就是说：从 clone 出来的仓库出发，你可以直接跑规则、自对弈、训练、审计；
+但你不能从游戏本体重新生成 IR。** IR 与卡库是**随仓库携带的产物**。
 
 ---
 
-## 4. 架构（每个模块做什么）
+## 4. 架构
 
-> 全部路径都经过我实际读代码核实。行号以**当前工作树**为准（源码在 2026-10-02 有大量未提交改动，见 §6.2）。
+> 所有路径都经过实际读代码核实；行号以提交 `d2d0f5c` 的工作树为准。
 
-### 4.1 内核（`src/KLink.Bot/`）
+### 4.1 内核（`src/KLink.Bot/`，33 个文件）
 
-| 模块 | 位置 | 作用 | 我核实的证据 |
+| 模块 | 位置 | 作用 | 关键实现点 |
 |---|---|---|---|
-| **Kismet VM** | `Effects/Blueprint/KismetVm.cs`（1273 行） | 解释 IR 字节码：`pushFlow`/`call`/`math`/`set`/`jumpIfNot`/`popFlow`/`jump`/`setArray`；局部变量、事件变量槽位解析、步数预算、`locals` 兜底 | `KismetVm.cs:12-17`（执行模型）；`MaxStepsPerProgram=5000` / `MaxStepsPerLocalProgram=400000` / `StepsPerPoolCard=52` / `MaxStepsHardCap=1000000`（`:27,43,79,89`） |
-| **原语派发表** | `Effects/CardApiDispatch.cs`（4547 行，253 KB） | 蓝图调用的**每一个函数**（`DamageCard` / `ChangeAttack` / `SpawnCardOnBattlefield` / `MakeCardsFight` …）在 C# 里的实现与名字派发 | `BuildDispatch()` 里逐键注册；例：`["MakeCardsFight"] = (c, r, a) => DoMakeCardsFight(c, a)`（`:389`） |
-| **卡牌 API** | `Effects/CardApi.cs`（137 KB） | 伤害/触发/关键字/压制/老兵/生成卡等上层实现 | `ApplyDamage` 漏斗在 `MatchEngine.cs:1982-2052`；`SuppressUnit` 见 `CardApi.cs` 与 `CardInstance.cs:214-310` |
-| **对局引擎** | `Engine/MatchEngine.cs`（131 KB） | `StartTurn` / `PlayCard` / `Attack` / `MoveUnit` / `Destroy` / 前线归属 / 回合推进 / 事件派发 | `MaxKreditCap = 24`（`:51`）；`RefreshFrontlineOwner`（`:1399-1410`） |
-| **状态与卡实例** | `Engine/GameState.cs`（33 KB）/ `Engine/CardInstance.cs`（41 KB） | 棋盘/手牌/牌库/弃牌堆、关键字、buff、**卡号分配** | `NextCardId`（`GameState.cs:467-484`）；`MaxAttacksThisTurn => Fury ? 2 : 1`（`CardInstance.cs:94`） |
-| **随机流** | `Engine/UeRandomStream.cs`（8.4 KB） | UE `FRandomStream` 的逐位复刻；`ConsumedCount` 是保真度探针 | 见 §2.2 |
-| **回放执行** | `Replay/ReplayRunner.cs`（82 KB） | 拿动作流重放，逐步与客户端对拍；产出审计信号 | 审计段落在 `tools/ServerBridgeTest/ReplayAudit.cs` |
-| **AI 决策** | `Server/NnPolicy.cs`（16 KB）/ `Server/BotTurnService.cs`（48 KB）/ `Bots/GreedyBot.cs`（8.2 KB） | 候选枚举 → 神经网络打分 → 产出动作；`GreedyBot` 是 baseline | `NnPolicy.cs:39`（候选：能动的单位 × 内核给的目标、能动的单位 × 所有前线槽位、结束回合） |
-| **神经网络** | `NN/StateEncoder.cs`（21 KB）/ `NN/NnModel.cs`（9.5 KB） | 局面编码 → 打分 | `StateEncoder.Dim`：`Globals(3) + PerSide×2`，`PerSide = 6 + Σ区域卡向量 + 5`，v2/v3 = **745 维**（`StateEncoder.cs:105-172`）；模型文件里存 `spec`，加载时逐项对账 |
-| **卡库** | `Cards/CardDatabase.cs` / `CardInnateTable.cs`（45 KB，696 条） / `CardPoolTable.cs`（27 KB） / `MetaDecks.cs`（22 套元卡组） | 卡面数值（CDO 权威表）+ 关键字/重甲 + 卡池模板 + 内置卡组 | `CardDatabase.cs:287-306`（卡面自带关键字/重甲取自 pak CDO 抽出的表） |
-| **服务器侧集成** | `Server/ServerReplayBridge.cs` / `Server/AtomicAction.cs` / `Server/ServerMatchSnapshot.cs` | 把内核动作转成服务端协议动作 | `AtomicAction.cs` 的 `PlayCardAction`/`AttackAction`/`MoveAction` |
+| **Kismet 字节码解释器** | `Effects/Blueprint/KismetVm.cs`（1273 行） | 解释 IR：`call` / `math` / `set` / `jumpIfNot` / `jump` / `popFlow` / `setArray`；局部变量、事件变量槽位解析、步数预算、`locals` 兜底 | 执行模型见 `:12-17`；`MaxStepsPerProgram = 5000`（`:27`）、`MaxStepsPerLocalProgram = 400_000`（`:43`）、`StepsPerPoolCard = 52`（`:79`）、`MaxStepsHardCap = 1_000_000`（`:89`） |
+| **IR 数据结构** | `Effects/Blueprint/KismetIr.cs`（654 行） | IR 的解析与库索引（`KismetLibrary`）：按卡名 / 入口名取程序、`locals` 查找与基名回退 | — |
+| **派发表** | `Effects/CardApiDispatch.cs`（4547 行 / 243 KB） | 蓝图里出现的**每一个函数名**在 C# 里的实现与名字派发 | `BuildDispatch()` 逐键注册；例：`["MakeCardsFight"] = (c, r, a) => DoMakeCardsFight(c, a)`（`:389`） |
+| **卡牌 API（原语层）** | `Effects/CardApi.cs`（2605 行 / 131 KB） | 伤害 / 触发 / 关键字 / 压制 / 老兵 / 生成卡等上层原语实现 | `ImplementedNames` 是派发缺口的判据之一 |
+| **派发缺口量化** | `Effects/Blueprint/DispatchGap.cs`（106 行） | 计算「IR 会调用、派发表没有、`locals` 也兜不住」的缺口集合与**指纹** | 三层判据见 `:20-32` |
+| **对局引擎** | `Engine/MatchEngine.cs`（2287 行 / 126 KB） | `StartTurn` / `PlayCard` / `Attack` / `MoveUnit` / `Destroy` / 前线归属 / 回合推进 / 事件派发 | `MaxKreditCap = 24`（`:51`） |
+| **状态与卡实例** | `Engine/GameState.cs`（681 行）/ `Engine/CardInstance.cs`（752 行） | 棋盘 / 手牌 / 牌库 / 弃牌堆、关键字、buff、**卡号分配** | `NextCardId`（`GameState.cs:422-484`，含与客户端逐位一致的 `id = 回合号 × 1000 + 本回合已生成数` 规则）；`MaxAttacksThisTurn => Fury ? 2 : 1`（`CardInstance.cs:94`） |
+| **随机流** | `Engine/UeRandomStream.cs`（171 行） | UE `FRandomStream` 的逐位复刻（见 §2.3） | — |
+| **确定性随机（非对局用）** | `Engine/DeterministicRandom.cs`（58 行） | 内核自带的 splitmix64，只用于训练侧采样，**不参与对局** | `UeRandomStream.cs:47-51` 的注释解释了为什么留它 |
+| **协议动作** | `Engine/WireAction.cs`（287 行） | 网络动作的解析与**紧凑名 ↔ 全名**映射 | `CompactToFull`（`:57-87`）：`PC` / `ML` / `AC` / `CS` / `HT` / `MG` / `SG` / `CH` / `EM` |
+| **回放执行** | `Replay/ReplayRunner.cs`（1539 行 / 79 KB）+ `Replay/ReplayData.cs`（270 行） | 拿动作流重放，逐步与客户端对拍；产出审计信号；`InferHqKey` 从动作流反推 HQ 采样键 | — |
+| **AI 决策** | `Server/NnPolicy.cs`（359 行）/ `Server/BotTurnService.cs`（1019 行）/ `Bots/GreedyBot.cs`（229 行） | 候选枚举 → 神经网络打分 → 产出动作；`GreedyBot` 是 baseline | `NnPolicy` 候选 = 能动的单位 × 内核给的目标 / 能动的单位 × 所有前线槽位 / 结束回合 |
+| **神经网络** | `NN/StateEncoder.cs`（373 行）/ `NN/NnModel.cs`（255 行） | 局面编码 → 打分；**训练与推理共用同一份编码器** | v2 布局 `Dim = 3 + 371 × 2 = 745`（`StateEncoder.cs:105-148`、`:168` 的 `Spec` 串）；v3 布局 `1065`（`:350`）；模型文件里存 `spec`，加载时逐项对账 |
+| **卡库** | `Cards/CardDatabase.cs`（367 行）/ `CardInnateTable.cs`（740 行）/ `CardPoolTable.cs`（698 行）/ `CardVarDefaults.cs`（91 行）/ `DeckCodeParser.cs`（127 行）/ `MetaDecks.cs`（35 行） | 卡面数值（取自 pak 的 CDO 权威表）+ 关键字 / 重甲 + 卡池模板 + 卡组码解析 + 内置元卡组 | `CardVarDefaults` 补上「蓝图成员变量的 CDO 默认值」（`gen-kismet-ir.py` 只编字节码、不编默认值） |
+| **服务器侧集成** | `Server/AtomicAction.cs`（396 行）/ `Server/ServerReplayBridge.cs`（133 行）/ `Server/ServerMatchSnapshot.cs`（82 行） | 把内核动作转成服务端协议动作、把宿主快照映射成内核局面 | 宿主仓库不在本仓库里，见 §5.6 |
 
-### 4.2 数据与工具（`klink bot/`）
+### 4.2 数据与 Python 工具（`klink bot/`）
 
-| 模块 | 位置 | 作用 |
+| 模块 | 位置 | 说明 |
 |---|---|---|
-| **规则参考** | `docs/KARDS基础规则参考.md`（15 KB） | 真人玩家整理 + 蓝图层面的规则定案（重甲不减免指令伤害 `:106`、压制移除时机 `:160`） |
-| **IR** | `docs/card-ir.json`（9.8 MB，1735 条） | 解释器执行的东西 |
-| **卡库** | `docs/cards.live.json` / `docs/cards.json`（各 2.1/1.1 MB，2021 张） | 卡面数值 |
-| **效果调用** | `docs/card-effects.json`（3.0 MB，2053 条） | 每张卡用了哪些外部调用 |
-| **卡向量** | `docs/card-vectors.json`（1.4 MB） | NN 用的卡向量 |
-| **卡组码表** | `docs/deck_code_ids.json` / `.live.json`（90 KB，2499 条） | 2 字符卡组码 ↔ 卡名 |
-| **事件契约** | `docs/event-contracts.json`（67 KB，172 条） | 事件槽位表 |
-| **真实对局** | `docs/fresh-replays/`（7 局）/ `docs/live-replays/`（5 局） | 回放审计语料 |
-| **生成器** | `tools/gen-kismet-ir.py` / `gen-card-db.py` / `gen-card-keywords.py` / `gen-card-pool-table.py` / `gen-card-vectors.py` / `gen-card-effects.py` | 从反编译产物生成上面那些数据 |
-| **训练脚本** | `tools/nn-r*.py`（r4→r9，约 40 个） | 训练/评估/消融/曲线 |
-| **采集 mod** | `ue4ss-mods/` | UE4SS 采集 mod（⚠️ UE4SS 在这个 UE5.6 fork 上**实测不可用**，AOB 扫描失败，见 `评估与实施路线图.md` 的 v3 修订） |
+| **IR** | `klink bot/docs/card-ir.json`（9.4 MiB，1735 条） | 解释器执行的东西 |
+| **卡库** | `klink bot/docs/cards.live.json`（2.0 MiB，2021 条）/ `cards.json` | 卡面数值 |
+| **效果调用表** | `klink bot/docs/card-effects.json`（2.7 MiB，2053 条） | 每张卡用了哪些外部调用 |
+| **卡向量** | `klink bot/docs/card-vectors.json`（1.0 MiB） | NN 用的卡向量 |
+| **卡组码表** | `klink bot/docs/deck_code_ids.json` / `.live.json`（各 88 KB，2499 条） | 2 字符卡组码 ↔ 卡名 |
+| **事件契约** | `klink bot/docs/event-contracts.json`（62 KB，172 条） | 事件槽位表 |
+| **规则参考** | `klink bot/docs/KARDS基础规则参考.md` | 真人玩家整理 + 蓝图层面的规则定案 |
+| **真实对局语料** | `klink bot/docs/fresh-replays/`（7 局）/ `live-replays/`（5 局） | 快照 + 动作流 |
+| **生成器** | `klink bot/tools/gen-kismet-ir.py` / `gen-card-db.py` / `gen-card-keywords.py` / `gen-card-pool-table.py` / `gen-card-vectors.py` / `gen-card-effects.py` | 从反编译产物生成上面的数据 |
+| **训练 / 评估脚本** | `klink bot/tools/nn-*.py`（r4 → r9，约 40 个） | 训练、评估、消融、曲线 |
+| **回放工具** | `klink bot/tools/wrap-fyserver-replay.py` / `decode-replay.py` / `analyze-replay.py` 等 | 把宿主导出的原始回放转成内核认识的形状（含全名 → 紧凑名映射，`:54-60`） |
+| **参照物拉取** | `klink bot/tools/fetch-kards-sim.py` | 拉取第三方参照实现 `CCB-TEAM/kards-sim` 到 `ref/kards-sim`（`ref/` 被 gitignore；脚本默认走一个本机代理，可用环境变量 `KARDS_REF_PROXY` 覆盖，`:29`） |
 
-### 4.3 测试与审计（仓库根的 `tools/`，属于 bot）
+### 4.3 验证与审计工具（仓库根的 `tools/`，属于本项目）
 
-| 模块 | 位置 | 作用 |
+| 工具 | 位置 | 作用 |
 |---|---|---|
-| **BotSim** | `tools/BotSim/`（`Program.cs` 30 KB / `SelfTest.cs` **461 KB** / `SmokeAllCards.cs` 85 KB / `DispatchGap.cs` / `GapReport.cs`） | `selftest` / `smoke-all-cards` / `dispatch-gap` / `play` / `decks` / `coverage` / `replay` |
-| **ServerBridgeTest** | `tools/ServerBridgeTest/`（`Program.cs` / `ReplayAudit.cs` 26 KB / `KreditTable.cs` / `LoadVerifier.cs` / `ServerDeckProbe.cs`） | `--audit-replay` 全套审计开关；`--verify-load`；`--kredit-table` |
-| **AotProbe** | `tools/AotProbe/` | 在**反射式序列化被关掉**的宿主（= fyserver 的 AOT 配置）里跑一遍内核全路径。**改完内核跑它一次，比打一局真对局便宜得多** |
-| **审计产物** | `out/audit/` | 汇总脚本 + 取证脚本 + 报告（227 个文件，16.2 MB） |
+| **BotSim** | `tools/BotSim/`（`Program.cs` 697 行 / `SelfTest.cs` 9566 行 / `SmokeAllCards.cs` 1813 行 / `DispatchGap.cs` / `GapReport.cs`） | `selftest` / `smoke-all-cards` / `dispatch-gap` / `play` / `decks` / `coverage` / `gaps` / `replay`（命令表见 `Program.cs:48-75`） |
+| **ServerBridgeTest** | `tools/ServerBridgeTest/`（`Program.cs` 416 行 / `ReplayAudit.cs` 456 行 / `KreditTable.cs` / `LoadVerifier.cs` / `ServerDeckProbe.cs`） | `--audit-replay` 全套审计；`--verify-load`；`--kredit-table`；`--kredit-trace` |
+| **NNTrain** | `tools/NNTrain/Program.cs`（927 行） | `dump`（自对弈产数据）/ `train` / `verify`；手写 MLP，**不依赖 numpy / torch** |
+| **NNPlay** | `tools/NNPlay/Program.cs`（599 行） | 让训练好的 NN 下场和贪心 bot 打一局 |
+| **AotProbe** | `tools/AotProbe/Program.cs`（219 行） | 在「反射式 JSON 序列化被关掉」的宿主里跑一遍内核全路径（见 §5.6） |
+| **审计产物** | `out/audit/`（199 个跟踪文件） | 汇总脚本 + 取证脚本 + 报告 |
+
+### 4.4 关于 `klink bot/` 这个**嵌套**目录
+
+```
+<仓库根>/klink bot/docs/     ← 数据 + 全部报告
+<仓库根>/klink bot/tools/    ← Python 生成器与训练脚本（142 个文件）
+```
+
+`klink bot/` 是**嵌套目录，不是笔误**。原因是内核与工具的源码把数据路径**硬编码**成了
+`klink bot/docs/...`：
+
+- C# 里约 15 处运行时回退路径（`tools/BotSim/Program.cs`、`tools/ServerBridgeTest/*.cs`、
+  `tools/NNTrain`、`tools/NNPlay`、`tools/AotProbe`）；
+- `src/KLink.Bot/KLink.Bot.csproj` 里 4 处 `CopyToOutputDirectory`（把
+  `..\..\klink bot\docs\*.json` 链接成输出目录下的 `Data\`）。
+
+保持这个相对路径 ⇒ **不需要改任何构建文件**。如果你想要扁平的 `docs/`，
+需要改那 ~15 处路径字面量。
+
+仓库根必须保留 `KLink.slnx`：`BotSim` 与 `ServerBridgeTest` 的 `FindRepoRoot()`
+是「从 exe 位置往上找第一个含 `KLink.slnx` 的目录」，缺了它工具在独立 clone 里找不到数据目录
+（`KLink.slnx` 里的注释写明了这一点）。
 
 ---
 
-## 5. 目录归属：哪些属于 bot、哪些属于宿主
+## 5. 能做什么（能力清单）
 
-### 5.1 属于 bot（本文覆盖）
+**下面五件事全部不需要启动器、不需要游戏客户端。**
 
-```
-src/KLink.Bot/           规则内核 + AI（KismetVm / CardApiDispatch / CardApi /
-                         MatchEngine / GameState / CardInstance / UeRandomStream /
-                         ReplayRunner / NnPolicy / StateEncoder / NnModel / CardDatabase …）
-klink bot/docs/          card-ir.json / cards.live.json / KARDS基础规则参考.md / 内核补全队列.md
-klink bot/tools/         gen-kismet-ir.py / gen-card-db.py / nn-r6-*.py
-tools/BotSim/            selftest(120) / smoke-all-cards / dispatch-gap
-tools/ServerBridgeTest/  --audit-replay 全套审计开关
-out/audit/               汇总脚本 + 取证产物
-```
+### 5.1 跑规则 / 自对弈
 
-### 5.2 属于宿主（只讲"怎么接"，不展开）
+```powershell
+# 1 局，打印逐回合过程
+dotnet run --project tools\BotSim -c Release -- play --games 1 --verbose
 
-```
-src/KLink.App / src/KLink.Server / tem/fyserver     ← 启动器与服务器
-rel/data/fyserver/BotData/                          ← 【内核运行时读的数据目录】
-tools/build-deploy-server.ps1                       ← 部署（⚠️ 启动器开着会锁 KLink.Bot.dll）
+# 1000 局，指定种子
+dotnet run --project tools\BotSim -c Release -- play --games 1000 --seed 7
+
+# 列出内置的 22 套元卡组及其解析结果
+dotnet run --project tools\BotSim -c Release -- decks
 ```
 
-⚠️ **两个仓库结构上的坑**（我实测）：
+### 5.2 训练神经网络
 
-1. **外层的 `klink` 仓库里，`src/` 和 `tools/` 都是 git 子模块**（各自有独立 `.git` 目录）。
-   所以要把 bot 单独拆成仓库，**必须复制文件**，不能靠 `git subtree`/子模块引用。
-2. `klink bot/` 里躺着 **7.1 GB 的 `kards-Windows.pak`** 和两个 `.jmap`（183 MB + 66 MB）。
-   任何"把 `klink bot/` 整个 `git add`"的做法都会直接爆掉。
+`tools/NNTrain` 是**手写 MLP**，不依赖 numpy / torch：
+
+```powershell
+# 自对弈产数据（每局从 22 套元卡组里随机抽 2 套不同的）
+dotnet run --project tools\NNTrain -c Release -- dump   --games 10000 --out out\nn-data.bin
+# 训练
+dotnet run --project tools\NNTrain -c Release -- train  --data out\nn-data.bin --epochs 30 --out out\nn-model.bin
+# 验证
+dotnet run --project tools\NNTrain -c Release -- verify --data out\nn-data.bin --model out\nn-model.bin
+
+# 让训练好的 NN 下场和贪心 bot 真打一局
+dotnet run --project tools\NNPlay -c Release -- play --model out\nn-model.bin [--nn-side left|right] [--seed 12345]
+```
+
+判据很直接（`tools/NNTrain/Program.cs:11-18`）：**用一个网络从局面预测胜负。
+准确率明显高于 50% = 编码里有信号；≈50% = 编码是垃圾。**
+
+⚠️ `out/nn-data.bin` 这类文件被 `.gitignore` 排除（`*.bin`），本仓库里**没有**训练数据，
+需要自己跑 `dump` 生成。
+
+### 5.3 审计真实对局回放（逐条与客户端对拍）
+
+```powershell
+# 单局
+dotnet run --project tools\ServerBridgeTest -c Release --no-build -- --audit-replay "out\_server-replays\replay-508065"
+
+# 6 局汇总
+& "out\audit\audit-all-replays.ps1"
+# 按四条判据汇总（推荐，见 §7.1）
+& "out\audit\audit-4metrics.ps1"
+```
+
+审计段落（`tools/ServerBridgeTest/ReplayAudit.cs`）：
+`① 判死事件` / `② 死亡单位仍被移动或攻击` / `③ 终局场上状态` / `④ HQ 对不上` /
+`⑤ 未应用的动作` / `⑤b 首个【人类】动作失败点` / `⑤c 身份不一致` /
+`⑤d 目标过不了客户端的门` / `⑥ 撞到但没实现的原语` / `⑥a RNG 游标失同步` /
+`⑥b 派发表静态缺口` / `⑥c 发号侧信号` / `⑦ RNG 游标计数`。
+
+常用开关：`--rng-trace`（逐次 RNG 消费流水）/ `--dump-log` / `--identity-fix` /
+`--identity-only <卡名>` / `--dup-start-kredit`。
+
+### 5.4 全卡池烟雾测试
+
+**脱离一切对局**，直接按 `(卡, 入口, 摆位)` 组合跑蓝图，抓五类问题：
+抛异常 / 撞未实现原语 / 撞步数上限 / 零状态变化 / 非确定性。
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
+# ⇒ out\audit\smoke-all-cards.tsv / .txt
+```
+
+常用选项：`--seed S`（默认 20261002）/ `--only 子串` / `--entry 程序名` / `--limit N` /
+`--include-non-live` / `--no-determinism` / `--no-integration` / `--no-two-passes` /
+`--debug-trace` / `--out <tsv>` / `--summary <txt>`。
+
+### 5.5 派发表静态缺口基线
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
+# ⇒ 打印当前缺口种类数 / 调用点数 / 指纹，以及应当填进 tools\BotSim\DispatchGap.cs 的基线常量
+```
+
+`selftest` 里有一条**防回归守卫**：缺口集合的**指纹**必须与冻结基线逐位相等
+（`tools/BotSim/DispatchGap.cs:75,78`）。用指纹而不是只比总数，是因为
+「修一个 + 坏一个」会互相抵消、让总数看起来没变。
+
+### 5.6 宿主集成（**不在本仓库**）
+
+内核为「接回真实对局」预留了完整的接口层（`src/KLink.Bot/Server/*`），
+但**真正的宿主（私有服务器 + 启动器 + 部署脚本 + `BotData` 数据目录）在另一个仓库里**，
+不在本仓库中。所以：
+
+- 本仓库**没有** `tools/build-deploy-server.ps1`，也**没有** `rel/data/fyserver/`；
+- 如果你想接自己的宿主，需要看 `src/KLink.Bot/Server/` 里的三个契约类：
+  `ServerMatchSnapshot`（宿主快照 → 内核局面）、`AtomicAction`（内核动作 → 协议动作）、
+  `BotTurnService`（重建局面 → 候选枚举 → 打分 → 产出动作）。
+
+**一个值得提前知道的宿主陷阱**（有真实事故记录）：宿主工程里如果写了
+`<JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>`
+（为了 AOT 兼容），那是**进程级**开关。任何用了反射式 JSON 却没显式配 `TypeInfoResolver`
+的代码，在那个宿主里抛异常、在别的宿主里正常。
+
+实测代价是一整局日志全是「神经网络决策失败（Reflection-based serialization has been
+disabled…），本回合改用贪心」—— **对局照常跑完，看起来像「AI 在打但很笨」，实际是 AI 根本没上场。**
+
+`tools/ServerBridgeTest` 和 `tools/NNPlay` **测不出这个问题**（它们自己没关反射）。
+为此专门有 `tools/AotProbe`：
+
+```powershell
+dotnet run --project tools\AotProbe -c Release --no-build -- "<数据目录>"
+```
+
+**改完内核跑它一次，比打一局真对局便宜得多。**
 
 ---
 
-## 6. 当前状态
+## 6. 快速开始
 
-### 6.1 度量口径（**必须写清楚，这里踩过很多坑**）
+### 6.1 前置
 
-**四条判据（按可靠性排序）**：
+| 需要 | 版本 | 说明 |
+|---|---|---|
+| .NET SDK | **10.0**（实测 `10.0.302`） | 内核与全部工具都是 `net10.0` |
+| Python | 3.x（实测 `3.14.6`） | 只用于数据生成 / 分析脚本；**跑内核和审计不需要它** |
+| 操作系统 | Windows（实测） | 路径与脚本按 Windows 写（`out\audit\*.ps1`）；内核本身是纯 .NET，理论上跨平台，但**未验证** |
+| 游戏本体 | **不需要** | 卡牌数据与 IR 随仓库携带 |
+
+⚠️ `bin/` 与 `obj/` 被 gitignore，**clone 出来没有编译产物**，必须自己先 build。
+
+### 6.2 构建
+
+```powershell
+# 内核（唯一必须构建的）
+dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release
+
+# 五个工具工程
+dotnet build tools\BotSim           -c Release
+dotnet build tools\ServerBridgeTest -c Release
+dotnet build tools\NNTrain          -c Release
+dotnet build tools\NNPlay           -c Release
+dotnet build tools\AotProbe         -c Release
+```
+
+本次实测结果：**全部 0 error**；内核构建有 **1 个可空性警告**
+（`CS8602`，`src/KLink.Bot/Server/BotTurnService.cs:191`）。
+
+⚠️ **不要 `dotnet build KLink.slnx`** —— 它的 restore 是坏的（`KLink.slnx` 的注释里写明了），
+请逐个项目 build。
+
+### 6.3 跑自测
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- selftest
+```
+
+实测：**120 项 / 1 失败**（进程退出码 1）。那 1 项是**已知且刻意保留**的：
+
+```
+❌ 手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须真的落实（0 费 + 回牌库顶）
+```
+
+### 6.4 跑全卡池烟雾测试
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
+```
+
+会写出 `out\audit\smoke-all-cards.tsv`（逐用例，被 gitignore）与
+`out\audit\smoke-all-cards.txt`（摘要，**被跟踪**）。想不覆盖跟踪文件：
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards `
+  --out "$env:TEMP\smoke.tsv" --summary "$env:TEMP\smoke.txt"
+```
+
+### 6.5 跑回放审计
+
+```powershell
+# 单局
+dotnet run --project tools\ServerBridgeTest -c Release --no-build -- --audit-replay "out\_server-replays\replay-508065"
+
+# 6 局汇总（推荐：先跑这个）
+& "out\audit\audit-4metrics.ps1"
+& "out\audit\audit-all-replays.ps1"
+```
+
+两个脚本都会自己向上找含 `KLink.slnx` 的仓库根，所以在哪调用都行。
+
+### 6.6 常见坑
+
+| 坑 | 说明 |
+|---|---|
+| **增量编译假阴性** | `Copy-Item` 会保留源文件时间戳 ⇒ MSBuild 判定「源比输出旧 ⇒ 最新」⇒ **不重编译**。看到「改了没效果」，先怀疑增量编译 |
+| **`--no-build` 用的是各自 bin 里的那份 DLL** | `dotnet run --project tools\ServerBridgeTest --no-build` 用的是 `tools\ServerBridgeTest\bin\...\KLink.Bot.dll` 这份**拷贝**。改完 `src\KLink.Bot` 后**必须显式重建**，并核对各份 DLL 的 SHA-256 是否一致 |
+| **数据目录不是 `klink bot/docs/`** | 内核读的是各工程 `bin\Release\net10.0\Data\` 下那份拷贝（由 csproj 的 `CopyToOutputDirectory` 生成）。改了 `klink bot/docs/*.json` 必须重新 build 才生效（见 §8.8） |
+| **仓库里有 7.1 GB 的 pak 与 249 MB 的 `.jmap`** | 任何「把整个目录 `git add`」的做法都会直接爆掉。`.gitignore` 已排除，但别手动绕开 |
+| **清理临时文件必须显式列举目标** | 本项目出过一次事故：用通配符清理 `out\_*` 时**删掉了 7 局回放**（不可恢复）。不要用通配删除 |
+| **宿主侧部署会锁 DLL** | 如果宿主进程正在运行，它会**独占** `KLink.Bot.dll`，部署会挂住。必须先关掉宿主 |
+
+---
+
+## 7. 度量与验证方法
+
+这一节是项目里**最需要小心**的部分。同一个改动，用不同判据看会得到不同结论。
+
+### 7.1 四条判据（按可靠性排序）
+
+出处：[`out/audit/audit-4metrics.ps1`](out/audit/audit-4metrics.ps1) 的文件头注释（`:1-12`）与末尾（`:96`）。
 
 | # | 判据 | 为什么可靠 |
 |---|---|---|
-| 1 | **首个漂开点（审计 ⑤b）是否后移/消失** | 最稳 —— 它是"第一条人类动作被内核拒绝"的位置 |
+| 1 | **首个漂开点（审计 ⑤b）是否后移或消失** | 最稳 —— 它是「第一条**人类**动作被内核拒绝」的位置，语义明确、单调 |
 | 2 | **未实现原语（⑥）是否减少** | 集合型指标，方向明确 |
 | 3 | **HQ 对不上（④，只看【人类】那一栏）是否减少** | 人类动作是 ground truth |
 | 4 | **人类失败总数** | ⚠️ **只在没有随机效果参与时可靠** |
 
-**⚠️ 三条重要的口径警告（都是实测教训）**：
+`audit-4metrics.ps1` 会把四条一起打出来，省得每次人工从长文本里抠。
 
-- **只有【人类】的动作是 ground truth** —— 回放里 **bot 的动作是旧内核生成的**，
-  用新内核重放自然会被拒。`out/audit/audit-all-replays.ps1:6-8` 就是为这件事写的注释，
-  它把 left/right 分开统计。
-- **随机效果从"静默失效"变成"正确执行"时，人类失败数可能反而上升**
-  （快照里**没有 RNG 种子**，不可复现）。
-- **「花费/消耗」这类下界量只能证伪、不能证实**（单侧弱约束）。
-  出处：`klink bot/docs/内核补全队列.md:8291-8321`。
+### 7.2 三条口径警告
 
-**★ "两个错抵消" —— 最危险的现象**（这是本项目最贵的一条教训）：
+**① 只有【人类】的动作是 ground truth。**
 
-```
-内核每回合发两条 XActionEndOfTurn（BotTurnService 一条、MatchEndpoints 一条）。
-把内核那条删掉后审计反而变差：542091 人类失败 0 → 2、HQ 对不上 9 → 2。
-⇒ 我们在人类 kredit 模型上本来就偏低，那条多余的 EndTurn→StartTurn(Left) 恰好补上了。
-⇒ 【"0 失败"不能当绿灯】；【"修对了反而变差"是正常的】。
-```
+回放里 **bot 自己的动作是旧内核生成的**，用新内核重放自然会被拒 —— **那不是保真度信号**。
+所以汇总脚本把 left / right 分开统计（`out/audit/audit-all-replays.ps1:6-8` 就是为这件事写的注释）。
 
-出处：`klink bot/docs/内核补全队列.md:7866-7873` 与 `:7919-7926`。
+**② 随机效果从「静默失效」变成「正确执行」时，人类失败数可能反而上升。**
 
-**同类实例（身份错造成的假绿）**：`773639` 里 `#46/#47` 的动作码是 `32`（= `iron_from_the_north`，费 1），
-而我们引擎里 `9001/3001` 是 `the_commonwealth`（费 12）—— 号由 `colossus`/`seac` 的**随机**抄牌生成。
+因为快照里**没有 RNG 种子**，随机效果本身不可复现。也就是说，「人类失败数」这个指标
+对随机效果是**负向**的：修对了反而可能变差。
+
+**③ 「花费 / 消耗」这类下界量只能证伪、不能证实。**
+
+出处：`klink bot/docs/内核补全队列.md:8314-8321`。原文的方法论是：
+
+> 用「花费 / 消耗」这类下界量去反推「上限 / 容量」时，永远要问：观测到的数是**紧贴**还是**松贴**？
+> 紧贴（观测值 ≈ 模型预测值）⇒ 有信息量；松贴（观测值 << 模型预测值）⇒ **几乎没有信息量**，
+> 换一个更大的模型也照样「成立」。
+
+实例：kredit（费用）槽位模型。有人提出「槽位 = 全局回合号」，证据是「每回合花费只跟全局回合号吻合」；
+但**花费是槽位的下界**，拿一个下界去比一个更大的数当然「每一行都成立」= **假吻合**。
+真正紧贴的是 `自己回合 + 1`（后手有奖励槽）。
+
+**⇒ 「无法被证伪」≠「被证实」。**
+
+### 7.3 ★ 「两个错抵消」：**「0 失败」不等于正确**
+
+这是本项目最重要的一条经验，也是为什么不能只看「人类失败数」。
+
+**现象**：内核每回合会发**两条** `XActionEndOfTurn`。把内核多发的那条删掉之后，
+审计结果**反而变差**：
+
+| 指标 | 删掉之前 | 删掉之后 |
+|---|---|---|
+| 回放 `542091` 人类失败 | 0 | **2** |
+| 回放 `542091` HQ 对不上 | 9 | 2 |
+
+（两处失败都是 `#33 t7` 与 `#63 t13` 的「kredit 不足（kredits=2，费用=5）」。）
+
+**结论（客观陈述）**：内核在人类 kredit 模型上本来就偏低，那条多余的
+`EndTurn → StartTurn(Left)` **恰好补上了这个偏差**。这是「两个错误互相抵消」的典型症状，
+真正的 bug 在 kredit / 回合推进模型里。
+
+出处：`klink bot/docs/内核补全队列.md:7868-7873` 与 `:7921-7926`。
+
+**⇒ 所以：**
+
+- **「0 失败」不能当绿灯**；
+- **「修对了反而变差」是正常现象**，不要因为指标变差就回滚一个语义上正确的修复。
+
+同类实例（身份错造成的**假绿**）：回放 `773639` 里 `#46/#47` 的动作码是 `32`
+（= `iron_from_the_north`，费 1），而内核里 `9001/3001` 被当成 `the_commonwealth`（费 12）——
+卡号由 `colossus` / `seac` 的**随机**抄牌生成，所以「看起来能付得起」其实是在比两张不同的卡。
 出处：`klink bot/docs/内核补全队列.md:8336-8338`。
-（⚠️ 父级给我的版本是「费 1 vs 费 3 / 少付 2 点 / 真实费用 12 > 上限 11」——
-**"上限 11" 那条我在仓库里没找到原始记录，未核实**，见 §13。）
 
-### 6.2 实测数字（**我自己跑了一遍**）
+### 7.4 证据等级：回放侧只能证明「没有回归」
 
-#### 6.2.1 六局回放汇总
+**6 局回放只覆盖很少的卡。** 实测（本次独立复核）：
 
 ```
-& "out\audit\audit-all-replays.ps1"
+out/_server-replays/ 里 6 局回放，每局各含 43 个不同的 card_* 名字，6 局的并集也是 43
+⇒ 6 局用的是同一对卡组
+而 IR 里有 1735 条、卡池有 2021 张
 ```
 
-| 回放 | 应用 | 应用率 | 人类失败 | bot 失败 | 死亡仍动 | 未实现种 |
-|---|---|---|---|---|---|---|
-| 214436 | 59/61 | 96.7% | 0 | 1 | 0 | 6 |
-| 389594 | 95/97 | 97.9% | 0 | 1 | 0 | 4 |
-| 508065 | 124/141 | 87.9% | **16** | 0 | 1 | 9 |
-| 542091 | 75/78 | 96.2% | 0 | 2 | 0 | 5 |
-| 773639 | 134/137 | 97.8% | 0 | 2 | 0 | 6 |
-| 854099 | 101/118 | 85.6% | **14** | 2 | 1 | 4 |
-| **合计** | **588/632** | **93.0%** | **30** | 8 | 2 | — |
+**⇒ 回放语料只覆盖卡池的约 2%。** 因此：
 
-✅ **与父级给的口径逐项吻合**（588/632、93.0%、30，以及每一局的分子分母）。
-脚本自带的口径警告：`⚠️ 只有「人类失败」是保真度信号`。
+- 一个修复如果**在回放里没有信号**，可能只是那张卡**根本没出现在这 6 局里**；
+- 反过来，回放侧「逐位相同」只能说明**没有回归**，**证明不了修对了**。
 
-#### 6.2.2 自测
+凡是一条修复的证据链只有「IR 形状 + 反编译产物 + 自测」，本项目的做法是**如实标注**，
+而不是当成已被回放验证。
 
-```
+### 7.5 烟雾测试能抓什么、抓不到什么
+
+全卡池烟雾测试的自我声明（`out/audit/smoke-all-cards.txt` 的「这个测试能抓什么、抓不到什么」一节）：
+
+| 能抓 | 抓不到 |
+|---|---|
+| 异常 / 崩溃 | **语义错**（跑得通但算错：该不该减免、该扣多少血、条件门读错对象） |
+| 撞到未实现原语 | **数值 / 顺序错**（那必须跟客户端对拍） |
+| 撞步数上限 | — |
+| 程序跳转没解析 | — |
+| 非确定性（同种子两次不同） | — |
+| 「该有效果却零变化」 | — |
+
+> **⇒ 它是「覆盖 / 烟雾测试」，不是「正确性判据」。没报错 ≠ 是对的。**
+
+两个具体的前提，也一并记录：
+
+- **事件入参是按 `event-contracts.json` 的槽位名近似填的**，局面也是合成的
+  （双方 HQ + 5 兵种 + 手牌 + 牌库）。真实对局里事件入参不同、局面不同 ⇒ 这里没报错不代表真实路径没问题。
+- 确定性那条结论有个前提：每个用例的两次执行都在**缓存已热**状态下比较
+  （冷启动先跑一次并丢弃）。也就是说它证明的是「同一个用例连续跑两次一致」，
+  **不**证明「结果与进程历史无关」。冷启动 vs 热启动实测有 **13 个用例**只有 VM 步数不同
+  （预期：缓存命中跳过执行）；跨用例的进程级污染**没有观测到**。
+
+---
+
+## 8. 当前状态（实测数字）
+
+> 下面每个数字都是本机跑出来的，命令随附。凡不是本次实测的，会注明来源。
+
+### 8.1 构建
+
+| 命令 | 结果 |
+|---|---|
+| `dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release` | **0 error**，1 warning（`CS8602` @ `BotTurnService.cs:191`） |
+| `dotnet build tools\{BotSim,ServerBridgeTest,NNTrain,NNPlay,AotProbe} -c Release` | **全部 0 error** |
+
+### 8.2 自测
+
+```powershell
 dotnet run --project tools\BotSim -c Release --no-build -- selftest
 ```
 
-⇒ **120 项 / 1 失败**。那 1 项是**已知且刻意不修**的：
+⇒ **120 项 / 1 失败**。失败项为已知的 `gordon_highlanders` 手牌目标用例。
+
+### 8.3 六局回放审计
+
+```powershell
+& "out\audit\audit-all-replays.ps1"     # 应用率 + 人类失败
+& "out\audit\audit-4metrics.ps1"        # 四条判据
+```
+
+| 回放 | 应用 | 应用率 | 人类失败 | ④HQ差(人) | ⑤b 首个漂开点 | ⑥ 未实现原语种类 | RNG 游标 |
+|---|---|---|---|---|---|---|---|
+| 214436 | 59/61 | 96.7% | 0 | 3 | 无（完全对齐） | 6 | 3 |
+| 389594 | 95/97 | 97.9% | 0 | 0 | 无（完全对齐） | 4 | 69 |
+| 508065 | 124/141 | 87.9% | **16** | 43 | `#54 t13 PC`（打不出） | 9 | 54 |
+| 542091 | 75/78 | 96.2% | 0 | 0 | 无（完全对齐） | 5 | 4 |
+| 773639 | 134/137 | 97.8% | 0 | 0 | 无（完全对齐） | 6 | 83 |
+| 854099 | 101/118 | 85.6% | **14** | 24 | `#70 t15 PC`（打不出） | 4 | 53 |
+| **合计** | **588/632** | **93.0%** | **30** | **70** | 4/6 局完全对齐 | — | — |
+
+**读数**：
+
+- 6 局里有 **4 局**的人类动作**完全被内核接受**（首个漂开点为空）；
+- 剩下的失败**集中在 2 局**（`508065` 16 条 + `854099` 14 条 = 全部 30 条）；
+- 这 2 局的首个漂开点**都是「出牌打不出」**（`PC`），与 §9.1 的随机效果选卡问题同源；
+- `RNG 游标` 列是内核本局消耗的随机数个数，用于定位「游标落后 / 超前」（见 §9.1）。
+
+⚠️ 只有【人类失败】是保真度信号；`bot 失败`（未列出）是旧内核动作被拒，属正常。
+
+### 8.4 全卡池烟雾测试
+
+```powershell
+dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
+```
+
+本次重跑（播种 `20261002`）与仓库里那份 `out/audit/smoke-all-cards.txt` **逐位相同**：
 
 ```
-❌ 手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须**真的落实**（0 费 + 回牌库顶）
-```
-
-✅ 与父级说法一致。
-
-#### 6.2.3 全卡池烟雾测试
-
-`out/audit/smoke-all-cards.txt`（mtime 2026-10-02 15:43）：
-
-```
-播种=20261002  用例=4088  卡=1570  入口=55
+用例=4088  卡=1570  入口=55
 
   OK（跑通且有状态变化）    1586
-  A  抛异常/崩溃               0
-  B  撞未实现原语            763
-  C  撞步数上限                0
-  D  零状态变化             1739
+  A  抛异常 / 崩溃              0
+  B  撞未实现原语             763
+  C  撞步数上限                 0
+  D  零状态变化              1739
 ```
 
 | 段 | 数字 |
@@ -394,14 +719,13 @@ dotnet run --project tools\BotSim -c Release --no-build -- selftest
 | (B) 撞未实现原语 | **362 张 / 763 个用例 / 105 个原语** |
 | (C) 撞步数上限 | **0 张 / 0 个用例** |
 | (D) 零状态变化 | **657 张 / 1739 个用例** |
-| 确定性（同种子两次逐位相同） | ✅ 全部用例一致（含指纹 / RNG 消费次数 / 步数 / 未实现集合） |
-| 引擎会派发的活入口点 | **64 个**，本次跑到 55 个；IR 里**没有任何卡注册**的活入口点 **9 个** |
+| 确定性（同种子两次逐位相同） | ✅ 全部用例一致（指纹 / RNG 消费次数 / 步数 / 未实现集合） |
+| 引擎会派发的活入口点 | **64 个**，本次跑到 **55 个**；IR 里**没有任何卡注册**的活入口点 **9 个** |
+| 未实现原语影响最大的几个 | `HasCampaignUpgrade` 35 张 / `ShouldGotchaTrigger` 34 张 / `MakeCardRetreat` 26 张 / `ConvertCard` 19 张 / `FullyHealCard` 17 张 |
 
-⚠️ 父级说"未实现原语 **106** 个" —— 当前文件里是 **105**（见 §13）。
+### 8.5 派发表静态缺口
 
-#### 6.2.4 派发表静态缺口
-
-```
+```powershell
 dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 ```
 
@@ -411,588 +735,384 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
   指纹：33D02CF8E0EEC7D5
 ```
 
-判据（三层，缺一不可，`src/KLink.Bot/Effects/Blueprint/DispatchGap.cs:20-32`）：
-① 不在派发表里；② `locals` 也兜不住（按**调用点**判）；③ 事件入口的 `Steps` **和** `locals` 都要扫。
-守卫是**冻结指纹**而不是只比总数 —— 因为"修一个 + 坏一个"会互相抵消。
-基线常量放在 `tools/BotSim/DispatchGap.cs:75,78`（`DispatchGapBaseline.BaselineCount = 538` /
-`BaselineFingerprint = "33D02CF8E0EEC7D5"`，与我实测逐位相同）。
+与冻结基线逐位相同（`tools/BotSim/DispatchGap.cs:75,78`）。
 
-#### 6.2.5 构建对齐（改完内核必须做的三件事）
+缺口最大的几个（真缺口调用点数）：
+`HasCampaignUpgrade` 247 / `CampaignSetText` 211 / `CampaignAddKreditCost` 79 /
+`GiveStarForCampaign` 75 / `CampaignAddAttack` 59 / `CampaignAddDefense` 59 /
+`GotchaTriggered` 54 / `ShouldGotchaTrigger` 53 / `CreateHelpBubbleEntry` 39 /
+`MakeCardRetreat` 36 / `FullyHealCard` 33 / `ConvertCard` 26。
 
-| 文件 | mtime | SHA-256（前 16 位） |
+⚠️ 这个集合里**混着大量 UI / 动画 / 战役（Campaign）专用函数**，
+它们**不需要**在对局内核里实现。判据本身只负责「集合不再悄悄变大」，
+不判断「该不该修」（分类见 `out/audit/missing-keys-report.md`）。
+
+### 8.6 数据规模（本次独立复核）
+
+| 项 | 数字 | 怎么来的 |
 |---|---|---|
-| `rel\data\fyserver\KLink.Bot.dll`（**部署的**） | 2026-10-02 16:55:22 | `9D4A75E119202569` |
-| `tem\fyserver\bin\Release\net10.0\KLink.Bot.dll` | 同上 | `9D4A75E119202569` |
-| `tools\BotSim\bin\Release\net10.0\KLink.Bot.dll` | 同上 | `9D4A75E119202569` |
-| `tools\ServerBridgeTest\bin\Release\net10.0\KLink.Bot.dll` | 同上 | `9D4A75E119202569` |
-
-完整 SHA-256：`9D4A75E119202569994E33C71E39B4DEE4F57362D8487A71D43E794357FA3953`
-
-⇒ **四份同 hash ⇒ 本次审计/自测/烟雾测试跑的确实是部署中的那一份内核。**
-`fyserver.dll` / `fyserver.exe` mtime = 2026-10-02 16:58:10。
-
-**服上跑的版本**：`rel\data\fyserver\KLink.Bot.dll`（mtime = 部署时间）。
-**内核读的数据目录是 `rel\data\fyserver\BotData\`**（`tem/fyserver/Services/ServerBotService.cs:193`：
-`Path.Combine(_env.ContentRootPath, "BotData")`）。我核对过：`BotData\card-ir.json`
-与 `klink bot\docs\card-ir.json` **同大小（9,847,589 B）同 mtime（2026-10-02 11:02:56）** ⇒ 已同步。
-
-⚠️ **源码是未提交状态**：外层 git 的最新提交是 `dc85e7d 2026-10-01`，
-2026-10-02 的全部改动都还在工作树里（`git status` 显示 `M src`、`M tools`、
-`M "klink bot/docs/card-ir.json"` 等）。
-
-### 6.3 最近这一轮修了什么（**列全，这是项目最值钱的部分**）
-
-> 每条都去代码里找过证据。凡是我没能核实的，单独标在 §13。
-
-#### A. 随机数：从"猜"变成"逐位复现"
-
-- `UeRandomStream.cs` = UE `FRandomStream` 逐位复刻（LCG 常数、高 23 位、**两端闭**）—— 见 §2.2。
-- **`match_id` 播种一次、连续推进**（2026-08-25 后服务端撤回了逐动作重播种）——
-  `UeRandomStream.cs:28-32`。
-- **修掉一个独立错**：`RandomIntFromRangeWithStream` 以前被当**半开区间**用，
-  于是 `(0,2)` 永远出不了 2 ⇒ 闭区间修正见 `CardApiDispatch.DoRandomIntFromRange`
-  与自测「`RandomIntFromRangeWithStream(0,2)` 必须能出 2」。
-- 已核对并修好的消费点：`GetRandomCard`（1 次/调用）、`ShuffleDeckBySide`（**前向** Fisher-Yates，n 次）、
-  `SpawnCardInDeckBySide`（**每次生成消耗 1 次** —— 以前完全不消耗，游标落后）。
-  出处：`out/audit/idfix/README.md:31-41`。
-- ⚠️ **仍未对上（如实记录）**：`508065` 的 `atlantic_convoy`（`#36 t9`）两次抽签，
-  内核落在流位置 #42/#43，客户端落在 **#88** ⇒ **我们落后 46 次消费**。
-  候选池本身已验证正确（102 张美国费≤3 单位、字典序；客户端选中的 `card_unit_fifth_ohio` = idx 55，
-  而流位置 #88 正好给出 55）⇒ 差异**只在流位置**。46 次的来源**未定位**。
-  出处：`out/audit/idfix/README.md:42-47`。
-
-#### B. 系统性 bug 类：「同一原语多种实参形状，实现只处理一种」
-
-**已找到 9+ 个实例**（父级清单，我逐条在 IR 里数了调用点，见下表"我实测"列）：
-
-| 原语 | 症状 | 父级给的影响面 | **我实测（IR 调用点/卡数）** |
-|---|---|---|---|
-| `Array_Add` | 只认一种实参形状 | 94 张卡 | **356 / 236** ⚠️ 对不上（见 §13） |
-| `GetDeckBySide` | 同上 | 46 张 | **IR 里 0 个调用点**（该名字不存在）⚠️ 见 §13 |
-| `Array_Contains` | 同上 | 30 点 / 22 张 | **30 / 22** ✅ 完全吻合 |
-| `getAndDecryptKredit` | **键根本不存在** | 52 点 / 34 张 | **71 / 50** ⚠️ 对不上 |
-| `DoGiveKeyword`（`PinUnit` 69 处） | 同上 | 69 处 | `DoGiveKeyword` 本身 **0** 调用点；`PinUnit` **72 / 60** ⚠️ |
-| `IsSameSideUnit` | **19/19 恒 false** | 19 | IR 里 **152 / 148**；「19」是**已生效**的调用点数，另 131 处潜伏在 `CanPlayFromHand`（`内核补全队列.md:7901`） |
-| `MakeVeteran` | 只认接收者 | 3/45 | IR 里 **49 / 45**；「3」是**行为真的变了**的处数（`内核补全队列.md:7902`） |
-| `CustomAbilityAdd` / `CustomAbilityRemove` | 同上 | — | **92 / 78** 与 **60 / 39** |
-| `ChangeKreditCost` | 同上 | — | **153 / 84** |
-
-**★ 还有一条我这轮新查实的同类实例**（父级只说了"彻底 no-op"，我实测更细）：
-
-`changeType=4`（`EChangeType::tempBuffRemove`，撤销该来源的临时攻/防 buff）
-在 `ChangeAttack` 上 **恰好 56 个调用点 / 41 张卡**（我按 `args[3] == {"int":4}` 逐位扫 IR 得到）
-—— **父级的数字完全正确**。
-
-但**"彻底 no-op"要修正**：
-
-- `DoChangeAttack`（`CardApiDispatch.cs:2328-2365`）只特判 `changeType == 2`（SetValue），
-  **完全没看 `changeType == 4`**，直接落到 `ChangeAttack(target, +delta)`。
-- 其中 **50 处调用点传的 `amount` 恰好是 0** ⇒ 加 0 ⇒ **确实是 no-op**。
-- **另外 6 处传的 `amount` 非 0**（`1,1,1,2,2,4`）⇒ 我们**把"撤销"当成了"加成"**，
-  方向反了。涉及 5 张卡：
-  `card_unit_ki_42_ii_ko`(2)、`card_unit_kyushu_j7w3`(2)、`card_unit_su_100`(4)、
-  `card_unit_type_92_105mm_field_gun`(1)、`card_unit_type_97`(1 ×2 处)。
-- 对比：`DoChangeKreditCost`（`:2434`）**是**处理了 `changeType==4` 的（`RemoveCostBuff`）
-  ⇒ **同一个枚举，费用那条链修了、攻防那条链没修**。
-
-#### C. 协议层
-
-| 修复 | 内容 | 出处 |
-|---|---|---|
-| **客户端给生成卡的编号** | `id = 回合号 × 1000 + 本回合已生成数`（回合号 0 时乘 500），序号**从 1 起**、**每回合归零**、**全局一个计数器**（**没有 side 参数**） | `GameState.cs:422-484`；蓝图 `BP_GameState_Battle.g.cs:1545`/`:1788` |
-| **HQ 采样键** | 它**不是固定值**，是**那一方 HQ 卡自己的 cardID，每局重新登记**。`BotTurnService._hqKey` 默认 `"40"` 只是兜底，实际由 `LearnHqKey` 从动作流里学；`ReplayData.InferHqKey` 在审计侧推断 | `BotTurnService.cs:390-422`；`ReplayData.cs:77-120` |
-| **★ bot 的目标根本没发到客户端（槽位 `1` vs `2`）** | 真实动作流里 **16/16 带目标的人类 `PC` 都是「`2` 号槽 = 目标 cardID」**；旧注释把两个槽写反了 ⇒ 客户端从 `2` 读到的恒为 0 ⇒ **卡照打（记牌器 +1）但目标效果不发生 = 玩家看到的「虚空」**。修法是**只补 `2`、不动 `1`**（槽 1 真实语义仍未定） | `BotTurnService.cs:855-900`（含 16 条逐条核对表） |
-| **回合号规则** | 连续同侧 `XActionStartOfTurn`（中间无 `EndOfTurn`）**只算一个客户端回合** —— 否则发号整体偏 1000 | `内核补全队列.md:8587-8611` |
-| **HQ 值写的是"自己"而不是"对手"** | `BotTurnService` 的 `EndOfTurn` 原先写自己的 HQ，协议要**对手**的（7 条） | `内核补全队列.md:7904` |
-
-#### D. 引擎 / 规则层
-
-| 修复 | 内容 | 出处（我核实过的代码位置） |
-|---|---|---|
-| **重甲不该减免「效果伤害」** | 只有**战斗伤害**才扣重甲。判据 `isCombatDamage`，**只有 `Attack` 传 true**。全局漏斗一处改 | `MatchEngine.cs:1994-2052`；规则参考 `KARDS基础规则参考.md:106`「重甲不减免指令伤害」 |
-| **奋战（Fury）一回合可攻击两次** | 蓝图是**整数额度** `attackLeft`（`getHasFury() ? 2 : 1`），不是布尔；`GiveFury` 立刻 +1、`RemoveFury` 用 `Min(attackLeft,1)` 收回 | `CardInstance.cs:54-94`（`MaxAttacksThisTurn => Fury ? 2 : 1`）、`:710`（`AttacksThisTurn`）；`MatchEngine.cs:561-562` |
-| **压制（`Pin`）不挡移动 + 钉住永不到期** | ⚠️ 这条父级的表述我需要更正一半：**压制是【挡】移动和攻击的**（`MatchEngine.cs:1275-1278`、`:1577-1581`）；被**删掉**的是我们**误加在「抑制（`Suppress`）」上的"不能行动"门**（`:1265-1271`、`:1516-1537`）。而"钉住永不到期"——`EndTurn` 里确实**还有**到期机制（`:1148-1152` 说「本函数是 `EndTurn` 里唯一的到期机制」），但**抑制**那边已无任何到期清理 | `MatchEngine.cs:1148-1152, 1223-1278, 1516-1581` |
-| **`FrontlineOwner` 死亡不重置**（**"AI 空过"的根因**） | 前线最后一个单位死亡后归属不重算 ⇒ 互斥门把 AI 自己锁死。`RefreshFrontlineOwner` 只在归属真的变了时发 `OnFrontlineOwnershipChange` | `MatchEngine.cs:1399-1410`；`CardApi.cs:1690-1709`（**直接生成到前线**也必须刷新归属） |
-| **`MakeCardsFight`（互斗）没实现** | **已实现**（`CardApiDispatch.cs:389` 注册、`:2845` `DoMakeCardsFight`）。语义：**4 个参数**（`CardApi.cs:850` 那行注释里的 `(a,b,dmg,False,True,False)` 是**内部**两次 `ExecuteOnDealDamageAddDamage` 的形状，不是它自己的签名）、双向、两个方向的攻击值**先快照再落地**、**没有"防御方死了就不反击"那道门** ⇒ 3/3 打 3/3 **同归于尽**、`fromAttack = False`（是**效果伤害**）、**不碰**油费/`HasAttackedThisTurn`/`OnBefore\|AfterAttack`、召唤失调/压制**照样能被强制互斗**、同阵营也能互斗 | `CardApiDispatch.cs:2757-2897`；自测 3 条全绿（`tools/BotSim` 的「互斗 MakeCardsFight：双向同时结算」等） |
-| **指挥点上限 12→24** | **纯规则错误，与蓝图无关**。旧写法 `Math.Min(MaxKreditCap=12, MaxKredits+1)` 会把**卡牌效果已经抬上去的槽位又钳回 12** | `MatchEngine.cs:38-51`（`MaxKreditCap = 24`）、`:456-537`、`:545-552` |
-| **抑制（Suppress）的完整语义** | **失去所有特效和关键字**（压制不受影响、老兵变回原形、所有增益失效）；**永久，不解除**（压制才是"下回合取消"）。并删掉了我们误加的"不能行动"门 | `CardInstance.cs:214-310`（`IsSuppressed` / `SuppressedOnTurn` / `SuppressStrippedKeywords` / `SuppressStrippedBuffs` / `HeavyArmorZeroedBySuppress`）；`MatchEngine.cs:613-625, 1110-1152`；玩家权威定义 + 蓝图 `isSuppressed` 全库**只有一处写点且写 `True`**（`BP_CardFunctions.g.cs:35781`） |
-| **`CanPlayFromHand` 那道门在 IR 里根本不存在** | 生成器白名单排除了它 ⇒ 重新生成 IR，**438 张卡** | 我实测：`card-ir.json` 的 `locals` 里 `CanPlayFromHand` 出现在 **438** 张卡上 |
-
-#### E. 工具（**整个项目的眼睛**）
-
-```
-tools/BotSim:
-  selftest              # 120 项用例
-  smoke-all-cards       # 全卡池烟雾测试（4088 用例 / 1570 卡 / 55 入口）—— 抓崩溃/未实现原语/步数上限/非确定性/零变化
-  dispatch-gap          # 更新「派发表缺口」基线（SHA-256 指纹冻结）
-
-tools/ServerBridgeTest --audit-replay <前缀> [--rng-trace] [--dump-log] [--identity-fix] [--dup-start-kredit]
-  # ⑤b 首个【人类】失败点 / ⑤c 身份不符 / ⑤d 目标过不了客户端的门 / ⑥ 未实现原语 / ⑥a RNG 游标失同步
-  # ⑥b 派发表缺口 / ⑥c 兜底造卡与避让跳号 / ⑦ RNG 游标 / ④ HQ / ② 死亡单位仍被移动
-  # --rng-trace 打印逐次 RNG 消费流水（含动作分隔线与 CREATE #id name）
-
-out/audit/audit-all-replays.ps1          # 6 局汇总
-out/audit/smoke-all-cards.tsv/.txt       # 烟雾测试产出
-out/audit/missing-dispatch-keys.py       # IR 调用的函数 vs 派发表键 的集合差
-out/audit/scan-target-shapes.py          # 原语调用点的实参形状统计
-```
-
-我核实的审计段落清单（`tools/ServerBridgeTest/ReplayAudit.cs`）：
-`① 判死事件` / `② 死亡单位仍被移动/攻击` / `③ 终局场上状态` / `④ HQ 对不上` /
-`⑤ 未应用的动作` / `⑤b 首个【人类】动作失败点` / `⑤c 身份不一致` / `⑤d 目标过不了客户端的门` /
-`⑥ 撞到但没实现的原语` / `⑥a RNG 游标失同步` / `⑥b 派发表静态缺口` / `⑥c 发号侧信号（兜底造卡 / 避让跳号）` /
-`⑦ RNG 游标计数`。
-
-#### F. 漂开闸门（`tem/fyserver/Services/ServerBotService.cs`）
-
-- **检测**：只算**人类动作**的未应用数 + **HQ 校验和**对不上（`ServerBotService.cs:69-125`）。
-- **触发** ⇒ **拒绝下棋**（返回空动作列表）+ 报警 + `/spectate/bot` 暴露
-  （`ServerBotService.cs:531-559`）。
-- **⇒ 它把"破坏对局"变成"AI 变被动"**，而且**把漂开的坐标直接报出来**。
-- 日志原话：`⚠ 判定已与客户端漂开，**本回合拒绝下棋**（只发回合边界动作）` +
-  `（漂开是不可逆的：本局此后每回合都会重新判定并继续拒绝下棋。）`
-
-### 6.4 覆盖率警告（**必须写，这是所有"零覆盖"的根源**）
-
-```
-6 局回放 / 只覆盖 ~43 张不同卡 / 而 IR 有 1735 张卡
-⇒ 【大部分修复无法用回放验证】
-```
-
-**烟雾测试交叉核对**：7 局回放的 ⑥ 段原语并集 = **9 个**，全在烟雾测试 B 表里；
-而 B 表 **105** 个原语里 **97 个【回放从没触发过】**。
-
-⇒ 回放侧只能证明"**没有回归**"，证明不了"**修对了**"。
-凡是"修复的证据链只有 IR 形状 + 直译产物 + 自测"的地方，本文都如实标注了。
-
----
-
-## 7. 将要做的（路线图）
-
-### 7.1 ★★ 随机效果的「选卡」不一致（最大的一块）
-
-- **已确认不是"发号"问题**：发号口径已逐句对齐蓝图，硬证据是
-  `773639` 我们台账 `3001/3002/3004` vs 客户端引用 `3001/3002/3004`
-  —— **槽位一致、只有槽里的卡不同**。
-- **分两类**：
-
-| 类 | 情况 | 下一步 |
-|---|---|---|
-| **① 静态卡池** | 池按名字排序 ⇒ **只可能是下标不同** ⇒ 要么「池子大小/过滤器」不同，要么「随机值/游标」不同 | 把 `UeRandomStream` 每次消费的**原始值**记进流水账，拿客户端的卡**反推它用的下标** |
-| **② 牌库派生池** | **修不了** —— 快照的牌库顺序是 fyserver 用 `Random.Shared` **假洗**的 | （需要能拿到真实初始牌序的快照才行） |
-
-- **影响**：`508065` **16 条**人类失败（首个漂开 `#54 t13`）、`854099` **14 条**（我实测数字，§6.2.1）。
-
-### 7.2 ★★ 费用 / kredit 结算的剩余缺口
-
-- `773639 t18`：**我们算上限 11、客户端付得起 12**（⚠️ 这条来自父级，我**未能在仓库里找到原始记录**）。
-- **待定问题**：「发号用的回合号」和「kredit 槽自然增长」是不是**两个独立计数器**？
-  （`--dup-start-kredit` 能让 773639 从 11 → 0，其余 5 局不变；但"多给 kredit"对审计**单调有利**，
-  需真人确认。）
-- 相关的、**已核实**的线索：`内核补全队列.md:7866-7873` / `:7919-7926` 的「两个错抵消」。
-- kredit 槽位模型的现状（`MatchEngine.cs:456-537`）：**槽位 = 自己第几个回合（+ 卡牌效果的额外槽）**，
-  与 `State.Turn` 无关；后手有奖励槽。**"花费 ≤ 槽位"只能证伪 self 模型、永远证伪不了 global 模型**
-  （global 恒 ≥ self）⇒ **这是单侧弱约束**。
-
-### 7.3 ★★ 补审计语料（6 局 → 更多）
-
-最好拿到朋友那批真人对局。当前只有 6 局在 `out/_server-replays/`，
-`klink bot/docs/fresh-replays/` 7 局 + `live-replays/` 5 局。
-
-### 7.4 结构性缺口
-
-| 缺口 | 规模 | 出处 |
-|---|---|---|
-| 未实现原语 | **105 个**（`out/audit/smoke-all-cards.txt` 有优先级表） | 我实测 |
-| 派发表**真**缺口（locals 也兜不住） | **538 种 / 2788 调用点**，指纹 `33D02CF8E0EEC7D5` | 我实测 `dispatch-gap` |
-| 从不派发的入口点 | IR 入口名 **449** 个，剔除 UI/动画后仍有 **53 个玩法相关入口**内核从不派发；**23 张卡**的**全部**入口都是死入口 | `out/audit/semantic-reconcile-report.md:141-159` |
-| `locals`-only 卡**零覆盖** | **45 张**（`SmokeAllCards` 按 `card.Entrypoints` 枚举 ⇒ 漏掉）；连同 entrypoints 为空的共 **98 张**零覆盖 | `out/audit/semantic-reconcile-report.md:161-170` |
-| `Gotcha` 子系统 | IR 调用点：`GotchaTriggered` **54/52 卡**、`ShouldGotchaTrigger` **53/52 卡**、`IsGotcha` **16/13 卡**；回放里**每局真触发 29~58 次** | 我实测 IR + `内核补全队列.md:8348` |
-| `changeType=4`（撤销攻/防 buff） | **56 调用点 / 41 张卡**；其中 50 处 `amount=0`（真 no-op），**6 处非 0 ⇒ 方向反了** | 我实测，见 §6.3 B |
-| `PinUnit` 的三条内部守卫 | `cantBeSuppressed` 风格的守卫 | `out/audit/没修的.md`（`PinUnit` 相关） |
-| `GetRandomCard` 忽略 `AlwaysSelectedAsRandom` | 潜伏（目前不触发） | `out/audit/没修的.md` |
-
-**下一轮的推荐顺序**（按「成本 ÷ 收益」，`out/audit/没修的.md:453-461`）：
-
-1. **`C-easy-ref` / `C-easy-wrap` 批量做**（约 40 种，语义都有出处）：
-   `getCardsBuffedByThisCard`(25) / `SetCountdown`(15) / `getKreditTempBuffAmount`(11) / `RemovePin`(10) /
-   `GetCardsPlayedFromHandLastTurn`(10) / `GetSupportLineLocationBySide`(19) / `DiscardRandomCardFromHand`(20) / `LoseKreditSlot`(16) …
-2. **`FullyHealCard`(33)** —— 最简单的一个「真实现」。
-3. **`MakeCardRetreat`(36) + `GetAllCardsInFrontline`(8)** —— 一起做，结构照 `DestroyCard`。
-4. **Gotcha 子系统**（`GotchaTriggered` 54 + `ShouldGotchaTrigger` 53 + `IsGotcha` 15）——
-   收益最大但要做**状态机**（Covert 揭示位 + cipher），单独排一轮。
-5. **`ConvertCard`(26)** —— 最后做，函数体最长（400+ 行）。
-
-⚠️ 不管做哪个，**做完都要更新 `tools/BotSim/DispatchGap.cs` 的两个基线常量**
-（`dotnet run --project tools\BotSim -c Release -- dispatch-gap`），否则守卫会（正确地）失败。
-
-**另外三条被点名的"下一轮首选"**（`out/audit/semantic-reconcile-report.md:263-267`）：
-
-1. 用「实参形状 vs 实现形状」对账**扫一遍全部原语** —— 这是唯一一条被证明能抓到 D2 类真 bug 的机械化判据。
-2. 修 **Pincer / Intel / Lose Smokescreen** 三条事件链（13 张卡，一次一条链）。
-3. 给 `SmokeAllCards` 加 `locals` 模式，把 45+53 张零覆盖的卡纳入测试。
-4. `SmokeAllCards.IsPurePrimitiveName` 加**大小写不敏感**（`name.StartsWith("Get")` 区分大小写，
-   把小写查询原语当成了"写原语"，D2 表长期虚高 **157 → 86 张卡**）。
-
-### 7.5 已定位但需要真人确认的规则问题
-
-| 问题 | 当前状态 |
-|---|---|
-| 抑制的解除时机 | **已确认永久**（玩家确认 + 蓝图 `isSuppressed` 无写 `False` 处） |
-| 「发号回合号」vs「kredit 槽增长」是否两个计数器 | **待确认** |
-| 前线互斥 / 落点 | 已按蓝图 + 玩家实测实现，见 §6.3 D |
-
----
-
-## 8. 方法论（这一节最值钱）
-
-> 这些都是踩过的坑。出处集中在 `klink bot/docs/内核补全队列.md` 的
-> 「★ 方法论教训」（`:7942-7953`、`:8314-8321`、`:7841-7845`）与 `out/audit/semantic-reconcile-report.md:225-232`。
-
-1. **「同一原语多种实参形状」是一个系统性 bug 类 —— 怎么找**：
-   对每个原语统计**所有调用点的实参形状**（`out/audit/scan-target-shapes.py`、
-   `argshape-callsites.json`、`out/audit/argshape-inventory.txt`），
-   「实现只认形状 A、却有调用点传形状 B」即为嫌疑。**已找到 9+ 个实例。**
-   它的危险之处：**这些原语都在派发表里 ⇒ 不计入「未实现原语」**，
-   烟雾测试只看到"零变化"，而"零变化"被归进了 D1/D2 的启发式里。
-2. **"卡什么都不做"不一定是"效果算错"，也可能是"程序根本没跑完"** ——
-   先数 `pc=` 行数看是否撞步数上限。反例：`card_event_atlantic_convoy` 曾被 5000 步上限
-   **静默截断**，表现是"候选表恒为空、而且**不报任何错**"（`KismetVm.cs:29-79`）。
-3. **审计报的"位置"可能是内核自己造的假象** ——
-   `ResolveCard` 找不到卡号时会**在牌库凭空造占位卡**（`ReplayRunner.cs:975` 附近）
-   ⇒ 表现成"落点错"。**看到异常位置先确认那张卡是不是真的存在。**
-4. **A/B 中间态看起来像回归，但不是** —— 子代理为证明"测试修复前会失败"会**临时撤掉修复**
-   ⇒ `selftest` 报 3/68 是**预期的**。**判断必须基于最终状态，不能用中途快照。**
-5. **`Copy-Item` 保留时间戳 ⇒ MSBuild 跳过重编译 ⇒ 假阴性**（踩过 7+ 次）。
-   **看到"改了没效果"，先怀疑增量编译。**
-6. **`dotnet run --project tools\ServerBridgeTest --no-build` 用的是
-   `tools\...\bin\...\KLink.Bot.dll` 这份【拷贝】** ⇒ 改完 `src\KLink.Bot` 后**必须显式重建**，
-   并用 **dll hash 三方对齐**确认（见 §6.2.5；我实测四份同 hash）。
-7. **清理临时文件必须显式列举目标，绝不能用 `out\_*` 通配** ——
-   出过事故：**删掉 7 局回放（不可恢复）**。这已是本项目第三次"通配/范围操作"事故。
-8. **用「下界量」反推「上限/容量」时，必须问"观测值是紧贴还是松贴"** ——
-   松贴几乎没有信息量。实例：有人提出"kredit 槽位 = 全局回合号"，
-   证据是"每回合花费只跟全局回合号吻合"；但**花费是槽位的下界**，
-   拿一个下界去比一个更大的数当然"每一行都成立"= **假吻合**。
-   真正紧贴的是 `自己回合 + 1`（后手奖励槽）。
-9. **"无法被证伪"≠"被证实"**（单侧弱约束）。同上。
-10. **分类粒度决定你能看见什么 bug** —— 曾把 `side` 归进「整数 cardID」，
-    于是 `IsSameSideUnit` 被列成"目标位是 cardID"，**恰好掩盖了它真正的形状问题**。
-11. **子代理会纠正你，这是好事** —— 一天里判断**连续错了 8~9 次**，每次都靠它们用证据纠正。
-    **给子代理的指令里一定要写**：「如果你发现我给的判断是错的，直接说并给证据」。
-
-**还有两条与"证据等级"有关的**（我补充的）：
-
-12. **回放侧只能证明"没有回归"，证明不了"修对了"** ——
-    实例：`IsSameSideUnit` / `MakeVeteran` 两个修复在那 3 局回放里**逐位相同**，
-    因为那 17+43 张卡在 3 副牌里**命中 0 张**（`内核补全队列.md:7847-7851`）。
-13. **静态"卡面文字 vs 实际行为"对账的精度很差** ——
-    那一轮 (A) 档 9 条**全是假阳性**（6 条把"条件词"读成"效果词"、2 条映射表漏原语、1 条已知未实现）；
-    (B) 档 147 条里真正值得人看的约 20 条。
-    **真正抓到东西的是"动态"那一侧（调了写原语却零变化）+ 实参形状对账**
-    （`out/audit/semantic-reconcile-report.md:9-23`）。
-
----
-
-## 9. 怎么上手（命令）
-
-**全部命令在仓库根目录跑。**
-
-### 9.1 构建
-
-```powershell
-# 内核（唯一必须构建的）
-dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release
-
-# 服务器（只有要接回真人对局时才需要）
-dotnet build "tem\fyserver\fyserver.csproj" -c Release -p:SkipAdminUiBuild=true
-```
-
-⚠️ **不要 `dotnet build KLink.slnx`** —— 它的 restore 是坏的，逐个项目 build
-（`out/_handoff/README-给Mahiro-Chan.md:109`）。
-
-### 9.2 自测
-
-```powershell
-dotnet run --project tools\BotSim -c Release --no-build -- selftest
-# ⇒ 期望 120 项 / 1 失败（已知的 gordon_highlanders）
-```
-
-### 9.3 全卡池烟雾测试（约 90 秒）
-
-```powershell
-dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
-# ⇒ out\audit\smoke-all-cards.tsv / .txt
-```
-
-常用选项：`--seed S`（默认 20261002）/ `--only 子串` / `--entry 程序名` / `--limit N` /
-`--include-non-live` / `--no-determinism` / `--no-integration` / `--no-two-passes` / `--debug-trace`。
-
-### 9.4 回放审计（单局）
-
-```powershell
-dotnet run --project tools\ServerBridgeTest -c Release --no-build -- --audit-replay "out\_server-replays\replay-508065"
-```
-
-可选开关：`--rng-trace`（逐次 RNG 消费流水）/ `--dump-log` / `--identity-fix` /
-`--identity-only <卡名>` / `--dup-start-kredit`。
-
-### 9.5 六局汇总
-
-```powershell
-& "out\audit\audit-all-replays.ps1"
-```
-
-### 9.6 派发表缺口基线
-
-```powershell
-dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
-# ⇒ 把打印出的 BaselineCount / BaselineFingerprint 填进 tools\BotSim\DispatchGap.cs
-```
-
-### 9.7 自对弈 / 训练 / 让 NN 下场
-
-```powershell
-# 自对弈（贪心 vs 贪心）
-dotnet run --project tools\BotSim -c Release -- play --games 1000 --seed 7
-dotnet run --project tools\BotSim -c Release -- play --games 1 --verbose
-
-# 自对弈产数据 → 训练 → 验证
-dotnet run --project tools\NNTrain -c Release -- dump   --games 10000 --out out\nn-data.bin
-dotnet run --project tools\NNTrain -c Release -- train  --data out\nn-data.bin --epochs 30 --out out\nn-model.bin
-dotnet run --project tools\NNTrain -c Release -- verify --data out\nn-data.bin --model out\nn-model.bin
-
-# 让训练好的 NN 下场真打一局
-dotnet run --project tools\NNPlay -c Release -- play --model out\nn-model.bin [--nn-side left|right] [--seed 12345]
-```
-
-### 9.8 部署到服务器
-
-```powershell
-# ⚠️ 部署前必须先关掉正在跑的启动器，否则 KLink.Bot.dll 被锁
-& "tools\build-deploy-server.ps1"
-
-# AOT 宿主的反射开关探针（fyserver 关了反射式序列化）
-dotnet run --project tools\AotProbe -c Release --no-build -- "<repo-root>\rel\data\fyserver\BotData"
-```
-
-⚠️ **部署的坑**（`tools/build-deploy-server.ps1:1-20`）：
-
-- `fyserver.exe` 运行时**锁定** `rel\data\fyserver\KLink.Bot.dll`，启动器开着的话部署会**挂住**。
-  **必须先关启动器。**
-- `rel\data\fyserver\setting.json` 是**部署侧配置**（启动器要的 5231/127.0.0.1），
-  构建输出里那份是测试用的（1145/0.0.0.0）。被覆盖启动器就连不上 —— 脚本用 robocopy 时**排除**了它。
-- **内核读的数据目录是 `rel\data\fyserver\BotData\`**
-  （`ServerBotService.cs:193`：`Path.Combine(_env.ContentRootPath, "BotData")`），
-  改 `card-ir.json` 之类**必须同步到那里**。
-- 脚本最后会**逐字节比对**构建产物与部署产物，不一致就报错退出。
-
----
-
-## 10. 怎么接回服务器（宿主集成）
-
-> 这一节只讲"怎么接"，不展开宿主自己的架构。
-
-| 环节 | 位置 | 说明 |
-|---|---|---|
-| **入口** | `tem/fyserver/Services/ServerBotService.cs`（27 KB，单例） | 读 `BotData/` 加载内核；把 `MatchInfo` 映射成 `ServerMatchSnapshot`；调 `BotTurnService.DecideTurn` |
-| **快照 → 决策** | `src/KLink.Bot/Server/BotTurnService.cs` | 重建局面 → 枚举候选 → NN 打分 → 产出服务端动作 |
-| **漂开闸门** | `ServerBotService.cs:69-125, 531-559` | 只算**人类动作**的未应用数 + HQ 校验和；触发 ⇒ **拒绝下棋** + 报警 + `/spectate/bot` |
-| **数据目录** | `rel/data/fyserver/BotData/` | `card-ir.json` / `cards.json` / `card-effects.json` / `card-vectors.json` / `deck_code_ids.json` / `nn-model.bin` |
-| **部署** | `tools/build-deploy-server.ps1` | 编译内核 → 重建 fyserver → robocopy 部署 → 校验 hash |
-| **日志** | `rel/data/fyserver/bot-log/` | ⚠️ 可能含账号/对局信息，**不要提交** |
-
-⚠️ **宿主的一个真实陷阱**：`fyserver.csproj` 里
-`<JsonSerializerIsReflectionEnabledByDefault>false</...>` 是**进程级**开关。
-任何用了反射式 JSON 却没显式配 `TypeInfoResolver` 的代码，在这个宿主里抛异常、在别的宿主里正常。
-**实测代价**：一整局 66 行日志全是「神经网络决策失败（Reflection-based serialization has been disabled…），
-本回合改用贪心」—— 对局照常跑完，**看起来像「AI 在打但很笨」，实际是 AI 根本没上场**。
-`ServerBridgeTest` / `NNPlay` 都测不出它（它们自己**没关**反射）。
-⇒ **改完内核跑一次 `tools/AotProbe`**，比打一局真对局便宜得多（`tools/AotProbe/Program.cs:12-28`）。
-
----
-
-## 11. 如何发布到 GitHub
-
-⚠️ **本文只准备命令，不执行推送**（需要作者本人的凭据 + 远端地址 + 公开/私有的决定）。
-
-**仓库体积（首次提交时实测）**：
+| IR 条目总数 | **1735** | 读 `klink bot/docs/card-ir.json` 的 `len()` |
+| ↳ 其中 | 1707 个 `card_*` + 24 个 `BP_*` + 2 个 `WBP_*` + 1 个 `BPI_*` + 1 个 `createCard_*` | 按键前缀统计 |
+| IR 里注册的**不同入口名** | **449** | 聚合所有卡的 `entrypoints` 键 |
+| 入口注册总数 | **3608** | 各卡 `entrypoints` 条数求和 |
+| 带 `locals`（卡内私有函数体）的条目 | **683** | `locals` 非空 |
+| ↳ 其中带 `CanPlayFromHand` 私有函数 | **438** | 自测里有一条「IR 必须带卡自己的 `CanPlayFromHand`」的重生成守卫 |
+| 卡池（`cards.live.json`） | **2021** | 读 JSON |
+| ↳ 卡池里**没有蓝图 IR** 的条目 | **314** | 多为 `card_display_*` / `card_location_ai_*` 等 UI / 战役条目 |
+| ↳ IR 里有、卡池里没有的 | **0** | 集合差 |
+| 卡组码映射 | **2499** | 读 `deck_code_ids.json` |
+| 效果调用表条目 | **2053** | 读 `card-effects.json` |
+| 事件契约条目 | **172** | 读 `event-contracts.json` |
+
+### 8.7 仓库规模
 
 | 指标 | 值 |
 |---|---|
 | 已跟踪文件 | **461 个** |
-| 工作树（已跟踪文件） | **21.93 MB** |
-| `.git` 目录 | **4.10 MB**（`size-pack` 3.96 MiB —— 大 JSON 压得很好） |
-| 最大单文件 | `klink bot/docs/card-ir.json` **9.85 MB**（远低于 GitHub 的 100 MB 硬限制） |
+| 已跟踪文件总字节 | **23,613,236 B ≈ 22.5 MiB**（十进制 23.6 MB） |
+| `.git` pack | **3.98 MiB**（503 个对象）—— 大 JSON 压得很好 |
+| 最大单文件 | `klink bot/docs/card-ir.json`，**9,847,589 B ≈ 9.4 MiB**（远低于 GitHub 的 100 MB 硬限制） |
+| 真实对局语料 | `out/_server-replays/` 6 局；`klink bot/docs/fresh-replays/` 7 局；`live-replays/` 5 局 |
+| 审计产物 | `out/audit/` 199 个跟踪文件 |
+| 首次提交 | `d2d0f5c`（2026-10-02 17:31:28 +0800） |
 
-按目录（含未跟踪的本地副本）：
+⇒ **不需要 Git LFS。**
 
-| 目录 | 文件数 | 体积 |
-|---|---:|---:|
-| `klink bot/docs/` | 51 | 17.80 MB |
-| `klink bot/tools/` | 142 | 0.80 MB |
-| `out/audit/` | 199 | 1.81 MB |
-| `src/KLink.Bot/` | 33 | 1.01 MB |
-| `tools/BotSim/` | 6 | 0.55 MB |
-| `out/_server-replays/` | 12 | 0.31 MB |
-| `tools/ServerBridgeTest/` | 6 | 0.07 MB |
-| `tools/NNTrain` + `NNPlay` + `AotProbe` | 6 | 0.08 MB |
-| 根目录散文件（README / slnx / NuGet.config / goal.txt / 路线图） | 5 | 0.11 MB |
+> ⚠️ 顺带说明一个容易算错的数字：只统计**纯 ASCII 文件名**的已跟踪文件时，
+> 合计是 22,422,593 B ≈ 21.38 MiB —— 差的 **1,190,643 B** 正是 19 个**中文名**跟踪文件
+> （16 个 `klink bot/docs/*.md`、2 个 `out/audit/*`、1 个根目录 `评估与实施路线图.md`）。
+> 用 `git ls-files` 走 shell 管道时，非 ASCII 路径会被 git 加引号转义，很容易被漏掉。
 
-⇒ **21.93 MB，不需要 LFS**。
+### 8.8 版本一致性与数据目录
+
+- 内核读的数据目录**不是** `klink bot/docs/` 本身，而是构建时被
+  `CopyToOutputDirectory` 复制到各工程 `bin\Release\net10.0\Data\` 的那一份
+  （映射关系见 `src/KLink.Bot/KLink.Bot.csproj`）。改了 `klink bot/docs/*.json`
+  必须重新 build 才会生效。
+- 本次跑自测 / 审计 / 烟雾测试时，事件契约文件的来源路径被打印为
+  `<repo-root>\klink bot\docs\event-contracts.json`，可用来确认数据目录解析正确。
+
+### 8.9 已知的**过期**文档
+
+`src/KLink.Bot/README.md`（240 行）**严重过期**，里面还写着：
+
+- 「kredit 上限（现按 12）」—— 实际是 `MaxKreditCap = 24`（`MatchEngine.cs:51`）；
+- 「card-ir.json 1636 张卡」—— 实际 1735 条；
+- 「还缺棋盘状态」—— 棋盘状态已完整实现（`Engine/GameState.cs`）；
+- 「修跳转语义」—— 已解决。
+
+**请以本 README 为准。** 本次没有改它（避免与其他正在进行的改动冲突）。
+
+---
+
+## 9. 路线图 / 已知缺口
+
+> 这一节**只列客观事实与规模**，按「已确认存在」→「未定位」→「未做」排列。
+
+### 9.1 最大的一块：随机效果的「选卡」不一致
+
+**状态：未修。**
+
+- 已经确认**不是发号问题**：回放 `773639` 里内核台账的卡号（`3001/3002/3004`）与客户端引用的一致，
+  **槽位一致、只有槽里的卡不同**。
+- 分两类：
+
+| 类 | 情况 | 可否修 |
+|---|---|---|
+| **① 静态卡池** | 池按名字排序 ⇒ 只可能是**下标不同** ⇒ 要么「池子大小 / 过滤器」不同，要么「随机值 / 游标」不同 | 可修（把每次消费的原始值记进流水账，拿客户端的卡反推下标） |
+| **② 牌库派生池** | 快照的牌库顺序是宿主用非确定性的 `Random.Shared` 假洗出来的 | **修不了**（需要能拿到真实初始牌序的快照） |
+
+- **影响面**：回放 `508065` 的 16 条人类失败（首个漂开 `#54 t13`）、
+  回放 `854099` 的 14 条人类失败（首个漂开 `#70 t15`）—— 即 §8.3 里全部 30 条失败。
+
+**未定位的具体差额**：回放 `508065` 的 `atlantic_convoy`（`#36 t9`）两次抽签，
+内核落在随机流位置 `#42/#43`，客户端落在 **`#88`** ⇒ **内核落后 46 次消费**。
+候选池本身已验证正确（102 张美国费 ≤ 3 的单位、字典序；客户端选中的卡在流位置 `#88` 上正好是 55 号，
+与客户端一致）⇒ **差异只在流位置，不在候选集**。46 次的来源**未定位**。
+
+出处：`out/audit/idfix/README.md:42-47`。
+
+### 9.2 费用 / kredit 结算的剩余缺口
+
+**状态：模型未定案。**
+
+- 已核实的强线索就是 §7.3 的「两个错抵消」：内核在人类 kredit 模型上**偏低**。
+- 未定问题：「发号用的回合号」与「kredit 槽自然增长」是不是**两个独立计数器**？
+- 现状模型（`MatchEngine.cs:456-537`）：**槽位 = 自己第几个回合（+ 卡牌效果给的额外槽）**，
+  与 `State.Turn` 无关；后手有奖励槽。
+- **注意**：「花费 ≤ 槽位」只是**单侧弱约束**，只能证伪「self 模型」，永远证伪不了「global 模型」
+  （global 恒 ≥ self）。见 §7.2 第 ③ 条。
+
+### 9.3 结构性缺口
+
+| 缺口 | 规模 | 出处 |
+|---|---|---|
+| **未实现原语** | **105 个**（影响 362 张卡 / 763 个用例） | `out/audit/smoke-all-cards.txt` |
+| **派发表真缺口**（`locals` 也兜不住） | **538 种 / 2788 个调用点**，指纹 `33D02CF8E0EEC7D5` | `dispatch-gap` 实测 |
+| **从不派发的玩法入口** | IR 入口名共 **449** 个，剔除 UI / 动画后仍有 **53 个玩法相关入口**内核从不派发；**23 张卡**的**全部**入口都是死入口 | `out/audit/semantic-reconcile-report.md` §5(N) |
+| ↳ 三条完整的死事件链 | **Pincer**（7 张）+ **Intel**（3 张）+ **Lose Smokescreen**（3 张）= 13 张卡，按「一条链一次修」性价比最高 | 同上 |
+| **`locals`-only 卡零覆盖** | **45 张**卡的 `entrypoints` 为空、逻辑全在 `locals`；烟雾测试按 `card.Entrypoints` 枚举用例 ⇒ 这 45 张**一个用例都没有**。连同 `entrypoints` 为空的共 **98 张**零覆盖 | `out/audit/semantic-reconcile-report.md` §5(L) |
+| **`Gotcha` 子系统** | IR 调用点：`GotchaTriggered` **54 点 / 52 张卡**、`ShouldGotchaTrigger` **53 点 / 52 张卡**、`IsGotcha` **16 点 / 13 张卡**；回放里每局真触发 29~58 次。**故意不做**：它是整条子系统（`gotchaActivated` + `RearrangeLocation` + `SetCardsSeenByCipher` + Covert 揭示位 + cipher），半吊子实现比不实现更糟 | IR 实测 + `klink bot/docs/内核补全队列.md:8348` |
+| **`changeType = 4` 在攻 / 防链上方向反了** | `ChangeAttack` 上共 **56 个调用点 / 41 张卡**；其中 **50 处 `amount = 0`**（真 no-op），**6 处非 0 ⇒ 把「撤销 buff」当成了「加 buff」**。涉及 5 张卡：`card_unit_ki_42_ii_ko`(2)、`card_unit_kyushu_j7w3`(2)、`card_unit_su_100`(4)、`card_unit_type_92_105mm_field_gun`(1)、`card_unit_type_97`(1×2)。对照：`DoChangeKreditCost` **处理了** `changeType == 4`（`RemoveCostBuff`）⇒ **同一个枚举，费用那条链修了、攻防那条链没修** | `src/KLink.Bot/Effects/CardApiDispatch.cs:2328-2365`、`:2434` |
+| **「同一原语多种实参形状，实现只处理一种」** | 一个**系统性 bug 类**，已找到 9+ 个实例（`Array_Add` / `Array_Contains` / `IsSameSideUnit` / `MakeVeteran` / `CustomAbilityAdd` / `ChangeKreditCost` …）。危险之处：**这些原语都在派发表里 ⇒ 不计入「未实现原语」**，烟雾测试只看到「零变化」 | `out/audit/argshape-inventory.txt`、`out/audit/scan-target-shapes.py` |
+| **`UnresolvedJumps` 不能当守卫判据** | 代码注释写「应恒为 0」，实测 **2212 个用例**非 0。静态复核表明跳转表本身没问题（1636 个蓝图的 `steps` + 881 个 `locals` 函数体，跳转目标缺失 **0 张 / 0 处**；692 张「首条是 `pushFlow`」的卡，派发返回地址 **692/692** 都指向 `return`）⇒ 非 0 是「派发返回地址」这条良性路径造成的 | `out/audit/smoke-all-cards.txt` 的「VM 诊断」一节 |
+| **`SmokeAllCards.IsPurePrimitiveName` 大小写 bug** | `name.StartsWith("Get")` **区分大小写**，把小写开头的查询原语当成「写原语」⇒ D2 表（「调了写原语却零变化」）长期虚高。**未改源码**（怕影响可比性），已知虚高幅度 157 → 86 张卡 | `out/audit/semantic-reconcile-report.md` |
+| **`GetRandomCard` 忽略 `AlwaysSelectedAsRandom`** | 潜伏（目前不触发） | `out/audit/没修的.md` |
+| **`_bal` / `_vet` 平衡变体数值** | 蓝图里只有基础卡，数值微调在另一张表里（**尚未解出**）⇒ `CardDatabase.Find` 剥后缀回退到基础卡，**数值可能不准** | — |
+
+### 9.4 证据链不足的地方（如实标注）
+
+| 事项 | 情况 |
+|---|---|
+| 那 3 个语义修复（`IsSameSideUnit` / `MakeVeteran` / `damageToDeal` CDO 默认值） | 证据链是「烟雾用例翻转 + selftest 无回归 + CDO 原文 + 卡面数字吻合」，**不是**回放对拍。原因见 §7.4：涉及的卡在这 6 局里命中 0 张 |
+| 静态「卡面文字 vs 实际行为」对账的精度 | **中等偏下**：(A) 档 9 条**全是假阳性**（把条件词读成效果词等），(B) 档 147 条里真正值得人看的约 20 条。真正抓到东西的是**动态**那一侧（调了写原语却零变化）+ **实参形状对账** |
+| 自对弈胜率偏斜 | 早期实测出现过 241/59 这种偏斜，**预期内**（平衡变体未应用 + 部分效果是近似实现） |
+| 6 局回放的 ⑥ 段原语并集 = 9 个，而烟雾测试 B 表有 105 个 | 即 **97 个未实现原语在回放里从没触发过**（数字出自 `klink bot/docs/内部现状与路线图.md`，本次**未独立复核**） |
+| 平台支持 | 只在 Windows 上实测过；**跨平台未验证** |
+
+### 9.5 建议的下一步顺序（按「成本 ÷ 收益」）
+
+1. **批量做「容易的引用 / 包装」类原语**（约 40 种，语义都有蓝图出处）：
+   `getCardsBuffedByThisCard`(25) / `SetCountdown`(15) / `getKreditTempBuffAmount`(11) /
+   `RemovePin`(10) / `GetCardsPlayedFromHandLastTurn`(10) / `GetSupportLineLocationBySide`(19) /
+   `DiscardRandomCardFromHand`(20) / `LoseKreditSlot`(16) …
+2. **`FullyHealCard`(33)** —— 最简单的一个「真实现」。
+3. **`MakeCardRetreat`(36) + `GetAllCardsInFrontline`(8)** —— 一起做，结构照 `DestroyCard`。
+4. **`Gotcha` 子系统**（`GotchaTriggered` 54 + `ShouldGotchaTrigger` 53 + `IsGotcha` 15）——
+   收益最大，但要做状态机，单独排一轮。
+5. **`ConvertCard`(26)** —— 最后做，函数体最长（400+ 行）。
+
+另外三条被点名的候选：
+
+- 用「实参形状 vs 实现形状」对账**扫一遍全部原语** —— 目前唯一被证明能抓到「同一原语多种实参形状」类真 bug 的机械化判据；
+- 修 **Pincer / Intel / Lose Smokescreen** 三条死事件链（13 张卡，一次一条链）；
+- 给 `SmokeAllCards` **加 `locals` 模式**，把 45 + 53 张零覆盖的卡纳入测试。
+
+⚠️ **不管做哪个，做完都要更新 `tools/BotSim/DispatchGap.cs` 的两个基线常量**
+（跑 `dispatch-gap` 拿新值），否则守卫会（正确地）失败。
+
+### 9.6 补充审计语料
+
+当前只有 6 局在 `out/_server-replays/`，另有 `fresh-replays/` 7 局 + `live-replays/` 5 局。
+**语料量是当前最大的瓶颈之一**：6 局只覆盖同一对卡组（§7.4）。
+
+---
+
+## 10. 法律与伦理
+
+> **这一节请务必读完再决定怎么用这个仓库。**
+
+### 10.1 项目性质
+
+本项目是**逆向工程 / 安全研究 / 互操作性研究**性质的个人研究项目，目标是
+**理解并离线复现一款已购买游戏的规则行为**。它不修改、不注入、不劫持游戏客户端进程。
+
+### 10.2 仓库里**不含**任何游戏本体资源
+
+这是硬保证，`.gitignore` 与已跟踪文件清单都可核对。**已跟踪文件里不存在**：
+
+| 被排除的东西 | 大小 / 说明 |
+|---|---|
+| `kards-Windows.pak` | **7.1 GB** 游戏数据包本体 |
+| `*.jmap` | UE 映射文件（183 MB + 66 MB，反编译用） |
+| `key.txt` | **pak 的 AES-256 解密密钥** |
+| `decompiled/` | 反编译原始产物（几十 MB 中间 JSON） |
+| `live/`、`extracted-live/` | 从 pak 解出的 uasset 目录树 |
+| 游戏素材（贴图 / 音频 / 模型） | 无 |
+| `UAssetAPI-master/`、`UAssetCLI/` | 第三方 fork 与解包 CLI（各有自己的仓库） |
+| NN 训练数据 / 模型 | `*.bin` / `*.npz` / `*.onnx`（最大一份 7.5 GB） |
+| 宿主侧目录 | `rel/`、`tem/`、`setting.json`、日志、`BotData/` |
+| 构建产物 | `bin/`、`obj/`、`publish/` |
+
+核对方式：
 
 ```powershell
-# 在独立仓库根（本 README 所在目录）执行
-git remote add origin https://github.com/<你的账号>/<仓库名>.git
-git branch -M main
-git push -u origin main
+git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAssetAPI|UAssetCLI|\.bin$|\.npz$'
+# ⇒ 无输出
 ```
 
-**建议的仓库名 / 描述**：
+此外，本次核实了**已跟踪的源码 / 文档 / 脚本里不含本机绝对路径**
+（唯一的例外是被移入 `klink bot/docs/内部现状与路线图.md` 的那份作者内部文档，
+它在描述脱敏时提到了原始路径）。
 
-| 项 | 建议 |
-|---|---|
-| 仓库名 | `klink-bot` |
-| 一句话描述 | `KARDS 卡牌游戏的离线规则内核与 AI：解释游戏蓝图字节码，可离线自对弈、训练、审计真实对局回放。` |
-| 可见性 | 建议**先私有**，确认没有敏感内容（见下）后再决定公开 |
+### 10.3 使用者的义务
 
-**⚠️ 公开前必须自己再确认一遍的三件事**：
+- **你必须自己拥有正版 KARDS 游戏。** 本项目不附带、不提供、也不指引获取游戏本体或解密密钥。
+- **pak 解密密钥（`key.txt`）不在仓库里**，需要你自己从自己的游戏安装中取得。
+- 本仓库携带的 `card-ir.json` / `cards.*.json` 等文件是**从游戏数据中提取的衍生物**，
+  仅用于研究与互操作目的。**再分发前请自行评估**。
+- 请遵守你所在地区的法律与游戏的服务条款。
 
-1. **对局数据**：`klink bot/docs/fresh-replays/` 与 `live-replays/` 是**真实对局的动作流**
-   （玩家 ID 只有 `1`/`2`，没有账号名/邮箱，我已核过；但**是否愿意公开**由你决定）。
-2. **本机绝对路径**：原 `E:\项目\klink-dotnet` 已全部替换成 `<repo-root>`、
-   原 `C:\Users\Administrator` 已替换成 `<user-home>`（见 §13）。
-   **如果你在别处又看到本机路径，请自行处理。**
-3. **`klink bot/key.txt`**（pak 的 AES-256 密钥）与 **`kards-Windows.pak`**（7.1 GB）
-   **不在本仓库里**（见 `.gitignore`）。密钥是否公开由你决定 —— 默认**排除**。
+### 10.4 与官方无关
 
----
+- 本项目**与 1939 Games 没有任何关联**，未获其授权、认可或赞助。
+- 本项目**不提供任何绕过付费、绕过联机限制、作弊或修改对局结果的功能**。
+- 本项目**不包含**任何可用于在线对局作弊的注入 / 内存修改代码。
+- 本项目**不是**游戏客户端、启动器或私有服务器；它只是一个**离线规则内核**。
 
-## 12. 没做成 / 没验证 / 已知缺口（如实说）
+### 10.5 许可（License）
 
-| # | 事项 | 状态 |
+**当前状态：许可待定（License TBD）。** 仓库根目录**没有** `LICENSE` 文件
+（已核实：`git ls-files` 中不存在 `LICENSE` / `COPYING` / `NOTICE`）。
+
+**本文不替作者选择许可。** 下面列出几个常见候选及各自含义，供作者决定：
+
+| 候选 | 含义 | 影响 |
 |---|---|---|
-| 1 | **`508065` 的 46 次 RNG 消费差额** | **未定位**。候选池已验证正确，差异只在流位置（`out/audit/idfix/README.md:42-47`） |
-| 2 | **随机效果选卡不一致** | **未修**，最大的一块（`508065` 16 条 + `854099` 14 条人类失败） |
-| 3 | **牌库派生池** | **修不了** —— 快照的牌库顺序是 fyserver 用 `Random.Shared` **假洗**的 |
-| 4 | **kredit 模型** | **未定案**。有"两个错抵消"的强线索（`内核补全队列.md:7866-7873`）；`773639 t18` 的「上限 11 / 付得起 12」我**没找到原始记录** |
-| 5 | **`changeType=4` 在攻/防链上** | **50 处 no-op、6 处方向反了**（我实测，§6.3 B）。**未修** |
-| 6 | **未实现原语 105 个** | 未清零 |
-| 7 | **派发表真缺口 538 种 / 2788 调用点** | 未清零 |
-| 8 | **53 个玩法相关入口内核从不派发**；23 张卡全部入口都是死入口 | 未修。Pincer / Intel / Lose Smokescreen 三条链性价比最高 |
-| 9 | **45 张 `locals`-only 卡零覆盖**（连同 entrypoints 为空的共 98 张） | 未做（需要给 `SmokeAllCards` 加 `locals` 模式） |
-| 10 | **Gotcha 子系统** | **故意不做**：它是整条子系统（`gotchaActivated` + `RearrangeLocation` + `SetCardsSeenByCipher` + Covert 揭示位 + cipher），**半吊子实现比不实现更糟**（`out/audit/没修的.md:65-66`） |
-| 11 | **静态"卡面 vs 行为"对账** | **判据质量"中等偏下"**：(A) 档精度 **0/9**（全假阳性），(B) 档 147 条里真正值得人看的约 20 条 |
-| 12 | **那 3 个语义修复没有真实对局验证** | 证据链是"烟雾用例翻转 + selftest 无回归 + CDO 原文 + 卡面数字吻合"，**不是**回放对拍（`semantic-reconcile-report.md:247-251`） |
-| 13 | **`SmokeAllCards.IsPurePrimitiveName` 的大小写 bug** | **没改源码**（怕影响可比性）。D2 表虚高 157 → 86 张卡 |
-| 14 | **`buffActive` / `friendlyAttacked` / `A6M2Effect`（3 张卡）** | **没动**：CDO 里"默认值"就是键名本身，读写用同一个（可能错的）键、行为自洽。**改不改判断不了** |
-| 15 | **`472510` 那局** | **拿不到**：本地 `/replays/472510` → 404、`/matches/v2/472510` → 401 ⇒ 「客户端写 4 / 我们算 24」这条**没有在本地复核过** |
-| 16 | **`src/KLink.Bot/README.md`** | **严重过期**（kredit 上限写 12、IR 写 1636 张、说"还缺棋盘状态"、说跳转语义要修）。**本次没有改它**（避免与其他在跑的工作冲突）—— 请以本文为准 |
-| 17 | **UE4SS 采集路线** | **实测不可用**（这个 UE5.6 fork 上 AOB 扫描失败）。它的用途已被离线方法替代（`评估与实施路线图.md` 的 v3 修订） |
-| 18 | **`_bal` / `_vet` 平衡变体** | 蓝图里只有基础卡，数值微调在 `kards/Content/Structs/BalancedCards` 表里（**尚未解出**）⇒ `CardDatabase.Find` 剥后缀回退到基础卡，**数值可能不准** |
-| 19 | **胜率偏斜** | 早期实测有 241/59 这种偏斜，**预期内**（平衡变体未应用 + 部分效果是近似实现） |
+| **MIT** | 最宽松：允许任意使用、修改、再分发（含闭源商用），只需保留版权与许可声明 | 最容易被他人复用；作者放弃大部分控制 |
+| **Apache-2.0** | 与 MIT 接近，但**显式包含专利授权**，并要求标注修改过的文件 | 适合担心专利问题的场景；与 MIT 兼容 |
+| **GPL-3.0** | 强 copyleft：衍生作品必须同样以 GPL 开源 | 阻止闭源商用；与 MIT / Apache 代码混合时约束较多 |
+
+⚠️ **两个必须注意的点**（无论选哪个）：
+
+1. **许可只能覆盖作者自己的代码。** 仓库里从游戏数据提取的产物（卡牌数据、IR、
+   回放动作流）可能仍受游戏发行商的权利约束，**开源许可不能替你解决这部分**。
+2. 文档（`*.md`）如果想单独授权，通常用 CC BY 4.0 之类；但**软件许可不要用 CC 系列**
+   （Creative Commons 明确不建议用于软件）。
+
+### 10.6 免责
+
+本项目按「现状」提供，不附带任何明示或暗示的担保。使用本项目造成的任何后果由使用者自行承担。
 
 ---
 
-## 13. 附录：本次核实到的与既有说法不一致之处
+## 11. 贡献指南
 
-> 这一节是**给作者看的差异清单**。所有数字都是我在本机跑出来/数出来的。
+这个项目的验证方式比较特殊，欢迎按下面的方式参与。
 
-### 13.1 数字对不上的
+### 11.1 最有价值的贡献：**真实对局回放**
 
-| # | 说法 | 我实测 | 结论 |
-|---|---|---|---|
-| 1 | 「IR 有 **1610** 张卡」 | **1735** 条（1707 个 `card_*` + 24 BP + 2 WBP + 1 BPI + 1 createCard） | **对不上**。`1610` 出自 `klink bot/docs/核心规则缺口审计.md:22`（2026-09-27 的旧口径）；IR 后来重生成过两次（`card-ir.json.bak-before-locals` 1636 → 现 1735）。**以 1735 为准** |
-| 2 | 「未实现原语 **106** 个」 | **105** 个（`out/audit/smoke-all-cards.txt`，2026-10-02 15:43，mtime 最新） | **对不上（差 1）**。以 **105** 为准 |
-| 3 | （`out/audit/没修的.md` 说）真缺口 **540 种 / 2752 调用点** | **538 种 / 2788 调用点**，指纹 `33D02CF8E0EEC7D5` | 该文档已过期（2026-10-01 23:00）；以 `dispatch-gap` 实测为准 |
-| 4 | 「`Array_Add`（**94 张卡**）」 | IR 里 **356 调用点 / 236 张卡** | **对不上**。"94" 可能是某个子集口径（如只算 `OnPlayedFromHand`，或某一族的调用点） |
-| 5 | 「`GetDeckBySide`（**46 张**）」 | IR 里 **0 个**叫 `GetDeckBySide` 的调用点 | **对不上**。相近的名字是 `GetCardsOnBoardBySide`（273/246）。可能该原语在生成器里被改名/合并了 |
-| 6 | 「`getAndDecryptKredit`（**52 点 / 34 张**）」 | **71 / 50** | **对不上** |
-| 7 | 「`DoGiveKeyword`（`PinUnit` **69 处**）」 | `DoGiveKeyword` 本身 **0** 调用点；`PinUnit` **72 / 60** | **对不上**（72 vs 69） |
-| 8 | 「`IsSameSideUnit`（**19/19** 恒 false）」 | IR 里 **152 调用点 / 148 张卡** | **不矛盾但口径不同**：19 是**已生效**的调用点数，另 **131 处潜伏**在 `CanPlayFromHand`（`内核补全队列.md:7901`）。我按 IR 全量数是 152 |
-| 9 | 「`MakeVeteran`（**3/45**）」 | IR 里 **49 / 45** | **不矛盾但口径不同**：3 是**行为真的变了**的处数，另 42 处因 `{"self":true} ≡ ctx.Self` **被巧合完全掩盖**（`内核补全队列.md:7902`） |
-| 10 | 「从不派发的入口点 **40** 个」 | IR 入口名 **449** 个；剔除 UI/动画后 **53 个玩法相关入口**内核从不派发；**23 张卡**的全部入口都是死入口；`SmokeAllCards.LiveEntrypoints` 白名单 **64** 个 | **对不上**。我找不到"40"这个口径。另外父级括号里那组数（`Pincer 15+13`、`Intel 6`、`OnOtherCovertCardPlayedFromHand 15`、`OnOtherCardCreatedAlterCard 11`）是 **`out/audit/appendix-a.md` 的「订阅卡数」**，**不是"从不派发"的计数** |
-| 11 | 「`Gotcha` **34+8** 张」 | IR 调用点：`GotchaTriggered` **54/52 卡**、`ShouldGotchaTrigger` **53/52 卡**、`IsGotcha` **16/13 卡** | **口径不同**：34 = 烟雾测试里能**撞到** `ShouldGotchaTrigger` 的卡数（B 表「68 用例 / 34 卡」），8 = 能撞到 `IsGotcha` 的卡数（「13 用例 / 8 卡」）。IR 层面的卡数都是 52 |
-| 12 | 「`changeType=4`（撤销攻击 buff）**56 调用点 / 41 张卡**」 | **56 / 41**（逐位扫 `ChangeAttack` 的 `args[3] == {"int":4}`） | ✅ **完全正确**。但"**彻底 no-op**"要修正 ⇒ 见 13.2 |
-| 13 | 「`MakeCardsFight`（互斗）没实现（12 张卡）」 | **已实现** | **已过期**（`out/audit/没修的.md` 2026-10-01 23:00）。现在注册在 `CardApiDispatch.cs:389`，实现 `:2845`，自测 3 条绿 |
-| 14 | 「压制（`Pinned`）**不挡移动**」 | 压制**是挡**移动和攻击的 | **说法需要更正**：被删掉的是我们**误加在「抑制（`Suppress`）」上的"不能行动"门**。中文客户端把 `Pin` 译作「压制」、`Suppress` 译作「抑制」，是两个关键字。见 `MatchEngine.cs:1265-1278`、`:1516-1581` |
-| 15 | 「`773639 t18`：我们算上限 11、客户端付得起 12」 | **未能在仓库里找到原始记录** | **未核实**。最接近的已核实线索是 `内核补全队列.md:7866-7873`/`:7919-7926` 的「两个错抵消」，以及 `:8336-8338` 的身份错（费 1 vs 费 12） |
-| 16 | 「IR 有 1610 张卡 ⇒ 6 局回放只覆盖 ~43 张不同卡」 | 覆盖率警告本身与 `out/audit` 的口径一致；但**分母是 1735** | 分子（~43）我**没有独立重算**，保留父级数字 |
+**当前语料量是最大瓶颈**（6 局、只覆盖同一对卡组，见 §7.4）。如果你能提供
+「开局快照 + 完整动作流」的真实对局（自己打的即可），价值远大于任何单个功能 PR。
 
-### 13.2 判断需要修正的
+放法：`out/_server-replays/replay-<match_id>.json` + `replay-<match_id>.actions.json`
+（两件套；`audit-all-replays.ps1` 与 `audit-4metrics.ps1` 会自动发现它们）。
+⚠️ **提交前请确认回放里不含账号 / 昵称 / 邮箱等个人信息。**
 
-**① `changeType=4` 不是"彻底 no-op"，而是"50 处 no-op + 6 处方向反了"。**
+### 11.2 修 bug / 补原语的正确流程
 
-- `DoChangeAttack`（`CardApiDispatch.cs:2328-2365`）只特判 `changeType == 2`，
-  **完全没看 `changeType == 4`**，直接落到 `ChangeAttack(target, +delta)`。
-- 56 处调用点里 **50 处 `amount = 0`** ⇒ 加 0 ⇒ 真 no-op。
-- **6 处 `amount` 非 0** ⇒ 我们把"撤销"当成了"加成"：
-  `card_unit_ki_42_ii_ko`(2)、`card_unit_kyushu_j7w3`(2)、`card_unit_su_100`(4)、
-  `card_unit_type_92_105mm_field_gun`(1)、`card_unit_type_97`(1 ×2)。
-- 对照：`DoChangeKreditCost`（`:2434`）**处理了** `changeType==4`（`RemoveCostBuff`）
-  ⇒ **同一个枚举，费用链修了、攻防链没修**。
+```
+1. 先跑基线：selftest + audit-4metrics.ps1 + smoke-all-cards（记录四条判据的值）
+2. 改代码
+3. 重建内核，并核对各份 KLink.Bot.dll 的 SHA-256 一致（避免跑到旧拷贝）
+4. 重跑：selftest（不得出现新失败）
+5. 重跑：audit-4metrics.ps1（⑤b 首漂开点应后移或消失；④ 人类 HQ 差应减少）
+6. 若改了原语层：重跑 dispatch-gap，并按需要更新 tools\BotSim\DispatchGap.cs 的基线常量
+7. 在 PR 描述里**写清哪条判据变好了、哪条没变、哪些没验证**
+```
 
-**② 「`FrontlineOwner` 死亡不重置」这条我确认存在，但要补一句**：
-`RefreshFrontlineOwner` **只在归属真的变了时**才发 `OnFrontlineOwnershipChange`
-（`MatchEngine.cs:1399-1410`），而且**直接生成到前线**也必须调它
-（`CardApi.cs:1690-1709`）—— 后者是同一族的第二个漏点。
+### 11.3 三条硬规矩
 
-### 13.3 我做过、但父级没提的补充
+1. **不要用「人类失败数」当唯一判据。** 见 §7.2 与 §7.3 —— 随机效果会把它变成负向指标，
+   而且「0 失败」可能是两个错互相抵消。
+2. **不要在无法验证时声称验证过。** 回放覆盖不到 98% 的卡池（§7.4）。
+   证据链只有「IR 形状 + 反编译产物 + 自测」时，**如实写出来**。
+3. **不要用通配符做批量删除。** 本项目出过一次事故：清理 `out\_*` 时删掉了 7 局回放（不可恢复）。
 
-1. **构建对齐实测**：`rel\data\fyserver\KLink.Bot.dll`、
-   `tem\fyserver\bin\Release\net10.0\KLink.Bot.dll`、`tools\BotSim\bin\...`、
-   `tools\ServerBridgeTest\bin\...` **四份同 SHA-256**
-   （完整值 `9D4A75E119202569994E33C71E39B4DEE4F57362D8487A71D43E794357FA3953`），mtime 均 `2026-10-02 16:55:22`
-   ⇒ 本次所有测试跑的确实是部署中的那一份内核。
-2. **数据目录同步实测**：`rel\data\fyserver\BotData\card-ir.json` 与
-   `klink bot\docs\card-ir.json` **同大小（9,847,589 B）同 mtime（2026-10-02 11:02:56）** ⇒ 已同步。
-3. **`tools/AotProbe` 的存在与理由**（父级没提）：它是为"fyserver 关了反射式序列化"
-   这条进程级陷阱专门建的工程，并且**已有一个真实事故记录**（一整局 66 行日志全是
-   「神经网络决策失败…本回合改用贪心」，看起来像"AI 很笨"，实际是 AI 没上场）。
-4. **`SmokeAllCards.IsPurePrimitiveName` 的大小写 bug**（父级没提）：
-   `name.StartsWith("Get")` **区分大小写**，把小写开头的查询原语当成"写原语"
-   ⇒ **D2 表长期虚高 157 → 86 张卡**（`semantic-reconcile-report.md:58-64, 255-257`）。
-5. **`SmokeAllCards.LiveEntrypoints` 是一个 64 项的硬编码白名单**，
-   注释说「IR 的 `entrypoints` 里有 **845 个**是 UI/动画/时间轴回调」
-   （`tools/BotSim/SmokeAllCards.cs:45-46`）—— ⚠️ 这个 **845** 与我实测的
-   「449 个不同入口名 / 3608 条入口注册」**都对不上**，可能它数的是"卡×入口"的组合数。**未核实。**
-6. **`src/KLink.Bot/README.md` 已存在但严重过期**（见 §12 第 16 条）。
-7. **`klink bot/` 里躺着 7.1 GB 的 `kards-Windows.pak` + 249 MB 的 `.jmap`**，
-   任何"整个目录 `git add`"都会出事。
-8. **外层 `klink` 仓库的 `src/` 与 `tools/` 都是 git 子模块** ⇒ 拆仓库必须复制文件。
-9. **`out/audit/semantic-reconcile-report.md`**（2026-10-02 13:46）是一份很新的、
-   质量很高的"逐卡语义对账"报告，父级没提到它。它的自我评价很诚实（(A) 档精度 0/9），
-   并且给出了**两条可复用的机械化判据**（实参形状对账、`locals`-only 覆盖缺口）。
-10. **上游 `tools/` 下还有一批工具没有纳入本仓库**：
-    `DevProbe`（自对弈逐回合 diff）/ `NNEarlyProbe`（拆解 NN 打分的归因探针）/
-    `TriCompare` / `BoardCompare` / `SimCompare`（三种对拍器）/
-    `AuraDiag`（光环诊断）/ `SmokeTest` / `PakTest` / `HostTest` / `LauncherApiTest` /
-    `BotNameTest` / `FyServerStub` / `NNTrain` 的**数据文件**（`nn-10k.bin` 548 MB、
-    `test.bin` 16.6 MB，见 `.gitignore` 的 `*.bin`）。
-    本仓库只收了 README 里真正会让读者去跑的那几个：`BotSim` / `ServerBridgeTest` /
-    `NNTrain`（仅源码）/ `NNPlay` / `AotProbe`。
-    ⚠️ `TriCompare` / `BoardCompare` / `SimCompare` 是**对拍工具链**（内核 vs 真实牌局逐字段对拍），
-    如果你要继续做"三方对拍"，它们值得一并搬过来。
+### 11.4 代码风格
+
+- C#：`net10.0`，`Nullable` 与 `ImplicitUsings` 均开启（`src/KLink.Bot/KLink.Bot.csproj`）。
+  注释用中文，**注释里写「为什么」而不是「是什么」**——现有代码大量使用这种风格。
+- Python：`klink bot/tools/` 下的脚本保持「单文件、可直接 `python xxx.py` 运行」。
+- **不要改数据路径字面量**（`klink bot/docs/...`），除非你打算一次性改掉全部 ~15 处（见 §4.4）。
+
+### 11.5 报告问题
+
+请附上：命令、完整输出、种子 / 回放编号、以及内核 DLL 的 SHA-256。
+有回放编号的问题最好定位。
 
 ---
 
-## 附：相关文档索引
+## 12. 致谢
+
+| 对象 | 用途 |
+|---|---|
+| **`CCB-TEAM/kards-sim`**（第三方开源参照实现） | 蓝图 AST → C# 直译的参照物。本项目用 `klink bot/tools/fetch-kards-sim.py` 把它拉到 `ref/kards-sim`（`ref/` 被 gitignore）。它对本项目最大的价值是**交叉验证**：它的直译产物是忠实的，因此两边都缺同一处效果时，可以判定缺口在引擎侧而不是直译侧（见 `klink bot/docs/issue-kards-sim.md`） |
+| **`UAssetAPI`**（第三方 UE 资产库） | 读取 UE 资产 / 蓝图字节码 |
+| **Unreal Engine 文档与引擎源码** | `FRandomStream` 的语义（LCG 常数、`GetFraction` 的高 23 位变换、闭区间取整） |
+| **`Kards_RNG_report`**（第三方逆向报告） | 提供了一组**可复算的** `FRandomStream` 测试向量，是本项目 RNG 复刻的逐位判据（§2.3） |
+| **UE4SS** | 曾尝试用它做运行时采集；在这个 UE5.6 fork 上**实测不可用**（AOB 扫描失败），相关目录保留在 `.gitignore` 中不随仓库分发 |
+| **KARDS 玩家社区** | 规则细节（重甲是否减免指令伤害、压制 / 抑制的解除时机等）的交叉确认 |
+
+⚠️ 上述第三方项目**不在本仓库内**，各自遵循自己的许可。
+
+---
+
+## 13. 目录结构
+
+```
+<仓库根>/
+├── README.md                       ← 你正在读的文件
+├── KLink.slnx                      ← 仓库根标记（工具靠它定位数据目录）+ 5 个工程
+├── NuGet.config / .gitignore / .gitattributes
+├── goal.txt                        ← 项目最初的设想（作者原话）
+├── 评估与实施路线图.md              ← 立项时的评估（含后来被推翻的结论）
+│
+├── src/KLink.Bot/                  ← 规则内核 + AI（33 个文件）
+│   ├── Engine/                     ← 对局引擎 / 状态 / 卡实例 / 随机流 / 协议动作
+│   ├── Effects/                    ← 原语层 + Kismet 解释器 + 派发表
+│   │   └── Blueprint/              ← KismetVm / KismetIr / DispatchGap
+│   ├── Replay/                     ← 回放执行与审计信号
+│   ├── Cards/                      ← 卡库 / 卡组码 / 元卡组
+│   ├── NN/                         ← 局面编码器 + 模型
+│   ├── Bots/                       ← 贪心 baseline
+│   └── Server/                     ← 宿主集成契约（快照 / 动作 / 决策服务）
+│
+├── tools/                          ← 本项目的验证工具（C#）
+│   ├── BotSim/                     ← selftest / smoke-all-cards / dispatch-gap / play
+│   ├── ServerBridgeTest/           ← --audit-replay 回放审计
+│   ├── NNTrain/                    ← 自对弈产数据 + 训练 + 验证
+│   ├── NNPlay/                     ← 让训练好的 NN 下场打一局
+│   └── AotProbe/                   ← 在「反射被关掉」的宿主里跑内核全路径
+│
+├── out/
+│   ├── _server-replays/            ← 6 局真实对局（快照 + 动作流）
+│   └── audit/                      ← 审计脚本 + 取证报告（199 个跟踪文件）
+│
+└── klink bot/                      ← ⚠️ 嵌套目录，不是笔误（见 §4.4）
+    ├── docs/                       ← IR / 卡库 / 卡向量 / 卡组码 / 事件契约 + 全部报告
+    │   ├── card-ir.json            ← 9.4 MiB，1735 条（解释器执行的东西）
+    │   ├── cards.live.json         ← 2021 张卡面数值
+    │   ├── fresh-replays/          ← 7 局真实对局
+    │   ├── live-replays/           ← 5 局真实对局
+    │   └── 内部现状与路线图.md      ← 作者的内部追踪文档（见 §14）
+    └── tools/                      ← Python 生成器与训练脚本（142 个文件）
+        ├── gen-kismet-ir.py        ← 字节码 → IR
+        ├── gen-card-*.py           ← 卡库 / 关键字 / 卡池 / 向量 / 效果表
+        └── nn-*.py                 ← 训练 / 评估 / 消融（r4 → r9）
+```
+
+---
+
+## 14. 内部文档指路
+
+> **作者的内部追踪文档在 [`klink bot/docs/内部现状与路线图.md`](klink%20bot/docs/内部现状与路线图.md)。**
+
+那份文档面向作者本人：里面有**逐轮的 A/B 记录、私人待办、以及对既有结论的自我更正清单**，
+写作风格与本文不同（更口语、带大量「未核实」标注）。如果你只想了解**项目现状与怎么用**，
+读本文即可；如果你想看**每一处判断是怎么被推翻和修正的**，那份文档更完整。
+
+其它值得一读的文档（都在 `klink bot/docs/`）：
 
 | 文档 | 内容 |
 |---|---|
-| `klink bot/docs/内核补全队列.md`（482 KB / 8636 行） | **项目的活日志**：规则定案 + 待办 + 每一轮的 A/B 与教训。**要了解"现在到哪了"先读它的最后 500 行** |
-| `klink bot/docs/KARDS基础规则参考.md` | 规则参考（真人玩家整理 + 蓝图层面的印证） |
-| `klink bot/docs/对局协议参考.md` | 85 个子动作 / 138 个参数键 / 76 个接收器 |
-| `klink bot/docs/NN训练诊断.md`（268 KB） | 神经网络为什么学不出东西（r4→r9） |
-| `klink bot/docs/核心规则缺口审计.md`（94 KB） | 关键字/合法性两个维度的缺口审计（⚠️ 数字较旧） |
-| `klink bot/docs/保真度对拍报告.md` | 内核 vs 真实对局的数字 |
-| `klink bot/docs/三方对拍方案.md` | 对拍方法论 |
-| `klink bot/docs/评估与实施路线图.md` | 项目立项时的评估（含被推翻的结论） |
-| `klink bot/goal.txt` | 作者最初的原始设想 |
-| `out/audit/没修的.md` | 本轮**没修**的缺口清单（⚠️ 2026-10-01，部分已过期） |
-| `out/audit/semantic-reconcile-report.md` | 逐卡「卡面 vs 实际行为」语义对账 |
-| `out/audit/idfix/README.md` | 2026-10-02 RNG 复刻 + 发号规则 + 安全网 + 四判据前后对比 |
-| `out/audit/missing-keys-report.md` | 派发表缺口分类报告（A/B/C 档） |
-| `out/audit/dim3-keywords.md` / `dim2-legality.md` | 关键字 / 合法性两个维度的逐条审计 |
+| `KARDS基础规则参考.md` | 规则参考（真人玩家整理 + 蓝图层面的印证） |
+| `对局协议参考.md` | 85 个子动作 / 138 个参数键 / 76 个接收器；紧凑动作名映射 |
+| `NN训练诊断.md`（268 KB） | 神经网络为什么学不出东西（r4 → r9 的完整记录） |
+| `内核补全队列.md`（482 KB / 8636 行） | 项目的活日志：规则定案 + 待办 + 每一轮的 A/B 与教训 |
+| `核心规则缺口审计.md`（94 KB） | 关键字 / 合法性两个维度的缺口审计（⚠️ 数字较旧） |
+| `保真度对拍报告.md` | 内核 vs 真实对局的数字 |
+| `三方对拍方案.md` | 对拍方法论 |
+| `issue-kards-sim.md` | 与第三方参照实现的交叉验证结论 |
+| `kards-cpp源码勘察.md` | 反编译源码勘察笔记 |
 
-> 免责声明：本项目仅供学习交流。修改、分发 KARDS 客户端可能违反 1939 Games 服务条款，请仅用于个人研究。
+审计侧的取证报告（`out/audit/`）：
+
+| 文件 | 内容 |
+|---|---|
+| `idfix/README.md` | RNG 复刻 + 发号规则 + 安全网 + 四判据的前后对比 |
+| `semantic-reconcile-report.md` | 逐卡「卡面 vs 实际行为」语义对账（含 §9.3 的 23 / 53 / 45 三个数字） |
+| `missing-keys-report.md` | 派发表缺口分类报告（A / B / C 档） |
+| `没修的.md` | 某一轮**没修**的缺口清单（⚠️ 部分已过期） |
+| `dim3-keywords.md` / `dim2-legality.md` | 关键字 / 合法性两个维度的逐条审计 |
+| `argshape-inventory.txt` | 原语调用点实参形状清单 |
