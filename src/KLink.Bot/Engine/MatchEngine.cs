@@ -554,6 +554,14 @@ public sealed class MatchEngine
         // 「本回合打出过哪些牌」按回合清空（客户端 GetCardsPlayedThisTurn 的语义）。
         // ⚠️ 必须在这里清、而不是在 EndTurn 里清：回放路径上 XActionStartOfTurn 与
         //    EndTurn 的配对并不严格（见 ReplayRunner 的 turnStarted 处理）。
+        //
+        // ★★ **清之前先快照进「按回合的历史」**（2026-10-02 补）——
+        //    `GetCardsPlayedFromHandLastTurn()` 要读它（见 `GameState.CardsPlayedFromHandByTurn`
+        //    的长注释）。这里是唯一的快照点：`EndTurn` 在 `:652` 先把 `State.Turn` +1
+        //    再调本方法，所以此刻 `CardsPlayedThisTurn` 里的正是 **`Turn - 1`** 那一回合的。
+        //    漏了这一步的后果：`didPlayBritishInfantryLastTurn`（5 张卡的私有函数）
+        //    读到空列表 ⇒ 恒假 ⇒ 那些卡的「上回合打过英国步兵」分支永不执行。
+        State.CardsPlayedFromHandByTurn[State.Turn - 1] = State.CardsPlayedThisTurn.ToList();
         State.CardsPlayedThisTurn.Clear();
 
         // 重置本单位行动状态

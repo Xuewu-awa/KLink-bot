@@ -162,6 +162,30 @@ public sealed class GameState
     /// </summary>
     public List<CardInstance> CardsPlayedThisTurn { get; } = new();
 
+    /// <summary>
+    /// **按回合分的「从手牌打出过哪些牌」历史**（键 = 回合号 = <see cref="Turn"/>）。
+    ///
+    /// 对应客户端的 `GameStateRef.cardsPlayedTurnMapped`。
+    /// 存在理由是一个具体的族：`didPlayBritishInfantryLastTurn` ——
+    /// **5 张卡**（`card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
+    /// `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` / `card_unit_valentine_mk_ii`）
+    /// 的私有函数都调它，而它调 `GetCardsPlayedFromHandLastTurn()`。
+    ///
+    /// 蓝图语义（逐字）：
+    /// <code>
+    /// GetCardsPlayedFromHandLastTurn()            // BP_CardFunctions.g.cs:20315
+    ///   = getCardsPlayedFromHandByTurn(GetTurnNumber() - 1)
+    /// getCardsPlayedFromHandByTurn(turn)          // _deps/BP_GameState_Battle.g.cs:1718
+    ///   = Map_Find(cardsPlayedTurnMapped, turn).CardIDs      // ← 返回的是**卡 ID 列表**
+    /// </code>
+    /// ⚠️ 返回**卡 ID（int）**而不是卡实例 —— 所以卡自己的程序会拿 `GetCardFromID(元素)` 再解析。
+    ///
+    /// ⚠️ 只写不读历史的话这个字段没用；快照点在 <see cref="MatchEngine.StartTurn"/>
+    ///    清空 <see cref="CardsPlayedThisTurn"/> **之前**（那边 `State.Turn` 已经 +1，
+    ///    所以被清的那份属于 `Turn - 1`）。
+    /// </summary>
+    public Dictionary<int, List<CardInstance>> CardsPlayedFromHandByTurn { get; } = new();
+
     /// <summary>内核遇到但尚未实现的 API 调用（用于量化缺口，见 Effects/CardApi.cs）。</summary>
     public Dictionary<string, int> UnimplementedCalls { get; } = new(StringComparer.Ordinal);
 

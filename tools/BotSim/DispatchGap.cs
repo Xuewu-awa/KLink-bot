@@ -72,10 +72,24 @@ internal static class DispatchGapBaseline
     /// 种类数与调用点**都降了**，符合"只降不升"。
     /// 更新方式：`dotnet run --project tools\BotSim -c Release -- dispatch-gap`。
     /// </remarks>
-    public const int BaselineCount = 538;
+    /// <remarks>
+    /// 2026-10-02：538 → **537**（调用点 2788 → **2778**）。原因是补上了
+    /// `GetCardsPlayedFromHandLastTurn` 与 `getCardsPlayedFromHandByTurn` 两个派发键 ——
+    /// 前者在缺口集合里原本有 **10 个调用点**，全在**卡内私有函数**
+    /// `didPlayBritishInfantryLastTurn` 的体里（**5 张卡**：
+    /// `card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
+    /// `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` /
+    /// `card_unit_valentine_mk_ii`，每张调 2 次）。
+    /// 也就是说那 5 张卡的「上回合打过英国步兵」分支此前是**静默空转**
+    /// —— 审计里 4 局的 `<local-ran:didPlayBritishInfantryLastTurn> ×1` 就是这条的留痕。
+    /// 种类数与调用点**都降了**，符合"只降不升"。
+    /// （`getCardsPlayedFromHandByTurn` 本来不在缺口集合里：它只被
+    /// `GetCardsPlayedFromHandLastTurn` 调，而后者不是卡内私有函数、不在 IR 里。）
+    /// </remarks>
+    public const int BaselineCount = 537;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "33D02CF8E0EEC7D5";
+    public const string BaselineFingerprint = "E674E0A25E96DAEA";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

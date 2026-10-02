@@ -880,6 +880,38 @@ public sealed partial class CardApi
                                             && string.Equals(x.Name, c.Self?.Name, StringComparison.Ordinal),
             ["GetCardsPlayedThisTurn"] = (c, r, a) => c.State.CardsPlayedThisTurn.ToList(),
 
+            // `getCardsPlayedFromHandByTurn(回合号)` —— 那一回合「从手牌打出」的卡 **ID** 列表。
+            //
+            // 蓝图 `ref/kards-sim/…/_deps/BP_GameState_Battle.g.cs:1718`：
+            //   `Map_Find(cardsPlayedTurnMapped, turn, …)` → 取到值的 `CardIDs`
+            // ⇒ 返回的是**卡 ID（int）**，**不是卡实例** —— 所以卡自己的程序会拿
+            //   `GetCardFromID(元素)` 再解析（`didPlayBritishInfantryLastTurn` 就是这么写的）。
+            ["getCardsPlayedFromHandByTurn"] = (c, r, a) =>
+            {
+                int turn = a.Length > 0 ? Blueprint.KismetVm.ToInt(a[0]) : c.State.Turn;
+                return c.State.CardsPlayedFromHandByTurn.TryGetValue(turn, out var list)
+                    ? list.Select(x => x.CardId).ToList()
+                    : new List<int>();
+            },
+
+            // `GetCardsPlayedFromHandLastTurn()` = `getCardsPlayedFromHandByTurn(GetTurnNumber() - 1)`
+            // —— 蓝图 `BP_CardFunctions.g.cs:20315` 逐字如此。而内核的 `GetTurnNumber()`
+            // 就是 `State.Turn`（`Effects/CardApi.cs:2500`）。
+            //
+            // ★ **为什么需要它**：卡内私有函数 `didPlayBritishInfantryLastTurn`
+            //   —— **5 张卡**（`card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
+            //   `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` /
+            //   `card_unit_valentine_mk_ii`）的体都调它（各自 29 步：
+            //   `IsSideActive` + `GetCardsPlayedFromHandLastTurn` ×2 + `Array_Get` +
+            //   `GetCardFromID` + `IsInfantry`）。
+            //   以前内核**完全没有这个原语** ⇒ 那 5 张卡的本地程序兜底跑出来恒假
+            //   ⇒ 「上回合打过英国步兵」分支永不执行（审计里那 4 局的
+            //   `<local-ran:didPlayBritishInfantryLastTurn> ×1` 就是这条的留痕）。
+            ["GetCardsPlayedFromHandLastTurn"] = (c, r, a) =>
+                c.State.CardsPlayedFromHandByTurn.TryGetValue(c.State.Turn - 1, out var prev)
+                    ? prev.Select(x => x.CardId).ToList()
+                    : new List<int>(),
+
             // `hasPlayedOrderThisTurn(卡, side, out 有没有)` —— 本回合 **side 这一方**
             // 有没有打过指令牌。
             //
