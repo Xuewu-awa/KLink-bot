@@ -971,8 +971,14 @@ public sealed class MatchEngine
         // 自己的进场时机 —— 它自己当然算"已经打出"。
         State.CardsPlayedThisTurn.Add(card);
 
-        // ---- ③ 进场触发点 ----
-        Api.FireTrigger("OnEnterPlay", card, card.Owner, "OnOtherCardEnterPlay", eventArgs: new object?[] { card, 0 });
+        // ---- ③ 进场触发点（**只发这张卡自己的 `OnEnterPlay`**）----
+        //
+        // ⚠️ 2026-10-03：原先这里把「自己那一路 `OnEnterPlay`」和「广播 `OnOtherCardEnterPlay`」
+        //    塞进**同一次** `FireTrigger`（靠第 4 个实参 `otherProgramName` 一起发）。
+        //    拆开的理由是广播那一路的位置错了 —— 见下面 ⑤ 的注释（蓝图 :6464）。
+        //    拆开**不改变**自己那一路的时机：蓝图 `OnEnterPlay(cardPlayed, 1)` 在
+        //    `:6179`（L_0DAD），排在 `otherCards` 那一轮循环（`:6462/:6464`）**之前**。
+        Api.FireTrigger("OnEnterPlay", card, card.Owner, eventArgs: new object?[] { card, 0 });
 
         // ---- ④ 部署 / 战吼 ----
         //
@@ -1013,6 +1019,27 @@ public sealed class MatchEngine
         //   ⇒ `#70 t15` 假「半场已满」（`#77/#79/#83/#90/#92/#102/#104/#109/#111/#116` 全是连锁）；
         //   随机游标也从 `#49` 起超前 1（审计 ④ 首条人类 HQ 失配 `#60 t13 期望 19 实际 20`）。
         Api.FireTrigger("OnOtherCardPlayedFromHand", card, card.Owner, eventArgs: new object?[] { card });
+
+        // ---- ⑤b 广播：`OnOtherCardEnterPlay`（触发号 43）----
+        //
+        // ⚠️⚠️ 2026-10-03：**同一张旁观卡必须 T51 在前、T43 在后**（旧实现反了）。
+        // 蓝图 `CardPlayedFromHand` 把两个触发点取到后 Append 进**同一个** `otherCards`：
+        //   :6060  otherCards = FetchAllCardsWithEventTrigger(51)
+        //   :6064  tmp       = FetchAllCardsWithEventTrigger(43)
+        //   :6066  Array_Append(otherCards, tmp)
+        // 然后那一轮循环里对**同一张卡**：
+        //   :6462  OnOtherCardPlayedFromHand(_tmpOtherCard, cardPlayed)   ← T51 先
+        //   :6464  OnOtherCardEnterPlay(_tmpOtherCard, cardPlayed, 1)     ← T43 后
+        //   :6466  cardsDone.Add(_tmpOtherCard.cardID)
+        // 订阅这两个触发点的交集只有 4 张（card_brawl_test1 / card_location_british_scen5 /
+        // card_unit_269th_rifles / card_unit_kv_1s），自测 `PlayCardOtherTriggersOrder` 直接守它。
+        //
+        // ⚠️ 这里**只**挪 T43 的广播位置。T51 广播与「卡自己的 `RunDeploymentEffect`」的先后
+        //    （上面 ⑤ 那段注释）**不动** —— 那是另一个任务的范围。
+        // ⚠️ 用 `programName = "OnOtherCardEnterPlay"`（而不是 `otherProgramName`）：
+        //    它的 `OnOther` 前缀让 `FireTrigger` 直接走广播分支，**不会**顺带把
+        //    `OnEnterPlay` 再发给主体一次（那会变成自己那一路发两遍）。
+        Api.FireTrigger("OnOtherCardEnterPlay", card, card.Owner, eventArgs: new object?[] { card, 0 });
 
         RunDeploymentEffect(card, target);
 
@@ -1720,16 +1747,27 @@ public sealed class MatchEngine
 
         // ---- 烟幕：**自己攻击之后消失** ----
         //
-        // 出处 `out/bp-cardfn.json` → `AttackCard`（168 条语句）：
+        // ⚠️⚠️ 2026-10-03 更正：这一段原来的注释有**两处**与蓝图控制流相反，已改正 ——
+        //    原注释写「`si=2966`（被压制）⇒ 不移除」与「时机在 `OnBeforeAttack` **之前**
+        //    （si=3511 < si=3590）」，两条都不对。按 `AttackCard` 的**控制流**（不是字节偏移顺序）：
         // <code>
-        // si=2911  _attackerCard.IsLocatedOnBoard(out isIt_2)
-        // si=2952  JumpIfNot 3640 if !isIt_2                 ; 攻击者不在场 ⇒ 跳过整段
-        // si=2966  JumpIfNot 3590 if _attackerCard.isSuppressed ; ★ 被压制 ⇒ 跳过
-        // si=3511  _attackerCard.cardFunction.RemoveSmokescreen(attackerCardID, attackerCardID, true, false)
-        // si=3590  _attackerCard.OnBeforeAttack(_defenderCard)
+        // si=2911 (:0B5F)  _attackerCard.IsLocatedOnBoard(out isIt_2)
+        // si=2952 (:0B88)  JumpIfNot(isIt_2) → 3640            ; 攻击者不在场 ⇒ 整段跳过
+        // si=2966 (:0B96)  JumpIfNot(_attackerCard.isSuppressed) → 3590   ; ★ 条件为**假**才跳
+        // si=3002 (:0BBA)  FetchAllCardsWithEventTrigger(13)               ; T13 那一轮
+        // si=3382 (:0D36)      item.OnBeforeOtherCardAttacks(_attackerCard, _defenderCard)
+        // si=3511 (:0DB7)  _attackerCard.cardFunction.RemoveSmokescreen(attackerCardID, attackerCardID, true, false)
+        // si=3589 (:0E05)  PopExecutionFlow
+        // si=3590 (:0E06)  _attackerCard.OnBeforeAttack(_defenderCard)     ; ★ 接收者只有攻击者
+        // si=3635 (:0E33)  Jump → 3002                                     ; ★ 回到 T13 那一轮
         // </code>
-        // ⚠️ 两个门槛都要：**不在场** 和 **被压制** 都不移除。
-        //    时机在 `OnBeforeAttack` **之前**（si=3511 < si=3590）。
+        // ⇒ 真实次序 = `OnBeforeAttack`(只给攻击者、被压制时跳过) → T13 广播(排除攻击者)
+        //   → `RemoveSmokescreen`。**被压制的攻击者照样会走到 si=3511**（si=2966 只是跳到
+        //   si=3590，随后 si=3635 又跳回 si=3002），所以 `RemoveSmokescreen` **没有**压制门。
+        //
+        // ⚠️ 本轮**只**修了 `OnBeforeAttack` / T13 那一对（接收者 + 先后，见下面那段）。
+        //    `RemoveSmokescreen` 的位置（这里放在两个触发点**之前**）与压制门仍是旧行为
+        //    —— 那是一处**独立的、已核实但未修**的偏差，留给后续任务。
         if (!attacker.Keywords.Contains(Keyword.Suppressed)
             && attacker.Keywords.Contains(Keyword.Smokescreen))
         {
@@ -1742,8 +1780,31 @@ public sealed class MatchEngine
             ["defenderCardID"] = defender.CardId,
         });
 
-        Api.FireTrigger("OnBeforeAttack", attacker, attacker.Owner, "OnBeforeOtherCardAttacks");
-        Api.FireTrigger("OnBeforeAttack", defender, defender.Owner);
+        // ---- 攻击前触发点（蓝图 `AttackCard` si=2966 / 3590 / 3635 / 3002 / 3382）----
+        //
+        // ⚠️⚠️ 2026-10-03：旧实现把两者塞进**同一次** `FireTrigger`
+        //    （`FireTrigger("OnBeforeAttack", attacker, …, "OnBeforeOtherCardAttacks")`）
+        //    于是 (a) 两者的先后随**遍历序**漂移、(b) 紧接着又
+        //    `FireTrigger("OnBeforeAttack", defender, …)` **给防御方也发了一份**。两处都错。
+        //
+        // 蓝图控制流：
+        //   si=2966  if (!_attackerCard.isSuppressed) → si=3590
+        //   si=3590  _attackerCard.OnBeforeAttack(_defenderCard)     ; ★ 接收者只有**攻击者**
+        //   si=3635  Jump → 3002
+        //   si=3002  FetchAllCardsWithEventTrigger(13)               ; T13 = OnBeforeOtherCardAttacks
+        //   si=3382      item.OnBeforeOtherCardAttacks(_attackerCard, _defenderCard)
+        //   si=4562      （循环内）item != _attackerCard             ; ★ 广播**排除攻击者本人**
+        // ⇒ 次序：**`OnBeforeAttack`(攻击者) → T13 广播(其余卡)**。
+        if (!attacker.Keywords.Contains(Keyword.Suppressed))
+        {
+            Api.FireTrigger("OnBeforeAttack", attacker, attacker.Owner);
+        }
+
+        // ⚠️ `OnBeforeOtherCardAttacks` 的前缀是 `OnBefore`、**不是** `OnOther`，
+        //    `FireTrigger` 的命名判据会把它当成"只发给主体" ⇒ 必须显式 `broadcastName: true`
+        //    （与 `OnBeforeOtherCardPlayedFromHand` 同一个坑，见 `PlayCard` 里那段注释）。
+        //    广播分支本身就排除主体，正好对上蓝图的 `item != _attackerCard`。
+        Api.FireTrigger("OnBeforeOtherCardAttacks", attacker, attacker.Owner, broadcastName: true);
 
         int attackerDamage = attacker.Attack;
         int defenderDamage = defender.IsHq ? 0 : defender.Attack;   // 反击

@@ -1999,14 +1999,27 @@ public sealed partial class CardApi
     /// L_026A          BooleanAND(isOnBoard, Not(cantBeSuppressed))
     /// L_02A9          _wasAlreadySuppressed = card.isSuppressed
     /// L_02D2          card.isSuppressed = True                     ; ★ 先置位，再摘东西
-    /// L_0314          if (!_wasAlreadySuppressed) → 广播 OnOtherCardSuppressed(触发号 58)
+    /// L_0314          if (!_wasAlreadySuppressed) goto L_174B      ; ★ 条件为**假**才跳
+    ///                 （`out/bp-cardfn.json` si=788 是
+    ///                   `JumpIfNot(Condition = _wasAlreadySuppressed, Offset = 6194)`，
+    ///                   而 6194 正是 si=6194 的 `Context->OnSuppressed` ⇒ 只在首次发"自己"）
+    /// L_174B          ★触发点A card.OnSuppressed()                  ; **自己**那一路，最先发
+    /// L_176F          goto L_0322
+    /// L_0322          ★触发点B 广播 OnOtherCardSuppressed(触发号 58) ; FetchAllCardsWithEventTrigger(58)
+    ///                 （紧随其后的 `si=6230 Jump(Offset = 802)`，802 就是 58 号 Fetch 那条语句）
     /// L_047E          IsUnrevealedCovertCard → RevealCard
     /// L_054E/1358     ① 摘关键词（见 SuppressStrips）+ 清 customJson + 摘卡牌给的能力
     /// L_119E/4510     ② 数值回落（GetStaticCard → 攻/防/行动费）+ JSON_Clear("veteran")
     /// L_136A/4970     ③ 攻防差额分流（只在"当前值 ≠ 卡面值"时改写；防御只在更高时压下来）
-    /// L_15A5/5541     ④ 广播 OnAfterOtherCardSuppressed(触发号 11)
-    /// L_174B          ⑤ card.OnSuppressed()（在 ④ 之后、OnOtherCardSuppressed 之前）
+    /// L_15A5/5541     ★触发点C 广播 OnAfterOtherCardSuppressed(触发号 11) ; 摘除/回落**之后**才发
     /// </code>
+    ///
+    /// ⇒ 三个触发点的真实次序是 **A 自己 OnSuppressed → B T58 广播 → C T11 广播**
+    /// （①②③ 夹在 B 与 C 之间）。内核 2026-10-03 之前写成 C → A → B，三个全错位；
+    /// 那段注释还把 `L_0314` 读成「跳到 T58 广播」，与它自己「`L_174B` = `OnSuppressed`」
+    /// 自相矛盾 —— 已一并改正。
+    /// 执行流栈的落点：58 那轮循环跑完弹到 `1358 = L_054E`，摘完弹到 `4510 = L_119E`，
+    /// 回落完弹到 `5541 = L_15A5`（`__ef.Push(5541)/Push(4510)/Push(1358)` 见 `:35773-35777`）。
     ///
     /// ⚠️ ①②③ 各自还带 `IsActionProcess()` 分流（`PushExecutionFlow`/`PopExecutionFlow`
     /// 那套），内核不建模"动作流程/回放流程"这一层，一律按主流程实现
@@ -2093,6 +2106,24 @@ public sealed partial class CardApi
         // ⚠️ 2026-10-02（第三轮）：它原先驱动一条"到期解除"（`ClearExpiredSuppression`），
         //    那条已删 —— 抑制按玩家确认/蓝图是**永久**的，所以这个值不会再被复位。
         target.SuppressedOnTurn = _engine.State.Turn;
+
+        // ---- ★触发点A 自己那一路：`OnSuppressed`（蓝图 L_0314 → L_174B → L_176F）----
+        // ⚠️ 次序：它在**摘任何东西之前**就发（L_174B 在 L_0322 / L_054E 之前）。
+        //    蓝图的门是 `if (!_wasAlreadySuppressed) goto L_174B;`（条件为**假**才跳），
+        //    即"只在**首次**抑制时发自己那一路"；上面那道
+        //    `Keywords.Contains(Keyword.Suppressed)` 早退已经保证了这里就是首次。
+        FireTrigger("OnSuppressed", target, target.Owner);
+
+        // ---- ★触发点B 广播：`OnOtherCardSuppressed`（触发号 58，蓝图 L_0322）----
+        // ⚠️ 它同样在摘除/回落**之前**（58 那轮循环跑完才弹执行流栈到 L_054E 摘东西）。
+        //    名字以 `OnOther` 开头，`FireTrigger` 的广播判据正好认得它。
+        FireTrigger("OnOtherCardSuppressed", target, target.Owner,
+            eventArgs: new object?[] { target },
+            eventSubject: target,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = target,
+            });
 
         // ---- ①a 摘关键词（可逆）----
         // 蓝图用 `_wasAlreadySuppressed`（`:35779-35806`）把这一整段放在"首次"分支里；
@@ -2196,27 +2227,15 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", target.CardId),
         });
 
-        // ---- ⑤ 广播（顺序照抄蓝图）----
-        //    si=6074  item.OnAfterOtherCardSuppressed(_card)   ← 广播（触发号 11）
-        //    si=6194  _card.OnSuppressed()                      ← 自己
-        //    si=802   FetchAllCardsWithEventTrigger(58) → item.OnOtherCardSuppressed(_card)
-        //    （触发号 58 那一遍在 si=6230 `Jump 802` 之后，所以排在最后。）
-        // ⚠️ 名字以 `OnAfter` 开头、但语义是**广播**（蓝图 si=6074 那一遍遍历的是
+        // ---- ★触发点C 广播：`OnAfterOtherCardSuppressed`（触发号 11，蓝图 L_15A5）----
+        // 它在**摘除（L_054E）+ 数值回落（L_119E）之后**才发 —— 见上方次序表。
+        // ⚠️ 名字以 `OnAfter` 开头、但语义是**广播**（蓝图 L_15C6 那一遍遍历的是
         //    `FetchAllCardsWithEventTrigger(11)` 的**全部订阅者**，没有排除自己）。
         //    `FireTrigger` 的广播判据是「程序名以 `OnOther` 开头」，这个名字不满足，
         //    所以必须**同时**用 `otherProgramName` 再发一遍 —— 只传 programName 的话
         //    它只会发给主体，订阅者里除主体外全部收不到。
         FireTrigger("OnAfterOtherCardSuppressed", target, target.Owner,
             otherProgramName: "OnAfterOtherCardSuppressed",
-            eventArgs: new object?[] { target },
-            eventSubject: target,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["card"] = target,
-            });
-
-        FireTrigger("OnSuppressed", target, target.Owner);
-        FireTrigger("OnOtherCardSuppressed", target, target.Owner,
             eventArgs: new object?[] { target },
             eventSubject: target,
             namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)

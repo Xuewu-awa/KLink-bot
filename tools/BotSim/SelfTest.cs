@@ -195,6 +195,8 @@ internal static class SelfTest
         new("抑制：**失去所有关键词与所有增益**（Guard/Blitz/HeavyArmor/Salvage/… + 攻防回落 + 老兵变回普通），" +
             "且**永不自动还原**（还原只能手工直调 `RestoreAfterSuppression`）；Pinned 不摘",
             SuppressStripsEverythingAndRestores),
+        new("抑制：三个触发点的先后必须是 **自己 OnSuppressed → T58 OnOtherCardSuppressed → T11 OnAfterOtherCardSuppressed**" +
+            "（蓝图 L_0314→L_174B→L_0322→L_15A5；旧实现三个全错位）", SuppressTriggerOrderMatchesBlueprint),
         // ---- 行动限制（2026-10-02，服务器实测暴露）----
         new("行动限制：**非坦克**移动后不能再攻击（规则表只有坦克能移动+攻击）", NonTankCannotMoveThenAttack),
         new("行动限制：**坦克**可以移动后攻击（规则表明确写的例外）", TankCanMoveThenAttack),
@@ -469,6 +471,21 @@ internal static class SelfTest
         // 2 个 `spawnedCardID`），`ZActionDamageCard.attackerCardID` 因此填错。
         new("★ `DamageCard` 的第 3 参（`damagerCardID`，int）必须解析成来源卡（旧实现退回施法者）",
             DamageCardResolvesIntDamagerCardId),
+
+        // ---- ★★ 2026-10-03：`PlayCard` 里 T51 与 T43 的**逐卡次序** ----
+        // 蓝图 `CardPlayedFromHand` 把 T51(`OnOtherCardPlayedFromHand`) 与 T43(`OnOtherCardEnterPlay`)
+        // 取到后 Append 进**同一个** `otherCards`（`:6060→:6066`），循环里对**同一张卡**
+        // **先** T51（`:6462`）**后** T43（`:6464`）。内核旧实现先 T43 后 T51。
+        new("★ `PlayCard`：同一张旁观卡必须**先** `OnOtherCardPlayedFromHand`(T51) **后** `OnOtherCardEnterPlay`(T43)" +
+            "（蓝图 :6462 → :6464；旧实现反了）", PlayCardOtherTriggersOrder),
+
+        // ---- ★★ 2026-10-03：攻击前触发点的**接收者**与**先后** ----
+        // 蓝图 `AttackCard`：`OnBeforeAttack` 的接收者是 `_attackerCard`（`:4633`，**不是防御方**），
+        // 且被压制时跳过；T13(`OnBeforeOtherCardAttacks`) 广播排除攻击者本人（`:4562`），
+        // 排在 `OnBeforeAttack` **之后**（`:4633 → :4635 Jump 3002 → :4543/:4587`）。
+        new("★ 攻击前触发点：`OnBeforeAttack` **只给攻击方**（且被压制时不发），T13 广播在它**之后**" +
+            "（蓝图 :4633 / :4587；旧实现给防御方也发、且两者混在一次派发里）",
+            AttackBeforeTriggersRecipientsAndOrder),
     };
 
     public static int Run(CardDatabase db)
@@ -4047,6 +4064,327 @@ internal static class SelfTest
         {
             return "打 HQ 时不该发战斗存活事件（蓝图 `ExecuteAttackCard` si=3130/3171 的 IsUnit 守卫）"
                  + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 抑制的三个触发点**先后次序**（2026-10-03 蓝图定案）。
+    ///
+    /// 蓝图 `SuppressMultipleUnits` 的控制流（`BP_CardFunctions.g.cs`，`L_xxxx` = 十六进制字节偏移，
+    /// 与 `out/bp-cardfn.json` 里 `PushExecutionFlow/JumpIfNot` 的目标一一对应）：
+    /// <code>
+    /// L_0314 (:35806)  if (!_wasAlreadySuppressed) goto L_174B;   ; 只在**首次**抑制时发"自己"
+    /// L_174B (:36284)  _card.OnSuppressed()                        ; ← ① 自己那一路
+    /// L_176F (:36286)  goto L_0322
+    /// L_0322 (:35808)  FetchAllCardsWithEventTrigger(58) → item.OnOtherCardSuppressed(_card)
+    /// L_03CA (:35818)  58 那轮循环跑完 → 弹执行流栈到 1358 = L_054E（摘关键词/增益）
+    /// L_114B (:36077)  摘完 → 弹到 4510 = L_119E（数值回落）
+    /// L_1532 (:36171)  回落完 → 弹到 5541 = L_15A5
+    /// L_15C6 (:36221)  FetchAllCardsWithEventTrigger(11) → item.OnAfterOtherCardSuppressed(_card)
+    /// </code>
+    /// ⇒ **自己 OnSuppressed → T58 广播 → T11 广播**（摘除/回落夹在 T58 与 T11 之间）。
+    /// 旧内核写成 T11 → OnSuppressed → T58（三个全错位）。
+    ///
+    /// 反向证据（防"读错分支方向"）：`out/bp-cardfn.json` 里 `si=788` 是
+    /// <c>JumpIfNot(Condition = _wasAlreadySuppressed, Offset = 6194)</c>，
+    /// 而 6194 正是 `si=6194 Context-&gt;OnSuppressed` —— **条件为假才跳到 OnSuppressed**；
+    /// 紧接着 `si=6230` 是 `Jump(Offset = 802)`，802 = `si=802` = 58 号 `FetchAllCardsWithEventTrigger`。
+    /// </summary>
+    private static string? SuppressTriggerOrderMatchesBlueprint(CardDatabase db)
+    {
+        const string victimName = "card_unit_raaf_walrus";         // 订阅 OnSuppressed（自己那一路）
+        const string t58Name = "card_unit_kings_own_scottish";     // 订阅 OnOtherCardSuppressed（触发号 58）
+        const string t11Name = "card_unit_adler_command_vehicle";  // 订阅 OnAfterOtherCardSuppressed（触发号 11）
+
+        foreach (string n in new[] { victimName, t58Name, t11Name })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+        var victim = state.CreateWithId(victimName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        state.CreateWithId(t58Name, Side.Left, 21, CardLocation.BoardHqLeft, 2);
+        state.CreateWithId(t11Name, Side.Left, 22, CardLocation.BoardHqLeft, 3);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.SuppressUnit(victim);
+        }
+        catch (Exception ex)
+        {
+            return $"{ex.GetType().Name}: {ex.Message}";
+        }
+
+        if (!victim.Keywords.Contains(Keyword.Suppressed))
+        {
+            return "布景失败：victim 没被抑制（本用例的前提）";
+        }
+
+        static int First(List<string> tr, string ev)
+            => tr.FindIndex(t => t.StartsWith(ev + " → ", StringComparison.Ordinal));
+
+        int iSelf = First(trace, "OnSuppressed");
+        int i58 = First(trace, "OnOtherCardSuppressed");
+        int i11 = First(trace, "OnAfterOtherCardSuppressed");
+
+        string Dump() => "\n       实际派发记录：" + string.Join(" | ", trace.Take(12));
+
+        if (iSelf < 0)
+        {
+            return "自己那一路 OnSuppressed 没发（蓝图 L_174B）" + Dump();
+        }
+
+        if (i58 < 0)
+        {
+            return "T58 广播 OnOtherCardSuppressed 没发（蓝图 L_0322）" + Dump();
+        }
+
+        if (i11 < 0)
+        {
+            return "T11 广播 OnAfterOtherCardSuppressed 没发（蓝图 L_15C6）" + Dump();
+        }
+
+        if (!(iSelf < i58 && i58 < i11))
+        {
+            return $"触发次序错了：蓝图是 自己 OnSuppressed → T58 → T11，"
+                 + $"实际次序 index 为 OnSuppressed={iSelf} / OnOtherCardSuppressed(58)={i58} / "
+                 + $"OnAfterOtherCardSuppressed(11)={i11}" + Dump();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `PlayCard` 里 T51 与 T43 的**逐卡次序**（2026-10-03 蓝图定案）。
+    ///
+    /// 蓝图 `BP_CardFunctions::CardPlayedFromHand`：
+    /// <code>
+    /// :6060  otherCards = FetchAllCardsWithEventTrigger(51)      ; T51 = OnOtherCardPlayedFromHand
+    /// :6064  tmp       = FetchAllCardsWithEventTrigger(43)       ; T43 = OnOtherCardEnterPlay
+    /// :6066  Array_Append(otherCards, tmp)                       ; ★ 两者进**同一个**数组
+    /// ...
+    /// :6462  OnOtherCardPlayedFromHand(_tmpOtherCard, cardPlayed) ; ★ 同一张卡：先 T51
+    /// :6464  OnOtherCardEnterPlay(_tmpOtherCard, cardPlayed, 1)   ; ★ 再 T43
+    /// :6466  cardsDone.Add(_tmpOtherCard.cardID)
+    /// </code>
+    /// 订阅这两个触发点的**交集只有 4 张**：`card_brawl_test1` / `card_location_british_scen5` /
+    /// `card_unit_269th_rifles` / `card_unit_kv_1s`（对 `docs/card-ir.json` 的 `entrypoints` 求交）。
+    /// 这里拿 `card_unit_kv_1s` 当**旁观探针**（放在场上），打一张普通单位，看派发记录里的先后。
+    ///
+    /// ⚠️ 本用例**只**守 T51/T43 的相对次序，不涉及「广播 vs 卡自己的 `RunDeploymentEffect`」。
+    /// </summary>
+    private static string? PlayCardOtherTriggersOrder(CardDatabase db)
+    {
+        const string watcherName = "card_unit_kv_1s";        // 同时订阅 T51 与 T43
+        const string playedName = "card_unit_269th_rifles";  // 从手牌打出的普通单位
+
+        foreach (string n in new[] { watcherName, playedName })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var played = state.CreateWithId(playedName, Side.Left, 21, CardLocation.HandLeft, 0);
+
+        if (!engine.CanPlay(played, out string why))
+        {
+            return $"前置不成立：{playedName} 打不出（{why}）";
+        }
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.PlayCard(played);
+        }
+        catch (Exception ex)
+        {
+            return $"{ex.GetType().Name}: {ex.Message}";
+        }
+
+        int Index(string ev)
+            => trace.FindIndex(t => t.StartsWith($"{ev} → {watcher.Name}#{watcher.CardId}",
+                                                StringComparison.Ordinal));
+
+        int i51 = Index("OnOtherCardPlayedFromHand");
+        int i43 = Index("OnOtherCardEnterPlay");
+
+        string Dump() => "\n       实际派发记录：" + string.Join(" | ", trace.Take(14));
+
+        if (i51 < 0)
+        {
+            return $"T51 `OnOtherCardPlayedFromHand` 没派发到旁观卡 {watcher.Name}#{watcher.CardId}" + Dump();
+        }
+
+        if (i43 < 0)
+        {
+            return $"T43 `OnOtherCardEnterPlay` 没派发到旁观卡 {watcher.Name}#{watcher.CardId}" + Dump();
+        }
+
+        if (!(i51 < i43))
+        {
+            return $"逐卡次序错了：蓝图是 T51 在前（:6462）、T43 在后（:6464），"
+                 + $"实际 index 为 OnOtherCardPlayedFromHand={i51} / OnOtherCardEnterPlay={i43}" + Dump();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 攻击前触发点的**接收者**与**先后**（2026-10-03 蓝图定案）。
+    ///
+    /// 蓝图 `BP_CardFunctions::AttackCard` 的控制流（`L_xxxx` = 十六进制字节偏移，
+    /// 与 `out/bp-cardfn.json` 的 `StatementIndex` 一一对应 —— 那份 dump 的 `StatementIndex`
+    /// 就是**字节偏移**，已在 `SuppressMultipleUnits` 上逐条核对过）：
+    /// <code>
+    /// si=2911 (:0B5F)  _attackerCard.IsLocatedOnBoard(out isIt_2)
+    /// si=2952 (:0B88)  JumpIfNot(isIt_2) → 3640          ; 攻击者不在场 ⇒ 整段跳过
+    /// si=2966 (:0B96)  JumpIfNot(_attackerCard.isSuppressed) → 3590   ; ★ 条件为**假**才跳
+    /// si=3002 (:0BBA)  FetchAllCardsWithEventTrigger(13)               ; T13 那一轮
+    /// si=3382 (:0D36)      item.OnBeforeOtherCardAttacks(_attackerCard, _defenderCard)
+    /// si=3511 (:0DB7)  _attackerCard.cardFunction.RemoveSmokescreen(…)
+    /// si=3589 (:0E05)  PopExecutionFlow
+    /// si=3590 (:0E06)  _attackerCard.OnBeforeAttack(_defenderCard)     ; ★ 接收者只有攻击者
+    /// si=3635 (:0E33)  Jump → 3002                                     ; ★ 回到 T13 那一轮
+    /// </code>
+    /// ⇒ 真实次序 = **`OnBeforeAttack`(只给攻击者、被压制时跳过) → T13 广播(排除攻击者) → RemoveSmokescreen**。
+    /// 旧内核写成「一次 `FireTrigger` 里按遍历序混发 + 再给防御方补一次 `OnBeforeAttack`」，
+    /// 于是 (a) **防御方多发**、(b) 次序随建卡序漂移。
+    ///
+    /// ⚠️ 本用例**不**守 `RemoveSmokescreen` 的位置与门槛（旧内核把它放在这两个触发点**之前**
+    /// 且加了"被压制就不移除"的门，蓝图两条都不是）—— 那是另一处独立偏差，见报告。
+    /// </summary>
+    private static string? AttackBeforeTriggersRecipientsAndOrder(CardDatabase db)
+    {
+        const string attackerName = "card_unit_infantry_regiment_25";   // 订阅 OnBeforeAttack（13 张之一）
+        const string defenderName = "card_unit_75mm_field_artillery";   // 同样订阅 OnBeforeAttack —— 但**不该**收到
+        const string t13Name = "card_unit_the_rangers";                 // 订阅 OnBeforeOtherCardAttacks（8 张之一）
+
+        foreach (string n in new[] { attackerName, defenderName, t13Name })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        // 布景：旁观者的 `LocationNumber` **更小**（0 < 1）。`FireTrigger` 的快照走
+        // `State.Board(s)` → `Cards(s)`，排序键是 `(LocationNumber, CardId)`，
+        // 所以旁观者会被**先**访问 —— 这样"T13 排在 OnBeforeAttack 之前"这个次序错误
+        // 才不会被遍历序掩盖。
+        (MatchEngine Engine, GameState State, CardInstance Bystander, CardInstance Attacker, CardInstance Defender)
+            Stage(bool attackerSuppressed)
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 12);
+            state.SetMaxKredits(Side.Left, 12);
+
+            var bystander = state.CreateWithId(t13Name, Side.Left, 20, CardLocation.BoardFrontline, 0);
+            var attacker = state.CreateWithId(attackerName, Side.Left, 21, CardLocation.BoardFrontline, 1);
+            var defender = state.CreateWithId(defenderName, Side.Right, 60, CardLocation.BoardHqRight, 0);
+            bystander.EnteredPlayOnTurn = -1;
+            attacker.EnteredPlayOnTurn = -1;
+            defender.EnteredPlayOnTurn = -1;
+            defender.Attack = 0;      // 没有反击 ⇒ 攻击者必定活下来
+            defender.Defense = 30;    // 防守方也活下来
+
+            if (attackerSuppressed)
+            {
+                attacker.Keywords.Add(Keyword.Suppressed);
+            }
+
+            return (engine, state, bystander, attacker, defender);
+        }
+
+        static int Index(List<string> tr, string ev, CardInstance c)
+            => tr.FindIndex(t => t.StartsWith($"{ev} → {c.Name}#{c.CardId}", StringComparison.Ordinal));
+
+        // ---- ① 没被压制：OnBeforeAttack(攻击者) → T13 广播；防御方一个都不该收到 ----
+        {
+            var (engine, st, bystander, attacker, defender) = Stage(false);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+
+            if (!engine.Attack(attacker, defender, out string why))
+            {
+                return $"前置不成立：攻击打不出去（{why}）";
+            }
+
+            string Dump() => "\n       实际派发记录：" + string.Join(" | ", trace)
+                           + "\n       左场建卡序：" + string.Join(", ",
+                                 st.Board(Side.Left).Select(c => $"{c.Name}#{c.CardId}"));
+
+            int iSelf = Index(trace, "OnBeforeAttack", attacker);
+            int i13 = Index(trace, "OnBeforeOtherCardAttacks", bystander);
+            int iDef = Index(trace, "OnBeforeAttack", defender);
+
+            if (iDef >= 0)
+            {
+                return $"防御方 {defender.Name}#{defender.CardId} **不该**收到 `OnBeforeAttack`"
+                     + $"（蓝图 :4633 的接收者是 `_attackerCard`）" + Dump();
+            }
+
+            if (iSelf < 0)
+            {
+                return $"攻击者自己那一路 `OnBeforeAttack` 没发（蓝图 :3590）" + Dump();
+            }
+
+            if (i13 < 0)
+            {
+                return $"T13 `OnBeforeOtherCardAttacks` 没派发到旁观卡 {bystander.Name}#{bystander.CardId}" + Dump();
+            }
+
+            if (!(iSelf < i13))
+            {
+                return $"次序错了：蓝图是 `OnBeforeAttack` 在前（:3590 → :3635 Jump 3002）、"
+                     + $"T13 广播在后（:3382），实际 index 为 OnBeforeAttack={iSelf} / OnBeforeOtherCardAttacks={i13}"
+                     + Dump();
+            }
+        }
+
+        // ---- ② 被压制：攻击者**自己**那一路不发（蓝图 si=2966 的门），但 T13 广播照发 ----
+        {
+            var (engine, _, bystander, attacker, defender) = Stage(true);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+
+            if (!engine.Attack(attacker, defender, out string why))
+            {
+                return $"前置不成立：被压制的攻击者打不出去（{why}）";
+            }
+
+            if (Index(trace, "OnBeforeAttack", attacker) >= 0)
+            {
+                return "被压制的攻击者**不该**收到自己那一路 `OnBeforeAttack`（蓝图 si=2966 的门）"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
+
+            if (Index(trace, "OnBeforeOtherCardAttacks", bystander) < 0)
+            {
+                return "被压制只是跳过攻击者**自己**那一路；T13 广播仍应照发（蓝图 si=3002 两条路都会走到）"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
         }
 
         return null;
