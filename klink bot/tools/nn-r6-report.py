@@ -483,7 +483,7 @@ def main():
     A("## 10. 复现命令（完整）")
     A("")
     A("```powershell")
-    A("# ⚠️ 全部在仓库根目录 E:\\项目\\klink-dotnet 下执行")
+    A("# ⚠️ 全部在仓库根目录 <repo-root> 下执行")
     A("$env:PYTHONIOENCODING='utf-8'")
     A("")
     A("# ---------- 0) 固定留出协议：首次运行会写出 gid 清单 ----------")

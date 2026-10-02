@@ -1007,9 +1007,10 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 # ⇒ 无输出
 ```
 
-此外，本次核实了**已跟踪的源码 / 文档 / 脚本里不含本机绝对路径**
-（唯一的例外是被移入 `klink bot/docs/内部现状与路线图.md` 的那份作者内部文档，
-它在描述脱敏时提到了原始路径）。
+此外，本次核实了**已跟踪的源码 / 文档 / 脚本里不含本机绝对路径**。唯一的例外是
+`klink bot/docs/内部现状与路线图.md` —— 那份作者内部文档在**描述脱敏过程本身**时
+提到了原始路径（即 `<repo-root>` 与 `<user-home>` 的原值）。
+（发布前另有一处残留在 `klink bot/tools/nn-r6-report.py` 里的本机路径，已改成 `<repo-root>`。）
 
 ### 10.3 使用者的义务
 
