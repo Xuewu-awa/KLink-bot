@@ -1,0 +1,1772 @@
+{
+ "GetLocationCardBySide": {
+  "card": 246,
+  "locationCardID": 246,
+  "card_1": 44,
+  "locationCardID_1": 44,
+  "card_2": 9,
+  "locationCardID_2": 9,
+  "LocationCard": 1,
+  "LocationCardID": 1,
+  "card_3": 4,
+  "locationCardID_3": 4,
+  "card_4": 3,
+  "locationCardID_4": 3
+ },
+ "ChangeDefense": {
+  "qqq": 334,
+  "qqq_1": 28,
+  "qqq_2": 3,
+  "qqq_3": 1
+ },
+ "DamageMultipleCards": {
+  "cardsDestroyed": 45,
+  "cardsDestroyed_1": 1
+ },
+ "DrawCardsFromDeckBySide": {
+  "cardsIDs": 71,
+  "cardsIDs_1": 2
+ },
+ "GetCardsOnBoardBySide": {
+  "cards": 269,
+  "cards_1": 27,
+  "cards_2": 1,
+  "cards_3": 1
+ },
+ "GetRandomCard": {
+  "randomCard": 157,
+  "randomCard_1": 13,
+  "randomCard_2": 5,
+  "randomCard_3": 2,
+  "randomCard_5": 1,
+  "randomCard_4": 1
+ },
+ "GetLeftMostCardInHand": {
+  "WasFound": 13,
+  "LeftMostCard": 13
+ },
+ "CustomAbilityAdd": {
+  "qqq": 81,
+  "qqq_1": 12,
+  "qqq_2": 2
+ },
+ "GetRightMostCardInHand": {
+  "WasFound": 6,
+  "RightMostCard": 6
+ },
+ "GetTargetedCard": {
+  "hasTarget": 429,
+  "card": 429,
+  "hasTarget_1": 2,
+  "card_1": 2
+ },
+ "GetCardsInHandBySide": {
+  "cards": 91,
+  "cards_1": 11
+ },
+ "DamageCard": {
+  "targetDestroyed": 267,
+  "targetDestroyed_1": 17,
+  "targetDestroyed_2": 2,
+  "targetDestroyed_4": 1,
+  "targetDestroyed_3": 1
+ },
+ "DiscardCardFromHand": {
+  "success": 40,
+  "success_1": 2
+ },
+ "ChangeKreditCost": {
+  "qqq_1": 36,
+  "qqq": 95,
+  "qqq_2": 21,
+  "qqq_4": 1,
+  "qqq_3": 2
+ },
+ "selectTargetFromHand": {
+  "qqq": 33
+ },
+ "GetCardFromID": {
+  "card": 479,
+  "card_1": 90,
+  "card_2": 25,
+  "card_3": 11,
+  "card_10": 1,
+  "card_7": 3,
+  "card_8": 1,
+  "card_5": 5,
+  "card_4": 9,
+  "card_6": 2,
+  "card_9": 1
+ },
+ "MoveCardInHandToLeftMost": {
+  "sucess": 1
+ },
+ "WasRightMostCardWhenPlayedFromHand": {
+  "WasRightMost": 4
+ },
+ "GetAllUnitsOnBoard": {
+  "cards": 108,
+  "cards_1": 8,
+  "cards_3": 1,
+  "cards_2": 1
+ },
+ "Forecast": {
+  "qqq": 10
+ },
+ "WasLeftMostCardWhenPlayedFromHand": {
+  "WasLeftMost": 6
+ },
+ "ChangeAttack": {
+  "qqq": 375,
+  "qqq_1": 60,
+  "qqq_9": 1,
+  "qqq_2": 21,
+  "qqq_3": 9,
+  "qqq_8": 1,
+  "qqq_6": 1,
+  "qqq_7": 1,
+  "qqq_5": 1,
+  "qqq_4": 1
+ },
+ "GetAllCardsOnBoard": {
+  "cards": 91,
+  "cards_1": 17
+ },
+ "MakeVeteran": {
+  "qqq": 48,
+  "qqq_1": 2
+ },
+ "GiveShock": {
+  "qqq": 20,
+  "qqq_1": 1
+ },
+ "GetCardsToTheLeft": {
+  "cards": 6,
+  "cards_3": 4,
+  "cards_2": 4,
+  "cards_1": 5,
+  "cards_4": 4,
+  "cards_5": 2
+ },
+ "JSON_SetBool": {
+  "found": 71,
+  "found_1": 16,
+  "found_2": 8
+ },
+ "GetAllCards": {
+  "cards": 105,
+  "cards_1": 21
+ },
+ "JSON_GetBool": {
+  "value": 70,
+  "found": 70,
+  "value_1": 23,
+  "found_1": 23,
+  "value_2": 12,
+  "found_2": 12,
+  "value_3": 4,
+  "found_3": 4
+ },
+ "JSON_Clear": {
+  "found": 137,
+  "found_1": 29,
+  "found_2": 13,
+  "found_3": 7
+ },
+ "JSON_GetInt": {
+  "value": 102,
+  "found": 102,
+  "value_3": 2,
+  "found_3": 2,
+  "value_2": 9,
+  "found_2": 9,
+  "value_1": 36,
+  "found_1": 36
+ },
+ "JSON_SetInt": {
+  "found": 95,
+  "found_1": 25
+ },
+ "AddNumberToText": {
+  "qqq": 21,
+  "qqq_1": 11
+ },
+ "GetMatchFinished": {
+  "OutFinished": 5
+ },
+ "IsMyCard": {
+  "yes": 2
+ },
+ "CreateHelpBubbleEntry": {
+  "newEntry": 4,
+  "newEntry_1": 2,
+  "newEntry_6": 1,
+  "newEntry_7": 1,
+  "newEntry_8": 1,
+  "newEntry_9": 1,
+  "newEntry_10": 1,
+  "newEntry_11": 1,
+  "newEntry_12": 1,
+  "newEntry_13": 1,
+  "newEntry_14": 1,
+  "newEntry_15": 1,
+  "newEntry_16": 1,
+  "newEntry_17": 1,
+  "newEntry_37": 1,
+  "newEntry_18": 1,
+  "newEntry_19": 1,
+  "newEntry_20": 1,
+  "newEntry_21": 1,
+  "newEntry_22": 1,
+  "newEntry_23": 1,
+  "newEntry_24": 1,
+  "newEntry_25": 1,
+  "newEntry_26": 1,
+  "newEntry_28": 1,
+  "newEntry_27": 1,
+  "newEntry_29": 1,
+  "newEntry_30": 1,
+  "newEntry_33": 1,
+  "newEntry_34": 1,
+  "newEntry_35": 1,
+  "newEntry_36": 1,
+  "newEntry_38": 1,
+  "newEntry_32": 1,
+  "newEntry_31": 1,
+  "newEntry_2": 1,
+  "newEntry_3": 1,
+  "newEntry_4": 1,
+  "newEntry_5": 1
+ },
+ "GetPlatformEnum": {
+  "CurrentPlatform": 36,
+  "CurrentPlatform_1": 12,
+  "CurrentPlatform_2": 10,
+  "CurrentPlatform_6": 3,
+  "CurrentPlatform_7": 3,
+  "CurrentPlatform_5": 4,
+  "CurrentPlatform_3": 8,
+  "CurrentPlatform_4": 6,
+  "CurrentPlatform_8": 3,
+  "CurrentPlatform_9": 1
+ },
+ "CalculatePlayRate": {
+  "rate": 1,
+  "rate_1": 1
+ },
+ "GetCachedBPBoard": {
+  "BP_Board_15": 2,
+  "BP_Board_16": 2,
+  "BP_Board_4": 2,
+  "BP_Board_1": 11,
+  "BP_Board_9": 5,
+  "BP_Board_11": 2,
+  "BP_Board_10": 2,
+  "BP_Board": 22,
+  "BP_Board_13": 3,
+  "BP_Board_2": 5,
+  "BP_Board_3": 2,
+  "BP_Board_7": 3,
+  "BP_Board_8": 4,
+  "BP_Board_5": 2,
+  "BP_Board_6": 3,
+  "BP_Board_12": 2,
+  "BP_Board_14": 2,
+  "BP_Board_17": 3,
+  "BP_Board_31": 1,
+  "BP_Board_22": 1,
+  "BP_Board_20": 1,
+  "BP_Board_24": 2,
+  "BP_Board_18": 1,
+  "BP_Board_19": 1,
+  "BP_Board_21": 1,
+  "BP_Board_27": 3,
+  "BP_Board_23": 1,
+  "BP_Board_26": 1,
+  "BP_Board_30": 1,
+  "BP_Board_28": 1,
+  "BP_Board_29": 1,
+  "BP_Board_25": 1,
+  "BP_Board_32": 1
+ },
+ "GetCard": {
+  "card_7": 9,
+  "card": 52,
+  "card_2": 15,
+  "card_3": 10,
+  "card_6": 9,
+  "card_1": 18,
+  "card_4": 8,
+  "card_5": 6,
+  "card_18": 2,
+  "card_19": 2,
+  "card_14": 2,
+  "card_8": 4,
+  "card_12": 3,
+  "card_13": 2,
+  "card_9": 3,
+  "card_10": 3,
+  "card_11": 3,
+  "card_15": 2,
+  "card_16": 3,
+  "card_17": 2,
+  "card_31": 1,
+  "card_30": 1,
+  "card_38": 1,
+  "card_36": 1,
+  "card_33": 2,
+  "card_34": 2,
+  "card_37": 1,
+  "card_22": 1,
+  "card_20": 1,
+  "card_35": 1,
+  "card_29": 1,
+  "card_26": 1,
+  "card_23": 2,
+  "card_25": 1,
+  "card_27": 1,
+  "card_32": 1,
+  "card_21": 1,
+  "card_24": 1,
+  "card_28": 1
+ },
+ "GetDeckTopCardTransform": {
+  "topCardTransform": 2,
+  "topCardTransform_1": 2
+ },
+ "GetBoard": {
+  "Board_1": 11,
+  "Board": 21,
+  "Board_2": 7,
+  "Board_6": 3,
+  "Board_9": 1,
+  "Board_10": 1,
+  "Board_5": 3,
+  "Board_12": 2,
+  "Board_7": 2,
+  "Board_4": 2,
+  "Board_8": 2,
+  "Board_3": 4,
+  "Board_11": 1
+ },
+ "GetLogic": {
+  "Logic_1": 6,
+  "Logic_2": 2,
+  "Logic": 17,
+  "Logic_3": 1
+ },
+ "GetOnlineMatch": {
+  "onlineMatch": 3,
+  "onlineMatch_1": 1
+ },
+ "GetBlowUpSound": {
+  "soundCue": 1
+ },
+ "GetExplosionDuration": {
+  "duration": 1
+ },
+ "FindCardLocationUnderCursor": {
+  "Location": 9,
+  "LocationNumber": 9,
+  "Coordinates": 9,
+  "rowFound": 9,
+  "boardFound": 9,
+  "cardAtLocation": 9,
+  "Location_1": 1,
+  "LocationNumber_1": 1,
+  "Coordinates_1": 1,
+  "rowFound_1": 1,
+  "boardFound_1": 1,
+  "cardAtLocation_1": 1,
+  "Location_2": 1,
+  "LocationNumber_2": 1,
+  "Coordinates_2": 1,
+  "rowFound_2": 1,
+  "boardFound_2": 1,
+  "cardAtLocation_2": 1
+ },
+ "GetMousePosition": {
+  "OutMousePosVec2": 6,
+  "OutMousePosVec2_2": 1,
+  "OutMousePosVec2_1": 1
+ },
+ "GetIsLocalClientTurn": {
+  "IsClientTurn": 5,
+  "IsClientTurn_1": 1
+ },
+ "GetTutorialBP": {
+  "NewParam": 6,
+  "NewParam_4": 2,
+  "NewParam_5": 2,
+  "NewParam_9": 1,
+  "NewParam_10": 1,
+  "NewParam_1": 3,
+  "NewParam_8": 1,
+  "NewParam_6": 2,
+  "NewParam_2": 3,
+  "NewParam_7": 1,
+  "NewParam_11": 1,
+  "NewParam_3": 2,
+  "NewParam_12": 1
+ },
+ "GetCardsByVisualLocation": {
+  "cardsInLocation": 2
+ },
+ "FindCardCoordinatesOnBoard": {
+  "coordinates": 1,
+  "row": 1
+ },
+ "GetDeckBP": {
+  "Deck_1": 4,
+  "Deck": 7,
+  "Deck_2": 1,
+  "Deck_5": 1,
+  "Deck_4": 1,
+  "Deck_3": 1
+ },
+ "GetNextVisualLocationNumber": {
+  "locationNumber": 1
+ },
+ "GetCardSound": {
+  "sound_cue_2": 2,
+  "found_2": 2,
+  "sound_cue_1": 3,
+  "found_1": 3,
+  "sound_cue": 5,
+  "found": 5,
+  "sound_cue_3": 2,
+  "found_3": 2,
+  "sound_cue_4": 1,
+  "found_4": 1
+ },
+ "GetTargetPointByTag": {
+  "Locator": 1
+ },
+ "FindCardCoordinatesInLocation": {
+  "coordinates": 2,
+  "found": 2,
+  "row": 2
+ },
+ "GetEquipmentBP": {
+  "Equipment": 3
+ },
+ "GetAttackSound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "GetBlowupSound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "GetMovementSound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "GetEnterPlaySound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "GetProjectileSound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "GetImpactSound": {
+  "soundCue_1": 1,
+  "soundCue": 1
+ },
+ "FetchCardsByLocationSorted": {
+  "cardIDs": 3
+ },
+ "GetVisualBoardCardCardFromID": {
+  "cardRef": 7,
+  "found": 7,
+  "cardRef_1": 3,
+  "found_1": 3,
+  "cardRef_2": 3,
+  "found_2": 3
+ },
+ "GetVisualCardFromID": {
+  "cardRef": 2,
+  "found": 2
+ },
+ "IsShowcaseCardToTheRight": {
+  "isIt": 3
+ },
+ "GetCardScaling": {
+  "cardScaling_1": 5,
+  "cardScaling": 4
+ },
+ "IsTablet": {
+  "Tablet": 7,
+  "Tablet_1": 1
+ },
+ "GetPlayerControllerBP": {
+  "outBPPlayerController": 8,
+  "outBPPlayerController_1": 1,
+  "outBPPlayerController_4": 1,
+  "outBPPlayerController_2": 1,
+  "outBPPlayerController_5": 1,
+  "outBPPlayerController_3": 1,
+  "outBPPlayerController_7": 1,
+  "outBPPlayerController_8": 1,
+  "outBPPlayerController_6": 1
+ },
+ "GetDragActor": {
+  "dragActor": 1
+ },
+ "MyHandLocation": {
+  "location": 3,
+  "location_3": 1,
+  "location_2": 1,
+  "location_4": 1,
+  "location_1": 1,
+  "location_5": 1
+ },
+ "GetMouseOverActor": {
+  "mouseOverActor": 1
+ },
+ "IsInMyHand": {
+  "inhand": 2
+ },
+ "CanPlayCard": {
+  "can_play": 2,
+  "can_play_1": 1
+ },
+ "GetMatch": {
+  "Match": 7,
+  "Match_1": 2
+ },
+ "GetDSession": {
+  "dSession": 8,
+  "dSession_1": 2
+ },
+ "GetPopupManager": {
+  "OutPopupManager": 1
+ },
+ "GetCurrentPopupZOrder": {
+  "OutZOrder": 1
+ },
+ "getAltCardNumber": {
+  "altArt": 9,
+  "altArt_1": 2,
+  "altArt_2": 13
+ },
+ "GetShowCaseCardLocation": {
+  "location": 2,
+  "scale": 2,
+  "location_1": 1,
+  "scale_1": 1
+ },
+ "GetCardFunctions": {
+  "cardFunctions": 2
+ },
+ "GetKardsGameInstancePure": {
+  "instance": 1
+ },
+ "GetGraphicsSettings": {
+  "GraphicSettings": 1
+ },
+ "ShouldUseSimpleMaterials": {
+  "bUseSimplifiedMaterials": 1
+ },
+ "GetCardName": {
+  "cardName": 1
+ },
+ "CanCardDoAnything": {
+  "canIt": 1
+ },
+ "IsMouseOver": {
+  "is_mouseover_actor": 2,
+  "is_mouseover_actor_1": 1,
+  "is_mouseover_actor_2": 1
+ },
+ "AmIFlying": {
+  "amI": 2,
+  "amI_1": 2
+ },
+ "IsBeingDragged": {
+  "is_drag_actor": 3,
+  "is_drag_actor_1": 1,
+  "is_drag_actor_2": 1
+ },
+ "IsTargetArrowActive": {
+  "isIt": 5,
+  "isIt_1": 1,
+  "isIt_2": 1
+ },
+ "ShowShowCaseCard": {
+  "showcaseCard": 2,
+  "showcaseCard_2": 1,
+  "showcaseCard_1": 1
+ },
+ "GetBPPlayerController": {
+  "BP_PlayerController": 2,
+  "BP_PlayerController_1": 2
+ },
+ "GetVisualController": {
+  "MatchController": 1
+ },
+ "HandCardIsSelectingTarget": {
+  "IsSelecting": 1
+ },
+ "StopBoardCardClicked": {
+  "doStop": 1
+ },
+ "GetTurnNumber": {
+  "TurnNumber": 2,
+  "turnNumber": 84,
+  "turnNumber_1": 44,
+  "turnNumber_2": 24,
+  "turnNumber_3": 13,
+  "turnNumber_4": 6,
+  "turnNumber_5": 3,
+  "turnNumber_6": 3,
+  "turnNumber_7": 1
+ },
+ "SupplyLineLocationFromSide": {
+  "location": 3,
+  "location_2": 1,
+  "location_1": 1,
+  "location_3": 1
+ },
+ "FetchCardsByLocation": {
+  "QtyInLocation": 16,
+  "isLocationFull": 16,
+  "AllCardsInLocation": 16,
+  "FirstCard": 16,
+  "fetchedCardsIDs": 16,
+  "QtyInLocation_1": 3,
+  "isLocationFull_1": 3,
+  "AllCardsInLocation_1": 3,
+  "FirstCard_1": 3,
+  "fetchedCardsIDs_1": 3,
+  "QtyInLocation_2": 1,
+  "isLocationFull_2": 1,
+  "AllCardsInLocation_2": 1,
+  "FirstCard_2": 1,
+  "fetchedCardsIDs_2": 1
+ },
+ "GetFrontlineOwnerSide": {
+  "ownerSide": 7,
+  "ownerSide_1": 2
+ },
+ "GetTargetArrowTargetCard": {
+  "card": 1,
+  "hasTarget": 1
+ },
+ "GetDamageVisualDelay": {
+  "delay": 1
+ },
+ "SetSaturationAndBrightness": {
+  "saturation_ImplicitCast": 3,
+  "brightness_ImplicitCast": 3,
+  "saturation_ImplicitCast_1": 1,
+  "brightness_ImplicitCast_1": 1
+ },
+ "StartDateAndEndDateValid": {
+  "isValid": 2
+ },
+ "GetCardTextureReference": {
+  "Card_Texture_Reference": 4,
+  "type": 4
+ },
+ "GetFactionColor": {
+  "factionColor": 2,
+  "factionColor_1": 1
+ },
+ "provideKeysAndFrameCount": {
+  "key1": 14,
+  "key2": 14,
+  "frameCount": 14,
+  "key1_2": 3,
+  "key2_2": 3,
+  "frameCount_2": 3,
+  "key1_3": 2,
+  "key2_3": 2,
+  "frameCount_3": 2,
+  "key1_1": 5,
+  "key2_1": 5,
+  "frameCount_1": 5
+ },
+ "IsActionProcess": {
+  "ActionProcess": 106,
+  "ActionProcess_1": 20,
+  "ActionProcess_2": 8,
+  "ActionProcess_3": 5,
+  "ActionProcess_4": 1,
+  "ActionProcess_5": 1
+ },
+ "RemoveCardFromDeckBySide": {
+  "removedIndex": 5
+ },
+ "GetActiveGotchasOrdered": {
+  "cardIDs": 4
+ },
+ "GetStopFurtherActions": {
+  "stopFurtherActions": 5,
+  "stopFurtherActions_2": 3,
+  "stopFurtherActions_1": 3
+ },
+ "GetWaitPlayFromHandCards": {
+  "WaitPlayFromHandCards": 2
+ },
+ "RemoveMobilize": {
+  "qqq": 4,
+  "qqq_1": 1
+ },
+ "ExecuteOnDealDamageAddDamage": {
+  "calculatedDamage": 4,
+  "calculatedDamage_2": 1,
+  "calculatedDamage_1": 2
+ },
+ "FetchAllCardsWithEventTrigger": {
+  "cardsWithThisTrigger": 58,
+  "cardsWithThisTrigger_2": 3,
+  "cardsWithThisTrigger_1": 9,
+  "cardsWithThisTrigger_4": 1,
+  "cardsWithThisTrigger_3": 2
+ },
+ "GetClientSide": {
+  "OutClientSide_1": 3,
+  "OutClientSide": 9
+ },
+ "GetOpponentSide": {
+  "OutOpponentSide_1": 1,
+  "OutOpponentSide": 4
+ },
+ "GetFatigueDamageBySide": {
+  "FatigueDamage": 1,
+  "FatigueDamage_1": 1
+ },
+ "GetSideEffectHolderBySide": {
+  "EffectHolder": 3
+ },
+ "SortCardsByLocationNumber": {
+  "sortedCards": 3,
+  "sortedCards_1": 1
+ },
+ "GetNewLocationNumbers": {
+  "cardIdToLocationNumber": 1
+ },
+ "OnOtherCardRetreat": {
+  "stopAction": 1
+ },
+ "OnBeforeRetreat": {
+  "stopAction": 1
+ },
+ "JSON_AddToIntArray": {
+  "found": 16,
+  "found_1": 4,
+  "found_2": 2
+ },
+ "RevealCard": {
+  "qqq_1": 1,
+  "qqq": 4
+ },
+ "GetStopAttack": {
+  "stopAttack": 1
+ },
+ "CalculateDamageDealt": {
+  "damage": 1,
+  "doesDamageRecieverDie": 1,
+  "damageRecieverKilledBeforeAattack": 1,
+  "wasShockAttack": 1,
+  "damage_1": 1,
+  "doesDamageRecieverDie_1": 1,
+  "damageRecieverKilledBeforeAattack_1": 1,
+  "wasShockAttack_1": 1
+ },
+ "ExecuteOnDealDamageAddDamageAfterCalc": {
+  "finalDamage_1": 2,
+  "finalDamage": 3
+ },
+ "ApplyFatigueDamage": {
+  "destroyed": 2
+ },
+ "SetCardsSeenByCipher": {
+  "qqq": 4
+ },
+ "NotifySideEffectTrigger": {
+  "qqq": 2
+ },
+ "ExecuteOnDeploymentTriggered": {
+  "triggerMultiple": 3
+ },
+ "CanCardBeBuffed": {
+  "CanBeBuffed": 17
+ },
+ "ChangeBuffsFromCards": {
+  "amountRemoved": 31,
+  "amountRemoved_2": 6,
+  "amountRemoved_1": 10,
+  "amountRemoved_3": 4
+ },
+ "OnBeforeGainDefense": {
+  "stopAction": 1
+ },
+ "GetHandLocationBySide": {
+  "handLocation": 10
+ },
+ "CreateCard": {
+  "cardID": 7
+ },
+ "IsLocationFull": {
+  "isFull": 31,
+  "isFull_1": 3
+ },
+ "CreateCardObject": {
+  "cardObject": 1
+ },
+ "GenerateNextCardID": {
+  "nextCardID": 1
+ },
+ "GetNextCardLocationNumber": {
+  "locationNumber": 3
+ },
+ "GetAllCardInBattleAsMap": {
+  "AllCardsInBattle": 4
+ },
+ "ApplyDamageToMultipleCards": {
+  "outputDestroyedCards": 1
+ },
+ "OnAttemptedDiscard": {
+  "cancelDiscard": 2
+ },
+ "IsThereGameplayRestriction": {
+  "isRestricted": 2,
+  "isRestricted_1": 1
+ },
+ "DrawTopCardFromDeck": {
+  "delay_ImplicitCast": 1,
+  "drawnCard": 3
+ },
+ "GetDeckByside": {
+  "deckCardIDs": 128,
+  "deckCardIDs_1": 17,
+  "deckCardIDs_2": 6
+ },
+ "GetDeckBySide": {
+  "DeckCardIDs": 8,
+  "DeckCardIDs_1": 1
+ },
+ "SetCardSeen": {
+  "qqq": 11
+ },
+ "ExecuteOnDrawnFromDeck": {
+  "newlyDrawnCard": 1
+ },
+ "RemoveShock": {
+  "qqq": 2
+ },
+ "OnCardDealDamage": {
+  "qqq": 1
+ },
+ "ExecuteOnDestructionEffectTriggered": {
+  "output_TriggerMultiple_3": 2,
+  "output_TriggerMultiple_2": 2,
+  "output_TriggerMultiple_1": 2,
+  "output_TriggerMultiple": 2
+ },
+ "SalvageMultipleUnits": {
+  "qqq": 3
+ },
+ "OnDeploymentEffectTriggered": {
+  "TriggerMultiple": 1
+ },
+ "OnDestructionEffectTriggered": {
+  "TriggerMultiple": 1
+ },
+ "NotifyShowCampaignMessage": {
+  "DelayBeforeShowing_ImplicitCast": 1
+ },
+ "OnBeforeFullyRepaired": {
+  "stopAction": 1
+ },
+ "GetAllCardInBattle": {
+  "AllCardsInBattle": 41
+ },
+ "IsChinaISBN": {
+  "is_ISBN": 5,
+  "is_ISBN_1": 1
+ },
+ "GetAllStaticCardsSortedByName": {
+  "OutAllStaticCards": 6
+ },
+ "NotifyCheckCardBlacklisted": {
+  "IsBlacklisted": 1
+ },
+ "isCardSetConfigActive": {
+  "isActive": 1
+ },
+ "NotifyCheckCardReserved": {
+  "IsReserved": 2
+ },
+ "getCardsPlayedFromHandByTurn": {
+  "cardsPlayed": 5
+ },
+ "GetAllActiveStaticCards": {
+  "cards": 54,
+  "cards_1": 1
+ },
+ "GetAllyFactionBySide": {
+  "AllyFaction": 1
+ },
+ "GetMainFactionBySide": {
+  "MainFaction": 2
+ },
+ "FetchCardFromCardID": {
+  "fetchedCard": 1
+ },
+ "GetDestroyedCardsCountBySide": {
+  "count": 24,
+  "count_1": 21,
+  "count_2": 17,
+  "count_3": 13,
+  "count_4": 9,
+  "count_5": 7,
+  "count_6": 1
+ },
+ "GetDestroyedCardsIDsByTurn": {
+  "DestroyedCardsIDs": 1,
+  "destroyedCardsIDs": 1
+ },
+ "GetDestroyedCardsIDs": {
+  "DestroyedCardsIDs": 1
+ },
+ "IsFrontlineLimited": {
+  "FrontlineLimited": 1
+ },
+ "GetHQ_DamagedAmountThisTurn": {
+  "damagedAmount": 1
+ },
+ "RandomIntFromRangeWithStream": {
+  "randomResult": 29,
+  "randomResult_1": 8,
+  "randomResult_2": 5,
+  "randomResult_3": 2
+ },
+ "GetStartingSide": {
+  "StartingSide": 1,
+  "side": 2
+ },
+ "getKreditSlotsLostBySide": {
+  "KreditSlotsLost": 1
+ },
+ "GetUnitDestroyedThisTurn": {
+  "UnitDestroyed": 2
+ },
+ "AddCustomGameplayTag": {
+  "qqq": 6
+ },
+ "CustomAbilityRemove": {
+  "qqq": 42,
+  "qqq_1": 13,
+  "qqq_2": 4,
+  "qqq_3": 3,
+  "qqq_4": 1
+ },
+ "ChangeHeavyArmor": {
+  "qqq": 10,
+  "qqq_1": 1
+ },
+ "OnCounterMeasureTriggered": {
+  "qqq": 1
+ },
+ "GetCampaignStrategy": {
+  "Strategy": 2
+ },
+ "MoveCardInHandToNewIndex": {
+  "success": 1
+ },
+ "GetVisualHandCardFromID": {
+  "cardRef": 3,
+  "found": 3
+ },
+ "PayMovementCost": {
+  "success": 1
+ },
+ "GetDeckLocationBySide": {
+  "deckLocation": 3
+ },
+ "GetCardsInSupportLineBySide": {
+  "cards_1": 7,
+  "cards": 35,
+  "cards_2": 1
+ },
+ "DoesSideControlTheFrontline": {
+  "doesHe": 58,
+  "doesHe_1": 12,
+  "doesHe_2": 2
+ },
+ "PayCardCost": {
+  "success": 1
+ },
+ "GetExecuteWaitPlayFromHand": {
+  "ShouldExecuteWait": 2
+ },
+ "Achievements_AddEliteCopy": {
+  "3_eliteAchieved": 1
+ },
+ "RemoveCustomGameplayTag": {
+  "qqq": 4,
+  "qqq_1": 2
+ },
+ "GetBuffsToRemoveEndOfTurn": {
+  "BuffsToRemove_1": 2,
+  "BuffsToRemove": 2
+ },
+ "JSON_RemoveFromIntArray": {
+  "found": 7,
+  "found_1": 1
+ },
+ "JSON_GetIntArray": {
+  "values_1": 12,
+  "found_1": 12,
+  "values": 24,
+  "found": 24,
+  "values_2": 3,
+  "found_2": 3
+ },
+ "NotifyShowTutorialMessage": {
+  "Delay_ImplicitCast": 1
+ },
+ "ShuffleDeckBySide": {
+  "qqq": 18,
+  "qqq_1": 2
+ },
+ "SpawnCardToBoard": {
+  "cardSpawnedID": 3
+ },
+ "GetSupportLineLocationBySide": {
+  "location": 27,
+  "location_1": 7,
+  "location_2": 1,
+  "location_5": 1,
+  "location_3": 1,
+  "location_4": 1
+ },
+ "RemoveBlitz": {
+  "qqq": 16
+ },
+ "RemoveImmune": {
+  "qqq": 10
+ },
+ "RemoveAlpine": {
+  "qqq": 2,
+  "qqq_1": 1
+ },
+ "RemoveSalvage": {
+  "qqq": 2
+ },
+ "SuppressMultipleUnits": {
+  "qqq": 3,
+  "qqq_1": 1
+ },
+ "ConstructAndCopyCard": {
+  "cardObject": 1
+ },
+ "GetAdjacentCards": {
+  "adjacentCards": 36
+ },
+ "JSON_GetString": {
+  "value": 13,
+  "found": 13,
+  "value_1": 4,
+  "found_1": 4,
+  "value_2": 1,
+  "found_2": 1
+ },
+ "GetIsGoldCard": {
+  "isGold_5": 1,
+  "isGold_6": 1,
+  "isGold_7": 1,
+  "isGold_8": 1,
+  "isGold_9": 1,
+  "isGold_10": 1,
+  "isGold_11": 1,
+  "isGold_12": 1,
+  "isGold_13": 1,
+  "isGold_14": 1,
+  "isGold_15": 1,
+  "isGold_16": 1,
+  "isGold_17": 1,
+  "isGold_18": 1,
+  "isGold_19": 1,
+  "isGold_20": 1,
+  "isGold_21": 1,
+  "isGold_22": 1,
+  "isGold_23": 1,
+  "isGold": 1,
+  "isGold_1": 1,
+  "isGold_2": 1,
+  "isGold_3": 1,
+  "isGold_4": 1
+ },
+ "GetExileFactionIconAsTexture": {
+  "Texture": 1
+ },
+ "GetExileText": {
+  "text": 1
+ },
+ "CreateHelpBubbleEntryWidget_Type": {
+  "cardHelpWidget": 1
+ },
+ "Capture": {
+  "RenderTargetOut": 1
+ },
+ "CheckIsInQueue": {
+  "bIsInQueue": 1
+ },
+ "GetMatchController": {
+  "MatchController": 4
+ },
+ "HandLocationFromSide": {
+  "location": 4,
+  "location_1": 1,
+  "location_2": 2
+ },
+ "SetDraftingOrActiveSwitcher": {
+  "bWasNotActive_1": 1,
+  "bWasNotActive": 1
+ },
+ "InitCarousel": {
+  "carousel": 1,
+  "carousel_1": 1
+ },
+ "GetMousePosBreak": {
+  "OutMousePosX": 1,
+  "OutMousePosY": 1
+ },
+ "GetPositionInDeckForCard": {
+  "ViewportPosition": 1
+ },
+ "UpdateCarouselScroll": {
+  "DeltaTime_ImplicitCast": 1
+ },
+ "UpdateExtraCards": {
+  "delta_ImplicitCast": 1
+ },
+ "GetTouchOrMousePosition": {
+  "Position": 1
+ },
+ "GetRarityIcon": {
+  "image": 2
+ },
+ "GetMainScaleBox": {
+  "MainScaleBox": 3
+ },
+ "HasHeavyArmorEffect": {
+  "hasHeavyArmor": 1
+ },
+ "IsHeavyArmorEffect": {
+  "isIt": 1
+ },
+ "CanSelectAsTarget": {
+  "can": 1,
+  "Reason": 1,
+  "Reason_Param_1": 1,
+  "Reason_Param_2": 1
+ },
+ "CreatePopup": {
+  "OutUserWidget": 1
+ },
+ "OpponentHandLocation": {
+  "location_3": 1,
+  "location_1": 1,
+  "location": 1,
+  "location_2": 1
+ },
+ "GetBattleHUD": {
+  "HUD_1": 2,
+  "HUD": 2
+ },
+ "ShouldBlockHandCardDragging": {
+  "shouldBlock": 1
+ },
+ "IsLocalClientTurn": {
+  "IsClientTurn": 4,
+  "IsClientTurn_1": 1
+ },
+ "TutorialCanPlayCheck": {
+  "canPlay": 1
+ },
+ "AttemptToPlayBasic": {
+  "CanPlay": 1
+ },
+ "DoesThisCardHasAnyTarget": {
+  "hasTarget": 1
+ },
+ "AttemptToPlayFinal": {
+  "canPlay": 1,
+  "targetCardID": 1
+ },
+ "ShowcaseCardWithDelay": {
+  "delay_ImplicitCast": 1
+ },
+ "IsMessageWindowOpen": {
+  "isIt": 2
+ },
+ "IsMouseOrFingerDown": {
+  "isDown": 1
+ },
+ "GetDeckActor": {
+  "deck": 1,
+  "deck_1": 1
+ },
+ "GetWorldPositionFromViewportPosition": {
+  "worldPosition": 1,
+  "worldPosition_1": 1
+ },
+ "GetLastTouchPos": {
+  "LastTouchPos": 1,
+  "MouseIsNull": 1
+ },
+ "GetFirstWidgetInViewport": {
+  "theWidget": 2
+ },
+ "GetVisualChooseOneBeingPlayedFromID": {
+  "cardRef": 2,
+  "found": 2
+ },
+ "StopHandCardPlaced": {
+  "doStop": 1
+ },
+ "setAltArt": {
+  "Found": 1
+ },
+ "GetIconSize": {
+  "Viewport_size": 2,
+  "World_size": 2
+ },
+ "getAltArtIndex": {
+  "altCardIndex": 1,
+  "altCardIndex_1": 2
+ },
+ "GetPositionAnchoredRight": {
+  "WorldPositionToRightOfCard": 2
+ },
+ "GetWorldSize": {
+  "Size": 5
+ },
+ "GetPositionAnchoredBottom": {
+  "WorldPositionBelowCard": 1
+ },
+ "GetPositionAnchoredTop": {
+  "WorldPositionAboveCard": 1
+ },
+ "IsAnyRotationTimelineActive": {
+  "bRotationActive_1": 1,
+  "bRotationActive": 1
+ },
+ "GetRarityDisplayName": {
+  "displayName": 1
+ },
+ "GetWhiteColor": {
+  "whiteColor": 1
+ },
+ "GetCardFactionPrimaryColor": {
+  "factionColor": 1
+ },
+ "GetFactionIconAsMaterial": {
+  "material": 1
+ },
+ "GetTypeIcon": {
+  "material": 2
+ },
+ "GetPlayingSide": {
+  "OutPlayingSide": 1
+ },
+ "getSkirmishBP": {
+  "skirmishBP": 4,
+  "skirmishBP_1": 1,
+  "skirmishBP_2": 1,
+  "skirmishBP_3": 1,
+  "skirmishBP_4": 1,
+  "skirmishBP_5": 1,
+  "skirmishBP_6": 1,
+  "skirmishBP_7": 1,
+  "skirmishBP_8": 1,
+  "skirmishBP_9": 1,
+  "skirmishBP_10": 1,
+  "skirmishBP_11": 1,
+  "skirmishBP_13": 1,
+  "skirmishBP_12": 1
+ },
+ "onOtherCardDealDamageAddDamage": {
+  "damageToAdd": 1
+ },
+ "SpawnCardOnBattlefield": {
+  "spawnedCardID": 73,
+  "spawnedCardID_1": 31,
+  "spawnedCardID_3": 13,
+  "spawnedCardID_2": 19,
+  "spawnedCardID_4": 9,
+  "spawnedCardID_5": 6,
+  "spawnedCardID_6": 4,
+  "spawnedCardID_12": 1,
+  "spawnedCardID_9": 1,
+  "spawnedCardID_10": 1,
+  "spawnedCardID_11": 1,
+  "spawnedCardID_8": 2,
+  "spawnedCardID_7": 2
+ },
+ "RandomChooseCards": {
+  "chosenCards": 1
+ },
+ "selectCardToDraw": {
+  "drawnCardID": 37
+ },
+ "GetCardsInFrontlineBySide": {
+  "cards": 11
+ },
+ "JSON_SetString": {
+  "found": 15,
+  "found_1": 7
+ },
+ "DestroyMultipleCards": {
+  "qqq": 19,
+  "qqq_1": 1
+ },
+ "GotchaTriggered": {
+  "qqq": 53,
+  "qqq_1": 1
+ },
+ "MoveCardToTopOfOwnersDeck": {
+  "qqq": 20
+ },
+ "SuppressUnit": {
+  "qqq": 14,
+  "qqq_1": 2
+ },
+ "GetHQ_DamagedAmountThisTurnBySide": {
+  "damagedAmount": 6
+ },
+ "IsCardReserved": {
+  "IsReserved": 44,
+  "IsReserved_1": 1
+ },
+ "GetHighestBomberAttack": {
+  "highestAttack": 1
+ },
+ "GetRandomBritishAir": {
+  "randomCard": 1
+ },
+ "FullyHealCard": {
+  "HealedAmount": 31,
+  "HealedAmount_1": 2
+ },
+ "ResetUnitOperations": {
+  "qqq": 3
+ },
+ "GetAllCardsInFrontline": {
+  "cards": 17
+ },
+ "DecrementCountdown": {
+  "countdownFinished": 15,
+  "countdownFound": 15
+ },
+ "SetCountdown": {
+  "qqq": 15
+ },
+ "GetCardsPlayedThisTurn": {
+  "cards": 12
+ },
+ "anyOrderPlayedThisTurn": {
+  "PlayedThisTurn": 1
+ },
+ "ChangeFrontlineLimiter": {
+  "qqq": 1,
+  "qqq_1": 1
+ },
+ "SpawnCardInHandBySide": {
+  "spawnedCardID": 28,
+  "spawnedCardID_1": 6
+ },
+ "SpawnCardInFrontline": {
+  "spawnedCardID": 29,
+  "spawnedCardID_1": 26,
+  "spawnedCardID_7": 2,
+  "spawnedCardID_2": 16,
+  "spawnedCardID_4": 9,
+  "spawnedCardID_6": 2,
+  "spawnedCardID_3": 16,
+  "spawnedCardID_5": 6,
+  "spawnedCardID_9": 1,
+  "spawnedCardID_8": 1
+ },
+ "MoveMultipleCardsToTopOfOwnersDeck": {
+  "qqq": 7,
+  "qqq_1": 2
+ },
+ "RemoveCardFromBoard": {
+  "qqq": 18
+ },
+ "SpawnCardInDeckBySide": {
+  "spawnedCardIDs": 23
+ },
+ "CheckFriendlyAirUnitsOnBoard": {
+  "FriendAirQty": 1
+ },
+ "hasGuardAdjacentUnit": {
+  "hasGuardAdjacentUnit": 2
+ },
+ "isSecondOrderThisTurn": {
+  "isSecondOrder": 3
+ },
+ "OrdersPlayedThisTurnBySide": {
+  "PlayedOrders": 1
+ },
+ "hasPlayedOrderThisTurn": {
+  "hasPlayedOrderThisTurn": 2
+ },
+ "getUnseenCardsOppositeSide": {
+  "unseenCount": 1
+ },
+ "GetCardsPlayedFromHandLastTurn": {
+  "CardIDsPlayedLastTurn": 10
+ },
+ "didPlayBritishInfantryLastTurn": {
+  "didSo": 9
+ },
+ "GiveBond": {
+  "qqq": 2
+ },
+ "GetKreditsBySide": {
+  "kredits": 16,
+  "kredits_1": 2
+ },
+ "MakeCardsFight": {
+  "qqq": 12
+ },
+ "IsTopDeckNavy": {
+  "isNavy": 7
+ },
+ "ConvertCard": {
+  "newCardIDs": 25,
+  "newCardIDs_1": 1
+ },
+ "JSON_SetIntArray": {
+  "found_1": 1,
+  "found": 8
+ },
+ "GiveKreditsBySide": {
+  "qqq": 48,
+  "qqq_1": 4
+ },
+ "AppendText": {
+  "text": 16
+ },
+ "WhichStrategy": {
+  "Branches": 16,
+  "Branches_2": 1,
+  "Branches_1": 1
+ },
+ "IsUsingStrategy": {
+  "usingIt_1": 2,
+  "usingIt_2": 1,
+  "usingIt": 2
+ },
+ "GetMaxKreditsBySide": {
+  "maxkredits": 12,
+  "maxkredits_1": 3
+ },
+ "StealCardFromBoardToDeck": {
+  "qqq": 2
+ },
+ "GiveSalvage": {
+  "qqq": 3
+ },
+ "CountFriendlyGuardUnits": {
+  "count": 1
+ },
+ "GetLevelManager": {
+  "levelManager": 1
+ },
+ "getWildcardsOwnedToCraft": {
+  "total": 1
+ },
+ "canCardBeCreated": {
+  "canIt": 1
+ },
+ "IsCardToBeReservedSoon": {
+  "toBeReservedSoon": 2
+ },
+ "isCardReserved": {
+  "isReserved": 3
+ },
+ "getWildcardToPayWith": {
+  "wildcardName": 1,
+  "foundWildcard": 1
+ },
+ "GetWidgetDefaultFocus": {
+  "FocusWidget": 1
+ },
+ "isCardLocked": {
+  "isLocked": 1
+ },
+ "DiscardRandomCardFromHand": {
+  "discardedCardID": 18,
+  "discardedCardID_1": 2
+ },
+ "AddKreditsTax": {
+  "qqq": 3,
+  "qqq_1": 2,
+  "qqq_2": 1
+ },
+ "RemoveGameplayRestriction": {
+  "qqq": 3,
+  "qqq_1": 1
+ },
+ "MoveUnitFromSupportToFrontLine": {
+  "qqq": 7
+ },
+ "DiscardCardFromDeck": {
+  "success": 11
+ },
+ "GiveMobilize": {
+  "qqq": 3
+ },
+ "GetCardsPlayedFromHandThisTurn": {
+  "CardIDsPlayedThisTurn": 28
+ },
+ "GetUnitTypeCountOnBoard": {
+  "TypeCount": 3
+ },
+ "Get_X_AndMoreAttackCardsOnBoard": {
+  "cardsIDs": 6,
+  "cardsIDs_1": 1
+ },
+ "RemovePin": {
+  "qqq": 9,
+  "qqq_1": 1
+ },
+ "PlayCardDirectlyFromHand": {
+  "qqq": 14,
+  "qqq_1": 1
+ },
+ "AddDefenseToMultipleCards": {
+  "qqq": 2
+ },
+ "ForceCardChangeLocation": {
+  "moved": 3,
+  "oldLocation": 4,
+  "oldLocationNumber": 4,
+  "moved_1": 3,
+  "oldLocation_1": 3,
+  "oldLocationNumber_1": 3,
+  "moved_2": 2,
+  "oldLocation_2": 2,
+  "oldLocationNumber_2": 2
+ },
+ "ShowTutorialMessage": {
+  "qqq": 13,
+  "qqq_2": 6,
+  "qqq_1": 10,
+  "qqq_3": 1
+ },
+ "AdjustCardPositionInDeck": {
+  "qqq_1": 1,
+  "qqq": 1
+ },
+ "GetOperationKreditsSpentThisTurn": {
+  "kreditsSpentThisTurn": 2,
+  "kreditsSpentThisTurn_1": 1
+ },
+ "PickRandomCard": {
+  "cardToSpawn": 1
+ },
+ "TriggerDeployment": {
+  "qqq": 2
+ },
+ "alreadyHasTheAbility": {
+  "has": 1
+ },
+ "GetTotalKreditsLostThisBattle": {
+  "kreditsLost": 5,
+  "kreditsLost_1": 2
+ },
+ "GiveImmune": {
+  "qqq": 9,
+  "qqq_1": 1
+ },
+ "RemoveGameplaySideEffect": {
+  "qqq": 1,
+  "qqq_1": 1
+ },
+ "ApplyGameplaySideEffect": {
+  "qqq": 1,
+  "qqq_1": 1
+ },
+ "isAlreadyAffectedByOtherGreater": {
+  "isIt": 1
+ },
+ "isAlreadyAffectedByOtherYamato": {
+  "isIt": 1
+ },
+ "TriggerDestruction": {
+  "qqq": 5,
+  "qqq_1": 1
+ },
+ "GetAllCardsPlayedThisBattle": {
+  "playedCardsIDs": 1
+ },
+ "GiveRandomCombatKeyword": {
+  "keywordGiven": 4,
+  "success": 4
+ },
+ "ChangedPinnedTurns": {
+  "qqq": 1
+ },
+ "anyFriendlyA6M2Active": {
+  "effectActive": 1
+ },
+ "get_adjacent_japan_units_count": {
+  "count": 1
+ },
+ "CompareHandCards": {
+  "sameSide": 1,
+  "otherSide": 1
+ },
+ "getFrontlineLimit": {
+  "isFrontlineLimited": 2
+ },
+ "GetSeenCardsFromOppositeSide": {
+  "seenCards": 1
+ },
+ "GetMainNationForSide": {
+  "mainNation": 1
+ },
+ "GetDestroyedCardsIDsThisBattle": {
+  "destroyedCardsIDs": 5
+ },
+ "ShouldTriggerAbility": {
+  "should": 1
+ },
+ "getMoveReason": {
+  "moveReason": 1
+ },
+ "AddIntelToCard": {
+  "qqq": 1,
+  "qqq_1": 1,
+  "qqq_2": 1
+ },
+ "Random_3_SovietUnits": {
+  "chosenCards": 1
+ },
+ "GetPrefixedName": {
+  "Name": 5,
+  "Name_1": 1
+ },
+ "OnCardRenderReady": {
+  "bHandled": 1
+ },
+ "GetRenderCache": {
+  "RenderCache_1": 1,
+  "RenderCache": 9,
+  "RenderCache_2": 8
+ },
+ "SpawnMultipleCardsOnBattlefield": {
+  "spawnedCardIDs": 5,
+  "spawnedCardIDs_1": 2,
+  "spawnedCardIDs_5": 1,
+  "spawnedCardIDs_3": 1,
+  "spawnedCardIDs_4": 1,
+  "spawnedCardIDs_2": 1
+ },
+ "CheckHasUnitToSpawn": {
+  "HasUnitToSpawn": 4
+ },
+ "GetOppositeUnitsOnBoard": {
+  "OppositeUnits": 1
+ },
+ "isAlreadyAffectedByOtherReckless": {
+  "isIt": 1
+ },
+ "RandomlyChooseTank": {
+  "cardToSpawn": 1
+ },
+ "RandomChooseA_Tank": {
+  "cardSpawn": 1
+ },
+ "getUnpinnedEnemyUnits": {
+  "unpinnedEnemyUnits": 1
+ },
+ "CreateLightInfantryArr": {
+  "arr_1": 1,
+  "arr_5": 1,
+  "arr_3": 1,
+  "arr": 1,
+  "arr_4": 1,
+  "arr_2": 1
+ },
+ "RemoveMultipleCardsFromBoard": {
+  "qqq": 1,
+  "qqq_1": 1,
+  "qqq_2": 1,
+  "qqq_3": 1,
+  "qqq_4": 1,
+  "qqq_5": 1
+ },
+ "CheckFriendlyUnitsOnBoard": {
+  "FriendUnitQty": 1
+ },
+ "GiveAlpine": {
+  "qqq": 2
+ },
+ "getPossibleCardsFromStaticCards": {
+  "possibleCards": 1
+ },
+ "getTwoCardsFromPossibleCards": {
+  "cardsFound": 1,
+  "cardNameA": 1,
+  "cardNameB": 1
+ },
+ "findPairOfUnits": {
+  "pairFound": 1,
+  "unitA": 1,
+  "unitB": 1
+ },
+ "SpawnNextToCard": {
+  "spawnedCardID": 3
+ },
+ "ShouldSpawnFrontline": {
+  "should": 1
+ },
+ "_isBigRedOne": {
+  "isBigRedOne": 1,
+  "isBigRedOne_1": 1
+ },
+ "SpawnShermanInHand": {
+  "spawnedCardID": 1,
+  "spawnedCardID_1": 1
+ },
+ "GetAllyNationForSide": {
+  "allyNation": 1
+ },
+ "GetDefenseBuffFromAdjacentUnits": {
+  "amount": 2
+ },
+ "RemoveBond": {
+  "qqq": 1
+ },
+ "GetUSAUnitsAndKredits": {
+  "outAllUSAUnits": 1,
+  "outAllKredits": 1
+ },
+ "GetRandomKreditCombo": {
+  "outCombo": 1,
+  "ComboFound": 1
+ },
+ "get_adjacent_unit_count": {
+  "count": 2
+ },
+ "doIControl3opCostUnit": {
+  "found3op": 1
+ },
+ "GetReducedDamage": {
+  "DamageReduction": 2
+ },
+ "GetDefaultFocusWidget": {
+  "Widget": 1
+ }
+}

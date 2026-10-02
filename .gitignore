@@ -1,0 +1,138 @@
+# ============================================================================
+#  klink bot —— 独立仓库的 .gitignore
+#
+#  这个仓库是从 `klink` 仓库里【挑出来的 bot 部分】。
+#  仓库根的布局是：
+#      README.md / .gitignore / .gitattributes / KLink.slnx / NuGet.config
+#      src/KLink.Bot/**            规则内核 + AI
+#      klink bot/docs/**           数据（IR / 卡库 / 卡向量 / 卡组码）+ 报告
+#      klink bot/tools/**          Python 生成器与训练脚本
+#      tools/BotSim/**             selftest / smoke-all-cards / dispatch-gap
+#      tools/ServerBridgeTest/**   --audit-replay 全套审计
+#      out/audit/**                审计脚本 + 报告
+#
+#  ⚠️ 为什么 `klink bot/` 是**嵌套**目录：内核与工具的源码里把数据路径写成了
+#     `klink bot/docs/...`（C# 里约 15 处运行时回退路径、csproj 里 4 处 CopyToOutputDirectory）。
+#     保持这个相对路径 ⇒ **不需要改任何构建文件**，独立仓库与上游行为逐字节一致。
+#     如果你想要扁平的 `docs/`，需要改那 ~15 处路径字面量（清单见 README 的附录）。
+#
+#  ⚠️ 本文件里**注释一律独占一行** —— git 不支持"模式后面的行尾注释"，
+#     写成 `*.pak   # 说明` 会把整行（含空格和 #）当成模式。
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# ★ 大文件 —— GitHub 有 100 MB 单文件硬限制，这几个直接爆
+# ---------------------------------------------------------------------------
+
+# kards-Windows.pak = 7.1 GB（游戏本体，绝不属于源码仓库）
+*.pak
+# UE 映射文件（183 MB + 66 MB，反编译用，非源码）
+*.jmap
+# NN 训练数据 / 模型（out/nn-data-100k-v3rules.bin = 7.5 GB）
+*.bin
+# NN 中间产物
+*.npz
+*.onnx
+*.gguf
+
+# ---------------------------------------------------------------------------
+# ★ 敏感 / 隐私 —— 可能含账号、本机路径、真实对局信息
+# ---------------------------------------------------------------------------
+
+# pak 的 AES-256 密钥。是否公开由作者决定，默认【排除】
+key.txt
+# 宿主侧配置（端口 / 地址 / 密钥）
+setting.json
+# 服务器 bot 日志（含真实对局与账号痕迹）
+bot-log/
+faster-log/
+*.log
+*.pdb
+*.dmp
+
+# ---------------------------------------------------------------------------
+# ★ 宿主侧产物 —— 不属于 bot（启动器 / 私有服务器 / 部署目录）
+# ---------------------------------------------------------------------------
+/rel/
+/tem/
+**/rel/data/fyserver/**
+**/tem/fyserver/bin/**
+**/tem/fyserver/obj/**
+**/tem/fyserver/publish/**
+
+# ---------------------------------------------------------------------------
+# ★ 上游遗留目录（不属于 bot，只是碰巧和 bot 一起躺在 klink bot/ 里）
+# ---------------------------------------------------------------------------
+# 反编译原始产物（几十 MB 的中间 JSON）
+/decompiled/
+# 从 pak 解出的 uasset 目录树
+/live/
+/extracted-live/
+# 第三方 fork（有自己的仓库）
+/UAssetAPI-master/
+# 解包 CLI（有自己的仓库，含 obj/ 与 publish/）
+/UAssetCLI/
+# UE4SS 尝试记录（实测在这个 UE5.6 fork 上不可用）
+/ue4ss-attempt/
+# UE4SS 发布包
+/ue4ss-dist/
+# UE4SS mod（⚠️ 若将来要发布采集 mod，把这一行删掉）
+/ue4ss-mods/
+/ue4ss-signatures/
+/pack/
+/dist/
+/dist-fd/
+/kds/
+/ref/
+/需求/
+# pak 文件清单（2.7 MB，可重新生成）
+pak-filelist-live.txt
+
+# ★ 上游的 docs/ 与 tools/ 的【重复副本】——
+#   repo 里以 `klink bot/docs` 与 `klink bot/tools` 为准（那两份是代码真正读的路径）。
+#   ⚠️ 注意要保留的 C# 工具必须逐个白名单，否则会被 /tools/* 一起吃掉。
+/docs/
+/tools/*
+!/tools/BotSim/
+!/tools/ServerBridgeTest/
+!/tools/NNTrain/
+!/tools/NNPlay/
+!/tools/AotProbe/
+
+# ---------------------------------------------------------------------------
+# 构建产物
+# ---------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+publish/
+win-x64/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+node_modules/
+__pycache__/
+*.pyc
+
+# ---------------------------------------------------------------------------
+# 可重新生成的批量审计产物（保留脚本与报告，丢掉几百 KB~几 MB 的转储）
+#   · smoke-all-cards.tsv（660 KB）—— 90 秒可重新生成
+#   · argshape-callsites.json（6.8 MB）/ target-shapes.json（1.9 MB）—— 同目录 .py 可重新生成
+# ---------------------------------------------------------------------------
+out/audit/*.tsv
+out/audit/_*
+out/audit/**/*.tsv
+out/audit/argshape-callsites.json
+out/audit/target-shapes.json
+out/audit/missing-keys-classify2*.json
+
+# ---------------------------------------------------------------------------
+# 文档备份（会掩盖真实 diff）
+# ---------------------------------------------------------------------------
+*.bak
+*.bak-*
+*.bak.*
+*.r5.bak
+*.r6.bak
+*.r9.bak

@@ -1,0 +1,474 @@
+====================================================================================================
+形状清单：派发表原语的实参形状分布
+  派发表原语数：194 ；IR 里被调用的原语数：760
+====================================================================================================
+
+### A. 有 >1 种实参形状的原语（104 个）—— 嫌疑区
+
+原语                                             调用点  形状分布（按实参位置）
+----------------------------------------------------------------------------------------------------
+Array_Get                                     1528  a[0]: 变量(card)×1359 / 变量(unknown)×163 / 成员读取(card)×4 / 成员读取(unknown)×2
+                                                    a[1]: 变量(unknown)×1480 / 整数常量×44 / 变量(card)×2 / 成员读取(unknown)×2
+                                                    a[2]: 变量(card)×1528
+PersistCustomFields                            489  a[0]: 变量(int)×459 / 成员读取(int)×22 / 变量(card)×5 / unknown×2 / 变量(unknown)×1
+                                                    a[1]: 布尔常量×489
+ChangeAttack                                   428  a[0]: 变量(card)×285 / self×143
+                                                    a[1]: 变量(int)×426 / 成员读取(int)×2
+                                                    a[2]: 整数常量×342 / 变量(unknown)×71 / 变量(int)×11 / 变量(card)×4
+                                                    a[3]: 整数常量×428
+                                                    a[4]: 布尔常量×428
+                                                    a[5]: 变量(unknown)×428
+GetCardFromID                                  397  a[0]: 变量(card)×296 / 变量(unknown)×62 / 成员读取(int)×16 / 变量(int)×15 / unknown×8
+                                                    a[1]: 变量(card)×397
+ChangeDefense                                  343  a[0]: 变量(card)×266 / self×76 / 成员读取(card)×1
+                                                    a[1]: 变量(int)×341 / 成员读取(int)×2
+                                                    a[2]: 整数常量×289 / 变量(unknown)×43 / 变量(int)×7 / 变量(card)×4
+                                                    a[3]: 整数常量×343
+                                                    a[4]: 布尔常量×343
+                                                    a[5]: 变量(unknown)×343
+DamageCard                                     271  a[0]: 变量(card)×268 / self×3
+                                                    a[1]: 变量(unknown)×144 / 整数常量×121 / 变量(int)×4 / 变量(card)×2
+                                                    a[2]: 变量(int)×262 / 成员读取(int)×7 / 变量(card)×2
+                                                    a[3]: 布尔常量×267 / 变量(unknown)×4
+                                                    a[4]: 布尔常量×271
+                                                    a[5]: 布尔常量×271
+                                                    a[6]: 变量(card)×271
+GetLocationCardBySide                          263  a[0]: 变量(card)×263
+                                                    a[1]: 变量(card)×263
+                                                    a[2]: 变量(int)×151 / 变量(unknown)×101 / 成员读取(int)×11
+GetCardsOnBoardBySide                          252  a[0]: 变量(int)×130 / 变量(unknown)×122
+                                                    a[1]: 布尔常量×252
+                                                    a[2]: 布尔常量×252
+                                                    a[3]: 变量(card)×252
+IsSideActive                                   245  a[0]: 变量(int)×221 / 变量(unknown)×14 / 成员读取(int)×7 / 整数常量×2 / 成员读取(unknown)×1
+                                                    a[1]: 变量(unknown)×245
+SpawnCardOnBattlefield                         234  a[0]: 变量(int)×149 / 变量(unknown)×77 / 成员读取(int)×8
+                                                    a[1]: 布尔常量×219 / 变量(unknown)×15
+                                                    a[2]: 名称×187 / 成员读取(unknown)×28 / 变量(unknown)×10 / 变量(card)×9
+                                                    a[3]: 变量(int)×227 / 整数常量×5 / 变量(card)×1 / 成员读取(int)×1
+                                                    a[4]: 变量(unknown)×234
+                                                    a[5]: 布尔常量×232 / 变量(unknown)×2
+                                                    a[6]: 整数常量×195 / 变量(unknown)×39
+                                                    a[7]: 整数常量×213 / unknown×10 / 成员读取(unknown)×8 / 变量(unknown)×3
+                                                    a[8]: 布尔常量×234
+                                                    a[9]: 布尔常量×233 / 成员读取(bool)×1
+                                                    a[10]: 变量(card)×234
+DrawCardsFromDeckBySide                        228  a[0]: 变量(int)×223 / 成员读取(int)×3 / 变量(card)×2
+                                                    a[1]: 变量(int)×208 / 变量(unknown)×15 / 成员读取(int)×3 / 成员读取(unknown)×2
+                                                    a[2]: 整数常量×210 / 变量(unknown)×13 / 变量(card)×3 / 变量(int)×2
+                                                    a[3]: 布尔常量×228
+                                                    a[4]: 布尔常量×228
+                                                    a[5]: 变量(card)×228
+                                                    a[6]: 浮点常量×228
+SpawnCardInHandBySide                          227  a[0]: 变量(int)×213 / 变量(unknown)×12 / 成员读取(int)×1 / 成员读取(unknown)×1
+                                                    a[1]: 名称×200 / 成员读取(unknown)×24 / 变量(card)×2 / 变量(unknown)×1
+                                                    a[2]: 变量(int)×227
+                                                    a[3]: 布尔常量×227
+                                                    a[4]: 布尔常量×227
+                                                    a[5]: 布尔常量×227
+                                                    a[6]: 字符串常量×225 / 变量(unknown)×2
+                                                    a[7]: 变量(unknown)×227
+                                                    a[8]: 整数常量×215 / 成员读取(unknown)×8 / 变量(unknown)×2 / unknown×2
+                                                    a[9]: 变量(card)×227
+ShowCampaignMessage                            205  a[0]: 变量(unknown)×205
+                                                    a[1]: 布尔常量×205
+                                                    a[2]: 布尔常量×205
+                                                    a[3]: 浮点常量×205
+                                                    a[4]: 布尔常量×205
+JSON_Clear                                     168  a[0]: self×164 / 变量(card)×4
+                                                    a[1]: 字符串常量×167 / 变量(unknown)×1
+                                                    a[2]: 变量(unknown)×168
+GetRandomCard                                  155  a[0]: 变量(card)×145 / 变量(unknown)×10
+                                                    a[1]: 布尔常量×155
+                                                    a[2]: 变量(card)×155
+GetDeckByside                                  141  a[0]: 变量(int)×125 / 变量(unknown)×15 / 成员读取(unknown)×1
+                                                    a[1]: 变量(card)×141
+ChangeOperationCost                            140  a[0]: 变量(card)×106 / self×34
+                                                    a[1]: 变量(int)×140
+                                                    a[2]: 整数常量×120 / 变量(unknown)×19 / 变量(int)×1
+                                                    a[3]: 整数常量×140
+                                                    a[4]: 布尔常量×140
+                                                    a[5]: 布尔常量×140
+                                                    a[6]: 布尔常量×140
+JSON_GetInt                                    138  a[0]: self×129 / 变量(card)×9
+                                                    a[1]: 字符串常量×138
+                                                    a[2]: 变量(unknown)×138
+                                                    a[3]: 变量(unknown)×138
+ChangeKreditCost                               136  a[0]: 变量(card)×97 / self×39
+                                                    a[1]: 变量(int)×136
+                                                    a[2]: 整数常量×111 / 变量(unknown)×24 / 变量(int)×1
+                                                    a[3]: 整数常量×136
+                                                    a[4]: 布尔常量×136
+                                                    a[5]: 变量(unknown)×136
+Array_Clear                                    124  a[0]: 变量(card)×115 / 变量(unknown)×9
+GetPlayFromHandDamage                          123  a[0]: 变量(card)×115 / self×8
+                                                    a[1]: 变量(unknown)×123
+DestroyCard                                    112  a[0]: 变量(card)×103 / self×5 / 变量(unknown)×1 / 成员读取(card)×1
+                                                    a[1]: self×108 / 变量(card)×2
+JSON_SetInt                                    111  a[0]: self×102 / 变量(card)×9
+                                                    a[1]: 字符串常量×111
+                                                    a[2]: 成员读取(int)×37 / 变量(unknown)×36 / 整数常量×20 / 变量(card)×12 / 变量(int)×4 / unknown×2
+                                                    a[3]: 变量(unknown)×111
+GetAllUnitsOnBoard                             104  a[0]: 布尔常量×104
+                                                    a[1]: 变量(card)×104
+isBuffedByCard                                 102  a[0]: 变量(int)×102
+                                                    a[1]: 变量(card)×102
+UpdateCampaignStarStatus                        98  a[0]: 整数常量×98
+                                                    a[1]: 变量(unknown)×97 / unknown×1
+                                                    a[2]: unknown×51 / 整数常量×47
+JSON_GetBool                                    97  a[0]: self×92 / 变量(card)×5
+                                                    a[1]: 字符串常量×87 / 变量(unknown)×10
+                                                    a[2]: 变量(unknown)×97
+                                                    a[3]: 变量(unknown)×97
+GetAllCardsOnBoard                              96  a[0]: 布尔常量×96
+                                                    a[1]: 变量(card)×96
+GetDestroyedCardsCountBySide                    91  a[0]: 变量(unknown)×46 / 变量(int)×45
+                                                    a[1]: 变量(card)×91
+CustomAbilityAdd                                90  a[0]: 字符串常量×90
+                                                    a[1]: 成员读取(int)×61 / 变量(card)×22 / 变量(int)×7
+                                                    a[2]: 变量(int)×90
+                                                    a[3]: 布尔常量×90
+                                                    a[4]: 布尔常量×88 / unknown×2
+                                                    a[5]: 布尔常量×90
+                                                    a[6]: 变量(unknown)×90
+JSON_SetBool                                    85  a[0]: self×80 / 变量(card)×5
+                                                    a[1]: 字符串常量×84 / 变量(unknown)×1
+                                                    a[2]: 布尔常量×84 / 变量(unknown)×1
+                                                    a[3]: 变量(unknown)×85
+IsVeteran                                       75  a[0]: 布尔常量×75
+                                                    a[1]: 变量(unknown)×75
+GetCardsInHandBySide                            71  a[0]: 变量(int)×49 / 变量(unknown)×20 / 成员读取(unknown)×1 / 整数常量×1
+                                                    a[1]: 变量(card)×71
+ShowNotification                                69  a[0]: 变量(int)×68 / 变量(unknown)×1
+                                                    a[1]: 变量(unknown)×69
+PinUnit                                         68  a[0]: 成员读取(int)×65 / 变量(card)×2 / 变量(unknown)×1
+                                                    a[1]: 变量(int)×68
+SetPlayRate                                     63  a[0]: 浮点常量×40 / 变量(unknown)×23
+GiveBlitz                                       62  a[0]: 成员读取(int)×34 / 变量(int)×21 / 变量(card)×7
+                                                    a[1]: 变量(int)×58 / 整数常量×4
+DoesSideControlTheFrontline                     61  a[0]: 变量(int)×40 / 变量(unknown)×21
+                                                    a[1]: 变量(unknown)×61
+CustomAbilityRemove                             58  a[0]: 字符串常量×58
+                                                    a[1]: 成员读取(int)×37 / 变量(int)×13 / 变量(unknown)×4 / 变量(card)×4
+                                                    a[2]: 变量(int)×56 / 整数常量×2
+                                                    a[3]: 布尔常量×58
+                                                    a[4]: 变量(unknown)×58
+GetPlatformEnum                                 57  a[0]: self×57
+                                                    a[1]: 变量(unknown)×57
+GiveKreditsBySide                               52  a[0]: 变量(int)×46 / 变量(unknown)×3 / 整数常量×2 / unknown×1
+                                                    a[1]: 整数常量×43 / 变量(unknown)×8 / 变量(int)×1
+                                                    a[2]: 变量(int)×51 / 成员读取(int)×1
+                                                    a[3]: 变量(unknown)×52
+HasCustomAbilityFromCard                        52  a[0]: 字符串常量×52
+                                                    a[1]: 变量(int)×52
+                                                    a[2]: 变量(card)×52
+AddToBattleLog                                  49  a[0]: 变量(int)×43 / 整数常量×6
+                                                    a[1]: 变量(int)×49
+                                                    a[2]: 布尔常量×49
+                                                    a[3]: 布尔常量×49
+GainKreditSlot                                  48  a[0]: self×47 / 变量(card)×1
+                                                    a[1]: 变量(int)×35 / 整数常量×8 / 变量(unknown)×4 / 成员读取(int)×1
+DamageMultipleCards                             46  a[0]: 变量(card)×44 / 变量(unknown)×2
+                                                    a[1]: 整数常量×33 / 变量(unknown)×11 / 变量(card)×1 / 变量(int)×1
+                                                    a[2]: 变量(int)×45 / 成员读取(int)×1
+                                                    a[3]: 变量(card)×46
+DrawSpecificCardFromDeckBySide                  46  a[0]: 变量(int)×40 / 整数常量×6
+                                                    a[1]: 成员读取(int)×41 / 变量(card)×3 / 变量(int)×2
+                                                    a[2]: 变量(int)×46
+                                                    a[3]: 布尔常量×46
+getHasGameplayTag                               46  a[0]: 结构/数组字面量×46
+                                                    a[1]: 变量(unknown)×46
+MakeVeteran                                     45  a[0]: self×42 / 变量(card)×3
+                                                    a[1]: 变量(unknown)×45
+GetBoard                                        42  a[0]: self×42
+                                                    a[1]: 变量(unknown)×42
+SetVisibility                                   40  a[0]: 布尔常量×28 / 整数常量×7 / 变量(unknown)×4 / unknown×1
+                                                    a[1]: 布尔常量×32
+selectCardToDraw                                37  a[0]: 变量(int)×37
+                                                    a[1]: 布尔常量×37
+                                                    a[2]: 布尔常量×37
+                                                    a[3]: 变量(card)×37
+JSON_GetIntArray                                34  a[0]: self×34
+                                                    a[1]: 字符串常量×34
+                                                    a[2]: 变量(unknown)×34
+                                                    a[3]: 变量(unknown)×34
+selectTargetFromHand                            33  a[0]: 变量(int)×33
+                                                    a[1]: 变量(card)×33
+AddNumberToText                                 31  a[0]: 变量(int)×31
+                                                    a[1]: 变量(unknown)×31
+                                                    a[2]: 整数常量×29 / unknown×2
+                                                    a[3]: 变量(unknown)×31
+SpawnCardInDeckBySide                           28  a[0]: 变量(int)×21 / 变量(unknown)×5 / 成员读取(unknown)×2
+                                                    a[1]: 名称×24 / 成员读取(unknown)×4
+                                                    a[2]: 变量(int)×28
+                                                    a[3]: 整数常量×25 / 变量(unknown)×2 / 变量(int)×1
+                                                    a[4]: 整数常量×26 / 成员读取(unknown)×2
+                                                    a[5]: 布尔常量×28
+                                                    a[6]: 布尔常量×28
+                                                    a[7]: 布尔常量×28
+                                                    a[8]: 布尔常量×28
+                                                    a[9]: 布尔常量×28
+                                                    a[10]: 变量(card)×28
+destroyActorAndChildActors                      28  a[0]: self×17 / 变量(card)×9 / 成员读取(unknown)×1 / 变量(unknown)×1
+                                                    a[1]: self×28
+PlaySoundEffect                                 26  a[0]: 变量(card)×12 / obj×11 / 变量(unknown)×3
+                                                    a[1]: self×26
+AddAttackUntilEndOfTurn                         25  a[0]: 变量(card)×20 / self×5
+                                                    a[1]: 变量(int)×25
+                                                    a[2]: 整数常量×24 / 变量(unknown)×1
+GetAdjacentCards                                25  a[0]: 变量(card)×19 / self×6
+                                                    a[1]: 布尔常量×25
+                                                    a[2]: 变量(card)×25
+GetCardsToTheLeft                               25  a[0]: self×23 / 变量(card)×2
+                                                    a[1]: 布尔常量×25
+                                                    a[2]: 布尔常量×25
+                                                    a[3]: 变量(card)×25
+SetScalarParameterValue                         24  a[0]: 名称×24
+                                                    a[1]: 变量(unknown)×12 / 浮点常量×10 / 变量(card)×2
+MoveUnitFromBoardToOwnersHand                   23  a[0]: 变量(card)×21 / self×2
+                                                    a[1]: 变量(int)×23
+GiveGuard                                       22  a[0]: 变量(int)×13 / 成员读取(int)×4 / 变量(card)×3 / 变量(unknown)×2
+                                                    a[1]: 变量(int)×22
+JSON_SetString                                  22  a[0]: self×22
+                                                    a[1]: 字符串常量×22
+                                                    a[2]: 变量(unknown)×22
+                                                    a[3]: 变量(unknown)×22
+JSON_AddToIntArray                              20  a[0]: self×20
+                                                    a[1]: 字符串常量×20
+                                                    a[2]: 成员读取(int)×14 / 变量(card)×5 / 变量(unknown)×1
+                                                    a[3]: 变量(unknown)×20
+MoveCardToTopOfOwnersDeck                       20  a[0]: 成员读取(int)×9 / 变量(card)×9 / 变量(int)×1 / 变量(unknown)×1
+                                                    a[1]: 变量(int)×19 / 变量(card)×1
+                                                    a[2]: 整数常量×19 / 变量(unknown)×1
+                                                    a[3]: 变量(card)×20
+GiveShock                                       19  a[0]: 成员读取(int)×8 / 变量(int)×7 / 变量(card)×4
+                                                    a[1]: 变量(int)×19
+                                                    a[2]: 变量(unknown)×19
+IsSameSideUnit                                  19  a[0]: 变量(int)×14 / 变量(unknown)×5
+                                                    a[1]: 变量(card)×19
+RandomIntFromRangeWithStream                    19  a[0]: 整数常量×19
+                                                    a[1]: 整数常量×13 / 变量(unknown)×6
+                                                    a[2]: 变量(unknown)×19
+ShuffleDeckBySide                               18  a[0]: 变量(int)×15 / 变量(unknown)×2 / 成员读取(unknown)×1
+                                                    a[1]: 布尔常量×18
+                                                    a[2]: 变量(int)×18
+                                                    a[3]: 变量(unknown)×18
+GetKreditsBySide                                17  a[0]: 变量(int)×16 / 变量(unknown)×1
+                                                    a[1]: 变量(unknown)×17
+GetLogic                                        17  a[0]: self×17
+                                                    a[1]: 变量(unknown)×17
+JSON_GetString                                  17  a[0]: self×17
+                                                    a[1]: 字符串常量×17
+                                                    a[2]: 变量(unknown)×17
+                                                    a[3]: 变量(unknown)×17
+RemoveCardFromBoard                             17  a[0]: 成员读取(int)×14 / 变量(int)×2 / 变量(card)×1
+                                                    a[1]: 变量(int)×16 / 变量(card)×1
+                                                    a[2]: 变量(card)×17
+SuppressUnit                                    16  a[0]: 成员读取(int)×14 / 变量(card)×2
+                                                    a[1]: 变量(int)×16
+                                                    a[2]: 变量(card)×16
+DecrementCountdown                              15  a[0]: 成员读取(int)×5 / 变量(card)×5 / 变量(int)×3 / 变量(unknown)×2
+                                                    a[1]: 变量(unknown)×15
+                                                    a[2]: 变量(unknown)×15
+GetCardSound                                    12  a[0]: 名称×12
+                                                    a[1]: self×12
+                                                    a[2]: 变量(card)×12
+                                                    a[3]: 变量(card)×12
+RemoveBlitz                                     12  a[0]: 变量(int)×5 / 成员读取(int)×4 / 变量(card)×3
+                                                    a[1]: 变量(unknown)×12
+                                                    a[2]: 变量(int)×11 / 整数常量×1
+                                                    a[3]: 布尔常量×12
+GetAllActiveStaticCards                         11  a[0]: 布尔常量×11
+                                                    a[1]: 变量(card)×11
+                                                    a[2]: 变量(card)×11
+HasCustomAbility                                11  a[0]: 字符串常量×11
+                                                    a[1]: 变量(unknown)×11
+IsCardReserved                                  11  a[0]: 变量(unknown)×11
+                                                    a[1]: 变量(card)×11
+Forecast                                        10  a[0]: self×10
+                                                    a[1]: 变量(unknown)×10
+GiveAmbush                                      10  a[0]: 成员读取(int)×5 / 变量(int)×5
+                                                    a[1]: 变量(int)×10
+GiveFury                                        10  a[0]: 变量(int)×6 / 成员读取(int)×4
+                                                    a[1]: 变量(int)×9 / 整数常量×1
+GiveImmune                                      10  a[0]: 变量(card)×5 / 成员读取(int)×3 / 变量(int)×1 / 变量(unknown)×1
+                                                    a[1]: 变量(int)×8 / 成员读取(int)×2
+                                                    a[2]: 变量(unknown)×10
+GetMaxKreditsBySide                              9  a[0]: 变量(int)×8 / 变量(unknown)×1
+                                                    a[1]: 变量(unknown)×9
+GiveSmokescreen                                  9  a[0]: 成员读取(int)×5 / 变量(int)×2 / 变量(card)×2
+                                                    a[1]: 变量(int)×8 / 整数常量×1
+RemoveGuard                                      9  a[0]: 变量(int)×4 / 成员读取(int)×4 / 变量(card)×1
+                                                    a[1]: 变量(int)×8 / 整数常量×1
+                                                    a[2]: 布尔常量×9
+                                                    a[3]: 布尔常量×9
+RemoveImmune                                     9  a[0]: 变量(unknown)×4 / 变量(card)×3 / 变量(int)×1 / 成员读取(int)×1
+                                                    a[1]: 变量(int)×8 / 成员读取(int)×1
+                                                    a[2]: 变量(unknown)×9
+                                                    a[3]: 布尔常量×9
+RemoveSmokescreen                                8  a[0]: 成员读取(int)×4 / 变量(unknown)×2 / 变量(int)×1 / 变量(card)×1
+                                                    a[1]: 变量(int)×8
+                                                    a[2]: 布尔常量×8
+                                                    a[3]: 布尔常量×8
+JSON_SetIntArray                                 7  a[0]: self×7
+                                                    a[1]: 字符串常量×7
+                                                    a[2]: 变量(card)×7
+                                                    a[3]: 变量(unknown)×7
+checkAndUpdateBuffOnCard                         7  a[0]: 变量(card)×6 / self×1
+ChangeHeavyArmor                                 6  a[0]: 变量(card)×5 / self×1
+                                                    a[1]: 变量(int)×6
+                                                    a[2]: 整数常量×6
+                                                    a[3]: 整数常量×6
+                                                    a[4]: 布尔常量×6
+                                                    a[5]: 变量(unknown)×6
+RemoveMultipleCardsFromBoard                     6  a[0]: 变量(card)×6
+                                                    a[1]: 变量(int)×6
+                                                    a[2]: 变量(card)×6
+RemoveAmbush                                     5  a[0]: 成员读取(int)×3 / 变量(int)×2
+                                                    a[1]: 变量(int)×5
+                                                    a[2]: 布尔常量×5
+                                                    a[3]: 布尔常量×5
+Array_Remove                                     4  a[0]: 变量(unknown)×3 / 变量(card)×1
+                                                    a[1]: 整数常量×4
+RemoveFury                                       4  a[0]: 变量(int)×3 / 变量(card)×1
+                                                    a[1]: 变量(int)×4
+                                                    a[2]: 布尔常量×4
+GetUnitTypeCountOnBoard                          3  a[0]: 变量(int)×2 / 成员读取(int)×1
+                                                    a[1]: 变量(card)×3
+GiveMobilize                                     3  a[0]: 成员读取(int)×3
+                                                    a[1]: 变量(int)×3
+                                                    a[2]: 变量(unknown)×3
+GiveSalvage                                      3  a[0]: 成员读取(int)×1 / 变量(int)×1 / 变量(card)×1
+                                                    a[1]: 变量(int)×3
+                                                    a[2]: 变量(unknown)×3
+GiveBond                                         2  a[0]: 变量(card)×1 / 成员读取(int)×1
+                                                    a[1]: 变量(int)×2
+                                                    a[2]: 变量(unknown)×2
+_isBigRedOne                                     2  a[0]: 变量(card)×2
+                                                    a[1]: 变量(unknown)×2
+GetAllyNationForSide                             1  a[0]: 变量(int)×1
+                                                    a[1]: 变量(unknown)×1
+GiveAlpine                                       1  a[0]: 成员读取(int)×1
+                                                    a[1]: 变量(unknown)×1
+                                                    a[2]: 变量(int)×1
+
+### B. 只有单一形状的原语（44 个）
+
+原语                                             调用点  形状
+----------------------------------------------------------------------------------------------------
+IsLocatedOnBoard                               649  a[0]: 变量(unknown)×649
+GetOppositeSide                                575  a[0]: 变量(unknown)×575
+IsUnit                                         292  a[0]: 变量(card)×292
+GetTurnNumber                                  159  a[0]: 变量(unknown)×159
+IsLocatedInHand                                115  a[0]: 变量(unknown)×115
+getTotalDefense                                113  a[0]: 变量(unknown)×113
+GetAllCards                                    111  a[0]: 变量(card)×111
+GetCard                                         76  a[0]: 变量(card)×76
+GetCachedBPBoard                                71  a[0]: 变量(unknown)×71
+IsAirUnit                                       52  a[0]: 变量(card)×52
+WhichChooseOne                                  50  a[0]: 变量(unknown)×50
+IsOrder                                         49  a[0]: 变量(unknown)×49
+IsLocatedInDeck                                 48  a[0]: 变量(unknown)×48
+getTotalAttack                                  46  a[0]: 变量(unknown)×46
+IsInfantry                                      45  a[0]: 变量(unknown)×45
+getTotalKreditCost                              44  a[0]: 变量(unknown)×44
+IsTank                                          41  a[0]: 变量(unknown)×41
+getTotalOperationCost                           36  a[0]: 变量(unknown)×36
+IsLocation                                      34  a[0]: 变量(unknown)×34
+IsGroundUnit                                    18  a[0]: 变量(card)×18
+GetCombatKeywords                               13  a[0]: 变量(unknown)×13; a[1]: 变量(unknown)×13
+ApplyTheBuff                                    10  a[0]: 变量(card)×2
+IsArtillery                                     10  a[0]: 变量(unknown)×10
+IsDamaged                                       10  a[0]: 变量(unknown)×10
+getHasAlpine                                     9  a[0]: 变量(unknown)×9
+getHasBlitz                                      7  a[0]: 变量(unknown)×7
+GetCardsPlayedThisTurn                           6  a[0]: 变量(card)×6
+RemoveTheBuff                                    6  a[0]: 变量(card)×1
+getHasShock                                      6  a[0]: 变量(unknown)×6
+GetDestroyedCardsIDsThisBattle                   5  a[0]: 变量(card)×5
+Array_Reverse                                    4  a[0]: 变量(card)×4
+getHasGuard                                      4  a[0]: 变量(unknown)×4
+getTotalHeavyArmor                               3  a[0]: 变量(unknown)×3
+GetStartingSide                                  2  a[0]: 变量(unknown)×2
+HasIntel                                         2  a[0]: 变量(unknown)×2
+updateCustomJsonIfNeeded                         2  a[0]: 变量(card)×2
+Array_Append                                     1  a[0]: 变量(card)×1; a[1]: 变量(card)×1
+GetPlayingSide                                   1  a[0]: 变量(unknown)×1
+anyOrderPlayedThisTurn                           1  a[0]: 变量(unknown)×1
+getHasAmbush                                     1  a[0]: 变量(unknown)×1
+getHasFury                                       1  a[0]: 变量(unknown)×1
+getHasSmokescreen                                1  a[0]: 变量(unknown)×1
+getPossibleCardsFromStaticCards                  1  a[0]: 变量(card)×1
+getTwoCardsFromPossibleCards                     1  a[0]: 变量(card)×1; a[1]: 变量(card)×1; a[2]: 变量(card)×1; a[3]: 变量(card)×1
+
+====================================================================================================
+关键信号：实参里出现「整数 cardID」形状（`{"var":"cardID","ctx":...}` 或 ID 结尾变量）
+  这些位置如果实现用 `AsCard(...)` 读，就恒为 null ⇒ 静默失效
+====================================================================================================
+  PersistCustomFields                        a[0]×481
+  SpawnCardInHandBySide                      a[0]×214, a[2]×227
+  DrawCardsFromDeckBySide                    a[0]×226, a[1]×211, a[2]×2
+  ChangeAttack                               a[1]×428, a[2]×11
+  SpawnCardOnBattlefield                     a[0]×157, a[3]×228
+  ChangeDefense                              a[1]×343, a[2]×7
+  DamageCard                                 a[1]×4, a[2]×269
+  IsSideActive                               a[0]×228
+  GetLocationCardBySide                      a[2]×162
+  CustomAbilityAdd                           a[1]×68, a[2]×90
+  ChangeOperationCost                        a[1]×140, a[2]×1
+  ChangeKreditCost                           a[1]×136, a[2]×1
+  PinUnit                                    a[0]×65, a[1]×68
+  GetCardsOnBoardBySide                      a[0]×130
+  DrawSpecificCardFromDeckBySide             a[0]×40, a[1]×43, a[2]×46
+  GetDeckByside                              a[0]×125
+  GiveBlitz                                  a[0]×55, a[1]×58
+  CustomAbilityRemove                        a[1]×50, a[2]×56
+  isBuffedByCard                             a[0]×102
+  GiveKreditsBySide                          a[0]×46, a[1]×1, a[2]×52
+  AddToBattleLog                             a[0]×43, a[1]×49
+  ShowNotification                           a[0]×68
+  HasCustomAbilityFromCard                   a[1]×52
+  SpawnCardInDeckBySide                      a[0]×21, a[2]×28, a[3]×1
+  GetCardsInHandBySide                       a[0]×49
+  DamageMultipleCards                        a[1]×1, a[2]×46
+  GetDestroyedCardsCountBySide               a[0]×45
+  JSON_SetInt                                a[2]×41
+  DoesSideControlTheFrontline                a[0]×40
+  GiveGuard                                  a[0]×17, a[1]×22
+  selectCardToDraw                           a[0]×37
+  GainKreditSlot                             a[1]×36
+  GiveShock                                  a[0]×15, a[1]×19
+  selectTargetFromHand                       a[0]×33
+  ShuffleDeckBySide                          a[0]×15, a[2]×18
+  RemoveCardFromBoard                        a[0]×16, a[1]×16
+  GetCardFromID                              a[0]×31
+  AddNumberToText                            a[0]×31
+  SuppressUnit                               a[0]×14, a[1]×16
+  MoveCardToTopOfOwnersDeck                  a[0]×10, a[1]×19
+  AddAttackUntilEndOfTurn                    a[1]×25
+  MoveUnitFromBoardToOwnersHand              a[1]×23
+  GiveAmbush                                 a[0]×10, a[1]×10
+  RemoveBlitz                                a[0]×9, a[2]×11
+  GiveFury                                   a[0]×10, a[1]×9
+  GetKreditsBySide                           a[0]×16
+  RemoveGuard                                a[0]×8, a[1]×8
+  GiveSmokescreen                            a[0]×7, a[1]×8
+  IsSameSideUnit                             a[0]×14
+  JSON_AddToIntArray                         a[2]×14
+  GiveImmune                                 a[0]×4, a[1]×10
+  RemoveSmokescreen                          a[0]×5, a[1]×8
+  RemoveImmune                               a[0]×2, a[1]×9
+  RemoveAmbush                               a[0]×5, a[1]×5
+  DecrementCountdown                         a[0]×8
+  GetMaxKreditsBySide                        a[0]×8
+  RemoveFury                                 a[0]×3, a[1]×4
+  ChangeHeavyArmor                           a[1]×6
+  GiveMobilize                               a[0]×3, a[1]×3
+  RemoveMultipleCardsFromBoard               a[1]×6
+  GiveSalvage                                a[0]×2, a[1]×3
+  GiveBond                                   a[0]×1, a[1]×2
+  GetUnitTypeCountOnBoard                    a[0]×3
+  GiveAlpine                                 a[0]×1, a[2]×1
+  GetAllyNationForSide                       a[0]×1
+
+全部调用点原始记录 → <repo-root>\out\audit\argshape-callsites.json

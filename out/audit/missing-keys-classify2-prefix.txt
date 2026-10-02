@@ -1,0 +1,705 @@
+IR 被调用函数 784 种；派发表键 195 种；**不在派发表里的 629 种**
+  其中 **64 种 / 154 调用点** 已由 `KismetVm` 的 **locals 兜底**执行（卡自己蓝图里有函数体）⇒ **不是缺口**
+  ⇒ **真缺口 565 种 / 3424 个调用点 / 666 张卡**
+
+  (A): 149 种 /   801 调用点 /  109 张卡
+  (B):   3 种 /    95 调用点 /   76 张卡
+  (C): 413 种 /  2528 调用点 /  626 张卡
+
+=== (B) ★ 实现**已经在我们代码里**、只差注册派发键（真·一行注册）：3 种 / 95 调用点 ===
+  DiscardCardFromHand                          真缺口  40调用  38卡 [B1] alias→DiscardCard
+  IsUnrevealedCovertCard                       真缺口  31调用  21卡 [B2] 同名方法 IsUnrevealedCovertCard
+  IsBomber                                     真缺口  24调用  18卡 [B2] 同名方法 IsBomber
+
+=== (C) 玩法关键但没实现（其中 C-easy-* = 语义已查明 / 纯包装，成本最低）：413 种 / 2528 调用点 ===
+  HasCampaignUpgrade                           真缺口 217调用  40卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1319
+  CustomName2HasAttribute                      真缺口 112调用  41卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1088
+  SpawnCardInFrontline                         真缺口 108调用  29卡 [C1] 定义于 ['BP_CardFunctions']
+  CustomName2Add                               真缺口  89调用  44卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1307
+  CampaignAddKreditCost                        真缺口  79调用  52卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1589
+  CampaignAddAttack                            真缺口  59调用  37卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1586
+  CampaignAddDefense                           真缺口  59调用  36卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1587
+  GotchaTriggered                              真缺口  54调用  52卡 [C1] 定义于 ['BP_CardFunctions']
+  ShouldGotchaTrigger                          真缺口  53调用  52卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348
+  GetCardsInSupportLineBySide                  真缺口  43调用  35卡 [C1] 定义于 ['BP_CardFunctions']
+  getAndDecryptAttack                          真缺口  38调用  28卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1098
+  MakeCardRetreat                              真缺口  36调用  35卡 [C1] 定义于 ['BP_CardFunctions']
+  FullyHealCard                                真缺口  33调用  31卡 [C1] 定义于 ['BP_CardFunctions']
+  ConvertCard                                  真缺口  26调用  25卡 [C1] 定义于 ['BP_CardFunctions']
+  getCardsBuffedByThisCard                     真缺口  25调用  19卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1399
+  CustomName2Remove                            真缺口  24调用  19卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1500
+  CampaignAddBlitz                             真缺口  23调用  23卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1612
+  IsLocationFull                               真缺口  23调用  20卡 [C1] 定义于 ['BP_CardFunctions']
+  AddGameplayRestriction                       真缺口  22调用  19卡 [C1] 定义于 ['BP_CardFunctions']
+  GetCardsPlayedFromHandThisTurn               真缺口  22调用   7卡 [C1] 定义于 ['BP_CardFunctions']
+  DestroyMultipleCards                         真缺口  20调用  19卡 [C1] 定义于 ['BP_CardFunctions']
+  DiscardRandomCardFromHand                    真缺口  20调用  17卡 [C1] 定义于 ['BP_CardFunctions']
+  CampaignAddOpCost                            真缺口  19调用  17卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1604
+  GetSupportLineLocationBySide                 真缺口  19调用  12卡 [C1] 定义于 ['BP_CardFunctions']
+  IsPinned                                     真缺口  18调用  17卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1341
+  WhichStrategy                                真缺口  18调用  16卡 [C1] 定义于 ['BP_CardFunctions']
+  GetCustomName2Attributes                     真缺口  17调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1639
+  IsFighter                                    真缺口  17调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1015
+  CampaignAddAmbush                            真缺口  16调用  16卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1611
+  LoseKreditSlot                               真缺口  16调用  14卡 [C1] 定义于 ['BP_CardFunctions']
+  Set_Add                                      真缺口  16调用   5卡 [C2] 直译产物里找不到定义
+  EndMatch                                     真缺口  15调用  15卡 [C1] 定义于 ['BP_CardFunctions']
+  IsGotcha                                     真缺口  15调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1342
+  PlayCardDirectlyFromHand                     真缺口  15调用  14卡 [C1] 定义于 ['BP_CardFunctions']
+  SetCountdown                                 真缺口  15调用  15卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['GetCardFromID', 'JSON_SetInt', 'PersistCustomFields']
+  CampaignAddGuard                             真缺口  14调用  14卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1614
+  CustomName1Add                               真缺口  14调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1498
+  IncrementObjectiveCounter                    真缺口  14调用  12卡 [C1] 定义于 ['BP_CardFunctions']
+  Reverse                                      真缺口  14调用   9卡 [C2] 直译产物里找不到定义
+  GetDeckBP                                    真缺口  13调用   5卡 [C2] 直译产物里找不到定义
+  IsExile                                      真缺口  13调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1106
+  SetActorScale3D                              真缺口  13调用   8卡 [C2] 直译产物里找不到定义
+  MakeCardsFight                               真缺口  12调用  12卡 [C1] 定义于 ['BP_CardFunctions']
+  DiscardCardFromDeck                          真缺口  11调用  11卡 [C1] 定义于 ['BP_CardFunctions']
+  GetPlayerControllerBP                        真缺口  11调用   3卡 [C2] 直译产物里找不到定义
+  SpawnMultipleCardsOnBattlefield              真缺口  11调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  getKreditTempBuffAmount                      真缺口  11调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1380
+  ArrangeCardsByLocation                       真缺口  10调用   3卡 [C2] 直译产物里找不到定义
+  CampaignAddSmokescreen                       真缺口  10调用  10卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1616
+  GetCardsPlayedFromHandLastTurn               真缺口  10调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  PlaySound2D                                  真缺口  10调用   5卡 [C2] 直译产物里找不到定义
+  RemovePin                                    真缺口  10调用   9卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1827
+  SetMaterial                                  真缺口  10调用   3卡 [C2] 直译产物里找不到定义
+  Get Is Server Config                         真缺口   9调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1356
+  GetLeftMostCardInHand                        真缺口   9调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  MoveMultipleCardsToTopOfOwnersDeck           真缺口   9调用   7卡 [C1] 定义于 ['BP_CardFunctions']
+  SetCardSeen                                  真缺口   9调用   9卡 [C1] 定义于 ['BP_CardFunctions']
+  getAttackTempBuffAmount                      真缺口   9调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1704
+  CustomName1HasAttribute                      真缺口   8调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1632
+  CustomName1Remove                            真缺口   8调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1499
+  DestroyAllActorsOfClass                      真缺口   8调用   6卡 [C2] 直译产物里找不到定义
+  FlyTo                                        真缺口   8调用   3卡 [C1] 定义于 ['BP_BaseCard', 'BP_DraftingCard']
+  ForceCardChangeLocation                      真缺口   8调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  GetAllCardsInFrontline                       真缺口   8调用   8卡 [C1] 定义于 ['BP_CardFunctions']
+  IsOwnedByClientSide                          真缺口   8调用   3卡 [C2] 直译产物里找不到定义
+  SetIsChecked                                 真缺口   8调用   1卡 [C2] 直译产物里找不到定义
+  SetIsEnabled                                 真缺口   8调用   1卡 [C2] 直译产物里找不到定义
+  SetObjectiveCounter                          真缺口   8调用   8卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1428
+  SetTouchedCard                               真缺口   8调用   3卡 [C2] 直译产物里找不到定义
+  CampaignAddFury                              真缺口   7调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1613
+  DestroyAllWidgetOfClass                      真缺口   7调用   2卡 [C2] 直译产物里找不到定义
+  DestroyShowCaseCard                          真缺口   7调用   3卡 [C1] 定义于 ['BP_BaseCard']
+  DidStuff                                     真缺口   7调用   4卡 [C2] 直译产物里找不到定义
+  GetCardsInFrontlineBySide                    真缺口   7调用   7卡 [C1] 定义于 ['BP_CardFunctions']
+  HasBond                                      真缺口   7调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1107
+  IsTopDeckNavy                                真缺口   7调用   6卡 [C1] 定义于 ['BP_CardFunctions']
+  JSON_RemoveFromIntArray                      真缺口   7调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  LoadRedrawSettingsFromConfig                 真缺口   7调用   5卡 [C2] 直译产物里找不到定义
+  MoveUnitFromSupportToFrontLine               真缺口   7调用   7卡 [C1] 定义于 ['BP_CardFunctions']
+  MyHandLocation                               真缺口   7调用   2卡 [C2] 直译产物里找不到定义
+  ReportError                                  真缺口   7调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1682
+  Stop                                         真缺口   7调用   6卡 [C2] 直译产物里找不到定义
+  AddKreditsTax                                真缺口   6调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  AddToTriggerQueue                            真缺口   6调用   6卡 [C1] 定义于 ['BP_CardFunctions']
+  GetTotalKreditsLostThisBattle                真缺口   6调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  Get_X_AndMoreAttackCardsOnBoard              真缺口   6调用   4卡 [C1] 定义于 ['BP_CardFunctions']
+  HandLocationFromSide                         真缺口   6调用   2卡 [C2] 直译产物里找不到定义
+  K2_SetActorRelativeLocation                  真缺口   6调用   4卡 [C2] 直译产物里找不到定义
+  K2_SetActorRelativeTransform                 真缺口   6调用   2卡 [C2] 直译产物里找不到定义
+  Map_Add                                      真缺口   6调用   3卡 [C2] 直译产物里找不到定义
+  ReceiveBeginPlay                             真缺口   6调用   6卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  RemoveFromParent                             真缺口   6调用   4卡 [C2] 直译产物里找不到定义
+  SupplyLineLocationFromSide                   真缺口   6调用   2卡 [C2] 直译产物里找不到定义
+  TriggerDestruction                           真缺口   6调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  WasLeftMostCardWhenPlayedFromHand            真缺口   6调用   6卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['JSON_GetBool']
+  AddCustomGameplayTag                         真缺口   5调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  AddMoveToPlayerMoveQueue                     真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  CampaignSetOpCost                            真缺口   5调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1598
+  ForceEndTurn                                 真缺口   5调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  GetDSession                                  真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  GetHandLocationBySide                        真缺口   5调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  GetMatch                                     真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  GetMousePosition                             真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  IsTargetArrowActive                          真缺口   5调用   2卡 [C2] 直译产物里找不到定义
+  IsUsingStrategy                              真缺口   5调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  K2_DestroyActor                              真缺口   5调用   2卡 [C2] 直译产物里找不到定义
+  K2_SetWorldTransform                         真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  LoadRedrawSettings                           真缺口   5调用   5卡 [C1] 定义于 ['BP_BoardCardWidget', 'BP_EffectBar']
+  RemoveCustomGameplayTag                      真缺口   5调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  SendSocketMessage                            真缺口   5调用   3卡 [C2] 直译产物里找不到定义
+  TakeControlOfEnemyUnit                       真缺口   5调用   5卡 [C1] 定义于 ['BP_CardFunctions']
+  AmIFlying                                    真缺口   4调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  ArrangeHandCardsByLocation                   真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  DestroyCardInfo                              真缺口   4调用   1卡 [C1] 定义于 ['BP_DraftingCard']
+  DisplayCardHelp                              真缺口   4调用   1卡 [C1] 定义于 ['BP_DraftingCard']
+  GetActorBounds                               真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  GetBPPlayerController                        真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  GetBattleHUD                                 真缺口   4调用   1卡 [C2] 直译产物里找不到定义
+  GetClientSide                                真缺口   4调用   3卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1357
+  GetDeckTopCardTransform                      真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  GetIsLocalClientTurn                         真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  GetMatchController                           真缺口   4调用   4卡 [C2] 直译产物里找不到定义
+  GiveRandomCombatKeyword                      真缺口   4调用   4卡 [C1] 定义于 ['BP_CardFunctions']
+  InitLook                                     真缺口   4调用   4卡 [C1] 定义于 ['BP_BoardCard', 'BP_BoardCardWidget']
+  InsertIntoQueue                              真缺口   4调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  IsBeingDragged                               真缺口   4调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  IsMouseOver                                  真缺口   4调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  IsTablet                                     真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  K2_AddLocalOffset                            真缺口   4调用   1卡 [C2] 直译产物里找不到定义
+  K2_SetActorRelativeRotation                  真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  K2_SetRelativeRotation                       真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  K2_SetRelativeTransform                      真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  MakeGapOnBoardForCard                        真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  OpponentHandLocation                         真缺口   4调用   1卡 [C2] 直译产物里找不到定义
+  PlaySoundEffectWithParams                    真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  RefreshGlowBorderTransform                   真缺口   4调用   1卡 [C1] 定义于 ['BP_HandCardLook']
+  RemoveGameplayRestriction                    真缺口   4调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  ReverseFromEnd                               真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  SetActorRelativeScale3D                      真缺口   4调用   3卡 [C2] 直译产物里找不到定义
+  SetCardBeingShowcased                        真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  SetCardOpacity                               真缺口   4调用   3卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  SetManuallyRedraw                            真缺口   4调用   2卡 [C2] 直译产物里找不到定义
+  SetSaturationAndBrightness                   真缺口   4调用   3卡 [C-easy-wrap] 纯包装 @BP_BoardCard → ['SetScalarParameterValue']
+  SetVectorParameterValue                      真缺口   4调用   4卡 [C2] 直译产物里找不到定义
+  SetWorldScale3D                              真缺口   4调用   4卡 [C2] 直译产物里找不到定义
+  ShowShowCaseCard                             真缺口   4调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  WasRightMostCardWhenPlayedFromHand           真缺口   4调用   4卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['JSON_GetBool']
+  AddIntelToCard                               真缺口   3调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1512
+  CanPlayCard                                  真缺口   3调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  ClearAndRearrange                            真缺口   3调用   1卡 [C1] 定义于 ['BP_HandCard']
+  FetchCardsByLocation                         真缺口   3调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1208
+  GetHQ_DamagedAmountThisTurnBySide            真缺口   3调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  GetInputMouseDelta                           真缺口   3调用   1卡 [C2] 直译产物里找不到定义
+  GetMatchFinished                             真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  GetOnlineMatch                               真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  GetOperationKreditsSpentThisTurn             真缺口   3调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  GetRightMostCardInHand                       真缺口   3调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  IsLocalClientTurn                            真缺口   3调用   1卡 [C1] 定义于 ['BP_HandCard']
+  K2_DetachFromActor                           真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  K2_SetRelativeLocation                       真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  MakeBoardDoCameraShake                       真缺口   3调用   1卡 [C2] 直译产物里找不到定义
+  PlayHoverAnimation                           真缺口   3调用   3卡 [C1] 定义于 ['BP_OpenPackCard', 'BP_RewardCard']
+  PlayRarityAnimation                          真缺口   3调用   1卡 [C1] 定义于 ['BP_OpenPackCard']
+  ReceiveTick                                  真缺口   3调用   3卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  ResetUnitOperations                          真缺口   3调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  SetAttackAndDefenseColor                     真缺口   3调用   1卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCard']
+  SetAttackText                                真缺口   3调用   2卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCard']
+  SetScalarParameterValueOnMaterials           真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  SetUserSpecifiedScale                        真缺口   3调用   2卡 [C2] 直译产物里找不到定义
+  SpawnCardHelpForCard                         真缺口   3调用   1卡 [C1] 定义于 ['BP_DraftingCard']
+  SpawnNextToCard                              真缺口   3调用   3卡 [C1] 定义于 ['BP_CardFunctions']
+  SuppressMultipleUnits                        真缺口   3调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  getAltCardNumber                             真缺口   3调用   3卡 [C1] 定义于 ['BP_BaseCard']
+  selectHandTarget                             真缺口   3调用   1卡 [C1] 定义于 ['BP_HandCard']
+  AddDefenseToMultipleCards                    真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  AdjustCardPositionInDeck                     真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  Apply The Buff                               真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  ApplyGameplaySideEffect                      真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  Array_Insert                                 真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  BlockLocationOnDestroy                       真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  CalculatePlayRate                            真缺口   2调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  CampaignAddMobilize                          真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1615
+  CardDragTick                                 真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  CardStopDrag                                 真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  ChangeFrontlineLimiter                       真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  ConvertVFX                                   真缺口   2调用   2卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCardLook']
+  CreateShowcaseDimmer                         真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  DeckHandHover                                真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  DisableInput                                 真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  EnableInput                                  真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  FlipAlignment                                真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  FreezeCarousel                               真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GetAttachedActors                            真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GetCardScaling                               真缺口   2调用   1卡 [C-easy-wrap] 纯包装 @BP_BaseCard → ['GetCachedBPBoard']
+  GetDeckActor                                 真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GetLocalBounds                               真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GetMainScaleBox                              真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  GetReducedDamage                             真缺口   2调用   1卡 [C1] 定义于 ['card_unit_seagull']
+  GetVisualBoardCardCardFromID                 真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GetVisualChooseOneBeingPlayedFromID          真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  GiveCredits                                  真缺口   2调用   1卡 [C1] 定义于 ['card_unit_182_landwehr']
+  GiveTwoKredits                               真缺口   2调用   1卡 [C1] 定义于 ['card_unit_2nd_michigan']
+  GoDown                                       真缺口   2调用   1卡 [C1] 定义于 ['BP_HandCard']
+  HasAttackLeft                                真缺口   2调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1288
+  IncOpCountAndCheckVeteran                    真缺口   2调用   1卡 [C1] 定义于 ['card_unit_182_landwehr']
+  IsDraggedOnTopOfDeck                         真缺口   2调用   1卡 [C1] 定义于 ['BP_DraftingCard']
+  K2_AddActorLocalRotation                     真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  K2_AddActorWorldOffset                       真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  K2_AddLocalRotation                          真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  K2_SetWorldLocation                          真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  MoveOlderOrdersBack                          真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  OnActorEndDrag                               真缺口   2调用   2卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnActorMouseEnter                            真缺口   2调用   2卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnActorMouseExit                             真缺口   2调用   2卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  PlaceHandCard                                真缺口   2调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  PlayAfterRotationEffect                      真缺口   2调用   2卡 [C1] 定义于 ['BP_OpenPackCard', 'BP_RewardCard']
+  PlayCamerashake                              真缺口   2调用   2卡 [C1] 定义于 ['BP_OpenPackCard', 'BP_RewardCard']
+  PlayOrderEffect                              真缺口   2调用   2卡 [C1] 定义于 ['BP_BaseCard']
+  ReleaseControlOfEnemyUnit                    真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  Reload                                       真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  RemoveAlpine                                 真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  RemoveGameplaySideEffect                     真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  ReportTamperingToSever                       真缺口   2调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  RevealCard                                   真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  SalvageMultipleUnits                         真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  Set Master Carousel Enabled                  真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  SetCardsSeenByCipher                         真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1527
+  SetDefenseText                               真缺口   2调用   2卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCard']
+  SetLifeSpan                                  真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  SetLifetimeOwner                             真缺口   2调用   2卡 [C1] 定义于 ['BP_BoardCardWidget']
+  SetRenderTransformPivot                      真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  SetVisibilityForCoverPlane                   真缺口   2调用   2卡 [C-easy-wrap] 纯包装 @BP_HandCard → ['SetVisibility']
+  Set_Clear                                    真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  Set_ToArray                                  真缺口   2调用   2卡 [C2] 直译产物里找不到定义
+  SetupCard                                    真缺口   2调用   2卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCardLook']
+  ShowSpacer                                   真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  StealCardFromBoardToDeck                     真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  ToggleChooseOneSelection                     真缺口   2调用   1卡 [C2] 直译产物里找不到定义
+  TriggerDeployment                            真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  UpdateHighlight                              真缺口   2调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_HandCard']
+  getFrontlineLimit                            真缺口   2调用   2卡 [C1] 定义于 ['BP_CardFunctions']
+  getHasVeteranUpgrade                         真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1052
+  hasActivePincerEffect                        真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1336
+  showKreditCostChanges                        真缺口   2调用   1卡 [C1] 定义于 ['BP_HandCard']
+  AddOption                                    真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Array_Resize                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  AttemptToPlayBasic                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  AttemptToPlayFinal                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  BlowCardUp                                   真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  BoardCardHover                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  CampaignIncreaseHeavyArmor                   真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1588
+  CampaignRemoveMobilize                       真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1617
+  CampaignRemoveSmokescreen                    真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1618
+  ChangedPinnedTurns                           真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  CheckIsInQueue                               真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_CardRenderer → ['Array_Get', 'Array_Length']
+  ClearChildren                                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ClearOptions                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ContinuePlayFromHand                         真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  CountFriendlyGuardUnits                      真缺口   1调用   1卡 [C1] 定义于 ['card_unit_sdf']
+  CreateCardFromWildcard                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  CreateSpawnCardHelp                          真缺口   1调用   1卡 [C1] 定义于 ['BP_CardHelp']
+  CustomEventOnCardDealDamage                  真缺口   1调用   1卡 [C1] 定义于 ['card_unit_220th_rifles']
+  CustomOnDealDamageToSelf                     真缺口   1调用   1卡 [C1] 定义于 ['card_unit_kyushu_j7w3']
+  DeactivateOtherNFS                           真缺口   1调用   1卡 [C1] 定义于 ['card_event_national_fire_service']
+  DeactivateOtherSniped                        真缺口   1调用   1卡 [C1] 定义于 ['card_event_sniped']
+  DestroyPlaceholderCard                       真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  DisplayCardInfo                              真缺口   1调用   1卡 [C1] 定义于 ['BP_DraftingCard']
+  DoesThisCardHasAnyTarget                     真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  DrawCardToRenderTarget                       真缺口   1调用   1卡 [C1] 定义于 ['BP_CardRenderer']
+  ErrorWithStackTrace                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ExecuteOnDeploymentTriggered                 真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  Explosion Particle Test                      真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  FadeToBlackAndWhite                          真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard', 'BP_HandCard']
+  FiltersUpdated                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  FindCardCoordinatesInLocation                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  FindCardCoordinatesOnBoard                   真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  ForceRefresh                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Get Start Of Turn Spawn Cards                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetCardFunctions                             真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetDamageVisualDelay                         真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_BoardCard → ['GetCardFromID', 'IsValid']
+  GetDefenseBuffFromAdjacentUnits              真缺口   1调用   1卡 [C1] 定义于 ['card_unit_48th_armored_infantry']
+  GetDestroyedCardsIDsByTurn                   真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  GetEquipmentBP                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetExplosionDuration                         真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_BaseCard → ['GetCard']
+  GetFrontlineOwnerSide                        真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1962
+  GetHighestBomberAttack                       真缺口   1调用   1卡 [C1] 定义于 ['card_event_for_precision_bombing']
+  GetMainNationForSide                         真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  GetMousePosBreak                             真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetOpponentSide                              真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  GetPositionInDeckForCard                     真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetRarityDisplayName                         真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetShowCaseCardLocation                      真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_HandCard']
+  GetTargetArrowTargetCard                     真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetTargetPointByTag                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GetUnitDestroyedThisTurn                     真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  GetVisualController                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  GoToMobileShowcase                           真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  GoToMobileShowcaseFinished                   真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  HandCardIsSelectingTarget                    真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HandCardMouseDown                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HandCardMouseEnter                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HandCardMouseExit                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HasMovementLeft                              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HideCount                                    真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  HighlightBoardRow                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  InsertCardAtLocationWithNumber               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Is Card Recyclable                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  IsCardToBeReservedSoon                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  IsChinaISBN                                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  IsMessageWindowOpen                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  IsMouseOrFingerDown                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  IsMyCard                                     真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  K2_AddRelativeLocation                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  K2_AddWorldOffset                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  LightFlares                                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Load Card Back                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Map_Clear                                    真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Map_Values                                   真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  MouseLeaveBoardCard                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  MouseOverBoardCard                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  MoveCardInHandToLeftMost                     真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  MoveFrontlineVisually                        真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  MoveToHandAfterDraw                          真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  MoveUnitFromHand                             真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  MulliganDiscardToggle                        真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  MyBoardCardMovingOrAttacking                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  NotiferStarCounterChanged                    真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1429
+  NotifyForceEndTurn                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  NotifyIncrementObjectiveCounter              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  OnActorHoldEnd                               真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnActorMouseDown                             真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnActorMouseUp                               真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnActorTouchPressed                          真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_DraftingCard']
+  OnActorTouchReleased                         真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_BoardCard']
+  OnAllCardsTurnedAround                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  OnCardOverCard                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  OnCardReady                                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  OnCardTapped                                 真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard', 'BP_DraftingCard']
+  OnEnterPlay                                  真缺口   1调用   1卡 [C1] 定义于 ['card_location_british_scen1_ai', 'card_location_german_scen1_ai']
+  OnPlayedFromHand                             真缺口   1调用   1卡 [C1] 定义于 ['card_event_7075_aluminium', 'card_event_a_few_good_men']
+  OnStartAttackingEnemy                        真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  PincerHover                                  真缺口   1调用   1卡 [C1] 定义于 ['BP_EffectBarIcon']
+  PincerHoverExit                              真缺口   1调用   1卡 [C1] 定义于 ['BP_EffectBarIcon']
+  PlaceBoardCard                               真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  PlayFanOut                                   真缺口   1调用   1卡 [C1] 定义于 ['BP_RewardCard']
+  PlayMySound                                  真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_Widget_EffectBarIcon → ['IsValid', 'PlaySoundEffect']
+  PlaySeenIconAnimOnWidget                     真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCardLook']
+  PlaySeenIconAnimation                        真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  PopDefenseQueue                              真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  ReceiveDestroyed                             真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard', 'BP_ChooseCardToDraw']
+  RecycleCard                                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  Remove the Buff                              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  RemoveBond                                   真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  RemoveSalvage                                真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  ResetRelativeTransform                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ResolveTriggerQueue                          真缺口   1调用   1卡 [C1] 定义于 ['BP_CardFunctions']
+  SelfCustomEventOnCardDealDamage              真缺口   1调用   1卡 [C1] 定义于 ['card_unit_su_100']
+  SetBrush                                     真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetDrawSize                                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetHiddenInGame                              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetImageVisibility                           真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @WBP_CreateCardInnerButton → ['SetVisibility']
+  SetIntensity                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetNiagaraVariableVec3                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetOperationCostText                         真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  SetOptions                                   真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetRelativeScale3D                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetSelectedOption                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  SetWeightFromAttackAndDefense                真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  SetWorldSize                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ShockRecoil                                  真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  ShouldBlockHandCardDragging                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ShowBuffTexts                                真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  ShowNoKreditLeftToOperateMessage             真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ShowUnitCantMoveOrAttackMessage              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ShowUnitOutOfAttackOrMoveMessage             真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  ShowcaseCardWithDelay                        真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  StopBoardCardClicked                         真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  StopPreviewing                               真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  TargetArrowDeleted                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  TickDebug                                    真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  TriggerGoldGlowEffect                        真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  TutorialCanPlayCheck                         真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  UnblockLocationAfterDestroy                  真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  UnblockShowcaseCards                         真缺口   1调用   1卡 [C1] 定义于 ['BP_HandCard']
+  UpdateAttack                                 真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  UpdateDefense                                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  UpdateEffectBar                              真缺口   1调用   1卡 [C1] 定义于 ['BP_BoardCard']
+  UpdateHandCardLook                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  UpdateOperationCost                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  WaitOnBoard                                  真缺口   1调用   1卡 [C1] 定义于 ['BP_BaseCard']
+  canCardBeCreated                             真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnAfterOtherCardLeaveBoardOrOwner          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnCardDrawn                                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnCardEnterPlay                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnCardPlayedFromHand                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnCardSpawnInHand                          真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnEndOfTurn                                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnOtherCardAbilitiesChanged                真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnOtherCardDestroyed                       真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnOtherCardKreditCostChanged               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnOtherCardReset                           真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  doOnSpawnCardSelected                        真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  flyToBottomOfDeck                            真缺口   1调用   1卡 [C1] 定义于 ['BP_ChooseCardToDraw']
+  getAndDecryptDefense                         真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1361
+  getCountdownValue                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  getKreditBySide                              真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1862
+  getStaticVeteranUpgrade                      真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1557
+  handCardHovered                              真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  handCardUnhovered                            真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  isAlreadyAffectedByOtherReckless             真缺口   1调用   1卡 [C1] 定义于 ['card_event_reckless_assault']
+  isCardReserved                               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  onAfterOtherCardAttacks                      真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+  onOtherCardDealDamageAddDamage               真缺口   1调用   1卡 [C2] 直译产物里找不到定义
+
+=== (A) 纯 UI / 战役 / 表现层 —— 对局无影响，跳过：149 种 / 801 调用点 ===
+  CampaignSetText                              真缺口 211调用  46卡 [A2] UI/战役 名形态
+  GiveStarForCampaign                          真缺口  75调用  25卡 [A2] UI/战役 名形态
+  AddToVerticalBox                             真缺口  41调用   1卡 [A2] UI/战役 名形态
+  CreateHelpBubbleEntry                        真缺口  39调用   1卡 [A2] UI/战役 名形态
+  ShowTutorialMessage                          真缺口  30调用  12卡 [A2] UI/战役 名形态
+  GetIsGoldCard                                真缺口  24调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  GetTutorialBP                                真缺口  21调用   3卡 [A2] UI/战役 名形态
+  GetRenderCache                               真缺口  17调用   1卡 [A1] 只定义在 UI/战役蓝图 ['WBP_DebugRenderer']
+  SetActorHiddenInGame                         真缺口  17调用   8卡 [A2] UI/战役 名形态
+  AppendText                                   真缺口  16调用  16卡 [A2] UI/战役 名形态
+  BindToAnimationFinished                      真缺口  16调用   3卡 [A2] UI/战役 名形态
+  AddToViewport                                真缺口  15调用   9卡 [A2] UI/战役 名形态
+  BindToAnimationStarted                       真缺口  14调用   1卡 [A2] UI/战役 名形态
+  FindCardLocationUnderCursor                  真缺口  11调用   3卡 [A2] UI/战役 名形态
+  SetColorAndOpacity                           真缺口  11调用   3卡 [A2] UI/战役 名形态
+  LoadCardBack                                 真缺口   9调用   7卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  SetPositionInViewport                        真缺口   9调用   7卡 [A2] UI/战役 名形态
+  RequestRenderUpdate                          真缺口   7调用   4卡 [A2] UI/战役 名形态
+  CloseShowHelpGate                            真缺口   6调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  OpenShowHelpGate                             真缺口   6调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  hoverEffect                                  真缺口   6调用   3卡 [A1] 只定义在 UI/战役蓝图 ['BP_ChooseCardToDraw', 'BP_ChooseCardToSpawn']
+  AddPopUpCentered                             真缺口   4调用   2卡 [A2] UI/战役 名形态
+  AttemptToShowHelp                            真缺口   4调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  DebugLog                                     真缺口   4调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardRenderer']
+  DoneRotating                                 真缺口   4调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  GetAllWidgetsOfClass                         真缺口   4调用   3卡 [A2] UI/战役 名形态
+  MakeCardHover                                真缺口   4调用   1卡 [A2] UI/战役 名形态
+  Update Operable Color                        真缺口   4调用   2卡 [A2] UI/战役 名形态
+  GetPrefixedName                              真缺口   3调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_RenderedCardCache']
+  Hide Help                                    真缺口   3调用   1卡 [A2] UI/战役 名形态
+  K2_SetText                                   真缺口   3调用   1卡 [A2] UI/战役 名形态
+  ReverseHoverAnimation                        真缺口   3调用   3卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  SetAlignmentInViewport                       真缺口   3调用   3卡 [A2] UI/战役 名形态
+  SetText                                      真缺口   3调用   3卡 [A2] UI/战役 名形态
+  SetupWidget                                  真缺口   3调用   2卡 [A2] UI/战役 名形态
+  Show                                         真缺口   3调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBarIcon', 'BP_Widget_EffectBarIcon']
+  ShowFiveOrFewerIcons                         真缺口   3调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  getAltArtIndex                               真缺口   3调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HistoryCard']
+  BlockDelay                                   真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HistoryCard']
+  CreateAndAddTutorialHelpBubbleIfNeeded       真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  GetTypeIcon                                  真缺口   2调用   1卡 [A2] UI/战役 名形态
+  HideDraftUI                                  真缺口   2调用   1卡 [A2] UI/战役 名形态
+  InitCarousel                                 真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard', 'BP_OpenPackCard']
+  InitialiseDefaults                           真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  IsAnyRotationTimelineActive                  真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard']
+  Lower                                        真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  MulliganHover                                真缺口   2调用   1卡 [A2] UI/战役 名形态
+  OnRarityStandard                             真缺口   2调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  OnRarityUnique                               真缺口   2调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  PopOffQueue                                  真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardRenderer']
+  Raise                                        真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  RearrangeVisualLocation                      真缺口   2调用   1卡 [A2] UI/战役 名形态
+  RotationTimeline                             真缺口   2调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  SetBrushFromTexture                          真缺口   2调用   2卡 [A2] UI/战役 名形态
+  SetDraftingOrActiveSwitcher                  真缺口   2调用   1卡 [A2] UI/战役 名形态
+  SetFocusVisualsVisibility                    真缺口   2调用   1卡 [A2] UI/战役 名形态
+  SetGlowForFaceDown                           真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  SetRarityIconCount                           真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  SetRarityStars                               真缺口   2调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  SetRenderScale                               真缺口   2调用   2卡 [A2] UI/战役 名形态
+  SetRotationSpeed                             真缺口   2调用   2卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard', 'BP_RewardCard']
+  SetTextureParameterValue                     真缺口   2调用   2卡 [A2] UI/战役 名形态
+  SetTickWhenOffscreen                         真缺口   2调用   1卡 [A2] UI/战役 名形态
+  SetVerticalBox                               真缺口   2调用   1卡 [A2] UI/战役 名形态
+  Show Tutorial Messages                       真缺口   2调用   1卡 [A2] UI/战役 名形态
+  ShowCardHelp                                 真缺口   2调用   2卡 [A2] UI/战役 名形态
+  ShowcaseCardAnimation                        真缺口   2调用   2卡 [A2] UI/战役 名形态
+  WidgetInFrontOfCamera                        真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  bailOut                                      真缺口   2调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_ChooseOneCard']
+  AddRecycleCardInfo                           真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  AddToCardSetAchievement                      真缺口   1调用   1卡 [A2] UI/战役 名形态
+  AddTypesFromCard                             真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  AddWildcardInfo                              真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  ArrangeIconLocations                         真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  CheckForCardChanges                          真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardRenderer']
+  CloseCardDetails                             真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  ClosePopup                                   真缺口   1调用   1卡 [A2] UI/战役 名形态
+  CountdownUpdateVisuals                       真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_Widget_EffectBarIcon']
+  CreateCardInfo                               真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  CreateExtraCards                             真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  CreateHelpBubbleEntryWidget_Type             真缺口   1调用   1卡 [A2] UI/战役 名形态
+  CreatePopup                                  真缺口   1调用   1卡 [A2] UI/战役 名形态
+  CreateVeteranCardHelp                        真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  DeleteExtraCards                             真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  EnemyCardClicked                             真缺口   1调用   1卡 [A2] UI/战役 名形态
+  FadeInIcons                                  真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HistoryCard']
+  FindAndSetBubbleTypesToAdd                   真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  GetBlowUpSound                               真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetCardFactionPrimaryColor                   真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetCardTextureReference                      真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetCardsByVisualLocation                     真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetDefaultFocusWidget                        真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetExileFactionIconAsTexture                 真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetExileText                                 真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardHelp']
+  GetFactionIconAsMaterial                     真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetLevelManager                              真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetNextVisualLocationNumber                  真缺口   1调用   1卡 [A2] UI/战役 名形态
+  GetRarityIcon                                真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  GetTouchOrMousePosition                      真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  GetWhiteColor                                真缺口   1调用   1卡 [A2] UI/战役 名形态
+  HideCardAndStopTicking                       真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  HideCardHelpLocations                        真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  Init                                         真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_Widget_EffectBarIcon']
+  LoadFactionIcon                              真缺口   1调用   1卡 [A2] UI/战役 名形态
+  MyCardClicked                                真缺口   1调用   1卡 [A2] UI/战役 名形态
+  NUIPickedAnimation                           真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  NotifyGiveStar                               真缺口   1调用   1卡 [A2] UI/战役 名形态
+  NotifyShowCampaignMessage                    真缺口   1调用   1卡 [A2] UI/战役 名形态
+  OnActorClicked                               真缺口   1调用   1卡 [A2] UI/战役 名形态
+  OnActorMouseHover                            真缺口   1调用   1卡 [A2] UI/战役 名形态
+  OnCardRenderReady                            真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BPI_CardRendererTarget']
+  OverrideCardTitleIfNeeded                    真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  PopQueue                                     真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  RefreshViewAfterConversionToGoldCard         真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  RefreshViewAfterRecycle                      真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  RefreshWidget                                真缺口   1调用   1卡 [A2] UI/战役 名形态
+  Render                                       真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardRenderer']
+  ResetWidgetDefaultFocus                      真缺口   1调用   1卡 [A2] UI/战役 名形态
+  SetBackgroundColor                           真缺口   1调用   1卡 [A2] UI/战役 名形态
+  SetCountermeasureStatus                      真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  SetCurrentFocusedWidget                      真缺口   1调用   1卡 [A2] UI/战役 名形态
+  SetEffectActive                              真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  SetEffectInactive                            真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  SetGuardOnTop                                真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBar']
+  SetHeight                                    真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_Widget_EffectBar_Mobile']
+  SetLightingChannel                           真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_CardRenderer']
+  SetReservedWarningVisibilites                真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  SetRetainRendering                           真缺口   1调用   1卡 [A2] UI/战役 名形态
+  ShowHelpOnceInPosition                       真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_OpenPackCard']
+  SimpleFlyTo                                  真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_HandCardLook']
+  StopRarityAnimation                          真缺口   1调用   1卡 [A2] UI/战役 名形态
+  TryCardPicking                               真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  UnbindAllFromAnimationFinished               真缺口   1调用   1卡 [A2] UI/战役 名形态
+  Unfan                                        真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_RewardCard']
+  UpdateCarouselScroll                         真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard', 'BP_OpenPackCard']
+  UpdateExtraCards                             真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_DraftingCard']
+  UpdateLocation                               真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_EffectBarIcon']
+  UpdateWildcardAmountsInTopbar                真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  ZoomingCamera                                真缺口   1调用   1卡 [A2] UI/战役 名形态
+  doOnStartOfGame                              真缺口   1调用   1卡 [A2] UI/战役 名形态
+  doOnStartOfTurn                              真缺口   1调用   1卡 [A2] UI/战役 名形态
+  flyOutOfScreen                               真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_ChooseCardToSpawn']
+  getWildcardToPayWith                         真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  getWildcardsOwnedToCraft                     真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  hideCard                                     真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['BP_ChooseOneCard']
+  sendDragToSpectatorSockets                   真缺口   1调用   1卡 [A2] UI/战役 名形态
+  sendEndDragToSpectatorSockets                真缺口   1调用   1卡 [A2] UI/战役 名形态
+  setLockedCardVisibilities                    真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+  setRarityLook                                真缺口   1调用   1卡 [A1] 只定义在 UI/战役蓝图 ['createCard_NUI_Widget']
+
+=== (C) 里成本最低的一批（C-easy-ref / C-easy-wrap）：59 种 / 1086 调用点 ===
+  HasCampaignUpgrade                           真缺口 217调用  40卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1319
+  CustomName2HasAttribute                      真缺口 112调用  41卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1088
+  CustomName2Add                               真缺口  89调用  44卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1307
+  CampaignAddKreditCost                        真缺口  79调用  52卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1589
+  CampaignAddAttack                            真缺口  59调用  37卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1586
+  CampaignAddDefense                           真缺口  59调用  36卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1587
+  ShouldGotchaTrigger                          真缺口  53调用  52卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348
+  getAndDecryptAttack                          真缺口  38调用  28卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1098
+  getCardsBuffedByThisCard                     真缺口  25调用  19卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1399
+  CustomName2Remove                            真缺口  24调用  19卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1500
+  CampaignAddBlitz                             真缺口  23调用  23卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1612
+  CampaignAddOpCost                            真缺口  19调用  17卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1604
+  IsPinned                                     真缺口  18调用  17卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1341
+  GetCustomName2Attributes                     真缺口  17调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1639
+  IsFighter                                    真缺口  17调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1015
+  CampaignAddAmbush                            真缺口  16调用  16卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1611
+  IsGotcha                                     真缺口  15调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1342
+  SetCountdown                                 真缺口  15调用  15卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['GetCardFromID', 'JSON_SetInt', 'PersistCustomFields']
+  CampaignAddGuard                             真缺口  14调用  14卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1614
+  CustomName1Add                               真缺口  14调用  13卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1498
+  IsExile                                      真缺口  13调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1106
+  getKreditTempBuffAmount                      真缺口  11调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1380
+  CampaignAddSmokescreen                       真缺口  10调用  10卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1616
+  RemovePin                                    真缺口  10调用   9卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1827
+  Get Is Server Config                         真缺口   9调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1356
+  getAttackTempBuffAmount                      真缺口   9调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1704
+  CustomName1HasAttribute                      真缺口   8调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1632
+  CustomName1Remove                            真缺口   8调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1499
+  SetObjectiveCounter                          真缺口   8调用   8卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1428
+  CampaignAddFury                              真缺口   7调用   7卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1613
+  HasBond                                      真缺口   7调用   6卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1107
+  ReportError                                  真缺口   7调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1682
+  WasLeftMostCardWhenPlayedFromHand            真缺口   6调用   6卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['JSON_GetBool']
+  CampaignSetOpCost                            真缺口   5调用   5卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1598
+  GetClientSide                                真缺口   4调用   3卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1357
+  SetSaturationAndBrightness                   真缺口   4调用   3卡 [C-easy-wrap] 纯包装 @BP_BoardCard → ['SetScalarParameterValue']
+  WasRightMostCardWhenPlayedFromHand           真缺口   4调用   4卡 [C-easy-wrap] 纯包装 @BP_CardFunctions → ['JSON_GetBool']
+  AddIntelToCard                               真缺口   3调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1512
+  FetchCardsByLocation                         真缺口   3调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1208
+  CampaignAddMobilize                          真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1615
+  GetCardScaling                               真缺口   2调用   1卡 [C-easy-wrap] 纯包装 @BP_BaseCard → ['GetCachedBPBoard']
+  HasAttackLeft                                真缺口   2调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1288
+  SetCardsSeenByCipher                         真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1527
+  SetVisibilityForCoverPlane                   真缺口   2调用   2卡 [C-easy-wrap] 纯包装 @BP_HandCard → ['SetVisibility']
+  getHasVeteranUpgrade                         真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1052
+  hasActivePincerEffect                        真缺口   2调用   2卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1336
+  CampaignIncreaseHeavyArmor                   真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1588
+  CampaignRemoveMobilize                       真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1617
+  CampaignRemoveSmokescreen                    真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1618
+  CheckIsInQueue                               真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_CardRenderer → ['Array_Get', 'Array_Length']
+  GetDamageVisualDelay                         真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_BoardCard → ['GetCardFromID', 'IsValid']
+  GetExplosionDuration                         真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_BaseCard → ['GetCard']
+  GetFrontlineOwnerSide                        真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1962
+  NotiferStarCounterChanged                    真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1429
+  PlayMySound                                  真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @BP_Widget_EffectBarIcon → ['IsValid', 'PlaySoundEffect']
+  SetImageVisibility                           真缺口   1调用   1卡 [C-easy-wrap] 纯包装 @WBP_CreateCardInnerButton → ['SetVisibility']
+  getAndDecryptDefense                         真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1361
+  getKreditBySide                              真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1862
+  getStaticVeteranUpgrade                      真缺口   1调用   1卡 [C-easy-ref] 参考实现有 → ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1557
+
+=== 已由 locals 兜底处理（不是缺口）：64 种 ===
+  getSkirmishBP                                  16调用   1卡  (定义在 1 张卡自己的 locals 里)
+  RemoveBuff                                     12调用   5卡  (定义在 5 张卡自己的 locals 里)
+  ApplyBuff                                      10调用   4卡  (定义在 4 张卡自己的 locals 里)
+  _onCardDefenseChanged                           7调用   1卡  (定义在 1 张卡自己的 locals 里)
+  CreateLightInfantryArr                          6调用   1卡  (定义在 1 张卡自己的 locals 里)
+  ApplyAttackBuff                                 5调用   2卡  (定义在 2 张卡自己的 locals 里)
+  RemoveAttackBuff                                5调用   2卡  (定义在 2 张卡自己的 locals 里)
+  didPlayBritishInfantryLastTurn                  5调用   5卡  (定义在 5 张卡自己的 locals 里)
+  CheckAndApplyKreditBuff                         4调用   2卡  (定义在 2 张卡自己的 locals 里)
+  Random Card                                     4调用   3卡  (定义在 3 张卡自己的 locals 里)
+  RemoveAllOverrides                              4调用   1卡  (定义在 1 张卡自己的 locals 里)
+  RemovePinnedOverride                            4调用   1卡  (定义在 1 张卡自己的 locals 里)
+  AddPinnedOverride                               3调用   1卡  (定义在 1 张卡自己的 locals 里)
+  ApplyAndCorrectBuff                             3调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GiveAlpineToLightInfantry                       3调用   1卡  (定义在 1 张卡自己的 locals 里)
+  checkAndUpdateBuff                              3调用   1卡  (定义在 1 张卡自己的 locals 里)
+  isSecondOrderThisTurn                           3调用   3卡  (定义在 3 张卡自己的 locals 里)
+  AddOverrideToPinnedCardsOnYourSide              2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  DeactivateOtherHTDP                             2调用   2卡  (定义在 2 张卡自己的 locals 里)
+  DisableDoubleCostAbility                        2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  DiscardHighestCostCardBySide                    2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  EnableDoubleCostAbility                         2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  SpawnShermanInHand                              2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  UpdateBuff                                      2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  get_adjacent_unit_count                         2调用   2卡  (定义在 2 张卡自己的 locals 里)
+  hasGuardAdjacentUnit                            2调用   2卡  (定义在 2 张卡自己的 locals 里)
+  updateBuffs                                     2调用   1卡  (定义在 1 张卡自己的 locals 里)
+  OnActorStartDrag                                1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  CheckAndUpdateCost                              1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  CheckFriendlyAirUnitsOnBoard                    1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  CheckFriendlyUnitsOnBoard                       1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  CompareHandCards                                1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  DisableOtherFriendly7th                         1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  Get Random Unit on Board                        1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GetOppositeUnitsOnBoard                         1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GetRandomBritishAir                             1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GetRandomKreditCombo                            1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GetSeenCardsFromOppositeSide                    1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  GetUSAUnitsAndKredits                           1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  Has Opposite Side Air On Board                  1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  MoveCards                                       1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  PickRandomCard                                  1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  RandomChooseA_Tank                              1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  RandomChooseCards                               1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  Random_3_SovietUnits                            1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  RandomlyChooseTank                              1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  ShouldSpawnFrontline                            1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  ShouldTriggerAbility                            1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  SpawnChooseOneCards                             1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  SpawnUnitsWithKreditCombo                       1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  TriggerMultipleDeploymentEffects                1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  _checkAndSetBuff                                1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  alreadyHasTheAbility                            1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  anyFriendlyA6M2Active                           1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  clearBuffs                                      1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  clearTargetCard                                 1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  doIControl3opCostUnit                           1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  getMoveReason                                   1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  getUnpinnedEnemyUnits                           1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  getUnseenCardsOppositeSide                      1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  get_adjacent_japan_units_count                  1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  hasPlayedOrderThisTurn                          1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  isAlreadyAffectedByOtherGreater                 1调用   1卡  (定义在 1 张卡自己的 locals 里)
+  isAlreadyAffectedByOtherYamato                  1调用   1卡  (定义在 1 张卡自己的 locals 里)

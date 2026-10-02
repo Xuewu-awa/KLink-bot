@@ -1,0 +1,54 @@
+参考模拟器 EngineHost.cs 的原语数：184
+我们缺失 608 种，其中参考实现**有**的：50 种
+  这些合计 1021 个调用点 / 265 张卡
+
+  HasCampaignUpgrade                            192调用  38卡   EngineHost.cs:1319
+  CustomName2HasAttribute                       108调用  40卡   EngineHost.cs:1088
+  CustomName2Add                                 88调用  44卡   EngineHost.cs:1307
+  CampaignAddKreditCost                          79调用  52卡   EngineHost.cs:1589
+  CampaignAddAttack                              59调用  37卡   EngineHost.cs:1586
+  CampaignAddDefense                             59调用  36卡   EngineHost.cs:1587
+  ShouldGotchaTrigger                            36调用  36卡   EngineHost.cs:1348
+  getAndDecryptAttack                            33调用  23卡   EngineHost.cs:1098
+  IsUnrevealedCovertCard                         28调用  18卡   EngineHost.cs:1073
+  CustomName2Remove                              24调用  19卡   EngineHost.cs:1500
+  CampaignAddBlitz                               23调用  23卡   EngineHost.cs:1612
+  IsBomber                                       19调用  13卡   EngineHost.cs:1016
+  CampaignAddOpCost                              19调用  17卡   EngineHost.cs:1604
+  getCardsBuffedByThisCard                       18调用  17卡   EngineHost.cs:1399
+  GetCustomName2Attributes                       17调用   6卡   EngineHost.cs:1639
+  CampaignAddAmbush                              16调用  16卡   EngineHost.cs:1611
+  IsPinned                                       16调用  16卡   EngineHost.cs:1341
+  IsFighter                                      15调用  11卡   EngineHost.cs:1015
+  CampaignAddGuard                               14调用  14卡   EngineHost.cs:1614
+  CustomName1Add                                 14调用  13卡   EngineHost.cs:1498
+  IsExile                                        13调用   6卡   EngineHost.cs:1106
+  IsGotcha                                       13调用  11卡   EngineHost.cs:1342
+  CampaignAddSmokescreen                         10调用  10卡   EngineHost.cs:1616
+  RemovePin                                      10调用   9卡   EngineHost.cs:1827
+  Get Is Server Config                            9调用   5卡   EngineHost.cs:1356
+  getKreditTempBuffAmount                         9调用   5卡   EngineHost.cs:1380
+  CustomName1HasAttribute                         8调用   6卡   EngineHost.cs:1632
+  CustomName1Remove                               8调用   7卡   EngineHost.cs:1499
+  SetObjectiveCounter                             8调用   8卡   EngineHost.cs:1428
+  CampaignAddFury                                 7调用   7卡   EngineHost.cs:1613
+  HasBond                                         7调用   6卡   EngineHost.cs:1107
+  ReportError                                     7调用   5卡   EngineHost.cs:1682
+  CampaignSetOpCost                               5调用   5卡   EngineHost.cs:1598
+  getAttackTempBuffAmount                         4调用   3卡   EngineHost.cs:1704
+  FetchCardsByLocation                            3调用   2卡   EngineHost.cs:1208
+  AddIntelToCard                                  3调用   1卡   EngineHost.cs:1512
+  CampaignAddMobilize                             2调用   2卡   EngineHost.cs:1615
+  GetClientSide                                   2调用   2卡   EngineHost.cs:1357
+  HasAttackLeft                                   2调用   1卡   EngineHost.cs:1288
+  SetCardsSeenByCipher                            2调用   2卡   EngineHost.cs:1527
+  getHasVeteranUpgrade                            2调用   2卡   EngineHost.cs:1052
+  hasActivePincerEffect                           2调用   2卡   EngineHost.cs:1336
+  CampaignIncreaseHeavyArmor                      1调用   1卡   EngineHost.cs:1588
+  NotiferStarCounterChanged                       1调用   1卡   EngineHost.cs:1429
+  GetFrontlineOwnerSide                           1调用   1卡   EngineHost.cs:1962
+  CampaignRemoveMobilize                          1调用   1卡   EngineHost.cs:1617
+  CampaignRemoveSmokescreen                       1调用   1卡   EngineHost.cs:1618
+  getAndDecryptDefense                            1调用   1卡   EngineHost.cs:1361
+  getKreditBySide                                 1调用   1卡   EngineHost.cs:1862
+  getStaticVeteranUpgrade                         1调用   1卡   EngineHost.cs:1557

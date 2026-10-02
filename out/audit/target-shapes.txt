@@ -1,0 +1,118 @@
+======================================================================================================================
+目标卡族形状清单：35 个原语，1816 个调用点
+======================================================================================================================
+原语                            调用点  a[0]  a[1]  a[2]  a[3]  a[4]  a[5]  a[6]
+----------------------------------------------------------------------------------------------------------------------
+DamageCard                    271  卡对象(变量)×268/卡对象×3  其它变量×144/整数常量×121/整数cardID×4/卡对象(变量)×2  整数cardID×269/卡对象(变量)×2  布尔常量×267/其它变量×4  布尔常量×271  布尔常量×271  卡对象(变量)×271
+ChangeAttack                  428  卡对象(变量)×285/卡对象×143  整数cardID×428  整数常量×342/其它变量×71/整数cardID×11/卡对象(变量)×4  整数常量×428  布尔常量×428  其它变量×428  -
+ChangeDefense                 343  卡对象(变量)×266/卡对象×76/其它变量×1  整数cardID×343  整数常量×289/其它变量×43/整数cardID×7/卡对象(变量)×4  整数常量×343  布尔常量×343  其它变量×343  -
+GainAttack                      0  （IR 里没有调用点）
+GainDefense                     0  （IR 里没有调用点）
+LoseAttack                      0  （IR 里没有调用点）
+SetDefense                      0  （IR 里没有调用点）
+DestroyCard                   112  卡对象(变量)×103/卡对象×5/其它变量×2  卡对象×108/卡对象(变量)×2  -  -  -  -  -
+HealCard                        0  （IR 里没有调用点）
+ChangeKreditCost              136  卡对象(变量)×97/卡对象×39  整数cardID×136  整数常量×111/其它变量×24/整数cardID×1  整数常量×136  布尔常量×136  其它变量×136  -
+ChangeOperationCost           140  卡对象(变量)×106/卡对象×34  整数cardID×140  整数常量×120/其它变量×19/整数cardID×1  整数常量×140  布尔常量×140  布尔常量×140  布尔常量×140
+ChangeHeavyArmor                6  卡对象(变量)×5/卡对象×1  整数cardID×6  整数常量×6  整数常量×6  布尔常量×6  其它变量×6  -
+GiveBlitz                      62  整数cardID×55/卡对象(变量)×7  整数cardID×58/整数常量×4  -  -  -  -  -
+GiveGuard                      22  整数cardID×17/卡对象(变量)×3/其它变量×2  整数cardID×22  -  -  -  -  -
+GiveSmokescreen                 9  整数cardID×7/卡对象(变量)×2  整数cardID×8/整数常量×1  -  -  -  -  -
+GiveShock                      19  整数cardID×15/卡对象(变量)×4  整数cardID×19  其它变量×19  -  -  -  -
+GiveBond                        2  卡对象(变量)×1/整数cardID×1  整数cardID×2  其它变量×2  -  -  -  -
+GiveAmbush                     10  整数cardID×10  整数cardID×10  -  -  -  -  -
+GiveFury                       10  整数cardID×10  整数cardID×9/整数常量×1  -  -  -  -  -
+GiveImmune                     10  卡对象(变量)×5/整数cardID×4/其它变量×1  整数cardID×10  其它变量×10  -  -  -  -
+GiveAlpine                      1  整数cardID×1  其它变量×1  整数cardID×1  -  -  -  -
+GiveMobilize                    3  整数cardID×3  整数cardID×3  其它变量×3  -  -  -  -
+GiveSalvage                     3  整数cardID×2/卡对象(变量)×1  整数cardID×3  其它变量×3  -  -  -  -
+AddHeavyArmor                   0  （IR 里没有调用点）
+RemoveBlitz                    12  整数cardID×9/卡对象(变量)×3  其它变量×12  整数cardID×11/整数常量×1  布尔常量×12  -  -  -
+RemoveGuard                     9  整数cardID×8/卡对象(变量)×1  整数cardID×8/整数常量×1  布尔常量×9  布尔常量×9  -  -  -
+RemoveSmokescreen               8  整数cardID×5/其它变量×2/卡对象(变量)×1  整数cardID×8  布尔常量×8  布尔常量×8  -  -  -
+PinUnit                        68  整数cardID×65/卡对象(变量)×2/其它变量×1  整数cardID×68  -  -  -  -  -
+UnpinUnit                       0  （IR 里没有调用点）
+SuppressUnit                   16  整数cardID×14/卡对象(变量)×2  整数cardID×16  卡对象(变量)×16  -  -  -  -
+AddAttackUntilEndOfTurn        25  卡对象(变量)×20/卡对象×5  整数cardID×25  整数常量×24/其它变量×1  -  -  -  -
+MakeVeteran                    45  卡对象×42/卡对象(变量)×3  其它变量×45  -  -  -  -  -
+GetAdjacentCards               25  卡对象(变量)×19/卡对象×6  布尔常量×25  卡对象(变量)×25  -  -  -  -
+IsSameSideUnit                 19  阵营side×19  卡对象(变量)×19  -  -  -  -  -
+_isBigRedOne                    2  卡对象(变量)×2  其它变量×2  -  -  -  -  -
+
+======================================================================================================================
+嫌疑点 A：目标位（a[0]）出现「整数 cardID」—— 实现若用 AsCard 读就恒 null
+======================================================================================================================
+  GiveBlitz                  a[0]=整数cardID ×55    卡数=48    例：card_event_campaign_philippines2_chase_them_down, card_event_combined_arms_cam1, card_event_deep_operation, card_event_exploit_the_gap
+  GiveGuard                  a[0]=整数cardID ×17    卡数=17    例：card_event_strong_bond, card_event_supply_drop, card_event_unity_is_strength_cam1, card_unit_1097_volksgrenadier
+  GiveSmokescreen            a[0]=整数cardID ×7     卡数=7     例：card_event_campaign_guadalcanal2_base_defense, card_event_diversion, card_event_shadow_strike, card_event_unity_is_strength_cam1
+  GiveShock                  a[0]=整数cardID ×15    卡数=14    例：card_event_breakout, card_event_decoy_tactics, card_event_shadow_strike, card_event_shock_tactics
+  GiveBond                   a[0]=整数cardID ×1     卡数=1     例：card_event_way_of_subjects
+  GiveAmbush                 a[0]=整数cardID ×10    卡数=10    例：card_event_decoy_tactics, card_event_escaut_plan, card_event_hasty_reinforcements, card_event_spars
+  GiveFury                   a[0]=整数cardID ×10    卡数=10    例：card_event_breakout, card_event_burst_of_fire, card_event_entrenched, card_event_reinforcements_cam1
+  GiveImmune                 a[0]=整数cardID ×4     卡数=4     例：card_event_lightning_conquest_new, card_event_on_the_horizon, card_event_veteran_pilots, card_unit_japan_ki_100_goshiken
+  GiveAlpine                 a[0]=整数cardID ×1     卡数=1     例：card_unit_67th_baranovichi
+  GiveMobilize               a[0]=整数cardID ×3     卡数=3     例：card_event_sortie, card_unit_2e_rima, card_unit_french_p_36
+  GiveSalvage                a[0]=整数cardID ×2     卡数=2     例：card_event_entrenched, card_unit_raf_mitchell
+  RemoveBlitz                a[0]=整数cardID ×9     卡数=9     例：card_event_patton, card_location_soviet_scen3, card_unit_57mm_m1943, card_unit_6th_marine_regiment
+  RemoveGuard                a[0]=整数cardID ×8     卡数=8     例：card_event_campaign_alamein1_through_the_wire, card_event_magic, card_unit_48e_regiment, card_unit_48e_regiment_cam1
+  RemoveSmokescreen          a[0]=整数cardID ×5     卡数=5     例：card_event_campaign_guadalcanal2_base_defense, card_event_magic, card_event_usa_promo2, card_location_usa_scen4
+  PinUnit                    a[0]=整数cardID ×65    卡数=56    例：card_event_active_sonar, card_event_against_the_odds, card_event_air_superiority_cam1, card_event_balloon_bombs
+  SuppressUnit               a[0]=整数cardID ×14    卡数=13    例：card_event_duress, card_event_hit_the_drop_point, card_event_pummel, card_event_rain2_deluge3
+
+======================================================================================================================
+嫌疑点 A2：a[0] 是「阵营 side」—— 说明这是 **接收者成员函数** `Context{卡}.F(side)`，
+  接收者才是被作用的卡；实现若按 `(卡, 卡)` 或 `AsCard(a[0])` 读就恒 null/false
+======================================================================================================================
+  IsSameSideUnit             a[0]=阵营side ×19    带 recv 的 ×19    例：card_event_industrial_might, card_event_patton, card_location_british_scen4
+
+======================================================================================================================
+嫌疑点 B：目标位（a[0]）是卡对象、但**别的**位置也出现卡对象 —— 实现若「扫全部实参取第一个卡」会挑错
+======================================================================================================================
+  DamageCard                 ×271  例：card_event_forward_base_anzac i=61 卡对象位=[0, 6]
+  ChangeAttack               ×4    例：card_unit_macchi_c_200 i=588 卡对象位=[0, 2]
+  ChangeDefense              ×4    例：card_unit_macchi_c_200 i=655 卡对象位=[0, 2]
+  DestroyCard                ×108  例：card_event_corps_command i=464 卡对象位=[0, 1]
+  SuppressUnit               ×2    例：card_unit_36th_cavalry i=287 卡对象位=[0, 2]
+  GetAdjacentCards           ×25   例：card_event_close_air_support i=786 卡对象位=[0, 2]
+
+======================================================================================================================
+嫌疑点 B2：a[0] **不是卡对象**、但**后面**位置有卡对象 ——
+  实现若「扫全部实参取第一个卡」（`TargetCard`），a[0] 解析不出来时会**挑错卡**（静默打错目标）
+======================================================================================================================
+  DestroyCard                ×2    例：card_event_last_ditch i=507 a[0]=变量(unknown) 后续卡位=[0, 1]
+  SuppressUnit               ×14   例：card_unit_cromwell_mk_iv i=136 a[0]=成员读取(int) 后续卡位=[0, 2]
+  IsSameSideUnit             ×19   例：card_location_british_scen4 i=4027 a[0]=变量(side) 后续卡位=[0, 1]
+
+======================================================================================================================
+嫌疑点 C：接收者(recv)形状分布 —— `cardFunction` 恒为施法者自己
+======================================================================================================================
+  DamageCard                 变量(card)×271
+  ChangeAttack               变量(card)×428
+  ChangeDefense              变量(card)×343
+  DestroyCard                变量(card)×112
+  ChangeKreditCost           变量(card)×136
+  ChangeOperationCost        变量(card)×140
+  ChangeHeavyArmor           变量(card)×6
+  GiveBlitz                  变量(card)×62
+  GiveGuard                  变量(card)×22
+  GiveSmokescreen            变量(card)×9
+  GiveShock                  变量(card)×19
+  GiveBond                   变量(card)×2
+  GiveAmbush                 变量(card)×10
+  GiveFury                   变量(card)×10
+  GiveImmune                 变量(card)×10
+  GiveAlpine                 变量(card)×1
+  GiveMobilize               变量(card)×3
+  GiveSalvage                变量(card)×3
+  RemoveBlitz                变量(card)×12
+  RemoveGuard                变量(card)×9
+  RemoveSmokescreen          变量(card)×8
+  PinUnit                    变量(card)×68
+  SuppressUnit               变量(card)×16
+  AddAttackUntilEndOfTurn    变量(card)×25
+  MakeVeteran                变量(card)×45
+  GetAdjacentCards           变量(card)×25
+  IsSameSideUnit             变量(card)×19
+  _isBigRedOne               空×2
+
+全部调用点原始记录 → <repo-root>\out\audit\target-shapes.json

@@ -1,0 +1,1208 @@
+{
+ "summary": {
+  "match_id": 15,
+  "match_type": "classic",
+  "status": "finished",
+  "left_player_id": 1,
+  "right_player_id": 2,
+  "turns": 30,
+  "action_count": 160,
+  "winner_side": "left",
+  "local_subactions": true
+ },
+ "starting_info": {
+  "local_subactions": true,
+  "match_and_starting_data": {
+   "starting_data": {
+    "left_player_tag": 1711,
+    "deck_left": [
+     {
+      "is_gold": true,
+      "name": "card_event_overcast",
+      "location": "deck_left",
+      "card_id": 5,
+      "location_number": 4
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "deck_left",
+      "card_id": 35,
+      "location_number": 5
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_fifth_ohio",
+      "location": "deck_left",
+      "card_id": 39,
+      "location_number": 6
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 16,
+      "location_number": 7
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_seaborne_invasion",
+      "location": "deck_left",
+      "card_id": 6,
+      "location_number": 8
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_left",
+      "card_id": 19,
+      "location_number": 9
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 9,
+      "location_number": 10
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 10,
+      "location_number": 11
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_left",
+      "card_id": 31,
+      "location_number": 12
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_call_to_the_colonies",
+      "location": "deck_left",
+      "card_id": 28,
+      "location_number": 13
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 17,
+      "location_number": 14
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_b_17_f",
+      "location": "deck_left",
+      "card_id": 25,
+      "location_number": 15
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_phoney_war",
+      "location": "deck_left",
+      "card_id": 12,
+      "location_number": 16
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 8,
+      "location_number": 17
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_uss_missouri",
+      "location": "deck_left",
+      "card_id": 14,
+      "location_number": 18
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_naval_battle",
+      "location": "deck_left",
+      "card_id": 38,
+      "location_number": 19
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_left",
+      "card_id": 30,
+      "location_number": 20
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 15,
+      "location_number": 21
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_call_to_the_colonies",
+      "location": "deck_left",
+      "card_id": 29,
+      "location_number": 22
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bomber_mafia",
+      "location": "deck_left",
+      "card_id": 26,
+      "location_number": 23
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_left",
+      "card_id": 18,
+      "location_number": 24
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_counter_strike",
+      "location": "deck_left",
+      "card_id": 22,
+      "location_number": 25
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_war_bonds",
+      "location": "deck_left",
+      "card_id": 24,
+      "location_number": 26
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_us_military_research",
+      "location": "deck_left",
+      "card_id": 7,
+      "location_number": 27
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bomber_mafia",
+      "location": "deck_left",
+      "card_id": 27,
+      "location_number": 28
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_liberation",
+      "location": "deck_left",
+      "card_id": 37,
+      "location_number": 29
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "deck_left",
+      "card_id": 33,
+      "location_number": 30
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_tropic_lightning",
+      "location": "deck_left",
+      "card_id": 40,
+      "location_number": 31
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_strategic_bombing",
+      "location": "deck_left",
+      "card_id": 11,
+      "location_number": 32
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_phoney_war",
+      "location": "deck_left",
+      "card_id": 13,
+      "location_number": 33
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_tigercat",
+      "location": "deck_left",
+      "card_id": 2,
+      "location_number": 34
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_defend_in_depth",
+      "location": "deck_left",
+      "card_id": 21,
+      "location_number": 35
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_defend_in_depth",
+      "location": "deck_left",
+      "card_id": 20,
+      "location_number": 36
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_liberation",
+      "location": "deck_left",
+      "card_id": 36,
+      "location_number": 37
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_war_bonds",
+      "location": "deck_left",
+      "card_id": 23,
+      "location_number": 38
+     }
+    ],
+    "player_stars_left": 120,
+    "starting_side": "left",
+    "ally_faction_left": "France",
+    "equipment_left": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "location_card_left": {
+     "is_gold": true,
+     "faction": "USA",
+     "name": "card_location_cherbourg",
+     "location": "board_hqleft",
+     "card_id": 1,
+     "location_number": 0
+    },
+    "left_player_name": "killmyworld",
+    "right_player_tag": 7794,
+    "player_id_right": 2,
+    "starting_hand_left": [
+     {
+      "is_gold": true,
+      "name": "card_event_overcast",
+      "location": "hand_left",
+      "card_id": 4,
+      "location_number": 0
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "hand_left",
+      "card_id": 34,
+      "location_number": 1
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "hand_left",
+      "card_id": 32,
+      "location_number": 2
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_overcast",
+      "location": "hand_left",
+      "card_id": 3,
+      "location_number": 3
+     }
+    ],
+    "location_card_right": {
+     "is_gold": true,
+     "faction": "Germany",
+     "name": "card_location_ardennes_waw",
+     "location": "board_hqright",
+     "card_id": 41,
+     "location_number": 0
+    },
+    "starting_hand_right": [
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "hand_right",
+      "card_id": 49,
+      "location_number": 0
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_15_cm_autokanone",
+      "location": "hand_right",
+      "card_id": 75,
+      "location_number": 1
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_FBGF",
+      "location": "hand_right",
+      "card_id": 71,
+      "location_number": 2
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_Elbe",
+      "location": "hand_right",
+      "card_id": 69,
+      "location_number": 3
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_heinkel_he_115_inv",
+      "location": "hand_right",
+      "card_id": 59,
+      "location_number": 4
+     }
+    ],
+    "right_player_officer": true,
+    "deck_right": [
+     {
+      "is_gold": true,
+      "name": "card_unit_169_grenadiers",
+      "location": "deck_right",
+      "card_id": 73,
+      "location_number": 5
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panther_d_winter",
+      "location": "deck_right",
+      "card_id": 44,
+      "location_number": 6
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_capitulation",
+      "location": "deck_right",
+      "card_id": 72,
+      "location_number": 7
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bismarck",
+      "location": "deck_right",
+      "card_id": 62,
+      "location_number": 8
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 67,
+      "location_number": 9
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_reich_research",
+      "location": "deck_right",
+      "card_id": 55,
+      "location_number": 10
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_comet",
+      "location": "deck_right",
+      "card_id": 45,
+      "location_number": 11
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_Germany_Nava",
+      "location": "deck_right",
+      "card_id": 53,
+      "location_number": 12
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_right",
+      "card_id": 48,
+      "location_number": 13
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_kriegsmarine",
+      "location": "deck_right",
+      "card_id": 63,
+      "location_number": 14
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_blitz_doctrine",
+      "location": "deck_right",
+      "card_id": 42,
+      "location_number": 15
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_right",
+      "card_id": 47,
+      "location_number": 16
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_20_panzergrenadier",
+      "location": "deck_right",
+      "card_id": 50,
+      "location_number": 17
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_shifting_attack",
+      "location": "deck_right",
+      "card_id": 76,
+      "location_number": 18
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_20_panzergrenadier",
+      "location": "deck_right",
+      "card_id": 51,
+      "location_number": 19
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_right",
+      "card_id": 57,
+      "location_number": 20
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 68,
+      "location_number": 21
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_blitz_doctrine",
+      "location": "deck_right",
+      "card_id": 43,
+      "location_number": 22
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_158_nachschub",
+      "location": "deck_right",
+      "card_id": 74,
+      "location_number": 23
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_GSA",
+      "location": "deck_right",
+      "card_id": 54,
+      "location_number": 24
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_ME262",
+      "location": "deck_right",
+      "card_id": 52,
+      "location_number": 25
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_tirpitz",
+      "location": "deck_right",
+      "card_id": 61,
+      "location_number": 26
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_asw_patrol",
+      "location": "deck_right",
+      "card_id": 77,
+      "location_number": 27
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 65,
+      "location_number": 28
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_asw_patrol",
+      "location": "deck_right",
+      "card_id": 78,
+      "location_number": 29
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_railway_gun_leopold",
+      "location": "deck_right",
+      "card_id": 46,
+      "location_number": 30
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_alpenfestung",
+      "location": "deck_right",
+      "card_id": 56,
+      "location_number": 31
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_enigma",
+      "location": "deck_right",
+      "card_id": 64,
+      "location_number": 32
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_Thule",
+      "location": "deck_right",
+      "card_id": 70,
+      "location_number": 33
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 66,
+      "location_number": 34
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panzer_iii_h",
+      "location": "deck_right",
+      "card_id": 79,
+      "location_number": 35
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panzer_iii_h",
+      "location": "deck_right",
+      "card_id": 80,
+      "location_number": 36
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_admiral_hipper",
+      "location": "deck_right",
+      "card_id": 60,
+      "location_number": 37
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_right",
+      "card_id": 58,
+      "location_number": 38
+     }
+    ],
+    "player_stars_right": 120,
+    "player_id_left": 1,
+    "is_ai_match": false,
+    "equipment_right": [
+     "item_OmegaWatch",
+     "emote_swift_as_the_wind",
+     "emote_thanks_for_game",
+     "emote_watch_me",
+     "emote_not_intended",
+     "emote_impossible",
+     "emote_feeling_under",
+     "emote_total_war",
+     "emote_blood_honor",
+     "avatar_paratrooper"
+    ],
+    "ally_faction_right": "USA",
+    "left_player_officer": true,
+    "card_back_left": "",
+    "card_back_right": "cardback_winter_war",
+    "right_player_name": "Furry_Euhan"
+   },
+   "match": {
+    "right_is_online": true,
+    "deck_id_right": 4,
+    "action_player_id": 2,
+    "action_side": "right",
+    "deck_id_left": 8,
+    "match_id": 15,
+    "player_id_right": 2,
+    "winner_id": 1,
+    "player_status_right": "mulligan_done",
+    "match_url": "http://127.0.0.1:5231/matches/v2/15",
+    "player_status_left": "mulligan_done",
+    "current_turn": 30,
+    "left_is_online": true,
+    "start_side": "left",
+    "current_action_id": 160,
+    "winner_side": "left",
+    "player_id_left": 1,
+    "match_type": "classic",
+    "actions_url": "http://127.0.0.1:5231/matches/v2/15/actions",
+    "actions": [],
+    "modify_date": "2026-09-30T13:37:00.728Z",
+    "notifications": [],
+    "status": "finished"
+   },
+   "mulligan_left": {
+    "deck": [
+     {
+      "is_gold": true,
+      "name": "card_event_overcast",
+      "location": "deck_left",
+      "card_id": 5,
+      "location_number": 4
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "deck_left",
+      "card_id": 35,
+      "location_number": 5
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_fifth_ohio",
+      "location": "deck_left",
+      "card_id": 39,
+      "location_number": 6
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 16,
+      "location_number": 7
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_seaborne_invasion",
+      "location": "deck_left",
+      "card_id": 6,
+      "location_number": 8
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_left",
+      "card_id": 19,
+      "location_number": 9
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 9,
+      "location_number": 10
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 10,
+      "location_number": 11
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_left",
+      "card_id": 31,
+      "location_number": 12
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_call_to_the_colonies",
+      "location": "deck_left",
+      "card_id": 28,
+      "location_number": 13
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 17,
+      "location_number": 14
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_b_17_f",
+      "location": "deck_left",
+      "card_id": 25,
+      "location_number": 15
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_phoney_war",
+      "location": "deck_left",
+      "card_id": 12,
+      "location_number": 16
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_175th_infantry_regiment",
+      "location": "deck_left",
+      "card_id": 8,
+      "location_number": 17
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_uss_missouri",
+      "location": "deck_left",
+      "card_id": 14,
+      "location_number": 18
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_naval_battle",
+      "location": "deck_left",
+      "card_id": 38,
+      "location_number": 19
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_left",
+      "card_id": 30,
+      "location_number": 20
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_left",
+      "card_id": 15,
+      "location_number": 21
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_call_to_the_colonies",
+      "location": "deck_left",
+      "card_id": 29,
+      "location_number": 22
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bomber_mafia",
+      "location": "deck_left",
+      "card_id": 26,
+      "location_number": 23
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_left",
+      "card_id": 18,
+      "location_number": 24
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_counter_strike",
+      "location": "deck_left",
+      "card_id": 22,
+      "location_number": 25
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_war_bonds",
+      "location": "deck_left",
+      "card_id": 24,
+      "location_number": 26
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_us_military_research",
+      "location": "deck_left",
+      "card_id": 7,
+      "location_number": 27
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bomber_mafia",
+      "location": "deck_left",
+      "card_id": 27,
+      "location_number": 28
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_liberation",
+      "location": "deck_left",
+      "card_id": 37,
+      "location_number": 29
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_compromise",
+      "location": "deck_left",
+      "card_id": 33,
+      "location_number": 30
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_tropic_lightning",
+      "location": "deck_left",
+      "card_id": 40,
+      "location_number": 31
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_strategic_bombing",
+      "location": "deck_left",
+      "card_id": 11,
+      "location_number": 32
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_phoney_war",
+      "location": "deck_left",
+      "card_id": 13,
+      "location_number": 33
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_tigercat",
+      "location": "deck_left",
+      "card_id": 2,
+      "location_number": 34
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_defend_in_depth",
+      "location": "deck_left",
+      "card_id": 21,
+      "location_number": 35
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_defend_in_depth",
+      "location": "deck_left",
+      "card_id": 20,
+      "location_number": 36
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_liberation",
+      "location": "deck_left",
+      "card_id": 36,
+      "location_number": 37
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_war_bonds",
+      "location": "deck_left",
+      "card_id": 23,
+      "location_number": 38
+     }
+    ],
+    "discarded_cards": [],
+    "replacement_cards": []
+   },
+   "mulligan_right": {
+    "deck": [
+     {
+      "is_gold": true,
+      "name": "card_unit_169_grenadiers",
+      "location": "deck_right",
+      "card_id": 73,
+      "location_number": 5
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panther_d_winter",
+      "location": "deck_right",
+      "card_id": 44,
+      "location_number": 6
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_capitulation",
+      "location": "deck_right",
+      "card_id": 72,
+      "location_number": 7
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_bismarck",
+      "location": "deck_right",
+      "card_id": 62,
+      "location_number": 8
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 67,
+      "location_number": 9
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_reich_research",
+      "location": "deck_right",
+      "card_id": 55,
+      "location_number": 10
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_comet",
+      "location": "deck_right",
+      "card_id": 45,
+      "location_number": 11
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_Germany_Nava",
+      "location": "deck_right",
+      "card_id": 53,
+      "location_number": 12
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_right",
+      "card_id": 48,
+      "location_number": 13
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_kriegsmarine",
+      "location": "deck_right",
+      "card_id": 63,
+      "location_number": 14
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_Elbe",
+      "location": "deck_right",
+      "card_id": 69,
+      "location_number": 15
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_in_hour_of_need",
+      "location": "deck_right",
+      "card_id": 47,
+      "location_number": 16
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_20_panzergrenadier",
+      "location": "deck_right",
+      "card_id": 50,
+      "location_number": 17
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_15_cm_autokanone",
+      "location": "deck_right",
+      "card_id": 75,
+      "location_number": 18
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_20_panzergrenadier",
+      "location": "deck_right",
+      "card_id": 51,
+      "location_number": 19
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "deck_right",
+      "card_id": 57,
+      "location_number": 20
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 68,
+      "location_number": 21
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_blitz_doctrine",
+      "location": "deck_right",
+      "card_id": 43,
+      "location_number": 22
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_158_nachschub",
+      "location": "deck_right",
+      "card_id": 74,
+      "location_number": 23
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_GSA",
+      "location": "deck_right",
+      "card_id": 54,
+      "location_number": 24
+     },
+     {
+      "is_gold": true,
+      "name": "card_events_ME262",
+      "location": "deck_right",
+      "card_id": 52,
+      "location_number": 25
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_FBGF",
+      "location": "deck_right",
+      "card_id": 71,
+      "location_number": 26
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_asw_patrol",
+      "location": "deck_right",
+      "card_id": 77,
+      "location_number": 27
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 65,
+      "location_number": 28
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_asw_patrol",
+      "location": "deck_right",
+      "card_id": 78,
+      "location_number": 29
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_railway_gun_leopold",
+      "location": "deck_right",
+      "card_id": 46,
+      "location_number": 30
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_alpenfestung",
+      "location": "deck_right",
+      "card_id": 56,
+      "location_number": 31
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_enigma",
+      "location": "deck_right",
+      "card_id": 64,
+      "location_number": 32
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_Thule",
+      "location": "deck_right",
+      "card_id": 70,
+      "location_number": 33
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_the_war_machine",
+      "location": "deck_right",
+      "card_id": 66,
+      "location_number": 34
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panzer_iii_h",
+      "location": "deck_right",
+      "card_id": 79,
+      "location_number": 35
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_panzer_iii_h",
+      "location": "deck_right",
+      "card_id": 80,
+      "location_number": 36
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_admiral_hipper",
+      "location": "deck_right",
+      "card_id": 60,
+      "location_number": 37
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_heinkel_he_115_inv",
+      "location": "deck_right",
+      "card_id": 59,
+      "location_number": 38
+     }
+    ],
+    "discarded_cards": [
+     {
+      "is_gold": true,
+      "name": "card_unit_15_cm_autokanone",
+      "location": "hand_right",
+      "card_id": 75,
+      "location_number": 1
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_FBGF",
+      "location": "hand_right",
+      "card_id": 71,
+      "location_number": 2
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_Elbe",
+      "location": "hand_right",
+      "card_id": 69,
+      "location_number": 3
+     },
+     {
+      "is_gold": true,
+      "name": "card_unit_heinkel_he_115_inv",
+      "location": "hand_right",
+      "card_id": 59,
+      "location_number": 4
+     }
+    ],
+    "replacement_cards": [
+     {
+      "is_gold": true,
+      "name": "card_event_shifting_attack",
+      "location": "hand_right",
+      "card_id": 76,
+      "location_number": 1
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_tirpitz",
+      "location": "hand_right",
+      "card_id": 61,
+      "location_number": 2
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_blitz_doctrine",
+      "location": "hand_right",
+      "card_id": 42,
+      "location_number": 3
+     },
+     {
+      "is_gold": true,
+      "name": "card_event_production_order",
+      "location": "hand_right",
+      "card_id": 58,
+      "location_number": 4
+     }
+    ]
+   }
+  }
+ }
+}

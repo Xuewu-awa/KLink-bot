@@ -1,0 +1,151 @@
+[
+ {
+  "fn": "SetCountdown",
+  "class": "C",
+  "calls": 15,
+  "cards": 15,
+  "definedIn": "BP_CardFunctions",
+  "callsRegistered": [
+   "GetCardFromID",
+   "JSON_SetInt",
+   "PersistCustomFields"
+  ]
+ },
+ {
+  "fn": "RemoveBuff",
+  "class": "C",
+  "calls": 12,
+  "cards": 5,
+  "definedIn": "card_unit_1st_london_brigade",
+  "callsRegistered": [
+   "ChangeAttack",
+   "IsLocatedOnBoard",
+   "isBuffedByCard"
+  ]
+ },
+ {
+  "fn": "CreateLightInfantryArr",
+  "class": "C",
+  "calls": 6,
+  "cards": 1,
+  "definedIn": "card_event_depths_of_winter",
+  "callsRegistered": [
+   "Array_Add"
+  ]
+ },
+ {
+  "fn": "WasLeftMostCardWhenPlayedFromHand",
+  "class": "C",
+  "calls": 6,
+  "cards": 6,
+  "definedIn": "BP_CardFunctions",
+  "callsRegistered": [
+   "JSON_GetBool"
+  ]
+ },
+ {
+  "fn": "RemoveAttackBuff",
+  "class": "C",
+  "calls": 5,
+  "cards": 2,
+  "definedIn": "card_unit_5th_medical_battalion",
+  "callsRegistered": [
+   "ChangeAttack",
+   "IsLocatedOnBoard",
+   "isBuffedByCard"
+  ]
+ },
+ {
+  "fn": "SetSaturationAndBrightness",
+  "class": "C",
+  "calls": 4,
+  "cards": 3,
+  "definedIn": "BP_BoardCard",
+  "callsRegistered": [
+   "SetScalarParameterValue"
+  ]
+ },
+ {
+  "fn": "WasRightMostCardWhenPlayedFromHand",
+  "class": "C",
+  "calls": 4,
+  "cards": 4,
+  "definedIn": "BP_CardFunctions",
+  "callsRegistered": [
+   "JSON_GetBool"
+  ]
+ },
+ {
+  "fn": "GetCardScaling",
+  "class": "C",
+  "calls": 2,
+  "cards": 1,
+  "definedIn": "BP_BaseCard",
+  "callsRegistered": [
+   "GetCachedBPBoard"
+  ]
+ },
+ {
+  "fn": "SetVisibilityForCoverPlane",
+  "class": "C",
+  "calls": 2,
+  "cards": 2,
+  "definedIn": "BP_HandCard",
+  "callsRegistered": [
+   "SetVisibility"
+  ]
+ },
+ {
+  "fn": "CheckIsInQueue",
+  "class": "A",
+  "calls": 1,
+  "cards": 1,
+  "definedIn": "BP_CardRenderer",
+  "callsRegistered": [
+   "Array_Get",
+   "Array_Length"
+  ]
+ },
+ {
+  "fn": "GetDamageVisualDelay",
+  "class": "C",
+  "calls": 1,
+  "cards": 1,
+  "definedIn": "BP_BoardCard",
+  "callsRegistered": [
+   "GetCardFromID",
+   "IsValid"
+  ]
+ },
+ {
+  "fn": "GetExplosionDuration",
+  "class": "C",
+  "calls": 1,
+  "cards": 1,
+  "definedIn": "BP_BaseCard",
+  "callsRegistered": [
+   "GetCard"
+  ]
+ },
+ {
+  "fn": "PlayMySound",
+  "class": "C",
+  "calls": 1,
+  "cards": 1,
+  "definedIn": "BP_Widget_EffectBarIcon",
+  "callsRegistered": [
+   "IsValid",
+   "PlaySoundEffect"
+  ]
+ },
+ {
+  "fn": "SetImageVisibility",
+  "class": "C",
+  "calls": 1,
+  "cards": 1,
+  "definedIn": "WBP_CreateCardInnerButton",
+  "callsRegistered": [
+   "SetVisibility"
+  ]
+ }
+]

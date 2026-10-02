@@ -1,0 +1,53 @@
+# ============================================================================
+#  klink bot —— .gitattributes
+#
+#  为什么需要它：上游的 `klink` 仓库里行尾是**混的** ——
+#  `src/KLink.Bot/**` 是 LF，而 `tools/BotSim/*.cs` 是 CRLF。
+#  不显式规定的话，`git add` 会刷一屏 `LF will be replaced by CRLF` 警告，
+#  而且换一台机器 clone 之后**整个文件都会显示成改动**（行尾变了），diff 直接废掉。
+#
+#  策略：仓库内统一 LF（`text=auto eol=lf`），
+#  只有 Windows 原生脚本（.ps1/.bat/.cmd）保持 CRLF。
+# ============================================================================
+
+# 默认：自动识别文本，仓库内统一 LF
+* text=auto eol=lf
+
+# Windows 原生脚本保持 CRLF（PowerShell 5.1 对 LF 的兼容性不如 pwsh）
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# 明确标记为文本（避免被 `text=auto` 误判成二进制）
+*.cs    text eol=lf
+*.csproj text eol=lf
+*.slnx  text eol=lf
+*.py    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.tsv   text eol=lf
+*.txt   text eol=lf
+*.xml   text eol=lf
+*.config text eol=lf
+
+# 生成的大 JSON —— 不要在 diff / 语言统计里算成源码
+# ⚠️ 路径里有空格 ⇒ 必须用双引号包起来，否则 git 会把后半截当成"属性名"而报错。
+"klink bot/docs/card-ir.json"           linguist-generated=true -diff
+"klink bot/docs/card-effects.json"      linguist-generated=true -diff
+"klink bot/docs/cards.live.json"        linguist-generated=true -diff
+"klink bot/docs/cards.json"             linguist-generated=true -diff
+"klink bot/docs/card-vectors.json"      linguist-generated=true -diff
+"klink bot/docs/deck_code_ids.json"     linguist-generated=true -diff
+"klink bot/docs/deck_code_ids.live.json" linguist-generated=true -diff
+"klink bot/docs/event-contracts.json"   linguist-generated=true -diff
+
+# 二进制（正常情况下被 .gitignore 挡住，这里再兜一层）
+*.pak   binary
+*.jmap  binary
+*.bin   binary
+*.npz   binary
+*.dll   binary
+*.exe   binary
+*.png   binary
+*.jpg   binary

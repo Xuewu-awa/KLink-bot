@@ -1,0 +1,150 @@
+=== 定义在 card_* 卡资产里、被 ubergraph 调用的私有函数 ===
+状态：★=已在 LOCAL_FUNCTIONS / 派发表有 / 派发表无（=IR 里既没函数体、VM 也不认，调用被记 Unimplemented）
+
+ApplyTheBuff                               卡数=   5  派发表有(手写C#)
+RemoveBuff                                 卡数=   5  **派发表无**
+didPlayBritishInfantryLastTurn             卡数=   5  **派发表无**
+RemoveTheBuff                              卡数=   4  派发表有(手写C#)
+ApplyBuff                                  卡数=   4  **派发表无**
+isSecondOrderThisTurn                      卡数=   3  **派发表无**
+Random Card                                卡数=   3  **派发表无**
+CheckAndApplyKreditBuff                    卡数=   2  **派发表无**
+hasGuardAdjacentUnit                       卡数=   2  **派发表无**
+updateCustomJsonIfNeeded                   卡数=   2  派发表有(手写C#)
+DeactivateOtherHTDP                        卡数=   2  **派发表无**
+ApplyAttackBuff                            卡数=   2  **派发表无**
+RemoveAttackBuff                           卡数=   2  **派发表无**
+get_adjacent_unit_count                    卡数=   2  **派发表无**
+checkAndUpdateBuff                         卡数=   1  **派发表无**
+getSkirmishBP                              卡数=   1  **派发表无**
+RandomChooseCards                          卡数=   1  **派发表无**
+CheckAndUpdateCost                         卡数=   1  **派发表无**
+GetRandomBritishAir                        卡数=   1  **派发表无**
+anyOrderPlayedThisTurn                     卡数=   1  派发表有(手写C#)
+CheckFriendlyAirUnitsOnBoard               卡数=   1  **派发表无**
+hasPlayedOrderThisTurn                     卡数=   1  **派发表无**
+DisableOtherFriendly7th                    卡数=   1  **派发表无**
+getUnseenCardsOppositeSide                 卡数=   1  **派发表无**
+ApplyAndCorrectBuff                        卡数=   1  **派发表无**
+UpdateBuff                                 卡数=   1  **派发表无**
+updateBuffs                                卡数=   1  **派发表无**
+clearBuffs                                 卡数=   1  **派发表无**
+clearTargetCard                            卡数=   1  **派发表无**
+RemoveAllOverrides                         卡数=   1  **派发表无**
+AddPinnedOverride                          卡数=   1  **派发表无**
+AddOverrideToPinnedCardsOnYourSide         卡数=   1  **派发表无**
+_qualifiesForUnpinning                     卡数=   1  **派发表无**
+RemovePinnedOverride                       卡数=   1  **派发表无**
+PickRandomCard                             卡数=   1  **派发表无**
+TriggerMultipleDeploymentEffects           卡数=   1  **派发表无**
+alreadyHasTheAbility                       卡数=   1  **派发表无**
+isAlreadyAffectedByOtherGreater            卡数=   1  **派发表无**
+isAlreadyAffectedByOtherYamato             卡数=   1  **派发表无**
+Has Opposite Side Air On Board             卡数=   1  **派发表无**
+_checkAndSetBuff                           卡数=   1  **派发表无**
+DisableDoubleCostAbility                   卡数=   1  **派发表无**
+anyFriendlyA6M2Active                      卡数=   1  **派发表无**
+EnableDoubleCostAbility                    卡数=   1  **派发表无**
+get_adjacent_japan_units_count             卡数=   1  **派发表无**
+CompareHandCards                           卡数=   1  **派发表无**
+DiscardHighestCostCardBySide               卡数=   1  **派发表无**
+GetSeenCardsFromOppositeSide               卡数=   1  **派发表无**
+ShouldTriggerAbility                       卡数=   1  **派发表无**
+getMoveReason                              卡数=   1  **派发表无**
+Apply The Buff                             卡数=   1  **派发表无**
+Random_3_SovietUnits                       卡数=   1  **派发表无**
+GetOppositeUnitsOnBoard                    卡数=   1  **派发表无**
+isAlreadyAffectedByOtherReckless           卡数=   1  **派发表无**
+RandomlyChooseTank                         卡数=   1  **派发表无**
+_onCardDefenseChanged                      卡数=   1  **派发表无**
+RandomChooseA_Tank                         卡数=   1  **派发表无**
+checkAndUpdateBuffOnCard                   卡数=   1  派发表有(手写C#)
+checkAndUpdateBuffOnAllCards               卡数=   1  派发表有(手写C#)
+getUnpinnedEnemyUnits                      卡数=   1  **派发表无**
+CreateLightInfantryArr                     卡数=   1  **派发表无**
+CheckFriendlyUnitsOnBoard                  卡数=   1  **派发表无**
+GiveAlpineToLightInfantry                  卡数=   1  **派发表无**
+isPattonPlayedThisTurn                     卡数=   1  **派发表无**
+getTwoCardsFromPossibleCards               卡数=   1  派发表有(手写C#)
+getPossibleCardsFromStaticCards            卡数=   1  派发表有(手写C#)
+ShouldSpawnFrontline                       卡数=   1  **派发表无**
+_isBigRedOne                               卡数=   1  派发表有(手写C#)
+SpawnShermanInHand                         卡数=   1  **派发表无**
+Remove the Buff                            卡数=   1  **派发表无**
+MoveCards                                  卡数=   1  **派发表无**
+Get Random Unit on Board                   卡数=   1  **派发表无**
+SpawnUnitsWithKreditCombo                  卡数=   1  **派发表无**
+GetUSAUnitsAndKredits                      卡数=   1  **派发表无**
+GetRandomKreditCombo                       卡数=   1  **派发表无**
+doIControl3opCostUnit                      卡数=   1  **派发表无**
+
+合计 76 个，其中派发表无 = 67
+
+=== 明细（哪些卡定义了它）===
+RemoveBuff: ['card_unit_1st_london_brigade', 'card_unit_royal_west_kents', 'card_unit_sdf', 'card_unit_type_4_chi_to', 'card_unit_wolves_of_tuscany']
+didPlayBritishInfantryLastTurn: ['card_event_forward_observers', 'card_unit_baltimore_mk_iii', 'card_unit_defiant_mk_i', 'card_unit_the_polar_bears', 'card_unit_valentine_mk_ii']
+ApplyBuff: ['card_unit_1st_london_brigade', 'card_unit_royal_west_kents', 'card_unit_type_4_chi_to', 'card_unit_wolves_of_tuscany']
+isSecondOrderThisTurn: ['card_event_lure', 'card_event_wave_after_wave', 'card_unit_cameronians']
+Random Card: ['card_event_red_banner', 'card_event_ural_factories', 'card_event_ural_factories_cam1']
+CheckAndApplyKreditBuff: ['card_event_patton', 'card_unit_raf_ground_crew']
+hasGuardAdjacentUnit: ['card_unit_raf_mitchell', 'card_unit_spitfire_mk_ii']
+DeactivateOtherHTDP: ['card_event_hit_the_drop_point', 'card_event_ski_troops']
+ApplyAttackBuff: ['card_unit_5th_medical_battalion', 'card_unit_panzer_iii_l']
+RemoveAttackBuff: ['card_unit_5th_medical_battalion', 'card_unit_panzer_iii_l']
+get_adjacent_unit_count: ['card_unit_112th_infantry_regiment', 'card_unit_26th_infantry_regiment']
+checkAndUpdateBuff: ['card_unit_the_silent_seventh']
+getSkirmishBP: ['card_brawl_test1']
+RandomChooseCards: ['card_event_foreign_support_skirm']
+CheckAndUpdateCost: ['card_event_for_precision_bombing']
+GetRandomBritishAir: ['card_event_radar_alert']
+CheckFriendlyAirUnitsOnBoard: ['card_event_sea_patrol']
+hasPlayedOrderThisTurn: ['card_unit_10th_para_battalion']
+DisableOtherFriendly7th: ['card_unit_7th_scottish_borderers']
+getUnseenCardsOppositeSide: ['card_unit_7th_scottish_borderers']
+ApplyAndCorrectBuff: ['card_unit_sdf']
+UpdateBuff: ['card_unit_panzer_iv_h']
+updateBuffs: ['card_event_support_column']
+clearBuffs: ['card_event_support_column']
+clearTargetCard: ['card_event_support_column']
+RemoveAllOverrides: ['card_unit_14_panzergrenadier']
+AddPinnedOverride: ['card_unit_14_panzergrenadier']
+AddOverrideToPinnedCardsOnYourSide: ['card_unit_14_panzergrenadier']
+_qualifiesForUnpinning: ['card_unit_14_panzergrenadier']
+RemovePinnedOverride: ['card_unit_14_panzergrenadier']
+PickRandomCard: ['card_event_harass']
+TriggerMultipleDeploymentEffects: ['card_event_air_escort']
+alreadyHasTheAbility: ['card_event_vanguard_ita']
+isAlreadyAffectedByOtherGreater: ['card_event_greater_purpose']
+isAlreadyAffectedByOtherYamato: ['card_event_yamato']
+Has Opposite Side Air On Board: ['card_unit_ki_42_ii_ko']
+_checkAndSetBuff: ['card_unit_78th_yongsan']
+DisableDoubleCostAbility: ['card_unit_zero_a6m2_21']
+anyFriendlyA6M2Active: ['card_unit_zero_a6m2_21']
+EnableDoubleCostAbility: ['card_unit_zero_a6m2_21']
+get_adjacent_japan_units_count: ['card_unit_3rd_yokosuka']
+CompareHandCards: ['card_unit_sakura_regiment']
+DiscardHighestCostCardBySide: ['card_event_rain4_monsoon_rain']
+GetSeenCardsFromOppositeSide: ['card_event_orp_orzel']
+ShouldTriggerAbility: ['card_unit_1st_grenadier_regiment']
+getMoveReason: ['card_unit_35th_infantry_regiment']
+Apply The Buff: ['card_unit_sturmovik_pol']
+Random_3_SovietUnits: ['card_event_soviet_promo3']
+GetOppositeUnitsOnBoard: ['card_unit_57th_rifles']
+isAlreadyAffectedByOtherReckless: ['card_event_reckless_assault']
+RandomlyChooseTank: ['card_event_stand_together_brothers']
+_onCardDefenseChanged: ['card_unit_392nd_rifles']
+RandomChooseA_Tank: ['card_event_refit']
+getUnpinnedEnemyUnits: ['card_event_campaign_moscow1_retreat']
+CreateLightInfantryArr: ['card_event_depths_of_winter']
+CheckFriendlyUnitsOnBoard: ['card_unit_122nd_korsun']
+GiveAlpineToLightInfantry: ['card_unit_67th_baranovichi']
+isPattonPlayedThisTurn: ['card_event_patton']
+ShouldSpawnFrontline: ['card_event_hell_on_wheels']
+SpawnShermanInHand: ['card_unit_cyclone_division']
+Remove the Buff: ['card_unit_l4_grasshopper']
+MoveCards: ['card_event_night_bombing']
+Get Random Unit on Board: ['card_event_island_hopping_elit']
+SpawnUnitsWithKreditCombo: ['card_event_mass_deployment']
+GetUSAUnitsAndKredits: ['card_event_mass_deployment']
+GetRandomKreditCombo: ['card_event_mass_deployment']
+doIControl3opCostUnit: ['card_unit_b_24_d']

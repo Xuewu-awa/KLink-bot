@@ -1,0 +1,219 @@
+=== 原生事件（BaseCardObject.h 的 void OnXxx(...)）× 订阅卡数 × 内核是否派发 ===
+事件                                               订阅卡数  内核
+OnAfterAttack                                      40  ✔ 已派发
+OnAfterCardMovedToDeckFromHand                      1  ✗ 未派发
+OnAfterChangeAttack                                 2  ✗ 未派发
+OnAfterDeckChanged                                  3  ✗ 未派发
+OnAfterDefenseIsSet                                 2  ✗ 未派发
+OnAfterDestroyed                                    3  ✗ 未派发
+OnAfterExtraKreditSlotGain                         12  ✗ 未派发
+OnAfterGainDefense                                 11  ✗ 未派发
+OnAfterKreditCostChanged                            0  ✗ 未派发
+OnAfterLeaveBoard                                  12  ✗ 未派发
+OnAfterOperationCostChanged                         0  ✗ 未派发
+OnAfterOtherCardAttacks                            23  ✔ 已派发
+OnAfterOtherCardChangeAttack                        2  ✗ 未派发
+OnAfterOtherCardDefenseIsSet                        3  ✗ 未派发
+OnAfterOtherCardGainDefense                         8  ✗ 未派发
+OnAfterOtherCardLeaveBoardOrOwner                  25  ✔ 已派发
+OnAfterOtherCardOperactionCostBuffsReset            1  ✗ 未派发
+OnAfterOtherCardOperactionCostChanged               1  ✗ 未派发
+OnAfterOtherCardSuppressed                          4  ✗ 未派发
+OnAttackStopped                                     2  ✗ 未派发
+OnAttemptedDiscard                                  0  ✗ 未派发
+OnBecomingVeteran                                  21  ✔ 已派发
+OnBeforeAttack                                     13  ✔ 已派发
+OnBeforeDestroyed                                   1  ✔ 已派发
+OnBeforeFullyRepaired                               0  ✗ 未派发
+OnBeforeGainDefense                                 0  ✗ 未派发
+OnBeforeOtherCardAttacks                            8  ✔ 已派发
+OnBeforeOtherCardDeploymentTrigger                  0  ✗ 未派发
+OnBeforeOtherCardDestroyed                          6  ✗ 未派发
+OnBeforeOtherCardGainDefense                        0  ✗ 未派发
+OnBeforeOtherCardGainDefenseAfterAdd                0  ✗ 未派发
+OnBeforeOtherCardLoseMobilize                       0  ✗ 未派发
+OnBeforeOtherCardPlayedFromHand                    39  ✗ 未派发
+OnBeforeRetreat                                     0  ✗ 未派发
+OnBeforeStartOfTurn                                13  ✗ 未派发
+OnCardDealDamage                                    0  ✗ 未派发
+OnCardDealDamage_ModifyDamageDealt                  0  ✗ 未派发
+OnCardDrawnFromDeck                                22  ✗ 未派发
+OnCardLocationMoved                                23  ✗ 未派发
+OnCardReset                                        64  ✗ 未派发
+OnCardRevealed                                      8  ✗ 未派发
+OnCardSpawnedInHand                                21  ✗ 未派发
+OnCounterMeasureTriggered                           0  ✗ 未派发
+OnCovertCardPlayedFromHand                          0  ✗ 未派发
+OnCreateCard                                       25  ✗ 未派发
+OnCreateCardApplyCampaignUpgrades                  55  ✗ 未派发
+OnCustomFieldsReceiveChanges                        0  ✗ 未派发
+OnDealDamageAddDamageAfterCalc                      0  ✗ 未派发
+OnDeckShuffled                                      5  ✗ 未派发
+OnDeploymentEffectTriggered                         0  ✗ 未派发
+OnDestroyed                                        79  ✔ 已派发
+OnDestructionEffectTriggered                        0  ✗ 未派发
+OnEndOfTurn                                       188  ✔ 已派发
+OnEnterPlay                                        91  ✔ 已派发
+OnFatigueDamage                                     0  ✗ 未派发
+OnFrontlineOwnershipChange                         28  ✔ 已派发
+OnFullyRepaired                                    10  ✗ 未派发
+OnGainMobilize                                      2  ✗ 未派发
+OnHandTargetSelected                               49  ✔ 已派发
+OnIntelTriggered                                    6  ✗ 未派发
+OnLeaveBoardOrOwner                                66  ✔ 已派发
+OnLoseMobilize                                      3  ✗ 未派发
+OnMoveFromFrontline                                 2  ✗ 未派发
+OnMoveToFrontline                                  29  ✔ 已派发
+OnOtherCardAbilitiesChanged                        11  ✗ 未派发
+OnOtherCardAttackSwitchTarget                       0  ✗ 未派发
+OnOtherCardAttacks                                  0  ✗ 未派发
+OnOtherCardBecomingVeteran                          9  ✗ 未派发
+OnOtherCardBlitzChanged                             1  ✗ 未派发
+OnOtherCardConverted                                3  ✗ 未派发
+OnOtherCardCreatedAlterCard                        11  ✗ 未派发
+OnOtherCardDealDamage                              27  ✗ 未派发
+OnOtherCardDealDamageAddDamage                      0  ✗ 未派发
+OnOtherCardDealDamageAddDamageAfterCalc             0  ✗ 未派发
+OnOtherCardDestroyed                               69  ✔ 已派发
+OnOtherCardDeveloped                                1  ✗ 未派发
+OnOtherCardDiscarded                                9  ✗ 未派发
+OnOtherCardDrawnFromDeck                           43  ✔ 已派发
+OnOtherCardEnterPlay                               84  ✔ 已派发
+OnOtherCardForecasted                               2  ✗ 未派发
+OnOtherCardFullyRepaired                            5  ✗ 未派发
+OnOtherCardKreditCostChanged                        4  ✗ 未派发
+OnOtherCardLeaveBoardOrOwner                       40  ✔ 已派发
+OnOtherCardLocationMoved                           14  ✗ 未派发
+OnOtherCardLoseSmokescreen                          3  ✗ 未派发
+OnOtherCardMoveFromFrontline                        3  ✗ 未派发
+OnOtherCardMoveToFrontline                         19  ✔ 已派发
+OnOtherCardMovedToLocationInHand                    2  ✗ 未派发
+OnOtherCardPlayedFromHand                         131  ✔ 已派发
+OnOtherCardReceiveDamage                            8  ✔ 已派发
+OnOtherCardReset                                   39  ✗ 未派发
+OnOtherCardRetreat                                  0  ✗ 未派发
+OnOtherCardRevealed                                 5  ✗ 未派发
+OnOtherCardSalvaged                                 1  ✗ 未派发
+OnOtherCardSpawnedInHand                           30  ✔ 已派发
+OnOtherCardSuppressed                              19  ✗ 未派发
+OnOtherCardSurvivedCombat                           6  ✗ 未派发
+OnOtherCovertCardPlayedFromHand                    15  ✗ 未派发
+OnOtherCovertCardSpawned                            1  ✗ 未派发
+OnOtherUnitPinned                                   2  ✗ 未派发
+OnOtherUnitUnpinned                                 3  ✗ 未派发
+OnPincerEffectApplied                              15  ✗ 未派发
+OnPincerEffectReceived                              1  ✗ 未派发
+OnPincerEffectRemoved                              13  ✗ 未派发
+OnPlayedFromHand                                  992  ✗ 未派发
+OnReceiveDamage                                    15  ✔ 已派发
+OnStartOfGame                                      43  ✔ 已派发
+OnStartOfTurn                                     155  ✔ 已派发
+OnSuccesfulDiscard                                  3  ✗ 未派发
+OnSuppressed                                       46  ✗ 未派发
+OnSurvivedCombat                                    9  ✗ 未派发
+
+原生事件总数=111  已派发=25  未派发=86
+
+=== 卡蓝图里订阅了、但不是 BaseCardObject 原生事件的入口点（≥2 张卡）===
+CampaignOnEndOfGame                                25  ✗
+CustomEvent                                        23  ✗
+ReceiveBeginPlay                                   20  ✗
+OnActorClicked                                     11  ✗
+OnActorDragTick                                    11  ✗
+OnActorMouseEnter                                  11  ✗
+OnActorMouseExit                                   11  ✗
+OnActorMouseHover                                   9  ✗
+OnActorEndDrag                                      8  ✗
+OnActorMouseDown                                    8  ✗
+OnActorMouseUp                                      8  ✗
+OnActorHoldEnd                                      7  ✗
+OnActorTouchPressed                                 7  ✗
+OnActorTouchReleased                                7  ✗
+OnActorTouchBegin                                   6  ✗
+OnActorTouchEnd                                     6  ✗
+OnActorTouchEnter                                   6  ✗
+OnActorTouchLeave                                   6  ✗
+ReceiveDestroyed                                    6  ✗
+ReceiveEndPlay                                      6  ✗
+ReceiveTick                                         6  ✗
+LoadRedrawSettings                                  5  ✗
+BorderGlow                                          4  ✗
+InitLook                                            4  ✗
+HoverTimeline__FinishedFunc                         4  ✗
+HoverTimeline__UpdateFunc                           4  ✗
+FlyTo                                               3  ✗
+GainAttack                                          3  ✗
+GainDefense                                         3  ✗
+SetCardOpacity                                      3  ✗
+Timeline_1__FinishedFunc                            3  ✗
+Timeline_1__UpdateFunc                              3  ✗
+FadeFromBlackAndWhite                               3  ✗
+FadeToBlackAndWhite                                 3  ✗
+ShowcaseCardAnimation                               3  ✗
+Timeline_1_0__FinishedFunc                          3  ✗
+Timeline_1_0__UpdateFunc                            3  ✗
+hoverEffect                                         3  ✗
+Timeline_0__FinishedFunc                            3  ✗
+Timeline_0__UpdateFunc                              3  ✗
+FlyOffScreen                                        3  ✗
+FlyOffScreenTimeline__FinishedFunc                  3  ✗
+FlyOffScreenTimeline__UpdateFunc                    3  ✗
+OnRarityStandard                                    3  ✗
+OnRarityUnique                                      3  ✗
+PlayHoverAnimation                                  3  ✗
+ReverseHoverAnimation                               3  ✗
+Construct                                           3  ✗
+OnOtherCardOperationKreditsSpent                    3  ✗
+DamageCard                                          2  ✗
+HealCard                                            2  ✗
+LoseAttack                                          2  ✗
+OperationCostChanged                                2  ✗
+SetDefense                                          2  ✗
+ConvertVFX                                          2  ✗
+OnCardTapped                                        2  ✗
+ShowcaseAnim__FinishedFunc                          2  ✗
+ShowcaseAnim__UpdateFunc                            2  ✗
+Timeline__FinishedFunc                              2  ✗
+Timeline__UpdateFunc                                2  ✗
+FlyToShowSpot__FinishedFunc                         2  ✗
+FlyToShowSpot__UpdateFunc                           2  ✗
+hoverTimeline__FinishedFunc                         2  ✗
+hoverTimeline__UpdateFunc                           2  ✗
+moveToBottomTimeline__FinishedFunc                  2  ✗
+moveToBottomTimeline__UpdateFunc                    2  ✗
+playCard                                            2  ✗
+PreviewCardAndRemove                                2  ✗
+spawnArrow                                          2  ✗
+Timeline_2__FinishedFunc                            2  ✗
+Timeline_2__UpdateFunc                              2  ✗
+Timeline_4__FinishedFunc                            2  ✗
+Timeline_4__UpdateFunc                              2  ✗
+Timeline_5__FinishedFunc                            2  ✗
+Timeline_5__UpdateFunc                              2  ✗
+AnimateIn__FinishedFunc                             2  ✗
+AnimateIn__UpdateFunc                               2  ✗
+LocationTimeline__FinishedFunc                      2  ✗
+LocationTimeline__UpdateFunc                        2  ✗
+OnFlyFinishDelayEnded                               2  ✗
+AnimationFinished                                   2  ✗
+AnimationStarted                                    2  ✗
+AttemptToShowHelp                                   2  ✗
+CheckIfWasTapped                                    2  ✗
+CloseShowHelpGate                                   2  ✗
+DoneRotating                                        2  ✗
+FlyDraggedExtraCardBackTimeline__FinishedFunc        2  ✗
+FlyDraggedExtraCardBackTimeline__UpdateFunc         2  ✗
+OpenShowHelpGate                                    2  ✗
+PlayAfterRotationEffect                             2  ✗
+PlayCamerashake                                     2  ✗
+RotationButItIsRare__FinishedFunc                   2  ✗
+RotationButItIsRare__UpdateFunc                     2  ✗
+RotationLegendary__FinishedFunc                     2  ✗
+RotationLegendary__UpdateFunc                       2  ✗
+RotationTimeline                                    2  ✗
+SetRarityStars                                      2  ✗
+SetRotationSpeed                                    2  ✗
+FlyOnScreen                                         2  ✗
+OnInitialized                                       2  ✗
+OnFocusChanged                                      2  ✗
+OnOperationKreditsSpent                             2  ✗

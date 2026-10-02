@@ -1,0 +1,657 @@
+=== 卡蓝图里的私有函数（非 ubergraph、非事件 stub），且被 ubergraph 调用过 ===
+（只列定义卡数 >= 1 的；★ = 已经在 LOCAL_FUNCTIONS 里）
+
+  ApplyTheBuff                                 被调用卡数=   5  定义卡数=   5
+  RemoveBuff                                   被调用卡数=   5  定义卡数=   5
+  didPlayBritishInfantryLastTurn               被调用卡数=   5  定义卡数=   5
+  RemoveTheBuff                                被调用卡数=   4  定义卡数=   4
+  ApplyBuff                                    被调用卡数=   4  定义卡数=   4
+  isSecondOrderThisTurn                        被调用卡数=   3  定义卡数=   3
+  Random Card                                  被调用卡数=   3  定义卡数=   3
+  SetSaturationAndBrightness                   被调用卡数=   2  定义卡数=   2
+  SetupCard                                    被调用卡数=   2  定义卡数=   2
+  SetupWidget                                  被调用卡数=   2  定义卡数=   2
+  SetDefenseText                               被调用卡数=   2  定义卡数=   2
+  SetAttackText                                被调用卡数=   2  定义卡数=   2
+  CheckAndApplyKreditBuff                      被调用卡数=   2  定义卡数=   2
+  hasGuardAdjacentUnit                         被调用卡数=   2  定义卡数=   2
+  updateCustomJsonIfNeeded                     被调用卡数=   2  定义卡数=   2
+  DeactivateOtherHTDP                          被调用卡数=   2  定义卡数=   2
+  RemoveAttackBuff                             被调用卡数=   2  定义卡数=   2
+  ApplyAttackBuff                              被调用卡数=   2  定义卡数=   2
+  get_adjacent_unit_count                      被调用卡数=   2  定义卡数=   2
+  checkAndUpdateBuff                           被调用卡数=   1  定义卡数=   1
+  GetBlowUpSound                               被调用卡数=   1  定义卡数=   1
+  GetExplosionDuration                         被调用卡数=   1  定义卡数=   1
+  DestroyShowCaseCard                          被调用卡数=   1  定义卡数=   1
+  GetCard                                      被调用卡数=   1  定义卡数=   2
+  CalculatePlayRate                            被调用卡数=   1  定义卡数=   1
+  FindCardCoordinatesOnBoard                   被调用卡数=   1  定义卡数=   1
+  Explosion Particle Test                      被调用卡数=   1  定义卡数=   1
+  sendEndDragToSpectatorSockets                被调用卡数=   1  定义卡数=   1
+  SetWeightFromAttackAndDefense                被调用卡数=   1  定义卡数=   1
+  IsLocation                                   被调用卡数=   1  定义卡数=   1
+  InsertIntoQueue                              被调用卡数=   1  定义卡数=   1
+  SetOperationCostText                         被调用卡数=   1  定义卡数=   1
+  SetAttackAndDefenseColor                     被调用卡数=   1  定义卡数=   2
+  ShowBuffTexts                                被调用卡数=   1  定义卡数=   1
+  GetAttackPlane                               被调用卡数=   1  定义卡数=   1
+  GetOperationCostPlane                        被调用卡数=   1  定义卡数=   1
+  Show Tutorial Messages                       被调用卡数=   1  定义卡数=   1
+  Load Card Back                               被调用卡数=   1  定义卡数=   1
+  GetDefensePlane                              被调用卡数=   1  定义卡数=   1
+  IsTargetArrowLengthValid                     被调用卡数=   1  定义卡数=   1
+  GetDamageVisualDelay                         被调用卡数=   1  定义卡数=   1
+  InitLook                                     被调用卡数=   1  定义卡数=   1
+  ExecuteOnDeploymentTriggered                 被调用卡数=   1  定义卡数=   1
+  ReportTamperingToSever                       被调用卡数=   1  定义卡数=   1
+  GetExileText                                 被调用卡数=   1  定义卡数=   1
+  AddWildcardInfo                              被调用卡数=   1  定义卡数=   1
+  AddRecycleCardInfo                           被调用卡数=   1  定义卡数=   1
+  CreateVeteranCardHelp                        被调用卡数=   1  定义卡数=   1
+  CreateAndAddTutorialHelpBubbleIfNeeded       被调用卡数=   1  定义卡数=   1
+  GetIsGoldCard                                被调用卡数=   1  定义卡数=   1
+  FindAndSetBubbleTypesToAdd                   被调用卡数=   1  定义卡数=   1
+  CreateSpawnCardHelp                          被调用卡数=   1  定义卡数=   1
+  AddTypesFromCard                             被调用卡数=   1  定义卡数=   1
+  CheckForCardChanges                          被调用卡数=   1  定义卡数=   1
+  DebugLog                                     被调用卡数=   1  定义卡数=   1
+  SetLightingChannel                           被调用卡数=   1  定义卡数=   1
+  DrawCardToRenderTarget                       被调用卡数=   1  定义卡数=   1
+  CheckIsInQueue                               被调用卡数=   1  定义卡数=   1
+  UpdateCarouselScroll                         被调用卡数=   1  定义卡数=   2
+  CreateExtraCards                             被调用卡数=   1  定义卡数=   1
+  IsDraggedOnTopOfDeck                         被调用卡数=   1  定义卡数=   1
+  HideCardAndStopTicking                       被调用卡数=   1  定义卡数=   1
+  DestroyCardInfo                              被调用卡数=   1  定义卡数=   1
+  SpawnCardHelpForCard                         被调用卡数=   1  定义卡数=   1
+  GetTouchOrMousePosition                      被调用卡数=   1  定义卡数=   1
+  SetRarityIconCount                           被调用卡数=   1  定义卡数=   1
+  InitCarousel                                 被调用卡数=   1  定义卡数=   2
+  TryCardPicking                               被调用卡数=   1  定义卡数=   1
+  CreateCardInfo                               被调用卡数=   1  定义卡数=   1
+  UpdateExtraCards                             被调用卡数=   1  定义卡数=   1
+  DeleteExtraCards                             被调用卡数=   1  定义卡数=   1
+  ShowFiveOrFewerIcons                         被调用卡数=   1  定义卡数=   1
+  ArrangeIconLocations                         被调用卡数=   1  定义卡数=   1
+  SetGuardOnTop                                被调用卡数=   1  定义卡数=   1
+  PincerHover                                  被调用卡数=   1  定义卡数=   1
+  PincerHoverExit                              被调用卡数=   1  定义卡数=   1
+  GetCardScaling                               被调用卡数=   1  定义卡数=   2
+  UpdateHighlight                              被调用卡数=   1  定义卡数=   2
+  MobileHoverTransform                         被调用卡数=   1  定义卡数=   1
+  SpawnChooseOneCards                          被调用卡数=   1  定义卡数=   1
+  IsLocalClientTurn                            被调用卡数=   1  定义卡数=   1
+  MakeCardHover                                被调用卡数=   1  定义卡数=   1
+  MobileIsOkToArrange                          被调用卡数=   1  定义卡数=   1
+  DoesThisCardHasAnyTarget                     被调用卡数=   1  定义卡数=   1
+  SetVisibilityForCoverPlane                   被调用卡数=   1  定义卡数=   1
+  selectHandTarget                             被调用卡数=   1  定义卡数=   1
+  TutorialCanPlayCheck                         被调用卡数=   1  定义卡数=   1
+  GetConvertEndTransform                       被调用卡数=   1  定义卡数=   1
+  ClearAndRearrange                            被调用卡数=   1  定义卡数=   1
+  showKreditCostChanges                        被调用卡数=   1  定义卡数=   1
+  GetShowCaseCardLocation                      被调用卡数=   1  定义卡数=   2
+  MulliganDiscardToggle                        被调用卡数=   1  定义卡数=   1
+  UnblockShowcaseCards                         被调用卡数=   1  定义卡数=   1
+  SetGoUpTransformMobile                       被调用卡数=   1  定义卡数=   1
+  SeenIconAlreadyShown                         被调用卡数=   1  定义卡数=   1
+  InitialiseDefaults                           被调用卡数=   1  定义卡数=   1
+  RefreshGlowBorderTransform                   被调用卡数=   1  定义卡数=   1
+  WidgetInFrontOfCamera                        被调用卡数=   1  定义卡数=   1
+  SetCountermeasureStatus                      被调用卡数=   1  定义卡数=   1
+  OverrideCardTitleIfNeeded                    被调用卡数=   1  定义卡数=   1
+  FadeInIcons                                  被调用卡数=   1  定义卡数=   1
+  getAltArtIndex                               被调用卡数=   1  定义卡数=   1
+  IsAnyRotationTimelineActive                  被调用卡数=   1  定义卡数=   1
+  Set Master Carousel Enabled                  被调用卡数=   1  定义卡数=   1
+  CountdownUpdateVisuals                       被调用卡数=   1  定义卡数=   1
+  PlayMySound                                  被调用卡数=   1  定义卡数=   1
+  getSkirmishBP                                被调用卡数=   1  定义卡数=   1
+  RandomChooseCards                            被调用卡数=   1  定义卡数=   1
+  CheckAndUpdateCost                           被调用卡数=   1  定义卡数=   1
+  GetRandomBritishAir                          被调用卡数=   1  定义卡数=   1
+  anyOrderPlayedThisTurn                       被调用卡数=   1  定义卡数=   1
+  CheckFriendlyAirUnitsOnBoard                 被调用卡数=   1  定义卡数=   1
+  hasPlayedOrderThisTurn                       被调用卡数=   1  定义卡数=   1
+  DisableOtherFriendly7th                      被调用卡数=   1  定义卡数=   1
+  getUnseenCardsOppositeSide                   被调用卡数=   1  定义卡数=   1
+  ApplyAndCorrectBuff                          被调用卡数=   1  定义卡数=   1
+  getWildcardsOwnedToCraft                     被调用卡数=   1  定义卡数=   1
+  setLockedCardVisibilities                    被调用卡数=   1  定义卡数=   1
+  Is Card Recyclable                           被调用卡数=   1  定义卡数=   1
+  getWildcardToPayWith                         被调用卡数=   1  定义卡数=   1
+  CreateRecycleConfirmationPopup               被调用卡数=   1  定义卡数=   1
+  setRarityLook                                被调用卡数=   1  定义卡数=   1
+  SetReservedWarningVisibilites                被调用卡数=   1  定义卡数=   1
+  UpdateBuff                                   被调用卡数=   1  定义卡数=   1
+  updateBuffs                                  被调用卡数=   1  定义卡数=   1
+  clearTargetCard                              被调用卡数=   1  定义卡数=   2
+  clearBuffs                                   被调用卡数=   1  定义卡数=   1
+  _qualifiesForUnpinning                       被调用卡数=   1  定义卡数=   1
+  AddOverrideToPinnedCardsOnYourSide           被调用卡数=   1  定义卡数=   1
+  RemovePinnedOverride                         被调用卡数=   1  定义卡数=   1
+  RemoveAllOverrides                           被调用卡数=   1  定义卡数=   1
+  AddPinnedOverride                            被调用卡数=   1  定义卡数=   1
+  PickRandomCard                               被调用卡数=   1  定义卡数=   1
+  TriggerMultipleDeploymentEffects             被调用卡数=   1  定义卡数=   1
+  alreadyHasTheAbility                         被调用卡数=   1  定义卡数=   1
+  isAlreadyAffectedByOtherGreater              被调用卡数=   1  定义卡数=   1
+  isAlreadyAffectedByOtherYamato               被调用卡数=   1  定义卡数=   1
+  Has Opposite Side Air On Board               被调用卡数=   1  定义卡数=   1
+  _checkAndSetBuff                             被调用卡数=   1  定义卡数=   1
+  DisableDoubleCostAbility                     被调用卡数=   1  定义卡数=   1
+  EnableDoubleCostAbility                      被调用卡数=   1  定义卡数=   1
+  anyFriendlyA6M2Active                        被调用卡数=   1  定义卡数=   1
+  get_adjacent_japan_units_count               被调用卡数=   1  定义卡数=   1
+  CompareHandCards                             被调用卡数=   1  定义卡数=   1
+  DiscardHighestCostCardBySide                 被调用卡数=   1  定义卡数=   1
+  GetSeenCardsFromOppositeSide                 被调用卡数=   1  定义卡数=   1
+  ShouldTriggerAbility                         被调用卡数=   1  定义卡数=   1
+  getMoveReason                                被调用卡数=   1  定义卡数=   1
+  Apply The Buff                               被调用卡数=   1  定义卡数=   1
+  Random_3_SovietUnits                         被调用卡数=   1  定义卡数=   1
+  GetPrefixedName                              被调用卡数=   1  定义卡数=   1
+  GetRenderCache                               被调用卡数=   1  定义卡数=   1
+  GetOppositeUnitsOnBoard                      被调用卡数=   1  定义卡数=   1
+  isAlreadyAffectedByOtherReckless             被调用卡数=   1  定义卡数=   1
+  RandomlyChooseTank                           被调用卡数=   1  定义卡数=   1
+  _onCardDefenseChanged                        被调用卡数=   1  定义卡数=   1
+  RandomChooseA_Tank                           被调用卡数=   1  定义卡数=   1
+  checkAndUpdateBuffOnAllCards                 被调用卡数=   1  定义卡数=   1
+  checkAndUpdateBuffOnCard                     被调用卡数=   1  定义卡数=   1
+  getUnpinnedEnemyUnits                        被调用卡数=   1  定义卡数=   1
+  CreateLightInfantryArr                       被调用卡数=   1  定义卡数=   1
+  CheckFriendlyUnitsOnBoard                    被调用卡数=   1  定义卡数=   1
+  GiveAlpineToLightInfantry                    被调用卡数=   1  定义卡数=   1
+  isPattonPlayedThisTurn                       被调用卡数=   1  定义卡数=   1
+  getTwoCardsFromPossibleCards                 被调用卡数=   1  定义卡数=   1
+  getPossibleCardsFromStaticCards              被调用卡数=   1  定义卡数=   1
+  ShouldSpawnFrontline                         被调用卡数=   1  定义卡数=   1
+  _isBigRedOne                                 被调用卡数=   1  定义卡数=   1
+  SpawnShermanInHand                           被调用卡数=   1  定义卡数=   1
+  Remove the Buff                              被调用卡数=   1  定义卡数=   1
+  MoveCards                                    被调用卡数=   1  定义卡数=   2
+  Get Random Unit on Board                     被调用卡数=   1  定义卡数=   1
+  SpawnUnitsWithKreditCombo                    被调用卡数=   1  定义卡数=   1
+  GetRandomKreditCombo                         被调用卡数=   1  定义卡数=   1
+  GetUSAUnitsAndKredits                        被调用卡数=   1  定义卡数=   1
+  doIControl3opCostUnit                        被调用卡数=   1  定义卡数=   1
+  GetDefaultFocusWidget                        被调用卡数=   1  定义卡数=   2
+
+=== 定义了但一次都没被 ubergraph 调用的私有函数（可能是死代码 / 被别处调用）===
+   Active                                       定义卡数=   1
+   AddAttackUntilEndOfTurn                      定义卡数=   1
+   AddCustomGameplayTag                         定义卡数=   1
+   AddDefenseToMultipleCards                    定义卡数=   1
+   AddEffect                                    定义卡数=   1
+   AddEffectToBuffHistory                       定义卡数=   1
+   AddGameplayRestriction                       定义卡数=   1
+   AddGuarded                                   定义卡数=   1
+   AddIntelToCard                               定义卡数=   1
+   AddKreditsTax                                定义卡数=   1
+   AddNumberToText                              定义卡数=   1
+   AddRef                                       定义卡数=   1
+   AddToBattleLog                               定义卡数=   1
+   AdjustCardPositionInDeck                     定义卡数=   1
+   AfterRotateBlink                             定义卡数=   1
+   AfterWaitCardPlayFromHand                    定义卡数=   1
+   AmIFlying                                    定义卡数=   1
+   AppendText                                   定义卡数=   1
+   ApplyDamageToCard                            定义卡数=   1
+   ApplyDamageToMultipleCards                   定义卡数=   1
+   ApplyDestroyMultipleCards                    定义卡数=   1
+   ApplyFatigueDamage                           定义卡数=   1
+   ApplyGameplaySideEffect                      定义卡数=   1
+   ApplyMakeCardRetreat                         定义卡数=   1
+   ApplyPincerEffects                           定义卡数=   1
+   ApplyRemoveCardFromBoard                     定义卡数=   1
+   ApplySalvageChanges                          定义卡数=   1
+   ApplySetCardsSeenByCipher                    定义卡数=   1
+   AttackCard                                   定义卡数=   1
+   BlinkPincerIcon                              定义卡数=   1
+   BlockCardFromBeingPlayedFromHand             定义卡数=   2
+   BlockShowcaseCards                           定义卡数=   1
+   CalculateDamageDealt                         定义卡数=   1
+   CanCardBeBuffed                              定义卡数=   1
+   CanOtherCardBeTargetted                      定义卡数=   1
+   CanPlayCard                                  定义卡数=   1
+   CanPlayFromHand                              定义卡数= 438
+   Capture                                      定义卡数=   1
+   CardLocationMoved                            定义卡数=   1
+   CardPlayedFromHand                           定义卡数=   1
+   ChangeAttack                                 定义卡数=   1
+   ChangeBuffsFromCards                         定义卡数=   1
+   ChangeDefense                                定义卡数=   1
+   ChangeFrontlineLimiter                       定义卡数=   1
+   ChangeHeavyArmor                             定义卡数=   1
+   ChangeKreditCost                             定义卡数=   1
+   ChangeKreditSlotsBySide                      定义卡数=   1
+   ChangeKreditsBySide                          定义卡数=   1
+   ChangeOperationCost                          定义卡数=   1
+   ChangeUnitOwnership                          定义卡数=   1
+   ChangedPinnedTurns                           定义卡数=   1
+   CheckHasUnitToSpawn                          定义卡数=   4
+   Cleanup                                      定义卡数=   1
+   ConstructAndCopyCard                         定义卡数=   1
+   ConvertCard                                  定义卡数=   1
+   CountFriendlyGuardUnits                      定义卡数=   1
+   CountdownInit                                定义卡数=   1
+   CreateCard                                   定义卡数=   2
+   CreateCardObject                             定义卡数=   1
+   CreateDamageWidget                           定义卡数=   1
+   CreateHelpBubble                             定义卡数=   1
+   CreateHelpBubbleEntries                      定义卡数=   1
+   CreateIconWidget                             定义卡数=   1
+   CreateLocationNumberGapForCard               定义卡数=   1
+   CustomAbilityAdd                             定义卡数=   1
+   CustomAbilityRemove                          定义卡数=   1
+   DamageCard                                   定义卡数=   1
+   DamageMultipleCards                          定义卡数=   1
+   DeactivateOtherNFS                           定义卡数=   1
+   DeactivateOtherSniped                        定义卡数=   1
+   DecrementCountdown                           定义卡数=   1
+   DestroyCard                                  定义卡数=   2
+   DestroyCardDetailsWidgets                    定义卡数=   1
+   DestroyHandCard                              定义卡数=   1
+   DestroyMultipleCards                         定义卡数=   1
+   DestroyVeteranVisualEffects                  定义卡数=   1
+   DestroyedCountChanged__DelegateSignature     定义卡数=   1
+   DisableHighlight                             定义卡数=   1
+   DiscardCardFromDeck                          定义卡数=   1
+   DiscardCardFromHand                          定义卡数=   1
+   DiscardMulliganCard                          定义卡数=   1
+   DiscardOnDrawingWithFullHands                定义卡数=   1
+   DiscardRandomCardFromHand                    定义卡数=   1
+   DoesSideControlTheFrontline                  定义卡数=   1
+   DoesSideEffectTagExist                       定义卡数=   1
+   DoneHiding                                   定义卡数=   1
+   DoneShowing                                  定义卡数=   1
+   DrawCardsFromDeckBySide                      定义卡数=   1
+   DrawSpecificCardFromDeckBySide               定义卡数=   1
+   DrawTopCardFromDeck                          定义卡数=   1
+   EnableHighlight                              定义卡数=   1
+   EndMatch                                     定义卡数=   1
+   ExecuteAfterChangeAttackEvents               定义卡数=   1
+   ExecuteAttackCard                            定义卡数=   1
+   ExecuteBeforeReceiveDamage                   定义卡数=   1
+   ExecuteBeforeStartOfTurnEvents               定义卡数=   1
+   ExecuteEndOfTurnEvents                       定义卡数=   1
+   ExecuteEndOfTurnQueue                        定义卡数=   1
+   ExecuteOnAfterAttackEvents                   定义卡数=   1
+   ExecuteOnAfterDeckChanged                    定义卡数=   1
+   ExecuteOnAfterLeaveBoardOrOwnerEvents        定义卡数=   1
+   ExecuteOnBeforeLeaveBoardOrOwnerEvents       定义卡数=   1
+   ExecuteOnBeforeOtherCardDestroyed            定义卡数=   1
+   ExecuteOnCardDealDamageEffects               定义卡数=   1
+   ExecuteOnCardDestroyedFunction               定义卡数=   1
+   ExecuteOnCardLocationMoved                   定义卡数=   1
+   ExecuteOnCardMoveFromFrontline               定义卡数=   1
+   ExecuteOnCardMovedInHand                     定义卡数=   1
+   ExecuteOnCovertCardSpawned                   定义卡数=   1
+   ExecuteOnDealDamageAddDamage                 定义卡数=   1
+   ExecuteOnDealDamageAddDamageAfterCalc        定义卡数=   1
+   ExecuteOnDestructionEffectTriggered          定义卡数=   1
+   ExecuteOnDrawnFromDeck                       定义卡数=   1
+   ExecuteOnEnterPlayEvents                     定义卡数=   1
+   ExecuteOnMoveToFrontlineCardEffects          定义卡数=   1
+   ExecuteOnOperationKreditsSpent               定义卡数=   1
+   ExecuteOnOtherCardsAbilitiesChanged          定义卡数=   1
+   ExecuteOnSpawnedInHandEvents                 定义卡数=   1
+   ExecuteOnSurvivedCombatEvents                定义卡数=   1
+   ExecuteScryingEffectBySide                   定义卡数=   1
+   ExecuteStartOfTurnEvents                     定义卡数=   1
+   ExecuteStoppedAttack                         定义卡数=   1
+   FetchAllCardsWithEventTrigger                定义卡数=   1
+   FetchCardsByLocation                         定义卡数=   1
+   FilterCardsToScry                            定义卡数=   1
+   ForceCardChangeLocation                      定义卡数=   1
+   Forecast                                     定义卡数=   1
+   FullyHealCard                                定义卡数=   1
+   GainDefense                                  定义卡数=   1
+   GainKreditSlot                               定义卡数=   1
+   GamepadDeselectCard                          定义卡数=   1
+   GamepadSelectCard                            定义卡数=   1
+   GamepadStopHoverCard                         定义卡数=   1
+   GetAbilityString                             定义卡数=   1
+   GetActiveGotchasOrdered                      定义卡数=   1
+   GetAdjacentCards                             定义卡数=   1
+   GetAllActiveStaticCards                      定义卡数=   1
+   GetAllCards                                  定义卡数=   1
+   GetAllCardsInFrontline                       定义卡数=   1
+   GetAllCardsOnBoard                           定义卡数=   1
+   GetAllCardsPlayedThisBattle                  定义卡数=   1
+   GetAllForecastCards                          定义卡数=   1
+   GetAllUnitsOnBoard                           定义卡数=   1
+   GetAllyNationForSide                         定义卡数=   1
+   GetAttackSound                               定义卡数=   1
+   GetBeforeAttackAttackBuff                    定义卡数=   3
+   GetBeforeAttackDamage                        定义卡数=   1
+   GetBeforeAttackDefenseBuff                   定义卡数=   2
+   GetCardCornerLocations                       定义卡数=   1
+   GetCardFromID                                定义卡数=   1
+   GetCardFunctionsNotifier                     定义卡数=   1
+   GetCardName                                  定义卡数=   1
+   GetCardsInFrontlineBySide                    定义卡数=   1
+   GetCardsInHandBySide                         定义卡数=   1
+   GetCardsInHandBySideOrdered                  定义卡数=   1
+   GetCardsInSupportLineBySide                  定义卡数=   1
+   GetCardsOnBoardBySide                        定义卡数=   1
+   GetCardsPlayedFromHandByTurnNumber           定义卡数=   1
+   GetCardsPlayedFromHandLastTurn               定义卡数=   1
+   GetCardsPlayedFromHandThisTurn               定义卡数=   1
+   GetCardsPlayedThisTurn                       定义卡数=   1
+   GetCardsToTheLeft                            定义卡数=   1
+   GetCardsToTheRight                           定义卡数=   1
+   GetChooseSpawnCards                          定义卡数=  36
+   GetClientSide                                定义卡数=   1
+   GetDeckByside                                定义卡数=   1
+   GetDeckLocationBySide                        定义卡数=   1
+   GetDefaultMovementSoundForType               定义卡数=   1
+   GetDefenseBuffFromAdjacentUnits              定义卡数=   1
+   GetDestroyedCardsCountBySide                 定义卡数=   1
+   GetDestroyedCardsIDsByTurn                   定义卡数=   1
+   GetDestroyedCardsIDsThisBattle               定义卡数=   1
+   GetEnterPlaySound                            定义卡数=   1
+   GetFiringSound                               定义卡数=   1
+   GetHQ_DamagedAmountThisTurnBySide            定义卡数=   1
+   GetHandLocationBySide                        定义卡数=   1
+   GetHeight                                    定义卡数=   1
+   GetHighestBomberAttack                       定义卡数=   1
+   GetIconSize                                  定义卡数=   1
+   GetImpactSound                               定义卡数=   1
+   GetKreditsBySide                             定义卡数=   1
+   GetLeftMostCardInHand                        定义卡数=   1
+   GetLocationCardBySide                        定义卡数=   1
+   GetMainNationForSide                         定义卡数=   1
+   GetMaxKreditsBySide                          定义卡数=   1
+   GetNewLocationNumbers                        定义卡数=   1
+   GetNextCardLocationNumber                    定义卡数=   1
+   GetNumberInFrontline                         定义卡数=   1
+   GetOperationKreditsSpentThisTurn             定义卡数=   1
+   GetOpponentSide                              定义卡数=   1
+   GetPassiveDefenseBuff                        定义卡数=   2
+   GetPlayFromHandDamage                        定义卡数= 129
+   GetPlayingSide                               定义卡数=   1
+   GetPositionAnchoredBottom                    定义卡数=   1
+   GetPositionAnchoredRight                     定义卡数=   1
+   GetPositionAnchoredTop                       定义卡数=   1
+   GetRandomCard                                定义卡数=   1
+   GetRarityIcon                                定义卡数=   1
+   GetReducedDamage                             定义卡数=   1
+   GetRightMostCardInHand                       定义卡数=   1
+   GetShakeAmount                               定义卡数=   3
+   GetStartingSide                              定义卡数=   1
+   GetStaticMeshComponents                      定义卡数=   2
+   GetSupportLineLocationBySide                 定义卡数=   1
+   GetTargetedCard                              定义卡数=   1
+   GetTextRenderComponents                      定义卡数=   2
+   GetTotalKreditsLostThisBattle                定义卡数=   1
+   GetTurnNumber                                定义卡数=   1
+   GetUnitDestroyedThisTurn                     定义卡数=   1
+   GetUnitTypeCountOnBoard                      定义卡数=   1
+   GetWorldSize                                 定义卡数=   2
+   Get_X_AndMoreAttackCardsOnBoard              定义卡数=   1
+   GiveAlpine                                   定义卡数=   1
+   GiveAlpineBonus                              定义卡数=   1
+   GiveAmbush                                   定义卡数=   1
+   GiveBlitz                                    定义卡数=   1
+   GiveBond                                     定义卡数=   1
+   GiveFury                                     定义卡数=   1
+   GiveGuard                                    定义卡数=   1
+   GiveImmune                                   定义卡数=   1
+   GiveKreditsBySide                            定义卡数=   1
+   GiveMobilize                                 定义卡数=   1
+   GiveRandomCombatKeyword                      定义卡数=   1
+   GiveSalvage                                  定义卡数=   1
+   GiveShock                                    定义卡数=   1
+   GiveSmokescreen                              定义卡数=   1
+   GoldLighting                                 定义卡数=   1
+   GotchaTriggered                              定义卡数=   1
+   HQ_DestroyedEndMatch                         定义卡数=   1
+   HandleExtraPlayTriggersAfterSelectHandCard   定义卡数=   1
+   HasHeavyArmorEffect                          定义卡数=   1
+   Hide                                         定义卡数=   1
+   HideCardHelpLocations                        定义卡数=   1
+   Inactive                                     定义卡数=   1
+   IncrementCardCount                           定义卡数=   1
+   Init                                         定义卡数=   1
+   InitializeEssentialActors                    定义卡数=   1
+   InitializeSideEffectHolders                  定义卡数=   1
+   InjectCardIntoLocation                       定义卡数=   1
+   InvalidTargetClicked                         定义卡数=   1
+   IsActionProcess                              定义卡数=   1
+   IsBeingDragged                               定义卡数=   1
+   IsCardReserved                               定义卡数=   1
+   IsDragThresHoldCrossed                       定义卡数=   1
+   IsHeavyArmorEffect                           定义卡数=   1
+   IsInMyHand                                   定义卡数=   1
+   IsLocationFull                               定义卡数=   1
+   IsMouseOver                                  定义卡数=   1
+   IsShowcaseCardToTheRight                     定义卡数=   1
+   IsTopDeckNavy                                定义卡数=   1
+   IsUsingStrategy                              定义卡数=   1
+   IsValidHandTarget                            定义卡数=  20
+   IsVisuallyInMyHand                           定义卡数=   1
+   JSON_AddToBoolArray                          定义卡数=   1
+   JSON_AddToIntArray                           定义卡数=   1
+   JSON_AddToStringArray                        定义卡数=   1
+   JSON_Clear                                   定义卡数=   1
+   JSON_GetBool                                 定义卡数=   1
+   JSON_GetBoolArray                            定义卡数=   1
+   JSON_GetInt                                  定义卡数=   1
+   JSON_GetIntArray                             定义卡数=   1
+   JSON_GetString                               定义卡数=   1
+   JSON_GetStringArray                          定义卡数=   1
+   JSON_RemoveFromBoolArray                     定义卡数=   1
+   JSON_RemoveFromIntArray                      定义卡数=   1
+   JSON_RemoveFromStringArray                   定义卡数=   1
+   JSON_SetBool                                 定义卡数=   1
+   JSON_SetBoolArray                            定义卡数=   1
+   JSON_SetInt                                  定义卡数=   1
+   JSON_SetIntArray                             定义卡数=   1
+   JSON_SetString                               定义卡数=   1
+   JSON_SetStringArray                          定义卡数=   1
+   KreditCheckAndAutoBanIfNeeded                定义卡数=   1
+   LoadCardBack                                 定义卡数=   1
+   LoseKreditSlot                               定义卡数=   1
+   MakeCardRetreat                              定义卡数=   1
+   MakeCardsFight                               定义卡数=   1
+   MakeCountAsTank                              定义卡数=   1
+   MakeVeteran                                  定义卡数=   1
+   MouseToWorld                                 定义卡数=   3
+   MoveCardFromBoardToOwnersHand                定义卡数=   1
+   MoveCardInHandToLeftMost                     定义卡数=   1
+   MoveCardInHandToNewIndex                     定义卡数=   1
+   MoveCardToFrontline                          定义卡数=   1
+   MoveCardToTopOfDeck                          定义卡数=   1
+   MoveCardToTopOfOwnersDeck                    定义卡数=   1
+   MoveMultipleCardsToTopOfOwnersDeck           定义卡数=   1
+   MoveUnitFromBoardToOwnersHand                定义卡数=   1
+   MoveUnitFromSupportToFrontLine               定义卡数=   1
+   NewEventDispatcher__DelegateSignature        定义卡数=   1
+   NormalLighting                               定义卡数=   1
+   NotifyEffectTagTriggered                     定义卡数=   1
+   NotifySideEffectTrigger                      定义卡数=   1
+   OnActorStartDrag                             定义卡数=   7
+   OnAfterExtraKreditSlotGain                   定义卡数=   2
+   OnAttemptedDiscard                           定义卡数=   3
+   OnBeforeFullyRepaired                        定义卡数=   1
+   OnBeforeOtherCardDeploymentTrigger           定义卡数=   4
+   OnBeforeOtherCardGainDefense                 定义卡数=   2
+   OnBeforeOtherCardGainDefenseAfterAdd         定义卡数=   1
+   OnBoardCardConvertFinished__DelegateSignature 定义卡数=   1
+   OnBondVisualsUpdated__DelegateSignature      定义卡数=   1
+   OnCardDealDamage                             定义卡数=  28
+   OnCardDealDamage_ModifyDamageDealt           定义卡数=  33
+   OnCardMoveToBoard__DelegateSignature         定义卡数=   1
+   OnCardReadyHandler                           定义卡数=   1
+   OnCardReady__DelegateSignature               定义卡数=   1
+   OnCardRenderReady                            定义卡数=   1
+   OnClicked__DelegateSignature                 定义卡数=   1
+   OnCollectionCardChanged__DelegateSignature   定义卡数=   1
+   OnCounterMeasureTriggered                    定义卡数=  13
+   OnDealDamageAddDamageAfterCalc               定义卡数=   3
+   OnDeploymentEffectTriggered                  定义卡数=   1
+   OnDestructionEffectTriggered                 定义卡数=   4
+   OnExtraCardsFinishedFlying__DelegateSignature 定义卡数=   1
+   OnFinishedFading__DelegateSignature          定义卡数=   1
+   OnFlyOutFinished__DelegateSignature          定义卡数=   1
+   OnGoalLocation Reached__DelegateSignature    定义卡数=   1
+   OnHeightChanged__DelegateSignature           定义卡数=   1
+   OnHovered__DelegateSignature                 定义卡数=   1
+   OnIconAnimationFinished__DelegateSignature   定义卡数=   1
+   OnIconAnimationStarted__DelegateSignature    定义卡数=   1
+   OnIconRequestRender__DelegateSignature       定义卡数=   1
+   OnKreditsChanged__DelegateSignature          定义卡数=   1
+   OnMoveToHandFinished__DelegateSignature      定义卡数=   1
+   OnNavalEngagementPlayed                      定义卡数=   1
+   OnOtherCardAttackSwitchTarget                定义卡数=   2
+   OnOtherCardAttacks                           定义卡数=  20
+   OnOtherCardDealDamageAddDamage               定义卡数=  29
+   OnOtherCardDealDamageAddDamageAfterCalc      定义卡数=  15
+   OnOtherCardRetreat                           定义卡数=   2
+   OnPopInAnimationFinished__DelegateSignature  定义卡数=   1
+   OnReadyToRender__DelegateSignature           定义卡数=   1
+   OnShouldDestroy__DelegateSignature           定义卡数=   1
+   OrdersPlayedThisTurnBySide                   定义卡数=   1
+   PayCardCost                                  定义卡数=   1
+   PayMovementCost                              定义卡数=   1
+   PersistCustomFields                          定义卡数=   1
+   PickColorForOffensiveAndDefensiveText        定义卡数=   1
+   PinUnit                                      定义卡数=   1
+   PlayCardDirectlyFromHand                     定义卡数=   1
+   PlayCardFromHand                             定义卡数=   1
+   PopulateEffectBar                            定义卡数=   1
+   RandomIntFromRangeWithStream                 定义卡数=   1
+   RearrangeLocation                            定义卡数=   1
+   RefreshCountdown                             定义卡数=   1
+   RefreshLocationStatus                        定义卡数=   1
+   ReleaseControlOfEnemyUnit                    定义卡数=   1
+   Remove                                       定义卡数=   1
+   RemoveAlpine                                 定义卡数=   1
+   RemoveAmbush                                 定义卡数=   1
+   RemoveBlitz                                  定义卡数=   1
+   RemoveBond                                   定义卡数=   1
+   RemoveBuffsEndOfTurn                         定义卡数=   1
+   RemoveCard                                   定义卡数=   1
+   RemoveCardFromBoard                          定义卡数=   1
+   RemoveCustomGameplayTag                      定义卡数=   1
+   RemoveDiscardStatus                          定义卡数=   1
+   RemoveEffect                                 定义卡数=   1
+   RemoveFury                                   定义卡数=   1
+   RemoveGameplayRestriction                    定义卡数=   1
+   RemoveGameplaySideEffect                     定义卡数=   1
+   RemoveGuard                                  定义卡数=   1
+   RemoveHeavyArmor                             定义卡数=   1
+   RemoveImmune                                 定义卡数=   1
+   RemoveMobilize                               定义卡数=   1
+   RemoveMultipleCardsFromBoard                 定义卡数=   1
+   RemovePin                                    定义卡数=   1
+   RemovePincerEffects                          定义卡数=   1
+   RemoveRef                                    定义卡数=   1
+   RemoveSalvage                                定义卡数=   1
+   RemoveShock                                  定义卡数=   1
+   RemoveSmokescreen                            定义卡数=   1
+   ResetCardInBattle                            定义卡数=   1
+   ResetToDefaults                              定义卡数=   1
+   ResetUnitOperations                          定义卡数=   1
+   RevealCard                                   定义卡数=   1
+   SalvageMultipleUnits                         定义卡数=   1
+   SequenceEvent__ENTRYPOINTBP_Widget_EffectBarIcon 定义卡数=   1
+   SequenceEvent__ENTRYPOINTBP_Widget_EffectBarIcon_0 定义卡数=   1
+   SequenceEvent__ENTRYPOINTBP_Widget_EffectBarIcon_1 定义卡数=   1
+   SequenceEvent__ENTRYPOINTBP_Widget_EffectBarIcon_2 定义卡数=   1
+   Set Card Help Transform                      定义卡数=   1
+   SetActionPlane                               定义卡数=   1
+   SetActive                                    定义卡数=   1
+   SetAttackerHasAttacked                       定义卡数=   1
+   SetCard                                      定义卡数=   1
+   SetCardLocationAndLocNumber                  定义卡数=   1
+   SetCardSeen                                  定义卡数=   1
+   SetCardsSeenByCipher                         定义卡数=   1
+   SetCarouselScrollActive                      定义卡数=   2
+   SetCountdown                                 定义卡数=   1
+   SetDamaged                                   定义卡数=   1
+   SetDeckBySide                                定义卡数=   1
+   SetDefense                                   定义卡数=   1
+   SetDestroyed                                 定义卡数=   1
+   SetEffectActive                              定义卡数=   1
+   SetEffectInactive                            定义卡数=   1
+   SetEffectTriggered                           定义卡数=   1
+   SetGlowForFaceDown                           定义卡数=   1
+   SetGuardedFromRight                          定义卡数=   1
+   SetHeight                                    定义卡数=   1
+   SetImage                                     定义卡数=   1
+   SetImageVisibility                           定义卡数=   1
+   SetKreditsAndKreditSlots                     定义卡数=   1
+   SetLifetimeOwner                             定义卡数=   1
+   SetMoveDown                                  定义卡数=   1
+   SetMoveUp                                    定义卡数=   1
+   SetPositionAnchoredLeft                      定义卡数=   1
+   SetPositionAnchoredTopLeft                   定义卡数=   1
+   SetRandomStreamByMatchID                     定义卡数=   1
+   SetRightLeftMostWhenPlayed                   定义卡数=   1
+   SetVeteranVisualEffects                      定义卡数=   1
+   ShouldHighlightInHand                        定义卡数=  60
+   Show                                         定义卡数=   1
+   ShowCardHelp                                 定义卡数=   1
+   ShowDiscardStatus                            定义卡数=   1
+   ShowNotification                             定义卡数=   1
+   ShowShowCaseCard                             定义卡数=   1
+   ShowTutorialMessage                          定义卡数=   1
+   ShowingMyCardDetails                         定义卡数=   1
+   ShuffleDeckBySide                            定义卡数=   1
+   SortCardsByLocationNumber                    定义卡数=   1
+   SpawnCardInDeckBySide                        定义卡数=   1
+   SpawnCardInFrontline                         定义卡数=   1
+   SpawnCardToBoard                             定义卡数=   1
+   SpawnCardinHandbySide                        定义卡数=   1
+   SpawnCardonBattlefield                       定义卡数=   1
+   SpawnMultipleCardsOnBattlefield              定义卡数=   1
+   SpawnNextToCard                              定义卡数=   1
+   StealCardFromBoardToDeck                     定义卡数=   1
+   SuppressMultipleUnits                        定义卡数=   1
+   SuppressUnit                                 定义卡数=   1
+   TakeControlOfEnemyUnit                       定义卡数=   1
+   ToggleDiscardStatus                          定义卡数=   1
+   ToggleGotcha                                 定义卡数=   1
+   Trigger                                      定义卡数=   1
+   TriggerDeployment                            定义卡数=   1
+   TriggerDestruction                           定义卡数=   1
+   Triggered                                    定义卡数=   1
+   Update Operable Color                        定义卡数=   1
+   UpdateBondVisuals                            定义卡数=   1
+   UpdateChooseOneActive                        定义卡数=   1
+   UpdateFrontlineIfNeeded                      定义卡数=   1
+   UpdateGuarded                                定义卡数=   1
+   UpdateHQ_DamagedAmountThisTurnIfNeeded       定义卡数=   1
+   UpdateTransform                              定义卡数=   1
+   UserConstructionScript                       定义卡数=   4
+   WasLeftMostCardWhenPlayedFromHand            定义卡数=   1
+   WasRightMostCardWhenPlayedFromHand           定义卡数=   1
+   WhichStrategy                                定义卡数=   1
+   WrapText                                     定义卡数=   1
+   bailOut                                      定义卡数=   1
+   clearSetDefenseOnDamageQueue                 定义卡数=   1
+   findPairOfUnits                              定义卡数=   1
+   getAltCardNumber                             定义卡数=   1
+   getFrontlineLimit                            定义卡数=   1
+   getLogicalLocationNumber                     定义卡数=   1
+   initVariables                                定义卡数=   1
+   isCardStoppedFromBeingPlayed                 定义卡数=   1
+   onBlowUpStarted__DelegateSignature           定义卡数=   1
+   onCardBlownUp__DelegateSignature             定义卡数=   1
+   onCardFinishedFlyingToLocation__DelegateSignature 定义卡数=   1
+   onCardFinishedFlying__DelegateSignature      定义卡数=   3
+   onCardStartDrag__DelegateSignature           定义卡数=   1
+   onRewardAcknowledged__DelegateSignature      定义卡数=   1
+   onZoominCamera__DelegateSignature            定义卡数=   1
+   provideKeysAndFrameCount                     定义卡数=   1
+   selectCardToDraw                             定义卡数=   1
+   selectTargetFromHand                         定义卡数=   1
+   sendDragToSpectatorSockets                   定义卡数=   1
+   setAltArt                                    定义卡数=   1
+   setLabelColors                               定义卡数=   1
+   setLabelFactions                             定义卡数=   1
+   setLabelName                                 定义卡数=   1

@@ -1,0 +1,24 @@
+<Solution>
+  <!--
+    这个文件有两个作用：
+
+    1. **给人看**：把本仓库的三个工程列在一起。
+    2. ★ **给工具用**：`tools/BotSim` 与 `tools/ServerBridgeTest` 的 `FindRepoRoot()`
+       是"从 exe 位置往上找第一个含 `KLink.slnx` 的目录"
+       （见 tools/ServerBridgeTest/Program.cs 的 FindRepoRoot、tools/BotSim 同名函数）。
+       仓库根**必须**有这个文件，否则工具在独立 clone 里找不到数据目录。
+
+    ⚠️ 不要用 `dotnet build KLink.slnx` —— 上游实测它的 restore 是坏的，
+       请逐个项目 build（见 README「怎么上手」）。
+  -->
+  <Folder Name="/src/">
+    <Project Path="src/KLink.Bot/KLink.Bot.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/BotSim/BotSim.csproj" />
+    <Project Path="tools/ServerBridgeTest/ServerBridgeTest.csproj" />
+    <Project Path="tools/NNTrain/NNTrain.csproj" />
+    <Project Path="tools/NNPlay/NNPlay.csproj" />
+    <Project Path="tools/AotProbe/AotProbe.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,113 @@
+==============================================================================================================
+① 「生成卡」一族的全部调用形状（原语 | 程序 | i= | recv | a[0..n]）
+==============================================================================================================
+
+---- SpawnCardOnBattlefield：239 个调用点 ----
+   a[0]: 变量(side)×154  变量(CallFunc_GetOppositeSide_oppositeSide_2)×11  变量(CallFunc_GetOppositeSide_oppositeSide_4)×10  变量(CallFunc_GetOppositeSide_oppositeSide_3)×10  变量(CallFunc_GetOppositeSide_oppositeSide_1)×9  变量(CallFunc_GetOppositeSide_oppositeSide_5)×9  变量(CallFunc_GetOppositeSide_oppositeSide_6)×7  变量(CallFunc_GetOppositeSide_oppositeSide_7)×5  变量(CallFunc_GetOppositeSide_oppositeSide)×5  变量(CallFunc_GetOppositeSide_oppositeSide_8)×4  成员读取(CallFunc_GetCardFromID_card).side×4  变量(side_removed)×2  变量(CallFunc_GetOppositeSide_oppositeSide_9)×2  成员读取(K2Node_Event_targetCard).side×1  成员读取(Target Card).side×1  变量(tmpSide)×1  成员读取(K2Node_Event_survivor).side×1  成员读取(tempCard).side×1  变量(CallFunc_GetOppositeSide_oppositeSide_11)×1  变量(CallFunc_GetOppositeSide_oppositeSide_10)×1
+   a[1]: 布尔常量×223  变量(frontline)×6  变量(spawninfront)×5  变量(inFront)×2  变量(CallFunc_EqualEqual_ByteByte_ReturnValue)×1  变量(CallFunc_ShouldSpawnFrontline_should)×1  变量(CallFunc_Not_PreBool_ReturnValue_1)×1
+   a[2]: 其它×191  成员读取(CallFunc_GetCardFromID_card).name×7  成员读取(CallFunc_GetRandomCard_randomCard).name×6  成员读取(K2Node_Event_targetCard).name×5  变量(cardToSpawn)×5  变量(CallFunc_Conv_StringToName_ReturnValue)×4  成员读取(CallFunc_Array_Get_Item).name×2  成员读取(Target Card).name×2  变量(CallFunc_Conv_StringToName_ReturnValue_1)×2  变量(tmpName)×2  变量(name)×2  变量(cardNameToSpawn)×1  成员读取(CallFunc_GetRandomCard_randomCard_1).name×1  成员读取(CallFunc_GetRandomCard_randomCard_2).name×1  成员读取(tempCard).name×1  成员读取(cardFound).name×1  成员读取(cardToSpawn).name×1  变量(CallFunc_Array_Get_Item_2)×1  成员读取(lastDestroyedCard).name×1  变量(CallFunc_getTwoCardsFromPossibleCards_cardNameA)×1  变量(CallFunc_getTwoCardsFromPossibleCards_cardNameB)×1  成员读取(CallFunc_Array_Get_Item_1).name×1
+   a[3]: 变量(cardID)×232  整数常量×5  变量(cardDestroyed)×1  成员读取(K2Node_Event_survivor).cardID×1
+   a[4]: 变量(Temp_text_Variable)×114  变量(Temp_text_Variable_1)×22  变量(Temp_text_Variable_16)×8  变量(Temp_text_Variable_18)×7  变量(Temp_text_Variable_17)×7  变量(Temp_text_Variable_7)×6  变量(Temp_text_Variable_8)×6  变量(Temp_text_Variable_14)×6  变量(Temp_text_Variable_15)×5  变量(Temp_text_Variable_12)×5  变量(Temp_text_Variable_10)×5  变量(Temp_text_Variable_9)×5  变量(Temp_text_Variable_2)×5  变量(Temp_text_Variable_13)×5  变量(Temp_text_Variable_20)×4  变量(Temp_text_Variable_19)×4  变量(Temp_text_Variable_11)×4  变量(Temp_text_Variable_3)×4  变量(Temp_text_Variable_6)×4  变量(Temp_text_Variable_4)×2  变量(Temp_text_Variable_5)×2  变量(Temp_text_Variable_22)×2  变量(Temp_text_Variable_23)×2  变量(Temp_text_Variable_24)×2  变量(Temp_text_Variable_21)×2  变量(Temp_text_Variable_25)×1
+   a[5]: 布尔常量×237  变量(CallFunc_HasCampaignUpgrade_doesIt_7)×1  变量(CallFunc_HasCampaignUpgrade_doesIt_4)×1
+   a[6]: 整数常量×197  变量(CallFunc_Add_IntInt_ReturnValue)×24  变量(CallFunc_Add_IntInt_ReturnValue_1)×7  变量(CallFunc_Array_Length_ReturnValue)×6  变量(CallFunc_Array_Length_ReturnValue_1)×2  变量(CallFunc_Add_IntInt_ReturnValue_2)×1  变量(locationNumber)×1  变量(spawnLocation)×1
+   a[7]: 整数常量×218  其它×10  成员读取(K2Node_Event_targetCard).salvageFaction×4  变量(salvageFaction)×3  成员读取(Target Card).salvageFaction×2  成员读取(tempCard).salvageFaction×1  成员读取(CallFunc_GetCardFromID_card).salvageFaction×1
+   a[8]: 布尔常量×239
+   a[9]: 布尔常量×238  成员读取(CallFunc_Array_Get_Item).isGoldCard×1
+   a[10]: 变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID)×73  变量(CallFunc_SpawnCardonBattlefield_spawnedCardID)×65  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_1)×31  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_2)×19  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_3)×13  变量(CallFunc_SpawnCardonBattlefield_spawnedCardID_1)×11  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_4)×9  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_5)×6  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_6)×4  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_8)×2  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_7)×2  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_12)×1  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_9)×1  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_10)×1  变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID_11)×1
+   recv: 变量(cardFunction)×239
+     card_event_foreign_support_skirm           OnPlayedFromHand   i=206    变量(side) , 布尔常量 , 成员读取(CallFunc_Array_Get_Item).name , 变量(cardID) , 变量(Temp_text_Variable) , 布尔常量 , 变量(CallFunc_Add_IntInt_ReturnValue_1) , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID)
+     card_unit_qf_40mm_mk_iii                   OnPlayedFromHand   i=131    变量(side) , 布尔常量 , 其它 , 变量(cardID) , 变量(Temp_text_Variable) , 布尔常量 , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID)
+     card_event_atlantic_convoy                 OnPlayedFromHand   i=549    变量(side) , 布尔常量 , 成员读取(CallFunc_GetRandomCard_randomCard).name , 变量(cardID) , 变量(Temp_text_Variable) , 布尔常量 , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID)
+     card_event_hms_illustrious                 OnPlayedFromHand   i=10     变量(side) , 布尔常量 , 其它 , 变量(cardID) , 变量(Temp_text_Variable) , 布尔常量 , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardonBattlefield_spawnedCardID)
+     card_event_hms_illustrious                 OnPlayedFromHand   i=106    变量(side) , 布尔常量 , 其它 , 变量(cardID) , 变量(Temp_text_Variable_1) , 布尔常量 , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardonBattlefield_spawnedCardID_1)
+     card_event_night_raid                      OnPlayedFromHand   i=1602   变量(side) , 布尔常量 , 其它 , 变量(cardID) , 变量(Temp_text_Variable) , 布尔常量 , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardOnBattlefield_spawnedCardID)
+
+---- SpawnCardInHandBySide：231 个调用点 ----
+   a[0]: 变量(side)×217  变量(CallFunc_GetOppositeSide_oppositeSide_3)×4  变量(CallFunc_GetOppositeSide_oppositeSide_1)×3  变量(CallFunc_GetOppositeSide_oppositeSide)×2  变量(CallFunc_GetOppositeSide_oppositeSide_4)×1  成员读取(K2Node_Event_cardDestroyed).side×1  变量(CallFunc_GetOppositeSide_oppositeSide_2)×1  成员读取(K2Node_Event_cardDestroyed).originalSide×1  变量(CallFunc_GetOppositeSide_oppositeSide_6)×1
+   a[1]: 其它×202  成员读取(CallFunc_GetRandomCard_randomCard).name×12  成员读取(K2Node_Event_cardDestroyed).name×3  成员读取(weatherCardChosen).name×3  成员读取(K2Node_Event_targetCard).name×2  成员读取(CallFunc_GetRandomCard_randomCard_1).name×1  变量(name)×1  成员读取(tempCard).name×1  成员读取(Unit_ToBeDrawn).name×1  成员读取(CallFunc_GetCardFromID_card).name×1  变量(card to spawn)×1  变量(cardToSpawn)×1  变量(CallFunc_Conv_StringToName_ReturnValue_1)×1  成员读取(cardDestroyed).name×1
+   a[2]: 变量(cardID)×231
+   a[3]: 布尔常量×231
+   a[4]: 布尔常量×231
+   a[5]: 布尔常量×231
+   a[6]: 字符串常量×229  变量(CallFunc_Conv_TextToString_ReturnValue)×2
+   a[7]: 变量(Temp_text_Variable)×97  变量(Temp_text_Variable_1)×37  变量(Temp_text_Variable_11)×12  变量(Temp_text_Variable_3)×10  变量(Temp_text_Variable_12)×10  变量(Temp_text_Variable_4)×8  变量(Temp_text_Variable_9)×8  变量(Temp_text_Variable_10)×8  变量(Temp_text_Variable_13)×8  变量(Temp_text_Variable_5)×7  变量(Temp_text_Variable_2)×6  变量(Temp_text_Variable_14)×5  变量(Temp_text_Variable_8)×5  变量(Temp_text_Variable_7)×4  变量(Temp_text_Variable_15)×3  变量(Temp_text_Variable_6)×3
+   a[8]: 整数常量×218  成员读取(K2Node_Event_cardDestroyed).salvageFaction×3  变量(salvageFaction)×2  成员读取(CallFunc_GetRandomCard_randomCard).salvageFaction×2  其它×2  变量(faction)×1  成员读取(K2Node_Event_targetCard).salvageFaction×1  成员读取(Unit_ToBeDrawn).salvageFaction×1  成员读取(CallFunc_GetCardFromID_card).salvageFaction×1
+   a[9]: 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)×108  变量(CallFunc_SpawnCardinHandbySide_spawnedCardID_1)×47  变量(CallFunc_SpawnCardInHandBySide_spawnedCardID)×28  变量(CallFunc_SpawnCardinHandbySide_spawnedCardID_2)×19  变量(CallFunc_SpawnCardinHandbySide_spawnedCardID_3)×11  变量(CallFunc_SpawnCardinHandbySide_spawnedCardID_4)×8  变量(CallFunc_SpawnCardInHandBySide_spawnedCardID_1)×6  变量(CallFunc_SpawnCardinHandbySide_spawnedCardID_5)×4
+   recv: 变量(cardFunction)×231
+     card_event_espionage_skirm                 OnPlayedFromHand   i=279    变量(side) , 成员读取(CallFunc_GetRandomCard_randomCard).name , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable_1) , 整数常量 , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+     card_unit_coldstream_guards                OnPlayedFromHand   i=10     变量(side) , 其它 , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable) , 整数常量 , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+     card_unit_manchester_ia                    OnPlayedFromHand   i=10     变量(side) , 其它 , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable) , 整数常量 , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+     card_event_atlantic_convoy                 OnPlayedFromHand   i=758    变量(side) , 成员读取(CallFunc_GetRandomCard_randomCard_1).name , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable_1) , 整数常量 , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+     card_event_night_raid                      OnPlayedFromHand   i=1389   变量(side) , 成员读取(CallFunc_GetRandomCard_randomCard).name , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable_1) , 整数常量 , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+     card_event_rescue_mission                  OnPlayedFromHand   i=327    变量(side) , 成员读取(K2Node_Event_cardDestroyed).name , 变量(cardID) , 布尔常量 , 布尔常量 , 布尔常量 , 字符串常量 , 变量(Temp_text_Variable_1) , 成员读取(K2Node_Event_cardDestroyed).salvageFaction , 变量(CallFunc_SpawnCardinHandbySide_spawnedCardID)
+
+---- SpawnCardInHand：0 个调用点 ----
+   recv: 
+
+---- SpawnCardInDeckBySide：28 个调用点 ----
+   a[0]: 变量(side)×21  变量(CallFunc_GetOppositeSide_oppositeSide)×4  成员读取(K2Node_Event_targetCard).originalSide×2  变量(CallFunc_GetOppositeSide_oppositeSide_1)×1
+   a[1]: 其它×24  成员读取(K2Node_Event_targetCard).name×2  成员读取(CallFunc_GetRandomCard_randomCard).name×2
+   a[2]: 变量(cardID)×28
+   a[3]: 整数常量×25  变量(CallFunc_Subtract_IntInt_ReturnValue)×1  变量(CallFunc_Divide_IntInt_ReturnValue)×1  变量(count)×1
+   a[4]: 整数常量×26  成员读取(K2Node_Event_targetCard).salvageFaction×2
+   a[5]: 布尔常量×28
+   a[6]: 布尔常量×28
+   a[7]: 布尔常量×28
+   a[8]: 布尔常量×28
+   a[9]: 布尔常量×28
+   a[10]: 变量(CallFunc_SpawnCardInDeckBySide_spawnedCardIDs)×23  变量(CallFunc_SpawnCardinDeckbySide_spawnedCardIDs)×4  变量(CallFunc_SpawnCardinDeckbySide_spawnedCardIDs_1)×1
+   recv: 变量(cardFunction)×28
+     card_event_fog_of_war                      OnPlayedFromHand   i=95     成员读取(K2Node_Event_targetCard).originalSide , 成员读取(K2Node_Event_targetCard).name , 变量(cardID) , 整数常量 , 成员读取(K2Node_Event_targetCard).salvageFaction , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardInDeckBySide_spawnedCardIDs)
+     card_event_escort_group                    OnPlayedFromHand   i=124    变量(side) , 其它 , 变量(cardID) , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardinDeckbySide_spawnedCardIDs)
+     card_event_escort_group                    OnPlayedFromHand   i=402    变量(side) , 其它 , 变量(cardID) , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardinDeckbySide_spawnedCardIDs_1)
+     card_event_double_strength                 OnPlayedFromHand   i=884    变量(side) , 成员读取(CallFunc_GetRandomCard_randomCard).name , 变量(cardID) , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardInDeckBySide_spawnedCardIDs)
+     card_unit_sherwood_foresters               OnPlayedFromHand   i=53     成员读取(K2Node_Event_targetCard).originalSide , 成员读取(K2Node_Event_targetCard).name , 变量(cardID) , 整数常量 , 成员读取(K2Node_Event_targetCard).salvageFaction , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardInDeckBySide_spawnedCardIDs)
+     card_event_colossus                        OnPlayedFromHand   i=185    变量(side) , 成员读取(CallFunc_GetRandomCard_randomCard).name , 变量(cardID) , 整数常量 , 整数常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 布尔常量 , 变量(CallFunc_SpawnCardInDeckBySide_spawnedCardIDs)
+
+---- SpawnCardInDeck：0 个调用点 ----
+   recv: 
+
+---- GetRandomCard：176 个调用点 ----
+   a[0]: 变量(CallFunc_GetCardsOnBoardBySide_cards)×44  变量(possibleCards)×36  变量(possibleUnits)×9  变量(possibleTargets)×8  变量(CallFunc_GetCardsInHandBySide_cards)×4  变量(possibleDiscards)×3  变量(possibleOrders)×3  变量(CallFunc_GetCardsOnBoardBySide_cards_1)×3  变量(PossibleCards)×3  变量(NumberXUnits)×3  变量(enemyBoardUnits)×3  变量(fighterCardid)×2  变量(NumberYUnits)×2  变量(Cards)×2  变量(possibleCopy)×1  变量(1_CostCards)×1  变量(2_CostCards)×1  变量(3_CostCards)×1  变量(spitfireToDraw)×1  变量(cardsToFight)×1  变量(possiblePinUnits)×1  变量(orderCardid)×1  变量(infantryCardid)×1  变量(tankCardid)×1  变量(artilleryCardid)×1  变量(notPinnedUnits)×1  变量(possibleCards1)×1  变量(possibleCards2)×1  变量(possibleCards3)×1  变量(inactiveGotchasInHand)×1  变量(alpineCards)×1  变量(possible_cards)×1  变量(AncientEmpires)×1  变量(1CostUnits)×1  变量(24thCards)×1  变量(mikuraCardid)×1  变量(units_opposite)×1  变量(OppositeUnits)×1  变量(friendliesInPlay)×1  变量(CallFunc_GetCardsInHandBySide_cards_1)×1  变量(unitsToPlay)×1  变量(CallFunc_GetSeenCardsFromOppositeSide_seenCards)×1  变量(maxBombers)×1  变量(CardsWithDestruction)×1  变量(Units_InSameDeck)×1  变量(CallFunc_GetOppositeUnitsOnBoard_OppositeUnits)×1  变量(t34ToDraw)×1  变量(possibleOptions)×1  变量(my_deck_units)×1  变量(CallFunc_getUnpinnedEnemyUnits_unpinnedEnemyUnits)×1  变量(FriendlyAirUnits)×1  变量(Units)×1  变量(PossibleUnits)×1  变量(CallFunc_GetCardsInSupportLineBySide_cards)×1  变量(CallFunc_GetCardsInFrontlineBySide_cards)×1  变量(ShermanCards)×1  变量(32ndCardid)×1  变量(_possibleCardsToRetreat)×1  变量(Possible Targets)×1  变量(friendlyUnits)×1  变量(NumberZUnits)×1  变量(BomberCardid)×1  变量(dauntlessCardid)×1  变量(CallFunc_GetAllCardsInFrontline_cards)×1  变量(OppositeUnitsFrontline)×1
+   a[1]: 布尔常量×176
+   a[2]: 变量(CallFunc_GetRandomCard_randomCard)×155  变量(CallFunc_GetRandomCard_randomCard_1)×12  变量(CallFunc_GetRandomCard_randomCard_2)×5  变量(CallFunc_GetRandomCard_randomCard_3)×2  变量(CallFunc_GetRandomCard_randomCard_5)×1  变量(CallFunc_GetRandomCard_randomCard_4)×1
+   recv: 变量(cardFunction)×176
+     card_event_corps_command                   OnPlayedFromHand   i=366    变量(CallFunc_GetCardsOnBoardBySide_cards) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard)
+     card_event_guerilla_warfare_school         OnPlayedFromHand   i=680    变量(CallFunc_GetCardsOnBoardBySide_cards) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard)
+     card_event_the_double_sunrise              OnPlayedFromHand   i=624    变量(possibleUnits) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard)
+     card_event_the_double_sunrise              OnPlayedFromHand   i=1639   变量(possibleCards) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard_1)
+     card_unit_6th_brigade_nz                   OnPlayedFromHand   i=385    变量(CallFunc_GetCardsOnBoardBySide_cards) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard)
+     card_event_burning_fields_skirm            OnPlayedFromHand   i=95     变量(CallFunc_GetCardsOnBoardBySide_cards) , 布尔常量 , 变量(CallFunc_GetRandomCard_randomCard)
+
+==============================================================================================================
+② 「扫全卡池」形状的程序 —— 动态步数 vs 两个上限
+  事件程序上限 5000（旧）/ 105,092（新，2021×52）；局部函数上限 400,000
+==============================================================================================================
+
+  【事件程序（旧上限 5000）】共 11 个 —— 这些才是真正会撞墙的
+    ★撞墙 card_event_allied_research_effort              环体=51   动态≈103071   语句数=56
+    ★撞墙 card_unit_kokuras_sword                        环体=46   动态≈92966    语句数=62
+    ★撞墙 card_event_strong_bond                         环体=44   动态≈88924    语句数=59
+    ★撞墙 card_event_mountain_offense                    环体=37   动态≈74777    语句数=53
+    ★撞墙 card_event_experimental_flight                 环体=37   动态≈74777    语句数=45
+    ★撞墙 card_event_atlantic_convoy                     环体=33   动态≈66693    语句数=44
+    ★撞墙 card_unit_13th_rifle_regiment                  环体=32   动态≈64672    语句数=35
+    ★撞墙 card_unit_c47_skytrain                         环体=32   动态≈64672    语句数=43
+    ★撞墙 card_event_partnership                         环体=30   动态≈60630    语句数=33
+    ★撞墙 card_unit_ki_27_nate                           环体=30   动态≈60630    语句数=37
+    ★撞墙 card_unit_p37los                               环体=13   动态≈26273    语句数=62
+
+  【局部函数（上限 400000，本来就不受限）】共 37 个
+      card_event_baker_street_irregulars             GetChooseSpawnCards              环体=38   动态≈76798
+      card_event_rain1_mist                          GetChooseSpawnCards              环体=34   动态≈68714
+      card_event_storm1_gale                         GetChooseSpawnCards              环体=34   动态≈68714
+      card_event_sunny1_blue_sky                     GetChooseSpawnCards              环体=34   动态≈68714
+      card_event_ural_factories_cam1                 Random Card                      环体=31   动态≈62651
+      card_event_foreign_support_skirm               RandomChooseCards                环体=30   动态≈60630
+      card_event_ingenuity                           GetChooseSpawnCards              环体=28   动态≈56588
+      card_event_stand_together_brothers             RandomlyChooseTank               环体=28   动态≈56588
+      card_event_red_banner                          Random Card                      环体=26   动态≈52546
+      card_event_ural_factories                      Random Card                      环体=26   动态≈52546
+      card_event_refit                               RandomChooseA_Tank               环体=26   动态≈52546
+      card_event_bpf                                 GetChooseSpawnCards              环体=25   动态≈50525
+      … 另 25 个

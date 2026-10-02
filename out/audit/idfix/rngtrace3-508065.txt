@@ -1,0 +1,315 @@
+=== 回放审计 replay-508065 ===
+  卡 80 张，动作 141 条，左=963422 右=-9178
+
+  应用 123/141 条（⚠ 18 条没应用）
+
+=== ① 内核观察到的「判死」事件：4 次 ===
+    #79 t24 AC 之后：card_unit_5th_parachute_brigade#64 离场（BoardHqRight → Discard）
+    #95 t19 PC 之后：card_unit_1st_airborne#60 离场（BoardHqRight → Discard）
+    #107 t30 AC 之后：card_unit_2nd_west_africa#39 离场（BoardFrontline → Discard）
+    #119 t33 AC 之后：card_unit_2nd_west_africa#40 离场（BoardFrontline → Discard）
+
+=== ② 死亡单位仍被移动/攻击：1 次 ===
+    #127 t23 **AC 动了已判死的单位** card_unit_2nd_west_africa#40
+
+=== ④ HQ 对不上的动作：62 条 ===
+    （其中人类 left 43 条、bot right 19 条）
+    #20 t9 XActionEndOfTurn（right） 期望 24 实际 20
+    #27 t8 XActionStartOfTurn（right） 期望 20 实际 27
+    #28 t12 XActionEndOfTurn（right） 期望 24 实际 27
+    #29 t8 XActionEndOfTurn（right） 期望 20 实际 27
+    #41 t15 XActionEndOfTurn（right） 期望 24 实际 27
+    #50 t18 XActionEndOfTurn（right） 期望 24 实际 27
+    #65 t21 XActionEndOfTurn（right） 期望 28 实际 27
+    #67 t15 XActionStartOfTurn（left） 期望 24 实际 28
+    #68 t15 PC（left） 期望 24 实际 28
+    #70 t15 PC（left） 期望 24 实际 28
+    #71 t15 ML（left） 期望 24 实际 28
+    #72 t15 PC（left） 期望 24 实际 28
+    #73 t15 XActionEndOfTurn（left） 期望 24 实际 28
+    #74 t16 XActionStartOfTurn（right） 期望 30 实际 27
+    #80 t24 XActionEndOfTurn（right） 期望 28 实际 27
+    #81 t16 XActionEndOfTurn（right） 期望 30 实际 27
+    #82 t17 XActionStartOfTurn（left） 期望 24 实际 28
+    #83 t17 PC（left） 期望 24 实际 28
+    #84 t17 AC（left） 期望 24 实际 28
+    #85 t17 PC（left） 期望 24 实际 28
+    #86 t17 AC（left） 期望 24 实际 28
+    #87 t17 ML（left） 期望 23 实际 28
+    #88 t17 PC（left） 期望 23 实际 28
+    #89 t17 XActionEndOfTurn（left） 期望 23 实际 28
+    #90 t18 XActionStartOfTurn（right） 期望 30 实际 27
+    #93 t18 XActionEndOfTurn（right） 期望 30 实际 27
+    #94 t19 XActionStartOfTurn（left） 期望 23 实际 28
+    #95 t19 PC（left） 期望 23 实际 28
+    #96 t19 AC（left） 期望 23 实际 28
+    #97 t19 AC（left） 期望 23 实际 28
+
+=== ⑤ 未应用的动作：18 条 ===
+    #54 t13 PC（left）：打不出：kredit 不足（kredits=5，费用=12）
+    #70 t15 PC（left）：打不出：半场已满（kredits=7，费用=1）
+    #71 t15 ML（left）：移动被拒：单位不是行动方的场上单位（位置=HandLeft 归属=Left 行动方=Left 是HQ=False）（当前 HandLeft）
+    #72 t15 PC（left）：重复记录（该 cardID 已在场/已打出过）
+    #84 t17 AC（left）：攻击被拒：够不着（跨战线射程不足：攻方=BoardHqLeft 目标=BoardHqRight 射程=1；任一方在前线则不需要射程，双方都在支援线才要射程 ≥ 2）
+    #85 t17 PC（left）：打不出：半场已满（kredits=9，费用=4）
+    #86 t17 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=HandLeft 归属=Left 行动方=Left）
+    #96 t19 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=HandLeft 归属=Left 行动方=Left）
+    #97 t19 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #111 t21 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #112 t21 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #123 t23 PC（left）：打不出：半场已满（kredits=12，费用=6）
+    #125 t23 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #126 t23 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #127 t23 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=Discard 归属=Left 行动方=Left）
+    #138 t25 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #139 t25 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #141 t25 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    #54 t13 PC：打不出：kredit 不足（kredits=5，费用=12）
+    （之前 0 条失败都是 bot 自己的动作，不算信号）
+    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。
+       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。
+
+=== ⑤c ★ 身份不一致（动作自带卡组码 ≠ 内核里那张卡的卡组码）：8 条 / 3 张卡（已校正 0 条）===
+    #44 t11 ML cardID=9002 内核=card_unit_brewster_f2a（码 Ak） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #46 t11 PC cardID=9003 内核=card_unit_usa_promo1（码 kQ） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #54 t13 PC cardID=7002 内核=card_event_the_commonwealth（码 0z） → 动作码 02 = card_event_aa_barrage [校正开关关闭]
+    #72 t15 PC cardID=9003 内核=card_unit_usa_promo1（码 kQ） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #84 t17 AC cardID=9003 内核=card_unit_usa_promo1（码 kQ） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #111 t21 AC cardID=9002 内核=card_unit_brewster_f2a（码 Ak） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #125 t23 AC cardID=9002 内核=card_unit_brewster_f2a（码 Ak） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #138 t25 AC cardID=9002 内核=card_unit_brewster_f2a（码 Ak） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+
+⑤c 汇总：条数=8 张数=3 已校正=0 内核码未知=0
+
+=== ⑥ 撞到但**没实现**的原语：8 种 ===
+    ShouldGotchaTrigger ×56
+    <attack-on-guarded-target> ×7
+    MakeCardRetreat ×2
+    AddToTriggerQueue ×2
+    <card:card_unit_5th_parachute_brigade> ×1
+    Array_AddUnique ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+
+=== ⑥a ★ RNG 游标失同步信号：7 条 ===
+    <rng-cursor-desync:card_unit_brewster_f2a->card_unit_fifth_ohio:消费212>
+    <rng-cursor-desync:card_unit_usa_promo1->card_unit_p40_warhawk:消费212>
+    <rng-cursor-desync:card_event_the_commonwealth->card_event_aa_barrage:消费213>
+    <rng-cursor-desync:card_unit_usa_promo1->card_unit_p40_warhawk:消费228>
+    <rng-cursor-desync:card_unit_usa_promo1->card_unit_p40_warhawk:消费229>
+    <rng-cursor-desync:card_unit_brewster_f2a->card_unit_fifth_ohio:消费229>
+    <rng-cursor-desync:card_unit_brewster_f2a->card_unit_fifth_ohio:消费230>
+
+=== ⑦ ★ RNG 游标：本局共消耗 230 个随机数 ===
+    （客户端 `cardsRandomStream` 的游标；漏一个消费点就少、多一个就多。
+     用 `--rng-trace` 可以打印逐次消费的流水账。）
+    ---- 逐次消费流水（174 条，全部）----
+    -- #1 t1 XActionStartOfTurn left --
+    -- #2 t1 XActionEndOfTurn left --
+    -- #3 t2 XActionStartOfTurn right --
+    -- #4 t3 PC right --
+    -- #5 t3 XActionEndOfTurn right --
+    -- #6 t2 XActionEndOfTurn right --
+    -- #7 t3 XActionStartOfTurn left --
+    -- #8 t3 PC left --
+    -- #9 t3 XActionEndOfTurn left --
+    -- #10 t4 XActionStartOfTurn right --
+    -- #11 t6 XActionEndOfTurn right --
+    -- #12 t4 XActionEndOfTurn right --
+    -- #13 t5 XActionStartOfTurn left --
+    -- #14 t5 PC left --
+    #1 GetRandomCard n=6 idx=4 -> card_event_baker_street_irregulars 池=[card_unit_gordon_highlanders,card_event_aa_barrage,card_event_aa_barrage,card_event_aerial_reconaissance,card_event_baker_street_irregulars,card_event_breakout]
+    -- #15 t5 XActionEndOfTurn left --
+    -- #16 t6 XActionStartOfTurn right --
+    -- #17 t9 PC right --
+    -- #18 t9 PC right --
+    -- #19 t9 PC right --
+    -- #20 t9 XActionEndOfTurn right --
+    -- #21 t6 XActionEndOfTurn right --
+    -- #22 t7 XActionStartOfTurn left --
+    -- #23 t7 PC left --
+    #2 GetRandomCard n=11 idx=5 -> card_event_aa_barrage 池=[card_event_iron_from_the_north,card_event_the_commonwealth,card_event_royal_research,card_event_iron_from_the_north,card_event_iron_from_the_north,card_event_aa_barrage,card_event_breakout,card_event_breakout,card_event_aa_barrage,card_event_baker_street_irregulars,card_event_iron_from_the_north]
+    #2 CREATE #7001 card_event_aa_barrage @DeckLeft owner=Left 回合=7
+    #3 SpawnCardInDeckBySide Left deckLen=31 rand=4 -> #7001 card_event_aa_barrage
+    #4 GetRandomCard n=11 idx=1 -> card_event_the_commonwealth 池=[card_event_iron_from_the_north,card_event_the_commonwealth,card_event_royal_research,card_event_iron_from_the_north,card_event_iron_from_the_north,card_event_aa_barrage,card_event_breakout,card_event_breakout,card_event_aa_barrage,card_event_baker_street_irregulars,card_event_iron_from_the_north]
+    #4 CREATE #7002 card_event_the_commonwealth @DeckLeft owner=Left 回合=7
+    #5 SpawnCardInDeckBySide Left deckLen=32 rand=17 -> #7002 card_event_the_commonwealth
+    #6 GetRandomCard n=11 idx=1 -> card_event_the_commonwealth 池=[card_event_iron_from_the_north,card_event_the_commonwealth,card_event_royal_research,card_event_iron_from_the_north,card_event_iron_from_the_north,card_event_aa_barrage,card_event_breakout,card_event_breakout,card_event_aa_barrage,card_event_baker_street_irregulars,card_event_iron_from_the_north]
+    #6 CREATE #7003 card_event_the_commonwealth @DeckLeft owner=Left 回合=7
+    #7 SpawnCardInDeckBySide Left deckLen=33 rand=16 -> #7003 card_event_the_commonwealth
+    #40 ShuffleDeckBySide Left n=33
+    -- #24 t7 PC left --
+    -- #25 t7 PC left --
+    -- #26 t7 XActionEndOfTurn left --
+    -- #27 t8 XActionStartOfTurn right --
+    -- #28 t12 XActionEndOfTurn right --
+    -- #29 t8 XActionEndOfTurn right --
+    -- #30 t9 XActionStartOfTurn left --
+    -- #31 t9 PC left --
+    -- #32 t9 PC left --
+    -- #33 t9 PC left --
+    #124 selectCardToDraw 洗候选表 n=84
+    #124 CREATE #9001 card_event_atlantic_convoy @HandLeft owner=Left 回合=9
+    #125 RandomIntFromRangeWithStream(0,28) -> 3
+    -- #34 t9 CS left --
+    -- #35 t9 PC left --
+    -- #36 t9 PC left --
+    #126 GetRandomCard n=102 idx=45 -> card_unit_brewster_f2a 池=[card_unit_103rd_cavalry_recon,card_unit_109th_combat_engineers,card_unit_10th_engineering_battalion,card_unit_112th_infantry_regiment,card_unit_115th_regiment_tut,card_unit_11th_infantry_regiment,card_unit_121st_regiment_tut,card_unit_12th_infantry_regiment,card_unit_12th_infantry_regiment_tut,card_unit_133rd_ironman,card_unit_13th_engineers_battalion,card_unit_142nd_infantry_regiment,card_unit_164th_infantry_regiment,card_unit_164th_infantry_regiment_cam1,card_unit_175th_infantry_regiment,card_unit_17th_infantry_regiment,card_unit_1st_cavalry_troop,card_unit_1st_defense_battalion,card_unit_1st_infantry_regiment_us,card_unit_1st_marines,card_unit_1st_texas_infantry,card_unit_22nd_marines,card_unit_22nd_marines_vet,card_unit_2_5_marines,…]
+    #126 CREATE #9002 card_unit_brewster_f2a @BoardHqLeft owner=Left 回合=9
+    #127 GetRandomCard n=102 idx=99 -> card_unit_usa_promo1 池=[card_unit_103rd_cavalry_recon,card_unit_109th_combat_engineers,card_unit_10th_engineering_battalion,card_unit_112th_infantry_regiment,card_unit_115th_regiment_tut,card_unit_11th_infantry_regiment,card_unit_121st_regiment_tut,card_unit_12th_infantry_regiment,card_unit_12th_infantry_regiment_tut,card_unit_133rd_ironman,card_unit_13th_engineers_battalion,card_unit_142nd_infantry_regiment,card_unit_164th_infantry_regiment,card_unit_164th_infantry_regiment_cam1,card_unit_175th_infantry_regiment,card_unit_17th_infantry_regiment,card_unit_1st_cavalry_troop,card_unit_1st_defense_battalion,card_unit_1st_infantry_regiment_us,card_unit_1st_marines,card_unit_1st_texas_infantry,card_unit_22nd_marines,card_unit_22nd_marines_vet,card_unit_2_5_marines,…]
+    #127 CREATE #9003 card_unit_usa_promo1 @HandLeft owner=Left 回合=9
+    -- #37 t9 PC left --
+    #211 selectCardToDraw 洗候选表 n=84
+    #211 CREATE #9004 card_event_forward_observers @HandLeft owner=Left 回合=9
+    #212 RandomIntFromRangeWithStream(0,27) -> 21
+    -- #38 t9 CS left --
+    -- #39 t9 XActionEndOfTurn left --
+    -- #40 t10 XActionStartOfTurn right --
+    -- #41 t15 XActionEndOfTurn right --
+    -- #42 t10 XActionEndOfTurn right --
+    -- #43 t11 XActionStartOfTurn left --
+    -- #44 t11 ML left --
+    -- #45 t11 PC left --
+    -- #46 t11 PC left --
+    #212 CREATE #11001 card_unit_32nd_infantry_regiment @DeckLeft owner=Left 回合=11
+    #213 SpawnCardInDeckBySide Left deckLen=25 rand=12 -> #11001 card_unit_32nd_infantry_regiment
+    -- #47 t11 ML left --
+    -- #48 t11 XActionEndOfTurn left --
+    -- #49 t12 XActionStartOfTurn right --
+    -- #50 t18 XActionEndOfTurn right --
+    -- #51 t12 XActionEndOfTurn right --
+    -- #52 t13 XActionStartOfTurn left --
+    -- #53 t13 PC left --
+    -- #54 t13 PC left --
+    -- #55 t13 PC left --
+    -- #56 t13 XActionEndOfTurn left --
+    -- #57 t14 XActionStartOfTurn right --
+    -- #58 t21 PC right --
+    -- #59 t21 PC right --
+    #228 selectCardToDraw 洗候选表 n=15
+    #228 CREATE #14001 card_unit_no43_commando @HandRight owner=Right 回合=14
+    -- #60 t21 CS right --
+    -- #61 t21 PC right --
+    -- #62 t21 PC right --
+    -- #63 t21 PC right --
+    #228 CREATE #14002 card_event_radar @HandRight owner=Right 回合=14
+    -- #64 t21 PC right --
+    -- #65 t21 XActionEndOfTurn right --
+    -- #66 t14 XActionEndOfTurn right --
+    -- #67 t15 XActionStartOfTurn left --
+    -- #68 t15 PC left --
+    -- #69 t15 CS left --
+    #228 CREATE #15001 card_unit_10th_para_battalion @HandLeft owner=Left 回合=15
+    -- #70 t15 PC left --
+    -- #71 t15 ML left --
+    -- #72 t15 PC left --
+    -- #73 t15 XActionEndOfTurn left --
+    -- #74 t16 XActionStartOfTurn right --
+    -- #75 t24 PC right --
+    -- #76 t24 HT right --
+    -- #77 t24 PC right --
+    -- #78 t24 PC right --
+    -- #79 t24 AC right --
+    -- #80 t24 XActionEndOfTurn right --
+    -- #81 t16 XActionEndOfTurn right --
+    -- #82 t17 XActionStartOfTurn left --
+    -- #83 t17 PC left --
+    #229 GetRandomCard n=2 idx=1 -> card_event_radar 池=[card_unit_no43_commando,card_event_radar]
+    -- #84 t17 AC left --
+    -- #85 t17 PC left --
+    -- #86 t17 AC left --
+    -- #87 t17 ML left --
+    -- #88 t17 PC left --
+    -- #89 t17 XActionEndOfTurn left --
+    -- #90 t18 XActionStartOfTurn right --
+    -- #91 t27 PC right --
+    -- #92 t27 XActionEndOfTurn right --
+    -- #93 t18 XActionEndOfTurn right --
+    -- #94 t19 XActionStartOfTurn left --
+    -- #95 t19 PC left --
+    -- #96 t19 AC left --
+    -- #97 t19 AC left --
+    -- #98 t19 PC left --
+    -- #99 t19 CS left --
+    #229 CREATE #19001 card_event_plan @HandLeft owner=Left 回合=19
+    -- #100 t19 CS left --
+    #229 CREATE #19002 card_event_hms_illustrious @HandLeft owner=Left 回合=19
+    -- #101 t19 PC left --
+    #229 CREATE #19003 card_unit_swordfish @BoardHqLeft owner=Left 回合=19
+    #229 CREATE #19004 card_unit_swordfish @BoardHqLeft owner=Left 回合=19
+    -- #102 t19 AC left --
+    -- #103 t19 PC left --
+    -- #104 t19 AC left --
+    -- #105 t19 XActionEndOfTurn left --
+    -- #106 t20 XActionStartOfTurn right --
+    -- #107 t30 AC right --
+    -- #108 t30 XActionEndOfTurn right --
+    -- #109 t20 XActionEndOfTurn right --
+    -- #110 t21 XActionStartOfTurn left --
+    -- #111 t21 AC left --
+    -- #112 t21 AC left --
+    -- #113 t21 AC left --
+    -- #114 t21 AC left --
+    -- #115 t21 ML left --
+    -- #116 t21 XActionEndOfTurn left --
+    -- #117 t22 XActionStartOfTurn right --
+    -- #118 t33 PC right --
+    -- #119 t33 AC right --
+    -- #120 t33 XActionEndOfTurn right --
+    -- #121 t22 XActionEndOfTurn right --
+    -- #122 t23 XActionStartOfTurn left --
+    -- #123 t23 PC left --
+    -- #124 t23 CS left --
+    #229 CREATE #23001 card_event_convoy_175 @HandLeft owner=Left 回合=23
+    -- #125 t23 AC left --
+    -- #126 t23 AC left --
+    -- #127 t23 AC left --
+    -- #128 t23 AC left --
+    -- #129 t23 AC left --
+    -- #130 t23 ML left --
+    -- #131 t23 XActionEndOfTurn left --
+    -- #132 t24 XActionStartOfTurn right --
+    -- #133 t36 PC right --
+    #230 GetRandomCard n=7 idx=6 -> card_location_london 池=[card_unit_m3a3_honey_desert,card_unit_brewster_f2a,card_unit_2nd_west_africa,card_unit_usa_promo1,card_unit_swordfish,card_unit_swordfish,card_location_london]
+    -- #134 t36 PC right --
+    -- #135 t36 XActionEndOfTurn right --
+    -- #136 t24 XActionEndOfTurn right --
+    -- #137 t25 XActionStartOfTurn left --
+    -- #138 t25 AC left --
+    -- #139 t25 AC left --
+    -- #140 t25 ActionEndMatch left --
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 25，场上 6 个
+     #26 card_unit_m3a3_honey_desert @BoardFrontline#0 2/3 活着=True
+     #38 card_unit_2nd_west_africa @BoardFrontline#2 1/2 活着=True
+     #9002 card_unit_brewster_f2a @BoardFrontline#1 2/2 活着=True
+     #9003 card_unit_usa_promo1 @BoardHqLeft#3 3/2 活着=True
+     #19003 card_unit_swordfish @BoardHqLeft#4 1/3 活着=True
+     #19004 card_unit_swordfish @BoardHqLeft#5 1/3 活着=True
+  right：HQ 22，场上 2 个
+     #47 card_unit_gordon_highlanders @BoardHqRight#1 3/8 活着=True
+     #83 card_unit_no43_commando @BoardHqRight#3 3/1 活着=True
+
+=== 判读 ===
+  ⚠️ 有**死亡单位被移动** ⇒ 内核自己的门漏了（不是漂开）。

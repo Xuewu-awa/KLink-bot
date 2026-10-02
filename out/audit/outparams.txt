@@ -1,0 +1,1608 @@
+=== 每个函数的出参槽名与类型（来自 cards.full.json 的原始字节码）===
+
+Achievements_AddEliteCopy   cards=1 arity=3
+    3_eliteAchieved                                         x1     Bool|Boolx1
+
+AddCustomGameplayTag   cards=6 arity=4
+    qqq                                                     x6     Int|Intx6
+
+AddDefenseToMultipleCards   cards=2 arity=4
+    qqq                                                     x2     Int|Intx2
+
+AddIntelToCard   cards=1 arity=4
+    qqq                                                     x1     Int|Intx1
+    qqq_1                                                   x1     Int|Intx1
+    qqq_2                                                   x1     Int|Intx1
+
+AddKreditsTax   cards=3 arity=4
+    qqq                                                     x3     Bool|Boolx3
+    qqq_1                                                   x2     Bool|Boolx2
+    qqq_2                                                   x1     Bool|Boolx1
+
+AddNumberToText   cards=21 arity=4
+    qqq                                                     x21    Int|Intx21
+    qqq_1                                                   x11    Int|Intx11
+
+AdjustCardPositionInDeck   cards=1 arity=4
+    qqq_1                                                   x1     Int|Intx1
+    qqq                                                     x1     Int|Intx1
+
+AmIFlying   cards=2 arity=1
+    amI                                                     x2     Bool|Boolx2
+    amI_1                                                   x2     Bool|Boolx2
+
+AppendText   cards=16 arity=3
+    text                                                    x16    Text|Textx16
+
+ApplyDamageToMultipleCards   cards=1 arity=4
+    outputDestroyedCards                                    x1     Int|Intx1
+
+ApplyFatigueDamage   cards=1 arity=3
+    destroyed                                               x2     Bool|Boolx2
+
+ApplyGameplaySideEffect   cards=1 arity=6
+    qqq                                                     x1     Int|Intx1
+    qqq_1                                                   x1     Int|Intx1
+
+AttemptToPlayBasic   cards=1 arity=2
+    CanPlay                                                 x1     Bool|Boolx1
+
+AttemptToPlayFinal   cards=1 arity=3
+    canPlay                                                 x1     Bool|Boolx1
+    targetCardID                                            x1     Int|Intx1
+
+CalculateDamageDealt   cards=1 arity=10
+    damage                                                  x1     Int|Intx1
+    doesDamageRecieverDie                                   x1     Bool|Boolx1
+    damageRecieverKilledBeforeAattack                       x1     Bool|Boolx1
+    wasShockAttack                                          x1     Bool|Boolx1
+    damage_1                                                x1     Int|Intx1
+    doesDamageRecieverDie_1                                 x1     Bool|Boolx1
+    damageRecieverKilledBeforeAattack_1                     x1     Bool|Boolx1
+    wasShockAttack_1                                        x1     Bool|Boolx1
+
+CalculatePlayRate   cards=1 arity=3
+    rate                                                    x1     Double|Doublex1
+    rate_1                                                  x1     Double|Doublex1
+
+CanCardBeBuffed   cards=1 arity=2
+    CanBeBuffed                                             x17    Bool|Boolx17
+
+CanCardDoAnything   cards=1 arity=2
+    canIt                                                   x1     Bool|Boolx1
+
+CanPlayCard   cards=2 arity=1
+    can_play                                                x2     Bool|Boolx2
+    can_play_1                                              x1     Bool|Boolx1
+
+CanSelectAsTarget   cards=1 arity=8
+    can                                                     x1     Bool|Boolx1
+    Reason                                                  x1     String|Stringx1
+    Reason_Param_1                                          x1     String|Stringx1
+    Reason_Param_2                                          x1     String|Stringx1
+
+Capture   cards=1 arity=1
+    RenderTargetOut                                         x1     Object|/Script/Engine.TextureRenderTarget2Dx1
+
+ChangeAttack   cards=356 arity=6
+    qqq                                                     x375   Bool|Boolx375
+    qqq_1                                                   x60    Bool|Boolx60
+    qqq_2                                                   x21    Bool|Boolx21
+    qqq_3                                                   x9     Bool|Boolx9
+    qqq_9                                                   x1     Bool|Boolx1
+    qqq_8                                                   x1     Bool|Boolx1
+    qqq_6                                                   x1     Bool|Boolx1
+    qqq_7                                                   x1     Bool|Boolx1
+
+ChangeBuffsFromCards   cards=1 arity=7
+    amountRemoved                                           x31    Int|Intx31
+    amountRemoved_1                                         x10    Int|Intx10
+    amountRemoved_2                                         x6     Int|Intx6
+    amountRemoved_3                                         x4     Int|Intx4
+
+ChangeDefense   cards=326 arity=6
+    qqq                                                     x334   Bool|Boolx334
+    qqq_1                                                   x28    Bool|Boolx28
+    qqq_2                                                   x3     Bool|Boolx3
+    qqq_3                                                   x1     Bool|Boolx1
+
+ChangeFrontlineLimiter   cards=1 arity=3
+    qqq                                                     x1     Int|Intx1
+    qqq_1                                                   x1     Int|Intx1
+
+ChangeHeavyArmor   cards=7 arity=6
+    qqq                                                     x10    Bool|Boolx10
+    qqq_1                                                   x1     Bool|Boolx1
+
+ChangeKreditCost   cards=85 arity=6
+    qqq                                                     x95    Bool|Boolx95
+    qqq_1                                                   x36    Bool|Boolx36
+    qqq_2                                                   x21    Bool|Boolx21
+    qqq_3                                                   x2     Bool|Boolx2
+    qqq_4                                                   x1     Bool|Boolx1
+
+ChangedPinnedTurns   cards=1 arity=4
+    qqq                                                     x1     Int|Intx1
+
+CheckFriendlyAirUnitsOnBoard   cards=1 arity=1
+    FriendAirQty                                            x1     Int|Intx1
+
+CheckFriendlyUnitsOnBoard   cards=1 arity=1
+    FriendUnitQty                                           x1     Int|Intx1
+
+CheckHasUnitToSpawn   cards=4 arity=2
+    HasUnitToSpawn                                          x4     Bool|Boolx4
+
+CheckIsInQueue   cards=1 arity=2
+    bIsInQueue                                              x1     Bool|Boolx1
+
+CompareHandCards   cards=1 arity=2
+    sameSide                                                x1     Int|Intx1
+    otherSide                                               x1     Int|Intx1
+
+ConstructAndCopyCard   cards=1 arity=2
+    cardObject                                              x1     Object|/Script/kards.BaseCardObjectx1
+
+ConvertCard   cards=25 arity=6
+    newCardIDs                                              x25    Int|Intx25
+    newCardIDs_1                                            x1     Int|Intx1
+
+CountFriendlyGuardUnits   cards=1 arity=1
+    count                                                   x1     Int|Intx1
+
+CreateCard   cards=2 arity=2,17
+    cardID                                                  x7     Int|Intx7
+
+CreateCardObject   cards=1 arity=8
+    cardObject                                              x1     Object|/Script/kards.BaseCardObjectx1
+
+CreateHelpBubbleEntry   cards=2 arity=7
+    newEntry                                                x4     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx4
+    newEntry_1                                              x2     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx2
+    newEntry_6                                              x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+    newEntry_7                                              x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+    newEntry_8                                              x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+    newEntry_9                                              x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+    newEntry_10                                             x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+    newEntry_11                                             x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+
+CreateHelpBubbleEntryWidget_Type   cards=1 arity=2
+    cardHelpWidget                                          x1     Object|/Game/Blueprints/UI/Components/cardHelp_Widget.cardHelp_Widget_Cx1
+
+CreateLightInfantryArr   cards=1 arity=2
+    arr_1                                                   x1     Name|Namex1
+    arr_5                                                   x1     Name|Namex1
+    arr_3                                                   x1     Name|Namex1
+    arr                                                     x1     Name|Namex1
+    arr_4                                                   x1     Name|Namex1
+    arr_2                                                   x1     Name|Namex1
+
+CreatePopup   cards=1 arity=3
+    OutUserWidget                                           x1     Object|/Script/UMG.UserWidgetx1
+
+CustomAbilityAdd   cards=80 arity=7
+    qqq                                                     x81    Bool|Boolx81
+    qqq_1                                                   x12    Bool|Boolx12
+    qqq_2                                                   x2     Bool|Boolx2
+
+CustomAbilityRemove   cards=40 arity=5
+    qqq                                                     x42    Bool|Boolx42
+    qqq_1                                                   x13    Bool|Boolx13
+    qqq_2                                                   x4     Bool|Boolx4
+    qqq_3                                                   x3     Bool|Boolx3
+    qqq_4                                                   x1     Bool|Boolx1
+
+DamageCard   cards=263 arity=7
+    targetDestroyed                                         x267   Bool|Boolx267
+    targetDestroyed_1                                       x17    Bool|Boolx17
+    targetDestroyed_2                                       x2     Bool|Boolx2
+    targetDestroyed_4                                       x1     Bool|Boolx1
+    targetDestroyed_3                                       x1     Bool|Boolx1
+
+DamageMultipleCards   cards=45 arity=4
+    cardsDestroyed                                          x45    Int|Intx45
+    cardsDestroyed_1                                        x1     Int|Intx1
+
+DecrementCountdown   cards=15 arity=3
+    countdownFinished                                       x15    Bool|Boolx15
+    countdownFound                                          x15    Bool|Boolx15
+
+DestroyMultipleCards   cards=20 arity=3
+    qqq                                                     x19    Int|Intx19
+    qqq_1                                                   x1     Int|Intx1
+
+DiscardCardFromDeck   cards=11 arity=5
+    success                                                 x11    Bool|Boolx11
+
+DiscardCardFromHand   cards=39 arity=5
+    success                                                 x40    Bool|Boolx40
+    success_1                                               x2     Bool|Boolx2
+
+DiscardRandomCardFromHand   cards=17 arity=3
+    discardedCardID                                         x18    Int|Intx18
+    discardedCardID_1                                       x2     Int|Intx2
+
+DoesSideControlTheFrontline   cards=57 arity=2
+    doesHe                                                  x58    Bool|Boolx58
+    doesHe_1                                                x12    Bool|Boolx12
+    doesHe_2                                                x2     Bool|Boolx2
+
+DoesThisCardHasAnyTarget   cards=1 arity=2
+    hasTarget                                               x1     Bool|Boolx1
+
+DrawCardsFromDeckBySide   cards=215 arity=7
+    cardsIDs                                                x71    Int|Intx71
+    cardsIDs_1                                              x2     Int|Intx2
+
+DrawTopCardFromDeck   cards=1 arity=8
+    drawnCard                                               x3     Int|Intx3
+    delay_ImplicitCast                                      x1     Double|Doublex1
+
+ExecuteOnDealDamageAddDamage   cards=1 arity=7
+    calculatedDamage                                        x4     Int|Intx4
+    calculatedDamage_1                                      x2     Int|Intx2
+    calculatedDamage_2                                      x1     Int|Intx1
+
+ExecuteOnDealDamageAddDamageAfterCalc   cards=1 arity=7
+    finalDamage                                             x3     Int|Intx3
+    finalDamage_1                                           x2     Int|Intx2
+
+ExecuteOnDeploymentTriggered   cards=1 arity=3
+    triggerMultiple                                         x3     Int|Intx3
+
+ExecuteOnDestructionEffectTriggered   cards=1 arity=6
+    output_TriggerMultiple_3                                x2     Int|Intx2
+    output_TriggerMultiple_2                                x2     Int|Intx2
+    output_TriggerMultiple_1                                x2     Int|Intx2
+    output_TriggerMultiple                                  x2     Int|Intx2
+
+ExecuteOnDrawnFromDeck   cards=1 arity=4
+    newlyDrawnCard                                          x1     Object|/Script/kards.BaseCardObjectx1
+
+FetchAllCardsWithEventTrigger   cards=1 arity=2
+    cardsWithThisTrigger                                    x58    Object|/Script/kards.BaseCardObjectx58
+    cardsWithThisTrigger_1                                  x9     Object|/Script/kards.BaseCardObjectx9
+    cardsWithThisTrigger_2                                  x3     Object|/Script/kards.BaseCardObjectx3
+    cardsWithThisTrigger_3                                  x2     Object|/Script/kards.BaseCardObjectx2
+    cardsWithThisTrigger_4                                  x1     Object|/Script/kards.BaseCardObjectx1
+
+FetchCardFromCardID   cards=1 arity=2
+    fetchedCard                                             x1     Object|/Script/kards.BaseCardObjectx1
+
+FetchCardsByLocation   cards=3 arity=6
+    QtyInLocation                                           x16    Int|Intx16
+    isLocationFull                                          x16    Bool|Boolx16
+    AllCardsInLocation                                      x16    Object|/Script/kards.BaseCardObjectx16
+    FirstCard                                               x16    Object|/Script/kards.BaseCardObjectx16
+    fetchedCardsIDs                                         x16    Int|Intx16
+    QtyInLocation_1                                         x3     Int|Intx3
+    isLocationFull_1                                        x3     Bool|Boolx3
+    AllCardsInLocation_1                                    x3     Object|/Script/kards.BaseCardObjectx3
+
+FetchCardsByLocationSorted   cards=2 arity=2
+    cardIDs                                                 x3     Int|Intx3
+
+FindCardCoordinatesInLocation   cards=2 arity=6
+    coordinates                                             x2     Struct|/Script/CoreUObject.Vectorx2
+    found                                                   x2     Bool|Boolx2
+    row                                                     x2     Object|/Script/Engine.StaticMeshComponentx2
+
+FindCardCoordinatesOnBoard   cards=1 arity=4
+    coordinates                                             x1     Struct|/Script/CoreUObject.Vectorx1
+    row                                                     x1     Object|/Script/Engine.StaticMeshComponentx1
+
+FindCardLocationUnderCursor   cards=3 arity=6
+    Location                                                x9     Byte|/Script/kards.ECardLocationEnumx9
+    LocationNumber                                          x9     Int|Intx9
+    Coordinates                                             x9     Struct|/Script/CoreUObject.Vectorx9
+    rowFound                                                x9     Bool|Boolx9
+    boardFound                                              x9     Bool|Boolx9
+    cardAtLocation                                          x9     Int|Intx9
+    Location_1                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    LocationNumber_1                                        x1     Int|Intx1
+
+ForceCardChangeLocation   cards=3 arity=7
+    oldLocation                                             x4     Byte|/Script/kards.ECardLocationEnumx4
+    oldLocationNumber                                       x4     Int|Intx4
+    moved                                                   x3     Bool|Boolx3
+    moved_1                                                 x3     Bool|Boolx3
+    oldLocation_1                                           x3     Byte|/Script/kards.ECardLocationEnumx3
+    oldLocationNumber_1                                     x3     Int|Intx3
+    moved_2                                                 x2     Bool|Boolx2
+    oldLocation_2                                           x2     Byte|/Script/kards.ECardLocationEnumx2
+
+Forecast   cards=10 arity=2
+    qqq                                                     x10    Int|Intx10
+
+FullyHealCard   cards=31 arity=3
+    HealedAmount                                            x31    Int|Intx31
+    HealedAmount_1                                          x2     Int|Intx2
+
+GenerateNextCardID   cards=1 arity=2
+    nextCardID                                              x1     Int|Intx1
+
+GetActiveGotchasOrdered   cards=1 arity=1
+    cardIDs                                                 x4     Int|Intx4
+
+GetAdjacentCards   cards=36 arity=3
+    adjacentCards                                           x36    Object|/Script/kards.BaseCardObjectx36
+
+GetAllActiveStaticCards   cards=49 arity=3
+    cards                                                   x54    Object|/Script/kards.BaseCardObjectx54
+    cards_1                                                 x1     Object|/Script/kards.BaseCardObjectx1
+
+GetAllCardInBattle   cards=2 arity=1
+    AllCardsInBattle                                        x41    Object|/Script/kards.BaseCardObjectx41
+
+GetAllCardInBattleAsMap   cards=1 arity=1
+    AllCardsInBattle                                        x4     Int|Intx4
+
+GetAllCards   cards=101 arity=1
+    cards                                                   x105   Object|/Script/kards.BaseCardObjectx105
+    cards_1                                                 x21    Object|/Script/kards.BaseCardObjectx21
+
+GetAllCardsInFrontline   cards=17 arity=2
+    cards                                                   x17    Object|/Script/kards.BaseCardObjectx17
+
+GetAllCardsOnBoard   cards=90 arity=2
+    cards                                                   x91    Object|/Script/kards.BaseCardObjectx91
+    cards_1                                                 x17    Object|/Script/kards.BaseCardObjectx17
+
+GetAllCardsPlayedThisBattle   cards=1 arity=1
+    playedCardsIDs                                          x1     Int|Intx1
+
+GetAllStaticCardsSortedByName   cards=1 arity=1
+    OutAllStaticCards                                       x6     Object|/Script/kards.BaseCardObjectx6
+
+GetAllUnitsOnBoard   cards=106 arity=2
+    cards                                                   x108   Object|/Script/kards.BaseCardObjectx108
+    cards_1                                                 x8     Object|/Script/kards.BaseCardObjectx8
+    cards_3                                                 x1     Object|/Script/kards.BaseCardObjectx1
+    cards_2                                                 x1     Object|/Script/kards.BaseCardObjectx1
+
+GetAllyFactionBySide   cards=1 arity=2
+    AllyFaction                                             x1     Byte|/Script/KardsCore.EFactionEnumx1
+
+GetAllyNationForSide   cards=1 arity=2
+    allyNation                                              x1     Byte|/Script/KardsCore.EFactionEnumx1
+
+GetAttackSound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetBPPlayerController   cards=2 arity=3
+    BP_PlayerController                                     x2     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx2
+    BP_PlayerController_1                                   x2     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx2
+
+GetBattleHUD   cards=1 arity=1
+    HUD_1                                                   x2     Object|/Game/Blueprints/UI/BP_Widget_Battle_HUD.BP_Widget_Battle_HUD_Cx2
+    HUD                                                     x2     Object|/Game/Blueprints/UI/BP_Widget_Battle_HUD.BP_Widget_Battle_HUD_Cx2
+
+GetBlowUpSound   cards=1 arity=1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetBlowupSound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetBoard   cards=9 arity=2
+    Board                                                   x21    Object|/Game/Blueprints/BP_Board.BP_Board_Cx21
+    Board_1                                                 x11    Object|/Game/Blueprints/BP_Board.BP_Board_Cx11
+    Board_2                                                 x7     Object|/Game/Blueprints/BP_Board.BP_Board_Cx7
+    Board_3                                                 x4     Object|/Game/Blueprints/BP_Board.BP_Board_Cx4
+    Board_6                                                 x3     Object|/Game/Blueprints/BP_Board.BP_Board_Cx3
+    Board_5                                                 x3     Object|/Game/Blueprints/BP_Board.BP_Board_Cx3
+    Board_12                                                x2     Object|/Game/Blueprints/BP_Board.BP_Board_Cx2
+    Board_7                                                 x2     Object|/Game/Blueprints/BP_Board.BP_Board_Cx2
+
+GetBuffsToRemoveEndOfTurn   cards=1 arity=1
+    BuffsToRemove_1                                         x2     Byte|/Script/kards.ECardBuffTypesx2
+    BuffsToRemove                                           x2     Byte|/Script/kards.ECardBuffTypesx2
+
+GetCachedBPBoard   cards=5 arity=1
+    BP_Board                                                x22    Object|/Game/Blueprints/BP_Board.BP_Board_Cx22
+    BP_Board_1                                              x11    Object|/Game/Blueprints/BP_Board.BP_Board_Cx11
+    BP_Board_9                                              x5     Object|/Game/Blueprints/BP_Board.BP_Board_Cx5
+    BP_Board_2                                              x5     Object|/Game/Blueprints/BP_Board.BP_Board_Cx5
+    BP_Board_8                                              x4     Object|/Game/Blueprints/BP_Board.BP_Board_Cx4
+    BP_Board_13                                             x3     Object|/Game/Blueprints/BP_Board.BP_Board_Cx3
+    BP_Board_7                                              x3     Object|/Game/Blueprints/BP_Board.BP_Board_Cx3
+    BP_Board_6                                              x3     Object|/Game/Blueprints/BP_Board.BP_Board_Cx3
+
+GetCampaignStrategy   cards=1 arity=1
+    Strategy                                                x2     Byte|/Script/kards.EnumCampaignStrategyx2
+
+GetCard   cards=5 arity=1
+    card                                                    x52    Object|/Script/kards.BaseCardObjectx52
+    card_1                                                  x18    Object|/Script/kards.BaseCardObjectx18
+    card_2                                                  x15    Object|/Script/kards.BaseCardObjectx15
+    card_3                                                  x10    Object|/Script/kards.BaseCardObjectx10
+    card_7                                                  x9     Object|/Script/kards.BaseCardObjectx9
+    card_6                                                  x9     Object|/Script/kards.BaseCardObjectx9
+    card_4                                                  x8     Object|/Script/kards.BaseCardObjectx8
+    card_5                                                  x6     Object|/Script/kards.BaseCardObjectx6
+
+GetCardFactionPrimaryColor   cards=1 arity=3
+    factionColor                                            x1     Struct|/Script/CoreUObject.LinearColorx1
+
+GetCardFromID   cards=238 arity=2
+    card                                                    x479   Object|/Script/kards.BaseCardObjectx479
+    card_1                                                  x90    Object|/Script/kards.BaseCardObjectx90
+    card_2                                                  x25    Object|/Script/kards.BaseCardObjectx25
+    card_3                                                  x11    Object|/Script/kards.BaseCardObjectx11
+    card_4                                                  x9     Object|/Script/kards.BaseCardObjectx9
+    card_5                                                  x5     Object|/Script/kards.BaseCardObjectx5
+    card_7                                                  x3     Object|/Script/kards.BaseCardObjectx3
+    card_6                                                  x2     Object|/Script/kards.BaseCardObjectx2
+
+GetCardFunctions   cards=2 arity=2
+    cardFunctions                                           x2     Object|/Game/Blueprints/Cards/BP_CardFunctions.BP_CardFunctions_Cx2
+
+GetCardName   cards=1 arity=1
+    cardName                                                x1     Name|Namex1
+
+GetCardScaling   cards=2 arity=1
+    cardScaling_1                                           x5     Double|Doublex5
+    cardScaling                                             x4     Double|Doublex4
+
+GetCardSound   cards=4 arity=4
+    sound_cue                                               x5     Object|/Script/Engine.SoundBasex5
+    found                                                   x5     Bool|Boolx5
+    sound_cue_1                                             x3     Object|/Script/Engine.SoundBasex3
+    found_1                                                 x3     Bool|Boolx3
+    sound_cue_2                                             x2     Object|/Script/Engine.SoundBasex2
+    found_2                                                 x2     Bool|Boolx2
+    sound_cue_3                                             x2     Object|/Script/Engine.SoundBasex2
+    found_3                                                 x2     Bool|Boolx2
+
+GetCardTextureReference   cards=4 arity=5
+    Card_Texture_Reference                                  x4     Object|/Script/Engine.Texturex4
+    type                                                    x4     Byte|/Game/Structs/E_AlternativeArtType.E_AlternativeArtTypex4
+
+GetCardsByVisualLocation   cards=1 arity=2
+    cardsInLocation                                         x2     Int|Intx2
+
+GetCardsInFrontlineBySide   cards=11 arity=3
+    cards                                                   x11    Object|/Script/kards.BaseCardObjectx11
+
+GetCardsInHandBySide   cards=79 arity=2
+    cards                                                   x91    Object|/Script/kards.BaseCardObjectx91
+    cards_1                                                 x11    Object|/Script/kards.BaseCardObjectx11
+
+GetCardsInSupportLineBySide   cards=35 arity=4
+    cards                                                   x35    Object|/Script/kards.BaseCardObjectx35
+    cards_1                                                 x7     Object|/Script/kards.BaseCardObjectx7
+    cards_2                                                 x1     Object|/Script/kards.BaseCardObjectx1
+
+GetCardsOnBoardBySide   cards=253 arity=4
+    cards                                                   x269   Object|/Script/kards.BaseCardObjectx269
+    cards_1                                                 x27    Object|/Script/kards.BaseCardObjectx27
+    cards_2                                                 x1     Object|/Script/kards.BaseCardObjectx1
+    cards_3                                                 x1     Object|/Script/kards.BaseCardObjectx1
+
+GetCardsPlayedFromHandLastTurn   cards=5 arity=1
+    CardIDsPlayedLastTurn                                   x10    Int|Intx10
+
+GetCardsPlayedFromHandThisTurn   cards=7 arity=1
+    CardIDsPlayedThisTurn                                   x28    Int|Intx28
+
+GetCardsPlayedThisTurn   cards=11 arity=1
+    cards                                                   x12    Object|/Script/kards.BaseCardObjectx12
+
+GetCardsToTheLeft   cards=3 arity=4
+    cards                                                   x6     Object|/Script/kards.BaseCardObjectx6
+    cards_1                                                 x5     Object|/Script/kards.BaseCardObjectx5
+    cards_3                                                 x4     Object|/Script/kards.BaseCardObjectx4
+    cards_2                                                 x4     Object|/Script/kards.BaseCardObjectx4
+    cards_4                                                 x4     Object|/Script/kards.BaseCardObjectx4
+    cards_5                                                 x2     Object|/Script/kards.BaseCardObjectx2
+
+GetClientSide   cards=3 arity=1
+    OutClientSide                                           x9     Byte|/Script/kards.ESideEnumx9
+    OutClientSide_1                                         x3     Byte|/Script/kards.ESideEnumx3
+
+GetCurrentPopupZOrder   cards=1 arity=1
+    OutZOrder                                               x1     Int|Intx1
+
+GetDSession   cards=5 arity=2
+    dSession                                                x8     Object|/Game/Blueprints/Logic/BP_KardsSession.BP_KardsSession_Cx8
+    dSession_1                                              x2     Object|/Game/Blueprints/Logic/BP_KardsSession.BP_KardsSession_Cx2
+
+GetDamageVisualDelay   cards=1 arity=3
+    delay                                                   x1     Double|Doublex1
+
+GetDeckActor   cards=1 arity=2
+    deck                                                    x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+    deck_1                                                  x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+
+GetDeckBP   cards=5 arity=3
+    Deck                                                    x7     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx7
+    Deck_1                                                  x4     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx4
+    Deck_2                                                  x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+    Deck_5                                                  x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+    Deck_4                                                  x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+    Deck_3                                                  x1     Object|/Game/Blueprints/BP_Deck.BP_Deck_Cx1
+
+GetDeckBySide   cards=1 arity=2
+    DeckCardIDs                                             x8     Int|Intx8
+    DeckCardIDs_1                                           x1     Int|Intx1
+
+GetDeckByside   cards=49 arity=2
+    deckCardIDs                                             x128   Int|Intx128
+    deckCardIDs_1                                           x17    Int|Intx17
+    deckCardIDs_2                                           x6     Int|Intx6
+
+GetDeckLocationBySide   cards=1 arity=2
+    deckLocation                                            x3     Byte|/Script/kards.ECardLocationEnumx3
+
+GetDeckTopCardTransform   cards=2 arity=2
+    topCardTransform                                        x2     Struct|/Script/CoreUObject.Transformx2
+    topCardTransform_1                                      x2     Struct|/Script/CoreUObject.Transformx2
+
+GetDefaultFocusWidget   cards=1 arity=1
+    Widget                                                  x1     Object|/Script/UMG.Widgetx1
+
+GetDefenseBuffFromAdjacentUnits   cards=1 arity=1
+    amount                                                  x2     Int|Intx2
+
+GetDestroyedCardsCountBySide   cards=24 arity=2
+    count                                                   x24    Int|Intx24
+    count_1                                                 x21    Int|Intx21
+    count_2                                                 x17    Int|Intx17
+    count_3                                                 x13    Int|Intx13
+    count_4                                                 x9     Int|Intx9
+    count_5                                                 x7     Int|Intx7
+    count_6                                                 x1     Int|Intx1
+
+GetDestroyedCardsIDs   cards=1 arity=1
+    DestroyedCardsIDs                                       x1     Int|Intx1
+
+GetDestroyedCardsIDsByTurn   cards=2 arity=2
+    DestroyedCardsIDs                                       x1     Int|Intx1
+    destroyedCardsIDs                                       x1     Int|Intx1
+
+GetDestroyedCardsIDsThisBattle   cards=5 arity=1
+    destroyedCardsIDs                                       x5     Int|Intx5
+
+GetDragActor   cards=1 arity=1
+    dragActor                                               x1     Object|/Script/Engine.Actorx1
+
+GetEnterPlaySound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetEquipmentBP   cards=3 arity=2
+    Equipment                                               x3     Object|/Game/Blueprints/BP_Equipment.BP_Equipment_Cx3
+
+GetExecuteWaitPlayFromHand   cards=1 arity=1
+    ShouldExecuteWait                                       x2     Bool|Boolx2
+
+GetExileFactionIconAsTexture   cards=1 arity=3
+    Texture                                                 x1     Object|/Script/Engine.Texture2Dx1
+
+GetExileText   cards=1 arity=3
+    text                                                    x1     Text|Textx1
+
+GetExplosionDuration   cards=1 arity=1
+    duration                                                x1     Double|Doublex1
+
+GetFactionColor   cards=2 arity=3
+    factionColor                                            x2     Struct|/Script/CoreUObject.LinearColorx2
+    factionColor_1                                          x1     Struct|/Script/CoreUObject.LinearColorx1
+
+GetFactionIconAsMaterial   cards=1 arity=3
+    material                                                x1     Object|/Script/Engine.MaterialInstancex1
+
+GetFatigueDamageBySide   cards=1 arity=2
+    FatigueDamage                                           x1     Int|Intx1
+    FatigueDamage_1                                         x1     Int|Intx1
+
+GetFirstWidgetInViewport   cards=1 arity=3
+    theWidget                                               x2     Object|/Script/UMG.UserWidgetx2
+
+GetFrontlineOwnerSide   cards=2 arity=1
+    ownerSide                                               x7     Byte|/Script/kards.ESideEnumx7
+    ownerSide_1                                             x2     Byte|/Script/kards.ESideEnumx2
+
+GetGraphicsSettings   cards=1 arity=1
+    GraphicSettings                                         x1     Object|/Game/Blueprints/GameSettings/BP_GraphicSettings.BP_GraphicSettings_Cx1
+
+GetHQ_DamagedAmountThisTurn   cards=1 arity=2
+    damagedAmount                                           x1     Int|Intx1
+
+GetHQ_DamagedAmountThisTurnBySide   cards=3 arity=2
+    damagedAmount                                           x6     Int|Intx6
+
+GetHandLocationBySide   cards=6 arity=2
+    handLocation                                            x10    Byte|/Script/kards.ECardLocationEnumx10
+
+GetHighestBomberAttack   cards=1 arity=1
+    highestAttack                                           x1     Int|Intx1
+
+GetIconSize   cards=1 arity=2
+    Viewport_size                                           x2     Struct|/Script/CoreUObject.Vector2Dx2
+    World_size                                              x2     Struct|/Script/CoreUObject.Vector2Dx2
+
+GetImpactSound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetIsGoldCard   cards=1 arity=1
+    isGold_5                                                x1     Bool|Boolx1
+    isGold_6                                                x1     Bool|Boolx1
+    isGold_7                                                x1     Bool|Boolx1
+    isGold_8                                                x1     Bool|Boolx1
+    isGold_9                                                x1     Bool|Boolx1
+    isGold_10                                               x1     Bool|Boolx1
+    isGold_11                                               x1     Bool|Boolx1
+    isGold_12                                               x1     Bool|Boolx1
+
+GetIsLocalClientTurn   cards=5 arity=1
+    IsClientTurn                                            x5     Bool|Boolx5
+    IsClientTurn_1                                          x1     Bool|Boolx1
+
+GetKardsGameInstancePure   cards=1 arity=2
+    instance                                                x1     Object|/Game/Blueprints/BP_KardsGameInstance.BP_KardsGameInstance_Cx1
+
+GetKreditsBySide   cards=16 arity=2
+    kredits                                                 x16    Int|Intx16
+    kredits_1                                               x2     Int|Intx2
+
+GetLastTouchPos   cards=1 arity=2
+    LastTouchPos                                            x1     Struct|/Script/CoreUObject.Vector2Dx1
+    MouseIsNull                                             x1     Bool|Boolx1
+
+GetLeftMostCardInHand   cards=8 arity=3
+    WasFound                                                x13    Bool|Boolx13
+    LeftMostCard                                            x13    Object|/Script/kards.BaseCardObjectx13
+
+GetLevelManager   cards=1 arity=2
+    levelManager                                            x1     Object|/Game/Blueprints/Logic/BP_LevelManager.BP_LevelManager_Cx1
+
+GetLocationCardBySide   cards=211 arity=3
+    card                                                    x246   Object|/Script/kards.BaseCardObjectx246
+    locationCardID                                          x246   Int|Intx246
+    card_1                                                  x44    Object|/Script/kards.BaseCardObjectx44
+    locationCardID_1                                        x44    Int|Intx44
+    card_2                                                  x9     Object|/Script/kards.BaseCardObjectx9
+    locationCardID_2                                        x9     Int|Intx9
+    card_3                                                  x4     Object|/Script/kards.BaseCardObjectx4
+    locationCardID_3                                        x4     Int|Intx4
+
+GetLogic   cards=9 arity=2
+    Logic                                                   x17    Object|/Game/Blueprints/Logic/BP_Logic.BP_Logic_Cx17
+    Logic_1                                                 x6     Object|/Game/Blueprints/Logic/BP_Logic.BP_Logic_Cx6
+    Logic_2                                                 x2     Object|/Game/Blueprints/Logic/BP_Logic.BP_Logic_Cx2
+    Logic_3                                                 x1     Object|/Game/Blueprints/Logic/BP_Logic.BP_Logic_Cx1
+
+GetMainFactionBySide   cards=1 arity=2
+    MainFaction                                             x2     Byte|/Script/KardsCore.EFactionEnumx2
+
+GetMainNationForSide   cards=1 arity=2
+    mainNation                                              x1     Byte|/Script/KardsCore.EFactionEnumx1
+
+GetMainScaleBox   cards=3 arity=1
+    MainScaleBox                                            x3     Object|/Script/UMG.ScaleBoxx3
+
+GetMatch   cards=4 arity=2
+    Match                                                   x7     Struct|/Script/kards.Match2x7
+    Match_1                                                 x2     Struct|/Script/kards.Match2x2
+
+GetMatchController   cards=4 arity=2
+    MatchController                                         x4     Object|/Game/Blueprints/Logic/BP_MatchData.BP_MatchData_Cx4
+
+GetMatchFinished   cards=4 arity=1
+    OutFinished                                             x5     Bool|Boolx5
+
+GetMaxKreditsBySide   cards=11 arity=2
+    maxkredits                                              x12    Int|Intx12
+    maxkredits_1                                            x3     Int|Intx3
+
+GetMouseOverActor   cards=1 arity=1
+    mouseOverActor                                          x1     Object|/Script/Engine.Actorx1
+
+GetMousePosBreak   cards=1 arity=3
+    OutMousePosX                                            x1     Double|Doublex1
+    OutMousePosY                                            x1     Double|Doublex1
+
+GetMousePosition   cards=3 arity=2
+    OutMousePosVec2                                         x6     Struct|/Script/CoreUObject.Vector2Dx6
+    OutMousePosVec2_2                                       x1     Struct|/Script/CoreUObject.Vector2Dx1
+    OutMousePosVec2_1                                       x1     Struct|/Script/CoreUObject.Vector2Dx1
+
+GetMovementSound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetNewLocationNumbers   cards=1 arity=3
+    cardIdToLocationNumber                                  x1     Int|Intx1
+
+GetNextCardLocationNumber   cards=1 arity=2
+    locationNumber                                          x3     Int|Intx3
+
+GetNextVisualLocationNumber   cards=1 arity=2
+    locationNumber                                          x1     Int|Intx1
+
+GetOnlineMatch   cards=3 arity=2
+    onlineMatch                                             x3     Object|/Game/Blueprints/Logic/BP_OnlineMatch.BP_OnlineMatch_Cx3
+    onlineMatch_1                                           x1     Object|/Game/Blueprints/Logic/BP_OnlineMatch.BP_OnlineMatch_Cx1
+
+GetOperationKreditsSpentThisTurn   cards=2 arity=1
+    kreditsSpentThisTurn                                    x2     Int|Intx2
+    kreditsSpentThisTurn_1                                  x1     Int|Intx1
+
+GetOpponentSide   cards=1 arity=1
+    OutOpponentSide                                         x4     Byte|/Script/kards.ESideEnumx4
+    OutOpponentSide_1                                       x1     Byte|/Script/kards.ESideEnumx1
+
+GetOppositeUnitsOnBoard   cards=1 arity=1
+    OppositeUnits                                           x1     Object|/Script/kards.BaseCardObjectx1
+
+GetPlatformEnum   cards=14 arity=2
+    CurrentPlatform                                         x36    Byte|/Game/Structs/E_Platform.E_Platformx36
+    CurrentPlatform_1                                       x12    Byte|/Game/Structs/E_Platform.E_Platformx12
+    CurrentPlatform_2                                       x10    Byte|/Game/Structs/E_Platform.E_Platformx10
+    CurrentPlatform_3                                       x8     Byte|/Game/Structs/E_Platform.E_Platformx8
+    CurrentPlatform_4                                       x6     Byte|/Game/Structs/E_Platform.E_Platformx6
+    CurrentPlatform_5                                       x4     Byte|/Game/Structs/E_Platform.E_Platformx4
+    CurrentPlatform_6                                       x3     Byte|/Game/Structs/E_Platform.E_Platformx3
+    CurrentPlatform_7                                       x3     Byte|/Game/Structs/E_Platform.E_Platformx3
+
+GetPlayerControllerBP   cards=4 arity=2
+    outBPPlayerController                                   x8     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx8
+    outBPPlayerController_1                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_4                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_2                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_5                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_3                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_7                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+    outBPPlayerController_8                                 x1     Object|/Game/Blueprints/BP_PlayerController.BP_PlayerController_Cx1
+
+GetPlayingSide   cards=1 arity=1
+    OutPlayingSide                                          x1     Byte|/Script/kards.ESideEnumx1
+
+GetPopupManager   cards=1 arity=2
+    OutPopupManager                                         x1     Object|/Game/Blueprints/CrossPlatformUI/NUI_PopupManager/BP_PopupManager.BP_PopupManager_Cx1
+
+GetPositionAnchoredBottom   cards=1 arity=1
+    WorldPositionBelowCard                                  x1     Struct|/Script/CoreUObject.Vectorx1
+
+GetPositionAnchoredRight   cards=1 arity=1
+    WorldPositionToRightOfCard                              x2     Struct|/Script/CoreUObject.Vectorx2
+
+GetPositionAnchoredTop   cards=1 arity=1
+    WorldPositionAboveCard                                  x1     Struct|/Script/CoreUObject.Vectorx1
+
+GetPositionInDeckForCard   cards=1 arity=2
+    ViewportPosition                                        x1     Struct|/Script/CoreUObject.Vector2Dx1
+
+GetPrefixedName   cards=1 arity=2
+    Name                                                    x5     Name|Namex5
+    Name_1                                                  x1     Name|Namex1
+
+GetProjectileSound   cards=1 arity=3
+    soundCue_1                                              x1     Object|/Script/Engine.SoundBasex1
+    soundCue                                                x1     Object|/Script/Engine.SoundBasex1
+
+GetRandomBritishAir   cards=1 arity=2
+    randomCard                                              x1     Object|/Script/kards.BaseCardObjectx1
+
+GetRandomCard   cards=157 arity=3
+    randomCard                                              x157   Object|/Script/kards.BaseCardObjectx157
+    randomCard_1                                            x13    Object|/Script/kards.BaseCardObjectx13
+    randomCard_2                                            x5     Object|/Script/kards.BaseCardObjectx5
+    randomCard_3                                            x2     Object|/Script/kards.BaseCardObjectx2
+    randomCard_5                                            x1     Object|/Script/kards.BaseCardObjectx1
+    randomCard_4                                            x1     Object|/Script/kards.BaseCardObjectx1
+
+GetRandomKreditCombo   cards=1 arity=4
+    outCombo                                                x1     Struct|/Script/CoreUObject.Vectorx1
+    ComboFound                                              x1     Bool|Boolx1
+
+GetRarityDisplayName   cards=1 arity=3
+    displayName                                             x1     Text|Textx1
+
+GetRarityIcon   cards=2 arity=4
+    image                                                   x2     Object|/Script/Engine.Texture2Dx2
+
+GetReducedDamage   cards=1 arity=2
+    DamageReduction                                         x2     Int|Intx2
+
+GetRenderCache   cards=1 arity=1
+    RenderCache                                             x9     Object|/Game/Blueprints/Cards/Render/BP_RenderedCardCache.BP_RenderedCardCache_Cx9
+    RenderCache_2                                           x8     Object|/Game/Blueprints/Cards/Render/BP_RenderedCardCache.BP_RenderedCardCache_Cx8
+    RenderCache_1                                           x1     Object|/Game/Blueprints/Cards/Render/BP_RenderedCardCache.BP_RenderedCardCache_Cx1
+
+GetRightMostCardInHand   cards=4 arity=3
+    WasFound                                                x6     Bool|Boolx6
+    RightMostCard                                           x6     Object|/Script/kards.BaseCardObjectx6
+
+GetSeenCardsFromOppositeSide   cards=1 arity=1
+    seenCards                                               x1     Object|/Script/kards.BaseCardObjectx1
+
+GetShowCaseCardLocation   cards=2 arity=2
+    location                                                x2     Struct|/Script/CoreUObject.Vectorx2
+    scale                                                   x2     Struct|/Script/CoreUObject.Vectorx2
+    location_1                                              x1     Struct|/Script/CoreUObject.Vectorx1
+    scale_1                                                 x1     Struct|/Script/CoreUObject.Vectorx1
+
+GetSideEffectHolderBySide   cards=1 arity=2
+    EffectHolder                                            x3     Object|/Script/kards.BaseCardObjectx3
+
+GetStartingSide   cards=3 arity=1
+    side                                                    x2     Byte|/Script/kards.ESideEnumx2
+    StartingSide                                            x1     Byte|/Script/kards.ESideEnumx1
+
+GetStopAttack   cards=1 arity=1
+    stopAttack                                              x1     Bool|Boolx1
+
+GetStopFurtherActions   cards=1 arity=1
+    stopFurtherActions                                      x5     Bool|Boolx5
+    stopFurtherActions_2                                    x3     Bool|Boolx3
+    stopFurtherActions_1                                    x3     Bool|Boolx3
+
+GetSupportLineLocationBySide   cards=26 arity=2
+    location                                                x27    Byte|/Script/kards.ECardLocationEnumx27
+    location_1                                              x7     Byte|/Script/kards.ECardLocationEnumx7
+    location_2                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_5                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_3                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_4                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+
+GetTargetArrowTargetCard   cards=1 arity=2
+    card                                                    x1     Object|/Script/kards.BaseCardObjectx1
+    hasTarget                                               x1     Bool|Boolx1
+
+GetTargetPointByTag   cards=1 arity=3
+    Locator                                                 x1     Object|/Script/Engine.Actorx1
+
+GetTargetedCard   cards=429 arity=3
+    hasTarget                                               x429   Bool|Boolx429
+    card                                                    x429   Object|/Script/kards.BaseCardObjectx429
+    hasTarget_1                                             x2     Bool|Boolx2
+    card_1                                                  x2     Object|/Script/kards.BaseCardObjectx2
+
+GetTotalKreditsLostThisBattle   cards=3 arity=2
+    kreditsLost                                             x5     Int|Intx5
+    kreditsLost_1                                           x2     Int|Intx2
+
+GetTouchOrMousePosition   cards=1 arity=1
+    Position                                                x1     Struct|/Script/CoreUObject.Vector2Dx1
+
+GetTurnNumber   cards=68 arity=1
+    turnNumber                                              x84    Int|Intx84
+    turnNumber_1                                            x44    Int|Intx44
+    turnNumber_2                                            x24    Int|Intx24
+    turnNumber_3                                            x13    Int|Intx13
+    turnNumber_4                                            x6     Int|Intx6
+    turnNumber_5                                            x3     Int|Intx3
+    turnNumber_6                                            x3     Int|Intx3
+    TurnNumber                                              x2     Int|Intx2
+
+GetTutorialBP   cards=3 arity=2
+    NewParam                                                x6     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx6
+    NewParam_1                                              x3     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx3
+    NewParam_2                                              x3     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx3
+    NewParam_4                                              x2     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx2
+    NewParam_5                                              x2     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx2
+    NewParam_6                                              x2     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx2
+    NewParam_3                                              x2     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx2
+    NewParam_9                                              x1     Object|/Game/Blueprints/Tutorials/BP_BaseTutorial.BP_BaseTutorial_Cx1
+
+GetTypeIcon   cards=1 arity=3
+    material                                                x2     Object|/Script/Engine.MaterialInstancex2
+
+GetUSAUnitsAndKredits   cards=1 arity=2
+    outAllUSAUnits                                          x1     Object|/Script/kards.BaseCardObjectx1
+    outAllKredits                                           x1     Int|Intx1
+
+GetUnitDestroyedThisTurn   cards=2 arity=1
+    UnitDestroyed                                           x2     Bool|Boolx2
+
+GetUnitTypeCountOnBoard   cards=3 arity=2
+    TypeCount                                               x3     Int|Intx3
+
+GetVisualBoardCardCardFromID   cards=3 arity=3
+    cardRef                                                 x7     Object|/Game/Blueprints/Cards/BP_BoardCard.BP_BoardCard_Cx5 / Object|BP_BoardCard_Cx2
+    found                                                   x7     Bool|Boolx7
+    cardRef_1                                               x3     Object|/Game/Blueprints/Cards/BP_BoardCard.BP_BoardCard_Cx3
+    found_1                                                 x3     Bool|Boolx3
+    cardRef_2                                               x3     Object|/Game/Blueprints/Cards/BP_BoardCard.BP_BoardCard_Cx3
+    found_2                                                 x3     Bool|Boolx3
+
+GetVisualCardFromID   cards=1 arity=3
+    cardRef                                                 x2     Object|BP_BaseCard_Cx2
+    found                                                   x2     Bool|Boolx2
+
+GetVisualChooseOneBeingPlayedFromID   cards=1 arity=3
+    cardRef                                                 x2     Object|/Game/Blueprints/Cards/BP_BaseCard.BP_BaseCard_Cx2
+    found                                                   x2     Bool|Boolx2
+
+GetVisualController   cards=1 arity=2
+    MatchController                                         x1     Object|/Game/Blueprints/Logic/BP_VisualController.BP_VisualController_Cx1
+
+GetVisualHandCardFromID   cards=1 arity=3
+    cardRef                                                 x3     Object|/Game/Blueprints/Cards/BP_HandCard.BP_HandCard_Cx3
+    found                                                   x3     Bool|Boolx3
+
+GetWaitPlayFromHandCards   cards=1 arity=1
+    WaitPlayFromHandCards                                   x2     Int|Intx2
+
+GetWhiteColor   cards=1 arity=2
+    whiteColor                                              x1     Struct|/Script/SlateCore.SlateColorx1
+
+GetWidgetDefaultFocus   cards=1 arity=3
+    FocusWidget                                             x1     Object|/Script/UMG.Widgetx1
+
+GetWorldPositionFromViewportPosition   cards=1 arity=4
+    worldPosition                                           x1     Struct|/Script/CoreUObject.Vectorx1
+    worldPosition_1                                         x1     Struct|/Script/CoreUObject.Vectorx1
+
+GetWorldSize   cards=1 arity=1
+    Size                                                    x5     Struct|/Script/CoreUObject.Vector2Dx5
+
+Get_X_AndMoreAttackCardsOnBoard   cards=5 arity=4
+    cardsIDs                                                x6     Int|Intx6
+    cardsIDs_1                                              x1     Int|Intx1
+
+GiveAlpine   cards=1 arity=3
+    qqq                                                     x2     Int|Intx2
+
+GiveBond   cards=2 arity=3
+    qqq                                                     x2     Int|Intx2
+
+GiveImmune   cards=9 arity=3
+    qqq                                                     x9     Bool|Boolx9
+    qqq_1                                                   x1     Bool|Boolx1
+
+GiveKreditsBySide   cards=48 arity=4
+    qqq                                                     x48    Bool|Boolx48
+    qqq_1                                                   x4     Bool|Boolx4
+
+GiveMobilize   cards=3 arity=3
+    qqq                                                     x3     Int|Intx3
+
+GiveRandomCombatKeyword   cards=4 arity=4
+    keywordGiven                                            x4     Byte|/Script/kards.ECombatKeywordx4
+    success                                                 x4     Bool|Boolx4
+
+GiveSalvage   cards=3 arity=3
+    qqq                                                     x3     Int|Intx3
+
+GiveShock   cards=19 arity=3
+    qqq                                                     x20    Int|Intx20
+    qqq_1                                                   x1     Int|Intx1
+
+GotchaTriggered   cards=52 arity=5
+    qqq                                                     x53    Bool|Boolx53
+    qqq_1                                                   x1     Bool|Boolx1
+
+HandCardIsSelectingTarget   cards=1 arity=2
+    IsSelecting                                             x1     Bool|Boolx1
+
+HandLocationFromSide   cards=2 arity=3
+    location                                                x4     Byte|/Script/kards.ECardLocationEnumx4
+    location_2                                              x2     Byte|/Script/kards.ECardLocationEnumx2
+    location_1                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+
+HasHeavyArmorEffect   cards=1 arity=1
+    hasHeavyArmor                                           x1     Bool|Boolx1
+
+InitCarousel   cards=1 arity=1
+    carousel                                                x1     Object|/Game/Blueprints/BP_Carousel.BP_Carousel_Cx1
+    carousel_1                                              x1     Object|/Game/Blueprints/BP_Carousel.BP_Carousel_Cx1
+
+IsActionProcess   cards=1 arity=1
+    ActionProcess                                           x106   Bool|Boolx106
+    ActionProcess_1                                         x20    Bool|Boolx20
+    ActionProcess_2                                         x8     Bool|Boolx8
+    ActionProcess_3                                         x5     Bool|Boolx5
+    ActionProcess_4                                         x1     Bool|Boolx1
+    ActionProcess_5                                         x1     Bool|Boolx1
+
+IsAnyRotationTimelineActive   cards=1 arity=1
+    bRotationActive_1                                       x1     Bool|Boolx1
+    bRotationActive                                         x1     Bool|Boolx1
+
+IsBeingDragged   cards=2 arity=1
+    is_drag_actor                                           x3     Bool|Boolx3
+    is_drag_actor_1                                         x1     Bool|Boolx1
+    is_drag_actor_2                                         x1     Bool|Boolx1
+
+IsCardReserved   cards=40 arity=2
+    IsReserved                                              x44    Bool|Boolx44
+    IsReserved_1                                            x1     Bool|Boolx1
+
+IsCardToBeReservedSoon   cards=1 arity=3
+    toBeReservedSoon                                        x2     Bool|Boolx2
+
+IsChinaISBN   cards=4 arity=2
+    is_ISBN                                                 x5     Bool|Boolx5
+    is_ISBN_1                                               x1     Bool|Boolx1
+
+IsFrontlineLimited   cards=1 arity=1
+    FrontlineLimited                                        x1     Bool|Boolx1
+
+IsHeavyArmorEffect   cards=1 arity=2
+    isIt                                                    x1     Bool|Boolx1
+
+IsInMyHand   cards=2 arity=1
+    inhand                                                  x2     Bool|Boolx2
+
+IsLocalClientTurn   cards=1 arity=1
+    IsClientTurn                                            x4     Bool|Boolx4
+    IsClientTurn_1                                          x1     Bool|Boolx1
+
+IsLocationFull   cards=28 arity=2
+    isFull                                                  x31    Bool|Boolx31
+    isFull_1                                                x3     Bool|Boolx3
+
+IsMessageWindowOpen   cards=1 arity=1
+    isIt                                                    x2     Bool|Boolx2
+
+IsMouseOrFingerDown   cards=1 arity=2
+    isDown                                                  x1     Bool|Boolx1
+
+IsMouseOver   cards=2 arity=1
+    is_mouseover_actor                                      x2     Bool|Boolx2
+    is_mouseover_actor_1                                    x1     Bool|Boolx1
+    is_mouseover_actor_2                                    x1     Bool|Boolx1
+
+IsMyCard   cards=1 arity=2
+    yes                                                     x2     Bool|Boolx2
+
+IsShowcaseCardToTheRight   cards=1 arity=1
+    isIt                                                    x3     Bool|Boolx3
+
+IsTablet   cards=4 arity=2
+    Tablet                                                  x7     Bool|Boolx7
+    Tablet_1                                                x1     Bool|Boolx1
+
+IsTargetArrowActive   cards=2 arity=2
+    isIt                                                    x5     Bool|Boolx5
+    isIt_1                                                  x1     Bool|Boolx1
+    isIt_2                                                  x1     Bool|Boolx1
+
+IsThereGameplayRestriction   cards=2 arity=3
+    isRestricted                                            x2     Bool|Boolx2
+    isRestricted_1                                          x1     Bool|Boolx1
+
+IsTopDeckNavy   cards=6 arity=2
+    isNavy                                                  x7     Bool|Boolx7
+
+IsUsingStrategy   cards=2 arity=2
+    usingIt_1                                               x2     Bool|Boolx2
+    usingIt                                                 x2     Bool|Boolx2
+    usingIt_2                                               x1     Bool|Boolx1
+
+JSON_AddToIntArray   cards=15 arity=4
+    found                                                   x16    Bool|Boolx16
+    found_1                                                 x4     Bool|Boolx4
+    found_2                                                 x2     Bool|Boolx2
+
+JSON_Clear   cards=128 arity=3
+    found                                                   x137   Bool|Boolx137
+    found_1                                                 x29    Bool|Boolx29
+    found_2                                                 x13    Bool|Boolx13
+    found_3                                                 x7     Bool|Boolx7
+
+JSON_GetBool   cards=63 arity=4
+    value                                                   x70    Bool|Boolx70
+    found                                                   x70    Bool|Boolx70
+    value_1                                                 x23    Bool|Boolx23
+    found_1                                                 x23    Bool|Boolx23
+    value_2                                                 x12    Bool|Boolx12
+    found_2                                                 x12    Bool|Boolx12
+    value_3                                                 x4     Bool|Boolx4
+    found_3                                                 x4     Bool|Boolx4
+
+JSON_GetInt   cards=93 arity=4
+    value                                                   x102   Int|Intx102
+    found                                                   x102   Bool|Boolx102
+    value_1                                                 x36    Int|Intx36
+    found_1                                                 x36    Bool|Boolx36
+    value_2                                                 x9     Int|Intx9
+    found_2                                                 x9     Bool|Boolx9
+    value_3                                                 x2     Int|Intx2
+    found_3                                                 x2     Bool|Boolx2
+
+JSON_GetIntArray   cards=21 arity=4
+    values                                                  x24    Int|Intx24
+    found                                                   x24    Bool|Boolx24
+    values_1                                                x12    Int|Intx12
+    found_1                                                 x12    Bool|Boolx12
+    values_2                                                x3     Int|Intx3
+    found_2                                                 x3     Bool|Boolx3
+
+JSON_GetString   cards=13 arity=4
+    value                                                   x13    String|Stringx13
+    found                                                   x13    Bool|Boolx13
+    value_1                                                 x4     String|Stringx4
+    found_1                                                 x4     Bool|Boolx4
+    value_2                                                 x1     String|Stringx1
+    found_2                                                 x1     Bool|Boolx1
+
+JSON_RemoveFromIntArray   cards=6 arity=4
+    found                                                   x7     Bool|Boolx7
+    found_1                                                 x1     Bool|Boolx1
+
+JSON_SetBool   cards=69 arity=4
+    found                                                   x71    Bool|Boolx71
+    found_1                                                 x16    Bool|Boolx16
+    found_2                                                 x8     Bool|Boolx8
+
+JSON_SetInt   cards=91 arity=4
+    found                                                   x95    Bool|Boolx95
+    found_1                                                 x25    Bool|Boolx25
+
+JSON_SetIntArray   cards=7 arity=4
+    found                                                   x8     Bool|Boolx8
+    found_1                                                 x1     Bool|Boolx1
+
+JSON_SetString   cards=15 arity=4
+    found                                                   x15    Bool|Boolx15
+    found_1                                                 x7     Bool|Boolx7
+
+MakeCardsFight   cards=12 arity=4
+    qqq                                                     x12    Int|Intx12
+
+MakeVeteran   cards=46 arity=2
+    qqq                                                     x48    Int|Intx48
+    qqq_1                                                   x2     Int|Intx2
+
+MoveCardInHandToLeftMost   cards=1 arity=2
+    sucess                                                  x1     Bool|Boolx1
+
+MoveCardInHandToNewIndex   cards=1 arity=3
+    success                                                 x1     Bool|Boolx1
+
+MoveCardToTopOfOwnersDeck   cards=20 arity=4
+    qqq                                                     x20    Int|Intx20
+
+MoveMultipleCardsToTopOfOwnersDeck   cards=7 arity=4
+    qqq                                                     x7     Int|Intx7
+    qqq_1                                                   x2     Int|Intx2
+
+MoveUnitFromSupportToFrontLine   cards=7 arity=3
+    qqq                                                     x7     Bool|Boolx7
+
+MyHandLocation   cards=3 arity=2
+    location                                                x3     Byte|/Script/kards.ECardLocationEnumx3
+    location_3                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_2                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_4                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_1                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_5                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+
+NotifyCheckCardBlacklisted   cards=1 arity=2
+    IsBlacklisted                                           x1     Bool|Boolx1
+
+NotifyCheckCardReserved   cards=1 arity=2
+    IsReserved                                              x2     Bool|Boolx2
+
+NotifyShowCampaignMessage   cards=1 arity=5
+    DelayBeforeShowing_ImplicitCast                         x1     Double|Doublex1
+
+NotifyShowTutorialMessage   cards=1 arity=4
+    Delay_ImplicitCast                                      x1     Double|Doublex1
+
+NotifySideEffectTrigger   cards=1 arity=3
+    qqq                                                     x2     Bool|Boolx2
+
+OnAttemptedDiscard   cards=1 arity=2
+    cancelDiscard                                           x2     Bool|Boolx2
+
+OnBeforeFullyRepaired   cards=1 arity=2
+    stopAction                                              x1     Bool|Boolx1
+
+OnBeforeGainDefense   cards=1 arity=1
+    stopAction                                              x1     Bool|Boolx1
+
+OnBeforeRetreat   cards=1 arity=1
+    stopAction                                              x1     Bool|Boolx1
+
+OnCardDealDamage   cards=1 arity=6
+    qqq                                                     x1     Bool|Boolx1
+
+OnCardRenderReady   cards=1 arity=2
+    bHandled                                                x1     Bool|Boolx1
+
+OnCounterMeasureTriggered   cards=1 arity=2
+    qqq                                                     x1     Bool|Boolx1
+
+OnDeploymentEffectTriggered   cards=1 arity=3
+    TriggerMultiple                                         x1     Int|Intx1
+
+OnDestructionEffectTriggered   cards=1 arity=4
+    TriggerMultiple                                         x1     Int|Intx1
+
+OnOtherCardRetreat   cards=1 arity=2
+    stopAction                                              x1     Bool|Boolx1
+
+OpponentHandLocation   cards=1 arity=2
+    location_3                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_1                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location                                                x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_2                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+
+OrdersPlayedThisTurnBySide   cards=1 arity=2
+    PlayedOrders                                            x1     Int|Intx1
+
+PayCardCost   cards=1 arity=4
+    success                                                 x1     Bool|Boolx1
+
+PayMovementCost   cards=1 arity=2
+    success                                                 x1     Bool|Boolx1
+
+PickRandomCard   cards=1 arity=1
+    cardToSpawn                                             x1     Name|Namex1
+
+PlayCardDirectlyFromHand   cards=14 arity=5
+    qqq                                                     x14    Int|Intx14
+    qqq_1                                                   x1     Int|Intx1
+
+RandomChooseA_Tank   cards=1 arity=2
+    cardSpawn                                               x1     Object|/Script/kards.BaseCardObjectx1
+
+RandomChooseCards   cards=1 arity=1
+    chosenCards                                             x1     Object|/Script/kards.BaseCardObjectx1
+
+RandomIntFromRangeWithStream   cards=26 arity=3
+    randomResult                                            x29    Int|Intx29
+    randomResult_1                                          x8     Int|Intx8
+    randomResult_2                                          x5     Int|Intx5
+    randomResult_3                                          x2     Int|Intx2
+
+Random_3_SovietUnits   cards=1 arity=1
+    chosenCards                                             x1     Object|/Script/kards.BaseCardObjectx1
+
+RandomlyChooseTank   cards=1 arity=2
+    cardToSpawn                                             x1     Name|Namex1
+
+RemoveAlpine   cards=2 arity=4
+    qqq                                                     x2     Int|Intx2
+    qqq_1                                                   x1     Int|Intx1
+
+RemoveBlitz   cards=16 arity=4
+    qqq                                                     x16    Bool|Boolx16
+
+RemoveBond   cards=1 arity=3
+    qqq                                                     x1     Int|Intx1
+
+RemoveCardFromBoard   cards=18 arity=3
+    qqq                                                     x18    Bool|Boolx18
+
+RemoveCardFromDeckBySide   cards=1 arity=3
+    removedIndex                                            x5     Int|Intx5
+
+RemoveCustomGameplayTag   cards=4 arity=5
+    qqq                                                     x4     Int|Intx4
+    qqq_1                                                   x2     Int|Intx2
+
+RemoveGameplayRestriction   cards=3 arity=5
+    qqq                                                     x3     Int|Intx3
+    qqq_1                                                   x1     Int|Intx1
+
+RemoveGameplaySideEffect   cards=1 arity=4
+    qqq                                                     x1     Int|Intx1
+    qqq_1                                                   x1     Int|Intx1
+
+RemoveImmune   cards=10 arity=4
+    qqq                                                     x10    Bool|Boolx10
+
+RemoveMobilize   cards=1 arity=5
+    qqq                                                     x4     Int|Intx4
+    qqq_1                                                   x1     Int|Intx1
+
+RemoveMultipleCardsFromBoard   cards=1 arity=3
+    qqq                                                     x1     Bool|Boolx1
+    qqq_1                                                   x1     Bool|Boolx1
+    qqq_2                                                   x1     Bool|Boolx1
+    qqq_3                                                   x1     Bool|Boolx1
+    qqq_4                                                   x1     Bool|Boolx1
+    qqq_5                                                   x1     Bool|Boolx1
+
+RemovePin   cards=9 arity=2
+    qqq                                                     x9     Int|Intx9
+    qqq_1                                                   x1     Int|Intx1
+
+RemoveSalvage   cards=2 arity=4
+    qqq                                                     x2     Int|Intx2
+
+RemoveShock   cards=1 arity=5
+    qqq                                                     x2     Int|Intx2
+
+ResetUnitOperations   cards=3 arity=3
+    qqq                                                     x3     Bool|Boolx3
+
+RevealCard   cards=3 arity=3
+    qqq                                                     x4     Int|Intx4
+    qqq_1                                                   x1     Int|Intx1
+
+SalvageMultipleUnits   cards=3 arity=3
+    qqq                                                     x3     Bool|Boolx3
+
+SetCardSeen   cards=10 arity=3
+    qqq                                                     x11    Int|Intx11
+
+SetCardsSeenByCipher   cards=3 arity=4
+    qqq                                                     x4     Int|Intx4
+
+SetCountdown   cards=15 arity=3
+    qqq                                                     x15    Bool|Boolx15
+
+SetDraftingOrActiveSwitcher   cards=1 arity=2
+    bWasNotActive_1                                         x1     Bool|Boolx1
+    bWasNotActive                                           x1     Bool|Boolx1
+
+SetSaturationAndBrightness   cards=3 arity=2
+    saturation_ImplicitCast                                 x3     Double|Doublex3
+    brightness_ImplicitCast                                 x3     Double|Doublex3
+    saturation_ImplicitCast_1                               x1     Double|Doublex1
+    brightness_ImplicitCast_1                               x1     Double|Doublex1
+
+ShouldBlockHandCardDragging   cards=1 arity=2
+    shouldBlock                                             x1     Bool|Boolx1
+
+ShouldSpawnFrontline   cards=1 arity=2
+    should                                                  x1     Bool|Boolx1
+
+ShouldTriggerAbility   cards=1 arity=4
+    should                                                  x1     Bool|Boolx1
+
+ShouldUseSimpleMaterials   cards=1 arity=1
+    bUseSimplifiedMaterials                                 x1     Bool|Boolx1
+
+ShowShowCaseCard   cards=2 arity=1
+    showcaseCard                                            x2     Object|/Game/Blueprints/Cards/BP_HandCardLook.BP_HandCardLook_Cx2
+    showcaseCard_2                                          x1     Object|/Game/Blueprints/Cards/BP_HandCardLook.BP_HandCardLook_Cx1
+    showcaseCard_1                                          x1     Object|/Game/Blueprints/Cards/BP_HandCardLook.BP_HandCardLook_Cx1
+
+ShowTutorialMessage   cards=12 arity=5
+    qqq                                                     x13    Bool|Boolx13
+    qqq_1                                                   x10    Bool|Boolx10
+    qqq_2                                                   x6     Bool|Boolx6
+    qqq_3                                                   x1     Bool|Boolx1
+
+ShowcaseCardWithDelay   cards=1 arity=1
+    delay_ImplicitCast                                      x1     Double|Doublex1
+
+ShuffleDeckBySide   cards=17 arity=4
+    qqq                                                     x18    Bool|Boolx18
+    qqq_1                                                   x2     Bool|Boolx2
+
+SortCardsByLocationNumber   cards=1 arity=2
+    sortedCards                                             x3     Object|/Script/kards.BaseCardObjectx3
+    sortedCards_1                                           x1     Object|/Script/kards.BaseCardObjectx1
+
+SpawnCardInDeckBySide   cards=27 arity=11
+    spawnedCardIDs                                          x23    Int|Intx23
+
+SpawnCardInFrontline   cards=29 arity=9
+    spawnedCardID                                           x29    Int|Intx29
+    spawnedCardID_1                                         x26    Int|Intx26
+    spawnedCardID_2                                         x16    Int|Intx16
+    spawnedCardID_3                                         x16    Int|Intx16
+    spawnedCardID_4                                         x9     Int|Intx9
+    spawnedCardID_5                                         x6     Int|Intx6
+    spawnedCardID_7                                         x2     Int|Intx2
+    spawnedCardID_6                                         x2     Int|Intx2
+
+SpawnCardInHandBySide   cards=134 arity=10
+    spawnedCardID                                           x28    Int|Intx28
+    spawnedCardID_1                                         x6     Int|Intx6
+
+SpawnCardOnBattlefield   cards=138 arity=11
+    spawnedCardID                                           x73    Int|Intx73
+    spawnedCardID_1                                         x31    Int|Intx31
+    spawnedCardID_2                                         x19    Int|Intx19
+    spawnedCardID_3                                         x13    Int|Intx13
+    spawnedCardID_4                                         x9     Int|Intx9
+    spawnedCardID_5                                         x6     Int|Intx6
+    spawnedCardID_6                                         x4     Int|Intx4
+    spawnedCardID_8                                         x2     Int|Intx2
+
+SpawnCardToBoard   cards=1 arity=11
+    cardSpawnedID                                           x3     Int|Intx3
+
+SpawnMultipleCardsOnBattlefield   cards=5 arity=7
+    spawnedCardIDs                                          x5     Int|Intx5
+    spawnedCardIDs_1                                        x2     Int|Intx2
+    spawnedCardIDs_5                                        x1     Int|Intx1
+    spawnedCardIDs_3                                        x1     Int|Intx1
+    spawnedCardIDs_4                                        x1     Int|Intx1
+    spawnedCardIDs_2                                        x1     Int|Intx1
+
+SpawnNextToCard   cards=3 arity=8
+    spawnedCardID                                           x3     Int|Intx3
+
+SpawnShermanInHand   cards=1 arity=1
+    spawnedCardID                                           x1     Int|Intx1
+    spawnedCardID_1                                         x1     Int|Intx1
+
+StartDateAndEndDateValid   cards=2 arity=4
+    isValid                                                 x2     Bool|Boolx2
+
+StealCardFromBoardToDeck   cards=2 arity=4
+    qqq                                                     x2     Int|Intx2
+
+StopBoardCardClicked   cards=1 arity=2
+    doStop                                                  x1     Bool|Boolx1
+
+StopHandCardPlaced   cards=1 arity=3
+    doStop                                                  x1     Bool|Boolx1
+
+SupplyLineLocationFromSide   cards=2 arity=3
+    location                                                x3     Byte|/Script/kards.ECardLocationEnumx3
+    location_2                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_1                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+    location_3                                              x1     Byte|/Script/kards.ECardLocationEnumx1
+
+SuppressMultipleUnits   cards=3 arity=3
+    qqq                                                     x3     Bool|Boolx3
+    qqq_1                                                   x1     Bool|Boolx1
+
+SuppressUnit   cards=14 arity=3
+    qqq                                                     x14    Bool|Boolx14
+    qqq_1                                                   x2     Bool|Boolx2
+
+TriggerDeployment   cards=2 arity=3
+    qqq                                                     x2     Int|Intx2
+
+TriggerDestruction   cards=5 arity=5
+    qqq                                                     x5     Int|Intx5
+    qqq_1                                                   x1     Int|Intx1
+
+TutorialCanPlayCheck   cards=1 arity=1
+    canPlay                                                 x1     Bool|Boolx1
+
+UpdateCarouselScroll   cards=1 arity=1
+    DeltaTime_ImplicitCast                                  x1     Double|Doublex1
+
+UpdateExtraCards   cards=1 arity=1
+    delta_ImplicitCast                                      x1     Double|Doublex1
+
+WasLeftMostCardWhenPlayedFromHand   cards=6 arity=2
+    WasLeftMost                                             x6     Bool|Boolx6
+
+WasRightMostCardWhenPlayedFromHand   cards=4 arity=2
+    WasRightMost                                            x4     Bool|Boolx4
+
+WhichStrategy   cards=16 arity=1
+    Branches                                                x16    Byte|/Script/kards.EnumCampaignStrategyx16
+    Branches_2                                              x1     Byte|/Script/kards.EnumCampaignStrategyx1
+    Branches_1                                              x1     Byte|/Script/kards.EnumCampaignStrategyx1
+
+_isBigRedOne   cards=1 arity=2
+    isBigRedOne                                             x1     Bool|Boolx1
+    isBigRedOne_1                                           x1     Bool|Boolx1
+
+alreadyHasTheAbility   cards=1 arity=3
+    has                                                     x1     Bool|Boolx1
+
+anyFriendlyA6M2Active   cards=1 arity=1
+    effectActive                                            x1     Bool|Boolx1
+
+anyOrderPlayedThisTurn   cards=1 arity=1
+    PlayedThisTurn                                          x1     Bool|Boolx1
+
+canCardBeCreated   cards=1 arity=1
+    canIt                                                   x1     Bool|Boolx1
+
+didPlayBritishInfantryLastTurn   cards=5 arity=1
+    didSo                                                   x9     Bool|Boolx9
+
+doIControl3opCostUnit   cards=1 arity=1
+    found3op                                                x1     Bool|Boolx1
+
+findPairOfUnits   cards=1 arity=5
+    pairFound                                               x1     Bool|Boolx1
+    unitA                                                   x1     Name|Namex1
+    unitB                                                   x1     Name|Namex1
+
+getAltArtIndex   cards=1 arity=1
+    altCardIndex_1                                          x2     Int|Intx2
+    altCardIndex                                            x1     Int|Intx1
+
+getAltCardNumber   cards=5 arity=1
+    altArt_2                                                x13    Int|Intx13
+    altArt                                                  x9     Int|Intx9
+    altArt_1                                                x2     Int|Intx2
+
+getCardsPlayedFromHandByTurn   cards=1 arity=2
+    cardsPlayed                                             x5     Int|Intx5
+
+getFrontlineLimit   cards=2 arity=1
+    isFrontlineLimited                                      x2     Bool|Boolx2
+
+getKreditSlotsLostBySide   cards=1 arity=2
+    KreditSlotsLost                                         x1     Int|Intx1
+
+getMoveReason   cards=1 arity=2
+    moveReason                                              x1     Byte|/Game/Structs/CardMoveReason.CardMoveReasonx1
+
+getPossibleCardsFromStaticCards   cards=1 arity=1
+    possibleCards                                           x1     Object|/Script/kards.BaseCardObjectx1
+
+getSkirmishBP   cards=1 arity=1
+    skirmishBP                                              x4     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx4
+    skirmishBP_1                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_2                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_3                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_4                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_5                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_6                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+    skirmishBP_7                                            x1     Object|/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_Cx1
+
+getTwoCardsFromPossibleCards   cards=1 arity=4
+    cardsFound                                              x1     Bool|Boolx1
+    cardNameA                                               x1     Name|Namex1
+    cardNameB                                               x1     Name|Namex1
+
+getUnpinnedEnemyUnits   cards=1 arity=1
+    unpinnedEnemyUnits                                      x1     Object|/Script/kards.BaseCardObjectx1
+
+getUnseenCardsOppositeSide   cards=1 arity=1
+    unseenCount                                             x1     Int|Intx1
+
+getWildcardToPayWith   cards=1 arity=2
+    wildcardName                                            x1     Name|Namex1
+    foundWildcard                                           x1     Bool|Boolx1
+
+getWildcardsOwnedToCraft   cards=1 arity=1
+    total                                                   x1     Int|Intx1
+
+get_adjacent_japan_units_count   cards=1 arity=1
+    count                                                   x1     Int|Intx1
+
+get_adjacent_unit_count   cards=2 arity=1
+    count                                                   x2     Int|Intx2
+
+hasGuardAdjacentUnit   cards=2 arity=1
+    hasGuardAdjacentUnit                                    x2     Bool|Boolx2
+
+hasPlayedOrderThisTurn   cards=1 arity=2
+    hasPlayedOrderThisTurn                                  x2     Bool|Boolx2
+
+isAlreadyAffectedByOtherGreater   cards=1 arity=2
+    isIt                                                    x1     Bool|Boolx1
+
+isAlreadyAffectedByOtherReckless   cards=1 arity=2
+    isIt                                                    x1     Bool|Boolx1
+
+isAlreadyAffectedByOtherYamato   cards=1 arity=2
+    isIt                                                    x1     Bool|Boolx1
+
+isCardLocked   cards=1 arity=3
+    isLocked                                                x1     Bool|Boolx1
+
+isCardReserved   cards=1 arity=3
+    isReserved                                              x3     Bool|Boolx3
+
+isCardSetConfigActive   cards=1 arity=3
+    isActive                                                x1     Bool|Boolx1
+
+isSecondOrderThisTurn   cards=3 arity=2
+    isSecondOrder                                           x3     Bool|Boolx3
+
+onOtherCardDealDamageAddDamage   cards=1 arity=4
+    damageToAdd                                             x1     Int|Intx1
+
+provideKeysAndFrameCount   cards=1 arity=3
+    key1                                                    x14    Int|Intx14
+    key2                                                    x14    Int|Intx14
+    frameCount                                              x14    Int|Intx14
+    key1_1                                                  x5     Int|Intx5
+    key2_1                                                  x5     Int|Intx5
+    frameCount_1                                            x5     Int|Intx5
+    key1_2                                                  x3     Int|Intx3
+    key2_2                                                  x3     Int|Intx3
+
+selectCardToDraw   cards=37 arity=4
+    drawnCardID                                             x37    Int|Intx37
+
+selectTargetFromHand   cards=33 arity=2
+    qqq                                                     x33    Int|Intx33
+
+setAltArt   cards=1 arity=1
+    Found                                                   x1     Bool|Boolx1

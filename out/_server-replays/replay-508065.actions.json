@@ -1,0 +1,2280 @@
+{
+  "match_id": 508065,
+  "next_action_id": 141,
+  "has_more": false,
+  "actions": [
+    {
+      "action_id": 1,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 1,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 2,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 1,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 3,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 2,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 4,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "73",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "03",
+        "40": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 3,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 5,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 3,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 6,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 2,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 7,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 3,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 8,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "28",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "bK",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 3,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 9,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 3,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 10,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 4,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 11,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 6,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 12,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 4,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 13,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 5,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 14,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "15",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "0l",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 5,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 15,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 5,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 16,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 6,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 17,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "77",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "pR",
+        "40": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 18,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "69",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "02",
+        "40": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 19,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "71",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "02",
+        "40": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 20,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 21,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 6,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 22,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 7,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 23,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "23",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "yO",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 7,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 24,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "2",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "0d",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 7,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 25,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "38",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "DR",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 7,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 26,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 7,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 27,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 8,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 28,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 12,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 29,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 8,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 30,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 31,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "39",
+        "1": "2",
+        "2": "0",
+        "3": "0",
+        "4": "DR",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 32,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "36",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "wb",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 33,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "33",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "DT",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 34,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "33",
+        "1": "2",
+        "2": "04"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 35,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "40",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "DR",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 36,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9001",
+        "1": "2",
+        "2": "0",
+        "3": "0",
+        "4": "04",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 37,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "31",
+        "1": "3",
+        "2": "0",
+        "3": "0",
+        "4": "DT",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 38,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "31",
+        "1": "0",
+        "2": "qY"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 39,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 9,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 40,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 10,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 41,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 42,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 10,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 43,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 44,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9002",
+        "1": "0",
+        "2": "DB",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 45,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "34",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "wb",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 46,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9003",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "dd",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 47,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "39",
+        "1": "1",
+        "2": "DR",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 48,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 11,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 49,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 12,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 50,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 18,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 51,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 12,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 52,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 13,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 53,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "18",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "bP",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 13,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 54,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "7002",
+        "1": "3",
+        "2": "9003",
+        "3": "0",
+        "4": "02",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 13,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 55,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "26",
+        "1": "3",
+        "2": "0",
+        "3": "0",
+        "4": "1V",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 13,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 56,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 13,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 57,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 14,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 58,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "64",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "hS",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 59,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "76",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "ou",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 60,
+      "action_type": "CS",
+      "player_id": -9178,
+      "action_data": {
+        "0": "76",
+        "1": "10",
+        "2": "1B"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 61,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "72",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "03",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 62,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "43",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "32",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 63,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "48",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "gv",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 64,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "84",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "gu",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 65,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "28"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 66,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 14,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 67,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 68,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "4",
+        "1": "3",
+        "2": "0",
+        "3": "0",
+        "4": "DS",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 69,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "4",
+        "1": "1",
+        "2": "oB"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 70,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "15001",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "oB",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 71,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "15001",
+        "1": "2",
+        "2": "oB",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 72,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9003",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "dd",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 73,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 15,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 74,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 16,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 75,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "47",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "sT",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 76,
+      "action_type": "HT",
+      "player_id": -9178,
+      "action_data": {
+        "0": "47",
+        "1": "49"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 77,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "60",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "10",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 78,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "46",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "32",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 79,
+      "action_type": "AC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "64",
+        "1": "39",
+        "2": "0",
+        "4": "hS",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 80,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "28"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 81,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 16,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 82,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 83,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "16",
+        "1": "1",
+        "2": "0",
+        "3": "0",
+        "4": "0l",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 84,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9003",
+        "1": "47",
+        "2": "dd",
+        "3": "sT",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 85,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "14",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "yJ",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 86,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "14",
+        "1": "41",
+        "2": "yJ",
+        "3": "0N",
+        "65": "24"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 87,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "38",
+        "1": "2",
+        "2": "DR",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 88,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "3",
+        "1": "1",
+        "2": "47",
+        "3": "0",
+        "4": "0m",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 89,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "23"
+      },
+      "sub_actions": [
+        {
+          "name": "ZActionChangePinnedTurns",
+          "cardID": 47,
+          "instigatorID": 0,
+          "turnsToChange": -1
+        },
+        {
+          "name": "ZActionChangePinnedTurns",
+          "cardID": 64,
+          "instigatorID": 0,
+          "turnsToChange": -1
+        },
+        {
+          "name": "ZActionChangePinnedTurns",
+          "cardID": 60,
+          "instigatorID": 0,
+          "turnsToChange": -1
+        }
+      ],
+      "turn_number": 17,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 90,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 18,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 91,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "83",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "1B",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 27,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 92,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 27,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 93,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 18,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 94,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 95,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9004",
+        "1": "3",
+        "2": "0",
+        "3": "0",
+        "4": "qY",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 96,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "15001",
+        "1": "47",
+        "2": "oB",
+        "3": "sT",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 97,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "38",
+        "1": "41",
+        "2": "DR",
+        "3": "0N",
+        "65": "23"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 98,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "12",
+        "1": "2",
+        "2": "0",
+        "3": "0",
+        "4": "tX",
+        "65": "22"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 99,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "12",
+        "1": "1",
+        "2": "CJ"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 100,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "12",
+        "1": "1",
+        "2": "0h"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 101,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19002",
+        "1": "3",
+        "2": "0",
+        "3": "0",
+        "4": "0h",
+        "65": "22"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 102,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19003",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "22"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 103,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19001",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "CJ",
+        "65": "21"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 104,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19004",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "21"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 105,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 19,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 106,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 20,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 107,
+      "action_type": "AC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "83",
+        "1": "39",
+        "2": "0",
+        "4": "1B",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 30,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 108,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 30,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 109,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 20,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 110,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 111,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9002",
+        "1": "41",
+        "2": "DB",
+        "3": "0N",
+        "65": "20"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 112,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "38",
+        "1": "41",
+        "2": "DR",
+        "3": "0N",
+        "65": "16"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 113,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19003",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "15"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 114,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19004",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "14"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 115,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "40",
+        "1": "0",
+        "2": "DR",
+        "65": "13"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 116,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "13"
+      },
+      "sub_actions": [],
+      "turn_number": 21,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 117,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 22,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 118,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "51",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "0C",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 33,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 119,
+      "action_type": "AC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "83",
+        "1": "40",
+        "2": "0",
+        "4": "1B",
+        "40": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 33,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 120,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 33,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 121,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 22,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 122,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "13"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 123,
+      "action_type": "PC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "13",
+        "1": "4",
+        "2": "0",
+        "3": "0",
+        "4": "w2",
+        "65": "13"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 124,
+      "action_type": "CS",
+      "player_id": 963422,
+      "action_data": {
+        "0": "13",
+        "1": "0",
+        "2": "08"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 125,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9002",
+        "1": "41",
+        "2": "DB",
+        "3": "0N",
+        "65": "13"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 126,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "38",
+        "1": "41",
+        "2": "DR",
+        "3": "0N",
+        "65": "9"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 127,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "40",
+        "1": "41",
+        "2": "DR",
+        "3": "0N",
+        "65": "8"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 128,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19004",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "7"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 129,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "19003",
+        "1": "41",
+        "2": "1O",
+        "3": "0N",
+        "65": "6"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 130,
+      "action_type": "ML",
+      "player_id": 963422,
+      "action_data": {
+        "0": "26",
+        "1": "1",
+        "2": "1V",
+        "65": "5"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 131,
+      "action_type": "XActionEndOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "reason": "endTurnButton",
+        "65": "5"
+      },
+      "sub_actions": [],
+      "turn_number": 23,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 132,
+      "action_type": "XActionStartOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 133,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "49",
+        "1": "26",
+        "2": "0",
+        "3": "0",
+        "4": "0z",
+        "40": "28"
+      },
+      "sub_actions": [],
+      "turn_number": 36,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 134,
+      "action_type": "PC",
+      "player_id": -9178,
+      "action_data": {
+        "0": "50",
+        "1": "0",
+        "2": "0",
+        "3": "0",
+        "4": "0C",
+        "40": "28"
+      },
+      "sub_actions": [],
+      "turn_number": 36,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 135,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "reason": "endTurnButton",
+        "65": "27"
+      },
+      "sub_actions": [],
+      "turn_number": 36,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 136,
+      "action_type": "XActionEndOfTurn",
+      "player_id": -9178,
+      "action_data": {
+        "side": "right",
+        "65": "30"
+      },
+      "sub_actions": [],
+      "turn_number": 24,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 137,
+      "action_type": "XActionStartOfTurn",
+      "player_id": 963422,
+      "action_data": {
+        "side": "left",
+        "65": "5"
+      },
+      "sub_actions": [],
+      "turn_number": 25,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 138,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "9002",
+        "1": "41",
+        "2": "DB",
+        "3": "0N",
+        "65": "5"
+      },
+      "sub_actions": [],
+      "turn_number": 25,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 139,
+      "action_type": "AC",
+      "player_id": 963422,
+      "action_data": {
+        "0": "26",
+        "1": "41",
+        "2": "1V",
+        "3": "0N",
+        "65": "1"
+      },
+      "sub_actions": [],
+      "turn_number": 25,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 140,
+      "action_type": "ActionEndMatch",
+      "player_id": 963422,
+      "action_data": {
+        "reason": "Victory_DestroyHQ",
+        "winner_side": "left"
+      },
+      "sub_actions": null,
+      "turn_number": 25,
+      "action": "",
+      "value": null,
+      "send_action_id": 508065
+    },
+    {
+      "action_id": 141,
+      "action_type": "",
+      "player_id": null,
+      "action_data": null,
+      "sub_actions": null,
+      "turn_number": 25,
+      "action": "end-match",
+      "value": {
+        "winner_id": 963422,
+        "winner_side": "left",
+        "result": "Victory_DestroyHQ"
+      },
+      "send_action_id": 508065
+    }
+  ]
+}

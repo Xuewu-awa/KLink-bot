@@ -1,0 +1,138 @@
+=== 回放审计 replay-508065 ===
+  卡 80 张，动作 141 条，左=963422 右=-9178
+
+  应用 127/141 条（⚠ 14 条没应用）
+
+=== ① 内核观察到的「判死」事件：7 次 ===
+    #79 t24 AC 之后：card_unit_5th_parachute_brigade#64 离场（BoardHqRight → Discard）
+    #84 t17 AC 之后：card_unit_f4f_wildcat#9003 离场（BoardHqLeft → Discard）
+    #86 t17 AC 之后：card_unit_meteor#14 离场（BoardHqLeft → Discard）
+    #95 t19 PC 之后：card_unit_1st_airborne#60 离场（BoardHqRight → Discard）
+    #107 t30 AC 之后：card_unit_2nd_west_africa#39 离场（BoardFrontline → Discard）
+    #119 t33 AC 之后：card_unit_2nd_west_africa#40 离场（BoardFrontline → Discard）
+    #133 t36 PC 之后：card_unit_506th_airborne#9002 离场（BoardFrontline → Discard）
+
+=== ② 死亡单位仍被移动/攻击：2 次 ===
+    #127 t23 **AC 动了已判死的单位** card_unit_2nd_west_africa#40
+    #138 t25 **AC 动了已判死的单位** card_unit_506th_airborne#9002
+
+=== ④ HQ 对不上的动作：61 条 ===
+    （其中人类 left 43 条、bot right 18 条）
+    #20 t9 XActionEndOfTurn（right） 期望 24 实际 20
+    #27 t8 XActionStartOfTurn（right） 期望 20 实际 27
+    #28 t12 XActionEndOfTurn（right） 期望 24 实际 27
+    #29 t8 XActionEndOfTurn（right） 期望 20 实际 27
+    #41 t15 XActionEndOfTurn（right） 期望 24 实际 27
+    #50 t18 XActionEndOfTurn（right） 期望 24 实际 27
+    #65 t21 XActionEndOfTurn（right） 期望 28 实际 27
+    #67 t15 XActionStartOfTurn（left） 期望 24 实际 28
+    #68 t15 PC（left） 期望 24 实际 28
+    #70 t15 PC（left） 期望 24 实际 28
+    #71 t15 ML（left） 期望 24 实际 28
+    #72 t15 PC（left） 期望 24 实际 28
+    #73 t15 XActionEndOfTurn（left） 期望 24 实际 28
+    #74 t16 XActionStartOfTurn（right） 期望 30 实际 27
+    #80 t24 XActionEndOfTurn（right） 期望 28 实际 27
+    #81 t16 XActionEndOfTurn（right） 期望 30 实际 27
+    #82 t17 XActionStartOfTurn（left） 期望 24 实际 28
+    #83 t17 PC（left） 期望 24 实际 28
+    #84 t17 AC（left） 期望 24 实际 28
+    #85 t17 PC（left） 期望 24 实际 28
+    #86 t17 AC（left） 期望 24 实际 28
+    #87 t17 ML（left） 期望 23 实际 27
+    #88 t17 PC（left） 期望 23 实际 27
+    #89 t17 XActionEndOfTurn（left） 期望 23 实际 27
+    #90 t18 XActionStartOfTurn（right） 期望 30 实际 27
+    #93 t18 XActionEndOfTurn（right） 期望 30 实际 27
+    #94 t19 XActionStartOfTurn（left） 期望 23 实际 27
+    #95 t19 PC（left） 期望 23 实际 27
+    #96 t19 AC（left） 期望 23 实际 27
+    #97 t19 AC（left） 期望 23 实际 27
+
+=== ⑤ 未应用的动作：14 条 ===
+    #54 t13 PC（left）：打不出：kredit 不足（kredits=5，费用=12）
+    #70 t15 PC（left）：打不出：半场已满（kredits=7，费用=1）
+    #71 t15 ML（left）：移动被拒：单位不是行动方的场上单位（位置=HandLeft 归属=Left 行动方=Left 是HQ=False）（当前 HandLeft）
+    #72 t15 PC（left）：重复记录（该 cardID 已在场/已打出过）
+    #96 t19 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=HandLeft 归属=Left 行动方=Left）
+    #97 t19 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #111 t21 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #112 t21 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #125 t23 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #126 t23 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #127 t23 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=Discard 归属=Left 行动方=Left）
+    #138 t25 AC（left）：攻击被拒：攻击者不在场上或不是行动方（位置=Discard 归属=Left 行动方=Left）
+    #139 t25 AC（left）：攻击被拒：目标受守护保护（攻击者既不是轰炸机也不是炮兵）
+    #141 t25 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    #54 t13 PC：打不出：kredit 不足（kredits=5，费用=12）
+    （之前 0 条失败都是 bot 自己的动作，不算信号）
+    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。
+       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。
+
+=== ⑤c ★ 身份不一致（动作自带卡组码 ≠ 内核里那张卡的卡组码）：8 条 / 3 张卡（已校正 0 条）===
+    #44 t11 ML cardID=9002 内核=card_unit_506th_airborne（码 cB） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #46 t11 PC cardID=9003 内核=card_unit_f4f_wildcat（码 cT） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #54 t13 PC cardID=7002 内核=card_event_the_commonwealth（码 0z） → 动作码 02 = card_event_aa_barrage [校正开关关闭]
+    #72 t15 PC cardID=9003 内核=card_unit_f4f_wildcat（码 cT） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #84 t17 AC cardID=9003 内核=card_unit_f4f_wildcat（码 cT） → 动作码 dd = card_unit_p40_warhawk [校正开关关闭]
+    #111 t21 AC cardID=9002 内核=card_unit_506th_airborne（码 cB） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #125 t23 AC cardID=9002 内核=card_unit_506th_airborne（码 cB） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+    #138 t25 AC cardID=9002 内核=card_unit_506th_airborne（码 cB） → 动作码 DB = card_unit_fifth_ohio [校正开关关闭]
+
+⑤c 汇总：条数=8 张数=3 已校正=0 内核码未知=0
+
+=== ⑥ 撞到但**没实现**的原语：8 种 ===
+    ShouldGotchaTrigger ×60
+    <attack-on-guarded-target> ×6
+    MakeCardRetreat ×2
+    AddToTriggerQueue ×2
+    <card:card_unit_5th_parachute_brigade> ×1
+    Array_AddUnique ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+
+=== ⑥a ★ RNG 游标失同步信号：6 条 ===
+    <rng-cursor-desync:card_unit_506th_airborne->card_unit_fifth_ohio:消费44>
+    <rng-cursor-desync:card_unit_f4f_wildcat->card_unit_p40_warhawk:消费44>
+    <rng-cursor-desync:card_event_the_commonwealth->card_event_aa_barrage:消费44>
+    <rng-cursor-desync:card_unit_f4f_wildcat->card_unit_p40_warhawk:消费45>
+    <rng-cursor-desync:card_unit_506th_airborne->card_unit_fifth_ohio:消费46>
+    <rng-cursor-desync:card_unit_506th_airborne->card_unit_fifth_ohio:消费47>
+
+=== ⑦ ★ RNG 游标：本局共消耗 47 个随机数 ===
+    （客户端 `cardsRandomStream` 的游标；漏一个消费点就少、多一个就多。
+     用 `--rng-trace` 可以打印逐次消费的流水账。）
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 27，场上 5 个
+     #13 card_unit_hampshire_regiment @BoardHqLeft#3 3/6 活着=True
+     #26 card_unit_m3a3_honey_desert @BoardFrontline#0 2/3 活着=True
+     #38 card_unit_2nd_west_africa @BoardFrontline#2 1/2 活着=True
+     #19003 card_unit_swordfish @BoardHqLeft#2 1/3 活着=True
+     #19004 card_unit_swordfish @BoardHqLeft#4 1/3 活着=True
+  right：HQ 21，场上 2 个
+     #47 card_unit_gordon_highlanders @BoardHqRight#1 3/6 活着=True
+     #83 card_unit_no43_commando @BoardHqRight#3 3/1 活着=True
+
+=== 判读 ===
+  ⚠️ 有**死亡单位被移动** ⇒ 内核自己的门漏了（不是漂开）。

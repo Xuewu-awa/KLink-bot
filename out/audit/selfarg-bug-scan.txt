@@ -1,0 +1,36 @@
+=== 只用 receiver、不用 SelfArg 的 handler，且蓝图里有「隐式 self」调用点 ===
+（隐式 self = IR 里没有 recv；VM 传进来的 receiver 是 null）
+
+GetOppositeSide                    隐式self调用点= 570  显式recv=   5  只看receiver=False  CardApiDispatch.cs:89
+IsSideActive                       隐式self调用点= 242  显式recv=   3  只看receiver=False  CardApiDispatch.cs:63
+GetPlayFromHandDamage              隐式self调用点= 123  显式recv=   0  只看receiver=False  CardApiDispatch.cs:157
+GetCard                            隐式self调用点=  72  显式recv=   4  只看receiver=True  CardApiDispatch.cs:147
+IsVeteran                          隐式self调用点=  70  显式recv=   5  只看receiver=True  CardApiDispatch.cs:72
+ApplyTheBuff                       隐式self调用点=  10  显式recv=   0  只看receiver=False  CardApiDispatch.cs:546
+isBuffedByCard                     隐式self调用点=   9  显式recv=  93  只看receiver=False  CardApiDispatch.cs:382
+checkAndUpdateBuffOnCard           隐式self调用点=   7  显式recv=   0  只看receiver=False  CardApiDispatch.cs:385
+RemoveTheBuff                      隐式self调用点=   6  显式recv=   0  只看receiver=False  CardApiDispatch.cs:547
+IsDamaged                          隐式self调用点=   3  显式recv=   7  只看receiver=True  CardApiDispatch.cs:451
+HasCustomAbilityFromCard           隐式self调用点=   3  显式recv=  49  只看receiver=False  CardApiDispatch.cs:69
+updateCustomJsonIfNeeded           隐式self调用点=   2  显式recv=   0  只看receiver=True  CardApiDispatch.cs:384
+getTotalHeavyArmor                 隐式self调用点=   2  显式recv=   1  只看receiver=True  CardApiDispatch.cs:553
+_isBigRedOne                       隐式self调用点=   2  显式recv=   0  只看receiver=False  CardApiDispatch.cs:549
+getTwoCardsFromPossibleCards       隐式self调用点=   1  显式recv=   0  只看receiver=False  CardApiDispatch.cs:407
+getPossibleCardsFromStaticCards    隐式self调用点=   1  显式recv=   0  只看receiver=False  CardApiDispatch.cs:406
+getHasGameplayTag                  隐式self调用点=   1  显式recv=  45  只看receiver=False  CardApiDispatch.cs:552
+checkAndUpdateBuffOnAllCards       隐式self调用点=   1  显式recv=   0  只看receiver=False  CardApiDispatch.cs:386
+anyOrderPlayedThisTurn             隐式self调用点=   1  显式recv=   0  只看receiver=False  CardApiDispatch.cs:548
+SetVisibility                      隐式self调用点=   1  显式recv=  39  只看receiver=False  CardApiDispatch.cs:369
+GetCombatKeywords                  隐式self调用点=   1  显式recv=  12  只看receiver=True  CardApiDispatch.cs:500
+
+=== 对照组：用了 SelfArg 的（这些是安全的）===
+HasCustomAbility                   隐式self=   3  SelfArg ✔  CardApiDispatch.cs:68
+HasIntel                           隐式self=   1  SelfArg ✔  CardApiDispatch.cs:67
+IsLocatedInDeck                    隐式self=   6  SelfArg ✔  CardApiDispatch.cs:62
+IsLocatedInHand                    隐式self=  46  SelfArg ✔  CardApiDispatch.cs:61
+IsLocatedOnBoard                   隐式self= 493  SelfArg ✔  CardApiDispatch.cs:60
+WhichChooseOne                     隐式self=  50  SelfArg ✔  CardApiDispatch.cs:404
+getTotalAttack                     隐式self=  12  SelfArg ✔  CardApiDispatch.cs:142
+getTotalDefense                    隐式self=  26  SelfArg ✔  CardApiDispatch.cs:143
+getTotalKreditCost                 隐式self=   6  SelfArg ✔  CardApiDispatch.cs:498
+getTotalOperationCost              隐式self=   9  SelfArg ✔  CardApiDispatch.cs:499

@@ -1,0 +1,12 @@
+=== 名字相近（归一化/近似）的缺失键：11 种 ===
+DiscardCardFromHand                          39调用  37卡 [B]  → ['DiscardCard']   [('src/KLink.Bot\\Effects\\CardApi.cs', 1659)]
+IsUnrevealedCovertCard                       28调用  18卡 [B]  → ['IsUnrevealedCovertCard']   [('src/KLink.Bot\\Effects\\CardApi.cs', 1194)]
+DestroyMultipleCards                         20调用  19卡 [C]  → ['Destroy', 'DestroyCard', 'DoDestroyCard']   [('src/KLink.Bot\\Engine\\MatchEngine.cs', 1734), ('src/KLink.Bot\\Effects\\CardApi.cs', 1641), ('src/KLink.Bot\\Effects\\CardApiDispatch.cs', 2270)]
+IsBomber                                     19调用  13卡 [B]  → ['IsBomber']   [('src/KLink.Bot\\Engine\\MatchEngine.cs', 1529)]
+DiscardCardFromDeck                          11调用  11卡 [B]  → ['DiscardCard']   [('src/KLink.Bot\\Effects\\CardApi.cs', 1659)]
+Random Card                                   4调用   3卡 [C]  → ['GetRandomCard']   [('src/KLink.Bot\\Effects\\CardApi.cs', 2112)]
+CanPlayCard                                   2调用   1卡 [C]  → ['CanPlay', 'PlayCard']   [('src/KLink.Bot\\Engine\\MatchEngine.cs', 673), ('src/KLink.Bot\\Engine\\MatchEngine.cs', 740)]
+Has Opposite Side Air On Board                1调用   1卡 [C]  → ['GetOppositeSide']   [('src/KLink.Bot\\Effects\\CardApi.cs', 2062)]
+MoveCards                                     1调用   1卡 [C]  → ['Move']   [('src/KLink.Bot\\Engine\\GameState.cs', 423)]
+MoveUnitFromHand                              1调用   1卡 [C]  → ['MoveUnit']   [('src/KLink.Bot\\Engine\\MatchEngine.cs', 1003)]
+getKreditBySide                               1调用   1卡 [C]  → ['AddKredits', 'Kredits', 'SetKredits']   [('src/KLink.Bot\\Engine\\GameState.cs', 43), ('src/KLink.Bot\\Engine\\GameState.cs', 34), ('src/KLink.Bot\\Engine\\GameState.cs', 44)]

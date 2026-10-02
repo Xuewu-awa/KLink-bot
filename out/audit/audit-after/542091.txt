@@ -1,0 +1,67 @@
+=== 回放审计 replay-542091 ===
+  卡 80 张，动作 78 条，左=300608 右=-9178
+
+  应用 75/78 条（⚠ 3 条没应用）
+
+=== ① 内核观察到的「判死」事件：2 次 ===
+    #69 t21 AC 之后：card_unit_no43_commando#81 离场（BoardHqRight → Discard）
+    #70 t21 AC 之后：card_unit_no43_commando#82 离场（BoardHqRight → Discard）
+
+=== ② 死亡单位仍被移动/攻击：0 次 ===
+    （没有）
+
+=== ④ HQ 对不上的动作：10 条 ===
+    #6 t3 XActionEndOfTurn 期望 22 实际 20
+    #14 t6 XActionEndOfTurn 期望 24 实际 20
+    #29 t9 XActionEndOfTurn 期望 24 实际 20
+    #39 t12 XActionEndOfTurn 期望 24 实际 20
+    #48 t15 XActionEndOfTurn 期望 24 实际 19
+    #49 t10 XActionEndOfTurn 期望 20 实际 19
+    #57 t18 XActionEndOfTurn 期望 24 实际 19
+    #65 t14 XActionStartOfTurn 期望 19 实际 21
+    #71 t21 XActionEndOfTurn 期望 24 实际 19
+    #72 t14 XActionEndOfTurn 期望 19 实际 20
+
+=== ⑤ 未应用的动作：3 条 ===
+    #55 t18 PC（right）：重复记录（该 cardID 已在场/已打出过）
+    #66 t21 PC（right）：重复记录（该 cardID 已在场/已打出过）
+    #78 t15 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐
+
+=== ⑥ 撞到但**没实现**的原语：5 种 ===
+    ShouldGotchaTrigger ×29
+    MakeCardRetreat ×2
+    <card:card_unit_5th_parachute_brigade> ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 29，场上 3 个
+     #9 card_unit_queens_own @BoardFrontline#0 7/1 活着=True
+     #14 card_unit_meteor @BoardHqLeft#2 1/1 活着=True
+     #25 card_unit_m3a3_honey_desert @BoardHqLeft#1 2/1 活着=True
+  right：HQ 24，场上 1 个
+     #59 card_unit_111th_indian_brigade @BoardHqRight#3 1/3 活着=True
+
+=== 判读 ===
+  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。

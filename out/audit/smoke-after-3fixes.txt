@@ -1,0 +1,315 @@
+=== 全卡池蓝图烟雾测试 · 摘要 ===
+播种=20261002  用例=4088  卡=1570  入口=55
+
+  OK（跑通且有状态变化）    1584
+  A  抛异常/崩溃               0
+  B  撞未实现原语            765
+  C  撞步数上限                0
+  D  零状态变化             1739
+
+=== ★ 确定性（同种子跑两次，逐位比对）===
+  ✅ 全部用例两次结果逐位相同（指纹 / RNG 消费次数 / 步数 / 未实现集合）
+  ⚠️ 这条结论有一个**前提**：每个用例的两次执行都在「缓存已热」状态下比较
+     （冷启动先跑一次并丢弃，见 `Run` 里那段注释）。
+     也就是说它证明的是「同一个用例连续跑两次一致」，
+     **不**证明「结果与进程历史无关」—— 后者是下面「进程级静态状态」那一节，
+     那里在本次运行里抓到了反例。
+
+=== (A) 抛异常的卡：0 张 / 0 个用例 ===
+  （没有）
+
+=== (B) 撞到未实现原语的卡：363 张 / 765 个用例 / 106 个原语 ===
+  ★ 这张表最有价值：它告诉我们「还差哪些原语」以及「每个原语影响多少张卡」。
+  （「用例」列 = 有多少个 (卡,入口,摆位) 组合撞到它；「卡」列 = 有多少张**不同的卡**。）
+      用例     卡  原语 / 受影响的卡（前 6）
+      64    35  HasCampaignUpgrade
+                      card_event_air_superiority_cam1, card_event_amphibious_assault_cam1, card_event_assault_cam1, card_event_bloody_sickle_cam1, card_event_combined_arms_cam1, card_event_cup_of_tea_cam1 …（共 35 张）
+      68    34  ShouldGotchaTrigger
+                      card_event_aerial_reconaissance, card_event_against_the_odds, card_event_airstrike_new, card_event_bridge_too_far, card_event_careless_talk, card_event_close_call …（共 34 张）
+      40    26  MakeCardRetreat
+                      card_event_aa_barrage, card_event_airdrop, card_event_campaign_alamein1_iron_fist, card_event_delaying_tactics, card_event_guerilla_warfare_school, card_event_pursuit …（共 26 张）
+      53    23  math:Conv_IntToInt64
+                      card_event_carrier_battle, card_event_seize_the_initiative, card_location_british_scen1, card_location_british_scen3, card_location_british_scen5, card_location_german_scen1 …（共 23 张）
+      53    23  math:Format
+                      card_event_carrier_battle, card_event_seize_the_initiative, card_location_british_scen1, card_location_british_scen3, card_location_british_scen5, card_location_german_scen1 …（共 23 张）
+      33    19  ConvertCard
+                      card_event_capitulation, card_event_happy_time, card_event_harass, card_event_orp_general_haller, card_event_out_with_the_old, card_event_rout …（共 19 张）
+      30    17  FullyHealCard
+                      card_event_cadet_nurse_corps, card_event_desert_push, card_event_desert_push_cam1, card_event_field_hospital, card_event_furor, card_event_imperial_order …（共 17 张）
+      28    15  AddGameplayRestriction
+                      card_event_admiral_hipper, card_event_campaign_tunis3_supply_intercepted, card_event_elusive_force, card_event_mud, card_event_tirpitz, card_event_u_99 …（共 15 张）
+      24    13  SetCountdown
+                      card_event_dark_deeds, card_event_exiled_forces, card_event_gunboat_hit, card_event_gunboat_raid, card_event_gunboat_run, card_event_mobilization …（共 13 张）
+      25    12  LoseKreditSlot
+                      card_event_air_land_sea, card_event_commit_the_reserves, card_event_dawn_operations, card_event_daylight_bombing, card_event_desperate_measures, card_event_last_ditch_force …（共 12 张）
+      13    11  getCardsBuffedByThisCard
+                      card_event_support_column, card_unit_1st_london_brigade, card_unit_5th_medical_battalion, card_unit_67th_baranovichi, card_unit_kv_1s, card_unit_m20_scout_car …（共 11 张）
+      16     9  DiscardRandomCardFromHand
+                      card_event_annihilation, card_event_case_yellow, card_event_divine_wind, card_event_kriegsmarine, card_event_molotov_cocktail_fin, card_event_type_xxi_boat …（共 9 张）
+      16     8  SetObjectiveCounter
+                      card_location_british_scen2, card_location_british_scen4, card_location_german_scen5, card_location_soviet_scen1, card_location_soviet_scen2, card_location_soviet_scen3 …（共 8 张）
+      13     8  IsGotcha
+                      card_event_lurking_danger, card_event_lysander_pl, card_event_war_production, card_unit_15_aufklarungs, card_unit_1st_pulk_piechoty, card_unit_a6m3_zeke …（共 8 张）
+      11     8  GetCardsOnBoardBySide<includeCovertCards>
+                      card_event_ambush, card_event_field_recon, card_event_night_bombing, card_unit_146th_infantry_regiment, card_unit_1er_hussards, card_unit_989_infantry_regiment …（共 8 张）
+      14     7  MoveMultipleCardsToTopOfOwnersDeck
+                      card_event_bletchley_park, card_event_edge_of_the_empire, card_event_ijn_akagi, card_event_redeployment, card_event_storm3_tropical_storm, card_event_take_liberty …（共 7 张）
+      18     6  getKreditTempBuffAmount
+                      card_event_cross_of_lorraine, card_event_exposed, card_event_for_precision_bombing, card_event_saar_probe, card_event_sea_patrol, card_unit_manchester_ia
+      14     6  SetCardSeen
+                      card_event_happy_time, card_event_sabotage, card_event_strike_group, card_unit_336th_guards_naval, card_unit_4th_alabama, card_unit_pb2y_coronado
+      11     6  GetSupportLineLocationBySide
+                      card_event_foreign_support_skirm, card_event_hms_hermes, card_event_soviet_promo3, card_event_sunny4_scorching_sun, card_location_japan_scen2, card_unit_m8_greyhound
+       9     6  GetCardsInFrontlineBySide
+                      card_event_blitzkrieg, card_event_rapid_response, card_event_seaborne_invasion, card_unit_463rd_battalion, card_unit_4_pioneer, card_unit_78th_steel_regiment
+      16     5  PlayCardDirectlyFromHand
+                      card_event_eagle_day, card_event_gambit, card_event_mayhem, card_event_special_assignment, card_unit_ilyushin_il_2
+      10     5  IncrementObjectiveCounter
+                      card_location_german_scen5, card_location_soviet_scen2, card_location_soviet_scen3, card_location_usa_scen1, card_location_usa_scen2
+      10     5  SpawnMultipleCardsOnBattlefield
+                      card_event_depths_of_winter, card_event_form_battle_line, card_event_no_surrender, card_event_parachute_assault, card_event_the_peoples_army
+       9     5  IsTopDeckNavy
+                      card_event_hms_belfast, card_event_u_16, card_event_uss_arcfish, card_event_uss_fitch, card_unit_1st_san_marco
+       9     5  TakeControlOfEnemyUnit
+                      card_event_confusion, card_event_lost_cause_skirm, card_event_minority_recruits, card_event_partisans, card_unit_39th_rifle_regiment
+       7     5  GetAllCardsInFrontline
+                      card_event_delaying_tactics, card_event_supply_front, card_unit_15th_engineers, card_unit_1st_airlanding_brigade, card_unit_black_prince
+       7     5  GetCardsPlayedFromHandLastTurn
+                      card_event_forward_observers, card_unit_baltimore_mk_iii, card_unit_defiant_mk_i, card_unit_the_polar_bears, card_unit_valentine_mk_ii
+       7     5  WasLeftMostCardWhenPlayedFromHand
+                      card_event_task_force_44, card_event_z_special_unit, card_unit_14th_brigade_nz, card_unit_17th_infantry_brigade, card_unit_the_silent_seventh
+       5     5  GetCardsPlayedFromHandThisTurn
+                      card_unit_5e_cuirassier, card_unit_bloch_mb_150, card_unit_char_b1_bis, card_unit_french_75, card_unit_somoa_s35
+      12     4  getAttackTempBuffAmount
+                      card_unit_78th_yongsan, card_unit_kv_1s, card_unit_panzer_iii_e, card_unit_type_4_chi_to
+       8     4  Map_Find
+                      card_event_greater_purpose, card_event_the_big_three, card_event_vanguard_ita, card_event_yamato
+       8     4  RemovePin
+                      card_event_desert_push, card_event_desert_push_cam1, card_event_rally, card_event_recuperation
+       8     4  WhichStrategy
+                      card_location_british_scen5, card_location_german_scen1, card_location_german_scen3, card_location_japan_scen4
+       7     4  AddCustomGameplayTag
+                      card_event_betasom, card_event_rm_roma, card_unit_40_royal_marine, card_unit_lovat_scouts
+       7     4  ForceEndTurn
+                      card_event_banzai_charge, card_event_calm_before_the_storm, card_event_repel_the_attack, card_unit_kurume_regiment
+      12     3  AddToTriggerQueue
+                      card_event_bpf, card_event_retribution4, card_event_the_rock_of_gibraltar
+      10     3  GetTotalKreditsLostThisBattle
+                      card_event_one_roof, card_event_shinyo_motorboats, card_unit_144th_infantry_regiment
+       6     3  Set_Length
+                      card_event_focused_attack_ger, card_unit_henschel_hs_126, card_unit_panzer_iii_e
+       6     3  TriggerDestruction
+                      card_event_fortunes_of_war, card_event_jungle_warfare, card_event_out_with_the_old
+       6     3  math:Max
+                      card_event_spirit_of_rome, card_unit_76th_napoli, card_unit_78th_yongsan
+       5     3  GetLeftMostCardInHand
+                      card_event_corps_command, card_event_forward_base_anzac, card_unit_7th_brigade_anzac
+       5     3  Get_X_AndMoreAttackCardsOnBoard
+                      card_event_case_blue, card_event_shock_tactics, card_unit_49th_infantry_regiment
+       5     3  MoveUnitFromSupportToFrontLine
+                      card_event_chasing_shadows, card_event_escaut_plan, card_unit_5r_chasseurs
+       4     3  GiveRandomCombatKeyword
+                      card_event_forged_in_fire, card_unit_sapporo_regiment, card_unit_the_professionals
+       4     3  WasRightMostCardWhenPlayedFromHand
+                      card_event_repel_the_attack, card_unit_6th_brigade_nz, card_unit_anzac_hurricane_ii_c_trop
+      12     2  GetRightMostCardInHand
+                      card_event_corps_command, card_event_guerilla_warfare_school
+       8     2  IsUsingStrategy
+                      card_location_british_scen4, card_location_british_scen5
+       6     2  GetOperationKreditsSpentThisTurn
+                      card_event_claim_objective, card_event_sustained_pressure
+       5     2  Set_Add
+                      card_event_focused_attack_ger, card_unit_panzer_iii_e
+       4     2  Array_AddUnique
+                      card_event_mass_deployment, card_unit_gordon_highlanders
+       4     2  GetHighestBomberAttack
+                      card_event_for_precision_bombing, card_unit_manchester_ia
+       4     2  ResetUnitOperations
+                      card_event_rain4_monsoon_rain3, card_event_tactical_withdrawal
+       4     2  Set_Clear
+                      card_unit_henschel_hs_126, card_unit_panzer_iii_e
+       4     2  StealCardFromBoardToDeck
+                      card_event_cobelligerents, card_event_honor_and_loyalty
+       4     2  math:Conv_StringToName
+                      card_location_german_scen5, card_location_soviet_scen3
+       3     2  math:Conv_StringToInt
+                      card_location_german_scen2, card_unit_superman
+       2     2  GetHQ_DamagedAmountThisTurnBySide
+                      card_unit_304_panzergrenadier, card_unit_qf_40mm_mk_iii
+       2     2  SpawnNextToCard
+                      card_unit_f4f_wildcat, card_unit_m24_chaffee
+      26     1  math:GetOrSpawnActor
+                      card_brawl_test1
+      10     1  isPattonPlayedThisTurn
+                      card_event_patton
+       4     1  MoveCardInHandToLeftMost
+                      card_event_hmas_warramunga
+       2     1  AddDefenseToMultipleCards
+                      card_event_root_out_the_enemy
+       2     1  AddIntelToCard
+                      card_unit_lublin_r_xiii
+       2     1  Array_Identical
+                      card_unit_10th_engineering_battalion
+       2     1  Array_Resize
+                      card_event_semper_fi
+       2     1  ChangeFrontlineLimiter
+                      card_unit_black_prince
+       2     1  ChangedPinnedTurns
+                      card_event_forced_surrender
+       2     1  GetClientSide
+                      card_location_soviet_scen2
+       2     1  GetMainNationForSide
+                      card_event_pilot_escape
+       2     1  Map_Add
+                      card_event_the_big_three
+
+=== (C) 撞步数上限的卡：0 张 / 0 个用例 ===
+  （没有）
+
+=== (D) 零状态变化的卡：657 张 / 1739 个用例 ===
+  ⚠️ 要区分两种情况，别一律当 bug。判据是**启发式**，不是定论：
+     D1「测试台局面不满足条件」= 程序跑完，**一条像「写」的原语都没调**
+        （只在卡池/手牌里扫了一遍、条件判断完就返回）
+     D2「该有效果却没生效」    = 调了名字像写原语的东西、状态却没变（可疑，要看）
+     判据细节：先取「在别的用例里确实伴随状态变化」的原语，再滤掉名字是查询形状的
+     （Get/Is/Has/Array_/Conv_…）。两层都过的原语共 133 个。
+     ⚠️ 这只说明「测试台局面下没效果」，**不**等于「真实对局里也没效果」。
+  D1（没调任何像写原语的原语）      1458 个用例 / 583 张卡
+  D2（调了却零变化，可疑）           281 个用例 / 143 张卡
+
+  ---- D2 明细（按步数降序前 50；步数越多越可能是「真跑了却没生效」）----
+    31359 步  card_event_allied_research_effort / OnPlayedFromHand / hand  调了：getAndDecryptKredit
+    31359 步  card_event_allied_research_effort / OnPlayedFromHand / discard  调了：getAndDecryptKredit
+      910 步  card_unit_coastwatchers / OnEnterPlay / board  调了：getHasGameplayTag
+      910 步  card_unit_coastwatchers / OnLeaveBoardOrOwner / board  调了：getHasGameplayTag
+      728 步  card_event_turning_point / OnPlayedFromHand / hand  调了：getHasGameplayTag
+      728 步  card_event_turning_point / OnPlayedFromHand / discard  调了：getHasGameplayTag
+      684 步  card_unit_l4_grasshopper / OnEnterPlay / board  调了：ApplyTheBuff
+      664 步  card_unit_layforce / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      664 步  card_unit_raf_mustang / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      639 步  card_event_committed_crew / OnPlayedFromHand / hand  调了：ApplyTheBuff
+      639 步  card_event_committed_crew / OnPlayedFromHand / discard  调了：ApplyTheBuff
+      633 步  card_event_refit_bia / OnPlayedFromHand / hand  调了：getHasGameplayTag
+      633 步  card_event_refit_bia / OnPlayedFromHand / discard  调了：getHasGameplayTag
+      631 步  card_event_resourcefulness / OnPlayedFromHand / hand  调了：getHasGameplayTag
+      631 步  card_event_resourcefulness / OnPlayedFromHand / discard  调了：getHasGameplayTag
+      630 步  card_unit_t_34_76d / OnDestroyed / board  调了：getHasGameplayTag
+      595 步  card_unit_big_red_one / OnLeaveBoardOrOwner / board  调了：RemoveTheBuff
+      590 步  card_unit_sakura_regiment / OnEnterPlay / board  调了：isBuffedByCard
+      590 步  card_unit_sakura_regiment / OnOtherCardDiscarded / board  调了：isBuffedByCard
+      590 步  card_unit_sakura_regiment / OnOtherCardPlayedFromHand / board  调了：isBuffedByCard
+      590 步  card_unit_sakura_regiment / OnOtherCardReset / board  调了：isBuffedByCard
+      590 步  card_unit_sakura_regiment / OnOtherCardSpawnedInHand / board  调了：isBuffedByCard
+      589 步  card_unit_sakura_regiment / OnOtherCardDrawnFromDeck / board  调了：isBuffedByCard
+      550 步  card_unit_3rd_canadian_division / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      549 步  card_unit_raf_ground_crew / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      509 步  card_unit_1st_infantry_regiment_us / OnEndOfTurn / board  调了：isBuffedByCard
+      336 步  card_unit_panzer_iv_h / OnSuppressed / board  调了：UpdateBuff,getTotalAttack,isBuffedByCard
+      303 步  card_event_rasputitsa / OnPlayedFromHand / hand  调了：getTotalOperationCost
+      303 步  card_event_rasputitsa / OnPlayedFromHand / discard  调了：getTotalOperationCost
+      270 步  card_unit_m4_sherman / OnPlayedFromHand / board  调了：DoesSideControlTheFrontline
+      269 步  card_unit_1st_defense_battalion / OnPlayedFromHand / board  调了：DoesSideControlTheFrontline
+      260 步  card_unit_type_93 / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      252 步  card_unit_pb2y_coronado / OnLeaveBoardOrOwner / board  调了：ChangeAttack
+      239 步  card_unit_269th_rifles / OnSuppressed / board  调了：isBuffedByCard
+      238 步  card_unit_p38_lightning / OnLeaveBoardOrOwner / board  调了：ChangeAttack
+      237 步  card_unit_storm_division / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      236 步  card_unit_adler_command_vehicle / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      227 步  card_event_flight_to_oblivion / OnPlayedFromHand / hand  调了：getAndDecryptAttack
+      227 步  card_event_flight_to_oblivion / OnPlayedFromHand / discard  调了：getAndDecryptAttack
+      224 步  card_unit_light_anti_air_battery / OnLeaveBoardOrOwner / board  调了：isBuffedByCard
+      221 步  card_unit_214th_amur / OnEnterPlay / board  调了：ApplyTheBuff
+      173 步  card_event_supply_shortage / OnStartOfTurn / hand  调了：DamageMultipleCards
+      173 步  card_event_supply_shortage / OnStartOfTurn / discard  调了：DamageMultipleCards
+      168 步  card_event_brute_force / OnPlayedFromHand / hand  调了：DamageCard
+      168 步  card_event_brute_force / OnPlayedFromHand / discard  调了：DamageCard
+      159 步  card_unit_panzer_iv_h / OnBecomingVeteran / board  调了：UpdateBuff,getTotalAttack,isBuffedByCard
+      159 步  card_unit_short_sunderland / OnEndOfTurn / board  调了：getHasGameplayTag
+      155 步  card_event_fliegerfuhrer_atlantik / OnPlayedFromHand / hand  调了：getHasGameplayTag
+      155 步  card_event_fliegerfuhrer_atlantik / OnPlayedFromHand / discard  调了：getHasGameplayTag
+      149 步  card_event_uprising / OnPlayedFromHand / hand  调了：DamageMultipleCards
+
+  ---- D1 按步数分布（步数越少越像「开头就退出了」）----
+     步数 0-4       351 个用例
+     步数 10-19     209 个用例
+     步数 20-49      14 个用例
+     步数 5-9       750 个用例
+     步数 50-99      32 个用例
+     步数 ≥100      102 个用例
+  ---- D1 卡名（前 30，按卡名序）----
+     card_event_7075_aluminium, card_event_act_on_the_intel, card_event_admiral_hipper, card_event_agency_africa, card_event_air_escort, card_event_area_bombardment, card_event_armaments_eg, card_event_arming_resistance, card_event_ats, card_event_awoken_giant, card_event_betasom, card_event_blitzkrieg, card_event_blood_red_sky, card_event_bocage_warfare, card_event_breakthrough, card_event_burst_of_fire, card_event_campaign_alamein3_riding_the_storm, card_event_campaign_alamein3_spring_the_reserves, card_event_campaign_guadalcanal4_bomber_runway, card_event_campaign_guadalcanal4_marine_patrols, card_event_campaign_trail, card_event_carrier_battle, card_event_claim_objective, card_event_colossus, card_event_committed_crew, card_event_comrades, card_event_confusion, card_event_contest_doctrine, card_event_corps_command, card_event_counter_offensive
+
+=== (E) 随机消费异常 ===
+  消耗过随机数的用例           205 / 4088
+  两次跑消耗次数不同（不确定）     0
+
+  ---- 随机消费最多的 25 个用例（每张卡消耗几次随机数）----
+      42 次  card_unit_158th_bushmasters / OnFullyRepaired / board
+      42 次  card_unit_158th_bushmasters / OnOtherCardFullyRepaired / board
+      20 次  card_event_storm3_tropical_storm / OnPlayedFromHand / hand
+      20 次  card_event_storm3_tropical_storm / OnPlayedFromHand / discard
+      20 次  card_event_take_liberty / OnPlayedFromHand / hand
+      20 次  card_event_take_liberty / OnPlayedFromHand / discard
+      12 次  card_event_shifting_doctrine / OnPlayedFromHand / hand
+      12 次  card_event_shifting_doctrine / OnPlayedFromHand / discard
+      12 次  card_event_shinano / OnPlayedFromHand / hand
+      12 次  card_event_shinano / OnPlayedFromHand / discard
+      12 次  card_unit_18th_bersaglieri / OnPlayedFromHand / board
+      12 次  card_unit_n1k1_kyofu / OnPlayedFromHand / board
+      11 次  card_event_reorganize / OnPlayedFromHand / hand
+      11 次  card_event_reorganize / OnPlayedFromHand / discard
+      11 次  card_unit_10th_recon / OnPlayedFromHand / board
+      10 次  card_event_edge_of_the_empire / OnPlayedFromHand / hand
+      10 次  card_event_edge_of_the_empire / OnPlayedFromHand / discard
+      10 次  card_event_ijn_akagi / OnPlayedFromHand / hand
+      10 次  card_event_ijn_akagi / OnPlayedFromHand / discard
+      10 次  card_event_redeployment / OnPlayedFromHand / hand
+      10 次  card_event_redeployment / OnPlayedFromHand / discard
+      10 次  card_event_reorganize / OnHandTargetSelected / hand
+      10 次  card_event_reorganize / OnHandTargetSelected / discard
+      10 次  card_event_the_tide_turns / OnPlayedFromHand / hand
+      10 次  card_event_the_tide_turns / OnPlayedFromHand / discard
+
+=== VM 诊断 ===
+  未解析跳转（UnresolvedJumps > 0）的用例：2212
+    · 1842 个：用例自己的卡首条语句是 `pushFlow` ⇒ 未解析的目标就是「派发返回地址」（良性）。
+    · 370 个：用例自己的卡首条**不是** `pushFlow` ⇒ 这次未解析跳转来自**被触发的别的卡**的程序（`DamageCard` / `DestroyCard` 这类原语内部会 `FireTrigger`），根因同上，只是归属不在本用例的卡上。
+    ⇒ 结论：这两条路都不代表「跳转表真的坏了」。静态复核：
+       · 1636 个蓝图的 `steps` + 881 个 `locals` 函数体，跳转目标缺失 **0 张 / 0 处**；
+       · 692 张「首条是 pushFlow」的卡，派发返回地址 **692/692 都指向 `return`**。
+       ⇒ `UnresolvedJumps` **不能当守卫判据**（它的注释写着「应恒为 0」，实测不成立）。
+
+=== ⚠️ 这个测试能抓什么、抓不到什么 ===
+  能抓：异常/崩溃、撞到未实现原语、撞步数上限、程序跳转没解析、
+        非确定性（同种子两次不同）、「该有效果却零变化」。
+  抓不到：语义错（跑得通但算错 —— 重甲该不该减免、该扣多少血、
+          条件门读错对象）、数值/顺序错（那要跟客户端对拍）。
+  ⇒ 它是「覆盖/烟雾测试」，不是「正确性判据」。**没报错 ≠ 是对的。**
+
+  另外：入参是按 event-contracts.json 的**槽位名**近似填的（218 个原语在本次运行里被观测到「调了就会改状态」）。
+  局面也是合成的（双方 HQ + 5 兵种 + 手牌 + 牌库）。
+  真实对局里事件入参不同、局面不同 ⇒ 这里没报错不代表真实路径也没问题。
+
+=== 附：真实编排路径（`MatchEngine.PlayCard`）—— 次要探针 ===
+  ⚠️ 归因有污染：PlayCard 会派发事件给场上其它卡，这里报的未实现原语
+     不一定来自被测试的那张卡。所以这一节只认**异常**与**确定性**两条判据。
+  用例：992（有 OnPlayedFromHand 的卡）
+  打出来了（CanPlay 通过）       992
+  打不出来（CanPlay 拒绝）         0   ← 多为「无合法目标 / 费用」
+  抛异常/VM 内部吞掉的异常         0
+  两次跑结果不同（不确定）         0
+  路径上出现未实现原语的卡       198（含其它订阅卡的贡献，仅供定位）
+
+=== 附：进程级静态状态（缓存 / 全局卡池模板）===
+  ① 冷启动 vs 热启动
+     状态指纹不同（**这是问题**，缓存不透明）       0
+     随机消费次数不同（**这是问题**）               0
+     只有 VM 步数不同（预期，缓存命中跳过执行）     13
+
+  ② 跨用例污染（第二趟冷指纹 vs 第一趟冷指纹）
+     ✅ 全部用例两趟冷指纹逐位相同 —— 没有观测到跨用例的进程级污染
+
+=== 附：入口点覆盖 ===
+  引擎会派发的活入口点：64 个，本次跑到 55 个
+  IR 里**没有任何卡注册**的活入口点（9 个）：
+     OnBeforeOtherCardDeploymentTrigger, OnCardDealDamage, OnCardDealDamage_ModifyDamageDealt, OnDeploymentEffectTriggered, OnDestructionEffectTriggered, OnOtherCardDealDamageAddDamage, OnOtherEndOfTurn, OnOtherFrontlineOwnershipChange, OnOtherStartOfTurn

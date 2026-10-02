@@ -1,0 +1,68 @@
+=== 回放审计 replay-214436 ===
+  卡 80 张，动作 61 条，左=963422 右=-9178
+
+  应用 59/61 条（⚠ 2 条没应用）
+
+=== ① 内核观察到的「判死」事件：2 次 ===
+    #30 t7 AC 之后：card_unit_10th_para_battalion#56 离场（BoardFrontline → Discard）
+    #50 t11 PC 之后：card_unit_10th_para_battalion#57 离场（BoardHqRight → Discard）
+
+=== ② 死亡单位仍被移动/攻击：0 次 ===
+    （没有）
+
+=== ④ HQ 对不上的动作：8 条 ===
+    #13 t6 XActionEndOfTurn 期望 22 实际 20
+    #23 t9 XActionEndOfTurn 期望 24 实际 20
+    #36 t12 XActionEndOfTurn 期望 22 实际 20
+    #38 t9 XActionStartOfTurn 期望 24 实际 22
+    #47 t15 XActionEndOfTurn 期望 18 实际 20
+    #49 t11 XActionStartOfTurn 期望 22 实际 20
+    #57 t18 XActionEndOfTurn 期望 14 实际 20
+    #59 t13 XActionStartOfTurn 期望 20 实际 18
+
+=== ⑤ 未应用的动作：2 条 ===
+    #46 t15 ML（right）：移动被拒（当前 BoardHqRight）
+    #61 t13 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐
+
+=== ⑥ 撞到但**没实现**的原语：7 种 ===
+    ShouldGotchaTrigger ×34
+    <local-ran:hasPlayedOrderThisTurn> ×2
+    MakeCardRetreat ×2
+    <frontline-blocked-by-opponent> ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+    Array_AddUnique ×1
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 20，场上 5 个
+     #22 card_unit_no_46_commando @BoardHqLeft#2 1/1 活着=True
+     #38 card_unit_2nd_west_africa @BoardHqLeft#1 1/2 活着=True
+     #39 card_unit_2nd_west_africa @BoardHqLeft#3 1/2 活着=True
+     #7002 card_unit_garrison @BoardFrontline#1 0/3 活着=True
+     #7003 card_unit_garrison @BoardFrontline#0 0/3 活着=True
+  right：HQ 18，场上 1 个
+     #47 card_unit_gordon_highlanders @BoardHqRight#1 3/10 活着=True
+
+=== 判读 ===
+  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。

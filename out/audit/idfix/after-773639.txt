@@ -1,0 +1,112 @@
+=== 回放审计 replay-773639 ===
+  卡 80 张，动作 137 条，左=849618 右=-9178
+
+  应用 134/137 条（⚠ 3 条没应用）
+
+=== ① 内核观察到的「判死」事件：8 次 ===
+    #22 t5 PC 之后：card_unit_5th_parachute_brigade#64 离场（BoardHqRight → Discard）
+    #29 t7 PC 之后：card_unit_1st_airborne#60 离场（BoardFrontline → Discard）
+    #64 t13 PC 之后：card_unit_5th_parachute_brigade#66 离场（BoardHqRight → Discard）
+    #64 t13 PC 之后：card_unit_5th_parachute_brigade#63 离场（BoardHqRight → Discard）
+    #77 t18 AC 之后：card_unit_meteor#14 离场（BoardHqLeft → Discard）
+    #89 t20 AC 之后：card_unit_meteor#17001 离场（BoardHqLeft → Discard）
+    #98 t22 AC 之后：card_unit_meteor#19001 离场（BoardHqLeft → Discard）
+    #109 t26 PC 之后：card_unit_111th_indian_brigade#58 离场（BoardHqRight → Discard）
+
+=== ② 死亡单位仍被移动/攻击：0 次 ===
+    （没有）
+
+=== ④ HQ 对不上的动作：53 条 ===
+    （其中人类 left 33 条、bot right 20 条）
+    #53 t10 XActionStartOfTurn（right） 期望 24 实际 25
+    #54 t10 XActionEndOfTurn（right） 期望 24 实际 25
+    #60 t12 XActionStartOfTurn（right） 期望 31 实际 34
+    #61 t12 XActionEndOfTurn（right） 期望 31 实际 34
+    #66 t14 XActionStartOfTurn（right） 期望 31 实际 34
+    #67 t14 XActionEndOfTurn（right） 期望 31 实际 34
+    #72 t16 XActionStartOfTurn（right） 期望 31 实际 34
+    #73 t16 XActionEndOfTurn（right） 期望 31 实际 34
+    #85 t19 XActionStartOfTurn（right） 期望 35 实际 40
+    #86 t19 XActionEndOfTurn（right） 期望 33 实际 40
+    #90 t20 PC（left） 期望 17 实际 18
+    #91 t20 AC（left） 期望 17 实际 18
+    #92 t20 AC（left） 期望 16 实际 17
+    #93 t20 XActionEndOfTurn（left） 期望 14 实际 15
+    #94 t21 XActionStartOfTurn（right） 期望 35 实际 44
+    #95 t21 XActionEndOfTurn（right） 期望 35 实际 44
+    #96 t22 XActionStartOfTurn（left） 期望 14 实际 15
+    #97 t22 PC（left） 期望 14 实际 15
+    #98 t22 AC（left） 期望 14 实际 15
+    #99 t22 ML（left） 期望 10 实际 14
+    #100 t22 XActionEndOfTurn（left） 期望 10 实际 14
+    #101 t23 XActionStartOfTurn（right） 期望 35 实际 44
+    #102 t23 XActionEndOfTurn（right） 期望 35 实际 44
+    #103 t24 XActionStartOfTurn（left） 期望 10 实际 14
+    #104 t24 PC（left） 期望 10 实际 14
+    #105 t24 XActionEndOfTurn（left） 期望 10 实际 14
+    #106 t25 XActionStartOfTurn（right） 期望 35 实际 44
+    #107 t25 XActionEndOfTurn（right） 期望 35 实际 44
+    #108 t26 XActionStartOfTurn（left） 期望 10 实际 14
+    #109 t26 PC（left） 期望 10 实际 14
+
+=== ⑤ 未应用的动作：3 条 ===
+    #36 t9 PC（right）：打不出：kredit 不足（kredits=0，费用=1）
+    #37 t9 PC（right）：打不出：kredit 不足（kredits=0，费用=1）
+    #137 t30 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐
+
+=== ⑤c ★ 身份不一致（动作自带卡组码 ≠ 内核里那张卡的卡组码）：1 条 / 1 张卡（已校正 0 条）===
+    #78 t18 PC cardID=3002 内核=card_event_baker_street_irregulars（码 ou） → 动作码 gv = card_event_royal_research [校正开关关闭]
+
+⑤c 汇总：条数=1 张数=1 已校正=0 内核码未知=0
+
+=== ⑥ 撞到但**没实现**的原语：7 种 ===
+    ShouldGotchaTrigger ×54
+    <card:card_unit_5th_parachute_brigade> ×3
+    <local-ran:isSecondOrderThisTurn> ×1
+    MakeCardsFight ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+    AddToTriggerQueue ×1
+
+=== ⑥a ★ RNG 游标失同步信号：1 条 ===
+    <rng-cursor-desync:card_event_baker_street_irregulars->card_event_royal_research:消费82>
+
+=== ⑦ ★ RNG 游标：本局共消耗 86 个随机数 ===
+    （客户端 `cardsRandomStream` 的游标；漏一个消费点就少、多一个就多。
+     用 `--rng-trace` 可以打印逐次消费的流水账。）
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 51，场上 8 个
+     #13 card_unit_hampshire_regiment @BoardFrontline#3 6/6 活着=True
+     #21 card_unit_no_46_commando @BoardFrontline#0 1/1 活着=True
+     #22 card_unit_no_46_commando @BoardHqLeft#2 1/1 活着=True
+     #25 card_unit_m3a3_honey_desert @BoardHqLeft#1 2/3 活着=True
+     #26 card_unit_m3a3_honey_desert @BoardFrontline#2 2/2 活着=True
+     #37 card_unit_2nd_west_africa @BoardFrontline#1 2/2 活着=True
+     #38 card_unit_2nd_west_africa @BoardHqLeft#4 1/2 活着=True
+     #40 card_unit_2nd_west_africa @BoardHqLeft#3 1/2 活着=True
+  right：HQ 4，场上 0 个
+
+=== 判读 ===
+  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。

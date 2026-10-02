@@ -1,0 +1,3871 @@
+{
+ "OnPlayedFromHand": {
+  "slots": {
+   "K2Node_Event_targetCard": {
+    "local": "targetCard",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 992
+   }
+  ]
+ },
+ "OnOtherCardPlayedFromHand": {
+  "slots": {
+   "K2Node_Event_cardPlayed": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardPlayed_1": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardPlayed_2": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 131
+   }
+  ]
+ },
+ "OnAfterOtherCardLeaveBoardOrOwner": {
+  "slots": {
+   "K2Node_Event_cardLeaving": {
+    "local": "cardLeaving",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_oldLocation": {
+    "local": "oldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_cardLeaving_1": {
+    "local": "cardLeaving",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "ECardLocationEnum"
+    ],
+    "cards": 25
+   }
+  ]
+ },
+ "OnCardDrawnFromDeck": {
+  "slots": {
+   "K2Node_Event_StartOfTurnDraw_1": {
+    "local": "StartOfTurnDraw",
+    "type": "Bool"
+   },
+   "K2Node_Event_drawnSide_1": {
+    "local": "drawnSide",
+    "type": "ESideEnum"
+   },
+   "K2Node_Event_StartOfTurnDraw": {
+    "local": "StartOfTurnDraw",
+    "type": "Bool"
+   },
+   "K2Node_Event_drawnSide": {
+    "local": "drawnSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool",
+     "ESideEnum"
+    ],
+    "cards": 22
+   }
+  ]
+ },
+ "OnCardSpawnedInHand": {
+  "slots": {
+   "K2Node_Event_spawnedSide_1": {
+    "local": "spawnedSide",
+    "type": "ESideEnum"
+   },
+   "K2Node_Event_spawnedSide": {
+    "local": "spawnedSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ESideEnum"
+    ],
+    "cards": 21
+   }
+  ]
+ },
+ "OnOtherCardDiscarded": {
+  "slots": {
+   "K2Node_Event_discardedCard": {
+    "local": "discardedCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_discarderID": {
+    "local": "discarderID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 9
+   }
+  ]
+ },
+ "OnOtherCardDrawnFromDeck": {
+  "slots": {
+   "K2Node_Event_drawnCardID": {
+    "local": "drawnCardID",
+    "type": "Int"
+   },
+   "K2Node_Event_StartOfTurnDraw": {
+    "local": "StartOfTurnDraw",
+    "type": "Bool"
+   },
+   "K2Node_Event_drawnSide": {
+    "local": "drawnSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Bool",
+     "ESideEnum"
+    ],
+    "cards": 43
+   }
+  ]
+ },
+ "OnOtherCardSpawnedInHand": {
+  "slots": {
+   "K2Node_Event_spawnedCardID": {
+    "local": "spawnedCardID",
+    "type": "Int"
+   },
+   "K2Node_Event_spawnedSide": {
+    "local": "spawnedSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "ESideEnum"
+    ],
+    "cards": 30
+   }
+  ]
+ },
+ "OnOtherCovertCardPlayedFromHand": {
+  "slots": {
+   "K2Node_Event_cardPlayed": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 15
+   }
+  ]
+ },
+ "OnStartOfTurn": {
+  "slots": {
+   "K2Node_Event_turnnumber": {
+    "local": "turnnumber",
+    "type": "Int"
+   },
+   "K2Node_Event_turnnumber_1": {
+    "local": "turnnumber",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 155
+   }
+  ]
+ },
+ "OnHandTargetSelected": {
+  "slots": {
+   "K2Node_Event_handTargetCardID": {
+    "local": "handTargetCardID",
+    "type": "Int"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 49
+   }
+  ]
+ },
+ "OnOtherCardForecasted": {
+  "slots": {
+   "K2Node_Event_cardDeveloped": {
+    "local": "cardDeveloped",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnAfterAttack": {
+  "slots": {
+   "K2Node_Event_defenderCard_1": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_wasShockAttack": {
+    "local": "wasShockAttack",
+    "type": "Bool"
+   },
+   "K2Node_Event_attackCost": {
+    "local": "attackCost",
+    "type": "Int"
+   },
+   "K2Node_Event_defenderCard": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_attackCost_1": {
+    "local": "attackCost",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool",
+     "Int"
+    ],
+    "cards": 40
+   }
+  ]
+ },
+ "OnBeforeAttack": {
+  "slots": {
+   "K2Node_Event_defenderCard": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_defenderCard_1": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 13
+   }
+  ]
+ },
+ "OnOtherCardBecomingVeteran": {
+  "slots": {
+   "K2Node_Event_cardBecomingVeteran": {
+    "local": "cardBecomingVeteran",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 9
+   }
+  ]
+ },
+ "OnAfterOtherCardMovedFromHandToDeck": {
+  "slots": {
+   "K2Node_Event_cardMoved": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnEnterPlay": {
+  "slots": {
+   "K2Node_Event_method": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_method_1": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_method_2": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_method_3": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "EOnEnterPlayMethod"
+    ],
+    "cards": 91
+   }
+  ]
+ },
+ "OnLeaveBoardOrOwner": {
+  "slots": {
+   "K2Node_Event_goingToLocation": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_leavePlayMethod": {
+    "local": "leavePlayMethod",
+    "type": "EOnLeavePlayMethod"
+   },
+   "K2Node_Event_goingToLocation_1": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_goingToLocation_2": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum",
+     "EOnLeavePlayMethod"
+    ],
+    "cards": 66
+   }
+  ]
+ },
+ "OnOtherCardReset": {
+  "slots": {
+   "K2Node_Event_cardReset": {
+    "local": "cardReset",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_resetCardID": {
+    "local": "resetCardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 39
+   }
+  ]
+ },
+ "OnBeforeOtherCardPlayedFromHand": {
+  "slots": {
+   "K2Node_Event_cardPlayed": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardPlayed_1": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 39
+   }
+  ]
+ },
+ "OnMoveToFrontline": {
+  "slots": {
+   "K2Node_Event_ForceMove_1": {
+    "local": "ForceMove",
+    "type": "Bool"
+   },
+   "K2Node_Event_moveCost_1": {
+    "local": "moveCost",
+    "type": "Int"
+   },
+   "K2Node_Event_ForceMove": {
+    "local": "ForceMove",
+    "type": "Bool"
+   },
+   "K2Node_Event_moveCost": {
+    "local": "moveCost",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool",
+     "Int"
+    ],
+    "cards": 29
+   }
+  ]
+ },
+ "OnOtherCardEnterPlay": {
+  "slots": {
+   "K2Node_Event_cardPlayed_1": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_method_2": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_cardPlayed": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_method": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_method_1": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "EOnEnterPlayMethod"
+    ],
+    "cards": 84
+   }
+  ]
+ },
+ "OnOtherCardLeaveBoardOrOwner": {
+  "slots": {
+   "K2Node_Event_cardLeaving": {
+    "local": "cardLeaving",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_goingToLocation": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_method": {
+    "local": "method",
+    "type": "EOnLeavePlayMethod"
+   },
+   "K2Node_Event_goingToLocation_1": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_method_1": {
+    "local": "method",
+    "type": "EOnLeavePlayMethod"
+   },
+   "K2Node_Event_cardLeaving_1": {
+    "local": "cardLeaving",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_method_2": {
+    "local": "method",
+    "type": "EOnLeavePlayMethod"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "ECardLocationEnum",
+     "EOnLeavePlayMethod"
+    ],
+    "cards": 40
+   }
+  ]
+ },
+ "OnOtherCardMoveFromFrontline": {
+  "slots": {
+   "K2Node_Event_cardMoved_1": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardMoved": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnOtherCardMoveToFrontline": {
+  "slots": {
+   "K2Node_Event_cardMoved": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_ForceMove": {
+    "local": "ForceMove",
+    "type": "Bool"
+   },
+   "K2Node_Event_moveCost": {
+    "local": "moveCost",
+    "type": "Int"
+   },
+   "K2Node_Event_ForceMove_1": {
+    "local": "ForceMove",
+    "type": "Bool"
+   },
+   "K2Node_Event_moveCost_1": {
+    "local": "moveCost",
+    "type": "Int"
+   },
+   "K2Node_Event_cardMoved_1": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool",
+     "Int"
+    ],
+    "cards": 19
+   }
+  ]
+ },
+ "OnEndOfTurn": {
+  "slots": {
+   "K2Node_Event_turnnumber_1": {
+    "local": "turnnumber",
+    "type": "Int"
+   },
+   "K2Node_Event_turnnumber": {
+    "local": "turnnumber",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 188
+   }
+  ]
+ },
+ "OnOtherCardKreditCostChanged": {
+  "slots": {
+   "K2Node_Event_cardChangingCost": {
+    "local": "cardChangingCost",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 4
+   }
+  ]
+ },
+ "BlowCardUpDelay": {
+  "slots": {
+   "K2Node_CustomEvent_delay_4": {
+    "local": "delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_blowUpLocation": {
+    "local": "blowUpLocation",
+    "type": "ECardLocationEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double",
+     "ECardLocationEnum"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BorderGlow": {
+  "slots": {
+   "K2Node_CustomEvent_borderGlowColor": {
+    "local": "borderGlowColor",
+    "type": "LinearColor"
+   },
+   "K2Node_Event_borderGlowColor": {
+    "local": "borderGlowColor",
+    "type": "LinearColor"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "LinearColor"
+    ],
+    "cards": 4
+   }
+  ]
+ },
+ "CardLocationChanged": {
+  "slots": {
+   "K2Node_CustomEvent_NewLocation": {
+    "local": "NewLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_CustomEvent_OldLocation": {
+    "local": "OldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_CustomEvent_NewLocationNumber": {
+    "local": "NewLocationNumber",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum",
+     "ECardLocationEnum",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "DamageCard": {
+  "slots": {
+   "K2Node_CustomEvent_damage": {
+    "local": "damage",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_attackerID": {
+    "local": "attackerID",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_fromAttack": {
+    "local": "fromAttack",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_oldDefense": {
+    "local": "oldDefense",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_wasShock": {
+    "local": "wasShock",
+    "type": "Bool"
+   },
+   "K2Node_Event_damage": {
+    "local": "damage",
+    "type": "Int"
+   },
+   "K2Node_Event_attackerID": {
+    "local": "attackerID",
+    "type": "Int"
+   },
+   "K2Node_Event_fromAttack": {
+    "local": "fromAttack",
+    "type": "Bool"
+   },
+   "K2Node_Event_oldDefense": {
+    "local": "oldDefense",
+    "type": "Int"
+   },
+   "K2Node_Event_wasShock": {
+    "local": "wasShock",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Bool",
+     "Int",
+     "Bool"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "DestroyPlaceholderCard": {
+  "slots": {
+   "K2Node_CustomEvent_cardID_1": {
+    "local": "cardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "FlyTo": {
+  "slots": {
+   "K2Node_CustomEvent_TargetTransform_1": {
+    "local": "TargetTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_Delay_2": {
+    "local": "Delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_Duration_1": {
+    "local": "Duration",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_UseCustomRotation_1": {
+    "local": "UseCustomRotation",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_CustomTargetRotation_1": {
+    "local": "CustomTargetRotation",
+    "type": "Rotator"
+   },
+   "K2Node_CustomEvent_useLift": {
+    "local": "useLift",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_targetTransform": {
+    "local": "targetTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_originalTransform": {
+    "local": "originalTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_rate": {
+    "local": "rate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_destroy": {
+    "local": "destroy",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_UseSeperateRotation": {
+    "local": "UseSeperateRotation",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_TargetRotation": {
+    "local": "TargetRotation",
+    "type": "Rotator"
+   },
+   "K2Node_CustomEvent_OriginalRotation": {
+    "local": "OriginalRotation",
+    "type": "Rotator"
+   },
+   "K2Node_CustomEvent_RotationRate": {
+    "local": "RotationRate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_OriginalZoffset": {
+    "local": "OriginalZoffset",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_TargetZoffset": {
+    "local": "TargetZoffset",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "Transform",
+     "Double",
+     "Bool",
+     "Bool",
+     "Rotator",
+     "Rotator",
+     "Double",
+     "Double",
+     "Double"
+    ],
+    "cards": 2
+   },
+   {
+    "types": [
+     "Transform",
+     "Double",
+     "Double",
+     "Bool",
+     "Rotator",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "GainAttack": {
+  "slots": {
+   "K2Node_CustomEvent_amount_3": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_newAttack": {
+    "local": "newAttack",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_isNeutral_1": {
+    "local": "isNeutral",
+    "type": "Bool"
+   },
+   "K2Node_Event_amount": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_newAttack": {
+    "local": "newAttack",
+    "type": "Int"
+   },
+   "K2Node_Event_isNeutral": {
+    "local": "isNeutral",
+    "type": "Bool"
+   },
+   "K2Node_Event_amount_1": {
+    "local": "amount",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Bool"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "GainDefense": {
+  "slots": {
+   "K2Node_CustomEvent_amount_1": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_amount": {
+    "local": "amount",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "HealCard": {
+  "slots": {
+   "K2Node_CustomEvent_amount_4": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_amount": {
+    "local": "amount",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "LoseAttack": {
+  "slots": {
+   "K2Node_CustomEvent_amount_2": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_giverID": {
+    "local": "giverID",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_isNeutral": {
+    "local": "isNeutral",
+    "type": "Bool"
+   },
+   "K2Node_Event_amount_1": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_giverID": {
+    "local": "giverID",
+    "type": "Int"
+   },
+   "K2Node_Event_isNeutral_1": {
+    "local": "isNeutral",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Bool"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "MoveCardBack": {
+  "slots": {
+   "K2Node_CustomEvent_TargetTransform": {
+    "local": "TargetTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_Delay_1": {
+    "local": "Delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_Duration": {
+    "local": "Duration",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_UseCustomRotation": {
+    "local": "UseCustomRotation",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_CustomTargetRotation": {
+    "local": "CustomTargetRotation",
+    "type": "Rotator"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "Double",
+     "Double",
+     "Bool",
+     "Rotator"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "MoveToDeck": {
+  "slots": {
+   "K2Node_CustomEvent_moveToOppositeDeck": {
+    "local": "moveToOppositeDeck",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_delay": {
+    "local": "delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_xOffset": {
+    "local": "xOffset",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_fromOppositeHand": {
+    "local": "fromOppositeHand",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool",
+     "Double",
+     "Double",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "MoveUnitFromHand": {
+  "slots": {
+   "K2Node_CustomEvent_Destination": {
+    "local": "Destination",
+    "type": "Transform"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnActorClicked": {
+  "slots": {
+   "K2Node_Event_IsPrecise": {
+    "local": "IsPrecise",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 11
+   }
+  ]
+ },
+ "OnCardFinishedGoingToDeck": {
+  "slots": {
+   "K2Node_CustomEvent_CardReference": {
+    "local": "CardReference",
+    "type": "BP_BaseCard_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_BaseCard_C"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnCardFinishedPreviewing": {
+  "slots": {
+   "K2Node_CustomEvent_CardReference_1": {
+    "local": "CardReference",
+    "type": "BP_BaseCard_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_BaseCard_C"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnCardPLayedFromHand": {
+  "slots": {
+   "K2Node_CustomEvent_cardID_2": {
+    "local": "cardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OperationCostChanged": {
+  "slots": {
+   "K2Node_CustomEvent_amount": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_changeType": {
+    "local": "changeType",
+    "type": "String"
+   },
+   "K2Node_Event_amount_2": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_changeType": {
+    "local": "changeType",
+    "type": "String"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "String"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "PlaceHandCard": {
+  "slots": {
+   "K2Node_CustomEvent_locationNumber": {
+    "local": "locationNumber",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_targetCardID": {
+    "local": "targetCardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "PlayOrderEffect": {
+  "slots": {
+   "K2Node_CustomEvent_delay_3": {
+    "local": "delay",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ReceiveEndPlay": {
+  "slots": {
+   "K2Node_Event_EndPlayReason": {
+    "local": "EndPlayReason",
+    "type": "EEndPlayReason"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "EEndPlayReason"
+    ],
+    "cards": 6
+   }
+  ]
+ },
+ "ReceiveTick": {
+  "slots": {
+   "K2Node_Event_DeltaSeconds": {
+    "local": "DeltaSeconds",
+    "type": "Float"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Float"
+    ],
+    "cards": 6
+   }
+  ]
+ },
+ "SalvageBlownUp": {
+  "slots": {
+   "K2Node_CustomEvent_location": {
+    "local": "location",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_CustomEvent_cardID": {
+    "local": "cardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "SetCardOpacity": {
+  "slots": {
+   "K2Node_CustomEvent_opacity": {
+    "local": "opacity",
+    "type": "Double"
+   },
+   "K2Node_Event_opacity": {
+    "local": "opacity",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "SetDefense": {
+  "slots": {
+   "K2Node_CustomEvent_defense": {
+    "local": "defense",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "SpawnFly": {
+  "slots": {
+   "K2Node_CustomEvent_transform": {
+    "local": "transform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_location_1": {
+    "local": "location",
+    "type": "ECardLocationEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "ECardLocationEnum"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "SpawnShowcasecard": {
+  "slots": {
+   "K2Node_CustomEvent_CardReference_2": {
+    "local": "CardReference",
+    "type": "BP_BaseCard_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_BaseCard_C"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "WaitOnBoard": {
+  "slots": {
+   "K2Node_CustomEvent_location_2": {
+    "local": "location",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_CustomEvent_locationNumber_1": {
+    "local": "locationNumber",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ConvertBoardCard": {
+  "slots": {
+   "K2Node_CustomEvent_newCardID": {
+    "local": "newCardID",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_index": {
+    "local": "index",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "InitLook": {
+  "slots": {
+   "K2Node_CustomEvent_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_reInit": {
+    "local": "reInit",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_name": {
+    "local": "name",
+    "type": "Name"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool"
+    ],
+    "cards": 2
+   },
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   },
+   {
+    "types": [
+     "Name"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnCardFinishedFlying": {
+  "slots": {
+   "K2Node_CustomEvent_CardReference": {
+    "local": "CardReference",
+    "type": "BP_BaseCard_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_BaseCard_C"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "SetAttackWarningBlink": {
+  "slots": {
+   "K2Node_CustomEvent_on": {
+    "local": "on",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ShockRecoil": {
+  "slots": {
+   "K2Node_CustomEvent_attackerID": {
+    "local": "attackerID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ShowcaseCardAnimation": {
+  "slots": {
+   "K2Node_CustomEvent_showcaseCard": {
+    "local": "showcaseCard",
+    "type": "BP_HandCardLook_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_HandCardLook_C"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "Tap": {
+  "slots": {
+   "K2Node_CustomEvent_tapLocation": {
+    "local": "tapLocation",
+    "type": "Vector2D"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Vector2D"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "AddToTriggerQueue": {
+  "slots": {
+   "K2Node_Event_Card": {
+    "local": "Card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "GiveStarForCampaign": {
+  "slots": {
+   "K2Node_Event_number": {
+    "local": "number",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ReportKreditTampering": {
+  "slots": {
+   "K2Node_CustomEvent_reportReason": {
+    "local": "reportReason",
+    "type": "String"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "String"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ReportTampering": {
+  "slots": {
+   "K2Node_Event_reportReason": {
+    "local": "reportReason",
+    "type": "String"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "String"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ShowCampaignMessage": {
+  "slots": {
+   "K2Node_Event_message_1": {
+    "local": "message",
+    "type": "Text"
+   },
+   "K2Node_Event_showOnce": {
+    "local": "showOnce",
+    "type": "Bool"
+   },
+   "K2Node_Event_showMulliganWhenFinished": {
+    "local": "showMulliganWhenFinished",
+    "type": "Bool"
+   },
+   "K2Node_Event_delay": {
+    "local": "delay",
+    "type": "Float"
+   },
+   "K2Node_Event_startOfGamea": {
+    "local": "startOfGamea",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Text",
+     "Bool",
+     "Bool",
+     "Float",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "UpdateCampaignStarStatus": {
+  "slots": {
+   "K2Node_Event_star": {
+    "local": "star",
+    "type": "Int"
+   },
+   "K2Node_Event_message": {
+    "local": "message",
+    "type": "Text"
+   },
+   "K2Node_Event_starStatus": {
+    "local": "starStatus",
+    "type": "ECampaignStarStatus"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Text",
+     "ECampaignStarStatus"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "RenderCard": {
+  "slots": {
+   "K2Node_CustomEvent_Card": {
+    "local": "Card",
+    "type": "RenderCardData"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "RenderCardData"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "hoverEffect": {
+  "slots": {
+   "K2Node_CustomEvent_HoverEnter": {
+    "local": "HoverEnter",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "HandleCardCreatedForChooseToSpawn": {
+  "slots": {
+   "K2Node_CustomEvent_CreatedCardID": {
+    "local": "CreatedCardID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "PreviewCardAndRemove": {
+  "slots": {
+   "K2Node_CustomEvent_previewTime": {
+    "local": "previewTime",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_cancelRemove": {
+    "local": "cancelRemove",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_gotcha": {
+    "local": "gotcha",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_scrying": {
+    "local": "scrying",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double",
+     "Bool",
+     "Bool"
+    ],
+    "cards": 1
+   },
+   {
+    "types": [
+     "Double",
+     "Bool",
+     "Bool",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "spawnArrow": {
+  "slots": {
+   "K2Node_CustomEvent_CardReference": {
+    "local": "CardReference",
+    "type": "BP_BaseCard_C"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BP_BaseCard_C"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnCardTapped": {
+  "slots": {
+   "K2Node_CustomEvent_TappedActor": {
+    "local": "TappedActor",
+    "type": "Actor"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Actor"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "PageFlipAnimation": {
+  "slots": {
+   "K2Node_CustomEvent_index": {
+    "local": "index",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_right": {
+    "local": "right",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "UnblockFlyingAfterDelay": {
+  "slots": {
+   "K2Node_CustomEvent_delay": {
+    "local": "delay",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "UpdateBarContainer": {
+  "slots": {
+   "K2Node_CustomEvent_numItems": {
+    "local": "numItems",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "UpdateLocation": {
+  "slots": {
+   "K2Node_CustomEvent_GoalY": {
+    "local": "GoalY",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ConvertHandCard": {
+  "slots": {
+   "K2Node_CustomEvent_newCardID": {
+    "local": "newCardID",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_index": {
+    "local": "index",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_fromDeck": {
+    "local": "fromDeck",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "GoUp": {
+  "slots": {
+   "K2Node_CustomEvent_rate": {
+    "local": "rate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_targetTransform": {
+    "local": "targetTransform",
+    "type": "Transform"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double",
+     "Transform"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "MoveToHandAfterDraw": {
+  "slots": {
+   "K2Node_CustomEvent_delay_1": {
+    "local": "delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_enemySide": {
+    "local": "enemySide",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "MulliganHover": {
+  "slots": {
+   "K2Node_CustomEvent_hoverEnter": {
+    "local": "hoverEnter",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnGlobalMouseUp_Event": {
+  "slots": {
+   "K2Node_CustomEvent_mousePosition": {
+    "local": "mousePosition",
+    "type": "Vector2D"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Vector2D"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "PlayCardDrawSoundMulligan": {
+  "slots": {
+   "K2Node_CustomEvent_delay_2": {
+    "local": "delay",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "selectBeforePlayToBoardFromSocket": {
+  "slots": {
+   "K2Node_CustomEvent_locationNumber": {
+    "local": "locationNumber",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "showCardAndStay": {
+  "slots": {
+   "K2Node_CustomEvent_delayTime": {
+    "local": "delayTime",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_position_1": {
+    "local": "position",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_side_1": {
+    "local": "side",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double",
+     "Int",
+     "ESideEnum"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ShowcaseCardWithDelay": {
+  "slots": {
+   "K2Node_CustomEvent_delay": {
+    "local": "delay",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "shuffleIntoDeck": {
+  "slots": {
+   "K2Node_CustomEvent_position": {
+    "local": "position",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_side": {
+    "local": "side",
+    "type": "ESideEnum"
+   },
+   "K2Node_CustomEvent_deckSpawnLocation": {
+    "local": "deckSpawnLocation",
+    "type": "EnumSpawnInDeckLocation"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "ESideEnum",
+     "EnumSpawnInDeckLocation"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "MulliganZoom": {
+  "slots": {
+   "K2Node_CustomEvent_ZoomEnter": {
+    "local": "ZoomEnter",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnLoaded_9DFF31D4488E0353A9F92CADF4D0252E": {
+  "slots": {
+   "K2Node_CustomEvent_Loaded": {
+    "local": "Loaded",
+    "type": "Object"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Object"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "SetCardback": {
+  "slots": {
+   "K2Node_CustomEvent_Texture": {
+    "local": "Texture",
+    "type": "Texture2D"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Texture2D"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "SimpleFlyTo": {
+  "slots": {
+   "K2Node_CustomEvent_originalTransform": {
+    "local": "originalTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_targetTransform": {
+    "local": "targetTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_rate": {
+    "local": "rate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_delayBefore": {
+    "local": "delayBefore",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "Transform",
+     "Double",
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnCarouselStateChanged": {
+  "slots": {
+   "K2Node_CustomEvent_bIsScrolling": {
+    "local": "bIsScrolling",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_Offset": {
+    "local": "Offset",
+    "type": "Int"
+   },
+   "K2Node_CustomEvent_NewXOffset": {
+    "local": "NewXOffset",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool",
+     "Int",
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "Ready": {
+  "slots": {
+   "K2Node_CustomEvent_Origin": {
+    "local": "Origin",
+    "type": "Vector"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Vector"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "ReuseCard": {
+  "slots": {
+   "K2Node_CustomEvent_cardObject": {
+    "local": "cardObject",
+    "type": "BaseCardObject"
+   },
+   "K2Node_CustomEvent_bIsReferenceCard": {
+    "local": "bIsReferenceCard",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_bFacedown": {
+    "local": "bFacedown",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_bIsEnemy": {
+    "local": "bIsEnemy",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_bAnimate": {
+    "local": "bAnimate",
+    "type": "Bool"
+   },
+   "K2Node_CustomEvent_delay": {
+    "local": "delay",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_Scale": {
+    "local": "Scale",
+    "type": "Vector"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool",
+     "Bool",
+     "Bool",
+     "Bool",
+     "Double",
+     "Vector"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "CheckIfWasTapped": {
+  "slots": {
+   "K2Node_CustomEvent_TappedActor": {
+    "local": "TappedActor",
+    "type": "Actor"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Actor"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "FlyOffScreen": {
+  "slots": {
+   "K2Node_CustomEvent_offscreenTransform": {
+    "local": "offscreenTransform",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_playRate": {
+    "local": "playRate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_playRate_1": {
+    "local": "playRate",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "Double"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "PlayCamerashake": {
+  "slots": {
+   "K2Node_CustomEvent_rarity_1": {
+    "local": "rarity",
+    "type": "ERarityEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ERarityEnum"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "SetRotationSpeed": {
+  "slots": {
+   "K2Node_CustomEvent_rarity": {
+    "local": "rarity",
+    "type": "ERarityEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ERarityEnum"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "FlyOnScreen": {
+  "slots": {
+   "K2Node_CustomEvent_Offscreen_Location": {
+    "local": "Offscreen Location",
+    "type": "Transform"
+   },
+   "K2Node_CustomEvent_playRate": {
+    "local": "playRate",
+    "type": "Double"
+   },
+   "K2Node_CustomEvent_delay": {
+    "local": "delay",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Transform",
+     "Double",
+     "Double"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "PlayWithADelay": {
+  "slots": {
+   "K2Node_CustomEvent_Duration": {
+    "local": "Duration",
+    "type": "Double"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Double"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnAfterOtherCardAttacks": {
+  "slots": {
+   "K2Node_Event_defenderCard": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_attackerCard": {
+    "local": "attackerCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_damageToDefender": {
+    "local": "damageToDefender",
+    "type": "Int"
+   },
+   "K2Node_Event_attackCost": {
+    "local": "attackCost",
+    "type": "Int"
+   },
+   "K2Node_Event_defenderCard_1": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_attackCost_1": {
+    "local": "attackCost",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject",
+     "Int",
+     "Int"
+    ],
+    "cards": 23
+   }
+  ]
+ },
+ "OnOtherCardAbilitiesChanged": {
+  "slots": {
+   "K2Node_Event_cardChanging": {
+    "local": "cardChanging",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 11
+   }
+  ]
+ },
+ "OnOtherCardDestroyed": {
+  "slots": {
+   "K2Node_Event_cardDestroyed": {
+    "local": "cardDestroyed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_killer": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_destroyedLocation": {
+    "local": "destroyedLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_selfIsAlsoGettingDestroyed": {
+    "local": "selfIsAlsoGettingDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_destroyedInCombat": {
+    "local": "destroyedInCombat",
+    "type": "Bool"
+   },
+   "K2Node_Event_cardDestroyed_1": {
+    "local": "cardDestroyed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_killer_1": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_1": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_destroyedInCombat_1": {
+    "local": "destroyedInCombat",
+    "type": "Bool"
+   },
+   "K2Node_Event_killer_2": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_2": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject",
+     "Bool",
+     "ECardLocationEnum",
+     "Bool",
+     "Bool"
+    ],
+    "cards": 69
+   }
+  ]
+ },
+ "OnOtherUnitPinned": {
+  "slots": {
+   "K2Node_Event_cardBeingPinned": {
+    "local": "cardBeingPinned",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnAfterOtherCardChangeAttack": {
+  "slots": {
+   "K2Node_Event_cardChanged": {
+    "local": "cardChanged",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_changedAmount": {
+    "local": "changedAmount",
+    "type": "Int"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int",
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnAfterLeaveBoard": {
+  "slots": {
+   "K2Node_Event_goingToLocation": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_goingToLocation_1": {
+    "local": "goingToLocation",
+    "type": "ECardLocationEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum"
+    ],
+    "cards": 12
+   }
+  ]
+ },
+ "OnOtherUnitUnpinned": {
+  "slots": {
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnSurvivedCombat": {
+  "slots": {
+   "K2Node_Event_cardCombated": {
+    "local": "cardCombated",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardCombated_1": {
+    "local": "cardCombated",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 9
+   }
+  ]
+ },
+ "OnOtherCardSurvivedCombat": {
+  "slots": {
+   "K2Node_Event_survivor": {
+    "local": "survivor",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_cardCombated": {
+    "local": "cardCombated",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject"
+    ],
+    "cards": 6
+   }
+  ]
+ },
+ "OnBeforeOtherCardAttacks": {
+  "slots": {
+   "K2Node_Event_cardAttacking": {
+    "local": "cardAttacking",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_defenderCard": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_defenderCard_1": {
+    "local": "defenderCard",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject"
+    ],
+    "cards": 8
+   }
+  ]
+ },
+ "OnOtherCardDealDamage": {
+  "slots": {
+   "K2Node_Event_cardDealingDamage": {
+    "local": "cardDealingDamage",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_toCard": {
+    "local": "toCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_damage": {
+    "local": "damage",
+    "type": "Int"
+   },
+   "K2Node_Event_isCombatDamage": {
+    "local": "isCombatDamage",
+    "type": "Bool"
+   },
+   "K2Node_Event_CounterDamage": {
+    "local": "CounterDamage",
+    "type": "Bool"
+   },
+   "K2Node_Event_isRedirected": {
+    "local": "isRedirected",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject",
+     "Int",
+     "Bool",
+     "Bool",
+     "Bool"
+    ],
+    "cards": 27
+   }
+  ]
+ },
+ "OnPincerEffectApplied": {
+  "slots": {
+   "K2Node_Event_card_1": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_card_2": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 15
+   }
+  ]
+ },
+ "OnPincerEffectRemoved": {
+  "slots": {
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_card_1": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 13
+   }
+  ]
+ },
+ "OnCardLocationMoved": {
+  "slots": {
+   "K2Node_Event_oldLocation": {
+    "local": "oldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_newLocation": {
+    "local": "newLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_ChangeOwner": {
+    "local": "ChangeOwner",
+    "type": "Bool"
+   },
+   "K2Node_Event_MoveReason": {
+    "local": "MoveReason",
+    "type": "String"
+   },
+   "K2Node_Event_oldLocation_1": {
+    "local": "oldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_newLocation_1": {
+    "local": "newLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_ChangeOwner_1": {
+    "local": "ChangeOwner",
+    "type": "Bool"
+   },
+   "K2Node_Event_MoveReason_1": {
+    "local": "MoveReason",
+    "type": "String"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ECardLocationEnum",
+     "ECardLocationEnum",
+     "Bool",
+     "String"
+    ],
+    "cards": 23
+   }
+  ]
+ },
+ "OnOtherCardLocationMoved": {
+  "slots": {
+   "K2Node_Event_cardMoved": {
+    "local": "cardMoved",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_oldLocation_1": {
+    "local": "oldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_newLocation_1": {
+    "local": "newLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_ChangeOwner_1": {
+    "local": "ChangeOwner",
+    "type": "Bool"
+   },
+   "K2Node_Event_MoveReason_1": {
+    "local": "MoveReason",
+    "type": "String"
+   },
+   "K2Node_Event_oldLocation": {
+    "local": "oldLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_newLocation": {
+    "local": "newLocation",
+    "type": "ECardLocationEnum"
+   },
+   "K2Node_Event_ChangeOwner": {
+    "local": "ChangeOwner",
+    "type": "Bool"
+   },
+   "K2Node_Event_MoveReason": {
+    "local": "MoveReason",
+    "type": "String"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "ECardLocationEnum",
+     "ECardLocationEnum",
+     "Bool",
+     "String"
+    ],
+    "cards": 14
+   }
+  ]
+ },
+ "OnOtherCardSuppressed": {
+  "slots": {
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_card_1": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 19
+   }
+  ]
+ },
+ "OnOtherCardReceiveDamage": {
+  "slots": {
+   "K2Node_Event_fromCard": {
+    "local": "fromCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_toCard": {
+    "local": "toCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_fromAttack": {
+    "local": "fromAttack",
+    "type": "Bool"
+   },
+   "K2Node_Event_damage": {
+    "local": "damage",
+    "type": "Int"
+   },
+   "K2Node_Event_toCard_1": {
+    "local": "toCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_damage_1": {
+    "local": "damage",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject",
+     "Bool",
+     "Int"
+    ],
+    "cards": 8
+   }
+  ]
+ },
+ "OnIntelTriggered": {
+  "slots": {
+   "K2Node_Event_intelCard": {
+    "local": "intelCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_intelValue": {
+    "local": "intelValue",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 6
+   }
+  ]
+ },
+ "OnDestroyed": {
+  "slots": {
+   "K2Node_Event_killer": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_killer_1": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_1": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool"
+    ],
+    "cards": 79
+   }
+  ]
+ },
+ "OnAfterDeckChanged": {
+  "slots": {
+   "K2Node_Event_deckSide": {
+    "local": "deckSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ESideEnum"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnFrontlineOwnershipChange": {
+  "slots": {
+   "K2Node_Event_instigator": {
+    "local": "instigator",
+    "type": "Int"
+   },
+   "K2Node_Event_oldSide": {
+    "local": "oldSide",
+    "type": "ESideEnum"
+   },
+   "K2Node_Event_newSide": {
+    "local": "newSide",
+    "type": "ESideEnum"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "ESideEnum",
+     "ESideEnum"
+    ],
+    "cards": 28
+   }
+  ]
+ },
+ "OnAfterGainDefense": {
+  "slots": {
+   "K2Node_Event_defenseGained": {
+    "local": "defenseGained",
+    "type": "Int"
+   },
+   "K2Node_Event_defenseGained_1": {
+    "local": "defenseGained",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 11
+   }
+  ]
+ },
+ "OnReceiveDamage": {
+  "slots": {
+   "K2Node_Event_fromCard": {
+    "local": "fromCard",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_damage": {
+    "local": "damage",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 15
+   }
+  ]
+ },
+ "OnCardRecycled": {
+  "slots": {
+   "K2Node_CustomEvent_cardName": {
+    "local": "cardName",
+    "type": "Name"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Name"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnFocusChanged": {
+  "slots": {
+   "K2Node_Event_bIsFocused": {
+    "local": "bIsFocused",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "refreshViewAfterCreation": {
+  "slots": {
+   "K2Node_CustomEvent_cardName_1": {
+    "local": "cardName",
+    "type": "Name"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Name"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnDeckShuffled": {
+  "slots": {
+   "K2Node_Event_deckSide": {
+    "local": "deckSide",
+    "type": "ESideEnum"
+   },
+   "K2Node_Event_instigatorCard": {
+    "local": "instigatorCard",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "ESideEnum",
+     "BaseCardObject"
+    ],
+    "cards": 5
+   }
+  ]
+ },
+ "OnAfterOtherCardGainDefense": {
+  "slots": {
+   "K2Node_Event_cardGainingDefense": {
+    "local": "cardGainingDefense",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_defenseGained": {
+    "local": "defenseGained",
+    "type": "Int"
+   },
+   "K2Node_Event_defenseGained_1": {
+    "local": "defenseGained",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 8
+   }
+  ]
+ },
+ "OnOtherCardRevealed": {
+  "slots": {
+   "K2Node_Event_cardBeingRevealed": {
+    "local": "cardBeingRevealed",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 5
+   }
+  ]
+ },
+ "OnAfterOtherCardSuppressed": {
+  "slots": {
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 4
+   }
+  ]
+ },
+ "OnBeforeOtherCardDestroyed": {
+  "slots": {
+   "K2Node_Event_cardDestroyed": {
+    "local": "cardDestroyed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_killer": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_destroyedInCombat": {
+    "local": "destroyedInCombat",
+    "type": "Bool"
+   },
+   "K2Node_Event_cardDestroyed_1": {
+    "local": "cardDestroyed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_killer_1": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_1": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_destroyedInCombat_1": {
+    "local": "destroyedInCombat",
+    "type": "Bool"
+   },
+   "K2Node_Event_killer_3": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_3": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "BaseCardObject",
+     "Bool",
+     "Bool"
+    ],
+    "cards": 6
+   }
+  ]
+ },
+ "OnOtherCardBlitzChanged": {
+  "slots": {
+   "K2Node_Event_cardChanged": {
+    "local": "cardChanged",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnOtherCardConverted": {
+  "slots": {
+   "K2Node_Event_oldCardIDs": {
+    "local": "oldCardIDs",
+    "type": "Int"
+   },
+   "K2Node_Event_newCardIDs": {
+    "local": "newCardIDs",
+    "type": "Int"
+   },
+   "K2Node_Event_newCardName": {
+    "local": "newCardName",
+    "type": "Name"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Name",
+     "Int"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnAfterChangeAttack": {
+  "slots": {
+   "K2Node_Event_changedAmount": {
+    "local": "changedAmount",
+    "type": "Int"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnOtherCardOperationKreditsSpent": {
+  "slots": {
+   "K2Node_Event_cardOperated": {
+    "local": "cardOperated",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_kreditsSpent": {
+    "local": "kreditsSpent",
+    "type": "Int"
+   },
+   "K2Node_Event_kreditsSpent_1": {
+    "local": "kreditsSpent",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnOperationKreditsSpent": {
+  "slots": {
+   "K2Node_Event_kreditsSpent_1": {
+    "local": "kreditsSpent",
+    "type": "Int"
+   },
+   "K2Node_Event_kreditsSpent": {
+    "local": "kreditsSpent",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 2
+   }
+  ]
+ },
+ "OnOtherCovertCardSpawned": {
+  "slots": {
+   "K2Node_Event_cardSpawned": {
+    "local": "cardSpawned",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnAfterExtraKreditSlotGain": {
+  "slots": {
+   "K2Node_Event_cardGivingKredit": {
+    "local": "cardGivingKredit",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_sideGaining": {
+    "local": "sideGaining",
+    "type": "ESideEnum"
+   },
+   "K2Node_Event_isNegativeGain": {
+    "local": "isNegativeGain",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "ESideEnum",
+     "Bool"
+    ],
+    "cards": 12
+   }
+  ]
+ },
+ "OnOtherCardCreatedAlterCard": {
+  "slots": {
+   "K2Node_Event_cardPlayed": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_method": {
+    "local": "method",
+    "type": "EOnEnterPlayMethod"
+   },
+   "K2Node_Event_cardPlayed_1": {
+    "local": "cardPlayed",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "EOnEnterPlayMethod"
+    ],
+    "cards": 11
+   }
+  ]
+ },
+ "OnAfterOtherCardDefenseIsSet": {
+  "slots": {
+   "K2Node_Event_cardDefenseSet": {
+    "local": "cardDefenseSet",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnSuccesfulDiscard": {
+  "slots": {
+   "K2Node_Event_discarderID": {
+    "local": "discarderID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnAfterDestroyed": {
+  "slots": {
+   "K2Node_Event_killer": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   },
+   "K2Node_Event_killer_2": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_2": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnOtherCardLoseSmokescreen": {
+  "slots": {
+   "K2Node_Event_card": {
+    "local": "card",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 3
+   }
+  ]
+ },
+ "OnOtherCardSalvaged": {
+  "slots": {
+   "K2Node_Event_cardSalvagedID": {
+    "local": "cardSalvagedID",
+    "type": "Int"
+   },
+   "K2Node_Event_newCardSalvagedID": {
+    "local": "newCardSalvagedID",
+    "type": "Int"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnFullyRepaired": {
+  "slots": {
+   "K2Node_Event_amount": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_amount_1": {
+    "local": "amount",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int"
+    ],
+    "cards": 10
+   }
+  ]
+ },
+ "onOtherCardSentFromHandToDeck": {
+  "slots": {
+   "K2Node_Event_cardMoving": {
+    "local": "cardMoving",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_DebugLogCheck_K2Node_ComponentBoundEvent_7_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_8": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_DisableRetainerCheck_K2Node_ComponentBoundEvent_12_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_3": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_DoubleCheck_K2Node_ComponentBoundEvent_3_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_11": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_EditableTextBox_41_K2Node_ComponentBoundEvent_18_OnEditableTextBoxChangedEvent__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_Text_1": {
+    "local": "Text",
+    "type": "Text"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Text"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_EditableTextBox_K2Node_ComponentBoundEvent_19_OnEditableTextBoxChangedEvent__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_Text": {
+    "local": "Text",
+    "type": "Text"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Text"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_ForceMObileCheck_K2Node_ComponentBoundEvent_9_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_6": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_ForcePCCheck_K2Node_ComponentBoundEvent_10_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_5": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_GenerateMipsCheck_K2Node_ComponentBoundEvent_11_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_4": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_GoldCard_K2Node_ComponentBoundEvent_5_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_9": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_GreyScaleCard_K2Node_ComponentBoundEvent_4_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_10": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_LightCheck_1_K2Node_ComponentBoundEvent_16_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_LightCheck_K2Node_ComponentBoundEvent_14_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_1": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_RTCheck_K2Node_ComponentBoundEvent_8_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_7": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_ShowChanges_K2Node_ComponentBoundEvent_13_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_2": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_SpinCheck_K2Node_ComponentBoundEvent_2_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_12": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "BndEvt__WBP_DebugRenderer_UseCacheCheck_K2Node_ComponentBoundEvent_1_CheckStateChanged__DelegateSignature": {
+  "slots": {
+   "K2Node_ComponentBoundEvent_IsChecked_13": {
+    "local": "IsChecked",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnAfterOtherCardOperactionCostBuffsReset": {
+  "slots": {
+   "K2Node_Event_cardToChange": {
+    "local": "cardToChange",
+    "type": "Int"
+   },
+   "K2Node_Event_instigator": {
+    "local": "instigator",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnBeforeDestroyed": {
+  "slots": {
+   "K2Node_Event_killer_1": {
+    "local": "killer",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_TriggerNotDestroyed_1": {
+    "local": "TriggerNotDestroyed",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnPincerEffectReceived": {
+  "slots": {
+   "K2Node_Event_PincerGiver": {
+    "local": "PincerGiver",
+    "type": "BaseCardObject"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnOtherCardFullyRepaired": {
+  "slots": {
+   "K2Node_Event_cardRepaired": {
+    "local": "cardRepaired",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_amount_1": {
+    "local": "amount",
+    "type": "Int"
+   },
+   "K2Node_Event_amount": {
+    "local": "amount",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 5
+   }
+  ]
+ },
+ "OnOtherCardDeveloped": {
+  "slots": {
+   "K2Node_Event_cardDeveloped": {
+    "local": "cardDeveloped",
+    "type": "BaseCardObject"
+   },
+   "K2Node_Event_instigatorID": {
+    "local": "instigatorID",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "BaseCardObject",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnAfterOtherCardOperactionCostChanged": {
+  "slots": {
+   "K2Node_Event_cardToChange": {
+    "local": "cardToChange",
+    "type": "Int"
+   },
+   "K2Node_Event_instigator": {
+    "local": "instigator",
+    "type": "Int"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Int",
+     "Int"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnAddedToFocusPath": {
+  "slots": {
+   "K2Node_Event_InFocusEvent_1": {
+    "local": "InFocusEvent",
+    "type": "FocusEvent"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "FocusEvent"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "OnRemovedFromFocusPath": {
+  "slots": {
+   "K2Node_Event_InFocusEvent": {
+    "local": "InFocusEvent",
+    "type": "FocusEvent"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "FocusEvent"
+    ],
+    "cards": 1
+   }
+  ]
+ },
+ "PreConstruct": {
+  "slots": {
+   "K2Node_Event_IsDesignTime": {
+    "local": "IsDesignTime",
+    "type": "Bool"
+   }
+  },
+  "shapes": [
+   {
+    "types": [
+     "Bool"
+    ],
+    "cards": 1
+   }
+  ]
+ }
+}

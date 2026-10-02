@@ -1,0 +1,302 @@
+[
+ {
+  "fn": "HasCampaignUpgrade",
+  "calls": 192,
+  "cards": 38,
+  "refLine": 1319
+ },
+ {
+  "fn": "CustomName2HasAttribute",
+  "calls": 108,
+  "cards": 40,
+  "refLine": 1088
+ },
+ {
+  "fn": "CustomName2Add",
+  "calls": 88,
+  "cards": 44,
+  "refLine": 1307
+ },
+ {
+  "fn": "CampaignAddKreditCost",
+  "calls": 79,
+  "cards": 52,
+  "refLine": 1589
+ },
+ {
+  "fn": "CampaignAddAttack",
+  "calls": 59,
+  "cards": 37,
+  "refLine": 1586
+ },
+ {
+  "fn": "CampaignAddDefense",
+  "calls": 59,
+  "cards": 36,
+  "refLine": 1587
+ },
+ {
+  "fn": "ShouldGotchaTrigger",
+  "calls": 36,
+  "cards": 36,
+  "refLine": 1348
+ },
+ {
+  "fn": "getAndDecryptAttack",
+  "calls": 33,
+  "cards": 23,
+  "refLine": 1098
+ },
+ {
+  "fn": "IsUnrevealedCovertCard",
+  "calls": 28,
+  "cards": 18,
+  "refLine": 1073
+ },
+ {
+  "fn": "CustomName2Remove",
+  "calls": 24,
+  "cards": 19,
+  "refLine": 1500
+ },
+ {
+  "fn": "CampaignAddBlitz",
+  "calls": 23,
+  "cards": 23,
+  "refLine": 1612
+ },
+ {
+  "fn": "IsBomber",
+  "calls": 19,
+  "cards": 13,
+  "refLine": 1016
+ },
+ {
+  "fn": "CampaignAddOpCost",
+  "calls": 19,
+  "cards": 17,
+  "refLine": 1604
+ },
+ {
+  "fn": "getCardsBuffedByThisCard",
+  "calls": 18,
+  "cards": 17,
+  "refLine": 1399
+ },
+ {
+  "fn": "GetCustomName2Attributes",
+  "calls": 17,
+  "cards": 6,
+  "refLine": 1639
+ },
+ {
+  "fn": "CampaignAddAmbush",
+  "calls": 16,
+  "cards": 16,
+  "refLine": 1611
+ },
+ {
+  "fn": "IsPinned",
+  "calls": 16,
+  "cards": 16,
+  "refLine": 1341
+ },
+ {
+  "fn": "IsFighter",
+  "calls": 15,
+  "cards": 11,
+  "refLine": 1015
+ },
+ {
+  "fn": "CampaignAddGuard",
+  "calls": 14,
+  "cards": 14,
+  "refLine": 1614
+ },
+ {
+  "fn": "CustomName1Add",
+  "calls": 14,
+  "cards": 13,
+  "refLine": 1498
+ },
+ {
+  "fn": "IsExile",
+  "calls": 13,
+  "cards": 6,
+  "refLine": 1106
+ },
+ {
+  "fn": "IsGotcha",
+  "calls": 13,
+  "cards": 11,
+  "refLine": 1342
+ },
+ {
+  "fn": "CampaignAddSmokescreen",
+  "calls": 10,
+  "cards": 10,
+  "refLine": 1616
+ },
+ {
+  "fn": "RemovePin",
+  "calls": 10,
+  "cards": 9,
+  "refLine": 1827
+ },
+ {
+  "fn": "Get Is Server Config",
+  "calls": 9,
+  "cards": 5,
+  "refLine": 1356
+ },
+ {
+  "fn": "getKreditTempBuffAmount",
+  "calls": 9,
+  "cards": 5,
+  "refLine": 1380
+ },
+ {
+  "fn": "CustomName1HasAttribute",
+  "calls": 8,
+  "cards": 6,
+  "refLine": 1632
+ },
+ {
+  "fn": "CustomName1Remove",
+  "calls": 8,
+  "cards": 7,
+  "refLine": 1499
+ },
+ {
+  "fn": "SetObjectiveCounter",
+  "calls": 8,
+  "cards": 8,
+  "refLine": 1428
+ },
+ {
+  "fn": "CampaignAddFury",
+  "calls": 7,
+  "cards": 7,
+  "refLine": 1613
+ },
+ {
+  "fn": "HasBond",
+  "calls": 7,
+  "cards": 6,
+  "refLine": 1107
+ },
+ {
+  "fn": "ReportError",
+  "calls": 7,
+  "cards": 5,
+  "refLine": 1682
+ },
+ {
+  "fn": "CampaignSetOpCost",
+  "calls": 5,
+  "cards": 5,
+  "refLine": 1598
+ },
+ {
+  "fn": "getAttackTempBuffAmount",
+  "calls": 4,
+  "cards": 3,
+  "refLine": 1704
+ },
+ {
+  "fn": "FetchCardsByLocation",
+  "calls": 3,
+  "cards": 2,
+  "refLine": 1208
+ },
+ {
+  "fn": "AddIntelToCard",
+  "calls": 3,
+  "cards": 1,
+  "refLine": 1512
+ },
+ {
+  "fn": "CampaignAddMobilize",
+  "calls": 2,
+  "cards": 2,
+  "refLine": 1615
+ },
+ {
+  "fn": "GetClientSide",
+  "calls": 2,
+  "cards": 2,
+  "refLine": 1357
+ },
+ {
+  "fn": "HasAttackLeft",
+  "calls": 2,
+  "cards": 1,
+  "refLine": 1288
+ },
+ {
+  "fn": "SetCardsSeenByCipher",
+  "calls": 2,
+  "cards": 2,
+  "refLine": 1527
+ },
+ {
+  "fn": "getHasVeteranUpgrade",
+  "calls": 2,
+  "cards": 2,
+  "refLine": 1052
+ },
+ {
+  "fn": "hasActivePincerEffect",
+  "calls": 2,
+  "cards": 2,
+  "refLine": 1336
+ },
+ {
+  "fn": "CampaignIncreaseHeavyArmor",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1588
+ },
+ {
+  "fn": "NotiferStarCounterChanged",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1429
+ },
+ {
+  "fn": "GetFrontlineOwnerSide",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1962
+ },
+ {
+  "fn": "CampaignRemoveMobilize",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1617
+ },
+ {
+  "fn": "CampaignRemoveSmokescreen",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1618
+ },
+ {
+  "fn": "getAndDecryptDefense",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1361
+ },
+ {
+  "fn": "getKreditBySide",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1862
+ },
+ {
+  "fn": "getStaticVeteranUpgrade",
+  "calls": 1,
+  "cards": 1,
+  "refLine": 1557
+ }
+]

@@ -1,0 +1,297 @@
+=== 回放审计 replay-773639 ===
+  卡 80 张，动作 137 条，左=849618 右=-9178
+
+  应用 134/137 条（⚠ 3 条没应用）
+
+=== ① 内核观察到的「判死」事件：8 次 ===
+    #22 t5 PC 之后：card_unit_5th_parachute_brigade#64 离场（BoardHqRight → Discard）
+    #29 t7 PC 之后：card_unit_1st_airborne#60 离场（BoardFrontline → Discard）
+    #64 t13 PC 之后：card_unit_5th_parachute_brigade#66 离场（BoardHqRight → Discard）
+    #64 t13 PC 之后：card_unit_5th_parachute_brigade#63 离场（BoardHqRight → Discard）
+    #77 t18 AC 之后：card_unit_meteor#14 离场（BoardHqLeft → Discard）
+    #89 t20 AC 之后：card_unit_meteor#17001 离场（BoardHqLeft → Discard）
+    #98 t22 AC 之后：card_unit_meteor#19001 离场（BoardHqLeft → Discard）
+    #109 t26 PC 之后：card_unit_111th_indian_brigade#58 离场（BoardHqRight → Discard）
+
+=== ② 死亡单位仍被移动/攻击：0 次 ===
+    （没有）
+
+=== ④ HQ 对不上的动作：53 条 ===
+    （其中人类 left 33 条、bot right 20 条）
+    #53 t10 XActionStartOfTurn（right） 期望 24 实际 25
+    #54 t10 XActionEndOfTurn（right） 期望 24 实际 25
+    #60 t12 XActionStartOfTurn（right） 期望 31 实际 34
+    #61 t12 XActionEndOfTurn（right） 期望 31 实际 34
+    #66 t14 XActionStartOfTurn（right） 期望 31 实际 34
+    #67 t14 XActionEndOfTurn（right） 期望 31 实际 34
+    #72 t16 XActionStartOfTurn（right） 期望 31 实际 34
+    #73 t16 XActionEndOfTurn（right） 期望 31 实际 34
+    #85 t19 XActionStartOfTurn（right） 期望 35 实际 40
+    #86 t19 XActionEndOfTurn（right） 期望 33 实际 40
+    #90 t20 PC（left） 期望 17 实际 18
+    #91 t20 AC（left） 期望 17 实际 18
+    #92 t20 AC（left） 期望 16 实际 17
+    #93 t20 XActionEndOfTurn（left） 期望 14 实际 15
+    #94 t21 XActionStartOfTurn（right） 期望 35 实际 44
+    #95 t21 XActionEndOfTurn（right） 期望 35 实际 44
+    #96 t22 XActionStartOfTurn（left） 期望 14 实际 15
+    #97 t22 PC（left） 期望 14 实际 15
+    #98 t22 AC（left） 期望 14 实际 15
+    #99 t22 ML（left） 期望 10 实际 14
+    #100 t22 XActionEndOfTurn（left） 期望 10 实际 14
+    #101 t23 XActionStartOfTurn（right） 期望 35 实际 44
+    #102 t23 XActionEndOfTurn（right） 期望 35 实际 44
+    #103 t24 XActionStartOfTurn（left） 期望 10 实际 14
+    #104 t24 PC（left） 期望 10 实际 14
+    #105 t24 XActionEndOfTurn（left） 期望 10 实际 14
+    #106 t25 XActionStartOfTurn（right） 期望 35 实际 44
+    #107 t25 XActionEndOfTurn（right） 期望 35 实际 44
+    #108 t26 XActionStartOfTurn（left） 期望 10 实际 14
+    #109 t26 PC（left） 期望 10 实际 14
+
+=== ⑤ 未应用的动作：3 条 ===
+    #36 t9 PC（right）：打不出：kredit 不足（kredits=0，费用=1）
+    #37 t9 PC（right）：打不出：kredit 不足（kredits=0，费用=1）
+    #137 t30 （?）：无法确定行动方
+
+=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===
+    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐
+
+=== ⑤c ★ 身份不一致（动作自带卡组码 ≠ 内核里那张卡的卡组码）：1 条 / 1 张卡（已校正 0 条）===
+    #78 t18 PC cardID=3002 内核=card_event_baker_street_irregulars（码 ou） → 动作码 gv = card_event_royal_research [校正开关关闭]
+
+⑤c 汇总：条数=1 张数=1 已校正=0 内核码未知=0
+
+=== ⑥ 撞到但**没实现**的原语：7 种 ===
+    ShouldGotchaTrigger ×54
+    <card:card_unit_5th_parachute_brigade> ×3
+    <local-ran:isSecondOrderThisTurn> ×1
+    MakeCardsFight ×1
+    GetCardsPlayedFromHandLastTurn ×1
+    <local-ran:didPlayBritishInfantryLastTurn> ×1
+    AddToTriggerQueue ×1
+
+=== ⑥a ★ RNG 游标失同步信号：1 条 ===
+    <rng-cursor-desync:card_event_baker_street_irregulars->card_event_royal_research:消费82>
+
+=== ⑦ ★ RNG 游标：本局共消耗 86 个随机数 ===
+    （客户端 `cardsRandomStream` 的游标；漏一个消费点就少、多一个就多。
+     用 `--rng-trace` 可以打印逐次消费的流水账。）
+    ---- 逐次消费流水（184 条，全部）----
+    -- #1 t1 XActionStartOfTurn left --
+    -- #2 t1 PC left --
+    #0 CREATE #1001 card_event_chain_home @HandLeft owner=Left 回合=1
+    #1 RandomIntFromRangeWithStream(0,35) -> 24
+    -- #3 t1 CS left --
+    -- #4 t1 XActionEndOfTurn left --
+    -- #5 t2 XActionStartOfTurn right --
+    -- #6 t3 PC right --
+    -- #7 t3 XActionEndOfTurn right --
+    -- #8 t2 XActionEndOfTurn right --
+    -- #9 t3 XActionStartOfTurn left --
+    -- #10 t3 PC left --
+    #2 GetRandomCard n=14 idx=3 -> card_event_iron_from_the_north 池=[card_event_breakout,card_event_baker_street_irregulars,card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #2 CREATE #3001 card_event_iron_from_the_north @DeckLeft owner=Left 回合=3
+    #3 SpawnCardInDeckBySide Left deckLen=36 rand=9 -> #3001 card_event_iron_from_the_north
+    #4 GetRandomCard n=14 idx=1 -> card_event_baker_street_irregulars 池=[card_event_breakout,card_event_baker_street_irregulars,card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #4 CREATE #3002 card_event_baker_street_irregulars @DeckLeft owner=Left 回合=3
+    #5 SpawnCardInDeckBySide Left deckLen=37 rand=33 -> #3002 card_event_baker_street_irregulars
+    #6 GetRandomCard n=14 idx=6 -> card_event_iron_from_the_north 池=[card_event_breakout,card_event_baker_street_irregulars,card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #6 CREATE #3003 card_event_iron_from_the_north @DeckLeft owner=Left 回合=3
+    #7 SpawnCardInDeckBySide Left deckLen=38 rand=23 -> #3003 card_event_iron_from_the_north
+    #45 ShuffleDeckBySide Left n=38
+    -- #11 t3 PC left --
+    #45 CREATE #3004 card_event_seac @HandLeft owner=Left 回合=3
+    #46 RandomIntFromRangeWithStream(0,38) -> 38
+    -- #12 t3 CS left --
+    -- #13 t3 XActionEndOfTurn left --
+    -- #14 t4 XActionStartOfTurn right --
+    -- #15 t5 PC right --
+    -- #16 t5 PC right --
+    -- #17 t5 XActionEndOfTurn right --
+    -- #18 t4 XActionEndOfTurn right --
+    -- #19 t5 XActionStartOfTurn left --
+    -- #20 t5 PC left --
+    -- #21 t5 PC left --
+    #46 CREATE #5001 card_event_blast @HandLeft owner=Left 回合=5
+    #46 CREATE #5002 card_event_plan @HandLeft owner=Left 回合=5
+    -- #22 t5 PC left --
+    -- #23 t5 XActionEndOfTurn left --
+    -- #24 t6 XActionStartOfTurn right --
+    -- #25 t7 ML right --
+    -- #26 t7 XActionEndOfTurn right --
+    -- #27 t6 XActionEndOfTurn right --
+    -- #28 t7 XActionStartOfTurn left --
+    -- #29 t7 PC left --
+    #46 CREATE #81 card_unit_1st_airborne @DeckRight owner=Right 回合=7
+    #47 SpawnCardInDeckBySide Right deckLen=32 rand=24 -> #81 card_unit_1st_airborne
+    #47 CREATE #82 card_unit_1st_airborne @DeckRight owner=Right 回合=7
+    #48 SpawnCardInDeckBySide Right deckLen=33 rand=15 -> #82 card_unit_1st_airborne
+    -- #30 t7 XActionEndOfTurn left --
+    -- #31 t8 XActionStartOfTurn right --
+    -- #32 t9 PC right --
+    -- #33 t9 PC right --
+    -- #34 t9 PC right --
+    -- #35 t9 PC right --
+    -- #36 t9 PC right --
+    -- #37 t9 PC right --
+    -- #38 t9 CS right --
+    #48 CREATE #83 card_unit_no43_commando @HandRight owner=Right 回合=8
+    -- #39 t9 XActionEndOfTurn right --
+    -- #40 t8 XActionEndOfTurn right --
+    -- #41 t9 XActionStartOfTurn left --
+    -- #42 t9 PC left --
+    -- #43 t9 PC left --
+    -- #44 t9 PC left --
+    #49 GetRandomCard n=3 idx=1 -> card_event_iron_from_the_north 池=[card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_iron_from_the_north]
+    #49 CREATE #9001 card_event_iron_from_the_north @HandLeft owner=Left 回合=9
+    -- #45 t9 ML left --
+    -- #46 t9 PC left --
+    -- #47 t9 PC left --
+    -- #48 t9 PC left --
+    -- #49 t9 PC left --
+    #49 CREATE #9002 card_event_radar @HandLeft owner=Left 回合=9
+    -- #50 t9 PC left --
+    -- #51 t9 PC left --
+    -- #52 t9 XActionEndOfTurn left --
+    -- #53 t10 XActionStartOfTurn right --
+    -- #54 t10 XActionEndOfTurn right --
+    -- #55 t11 XActionStartOfTurn left --
+    -- #56 t11 PC left --
+    #50 GetRandomCard n=12 idx=8 -> card_event_iron_from_the_north 池=[card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #50 CREATE #11001 card_event_iron_from_the_north @DeckLeft owner=Left 回合=11
+    #51 SpawnCardInDeckBySide Left deckLen=23 rand=1 -> #11001 card_event_iron_from_the_north
+    #52 GetRandomCard n=12 idx=7 -> card_event_breakout 池=[card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #52 CREATE #11002 card_event_breakout @DeckLeft owner=Left 回合=11
+    #53 SpawnCardInDeckBySide Left deckLen=24 rand=5 -> #11002 card_event_breakout
+    #54 GetRandomCard n=12 idx=0 -> card_event_baker_street_irregulars 池=[card_event_baker_street_irregulars,card_event_iron_from_the_north,card_event_the_commonwealth,card_event_aa_barrage,card_event_iron_from_the_north,card_event_aa_barrage,card_event_royal_research,card_event_breakout,card_event_iron_from_the_north,card_event_aa_barrage,card_event_aa_barrage,card_event_breakout]
+    #54 CREATE #11003 card_event_baker_street_irregulars @DeckLeft owner=Left 回合=11
+    #55 SpawnCardInDeckBySide Left deckLen=25 rand=25 -> #11003 card_event_baker_street_irregulars
+    #80 ShuffleDeckBySide Left n=25
+    -- #57 t11 PC left --
+    -- #58 t11 PC left --
+    -- #59 t11 XActionEndOfTurn left --
+    -- #60 t12 XActionStartOfTurn right --
+    -- #61 t12 XActionEndOfTurn right --
+    -- #62 t13 XActionStartOfTurn left --
+    -- #63 t13 PC left --
+    -- #64 t13 PC left --
+    -- #65 t13 XActionEndOfTurn left --
+    -- #66 t14 XActionStartOfTurn right --
+    -- #67 t14 XActionEndOfTurn right --
+    -- #68 t15 XActionStartOfTurn left --
+    -- #69 t15 PC left --
+    -- #70 t15 PC left --
+    #81 GetRandomCard n=7 idx=5 -> card_unit_1st_airborne 池=[card_event_unexpected_resistance,card_unit_1st_airborne,card_event_baker_street_irregulars,card_event_breakout,card_unit_1st_airborne,card_unit_1st_airborne,card_unit_no43_commando]
+    -- #71 t15 XActionEndOfTurn left --
+    -- #72 t16 XActionStartOfTurn right --
+    -- #73 t16 XActionEndOfTurn right --
+    -- #74 t17 XActionStartOfTurn left --
+    -- #75 t18 XActionStartOfTurn left --
+    -- #76 t18 PC left --
+    -- #77 t18 AC left --
+    #81 CREATE #18001 card_unit_meteor @DeckLeft owner=Left 回合=17
+    #82 SpawnCardInDeckBySide Left deckLen=15 rand=14 -> #18001 card_unit_meteor
+    -- #78 t18 PC left --
+    -- #79 t18 PC left --
+    -- #80 t18 PC left --
+    -- #81 t18 PC left --
+    -- #82 t18 PC left --
+    #83 GetRandomCard n=1 idx=0 -> card_unit_111th_indian_brigade 池=[card_unit_111th_indian_brigade]
+    -- #83 t18 ML left --
+    -- #84 t18 XActionEndOfTurn left --
+    -- #85 t19 XActionStartOfTurn right --
+    -- #86 t19 XActionEndOfTurn right --
+    -- #87 t20 XActionStartOfTurn left --
+    -- #88 t20 PC left --
+    -- #89 t20 AC left --
+    #83 CREATE #20001 card_unit_meteor @DeckLeft owner=Left 回合=19
+    #84 SpawnCardInDeckBySide Left deckLen=13 rand=6 -> #20001 card_unit_meteor
+    -- #90 t20 PC left --
+    #85 GetRandomCard n=8 idx=6 -> card_unit_1st_airborne 池=[card_event_unexpected_resistance,card_unit_1st_airborne,card_event_baker_street_irregulars,card_event_baker_street_irregulars,card_event_breakout,card_unit_1st_airborne,card_unit_1st_airborne,card_unit_no43_commando]
+    -- #91 t20 AC left --
+    -- #92 t20 AC left --
+    -- #93 t20 XActionEndOfTurn left --
+    -- #94 t21 XActionStartOfTurn right --
+    -- #95 t21 XActionEndOfTurn right --
+    -- #96 t22 XActionStartOfTurn left --
+    -- #97 t22 PC left --
+    -- #98 t22 AC left --
+    #85 CREATE #22001 card_unit_meteor @DeckLeft owner=Left 回合=21
+    #86 SpawnCardInDeckBySide Left deckLen=11 rand=2 -> #22001 card_unit_meteor
+    -- #99 t22 ML left --
+    -- #100 t22 XActionEndOfTurn left --
+    -- #101 t23 XActionStartOfTurn right --
+    -- #102 t23 XActionEndOfTurn right --
+    -- #103 t24 XActionStartOfTurn left --
+    -- #104 t24 PC left --
+    -- #105 t24 XActionEndOfTurn left --
+    -- #106 t25 XActionStartOfTurn right --
+    -- #107 t25 XActionEndOfTurn right --
+    -- #108 t26 XActionStartOfTurn left --
+    -- #109 t26 PC left --
+    -- #110 t26 PC left --
+    #86 CREATE #26001 card_event_blast @HandLeft owner=Left 回合=25
+    #86 CREATE #26002 card_event_plan @HandLeft owner=Left 回合=25
+    -- #111 t26 PC left --
+    -- #112 t26 PC left --
+    -- #113 t26 PC left --
+    -- #114 t26 CS left --
+    #86 CREATE #26003 card_event_fortification @HandLeft owner=Left 回合=25
+    -- #115 t26 XActionEndOfTurn left --
+    -- #116 t27 XActionStartOfTurn right --
+    -- #117 t27 XActionEndOfTurn right --
+    -- #118 t28 XActionStartOfTurn left --
+    -- #119 t28 ML left --
+    -- #120 t28 PC left --
+    -- #121 t28 PC left --
+    -- #122 t28 PC left --
+    -- #123 t28 PC left --
+    -- #124 t28 CS left --
+    #86 CREATE #28001 card_event_plan @HandLeft owner=Left 回合=27
+    -- #125 t28 CS left --
+    #86 CREATE #28002 card_event_hms_formidable @HandLeft owner=Left 回合=27
+    -- #126 t28 PC left --
+    -- #127 t28 XActionEndOfTurn left --
+    -- #128 t29 XActionStartOfTurn right --
+    -- #129 t29 XActionEndOfTurn right --
+    -- #130 t30 XActionStartOfTurn left --
+    -- #131 t30 PC left --
+    -- #132 t30 PC left --
+    -- #133 t30 AC left --
+    -- #134 t30 AC left --
+    -- #135 t30 AC left --
+    -- #136 t30 ActionEndMatch left --
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：540 种 / 2752 个真缺口调用点 ===
+    指纹 290650B7225728D2（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×217
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    GotchaTriggered ×54
+    ShouldGotchaTrigger ×53
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    MakeCardRetreat ×36
+    FullyHealCard ×33
+    ShowTutorialMessage ×30
+    ConvertCard ×26
+    getCardsBuffedByThisCard ×25
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 51，场上 8 个
+     #13 card_unit_hampshire_regiment @BoardFrontline#3 6/6 活着=True
+     #21 card_unit_no_46_commando @BoardFrontline#0 1/1 活着=True
+     #22 card_unit_no_46_commando @BoardHqLeft#2 1/1 活着=True
+     #25 card_unit_m3a3_honey_desert @BoardHqLeft#1 2/3 活着=True
+     #26 card_unit_m3a3_honey_desert @BoardFrontline#2 2/2 活着=True
+     #37 card_unit_2nd_west_africa @BoardFrontline#1 2/2 活着=True
+     #38 card_unit_2nd_west_africa @BoardHqLeft#4 1/2 活着=True
+     #40 card_unit_2nd_west_africa @BoardHqLeft#3 1/2 活着=True
+  right：HQ 4，场上 0 个
+
+=== 判读 ===
+  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。
