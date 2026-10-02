@@ -976,13 +976,37 @@ public sealed class MatchEngine
         //     → OnPlayedFromHand 跑 `1 + triggerMultiple` 次。
         // 两条路在「不取消、不翻倍」时**完全一样**，所以旧实现（无条件跑一次）对绝大多数
         // 对局是对的；差别只在取消与翻倍。见 `RunDeploymentEffect` 的注释。
-        RunDeploymentEffect(card, target);
-
         // ---- ⑤「别的卡从手牌被打出」----
         // 这一条以前**根本没接**，所以 card_unit_85_pioneer_company /
         // card_event_committed_crew 的 OnOtherCardPlayedFromHand 分支
         // （就是它们还原 buff / 给部署单位加成的那一支）从来没执行过。
+        //
+        // ⚠️⚠️ **顺序：必须在下面 `RunDeploymentEffect` 之前**（2026-10-02 修正）。
+        //
+        // 蓝图 `BP_CardFunctions.g.cs:5827 CardPlayedFromHand` 的语句序是：
+        //   :6060  取触发点 51（`OnOtherCardPlayedFromHand`，`Core/Trigger.g.cs:61`）
+        //   :6142  **广播**它
+        //   :6388/:6396/:6412  才跑**这张卡自己的** `OnPlayedFromHand`
+        // ⇒ **广播在前、自身效果在后**。参考实现同序：
+        //   `ref/kards-sim/KardsSim/Bridge/GameEngine.Actions.cs:429 FirePlayTriggers(c)`
+        //   在 `:448 Host.PlayCardFromHand(c, …)` **之前**
+        //   （`GameEngine.Triggers.cs:50` 注明「顺序照客户端 `CardPlayedFromHand` 的编排」）。
+        //
+        // 旧实现把这两步**反了**。后果实测（回放 854099 `#49 t11`，人类打 `card_event_night_raid`）：
+        //   该指令的效果 `SpawnCardOnBattlefield(…, "card_unit_commandos", …)` 生成 `#11002` 到半场；
+        //   因为广播排在后面，**这个刚生成的单位已经落场**，于是收到了本该只发给"**别人**"的广播
+        //   —— 它自己的 `OnOtherCardPlayedFromHand`（`card_unit_commandos.g.cs:36-59`：
+        //   `IsLocatedOnBoard && IsOrder && faction==2 && side==self.side`
+        //   → `GetCardsOnBoardBySide(敌)` → **`GetRandomCard`** → `DamageCard(1)`）就执行了
+        //   ⇒ **多消费 1 个随机数**（`--rng-trace` 实测 `#39 GetRandomCard n=3 idx=1`），
+        //   并把对方的 `#66`(1/1) 打死。
+        // ⇒ 连锁：`#54 t13` 客户端用 `#66` 打 `#39`、内核已把 `#66` 丢掉 ⇒ 拒打
+        //   ⇒ **客户端 `#39` 死、内核 `#39` 活** ⇒ 内核半场虚高 1
+        //   ⇒ `#70 t15` 假「半场已满」（`#77/#79/#83/#90/#92/#102/#104/#109/#111/#116` 全是连锁）；
+        //   随机游标也从 `#49` 起超前 1（审计 ④ 首条人类 HQ 失配 `#60 t13 期望 19 实际 20`）。
         Api.FireTrigger("OnOtherCardPlayedFromHand", card, card.Owner, eventArgs: new object?[] { card });
+
+        RunDeploymentEffect(card, target);
 
         // ---- ⑥ 山地加成（`GiveAlpineBonus`）----
         //
