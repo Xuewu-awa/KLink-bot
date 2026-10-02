@@ -241,7 +241,7 @@ public sealed partial class CardApi
             //       `["getTotalDefense"] = (h, a) => … h.Card_(a[0]).TotalDefense`（:1660-1664）、
             //       `["getTotalAttack"]  = (h, a) => Out(a, h.Card_(a[0]) is { } tc ? tc.TotalAttack : 0)`
             //       （:1099）—— 两条的主语都是**接收者那张卡**。
-            //    2. UHT 签名（`E:\peoject\kards\Source\kards\Public\BaseCardObject.h`）：
+            //    2. UHT 签名（`<kards-src>\Source\kards\Public\BaseCardObject.h`）：
             //       `:982 void getTotalDefense(int32& totalDefense);`
             //       `:985 void getTotalAttack(int32& totalAttack);`
             //       两条同为 `UFUNCTION(BlueprintCallable, BlueprintPure)` 的 **`UBaseCardObject`
@@ -2341,7 +2341,7 @@ public sealed partial class CardApi
         //   L_04C8（ct==1 permBuff）  newVal = Clamp(decryptedAttack + localInputAmount, 0, 99)
         // </code>
         // 即：**2 = 总量赋成 amount**、**1 = 加 amount**。
-        // 枚举值逐字来自 `E:\peoject\kards\Source\kards\Public\EChangeType.h`
+        // 枚举值逐字来自 `<kards-src>\Source\kards\Public\EChangeType.h`
         // （`tempBuffGive=0, permBuff=1, SetValue=2, Suppress=3, tempBuffRemove=4, …`）。
         //
         // 为什么必须修（对局 389594 任务 A 的另一半）：`card_unit_meteor` 的
@@ -2468,7 +2468,7 @@ public sealed partial class CardApi
     /// <summary>
     /// ⚠️ `EChangeType::SetValue` 的**真实枚举值**是 <b>2</b>，不是 <see cref="ChangeTypeSetValue"/> 的 1。
     ///
-    /// 出处：`E:\peoject\kards\Source\kards\Public\EChangeType.h:6-17`
+    /// 出处：`<kards-src>\Source\kards\Public\EChangeType.h:6-17`
     /// <code>
     /// enum class EChangeType : uint8 {
     ///     tempBuffGive,   // 0

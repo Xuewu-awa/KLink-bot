@@ -1425,7 +1425,7 @@ internal static class SelfTest
     /// i=348  ChangeKreditCost(card, cardID, 0, changeType=2, false)   ← 卡面 "with a cost of 0."
     /// </code>
     /// `changeType=2` 是 `EChangeType::SetValue` 的真实枚举值
-    /// （`E:\peoject\kards\Source\kards\Public\EChangeType.h:6-17`），
+    /// （`<kards-src>\Source\kards\Public\EChangeType.h:6-17`），
     /// `DoChangeKreditCost` 对它的实现是**对的**（`CardApiDispatch.cs:1893-1904`），
     /// 不要动 —— 缺的是"这条语句一次都没执行"。
     ///

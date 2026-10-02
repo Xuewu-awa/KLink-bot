@@ -8,10 +8,10 @@ namespace KLink.Bot.Engine;
 ///
 /// 实测样本（来自 fyserver 控制台日志，见 docs/live-actions.json）：
 /// <code>
-/// {"action_type":"PC","player_id":892257,"action_id":49,"local_subactions":1,
+/// {"action_type":"PC","player_id":900009,"action_id":49,"local_subactions":1,
 ///  "action_data":{"0":"64","1":"3","2":"0","3":"0","4":"jJ","84":"11"}}
 ///
-/// {"action_type":"AC","player_id":654612,"action_id":39,"local_subactions":1,
+/// {"action_type":"AC","player_id":900008,"action_id":39,"local_subactions":1,
 ///  "action_data":{"0":"7","1":"59","2":"4H","3":"d3","84":"3"}}
 /// </code>
 ///

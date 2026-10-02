@@ -6,7 +6,7 @@
     {
       "action_id": 1,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -20,7 +20,7 @@
     {
       "action_id": 2,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "33",
         "1": "0",
@@ -38,7 +38,7 @@
     {
       "action_id": 3,
       "action_type": "CS",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "33",
         "1": "0",
@@ -53,7 +53,7 @@
     {
       "action_id": 4,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -129,7 +129,7 @@
     {
       "action_id": 9,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -143,7 +143,7 @@
     {
       "action_id": 10,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "24",
         "1": "0",
@@ -161,7 +161,7 @@
     {
       "action_id": 11,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "32",
         "1": "1",
@@ -179,7 +179,7 @@
     {
       "action_id": 12,
       "action_type": "CS",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "32",
         "1": "2",
@@ -194,7 +194,7 @@
     {
       "action_id": 13,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -288,7 +288,7 @@
     {
       "action_id": 19,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -302,7 +302,7 @@
     {
       "action_id": 20,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "36",
         "1": "0",
@@ -320,7 +320,7 @@
     {
       "action_id": 21,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "21",
         "1": "0",
@@ -338,7 +338,7 @@
     {
       "action_id": 22,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "5001",
         "1": "1",
@@ -356,7 +356,7 @@
     {
       "action_id": 23,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -430,7 +430,7 @@
     {
       "action_id": 28,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -444,7 +444,7 @@
     {
       "action_id": 29,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "19",
         "1": "1",
@@ -462,7 +462,7 @@
     {
       "action_id": 30,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -643,7 +643,7 @@
     {
       "action_id": 41,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -657,7 +657,7 @@
     {
       "action_id": 42,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "35",
         "1": "0",
@@ -675,7 +675,7 @@
     {
       "action_id": 43,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "37",
         "1": "2",
@@ -693,7 +693,7 @@
     {
       "action_id": 44,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "3004",
         "1": "2",
@@ -711,7 +711,7 @@
     {
       "action_id": 45,
       "action_type": "ML",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "21",
         "1": "0",
@@ -727,7 +727,7 @@
     {
       "action_id": 46,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "9001",
         "1": "2",
@@ -745,7 +745,7 @@
     {
       "action_id": 47,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "3001",
         "1": "1",
@@ -763,7 +763,7 @@
     {
       "action_id": 48,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "26",
         "1": "2",
@@ -781,7 +781,7 @@
     {
       "action_id": 49,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "5",
         "1": "1",
@@ -799,7 +799,7 @@
     {
       "action_id": 50,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "9002",
         "1": "1",
@@ -817,7 +817,7 @@
     {
       "action_id": 51,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "6",
         "1": "2",
@@ -835,7 +835,7 @@
     {
       "action_id": 52,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -878,7 +878,7 @@
     {
       "action_id": 55,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -892,7 +892,7 @@
     {
       "action_id": 56,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "23",
         "1": "2",
@@ -910,7 +910,7 @@
     {
       "action_id": 57,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "2",
         "1": "1",
@@ -928,7 +928,7 @@
     {
       "action_id": 58,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "5002",
         "1": "0",
@@ -946,7 +946,7 @@
     {
       "action_id": 59,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -989,7 +989,7 @@
     {
       "action_id": 62,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -1003,7 +1003,7 @@
     {
       "action_id": 63,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "3",
         "1": "2",
@@ -1021,7 +1021,7 @@
     {
       "action_id": 64,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "7",
         "1": "0",
@@ -1039,7 +1039,7 @@
     {
       "action_id": 65,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1082,7 +1082,7 @@
     {
       "action_id": 68,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -1096,7 +1096,7 @@
     {
       "action_id": 69,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "18",
         "1": "2",
@@ -1114,7 +1114,7 @@
     {
       "action_id": 70,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "15",
         "1": "2",
@@ -1132,7 +1132,7 @@
     {
       "action_id": 71,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1175,7 +1175,7 @@
     {
       "action_id": 74,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -1189,7 +1189,7 @@
     {
       "action_id": 75,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "20"
@@ -1203,7 +1203,7 @@
     {
       "action_id": 76,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "14",
         "1": "3",
@@ -1221,7 +1221,7 @@
     {
       "action_id": 77,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "14",
         "1": "41",
@@ -1238,7 +1238,7 @@
     {
       "action_id": 78,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "3002",
         "1": "1",
@@ -1256,7 +1256,7 @@
     {
       "action_id": 79,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "25",
         "1": "3",
@@ -1274,7 +1274,7 @@
     {
       "action_id": 80,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "17002",
         "1": "3",
@@ -1292,7 +1292,7 @@
     {
       "action_id": 81,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "40",
         "1": "1",
@@ -1310,7 +1310,7 @@
     {
       "action_id": 82,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "1001",
         "1": "2",
@@ -1328,7 +1328,7 @@
     {
       "action_id": 83,
       "action_type": "ML",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "37",
         "1": "1",
@@ -1344,7 +1344,7 @@
     {
       "action_id": 84,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1387,7 +1387,7 @@
     {
       "action_id": 87,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "19"
@@ -1401,7 +1401,7 @@
     {
       "action_id": 88,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "17001",
         "1": "4",
@@ -1419,7 +1419,7 @@
     {
       "action_id": 89,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "17001",
         "1": "41",
@@ -1436,7 +1436,7 @@
     {
       "action_id": 90,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "16",
         "1": "1",
@@ -1454,7 +1454,7 @@
     {
       "action_id": 91,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "21",
         "1": "41",
@@ -1471,7 +1471,7 @@
     {
       "action_id": 92,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "37",
         "1": "41",
@@ -1488,7 +1488,7 @@
     {
       "action_id": 93,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1531,7 +1531,7 @@
     {
       "action_id": 96,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "14"
@@ -1545,7 +1545,7 @@
     {
       "action_id": 97,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "19001",
         "1": "4",
@@ -1563,7 +1563,7 @@
     {
       "action_id": 98,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "19001",
         "1": "41",
@@ -1580,7 +1580,7 @@
     {
       "action_id": 99,
       "action_type": "ML",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "26",
         "1": "2",
@@ -1596,7 +1596,7 @@
     {
       "action_id": 100,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1639,7 +1639,7 @@
     {
       "action_id": 103,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "10"
@@ -1653,7 +1653,7 @@
     {
       "action_id": 104,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "28",
         "1": "1",
@@ -1671,7 +1671,7 @@
     {
       "action_id": 105,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1714,7 +1714,7 @@
     {
       "action_id": 108,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "10"
@@ -1728,7 +1728,7 @@
     {
       "action_id": 109,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "8",
         "1": "2",
@@ -1746,7 +1746,7 @@
     {
       "action_id": 110,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "22",
         "1": "3",
@@ -1764,7 +1764,7 @@
     {
       "action_id": 111,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "25001",
         "1": "3",
@@ -1782,7 +1782,7 @@
     {
       "action_id": 112,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "25002",
         "1": "3",
@@ -1800,7 +1800,7 @@
     {
       "action_id": 113,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "13",
         "1": "4",
@@ -1818,7 +1818,7 @@
     {
       "action_id": 114,
       "action_type": "CS",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "13",
         "1": "1",
@@ -1833,7 +1833,7 @@
     {
       "action_id": 115,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -1876,7 +1876,7 @@
     {
       "action_id": 118,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "10"
@@ -1890,7 +1890,7 @@
     {
       "action_id": 119,
       "action_type": "ML",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "13",
         "1": "3",
@@ -1906,7 +1906,7 @@
     {
       "action_id": 120,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "25003",
         "1": "3",
@@ -1924,7 +1924,7 @@
     {
       "action_id": 121,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "38",
         "1": "4",
@@ -1942,7 +1942,7 @@
     {
       "action_id": 122,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "30",
         "1": "2",
@@ -1960,7 +1960,7 @@
     {
       "action_id": 123,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "12",
         "1": "1",
@@ -1978,7 +1978,7 @@
     {
       "action_id": 124,
       "action_type": "CS",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "12",
         "1": "1",
@@ -1993,7 +1993,7 @@
     {
       "action_id": 125,
       "action_type": "CS",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "12",
         "1": "2",
@@ -2008,7 +2008,7 @@
     {
       "action_id": 126,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "27001",
         "1": "3",
@@ -2026,7 +2026,7 @@
     {
       "action_id": 127,
       "action_type": "XActionEndOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "reason": "endTurnButton",
@@ -2069,7 +2069,7 @@
     {
       "action_id": 130,
       "action_type": "XActionStartOfTurn",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "side": "left",
         "39": "10"
@@ -2083,7 +2083,7 @@
     {
       "action_id": 131,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "17",
         "1": "4",
@@ -2101,7 +2101,7 @@
     {
       "action_id": 132,
       "action_type": "PC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "27002",
         "1": "3",
@@ -2119,7 +2119,7 @@
     {
       "action_id": 133,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "13",
         "1": "41",
@@ -2136,7 +2136,7 @@
     {
       "action_id": 134,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "26",
         "1": "41",
@@ -2153,7 +2153,7 @@
     {
       "action_id": 135,
       "action_type": "AC",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "0": "37",
         "1": "41",
@@ -2170,7 +2170,7 @@
     {
       "action_id": 136,
       "action_type": "ActionEndMatch",
-      "player_id": 849618,
+      "player_id": 900006,
       "action_data": {
         "reason": "Victory_DestroyHQ",
         "winner_side": "left"
@@ -2190,7 +2190,7 @@
       "turn_number": 30,
       "action": "end-match",
       "value": {
-        "winner_id": 849618,
+        "winner_id": 900006,
         "winner_side": "left",
         "result": "Victory_DestroyHQ"
       },

@@ -5,7 +5,7 @@ ir = json.load(open(os.path.join(ROOT, r'klink bot\docs\card-ir.json'), encoding
 src = open(os.path.join(ROOT, r'src\KLink.Bot\Effects\CardApiDispatch.cs'), encoding='utf-8').read()
 dispatched = set(re.findall(r'^\s*\["([A-Za-z_0-9]+)"\]\s*=', src, re.M))
 
-hdr = open(r'E:\peoject\kards\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
+hdr = open(r'<kards-src>\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
 native_events = set(re.findall(r'\n\s*void\s+(On[A-Za-z_0-9]+)\s*\(', hdr))
 fired = set(open(os.path.join(ROOT, r'out\audit\fired.txt'), encoding='utf-8').read().split()) if os.path.exists(os.path.join(ROOT, r'out\audit\fired.txt')) else set()
 

@@ -7,7 +7,7 @@
   中途新增了 `OutOfRangeAttacksRejected`（`:73`）和 `CanReachAcrossFrontline`（`:866`）。
   **本报告的内核行号对应 995 行那一版。** 表里凡是写「已实现」的，请以行号复核。
 - 蓝图来源：`out/bp-logic.json` / `out/bp-gamestate.json` / `out/bp-cardscheck.json` / `out/bp-cardfn.json`。
-- 枚举权威：`E:\peoject\kards\Source\kards\Public\*.h`。
+- 枚举权威：`<kards-src>\Source\kards\Public\*.h`。
 - 内核派发表：`src/KLink.Bot/Effects/CardApiDispatch.cs` 的 `BuildDispatch()`（177 个键）。
   **键名不在表里 = 内核没实现这个蓝图原语。**
 - 卡量统计：`klink bot/docs/card-ir.json`（1636 张，`entrypoints` + `steps[].fn`）、
@@ -269,7 +269,7 @@ i=436  BooleanAND(EqualEqual_ByteByte_ReturnValue_1, EqualEqual_ByteByte_ReturnV
 i=474  PopExecutionFlowIfNot(AND) ⇒ i=484 localIsRestricted = True；i=495 break = True
 i=507  isRestricted = localIsRestricted
 ```
-结构体（`E:\peoject\kards\Source\kards\Public\GameplayRestrictionEffect.h`）：
+结构体（`<kards-src>\Source\kards\Public\GameplayRestrictionEffect.h`）：
 ```
 ESideEnum AffectedSide;
 EGameplayRestrictions RestrictionType;

@@ -435,7 +435,7 @@ public sealed class ReplayRunner
         //     replay-508065  EndOfTurn  side={right:24, left:12}   StartOfTurn={left:13, right:12}
         //     replay-542091  EndOfTurn  side={right:14, left:7}    StartOfTurn={left:8,  right:7}
         // </code>
-        //    真人（left，player=963422/300608）每回合**只有一条**，`reason="endTurnButton"`；
+        //    真人（left，player=900003/900005）每回合**只有一条**，`reason="endTurnButton"`；
         //    bot（right，player=-9178）每回合**两条且相邻**，一条 `reason="endTurnButton"`
         //    （= `MatchEngine.EndTurn` 自己 `RecordAction` 的那条）、一条 `reason` 缺失
         //    （= 服务端把我们发出去的那条线上动作也记了一遍）。

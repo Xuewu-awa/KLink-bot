@@ -158,9 +158,9 @@ tools/BotSim/Program.cs         验证运行器（decks / play / coverage）
 **② `action_data` 是「下标 → 字符串」，且含义随动作类型而变**
 
 ```
-PC  892257  {0:64, 1:3, 2:0,  3:0,  4:jJ, 84:11}   → 打出 card_unit_heinkel_he_111_waw
-AC  654612  {0:7,  1:59, 2:4H, 3:d3,        84:3 }   → 361_light_regiment 攻击 m4a1
-ML  892257  {0:74, 1:1,  2:yD,              84:11}   → 移动 card_unit_wolfhounds
+PC  900009  {0:64, 1:3, 2:0,  3:0,  4:jJ, 84:11}   → 打出 card_unit_heinkel_he_111_waw
+AC  900008  {0:7,  1:59, 2:4H, 3:d3,        84:3 }   → 361_light_regiment 攻击 m4a1
+ML  900009  {0:74, 1:1,  2:yD,              84:11}   → 移动 card_unit_wolfhounds
 ```
 
 ⚠️ **坑**：`0` 的取值（64/60/32…）**有些恰好是合法的 2 字符卡组码**，

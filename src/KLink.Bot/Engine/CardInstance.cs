@@ -48,7 +48,7 @@ public sealed class CardInstance
 
     /// <summary>
     /// 本回合**已经攻击过几次**（蓝图 `UBaseCardObject::attackCountThisTurn`，
-    /// 声明见 `E:\peoject\kards\Source\kards\Public\BaseCardObject.h:256`）。
+    /// 声明见 `<kards-src>\Source\kards\Public\BaseCardObject.h:256`）。
     ///
     /// ⚠️ 为什么光有 <see cref="HasAttackedThisTurn"/> 不够（2026-10-02 对局 389594 修）：
     /// **奋战（Fury）的单位一回合可以攻击两次**（规则表 `KARDS基础规则参考.md:107`

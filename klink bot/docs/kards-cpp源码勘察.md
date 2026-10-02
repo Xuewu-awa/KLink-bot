@@ -1,7 +1,7 @@
-# `E:\peoject\kards` C++ 源码勘察报告
+# `<kards-src>` C++ 源码勘察报告
 
 勘察日期：本轮会话
-勘察对象：`E:\peoject\kards`（1894 MB / 6631 文件）
+勘察对象：`<kards-src>`（1894 MB / 6631 文件）
 本报告只做勘察记录，**没有改动 `src/KLink.Bot/` 或 `ref/kards-sim/` 的任何代码**。
 
 ---
@@ -47,25 +47,25 @@
 
 **（a）`BaseCardObject.cpp` 全 678 行，唯一的"实体"是构造函数 + 若干 `return` 常量：**
 
-`E:\peoject\kards\Source\kards\Private\BaseCardObject.cpp:383-384`
+`<kards-src>\Source\kards\Private\BaseCardObject.cpp:383-384`
 ```cpp
 void UBaseCardObject::HasMovementLeft(bool& doesIt) {
 }
 ```
 
-`E:\peoject\kards\Source\kards\Private\BaseCardObject.cpp:410-411`
+`<kards-src>\Source\kards\Private\BaseCardObject.cpp:410-411`
 ```cpp
 void UBaseCardObject::HasAttackLeft(bool& doesIt) {
 }
 ```
 
-`E:\peoject\kards\Source\kards\Private\BaseCardObject.cpp:492-493`
+`<kards-src>\Source\kards\Private\BaseCardObject.cpp:492-493`
 ```cpp
 void UBaseCardObject::getHasBlitz(bool& doesIt) {
 }
 ```
 
-`E:\peoject\kards\Source\kards\Private\BaseCardObject.cpp:593-594`
+`<kards-src>\Source\kards\Private\BaseCardObject.cpp:593-594`
 ```cpp
 void UBaseCardObject::CanMoveAndAttackInTheSameTurn(bool& canIt) {
 }
@@ -75,7 +75,7 @@ void UBaseCardObject::CanMoveAndAttackInTheSameTurn(bool& canIt) {
 
 **（b）`ResetUnitOperations` 在 `.cpp` 里完全不存在：**
 
-`E:\peoject\kards\Source\kards\Private\CardFunctionsStub.cpp` 全 196 行，内容只有：
+`<kards-src>\Source\kards\Private\CardFunctionsStub.cpp` 全 196 行，内容只有：
 ```cpp
 #include "CardFunctionsStub.h"
 
@@ -88,7 +88,7 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
 **（c）为什么 `.cpp` 会生成 `_Implementation` 后缀（一个需要解释的反常现象）：**
 
 4 个头文件里的声明是**普通** `BlueprintCallable, BlueprintPure`，**没有** `BlueprintNativeEvent`：
-`E:\peoject\kards\Source\kards\Public\BaseCardObject.h:936-937`
+`<kards-src>\Source\kards\Public\BaseCardObject.h:936-937`
 ```cpp
     UFUNCTION(BlueprintCallable, BlueprintPure)
     void HasMovementLeft(bool& doesIt);
@@ -97,7 +97,7 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
 
 **（d）更强的证据：UE4SS 配置强制覆写了 Blueprint 权限：**
 
-`E:\peoject\kards\Plugins\KardsChineseDocs\Resources\kards_functions_zh.md:38`
+`<kards-src>\Plugins\KardsChineseDocs\Resources\kards_functions_zh.md:38`
 ```
 `UE4SS-settings.ini` 当前设置了 `MakeAllFunctionsBlueprintCallable=1`、`MakeAllPropertyBlueprintsReadWrite=1`，
 因此 UHT 生成的头文件可能包含提取器强制补出的 Blueprint 权限；不要仅凭这些宏判断原始编辑器权限。
@@ -154,7 +154,7 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
 
 ### 出处
 
-`E:\peoject\kards\Source\kards\Public\CardFunctionsStub.h` 共 600 行。
+`<kards-src>\Source\kards\Public\CardFunctionsStub.h` 共 600 行。
 - 第 22-23 行：`UCLASS(Blueprintable) class ACardFunctionsStub : public AActor {`
 - `UFUNCTION` 说明符统计（我用 `Select-String` + `Group-Object` 数的）：
   - `BlueprintCallable, BlueprintImplementableEvent` = **155**
@@ -315,7 +315,7 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
 3. **`ResetUnitOperations` 的调用方不在 `BP_Logic` 里**（本轮新查实）：
    我把 `BP_Logic` 全量反汇编（181 个 export）后搜 `ResetUnitOperations` —— **0 命中**。
    只有接口 notifier 里有：
-   `E:\bpasm\notifier.bpasm:1486`（源资产 `live/Logic/.../U_CardFunctionsNotifier.uasset`）
+   `<bpasm-dir>\notifier.bpasm:1486`（源资产 `live/Logic/.../U_CardFunctionsNotifier.uasset`）
    ```
    .export 76 "NotifyResetUnitOperations" {
        context { interfacecontext { instancevariable @path(owner=1) "OnlineMatchReceiver" } }
@@ -336,8 +336,8 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
   也就是 `CardFunctionsStub.h` 只是 `ACardFunctionsStub` 这一个类的接口，
   另外 **804 个 UFUNCTION 分布在别的类里**（`BaseCardObject` 256 个、
   `BP_GameState_Battle`、`CombatHelperFunctions` 等）。**要凑齐"权威对照表"，只靠这一份不够。**
-- 本轮**没有**去 `C:\Apps\game\kards\Binaries\Win64\ue4ss`（文档第 12 行给的路径）核对
-  那 364 个头文件 —— 本轮工作目录在 `E:\`，跨盘去读别人的游戏目录我没有做。
+- 本轮**没有**去 `<kards-install>\Binaries\Win64\ue4ss`（文档第 12 行给的路径）核对
+  那 364 个头文件 —— 本轮工作目录在 `<drive-e>:\`，跨盘去读别人的游戏目录我没有做。
   **如果要把 3103 差集一次做干净，那是必须去的地方。**
 
 ---
@@ -370,7 +370,7 @@ ACardFunctionsStub::ACardFunctionsStub(const FObjectInitializer& ObjectInitializ
 
 ### 出处
 
-`E:\peoject\kards\Source\kards\Public\EChangeType.h:5-17`（全文）
+`<kards-src>\Source\kards\Public\EChangeType.h:5-17`（全文）
 ```cpp
 UENUM(BlueprintType)
 enum class EChangeType : uint8 {
@@ -387,7 +387,7 @@ enum class EChangeType : uint8 {
 };
 ```
 
-`E:\peoject\kards\Source\kards\Public\CardBuffData.h:5-16`（全文）
+`<kards-src>\Source\kards\Public\CardBuffData.h:5-16`（全文）
 ```cpp
 USTRUCT(BlueprintType)
 struct FCardBuffData {
@@ -435,7 +435,7 @@ public:
 
 ### 补充：本轮新读到的两个效果结构体（我们之前没建模过）
 
-`E:\peoject\kards\Source\kards\Public\GameplayEffect.h:10-30`（全文）
+`<kards-src>\Source\kards\Public\GameplayEffect.h:10-30`（全文）
 ```cpp
 USTRUCT(BlueprintType)
 struct FGameplayEffect {
@@ -450,7 +450,7 @@ public:
 };
 ```
 
-`E:\peoject\kards\Source\kards\Public\GameplayRestrictionEffect.h:7-26`（全文）
+`<kards-src>\Source\kards\Public\GameplayRestrictionEffect.h:7-26`（全文）
 ```cpp
 USTRUCT(BlueprintType)
 struct FGameplayRestrictionEffect {
@@ -464,7 +464,7 @@ public:
 };
 ```
 
-配套枚举 `E:\peoject\kards\Source\kards\Public\EDurationPolicy.h:5-12`（全文）
+配套枚举 `<kards-src>\Source\kards\Public\EDurationPolicy.h:5-12`（全文）
 ```cpp
 UENUM(BlueprintType)
 enum class EDurationPolicy : uint8 {
@@ -526,7 +526,7 @@ enum class EGameplayRestrictions : uint8 {
 
 ### 出处
 
-`E:\peoject\kards\Source\kards\Public\ECardLocationEnum.h:5-17`（全文）
+`<kards-src>\Source\kards\Public\ECardLocationEnum.h:5-17`（全文）
 ```cpp
 UENUM(BlueprintType)
 enum class ECardLocationEnum : uint8 {
@@ -543,7 +543,7 @@ enum class ECardLocationEnum : uint8 {
 };
 ```
 
-`E:\peoject\kards\Source\kards\Public\ChooseOneCardStruct.h:5-16`（全文）
+`<kards-src>\Source\kards\Public\ChooseOneCardStruct.h:5-16`（全文）
 ```cpp
 USTRUCT(BlueprintType)
 struct FChooseOneCardStruct {
@@ -559,7 +559,7 @@ public:
 };
 ```
 
-**配套 enum**：`E:\peoject\kards\Source\kards\Public\EnumChooseOneCardBeingPlayed.h:5-9`
+**配套 enum**：`<kards-src>\Source\kards\Public\EnumChooseOneCardBeingPlayed.h:5-9`
 ```cpp
 UENUM(BlueprintType)
 enum class EnumChooseOneCardBeingPlayed : uint8 {
@@ -609,7 +609,7 @@ enum class EnumChooseOneCardBeingPlayed : uint8 {
 
 ### 出处
 
-`E:\peoject\kards\Source\BlueprintJson\Public\BlueprintJsonObject.h`（全文 11 行）
+`<kards-src>\Source\BlueprintJson\Public\BlueprintJsonObject.h`（全文 11 行）
 ```cpp
 #pragma once
 #include "CoreMinimal.h"
@@ -623,7 +623,7 @@ public:
 };
 ```
 
-`E:\peoject\kards\Source\BlueprintJson\Private\BlueprintJsonObject.cpp`（全文 5 行）
+`<kards-src>\Source\BlueprintJson\Private\BlueprintJsonObject.cpp`（全文 5 行）
 ```cpp
 #include "BlueprintJsonObject.h"
 
@@ -631,14 +631,14 @@ FBlueprintJsonObject::FBlueprintJsonObject() {
 }
 ```
 
-`E:\peoject\kards\Source\BlueprintJson\Private\BlueprintJsonModule.cpp`（全文 3 行）
+`<kards-src>\Source\BlueprintJson\Private\BlueprintJsonModule.cpp`（全文 3 行）
 ```cpp
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 ```
 
-`E:\peoject\kards\Source\BlueprintJson\BlueprintJson.Build.cs:11-15` 依赖只有
+`<kards-src>\Source\BlueprintJson\BlueprintJson.Build.cs:11-15` 依赖只有
 `Core` / `CoreUObject` / `Engine`，**没有 `Json` / `JsonUtilities`** —— 进一步证明它不碰 JSON。
 
 **注意它被谁用了**：`BaseCardObject.h:410`
@@ -649,7 +649,7 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 → **`customJson` 的真实类型是 `FBlueprintJsonObject`，而它是个空结构体。**
 也就是说：**我们如果把 `customJson` 当"任意 JSON 字典"来建模，方向是对的**（因为游戏侧的 `JSON_*`
 系列函数就是往里塞 key/value），但**空结构体意味着类型信息在这里完全丢失** ——
-`E:\peoject\kards\Source\kards\Private\BaseCardObject.cpp` 里也**没有 `FBlueprintJsonObject` 的实现**，
+`<kards-src>\Source\kards\Private\BaseCardObject.cpp` 里也**没有 `FBlueprintJsonObject` 的实现**，
 只在这个 .cpp 里有构造函数。
 
 ### 对内核/工具的直接影响
@@ -658,8 +658,8 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
    我们仓库里的 `Effects/Blueprint/KismetIr.cs` + `KismetVm.cs` 是自己在做，
    **不要指望这个插件**。
 2. **真正能补这个缺口的东西在别处（本轮新发现，见 §⑥）：**
-   - `E:\peoject\kards\Plugins\KardsBlueprintRestorer\`（UE 5.6 编辑器插件，**能反过来**：把 FModel/CUE4Parse 的 JSON 还原成可编辑蓝图）
-   - `E:\bpasm\bpasm.exe`（**蓝图字节码汇编/反汇编器**，本报告验证可用）
+   - `<kards-src>\Plugins\KardsBlueprintRestorer\`（UE 5.6 编辑器插件，**能反过来**：把 FModel/CUE4Parse 的 JSON 还原成可编辑蓝图）
+   - `<bpasm-dir>\bpasm.exe`（**蓝图字节码汇编/反汇编器**，本报告验证可用）
 3. **`customJson` 的建模可以放心**：因为游戏侧 `JSON_*` 22 个函数就是 `(card, VariableName, Value, CreateIfMissing, skipAction)`，
    等价于一个"字符串 key → 任意类型"的字段袋。内核把它建成 `Dictionary<string, object>` 是合理的。
 
@@ -674,7 +674,7 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 
 ### 6.1 `Tools/` —— 是"改包"工具，不是"读蓝图"工具
 
-`E:\peoject\kards\Tools\pakcook\`：
+`<kards-src>\Tools\pakcook\`：
 | 文件 | 大小 | 说明 |
 |---|---|---|
 | `pakcook.exe` | 3.47 MB | 打包器 |
@@ -684,18 +684,18 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 | `_filelist.txt` | 18.5 KB | UnrealPak 的文件清单（`"<绝对路径>" "../../../kards/Content/..."` 两列格式） |
 | `settings.json` | 615 B | 见下 |
 
-`E:\peoject\kards\Tools\pakcook\settings.json`（全文）
+`<kards-src>\Tools\pakcook\settings.json`（全文）
 ```json
 {
 	"aeskey": "C257932734957B6D467FA16FCF728D5A16A5BDD07F6E20EE6E3155E898305CC0",
-	"unrealpak": "E:/Epic Games/UE_5.6/Engine/Binaries/Win64/UnrealPak.exe",
+	"unrealpak": "<ue-engine-dir>/UE_5.6/Engine/Binaries/Win64/UnrealPak.exe",
 	"gameName": "kards",
-	"contentRoot": "E:/peoject/kards/Saved/Cooked/Windows/kards",
-	"copyTo": "E:/klink/kds/kards/Content/Paks",
+	"contentRoot": "<kards-src>/Saved/Cooked/Windows/kards",
+	"copyTo": "<klink-src>/kds/kards/Content/Paks",
 	"encrypt": false,
 	"packAssetRegistry": true,
 	"packConfig": true,
-	"configRoot": "E:/peoject/kards/Config",
+	"configRoot": "<kards-src>/Config",
 	"excludeFiles": [ "verticalKardsButtonWithText_Widget", "Battle_Settings_Widget",
 	                  "BP_EntryPointBaseComponent", "BP_EntryPointActor", "card_event_tfsh",
 	                  "BP_CardFunctions", "U_CardFunctionsNotifier" ]
@@ -707,17 +707,17 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 
 ### 6.2 引擎版本 —— **本轮没在 `Config/DefaultEngine.ini` 里找到**
 
-`E:\peoject\kards\Config\` 只有 4 个文件：`DefaultEditor.ini`(0 B)、`DefaultEngine.ini`(9.18 KB)、
+`<kards-src>\Config\` 只有 4 个文件：`DefaultEditor.ini`(0 B)、`DefaultEngine.ini`(9.18 KB)、
 `DefaultGame.ini`(1.37 KB)、`DefaultInput.ini`(9.03 KB)。**`DefaultEditor.ini` 是 0 字节。**
 我用 `Select-String -Pattern 'EngineVersion|BuildId|BranchName|CompatibleChangelist'`
 扫了 `Config\*.ini`，**0 命中**。
 
 **但引擎版本可以从别处确定，而且是确定的：**
-- `E:\peoject\kards\Plugins\KardsBlueprintRestorer\README.md:3`
+- `<kards-src>\Plugins\KardsBlueprintRestorer\README.md:3`
   > Editor-only **UE5.6** plugin for rebuilding editable KARDS card Blueprints from FModel/CUE4Parse JSON.
-- `E:\peoject\kards\Plugins\AssetRegistryTool\README.md:3`
+- `<kards-src>\Plugins\AssetRegistryTool\README.md:3`
   > **UE 5.6.1** editor plugin for building a new `AssetRegistry.bin` ...
-- `Tools/pakcook/settings.json` 的 `unrealpak` 指向 `E:/Epic Games/UE_5.6/...`
+- `Tools/pakcook/settings.json` 的 `unrealpak` 指向 `<ue-engine-dir>/UE_5.6/...`
 - 我们仓库里有两个 usmap：`klink bot/kards-5.6.1-0+++UE5+Release-5.6-Fork-unknown.jmap`
   和 `klink bot/kards1.60_No_UE4SS.jmap`
 
@@ -725,13 +725,13 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 
 ### 6.3 `.mcp.json` / `.reasonix` —— 是"用 Python 遥控 UE 编辑器"的工作区
 
-`E:\peoject\kards\.mcp.json`（全文 13 行）
+`<kards-src>\.mcp.json`（全文 13 行）
 ```json
 {
   "mcpServers": {
     "unreal-mcpython": {
       "command": "<user-home>\\AppData\\Local\\Programs\\uv\\uv.exe",
-      "args": [ "--directory", "E:/peoject/kards/.reasonix/unreal-mcp/mcp-server",
+      "args": [ "--directory", "<kards-src>/.reasonix/unreal-mcp/mcp-server",
                 "run", "src/unreal_mcp/main.py" ]
     }
   }
@@ -742,7 +742,7 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 1. **一堆一次性小脚本 + 查表产物**：`parse_pak.py`、`cardid_lookup.{py,txt}`、
    `kredits_lookup.{py,txt}`、`repeat_lookup.{py,txt}`、`extra_lookup.{py,txt}`、
    `make_row.py`、`make_mini_reg.py`、`prep_csv.py`、`append_row.py`、`xiangtai_row.json`。
-   从 `parse_pak.py` 里硬编码的 `pak_path = r"E:\klink\kds\kards\Content\Paks\mod_P.pak"`
+   从 `parse_pak.py` 里硬编码的 `pak_path = r"<klink-src>\kds\kards\Content\Paks\mod_P.pak"`
    可以看出这是**做 DIY 卡 mod 时的临时脚本区**。
 2. **`unreal-mcp/`**：`mcp-server/`（Python MCP 服务端 + `_catalog.py` 49 KB 工具目录）
    + `repo/`（一个 git clone 的 UnrealMCPython 上游）。
@@ -778,7 +778,7 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 
 ### 6.5 `Binaries/` —— 只有我们自己编的 3 个 DLL，没有游戏本体
 
-`E:\peoject\kards\Binaries\Win64\`：
+`<kards-src>\Binaries\Win64\`：
 `UnrealEditor-BlueprintJson.dll`(58 KB) / `UnrealEditor-kards.dll`(625 KB) /
 `UnrealEditor-KardsCore.dll`(60 KB) + 三个 58~62 MB 的 `.pdb` + `kardsEditor.target` + `UnrealEditor.modules`。
 → **是这份工程自己编译的产物**。因为没有对应的 `.cpp` 实现体（§①），
@@ -859,9 +859,9 @@ IMPLEMENT_MODULE(FDefaultGameModuleImpl, BlueprintJson);
 同目录 `temp/KardsChineseDocs/` 是同一份插件的**旧快照**（Intermediate/binaries 更多），
 4 个 md 的内容一致。
 
-### 6.8 ★★★ 第二个金矿：`E:\bpasm\bpasm.exe` —— 蓝图字节码反汇编器（**已验证可用**）
+### 6.8 ★★★ 第二个金矿：`<bpasm-dir>\bpasm.exe` —— 蓝图字节码反汇编器（**已验证可用**）
 
-`E:\bpasm\` 内容：
+`<bpasm-dir>\` 内容：
 | 文件 | 大小 | 说明 |
 |---|---|---|
 | `bpasm.exe` | 78.9 MB | **UE 蓝图字节码 assembler/disassembler** |
@@ -884,7 +884,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 | `bpasm disasm <BP_Logic.uasset> VER_UE5_6 out.bpasm`（**无 --usmap**） | `Wrote ... (48 chars)` —— 只有一行 `.objectversion`，**等于没解出来** |
 | 同上 **加** `--usmap kards-5.6.1-0+++UE5+Release-5.6-Fork-unknown.jmap` | `Wrote ... (1018481 chars)` —— **1 MB 完整反汇编，181 个 export 全出来了** |
 
-**已产出的可用反汇编（放在 `E:\bpasm\`）：**
+**已产出的可用反汇编（放在 `<bpasm-dir>\`）：**
 - `bp_logic_us.bpasm`（1.02 MB / 28109 行）← `klink bot/live/Logic/kards/Content/Blueprints/Logic/BP_Logic.uasset`
 - `notifier.bpasm`（53 KB / 1895 行）← `.../Logic/U_CardFunctionsNotifier.uasset`
 
@@ -893,15 +893,15 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 **(1) `HasAttackLeft` / `HasMovementLeft` 的调用点确认在 `CanCardDoAnything` 里，
 且它们是原生外部符号（`@import(319)` / `@import(321)`），字节码里没有实现：**
 
-`E:\bpasm\bp_logic_us.bpasm:1494` → `.export 15 "CanCardDoAnything" {`
-`E:\bpasm\bp_logic_us.bpasm:1816-1819`（`GetTurnNumber`）
+`<bpasm-dir>\bp_logic_us.bpasm:1494` → `.export 15 "CanCardDoAnything" {`
+`<bpasm-dir>\bp_logic_us.bpasm:1816-1819`（`GetTurnNumber`）
 ```
     localvirtualfunction name "GetTurnNumber" {
         localvariable @path(owner=16) "CallFunc_GetTurnNumber_TurnNumber"
         endfunctionparms
     }
 ```
-`E:\bpasm\bp_logic_us.bpasm:1867-1877`
+`<bpasm-dir>\bp_logic_us.bpasm:1867-1877`
 ```
     context {
         localvariable @path(owner=16) "_card"
@@ -915,7 +915,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
         localvariable @path(owner=16) "CallFunc_HasAttackLeft_doesIt"
     }
 ```
-`E:\bpasm\bp_logic_us.bpasm:2142-2169`
+`<bpasm-dir>\bp_logic_us.bpasm:2142-2169`
 ```
     context {
         localvariable @path(owner=16) "_card"
@@ -937,8 +937,8 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 
 **(2) `HasDeploymentSickness` 的表达式逐句对上：**
 
-`E:\bpasm\bp_logic_us.bpasm:20760` → `.export 82 "HasDeploymentSickness" {`
-`E:\bpasm\bp_logic_us.bpasm:20765-20771`
+`<bpasm-dir>\bp_logic_us.bpasm:20760` → `.export 82 "HasDeploymentSickness" {`
+`<bpasm-dir>\bp_logic_us.bpasm:20765-20771`
 ```
     context {
         localvariable @path(owner=83) "Card"
@@ -949,7 +949,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
         }
     }
 ```
-`E:\bpasm\bp_logic_us.bpasm:20784-20792`
+`<bpasm-dir>\bp_logic_us.bpasm:20784-20792`
 ```
         callmath @import(256) "EqualEqual_IntInt" {
             context { localvariable @path(owner=83) "Card" }
@@ -960,7 +960,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
             endfunctionparms
         }
 ```
-`E:\bpasm\bp_logic_us.bpasm:20794-20800`（`IsLocatedOnBoard`，`@import(325)`）
+`<bpasm-dir>\bp_logic_us.bpasm:20794-20800`（`IsLocatedOnBoard`，`@import(325)`）
 → **`!getHasBlitz() && (enterPlayOnTurn == GetTurnNumber()) && IsLocatedOnBoard()` 三段全对上。**
 §①.9 §②.2 的结论**成立**。
 
@@ -976,14 +976,14 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 ### 对内核/工具的直接影响
 
 1. **`bpasm` 应该成为我们读卡牌逻辑的主工具**，而不是继续在 Python 里自己解 Kismet 字节码。
-   它已经在 `E:\bpasm\`，**不需要安装**，只要 `bpasm.exe disasm <uasset> VER_UE5_6 out.bpasm --usmap <jmap>`。
+   它已经在 `<bpasm-dir>\`，**不需要安装**，只要 `bpasm.exe disasm <uasset> VER_UE5_6 out.bpasm --usmap <jmap>`。
    **务必带 `--usmap`**，否则静默返回 48 字节空壳（exit code 还是 0，**很容易误判成"这资产没字节码"**）。
 2. **对"卡内私有函数没进 IR"那个缺口，`bpasm` 是直接的答案**：
    它按 **export** 输出，`.export N "函数名"`，**卡内私有函数就是普通的 export**，
    不像我们现在的方案只编 `ExecuteUbergraph_*` 入口。**这一条建议优先验证。**
 3. **`bpasm asm` 还能写回**——如果哪天真要改蓝图（比如做实验卡），这条路是通的。
 4. **注意 usable 资产都在 `klink bot/live/` 下**（Logic 28 / Cards 1000+ / GameState / Library / UIBP），
-   `E:\peoject\kards\Content\` 里那 62 个只有 4 个和规则沾边。
+   `<kards-src>\Content\` 里那 62 个只有 4 个和规则沾边。
 
 ### 不确定的
 
@@ -993,7 +993,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
   **本轮没有查明原因**（可能是版本号要换、可能是这些 DIY/mod 资产的 export 表结构不同）。
   但 `BP_Logic`(107 KB uasset) 和 `U_CardFunctionsNotifier`(24.5 KB) 都正常 →
   **大资产没问题，小资产要留意。**
-- 我**没有**去 `C:\Apps\game\kards\Binaries\Win64\ue4ss`（`kards_functions_zh.md:12` 给的提取目录）
+- 我**没有**去 `<kards-install>\Binaries\Win64\ue4ss`（`kards_functions_zh.md:12` 给的提取目录）
   核对 364 个头文件 / 994 个 UFUNCTION。要去的话得跨盘读别人的游戏目录。
 - `bpasm.exe` 的 `asm` 模式本轮**没有实测**。
 
@@ -1021,7 +1021,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 
 ---
 
-### 🥈 二、`E:\bpasm\bpasm.exe` —— 现成的蓝图字节码反汇编器，且已实测可用
+### 🥈 二、`<bpasm-dir>\bpasm.exe` —— 现成的蓝图字节码反汇编器，且已实测可用
 
 `bpasm disasm <uasset> VER_UE5_6 out.bpasm --usmap <jmap>` 一条命令，
 把 `BP_Logic.uasset` 解出 **1.02 MB / 28109 行 / 181 个 export 的完整字节码文本**，
@@ -1078,13 +1078,13 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 | 文件 | 内容 |
 |---|---|
 | `_stub_fns.txt` | `CardFunctionsStub.h` 全部 190 个函数，格式 `行号\|函数名\|完整参数表` |
-| `E:\bpasm\bp_logic_us.bpasm` | `BP_Logic` 完整反汇编（1.02 MB / 28109 行 / 181 export） |
-| `E:\bpasm\notifier.bpasm` | `U_CardFunctionsNotifier` 完整反汇编（53 KB / 1895 行 / 99 export） |
-| `E:\bpasm\bp_logic.bpasm` / `card_test.bpasm` / `card_pg.bpasm` | **48 字节空壳，是"忘了带 `--usmap`"的反面样例，留着当对照** |
+| `<bpasm-dir>\bp_logic_us.bpasm` | `BP_Logic` 完整反汇编（1.02 MB / 28109 行 / 181 export） |
+| `<bpasm-dir>\notifier.bpasm` | `U_CardFunctionsNotifier` 完整反汇编（53 KB / 1895 行 / 99 export） |
+| `<bpasm-dir>\bp_logic.bpasm` / `card_test.bpasm` / `card_pg.bpasm` | **48 字节空壳，是"忘了带 `--usmap`"的反面样例，留着当对照** |
 
 ## 附：本轮**没有**覆盖的地方（别当成已查过）
 
-1. `C:\Apps\game\kards\Binaries\Win64\ue4ss`（`kards_functions_zh.md:12` 给的提取目录）
+1. `<kards-install>\Binaries\Win64\ue4ss`（`kards_functions_zh.md:12` 给的提取目录）
    —— 364 个头文件 / 994 个 UFUNCTION 没核对。**这是补齐 §② 那 3103 差集必须去的地方。**
 2. `BP_CardFunctions.uasset`（`GetCardFromID` / `ChangeAttack` 的真实实现）
    —— 本轮只反汇编了 `BP_Logic` 和 `U_CardFunctionsNotifier`，**没碰它**。
@@ -1092,7 +1092,7 @@ bpasm check  <file.bpasm> [asset.uasset] [version] [--usmap <file.usmap>] [--jso
 3. `BP_GameState_Battle.uasset` —— 资产在 `klink bot/live/GameState/`（30 KB + 76 KB），
    **本轮没反汇编**。§①.9 的前线定案是从它来的，如果要复核应该对它跑一次 `bpasm`。
 4. `bpasm asm` 模式、`bpasm check --json` —— **没实测。**
-5. `E:\peoject\kards\temp\1\` —— 是 `Source/` + `Config/` + `Content/` 的**旧快照**
+5. `<kards-src>\temp\1\` —— 是 `Source/` + `Config/` + `Content/` 的**旧快照**
    （`BaseCardObject.h` 的 SHA256 与 `Source/` 那份完全相同：`F4133F388EFEDC30...`），
    **没有额外信息**，不用再看。
 6. `temp/3/`（`AssetRegistry.bin` 6.66 MB + `main.go` 10 KB + `pakcook.exe`）——

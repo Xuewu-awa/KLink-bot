@@ -1007,10 +1007,38 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 # ⇒ 无输出
 ```
 
-此外，本次核实了**已跟踪的源码 / 文档 / 脚本里不含本机绝对路径**。唯一的例外是
-`klink bot/docs/内部现状与路线图.md` —— 那份作者内部文档在**描述脱敏过程本身**时
-提到了原始路径（即 `<repo-root>` 与 `<user-home>` 的原值）。
-（发布前另有一处残留在 `klink bot/tools/nn-r6-report.py` 里的本机路径，已改成 `<repo-root>`。）
+此外，本次核实了**已跟踪的源码 / 文档 / 脚本里不含本机绝对路径** —— 本机路径一律
+写成占位符：
+
+| 占位符 | 它代表的本机路径（前缀） |
+|---|---|
+| `<kards-src>` | KARDS 客户端的 C++ 源码树（本机在 `E:` 盘的 `\peoject\kards`） |
+| `<bpasm-dir>` | 蓝图字节码汇编 / 反汇编器 `bpasm.exe` 所在的目录（`E:` 盘的 `\bpasm`） |
+| `<klink-src>` | 上游 KLink 仓库（`E:` 盘的 `\klink`） |
+| `<repo-root>` | 本仓库所属的父仓库根（`E:` 盘的 `\项目\klink-dotnet`） |
+
+替换**只动前缀**，后面的分隔符与子路径原样保留：`…\peoject\kards\Source\BaseCardObject.h`
+⇒ `<kards-src>\Source\BaseCardObject.h`；`\` 与 `/` 两种写法都认。
+
+这套约定由 `out/audit/desensitize-paths.py` 执行、也可随时复查（映射表的原值就在它的
+`PATH_MAP` 里）：
+
+```powershell
+python out/audit/desensitize-paths.py --check
+# ⇒ 干净：没有发现 PATH_MAP 里可映射的本机绝对路径
+```
+
+**唯一的已知例外**是 `klink bot/docs/内部现状与路线图.md` —— 那份作者内部文档在
+**描述脱敏过程本身**时提到了原始路径（即 `<repo-root>` 与 `<user-home>` 的原值），
+改了这段话就自相矛盾，所以脚本显式跳过它。
+（`src/KLink.Bot/Effects/CardApiDispatch.cs` 的同类残留由另一条清理线负责，
+`desensitize-paths.py` 暂时也把它列在跳过名单里。）
+
+按约定，`--check` 还会把**不在映射表里**的 `E:` 盘前缀单列出来，**只报告、不猜着改**。
+目前剩两类：`E:` 盘上的 UE 引擎安装目录（出现在 `kards-cpp源码勘察.md` 引用的
+`pakcook/settings.json` 片段里），以及一句「本轮工作目录在 `E:` 盘根」的叙述 ——
+内层发布副本与父仓库的工作副本各一份，共 6 处。要清理就先给它们定下占位符，
+再往 `PATH_MAP` 里加一条。
 
 ### 10.3 使用者的义务
 

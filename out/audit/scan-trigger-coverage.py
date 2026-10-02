@@ -2,7 +2,7 @@
 import json, re, os, collections
 
 ROOT = r'<repo-root>'
-hdr = open(r'E:\peoject\kards\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
+hdr = open(r'<kards-src>\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
 native_events = sorted(set(re.findall(r'\n\s*void\s+(On[A-Za-z_0-9]+)\s*\(', hdr)))
 
 ir = json.load(open(os.path.join(ROOT, r'klink bot\docs\card-ir.json'), encoding='utf-8'))

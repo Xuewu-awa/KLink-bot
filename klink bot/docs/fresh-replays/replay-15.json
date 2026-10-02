@@ -285,7 +285,7 @@
      "card_id": 1,
      "location_number": 0
     },
-    "left_player_name": "killmyworld",
+    "left_player_name": "player-B",
     "right_player_tag": 7794,
     "player_id_right": 2,
     "starting_hand_left": [
@@ -623,7 +623,7 @@
     "left_player_officer": true,
     "card_back_left": "",
     "card_back_right": "cardback_winter_war",
-    "right_player_name": "Furry_Euhan"
+    "right_player_name": "player-C"
    },
    "match": {
     "right_is_online": true,

@@ -2,7 +2,7 @@
 import json, re, os, collections
 
 ROOT = r'<repo-root>'
-hdr = open(r'E:\peoject\kards\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
+hdr = open(r'<kards-src>\Source\kards\Public\BaseCardObject.h', encoding='utf-8', errors='replace').read()
 native = {}
 for m in re.finditer(r'\n\s*(?:void|bool|int32|float|FString|TArray<[^>]*>|[A-Za-z_][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)\s*;', hdr):
     native[m.group(1)] = m.group(2).strip()

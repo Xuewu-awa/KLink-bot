@@ -1,7 +1,7 @@
 """从 fyserver 控制台日志里抽出真实客户端动作，还原线上协议。
 
 日志形如：
-    [23:34:22] [fyserver] 解密结果：{"action_type": "PC", "player_id": 892257,
+    [23:34:22] [fyserver] 解密结果：{"action_type": "PC", "player_id": 900009,
         "action_data": {"0":"64","1":"3","2":"0","3":"0","4":"jJ","84":"11"},
         "action_id": 49, "local_subactions": 1}
 
