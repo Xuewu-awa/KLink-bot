@@ -451,7 +451,10 @@ public sealed class ReplayRunner
         //    正常对局里同一个人不可能连着结束两次回合。
         Side? endedTurnSide = null;
 
-        var seenPlayedIds = new HashSet<int>();
+        // ⚠️ 这里原有一个 `seenPlayedIds`（「曾打出过的 cardID」集合），用来把
+        //    「PC 引用一张已经打出过的卡」判成重复记录。**已删除**（2026-10-02）：
+        //    那条判据会误杀「退回手牌后再打出」这条合法路径（见下面 `PC` 分支的注释）。
+        //    判重只保留「该 cardID **当前在场上**」这一条。
         string? hqKey = replay.InferHqKey();
 
         // 客户端发号用的回合号 —— 数 `XActionStartOfTurn`（见下面那段长注释）。
@@ -806,10 +809,28 @@ public sealed class ReplayRunner
                                 break;
                             }
 
-                            if (card.Location.IsBoard() || seenPlayedIds.Contains(card.CardId))
+                            // ⚠️ **只判「当前在场上」**，**不再判「曾打出过」**（2026-10-02 修正）。
+                            //
+                            // 旧判据是 `card.Location.IsBoard() || seenPlayedIds.Contains(card.CardId)`，
+                            // 第二条是错的：**「退回手牌后再打出」是一条合法路径**
+                            //（`MoveUnitFromBoardToOwnersHand` 把单位退回手牌，之后再 `PC` 打出来），
+                            // 而「曾打出过就永远算重复」会把它误判成重复动作 ⇒ 那条 `PC` 被拒
+                            // ⇒ 内核手里没有那张卡 ⇒ 之后所有引用它的动作全失败。
+                            //
+                            // 实测（回放 310284，服务端记录里那一局）：
+                            //   `#64 t16` 左方 `card_unit_ace_of_spades` 的 `OnStartOfTurn`
+                            //   把**所有单位**退回手牌（IR `i=815 GetAllUnitsOnBoard` → `i=208/i=475`
+                            //   `MoveUnitFromBoardToOwnersHand`）；人类随后在
+                            //   `#66 t17 PC 5` / `#67 t17 PC 38` / `#93 t21 PC 32` 把其中三张**再打出来**。
+                            //   旧判据把这三条判成「重复记录」⇒ 内核里它们留在手上
+                            //   ⇒ 后面 `#80/#81 t19 AC`、`#87/#89 t20 ML`、`#92 t21 AC`
+                            //   一连串「攻击者/目标不在场上」。
+                            //
+                            // 「已经在场上还收到 PC」仍然要拦（那确实是重复记录）。
+                            if (card.Location.IsBoard())
                             {
                                 duplicate = true;
-                                failure = "重复记录（该 cardID 已在场/已打出过）";
+                                failure = "重复记录（该 cardID 已在场）";
                                 break;
                             }
 
@@ -859,7 +880,6 @@ public sealed class ReplayRunner
                             }
 
                             engine.PlayCard(card, target);
-                            seenPlayedIds.Add(card.CardId);
                             applied = true;
                             break;
                         }
