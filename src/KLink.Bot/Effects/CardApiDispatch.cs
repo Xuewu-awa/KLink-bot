@@ -1196,15 +1196,39 @@ public sealed partial class CardApi
         // 候选表由**那张卡自己**的 `GetChooseSpawnCards` 算（每卡过滤条件不同）。
         var candidates = GetChooseSpawnCards(c, selecting, out _, out bool keepOrder);
 
-        // ⚠️ **`keepOrder` 为假时蓝图会先洗一遍候选表，本内核故意不做**（2026-10-02 实测否决）：
+        // ⚠️ **`keepOrder` 为假时蓝图会先洗一遍候选表，本内核故意不做**。
+        //    （2026-10-02 实测否决；2026-10-02 凌晨六 补上穷举否证与边界说明。）
+        //
         //    `BP_CardFunctions::selectCardToDraw` 的 L_08C6
         //    （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:33783`）确实是
-        //    `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)`，
+        //    `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)`；
         //    我按"游标必须对齐"的理由实现过一次 —— **结果整体变差**：
         //    人类失败 13 → 22、应用 395/417 → 386/417，`773639` 更是从 0 条人类失败
-        //    退回到 5 条。说明**我们这边的 `keepOrder` 判定与客户端不一致**
-        //    （我们算成 false、客户端算成 true，或反之），照做等于往游标里塞多余的消费。
-        //    ⇒ 在把 `keepOrder` 的来源查清之前，**不加**这一次消费。
+        //    退回到 5 条。
+        //
+        //    ⚠️ **当年注释里那条推断（"我们的 `keepOrder` 判定与客户端不一致"）已被证伪**：
+        //    pams 蓝图里 `keepOrder = false` 是**硬编码字面量**（`card_event_pams.g.cs:245`），
+        //    内核 IR 里也是 `false`（`GetChooseSpawnCards` 的 `i=824`）⇒ **两边一致**。
+        //    所以"锅在 keepOrder"这条要划掉 —— 它只是当年那个回归的现象解释，不是原因。
+        //
+        //    ⇒ 改用**穷举**去否证「补上这次洗牌」这个方案本身。模型 =「洗牌后取
+        //      `shuffled[候选下标]`」，判据 = 6 局各自的第一次 pams 构成 **6 个独立约束**
+        //      （对 1 个未知量 ⇒ **只有全中才算证据**，命中 1~2 个是噪声）。
+        //      已全灭的维度：池口径(41/71/54/84) × 排序键(7 种) × 全局起始偏移 K(0..2000)
+        //      × 洗牌消耗次数(n/n−1) × **洗牌方向**(前向/后向/后向含 i=0/前向全区间)
+        //      × 不洗牌模型；消费顺序也已从蓝图定死（`OnPlayedFromHand` 只调
+        //      `selectCardToDraw`，`OnHandTargetSelected` 才做那次 `RandRange`）⇒ 不是顺序造成的。
+        //
+        //    ⚠️ **边界**：上面那个否证把 `CS` 的字段 `1` 当成"洗牌后数组的下标"，
+        //      而这一点**没有独立证据** —— `WireAction.cs:156` 里 `CS` 的 `CardId` 取自字段 `"2"`，
+        //      字段 `"1"` 只被 `SecondId` 读出来记日志；参考实现的 `autoPickCardToDraw`
+        //      也是用 `Map_Find` **按键**取待选项的。所以两种可能都存在：
+        //      字段 `1` 是下标 ⇒ 已被上表否证；字段 `1` 不是下标 ⇒ 这个模型**离线不可验证**。
+        //      **两种情况下都不该实现它。**
+        //
+        //    ⇒ 完整依据、复算配方与「哪些还没排除」：`README.md` §9.1.7
+        //      与 `klink bot/docs/内核补全队列.md` 的「2026-10-02（凌晨六）」一节。
+        //
         //    （回放路径本来也不需要它：答复自带卡名，不依赖候选表的顺序。）
         _ = keepOrder;
 
