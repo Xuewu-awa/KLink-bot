@@ -84,6 +84,22 @@ internal static class SelfTest
         new("第 214 阿穆尔：己方 T-34 +1 重甲 / 行动费 -1、离场还原", AmurTankAura),
         new("敢死队（committed crew）：Spitfire 变 0 费、部署 +3+3", CommittedCrewAura),
 
+        // ---- `ChangeAttack` / `ChangeDefense` 的 `changeType = 4`（2026-10-02）----
+        // 蓝图 `ChangeAttack` :6591 `localChangeType == 4 → L_096F` 是**撤销**该来源的攻 buff：
+        // :6789「amountRemoved == 0 ⇒ 什么都不做」、:6805「实参 amount 被 amountRemoved 覆盖」。
+        // 内核旧实现只处理 ct=2，ct=4 落进默认分支 ⇒「撤销」被当成「再加一次」。
+        // 卡池里有 6 个 amount≠0 的 ct=4 调用点（su_100 / ki_42_ii_ko / type_97 ×2 /
+        // kyushu_j7w3 / type_92_105mm），另有 42 个 amount=0 的（旧实现下全是空转）。
+        // ⚠️ 这 5 张卡**没有**出现在 BoardCompare 那 6 局回放里，所以回放对拍给不出信号 ——
+        //    这条自测是唯一能守住它的东西。
+        new("★ ChangeAttack 的 changeType=4 是**撤销该来源的攻击 buff**（给→撤必须回到原值）",
+            ChangeAttackTempBuffRemove),
+        // `ChangeDefense` 的 ct=4 在蓝图里是 :7906 `L_0E96` 的**非法值分支**（只 log + return），
+        // 与 `ChangeAttack` 的 L_096F **语义不一致** ⇒ 补的是 no-op，不是撤销。
+        // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
+        new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
+            ChangeDefenseChangeType4IsRejected),
+
         // ---- 三个规则 bug 的回归断言（2026-09-27）----
         new("3 掷弹兵：只有**德国**单位操作才 +1+1（别的阵营不算）", PanzergrenadierFactionGate),
         new("Attack 必须拒绝已经进弃牌堆的目标", AttackRejectsDeadTarget),
@@ -2001,6 +2017,181 @@ internal static class SelfTest
 
         return null;
     }
+    /// <summary>
+    /// `ChangeAttack` 的 `changeType = 4`（`EChangeType::tempBuffRemove`）= **撤销**，
+    /// 不是"再加一次"。这条断言守的就是那个分支。
+    ///
+    /// 蓝图出处（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
+    /// <code>
+    /// ChangeAttack（:6491）里 changeType 的分派：
+    ///   :6591 localChangeType == 4 → L_096F
+    ///   :6789 L_096F: if (amountRemoved == 0) { valueChanged = False; 直接结束 }   ← 没撤到东西 ⇒ 什么都不做
+    ///   :6805 L_09AB: localInputAmount = amountRemoved                             ← ★ 实参 amount 被覆盖，不参与运算
+    ///   :6808 L_09EF: decryptedAttackBuff = getAndDecryptAttackBuff(card)
+    ///   :6811 L_0A18: newBuff = decryptedAttackBuff + amountRemoved
+    ///   :6813 L_0A46: setAndEncryptAttackBuff(card, newBuff, …)
+    /// </code>
+    /// `amountRemoved` 是 `ChangeBuffsFromCards` 的出参（:6561 调用 / :6848 出参槽）：
+    /// <code>
+    ///   :6885 入口分派 changeType == 4 → :6887 goto L_0831
+    ///   :7080 L_0831 用 EChangeType::tempBuffGive(=0) 与 buffType 拼出键名，:7090 goto L_0369
+    ///   :6936 L_0369 Map_Find(cardToChange.buffsFromCards, instigatorID, …) 的通用删除路径
+    ///   :7474 L_16E6 localAmountRemoved = 已存的量 × -1（:7481/:7483），:7485 Map_Remove 掉那个键
+    /// </code>
+    /// ⇒ **撤销量 = 当初存进去的量**，与本次实参 `amount` 无关。
+    /// 对照：ct=0/1 走 :6918 `L_0250`，那里才有 `if (amount == 0) { amountRemoved = 0; return; }` 的短路。
+    ///
+    /// 修复前内核只处理了 ct=2，ct=4 落进默认分支 `ChangeAttack(target, +delta)` ——
+    /// 「+4 之后再撤 4」变成 +8，攻击力永远回不到原值。
+    /// </summary>
+    private static string? ChangeAttackTempBuffRemove(CardDatabase db)
+    {
+        const string unit = "card_unit_t_34";
+        if (db.Find(unit) is null)
+        {
+            return $"卡库里缺 {unit}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+
+        var target = state.CreateWithId(unit, Side.Left, 2, CardLocation.BoardFrontline, 0);
+        var giver = state.CreateWithId(unit, Side.Left, 3, CardLocation.BoardFrontline, 1);
+        var other = state.CreateWithId(unit, Side.Left, 4, CardLocation.BoardFrontline, 2);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = giver,
+            Controller = Side.Left,
+        };
+
+        // 蓝图实参形状：`ChangeAttack(卡, instigatorID, 数值, changeType, skipAction, out)`
+        // （卡池实测，例：`card_unit_su_100` IR i=376 给 +4/ct=0、i=206 撤 4/ct=4）
+        void ChangeAttack(CardInstance source, int amount, int changeType)
+        {
+            ctx.Self = source;
+            engine.Api.InvokeByName("ChangeAttack", null,
+                new object?[] { target, source.CardId, amount, changeType, false, null }, ctx, out _);
+        }
+
+        int baseAttack = target.Attack;
+
+        // ① 给→撤 往返：+4/ct=0 之后 4/ct=4，攻击力必须回到原值
+        ChangeAttack(giver, 4, 0);
+        if (target.Attack != baseAttack + 4)
+        {
+            return $"施加 ct=0 之后攻击力应为 {baseAttack + 4}，实际 {target.Attack}";
+        }
+
+        ChangeAttack(giver, 4, 4);
+        if (target.Attack != baseAttack)
+        {
+            return $"撤销 ct=4 之后攻击力应回到 {baseAttack}，实际 {target.Attack}"
+                 + $"（多出 {target.Attack - baseAttack}）—— ct=4 被当成「再加一次」了";
+        }
+
+        // ② 撤销一个**不存在**的来源 buff：不得崩、不得改数值（蓝图 :6789 的短路）
+        ChangeAttack(other, 4, 4);
+        if (target.Attack != baseAttack)
+        {
+            return $"撤销一个不存在的来源之后攻击力不该变（应 {baseAttack}，实际 {target.Attack}）";
+        }
+
+        // ③ 别的来源的 buff 不受影响 —— 撤销只动「该来源」那一个槽（`RemoveCostBuff` 的语义）
+        ChangeAttack(other, 2, 0);
+        ChangeAttack(giver, 5, 0);
+        ChangeAttack(giver, 5, 4);
+        if (target.Attack != baseAttack + 2)
+        {
+            return $"撤销 giver 的 buff 不该动 other 的：应 {baseAttack + 2}，实际 {target.Attack}";
+        }
+
+        // ④ 蓝图 :6805 的「实参 amount 被覆盖」：撤销量由存量决定，与这次传的数字无关
+        ChangeAttack(other, 99, 4);
+        if (target.Attack != baseAttack)
+        {
+            return $"ct=4 的实参应被忽略（撤销量 = 当初存的量）：应 {baseAttack}，实际 {target.Attack}";
+        }
+
+        // ⑤ 对已经撤干净的来源再撤一次不产生负向漂移
+        ChangeAttack(other, 2, 4);
+        if (target.Attack != baseAttack)
+        {
+            return $"对已撤销的来源再撤一次不该改数值：应 {baseAttack}，实际 {target.Attack}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `ChangeDefense` 的 `changeType = 4` —— **不是**撤销：蓝图把它当非法值直接拒绝。
+    ///
+    /// 出处 `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs` 的 `ChangeDefense`（:7543）：
+    /// <code>
+    ///   :7630 localChangeType == 0 → L_0E96
+    ///   :7634 localChangeType == 1 → L_07CB    （permBuff，加）
+    ///   :7638 localChangeType == 2 → L_03D8    （SetValue，设成绝对值）
+    ///   :7646 localChangeType == 4 → L_0E96    ← ★ 与 ChangeAttack 的 L_096F 完全不是一回事
+    ///   :7906 L_0E96: DirectClientLogger("change type incorrect for \"Change Defense\"")
+    ///   :7909         qqq = False
+    ///   :7911         return                   ← 什么都不改
+    /// </code>
+    /// 对照 `ChangeAttack`（:6591）：那里的 ct=4 有专门的 `L_096F` 撤销分支。
+    /// ⇒ 两个函数的 ct=4 **语义不一致**，所以这里对齐的是「no-op」，不是「撤销」。
+    ///
+    /// 当前卡池 `ChangeDefense` 的 changeType 分布是 `{1:333, 2:10}`，**ct=4 有 0 个调用点**
+    /// ⇒ 这条属**行为中性**的预防性对齐（改了也不会动 A/B 的任何一格）。
+    /// </summary>
+    private static string? ChangeDefenseChangeType4IsRejected(CardDatabase db)
+    {
+        const string unit = "card_unit_t_34";
+        if (db.Find(unit) is null)
+        {
+            return $"卡库里缺 {unit}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+
+        var target = state.CreateWithId(unit, Side.Left, 2, CardLocation.BoardFrontline, 0);
+        var giver = state.CreateWithId(unit, Side.Left, 3, CardLocation.BoardFrontline, 1);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = giver,
+            Controller = Side.Left,
+        };
+
+        void ChangeDefense(int amount, int changeType)
+        {
+            engine.Api.InvokeByName("ChangeDefense", null,
+                new object?[] { target, giver.CardId, amount, changeType, false, null }, ctx, out _);
+        }
+
+        int baseDefense = target.Defense;
+
+        // ct=1（permBuff）是「加」—— 顺便钉住"没顺手改 ct=1 语义"这件事
+        ChangeDefense(3, 1);
+        if (target.Defense != baseDefense + 3)
+        {
+            return $"ct=1 之后防御应为 {baseDefense + 3}，实际 {target.Defense}";
+        }
+
+        // 蓝图 ct=4 是 :7906 的非法值分支 ⇒ 防御一点不动（旧实现按「加」算，会变成 +6）
+        ChangeDefense(3, 4);
+        if (target.Defense != baseDefense + 3)
+        {
+            return $"蓝图 `ChangeDefense` 的 ct=4 是 L_0E96 的非法值分支（只 log + return），"
+                 + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// `card_event_committed_crew` —— "Until end of turn, Spitfires cost 0 to deploy
     /// and get +3+3 when deployed."

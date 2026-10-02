@@ -2361,6 +2361,51 @@ public sealed partial class CardApi
             return null;
         }
 
+        // ★★ `changeType == 4`（`EChangeType::tempBuffRemove`）= **撤销该来源施加的攻击 buff**。
+        //
+        // 判据是蓝图本体（`ref/kards-sim/.../BP_CardFunctions.g.cs` 的 `ChangeAttack`，起始 `:6491`）：
+        // <code>
+        //   :6591 localChangeType 分支：0→L_06BA  1→L_04C8  2/3/5/default→L_0357  4→L_096F
+        //   :6789 L_096F  if (amountRemoved == 0) { valueChanged = False; return }  ← 没撤到东西就什么都不做
+        //   :6805 L_09AB  localInputAmount = amountRemoved     ★ 实参 amount 被覆盖，不参与运算
+        //   :6808 L_09EF  decryptedAttackBuff = getAndDecryptAttackBuff(card)
+        //   :6811 L_0A18  newBuff = decryptedAttackBuff + amountRemoved
+        //   :6813 L_0A46  setAndEncryptAttackBuff(card, newBuff, …)
+        // </code>
+        // `amountRemoved` 是 `ChangeBuffsFromCards` 的出参（:6561 调用 / :6848 出参槽）：
+        //   ct=4 在它的入口分派里走 :6887 → `L_0831`（用 `EChangeType::tempBuffGive`(=0) 与
+        //   `buffType` 拼出键名），再进 `L_0369`（:6936）的通用删除路径，最终 `L_16E6`（:7474）：
+        //   `localAmountRemoved = 已存的量 × -1`（:7481/:7483），然后 `Map_Remove` 掉那个键（:7485）。
+        // ⇒ **撤销量 = 当初存进去的量**，与本次实参 `amount` 无关。
+        //   （对照 ct=0/1 走的 `L_0250`（:6918），那里才有 `if (amount == 0) { amountRemoved = 0; return; }` 的短路。）
+        //
+        // 卡池证据（`docs/card-ir.json` 全 IR 扫描，1735 条）：`ChangeAttack` 的 changeType 分布是
+        // `{0:60, 1:314, 2:6, 4:48}`；其中 ct=4 且 `amount≠0` 的 6 处、5 张卡，**全部是「先给后撤」
+        // 的成对形态**，撤销量恰好等于当初给的量：
+        //   card_unit_su_100                    i=376 `+4, ct=0` / i=206  `4, ct=4`
+        //   card_unit_ki_42_ii_ko               i=100 `+2, ct=0` / i=277  `2, ct=4`
+        //   card_unit_type_97                   i=1306 `+1, ct=0` / i=495 `1, ct=4`（另有 i=2595 一处）
+        //   card_unit_kyushu_j7w3               （给）/ i=155 `2, ct=4`
+        //   card_unit_type_92_105mm_field_gun   （给）/ i=1206 `1, ct=4`
+        // 剩下 42 处 ct=4 传的是 `amount=0` —— 旧实现下它们是**纯空转**
+        // （`ChangeAttack(target, 0)` 在 `CardApi.ChangeAttack` 开头就被 `delta == 0` 挡掉），
+        // 修完之后才会真的撤销。
+        //
+        // ⚠️ 这里**故意不碰** ct=0 / ct=1 的语义（它们仍然走下面那条 `ChangeAttack(target, delta)`）。
+        //    项目自己的日志里记过这条教训：把两件事混在一个改动里，A/B 结论就没法归因了。
+        //
+        // ⚠️ 来源必须取 `c.Self`，**不能**取 `SourceCardIdArg(a, 1, c.Self)`：
+        //    施加路径（下面的默认分支）用的就是 `c.Self`，撤销必须落在同一个槽上才对得起来。
+        if (!invert && changeType == ChangeTypeTempBuffRemove)
+        {
+            if (c.Self is { } remover)
+            {
+                RemoveAttackBuff(target, remover.CardId);
+            }
+
+            return null;
+        }
+
         ChangeAttack(target, invert ? -delta : delta, c.Self);
         return null;
     }
@@ -2383,6 +2428,24 @@ public sealed partial class CardApi
         //   实测调用点：`card_unit_no_9_commando` i=53（防设成 1）、
         //   `card_unit_meteor` i=432（防设成 defTotal×2）。
         int value = IntArg(a, 2);
+
+        // ★ `changeType == 4`：蓝图 `ChangeDefense`（起始 `:7543`）**没有**撤销分支 ——
+        //   :7646 `localChangeType == 4 → L_0E96`，而 :7906 `L_0E96` 是
+        //   `DirectClientLogger("change type incorrect for \"Change Defense\"")`（:7907）
+        //   + `qqq = False`（:7909）+ return（:7911），也就是**非法值，什么都不改**。
+        //   对照 `ChangeAttack`（:6591）：那里的 ct=4 有专门的 `L_096F` 撤销分支。
+        //   ⇒ 两个函数的 ct=4 **语义不一致**，所以这里对齐的是 no-op，
+        //     **不是** `RemoveAttackBuff` —— 对称地挂一个撤销会和蓝图相反。
+        //
+        // 为什么把它显式写出来（而不是省掉）：`ChangeAttack` 的 ct=4 修好之后，
+        //   很容易有人「顺手对称」地给这里也挂一个 `RemoveAttackBuff`。
+        // 当前卡池 `ChangeDefense` 的 changeType 分布是 `{1:333, 2:10}`，
+        //   **ct=4 有 0 个调用点** ⇒ 这条是**行为中性**的预防性对齐（A/B 一格都不会动）。
+        if (IntArg(a, 3) == ChangeTypeTempBuffRemove)
+        {
+            return null;
+        }
+
         if (IntArg(a, 3) == ChangeTypeSetValueReal)
         {
             SetDefenseValue(target, Math.Clamp(value, 0, 99), c.Self);
@@ -2460,7 +2523,13 @@ public sealed partial class CardApi
         return null;
     }
 
-    /// <summary>`ChangeKreditCost` 的 changeType 取值（实测只出现这三种）。</summary>
+    /// <summary>
+    /// `ChangeKreditCost` 的 changeType 取值（实测只出现这三种）。
+    ///
+    /// ⚠️ 这几个常量是**逐字的 `EChangeType` 枚举值**，所以同名的 4 也被
+    /// `ChangeAttack`（撤销该来源的攻 buff）/ `ChangeDefense`（非法值，no-op）复用 ——
+    /// 名字里的 "Cost" 只是它当初的落点，别再按"只属于费用"来理解。
+    /// </summary>
     private const int ChangeTypeOffset = 0;        // 相对卡面费用加减
     private const int ChangeTypeSetValue = 1;      // 设成绝对值
     private const int ChangeTypeTempBuffRemove = 4; // 撤销该来源的临时改费
@@ -2522,6 +2591,56 @@ public sealed partial class CardApi
         {
             target.RecalculateStats();
         }
+    }
+
+    /// <summary>
+    /// 撤销某个来源在目标卡上的**攻击** buff（该来源的其余 buff 保留）——
+    /// `ChangeAttack` 的 `changeType = 4`（`EChangeType::tempBuffRemove`）的落地处，
+    /// 形状照 <see cref="RemoveCostBuff"/>（取槽 → 清零 → 空槽删掉 → `RecalculateStats`）。
+    ///
+    /// ⚠️ 与费用那个的关键差别：**攻击力不是派生量**。
+    /// <see cref="CardInstance.RecalculateStats"/> 只重算费用 / 行动费 / 重甲
+    /// （见它自己的注释「落点：KreditCost、OperationCost、重甲关键字」），**不动 Attack**；
+    /// 而 `CardApi.ChangeAttack` 是直接写 `target.Attack += delta` 的 ——
+    /// 所以撤销必须自己做**逆运算** `-=`（同一形状见 `CardApi.RemoveTemporaryBuffs`），
+    /// 光清 buff 槽会让攻击力永久偏高。
+    ///
+    /// ⚠️ 槽位取 `(sourceId, false)`（永久槽）：内核的施加路径
+    /// （`DoChangeAttack` 的默认分支）调的是 `ChangeAttack(target, delta, c.Self)`，
+    /// `temporary` 用默认值 `false` ⇒ ct=0 / ct=1 都落在**永久槽**里。
+    /// 撤销必须落在**同一个槽**上，「给→撤」才闭合。
+    /// （蓝图那边更细：ct=0 存的是 `tempBuffGive` 键、ct=1 存的是 `permBuff` 键，
+    /// ct=4 只删 `tempBuffGive` 那一个键。内核是「一个来源一个槽」的简化模型 ——
+    /// 这属于既有口径，本轮**不动**，只保证给/撤这一对能对消。）
+    ///
+    /// 不发任何事件：这是 <see cref="RemoveCostBuff"/> 的形状（它只清槽 + `RecalculateStats`）。
+    /// 蓝图 ct=4 之后确实还会走到 `NotifyGainAttack` / `ExecuteAfterChangeAttackEvents`
+    /// （:6730 `L_07C6` → `IsActionProcess` → :6771 `L_08C0`），但那是**另一件事**：
+    /// 补事件会往 `ActionLog` 里多插动作，把回放对拍的结论和本次数值修复搅在一起。
+    /// </summary>
+    private void RemoveAttackBuff(CardInstance target, int sourceId)
+    {
+        var key = (sourceId, false);
+        if (!target.BuffsBySource.TryGetValue(key, out var buff))
+        {
+            // 蓝图 :6789 `L_096F` 的短路：`amountRemoved == 0` ⇒ 什么都不做（不崩、不改数值）。
+            return;
+        }
+
+        // 逆运算：`CardApi.ChangeAttack` 是 `target.Attack += delta` + `buff.Attack += delta`，
+        // 所以撤销是 `-= buff.Attack`；下限 0 与施加侧的 `Math.Max(0, …)` 对称。
+        if (buff.Attack != 0)
+        {
+            target.Attack = Math.Max(0, target.Attack - buff.Attack);
+        }
+
+        buff.Attack = 0;
+        if (buff.IsEmpty)
+        {
+            target.BuffsBySource.Remove(key);
+        }
+
+        target.RecalculateStats();
     }
 
     private object? DoSetKreditCost(EffectContext c, object? r, object?[] a)
