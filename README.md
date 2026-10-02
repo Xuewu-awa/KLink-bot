@@ -115,6 +115,39 @@ card-ir.json（9.4 MiB / 1735 条）
 **接法**（可核实的证据）：`src/KLink.Bot/Engine/UeRandomStream.cs` 与本仓库里的那一份
 **SHA-256 相同**（`55BD6F19…`），说明抽取是逐字节搬运、不是重新实现。
 
+#### 1.4.1 为什么会有这个独立仓库
+
+**同一份 bot 也会随启动器仓库一起发布**（`KLink-dotnet` 的 `src/KLink.Bot`）。
+这里单独开一个仓库，**唯一目的是方便别人 clone**：
+
+| | 启动器仓库 `KLink-dotnet` | **本仓库 `klink bot`** |
+|---|---|---|
+| 内容 | 启动器（WPF UI）+ 私服 + bot | **只有规则内核 + AI + 数据 + 工具** |
+| clone 之后能做什么 | 开服、起启动器、进游戏打人机 | **直接跑规则 / 自对弈 / 训练 / 审计**（见 §5、§6） |
+| 体量 | 大得多（含 WPF UI、服务器、资源） | **463 个文件 / 约 22.62 MiB** |
+| 需要游戏本体吗 | 需要（要探测 `kds\kards\Binaries\Win64\kards-Win64-Shipping.exe`） | **不需要** |
+| 需要 .NET 之外的依赖吗 | WPF / Windows 桌面 | 只要 .NET 10 SDK（Python 可选） |
+
+⇒ 如果你只想**研究或改进这个规则内核与 AI**，clone 本仓库就够了；
+如果你想**实际开一局**，需要启动器仓库 + 你自己的正版游戏。
+
+#### 1.4.2 两个仓库的关系与同步
+
+- **`src/KLink.Bot/**` 在两边是同一份代码**（本仓库是逐字节搬运，不是 fork）。
+- 让本仓库能**独立跑起来**的东西是一并带上的：数据（`klink bot/docs/**`）、
+  Python 工具（`klink bot/tools/**`）、审计产物（`out/audit/**`）、真实对局语料
+  （`out/_server-replays/**`）。
+- **只收了 5 个 C# 工具工程**（`BotSim` / `ServerBridgeTest` / `NNTrain` / `NNPlay` / `AotProbe`），
+  即本文档里真正会让读者去跑的那几个。上游还有一批**没有纳入**：
+  `DevProbe`（自对弈逐回合 diff）、`NNEarlyProbe`（NN 打分归因探针）、
+  `TriCompare` / `BoardCompare` / `SimCompare`（三种对拍器）、`AuraDiag`（光环诊断）、
+  `SmokeTest` / `PakTest` / `HostTest` / `LauncherApiTest` / `BotNameTest` / `FyServerStub`，
+  以及 `NNTrain` 的训练数据文件（`*.bin`，最大一份 7.5 GB，被 `.gitignore` 排除）。
+  ⚠️ 其中 `TriCompare` / `BoardCompare` / `SimCompare` 是**对拍工具链**（内核 vs 真实牌局逐字段对拍），
+  如果你要继续做「三方对拍」，值得从上游一并取来。
+- **建议的同步方向**：改动先落在上游 `KLink-dotnet`，再同步到本仓库，避免两边分叉
+  （这一条是文档建议，不是硬性约束）。
+
 ---
 
 ## 2. 核心难题：确定性锁步下的逐位复刻
@@ -806,19 +839,23 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 | 指标 | 值 |
 |---|---|
-| 已跟踪文件 | **461 个** |
-| 已跟踪文件总字节 | **23,613,236 B ≈ 22.5 MiB**（十进制 23.6 MB） |
-| `.git` pack | **3.98 MiB**（503 个对象）—— 大 JSON 压得很好 |
+| 已跟踪文件 | **463 个** |
+| 跟踪内容总字节 | **≈ 22.6 MiB**（`git ls-tree -r -l HEAD` 的 size 列求和；`.gitattributes` 已把行尾统一成 LF） |
+| `.git` 目录 | **约 4.2 MiB**（其中 pack 3.98 MiB / 503 个对象）—— 大 JSON 压得很好 |
 | 最大单文件 | `klink bot/docs/card-ir.json`，**9,847,589 B ≈ 9.4 MiB**（远低于 GitHub 的 100 MB 硬限制） |
 | 真实对局语料 | `out/_server-replays/` 6 局；`klink bot/docs/fresh-replays/` 7 局；`live-replays/` 5 局 |
 | 审计产物 | `out/audit/` 199 个跟踪文件 |
 | 首次提交 | `d2d0f5c`（2026-10-02 17:31:28 +0800） |
 
+> 首次提交时是 **461 个文件 / 21.38 MiB（仅纯 ASCII 文件名口径）**；
+> 此后新增了 `LICENSE` 与 `klink bot/docs/内部现状与路线图.md`（后者是从根 `README.md`
+> 用 `git mv` 移过去的，git 把它识别为 100% 的 copy）。
+
 ⇒ **不需要 Git LFS。**
 
-> ⚠️ 顺带说明一个容易算错的数字：只统计**纯 ASCII 文件名**的已跟踪文件时，
-> 合计是 22,422,593 B ≈ 21.38 MiB —— 差的 **1,190,643 B** 正是 19 个**中文名**跟踪文件
-> （16 个 `klink bot/docs/*.md`、2 个 `out/audit/*`、1 个根目录 `评估与实施路线图.md`）。
+> ⚠️ 顺带说明一个容易算错的数字：只统计**纯 ASCII 文件名**的已跟踪文件时，合计约 **21.4 MiB** ——
+> 差的 **约 1.20 MiB** 正是 **20 个中文名**跟踪文件
+> （17 个 `klink bot/docs/*`、2 个 `out/audit/*`、1 个根目录 `评估与实施路线图.md`）。
 > 用 `git ls-files` 走 shell 管道时，非 ASCII 路径会被 git 加引号转义，很容易被漏掉。
 
 ### 8.8 版本一致性与数据目录
@@ -1001,7 +1038,9 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 > `src/KLink.Bot` **逐字节抽取**出来的（证据：`src/KLink.Bot/Engine/UeRandomStream.cs` 两边
 > SHA-256 相同，`55BD6F19…`），而那个仓库的 `src/LICENSE` 就是 **GNU GPL v3.0 全文**，
 > 覆盖 `src/` 下的 `KLink.App` / `KLink.Server` / **`KLink.Bot`**。
-> 本仓库的 `LICENSE` 与该文件**逐字节相同**（SHA-256 `230184F6…`）。
+> 本仓库的 `LICENSE` 与它**是同一个 git 对象**（blob `f288702d…`，35,149 B）——
+> 即两边提交进 git 的字节完全相同（`.gitattributes` 把行尾统一成 LF；
+> 工作树里带 CRLF 的那份是 35,823 B / SHA-256 `230184F6…`）。
 
 **这对使用者意味着什么**（客观陈述，不构成法律意见）：
 
@@ -1065,7 +1104,17 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 - Python：`klink bot/tools/` 下的脚本保持「单文件、可直接 `python xxx.py` 运行」。
 - **不要改数据路径字面量**（`klink bot/docs/...`），除非你打算一次性改掉全部 ~15 处（见 §4.4）。
 
-### 11.5 报告问题
+### 11.5 改动落在哪个仓库
+
+`src/KLink.Bot/**` 同时存在于**上游启动器仓库**（[`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet)
+的 `src/KLink.Bot`）与**本仓库**里，两边是同一份代码（见 §1.4.2）。
+
+- **只改内核代码**：两个仓库都要落到，否则会分叉。建议**先上游、后本仓库**。
+- **只改数据 / Python 工具 / 审计报告 / 本文档**：这些是本仓库独有的（让内核能独立跑起来的那部分），
+  直接改本仓库即可。
+- **不确定该改哪边**：先开 issue 说明，或按「先上游」处理。
+
+### 11.6 报告问题
 
 请附上：命令、完整输出、种子 / 回放编号、以及内核 DLL 的 SHA-256。
 有回放编号的问题最好定位。
