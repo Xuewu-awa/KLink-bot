@@ -5,11 +5,16 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
 ![C#](https://img.shields.io/badge/C%23-net10.0-239120)
 ![Python](https://img.shields.io/badge/Python-3-3776AB)
-![License](https://img.shields.io/badge/license-TBD-lightgrey)
+![License](https://img.shields.io/badge/license-TBD%20(origin%20repo%20is%20GPL--3.0)-lightgrey)
 ![CI](https://img.shields.io/badge/CI-none%20(all%20numbers%20measured%20locally)-lightgrey)
 
 > ⚠️ **本仓库没有 CI**，所以上面没有构建徽章。本文里所有数字都是**本机手工跑出来的**，
 > 每条都附了命令或文件行号。凡是**没有独立核实**的，文中会明确标注「未独立复核」。
+>
+> 📦 **出处**：本仓库是开源项目 **KLink**（[`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet)，
+> 启动器 + 私服，**GPL-3.0**）中**规则内核 + AI** 这一部分的独立抽取版。
+> 启动器与私服**不在本仓库里，但都是开源的** —— 见 §5.6。
+> ⚠️ 抽取时**没有带上 `LICENSE` 文件**；来源仓库是 GPL-3.0，详见 §10.5。
 >
 > 本文档核实时间：**2026-10-02**（提交 `d2d0f5c` 的工作树）。
 > 作者的内部追踪文档在 [`klink bot/docs/内部现状与路线图.md`](klink%20bot/docs/内部现状与路线图.md)。
@@ -94,6 +99,21 @@ card-ir.json（9.4 MiB / 1735 条）
 | **大规模差分测试** | 4088 个 (卡, 入口, 摆位) 用例的全卡池烟雾测试，同时检查崩溃 / 未实现原语 / 步数上限 / 非确定性 / 零状态变化 |
 | **带指纹的防回归守卫** | 用集合指纹（而不是总数）冻结「未实现原语」缺口，防止「修一个坏一个」互相抵消 |
 | **对拍方法论** | 明确区分「哪些判据可靠、哪些只是弱约束」，并记录了一次「两个错互相抵消」的真实案例（见 §7.3） |
+
+### 1.4 它在更大的项目里处于什么位置
+
+本项目不是一个孤立的东西：它原本是开源项目 **KLink**（KARDS 私服启动器 + 私服）里的
+**规则内核与 AI** 那一层，现在被抽成了独立仓库。围绕它的开源组件（**都不在本仓库里**）：
+
+| 组件 | 仓库 | 说明 |
+|---|---|---|
+| **启动器 + 私服（.NET 10 / WPF，Windows）** | [`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet) | **本项目就出自这里**（`src/KLink.Bot`）。许可 **GPL-3.0** |
+| **启动器（Android / Java 版）** | [`Xuewu-awa/KLink`](https://github.com/Xuewu-awa/KLink) | 同一启动器的 Android 版 |
+| **服务端参考实现（Go）** | [`kardswalker/kards-server-go`](https://github.com/kardswalker/kards-server-go) | 私服协议的参考实现 |
+| **实际承载本内核的私服核心（C#）** | [`CCB-TEAM/fyserver`](https://github.com/CCB-TEAM/fyserver) | 内核以 DLL 形式被它加载（见 §5.6） |
+
+**接法**（可核实的证据）：`src/KLink.Bot/Engine/UeRandomStream.cs` 与本仓库里的那一份
+**SHA-256 相同**（`55BD6F19…`），说明抽取是逐字节搬运、不是重新实现。
 
 ---
 
@@ -279,7 +299,7 @@ IR 的形状（生成器文档串，[`klink bot/tools/gen-kismet-ir.py`](klink%2
 | **AI 决策** | `Server/NnPolicy.cs`（359 行）/ `Server/BotTurnService.cs`（1019 行）/ `Bots/GreedyBot.cs`（229 行） | 候选枚举 → 神经网络打分 → 产出动作；`GreedyBot` 是 baseline | `NnPolicy` 候选 = 能动的单位 × 内核给的目标 / 能动的单位 × 所有前线槽位 / 结束回合 |
 | **神经网络** | `NN/StateEncoder.cs`（373 行）/ `NN/NnModel.cs`（255 行） | 局面编码 → 打分；**训练与推理共用同一份编码器** | v2 布局 `Dim = 3 + 371 × 2 = 745`（`StateEncoder.cs:105-148`、`:168` 的 `Spec` 串）；v3 布局 `1065`（`:350`）；模型文件里存 `spec`，加载时逐项对账 |
 | **卡库** | `Cards/CardDatabase.cs`（367 行）/ `CardInnateTable.cs`（740 行）/ `CardPoolTable.cs`（698 行）/ `CardVarDefaults.cs`（91 行）/ `DeckCodeParser.cs`（127 行）/ `MetaDecks.cs`（35 行） | 卡面数值（取自 pak 的 CDO 权威表）+ 关键字 / 重甲 + 卡池模板 + 卡组码解析 + 内置元卡组 | `CardVarDefaults` 补上「蓝图成员变量的 CDO 默认值」（`gen-kismet-ir.py` 只编字节码、不编默认值） |
-| **服务器侧集成** | `Server/AtomicAction.cs`（396 行）/ `Server/ServerReplayBridge.cs`（133 行）/ `Server/ServerMatchSnapshot.cs`（82 行） | 把内核动作转成服务端协议动作、把宿主快照映射成内核局面 | 宿主仓库不在本仓库里，见 §5.6 |
+| **服务器侧集成** | `Server/AtomicAction.cs`（396 行）/ `Server/ServerReplayBridge.cs`（133 行）/ `Server/ServerMatchSnapshot.cs`（82 行） | 把内核动作转成服务端协议动作、把宿主快照映射成内核局面 | 宿主是开源项目 KLink / fyserver，见 §5.6 |
 
 ### 4.2 数据与 Python 工具（`klink bot/`）
 
@@ -418,16 +438,34 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 （`tools/BotSim/DispatchGap.cs:75,78`）。用指纹而不是只比总数，是因为
 「修一个 + 坏一个」会互相抵消、让总数看起来没变。
 
-### 5.6 宿主集成（**不在本仓库**）
+### 5.6 宿主集成：启动器与私服（**开源，但不在本仓库**）
 
-内核为「接回真实对局」预留了完整的接口层（`src/KLink.Bot/Server/*`），
-但**真正的宿主（私有服务器 + 启动器 + 部署脚本 + `BotData` 数据目录）在另一个仓库里**，
-不在本仓库中。所以：
+内核为「接回真实对局」预留了完整的接口层（`src/KLink.Bot/Server/*`）。
+**真正的宿主是启动器 + 私服，它们不在本仓库里 —— 但都是开源的**：
 
-- 本仓库**没有** `tools/build-deploy-server.ps1`，也**没有** `rel/data/fyserver/`；
-- 如果你想接自己的宿主，需要看 `src/KLink.Bot/Server/` 里的三个契约类：
+| 角色 | 仓库 | 许可 / 说明 |
+|---|---|---|
+| **启动器 + 私服**（.NET 10 / WPF，Windows） | [`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet) | **GPL-3.0**；本仓库就是它的 `src/KLink.Bot` 抽出来的 |
+| **启动器**（Android / Java 版） | [`Xuewu-awa/KLink`](https://github.com/Xuewu-awa/KLink) | 同一启动器的 Android 版 |
+| **私服核心**（C#，实际加载本内核） | [`CCB-TEAM/fyserver`](https://github.com/CCB-TEAM/fyserver) | 独立进程；启动器作为唯一入口去拉起它 |
+| **服务端参考实现**（Go） | [`kardswalker/kards-server-go`](https://github.com/kardswalker/kards-server-go) | 私服协议的上游参考 |
+
+**内核在宿主里的接法**（都可以在宿主仓库里核实）：
+
+- **部署形态**：`KLink.Bot.dll` 与 `fyserver.dll` **同级**部署（启动器仓库的 `rel/data/fyserver/`），
+  数据目录是 `<ContentRoot>/BotData`（`CCB-TEAM/fyserver` 的 `Services/ServerBotService.cs:193`；
+  找不到时回退到 `AppContext.BaseDirectory/BotData`，`:196`）。
+  `BotData/` 里放的就是本仓库 `klink bot/docs/` 那几份 JSON，外加训练好的 `nn-model.bin`。
+- **调用链**：`MatchInfo ──ToSnapshot──▶ ServerMatchSnapshot ──▶ BotTurnService.DecideTurn`
+  （`ServerBotService.cs:15` 的注释原文）。
+- **部署脚本在启动器仓库里**：`tools/build-deploy-server.ps1` —— **本仓库没有这个文件**
+  （本仓库只包含 5 个 C# 工具工程，见 §4.3）。
+- **如果你想接自己的宿主**，看 `src/KLink.Bot/Server/` 里的三个契约类：
   `ServerMatchSnapshot`（宿主快照 → 内核局面）、`AtomicAction`（内核动作 → 协议动作）、
   `BotTurnService`（重建局面 → 候选枚举 → 打分 → 产出动作）。
+
+⚠️ 顺带说明：**启动器 / 私服有自己的许可与免责声明**（`fyserver` 的 README 写明「非盈利性，
+严禁用于任何商业或营利性目的」），与 `klink bot` 本仓库无关。见 §10.4。
 
 **一个值得提前知道的宿主陷阱**（有真实事故记录）：宿主工程里如果写了
 `<JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>`
@@ -946,24 +984,34 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 ### 10.4 与官方无关
 
 - 本项目**与 1939 Games 没有任何关联**，未获其授权、认可或赞助。
-- 本项目**不提供任何绕过付费、绕过联机限制、作弊或修改对局结果的功能**。
-- 本项目**不包含**任何可用于在线对局作弊的注入 / 内存修改代码。
-- 本项目**不是**游戏客户端、启动器或私有服务器；它只是一个**离线规则内核**。
+- **本仓库本身**只是一个**离线规则内核 + AI**：它不提供任何绕过付费、绕过联机限制、
+  作弊或修改对局结果的功能，也不包含任何注入 / 内存修改代码，**不是**游戏客户端或启动器。
+- ⚠️ 但它出自开源项目 **KLink**（启动器 + 私服，见 §5.6）。**启动器 / 私服是独立项目**，
+  有各自的仓库、许可与免责声明（例如 `fyserver` 的 README 写明「非盈利性，严禁用于任何
+  商业或营利性目的」）。**它们的行为与责任不属于本仓库**；如果你要用它们，请读它们自己的声明。
+- 修改、分发 KARDS 客户端可能违反 1939 Games 的服务条款。请仅用于个人研究。
 
 ### 10.5 许可（License）
 
-**当前状态：许可待定（License TBD）。** 仓库根目录**没有** `LICENSE` 文件
-（已核实：`git ls-files` 中不存在 `LICENSE` / `COPYING` / `NOTICE`）。
+**当前状态：本仓库没有 `LICENSE` 文件**（已核实：`git ls-files` 中不存在
+`LICENSE` / `COPYING` / `NOTICE`）。但**来源仓库的许可已经查清**，这是决定时最关键的一条事实：
 
-**本文不替作者选择许可。** 下面列出几个常见候选及各自含义，供作者决定：
+> **本仓库是从 [`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet) 的
+> `src/KLink.Bot` 逐字节抽取出来的**（证据：`src/KLink.Bot/Engine/UeRandomStream.cs` 两边
+> SHA-256 相同，`55BD6F19…`），而那个仓库的 `src/LICENSE` 是
+> **GNU GPL v3.0 全文**，覆盖 `src/` 下的 `KLink.App` / `KLink.Server` / **`KLink.Bot`**。
+
+⇒ 因此「License TBD」其实是个**待确认**状态而不是「从来没有过许可」：
+**如果本仓库被视为同一作品的延续，最自然的选择是沿用 GPL-3.0**（并补一份 `LICENSE`）。
+⚠️ **本文不替作者决定**，最终由作者选择。下面是三个候选及各自含义：
 
 | 候选 | 含义 | 影响 |
 |---|---|---|
-| **MIT** | 最宽松：允许任意使用、修改、再分发（含闭源商用），只需保留版权与许可声明 | 最容易被他人复用；作者放弃大部分控制 |
-| **Apache-2.0** | 与 MIT 接近，但**显式包含专利授权**，并要求标注修改过的文件 | 适合担心专利问题的场景；与 MIT 兼容 |
-| **GPL-3.0** | 强 copyleft：衍生作品必须同样以 GPL 开源 | 阻止闭源商用；与 MIT / Apache 代码混合时约束较多 |
+| **GPL-3.0**（与来源仓库一致） | 强 copyleft：衍生作品必须同样以 GPL 开源 | **与来源仓库许可一致、无冲突**；但它会传导到链接它的宿主（`KLink.Bot.dll` 被宿主进程加载时，宿主侧也要满足 GPL 的相应义务） |
+| **MIT** | 最宽松：允许任意使用、修改、再分发（含闭源商用），只需保留版权与许可声明 | 最容易被他人复用；⚠️ 但**从 GPL-3.0 代码改许可需要版权持有者同意**，若作者即版权持有者则可行 |
+| **Apache-2.0** | 与 MIT 接近，但**显式包含专利授权**，并要求标注修改过的文件 | 同上：与来源许可的兼容性需要作者确认 |
 
-⚠️ **两个必须注意的点**（无论选哪个）：
+⚠️ **另外两个必须注意的点**（无论选哪个）：
 
 1. **许可只能覆盖作者自己的代码。** 仓库里从游戏数据提取的产物（卡牌数据、IR、
    回放动作流）可能仍受游戏发行商的权利约束，**开源许可不能替你解决这部分**。
@@ -1027,6 +1075,10 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 
 | 对象 | 用途 |
 |---|---|
+| **[`Xuewu-awa/KLink-dotnet`](https://github.com/Xuewu-awa/KLink-dotnet)**（本项目出自这里） | 启动器 + 私服（.NET 10 / WPF，GPL-3.0）。本仓库就是它的 `src/KLink.Bot` 抽出来的；`tools/build-deploy-server.ps1`、`BotData/` 数据目录、`ServerBotService` 都在那边 |
+| **[`Xuewu-awa/KLink`](https://github.com/Xuewu-awa/KLink)** | 同一启动器的 Android / Java 版（协议与 .NET 版一致） |
+| **[`kardswalker/kards-server-go`](https://github.com/kardswalker/kards-server-go)** | 私服协议的 Go 参考实现，KLink 系列的共同上游 |
+| **[`CCB-TEAM/fyserver`](https://github.com/CCB-TEAM/fyserver)** | 实际加载本内核的私服核心（C#）。内核作为 `KLink.Bot.dll` 与它同级部署 |
 | **`CCB-TEAM/kards-sim`**（第三方开源参照实现） | 蓝图 AST → C# 直译的参照物。本项目用 `klink bot/tools/fetch-kards-sim.py` 把它拉到 `ref/kards-sim`（`ref/` 被 gitignore）。它对本项目最大的价值是**交叉验证**：它的直译产物是忠实的，因此两边都缺同一处效果时，可以判定缺口在引擎侧而不是直译侧（见 `klink bot/docs/issue-kards-sim.md`） |
 | **`UAssetAPI`**（第三方 UE 资产库） | 读取 UE 资产 / 蓝图字节码 |
 | **Unreal Engine 文档与引擎源码** | `FRandomStream` 的语义（LCG 常数、`GetFraction` 的高 23 位变换、闭区间取整） |
@@ -1034,7 +1086,7 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 | **UE4SS** | 曾尝试用它做运行时采集；在这个 UE5.6 fork 上**实测不可用**（AOB 扫描失败），相关目录保留在 `.gitignore` 中不随仓库分发 |
 | **KARDS 玩家社区** | 规则细节（重甲是否减免指令伤害、压制 / 抑制的解除时机等）的交叉确认 |
 
-⚠️ 上述第三方项目**不在本仓库内**，各自遵循自己的许可。
+⚠️ 除 KLink 系列外，上述第三方项目**不在本仓库内**，各自遵循自己的许可。
 
 ---
 
