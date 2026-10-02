@@ -1638,6 +1638,46 @@ public sealed class MatchEngine
             return false;
         }
 
+        // ★★ 目标合法性门（规则库 `CanSelectAsTarget`）—— 攻击路径原先**完全没接**这道门。
+        //
+        // ## 蓝图依据
+        //
+        // `cardsCheckFunctions.CanAttack` 里就有这一句
+        //（`ref/kards-sim/KardsSim/Generated/_deps/cardsCheckFunctions.g.cs:902`）：
+        // <code>
+        // CanSelectAsTarget(self, defenderCard, attackerCard, False, __WorldContext,
+        //                   out can, out Reason, …)
+        // if (!can) { canAttack = False; failReason = Reason; }      // :904/:930
+        // </code>
+        // 实参顺序（**第 0 个是接收者**，不在 4 个形参里，见 `KismetVm` 的约定）：
+        // `Targeted = defenderCard`、`Targeting = attackerCard`、`byPlayFromHand = False`。
+        // 内核 `CardApi.CanSelectAsTarget` 的形参顺序是 `(targeting, targeted, …)`
+        //（与蓝图**相反**，内部自洽；判据见那个方法的注释与 `CanTarget` 的调用点），
+        // 所以这里写 `(attacker, defender, false)` —— 攻方是 `targeting`，防御方是 `targeted`。
+        //
+        // ## ⚠️⚠️ 位置：必须在下面 `State.AddKredits` **之前**，不能挪
+        //
+        // 这道门**自己会算一次行动费**（`CanSelectAsTarget` 的 ⑤）：
+        // <code>
+        // cost = byPlayFromHand ? KreditCost : OperationCost
+        // remaining = State.Kredits(targeting.Owner) - cost      // ← 它自己减
+        // if (remaining < 0) ⇒ 拒（not_enough_kredits_to_target）
+        // </code>
+        // 放在 `AddKredits(-OperationCost)` **之后**，油费会被减两次 ⇒ 费用紧时
+        // **误拒合法攻击**（而 4 张受影响卡都不在回放语料里，这种误拒只会表现成
+        // "别的地方莫名失败"，极难从数字上看出来）。
+        // 放在之前则与上面 `:1571` 的「油费够不够」预检**同源**：那一条保证
+        // `OperationCost ≤ Kredits`，于是门里的 ⑤ 必然通过，两者不会互相打架。
+        // 拒绝原因逐字用门给的 `Reason`（蓝图自己也是把 `Reason` 直接当 `failReason`）。
+        // ⚠️ 判据与 `LegalTargets` **共用 `AttackTargetGate`**，不在这里另写一份 ——
+        //    枚举与结算漂移会让 AI 反复尝试一个永远失败的动作。
+        var targetGate = AttackTargetGate(attacker, defender);
+        if (!targetGate.Can)
+        {
+            reason = $"目标合法性门拒绝：{targetGate.Describe()}";
+            return false;
+        }
+
         State.AddKredits(attacker.Owner, -attacker.OperationCost);
         attacker.HasAttackedThisTurn = true;
         // 攻击额度 -1（蓝图 `SetAttackerHasAttacked`，`BP_CardFunctions.g.cs:33930-33942`：
@@ -1815,8 +1855,35 @@ public sealed class MatchEngine
         // ⚠️ 它现在对**所有**分支一致生效（包括原来那条 Guard 分支）——
         //    旧实现里 Guard 分支也套了它，但那是因为分支结构不同；
         //    统一过滤后语义不变：够不着的目标就是不能打（蓝图 si=90-99）。
-        return targets.Where(t => CanReachAcrossFrontline(attacker, t));
+        //
+        // ★★ 再叠上**目标合法性门**（规则库 `CanSelectAsTarget`，`byPlayFromHand: false`）。
+        // 为什么原先没有这一道：`LegalTargets` 只做了「射程 + 烟幕 + 掩护」三条**手写**判据，
+        // 而蓝图 `CanAttack` 在末尾（`_deps/cardsCheckFunctions.g.cs:902`）是**直接调规则库**的
+        // —— 于是「被敌方指定的额外税」`KreditsTax_AsEnemyTarget`、
+        // 「触发点 2 的否决位」`CanOtherCardBeTargetted`（唯一实现者
+        // `card_unit_no_3_commando`：「Units with 4 or more attack cannot attack.」）
+        // 这两条在攻击路径上**从来没有生效过**。
+        //
+        // ⚠️ 与 `Attack` 里那道门**必须同源**：这里过滤掉的目标，`Attack` 也必须拒；
+        //    反过来，`Attack` 拒的，这里也不能列出来 —— 否则「候选里有、结算说非法」
+        //    会表现成 AI 反复尝试一个永远失败的动作。两处都走 `AttackTargetGate`。
+        return targets.Where(t => CanReachAcrossFrontline(attacker, t) && AttackTargetGate(attacker, t).Can);
     }
+
+    /// <summary>
+    /// 攻击路径的**目标合法性门**（规则库 `cardsCheckFunctions.CanSelectAsTarget`，
+    /// `byPlayFromHand: false`）—— `LegalTargets`（候选枚举）与 `Attack`（结算）**共用这一份**。
+    ///
+    /// 为什么要抽成一个方法：这两处以前各写各的手写判据（射程 / 烟幕 / 掩护），
+    /// 而蓝图只有**一处**（`CanAttack` 末尾调规则库）。抽出来之后「枚举」与「结算」
+    /// 不可能再漂移 —— 这是本文件里唯一一处「同一条判据被两条路径共用」的写法。
+    ///
+    /// 实参顺序：内核 `CanSelectAsTarget` 的形参是 `(targeting, targeted, byPlayFromHand)`
+    /// （与蓝图签名的 `(Targeted, Targeting, …)` **相反**，见那个方法的注释），
+    /// 所以攻方传第 1 个、防御方传第 2 个。
+    /// </summary>
+    private CardApi.TargetCheck AttackTargetGate(CardInstance attacker, CardInstance defender)
+        => Api.CanSelectAsTarget(attacker, defender, byPlayFromHand: false);
 
     /// <summary>轰炸机（`IsBomber`，`CanAttack` si=2492 用它跳过掩护判定）。</summary>
     public static bool IsBomber(CardInstance card) => card.Definition.Type == "bomber";

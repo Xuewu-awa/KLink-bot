@@ -4503,28 +4503,218 @@ public sealed partial class CardApi
     /// 触发点 2 = `Trigger.CanOtherCardBeTargetted`
     ///（`ref/kards-sim/KardsSim/Core/Trigger.g.cs:12`）。
     ///
-    /// ⚠️ 本内核没有「按触发点索引卡」的订阅表，所以这里是**空集 ⇒ 不否决**。
-    /// 这不是猜，有三条证据：
+    /// ## 订阅表：数据驱动，不写死卡名清单
+    ///
+    /// 蓝图那一步是「问客户端：谁注册了触发点 2」。内核里与它**同源**的数据是
+    /// `card-effects.json` 的 `functions`（反编译出的**每卡注册函数表**，装载进
+    /// <see cref="CardDefinition.FunctionCalls"/>），判据就是
+    /// `FunctionCalls.ContainsKey("CanOtherCardBeTargetted")` —— 不需要另造一张表，
+    /// 也就不会与卡池数据漂移。全卡池实测**恰好 1 张**注册它：
+    /// `card_unit_no_3_commando`（扫 `docs/card-effects.json` 的 2730 个函数名，
+    /// 只有它带这一项）。
+    ///
+    /// ## 判据来源：**先跑卡自己的函数体**，拿不到才用转写体
+    ///
+    /// 蓝图那版是「对每张注册卡调**它自己的** `CanOtherCardBeTargetted`」，所以这里
+    /// 第一选择就是**执行那张卡的函数体**（IR 的 `locals`，与
+    /// <see cref="CanPlayFromHandOn"/> / `GetChooseSpawnCards` 同一条路：
+    /// `RunOwnLocal` + `KismetLibrary.FindLocalProgram`）。
+    /// 入参按蓝图卡版的形参名播种
+    ///（`card_unit_no_3_commando.g.cs:37-39`：`targettingCard` / `targetCard` / `byPlayFromHand`），
+    /// 出参取 `canIt` / `reason` / `reasonParam1` / `reasonParam2`。
+    ///
+    /// ⚠️ **但唯一实现者的函数体现在不在 IR 里**，所以会落到下面的转写体：
     /// <list type="number">
-    /// <item>全卡池 **1735 张卡只有 1 张**实现它 ——
-    ///   `Generated/Britain/Breakthrough/units/card_unit_no_3_commando.g.cs:24-82`；</item>
-    /// <item>那张卡的**第一条**判据就是 `Not_PreBool(byPlayFromHand)`
-    ///   （同文件 `i=0`，`g.cs` 直译版 `L_0000`），`byPlayFromHand=True` 时
-    ///   整个 AND 恒假 ⇒ 直接落到 else 分支 `canIt = True`；</item>
-    /// <item>而本门（选目标）**恒以 `byPlayFromHand=True` 调用**
-    ///   （`BP_Logic.g.cs:1312` 传的就是 `Val.True`）。</item>
+    /// <item>`card_unit_no_3_commando` **不在 `card-ir.json` 里**。IR 只收 1735 张，
+    ///   它是「卡池有（2021 张）、IR 没有」的那批之一 —— 它在蓝图里
+    ///   **只有 `CanOtherCardBeTargetted` 一个函数、没有任何事件入口**，而
+    ///   `tools/gen-kismet-ir.py:538` 对「收集不到入口点」的卡直接 `continue`。</item>
+    /// <item>修法是**加法**、不动本文件：把 `CanOtherCardBeTargetted` 加进
+    ///   `tools/gen-kismet-ir.py` 的 `LOCAL_FUNCTIONS`（照 `CanPlayFromHand` 那条的
+    ///   注释风格），然后
+    ///   <code>
+    ///   python "klink bot\tools\gen-kismet-ir.py" "decompiled\cards.full.json" "klink bot\docs\card-ir.json"
+    ///   </code>
+    ///   （`decompiled/cards.full.json` 在本机存在，86.8 MB；**两份 `card-ir.json`
+    ///   副本要一起同步** —— 工作副本 csproj 读的是 `klink bot/klink bot/docs/` 那份，
+    ///   上游镜像 csproj 读的是 `klink bot/docs/` 那份）。
+    ///   上一轮的独立复核量过这一步是**外科手术式**的：1735 → 1736 张，新增的只有
+    ///   这张卡、**0 张已有卡内容变化**、新旧 IR 的调用名集合完全相同
+    ///   ⇒ 派发表缺口指纹不变、`DispatchGapGuard` 仍绿；新卡的
+    ///   `locals["CanOtherCardBeTargetted"]` 是 18 步。
+    ///   ⚠️ **本轮改动没有复现这一步**（数据只在复核里量过，见上）。
+    ///   **一旦做了，上面的通用路径自动接管、下面的转写体自然休眠 —— 但不要删它**：
+    ///   它是「IR 被重新生成却没带这个白名单」时的安全网。</item>
     /// </list>
-    /// ⇒ 在「从手牌指定目标」这条路上，触发点 2 的否决位对**全卡池都是空操作**。
-    /// （它在 `CanAttack` 那条路上才有意义 —— `g.cs:902` 传 `False`。）
+    /// ⇒ 转写体逐句来自
+    /// `ref/kards-sim/KardsSim/Generated/Britain/Breakthrough/units/card_unit_no_3_commando.g.cs:40-65`：
+    /// <code>
+    /// :41  Not_PreBool(byPlayFromHand)
+    /// :43  getTotalAttack(targettingCard)          ← 攻方**总**攻（含 buff）
+    /// :45  IsLocatedOnBoard(self)                  ← self = 订阅者自己
+    /// :47  GreaterEqual_IntInt(总攻, 4)
+    /// :49  BooleanAND(≥4, Not_PreBool)
+    /// :51  BooleanAND(…, IsLocatedOnBoard(self))
+    /// :53  三条全真 ⇒ :55 canIt = False / :57 reason = "unit_cant_attack"
+    /// </code>
+    /// 卡面互证（`docs/cards.live.json`）：「No. 3 COMMANDO」=
+    /// <c>Units with 4 or more attack cannot attack.</c>
+    ///
+    /// ## ⚠️ `self` 是**订阅者**（那张 commando），**不是**被指的目标
+    ///
+    /// 库版 `g.cs:1003` 的实参形状是
+    /// `H.Call("CanOtherCardBeTargetted", [item, out canIt, out reason, out p1, out p2,
+    /// cardTargetting, targetCard, byPlayFromHand])` —— 数组第 0 个元素是**接收者**，
+    /// 也就是 `FetchAllCardsWithEventTrigger(…, 2)` 取出来的那张卡。所以卡版里的 `self`
+    /// 就是订阅者；而 `targetCard`（被指的那张）它**一次都没用到**。
+    /// ⇒ 语义是「**我在场** + 这次不是从手牌打出（即攻击路径）+ 攻方总攻 ≥ 4 ⇒ 谁都不能被打」，
+    /// 与卡面一致。把 `self` 当成 `targeted`（= 只有当 commando 自己被打时才生效）
+    /// 会让「4 攻打**别的**单位」漏过去，那不是蓝图语义。
+    ///
+    /// ## 三条边界
+    /// <list type="bullet">
+    /// <item>`byPlayFromHand = true`（**出牌路径**）⇒ 第一条判据 `Not_PreBool` 恒假
+    ///   ⇒ 整个 AND 恒假 ⇒ 落 else 分支 `canIt = True`。本方法**直接早退**，
+    ///   既是性能也是硬保证：出牌路径（`CanTarget` / `LegalPlayTargets`）行为
+    ///   **一个字节都不变**，8 条目标门自测守着这一点。</item>
+    /// <item>订阅表里**每一张**都问过，任何一张回 false ⇒ 整体否决
+    ///   （库版 `g.cs:1005` 的分支）—— 不是「只看第一张」。</item>
+    /// <item>⚠️ 转写体**只对唯一实现者成立**。出现第二个实现者时，若它的函数体也不在
+    ///   IR 里，必须在这里补它的判据（或直接把 IR 补上，让通用路径接管）。</item>
+    /// </list>
     /// </summary>
-    private static TargetCheck CanOtherCardBeTargetted(CardInstance targeting, CardInstance targeted,
-                                                       bool byPlayFromHand)
+    private TargetCheck CanOtherCardBeTargetted(CardInstance targeting, CardInstance targeted,
+                                               bool byPlayFromHand)
     {
-        _ = targeting;
-        _ = targeted;
-        _ = byPlayFromHand;
+        // 出牌路径：蓝图 `Not_PreBool(byPlayFromHand)` 恒假 ⇒ 永不否决（见上「三条边界」）。
+        if (byPlayFromHand)
+        {
+            return TargetCheck.Ok;
+        }
+
+        // 遍历范围沿用本内核触发派发的口径（`CardApi.FireTrigger` 的快照：双方棋盘 + 弃牌堆）。
+        // 「在不在棋盘上」由**卡自己的判据**（`IsLocatedOnBoard(self)`）负责 ——
+        // 蓝图也是这么分工的（`FetchAllCardsWithEventTrigger` 只看注册表，不看位置）。
+        for (int i = 0; i < 2; i++)
+        {
+            Side side = i == 0 ? Side.Left : Side.Right;
+            foreach (CardInstance sub in State.Board(side).Concat(State.Discard(side)))
+            {
+                if (sub.Location == CardLocation.NotAvailable
+                    || !sub.Definition.FunctionCalls.ContainsKey(Trigger2Function))
+                {
+                    continue;   // 没注册触发点 2 ⇒ 不归它管
+                }
+
+                var r = AskCardCanOtherCardBeTargetted(sub, targeting, targeted, byPlayFromHand);
+                if (!r.Can)
+                {
+                    return r;   // 任何一张回 false ⇒ 整体否决（库版 `g.cs:1005` 的分支）
+                }
+            }
+        }
+
         return TargetCheck.Ok;
     }
+
+    /// <summary>
+    /// 问**订阅表里的一张卡**：`sub` 自己的 `CanOtherCardBeTargetted` 判这次指定合不合法。
+    ///
+    /// 两条路（顺序即优先级）：
+    /// <list type="number">
+    /// <item><b>通用路径</b>：跑 `sub` 自己的函数体（IR `locals`）。这条路对
+    ///   「将来新增的实现者」自动成立，不需要改本文件。</item>
+    /// <item><b>兜底路径</b>：IR 里没有这张卡的函数体时，用手写转写体
+    ///   （目前只有唯一实现者 `card_unit_no_3_commando` 需要它）。
+    ///   转写体不认识的名字**不否决**（等同空集），但会记一笔
+    ///   `UnimplementedCalls` 留痕 —— 不静默。</item>
+    /// </list>
+    /// </summary>
+    private TargetCheck AskCardCanOtherCardBeTargetted(CardInstance sub, CardInstance targeting,
+                                                       CardInstance targeted, bool byPlayFromHand)
+    {
+        // ---- ① 通用路径：这张卡自己的函数体（IR locals）----
+        //
+        // 入参名逐字用蓝图卡版的形参名（`card_unit_no_3_commando.g.cs:37-39`），
+        // 与 `CanPlayFromHandOn` 播种 `toCard` 是同一个约定（`KismetVm.RunLocalProgramMulti`
+        // 把 seed 覆盖进帧的默认值）。
+        var outs = RunOwnLocal(
+            sub, Trigger2Function,
+            new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["targettingCard"] = targeting,
+                ["targetCard"] = targeted,
+                ["byPlayFromHand"] = byPlayFromHand,
+            },
+            "canIt", "reason", "reasonParam1", "reasonParam2");
+
+        if (outs is not null)
+        {
+            return new TargetCheck(
+                Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("canIt")),
+                outs.GetValueOrDefault("reason") as string ?? "",
+                outs.GetValueOrDefault("reasonParam1") as string ?? "",
+                outs.GetValueOrDefault("reasonParam2") as string ?? "");
+        }
+
+        // ---- ② 兜底：函数体不在 IR 里 ----
+        if (sub.Definition.Name == CommandoCard)
+        {
+            return CommandoCanOtherCardBeTargetted(sub, targeting, targeted);
+        }
+
+        // 有订阅者、但既没有 IR 函数体、也没有转写体 ⇒ 放行（等同空集），
+        // 但必须留痕：静默放行正是「门看起来实现了、其实一张都管不住」的形状。
+        State.UnimplementedCalls[$"<{Trigger2Function}-body-missing>"] =
+            State.UnimplementedCalls.GetValueOrDefault($"<{Trigger2Function}-body-missing>") + 1;
+        return TargetCheck.Ok;
+    }
+
+    /// <summary>触发点 2 的注册函数名（`ERegisteredCardFunction.h` 第 3 项 = 序号 2）。</summary>
+    private const string Trigger2Function = "CanOtherCardBeTargetted";
+
+    /// <summary>
+    /// **卡版** `CanOtherCardBeTargetted` 的**兜底转写体** —— 只覆盖全池唯一实现者
+    /// `card_unit_no_3_commando`（`ref/kards-sim/.../card_unit_no_3_commando.g.cs:40-65`）。
+    ///
+    /// 它是 <see cref="AskCardCanOtherCardBeTargetted"/> 的**第二选择**：只有在
+    /// 「这张卡注册了触发点 2、但它的函数体不在 IR 里」时才会被调用。
+    /// **一旦那张卡进了 `card-ir.json`，通用路径接管，本方法就不再被触发。**
+    ///
+    /// 为什么判据里显式带卡名（而不是做成对所有卡生效的通用规则）：全池**只有这 1 张**
+    /// 注册触发点 2，而它没有 IR、函数体执行不了，所以只能按名字转写；
+    /// 卡面文字（`Units with 4 or more attack cannot attack.`）与蓝图逐句互证。
+    /// **若出现第二个实现者，必须在这里补它的判据**（或直接把 IR 补上）。
+    /// </summary>
+    /// <param name="self">订阅者（= 蓝图卡版里的 `self`，`IsLocatedOnBoard(self)` 判的就是它）。</param>
+    /// <param name="targeting">发起方（蓝图 `targettingCard`，攻方）。</param>
+    /// <param name="targeted">候选目标（蓝图 `targetCard`）—— ⚠️ 转写体**不用**它，见注释。</param>
+    private static TargetCheck CommandoCanOtherCardBeTargetted(CardInstance self, CardInstance targeting,
+                                                              CardInstance targeted)
+    {
+        _ = targeted;   // 蓝图的卡版全文没有一处用到 `targetCard`（`g.cs:40-65`）
+
+        if (self.Definition.Name != CommandoCard)
+        {
+            return TargetCheck.Ok;   // 尚未转写判据的实现者：放行（调用方会记一笔留痕）
+        }
+
+        // :47 `getTotalAttack(targettingCard) >= 4`
+        //     —— 内核 `getTotalAttack` 的派发就是 `SelfArg(...)?.Attack ?? 0`
+        //        （本文件 `:268`），所以 `Attack` 已经是含 buff 的当前总攻。
+        // :45 `IsLocatedOnBoard(self)` —— 用**蓝图语义**的 `Location.IsBoard()`
+        //     （含 HQ；与 `CanSelectAsTarget` 的 ② 同一口径，见那里的注释）。
+        // :41 `Not_PreBool(byPlayFromHand)` —— 上面已经早退，走到这里必然为真。
+        if (targeting.Attack >= 4 && self.Location.IsBoard())
+        {
+            return new TargetCheck(false, "unit_cant_attack", "", "");
+        }
+
+        return TargetCheck.Ok;
+    }
+
+    /// <summary>全池唯一实现触发点 2 的卡（见 <see cref="CommandoCanOtherCardBeTargetted"/> 的注释）。</summary>
+    private const string CommandoCard = "card_unit_no_3_commando";
 
     /// <summary>
     /// ★★ **卡自己的**目标判据 —— 执行这张卡的 `CanPlayFromHand`（IR 的 `locals`），

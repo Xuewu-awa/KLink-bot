@@ -402,6 +402,20 @@ internal static class SelfTest
         new("目标门：规则库门 `CanSelectAsTarget` —— 不在场上 / kredit 不足 / 不在场上的卡",
             TargetGateLibraryChecks),
 
+        // ---- ★★ 攻击路径的目标合法性门（2026-10-02 第三轮）----
+        //
+        // 蓝图 `CanAttack` 末尾直接调规则库（`cardsCheckFunctions.g.cs:902`），
+        // 而内核的攻击路径（`LegalTargets` / `Attack`）上一轮**完全没接**这道门。
+        // 真正生效的只有两条：⑥ 额外税（3 张税卡）、⑧ 触发点 2 的否决位（commando）。
+        new("★ 攻击门：额外税（3 张税卡）—— 余下 kredit 不够付税时目标被拒，够了放行，同阵营不付税",
+            TargetGateAttackTax),
+        new("★ 攻击门：触发点 2 的否决位（commando「4 攻以上不能攻击」）—— 攻击路径否决，原因 `unit_cant_attack`",
+            TargetGateCommandoVeto),
+        new("★★ 攻击门**反向**：总攻 < 4 / 订阅者不在场 / 出牌路径 / 真的打一次 —— 都必须**放行**（防恒拒）",
+            TargetGateAttackPathAllows),
+        new("★ 攻击门：攻击路径与出牌路径**共用同一道门**（拒绝原因同源 + 被拒无副作用 + 枚举一致）",
+            TargetGateSharedByBothPaths),
+
         // ---- 全卡池烟雾测试台（`BotSim smoke-all-cards`，2026-10-02）----
         //
         // 这三条守的是**测试台本身**，不是规则。为什么值得守：
@@ -9736,6 +9750,358 @@ internal static class SelfTest
             if (engine.Api.CanTarget(card, null).Can)
             {
                 return "`CanTarget(card, null)` 放行了 —— null 必须当成「没有目标」拒绝";
+            }
+        }
+
+        return null;
+    }
+
+    // ==================== ★★ 攻击路径的目标合法性门（2026-10-02 第三轮） ====================
+    //
+    // 上一轮把 `CanSelectAsTarget` 只接进了**出牌路径**（`CardApi.CanTarget` /
+    // `MatchEngine.LegalPlayTargets`），**攻击路径完全没接**：
+    // `MatchEngine.LegalTargets` 只做了「射程 + 烟幕 + 掩护」三条**手写**判据，
+    // `MatchEngine.Attack` 同样。而蓝图 `CanAttack` 的末尾就是**直接调规则库**
+    //（`ref/kards-sim/KardsSim/Generated/_deps/cardsCheckFunctions.g.cs:902`）：
+    // <code>
+    // CanSelectAsTarget(self, defenderCard, attackerCard, False, __WorldContext, out can, out Reason, …)
+    // if (!can) { canAttack = False; failReason = Reason; }        // :904 / :930
+    // </code>
+    //
+    // ⇒ 两条判据在攻击路径上**从来没有生效过**（这是本次改动真正的收益）：
+    //   ⑥ 被敌方指定的额外税 `KreditsTax_AsEnemyTarget`（全池 3 张税卡）
+    //   ⑧ 触发点 2 的否决位 `CanOtherCardBeTargetted`（全池唯一实现者 commando）
+    // 下面每条都**直接断言中间状态**（门的判定 + 拒绝原因 + 无副作用），
+    // 不是"连打 N 局看结果" —— 种子固定时后者可能恰好都通过。
+
+    /// <summary>攻击路径的门 ⑥：被敌方指定的额外税（3 张税卡各一条）。</summary>
+    private static string? TargetGateAttackTax(CardDatabase db)
+    {
+        // 3 张税卡 + 各自税额。出处 `CardInstance.KreditsTaxAsEnemyTarget` 的注释
+        //（写方 `BP_CardFunctions.AddKreditsTax`；`card_event_order_of_the_day` +1、
+        //  `card_event_grim_day` ±2、`card_unit_tupolev_sb_2` ±2）。
+        // 这里直接摆「税已加上」的局面，而不是去跑那三张卡的整套效果 ——
+        // 本组测的是**门**，税是怎么加上去的与门无关。
+        (string Card, int Tax)[] taxes =
+        {
+            ("card_event_order_of_the_day", 1),
+            ("card_event_grim_day", 2),
+            ("card_unit_tupolev_sb_2", 2),
+        };
+
+        const string Attacker = "card_unit_a26_invader";   // 4/4 轰炸机，行动费 2，射程 2
+        string? infantry = FindType(db, "infantry");
+        if (infantry is null) return "卡库里没有 infantry";
+
+        foreach (var (taxCard, tax) in taxes)
+        {
+            var def = db.Find(taxCard);
+            if (def is null) return $"卡库里缺税卡 {taxCard}";
+
+            // 守卫：这张卡必须**真的**是税卡（蓝图里调过 `AddKreditsTax`），
+            // 否则下面测的就是我们自己编的数字，不是卡池事实。
+            if (!def.FunctionCalls.Values.Any(cs => cs.Contains("AddKreditsTax")))
+            {
+                return $"`{taxCard}` 的蓝图里没有 `AddKreditsTax` —— 测试前提失效（它不是税卡）";
+            }
+
+            // ① 余下 kredit 刚好够付行动费（2）、但不够付税 ⇒ 必须拒，原因 `cost_extra_to_target`
+            {
+                var (engine, _, state) = TargetBoard(db, taxCard, kredits: 2);
+                var attacker = PlaceUnit(state, Attacker, Side.Left, 3, 1);
+                var foe = PlaceUnit(state, infantry, Side.Right, 51, 1);
+                foe.KreditsTaxAsEnemyTarget = tax;
+
+                var r = engine.Api.CanSelectAsTarget(attacker, foe, byPlayFromHand: false);
+                if (r.Can)
+                {
+                    return $"`{taxCard}`（税 {tax}）：余下 kredit 0 < 税 {tax}，目标却**被放行** —— "
+                         + "攻击路径的第 ⑥ 条判据没生效（旧行为：门根本没接进攻击路径）";
+                }
+
+                if (r.Reason != "cost_extra_to_target")
+                {
+                    return $"`{taxCard}`：拒绝原因是 `{r.Describe()}`，应当是 `cost_extra_to_target`"
+                         + "（蓝图 `cardsCheckFunctions.g.cs:1184`）";
+                }
+            }
+
+            // ② ★ 反向：余下 kredit 够付税 ⇒ **必须放行**（守「不是恒拒」）
+            {
+                var (engine, _, state) = TargetBoard(db, taxCard, kredits: 2 + tax);
+                var attacker = PlaceUnit(state, Attacker, Side.Left, 3, 1);
+                var foe = PlaceUnit(state, infantry, Side.Right, 51, 1);
+                foe.KreditsTaxAsEnemyTarget = tax;
+
+                var r = engine.Api.CanSelectAsTarget(attacker, foe, byPlayFromHand: false);
+                if (!r.Can)
+                {
+                    return $"`{taxCard}`（税 {tax}）：余下 kredit {tax} ≥ 税，目标却**被拒**"
+                         + $"（{r.Describe()}）—— 上面那条可能是恒拒，而不是真的在算税";
+                }
+            }
+
+            // ③ ★ 反向：**同阵营不付税**（蓝图 `SelectInt(0, 税, 同阵营)`）
+            {
+                var (engine, _, state) = TargetBoard(db, taxCard, kredits: 2);
+                var attacker = PlaceUnit(state, Attacker, Side.Left, 3, 1);
+                var own = PlaceUnit(state, infantry, Side.Left, 4, 2);
+                own.KreditsTaxAsEnemyTarget = tax;
+
+                var r = engine.Api.CanSelectAsTarget(attacker, own, byPlayFromHand: false);
+                if (!r.Can)
+                {
+                    return $"`{taxCard}`：**同阵营**目标被收税（{r.Describe()}）—— 蓝图是 "
+                         + "`SelectInt(0, KreditsTax_AsEnemyTarget, 同阵营)`，同阵营恒不付税";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 攻击路径的门 ⑧：触发点 2 的否决位（全池唯一实现者 `card_unit_no_3_commando`，
+    /// 卡面「Units with 4 or more attack cannot attack.」）。
+    /// </summary>
+    private static string? TargetGateCommandoVeto(CardDatabase db)
+    {
+        const string Commando = "card_unit_no_3_commando";
+        const string Attacker = "card_unit_a26_invader";   // 总攻 4
+        if (db.Find(Commando) is null) return $"卡库里缺 {Commando}";
+
+        string? infantry = FindType(db, "infantry");
+        if (infantry is null) return "卡库里没有 infantry";
+
+        // ★ 证据：这条自测**实际走的是哪条路**（不许只断言结论）。
+        // `CanOtherCardBeTargetted` 的实现是「先跑卡自己的 IR 函数体，拿不到才用转写兜底」，
+        // 而 `card-ir.json` 目前**没有**这张卡的函数体（它没有任何事件入口，
+        // 生成器对这类卡直接 continue）⇒ 预期走兜底。
+        var program = KismetLibrary.Default?.FindLocalProgram(Commando, "CanOtherCardBeTargetted");
+        Console.WriteLine("      [commando 判据来源] "
+            + (program is null
+                ? "兜底转写体（`card-ir.json` 里没有这张卡的 `CanOtherCardBeTargetted` 函数体）"
+                : $"通用路径（跑卡自己的 IR 函数体，{program.Steps.Count} 步）"));
+
+        var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+        var attacker = PlaceUnit(state, Attacker, Side.Left, 3, 1);
+        var commando = PlaceUnit(state, Commando, Side.Right, 51, 1);
+        var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+
+        if (attacker.Attack < 4) return $"测试前提失效：`{Attacker}` 的总攻 {attacker.Attack} < 4";
+
+        // ① 攻方总攻 ≥ 4、commando 在场、**攻击路径** ⇒ 否决，原因逐字 `unit_cant_attack`
+        {
+            var r = engine.Api.CanSelectAsTarget(attacker, foe, byPlayFromHand: false);
+            if (r.Can)
+            {
+                return $"commando 在场、攻方总攻 {attacker.Attack} ≥ 4，目标却**被放行** —— "
+                     + "攻击路径的第 ⑧ 条判据没生效（旧行为：门根本没接进攻击路径）";
+            }
+
+            if (r.Reason != "unit_cant_attack")
+            {
+                return $"拒绝原因是 `{r.Describe()}`，应当是蓝图写死的 `unit_cant_attack`"
+                     + "（`card_unit_no_3_commando.g.cs:57`）";
+            }
+        }
+
+        // ② ★ `self` 是**订阅者**（commando 自己），**不是**被指的目标 ⇒
+        //    打「第三张卡」和打 commando 自己都必须被否。这条同时把
+        //    「把 `self` 误当成 `targeted`」那种写法钉死。
+        {
+            var r = engine.Api.CanSelectAsTarget(attacker, commando, byPlayFromHand: false);
+            if (r.Can)
+            {
+                return "打 commando 自己**被放行** —— 蓝图里 `IsLocatedOnBoard(self)` 的 `self` "
+                     + "是订阅者，不是 `targetCard`";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ **反向用例（最重要）**：不满足条件时**必须放行**。
+    ///
+    /// 这是防「把门做成恒拒」的安全网 —— 恒拒会让合法攻击也被拒、回放侧立刻变差，
+    /// 而 4 张受影响卡都不在回放语料里，这种回归**从数字上看不出来**。
+    /// 四个不满足条件的分支各一条：总攻 &lt; 4 / commando 不在场 / 出牌路径 / 真的打一次。
+    /// </summary>
+    private static string? TargetGateAttackPathAllows(CardDatabase db)
+    {
+        const string Commando = "card_unit_no_3_commando";
+        const string Strong = "card_unit_a26_invader";     // 总攻 4
+        const string Weak = "card_unit_120mm_m1_gun";      // 总攻 3，炮兵，射程 2
+
+        if (db.Find(Commando) is null) return $"卡库里缺 {Commando}";
+        string? infantry = FindType(db, "infantry");
+        if (infantry is null) return "卡库里没有 infantry";
+
+        // ① 攻方总攻 < 4 + commando 在场 ⇒ 放行
+        {
+            var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+            var weak = PlaceUnit(state, Weak, Side.Left, 3, 1);
+            PlaceUnit(state, Commando, Side.Right, 51, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+
+            if (weak.Attack >= 4)
+            {
+                return $"测试前提失效：`{Weak}` 的总攻是 {weak.Attack}，不是 < 4";
+            }
+
+            var r = engine.Api.CanSelectAsTarget(weak, foe, byPlayFromHand: false);
+            if (!r.Can)
+            {
+                return $"攻方总攻 {weak.Attack} < 4、commando 在场，目标却**被拒**（{r.Describe()}）"
+                     + " —— 门写太严（commando 的判据是「4 攻**以上**不能攻击」）";
+            }
+
+            if (!engine.LegalTargets(weak).Contains(foe))
+            {
+                return "`LegalTargets` 里没有这个合法目标 —— 候选枚举把合法攻击误杀了";
+            }
+        }
+
+        // ② 攻方总攻 ≥ 4、但 commando **不在场** ⇒ 放行
+        {
+            var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+            var strong = PlaceUnit(state, Strong, Side.Left, 3, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 51, 1);
+
+            var r = engine.Api.CanSelectAsTarget(strong, foe, byPlayFromHand: false);
+            if (!r.Can)
+            {
+                return $"commando 不在场、攻方总攻 {strong.Attack} ≥ 4，目标却**被拒**（{r.Describe()}）"
+                     + " —— 这条判据要求订阅者自己在场（蓝图 `IsLocatedOnBoard(self)`）";
+            }
+
+            if (!engine.LegalTargets(strong).Contains(foe))
+            {
+                return "`LegalTargets` 里没有这个合法目标 —— 候选枚举把合法攻击误杀了";
+            }
+        }
+
+        // ③ 攻方总攻 ≥ 4、commando 在场，但 `byPlayFromHand: true`（**出牌路径**）⇒ 放行。
+        //    蓝图第一条判据是 `Not_PreBool(byPlayFromHand)`：出牌路径恒不否决。
+        {
+            var (engine, card, state) = TargetBoard(db, Strong, kredits: 20);
+            PlaceUnit(state, Commando, Side.Right, 51, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+
+            var r = engine.Api.CanSelectAsTarget(card, foe, byPlayFromHand: true);
+            if (!r.Can)
+            {
+                return $"**出牌路径**被 commando 否决了（{r.Describe()}）—— 蓝图卡版的第一条判据是 "
+                     + "`Not_PreBool(byPlayFromHand)`，出牌路径必须完全不受它影响";
+            }
+        }
+
+        // ④ commando 在**弃牌堆**（订阅表里仍在，但不在场上）⇒ 放行
+        {
+            var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+            var strong = PlaceUnit(state, Strong, Side.Left, 3, 1);
+            var commando = PlaceUnit(state, Commando, Side.Right, 51, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+            state.Move(commando, CardLocation.Discard);
+
+            var r = engine.Api.CanSelectAsTarget(strong, foe, byPlayFromHand: false);
+            if (!r.Can)
+            {
+                return $"commando 已经进弃牌堆，目标却**被拒**（{r.Describe()}）—— "
+                     + "这条判据要求订阅者**在场上**（蓝图 `IsLocatedOnBoard(self)`）";
+            }
+        }
+
+        // ⑤ 端到端：commando 不在场时，4 攻单位的攻击必须**真的打得出去**
+        //    （前四条都只问门，这一条证明门不会拦下合法攻击）
+        {
+            var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+            var strong = PlaceUnit(state, Strong, Side.Left, 3, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 51, 1);
+
+            if (!engine.Attack(strong, foe, out string why))
+            {
+                return $"合法攻击被拒（{why}）—— 门把合法攻击也拦了（恒拒回归）";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ **攻击路径与出牌路径用的是同一道门** —— 直接断言三件事：
+    /// ① `Attack` 的拒绝原因**逐字来自门**（不是另写一份判据）；
+    /// ② 被拒的攻击**没有任何副作用**（门必须在 `State.AddKredits` 之前）；
+    /// ③ 候选枚举 `LegalTargets` 与门的结论一致（枚举与结算不可能漂移）。
+    /// </summary>
+    private static string? TargetGateSharedByBothPaths(CardDatabase db)
+    {
+        const string Commando = "card_unit_no_3_commando";
+        const string Attacker = "card_unit_a26_invader";
+        if (db.Find(Commando) is null) return $"卡库里缺 {Commando}";
+
+        string? infantry = FindType(db, "infantry");
+        if (infantry is null) return "卡库里没有 infantry";
+
+        var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+        var attacker = PlaceUnit(state, Attacker, Side.Left, 3, 1);
+        PlaceUnit(state, Commando, Side.Right, 51, 1);
+        var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+        state.ActiveSide = Side.Left;
+
+        var gate = engine.Api.CanSelectAsTarget(attacker, foe, byPlayFromHand: false);
+        if (gate.Can)
+        {
+            return "测试前提失效：这道门本应拒绝这次攻击（commando 在场 + 攻方总攻 ≥ 4）";
+        }
+
+        // ① 结算路径的拒绝原因必须**逐字**带上门的 `Describe()`
+        if (engine.Attack(attacker, foe, out string reason))
+        {
+            return "`Attack` 竟然放行了 —— 结算路径没有走这道门（这正是本次要修的缺口）";
+        }
+
+        if (!reason.Contains(gate.Describe(), StringComparison.Ordinal))
+        {
+            return $"`Attack` 的拒绝原因是 `{reason}`，里面没有门的 `{gate.Describe()}` —— "
+                 + "两条路径的判据不是同一份（枚举一套、结算另一套）";
+        }
+
+        // ② 被拒 ⇒ 不许有任何副作用（门在扣油费 / 置已攻击 / 发触发**之前**）
+        if (state.Kredits(Side.Left) != 20)
+        {
+            return $"被拒的攻击扣了油费（kredit {state.Kredits(Side.Left)} ≠ 20）—— "
+                 + "门插在 `State.AddKredits` 之后了（门自己会算一次行动费，会变成减两次 ⇒ 误拒合法攻击）";
+        }
+
+        if (attacker.HasAttackedThisTurn)
+        {
+            return "被拒的攻击置了 `HasAttackedThisTurn` —— 门插在副作用之后了";
+        }
+
+        if (attacker.AttacksThisTurn != 0)
+        {
+            return $"被拒的攻击算了攻击额度（{attacker.AttacksThisTurn} ≠ 0）—— 门插在副作用之后了";
+        }
+
+        // ③ 候选枚举必须与门同结论
+        if (engine.LegalTargets(attacker).Contains(foe))
+        {
+            return "`LegalTargets` 列出了 `Attack` 会拒的目标 —— 枚举与结算漂移"
+                 + "（AI 会反复尝试一个永远失败的动作）";
+        }
+
+        // ④ 出牌路径走的也是同一个方法（`CardApi.CanTarget` → `CanSelectAsTarget`），
+        //    两条路径的差别**只在实参** `byPlayFromHand`：
+        //    出牌路径 True ⇒ commando 的判据恒不生效（见蓝图卡版的第一条）。
+        {
+            var playCard = state.CreateWithId(Attacker, Side.Left, 9, CardLocation.HandLeft, 0);
+            var playGate = engine.Api.CanSelectAsTarget(playCard, foe, byPlayFromHand: true);
+            if (!playGate.Can)
+            {
+                return $"**出牌路径**被 commando 否决了（{playGate.Describe()}）—— 两条路径共用同一个方法，"
+                     + "差别只应在 `byPlayFromHand` 这个实参上";
             }
         }
 
