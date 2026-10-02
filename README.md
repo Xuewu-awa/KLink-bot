@@ -887,7 +887,9 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 ### 9.1 最大的一块：随机效果的「选卡」不一致
 
-**状态：未修。**
+**状态：根因已定位（未修）。**
+
+#### 9.1.1 现象（历史记录，仍然成立）
 
 - 已经确认**不是发号问题**：回放 `773639` 里内核台账的卡号（`3001/3002/3004`）与客户端引用的一致，
   **槽位一致、只有槽里的卡不同**。
@@ -901,12 +903,76 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 - **影响面**：回放 `508065` 的 16 条人类失败（首个漂开 `#54 t13`）、
   回放 `854099` 的 14 条人类失败（首个漂开 `#70 t15`）—— 即 §8.3 里全部 30 条失败。
 
-**未定位的具体差额**：回放 `508065` 的 `atlantic_convoy`（`#36 t9`）两次抽签，
-内核落在随机流位置 `#42/#43`，客户端落在 **`#88`** ⇒ **内核落后 46 次消费**。
-候选池本身已验证正确（102 张美国费 ≤ 3 的单位、字典序；客户端选中的卡在流位置 `#88` 上正好是 55 号，
-与客户端一致）⇒ **差异只在流位置，不在候选集**。46 次的来源**未定位**。
-
 出处：`out/audit/idfix/README.md:42-47`。
+
+#### 9.1.2 ⚠️ 下面这段旧的「未定位」描述**已过期**，保留作历史
+
+> **未定位的具体差额**：回放 `508065` 的 `atlantic_convoy`（`#36 t9`）两次抽签，
+> 内核落在随机流位置 `#42/#43`，客户端落在 **`#88`** ⇒ **内核落后 46 次消费**。
+> 候选池本身已验证正确（102 张美国费 ≤ 3 的单位、字典序；客户端选中的卡在流位置 `#88` 上正好是 55 号，
+> 与客户端一致）⇒ **差异只在流位置，不在候选集**。46 次的来源**未定位**。
+
+**为什么过期**：那个「102 张」是**候选池修复之前**的旧口径数字，而「客户端游标 = 88」
+正是从它反推出来的。
+
+#### 9.1.3 已定位的根因：两个**缺失的随机消费点**
+
+| # | 缺失点 | 蓝图出处 | 内核现状 |
+|---|---|---|---|
+| ① | `selectCardToDraw` 的**候选表洗牌** | `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:33750` 判 `keepOrder`，假时 `:33783` 执行 `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)` ⇒ **消费 = 候选表长度**；`card_event_pams` **硬编码 `keepOrder = false`**（`ref/kards-sim/.../card_event_pams.g.cs:245`） | `src/KLink.Bot/Effects/CardApiDispatch.cs:1197-1209` **有意不执行**这次消费（当年实现过一次，人类失败 13 → 22 所以回退） |
+| ② | `SetCardsSeenByCipher` | `BP_CardFunctions.g.cs:6056-6058`（`IsGotcha` 为假）→ `:6175` 调用 ⇒ **每张非 Gotcha 出牌都调**；该函数（`:34037`）对「对手手牌里 `cardSeen == false` 的那些」做 `Array_ShuffleFromStream`（`:34166`）⇒ 每次消费 **k 次** | **完全没有这个子系统**（`grep -rn "SetCardsSeenByCipher" src/` ⇒ **0 命中**） |
+
+⇒ 两者叠加 ⇒ 内核在 `#36` **至少落后 41 + 13 = 54 次**，**比 46 还多**
+（`#36` 之前有 **13 条 `PC`**，逐条数 `out/_server-replays/replay-508065.actions.json`）。
+
+**「46」这个数本身也不可靠**：同一个「游标 → 下标」模型对第二张牌失效
+（游标 89 → idx 6，而客户端第二张是 `card_unit_p40_warhawk`，池内 idx 82）；
+而且候选池口径已经变了（见下）。
+
+#### 9.1.4 候选池口径：**已实现**，不需要改代码
+
+`CardApiDispatch.cs:1697` 的 `StaticCardPool` 在 `:1727` 过 `CardPoolTable.IsSetInPool`（卡集层）、
+`:1732` 过 `CardPoolTable.IsReserved`（预备卡层）；第三层（服务端 `cards_blacklist`）离线恒空。
+离线复算：全卡库 **2021 → 过卡集 1542 → 排除 563 张预备卡 979**。
+于是候选表长度：`atlantic_convoy`（USA ∧ 单位 ∧ 费 ≤ 3）= **53 张**、
+`pams`（Britain ∧ order ∧ 费 < 5）= **41 张**。
+
+**而「102 张」正是 `atlantic_convoy` 不过滤时的旧口径**：`card_unit_fifth_ohio` 在旧 102 张表里
+正好是 **idx 55**，新表只有 53 张 ⇒ 「`#88` → 55 号」这个推导**失效**。
+唯一离线不可得的是**第三层**（服务端 `cards_blacklist`），它的影响是
+「每黑一张卡池少一张 ⇒ 之后下标整体偏移」，是个**有界**未知量。
+
+#### 9.1.5 当年那条假设已被证伪：锅不在 `keepOrder`
+
+`CardApiDispatch.cs:1205` 的注释写「我们的 `keepOrder` 判定与客户端不一致」。实测：
+pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pams 的 `GetChooseSpawnCards`
+是**完整忠实的循环**（31 步，`i=824 set keepOrder = false`）；`CardApiDispatch.cs:2002` 的初值也是 `false`
+⇒ **两边一致**，当年那次回归的锅**不在 `keepOrder`**。
+
+#### 9.1.6 判决性实验**已做**：洗牌模型被证伪（6 局 0/6 命中）
+
+三条证据**夹住**了「补洗牌」这个方案：
+
+1. 客户端 pams 实际选中的（回放 `508065` 的 `#34 CS` → `04` = `atlantic_convoy`）正好是
+   **不洗牌时的第 0 张**；
+2. 把洗牌放在最自然的游标位置（S=41）**复现不出**它；
+3. ★ **零参数判决性实验**：取 6 局各自的**第一次 pams**（种子 = 该局 `match_id`），
+   按「洗牌在最前、起始游标 = 内核在该动作开始前的游标」复算 `shuffled[观测下标]`，
+   与客户端实际选中的卡比对 ⇒ **0/6 命中**
+   （模型成立应当 6/6；偶然全中概率 ≈ (1/41)⁶ ≈ 2.1×10⁻¹⁰）。
+
+⚠️ **第 3 条的边界**：它依赖「洗牌点上客户端的游标 = 内核的游标」。所以严格说
+**至少有一条假设是错的** —— 要么洗牌模型不对，要么游标不等（即 pams 之前还有未找到的消费点）。
+**两种情况下都不能直接「把洗牌加上去」。**
+
+这与当年那次「实现后人类失败 13 → 22」的回归**方向一致** ⇒ **不要贸然实现**。
+下一步应先查清 `CS` 动作的字段语义（字段 `1` 是不是「洗牌后的下标」）
+与「洗牌 / 塞回牌库随机位 / 发牌」三者的消费顺序。
+另外，客户端候选表的真实长度依赖服务端状态（`DSession.cards_reserve_changes` / blacklist），
+**离线拿不到**。
+
+**完整依据**（逐条 `文件:行号` + 可复跑命令）：`klink bot/docs/内核补全队列.md` 的
+「2026-10-02（凌晨四）：RNG 游标失同步」一节。
 
 ### 9.2 费用 / kredit 结算的剩余缺口
 
@@ -929,7 +995,8 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 | ↳ 三条完整的死事件链 | **Pincer**（7 张）+ **Intel**（3 张）+ **Lose Smokescreen**（3 张）= 13 张卡，按「一条链一次修」性价比最高 | 同上 |
 | **`locals`-only 卡零覆盖** | **45 张**卡的 `entrypoints` 为空、逻辑全在 `locals`；烟雾测试按 `card.Entrypoints` 枚举用例 ⇒ 这 45 张**一个用例都没有**。连同 `entrypoints` 为空的共 **98 张**零覆盖 | `out/audit/semantic-reconcile-report.md` §5(L) |
 | **`Gotcha` 子系统** | IR 调用点：`GotchaTriggered` **54 点 / 52 张卡**、`ShouldGotchaTrigger` **53 点 / 52 张卡**、`IsGotcha` **16 点 / 13 张卡**；回放里每局真触发 29~58 次。**故意不做**：它是整条子系统（`gotchaActivated` + `RearrangeLocation` + `SetCardsSeenByCipher` + Covert 揭示位 + cipher），半吊子实现比不实现更糟 | IR 实测 + `klink bot/docs/内核补全队列.md:8348` |
-| **`changeType = 4` 在攻 / 防链上方向反了** | `ChangeAttack` 上共 **56 个调用点 / 41 张卡**；其中 **50 处 `amount = 0`**（真 no-op），**6 处非 0 ⇒ 把「撤销 buff」当成了「加 buff」**。涉及 5 张卡：`card_unit_ki_42_ii_ko`(2)、`card_unit_kyushu_j7w3`(2)、`card_unit_su_100`(4)、`card_unit_type_92_105mm_field_gun`(1)、`card_unit_type_97`(1×2)。对照：`DoChangeKreditCost` **处理了** `changeType == 4`（`RemoveCostBuff`）⇒ **同一个枚举，费用那条链修了、攻防那条链没修** | `src/KLink.Bot/Effects/CardApiDispatch.cs:2328-2365`、`:2434` |
+| **`changeType = 4` 在攻 / 防链上方向反了**（**已修**：`klink bot` `c54865d` / 上游镜像 `src` `33da1bd`） | `ChangeAttack` 上共 **56 个调用点**（全量 `steps` + `locals` 口径；只看 `steps` 时 ct 分布是 `{0:60, 1:314, 2:6, 4:48}`）。**受影响 41 张卡**（34 张的调用点在 `steps`、8 张在 `locals`，交集 1）；其中 **50 处 `amount = 0`**（真 no-op），**6 处非 0 ⇒ 旧实现把「撤销 buff」当成了「加 buff」**（5 张卡：`card_unit_su_100`、`card_unit_ki_42_ii_ko`、`card_unit_type_97`、`card_unit_kyushu_j7w3`、`card_unit_type_92_105mm_field_gun`）。⚠️ **`ChangeDefense` 的 ct=4 语义不同**：蓝图 `:7646` 把它路由到 `L_0E96` = `DirectClientLogger` 输出 `change type incorrect for "Change Defense"` 后返回（`:7906-7911`）⇒ **非法值、什么都不改**，所以内核补的是 **no-op**，不是「对称地撤销」（`ChangeDefense` 的 ct 分布 `{1:333, 2:10}`，**ct=4 有 0 个调用点**）。对照：`DoChangeKreditCost` **处理了** `changeType == 4`（`RemoveCostBuff`）⇒ 同一个枚举，费用那条链早就修了 | `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:6492/6789/6805/7543/7646/7906`、`src/KLink.Bot/Effects/CardApiDispatch.cs` |
+| **`CanSelectAsTarget` 的缺口位置**（**更正**：门**已实现**，真缺口在**攻击路径**） | 那道门**早就实现**且**已接进出牌候选枚举**：`src/KLink.Bot/Effects/CardApiDispatch.cs:310`（派发表）/`:4639`（本体）、`src/KLink.Bot/Engine/MatchEngine.cs:1842`（`LegalPlayTargets`）、`src/KLink.Bot/Server/NnPolicy.cs:129`、`tools/BotSim/SelfTest.cs:388-402`（8 条「目标门」自测全绿）。「IR 里 0 命中」**不是**判据 —— 唯一调用方是客户端 UI 蓝图 `BP_HandCard::DoesThisCardHasAnyTarget`，不是卡。**真缺口**：`MatchEngine.LegalTargets`（`:1758`，末尾 `:1818`）与 `Attack`（`:1481`/`:1493`）**从不调它**，而蓝图 `cardsCheckFunctions` 的 `CanAttack` 会调。影响面按 `AddKreditsTax` 的 6 个调用点算 = **3 张税卡**（`order_of_the_day` / `tupolev_sb_2` / `grim_day`）+ 1 张 `card_unit_no_3_commando` | `ref/kards-sim/KardsSim/Generated/_deps/cardsCheckFunctions.g.cs:902`、`src/KLink.Bot/Effects/CardApiDispatch.cs:4490/4520` |
 | **「同一原语多种实参形状，实现只处理一种」** | 一个**系统性 bug 类**，已找到 9+ 个实例（`Array_Add` / `Array_Contains` / `IsSameSideUnit` / `MakeVeteran` / `CustomAbilityAdd` / `ChangeKreditCost` …）。危险之处：**这些原语都在派发表里 ⇒ 不计入「未实现原语」**，烟雾测试只看到「零变化」 | `out/audit/argshape-inventory.txt`、`out/audit/scan-target-shapes.py` |
 | **`UnresolvedJumps` 不能当守卫判据** | 代码注释写「应恒为 0」，实测 **2212 个用例**非 0。静态复核表明跳转表本身没问题（1636 个蓝图的 `steps` + 881 个 `locals` 函数体，跳转目标缺失 **0 张 / 0 处**；692 张「首条是 `pushFlow`」的卡，派发返回地址 **692/692** 都指向 `return`）⇒ 非 0 是「派发返回地址」这条良性路径造成的 | `out/audit/smoke-all-cards.txt` 的「VM 诊断」一节 |
 | **`SmokeAllCards.IsPurePrimitiveName` 大小写 bug** | `name.StartsWith("Get")` **区分大小写**，把小写开头的查询原语当成「写原语」⇒ D2 表（「调了写原语却零变化」）长期虚高。**未改源码**（怕影响可比性），已知虚高幅度 157 → 86 张卡 | `out/audit/semantic-reconcile-report.md` |

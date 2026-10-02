@@ -1,5 +1,35 @@
 # 维度 2：合法性函数审计（蓝图 ⇄ 内核）
 
+> ⚠️ **部分结论已过期（2026-10-02 凌晨四）** —— 表格正文按历史原样保留，不改。
+>
+> 本文第 **360** 行（`CanAttack` #18 `CanSelectAsTarget` → 「**缺**」）与第 **390** 行
+> （「**内核零实现**」）**都已不成立**：
+>
+> - `CanSelectAsTarget` **早就实现了**，而且**已接进出牌候选枚举**：
+>   `src/KLink.Bot/Effects/CardApiDispatch.cs:310`（**在派发表里**）、`:4639`（`InvokeCanSelectAsTarget` 本体）、
+>   `src/KLink.Bot/Engine/MatchEngine.cs:1842`（`LegalPlayTargets` 逐张候选过门）、
+>   `src/KLink.Bot/Server/NnPolicy.cs:129`、`tools/BotSim/SelfTest.cs:388-402`（8 条「目标门」自测全绿）。
+>   「IR 里查不到调用点」（`klink bot/docs/card-ir.json` **0 命中**）**不是**「没实现」的判据 ——
+>   它唯一的调用方是**客户端 UI 蓝图** `BP_HandCard::DoesThisCardHasAnyTarget`，不是卡。
+> - 但第 360 行说的**位置**是对的：真缺口就在**攻击路径** —— 蓝图
+>   `ref/kards-sim/KardsSim/Generated/_deps/cardsCheckFunctions.g.cs:902` 的 `CanAttack`
+>   会调它（`byPlayFromHand=False`）并把它当 `failReason`，而内核
+>   `MatchEngine.LegalTargets`（`:1758`，末尾 `:1818`）与 `Attack`（`:1481`/`:1493`）
+>   **从不调它**，只做射程 + 烟幕 + 掩护。
+> - 第 390-391 行「`CanBeTargetted` / `CanOtherCardBeTargetted` / `IsUnrevealedCovertCard` /
+>   `KreditsTax_AsEnemyTarget` 四个原语都不在派发表」，逐条更正：
+>   `IsUnrevealedCovertCard` **在派发表里**（`CardApiDispatch.cs:966`），但是**恒 false 的桩**
+>   （`:959`）⇒ 第 370-371 行那条 `cant_target_unrevealed` 是**死代码**；
+>   `CanBeTargetted`（`:4490`）与 `CanOtherCardBeTargetted`（`:4520`）**不是派发表键**
+>   （是内核内部的私有实现，由 `InvokeCanSelectAsTarget` 调用）⇒ 「不在派发表」字面仍成立，
+>   但**「零实现」不成立**，它们分别是「**BinaryEvent 推断**」与「**恒放行的桩**」；
+>   只有 `KreditsTax_AsEnemyTarget` 这条**仍然成立**。
+> - 本报告 §2.3.3 对 `CanOtherCardBeTargetted` 的「❌ 未实现」同样不成立：
+>   全池唯一实现者是 `ref/kards-sim/.../card_unit_no_3_commando.g.cs:41-65`。
+>
+> 完整依据、影响面（3 张税卡 + 1 张 `card_unit_no_3_commando`）见 `klink bot/docs/内核补全队列.md` 的
+> 「**★★★ 2026-10-02（凌晨四）：`CanSelectAsTarget` 早已实现 —— 真缺口在攻击路径**」一节。
+
 **只读审计，未改 `src/KLink.Bot/` 任何一行。**
 
 - 内核快照时间：**2026-09-27 12:04:59**（`MatchEngine.cs` 的 mtime）。
