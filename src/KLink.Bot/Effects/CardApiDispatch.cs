@@ -879,6 +879,55 @@ public sealed partial class CardApi
             ["_isBigRedOne"] = (c, r, a) => a.Length > 0 && AsCard(a[0]) is { } x
                                             && string.Equals(x.Name, c.Self?.Name, StringComparison.Ordinal),
             ["GetCardsPlayedThisTurn"] = (c, r, a) => c.State.CardsPlayedThisTurn.ToList(),
+
+            // `hasPlayedOrderThisTurn(卡, side, out 有没有)` —— 本回合 **side 这一方**
+            // 有没有打过指令牌。
+            //
+            // ## 为什么必须手写替身（不能让它走卡自己的 locals）
+            //
+            // 它是**卡内私有函数**，签名需要一个**真的 `side` 入参**。
+            // `card_unit_10th_para_battalion` 的 IR 调用点形状是：
+            // <code>
+            // { op:"call", fn:"hasPlayedOrderThisTurn",
+            //   args:[{var:"side"}, {var:"CallFunc_hasPlayedOrderThisTurn_hasPlayedOrderThisTurn"}],
+            //   outs:[{param:1, slot:"CallFunc_…"}] }
+            // </code>
+            // 而 `KismetVm` 那条「本地程序兜底」**不 seed 入参**（见 `KismetVm.cs:586-601`
+            // 的「三条取舍」第 3 条：dump 里没有参数名，需要真入参的私有函数会拿到 null）。
+            // 于是它读到的 `side` 是帧默认值 ⇒ 判据恒假。
+            //
+            // ## 后果（回放 508065 `#71 t15 ML`，实测）
+            //
+            // `card_unit_10th_para_battalion#15001` 的卡面是
+            // 「**Deployment: Gets +1+1 and Blitz if you have given an order this turn.**」
+            // —— 那一回合人类确实打过指令，所以客户端那边它**有 Blitz** ⇒ **不是召唤失调**
+            // ⇒ 允许移动。内核因为判据恒假没给 Blitz ⇒ `CanMoveThisTurn` 判召唤失调
+            // ⇒ **拒移**（`移动被拒：单位本回合不能移动（召唤失调 … 进场回合=15 当前回合=15）`）
+            // ⇒ 它留在半场 ⇒ `#85 t17` 假「半场已满」。
+            //
+            // ## 判据
+            //
+            // 与 `AnyOrderPlayedThisTurn` **同源**（同一个循环），区别只是这里用
+            // **显式传入的 side** 而不是"自己那一方"：
+            // 蓝图 `hasPlayedOrderThisTurn` 的体遍历 `GetCardsPlayedThisTurn()`，
+            // 命中 `IsOrder(卡) && 卡.side == side` 就置 true
+            //（`ref/kards-sim/…/Britain/CovertOp/units/card_unit_10th_para_battalion.g.cs:67-151`）。
+            //
+            // ⚠️ 这是一处**定向**修补：`KismetVm` 那条"不 seed 入参"的**通用**局限仍在，
+            //    其它同样需要真入参的卡内私有函数依然会拿到 null（有 `<local-ran:…>` 留痕）。
+            ["hasPlayedOrderThisTurn"] = (c, r, a) =>
+            {
+                Side want = SideArg(r, a, 0, SelfSide(c));
+                foreach (var card in c.State.CardsPlayedThisTurn)
+                {
+                    if (IsOrder(card) && card.Owner == want)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
             ["getHasGameplayTag"] = (c, r, a) => HasGameplayTag(c, r, a),
 
             // `BP_CardFunctions::CanCardBeBuffed(Card)` 的实现（见 CardApi.CanCardBeBuffed）。
