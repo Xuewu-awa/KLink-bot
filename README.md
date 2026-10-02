@@ -839,7 +839,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 | 指标 | 值 |
 |---|---|
-| 已跟踪文件 | **463 个** |
+| 已跟踪文件 | **462 个** |
 | 跟踪内容总字节 | **≈ 22.6 MiB**（`git ls-tree -r -l HEAD` 的 size 列求和；`.gitattributes` 已把行尾统一成 LF） |
 | `.git` 目录 | **约 4.2 MiB**（其中 pack 3.98 MiB / 503 个对象）—— 大 JSON 压得很好 |
 | 最大单文件 | `klink bot/docs/card-ir.json`，**9,847,589 B ≈ 9.4 MiB**（远低于 GitHub 的 100 MB 硬限制） |
@@ -849,7 +849,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 > 首次提交时是 **461 个文件 / 21.38 MiB（仅纯 ASCII 文件名口径）**；
 > 此后新增了 `LICENSE` 与 `klink bot/docs/内部现状与路线图.md`（后者是从根 `README.md`
-> 用 `git mv` 移过去的，git 把它识别为 100% 的 copy）。
+> 用 `git mv` 移过去的，git 把它识别为 100% 的 copy），并删除了 `goal.txt`。
 
 ⇒ **不需要 Git LFS。**
 
@@ -1148,7 +1148,6 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 ├── LICENSE                         ← GNU GPL v3.0 全文（与来源仓库 KLink-dotnet 逐字节相同）
 ├── KLink.slnx                      ← 仓库根标记（工具靠它定位数据目录）+ 5 个工程
 ├── NuGet.config / .gitignore / .gitattributes
-├── goal.txt                        ← 项目最初的设想（作者原话）
 ├── 评估与实施路线图.md              ← 立项时的评估（含后来被推翻的结论）
 │
 ├── src/KLink.Bot/                  ← 规则内核 + AI（33 个文件）
