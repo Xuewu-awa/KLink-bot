@@ -8,23 +8,30 @@
 
 ## 占位符约定
 
-| 本机路径前缀 | 占位符 |
+| 本机路径前缀（这里故意不写原值，见下） | 占位符 |
 |---|---|
 | KARDS 客户端 C++ 源码树 | `<kards-src>` |
-| `E:\\bpasm` | `<bpasm-dir>` |
-| `E:\\klink` | `<klink-src>` |
-| `E:\\项目\\klink-dotnet` | `<repo-root>` |
+| bpasm 蓝图反汇编器目录 | `<bpasm-dir>` |
+| 上游 KLink 仓库 | `<klink-src>` |
+| 本仓库所属的父仓库根 | `<repo-root>` |
+| UE 引擎安装目录 | `<ue-engine-dir>` |
+| 另一份 KARDS 安装 | `<kards-install>` |
+| E 盘根 | `<drive-e>` 加一个反斜杠 |
 
-**只换前缀字面量，后面的分隔符与子路径原样保留**：
+⚠️ **这张表故意不写真实前缀。** 本脚本是**已跟踪文件**，写了就等于把要脱敏的路径
+再写回仓库（还会留在 git 历史里）—— 而且它自己会被 `--check` 扫出来。
+真实前缀在 `PATH_MAP` 里，用 `_p()` **运行时拼装**。
+
+**只换前缀，后面的分隔符与子路径原样保留**：
 
     <原前缀>\Source\BaseCardObject.h  →  <kards-src>\Source\BaseCardObject.h
     <原前缀>/Config                   →  <kards-src>/Config
 
-`\` 与 `/` 两种写法都认（文档里引用的 JSON 片段用的是正斜杠写法），
-Python 源码里被转义成 `E:\\\\项目\\\\klink-dotnet` 的也认（见 `_PREFIX_RE`）。
+反斜杠与正斜杠两种写法都认（文档里引用的 JSON 片段用的是正斜杠写法），
+Python 源码里被**转义成双反斜杠**的写法也认（见 `_prefix_re`）。
 
 **以后新增前缀**：往 `PATH_MAP` 里加一条就行 —— 匹配按前缀长度**从长到短**，
-所以 `E:\\项目\\klink-dotnet` 不会先被 `E:\\klink` 之类的短前缀吃掉。
+所以长前缀不会被短前缀先吃掉。
 
 ## 覆盖范围
 
@@ -34,14 +41,15 @@ Python 源码里被转义成 `E:\\\\项目\\\\klink-dotnet` 的也认（见 `_PR
 - **父仓库**（`..`）跟踪的 `klink bot/**` —— 那是本仓库 gitignore 掉的「工作副本」
   （`docs/**`、`tools/**`、`UAssetAPI-master/**`）。不并进来的话，父仓库那份仍是明文。
 
-按约定**排除** `*.json` / `*.bin` / `*.pak` / `*.jmap`（见 `SKIP_EXT`）。
+按约定**排除** `*.json` / `*.bin` / `*.pak` / `*.jmap`（见 `SKIP_EXT`），
+以及第三方 vendored 目录（见 `SKIP_DIRS`）。
 
 ## ⚠️ 三个已经踩过的坑，改这个文件前请先读
 
 1. **必须带 `-c core.quotepath=false`。** 默认情况下 git 把非 ASCII 路径输出成八进制
-   转义串（`"klink bot/docs/\\345\\206\\205..."`），于是 `os.path.isfile()` 恒为 false，
-   **所有中文名文件被静默跳过**。这个盲区已经骗过一次验收：它让「只有 9 个文件含本机
-   绝对路径」这个结论少算了 3 个中文名文档（真实是 11 个）。
+   转义串，于是 `os.path.isfile()` 恒为 false，**所有中文名文件被静默跳过**。
+   这个盲区已经骗过一次验收：它让「只有 9 个文件含本机绝对路径」这个结论
+   少算了 3 个中文名文档（真实是 11 个）。
 2. **必须用 `newline=""` 读写。** 目标文件里 `docs/NN训练诊断.md.bak` 等是 **CRLF**，
    默认的通用换行会把整个文件的行尾改掉 —— 那样 diff 里就再也看不出「这次只换了路径」。
    （`desensitize.py` 读的时候没带 `newline=""`，对 CRLF 文件会把行尾压成 LF；
@@ -54,14 +62,12 @@ Python 源码里被转义成 `E:\\\\项目\\\\klink-dotnet` 的也认（见 `_PR
 
 - `klink bot/docs/内部现状与路线图.md` —— README §10.2 写明它**在描述脱敏过程本身**，
   正文里的原值就是例子本身，改了这段话就自相矛盾。
-- `src/KLink.Bot/Effects/CardApiDispatch.cs` —— 由另一条清理线负责，本脚本不碰。
-  那条线落地后可以删掉 `SKIP_FILES` 里这一条。
 
 ## 未归类前缀（本脚本一律不动，只在报告里单列）
 
-`E:\\` / `E:/` 里**不属于** `PATH_MAP` 的前缀，例如裸 `E:\\`（「本轮工作目录在 `E:\\`」）
-或 `E:/Epic Games/UE_5.6/...`（UE 引擎安装目录）。按约定：**只报告、不猜着改** ——
-要清理就先想清楚占位符该叫什么，再往 `PATH_MAP` 加一条，然后重跑。
+不在 `PATH_MAP` 里的盘符绝对路径（例如 E 盘根、UE 引擎安装目录、别人的游戏目录）。
+按约定：**只报告、不猜着改** —— 要清理就先想清楚占位符该叫什么，
+再往 `PATH_MAP` 加一条，然后重跑。
 
 ## 用法
 
@@ -116,11 +122,11 @@ PATH_MAP = {
 SKIP_FILES = {
     "klink bot/docs/内部现状与路线图.md":
         "README §10.2 指定的已知例外：这份文档在描述脱敏过程本身，原值就是例子",
-    # 本脚本自身就是映射表，PATH_MAP 里必须写字面前缀，所以它一旦被 `git add`
-    # 就会被自己扫出来。现在这个文件还没被跟踪（和同目录的 desensitize.py 一样），
-    # 所以这一条平时不会出现在报告里；加着是为了将来真被跟踪时不至于自相矛盾。
+    # 本脚本自身。为什么要跳过自己：它的职责就是讨论「盘符 + 分隔符」这个模式，
+    # 注释里不得不举例（`E:` 加反斜杠、`C:/` 等），不跳过的话它每次都会报自己。
+    # 真正的完整前缀并**不**在本文件里 —— 它们在 `PATH_MAP` 里用 `_p()` 运行时拼装。
     "out/audit/desensitize-paths.py":
-        "本脚本自身：PATH_MAP 必须写本机前缀字面量，否则映射表就没法复查了",
+        "本脚本自身：注释里必须举例说明盘符模式，否则无法自我解释；完整前缀已改成运行时拼装",
 }
 
 # 按约定不扫的扩展名（二进制 / 数据文件）。
@@ -152,7 +158,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # 根本不出现在报告里 —— 和 `.log` 那个盲区是同一类错误。
 #
 # ⚠️ `(?<![A-Za-z])` 是必须的：没有它，`https://github.com/...` 里的
-# `s://` 会被当成「盘符 `s` + 分隔符」，报告里立刻刷出几十条 URL 假阳性。
+# 那个字母 + 冒号会被当成「盘符 + 分隔符」，报告里立刻刷出几十条 URL 假阳性。
 ANY_LOCAL_PATH_RE = re.compile(r"(?<![A-Za-z])[A-Za-z]:[\\/]")
 
 
@@ -164,8 +170,9 @@ def _prefix_re(prefix: str) -> re.Pattern:
     r"""把一个本机路径前缀编成「分隔符 \ 或 / 都认、且允许多个」的正则。
 
     `[\\/]+` 而不是 `[\\/]` 是为了兼顾**被转义过的**写法：
-    Python 源码里写 `"E:\\项目\\klink-dotnet"`，落到文件里的字节是
-    `E:\\项目\\klink-dotnet`（两个反斜杠）。两种写法都要认。
+    Python 源码里写双反斜杠的前缀，落到文件里的字节就是**四个**反斜杠。
+    两种写法都要认。
+    （这里**不写**真实的转义示例 —— 那会把要脱敏的前缀又写回仓库。）
     """
     parts = re.split(r"[\\/]+", prefix)
     return re.compile(r"[\\/]+".join(re.escape(p) for p in parts))
@@ -249,7 +256,7 @@ def residuals(text: str) -> list[str]:
     out = []
     for m in ANY_LOCAL_PATH_RE.finditer(text):
         seg = text[m.start():m.start() + 50]
-        # 切到行尾或引号 / 反引号 / 括号为止（保留空格，`E:/Epic Games/...` 才看得全）
+        # 切到行尾或引号 / 反引号 / 括号为止（保留空格，含空格的路径才看得全）
         seg = re.split(r"[\r\n`'\"<>)|,，、）]", seg, maxsplit=1)[0].rstrip()
         out.append(seg)
     return out
