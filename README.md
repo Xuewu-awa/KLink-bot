@@ -839,8 +839,8 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 | 指标 | 值 |
 |---|---|
-| 已跟踪文件 | **462 个** |
-| 跟踪内容总字节 | **≈ 22.6 MiB**（`git ls-tree -r -l HEAD` 的 size 列求和；`.gitattributes` 已把行尾统一成 LF） |
+| 已跟踪文件 | **453 个** |
+| 跟踪内容总字节 | **≈ 22.4 MiB**（`git ls-tree -r -l HEAD` 的 size 列求和；`.gitattributes` 已把行尾统一成 LF） |
 | `.git` 目录 | **约 4.2 MiB**（其中 pack 3.98 MiB / 503 个对象）—— 大 JSON 压得很好 |
 | 最大单文件 | `klink bot/docs/card-ir.json`，**9,847,589 B ≈ 9.4 MiB**（远低于 GitHub 的 100 MB 硬限制） |
 | 真实对局语料 | `out/_server-replays/` 6 局；`klink bot/docs/fresh-replays/` 7 局；`live-replays/` 5 局 |
@@ -849,13 +849,14 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 > 首次提交时是 **461 个文件 / 21.38 MiB（仅纯 ASCII 文件名口径）**；
 > 此后新增了 `LICENSE` 与 `klink bot/docs/内部现状与路线图.md`（后者是从根 `README.md`
-> 用 `git mv` 移过去的，git 把它识别为 100% 的 copy），并删除了 `goal.txt`。
+> 用 `git mv` 移过去的，git 把它识别为 100% 的 copy），
+> 并删除了 `goal.txt` 与 9 份已过期的内部文档（见 §14）。
 
 ⇒ **不需要 Git LFS。**
 
 > ⚠️ 顺带说明一个容易算错的数字：只统计**纯 ASCII 文件名**的已跟踪文件时，合计约 **21.4 MiB** ——
-> 差的 **约 1.20 MiB** 正是 **20 个中文名**跟踪文件
-> （17 个 `klink bot/docs/*`、2 个 `out/audit/*`、1 个根目录 `评估与实施路线图.md`）。
+> 差的 **约 1.02 MiB** 正是 **11 个中文名**跟踪文件
+> （9 个 `klink bot/docs/*`、2 个 `out/audit/*`）。
 > 用 `git ls-files` 走 shell 管道时，非 ASCII 路径会被 git 加引号转义，很容易被漏掉。
 
 ### 8.8 版本一致性与数据目录
@@ -1148,7 +1149,6 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 ├── LICENSE                         ← GNU GPL v3.0 全文（与来源仓库 KLink-dotnet 逐字节相同）
 ├── KLink.slnx                      ← 仓库根标记（工具靠它定位数据目录）+ 5 个工程
 ├── NuGet.config / .gitignore / .gitattributes
-├── 评估与实施路线图.md              ← 立项时的评估（含后来被推翻的结论）
 │
 ├── src/KLink.Bot/                  ← 规则内核 + AI（33 个文件）
 │   ├── Engine/                     ← 对局引擎 / 状态 / 卡实例 / 随机流 / 协议动作
@@ -1207,6 +1207,11 @@ git ls-files | Select-String -Pattern '\.pak$|\.jmap$|key\.txt|^decompiled/|UAss
 | `三方对拍方案.md` | 对拍方法论 |
 | `issue-kards-sim.md` | 与第三方参照实现的交叉验证结论 |
 | `kards-cpp源码勘察.md` | 反编译源码勘察笔记 |
+
+> ⚠️ 这两份内部文档（`内部现状与路线图.md`、`内核补全队列.md`）是作者的**工作快照**，
+> 写的时候引用了不少**一次性笔记**（进度快照、方案提案、单项诊断等）。
+> 那些笔记已在本仓库整理对外版时删除，所以这些文档里**个别路径可能已经不存在** ——
+> 引用到的**内容本身仍然有效**，只是原文件不再随仓库分发。
 
 审计侧的取证报告（`out/audit/`）：
 
