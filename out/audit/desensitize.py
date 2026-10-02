@@ -12,7 +12,7 @@
 | `winner_id`（end-match 动作）、`playerID`（驼峰，fyserver 日志格式） | 同上，**换了个键名** |
 | `left/right_player_name` | **3 个真实昵称**（外加作者自己的账号名） |
 | `left/right_player_tag` | 玩家 tag（4 位数字，与账号绑定） |
-| `match_url` / `actions_url` | **本机内网地址** `192.168.1.7` |
+| `match_url` / `actions_url` | **本机内网地址**（`192.168.` 私有网段） |
 
 ⚠️ **两个已经踩过的坑，改这个文件前请先读：**
 
