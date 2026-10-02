@@ -342,6 +342,16 @@ internal static class SelfTest
         new("★ 前线归属：**直接生成到前线**（不是推进）也必须更新 `FrontlineOwner`，否则互斥门失效",
             SpawnToFrontlineUpdatesOwner),
 
+        // ---- ★ 2026-10-03：`JSON_Clear` 只删**指定的那一个键**，且要回报它是否存在 ----
+        // 蓝图 `BP_CardFunctions.g.cs:24383-24395`：`existed = JsonHasField(card.customJson, variableName)`
+        // → **仅当 existed** 才 `JsonRemoveField(…, variableName)` → `found = existed`。
+        // 旧实现是 `card.CustomJson.Clear()`（**清空整张表**、忽略键名），
+        // 且派发表那条 lambda 返回 null ⇒ `found` 从不写入
+        //（VM 只在 `result is not null` 时写 out 槽，见 `KismetVm.cs:669`）。
+        // 有 **46 张卡**读 `CallFunc_JSON_Clear_found`。
+        new("★ `JSON_Clear` 只删指定键、并回报键是否存在（旧实现清空整表且不写 found）",
+            JsonClearRemovesOnlyNamedKey),
+
         // ---- ★★ 防回归守卫：派发表静态缺口（2026-10-02）----
         //
         // 这个 bug 类的根源是「IR 调了、表里没有、而且静默失败」——
@@ -3195,6 +3205,47 @@ internal static class SelfTest
     /// 第一条断言中间状态（`FrontlineOwner` 变成生成方）；
     /// 第二条断言**后果** —— 不修的话互斥门形同虚设，对面能推进到**已经被占**的前线。
     /// </summary>
+    /// <summary>
+    /// `JSON_Clear(card, variableName, out found)` —— 蓝图 `BP_CardFunctions.g.cs:24383-24395`：
+    /// 先 `JsonHasField` 查，**只删指定的那一个键**，并把 `found = existed` 写出去。
+    /// 旧实现 `card.CustomJson.Clear()` 会**清空整张表**、忽略键名、且 `found` 从不写入。
+    /// </summary>
+    private static string? JsonClearRemovesOnlyNamedKey(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var card = engine.Api.SpawnOnBattlefield(Side.Left, InfRange1, frontline: false);
+
+        engine.Api.JsonSetInt(card, "keep", 7);
+        engine.Api.JsonSetInt(card, "drop", 9);
+
+        bool found = engine.Api.JsonClear(card, "drop");
+        if (!found)
+        {
+            return "**`JsonClear` 对**存在**的键回报 false**（应 true）"
+                 + Dump(state, ("customJson", string.Join(",", card.CustomJson.Select(kv => $"{kv.Key}={kv.Value}"))));
+        }
+
+        if (card.CustomJson.ContainsKey("drop"))
+        {
+            return "**`JsonClear` 没有删掉指定的键**"
+                 + Dump(state, ("customJson", string.Join(",", card.CustomJson.Select(kv => $"{kv.Key}={kv.Value}"))));
+        }
+
+        if (engine.Api.JsonGetInt(card, "keep") != 7)
+        {
+            return "**`JsonClear` 把**别的**键也删了** —— 旧实现是 `CustomJson.Clear()` 清空整张表，"
+                 + "蓝图只 `JsonRemoveField(…, variableName)`"
+                 + Dump(state, ("customJson", string.Join(",", card.CustomJson.Select(kv => $"{kv.Key}={kv.Value}"))));
+        }
+
+        if (engine.Api.JsonClear(card, "nope"))
+        {
+            return "**`JsonClear` 对**不存在**的键回报 true**（应 false）";
+        }
+
+        return null;
+    }
+
     private static string? SpawnToFrontlineUpdatesOwner(CardDatabase db)
     {
         var (engine, state) = EmptyBoard(db);

@@ -490,7 +490,10 @@ public sealed partial class CardApi
                 ? new object?[] { JsonGetString(x, StrArg(a, 1)), JsonHasKey(x, StrArg(a, 1)) }
                 : new object?[] { "", false },
             ["JSON_SetString"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetString(x, StrArg(a, 1), StrArg(a, 2)); return null; },
-            ["JSON_Clear"] = (c, r, a) => { if (AsCard(r) is { } x) JsonClear(x); return null; },
+            // ⚠️ 必须**返回非 null** —— VM 只在 `result is not null` 时写 out 槽
+            //    （`KismetVm.cs:669`），而 `found` 是 `JSON_Clear` 的第 3 个实参（有 46 张卡读它）。
+            //    语义见 `CardApi.JsonClear` 的注释（蓝图只删**指定那一个键**）。
+            ["JSON_Clear"] = (c, r, a) => AsCard(r) is { } x && JsonClear(x, StrArg(a, 1)),
 
             // ---------------- 数组（卡牌蓝图里大量使用）----------------
             // ⚠️ 这一族全部走 `EvalList`（**元素类型无关**），不是 `EvalArray`。

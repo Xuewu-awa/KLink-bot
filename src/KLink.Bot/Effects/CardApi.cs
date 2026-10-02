@@ -2380,7 +2380,25 @@ public sealed partial class CardApi
 
     public void JsonSetString(CardInstance card, string key, string value) => card.CustomJson[key] = value;
 
-    public void JsonClear(CardInstance card) => card.CustomJson.Clear();
+    /// <summary>
+    /// `JSON_Clear(card, variableName, out found)` —— **只删指定的那一个键**，
+    /// 并回报它原本是否存在。
+    ///
+    /// ⚠️ 蓝图 `BP_CardFunctions.g.cs:24383-24395` 逐行是：
+    ///   `existed = JsonHasField(card.customJson, variableName)`
+    ///   `if (existed) card.customJson = JsonRemoveField(card.customJson, variableName)`
+    ///   `found = existed`
+    /// ⇒ **只删一个键**，而且 `found` 要写出去。
+    ///
+    /// 旧实现是 `card.CustomJson.Clear()` —— **清空整张卡的 JSON**、**忽略 `variableName`**，
+    /// 且派发表那条 lambda 返回 null ⇒ `found` 从不写入（VM 只在 `result is not null`
+    /// 时写出参，见 `KismetVm.cs:669`）。
+    /// 有 **46 张卡**读 `CallFunc_JSON_Clear_found`；典型受害卡
+    /// `card_unit_85_pioneer_company` 的 `buffActive` 正是
+    /// `JSON_SetBool → JSON_Clear → JSON_GetBool` 三段 —— 整张表被清 ⇒ 兄弟键一起丢。
+    /// </summary>
+    public bool JsonClear(CardInstance card, string key)
+        => !string.IsNullOrEmpty(key) && card.CustomJson.Remove(key);
 
     // ---- 卡牌私有 JSON 的数组变体（JSON_GetIntArray / JSON_AddToIntArray）----
     // 存成逗号分隔字符串，既省内存又天然确定性（字典遍历顺序不影响它）。
