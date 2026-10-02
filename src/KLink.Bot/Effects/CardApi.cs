@@ -1397,6 +1397,22 @@ public sealed partial class CardApi
     }
 
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false)
+        => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true);
+
+    /// <summary>
+    /// 防御力增减的**共同实现**。
+    ///
+    /// ⚠️ <paramref name="fireGainDefenseEvent"/> 这条开关是**蓝图的分支互斥**要求的
+    ///（2026-10-02 修）：蓝图 `BP_CardFunctions.g.cs` 的 `ChangeDefense` 里，
+    /// **T6 `OnAfterOtherCardDefenseIsSet`** 在 `changeType == 2`（`SetValue`）那条分支
+    ///（`:7721-7727`），而 **T7 `OnAfterOtherCardGainDefense`** 在**另一条**分支
+    ///（`:7954-7956`，且带 `!cardToChangeRef.isSuppressed` 门）—— **两条互斥**。
+    /// 而内核旧实现的 `SetDefenseValue` 先调 `ChangeDefense`（于是发了 T7）
+    /// 再自己发 T6 ⇒ **每次「设为某值」都多发一次 T7**（T7 有 8 张订阅）。
+    /// ⇒ `SetValue` 路径必须把 T7 关掉。
+    /// </summary>
+    private void ApplyDefenseDelta(CardInstance target, int delta, CardInstance? source,
+                                   bool temporary, bool fireGainDefenseEvent)
     {
         if (!target.IsAlive || delta == 0)
         {
@@ -1423,7 +1439,9 @@ public sealed partial class CardApi
         // 签名 `BaseCardObject.h:814/793`：
         //   `OnAfterGainDefense(int32 defenseGained)`（自己）
         //   `OnAfterOtherCardGainDefense(UBaseCardObject* cardGainingDefense, int32 defenseGained)`
-        if (delta > 0)
+        //
+        // ⚠️ **只有「增量」那条分支才发**（`SetValue` 分支发 T6，见上）。
+        if (fireGainDefenseEvent && delta > 0)
         {
             FireTrigger("OnAfterGainDefense", target, target.Owner, "OnAfterOtherCardGainDefense",
                 eventArgs: new object?[] { target, delta },
@@ -1444,10 +1462,15 @@ public sealed partial class CardApi
     /// 「防御力被设成某个值」—— 对应蓝图 `ChangeDefense` 的 `SetValue` 分支
     /// （`EChangeType::SetValue`，i=1589 `OnAfterDefenseIsSet`）。
     /// 与 <see cref="ChangeDefense"/> 分开，因为事件名不同。
+    ///
+    /// ⚠️ **这条路径不发 T7**（`OnAfterGainDefense` / `OnAfterOtherCardGainDefense`）：
+    /// 蓝图里 T6 与 T7 在**互斥分支**（见 `ApplyDefenseDelta` 的注释）。旧实现走
+    /// `ChangeDefense` 转发 ⇒ 每次「设为某值」多发一次 T7（8 张订阅）。
     /// </summary>
     public void SetDefenseValue(CardInstance target, int value, CardInstance? source)
     {
-        ChangeDefense(target, value - target.Defense, source);
+        ApplyDefenseDelta(target, value - target.Defense, source,
+                          temporary: false, fireGainDefenseEvent: false);
 
         if (!target.IsAlive)
         {
