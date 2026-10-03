@@ -92,10 +92,32 @@ internal static class DispatchGapBaseline
     /// `AddGameplayRestriction`、`RemoveGameplayRestriction` 和
     /// `IsThereGameplayRestriction`，覆盖全局玩法限制的状态查询与修改。
     /// 2026-10-03: 534 → **533** (2714 calls), implementing `MakeCardRetreat`.
-    public const int BaselineCount = 530;
+    /// <item>2026-10-03：533 → **525**（调用点 2714 → **2528**）。按蓝图重写 Gotcha（反制卡）
+    /// 子系统，补上 **5 个**派发键 —— 它们此前**全部**在缺口里，也就是整族效果静默空转：
+    /// <list type="bullet">
+    /// <item>`GotchaTriggered` −54（IR 里 52 张 gotcha 卡的触发点）</item>
+    /// <item>`ShouldGotchaTrigger` −53</item>
+    /// <item>`IsGotcha` −16</item>
+    /// <item>`SetCardsSeenByCipher` −2（`card_event_cruiser_scouts` / `card_event_stretch_the_line`）</item>
+    /// <item>`AddIntelToCard` −3（`card_unit_lublin_r_xiii`）</item>
+    /// </list>
+    /// 合计 **−8 种 / −128 个调用点**。
+    /// 指纹 7A024C984F6E9873 → **5588ABD560840292**。
+    /// <para>
+    /// ⚠️ **为什么不是 524 种**：`GetHandLocationBySide` **有实现但故意不注册** ——
+    /// 注册它会把 IR 里 5 个既有调用点（5 张卡的"这张牌在我手里吗 / 手牌满了吗"门）
+    /// 从「out 槽不写 ⇒ null」变成真实手牌位置，实测对局 `854099` **106/118 → 100/118**
+    /// （其余 8 局逐位不变）。这是典型的「两个错抵消」（README §7.3）：
+    /// 门恒假掩盖了下游另一个偏差。按「任何一局应用率下降都算失败 ⇒ 回退」的硬性要求
+    /// 回退注册，并**如实把它留在缺口里**（−5 个调用点不扣）。
+    /// 判据与完整 A/B 见 `CardApiDispatch.cs` 里 `["GetHandLocationBySide"]` 上方那段注释。
+    /// </para>
+    /// </item>
+    /// </remarks>
+    public const int BaselineCount = 525;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "7A024C984F6E9873";
+    public const string BaselineFingerprint = "5588ABD560840292";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

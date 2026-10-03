@@ -496,6 +496,30 @@ internal static class SelfTest
         new("★ 攻击前触发点：`OnBeforeAttack` **只给攻击方**（且被压制时不发），T13 广播在它**之后**" +
             "（蓝图 :4633 / :4587；旧实现给防御方也发、且两者混在一次派发里）",
             AttackBeforeTriggersRecipientsAndOrder),
+
+        // ---- ★★ 2026-10-03：Gotcha（反制卡）子系统按蓝图重写 ----
+        // 权威：`BP_CardFunctions.g.cs:23719-23912`（`GotchaTriggered`）等五处。
+        // 这一族此前**完全没有**（`GotchaTriggered` 54 个调用点 / `ShouldGotchaTrigger` 53 /
+        // `IsGotcha` 16 / `GetHandLocationBySide` 5 / `SetCardsSeenByCipher` 2 全在派发缺口里）。
+        new("★ Gotcha：`IsGotcha` 判的是**卡定义类型**（52 张 `type==gotcha`），普通卡为假",
+            GotchaIsGotchaByCardType),
+        new("★★ Gotcha：`ShouldGotchaTrigger` 判的是 **self**（不是实参 a[0]）" +
+            "（蓝图调用点 `card_event_interception.g.cs:53` 实参是触发卡、self 隐式）",
+            GotchaShouldTriggerJudgesSelf),
+        new("★★ Gotcha：`OnCounterMeasureTriggered` 的实参必须是 **gotcha 卡**" +
+            "（`card_unit_the_tigers` 读 `countermeasureTriggering.originalSide/cardID/side`；" +
+            "传触发卡则 +1+1 不发生）",
+            GotchaCounterMeasureArgIsGotchaCard),
+        new("★ Gotcha：触发后 gotcha 卡 **location = Discard(8)**、`enterPlayOnTurn` 被设、手牌被压紧",
+            GotchaTriggeredMovesAndRearranges),
+        new("★★ Gotcha：`gotchaActivated` 是**从 1 起的激活序号**（不是 bool）——" +
+            "`GotchaTriggered` 置 0、装填递增、`GetActiveGotchasOrdered` 取 >0 且按键升序",
+            GotchaActivatedIsSequence),
+        new("★ Gotcha：`stopFurtherCardActions` ⇒ `SetStopFurtherActions(true)` + " +
+            "`instigator.enterPlayOnTurn=0`；`IsOrder && skipDiscardingOrder` ⇒ `customJson.cancelOrderRemove`",
+            GotchaStopFurtherActions),
+        new("★ Intel：`SetCardsSeenByCipher` 只翻**对手**手牌里 min(n, 未见面数) 张，并消耗一次洗牌",
+            SetCardsSeenByCipherRevealsOpponentUnseen),
     };
 
     public static int Run(CardDatabase db)
@@ -11179,9 +11203,543 @@ internal static class SelfTest
         return -1;
     }
 
-    private static string Dump(GameState state, params (string Label, string Value)[] extras)
+    // ==================== Gotcha（反制卡）子系统（2026-10-03） ====================
+    //
+    // 权威：`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:23719-23912`
+    // （`GotchaTriggered`）、`:18623-18892`（`GetActiveGotchasOrdered`）、
+    // `:34036-34220`（`SetCardsSeenByCipher`）、`:3996-4071`（`ApplySetCardsSeenByCipher`）、
+    // `:20904-20930`（`GetHandLocationBySide`）、`:29227-29300`（`RearrangeLocation`）、
+    // `:28080-28316`（装填）；参考实现 `Bridge/EngineHost.cs:1342-1355`。
+    //
+    // ⚠️ 下面每条都断言**蓝图的行为**，不断言实现细节：
+    //    · 不涉及「每次非 gotcha 出牌后重排对手手牌」这种蓝图里**没有**的副作用；
+    //    · 断言用的是**卡自己的 IR 体读到的值**（`card_unit_the_tigers` 读
+    //      `countermeasureTriggering.originalSide/cardID/side`），不是内核的内部标志。
+
+    /// <summary>造一张反制卡（默认 `card_event_interception`，52 张 gotcha 之一）。</summary>
+    private static CardInstance MakeGotcha(GameState state, string name, Side owner, int cardId,
+                                           CardLocation location, int locationNumber)
+        => state.CreateWithId(name, owner, cardId, location, locationNumber);
+
+    /// <summary>
+    /// Kismet 的布尔语义（`KismetVm.Truthy` 是 `internal`，测试工程看不到）：
+    /// `null` / `false` / `0` / 空串为假，其余为真。
+    /// </summary>
+    private static bool Truthy(object? v) => v switch
     {
-        var sb = new System.Text.StringBuilder();
+        null => false,
+        bool b => b,
+        int i => i != 0,
+        string s => s.Length > 0,
+        _ => true,
+    };
+
+    /// <summary>
+    /// `IsGotcha(card, out isIt)` —— 判据是**卡定义的类型**
+    /// （52 张 `docs/cards.live.json` 里 `type == "gotcha"` 的卡，与 IR 里调用
+    /// `GotchaTriggered` 的 52 张集合完全相同）。
+    /// </summary>
+    private static string? GotchaIsGotchaByCardType(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+
+        if (db.Find("card_event_interception") is null)
+        {
+            return "找不到 card_event_interception";
+        }
+
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
+            CardLocation.BoardHqLeft, 0);
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = normal, Controller = Side.Left };
+
+        if (!engine.Api.IsGotcha(gotcha))
+        {
+            return "card_event_interception 的类型是 gotcha，IsGotcha 却是假";
+        }
+
+        if (engine.Api.IsGotcha(normal))
+        {
+            return $"普通单位 {normal.Name} 被判成 gotcha";
+        }
+
+        // 走派发表（IR 形状：`IsGotcha(card, out)`，接收者才是被查的卡）
+        object? r = engine.Api.InvokeByName("IsGotcha", gotcha, new object?[] { null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `IsGotcha` —— IR 里 16 个调用点全部静默失效";
+        }
+
+        if (!Truthy(r))
+        {
+            return $"派发 `IsGotcha` 的接收者是 gotcha 卡，返回值却是 {r ?? "null"}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ `ShouldGotchaTrigger` 判的是 **self**，不是实参。
+    ///
+    /// 蓝图调用点（`Generated/Britain/Base/events/card_event_interception.g.cs:53`）：
+    /// <code>
+    /// H.Call("ShouldGotchaTrigger", new Val[] { self, K2Node_Event_cardPlayed, Val.Out(…) })
+    /// </code>
+    /// IR 形状（`docs/card-ir.json`，53 个调用点**全部**）：`args = [触发卡, out]`，
+    /// **没有 `recv`** ⇒ self 是隐式的（`KismetVm.Eval` 的 `{self:true}` → `ctx.Self`）。
+    ///
+    /// ⇒ 本测用**两个方向**把它钉死：
+    /// <list type="number">
+    /// <item>self = 反制卡、a[0] = 普通卡 ⇒ **真**；</item>
+    /// <item>self = 普通卡、a[0] = 反制卡 ⇒ **假**（这就是"判 a[0]"的错法会翻车的那一面）。</item>
+    /// </list>
+    /// </summary>
+    private static string? GotchaShouldTriggerJudgesSelf(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        if (db.Find("card_event_interception") is null)
+        {
+            return "找不到 card_event_interception";
+        }
+
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
+            CardLocation.BoardHqLeft, 0);
+
+        // ① self = 反制卡；实参 a[0] = 普通卡（蓝图里那是"触发这件事的卡"）
+        var ctx1 = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
+        object? r1 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
+            new object?[] { normal, null }, ctx1, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `ShouldGotchaTrigger` —— IR 里 53 个调用点全部静默失效";
+        }
+
+        if (!Truthy(r1))
+        {
+            return "self 是反制卡、a[0] 是普通卡，`ShouldGotchaTrigger` 应当为**真**，"
+                 + $"实际 {r1 ?? "null"} —— 判据没落在 self 上";
+        }
+
+        // ② self = 普通卡；实参 a[0] = 反制卡 ⇒ 必须为假（判 a[0] 的实现会在这里返回真）
+        var ctx2 = new EffectContext { Engine = engine, State = state, Self = normal, Controller = Side.Left };
+        object? r2 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
+            new object?[] { gotcha, null }, ctx2, out _);
+        if (Truthy(r2))
+        {
+            return "self 是普通卡、a[0] 是反制卡，`ShouldGotchaTrigger` 必须为**假**，"
+                 + "实际为真 —— 这是「判 a[0]」的错法（审计 §9 第 9 条）";
+        }
+
+        // ③ 反制卡被丢弃（"已销毁"）之后不再响应
+        gotcha.Location = CardLocation.Discard;
+        object? r3 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
+            new object?[] { normal, null }, ctx1, out _);
+        if (Truthy(r3))
+        {
+            return "反制卡已进弃牌堆，`ShouldGotchaTrigger` 仍为真（蓝图/参考实现要 `!Destroyed`）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ `GotchaTriggered` 循环里 `OnCounterMeasureTriggered(item, **TmpGotcha**, out)`
+    /// （`BP_CardFunctions.g.cs:23839`）—— 实参必须是 **gotcha 卡**。
+    ///
+    /// 验证者选 `card_unit_the_tigers`（`docs/card-ir.json` 的
+    /// `locals.OnCounterMeasureTriggered`，14 步），它**真的读**那个实参：
+    /// <code>
+    /// i=33   EqualEqual_ByteByte(originalSide@countermeasureTriggering, side)      ; 同阵营？
+    /// i=93   Greater_IntInt(cardID@countermeasureTriggering, 1000)                 ; 生成卡？
+    /// i=149  Not_PreBool(同阵营)
+    /// i=178  BooleanOR(生成卡, Not(同阵营))
+    /// i=216  EqualEqual_ByteByte(side@countermeasureTriggering, side)
+    /// i=276  BooleanAND(同阵营实参, 上面那个 OR)
+    /// i=314  JumpIfNot → 不加成
+    /// i=328  ChangeAttack (self, cardID, +1, changeType=1)
+    /// i=391  ChangeDefense(self, cardID, +1, changeType=1)
+    /// </code>
+    /// ⇒ 把 `TmpGotcha` 换成**触发卡**（审计第 6 条说的错法）时，
+    /// `side@countermeasureTriggering` 变成**对面**阵营 ⇒ AND 恒假 ⇒ **+1+1 不发生**。
+    /// 这正是本测的判别力所在（把实参改成 instigator 会让它红）。
+    /// </summary>
+    private static string? GotchaCounterMeasureArgIsGotchaCard(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        if (db.Find("card_unit_the_tigers") is null || db.Find("card_event_interception") is null)
+        {
+            return "找不到 card_unit_the_tigers / card_event_interception";
+        }
+
+        // 订阅者：左方场上的 THE TIGERS
+        var tigers = state.CreateWithId("card_unit_the_tigers", Side.Left, 1600,
+            CardLocation.BoardHqLeft, 0);
+        int atk0 = tigers.Attack, def0 = tigers.Defense;
+
+        // 反制卡：**左方**手牌，cardID > 1000（tigers 的判据之一）
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        gotcha.GotchaActivated = 1;
+
+        // 触发卡（instigator）：**右方**的一张指令 —— 传错它就会把阵营判成右方
+        var instigator = state.CreateWithId("card_event_aans", Side.Right, 2000,
+            CardLocation.HandRight, 0);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = gotcha, Controller = Side.Left,
+        };
+
+        object? r = engine.Api.InvokeByName("GotchaTriggered", gotcha,
+            new object?[] { gotcha, instigator.CardId, false, false, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `GotchaTriggered` —— IR 里 54 个调用点全部静默失效";
+        }
+
+        _ = r;
+        if (tigers.Attack != atk0 + 1 || tigers.Defense != def0 + 1)
+        {
+            return $"`OnCounterMeasureTriggered` 的实参没绑到 gotcha 卡："
+                 + $"THE TIGERS 的攻防应当 {atk0}/{def0} → {atk0 + 1}/{def0 + 1}，"
+                 + $"实际 {tigers.Attack}/{tigers.Defense}（把实参传成触发卡时 "
+                 + "`side@countermeasureTriggering` 变成对面阵营 ⇒ AND 恒假）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `GotchaTriggered` 的前 4 步（`BP_CardFunctions.g.cs:23735-23745`）：
+    /// <code>
+    /// :23735  gotchaActivated = 0
+    /// :23739  enterPlayOnTurn = GetTurnNumber()
+    /// :23741  location = 8 (Discard)
+    /// :23743  GetHandLocationBySide(side) → :23745 RearrangeLocation(handLocation)
+    /// </code>
+    /// 手牌压紧那一环：拿掉 gotcha 之后，剩下的手牌 `locationNumber` 必须重新变成 0..n-1
+    /// （蓝图 `RearrangeLocation` → `SetCardLocationAndLocNumber(cardID, loc, index)`）。
+    /// </summary>
+    private static string? GotchaTriggeredMovesAndRearranges(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        if (db.Find("card_event_interception") is null)
+        {
+            return "找不到 card_event_interception";
+        }
+
+        // 左方手牌：gotcha（号 0）+ 两张普通卡（号 1、2）
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        gotcha.GotchaActivated = 1;
+        gotcha.EnteredPlayOnTurn = 99;
+
+        var h1 = state.CreateWithId("card_event_aans", Side.Left, 1501, CardLocation.HandLeft, 1);
+        var h2 = state.CreateWithId("card_event_aans", Side.Left, 1502, CardLocation.HandLeft, 2);
+
+        // 把 gotcha 手动挪到号 2，制造一个"洞"（0/1/2 里拿掉中间那张）
+        gotcha.LocationNumber = 2;
+        h1.LocationNumber = 0;
+        h2.LocationNumber = 1;
+
+        state.Turn = 7;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
+        engine.Api.InvokeByName("GotchaTriggered", gotcha,
+            new object?[] { gotcha, 0, false, false, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `GotchaTriggered`";
+        }
+
+        if (gotcha.Location != CardLocation.Discard)
+        {
+            return $"触发后 gotcha 的位置应当是 Discard(8)，实际 {gotcha.Location}（蓝图 :23741）";
+        }
+
+        if (gotcha.EnteredPlayOnTurn != 7)
+        {
+            return $"触发后 `enterPlayOnTurn` 应当是当前回合 7，实际 {gotcha.EnteredPlayOnTurn}"
+                 + "（蓝图 :23737-23739）";
+        }
+
+        if (gotcha.GotchaActivated != 0)
+        {
+            return $"触发后 `gotchaActivated` 应当被置 **0**（蓝图 :23735），实际 {gotcha.GotchaActivated}";
+        }
+
+        if (h1.LocationNumber != 0 || h2.LocationNumber != 1)
+        {
+            return $"手牌没被压紧：两张普通卡的 locationNumber 应当是 0/1，"
+                 + $"实际 {h1.LocationNumber}/{h2.LocationNumber}（蓝图 :23743-23745 RearrangeLocation）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ `gotchaActivated` 是**从 1 起的激活序号**，不是 bool。
+    ///
+    /// 三条独立断言：
+    /// <list type="number">
+    /// <item><b>装填递增</b>：`PlayCardDirectlyFromHand:28310-28316`
+    ///   `_nextGotchaActivated = max(同阵营已激活) + 1` —— 第一张 = 1，第二张 = 2；</item>
+    /// <item><b>再次正常打出 ⇒ 置 0</b>（`:28092-28096`）；</item>
+    /// <item><b>取用</b>：`GetActiveGotchasOrdered` 只收 `gotchaActivated &gt; 0`，
+    ///   且输出**按键升序** —— 而 interception / ultra 用的是负数键
+    ///   （`:18764` `cardID * -1`、`:18790` `(cardID + 1000000) * -1`），
+    ///   所以它们**永远排在普通反制卡之前**。</item>
+    /// </list>
+    /// 用 bool 的话第 2、3 条都不成立（两张反制卡同号、顺序与客户端不一致）。
+    /// </summary>
+    private static string? GotchaActivatedIsSequence(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        if (db.Find("card_event_interception") is null || db.Find("card_event_ultra") is null)
+        {
+            return "找不到 card_event_interception / card_event_ultra";
+        }
+
+        // ---- ① 装填递增（左方）----
+        var g1 = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        engine.Api.AssignGotchaActivatedOnPlayFromHand(g1);
+        if (g1.GotchaActivated != 1)
+        {
+            return $"第一张反制卡装填后应当是 **1**，实际 {g1.GotchaActivated}（蓝图 :28310-28316）";
+        }
+
+        var g2 = MakeGotcha(state, "card_event_ultra", Side.Left, 1501, CardLocation.HandLeft, 1);
+        engine.Api.AssignGotchaActivatedOnPlayFromHand(g2);
+        if (g2.GotchaActivated != 2)
+        {
+            return $"第二张反制卡装填后应当是 **2**（= max+1），实际 {g2.GotchaActivated}";
+        }
+
+        // 右方独立计数（蓝图 :28261 只数 `item.side == card.side`）
+        var gr = MakeGotcha(state, "card_event_interception", Side.Right, 2000,
+            CardLocation.HandRight, 0);
+        engine.Api.AssignGotchaActivatedOnPlayFromHand(gr);
+        if (gr.GotchaActivated != 1)
+        {
+            return $"右方第一张反制卡应当是 **1**（按阵营独立计数），实际 {gr.GotchaActivated}";
+        }
+
+        // ---- ② 再次正常打出 ⇒ 置 0（:28092-28096）----
+        engine.Api.AssignGotchaActivatedOnPlayFromHand(g1);
+        if (g1.GotchaActivated != 0)
+        {
+            return $"已激活的反制卡再次装填应当被置 **0**（蓝图 :28096），实际 {g1.GotchaActivated}";
+        }
+
+        g1.GotchaActivated = 1;   // 复原，供第 ③ 条用
+
+        // ---- ③ 取用：>0 过滤 + 按键升序（负数键优先）----
+        var idle = MakeGotcha(state, "card_event_interception", Side.Left, 1502,
+            CardLocation.HandLeft, 2);   // gotchaActivated 保持 0 ⇒ 必须被过滤掉
+
+        var orderCtx = new EffectContext
+        {
+            Engine = engine, State = state, Self = g1, Controller = Side.Left,
+        };
+        var ordered = engine.Api.InvokeByName("GetActiveGotchasOrdered", null,
+            new object?[] { null }, orderCtx, out bool handledOrdered) as List<int>;
+        if (!handledOrdered || ordered is null)
+        {
+            return "派发表里没有 `GetActiveGotchasOrdered`（蓝图 :18623-18892；"
+                 + "`AfterWaitCardPlayFromHand` :626 是它的调用点）";
+        }
+        // 键的算术（蓝图 :18764 `cardID * -1` / :18790 `(cardID + 1000000) * -1`）：
+        //   ultra  #1501 → -(1501+1000000) = -1001501   ← 最小，排第一
+        //   interception #2000 → -2000                  ← 次之（**cardID 越大键越小**）
+        //   interception #1500 → -1500                  ← 再次
+        // ⇒ 期望 [1501, 2000, 1500]；未激活的 #1502 必须被 `:18733` 的 `> 0` 过滤掉。
+        var expect = new List<int> { g2.CardId, gr.CardId, g1.CardId };
+        if (!ordered.SequenceEqual(expect))
+        {
+            return "`GetActiveGotchasOrdered` 的顺序应当是 "
+                 + $"[ultra #{g2.CardId}, interception #{gr.CardId}, interception #{g1.CardId}]"
+                 + "（蓝图 :18764/:18790 用**负数**键 —— ultra 的 -(cardID+1000000) 最小、"
+                 + "interception 的 -cardID 次之且 **cardID 越大越靠前**；"
+                 + ":18733 过滤 `gotchaActivated > 0`），"
+                 + $"实际 [{string.Join(",", ordered)}]"
+                 + $"（未激活的 #{idle.CardId} 必须不在结果里）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `GotchaTriggered` 尾段（`BP_CardFunctions.g.cs:23857-23904`）：
+    /// <code>
+    /// :23857  if (!stopFurtherCardActions) → :23902 SetStopFurtherActions(False)
+    /// :23859      否则 SetStopFurtherActions(True)
+    /// :23863          GetCardFromID(instigatorID).enterPlayOnTurn = 0
+    /// :23869      IsOrder(instigator) &amp;&amp; skipDiscardingOrder
+    /// :23890          instigator.customJson = JsonMakeField(customJson, "cancelOrderRemove",
+    ///                                                       JsonMakeBool(skipDiscardingOrder))
+    /// </code>
+    /// 两条分支的公共落点都是「`IsOrder &amp;&amp; skipDiscardingOrder` ⇒ 写 `cancelOrderRemove`」；
+    /// 差别只有 `SetStopFurtherActions` 的取值与 `enterPlayOnTurn = 0`（只在 True 分支）。
+    ///
+    /// ⚠️ 蓝图的 `True` 分支**到不了** `SetStopFurtherActions(False)`（执行流栈的
+    /// `PopExecutionFlow` 落点是 `:23905` 的 Return）—— 这条**照抄不改**，
+    /// 所以第 ① 条断言的是「保持 true」，不是「复位」。
+    /// </summary>
+    private static string? GotchaStopFurtherActions(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        if (db.Find("card_event_interception") is null)
+        {
+            return "找不到 card_event_interception";
+        }
+
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1500,
+            CardLocation.HandLeft, 0);
+        gotcha.GotchaActivated = 1;
+
+        // instigator 必须是**指令**（`IsOrder`）才会写 customJson
+        var order = state.CreateWithId("card_event_aans", Side.Right, 2000,
+            CardLocation.HandRight, 0);
+        order.EnteredPlayOnTurn = 55;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
+
+        // ---- ① stopFurtherCardActions = true ----
+        engine.Api.InvokeByName("GotchaTriggered", gotcha,
+            new object?[] { gotcha, order.CardId, true, true, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `GotchaTriggered`";
+        }
+
+        if (!engine.Api.GetStopFurtherActions())
+        {
+            return "`stopFurtherCardActions=true` 时 `SetStopFurtherActions(True)` 没生效（蓝图 :23859）";
+        }
+
+        if (order.EnteredPlayOnTurn != 0)
+        {
+            return $"触发卡的 `enterPlayOnTurn` 应当被置 0（蓝图 :23863），实际 {order.EnteredPlayOnTurn}";
+        }
+
+        if (order.CustomJson.GetValueOrDefault("cancelOrderRemove") != "1")
+        {
+            return "`IsOrder(instigator) && skipDiscardingOrder` 时应当写 "
+                 + "`customJson[\"cancelOrderRemove\"] = true`（蓝图 :23890），"
+                 + $"实际 {order.CustomJson.GetValueOrDefault("cancelOrderRemove") ?? "<缺>"}";
+        }
+
+        // ---- ② stopFurtherCardActions = false + skipDiscardingOrder = false ----
+        engine.Api.SetStopFurtherActions(false);
+        var gotcha2 = MakeGotcha(state, "card_event_interception", Side.Left, 1503,
+            CardLocation.HandLeft, 1);
+        order.CustomJson.Remove("cancelOrderRemove");
+        order.EnteredPlayOnTurn = 55;
+
+        engine.Api.InvokeByName("GotchaTriggered", gotcha2,
+            new object?[] { gotcha2, order.CardId, false, false, null }, ctx, out _);
+
+        if (engine.Api.GetStopFurtherActions())
+        {
+            return "`stopFurtherCardActions=false` 时应当 `SetStopFurtherActions(False)`（蓝图 :23902）";
+        }
+
+        if (order.CustomJson.ContainsKey("cancelOrderRemove"))
+        {
+            return "`skipDiscardingOrder=false` 时不该写 `cancelOrderRemove`（蓝图 :23869 的 AND）";
+        }
+
+        if (order.EnteredPlayOnTurn != 55)
+        {
+            return $"`stopFurtherCardActions=false` 时不该动触发卡的 `enterPlayOnTurn`（蓝图只在 :23863 的 True 分支写），"
+                 + $"实际被改成 {order.EnteredPlayOnTurn}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `SetCardsSeenByCipher(numberOfCardsSeen, instigatorID, side, out qqq)`
+    /// （`BP_CardFunctions.g.cs:34036-34220`）：
+    /// <code>
+    /// :34107  GetCardsInHandBySide(Switch(side, {0→0, 1→2, 2→1}))   ; ★ **对手**手牌
+    /// :34137      if (cardSeen) 跳过
+    /// :34166  Array_ShuffleFromStream(oppositeSideUnseenCards, cardsRandomStream)
+    /// :34170  min = Min(numberOfCardsSeen, 未见面数)
+    /// :34174  ApplySetCardsSeenByCipher(…)  → :4048 cardSeen = True
+    /// </code>
+    /// 三条断言：**只翻对手** / **只翻未见的** / **数量 = min(n, 未见面数)**，
+    /// 并且**消耗一次随机流**（洗牌）。
+    /// </summary>
+    private static string? SetCardsSeenByCipherRevealsOpponentUnseen(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+
+        // 左方（施法方）自己手牌里两张 —— 永远不该被翻
+        var own1 = state.CreateWithId("card_event_aans", Side.Left, 1501, CardLocation.HandLeft, 0);
+        var own2 = state.CreateWithId("card_event_aans", Side.Left, 1502, CardLocation.HandLeft, 1);
+
+        // 右方（对手）手牌三张，其中一张**已经见过**
+        var foe1 = state.CreateWithId("card_event_aans", Side.Right, 2001, CardLocation.HandRight, 0);
+        var foe2 = state.CreateWithId("card_event_aans", Side.Right, 2002, CardLocation.HandRight, 1);
+        var foe3 = state.CreateWithId("card_event_aans", Side.Right, 2003, CardLocation.HandRight, 2);
+        foe3.CardSeen = true;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = own1, Controller = Side.Left };
+
+        long cursorBefore = state.Random.ConsumedCount;
+
+        // n = 5 > 未见面数(2) ⇒ 应当把两张**未见的**全翻掉，一张不多
+        engine.Api.InvokeByName("SetCardsSeenByCipher", own1,
+            new object?[] { 5, own1.CardId, (int)Side.Left, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `SetCardsSeenByCipher` —— IR 里 2 个调用点静默失效";
+        }
+
+        if (!foe1.CardSeen || !foe2.CardSeen)
+        {
+            return $"对手两张未见的牌应当都被翻（n=5 &gt; 未见面数 2），"
+                 + $"实际 #{foe1.CardId}.seen={foe1.CardSeen} #{foe2.CardId}.seen={foe2.CardSeen}"
+                 + " —— 注意蓝图取的是**对手**手牌（:34107 的 side 取反）";
+        }
+
+        if (own1.CardSeen || own2.CardSeen)
+        {
+            return "**自己的**手牌被翻开了 —— 蓝图 :34107 取的是 `side` 的**对面**";
+        }
+
+        if (state.Random.ConsumedCount == cursorBefore)
+        {
+            return "没有消耗随机流 —— 蓝图 :34166 会对候选做 `Array_ShuffleFromStream`"
+                 + "（参考实现洗的是下标数组，那是错的：蓝图洗的是候选卡本身）";
+        }
+
+        // 第二轮：n = 1，且未见面数为 0 ⇒ 什么都不做、也**不消耗**随机流
+        var (engine2, state2) = EmptyBoard(db);
+        var a = state2.CreateWithId("card_event_aans", Side.Right, 3001, CardLocation.HandRight, 0);
+        a.CardSeen = true;
+        var caster = state2.CreateWithId("card_event_aans", Side.Left, 3002, CardLocation.HandLeft, 0);
+        var ctx2 = new EffectContext { Engine = engine2, State = state2, Self = caster, Controller = Side.Left };
+        long before2 = state2.Random.ConsumedCount;
+        engine2.Api.InvokeByName("SetCardsSeenByCipher", caster,
+            new object?[] { 1, caster.CardId, (int)Side.Left, null }, ctx2, out _);
+
+        if (state2.Random.ConsumedCount != before2)
+        {
+            return "对手手牌**全部已见**时不该消耗随机流（蓝图 :34150 的 `Array_IsNotEmpty` 门）";
+        }
+
+        return null;
+    }
+
+    private static string Dump(GameState state, params (string Label, string Value)[] extras)
+    {        var sb = new System.Text.StringBuilder();
         sb.Append($"\n       左场: {string.Join("  ", state.Board(Side.Left).Select(x => $"{x.Name}#{x.CardId}({x.Attack}/{x.Defense} 费{x.KreditCost})"))}");
         sb.Append($"\n       左手: {string.Join("  ", state.Hand(Side.Left).Select(x => $"{x.Name}#{x.CardId}(费{x.KreditCost})"))}");
         foreach (var (label, value) in extras)

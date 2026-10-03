@@ -47,6 +47,81 @@ public sealed class CardInstance
     public bool HasAttackedThisTurn { get; set; }
 
     /// <summary>
+    /// `gotchaActivated` —— **反制卡（Gotcha）的激活序号**，`0` = 未激活。
+    ///
+    /// ## 权威（蓝图，逐行）
+    ///
+    /// 写入方**只有** `BP_CardFunctions::PlayCardDirectlyFromHand`
+    /// （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:28092-28316`）：
+    /// <code>
+    /// :28080  card.location == 4 || card.location == 3     ; 在手牌里
+    /// :28088  IsGotcha(card)
+    /// :28092  card.gotchaActivated &gt; 0                     ; 已经激活过 ⇒
+    /// :28096      card.gotchaActivated = 0                 ;   置 0（正常打出 ⇒ 不再是反制）
+    /// :28243  否则：遍历 GetAllCardInBattle()，取**同阵营**且 IsGotcha 的卡里
+    /// :28263      gotchaActivated 的**最大值**  → _nextGotchaActivated
+    /// :28310  _nextGotchaActivated += 1
+    /// :28316  card.gotchaActivated = _nextGotchaActivated
+    /// </code>
+    /// ⇒ 语义是「**本方第几张被激活的反制卡**」，**从 1 开始递增**（不是 bool）。
+    ///
+    /// ## 为什么必须是 int 而不是 bool（审计：某个 PR 用了 bool 置 true）
+    ///
+    /// 判据方读的是 **`&gt; 0`**，而且顺序键就是它的**数值**
+    /// （`GetActiveGotchasOrdered`，`BP_CardFunctions.g.cs:18623-18892`）：
+    /// <code>
+    /// :18733  item.gotchaActivated &gt; 0                    ; 只收激活过的
+    /// :18766  activeGotchas.Add(cardID * -1, cardID)      ; interception 键 = -cardID
+    /// :18794  activeGotchas.Add((cardID + 1000000) * -1, cardID) ; ultra 键
+    /// :18810  Map_Find(activeGotchas, gotchaActivated)    ; backup 用激活号做键
+    /// :18854  activeGotchas.Add(backUpNextGotcha, cardID) ; backup 键 = 100,101,…
+    /// :18874  activeGotchas.Add(gotchaActivated, cardID)  ; 其余按激活号
+    /// :18699  MinOfIntArray(keys) 逐个取最小 ⇒ 输出顺序由这些键升序决定
+    /// </code>
+    /// 用 bool 的话 `gotchaActivated` 只有 0/1，`GetActiveGotchasOrdered` 的
+    /// 「第二张反制卡」就与第一张同号 ⇒ 顺序与客户端不一致。
+    ///
+    /// ## 复位
+    ///
+    /// `GotchaTriggered` 的**第一条**语句就是 `TmpGotcha.gotchaActivated = 0`
+    /// （`:23735`）—— 触发过的反制卡不再处于激活态。
+    /// </summary>
+    public int GotchaActivated { get; set; }
+
+    /// <summary>
+    /// `cardSeen` —— 「这张手牌已经被**情报（Intel / Cipher）**揭示过了」。
+    ///
+    /// 写入方（蓝图全量，只有两处）：
+    /// <list type="bullet">
+    /// <item>`ApplySetCardsSeenByCipher` `BP_CardFunctions.g.cs:4048`
+    ///   （`cardSeen = True`，只对 `IsLocatedInHand` 的卡）；</item>
+    /// <item>`SetCardSeen` `:34013`（单张版本）。</item>
+    /// </list>
+    /// 读取方：`SetCardsSeenByCipher` 自己攒「未见面」候选时的 `:34137`
+    /// （`if (cardSeen) 跳过`），以及 11 张卡的 IR 体。
+    ///
+    /// ⚠️ **IR 侧读不到这个成员**：成员表在
+    /// `Effects/Blueprint/KismetVm.cs:961-1038`，本轮**不在改动范围内**
+    /// ⇒ 那 11 张卡读 `cardSeen` 仍然得到 `null`（判假）。
+    /// 这个字段是为**C# 侧语义正确**（`SetCardsSeenByCipher` 的"未见面"过滤）
+    /// 与自测可观测而加的，如实标注这处**未接线**。
+    /// </summary>
+    public bool CardSeen { get; set; }
+
+    /// <summary>
+    /// `cipher` —— 卡的**情报值**（`AddIntelToCard` 写、`SetCardsSeenByCipher` /
+    /// `GotchaTriggered` 读）。蓝图出处见 <see cref="Effects.CardApi.AddIntelToCard"/>。
+    ///
+    /// ⚠️ **CDO 初值缺失**：客户端把它存在卡 CDO 上
+    /// （`decompiled/cards.all.json` 里 25 张卡非 0，例 `card_event_espionage_skirm`=9），
+    /// 但本内核的卡数据（`docs/cards.live.json` / `docs/card-effects.json`）
+    /// **不含该字段**，补表要动 `Cards/CardVarDefaults.cs`（本轮不在改动范围内）
+    /// ⇒ 这里初值一律 **0**（偏小）。52 张 gotcha 卡的 CDO 里**本来就没有** `cipher`
+    /// （已核实）⇒ 对这一族无影响。
+    /// </summary>
+    public int Cipher { get; set; }
+
+    /// <summary>
     /// 本回合**已经攻击过几次**（蓝图 `UBaseCardObject::attackCountThisTurn`，
     /// 声明见 `<kards-src>\Source\kards\Public\BaseCardObject.h:256`）。
     ///

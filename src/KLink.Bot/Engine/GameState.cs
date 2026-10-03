@@ -124,6 +124,31 @@ public sealed class GameState
     public Side FrontlineOwner { get; set; } = Side.NotAvailable;
 
     /// <summary>
+    /// `stopFurtherActions` —— `BP_GameState_Battle` 的一个 **bool 成员**
+    /// （读写各一行：`_deps/BP_GameState_Battle.g.cs:3611` 写、`:2578` 读）。
+    ///
+    /// ## 谁写谁读（蓝图全量）
+    ///
+    /// 写：`SetStopFurtherActions(GameStateRef, bool)`。三个写入方：
+    /// <list type="bullet">
+    /// <item>`AfterWaitCardPlayFromHand` `:624` 开头的 `False`（**每次动作前复位**）；</item>
+    /// <item>`GotchaTriggered` `:23859` 的 `True` —— 「反制卡触发 ⇒ 后面的卡动作全部作废」；</item>
+    /// <item>`GotchaTriggered` `:23902` 的 `False`（见下方 ⚠️）。</item>
+    /// </list>
+    /// 读：`GetStopFurtherActions()`，只在卡牌打出链里当**提前退出**的门用
+    /// （`BP_CardFunctions.g.cs:684/5887/6316/14937/15673/16567`）。
+    ///
+    /// ## ⚠️ 内核只建模**状态**，没有建模**消费者**
+    ///
+    /// 所有读取点都在 `AfterWaitCardPlayFromHand` / `CardPlayedFromHand` /
+    /// `PlayCardFromHand` 这一族**库函数**里，而它们**不在 `card-ir.json` 的调用点集合里**
+    /// （IR 只含每张卡自己的事件体）。⇒ 本内核设置这个标志后**没有代码读它**，
+    /// 效果是惰性的。如实记录：**这是"状态已就位、消费方未接线"**，
+    /// 不是"已经实现了 stopFurtherActions 的语义"。
+    /// </summary>
+    public bool StopFurtherActions { get; set; }
+
+    /// <summary>
     /// 前线**限制者**卡 ID 的集合（对应 `BP_GameState_Battle.FrontlineLimiters`
     /// 与 `ZActionUpdateFrontlineLimiter`）。
     ///

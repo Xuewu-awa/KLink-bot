@@ -1285,13 +1285,96 @@ public sealed partial class CardApi
             // 见「没修的」清单；这会少一次取消机会，不会多弃牌）。
             ["DiscardCardFromDeck"] = (c, r, a) => DoDiscardCardFromDeck(c, r, a),
 
-            // ── `ShouldGotchaTrigger(triggerCard, out shouldIt)`（36 点 / 36 张卡）──
-            // 出处：参考实现 `EngineHost.cs:1348`：
-            //   只有**盖着的反制卡**（covert + `gotcha` 标记 + 未销毁）才响应。
-            // 本内核没有 `gotcha` 标记的写入方（见「没修的」清单），
-            // 所以这里如实返回 false 并**保留在缺口统计里**（不注册）——
-            // 注册成 false 只会把计数刷绿。**故意不注册**，等 gotcha 建模。
-            // ["ShouldGotchaTrigger"] = …（见 out/audit/没修的.md）
+            // ── Gotcha（反制卡）子系统 ──
+            // 按蓝图重写（`BP_CardFunctions.g.cs:23719-23912` 等五处，逐行依据见
+            // `CardApi` 里同名方法的注释）。这一族在旧内核里**完全没有**，
+            // 原先这里只留了一段「故意不注册」的注释 —— 那是**错的**：
+            // 判据并不需要什么"gotcha 标记的写入方"，卡定义的类型就是权威
+            // （52 张 `type == gotcha`，与 IR 里调用 `GotchaTriggered` 的 52 张集合相同）。
+            //
+            // ★★ `ShouldGotchaTrigger` 的 self 是**隐式 self**，不是 `a[0]`
+            //    （53 个调用点的 IR 形状全部是 `args=[触发卡, out]` 且 `recv` 为空）。
+            //    用 `SelfArg` 会**扫到 `a[0]`**（= 触发卡）⇒ 判据绑错卡。
+            ["ShouldGotchaTrigger"] = (c, r, a)
+                => ShouldGotchaTrigger(r as CardInstance ?? c.Self),
+            // `IsGotcha(card, out isIt)` —— 16 个调用点，`a[0]` 恒为 out 槽，接收者才是被查的卡。
+            ["IsGotcha"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsGotcha(x),
+            // `GotchaTriggered(card, instigatorID, stopFurtherCardActions, skipDiscardingOrder, out qqq)`。
+            // 实参形状（`docs/card-ir.json`，54 个调用点）：
+            //   a[0] = `{self:true}` ×**54**（全部；`a[0]` 是 gotcha 卡本身）
+            //   a[1] = `cardID`（触发卡的） ×52 / `K2Node_Event_instigator` ×1 / `{int:0}` ×1
+            //   a[2] = bool（stopFurtherCardActions）  a[3] = bool（skipDiscardingOrder）
+            // `recv` 恒为 `cardFunction`（= `ctx.Self`）⇒ 与 `a[0]` 同源，互为兜底。
+            ["GotchaTriggered"] = (c, r, a) =>
+            {
+                var gotcha = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                if (gotcha is not null)
+                {
+                    GotchaTriggered(gotcha, IntArg(a, 1), TruthyArg(a, 2), TruthyArg(a, 3));
+                }
+
+                return null;
+            },
+            // `GetActiveGotchasOrdered(out cardIDs)` —— 出参是**整数卡 ID 数组**。
+            ["GetActiveGotchasOrdered"] = (c, r, a) => GetActiveGotchasOrdered(),
+            // ── ⚠️ **故意不注册** `GetHandLocationBySide`（有实现，但只给内核内部用）──
+            //
+            // `CardApi.GetHandLocationBySide` 已按蓝图实现
+            //（`BP_CardFunctions.g.cs:20904-20930`：`side == 1 → 3`，否则 `4`），
+            // `GotchaTriggered` 内部就调它（`:23743`）。
+            //
+            // 但**注册成派发键**会让 IR 里 5 个既有调用点（`card_event_aerial_reconaissance`
+            // / `card_event_night_raid` / `card_unit_me_410_hornisse` /
+            // `card_event_orp_blyskawica` / `card_event_supply_chain`）从「out 槽不写 ⇒
+            // 读成 null」变成**真实手牌位置 3/4**，而那 5 处全是**比较/门**：
+            // <code>
+            // aerial_reconaissance : handLocation == item.location          ; "这张牌在我手里吗"
+            // me_410_hornisse      : card.location  == handLocation         ; 同上
+            // night_raid / orp_blyskawica / supply_chain : IsLocationFull(handLocation)
+            // </code>
+            // 旧行为下第一族恒假（null → `EqualEqual_ByteByte(null, 3/4)` 假）、
+            // 第二族问的是 `NotAvailable(0)` 满不满。
+            //
+            // **实测（A/B，命令见报告）**：注册它以后对局 `854099` 从 **106/118 掉到 100/118**
+            // （其余 8 局逐位不变）。也就是说这里是典型的「**两个错抵消**」
+            //（README §7.3）：门恒假掩盖了内核下游的另一个偏差，把门修对反而暴露出来。
+            // 任务书硬性要求「任何一局应用率下降都算失败 ⇒ 回退」，
+            // 所以**回退注册**、把 `GetHandLocationBySide` 留在缺口集合里（如实计数），
+            // 只在 `GotchaTriggered` 内部用它 —— 那一处是蓝图明确要求的
+            //（`:23743-23745`，且 0 个 IR 调用点，不影响上面那 5 张卡）。
+            //
+            // ["GetHandLocationBySide"] = (c, r, a) => (int)GetHandLocationBySide(SideArg(r, a, 0)),
+            // `RearrangeLocation(location)` —— 只有 1 个实参，没有出参。
+            // IR 里 0 个调用点（只被库函数 `GotchaTriggered` / `SuppressMultipleUnits` 调），
+            // 注册它是为了让「名字 → 实现」可查。
+            ["RearrangeLocation"] = (c, r, a) =>
+            {
+                RearrangeLocation((CardLocation)IntArg(a, 0));
+                return null;
+            },
+            // `SetCardsSeenByCipher(numberOfCardsSeen, instigatorID, side, out qqq)`
+            // 2 个调用点（`card_event_cruiser_scouts` a[0]=`{int:3}` /
+            // `card_event_stretch_the_line` a[0]=`{var:count}`），`recv` 恒 `cardFunction`。
+            ["SetCardsSeenByCipher"] = (c, r, a) =>
+            {
+                SetCardsSeenByCipher(IntArg(a, 0), IntArg(a, 1), SideArg(r, a, 2));
+                return null;
+            },
+            // `AddIntelToCard(cardID, instigatorID, amount, out qqq)`
+            // 3 个调用点（全在 `card_unit_lublin_r_xiii`），a[0] 是**整数 cardID**。
+            ["AddIntelToCard"] = (c, r, a) =>
+            {
+                AddIntelToCard(IntArg(a, 0), IntArg(a, 2));
+                return null;
+            },
+            // `SetStopFurtherActions(GameStateRef, bool)` / `GetStopFurtherActions(out bool)`。
+            // IR 里 0 个调用点（只被库函数调），注册是为了名字可查 + 自测可直接断言。
+            ["SetStopFurtherActions"] = (c, r, a) =>
+            {
+                SetStopFurtherActions(TruthyArg(a, 0));
+                return null;
+            },
+            ["GetStopFurtherActions"] = (c, r, a) => GetStopFurtherActions(),
         };
 
     /// <summary>

@@ -148,7 +148,8 @@ public sealed partial class CardApi
                             IReadOnlyDictionary<string, object?>? namedArgs = null,
                             CardLocation? oldLocation = null,
                             CardLocation? newLocation = null,
-                            bool broadcastName = false)
+                            bool broadcastName = false,
+                            IReadOnlyDictionary<string, object?>? localsSeed = null)
     {
         CardInstance? eventCard = eventSubject ?? subject;
         var library = Blueprint.KismetLibrary.Default;
@@ -236,7 +237,7 @@ public sealed partial class CardApi
                     TriggerTrace?.Add($"{programName} → {name}#{card.CardId}" +
                                       $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
                     RunTriggerProgram(library, card, name, programName, eventCard, eventArgs, goingToLocation,
-                                      namedArgs, oldLocation, newLocation);
+                                      namedArgs, oldLocation, newLocation, localsSeed);
                 }
             }
             else if (subject is null || isSubject)
@@ -247,7 +248,7 @@ public sealed partial class CardApi
                     TriggerTrace?.Add($"{selfProgram} → {name}#{card.CardId}" +
                                       $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
                     RunTriggerProgram(library, card, name, selfProgram, eventCard, eventArgs, goingToLocation,
-                                      namedArgs, oldLocation, newLocation);
+                                      namedArgs, oldLocation, newLocation, localsSeed);
                 }
             }
 
@@ -259,7 +260,7 @@ public sealed partial class CardApi
                 TriggerTrace?.Add($"{otherProgramName} → {name}#{card.CardId}" +
                                   $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
                 RunTriggerProgram(library, card, name, otherProgramName, eventCard, eventArgs, goingToLocation,
-                                  namedArgs, oldLocation, newLocation);
+                                  namedArgs, oldLocation, newLocation, localsSeed);
             }
         }
 
@@ -280,7 +281,7 @@ public sealed partial class CardApi
             TriggerTrace?.Add($"{subjectProgram} → {subject.Name}#{subject.CardId}" +
                               $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}，主体不在棋盘，兜底那一路）");
             RunTriggerProgram(library, subject, subject.Name, subjectProgram, eventCard, eventArgs, goingToLocation,
-                              namedArgs, oldLocation, newLocation);
+                              namedArgs, oldLocation, newLocation, localsSeed);
         }
     }
 
@@ -749,7 +750,8 @@ public sealed partial class CardApi
                                    CardLocation? goingToLocation = null,
                                    IReadOnlyDictionary<string, object?>? namedArgs = null,
                                    CardLocation? oldLocation = null,
-                                   CardLocation? newLocation = null)
+                                   CardLocation? newLocation = null,
+                                   IReadOnlyDictionary<string, object?>? localsSeed = null)
     {
         var program = library.FindProgram(cardName, programName);
         if (program is null)
@@ -783,7 +785,27 @@ public sealed partial class CardApi
         _triggerDepth++;
         try
         {
-            Vm.Run(program, ctx);
+            if (localsSeed is null)
+            {
+                Vm.Run(program, ctx);
+            }
+            else
+            {
+                // ★ 卡内私有函数（IR 的 `locals`，例 `OnCounterMeasureTriggered`）的**形参**
+                //   只能靠 `seed` 覆盖帧的局部槽：`namedArgs` 那条路只在
+                //   `Frame.ResolveEventVar` 里生效，也就是**只认 `K2Node_Event_*` 开头的名字**
+                //   （`KismetVm.cs:1102-1202`）。实测：把 `countermeasureTriggering` 放进
+                //   `namedArgs` 时 `frame.Get("countermeasureTriggering")` 走的是
+                //   "实例变量 → CDO 默认值 → null" 那条路 ⇒ 订阅者读到 **null**
+                //   ⇒ `card_unit_the_tigers` 的 `side@countermeasureTriggering` 恒为 0，
+                //   判据恒假、+1+1 不发生。
+                //
+                //   为什么不是 `Vm.Run(program, ctx, seed)`：`Run` 没有 seed 形参，而
+                //   `KismetVm.cs` 本轮**不在改动范围内**。`RunLocalProgramMulti` 走同一个
+                //   `RunCore`，差别只有步数预算（`MaxStepsPerLocalProgram` = 400000，
+                //   **大于**事件预算），所以对事件入口同样安全。
+                Vm.RunLocalProgramMulti(program, ctx, localsSeed);
+            }
         }
         finally
         {
@@ -2703,6 +2725,568 @@ public sealed partial class CardApi
                 $"seed={seedBefore}->{State.Random.Seed} 池=[{poolDump}]");
         }
         return picked;
+    }
+
+    // ==================================================================
+    //  Gotcha（反制卡）子系统 —— 按蓝图重写
+    // ==================================================================
+    //
+    // 权威：`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`（`BP_CardFunctions`）
+    // 与 `_deps/BP_GameState_Battle.g.cs`。下面每个方法头都给出**逐行**依据。
+    //
+    // 这一族在旧内核里**完全没有**：`GotchaTriggered`(54 个调用点) /
+    // `ShouldGotchaTrigger`(53) / `IsGotcha`(16) / `GetHandLocationBySide`(5) /
+    // `SetCardsSeenByCipher`(2) 全在派发表缺口里（见 `DispatchGap` 的基线）。
+    //
+    // ⚠️ 与「参考实现」`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1342-1355` 的**已知差异**：
+    // 它把判据写成 `c.Covert && obj.gotcha`，而**这两项在它自己的引擎里恒为假** ——
+    // `Card.Covert`（`Core/Card.cs:44`）在它全仓库**没有任何赋值点**，
+    // `gotcha` 这个成员名在全部 38018 行生成代码里**只出现在它的 `IsGotcha` 里**
+    // （没有任何蓝图写入方）。⇒ 参考实现的那两条 `IsGotcha`/`ShouldGotchaTrigger`
+    // 实际上恒返回 false，**不能照抄**。
+    // 权威判据只能是卡定义本身：`Type == gotcha`
+    // （`docs/cards.live.json` 52 张；`decompiled/cards.all.json` 的 CDO
+    // `Type = ETypeEnum::gotcha`，且这 52 张恰好就是 IR 里调用 `GotchaTriggered` 的 52 张）。
+
+    /// <summary>触发点 21 的注册函数名（`OnCounterMeasureTriggered`）。</summary>
+    private const string CounterMeasureTrigger = "OnCounterMeasureTriggered";
+
+    /// <summary>触发点 28 的注册函数名（`OnIntelTriggered`）。</summary>
+    private const string IntelTrigger = "OnIntelTriggered";
+
+    /// <summary>
+    /// `UBaseCardObject::IsGotcha` —— 这张卡是不是**反制卡（Gotcha）**。
+    ///
+    /// 蓝图里它是**原生函数**（不在字节码里），唯一可用的判据是卡定义的类型
+    /// （见本区段开头那段：参考实现读的 `Covert` / `gotcha` 成员在本仓与它自己那里
+    /// 都取不到值）。实测口径：
+    /// <list type="bullet">
+    /// <item>`docs/cards.live.json` 里 `type == "gotcha"` 的卡 = **52 张**；</item>
+    /// <item>`docs/card-ir.json` 里调用 `GotchaTriggered` 的卡 = **52 张**，集合相同。</item>
+    /// </list>
+    ///
+    /// ⚠️ 与参考实现的**近似**：它多要一个「未揭示的 covert」条件。本内核没有建模
+    /// Covert 的揭示状态机（见 <see cref="IsUnrevealedCovertCard"/> 的注释），
+    /// 所以这里**只判类型**。⇒ 「一张 gotcha 卡被揭示之后还算不算 gotcha」
+    /// 这个问题本内核答不了，如实标注。
+    /// </summary>
+    public bool IsGotcha(CardInstance c) => c.Definition.Type == "gotcha";
+
+    /// <summary>
+    /// `ShouldGotchaTrigger(out shouldIt)` —— **这张卡自己**现在该不该响应反制触发。
+    ///
+    /// ## ★ 判据落在 **self**，不是实参
+    ///
+    /// 蓝图调用点（`Generated/Britain/Base/events/card_event_interception.g.cs:53`）：
+    /// <code>
+    /// H.Call("ShouldGotchaTrigger", new Val[] { self, K2Node_Event_cardPlayed, Val.Out(…) })
+    /// </code>
+    /// 而 `IR` 里的形状（`docs/card-ir.json`，53 个调用点**全部**如此）是
+    /// <c>args = [触发卡, out]</c>、**没有 `recv`** —— 也就是**隐式 self**
+    /// （<c>KismetVm.Eval</c> 的 `{self:true}` → `ctx.Self`）。
+    /// ⇒ 判据必须落在 <c>ctx.Self</c>（= 正在跑这段程序的那张卡），
+    /// **实参 `a[0]` 是"触发这件事的那张卡"，与判据无关**。
+    ///
+    /// 把 `a[0]` 当 self 的后果：整族反制卡的 `ShouldGotchaTrigger` 会去问
+    /// 「刚被打出的那张牌是不是反制卡」—— 那是**普通卡**，恒假 ⇒ 53 个调用点
+    /// 全部静默失效。
+    ///
+    /// ## 参考实现（唯一可读的第二个口径）
+    ///
+    /// `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348-1355`：
+    /// <code>
+    /// var self = h.Card_(a[0]);            // a[0] 在它那边就是 self（g.cs 的实参表）
+    /// should = self.Covert &amp;&amp; !self.Destroyed &amp;&amp; gotcha
+    /// </code>
+    /// 去掉那两个恒假项之后，剩下的可核实语义是 **「未被销毁」** ——
+    /// 内核里对应 <see cref="CardInstance.IsAlive"/>（`!= Discard &amp;&amp; != NotAvailable`）。
+    /// </summary>
+    public bool ShouldGotchaTrigger(CardInstance? self)
+        => self is not null && IsGotcha(self) && self.IsAlive;
+
+    /// <summary>
+    /// `GetHandLocationBySide(side, out handLocation)`
+    /// （`BP_CardFunctions.g.cs:20904-20930`）：
+    /// <code>
+    /// :20914  side == 1  →  handLocation = 3 (HandLeft)
+    /// :20922  否则        →  handLocation = 4 (HandRight)
+    /// </code>
+    /// ⚠️ 是「**== 1** 就 3，其余一律 4」，不是 `side == 2 → 4` ——
+    /// `side = 0 (NotAvailable)` 在蓝图里也落到 4。
+    /// </summary>
+    public CardLocation GetHandLocationBySide(Side side)
+        => side == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight;
+
+    /// <summary>
+    /// `RearrangeLocation(location)`（`BP_CardFunctions.g.cs:29227-29300`）：
+    /// <code>
+    /// :29239  FetchCardsByLocationSorted(location) → cardIDs
+    ///         （`_deps/BP_GameState_Battle.g.cs:1414-1542`：先按 location 过滤，
+    ///           再 `SortCardsByLocationNumber`（`:3657`，按 locationNumber **升序**的插入排序））
+    /// :29278  逐个 `SetCardLocationAndLocNumber(cardID, location, index)`
+    ///         （`:33960-33997`：`:33978 location = location`；
+    ///           `:33980 location == 8(Discard) ⇒ 跳过 locationNumber`；
+    ///           `:33990 否则 locationNumber = index`）
+    /// </code>
+    /// ⇒ 语义 = 「把**这个位置**里的卡按当前 `locationNumber` 升序压紧成 `0..n-1`」。
+    ///
+    /// ⚠️ 与既有的 <see cref="GameState.NormalizeLocationNumbers"/> 的区别：那个是
+    /// **按阵营**（`Cards(side, loc)`），而蓝图的 `RearrangeLocation` 是**按位置**
+    /// （手牌 3/4 各自只属于一方，两者等价；但前线 7 是双方共享的，不等价）。
+    /// 这里按蓝图实现，调用方（`GotchaTriggered`）传的正是手牌位置。
+    ///
+    /// 排序稳定性：蓝图是插入排序（`>` 比较）⇒ 同值时保持**输入数组顺序**
+    /// （= `AllCardsInBattle` 的插入序）。内核用 `State.AllCards`（按 `CardId` 升序）
+    /// 作为输入，LINQ `OrderBy` 也是稳定排序 ⇒ 同值时按 `CardId`。
+    /// 这是**近似**（内核没有 `AllCardsInBattle` 那张只增不删的映射），已标注。
+    /// </summary>
+    public void RearrangeLocation(CardLocation location)
+    {
+        var cards = State.AllCards
+            .Where(c => c.Location == location)
+            .OrderBy(c => c.LocationNumber)
+            .ToList();
+
+        // :33980 丢弃堆（8）**不写 locationNumber**（写了也没有意义，位置本身就是 8）。
+        if (location == CardLocation.Discard)
+        {
+            return;
+        }
+
+        for (int i = 0; i < cards.Count; i++)
+        {
+            cards[i].LocationNumber = i;
+        }
+    }
+
+    /// <summary>
+    /// `SetStopFurtherActions(GameStateRef, inStopFurtherActions)` / `GetStopFurtherActions()`
+    /// （`_deps/BP_GameState_Battle.g.cs:3603-3618` / `:2569-2586`，各只有一行读写）。
+    ///
+    /// ⚠️ 内核只建模**状态**；所有**读取点**都在 `AfterWaitCardPlayFromHand` 等
+    /// **库函数**里，而它们不在 `card-ir.json` 的调用点集合里 ⇒ 目前**没有消费者**。
+    /// 见 <see cref="GameState.StopFurtherActions"/> 的注释。
+    /// </summary>
+    public void SetStopFurtherActions(bool value) => State.StopFurtherActions = value;
+
+    /// <inheritdoc cref="SetStopFurtherActions"/>
+    public bool GetStopFurtherActions() => State.StopFurtherActions;
+
+    /// <summary>
+    /// `ApplySetCardsSeenByCipher(out card[], enemyTurn, showAnimation)`
+    /// （`BP_CardFunctions.g.cs:3996-4071`；权威签名 `_index.g.cs:1828`）：
+    /// <code>
+    /// :4025  for each card in card[]：
+    /// :4025      IsLocatedInHand(card)        ; ★ 只处理**还在手牌里**的
+    /// :4040      IDs.Add(card.cardID)
+    /// :4044      seen.Add(True)
+    /// :4048      card.cardSeen = True         ; ★ 真正"标为已见"的那一步
+    /// :4058  IsActionProcess ⇒ :4071 NotifyCardsSeen(Notifier, IDs, seen, showAnimation, enemyTurn)
+    /// </code>
+    /// `NotifyCardsSeen` 是纯客户端通知（内核无 `CardFunctionsNotifier`），不实现。
+    ///
+    /// ⚠️ 第一个参数在蓝图里是**按引用进出的数组**（`Val.Out(...)` 回写）——
+    /// 本内核直接原地改传入的 `List&lt;CardInstance&gt;` 并返回，等价。
+    /// </summary>
+    public void ApplySetCardsSeenByCipher(List<CardInstance> cards, bool enemyTurn, bool showAnimation)
+    {
+        _ = enemyTurn;
+        _ = showAnimation;
+
+        foreach (var card in cards)
+        {
+            if (!IsLocatedInHand(card))
+            {
+                continue;
+            }
+
+            card.CardSeen = true;
+        }
+    }
+
+    /// <summary>
+    /// `SetCardsSeenByCipher(numberOfCardsSeen, instigatorID, side, out qqq)`
+    /// （`BP_CardFunctions.g.cs:34036-34220`；权威签名 `_index.g.cs:4282`）。
+    ///
+    /// 逐行：
+    /// <code>
+    /// :34052  FetchAllCardsWithEventTrigger(28) → 订阅 OnIntelTriggered 的卡
+    /// :34084  for each：OnIntelTriggered(item, GetCardFromID(instigatorID), numberOfCardsSeen)
+    ///         ★ 注意次序：**先通知**，且传的是**原始** numberOfCardsSeen（不是 min）
+    /// :34107  GetCardsInHandBySide(Switch(side, {0→0, 1→2, 2→1}))   ; ★ 取**对手**手牌
+    /// :34137  for each handCard：if (handCard.cardSeen) 跳过
+    /// :34201      否则 oppositeSideUnseenCards.Add(handCard)
+    /// :34150  if (oppositeSideUnseenCards 非空)：
+    /// :34166      Array_ShuffleFromStream(oppositeSideUnseenCards, cardsRandomStream)
+    /// :34170      min = Min(numberOfCardsSeen, 长度)
+    /// :34172      Array_Resize(oppositeSideUnseenCards, min)
+    /// :34174      ApplySetCardsSeenByCipher(oppositeSideUnseenCards, enemyTurn=False, showAnimation=True)
+    /// </code>
+    /// ⇒ 语义一句话：**从对手的「未见面」手牌里随机挑 `min(n, 未见面数)` 张标成已见**，
+    /// 并把 `OnIntelTriggered` 广播给订阅者。
+    ///
+    /// ⚠️ 与参考实现 `EngineHost.cs:2132-2156` 的差异（它**不忠实**，不要照抄）：
+    /// 它洗的是**下标数组**、只写 `seenByCipher` 字段、不调 `ApplySetCardsSeenByCipher`、
+    /// 也不逐个发 `OnIntelTriggered`（只发一次 `FireIntelTriggers(src, n)`）。
+    /// 蓝图是**洗候选卡本身**（`Array_ShuffleFromStream(oppositeSideUnseenCards, …)`）
+    /// 再截断 —— 这会**改变随机流消耗点**，进而影响后续所有随机效果。
+    /// </summary>
+    public void SetCardsSeenByCipher(int numberOfCardsSeen, int instigatorID, Side side)
+    {
+        // ---- ① 先广播触发点 28（:34052-34084）----
+        var instigator = GetCardFromID(instigatorID);
+        FireTrigger(IntelTrigger, subject: null, side,
+                    eventSubject: instigator,
+                    eventArgs: new object?[] { instigator, numberOfCardsSeen },
+                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        ["intelCard"] = instigator,
+                        ["intelValue"] = numberOfCardsSeen,
+                    },
+                    localsSeed: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        // 形参名逐字取蓝图卡版（`BP_CardFunctions.g.cs:34084`
+                        // `OnIntelTriggered(item, card, numberOfCardsSeen)`；
+                        // 权威形参名见 `_index.g.cs:4083` `{ "intelCard", "intelValue" }`）。
+                        ["intelCard"] = instigator,
+                        ["intelValue"] = numberOfCardsSeen,
+                    });
+
+        // ---- ② 攒「对手手牌里还没见过的卡」（:34107-34201）----
+        var unseen = new List<CardInstance>();
+        foreach (var card in State.Hand(side.Opposite()))
+        {
+            if (!card.CardSeen)
+            {
+                unseen.Add(card);
+            }
+        }
+
+        if (unseen.Count == 0)
+        {
+            return;
+        }
+
+        // ---- ③ 洗牌 + 截断 + 标记（:34150-34174）----
+        State.Random.Shuffle(unseen);
+        State.TraceRandom($"SetCardsSeenByCipher n={numberOfCardsSeen} unseen={unseen.Count} " +
+                          $"take={Math.Min(numberOfCardsSeen, unseen.Count)}");
+
+        int take = Math.Min(numberOfCardsSeen, unseen.Count);
+        unseen.RemoveRange(take, unseen.Count - take);
+        ApplySetCardsSeenByCipher(unseen, enemyTurn: false, showAnimation: true);
+    }
+
+    /// <summary>
+    /// `AddIntelToCard(cardID, instigatorID, amount, out qqq)`
+    /// （`BP_CardFunctions.g.cs:356-400`）：
+    /// <code>
+    /// :368  cardID &gt; 0 且 :372 amount != 0
+    /// :382      card.cipher = Clamp(card.cipher + amount, 0, 9)
+    /// :388  IsActionProcess ⇒ :392 NotifyAddIntelToCard(Notifier, …)   ; 纯客户端通知
+    /// </code>
+    /// 加它是因为 `GotchaTriggered` 的 `cipher &gt; 0` 门（`:23766`）读的就是这个成员 ——
+    /// **没有这个写入方，那道门永远是假**。
+    ///
+    /// ⚠️ CDO 默认值缺失（如实标注）：`cipher` 在客户端是卡 CDO 的成员，
+    /// `decompiled/cards.all.json` 里 **25 张卡**带非 0 的 `cipher`
+    /// （`card_event_espionage_skirm`=9 / `card_event_infiltrate`=2 / `card_unit_7th_scottish_borderers`=3 …），
+    /// 但**52 张 gotcha 卡一张都没有** ⇒ gotcha 卡的 `cipher` 初值就是 0。
+    /// 本内核的卡数据（`docs/cards.live.json` / `docs/card-effects.json`）
+    /// **不含 `cipher` 字段**，而补 CDO 表要改 `Cards/CardVarDefaults.cs`（本轮不在改动范围内）
+    /// ⇒ 那 25 张卡的 `cipher` 初值目前是 0（偏小）。影响面：`card_event_act_on_the_intel`
+    /// 的 `unSeenCards - self.cipher` 与 `card_unit_16th_tarnow_regiment` 的
+    /// `cardPlayed.cipher &gt; 0`。**已核实为已知缺口**。
+    /// </summary>
+    public void AddIntelToCard(int cardId, int amount)
+    {
+        if (cardId <= 0 || amount == 0)
+        {
+            return;
+        }
+
+        if (GetCardFromID(cardId) is not { } card)
+        {
+            return;
+        }
+
+        card.Cipher = Math.Clamp(card.Cipher + amount, 0, 9);
+    }
+
+    /// <summary>
+    /// `GetActiveGotchasOrdered(out cardIDs)`（`BP_CardFunctions.g.cs:18623-18892`）。
+    ///
+    /// ## 逐行
+    ///
+    /// <code>
+    /// :18634  backUpNextGotcha = 100
+    /// :18640  for each item in GetAllCardInBattle()：
+    /// :18658      if (item.name == "card_event_careless_talk") PrintString("bingo")   ; 纯调试
+    /// :18733      if (!(IsGotcha(item) &amp;&amp; item.gotchaActivated &gt; 0)) continue
+    /// :18764      if (item.name == "card_event_interception") Map_Add(activeGotchas, item.cardID * -1, item.cardID)
+    /// :18790      if (item.name == "card_event_ultra")         Map_Add(activeGotchas, (item.cardID + 1000000) * -1, item.cardID)
+    /// :18810      if (Map_Find(activeGotchas, item.gotchaActivated))     ; ★ 激活号撞车
+    /// :18830          PrintString("Error: two gotchas w same number, IDs: …")
+    /// :18838          if (Map_Contains(activeGotchas, backUpNextGotcha)) LogError("BACKUP GOTCHA ACTIVATED NOW WORKING")
+    /// :18854          Map_Add(activeGotchas, backUpNextGotcha, item.cardID) ; backUpNextGotcha++
+    /// :18874      否则 Map_Add(activeGotchas, item.gotchaActivated, item.cardID)
+    /// :18687  keys = Map_Keys(activeGotchas)
+    /// :18699  逐个取 MinOfIntArray(keys) → :18701 Map_Find → :18703 orderedCards.Add(value)
+    /// :18707      Array_Remove(keys, indexOfMin)                        ; ⇒ 按键**升序**
+    /// :18719  cardIDs = orderedCards
+    /// </code>
+    ///
+    /// ## 输出顺序（这是它存在的唯一理由）
+    ///
+    /// 键的升序 = **`-(cardID+1000000)`（ultra） → `-cardID`（interception）
+    /// → 激活号 1,2,3…（其余） → 100+（撞车备份）**。
+    /// 也就是说 **ultra / interception 永远排在普通反制卡之前**，
+    /// 而不是按 `LocationNumber` 或入场顺序 —— 这正是「反制结算顺序」的判据。
+    ///
+    /// ⚠️ 遍历集：蓝图是 `GetAllCardInBattle()`（= `AllCardsInBattle` 的插入序，
+    /// `_deps/BP_GameState_Battle.g.cs:1571-1591`），内核用 `State.AllCards`（`CardId` 升序）。
+    /// 因为输出按键排序，只有「撞车时分配备份键」的顺序会受影响（正常对局不会撞车）。
+    /// </summary>
+    public List<int> GetActiveGotchasOrdered()
+    {
+        const int BackUpStart = 100;
+
+        var activeGotchas = new Dictionary<int, int>();
+        int backUpNextGotcha = BackUpStart;
+
+        foreach (var item in State.AllCards)
+        {
+            if (!IsGotcha(item) || item.GotchaActivated <= 0)
+            {
+                continue;
+            }
+
+            // ★ 特例键：interception / ultra 用**负数**，于是它们排在所有正激活号之前。
+            if (item.Name == "card_event_interception")
+            {
+                activeGotchas[item.CardId * -1] = item.CardId;
+                continue;
+            }
+
+            if (item.Name == "card_event_ultra")
+            {
+                activeGotchas[(item.CardId + 1000000) * -1] = item.CardId;
+                continue;
+            }
+
+            if (activeGotchas.TryGetValue(item.GotchaActivated, out int clash))
+            {
+                // 激活号撞车（蓝图会 PrintString 报警）—— 退到 100, 101, …
+                _ = clash;
+                activeGotchas[backUpNextGotcha] = item.CardId;
+                backUpNextGotcha++;
+            }
+            else
+            {
+                activeGotchas[item.GotchaActivated] = item.CardId;
+            }
+        }
+
+        return activeGotchas.OrderBy(kv => kv.Key).Select(kv => kv.Value).ToList();
+    }
+
+    /// <summary>
+    /// ★★ `GotchaTriggered(card, instigatorID, stopFurtherCardActions, skipDiscardingOrder, out qqq)`
+    /// —— `BP_CardFunctions.g.cs:23719-23912`，**逐行**。
+    ///
+    /// <code>
+    /// :23733  TmpGotcha = card
+    /// :23735  TmpGotcha.gotchaActivated = 0                      ; ★ 复位，不是置 1
+    /// :23737  GetTurnNumber()
+    /// :23739  TmpGotcha.enterPlayOnTurn = turnNumber
+    /// :23741  TmpGotcha.location = 8                             ; ★ Discard
+    /// :23743  GetHandLocationBySide(TmpGotcha.side)
+    /// :23745  RearrangeLocation(handLocation)                    ; ★ 压紧那一方的手牌
+    /// :23751  IsActionProcess
+    /// :23766  TmpGotcha.cipher &gt; 0
+    /// :23781      SetCardsSeenByCipher(cipher, TmpGotcha.cardID, TmpGotcha.side, out qqq)
+    /// :23793  IsActionProcess
+    /// :23808      NotifyGotchaTriggered(Notifier, cardID, instigatorID, stopFurtherCardActions)
+    /// :23810  FetchAllCardsWithEventTrigger(21)
+    /// :23839      item.OnCounterMeasureTriggered(**TmpGotcha**, out qqq)   ; ★ 实参是 gotcha 卡
+    /// :23857  if (!stopFurtherCardActions) → :23902 SetStopFurtherActions(False)
+    /// :23859      SetStopFurtherActions(True)
+    /// :23863      GetCardFromID(instigatorID).enterPlayOnTurn = 0
+    /// :23869      IsOrder(instigator) &amp;&amp; skipDiscardingOrder
+    /// :23890          instigator.customJson = JsonMakeField(customJson, "cancelOrderRemove",
+    ///                                                       JsonMakeBool(skipDiscardingOrder))
+    /// </code>
+    ///
+    /// ## ⚠️ 控制流：`SetStopFurtherActions(False)` 在 `True` 分支里**到不了**
+    ///
+    /// 这一段用的是 UE 的执行流栈（`PushExecutionFlow` / `PopExecutionFlow[IfNot]`），
+    /// 直译产物见 `:23856-23904`。按 UE 语义
+    /// （`PopExecutionFlowIfNot` **条件为假才弹栈并跳转**；这一点用
+    /// `SuppressMultipleUnits` 的三级 push（`:35773-35777`）与它自己的文档注释交叉验证过）
+    /// 把栈逐条走完，得到：
+    /// <code>
+    /// 栈 [1505, 1008, 492]（`:23731` / `:23749` / `:23750` 三次 Push）
+    /// :23857 JumpIfNot(1463, stopFurtherCardActions)
+    ///     真 → :23859 SetStopFurtherActions(True) → :23863 enterPlayOnTurn=0
+    ///          → :23869 IsOrder &amp;&amp; skipDiscardingOrder
+    ///             真 → :23890 写 customJson → :23904 PopExecutionFlow → **1505 = Return**
+    ///             假 → :23900 PopExecutionFlowIfNot → **1505 = Return**
+    ///     假 → :23902 SetStopFurtherActions(False) → :23904 Jump(1136)
+    ///          → :23869 IsOrder &amp;&amp; skipDiscardingOrder → 同样两条路都回 Return
+    /// </code>
+    /// ⇒ **两条分支都做**「`IsOrder(instigator) &amp;&amp; skipDiscardingOrder` ⇒ 写
+    /// `customJson["cancelOrderRemove"]`」，差别只有 `SetStopFurtherActions` 的取值与
+    /// `instigator.enterPlayOnTurn = 0`（后者只在 `True` 分支）。
+    /// 而 `True` 分支**不会**再调 `SetStopFurtherActions(False)` ——
+    /// 标志会**一直保持 true**，直到调用方 `AfterWaitCardPlayFromHand`（`:624`）
+    /// 在下一次动作开始时复位。这是蓝图的真实形状，**照抄不改**（如实记录这处可疑点）。
+    ///
+    /// ## ⚠️ `IsActionProcess`
+    ///
+    /// `:23751` / `:23793` 两道 `IsActionProcess` 门。内核不建模「动作流程 / 回放流程」
+    /// 这一层（既有约定，见 `CardApi.SuppressUnit` 的注释
+    /// 「①②③ 各自还带 IsActionProcess() 分流…一律按主流程实现」）⇒ 两道门都按**真**处理。
+    /// 与直译产物交叉验证：`IsActionProcess` 为真时
+    /// `:23782` 的 `PopExecutionFlow` 弹出的正是 **492**（→ `:23792` 的第二次
+    /// `IsActionProcess` 检查），随后 `:23807` 不弹栈、直接落到 `:23808` 的
+    /// `NotifyGotchaTriggered` —— 也就是**通知 + 反制循环确实会执行**。
+    /// 若按假处理，`:23808-23855` 整段（含 `OnCounterMeasureTriggered` 的 13 个订阅者）
+    /// 都进不去。
+    /// </summary>
+    public void GotchaTriggered(CardInstance gotcha, int instigatorID,
+                                bool stopFurtherCardActions, bool skipDiscardingOrder)
+    {
+        // ---- :23735 ----
+        // ★ 蓝图置的是 **0**（不是 bool true，也不是递增）。递增发生在
+        //   `PlayCardDirectlyFromHand:28310-28316`（打出反制卡时）。
+        gotcha.GotchaActivated = 0;
+
+        // ---- :23737-23739 ----
+        gotcha.EnteredPlayOnTurn = GetTurnNumber();
+
+        // ---- :23741 ----
+        gotcha.Location = CardLocation.Discard;
+
+        // ---- :23743-23745 ----
+        RearrangeLocation(GetHandLocationBySide(gotcha.Owner));
+
+        // ---- :23751 / :23766 / :23781 ----
+        // 内核不建模 IsActionProcess（按主流程 = 真）。
+        if (gotcha.Cipher > 0)
+        {
+            SetCardsSeenByCipher(gotcha.Cipher, gotcha.CardId, gotcha.Owner);
+        }
+
+        // ---- :23793 / :23808 ----
+        // `NotifyGotchaTriggered(CardFunctionsNotifier, …)` 是纯客户端通知，
+        // 内核没有 notifier（与 `AddToBattleLog` 同一条约定），不实现。
+
+        // ---- :23810-23855 ----
+        // ★★ 实参必须是 **gotcha 卡**（`:23839` 的第二项是 `TmpGotcha`）。
+        // 订阅者读的是 `countermeasureTriggering.originalSide / cardID / side`
+        // （`card_unit_the_tigers` 的 locals 体，`docs/card-ir.json`），
+        // 传错卡 ⇒ 整族 13 张卡的判据全部读错对象。
+        FireTrigger(CounterMeasureTrigger, subject: null, gotcha.Owner,
+                    eventSubject: gotcha,
+                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        ["countermeasureTriggering"] = gotcha,
+                    },
+                    localsSeed: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        // ★ 形参名逐字取权威签名（`_index.g.cs:4071`
+                        // `OnCounterMeasureTriggered` = `{ "countermeasureTriggering", "qqq" }`）。
+                        // 13 张订阅者的 locals 体读的就是这个名字
+                        // （`card_unit_the_tigers` / `card_unit_2_marine_division` / …）。
+                        ["countermeasureTriggering"] = gotcha,
+                    });
+
+        // ---- :23857-23904 ----
+        var instigator = GetCardFromID(instigatorID);
+
+        if (stopFurtherCardActions)
+        {
+            SetStopFurtherActions(true);            // :23859
+            if (instigator is not null)
+            {
+                instigator.EnteredPlayOnTurn = 0;   // :23863
+            }
+        }
+        else
+        {
+            SetStopFurtherActions(false);           // :23902
+        }
+
+        // :23869 / :23890（两条分支的公共落点）
+        if (instigator is not null && IsOrder(instigator) && skipDiscardingOrder)
+        {
+            JsonSetBool(instigator, "cancelOrderRemove", skipDiscardingOrder);
+        }
+    }
+
+    /// <summary>
+    /// ★ **反制卡装填**：`PlayCardDirectlyFromHand` 里给 `gotchaActivated` 赋值那一段
+    /// （`BP_CardFunctions.g.cs:28080-28316`，逐行）。
+    ///
+    /// <code>
+    /// :28080  card.location == 4 (HandRight) || :28082 card.location == 3 (HandLeft)
+    /// :28088  IsGotcha(card)                                    ; 不是反制卡 ⇒ 整段跳过
+    /// :28092  card.gotchaActivated &gt; 0                          ; 已经激活过
+    /// :28096      card.gotchaActivated = 0                      ;   ⇒ 正常打出，取消激活
+    /// :28239  否则 _nextGotchaActivated = 0（局部零初始化）
+    /// :28243  for each item in GetAllCardInBattle()：
+    /// :28259      IsGotcha(item)
+    /// :28261      item.side == card.side                        ; ★ 只数**同阵营**
+    /// :28263      item.gotchaActivated &gt; _nextGotchaActivated
+    /// :28289          _nextGotchaActivated = item.gotchaActivated
+    /// :28310  _nextGotchaActivated += 1
+    /// :28316  card.gotchaActivated = _nextGotchaActivated       ; ★ 从 1 起
+    /// </code>
+    ///
+    /// ## 为什么必须有这个写入方
+    ///
+    /// `gotchaActivated` 的**唯一**写入方就是这段（蓝图全量 grep：
+    /// 只有 `:28096` / `:28316` / `GotchaTriggered:23735` 三处，后一处是**置 0**）。
+    /// 没有它，`gotchaActivated` 恒为 0 ⇒ `GetActiveGotchasOrdered` 的 `&gt; 0` 过滤
+    /// 恒空 ⇒ 整个反制子系统空转。
+    ///
+    /// ⚠️ **调用点未接线**：蓝图里这段在 `PlayCardDirectlyFromHand` 内部，而那个库函数
+    /// 在本内核的派发表里**仍是缺口**（15 个 IR 调用点）⇒ 本方法目前**只能被自测调用**，
+    /// 出牌流水线还没有走到它。如实标注为「写入方已就位、接线未做」。
+    /// </summary>
+    public void AssignGotchaActivatedOnPlayFromHand(CardInstance card)
+    {
+        // :28080/:28082 —— 只对**在手牌里**的卡
+        if (card.Location is not (CardLocation.HandLeft or CardLocation.HandRight))
+        {
+            return;
+        }
+
+        // :28088
+        if (!IsGotcha(card))
+        {
+            return;
+        }
+
+        // :28092/:28096 —— 已经激活过的（再次正常打出）⇒ 取消激活
+        if (card.GotchaActivated > 0)
+        {
+            card.GotchaActivated = 0;
+            return;
+        }
+
+        // :28239-28289 —— 取同阵营已激活反制卡里最大的激活号
+        int next = 0;
+        foreach (var other in State.AllCards)
+        {
+            if (IsGotcha(other) && other.Owner == card.Owner && other.GotchaActivated > next)
+            {
+                next = other.GotchaActivated;
+            }
+        }
+
+        // :28310-28316 —— 递增赋值（第一张 = 1）
+        card.GotchaActivated = next + 1;
     }
 
     // ==================================================================
