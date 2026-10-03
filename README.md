@@ -738,7 +738,8 @@ out/_server-replays/ 里 6 局回放，每局各含 43 个不同的 card_* 名�
 dotnet run --project tools\BotSim -c Release --no-build -- selftest
 ```
 
-⇒ **120 项 / 1 失败**。失败项为已知的 `gordon_highlanders` 手牌目标用例。
+⇒ **133 项 / 1 失败**（2026-10-03）。失败项为已知的 `gordon_highlanders` 手牌目标用例
+（它自己的机制已查清：`JSON_Clear` 会清空整张卡 JSON ⇒ `found` 出参从不写入，见 §9.3）。
 
 ### 8.3 六局回放审计
 
@@ -749,19 +750,21 @@ dotnet run --project tools\BotSim -c Release --no-build -- selftest
 
 | 回放 | 应用 | 应用率 | 人类失败 | ④HQ差(人) | ⑤b 首个漂开点 | ⑥ 未实现原语种类 | RNG 游标 |
 |---|---|---|---|---|---|---|---|
-| 214436 | 59/61 | 96.7% | 0 | 3 | 无（完全对齐） | 6 | 3 |
-| 389594 | 95/97 | 97.9% | 0 | 0 | 无（完全对齐） | 4 | 69 |
-| 508065 | 124/141 | 87.9% | **16** | 43 | `#54 t13 PC`（打不出） | 9 | 54 |
-| 542091 | 75/78 | 96.2% | 0 | 0 | 无（完全对齐） | 5 | 4 |
-| 773639 | 134/137 | 97.8% | 0 | 0 | 无（完全对齐） | 6 | 83 |
-| 854099 | 101/118 | 85.6% | **14** | 24 | `#70 t15 PC`（打不出） | 4 | 53 |
-| **合计** | **588/632** | **93.0%** | **30** | **70** | 4/6 局完全对齐 | — | — |
+| 214436 | 59/61 | 96.7% | 0 | 3 | 无（完全对齐） | 4 | 3 |
+| 389594 | 95/97 | 97.9% | 0 | 0 | 无（完全对齐） | 3 | 69 |
+| 508065 | 130/141 | 92.2% | **10** | 43 | `#54 t13 PC`（打不出） | 7 | 55 |
+| 542091 | 77/78 | 98.7% | 0 | 0 | 无（完全对齐） | 4 | 4 |
+| 773639 | 134/137 | 97.8% | 0 | 0 | 无（完全对齐） | 5 | 83 |
+| 854099 | 106/118 | 89.8% | **9** | 36 | `#78 t17 ML`（移动被拒） | 4 | 52 |
+| **合计** | **601/632** | **95.1%** | **19** | **82** | 4/6 局完全对齐 | — | — |
 
-**读数**：
+**读数（2026-10-03 重测）**：
 
 - 6 局里有 **4 局**的人类动作**完全被内核接受**（首个漂开点为空）；
-- 剩下的失败**集中在 2 局**（`508065` 16 条 + `854099` 14 条 = 全部 30 条）；
-- 这 2 局的首个漂开点**都是「出牌打不出」**（`PC`），与 §9.1 的随机效果选卡问题同源；
+- 与 2026-10-02 相比：应用 **588 → 601/632**、人类失败 **30 → 19**（`508065` 16→10、`854099` 14→9）；
+  首漂开 `854099` 从 `#70` **后移到 `#78`**；
+- ⚠️ **④ 人类 HQ 差从 70 涨到 82**（`854099` 15→36）—— 这是「候选集顺序改成插入序」那一步
+  带来的，**原因未解释**（见 §9.1.7 的如实标注）。按 §7.1 的可靠性排序，它排在⑤b 与人类失败之后；
 - `RNG 游标` 列是内核本局消耗的随机数个数，用于定位「游标落后 / 超前」（见 §9.1）。
 
 ⚠️ 只有【人类失败】是保真度信号；`bot 失败`（未列出）是旧内核动作被拒，属正常。
@@ -802,11 +805,14 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 ```
 === 派发表静态缺口（IR 会调用、派发表没有、locals 也兜不住）===
-  种类：538    真缺口调用点：2788
-  指纹：33D02CF8E0EEC7D5
+  种类：537    真缺口调用点：2778
+  指纹：E674E0A25E96DAEA
 ```
 
-与冻结基线逐位相同（`tools/BotSim/DispatchGap.cs:75,78`）。
+与冻结基线逐位相同（`tools/BotSim/DispatchGap.cs`）。**每次修完原语都要重跑并更新那两个常量**
+（历史：2026-10-02 `538/2788/33D02CF8E0EEC7D5` → 补 `GetCardsPlayedFromHandLastTurn` 后
+`537/2778/E674E0A25E96DAEA`；`MakeCardRetreat` 补丁 B 单独会把调用点降到 `2742`、
+指纹变 `07EE956F68DC804A`，见 §9.5 P0）。
 
 缺口最大的几个（真缺口调用点数）：
 `HasCampaignUpgrade` 247 / `CampaignSetText` 211 / `CampaignAddKreditCost` 79 /
@@ -1065,29 +1071,125 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 
 ### 9.5 建议的下一步顺序（按「成本 ÷ 收益」）
 
-1. **批量做「容易的引用 / 包装」类原语**（约 40 种，语义都有蓝图出处）：
-   `getCardsBuffedByThisCard`(25) / `SetCountdown`(15) / `getKreditTempBuffAmount`(11) /
-   `RemovePin`(10) / `GetCardsPlayedFromHandLastTurn`(10) / `GetSupportLineLocationBySide`(19) /
-   `DiscardRandomCardFromHand`(20) / `LoseKreditSlot`(16) …
-2. **`FullyHealCard`(33)** —— 最简单的一个「真实现」。
-3. **`MakeCardRetreat`(36) + `GetAllCardsInFrontline`(8)** —— 一起做，结构照 `DestroyCard`。
-4. **`Gotcha` 子系统**（`GotchaTriggered` 54 + `ShouldGotchaTrigger` 53 + `IsGotcha` 15）——
-   收益最大，但要做状态机，单独排一轮。
-5. **`ConvertCard`(26)** —— 最后做，函数体最长（400+ 行）。
+> ⚠️ **本节的数字与优先级是 2026-10-03 用实测重排的**（旧版第 3 条「`MakeCardRetreat` 一起做」
+> 已经**做完并被一个上游 bug 挡住**，见 P0）。四条判据的口径见 §7.1。
 
-另外三条被点名的候选：
+#### P0 ★ 解开 `MakeCardRetreat` 的阻塞：**`ResolveEventVar` 的 `?? _ctx.Self`**
 
-- 用「实参形状 vs 实现形状」对账**扫一遍全部原语** —— 目前唯一被证明能抓到「同一原语多种实参形状」类真 bug 的机械化判据；
-- 修 **Pincer / Intel / Lose Smokescreen** 三条死事件链（13 张卡，一次一条链）；
-- 给 `SmokeAllCards` **加 `locals` 模式**，把 45 + 53 张零覆盖的卡纳入测试。
+`MakeCardRetreat` 的**实现已经写好并验证过**，卡在一个**上游 VM bug** 上：
+
+- **补丁**：`out/_ab/makecardretreat-B.patch`（撤回；25.6 KB）。
+  语义已按蓝图定案（`BP_CardFunctions.g.cs` 分发体 `:25764-25904` + 逐张体 `:3478-3743`）：
+  **前线 ⇒ 本方半场；半场满、或本来就在半场 ⇒ 退回拥有者手牌**
+  （⚠️ **不是**「一律退回手牌」——那只是分支③④）。36 个调用点 / 35 张卡，**只有一种实参形状**。
+- **它自己的 A/B**：`770857` 的 `#35` 从「重复记录」变成**应用成功**、⑤b **消失** ✓；
+  六局逐局**完全相同** ✓；但**五局变差**（`310284` 89/95 + 新 ⑤b）✗。
+- **变差的根因（已核实，不在撤回逻辑里）**：`KismetVm.cs:1247-1248`
+  ```csharp
+  var eventSubject = _ctx.Trigger ?? _ctx.Target;
+  return eventSubject ?? _ctx.Self;      // ← 无目标时，任何事件变量都读成【施法者自己】
+  ```
+  于是「**无目标打出**的卡」读 `K2Node_Event_targetCard` 拿到的是**自己**。
+  实证：`310284 #20 t7` 的 `card_unit_m16_halftrack`（`targetID=0`）本该在
+  `IsValid(targetCard)`（IR `i=39`）就返回，却拿到 `[自己]` ⇒ 撤回把它**自己**退回手牌
+  ⇒ `#31` 人类移动被拒。
+- **为什么不能直接改**：`out/_ab/makecardretreat-C.patch` 在 `CardApi.cs:49` 精确传了
+  `NamedArgs["targetCard"]`，**五局被精确还原** ✓，但**六局变差**（594/632，`508065`
+  130→123）✗ —— 说明那里有卡**依赖旧行为**，而**它没被根因定位**。
+- **验收（可证伪）**：修好 fallback 后应用 B 补丁 ⇒
+  **六局 ≥ 601/632、五局 ≥ 132/140、770857 的 ⑤b 消失**，三者同时成立才算过。
+
+#### P1 ★ `OnOtherCardAttacks`（T31，**20 张卡**）—— 内核漏了 `locals` 里的订阅者
+
+`MatchEngine.cs:1818-1823` 的注释写「`OnOtherCardAttacks` 在全部 1636 张卡的 **`entrypoints`**
+里一个订阅者都没有」—— **只查了 `entrypoints`**。实测：它在 **0 张 `entrypoints`**、
+**20 张 `locals`** 里（`KismetIr.cs:339-349` 明写 `locals` 是独立事件函数）。
+蓝图 `:4385/:4434` 调它，**出参 `stopAttack`/`AttackedAndStopped` 能中止攻击**
+⇒ 这 20 张卡的整条行为是死的。**验收**：该钩子被派发、出参被尊重。
+
+#### P2 ★ 「**早快照 + 自身效果在前 + 广播在后**」—— 修掉一处「症状对、机制错」
+
+`MatchEngine.PlayCard` 里，`otherCards` 在蓝图里是 **`:6060-6066` 的早快照**、广播在 **`:6462`**，
+而卡自己的 `OnPlayedFromHand` 在 **`:6396`** ⇒ 蓝图是「早快照 + **自身效果在前** + 广播在后」。
+2026-10-02 那轮把广播**提前**，症状（新生成单位误收广播）好了，但那是靠**顺序**凑的；
+**蓝图靠的是 `6060` 那个快照**。内核 `FireTrigger` 是即取即发，**没有「先快照后派发」的能力**
+⇒ 要**加上这个能力**，并把顺序**改回**蓝图那样。**验收**：新生成单位仍收不到广播，
+且 5 个触发点的先后与蓝图逐条一致。
+
+#### P3 「压制门」那一族（**所有触发点**）
+
+蓝图 `_deps/BP_GameState_Battle.g.cs:1057-1063` 对**每一个**触发点都跳过
+`isSuppressed && !suppressionExceptionTriggers.Contains(trigger)` 的卡；
+内核只在 `MatchEngine.cs:2238`（T15）自己加了一道 ⇒ 被压制的卡仍会收到 T7/T39/T51/T58 等 = **多发**。
+同族另有三处**已核实但未改**：`RemoveSmokescreen` 的位置与门槛、
+`MakeVeteran`（`:26302`）与 `AttackCard`（`:2966`）的 `if (!card.isSuppressed) <自己那一路>` 门、
+`ApplyDefenseDelta` 的 self 与 T7 混在一次 `FireTrigger` 里（蓝图是 self 在前、T7 在后）。
+⚠️ **别把 `ChangeDefense` 的 T7 当成本族**：`BP_CardFunctions.g.cs:7954` 那道门后面
+`L_130F:8017` 紧跟 `goto L_10FD` **又跳回 T7 那轮循环** ⇒ T7 两条路都会发，
+内核无条件发 T7 是**对的**（这条已查死，别再改）。
+
+#### P4 其余「内核完全没有」的触发点（按订阅数）
+
+`OnOtherCovertCardPlayedFromHand`(T60, 15 卡) / `OnCounterMeasureTriggered`(T21, 13) /
+`OnOtherCardCreatedAlterCard`(T35, 11) / `OnIntelTriggered`(T28, 6) /
+`OnOtherCardAttackSwitchTarget`(T30, 2 —— 出参 `newDefender` **可改攻击目标**) …
+完整对照表见 [`docs/触发点普查表.md`](docs/触发点普查表.md)（68 项 × 蓝图行号 × 内核行号 × 判定 × 订阅数）。
+
+#### P5 原语实参形状普查的剩余项
+
+这一族（README §9.3）已修：`Array_Add` / `Array_Contains` / `IsSameSideUnit` / `MakeVeteran` /
+`CustomAbilityAdd` / `ChangeKreditCost` / `IsVeteran` / `GetOppositeSide` / `GetLocationCardBySide` /
+`JSON_Clear` / `PersistCustomFields` / `DrawCardsFromDeckBySide` / `DamageCard` a[2]。
+**负结论（别再重扫）**：`changeType=4` 五条链**全处理了**；**无越界读**；
+13 个「lambda 恒返回 null 且有 out 槽」的原语里**只有 3 个是真缺口**（都已修）。
+
+#### P6 手牌虚增 ⇒ 回手溢出到弃牌堆
+
+`ReplayRunner.cs:816-820` 对「PC 引用但不在手牌」的卡会从牌库/弃牌堆**硬塞进手牌**。
+后果实测（`310284 #64 t16`）：`ace_of_spades` 的「所有单位退回手牌」把 6 张挤进**弃牌堆**，
+而客户端容得下（真实手牌 ≈5/4 vs 内核 7/8）⇒ 下游 `#80/#81 AC`、`#87/#89 ML`、`#92 AC`
+一连串「不在场上」。**这是 `ReplayRunner` 类注释自认的保真度缺口。**
+
+#### P7 随机效果分岔（`508065` 的 `#54`、`854099` 的 `#78`）—— **等新观测量**
+
+四条成因已逐条关掉：① 漏/多消费点（洗牌两变体、`SetCardsSeenByCipher`、develop 消费全否证）
+② 静默 no-op（⑥ 段逐个查过）③ 候选集**顺序**（✅ 已修：插入序 + HQ 最先，见 §9.1.7）
+④ 候选集**内容**（✅ 已排除：`cards_blacklist` 恒空、`isReserved` 与内核表**逐张一致** 563/563）。
+⇒ 只剩「`cardsRandomStream` 上某个**调用点/时机**差异」，而且**不是缺函数**
+（真正被调用的 8 个 RNG 函数全部已实现）。**要再往前推需要新观测**，例如客户端某次
+候选表的完整快照、服务端黑名单/预备表、或一次带全字段的抓包。
 
 ⚠️ **不管做哪个，做完都要更新 `tools/BotSim/DispatchGap.cs` 的两个基线常量**
 （跑 `dispatch-gap` 拿新值），否则守卫会（正确地）失败。
 
 ### 9.6 补充审计语料
 
-当前只有 6 局在 `out/_server-replays/`，另有 `fresh-replays/` 7 局 + `live-replays/` 5 局。
-**语料量是当前最大的瓶颈之一**：6 局只覆盖同一对卡组（§7.4）。
+**现在的语料是 12 局**（2026-10-03 更新）：
+
+| 来源 | 局数 | 说明 |
+|---|---|---|
+| `out/_server-replays/` | **6** | 主对拍集：`214436 389594 508065 542091 773639 854099`（同一对卡组，§7.4） |
+| `tem/fyserver/…/data/live-replays/` | **5** | `130691 165924 310284 563868 955337`（从**服务端数据目录**里找到的，其中 3 局只有 3 条动作） |
+| `out/_server-replays/replay-770857` | **1** | ★ **真人对局**（2026-10-03 抓），54 条动作，首漂开 `#35 t9` 由 `MakeCardRetreat` 未实现引起 |
+| `fresh-replays/` | 7 | 另有 |
+
+★ **新增能力：可以在服务端**运行时**把当前对局抓下来**（不必等回放落盘）：
+
+```powershell
+# 服务端在跑（KLink.App 拉起 fyserver，端口 5231）时：
+python tools/fetch-match.py <matchId>          # 从管理接口抓 -> out/_server-replays/replay-<id>.{json,actions.json}
+dotnet run --project tools/ServerBridgeTest -c Release --no-build -- --audit-replay "out\_server-replays\replay-<id>"
+```
+
+⚠️ **两个坑**（都踩过）：
+1. 管理接口 `/admin/api/matches/history/{id}` 把 **summary 序列化成 camelCase**（`leftPlayerId`），
+   而 `ReplayData.Load`（`:135-136`）读 **snake_case**（`left_player_id`）⇒ 不转就会
+   玩家 ID 读成 0、**每条动作都「无法确定行动方」**。`fetch-match.py` 已做这个转换。
+2. 动作那份必须是**对象**（含 `actions` 数组），不能是裸列表 —— `ReplayData.cs:188-190` 走的是
+   `actionsDoc["actions"]`。
+
+**语料量仍是最大的瓶颈之一**：12 局里 6 局是同一对卡组，3 局只有 3 条动作。
+真人对局（`770857` 那种）价值最高 —— 它能抓到卡组/局面各不相同的漂开。
 
 ---
 

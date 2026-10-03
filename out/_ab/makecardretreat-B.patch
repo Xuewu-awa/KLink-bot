@@ -1,0 +1,491 @@
+diff --git a/src/KLink.Bot/Effects/CardApiDispatch.cs b/src/KLink.Bot/Effects/CardApiDispatch.cs
+index 9febb09..4e390e5 100644
+--- a/src/KLink.Bot/Effects/CardApiDispatch.cs
++++ b/src/KLink.Bot/Effects/CardApiDispatch.cs
+@@ -746,6 +746,22 @@ public sealed partial class CardApi
+             // 退回手牌 / 回牌库 —— 这两个是 `ResetCardInBattle`（→ OnCardReset 族）的**唯一**触发路径。
+             ["MoveUnitFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
+             ["MoveCardFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
++
++            // ★★ 2026-10-03 补：`MakeCardRetreat(cards, instigatorID)`（「撤回」）——
++            //    派发表里**原先没有这个键**。缺键 ⇒ `KismetVm.ExecuteCall` 什么都不做、
++            //    只记一笔 `UnimplementedCalls`（`KismetVm.cs:606-612`）⇒ 整段「撤回」静默不发生。
++            //
++            //    影响面（`docs/card-ir.json` 普查）：**36 个调用点 / 35 张卡**
++            //    （34 个在 `steps`、2 个在 `locals` 的 `OnOtherCardAttacks`）。
++            //    实参形状**只有一种**：`recv` 恒为 `cardFunction`、恒 2 个实参
++            //    （`a[0]` = 卡对象数组、`a[1]` = `cardID`）—— 详见
++            //    `DoMakeCardRetreat` 的注释，那里有完整普查表。⚠️ 不要再假设
++            //    "它跟别的原语一样有第二种形状"（这个项目栽过那一类跟头）。
++            //
++            //    实测留痕：`replay-770857` #28 t9 的 `card_event_aa_barrage`（人类 #19 的
++            //    战斗机当目标）—— 目标没被撤回 ⇒ 人类 #35 再打同一张卡时被内核判
++            //    「重复记录（该 cardID 已在场）」（该局 ⑤b 首漂开）。
++            ["MakeCardRetreat"] = (c, r, a) => DoMakeCardRetreat(c, a),
+             ["ResetCardInBattle"] = (c, r, a) =>
+             {
+                 if (AsCard(a.FirstOrDefault()) is { } rc)
+@@ -2387,6 +2403,186 @@ public sealed partial class CardApi
+         return null;
+     }
+ 
++    /// <summary>
++    /// `MakeCardRetreat(cards, instigatorID)` —— 「**撤回**」（把棋盘上的卡往回挪一个区）。
++    ///
++    /// ## 出处（逐行；`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）
++    ///
++    /// 分发体 `:25764-25904`：
++    /// <code>
++    /// :25769  cards = args[0] / instigatorID = args[1]   ; 签名 `_index.g.cs:3993`
++    /// :25790  HasCustomAbility(item, "cantRetreat") → doesIt
++    /// :25792  doesIt ⇒ goto 循环自增（**这张不撤**）      ; ★ 前置条件①
++    /// :25869  item.location == 7 ⇒ Array_Add(_frontLineCards)
++    /// :25888  否则               ⇒ Array_Add(_supportLineCards)
++    /// :25823  先 ApplyMakeCardRetreat(_supportLineCards, instigatorID)   ; ★ 半场那批**先**跑
++    /// :25850  再 ApplyMakeCardRetreat(_frontLineCards,  instigatorID)
++    /// </code>
++    ///
++    /// 逐张主体 `ApplyMakeCardRetreat` `:3478-3743`：
++    /// <code>
++    /// :3555   location ∉ {5,6,7} ⇒ log "Attempted retreat on card that is not on the
++    ///         board" 并**整张跳过**                       ; ★ 前置条件②
++    /// :3571   tmpSupplyLineLocation = GetSupportLineBySide(tmpCard.side)     ; = 5/6
++    /// :3583   tmpHandLocation       = GetHandLocationBySide(tmpCard.originalSide)
++    /// :3587   IsActionProcess() 为假 ⇒ 下面两个撤回事件都**不发**
++    /// :3591   !isSuppressed ⇒ OnBeforeRetreat(tmpCard)
++    /// :3593   FetchAllCardsWithEventTrigger(54) → OnOtherCardRetreat(那张, tmpCard)
++    /// :3672   location == 7（前线）:
++    /// :3676       tmpNewLocation = 本方半场（支援线）
++    /// :3682       半场**满** ⇒ 落到 :3703（退手牌）
++    /// :3684       没满 ⇒ movementLeft −1、CardLocationMoved(…, 旧=7, 新=支援线, …)
++    /// :3714   否则（本来就在 5/6）⇒ tmpNewLocation = 手牌 ⇒ :3703
++    /// :3703   MoveCardFromBoardToOwnersHand(cardID, instigatorID, 旧位置, 手牌)
++    /// </code>
++    ///
++    /// ⇒ **语义 = 「前线 → 本方半场；半场满、或本来就在半场 ⇒ 退回拥有者手牌」。**
++    ///
++    /// ## ⚠️ 它**不是**「一律退回手牌」（这正是要修的那个误判）
++    ///
++    /// 「人类随后还能再打一次那张卡」只能推出**那一次**是走了"退手牌"这条分支 ——
++    /// 卡本来就在半场 5/6（单位默认部署到半场），或者前线但半场已满。
++    /// 前线 + 半场有空位时，卡**停在棋盘上**（本方半场），不进手牌。
++    /// 蓝图为准，见上面的 `:3672-3703`。
++    ///
++    /// ## 复用的既有实现（不另造一套）
++    ///
++    /// "退手牌"那一步直接走 <see cref="DoMoveUnitFromBoardToOwnersHand"/> ——
++    /// 那正是蓝图的 `MoveCardFromBoardToOwnersHand`（派发表 `:747`/`:748` 两个键本来就
++    /// 都归到它），于是顺带继承它的 `!IsHq &amp;&amp; IsLocatedOnBoard &amp;&amp; IsUnit` 守卫
++    /// （蓝图 `MoveUnitFromBoardToOwnersHand` i=0/41/82/120）、
++    /// 手牌满 ⇒ 进弃牌堆（i=173/187）、离场触发点、`ResetCardInBattle`。
++    /// 那道 `IsHq` 守卫在这里**是必要的**：`card_unit_l6_40` 的
++    /// `MakeCardRetreat(GetCardsOnBoardBySide)` 取的是"棋盘上的卡"（可能含 HQ 位置卡，
++    /// 它也在 5/6 这一格），而蓝图 `ApplyMakeCardRetreat` 自己**只判 location**。
++    ///
++    /// ## 没有镜像的一步（如实记）
++    ///
++    /// `:3684-3688` 的 `card.movementLeft − 1`（`Max(…,0)`）：内核**没有** `movementLeft`
++    /// 这个成员（`CardInstance` 只有 `HasMovedThisTurn` 那条路径，全库 grep 无该字段）
++    /// ⇒ 无处可减；它也不改变"卡去哪"，不影响落点。
++    ///
++    /// ## 实参形状普查（`docs/card-ir.json`，2026-10-03；含 `locals` 体）
++    ///
++    /// **36 个调用点 / 35 张卡，只有一种形状**：
++    /// <list type="bullet">
++    /// <item>`recv` = `cardFunction` —— **36/36**（恒为施法的那张牌自己）；</item>
++    /// <item>实参个数 = **2** —— 36/36；</item>
++    /// <item>`a[0]` 全是**变量**（卡对象数组）：`K2Node_MakeArray_Array` ×27、
++    ///   `CallFunc_GetAllCardsInFrontline_cards` ×2、`K2Node_MakeArray_Array_1` ×2、
++    ///   `affectedUnits` / `cardsToRetreat` / `unitsToRetreat` /
++    ///   `CallFunc_GetCardsInFrontlineBySide_cards` / `CallFunc_GetCardsOnBoardBySide_cards`
++    ///   各 ×1（其中 1 个带 `ctx`）；</item>
++    /// <item>`a[1]` 全是 `cardID`（`instigatorID`）。</item>
++    /// </list>
++    /// 两个在 `locals` 里的调用点：`card_event_merchant_navy` 与 `card_unit_bm_13n_us6`
++    /// 的 `OnOtherCardAttacks`。⇒ **不存在"同一原语多种形状"的坑**。
++    ///
++    /// ⚠️ 不注册 `ApplyMakeCardRetreat`：它是 `BP_CardFunctions` 的**全局**函数，
++    /// 只被上面这段分发体调用，而内核根本不执行全局蓝图函数体（那部分没有 IR），
++    /// 所以它永远不会成为运行时调用点（`DispatchGap` 的缺口集合里也没有它）。
++    /// </summary>
++    private object? DoMakeCardRetreat(EffectContext c, object?[] a)
++    {
++        // ① 取 `a[0]` 那个数组。⚠️ **不能用 `EvalArray(r, a)`**：它的兜底是
++        //    "接收者本身是一张卡时当成单元素数组"，而这里的 `r` 恒为 `cardFunction`
++        //    （= 施法的那张牌自己）⇒ 目标数组为空/null 时会**把施法牌自己撤了**。
++        //    `AsCardOrId` 同时认卡对象与整数 cardID（本族别处的两种元素类型）。
++        var targets = new List<CardInstance>();
++        if (a.Length > 0)
++        {
++            if (a[0] is System.Collections.IList arr)
++            {
++                foreach (object? v in arr)
++                {
++                    if (AsCardOrId(c, v) is { } one)
++                    {
++                        targets.Add(one);
++                    }
++                }
++            }
++            else if (AsCardOrId(c, a[0]) is { } single)
++            {
++                targets.Add(single);
++            }
++        }
++
++        // ② 一遍循环分两批（蓝图 `:25790-25888`）：`cantRetreat` 的卡**直接不撤**，
++        //    其余的按"是不是在前线(7)"分。
++        var supportBatch = new List<CardInstance>();
++        var frontBatch = new List<CardInstance>();
++        foreach (var card in targets)
++        {
++            if (HasCustomAbility(card, "cantRetreat"))
++            {
++                continue;
++            }
++
++            (card.Location == CardLocation.BoardFrontline ? frontBatch : supportBatch).Add(card);
++        }
++
++        // ③ 顺序**不能反**（蓝图 `:25823` 在 `:25850` 之前）：半场那批先退走 ⇒ 腾出槽位，
++        //    前线那批才可能有位置退；反过来会让"半场刚好满"的局面得到与客户端不同的落点。
++        // ④ 批内按 `SortCardsByLocationNumber`（`:3495`，槽位序）逐张结算 ——
++        //    前线那批是**逐张**判"半场满没满"的（前一张退进去后可能就满了）。
++        foreach (var batch in new[] { supportBatch, frontBatch })
++        {
++            foreach (var card in batch.OrderBy(x => x.LocationNumber))
++            {
++                RetreatOneCard(c, card);
++            }
++        }
++
++        return null;
++    }
++
++    /// <summary>
++    /// 「撤回」逐张主体 —— <see cref="DoMakeCardRetreat"/> 的落地部分
++    /// （蓝图 `ApplyMakeCardRetreat` `:3530-3716` 的那一段）。判据与出处见调用方的注释。
++    /// </summary>
++    private void RetreatOneCard(EffectContext c, CardInstance card)
++    {
++        // 前置条件②（`:3555`/`:3653`）：不在棋盘上 ⇒ 什么都不做（蓝图只 log 一句）。
++        // 蓝图这里是 `location ∈ {5,6,7}`；`IsLocatedOnBoard` 是同一判据再排掉 HQ
++        // （HQ 这份位置卡恰好也在 5/6，见 `Engine/Enums.cs:20-26`），与"撤单位"一致。
++        if (!IsLocatedOnBoard(card))
++        {
++            return;
++        }
++
++        // 事件链（`:3587-3730`）：
++        //   · `IsActionProcess()` 为假时**整段不发** —— 内核没有这个分流，效果路径上
++        //     按"恒真"处理（同一个取舍见 `CardApi.SpawnCardToBoard` 对 `:734` 的处理）。
++        //   · `OnBeforeRetreat` 在**整个卡池里一个实现都没有**（`docs/card-effects.json`
++        //     无该事件键）⇒ 它那条 `stopAction` 取消门永远不会命中；照发一次保持结构。
++        //   · 事件触发点 **54 = `OnOtherCardRetreat`**（`docs/触发点普查表.md:65`），
++        //     卡池里 2 张有实现（`card_unit_typhoon_mk_ib` 触发抽牌 / `card_event_decoy_tactics`）。
++        //     蓝图自己**忽略**它的 `stopAction`（`:3725`/`:3730` 两条分支都回内层循环），
++        //     内核 `FireTrigger` 也没有出参 ⇒ 两边一致。
++        if (!card.IsSuppressed)
++        {
++            FireTrigger("OnBeforeRetreat", card, card.Owner);
++        }
++
++        FireTrigger("OnOtherCardRetreat", card, card.Owner);
++
++        // 前线(7) ⇒ 退回**本方半场**（支援线 = `side.HqOf()`，5/6）—— 前提是半场没满
++        // （容量 5、**含 HQ**，与 `DoIsLocationFull` 同一口径）。
++        if (card.Location == CardLocation.BoardFrontline)
++        {
++            CardLocation support = card.Owner.HqOf();
++            bool full = c.State.Cards(card.Owner, support).Count >= GameState.HalfBoardCapacity;
++            if (!full)
++            {
++                c.State.Move(card, support);
++                return;
++            }
++        }
++
++        // 其余全部（本来就在半场 5/6、或前线但半场满）⇒ 退回**拥有者手牌**（蓝图 `:3703`）。
++        DoMoveUnitFromBoardToOwnersHand(c, card, new object?[] { card });
++    }
++
+     /// <summary>
+     /// `RandomIntFromRangeWithStream(minimum, maximum, out randomResult)` ——
+     /// **闭区间** `[minimum, maximum]` 的均匀整数。
+diff --git a/tools/BotSim/DispatchGap.cs b/tools/BotSim/DispatchGap.cs
+index 5be73e9..f6a84e7 100644
+--- a/tools/BotSim/DispatchGap.cs
++++ b/tools/BotSim/DispatchGap.cs
+@@ -86,10 +86,21 @@ internal static class DispatchGapBaseline
+     /// （`getCardsPlayedFromHandByTurn` 本来不在缺口集合里：它只被
+     /// `GetCardsPlayedFromHandLastTurn` 调，而后者不是卡内私有函数、不在 IR 里。）
+     /// </remarks>
+-    public const int BaselineCount = 537;
++    /// <remarks>
++    /// 2026-10-03：537 → **536**（调用点 2778 → **2742**）。原因是补上了
++    /// `MakeCardRetreat`（「撤回」）这个派发键 —— 它在缺口集合里原本有 **36 个调用点
++    /// / 35 张卡**（34 个在 `steps`、2 个在 `locals` 的 `OnOtherCardAttacks`：
++    /// `card_event_merchant_navy` / `card_unit_bm_13n_us6`）。
++    /// 也就是说那 35 张卡的「撤回」此前是**静默空转** ——
++    /// 实测留痕：`replay-770857` #28 t9 的 `card_event_aa_barrage` 目标没被撤回
++    /// ⇒ 人类 #35 再打同一张卡时被判「重复记录（该 cardID 已在场）」（该局 ⑤b 首漂开）。
++    /// 种类数与调用点**都降了**，符合"只降不升"。
++    /// 更新方式：`dotnet run --project tools\BotSim -c Release -- dispatch-gap`。
++    /// </remarks>
++    public const int BaselineCount = 536;
+ 
+     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
+-    public const string BaselineFingerprint = "E674E0A25E96DAEA";
++    public const string BaselineFingerprint = "07EE956F68DC804A";
+ 
+     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
+     public static string? Check(CardDatabase db)
+diff --git a/tools/BotSim/SelfTest.cs b/tools/BotSim/SelfTest.cs
+index 8126bc3..697e449 100644
+--- a/tools/BotSim/SelfTest.cs
++++ b/tools/BotSim/SelfTest.cs
+@@ -354,6 +354,18 @@ internal static class SelfTest
+         new("★ `JSON_Clear` 只删指定键、并回报键是否存在（旧实现清空整表且不写 found）",
+             JsonClearRemovesOnlyNamedKey),
+ 
++        // ---- ★ 2026-10-03：`MakeCardRetreat`（「撤回」）----
++        // 语义出处：蓝图 `BP_CardFunctions.g.cs:25764-25904`（分发）+
++        // `:3478-3743`（主体 `ApplyMakeCardRetreat`）。
++        // 修复前**派发表里没有这个键** ⇒ IR 里 **36 个调用点 / 35 张卡**整段静默
++        //（`replay-770857` #28 t9 的 `card_event_aa_barrage` 就是这条）。
++        // ⚠️ 语义是「前线 → 本方半场；半场满、或本来就在半场 ⇒ 退回拥有者手牌」，
++        //    **不是**「一律退回手牌」—— 第二条用例的 ② 子例专门守这一点。
++        new("★ 撤回（MakeCardRetreat）：前线⇒本方半场；半场满/已在半场⇒退回手牌；不在场 / cantRetreat ⇒ 零变化",
++            MakeCardRetreatBranches),
++        new("★ 撤回端到端：`card_event_aa_barrage` 打半场上的敌方战斗机 ⇒ 目标退回其手牌 + 本方 HQ +2（复刻 770857 #28）",
++            AaBarrageRetreatEndToEnd),
++
+         // ---- ★★ 防回归守卫：派发表静态缺口（2026-10-02）----
+         //
+         // 这个 bug 类的根源是「IR 调了、表里没有、而且静默失败」——
+@@ -8889,6 +8901,225 @@ internal static class SelfTest
+         return null;
+     }
+ 
++    // ==================================================================
++    //  撤回（`MakeCardRetreat`）—— 2026-10-03
++    //
++    //  蓝图：`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`
++    //    · 分发体 `:25764-25904`   —— 剔除 `cantRetreat`、按"在不在前线(7)"分两批、
++    //                                 **先**跑半场那批（`:25823`）**再**跑前线那批（`:25850`）
++    //    · 逐张体 `:3478-3743`     —— 见 `CardApiDispatch.DoMakeCardRetreat` 的注释
++    // ==================================================================
++
++    /// <summary>
++    /// 四条分支。（**修好之前第一条就红**：派发表没这个键 ⇒ `handled=false`、什么都不动。）
++    /// <list type="number">
++    /// <item>前线 + 本方半场有空位 ⇒ 落到 <c>BoardHqLeft</c>（**仍在棋盘上**，蓝图 `:3692`）；</item>
++    /// <item>已在半场 ⇒ 落到 <c>HandLeft</c>（蓝图 `:3714` → `:3703`）；</item>
++    /// <item>前线 + 本方半场**满** ⇒ 落到 <c>HandLeft</c>（蓝图 `:3682` → `:3703`）；</item>
++    /// <item>不在棋盘上（在手牌）⇒ **零变化**（蓝图 `:3555`）；
++    ///       带 `cantRetreat` 自定义能力的卡 ⇒ **零变化**（蓝图 `:25790-25792`）。</item>
++    /// </list>
++    /// </summary>
++    private static string? MakeCardRetreatBranches(CardDatabase db)
++    {
++        const string unit = "card_unit_2nd_parachute";
++        if (db.Find(unit) is null)
++        {
++            return $"卡库里缺 {unit}";
++        }
++
++        // ① 前线 ⇒ 本方半场（蓝图 :3672-3692）。⚠️ 不是手牌。
++        {
++            var (engine, state) = DeploymentBoard(db);
++            var front = state.CreateWithId(unit, Side.Left, 20, CardLocation.BoardFrontline, 0);
++            var ctx = new EffectContext { Engine = engine, State = state, Self = front, Controller = Side.Left };
++
++            engine.Api.InvokeByName("MakeCardRetreat", null,
++                new object?[] { new List<CardInstance> { front }, front.CardId }, ctx, out bool handled);
++            if (!handled)
++            {
++                return "派发表里没有 `MakeCardRetreat`（**修复前就是这个状态**：整段撤回静默不发生）";
++            }
++
++            if (front.Location != CardLocation.BoardHqLeft)
++            {
++                return $"① 前线单位应退到**本方半场** BoardHqLeft，实际 {front.Location}"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++
++            if (state.Hand(Side.Left).Contains(front))
++            {
++                return "① 半场有空位时**不该**进手牌（「一律退回手牌」是这个 bug 的误判）";
++            }
++        }
++
++        // ② 已在半场 ⇒ 拥有者手牌
++        {
++            var (engine, state) = DeploymentBoard(db);
++            var sitting = PutOnBoard(state, unit, Side.Left, 20, 1);
++            var ctx = new EffectContext { Engine = engine, State = state, Self = sitting, Controller = Side.Left };
++
++            engine.Api.InvokeByName("MakeCardRetreat", null,
++                new object?[] { new List<CardInstance> { sitting }, sitting.CardId }, ctx, out bool handled);
++            if (!handled)
++            {
++                return "派发表里没有 `MakeCardRetreat`";
++            }
++
++            if (sitting.Location != CardLocation.HandLeft)
++            {
++                return $"② 已在本方半场的单位应退回拥有者手牌 HandLeft，实际 {sitting.Location}"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++        }
++
++        // ③ 前线 + 本方半场满（HQ 1 格 + 4 个单位 = 上限 5）⇒ 退手牌
++        {
++            var (engine, state) = DeploymentBoard(db);
++            for (int k = 0; k < 4; k++)
++            {
++                PutOnBoard(state, unit, Side.Left, 30 + k, 1 + k);
++            }
++
++            var front = state.CreateWithId(unit, Side.Left, 20, CardLocation.BoardFrontline, 0);
++            var ctx = new EffectContext { Engine = engine, State = state, Self = front, Controller = Side.Left };
++
++            engine.Api.InvokeByName("MakeCardRetreat", null,
++                new object?[] { new List<CardInstance> { front }, front.CardId }, ctx, out bool handled);
++            if (!handled)
++            {
++                return "派发表里没有 `MakeCardRetreat`";
++            }
++
++            if (front.Location != CardLocation.HandLeft)
++            {
++                return $"③ 前线单位在本方半场已满时应退回手牌，实际 {front.Location}"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++        }
++
++        // ④ 两类"零变化"：不在棋盘上 / 有 `cantRetreat`
++        {
++            var (engine, state) = DeploymentBoard(db);
++            var inHand = state.CreateWithId(unit, Side.Left, 20, CardLocation.HandLeft, 0);
++            var front = state.CreateWithId(unit, Side.Left, 21, CardLocation.BoardFrontline, 0);
++            engine.Api.CustomAbilityAdd(front, "cantRetreat", null);
++
++            var ctx = new EffectContext { Engine = engine, State = state, Self = front, Controller = Side.Left };
++
++            engine.Api.InvokeByName("MakeCardRetreat", null,
++                new object?[] { new List<CardInstance> { inHand, front }, inHand.CardId }, ctx, out bool handled);
++            if (!handled)
++            {
++                return "派发表里没有 `MakeCardRetreat`";
++            }
++
++            if (inHand.Location != CardLocation.HandLeft)
++            {
++                return $"④ 不在棋盘上的卡不该被移动（蓝图 :3555），实际 {inHand.Location}";
++            }
++
++            if (front.Location != CardLocation.BoardFrontline)
++            {
++                return $"④ 带 `cantRetreat` 的卡不该被撤回（蓝图 :25790-25792），实际 {front.Location}";
++            }
++        }
++
++        return null;
++    }
++
++    /// <summary>
++    /// 端到端复刻 `replay-770857` #28 t9：`card_event_aa_barrage`
++    /// （卡面「Target air unit must retreat. Give your HQ +2 defense.」，`docs/cards.json`；
++    /// 人类当时的目标是 `card_unit_j2m_raiden`，日本战斗机）。
++    ///
++    /// IR 只有三步（`docs/card-ir.json`）：`i=10 setArray([target])`
++    /// → `i=30 MakeCardRetreat(那个数组, cardID)` → `i=84 ChangeDefense(本方 HQ, +2)`。
++    ///
++    /// <list type="number">
++    /// <item>目标在**敌方半场**（= 770857 的局面）⇒ 蓝图走 `:3714` ⇒ **退回拥有者手牌**
++    ///   （所以人类 #35 才可能再打一次同一张卡；内核修复前 #35 被判
++    ///   「重复记录（该 cardID 已在场）」）。</item>
++    /// <item>目标在**前线**、敌方半场只有 HQ（没满）⇒ 蓝图走 `:3692`
++    ///   ⇒ 落到 `BoardHqRight`、**不进手牌**。这一条专门守"不是一律退手牌"。</item>
++    /// </list>
++    /// </summary>
++    private static string? AaBarrageRetreatEndToEnd(CardDatabase db)
++    {
++        const string card = "card_event_aa_barrage";
++        const string fighter = "card_unit_j2m_raiden";
++        if (db.Find(card) is null || db.Find(fighter) is null)
++        {
++            return $"卡库里缺 {card} / {fighter}";
++        }
++
++        // ① 770857 #28 的局面：目标在敌方**半场** ⇒ 退回敌方手牌
++        {
++            var (engine, state) = DeploymentBoard(db);
++            var target = state.CreateWithId(fighter, Side.Right, 42, CardLocation.BoardHqRight, 1);
++            var order = state.CreateWithId(card, Side.Left, 2, CardLocation.HandLeft, 0);
++
++            int hqBefore = state.HqDefense(Side.Left);
++            if (!engine.CanPlay(order, out string why))
++            {
++                return $"打不出 {card}：{why}";
++            }
++
++            if (!engine.PlayCard(order, target))
++            {
++                return $"{card} 打出失败";
++            }
++
++            if (state.UnimplementedCalls.ContainsKey("MakeCardRetreat"))
++            {
++                return "① 走 VM 的这次调用仍然没进派发表（`UnimplementedCalls` 里有 `MakeCardRetreat`）"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++
++            if (target.Location != CardLocation.HandRight)
++            {
++                return $"① 半场上的目标应被撤回**拥有者手牌** HandRight，实际 {target.Location}"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++
++            int hqAfter = state.HqDefense(Side.Left);
++            if (hqAfter != hqBefore + 2)
++            {
++                return $"① 本方 HQ 应 +2（IR i=84 `ChangeDefense(本方HQ, 2)`），实际 {hqBefore} → {hqAfter}";
++            }
++        }
++
++        // ② 目标在**前线**、敌方半场没满 ⇒ 退回敌方半场（不是手牌）
++        {
++            var (engine, state) = DeploymentBoard(db);
++            var target = state.CreateWithId(fighter, Side.Right, 42, CardLocation.BoardFrontline, 0);
++            var order = state.CreateWithId(card, Side.Left, 2, CardLocation.HandLeft, 0);
++
++            if (!engine.CanPlay(order, out string why))
++            {
++                return $"打不出 {card}：{why}";
++            }
++
++            if (!engine.PlayCard(order, target))
++            {
++                return $"{card} 打出失败";
++            }
++
++            if (target.Location != CardLocation.BoardHqRight)
++            {
++                return $"② 前线上的目标应退到**其拥有者半场** BoardHqRight（蓝图 :3692），实际 {target.Location}"
++                     + Dump(state, ("未实现", Unimpl(state)));
++            }
++
++            if (state.Hand(Side.Right).Contains(target))
++            {
++                return "② 前线单位在己方半场有空位时**不该**进手牌（蓝图 :3692 只退一格）";
++            }
++        }
++
++        return null;
++    }
++
+     /// <summary>
+     /// `DestroyMultipleCards(cardsToDestroy, destroyerCardID, out)` —— 20 调用点 / 19 张卡。
+     ///
