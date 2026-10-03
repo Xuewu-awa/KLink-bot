@@ -78,6 +78,10 @@ public sealed partial class CardApi
             //      原来恒 false ⇒ 预备卡永远进候选池（见 `StaticCardPool`）。
             ["IsCardReserved"] = (c, r, a) => CardPoolTable.IsReserved(StrArgOrNull(a, 0)),
             ["IsForecastCard"] = (c, r, a) => false,            // TODO 未知语义
+            // Campaign upgrades belong to the campaign client profile, which is not
+            // part of a normal match/replay state. Keep the missing-state behavior
+            // explicit instead of silently pretending every upgrade is present.
+            ["HasCampaignUpgrade"] = (c, r, a) => false,
             ["HasIntel"] = (c, r, a) => SelfArg(c, r, a) is { } x && JsonGetBool(x, "intel"),
 
             // ⚠️ 这两个是**同形参数位错**（审计 §5.2），一起修：
@@ -156,6 +160,8 @@ public sealed partial class CardApi
             ["IsVeteran"] = (c, r, a) => SelfArg(c, r, a) is { } v && v.Keywords.Contains(Keyword.Veteran),
             ["GetKreditsBySide"] = (c, r, a) => c.State.Kredits(SideArg(r, a, 0, c.Controller)),
             ["GetMaxKreditsBySide"] = (c, r, a) => c.State.MaxKredits(SideArg(r, a, 0, c.Controller)),
+            ["getKreditSlotsLostBySide"] = (c, r, a)
+                => c.State.KreditSlotsLost(SideArgOrNull(a, 0) ?? Side.NotAvailable),
 
             // ---------------- 取值 / 选择器 ----------------
             // ⚠️ `GetOppositeSide` **没有入参** —— 它的"我方"取自卡本身。
@@ -211,15 +217,9 @@ public sealed partial class CardApi
                         c.State.UnimplementedCalls.GetValueOrDefault("GetCardsOnBoardBySide<includeCovertCards>") + 1;
                 }
 
-                // ⚠️ `unitsOnly=false` 时 **HQ 要留在它自己的插入位置（= 最前）**，
-                //    **不能**追加到末尾：客户端 `AllCardsInBattle` 是「只增不删」的映射，
-                //    而 HQ 是**开局就创建**的 ⇒ 它排在**最前**。
-                //    旧实现是 `Board(side).Concat([HQ])` ⇒ HQ 落到最后一位
-                //    ⇒ 同一次消费、同一个下标会取到不同的卡。
-                //    见 `GameState.BattleCardsInOrder` 与 `BoardInBattleOrder` 里的蓝图依据。
                 return TruthyArg(a, 1)
                     ? GetCardsOnBoardBySide(side).ToList()
-                    : c.State.BattleCardsInOrder(side).ToList();
+                    : GetCardsOnBoardBySide(side).Concat(new[] { c.State.Hq(side) }).ToList();
             },
             ["GetCardsInHandBySide"] = (c, r, a) => GetCardsInHandBySide(SideArg(r, a, 0)).ToList(),
             // ⚠️ 出参是 `TArray<int> deckCardIDs`（卡 **ID**），不是卡实例 ——
@@ -235,6 +235,7 @@ public sealed partial class CardApi
             // 于是 90 个传 `false` 的调用点拿到的是"只有单位"，少了 HQ。
             ["GetAllUnitsOnBoard"] = (c, r, a) => GetAllUnitsOnBoard().ToList(),
             ["GetAllCardsOnBoard"] = (c, r, a) => GetAllCardsOnBoard().ToList(),
+            ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline(TruthyArg(a, 0)).ToList(),
             ["GetAllCards"] = (c, r, a) => GetAllCards().ToList(),
             // ⚠️ 这两个是 **`BaseCardObject` 的原生成员函数**（UHT 签名
             //    `void getTotalAttack(int32& totalAttack)` / `void getTotalDefense(int32& totalDefense)`），
@@ -358,6 +359,7 @@ public sealed partial class CardApi
                 var cards = GetChooseSpawnCards(c, selecting, out bool markAsSeen, out bool keepOrder);
                 return new object?[] { cards, markAsSeen, keepOrder };
             },
+            ["ConvertCard"] = (c, r, a) => DoConvertCard(c, a),
             ["MoveCardToTopOfOwnersDeck"] = (c, r, a) => DoMoveCardToTopOfOwnersDeck(c, a),
             ["RandomIntFromRangeWithStream"] = (c, r, a) => DoRandomIntFromRange(c, a),
             ["GetPlayingSide"] = (c, r, a) => (int)c.Controller,
@@ -395,6 +397,7 @@ public sealed partial class CardApi
             ["MakeCardsFight"] = (c, r, a) => DoMakeCardsFight(c, a),
             ["AddAttackUntilEndOfTurn"] = (c, r, a) => DoAddAttackUntilEndOfTurn(c, a),
             ["HealCard"] = (c, r, a) => DoHealCard(c, r, a),
+            ["FullyHealCard"] = (c, r, a) => DoFullyHealCard(c, r, a),
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
             ["DrawCardsFromDeckBySide"] = (c, r, a) => { DrawCards(SideArg(r, a, 1, c.Controller), IntArg(a, 2, 1)); return null; },
             ["DrawCardFromDeck"] = (c, r, a) => { DrawCards(SideArg(r, a, 0, c.Controller), IntArg(a, 1, 1)); return null; },
@@ -408,6 +411,9 @@ public sealed partial class CardApi
             //    读 index 0 会拿到一张卡对象 → `SideArg` 退化成 receiver 的 owner，
             //    对"给对手加槽位"这类卡会加错边。
             ["GainKreditSlot"] = (c, r, a) => { GainKreditSlot(SideArg(r, a, 1, c.Controller), 1); return null; },
+            ["LoseKreditSlot"] = (c, r, a) => { LoseKreditSlot(SideArg(r, a, 0, c.Controller)); return null; },
+            ["GetTotalKreditsLostThisBattle"] = (c, r, a)
+                => GetTotalKreditsLostThisBattle(SideArgOrNull(a, 0) ?? Side.NotAvailable),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
             ["CustomAbilityRemove"] = (c, r, a) => DoCustomAbilityRemove(c, r, a),
             ["PersistCustomFields"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },
@@ -455,6 +461,7 @@ public sealed partial class CardApi
             //    走 `CardApi.PinUnit` 才能和 `UnpinUnit`/到期递减对上。
             //    **派发键没变**（还是 "PinUnit"），只是换了实现。
             ["PinUnit"] = (c, r, a) => DoPinUnit(c, r, a),
+            ["RemovePin"] = (c, r, a) => DoRemovePin(c, r, a),
             ["UnpinUnit"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Pinned),
             ["SuppressUnit"] = (c, r, a) => DoSuppressUnit(c, r, a),
 
@@ -580,6 +587,26 @@ public sealed partial class CardApi
 
                 return arr.Count - 1;
             },
+            ["Array_AddUnique"] = (c, r, a) =>
+            {
+                var arr = EvalList(r, a);
+                if (a.Length == 0)
+                {
+                    return -1;
+                }
+
+                object? value = a[^1];
+                for (int i = 0; i < arr.Count; i++)
+                {
+                    if (SameArrayValue(arr[i], value))
+                    {
+                        return i;
+                    }
+                }
+
+                ArrayAppendOne(c, arr, value);
+                return arr.Count - 1;
+            },
             ["Array_Append"] = (c, r, a) =>
             {
                 var arr = EvalList(r, a);
@@ -635,12 +662,16 @@ public sealed partial class CardApi
             ["JSON_GetIntArray"] = (c, r, a) => AsCard(r) is { } x ? JsonGetIntArray(x, StrArg(a, 1)) : new List<int>(),
             ["JSON_SetIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return null; },
             ["JSON_AddToIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonAddToIntArray(x, StrArg(a, 1), IntArg(a, 2)); return null; },
+            ["JSON_RemoveFromIntArray"] = (c, r, a) => AsCard(r) is { } x
+                && JsonRemoveFromIntArray(x, StrArg(a, 1), IntArg(a, 2)),
 
             // ---------------- 纯表现层调用：无头环境下直接吃掉 ----------------
             // 这些是 UI / 特效 / 音效，不改变规则状态。显式列出来是为了让
             // 「未实现」这个指标只反映**规则**缺口，不被表现层噪声淹没。
             ["ShowNotification"] = (c, r, a) => null,
             ["ShowCampaignMessage"] = (c, r, a) => null,
+            ["SetObjectiveCounter"] = (c, r, a) => null,
+            ["ReportError"] = (c, r, a) => null,
             ["PlaySoundEffect"] = (c, r, a) => null,
             ["PlayFromStart"] = (c, r, a) => null,
             ["Play"] = (c, r, a) => null,
@@ -657,6 +688,7 @@ public sealed partial class CardApi
 
             // ---------------- 近似实现（语义未验证，保守处理）----------------
             ["GetDestroyedCardsCountBySide"] = (c, r, a) => c.State.Discard(SideArg(r, a, 0, c.Controller)).Count(),
+            ["getCardsBuffedByThisCard"] = (c, r, a) => GetCardsBuffedByThisCard(c, r, a),
             ["isBuffedByCard"] = (c, r, a) => IsBuffedByCard(c, r, a),
             ["GetUnitTypeCountOnBoard"] = (c, r, a) => c.State.Board(SideArg(r, a, 0, c.Controller)).Count(u => IsUnit(u)),
             ["updateCustomJsonIfNeeded"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },
@@ -714,6 +746,8 @@ public sealed partial class CardApi
             // 退回手牌 / 回牌库 —— 这两个是 `ResetCardInBattle`（→ OnCardReset 族）的**唯一**触发路径。
             ["MoveUnitFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
             ["MoveCardFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
+            ["MoveUnitFromSupportToFrontLine"] = (c, r, a) => DoMoveUnitFromSupportToFrontLine(c, r, a),
+            ["MakeCardRetreat"] = (c, r, a) => DoMakeCardRetreat(c, r, a),
             ["ResetCardInBattle"] = (c, r, a) =>
             {
                 if (AsCard(a.FirstOrDefault()) is { } rc)
@@ -782,6 +816,7 @@ public sealed partial class CardApi
                 return null;
             },
             ["AddToBattleLog"] = (c, r, a) => null,      // 纯日志
+            ["SetCountdown"] = (c, r, a) => SetCountdown(c, a),
             ["DecrementCountdown"] = (c, r, a) => null,  // 倒计时机制，语义待确认
             ["Array_Reverse"] = (c, r, a) =>
             {
@@ -830,6 +865,11 @@ public sealed partial class CardApi
             // </code>
             // 也就是和 `getTotalKreditCost` **完全同形**，主语在接收者，走 `SelfArg`。
             ["getAndDecryptKredit"] = (c, r, a) => SelfArg(c, r, a)?.KreditCost ?? 0,
+            // `get*TempBuffAmount(cardID, out)` 的主语是接收者，a[0] 是来源卡 ID。
+            // 真实临时槽优先；旧的 Change* 派发仍把 changeType=0 记在统一来源槽，
+            // 因此没有临时槽时回退到该槽，避免重复施加同一来源的 buff。
+            ["getKreditTempBuffAmount"] = (c, r, a) => GetTempBuffAmount(c, r, a, attack: false),
+            ["getAttackTempBuffAmount"] = (c, r, a) => GetTempBuffAmount(c, r, a, attack: true),
             ["GetCombatKeywords"] = (c, r, a) =>
             {
                 // 战斗相关关键字列表（Guard/Blitz/Fury/…），供卡牌读取
@@ -885,88 +925,11 @@ public sealed partial class CardApi
             ["_isBigRedOne"] = (c, r, a) => a.Length > 0 && AsCard(a[0]) is { } x
                                             && string.Equals(x.Name, c.Self?.Name, StringComparison.Ordinal),
             ["GetCardsPlayedThisTurn"] = (c, r, a) => c.State.CardsPlayedThisTurn.ToList(),
-
-            // `getCardsPlayedFromHandByTurn(回合号)` —— 那一回合「从手牌打出」的卡 **ID** 列表。
-            //
-            // 蓝图 `ref/kards-sim/…/_deps/BP_GameState_Battle.g.cs:1718`：
-            //   `Map_Find(cardsPlayedTurnMapped, turn, …)` → 取到值的 `CardIDs`
-            // ⇒ 返回的是**卡 ID（int）**，**不是卡实例** —— 所以卡自己的程序会拿
-            //   `GetCardFromID(元素)` 再解析（`didPlayBritishInfantryLastTurn` 就是这么写的）。
-            ["getCardsPlayedFromHandByTurn"] = (c, r, a) =>
-            {
-                int turn = a.Length > 0 ? Blueprint.KismetVm.ToInt(a[0]) : c.State.Turn;
-                return c.State.CardsPlayedFromHandByTurn.TryGetValue(turn, out var list)
-                    ? list.Select(x => x.CardId).ToList()
-                    : new List<int>();
-            },
-
-            // `GetCardsPlayedFromHandLastTurn()` = `getCardsPlayedFromHandByTurn(GetTurnNumber() - 1)`
-            // —— 蓝图 `BP_CardFunctions.g.cs:20315` 逐字如此。而内核的 `GetTurnNumber()`
-            // 就是 `State.Turn`（`Effects/CardApi.cs:2500`）。
-            //
-            // ★ **为什么需要它**：卡内私有函数 `didPlayBritishInfantryLastTurn`
-            //   —— **5 张卡**（`card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
-            //   `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` /
-            //   `card_unit_valentine_mk_ii`）的体都调它（各自 29 步：
-            //   `IsSideActive` + `GetCardsPlayedFromHandLastTurn` ×2 + `Array_Get` +
-            //   `GetCardFromID` + `IsInfantry`）。
-            //   以前内核**完全没有这个原语** ⇒ 那 5 张卡的本地程序兜底跑出来恒假
-            //   ⇒ 「上回合打过英国步兵」分支永不执行（审计里那 4 局的
-            //   `<local-ran:didPlayBritishInfantryLastTurn> ×1` 就是这条的留痕）。
-            ["GetCardsPlayedFromHandLastTurn"] = (c, r, a) =>
-                c.State.CardsPlayedFromHandByTurn.TryGetValue(c.State.Turn - 1, out var prev)
-                    ? prev.Select(x => x.CardId).ToList()
-                    : new List<int>(),
-
-            // `hasPlayedOrderThisTurn(卡, side, out 有没有)` —— 本回合 **side 这一方**
-            // 有没有打过指令牌。
-            //
-            // ## 为什么必须手写替身（不能让它走卡自己的 locals）
-            //
-            // 它是**卡内私有函数**，签名需要一个**真的 `side` 入参**。
-            // `card_unit_10th_para_battalion` 的 IR 调用点形状是：
-            // <code>
-            // { op:"call", fn:"hasPlayedOrderThisTurn",
-            //   args:[{var:"side"}, {var:"CallFunc_hasPlayedOrderThisTurn_hasPlayedOrderThisTurn"}],
-            //   outs:[{param:1, slot:"CallFunc_…"}] }
-            // </code>
-            // 而 `KismetVm` 那条「本地程序兜底」**不 seed 入参**（见 `KismetVm.cs:586-601`
-            // 的「三条取舍」第 3 条：dump 里没有参数名，需要真入参的私有函数会拿到 null）。
-            // 于是它读到的 `side` 是帧默认值 ⇒ 判据恒假。
-            //
-            // ## 后果（回放 508065 `#71 t15 ML`，实测）
-            //
-            // `card_unit_10th_para_battalion#15001` 的卡面是
-            // 「**Deployment: Gets +1+1 and Blitz if you have given an order this turn.**」
-            // —— 那一回合人类确实打过指令，所以客户端那边它**有 Blitz** ⇒ **不是召唤失调**
-            // ⇒ 允许移动。内核因为判据恒假没给 Blitz ⇒ `CanMoveThisTurn` 判召唤失调
-            // ⇒ **拒移**（`移动被拒：单位本回合不能移动（召唤失调 … 进场回合=15 当前回合=15）`）
-            // ⇒ 它留在半场 ⇒ `#85 t17` 假「半场已满」。
-            //
-            // ## 判据
-            //
-            // 与 `AnyOrderPlayedThisTurn` **同源**（同一个循环），区别只是这里用
-            // **显式传入的 side** 而不是"自己那一方"：
-            // 蓝图 `hasPlayedOrderThisTurn` 的体遍历 `GetCardsPlayedThisTurn()`，
-            // 命中 `IsOrder(卡) && 卡.side == side` 就置 true
-            //（`ref/kards-sim/…/Britain/CovertOp/units/card_unit_10th_para_battalion.g.cs:67-151`）。
-            //
-            // ⚠️ 这是一处**定向**修补：`KismetVm` 那条"不 seed 入参"的**通用**局限仍在，
-            //    其它同样需要真入参的卡内私有函数依然会拿到 null（有 `<local-ran:…>` 留痕）。
-            ["hasPlayedOrderThisTurn"] = (c, r, a) =>
-            {
-                Side want = SideArg(r, a, 0, SelfSide(c));
-                foreach (var card in c.State.CardsPlayedThisTurn)
-                {
-                    if (IsOrder(card) && card.Owner == want)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            },
+            ["GetCardsPlayedFromHandThisTurn"] = (c, r, a)
+                => c.State.CardsPlayedThisTurn.Select(card => card.CardId).ToList(),
+            ["GetCardsPlayedFromHandLastTurn"] = (c, r, a) => c.State.CardsPlayedFromHandLastTurn.ToList(),
             ["getHasGameplayTag"] = (c, r, a) => HasGameplayTag(c, r, a),
+            ["IsTopDeckNavy"] = (c, r, a) => DoIsTopDeckNavy(c, r, a),
 
             // `BP_CardFunctions::CanCardBeBuffed(Card)` 的实现（见 CardApi.CanCardBeBuffed）。
             // 卡蓝图本身不直接调它（调用点是 ChangeAttack/ChangeDefense/ChangeKreditCost/
@@ -1041,6 +1004,9 @@ public sealed partial class CardApi
             //     a[4]=out success。
             ["DiscardCardFromHand"] = (c, r, a) => DoDiscardCardFromHand(c, r, a),
 
+            // `DiscardRandomCardFromHand(side, discarderID, out discardedCardID)`
+            ["DiscardRandomCardFromHand"] = (c, r, a) => DoDiscardRandomCardFromHand(c, r, a),
+
             // B2：`CardApi.IsUnrevealedCovertCard`（`CardApi.cs:1194`）与
             //     `MatchEngine.IsBomber`（`MatchEngine.cs:1529`）都是**同名现成方法**。
             //     ⚠️ `IsUnrevealedCovertCard` 目前是**有意的恒 false 桩**（本内核没建模
@@ -1052,6 +1018,47 @@ public sealed partial class CardApi
             //     因为这一族里有隐式 self 的调用点（同 `getHas*` 一族的前科，见上面注释）。
             ["IsUnrevealedCovertCard"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && IsUnrevealedCovertCard(x),
+            ["IsGotcha"] = (c, r, a)
+                => SelfArg(c, r, a) is { } x && IsGotcha(x),
+            ["RearrangeLocation"] = (c, r, a) =>
+            {
+                CardInstance? card = SelfArg(c, r, a);
+                if (card is not null)
+                {
+                    RearrangeLocation(card.Owner, card.Location);
+                }
+                return null;
+            },
+            ["SetCardsSeenByCipher"] = (c, r, a) =>
+            {
+                CardInstance? card = SelfArg(c, r, a) ?? c.Trigger;
+                if (card is not null)
+                {
+                    ApplySetCardsSeenByCipher(card.Owner, shuffleUnseenOpponentHand: true);
+                }
+                return null;
+            },
+            ["ShouldGotchaTrigger"] = (c, r, a) =>
+            {
+                CardInstance? trigger = AsCard(a.ElementAtOrDefault(0)) ?? c.Trigger ?? c.Target;
+                if (trigger is null || !ShouldGotchaTrigger(trigger, out _))
+                {
+                    return false;
+                }
+
+                return true;
+            },
+            ["GotchaTriggered"] = (c, r, a) =>
+            {
+                CardInstance? gotcha = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a);
+                CardInstance? trigger = AsCardOrId(c, a.ElementAtOrDefault(1)) ?? c.Trigger ?? c.Target;
+                if (gotcha is not null && trigger is not null)
+                {
+                    GotchaTriggered(gotcha, trigger);
+                }
+
+                return null;
+            },
             ["IsBomber"] = (c, r, a) => SelfArg(c, r, a) is { } x && MatchEngine.IsBomber(x),
 
             // ── 语义取自参考实现 `ref/kards-sim/KardsSim/Bridge/EngineHost.cs` ────
@@ -1096,6 +1103,15 @@ public sealed partial class CardApi
             ["getKreditBySide"] = (c, r, a) => c.State.Kredits(SideArgOrNull(a, 0) ?? SelfSide(c)),
             ["GetFrontlineOwnerSide"] = (c, r, a) => (int)c.State.FrontlineOwner,
 
+            // `GetSupportLineLocationBySide(side, out location)`：5/6 是双方各自的半场，
+            // 也是 HQ 与单位共用的位置槽。
+            ["GetSupportLineLocationBySide"] = (c, r, a) => SideArgOrNull(a, 0) switch
+            {
+                Side.Left => (int)CardLocation.BoardHqLeft,
+                Side.Right => (int)CardLocation.BoardHqRight,
+                _ => (int)CardLocation.NotAvailable,
+            },
+
             // ── ★ `SpawnCardInFrontline`（108 调用点 / 29 张卡）──────────────────
             // 出处：直译产物 `out/Generated-gap/_deps/BP_CardFunctions.g.cs:35201`
             //       （函数体只有一步）：
@@ -1137,6 +1153,12 @@ public sealed partial class CardApi
             // ④ 按参数过滤。**HQ 不算**：`GetAllCardInBattle` 含 HQ，但 HQ 也是 location 卡、
             // 不是单位 ⇒ 只要 `unitsOnly` 为真就天然被 ④ 挡掉；为假时保留（与蓝图同）。
             ["GetCardsInSupportLineBySide"] = (c, r, a) => DoGetCardsInSupportLine(c, r, a),
+
+            // `GetCardsInFrontlineBySide(side, unitsOnly, includeCovert, out cards)`
+            // uses the same four filters as the support-line query, but selects
+            // the shared frontline location for the requested side.
+            ["GetCardsInFrontlineBySide"] = (c, r, a) => DoGetCardsInFrontline(c, r, a),
+            ["Get_X_AndMoreAttackCardsOnBoard"] = (c, r, a) => DoGetCardsWithMinimumAttack(c, r, a),
 
             // ── `IsLocationFull(location, out isFull)`（20 调用点 / 17 张卡）────
             // 出处：直译产物 `_deps/BP_CardFunctions.g.cs` 同名函数体 ——
@@ -1283,39 +1305,15 @@ public sealed partial class CardApi
         // 候选表由**那张卡自己**的 `GetChooseSpawnCards` 算（每卡过滤条件不同）。
         var candidates = GetChooseSpawnCards(c, selecting, out _, out bool keepOrder);
 
-        // ⚠️ **`keepOrder` 为假时蓝图会先洗一遍候选表，本内核故意不做**。
-        //    （2026-10-02 实测否决；2026-10-02 凌晨六 补上穷举否证与边界说明。）
-        //
+        // ⚠️ **`keepOrder` 为假时蓝图会先洗一遍候选表，本内核故意不做**（2026-10-02 实测否决）：
         //    `BP_CardFunctions::selectCardToDraw` 的 L_08C6
         //    （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:33783`）确实是
-        //    `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)`；
+        //    `Array_ShuffleFromStream(possibleChooseCards, cardsRandomStream)`，
         //    我按"游标必须对齐"的理由实现过一次 —— **结果整体变差**：
         //    人类失败 13 → 22、应用 395/417 → 386/417，`773639` 更是从 0 条人类失败
-        //    退回到 5 条。
-        //
-        //    ⚠️ **当年注释里那条推断（"我们的 `keepOrder` 判定与客户端不一致"）已被证伪**：
-        //    pams 蓝图里 `keepOrder = false` 是**硬编码字面量**（`card_event_pams.g.cs:245`），
-        //    内核 IR 里也是 `false`（`GetChooseSpawnCards` 的 `i=824`）⇒ **两边一致**。
-        //    所以"锅在 keepOrder"这条要划掉 —— 它只是当年那个回归的现象解释，不是原因。
-        //
-        //    ⇒ 改用**穷举**去否证「补上这次洗牌」这个方案本身。模型 =「洗牌后取
-        //      `shuffled[候选下标]`」，判据 = 6 局各自的第一次 pams 构成 **6 个独立约束**
-        //      （对 1 个未知量 ⇒ **只有全中才算证据**，命中 1~2 个是噪声）。
-        //      已全灭的维度：池口径(41/71/54/84) × 排序键(7 种) × 全局起始偏移 K(0..2000)
-        //      × 洗牌消耗次数(n/n−1) × **洗牌方向**(前向/后向/后向含 i=0/前向全区间)
-        //      × 不洗牌模型；消费顺序也已从蓝图定死（`OnPlayedFromHand` 只调
-        //      `selectCardToDraw`，`OnHandTargetSelected` 才做那次 `RandRange`）⇒ 不是顺序造成的。
-        //
-        //    ⚠️ **边界**：上面那个否证把 `CS` 的字段 `1` 当成"洗牌后数组的下标"，
-        //      而这一点**没有独立证据** —— `WireAction.cs:156` 里 `CS` 的 `CardId` 取自字段 `"2"`，
-        //      字段 `"1"` 只被 `SecondId` 读出来记日志；参考实现的 `autoPickCardToDraw`
-        //      也是用 `Map_Find` **按键**取待选项的。所以两种可能都存在：
-        //      字段 `1` 是下标 ⇒ 已被上表否证；字段 `1` 不是下标 ⇒ 这个模型**离线不可验证**。
-        //      **两种情况下都不该实现它。**
-        //
-        //    ⇒ 完整依据、复算配方与「哪些还没排除」：`README.md` §9.1.7
-        //      与 `klink bot/docs/内核补全队列.md` 的「2026-10-02（凌晨六）」一节。
-        //
+        //    退回到 5 条。说明**我们这边的 `keepOrder` 判定与客户端不一致**
+        //    （我们算成 false、客户端算成 true，或反之），照做等于往游标里塞多余的消费。
+        //    ⇒ 在把 `keepOrder` 的来源查清之前，**不加**这一次消费。
         //    （回放路径本来也不需要它：答复自带卡名，不依赖候选表的顺序。）
         _ = keepOrder;
 
@@ -1491,12 +1489,22 @@ public sealed partial class CardApi
             return null;
         }
 
+        if (!hand.Contains(chosen))
+        {
+            return null;
+        }
+
         // 留痕 —— `BotTurnService` 靠它产出 `HT` 发给客户端。
         c.Engine.RecordHandTargetPick(selecting.CardId, chosen.CardId);
 
         FireTrigger("OnHandTargetSelected", selecting, selecting.Owner,
                     eventArgs: new object?[] { chosen.CardId, selecting.CardId },
-                    eventSubject: chosen);
+                    eventSubject: chosen,
+                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        ["handTargetCardID"] = chosen.CardId,
+                        ["instigatorID"] = selecting.CardId,
+                    });
 
         return chosen;
     }
@@ -1935,7 +1943,7 @@ public sealed partial class CardApi
         "Conv_StringToText", "Conv_IntToBool", "Conv_BoolToInt", "Conv_IntToByte", "Conv_ByteToInt",
         "EqualEqual_ByteByte", "NotEqual_ByteByte",
         "EnumCompareFaction", "EnumCompareSide", "EnumCompareCardType", "EnumCompareCardLocation",
-        "Concat_StrStr", "Conv_NameToString", "GetEnumeratorUserFriendlyName",
+        "Concat_StrStr", "Conv_NameToString", "Conv_IntToInt64", "Format", "GetEnumeratorUserFriendlyName",
     };
 
     /// <summary>卡名（已解析变体）→ 这个程序的 `GetChooseSpawnCards` 是否可缓存。只算一次。</summary>
@@ -2303,6 +2311,50 @@ public sealed partial class CardApi
     }
 
     /// <summary>
+    /// `ConvertCard(cards, instigatorID, targetName, targetCardID, forceGold, out newIDs)`.
+    ///
+    /// The game keeps the card identity and location stable while replacing its definition;
+    /// preserving the card ID is required because subsequent blueprint steps still reference
+    /// the original ID.  Runtime buffs and damage are retained through <see cref="CardInstance.Reidentify"/>.
+    /// </summary>
+    private object? DoConvertCard(EffectContext c, object?[] a)
+    {
+        var targets = EvalList(a.FirstOrDefault(), a)
+            .Cast<object?>()
+            .Select(v => AsCardOrId(c, v))
+            .Where(card => card is not null)
+            .Select(card => card!)
+            .Distinct()
+            .ToList();
+
+        string? targetName = a.ElementAtOrDefault(2) as string;
+        if (string.IsNullOrWhiteSpace(targetName) || c.State.Database.Find(targetName) is null)
+        {
+            targetName = c.State.ById(IntArg(a, 3))?.Definition.Name;
+        }
+
+        if (targetName is null || c.State.Database.Find(targetName) is not { } definition)
+        {
+            return Array.Empty<int>();
+        }
+
+        bool forceGold = TruthyArg(a, 4);
+        var converted = new List<int>(targets.Count);
+        foreach (var card in targets)
+        {
+            card.Reidentify(targetName, definition);
+            if (forceGold)
+            {
+                card.IsGold = true;
+            }
+
+            converted.Add(card.CardId);
+        }
+
+        return converted;
+    }
+
+    /// <summary>
     /// `MoveUnitFromBoardToOwnersHand(card, instigatorID)` —— 把场上的单位退回原主手牌。
     ///
     /// 出处：`out/bp-cardfn.json` 函数 `MoveUnitFromBoardToOwnersHand`：
@@ -2353,6 +2405,125 @@ public sealed partial class CardApi
         // i=626：回手之后重置这张卡的累积状态（→ OnCardReset / OnOtherCardReset）。
         ResetCardInBattle(card);
         return null;
+    }
+
+    /// <summary>
+    /// `MoveUnitFromSupportToFrontLine(card, instigatorID, out success)`。
+    ///
+    /// 这是卡牌效果的强制推进，不是玩家的 `MatchEngine.MoveUnit`：蓝图只检查
+    /// 在场、`cantMove`、前线互斥和容量，最后以 `force=true` 路径跳过行动费。
+    /// </summary>
+    private object? DoMoveUnitFromSupportToFrontLine(EffectContext c, object? r, object?[] a)
+    {
+        var card = AsCard(a.FirstOrDefault()) ?? AsCard(r) ?? c.Target;
+        if (card is null || !IsLocatedOnBoard(card) || HasCustomAbility(card, "cantMove"))
+        {
+            return false;
+        }
+
+        if (c.State.FrontlineOwner != Side.NotAvailable
+            && c.State.FrontlineOwner != card.Owner)
+        {
+            return false;
+        }
+
+        if (c.State.FrontlineOwner == card.Owner
+            && c.State.Cards(card.Owner, CardLocation.BoardFrontline).Count >= c.State.FrontlineCapacity)
+        {
+            return false;
+        }
+
+        int targetSlot = c.State.NextLocationNumber(card.Owner, CardLocation.BoardFrontline);
+        int instigatorId = IntArg(a, 1, c.Self?.CardId ?? card.CardId);
+        c.Engine.FireSubAction("ZActionMoveCardToNewLocation", new[]
+        {
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Int("locationNumber", targetSlot),
+        });
+        c.State.Move(card, CardLocation.BoardFrontline, targetSlot);
+        c.Engine.Api.FireTrigger("OnMoveToFrontline", card, card.Owner, "OnOtherCardMoveToFrontline");
+        return true;
+    }
+
+    private object? DoMakeCardRetreat(EffectContext c, object? r, object?[] a)
+    {
+        var requested = EvalList(r, a).Cast<object?>().ToList();
+        int instigatorId = AsCardOrId(c, a.ElementAtOrDefault(1))?.CardId
+            ?? IntArg(a, 1, c.Self?.CardId ?? 0);
+
+        foreach (object? value in requested)
+        {
+            var card = AsCardOrId(c, value);
+            if (card is null || card.IsHq || !IsUnit(card) || !IsLocatedOnBoard(card) || !card.IsAlive
+                || HasCustomAbility(card, "cantRetreat"))
+            {
+                continue;
+            }
+
+            if (RetreatStopped(c, card, instigatorId))
+            {
+                continue;
+            }
+
+            if (card.Location == CardLocation.BoardFrontline
+                && MoveRetreatingCardToSupport(c, card))
+            {
+                continue;
+            }
+
+            CardLocation oldLocation = card.Location;
+            DoMoveUnitFromBoardToOwnersHand(c, card, Array.Empty<object?>());
+            c.State.NormalizeLocationNumbers(card.Owner, oldLocation);
+        }
+
+        return null;
+    }
+
+    private static bool MoveRetreatingCardToSupport(EffectContext c, CardInstance card)
+    {
+        CardLocation support = card.Owner.HqOf();
+        c.State.NormalizeLocationNumbers(card.Owner, support);
+        var supportCards = c.State.Cards(card.Owner, support);
+        if (supportCards.Count >= GameState.HalfBoardCapacity)
+        {
+            return false;
+        }
+
+        c.State.Move(card, support, supportCards.Count);
+        c.State.NormalizeLocationNumbers(card.Owner, CardLocation.BoardFrontline);
+        return true;
+    }
+
+    private static bool RetreatStopped(EffectContext c, CardInstance card, int instigatorId)
+    {
+        var eventArgs = new object?[] { card, instigatorId };
+        var namedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardRetreating"] = card,
+            ["cardMoved"] = card,
+            ["instigatorID"] = instigatorId,
+        };
+
+        var selfHits = c.Engine.Api.BroadcastWithOutParams(
+            "OnBeforeRetreat", card, card.Owner, new[] { "stopAction" },
+            eventArgs: eventArgs, eventSubject: card, namedArgs: namedArgs,
+            only: new[] { card });
+        if (selfHits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction"))))
+        {
+            return true;
+        }
+
+        var otherCards = c.State.Board(Side.Left)
+            .Concat(c.State.Board(Side.Right))
+            .Concat(c.State.Discard(Side.Left))
+            .Concat(c.State.Discard(Side.Right))
+            .Where(other => !ReferenceEquals(other, card))
+            .ToList();
+        var otherHits = c.Engine.Api.BroadcastWithOutParams(
+            "OnOtherCardRetreat", card, card.Owner, new[] { "stopAction" },
+            eventArgs: eventArgs, eventSubject: card, namedArgs: namedArgs,
+            only: otherCards);
+        return otherHits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")));
     }
 
     /// <summary>
@@ -2905,6 +3076,19 @@ public sealed partial class CardApi
         return null;
     }
 
+    private object DoFullyHealCard(EffectContext c, object? r, object?[] a)
+    {
+        var target = TargetCard(c, r, a);
+        if (target is null || !target.IsAlive)
+        {
+            return 0;
+        }
+
+        int before = target.Defense;
+        HealCard(target, target.MaxDefense - before);
+        return Math.Max(0, target.Defense - before);
+    }
+
     /// <summary>
     /// `BP_CardFunctions.DamageMultipleCards`（7 条语句）——
     /// 「对一批卡同时造成等量伤害」的包装。
@@ -3262,6 +3446,27 @@ public sealed partial class CardApi
         return true;
     }
 
+    private object? DoDiscardRandomCardFromHand(EffectContext c, object? r, object?[] a)
+    {
+        Side side = SideArg(r, a, 0, c.Controller);
+        if (side is not (Side.Left or Side.Right))
+        {
+            return 0;
+        }
+
+        var hand = GetAllCards()
+            .Where(card => card.Location == side.HandOf())
+            .ToList();
+        var card = GetRandomCard(hand);
+        if (card is null)
+        {
+            return 0;
+        }
+
+        DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
+        return card.CardId;
+    }
+
     /// <summary>
     /// `DiscardCardFromDeck(cardID, discarderID, skipTriggers, skipVisuals, out success)`。
     ///
@@ -3384,6 +3589,41 @@ public sealed partial class CardApi
         }
 
         return cards;
+    }
+
+    /// <summary>
+    /// `GetCardsInFrontlineBySide(side, unitsOnly, includeCovertCards, out cards)`.
+    /// Covert cards are currently not modeled, so the include flag is accepted
+    /// consistently with the other board queries.
+    /// </summary>
+    private object? DoGetCardsInFrontline(EffectContext c, object? r, object?[] a)
+    {
+        var side = SideArg(r, a, 0, c.Controller);
+        bool unitsOnly = TruthyArg(a, 1);
+
+        var cards = c.State.Cards(side, CardLocation.BoardFrontline);
+        if (unitsOnly)
+        {
+            cards = cards.FindAll(IsUnit);
+        }
+
+        return cards;
+    }
+
+    /// <summary>
+    /// `Get_X_AndMoreAttackCardsOnBoard(side, out cardIDs, attack, includeCovertCards)`.
+    /// The native helper returns IDs of living units on the requested side whose
+    /// current attack is at least the requested threshold.
+    /// </summary>
+    private object? DoGetCardsWithMinimumAttack(EffectContext c, object? r, object?[] a)
+    {
+        var side = SideArg(r, a, 0, c.Controller);
+        int minimumAttack = IntArg(a, 2, 0);
+
+        return c.State.Board(side)
+            .Where(card => IsUnit(card) && card.Attack >= minimumAttack)
+            .Select(card => card.CardId)
+            .ToList();
     }
 
     /// <summary>
@@ -3902,6 +4142,34 @@ public sealed partial class CardApi
         return target.BuffsBySource.Count > 0;
     }
 
+    /// <summary>返回来源卡自己记录的、曾被它 buff 过的卡 ID。</summary>
+    private List<int> GetCardsBuffedByThisCard(EffectContext c, object? r, object?[] a)
+    {
+        var source = SelfArg(c, r, a);
+        return source is null
+            ? new List<int>()
+            : JsonGetIntArray(source, BuffedCardsKey);
+    }
+
+    private static int GetTempBuffAmount(EffectContext c, object? receiver, object?[] args, bool attack)
+    {
+        var target = SelfArg(c, receiver, args);
+        if (target is null)
+        {
+            return 0;
+        }
+
+        int sourceId = IntArg(args, 0);
+        if (target.BuffsBySource.TryGetValue((sourceId, true), out var temporary))
+        {
+            return attack ? temporary.Attack : temporary.KreditCost;
+        }
+
+        return target.BuffsBySource.TryGetValue((sourceId, false), out var current)
+            ? attack ? current.Attack : current.KreditCost
+            : 0;
+    }
+
     /// <summary>
     /// `getHasGameplayTag(标签数组, out 有没有)` —— 判子类型。
     ///
@@ -3956,6 +4224,17 @@ public sealed partial class CardApi
 
     private static bool HasGameplayTag(CardInstance card, string tag)
         => GameplayTagTable.Has(card.Name, tag);
+
+    /// <summary>
+    /// `IsTopDeckNavy(side, out isNavy)` checks the first card in the
+    /// requested side's deck for the `subtype.navy` gameplay tag.
+    /// </summary>
+    private static object DoIsTopDeckNavy(EffectContext c, object? r, object?[] a)
+    {
+        var side = SideArg(r, a, 0, c.Controller);
+        var top = c.State.Deck(side).FirstOrDefault(card => card.LocationNumber == 0);
+        return top is not null && HasGameplayTag(top, "subtype.navy");
+    }
 
     private static void CollectTagStrings(object? v, List<string> into)
     {
@@ -4117,6 +4396,26 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    private object? DoRemovePin(EffectContext c, object? r, object?[] a)
+    {
+        var target = AsCardOrId(c, a.ElementAtOrDefault(0));
+        return target is not null && RemovePin(target) ? 1 : 0;
+    }
+
+    /// <summary>`SetCountdown(cardID, turns, out)`：把倒计时写入目标卡的私有 JSON。</summary>
+    private object? SetCountdown(EffectContext c, object?[] a)
+    {
+        var target = AsCardOrId(c, a.ElementAtOrDefault(0));
+        if (target is null)
+        {
+            return false;
+        }
+
+        JsonSetInt(target, "countdown_timer", IntArg(a, 1));
+        PersistCustomFields(target);
+        return true;
     }
 
     // ==================== 参数提取小工具 ====================

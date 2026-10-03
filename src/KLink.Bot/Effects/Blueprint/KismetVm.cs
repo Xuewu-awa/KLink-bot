@@ -614,10 +614,23 @@ public sealed class KismetVm
                 }
             }
 
+            // 独立函数的参数槽不在 IR 元数据里，但函数体仍保留了裸变量名。
+            // 从调用点的非 out 实参按出现顺序喂给函数体中未赋值、且不是卡实例
+            // 成员/上下文默认槽的变量。这样 `GetRandomBritishAir(kreditToCheck, …)`
+            // 等调用不会把 kreditToCheck 留成 null。
+            var localSeed = BuildLocalSeed(local, step, raw, ctx);
             var bag = outNames.Count > 0
-                ? RunLocalProgramMulti(local, ctx, null, outNames.ToArray())
-                : RunLocalProgramMulti(local, ctx, null);
-            result = outNames.Count > 0 ? bag[outNames[0]] : null;
+                ? RunLocalProgramMulti(local, ctx, localSeed, outNames.ToArray())
+                : RunLocalProgramMulti(local, ctx, localSeed);
+            // 调用点的 out 槽通常叫 `CallFunc_<函数>_<出参>`，而局部函数体
+            // 写入的是裸出参名（例如 `randomCard`）。两者都放进 bag，
+            // 但返回值必须优先取裸名；否则 `card_event_radar_alert` 会把
+            // `GetRandomBritishAir` 的成功结果读成 null，永远重试到步数上限。
+            string? preferredOut = outNames.FirstOrDefault(name =>
+                !name.StartsWith("CallFunc_" + fn + "_", StringComparison.Ordinal));
+            result = outNames.Count > 0
+                ? bag[preferredOut ?? outNames[0]]
+                : null;
             handled = true;
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }
@@ -686,6 +699,121 @@ public sealed class KismetVm
         {
             StepTrace?.Add($"      [!] {fn} 返回 null，输出槽未写入");
         }
+    }
+
+    private static IReadOnlyDictionary<string, object?>? BuildLocalSeed(
+        KismetProgram local, KismetStep call, object?[] raw, EffectContext ctx)
+    {
+        var assigned = new HashSet<string>(StringComparer.Ordinal);
+        var referenced = new List<string>();
+        foreach (var step in local.Steps)
+        {
+            if (!string.IsNullOrEmpty(step.DestinationVar))
+            {
+                assigned.Add(step.DestinationVar!);
+            }
+
+            AddVars(step.Source, referenced);
+            AddVars(step.Condition, referenced);
+            AddVars(step.Receiver, referenced);
+            foreach (var arg in step.Args)
+            {
+                AddVars(arg, referenced);
+            }
+
+            AddArrayTargets(step.Source, assigned);
+            AddArrayTargets(step.Condition, assigned);
+
+            // Array_* 原语的第一个参数是蓝图里的 TArray 引用，会由
+            // SeedArrayTarget 在第一次写操作时初始化；它不是函数入参。
+            if (step.Function is ("Array_Add" or "Array_Append" or "Array_Clear"
+                or "Array_Remove" or "Array_RemoveItem" or "Array_Reverse")
+                && step.Args.FirstOrDefault()?.Var is { } arrayTarget)
+            {
+                assigned.Add(arrayTarget);
+            }
+        }
+
+        var frameSlots = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "self", "cardFunction", "cardID", "targetCardID", "targetCard",
+            "side", "mySide", "tempCard", "instigatorID", "triggerCardID",
+        };
+        var inputs = referenced
+            .Where(name => !assigned.Contains(name)
+                           && !frameSlots.Contains(name)
+                           && !name.StartsWith("Temp_", StringComparison.Ordinal)
+                           && !name.StartsWith("CallFunc_", StringComparison.Ordinal)
+                           && !name.StartsWith("K2Node_", StringComparison.Ordinal)
+                           && GetMember(ctx.Self, name) is null)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+        int input = 0;
+        for (int i = 0; i < call.Args.Count && input < inputs.Length; i++)
+        {
+            if (call.OutParams.Contains(i))
+            {
+                continue;
+            }
+
+            values[inputs[input++]] = raw[i];
+        }
+
+        return values.Count == 0 ? null : values;
+    }
+
+    private static void AddVars(KismetExpr? expr, List<string> vars)
+    {
+        if (expr is null)
+        {
+            return;
+        }
+
+        if (expr.Var is { Length: > 0 } name)
+        {
+            vars.Add(name);
+        }
+
+        foreach (var arg in expr.Args)
+        {
+            AddVars(arg, vars);
+        }
+
+        foreach (var item in expr.Array)
+        {
+            AddVars(item, vars);
+        }
+
+        AddVars(expr.Context, vars);
+    }
+
+    private static void AddArrayTargets(KismetExpr? expr, HashSet<string> targets)
+    {
+        if (expr is null)
+        {
+            return;
+        }
+
+        if (expr.Call is ("Array_Add" or "Array_Append" or "Array_Clear"
+            or "Array_Remove" or "Array_RemoveItem" or "Array_Reverse")
+            && expr.Args.FirstOrDefault()?.Var is { } target)
+        {
+            targets.Add(target);
+        }
+
+        foreach (var arg in expr.Args)
+        {
+            AddArrayTargets(arg, targets);
+        }
+
+        foreach (var item in expr.Array)
+        {
+            AddArrayTargets(item, targets);
+        }
+
+        AddArrayTargets(expr.Context, targets);
     }
 
     // ==================== 表达式求值 ====================
@@ -861,6 +989,7 @@ public sealed class KismetVm
             case "Array_Length": return a is System.Collections.ICollection col ? col.Count : 0;
             case "Conv_IntToString": return ToInt(a).ToString();
             case "Conv_IntToText": return ToInt(a).ToString();
+            case "Conv_IntToInt64": return (long)ToInt(a);
             case "Conv_ByteToText": return ToInt(a).ToString();
             case "Conv_TextToString": return a?.ToString() ?? "";
             case "Conv_StringToText": return a?.ToString() ?? "";
@@ -891,6 +1020,19 @@ public sealed class KismetVm
                 return ToInt(a) == ToInt(b) ? 0 : 1;
             case "Concat_StrStr": return string.Concat(a?.ToString(), b?.ToString());
             case "Conv_NameToString": return a?.ToString() ?? "";
+            case "Format":
+                {
+                    string format = a?.ToString() ?? "";
+                    var values = argExprs.Skip(1).Select(x => Eval(x, frame, ctx)?.ToString() ?? "").ToArray();
+                    try
+                    {
+                        return string.Format(System.Globalization.CultureInfo.InvariantCulture, format, values);
+                    }
+                    catch (FormatException)
+                    {
+                        return format;
+                    }
+                }
             case "GetEnumeratorUserFriendlyName": return a?.ToString() ?? "";
 
             // ---- /Script/kards.FunctionLibrary ----

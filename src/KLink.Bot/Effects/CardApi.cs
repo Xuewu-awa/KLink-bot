@@ -1260,7 +1260,73 @@ public sealed partial class CardApi
     /// 单独抽成函数而不是在门里写 `if (true)`：这样 Covert 状态落地时只改这一处，
     /// 而且调用方（`CanCardBeBuffed`）的形状与蓝图逐字一致。
     /// </summary>
-    public static bool IsUnrevealedCovertCard(CardInstance card) => false;
+    public static bool IsUnrevealedCovertCard(CardInstance card)
+        => card.Keywords.Contains(Keyword.Covert) && !card.IsCovertRevealed;
+
+    public static bool IsGotcha(CardInstance card)
+        => card.Location != CardLocation.NotAvailable
+           && card.Definition.Type.Equals("gotcha", StringComparison.OrdinalIgnoreCase)
+           && !card.IsCovertRevealed
+           && !card.GotchaActivated;
+
+    public IReadOnlyList<CardInstance> GetActiveGotchasOrdered(Side side)
+        => State.Cards(side)
+            .Where(IsGotcha)
+            .OrderBy(c => c.LocationNumber)
+            .ThenBy(c => c.CardId)
+            .ToArray();
+
+    public bool ShouldGotchaTrigger(CardInstance triggerCard, out CardInstance? gotcha)
+    {
+        gotcha = GetActiveGotchasOrdered(triggerCard.Owner.Opposite()).FirstOrDefault();
+        return gotcha is not null;
+    }
+
+    public void GotchaTriggered(CardInstance gotcha, CardInstance triggerCard)
+    {
+        if (!IsGotcha(gotcha))
+        {
+            return;
+        }
+
+        gotcha.GotchaActivated = true;
+        gotcha.IsCovertRevealed = true;
+        FireTrigger("OnCounterMeasureTriggered", triggerCard, gotcha.Owner,
+            eventArgs: new object?[] { triggerCard }, eventSubject: triggerCard);
+        SetCardsSeenByCipher(gotcha.Owner, gotcha);
+    }
+
+    public void SetCardsSeenByCipher(Side viewer, CardInstance card)
+    {
+        card.CardsSeenByCipher.Add(viewer);
+        card.CustomJson[$"cardSeen:{viewer}"] = "true";
+    }
+
+    public void ApplySetCardsSeenByCipher(Side viewer, bool shuffleUnseenOpponentHand)
+    {
+        Side opponent = viewer.Opposite();
+        var unseen = State.Hand(opponent)
+            .Where(card => !card.CardsSeenByCipher.Contains(viewer))
+            .ToList();
+
+        foreach (var card in unseen)
+        {
+            SetCardsSeenByCipher(viewer, card);
+        }
+
+        if (shuffleUnseenOpponentHand && unseen.Count > 1)
+        {
+            State.Random.Shuffle(unseen);
+            for (int i = 0; i < unseen.Count; i++)
+            {
+                unseen[i].LocationNumber = i;
+            }
+            State.NormalizeLocationNumbers(opponent, opponent.HandOf());
+        }
+    }
+
+    public void RearrangeLocation(Side side, CardLocation location)
+        => State.NormalizeLocationNumbers(side, location);
 
     /// <summary>
     /// **山地（Alpine）加成** —— `BP_CardFunctions::GiveAlpineBonus`（39 条语句）。
@@ -1595,6 +1661,30 @@ public sealed partial class CardApi
         FireExtraKreditSlotGain(side, count, giver: null);
     }
 
+    /// <summary>减少一方的 kredit 槽位，并记录本局累计损失。</summary>
+    public void LoseKreditSlot(Side side)
+    {
+        if (side is not (Side.Left or Side.Right))
+        {
+            return;
+        }
+
+        State.AddMaxKredits(side, -1);
+        State.SetKredits(side, Math.Min(State.Kredits(side), State.MaxKredits(side)));
+        State.AddKreditSlotsLost(side, 1);
+
+        _engine.FireSubAction("ZActionChangeKredits", new[]
+        {
+            ActionValue2.Str("side", side.ToWire()),
+            ActionValue2.Int("newMaxKredits", State.MaxKredits(side)),
+            ActionValue2.Int("newKredits", State.Kredits(side)),
+        });
+
+        FireExtraKreditSlotGain(side, -1, giver: null);
+    }
+
+    public int GetTotalKreditsLostThisBattle(Side side) => State.KreditSlotsLost(side);
+
     /// <summary>
     /// 「额外 kredit 槽位到手」事件 —— 出处 `out/bp-cardfn.json` 函数 `GainKreditSlot`
     /// （i=680）与 `LoseKreditSlot`（i=574），签名 `BaseCardObject.h:817`：
@@ -1841,6 +1931,33 @@ public sealed partial class CardApi
 
         int turns = IsSideActive(target.Owner) ? 3 : 2;
         target.PinnedTurns = Math.Max(target.PinnedTurns, turns);
+    }
+
+    /// <summary>解除一张卡的钉住状态，并广播原生的解除事件。</summary>
+    public bool RemovePin(CardInstance target)
+    {
+        bool wasPinned = target.Keywords.Contains(Keyword.Pinned) || target.PinnedTurns > 0;
+        if (!wasPinned)
+        {
+            target.PinnedTurns = 0;
+            return false;
+        }
+
+        target.Keywords.Remove(Keyword.Pinned);
+        target.PinnedTurns = 0;
+        _engine.FireSubAction("ZActionUnpinUnit", new[]
+        {
+            ActionValue2.Int("cardID", target.CardId),
+        });
+
+        FireTrigger("OnOtherUnitUnpinned", target, target.Owner,
+            eventArgs: new object?[] { target },
+            eventSubject: target,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = target,
+            });
+        return true;
     }
 
     /// <summary>
@@ -2393,6 +2510,20 @@ public sealed partial class CardApi
         JsonSetIntArray(card, key, list);
     }
 
+    public bool JsonRemoveFromIntArray(CardInstance card, string key, int value)
+    {
+        var list = JsonGetIntArray(card, key);
+        int index = list.IndexOf(value);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        list.RemoveAt(index);
+        JsonSetIntArray(card, key, list);
+        return true;
+    }
+
     /// <summary>把 VM 传来的值当作卡牌数组。</summary>
     internal static List<CardInstance> EvalArray(object? receiver, object?[] args)
     {
@@ -2503,22 +2634,13 @@ public sealed partial class CardApi
     public CardInstance? GetCardFromID(int cardId) => State.ById(cardId);
     public CardInstance? GetLocationCardBySide(Side s) => State.Hq(s);
 
-    /// <summary>
-    /// 客户端 `GetCardsOnBoardBySide(side, unitsOnly, includeCovertCards)` 的候选集。
-    ///
-    /// ★★ **顺序必须是「进入战斗的顺序」**（2026-10-02 从蓝图定案）。
-    /// 客户端遍历场上一律走 `GetAllCardInBattle()` = `Map_Values(AllCardsInBattle)`
-    ///（`_deps/BP_GameState_Battle.g.cs:1571`），而那个映射**只增不删**
-    ///（全树 0 处 `Map_Remove`，见 `AddCardToAllCardsInBattle` `:301-319`）
-    /// ⇒ 顺序 = **插入顺序**。详见 <see cref="GameState.BoardInBattleOrder"/>。
-    ///
-    /// ⚠️ 以前这里用的是 `State.Board(s)`（按 `LocationNumber` 排序）——
-    /// 同一次消费、同一个下标会**取到不同的卡**，这正是「随机效果与客户端不一致」
-    /// 的第三个成因（`GetRandomCard` 的注释里写过）。
-    /// </summary>
-    public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.BoardInBattleOrder(s);
+    public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.Board(s);
     public IEnumerable<CardInstance> GetAllUnitsOnBoard() => State.Board(Side.Left).Concat(State.Board(Side.Right));
     public IEnumerable<CardInstance> GetAllCardsOnBoard() => GetAllUnitsOnBoard().Concat(new[] { State.Hq(Side.Left), State.Hq(Side.Right) });
+    public IEnumerable<CardInstance> GetAllCardsInFrontline(bool includeCovertCards = false)
+        => State.Cards(Side.Left, CardLocation.BoardFrontline)
+            .Concat(State.Cards(Side.Right, CardLocation.BoardFrontline))
+            .Where(card => includeCovertCards || !IsUnrevealedCovertCard(card));
     public IEnumerable<CardInstance> GetAllCards() => State.AllCards;
     public IEnumerable<CardInstance> GetCardsInHandBySide(Side s) => State.Hand(s);
     /// <summary>

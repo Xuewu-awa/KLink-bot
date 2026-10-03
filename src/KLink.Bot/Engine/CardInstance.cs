@@ -392,6 +392,15 @@ public sealed class CardInstance
     /// <summary>卡牌私有 JSON 暂存（对应游戏里的 JSON_Get*/JSON_Set*/JSON_Clear 一族调用）。</summary>
     public Dictionary<string, string> CustomJson { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>隐蔽卡是否已经被揭示。</summary>
+    public bool IsCovertRevealed { get; set; }
+
+    /// <summary>这张反制卡是否已经响应过一次触发。</summary>
+    public bool GotchaActivated { get; set; }
+
+    /// <summary>按阵营记录该卡是否已被密码情报看到。</summary>
+    public HashSet<Side> CardsSeenByCipher { get; } = new();
+
     /// <summary>
     /// buff 记录：(来源卡, 是否临时) → 该来源施加的修正。
     /// 用于 `RemoveTheBuff` / `checkAndUpdateBuffOnCard` / 回合结束清理。

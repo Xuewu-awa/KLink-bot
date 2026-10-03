@@ -70,26 +70,49 @@ internal static class DispatchGapBaseline
     /// （`card_event_white_death` i=382、`card_unit_38th_independent` i=590/i=2808），
     /// 也就是说那两张卡的「抑制」此前是**静默空转**（玩家报的「抑制不生效」）。
     /// 种类数与调用点**都降了**，符合"只降不升"。
+    /// 2026-10-02：538 → **537**（调用点 2788 → 2755）。原因是补上
+    /// `FullyHealCard`；IR 中的 33 个调用点现在都会返回实际治疗量。
+    /// 2026-10-03：537 → **536**（调用点 2755 → 2730）。原因是补上
+    /// `getCardsBuffedByThisCard`；18 个光环撤销/回合维护调用现在能读取
+    /// 来源卡自己的 buff 账本。
+    /// 2026-10-03：536 → **535**（调用点 2730 → 2715）。原因是补上
+    /// `SetCountdown`；15 个调用点现在会写入目标卡的 `countdown_timer`。
+    /// 2026-10-03：535 → **534**（调用点 2715 → 2705）。原因是补上
+    /// `RemovePin`；10 个调用点现在会解除钉住并广播 `OnOtherUnitUnpinned`。
+    /// 2026-10-03：534 → **532**（调用点 2705 → 2685）。原因是补上
+    /// `getKreditTempBuffAmount` / `getAttackTempBuffAmount`，按来源读取临时增益。
+    /// 2026-10-03：532 → **531**（调用点 2685 → 2649）。原因是补上
+    /// `GetSupportLineLocationBySide`，按阵营返回半场位置。
+    /// 2026-10-03：531 → **530**（调用点 2649 → 2639）。原因是补上
+    /// `GetCardsPlayedFromHandLastTurn`，按原生签名返回上一回合的卡 ID 列表。
+    /// 2026-10-03：530 → **529**（调用点 2639 → 2619）。原因是补上
+    /// `DiscardRandomCardFromHand`，按阵营从手牌随机弃牌并返回被弃卡的 ID。
+    /// 2026-10-03：529 → **527**（调用点 2619 → 2597）。原因是补上
+    /// `LoseKreditSlot` 与 `GetTotalKreditsLostThisBattle`，实现槽位损失、累计查询
+    /// 及负向槽位事件。
+    /// 2026-10-03：527 → **525**（调用点 2597 → 2553）。原因是补上
+    /// `MakeCardRetreat`（36 个调用点）、`GetAllCardsInFrontline`（8 个调用点）
+    /// 与 `GetCardsPlayedFromHandThisTurn`（22 个调用点）。
+    /// 2026-10-03：521 → **520**（调用点 2460 → 2449）。原因是补上
+    /// `GetCardsInFrontlineBySide`，返回指定阵营前线卡并支持 unitsOnly 过滤。
+    /// 2026-10-03：520 → **519**（调用点 2449 → 2442）。原因是补上
+    /// `Get_X_AndMoreAttackCardsOnBoard`，按阵营和最低攻击力返回单位 ID。
+    /// 2026-10-03：519 → **518**（调用点 2442 → 2435）。原因是补上
+    /// `IsTopDeckNavy`，按阵营读取牌库顶牌的 Navy 标签。
+    /// 2026-10-03：518 → **517**（调用点 2435 → 2428）。原因是补上
+    /// `JSON_RemoveFromIntArray`，按值删除卡牌私有整数数组中的首个匹配项并写回 found。
+    /// 2026-10-03：517 → **516**（调用点 2428 → 2421）。原因是补上
+    /// `MoveUnitFromSupportToFrontLine`，实现强制推进、前线互斥和容量门。
+    /// 2026-10-03：516 → **515**（调用点 2421 → 2413）。原因是补上
+    /// `SetObjectiveCounter`；这是战役/UI setter，在无头对局中按 no-op 处理。
+    /// 2026-10-03：515 → **514**（调用点 2413 → 2406）。原因是补上
+    /// `ReportError`；其调用点只报告 UI/初始化诊断，无头环境按 no-op 处理。
     /// 更新方式：`dotnet run --project tools\BotSim -c Release -- dispatch-gap`。
     /// </remarks>
-    /// <remarks>
-    /// 2026-10-02：538 → **537**（调用点 2788 → **2778**）。原因是补上了
-    /// `GetCardsPlayedFromHandLastTurn` 与 `getCardsPlayedFromHandByTurn` 两个派发键 ——
-    /// 前者在缺口集合里原本有 **10 个调用点**，全在**卡内私有函数**
-    /// `didPlayBritishInfantryLastTurn` 的体里（**5 张卡**：
-    /// `card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
-    /// `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` /
-    /// `card_unit_valentine_mk_ii`，每张调 2 次）。
-    /// 也就是说那 5 张卡的「上回合打过英国步兵」分支此前是**静默空转**
-    /// —— 审计里 4 局的 `<local-ran:didPlayBritishInfantryLastTurn> ×1` 就是这条的留痕。
-    /// 种类数与调用点**都降了**，符合"只降不升"。
-    /// （`getCardsPlayedFromHandByTurn` 本来不在缺口集合里：它只被
-    /// `GetCardsPlayedFromHandLastTurn` 调，而后者不是卡内私有函数、不在 IR 里。）
-    /// </remarks>
-    public const int BaselineCount = 537;
+    public const int BaselineCount = 511;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "E674E0A25E96DAEA";
+    public const string BaselineFingerprint = "A0E2688CFE47DA08";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)
