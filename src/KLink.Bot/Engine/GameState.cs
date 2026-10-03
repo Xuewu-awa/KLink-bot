@@ -46,6 +46,10 @@ public sealed class GameState
     public int MaxKredits(Side s) => _maxKredits[(int)s];
     private readonly int[] _kredits = new int[3];
     private readonly int[] _maxKredits = new int[3];
+    private readonly int[] _kreditSlotsLost = new int[3];
+
+    public int KreditSlotsLost(Side s)
+        => s is Side.Left or Side.Right ? _kreditSlotsLost[(int)s] : 0;
 
     /// <summary>疲劳计数（牌库空后每次抽牌递增）。</summary>
     private readonly int[] _fatigue = new int[3];
@@ -55,6 +59,13 @@ public sealed class GameState
     public void SetKredits(Side s, int value) => _kredits[(int)s] = Math.Max(0, value);
     public void AddMaxKredits(Side s, int amount) => _maxKredits[(int)s] = Math.Max(0, _maxKredits[(int)s] + amount);
     public void SetMaxKredits(Side s, int value) => _maxKredits[(int)s] = Math.Max(0, value);
+    public void AddKreditSlotsLost(Side s, int amount)
+    {
+        if (s is Side.Left or Side.Right)
+        {
+            _kreditSlotsLost[(int)s] = Math.Max(0, _kreditSlotsLost[(int)s] + amount);
+        }
+    }
     public void SetFatigue(Side s, int value) => _fatigue[(int)s] = Math.Max(0, value);
 
     /// <summary>前线归属。NotAvailable = 无人控制。</summary>
@@ -163,28 +174,13 @@ public sealed class GameState
     public List<CardInstance> CardsPlayedThisTurn { get; } = new();
 
     /// <summary>
-    /// **按回合分的「从手牌打出过哪些牌」历史**（键 = 回合号 = <see cref="Turn"/>）。
+    /// 上一回合从手牌打出的卡 ID，按打出顺序保存。
     ///
-    /// 对应客户端的 `GameStateRef.cardsPlayedTurnMapped`。
-    /// 存在理由是一个具体的族：`didPlayBritishInfantryLastTurn` ——
-    /// **5 张卡**（`card_event_forward_observers` / `card_unit_baltimore_mk_iii` /
-    /// `card_unit_defiant_mk_i` / `card_unit_the_polar_bears` / `card_unit_valentine_mk_ii`）
-    /// 的私有函数都调它，而它调 `GetCardsPlayedFromHandLastTurn()`。
-    ///
-    /// 蓝图语义（逐字）：
-    /// <code>
-    /// GetCardsPlayedFromHandLastTurn()            // BP_CardFunctions.g.cs:20315
-    ///   = getCardsPlayedFromHandByTurn(GetTurnNumber() - 1)
-    /// getCardsPlayedFromHandByTurn(turn)          // _deps/BP_GameState_Battle.g.cs:1718
-    ///   = Map_Find(cardsPlayedTurnMapped, turn).CardIDs      // ← 返回的是**卡 ID 列表**
-    /// </code>
-    /// ⚠️ 返回**卡 ID（int）**而不是卡实例 —— 所以卡自己的程序会拿 `GetCardFromID(元素)` 再解析。
-    ///
-    /// ⚠️ 只写不读历史的话这个字段没用；快照点在 <see cref="MatchEngine.StartTurn"/>
-    ///    清空 <see cref="CardsPlayedThisTurn"/> **之前**（那边 `State.Turn` 已经 +1，
-    ///    所以被清的那份属于 `Turn - 1`）。
+    /// 对应客户端 `GetCardsPlayedFromHandLastTurn` 的
+    /// `TArray<int32> CardIDsPlayedLastTurn` 出参；使用卡 ID 而不是卡对象，
+    /// 因为指令牌在结算时已经进入弃牌堆，调用方仍需通过 ID 找回它。
     /// </summary>
-    public Dictionary<int, List<CardInstance>> CardsPlayedFromHandByTurn { get; } = new();
+    public List<int> CardsPlayedFromHandLastTurn { get; } = new();
 
     /// <summary>内核遇到但尚未实现的 API 调用（用于量化缺口，见 Effects/CardApi.cs）。</summary>
     public Dictionary<string, int> UnimplementedCalls { get; } = new(StringComparer.Ordinal);
@@ -316,38 +312,6 @@ public sealed class GameState
     public List<CardInstance> Deck(Side s) => Cards(s, s.DeckOf());
     public List<CardInstance> Hand(Side s) => Cards(s, s.HandOf());
     public List<CardInstance> Board(Side s) => Cards(s).FindAll(c => c.Location.IsBoard() && !c.IsHq);
-
-    /// <summary>
-    /// 该方**场上**的卡，按**进入战斗的顺序**（**不是** `LocationNumber` 顺序）。
-    ///
-    /// ★ 为什么需要它（2026-10-02，从蓝图定案）：
-    /// 客户端所有「遍历场上」的函数都走 `GetAllCardInBattle()`
-    ///（`ref/kards-sim/…/_deps/BP_GameState_Battle.g.cs:1571`），而它**只有一句**
-    /// `Map_Values(self.AllCardsInBattle)` ⇒ 顺序 = **这个 `TMap` 的迭代顺序**。
-    /// 而 `AddCardToAllCardsInBattle`（同文件 `:301-319`）是
-    /// 「`cardID &gt; 0` 且 `Map_Find` 查不到 ⇒ `Map_Add`」——
-    /// **全树 0 处 `Map_Remove`** ⇒ 该映射**只增不删**、永不出现 swap-remove 的洞
-    /// ⇒ **`Map_Values` 的顺序就是插入顺序**（= 卡进入战斗的顺序）。
-    ///
-    /// ⚠️ `Board(s)` 是按 `LocationNumber` **排序**的（见 <see cref="Cards"/>），
-    /// 与客户端的插入序**不是一回事**。而「随机挑一张」这类效果的候选集顺序
-    /// 直接决定抽到谁（同一次消费、同一个下标，排列不同就取到不同的卡 ——
-    /// 见 `CardApi.GetRandomCard` 的注释），所以**随机族必须用本方法**。
-    /// </summary>
-    public List<CardInstance> BoardInBattleOrder(Side s)
-        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard() && !c.IsHq);
-
-    /// <summary>
-    /// 该方**在战场上**的**全部**卡（**含 HQ**），按**进入战斗的顺序**。
-    ///
-    /// 客户端 `AllCardsInBattle` 装的是**所有进过战斗的卡**（含双方 HQ），
-    /// 而 HQ 是**开局就创建**的 ⇒ 在「只增不删」的插入序里它排在**最前**。
-    /// 所以「`unitsOnly=false`」的候选集**不能**把 HQ 追加到末尾
-    ///（内核原先正是 `Board(side).Concat([HQ])`，把 HQ 放在最后一位）。
-    /// 详见 <see cref="BoardInBattleOrder"/> 里那段蓝图依据。
-    /// </summary>
-    public List<CardInstance> BattleCardsInOrder(Side s)
-        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard());
     public List<CardInstance> Discard(Side s) => Cards(s, CardLocation.Discard);
 
     public CardInstance Hq(Side s) => _cardsBySide[(int)s].First(c => c.IsHq);

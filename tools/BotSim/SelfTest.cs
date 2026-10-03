@@ -20,8 +20,25 @@ internal static class SelfTest
     {
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
+        new("GetSupportLineLocationBySide 按阵营返回半场位置", SupportLineLocationBySide),
+        new("GetAllCardsInFrontline 只返回双方前线卡", GetAllCardsInFrontlineQuery),
+        new("GetCardsInFrontlineBySide 按阵营、位置和 unitsOnly 过滤", FrontlineQuery),
+        new("Get_X_AndMoreAttackCardsOnBoard 返回达到阈值的单位 ID", MinimumAttackCardsQuery),
+        new("IsTopDeckNavy 检查指定阵营牌库顶牌的 Navy 标签", TopDeckNavyQuery),
+        new("JSON_RemoveFromIntArray 删除首个匹配值并写回 found", JsonRemoveFromIntArray),
+        new("MoveUnitFromSupportToFrontLine 强制推进并遵守前线门", MoveUnitFromSupportToFrontLineDispatch),
+        new("MakeCardRetreat 处理支援线、手牌容量和多目标数组", MakeCardRetreatSemantics),
+        new("GetCardsPlayedFromHandThisTurn 返回本回合出牌 ID", CardsPlayedFromHandThisTurnQuery),
+        new("GetCardsPlayedFromHandLastTurn 返回上一回合出牌 ID", CardsPlayedFromHandLastTurnQuery),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
+        new("FullyHealCard 返回实际治疗量并处理满血目标", FullyHealCardReturnsHealedAmount),
+        new("getCardsBuffedByThisCard 返回来源卡的 buff 账本", CardsBuffedByThisCard),
+        new("SetCountdown 写入目标卡倒计时并持久化", SetCountdownStoresTimer),
+        new("SetObjectiveCounter 被识别且不修改对局规则状态", SetObjectiveCounterIsPresentationOnly),
+        new("ReportError 被识别且不修改对局规则状态", ReportErrorIsDiagnosticOnly),
+        new("RemovePin 解除钉住、清零时长并发出子动作", RemovePinClearsPinnedState),
+        new("getKreditTempBuffAmount / getAttackTempBuffAmount 按来源读取增益", TempBuffAmountQueries),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -221,12 +238,22 @@ internal static class SelfTest
         new("手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须**真的落实**（0 费 + 回牌库顶）", HandTargetSelectWorks),
         new("CanCardBeBuffed：门对所有位置放行（si=41 极性修正）+ 未揭示隐蔽卡的位置表逐条核对",
             CanCardBeBuffedTruthTable),
+        new("Gotcha：未揭示状态、激活状态与 cipher 视野按阵营隔离",
+            GotchaStateSemantics),
+        new("Gotcha：cipher 扫描未见手牌并重排位置编号", CipherHandVisibilityAndRearrange),
 
         // ---- P0 第 3 族：卡内私有函数（locals 管道，2026-09-27）----
         new("私有函数：IR 里带了卡自己的函数体（ApplyBuff / didPlayBritishInfantryLastTurn …）",
             LocalFunctionBodiesPresent),
         new("私有函数：派发表认不出来时会**执行卡自己的函数体**（不再记 Unimplemented）",
             LocalFunctionActuallyRuns),
+        new("私有函数：调用实参传入局部 Frame、out 返回值回到调用槽，且随机只消费一次",
+            LocalFunctionArgumentsAndOutputs),
+        new("VM 数学节点：Int64 转换与 Format 保持值语义",
+            VmConversionAndFormat),
+        new("Gotcha：触发后只激活并揭示一个对手 Gotcha",
+            GotchaTriggeredDispatch),
+        new("ConvertCard：按卡 ID 转换并保留位置与身份", ConvertCardDispatch),
 
         // ---- P1：关键字基础设施（2026-09-30）----
         // 审计 §6 的 P1#27f / #27g：同一个判据在 IR 里有两种形状 ——
@@ -305,6 +332,10 @@ internal static class SelfTest
             SpawnCardInFrontlineLandsOnFrontline),
         new("DiscardCardFromHand：卡对象 / 整数 cardID **两种形状**都要真的弃掉",
             DiscardCardFromHandBothShapes),
+        new("DiscardRandomCardFromHand：按阵营随机弃牌并返回卡 ID",
+            DiscardRandomCardFromHand),
+        new("LoseKreditSlot：减少指定阵营槽位、clamp kredit、累计损失并广播负向事件",
+            LoseKreditSlot),
         new("getAndDecryptAttack / getAndDecryptDefense：必须返回**真实攻防**，不能恒 0",
             DecryptAttackDefenseRealValues),
         new("IsBomber / IsFighter：轰炸机 / 战斗机判据必须为真（旧实现 out 槽恒 null ⇒ 恒假）",
@@ -486,6 +517,478 @@ internal static class SelfTest
         return (engine, state);
     }
 
+    private static string? GetAllCardsInFrontlineQuery(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        if (unitName is null)
+        {
+            return "卡库里没有 infantry";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftFront = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardFrontline, 3);
+        var leftSupport = state.CreateWithId(unitName, Side.Left, 3, CardLocation.BoardHqLeft, 1);
+        var rightFront = state.CreateWithId(unitName, Side.Right, 42, CardLocation.BoardFrontline, 2);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "GetAllCardsInFrontline", null, new object?[] { false, null }, context, out bool handled);
+        if (!handled || result is not List<CardInstance> cards)
+        {
+            return $"查询未处理或返回类型错误：handled={handled} type={result?.GetType().Name ?? "null"}";
+        }
+
+        if (cards.Count != 2 || !cards.Contains(leftFront) || !cards.Contains(rightFront)
+            || cards.Contains(leftSupport) || cards.Any(card => card.IsHq || card.Location != CardLocation.BoardFrontline))
+        {
+            return $"前线查询结果错误：{string.Join(",", cards.Select(card => $"{card.CardId}:{card.Location}"))}";
+        }
+
+        object? includeCovertResult = engine.Api.InvokeByName(
+            "GetAllCardsInFrontline", null, new object?[] { true, null }, context, out bool includeHandled);
+        if (!includeHandled || includeCovertResult is not List<CardInstance> included
+            || included.Count != cards.Count)
+        {
+            return $"includeCovertCards 形状错误：handled={includeHandled} count={
+                (includeCovertResult as List<CardInstance>)?.Count.ToString() ?? "null"}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `GetCardsInFrontlineBySide(side, unitsOnly, includeCovertCards, out cards)`
+    /// must select only the requested side's frontline cards and honor the
+    /// unit-only switch. HQs and support-line cards must never leak into the
+    /// frontline result.
+    /// </summary>
+    private static string? FrontlineQuery(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        string? orderName = FindType(db, "order");
+        if (unitName is null || orderName is null)
+        {
+            return "卡库里没有 infantry/order";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftUnit = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardFrontline, 0);
+        var leftOrder = state.CreateWithId(orderName, Side.Left, 3, CardLocation.BoardFrontline, 1);
+        var rightUnit = state.CreateWithId(unitName, Side.Right, 42, CardLocation.BoardFrontline, 0);
+        var leftSupport = state.CreateWithId(unitName, Side.Left, 4, CardLocation.BoardHqLeft, 1);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "GetCardsInFrontlineBySide", null, new object?[] { 1, true, false, null },
+            context, out bool handled);
+        if (!handled || result is not List<CardInstance> units)
+        {
+            return $"查询未处理或返回类型错误：handled={handled} type={result?.GetType().Name ?? "null"}";
+        }
+
+        if (units.Count != 1 || !units.Contains(leftUnit) || units.Contains(rightUnit)
+            || units.Contains(leftOrder) || units.Contains(leftSupport))
+        {
+            return $"左方 unitsOnly 前线结果错误：{string.Join(",", units.Select(card => $"{card.CardId}:{card.Location}:{card.Definition.Type}"))}";
+        }
+
+        result = engine.Api.InvokeByName(
+            "GetCardsInFrontlineBySide", null, new object?[] { 2, false, false, null },
+            context, out bool allHandled);
+        if (!allHandled || result is not List<CardInstance> all)
+        {
+            return $"右方查询未处理或返回类型错误：handled={allHandled}";
+        }
+
+        if (all.Count != 1 || !all.Contains(rightUnit) || all.Contains(leftUnit)
+            || all.Contains(leftOrder) || all.Contains(leftSupport))
+        {
+            return $"右方 all 前线结果错误：{string.Join(",", all.Select(card => $"{card.CardId}:{card.Location}:{card.Definition.Type}"))}";
+        }
+
+        result = engine.Api.InvokeByName(
+            "GetCardsInFrontlineBySide", null, new object?[] { 1, false, true, null },
+            context, out bool includeHandled);
+        if (!includeHandled || result is not List<CardInstance> withNonUnit)
+        {
+            return $"includeCovertCards 形状错误：handled={includeHandled}";
+        }
+
+        if (withNonUnit.Count != 2 || !withNonUnit.Contains(leftUnit) || !withNonUnit.Contains(leftOrder))
+        {
+            return $"unitsOnly=false 应包含前线非单位卡：{string.Join(",", withNonUnit.Select(card => $"{card.CardId}:{card.Definition.Type}"))}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The query returns card IDs, not card objects, and must filter by side,
+    /// board location, unit type, and the inclusive attack threshold.
+    /// </summary>
+    private static string? MinimumAttackCardsQuery(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        string? orderName = FindType(db, "order");
+        if (unitName is null || orderName is null)
+        {
+            return "卡库里没有 infantry/order";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftAtThreshold = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        leftAtThreshold.Attack = 4;
+        var leftBelowThreshold = state.CreateWithId(unitName, Side.Left, 3, CardLocation.BoardFrontline, 0);
+        leftBelowThreshold.Attack = 3;
+        var rightAtThreshold = state.CreateWithId(unitName, Side.Right, 42, CardLocation.BoardFrontline, 0);
+        rightAtThreshold.Attack = 7;
+        var leftOrder = state.CreateWithId(orderName, Side.Left, 4, CardLocation.BoardFrontline, 1);
+        leftOrder.Attack = 99;
+
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "Get_X_AndMoreAttackCardsOnBoard", null, new object?[] { 1, null, 4, false },
+            context, out bool handled);
+        if (!handled || result is not System.Collections.IEnumerable values)
+        {
+            return $"查询未处理或返回类型错误：handled={handled} type={result?.GetType().Name ?? "null"}";
+        }
+
+        var ids = values.Cast<object?>().Select(Convert.ToInt32).ToList();
+        if (ids.Count != 1 || !ids.Contains(leftAtThreshold.CardId)
+            || ids.Contains(leftBelowThreshold.CardId) || ids.Contains(rightAtThreshold.CardId)
+            || ids.Contains(leftOrder.CardId))
+        {
+            return $"左方攻击阈值结果错误：[{string.Join(",", ids)}]";
+        }
+
+        result = engine.Api.InvokeByName(
+            "Get_X_AndMoreAttackCardsOnBoard", null, new object?[] { 2, null, 7, true },
+            context, out bool rightHandled);
+        if (!rightHandled || result is not System.Collections.IEnumerable rightValues)
+        {
+            return $"右方查询未处理或返回类型错误：handled={rightHandled}";
+        }
+
+        var rightIds = rightValues.Cast<object?>().Select(Convert.ToInt32).ToList();
+        if (rightIds.Count != 1 || !rightIds.Contains(rightAtThreshold.CardId))
+        {
+            return $"右方包含阈值卡且返回 ID 错误：[{string.Join(",", rightIds)}]";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A navy card at deck position 0 must match; a non-navy card at position 0
+    /// must not. The query must also use the requested side rather than the
+    /// effect controller.
+    /// </summary>
+    private static string? TopDeckNavyQuery(CardDatabase db)
+    {
+        const string navy = "card_event_hms_belfast";
+        const string nonNavy = "card_unit_2nd_parachute";
+        if (db.Find(navy) is null || db.Find(nonNavy) is null)
+        {
+            return $"卡库里缺 {navy} / {nonNavy}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId(navy, Side.Left, 2, CardLocation.DeckLeft, 0);
+        state.CreateWithId(nonNavy, Side.Right, 42, CardLocation.DeckRight, 0);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        object? left = engine.Api.InvokeByName(
+            "IsTopDeckNavy", null, new object?[] { 1, null }, context, out bool leftHandled);
+        if (!leftHandled || left is not true)
+        {
+            return $"左方 Navy 顶牌应返回 true：handled={leftHandled} result={left ?? "null"}";
+        }
+
+        object? right = engine.Api.InvokeByName(
+            "IsTopDeckNavy", null, new object?[] { 2, null }, context, out bool rightHandled);
+        if (!rightHandled || right is not false)
+        {
+            return $"右方非 Navy 顶牌应返回 false：handled={rightHandled} result={right ?? "null"}";
+        }
+
+        state.Move(state.Deck(Side.Left)[0], CardLocation.Discard);
+        object? empty = engine.Api.InvokeByName(
+            "IsTopDeckNavy", null, new object?[] { 1, null }, context, out bool emptyHandled);
+        if (!emptyHandled || empty is not false)
+        {
+            return $"空牌库应返回 false：handled={emptyHandled} result={empty ?? "null"}";
+        }
+
+        return null;
+    }
+
+    private static string? JsonRemoveFromIntArray(CardDatabase db)
+    {
+        string? cardName = FindType(db, "infantry");
+        if (cardName is null)
+        {
+            return "卡库里没有 infantry";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var card = state.CreateWithId(cardName, Side.Left, 2, CardLocation.HandLeft, 0);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = card,
+            Controller = Side.Left,
+        };
+
+        const string key = "cardsAffected";
+        engine.Api.JsonSetIntArray(card, key, new[] { 11, 22, 33 });
+        object? removed = engine.Api.InvokeByName(
+            "JSON_RemoveFromIntArray", card, new object?[] { card, key, 22, null }, context,
+            out bool handled);
+        if (!handled || removed is not true
+            || !engine.Api.JsonGetIntArray(card, key).SequenceEqual(new[] { 11, 33 }))
+        {
+            return $"删除中间值失败：handled={handled} result={removed ?? "null"} "
+                 + $"array=[{string.Join(",", engine.Api.JsonGetIntArray(card, key))}]";
+        }
+
+        removed = engine.Api.InvokeByName(
+            "JSON_RemoveFromIntArray", card, new object?[] { card, key, 99, null }, context,
+            out bool missingHandled);
+        if (!missingHandled || removed is not false
+            || !engine.Api.JsonGetIntArray(card, key).SequenceEqual(new[] { 11, 33 }))
+        {
+            return $"不存在值的 found/数组错误：handled={missingHandled} result={removed ?? "null"} "
+                 + $"array=[{string.Join(",", engine.Api.JsonGetIntArray(card, key))}]";
+        }
+
+        engine.Api.JsonSetIntArray(card, key, new[] { 7, 7, 8 });
+        removed = engine.Api.InvokeByName(
+            "JSON_RemoveFromIntArray", card, new object?[] { card, key, 7, null }, context,
+            out bool duplicateHandled);
+        if (!duplicateHandled || removed is not true
+            || !engine.Api.JsonGetIntArray(card, key).SequenceEqual(new[] { 7, 8 }))
+        {
+            return $"重复值未只删除首项：handled={duplicateHandled} result={removed ?? "null"} "
+                 + $"array=[{string.Join(",", engine.Api.JsonGetIntArray(card, key))}]";
+        }
+
+        engine.Api.JsonSetIntArray(card, key, Array.Empty<int>());
+        removed = engine.Api.InvokeByName(
+            "JSON_RemoveFromIntArray", card, new object?[] { card, key, 7, null }, context,
+            out bool emptyHandled);
+        if (!emptyHandled || removed is not false || engine.Api.JsonGetIntArray(card, key).Count != 0)
+        {
+            return $"空数组的 found/数组错误：handled={emptyHandled} result={removed ?? "null"}";
+        }
+
+        return null;
+    }
+
+    private static string? MoveUnitFromSupportToFrontLineDispatch(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        if (unitName is null)
+        {
+            return "卡库里没有 infantry";
+        }
+
+        static (bool Handled, object? Result) Move(MatchEngine engine, GameState state, CardInstance card)
+        {
+            var context = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = card,
+                Controller = card.Owner,
+            };
+            object? result = engine.Api.InvokeByName(
+                "MoveUnitFromSupportToFrontLine", card,
+                new object?[] { card, 777, null }, context, out bool handled);
+            return (handled, result);
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        state.SetKredits(Side.Left, 0);
+        var first = Move(engine, state, target);
+        if (!first.Handled || first.Result is not true
+            || target.Location != CardLocation.BoardFrontline
+            || state.Kredits(Side.Left) != 0
+            || state.FrontlineOwner != Side.Left)
+        {
+            return $"强制推进失败：handled={first.Handled} result={first.Result ?? "null"} "
+                 + $"location={target.Location} kredit={state.Kredits(Side.Left)} owner={state.FrontlineOwner}";
+        }
+
+        (engine, state) = EmptyBoard(db);
+        target = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        target.CustomAbility = "cantMove";
+        var cantMove = Move(engine, state, target);
+        if (!cantMove.Handled || cantMove.Result is not false
+            || target.Location != CardLocation.BoardHqLeft)
+        {
+            return "cantMove 目标不应被推进";
+        }
+
+        (engine, state) = EmptyBoard(db);
+        state.FrontlineOwner = Side.Right;
+        state.CreateWithId(unitName, Side.Right, 42, CardLocation.BoardFrontline, 0);
+        target = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        var opponentFrontline = Move(engine, state, target);
+        if (!opponentFrontline.Handled || opponentFrontline.Result is not false
+            || target.Location != CardLocation.BoardHqLeft)
+        {
+            return "对面占线时不应推进";
+        }
+
+        (engine, state) = EmptyBoard(db);
+        state.FrontlineOwner = Side.Left;
+        for (int index = 0; index < GameState.DefaultFrontlineCapacity; index++)
+        {
+            state.CreateWithId(unitName, Side.Left, 10 + index, CardLocation.BoardFrontline, index);
+        }
+
+        target = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        var fullFrontline = Move(engine, state, target);
+        if (!fullFrontline.Handled || fullFrontline.Result is not false
+            || target.Location != CardLocation.BoardHqLeft)
+        {
+            return "己方前线已满时不应推进";
+        }
+
+        return null;
+    }
+
+    private static string? MakeCardRetreatSemantics(CardDatabase db)
+    {
+        string? unitName = FindType(db, "infantry");
+        if (unitName is null)
+        {
+            return "卡库里没有 infantry";
+        }
+
+        static EffectContext ContextFor(MatchEngine engine, GameState state)
+            => new()
+            {
+                Engine = engine,
+                State = state,
+                Self = state.Hq(Side.Left),
+                Controller = Side.Left,
+            };
+
+        static bool Retreat(MatchEngine engine, GameState state, object? targets)
+        {
+            object? result = engine.Api.InvokeByName(
+                "MakeCardRetreat", null, new object?[] { targets, state.Hq(Side.Left).CardId },
+                ContextFor(engine, state), out bool handled);
+            return handled && result is null;
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var existingSupport = state.CreateWithId(unitName, Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        var first = state.CreateWithId(unitName, Side.Left, 3, CardLocation.BoardFrontline, 2);
+        var second = state.CreateWithId(unitName, Side.Left, 4, CardLocation.BoardFrontline, 4);
+        object? queryResult = engine.Api.InvokeByName(
+            "GetAllCardsInFrontline", null, new object?[] { false, null }, ContextFor(engine, state), out bool queryHandled);
+        if (!queryHandled || queryResult is not List<CardInstance> targets || targets.Count != 2)
+        {
+            return "多目标前置查询未返回两张前线卡";
+        }
+
+        if (!Retreat(engine, state, targets)
+            || first.Location != CardLocation.BoardHqLeft
+            || second.Location != CardLocation.BoardHqLeft
+            || state.Cards(Side.Left, CardLocation.BoardFrontline).Count != 0
+            || state.Cards(Side.Left, CardLocation.BoardHqLeft).Count != 4
+            || state.FrontlineOwner != Side.NotAvailable)
+        {
+            return $"多目标撤退错误：first={first.Location}/{first.LocationNumber} "
+                 + $"second={second.Location}/{second.LocationNumber} "
+                 + $"support={state.Cards(Side.Left, CardLocation.BoardHqLeft).Count} "
+                 + $"frontlineOwner={state.FrontlineOwner}";
+        }
+
+        if (!Retreat(engine, state, new List<CardInstance> { existingSupport })
+            || existingSupport.Location != CardLocation.HandLeft
+            || state.Hand(Side.Left).Count != 1)
+        {
+            return $"已在支援线的卡未回手：location={existingSupport.Location} hand={state.Hand(Side.Left).Count}";
+        }
+
+        var (fullSupportEngine, fullSupportState) = EmptyBoard(db);
+        for (int index = 0; index < 4; index++)
+        {
+            fullSupportState.CreateWithId(unitName, Side.Left, 10 + index, CardLocation.BoardHqLeft, index + 1);
+        }
+
+        var fullSupportTarget = fullSupportState.CreateWithId(
+            unitName, Side.Left, 20, CardLocation.BoardFrontline, 0);
+        if (!Retreat(fullSupportEngine, fullSupportState, new List<CardInstance> { fullSupportTarget })
+            || fullSupportTarget.Location != CardLocation.HandLeft)
+        {
+            return $"支援线已满时未回手：location={fullSupportTarget.Location}";
+        }
+
+        var (fullHandEngine, fullHandState) = EmptyBoard(db);
+        for (int index = 0; index < MatchEngine.SupportLineCapacity - 1; index++)
+        {
+            fullHandState.CreateWithId(unitName, Side.Left, 70 + index, CardLocation.BoardHqLeft, index + 1);
+        }
+
+        for (int index = 0; index < GameState.HandCapacity; index++)
+        {
+            fullHandState.CreateWithId(unitName, Side.Left, 30 + index, CardLocation.HandLeft, index);
+        }
+
+        var fullHandTarget = fullHandState.CreateWithId(
+            unitName, Side.Left, 50, CardLocation.BoardFrontline, 0);
+        if (!Retreat(fullHandEngine, fullHandState, new List<CardInstance> { fullHandTarget })
+            || fullHandTarget.Location != CardLocation.Discard
+            || fullHandState.Hand(Side.Left).Count != GameState.HandCapacity)
+        {
+            return $"手牌已满时未进弃牌堆：location={fullHandTarget.Location} hand={fullHandState.Hand(Side.Left).Count}";
+        }
+
+        var (blockedEngine, blockedState) = EmptyBoard(db);
+        var blocked = blockedState.CreateWithId(
+            unitName, Side.Left, 60, CardLocation.BoardFrontline, 0);
+        blocked.CustomAbility = "cantRetreat";
+        if (!Retreat(blockedEngine, blockedState, new List<int> { blocked.CardId })
+            || blocked.Location != CardLocation.BoardFrontline)
+        {
+            return $"cantRetreat 未阻止撤退：location={blocked.Location}";
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// card_unit_10_5_cm_lefh 的蓝图逻辑是
     /// <c>GetOppositeSide() → GetLocationCardBySide(那个 side) → DamageCard(它, 2, …)</c>，
@@ -577,6 +1080,247 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? LoseKreditSlot(CardDatabase db)
+    {
+        const string watcherName = "card_unit_144th_infantry_regiment";
+        if (db.Find(watcherName) is null)
+        {
+            return $"卡库里缺 {watcherName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var watcher = PutOnBoard(state, watcherName, Side.Left, 20, 1);
+        state.SetMaxKredits(Side.Left, 5);
+        state.SetKredits(Side.Left, 5);
+        state.SetMaxKredits(Side.Right, 7);
+        state.SetKredits(Side.Right, 3);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = watcher, Controller = Side.Left,
+        };
+
+        object? leftFirst = engine.Api.InvokeByName("LoseKreditSlot", watcher,
+            new object?[] { (int)Side.Left }, ctx, out bool handledLeft);
+        if (!handledLeft || leftFirst is not null)
+        {
+            return $"LoseKreditSlot(Left) 应被处理且无返回值，handled={handledLeft} result={leftFirst ?? "null"}";
+        }
+
+        if (state.MaxKredits(Side.Left) != 4 || state.Kredits(Side.Left) != 4
+            || state.MaxKredits(Side.Right) != 7 || state.Kredits(Side.Right) != 3
+            || state.KreditSlotsLost(Side.Left) != 1)
+        {
+            return $"第一次丢左侧槽位状态错误：L={state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)} "
+                 + $"R={state.Kredits(Side.Right)}/{state.MaxKredits(Side.Right)} "
+                 + $"lostL={state.KreditSlotsLost(Side.Left)}";
+        }
+
+        object? right = engine.Api.InvokeByName("LoseKreditSlot", watcher,
+            new object?[] { (int)Side.Right }, ctx, out bool handledRight);
+        if (!handledRight || right is not null
+            || state.MaxKredits(Side.Right) != 6 || state.Kredits(Side.Right) != 3
+            || state.KreditSlotsLost(Side.Right) != 1
+            || state.KreditSlotsLost(Side.Left) != 1)
+        {
+            return $"丢右侧槽位应只影响右侧：handled={handledRight} "
+                 + $"L={state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}/lost{state.KreditSlotsLost(Side.Left)} "
+                 + $"R={state.Kredits(Side.Right)}/{state.MaxKredits(Side.Right)}/lost{state.KreditSlotsLost(Side.Right)}";
+        }
+
+        engine.Api.InvokeByName("LoseKreditSlot", watcher,
+            new object?[] { (int)Side.Left }, ctx, out bool handledSecondLeft);
+        if (!handledSecondLeft || state.MaxKredits(Side.Left) != 3 || state.Kredits(Side.Left) != 3
+            || state.KreditSlotsLost(Side.Left) != 2)
+        {
+            return $"第二次丢左侧槽位未累计/clamp：handled={handledSecondLeft} "
+                 + $"L={state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}/lost{state.KreditSlotsLost(Side.Left)}";
+        }
+
+        object? totalLeft = engine.Api.InvokeByName("GetTotalKreditsLostThisBattle", watcher,
+            new object?[] { (int)Side.Left, null }, ctx, out bool handledTotalLeft);
+        object? totalRight = engine.Api.InvokeByName("GetTotalKreditsLostThisBattle", watcher,
+            new object?[] { (int)Side.Right, null }, ctx, out bool handledTotalRight);
+        object? invalid = engine.Api.InvokeByName("getKreditSlotsLostBySide", watcher,
+            new object?[] { (int)Side.NotAvailable, null }, ctx, out bool handledInvalid);
+        if (!handledTotalLeft || !handledTotalRight || !handledInvalid
+            || totalLeft is not int leftLost || leftLost != 2
+            || totalRight is not int rightLost || rightLost != 1
+            || invalid is not int invalidLost || invalidLost != 0)
+        {
+            return $"丢槽查询错误：handled={handledTotalLeft}/{handledTotalRight}/{handledInvalid} "
+                 + $"values={totalLeft ?? "null"}/{totalRight ?? "null"}/{invalid ?? "null"}";
+        }
+
+        if (!trace.Any(t => t.StartsWith("OnAfterExtraKreditSlotGain", StringComparison.Ordinal)))
+        {
+            return "LoseKreditSlot 没有广播 OnAfterExtraKreditSlotGain";
+        }
+
+        if (!watcher.CustomJson.TryGetValue("slots_lost", out string? slotsLost)
+            || slotsLost != "2")
+        {
+            return $"负向槽位事件未被 144 步兵连消费，slots_lost={slotsLost ?? "null"}";
+        }
+
+        engine.Api.InvokeByName("GainKreditSlot", watcher,
+            new object?[] { watcher, (int)Side.Left }, ctx, out bool handledGain);
+        bool hasAfterGain = watcher.CustomJson.TryGetValue("slots_lost", out string? afterGain);
+        if (!handledGain || !hasAfterGain || afterGain != "2")
+        {
+            return $"正向 GainKreditSlot 不应增加 slots_lost，handled={handledGain} value={afterGain ?? "null"}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `GetCardsPlayedFromHandLastTurn(out cardIDs)` → 上一回合按顺序排列的整数卡 ID。
+    /// 快照在 <c>StartTurn</c> 边界滚动，不返回卡对象。
+    /// </summary>
+    private static string? CardsPlayedFromHandLastTurnQuery(CardDatabase db)
+    {
+        const string leftCardName = "card_event_forward_observers";
+        const string rightCardName = "card_event_aa_barrage";
+        if (db.Find(leftCardName) is null || db.Find(rightCardName) is null)
+        {
+            return $"卡库缺少测试卡 {leftCardName} 或 {rightCardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftCard = state.CreateWithId(leftCardName, Side.Left, 20, CardLocation.HandLeft, 1);
+        var rightCard = state.CreateWithId(rightCardName, Side.Right, 60, CardLocation.HandRight, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.ById(1),
+            Controller = Side.Left,
+        };
+
+        string Describe(object? value) => value is System.Collections.IEnumerable values
+            ? $"[{string.Join(",", values.Cast<object?>())}]"
+            : value?.GetType().Name ?? "null";
+
+        state.CardsPlayedThisTurn.Add(leftCard);
+        state.Turn++;
+        engine.StartTurn(Side.Right, draw: false);
+
+        var first = engine.Api.InvokeByName(
+            "GetCardsPlayedFromHandLastTurn", null, new object?[] { null }, ctx,
+            out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `GetCardsPlayedFromHandLastTurn`（**修复前就是这个状态**）";
+        }
+
+        if (first is not IEnumerable<int> firstIds || !firstIds.SequenceEqual(new[] { leftCard.CardId }))
+        {
+            return $"第一次回合滚动应返回 [{leftCard.CardId}]，实际 {Describe(first)}";
+        }
+
+        state.CardsPlayedThisTurn.Add(rightCard);
+        state.Turn++;
+        engine.StartTurn(Side.Left, draw: false);
+
+        var second = engine.Api.InvokeByName(
+            "GetCardsPlayedFromHandLastTurn", null, new object?[] { null }, ctx, out _);
+        if (second is not IEnumerable<int> secondIds || !secondIds.SequenceEqual(new[] { rightCard.CardId }))
+        {
+            return $"第二次回合滚动应返回 [{rightCard.CardId}]，实际 {Describe(second)}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `GetCardsPlayedFromHandThisTurn(out cardIDs)` 返回本回合按出牌顺序记录的卡 ID。
+    /// 该原生函数没有 side 参数，因此结果包含双方本回合从手牌打出的牌。
+    /// </summary>
+    private static string? CardsPlayedFromHandThisTurnQuery(CardDatabase db)
+    {
+        const string leftCardName = "card_event_forward_observers";
+        const string rightCardName = "card_event_aa_barrage";
+        if (db.Find(leftCardName) is null || db.Find(rightCardName) is null)
+        {
+            return $"卡库缺少测试卡 {leftCardName} 或 {rightCardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftCard = state.CreateWithId(leftCardName, Side.Left, 20, CardLocation.HandLeft, 1);
+        var rightCard = state.CreateWithId(rightCardName, Side.Right, 60, CardLocation.HandRight, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.ById(1),
+            Controller = Side.Left,
+        };
+
+        state.CardsPlayedThisTurn.Add(leftCard);
+        state.CardsPlayedThisTurn.Add(rightCard);
+
+        object? result = engine.Api.InvokeByName(
+            "GetCardsPlayedFromHandThisTurn", null, new object?[] { null }, ctx,
+            out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `GetCardsPlayedFromHandThisTurn`";
+        }
+
+        return result is IEnumerable<int> ids
+            && ids.SequenceEqual(new[] { leftCard.CardId, rightCard.CardId })
+            ? null
+            : $"本回合应返回 [{leftCard.CardId},{rightCard.CardId}]，实际 "
+              + (result is System.Collections.IEnumerable values
+                  ? $"[{string.Join(",", values.Cast<object?>())}]"
+                  : result?.GetType().Name ?? "null");
+    }
+
+    /// <summary>
+    /// `GetSupportLineLocationBySide(side, out location)` → 该阵营的半场位置。
+    /// </summary>
+    private static string? SupportLineLocationBySide(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.ById(1),
+            Controller = Side.Left,
+        };
+
+        foreach (var (side, expected) in new[]
+                 {
+                     (Side.Left, (int)CardLocation.BoardHqLeft),
+                     (Side.Right, (int)CardLocation.BoardHqRight),
+                 })
+        {
+            object? result = engine.Api.InvokeByName(
+                "GetSupportLineLocationBySide", null, new object?[] { (int)side, null }, ctx,
+                out bool handled);
+            if (!handled)
+            {
+                return "派发表里没有 `GetSupportLineLocationBySide`（**修复前就是这个状态**）";
+            }
+
+            if (result is not int location)
+            {
+                return $"{side} 返回类型不是 int，而是 {result?.GetType().Name ?? "null"}";
+            }
+
+            if (location != expected)
+            {
+                return $"{side} 应返回半场位置 {expected}，实际 {location}";
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// `GetLocationCardBySide(side)` → 该阵营的 HQ 卡。
     /// 入参在 index 2（前两个是 out 槽 `card` 与 `locationCardID`）。
@@ -634,6 +1378,300 @@ internal static class SelfTest
 
         int after = state.HqDefense(Side.Right);
         return after == before - 2 ? null : $"期望 {before - 2}，实际 {after}";
+    }
+
+    private static string? FullyHealCardReturnsHealedAmount(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var caster = state.ById(1);
+        if (caster is null)
+        {
+            return "测试缺少施法方 HQ";
+        }
+
+        var target = state.CreateWithId(
+            "card_unit_10_5_cm_lefh", Side.Left, 2, CardLocation.BoardHqLeft, 0);
+        if (target.MaxDefense < 2)
+        {
+            return $"测试卡最大防御异常：{target.MaxDefense}";
+        }
+
+        target.Defense = target.MaxDefense - 2;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = caster,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "FullyHealCard", null, new object?[] { target, caster.CardId, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "FullyHealCard 没有注册到派发表里";
+        }
+
+        if (result is not int healed || healed != 2 || target.Defense != target.MaxDefense)
+        {
+            return $"受伤目标应恢复 2 点并回满，实际 healed={result ?? "null"} "
+                 + $"defense={target.Defense}/{target.MaxDefense}";
+        }
+
+        result = engine.Api.InvokeByName(
+            "FullyHealCard", null, new object?[] { target, caster.CardId, null }, ctx, out handled);
+        return result is int second && second == 0
+            ? null
+            : $"满血目标应返回 0，实际 {result ?? "null"}";
+    }
+
+    private static string? CardsBuffedByThisCard(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var aura = state.CreateWithId(
+            "card_unit_85_pioneer_company", Side.Left, 2, CardLocation.BoardHqLeft, 0);
+        var target = state.CreateWithId(
+            "card_event_the_commonwealth", Side.Left, 3, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = aura,
+            Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("ApplyTheBuff", null, new object?[] { target }, ctx, out bool applied);
+        if (!applied)
+        {
+            return "ApplyTheBuff 没有注册到派发表里";
+        }
+
+        object? result = engine.Api.InvokeByName(
+            "getCardsBuffedByThisCard", aura, new object?[] { null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "getCardsBuffedByThisCard 没有注册到派发表里";
+        }
+
+        if (result is not List<int> ids || !ids.SequenceEqual(new[] { target.CardId }))
+        {
+            return $"期望返回 [{target.CardId}]，实际 {result ?? "null"}";
+        }
+
+        var emptyAura = state.CreateWithId(
+            "card_unit_85_pioneer_company", Side.Left, 4, CardLocation.BoardHqLeft, 0);
+        var emptyContext = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = emptyAura,
+            Controller = Side.Left,
+        };
+        result = engine.Api.InvokeByName(
+            "getCardsBuffedByThisCard", null, new object?[] { null }, emptyContext, out handled);
+        return result is List<int> empty && empty.Count == 0
+            ? null
+            : $"无记录来源卡应返回空数组，实际 {result ?? "null"}";
+    }
+
+    private static string? SetCountdownStoresTimer(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(
+            "card_unit_10_5_cm_lefh", Side.Left, 2, CardLocation.BoardHqLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = target,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "SetCountdown", null, new object?[] { target.CardId, 3, null }, ctx, out bool handled);
+        if (!handled || result is not bool ok || !ok)
+        {
+            return $"SetCountdown 应返回成功，handled={handled} result={result ?? "null"}";
+        }
+
+        if (!target.CustomJson.TryGetValue("countdown_timer", out string? value) || value != "3")
+        {
+            return $"目标卡 countdown_timer 应为 3，实际 {value ?? "<missing>"}";
+        }
+
+        result = engine.Api.InvokeByName(
+            "SetCountdown", null, new object?[] { 999999, 2, null }, ctx, out handled);
+        return handled && result is bool failed && !failed
+            ? null
+            : $"无效目标应返回失败，handled={handled} result={result ?? "null"}";
+    }
+
+    private static string? SetObjectiveCounterIsPresentationOnly(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Controller = Side.Left,
+        };
+
+        int leftKredits = state.Kredits(Side.Left);
+        int rightKredits = state.Kredits(Side.Right);
+        object? result = engine.Api.InvokeByName(
+            "SetObjectiveCounter", null, new object?[] { 0 }, ctx, out bool handled);
+
+        return handled && result is null
+            && state.Kredits(Side.Left) == leftKredits
+            && state.Kredits(Side.Right) == rightKredits
+            && state.AllCards.Count == 2
+            ? null
+            : $"表现层调用应被处理且无规则副作用，handled={handled} result={result ?? "null"} cards={state.AllCards.Count}";
+    }
+
+    private static string? ReportErrorIsDiagnosticOnly(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Controller = Side.Left,
+        };
+
+        int leftKredits = state.Kredits(Side.Left);
+        int rightKredits = state.Kredits(Side.Right);
+        object? result = engine.Api.InvokeByName(
+            "ReportError", null,
+            new object?[] { "test diagnostic", "detail", "", 42, 0, true }, ctx, out bool handled);
+
+        return handled && result is null
+            && state.Kredits(Side.Left) == leftKredits
+            && state.Kredits(Side.Right) == rightKredits
+            && state.AllCards.Count == 2
+            && state.UnimplementedCalls.Count == 0
+            ? null
+            : $"诊断调用应被处理且无规则副作用，handled={handled} result={result ?? "null"} cards={state.AllCards.Count}";
+    }
+
+    private static string? RemovePinClearsPinnedState(CardDatabase db)
+    {
+        var made = MakeBoard(db, PlainUnit);
+        if (made is null)
+        {
+            return $"卡库里缺 {PlainUnit}";
+        }
+
+        var (engine, unit) = made.Value;
+        engine.Api.PinUnit(unit);
+        if (!unit.Keywords.Contains(Keyword.Pinned))
+        {
+            return "测试前置失败：PinUnit 没有加上钉住关键字";
+        }
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = engine.State,
+            Self = unit,
+            Controller = Side.Left,
+        };
+        object? result = engine.Api.InvokeByName(
+            "RemovePin", null, new object?[] { unit, null }, ctx, out bool handled);
+        if (!handled || result is not int removed || removed != 1)
+        {
+            return $"RemovePin 应返回 1，handled={handled} result={result ?? "null"}";
+        }
+
+        if (unit.Keywords.Contains(Keyword.Pinned) || unit.PinnedTurns != 0)
+        {
+            return $"解除后仍有钉住状态：keyword={unit.Keywords.Contains(Keyword.Pinned)} " +
+                   $"turns={unit.PinnedTurns}";
+        }
+
+        bool hasAction = engine.State.ActionLog.Any(action =>
+            action.SubActions.Any(sub => sub.Name == "ZActionUnpinUnit"
+                && sub.Values.Any(value => value.Name == "cardID" && value.Value == unit.CardId)));
+        if (!hasAction)
+        {
+            return "RemovePin 没有记录 ZActionUnpinUnit";
+        }
+
+        result = engine.Api.InvokeByName(
+            "RemovePin", null, new object?[] { unit, null }, ctx, out handled);
+        return handled && result is int second && second == 0
+            ? null
+            : $"重复解除应返回 0，handled={handled} result={result ?? "null"}";
+    }
+
+    private static string? TempBuffAmountQueries(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(
+            "card_unit_t_34", Side.Left, 2, CardLocation.BoardFrontline, 0);
+        var giver = state.CreateWithId(
+            "card_unit_t_34", Side.Left, 3, CardLocation.BoardFrontline, 1);
+        var temporaryGiver = state.CreateWithId(
+            "card_unit_t_34", Side.Left, 4, CardLocation.BoardFrontline, 2);
+        var costTarget = state.CreateWithId(
+            "card_event_the_commonwealth", Side.Left, 5, CardLocation.HandLeft, 0);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = giver,
+            Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("ChangeAttack", null,
+            new object?[] { target, giver.CardId, 3, 0, false, null }, ctx, out bool attackHandled);
+        if (!attackHandled)
+        {
+            return "ChangeAttack 没有注册到派发表里";
+        }
+
+        ctx.Self = target;
+        object? result = engine.Api.InvokeByName(
+            "getAttackTempBuffAmount", null, new object?[] { giver.CardId, null }, ctx,
+            out bool handled);
+        if (!handled || result is not int attackAmount || attackAmount != 3)
+        {
+            return $"攻击临时增益应返回 3，handled={handled} result={result ?? "null"}";
+        }
+
+        engine.Api.ChangeAttack(target, 2, temporaryGiver, temporary: true);
+        result = engine.Api.InvokeByName(
+            "getAttackTempBuffAmount", target, new object?[] { temporaryGiver.CardId, null }, ctx,
+            out handled);
+        if (!handled || result is not int trueTemporaryAmount || trueTemporaryAmount != 2)
+        {
+            return $"真实临时槽应返回 2，handled={handled} result={result ?? "null"}";
+        }
+
+        ctx.Self = giver;
+        engine.Api.InvokeByName("ChangeKreditCost", null,
+            new object?[] { costTarget, giver.CardId, -2, 0, false, null }, ctx,
+            out bool costHandled);
+        if (!costHandled)
+        {
+            return "ChangeKreditCost 没有注册到派发表里";
+        }
+
+        result = engine.Api.InvokeByName(
+            "getKreditTempBuffAmount", costTarget, new object?[] { giver.CardId, null }, ctx,
+            out handled);
+        if (!handled || result is not int costAmount || costAmount != -2)
+        {
+            return $"费用临时增益应返回 -2，handled={handled} result={result ?? "null"}";
+        }
+
+        result = engine.Api.InvokeByName(
+            "getAttackTempBuffAmount", target, new object?[] { costTarget.CardId, null }, ctx,
+            out handled);
+        return handled && result is int missingAmount && missingAmount == 0
+            ? null
+            : $"不存在的来源应返回 0，handled={handled} result={result ?? "null"}";
     }
 
     /// <summary>
@@ -6583,12 +7621,11 @@ internal static class SelfTest
         var (engine, state) = EmptyBoard(db);
         var card = state.CreateWithId(PlainUnit, Side.Left, 20, CardLocation.DeckLeft, 0);
 
-        // ② 前提：内核没有 Covert 揭示状态 ⇒ 这道门的第一支恒真。
+        // 普通卡不是未揭示的隐蔽卡。
         card.Location = CardLocation.BoardFrontline;
         if (CardApi.IsUnrevealedCovertCard(card))
         {
-            return "内核没有建模 Covert 的揭示状态，IsUnrevealedCovertCard 应当恒假；"
-                 + "现在返回 true ⇒ CanCardBeBuffed 会走位置表，这条用例的 ① 要跟着改";
+            return "普通卡不应被识别为未揭示的隐蔽卡";
         }
 
         // ① 修好极性之后：门对**所有**位置都放行。
@@ -6630,6 +7667,118 @@ internal static class SelfTest
         }
 
         _ = engine;
+        return null;
+    }
+
+    private static string? GotchaStateSemantics(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var gotchaDefinition = db.Find("card_event_close_call");
+        var triggerDefinition = db.Find(PlainUnit);
+        if (gotchaDefinition is null || triggerDefinition is null)
+        {
+            return "卡库缺少 Gotcha 或普通单位测试卡";
+        }
+
+        var gotcha = state.CreateWithId(gotchaDefinition.Name, Side.Left, 200,
+            CardLocation.HandLeft, 0);
+        var trigger = state.CreateWithId(triggerDefinition.Name, Side.Right, 201,
+            CardLocation.BoardFrontline, 0);
+
+        if (!CardApi.IsGotcha(gotcha))
+        {
+            return "未揭示、未激活的 Gotcha 应当可触发";
+        }
+
+        engine.Api.GotchaTriggered(gotcha, trigger);
+        if (!gotcha.GotchaActivated || !gotcha.IsCovertRevealed || CardApi.IsGotcha(gotcha))
+        {
+            return "Gotcha 触发后必须标记为已激活且已揭示";
+        }
+
+        if (!gotcha.CardsSeenByCipher.Contains(Side.Left)
+            || gotcha.CardsSeenByCipher.Contains(Side.Right))
+        {
+            return "cipher 视野必须按阵营隔离";
+        }
+
+        state.Move(gotcha, CardLocation.Discard);
+        if (CardApi.IsGotcha(gotcha))
+        {
+            return "弃牌堆中的 Gotcha 不应仍是活动 Gotcha";
+        }
+
+        return null;
+    }
+
+    private static string? ConvertCardDispatch(CardDatabase db)
+    {
+        var source = FindType(db, "infantry");
+        var target = FindType(db, "tank");
+        if (source is null || target is null)
+        {
+            return "卡库缺少 infantry 或 tank 测试卡";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var card = state.CreateWithId(source, Side.Left, 210, CardLocation.HandLeft, 3);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("ConvertCard", null,
+            new object?[] { new List<CardInstance> { card }, 1, target, 0, false, null },
+            context, out bool handled);
+        if (!handled)
+        {
+            return "ConvertCard 未接入派发表";
+        }
+
+        if (card.CardId != 210 || card.Name != target || card.Definition.Name != target
+            || card.Location != CardLocation.HandLeft || card.LocationNumber != 3)
+        {
+            return $"转换后身份/位置错误：{card.Name}#{card.CardId} @{card.Location}:{card.LocationNumber}";
+        }
+
+        if (result is not List<int> ids || ids.Count != 1 || ids[0] != card.CardId)
+        {
+            return "ConvertCard 的 newCardIDs 应返回原卡 ID 数组";
+        }
+
+        return null;
+    }
+
+    private static string? CipherHandVisibilityAndRearrange(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var unit = db.Find(PlainUnit);
+        if (unit is null)
+        {
+            return $"卡库里缺 {PlainUnit}";
+        }
+
+        var first = state.CreateWithId(PlainUnit, Side.Left, 210, CardLocation.HandLeft, 4);
+        var second = state.CreateWithId(PlainUnit, Side.Left, 211, CardLocation.HandLeft, 9);
+        engine.Api.ApplySetCardsSeenByCipher(Side.Right, shuffleUnseenOpponentHand: false);
+        if (!first.CardsSeenByCipher.Contains(Side.Right)
+            || !second.CardsSeenByCipher.Contains(Side.Right))
+        {
+            return "cipher 应标记对手手牌为已见";
+        }
+
+        first.LocationNumber = 7;
+        second.LocationNumber = 12;
+        engine.Api.RearrangeLocation(Side.Left, CardLocation.HandLeft);
+        var hand = state.Hand(Side.Left);
+        if (hand.Count != 2 || hand[0].LocationNumber != 0 || hand[1].LocationNumber != 1)
+        {
+            return "RearrangeLocation 应将同区位置编号压紧为 0..n-1";
+        }
+
         return null;
     }
 
@@ -6730,6 +7879,126 @@ internal static class SelfTest
                 return $"{aura} 的 OnEnterPlay 调 ApplyBuff()：走了 locals 兜底={ran}、仍被记未实现={stillMissing}"
                      + Dump(state, ("未实现", Unimpl(state)));
             }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 最小化守卫 `card_event_radar_alert.GetRandomBritishAir(4, out randomCard)`。
+    ///
+    /// 这条调用同时覆盖三个容易退化的边界：调用实参必须进入新 Frame，
+    /// 局部函数写入的裸 out 名必须映射回调用点槽位，以及函数体内的
+    /// `GetRandomCard` 只能消费一次随机数。旧实现会把 4 留成 null，或把
+    /// 局部返回值读成 `CallFunc_*` 槽，最终让上层循环撞步数上限。
+    /// </summary>
+    private static string? LocalFunctionArgumentsAndOutputs(CardDatabase db)
+    {
+        const string cardName = "card_event_radar_alert";
+        const string output = "CallFunc_GetRandomBritishAir_randomCard";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里缺 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var actor = state.CreateWithId(cardName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = actor,
+            Controller = Side.Left,
+        };
+
+        var call = new KismetStep(
+            0, "call", "GetRandomBritishAir",
+            new KismetExpr[] { new() { Int = 4 }, new() { Var = output } },
+            new[] { 1 }, null, null, -1, null, null);
+        var ret = new KismetStep(
+            1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+            null, null, -1, null, null);
+
+        long beforeRandom = state.Random.ConsumedCount;
+        var bag = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(new[] { call, ret }, 0), ctx, null, output);
+        object? value = bag.GetValueOrDefault(output);
+
+        if (value is not CardInstance picked)
+        {
+            return $"GetRandomBritishAir(4) 的 out 返回值应为卡对象，实际 {value ?? "null"}"
+                 + "（局部函数结果没有映射回调用槽）";
+        }
+
+        if (state.Random.ConsumedCount - beforeRandom != 1)
+        {
+            return $"GetRandomBritishAir(4) 应只消费 1 次随机数，实际消费 "
+                 + $"{state.Random.ConsumedCount - beforeRandom} 次";
+        }
+
+        if (engine.Api.Vm.StepLimitHits != 0)
+        {
+            return $"局部函数不应撞步数上限，实际 {engine.Api.Vm.StepLimitHits} 次";
+        }
+
+        return picked.Definition.FactionId == 2
+            ? null
+            : $"GetRandomBritishAir 返回了非英国卡 {picked.Name}";
+    }
+
+    private static string? VmConversionAndFormat(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var actor = state.CreateWithId("card_event_aans", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = actor, Controller = Side.Left };
+
+        var steps = new KismetStep[]
+        {
+            new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "Conv_IntToInt64", Args = new[] { new KismetExpr { Int = 7 } } },
+                null, -1, "i64", null),
+            new(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "Format", Args = new[] { new KismetExpr { Str = "cost={0}" }, new KismetExpr { Var = "i64" } } },
+                null, -1, "text", null),
+            new(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+
+        var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "i64", "text");
+        if (bag["i64"] is not long n || n != 7)
+        {
+            return $"Conv_IntToInt64 应返回 long 7，实际 {bag["i64"] ?? "null"}";
+        }
+
+        return string.Equals(bag["text"]?.ToString(), "cost=7", StringComparison.Ordinal)
+            ? null
+            : $"Format 应返回 cost=7，实际 {bag["text"] ?? "null"}";
+    }
+
+    private static string? GotchaTriggeredDispatch(CardDatabase db)
+    {
+        string? actualName = db.All.FirstOrDefault(c => c.Type?.Equals("gotcha", StringComparison.OrdinalIgnoreCase) == true)?.Name;
+        if (actualName is null)
+        {
+            return "卡库没有 Gotcha 定义，无法构造触发用例";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var gotcha = state.CreateWithId(actualName, Side.Right, 50, CardLocation.HandRight, 0);
+        var trigger = state.CreateWithId("card_event_aans", Side.Left, 51, CardLocation.HandLeft, 0);
+        if (!CardApi.IsGotcha(gotcha))
+        {
+            return $"新建 Gotcha {actualName} 未被识别为 Gotcha";
+        }
+
+        engine.Api.GotchaTriggered(gotcha, trigger);
+        if (!gotcha.GotchaActivated || !gotcha.IsCovertRevealed)
+        {
+            return "GotchaTriggered 应同时设置 GotchaActivated 和 IsCovertRevealed";
+        }
+
+        if (!gotcha.CardsSeenByCipher.Contains(Side.Right))
+        {
+            return "触发后的 Gotcha 应记录本方 cipher 可见";
         }
 
         return null;
@@ -8059,6 +9328,66 @@ internal static class SelfTest
             {
                 return $"形状【{shape}】下 out 槽 success 应当是 true，实际 {result}";
             }
+        }
+
+        return null;
+    }
+
+    private static string? DiscardRandomCardFromHand(CardDatabase db)
+    {
+        const string unit = "card_unit_2nd_parachute";
+        const string self = "card_unit_10_5_cm_lefh";
+        if (db.Find(unit) is null || db.Find(self) is null)
+        {
+            return $"卡库里缺 {unit} / {self}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var actor = PutOnBoard(state, self, Side.Left, 20, 1);
+        var leftA = state.CreateWithId(unit, Side.Left, 21, CardLocation.HandLeft, 0);
+        var leftB = state.CreateWithId(unit, Side.Left, 22, CardLocation.HandLeft, 1);
+        var right = state.CreateWithId(unit, Side.Right, 42, CardLocation.HandRight, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = actor, Controller = Side.Left,
+        };
+
+        object? first = engine.Api.InvokeByName("DiscardRandomCardFromHand", actor,
+            new object?[] { (int)Side.Left, actor.CardId, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `DiscardRandomCardFromHand`（**修复前就是这个状态**）";
+        }
+
+        if (first is not int firstId || firstId is not (21 or 22))
+        {
+            return $"第一次应返回左侧被弃卡的整数 ID 21/22，实际 {first ?? "null"}";
+        }
+
+        CardInstance firstCard = firstId == leftA.CardId ? leftA : leftB;
+        CardInstance remaining = firstId == leftA.CardId ? leftB : leftA;
+        if (firstCard.Location != CardLocation.Discard || remaining.Location != CardLocation.HandLeft)
+        {
+            return $"第一次只应弃掉一张左侧手牌，实际 {leftA.Location}/{leftB.Location}";
+        }
+
+        if (right.Location != CardLocation.HandRight || state.Random.ConsumedCount != 1)
+        {
+            return $"第一次不应影响右侧手牌，且应消费 1 次随机数，实际位置={right.Location} / 消费={state.Random.ConsumedCount}";
+        }
+
+        object? second = engine.Api.InvokeByName("DiscardRandomCardFromHand", actor,
+            new object?[] { (int)Side.Left, actor.CardId, null }, ctx, out _);
+        if (second is not int secondId || secondId != remaining.CardId || remaining.Location != CardLocation.Discard)
+        {
+            return $"第二次应返回并弃掉剩余左侧手牌 {remaining.CardId}，实际返回={second ?? "null"} / 位置={remaining.Location}";
+        }
+
+        object? empty = engine.Api.InvokeByName("DiscardRandomCardFromHand", actor,
+            new object?[] { (int)Side.Left, actor.CardId, null }, ctx, out _);
+        if (empty is not int emptyId || emptyId != 0 || state.Random.ConsumedCount != 2)
+        {
+            return $"左侧手牌为空时应返回 0 且不再消费随机数，实际返回={empty ?? "null"} / 消费={state.Random.ConsumedCount}";
         }
 
         return null;

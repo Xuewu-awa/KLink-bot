@@ -152,6 +152,17 @@ public sealed class MatchEngine
             oldLocation: oldLocation,
             newLocation: newLocation);
 
+        if (oldLocation == CardLocation.BoardFrontline && newLocation != CardLocation.BoardFrontline)
+        {
+            Api.FireTrigger("OnMoveFromFrontline", card, card.Owner, "OnOtherCardMoveFromFrontline",
+                eventArgs: new object?[] { card },
+                eventSubject: card,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardMoved"] = card,
+                });
+        }
+
         // ---- 前线归属重算（P0，2026-10-01 实测 replay-214436）----
         //
         // 出处 `out/bp-cardfn.json` → `CardLocationMoved`（61 条语句）：
@@ -554,14 +565,8 @@ public sealed class MatchEngine
         // 「本回合打出过哪些牌」按回合清空（客户端 GetCardsPlayedThisTurn 的语义）。
         // ⚠️ 必须在这里清、而不是在 EndTurn 里清：回放路径上 XActionStartOfTurn 与
         //    EndTurn 的配对并不严格（见 ReplayRunner 的 turnStarted 处理）。
-        //
-        // ★★ **清之前先快照进「按回合的历史」**（2026-10-02 补）——
-        //    `GetCardsPlayedFromHandLastTurn()` 要读它（见 `GameState.CardsPlayedFromHandByTurn`
-        //    的长注释）。这里是唯一的快照点：`EndTurn` 在 `:652` 先把 `State.Turn` +1
-        //    再调本方法，所以此刻 `CardsPlayedThisTurn` 里的正是 **`Turn - 1`** 那一回合的。
-        //    漏了这一步的后果：`didPlayBritishInfantryLastTurn`（5 张卡的私有函数）
-        //    读到空列表 ⇒ 恒假 ⇒ 那些卡的「上回合打过英国步兵」分支永不执行。
-        State.CardsPlayedFromHandByTurn[State.Turn - 1] = State.CardsPlayedThisTurn.ToList();
+        State.CardsPlayedFromHandLastTurn.Clear();
+        State.CardsPlayedFromHandLastTurn.AddRange(State.CardsPlayedThisTurn.Select(c => c.CardId));
         State.CardsPlayedThisTurn.Clear();
 
         // 重置本单位行动状态
@@ -984,37 +989,19 @@ public sealed class MatchEngine
         //     → OnPlayedFromHand 跑 `1 + triggerMultiple` 次。
         // 两条路在「不取消、不翻倍」时**完全一样**，所以旧实现（无条件跑一次）对绝大多数
         // 对局是对的；差别只在取消与翻倍。见 `RunDeploymentEffect` 的注释。
+        RunDeploymentEffect(card, target);
+
         // ---- ⑤「别的卡从手牌被打出」----
         // 这一条以前**根本没接**，所以 card_unit_85_pioneer_company /
         // card_event_committed_crew 的 OnOtherCardPlayedFromHand 分支
         // （就是它们还原 buff / 给部署单位加成的那一支）从来没执行过。
-        //
-        // ⚠️⚠️ **顺序：必须在下面 `RunDeploymentEffect` 之前**（2026-10-02 修正）。
-        //
-        // 蓝图 `BP_CardFunctions.g.cs:5827 CardPlayedFromHand` 的语句序是：
-        //   :6060  取触发点 51（`OnOtherCardPlayedFromHand`，`Core/Trigger.g.cs:61`）
-        //   :6142  **广播**它
-        //   :6388/:6396/:6412  才跑**这张卡自己的** `OnPlayedFromHand`
-        // ⇒ **广播在前、自身效果在后**。参考实现同序：
-        //   `ref/kards-sim/KardsSim/Bridge/GameEngine.Actions.cs:429 FirePlayTriggers(c)`
-        //   在 `:448 Host.PlayCardFromHand(c, …)` **之前**
-        //   （`GameEngine.Triggers.cs:50` 注明「顺序照客户端 `CardPlayedFromHand` 的编排」）。
-        //
-        // 旧实现把这两步**反了**。后果实测（回放 854099 `#49 t11`，人类打 `card_event_night_raid`）：
-        //   该指令的效果 `SpawnCardOnBattlefield(…, "card_unit_commandos", …)` 生成 `#11002` 到半场；
-        //   因为广播排在后面，**这个刚生成的单位已经落场**，于是收到了本该只发给"**别人**"的广播
-        //   —— 它自己的 `OnOtherCardPlayedFromHand`（`card_unit_commandos.g.cs:36-59`：
-        //   `IsLocatedOnBoard && IsOrder && faction==2 && side==self.side`
-        //   → `GetCardsOnBoardBySide(敌)` → **`GetRandomCard`** → `DamageCard(1)`）就执行了
-        //   ⇒ **多消费 1 个随机数**（`--rng-trace` 实测 `#39 GetRandomCard n=3 idx=1`），
-        //   并把对方的 `#66`(1/1) 打死。
-        // ⇒ 连锁：`#54 t13` 客户端用 `#66` 打 `#39`、内核已把 `#66` 丢掉 ⇒ 拒打
-        //   ⇒ **客户端 `#39` 死、内核 `#39` 活** ⇒ 内核半场虚高 1
-        //   ⇒ `#70 t15` 假「半场已满」（`#77/#79/#83/#90/#92/#102/#104/#109/#111/#116` 全是连锁）；
-        //   随机游标也从 `#49` 起超前 1（审计 ④ 首条人类 HQ 失配 `#60 t13 期望 19 实际 20`）。
         Api.FireTrigger("OnOtherCardPlayedFromHand", card, card.Owner, eventArgs: new object?[] { card });
 
-        RunDeploymentEffect(card, target);
+        // 非 Gotcha 出牌会让密码视野重新评估对手尚未公开的手牌。
+        if (!CardApi.IsGotcha(card))
+        {
+            Api.ApplySetCardsSeenByCipher(card.Owner, shuffleUnseenOpponentHand: true);
+        }
 
         // ---- ⑥ 山地加成（`GiveAlpineBonus`）----
         //
@@ -1200,8 +1187,7 @@ public sealed class MatchEngine
             }
 
             // PinnedTurns == 1 ⇒ 到期解除（蓝图 RemovePin）
-            card.PinnedTurns = 0;
-            if (card.Keywords.Remove(Keyword.Pinned))
+            if (Api.RemovePin(card))
             {
                 Say($"{card} 的钉住到期解除");
             }
