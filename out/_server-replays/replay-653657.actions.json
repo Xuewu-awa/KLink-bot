@@ -6,7 +6,7 @@
   {
    "action_id": 1,
    "action_type": "XActionStartOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "57": "20"
@@ -20,7 +20,7 @@
   {
    "action_id": 2,
    "action_type": "XActionEndOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "reason": "endTurnButton",
@@ -96,7 +96,7 @@
   {
    "action_id": 7,
    "action_type": "XActionStartOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "57": "20"
@@ -110,7 +110,7 @@
   {
    "action_id": 8,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "30",
     "1": "1",
@@ -128,7 +128,7 @@
   {
    "action_id": 9,
    "action_type": "ML",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "30",
     "1": "0",
@@ -144,7 +144,7 @@
   {
    "action_id": 10,
    "action_type": "XActionEndOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "reason": "endTurnButton",
@@ -253,7 +253,7 @@
   {
    "action_id": 17,
    "action_type": "XActionStartOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "57": "20"
@@ -267,7 +267,7 @@
   {
    "action_id": 18,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "28",
     "1": "2",
@@ -285,7 +285,7 @@
   {
    "action_id": 19,
    "action_type": "AC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "30",
     "1": "41",
@@ -302,7 +302,7 @@
   {
    "action_id": 20,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "31",
     "1": "1",
@@ -320,7 +320,7 @@
   {
    "action_id": 21,
    "action_type": "ML",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "31",
     "1": "1",
@@ -336,7 +336,7 @@
   {
    "action_id": 22,
    "action_type": "XActionEndOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "reason": "endTurnButton",
@@ -447,7 +447,7 @@
   {
    "action_id": 29,
    "action_type": "XActionStartOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "57": "16"
@@ -461,7 +461,7 @@
   {
    "action_id": 30,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "12",
     "1": "1",
@@ -479,7 +479,7 @@
   {
    "action_id": 31,
    "action_type": "AC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "31",
     "1": "41",
@@ -496,7 +496,7 @@
   {
    "action_id": 32,
    "action_type": "AC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "30",
     "1": "41",
@@ -513,7 +513,7 @@
   {
    "action_id": 33,
    "action_type": "XActionEndOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "reason": "endTurnButton",
@@ -556,7 +556,7 @@
   {
    "action_id": 36,
    "action_type": "XActionStartOfTurn",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "side": "left",
     "57": "8"
@@ -570,7 +570,7 @@
   {
    "action_id": 37,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "17",
     "1": "0",
@@ -588,7 +588,7 @@
   {
    "action_id": 38,
    "action_type": "PC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "29",
     "1": "0",
@@ -606,7 +606,7 @@
   {
    "action_id": 39,
    "action_type": "AC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "31",
     "1": "41",
@@ -623,7 +623,7 @@
   {
    "action_id": 40,
    "action_type": "AC",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "0": "30",
     "1": "41",
@@ -640,7 +640,7 @@
   {
    "action_id": 41,
    "action_type": "ActionEndMatch",
-   "player_id": 802054,
+   "player_id": 900003,
    "action_data": {
     "reason": "Victory_DestroyHQ",
     "winner_side": "left"
@@ -660,7 +660,7 @@
    "turn_number": 9,
    "action": "end-match",
    "value": {
-    "winner_id": 802054,
+    "winner_id": 900003,
     "winner_side": "left",
     "result": "Victory_DestroyHQ"
    },
