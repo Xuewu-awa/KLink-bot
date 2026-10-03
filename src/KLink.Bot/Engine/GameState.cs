@@ -11,6 +11,14 @@ namespace KLink.Bot.Engine;
 /// </summary>
 public sealed class GameState
 {
+    public sealed class GameplayRestriction
+    {
+        public required Side Side { get; init; }
+        public required GameplayRestrictionType Type { get; init; }
+        public required int SourceCardId { get; init; }
+        public int TurnsRemaining { get; set; }
+    }
+
     /// <summary>左/右两侧，索引 1/2（与 <see cref="Side"/> 对齐，0 位弃用）。</summary>
     private readonly List<CardInstance>[] _cardsBySide = { new(), new(), new() };
 
@@ -37,6 +45,61 @@ public sealed class GameState
     /// </summary>
     public UeRandomStream Random { get; }
     public ulong Seed { get; }
+
+    // BP_GameState_Battle stores signed updates and returns Abs_Int on query.
+    private readonly int[] _kreditSlotsLost = new int[3];
+    public int KreditSlotsLost(Side side) => Math.Abs(_kreditSlotsLost[(int)side]);
+    public void RecordKreditSlotLoss(Side side) => _kreditSlotsLost[(int)side]--;
+
+    /// <summary>
+    /// Active global restrictions from `FGameplayRestrictionEffect`.
+    /// A restriction is keyed by affected side, type, and source card ID;
+    /// multiple sources of the same type may coexist.
+    /// </summary>
+    public List<GameplayRestriction> GameplayRestrictions { get; } = new();
+
+    public bool HasGameplayRestriction(Side side, GameplayRestrictionType type)
+        => GameplayRestrictions.Any(x => x.Side == side && x.Type == type && x.TurnsRemaining != 0);
+
+    public void AddGameplayRestriction(Side side, GameplayRestrictionType type, int sourceCardId, int turns)
+    {
+        var existing = GameplayRestrictions.FirstOrDefault(x =>
+            x.Side == side && x.Type == type && x.SourceCardId == sourceCardId);
+        if (existing is not null)
+        {
+            existing.TurnsRemaining = Math.Max(existing.TurnsRemaining, turns);
+            return;
+        }
+
+        GameplayRestrictions.Add(new GameplayRestriction
+        {
+            Side = side,
+            Type = type,
+            SourceCardId = sourceCardId,
+            TurnsRemaining = turns,
+        });
+    }
+
+    public void RemoveGameplayRestriction(Side side, GameplayRestrictionType type,
+        int sourceCardId, bool removeAll)
+    {
+        GameplayRestrictions.RemoveAll(x => x.Side == side && x.Type == type
+            && (removeAll || x.SourceCardId == sourceCardId));
+    }
+
+    /// <summary>Called at the start of a global turn, matching DecrementTurnGameplayRestrictions.</summary>
+    public void DecrementGameplayRestrictions()
+    {
+        foreach (var restriction in GameplayRestrictions)
+        {
+            if (restriction.TurnsRemaining > 0)
+            {
+                restriction.TurnsRemaining--;
+            }
+        }
+
+        GameplayRestrictions.RemoveAll(x => x.TurnsRemaining == 0);
+    }
 
     public int Turn { get; set; } = 1;
     public Side ActiveSide { get; set; } = Side.Left;
@@ -673,7 +736,15 @@ public sealed class GameState
         Kredits(Side.Right), MaxKredits(Side.Right),
         FrontlineOwner,
         IsFrontlineLimited,
-        AllCards.Select(c => c.Snapshot()).ToArray());
+        AllCards.Select(c => c.Snapshot()).ToArray())
+        {
+            LeftKreditSlotsLost = KreditSlotsLost(Side.Left),
+            RightKreditSlotsLost = KreditSlotsLost(Side.Right),
+            FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
+            // Preserve list order: future dispatch can depend on insertion order.
+            Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(
+                x.Side, x.Type, x.SourceCardId, x.TurnsRemaining)).ToArray(),
+        };
 
     public string SnapshotJson() => System.Text.Json.JsonSerializer.Serialize(
         Snapshot(), SnapshotJsonOptions);
@@ -714,7 +785,16 @@ public sealed record MatchSnapshot(
     int RightMaxKredits,
     Side FrontlineOwner,
     bool IsFrontlineLimited,
-    CardSnapshot[] Cards);
+    CardSnapshot[] Cards)
+{
+    public int LeftKreditSlotsLost { get; init; }
+    public int RightKreditSlotsLost { get; init; }
+    public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
+    public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();
+}
+
+public sealed record GameplayRestrictionSnapshot(Side Side, GameplayRestrictionType Type,
+    int SourceCardId, int TurnsRemaining);
 
 /// <summary>一条已结算的动作 —— 与协议里的 action 信封对应。</summary>
 public sealed record GameAction(

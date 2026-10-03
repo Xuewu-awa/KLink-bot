@@ -78,6 +78,12 @@ public sealed class CardInstance
     public int AttacksThisTurn { get; set; }
 
     /// <summary>
+    /// Whether this unit has already been attacked during the current turn.
+    /// `CalculateDamageDealt` uses this to decide whether Ambush is live.
+    /// </summary>
+    public bool HasBeenAttackedThisTurn { get; set; }
+
+    /// <summary>
     /// 本回合最多能攻击几次 —— 蓝图 `DoOnStartOfTurn` 给 `attackLeft` 赋的**初值**
     /// （`BP_Logic.g.cs:3110` / `:3124`）。
     ///
@@ -612,7 +618,11 @@ public sealed class CardInstance
         AttacksThisTurn,
         Keywords.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
         CustomAbility,
-        CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value));
+        CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
+        {
+            HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
+            PinnedTurns = PinnedTurns,
+        };
 }
 
 /// <summary>某个来源施加在卡上的持续修正。</summary>
@@ -711,7 +721,11 @@ public sealed record CardSnapshot(
     int AttacksThisTurn,
     string[] Keywords,
     string? CustomAbility,
-    Dictionary<string, string> CustomJson);
+    Dictionary<string, string> CustomJson)
+{
+    public bool HasBeenAttackedThisTurn { get; init; }
+    public int PinnedTurns { get; init; }
+}
 
 /// <summary>
 /// 游戏里的关键字。名字取自反编译出的子动作名

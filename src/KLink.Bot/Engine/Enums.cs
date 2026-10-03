@@ -11,6 +11,21 @@ public enum Side
 }
 
 /// <summary>
+/// `EGameplayRestrictions` from the game's public headers.
+/// These values are part of the Blueprint ABI; do not reorder them.
+/// </summary>
+public enum GameplayRestrictionType
+{
+    CannotDrawCardAtTurnStart = 0,
+    CannotKreditSlotAtTurnStart = 1,
+    CannotPlayOrders = 2,
+    CannotDeployUnits = 3,
+    CannotAttackWithGroundUnits = 4,
+    CannotDiscardAnyCardFromHand = 5,
+    NotAvailable = 6,
+}
+
+/// <summary>
 /// 卡牌所在位置。逐值对应游戏原生枚举 <c>/Script/kards.ECardLocationEnum</c>
 /// （从 kards-Win64-Shipping.exe 的 .jmap 转储中提取，见 decompiled/kards-enums.json）。
 ///

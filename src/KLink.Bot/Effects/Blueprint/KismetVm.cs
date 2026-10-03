@@ -716,7 +716,7 @@ public sealed class KismetVm
     /// </summary>
     private static readonly HashSet<string> InPlaceArrayOps = new(StringComparer.Ordinal)
     {
-        "Array_Add", "Array_Clear", "Array_Append", "Array_Insert",
+        "Array_Add", "Array_AddUnique", "Array_Clear", "Array_Append", "Array_Insert",
         "Array_Remove", "Array_RemoveItem", "Array_Set",
     };
 
@@ -1244,6 +1244,13 @@ public sealed class KismetVm
             // 例如「别的卡被打出」时，被派发到的是光环、事件参数才是被打出的那张牌。
             // 混用会让光环读到自己的 cardID（实测症状：`IsOrder(光环)` 恒假，
             // 于是 85 先驱连永远不还原费用）。
+            // `targetCard` is nullable by design. A non-targeting play has no
+            // target and must not silently become the card running the effect.
+            if (bare is "targetCard" or "targetedCard")
+            {
+                return _ctx.Target;
+            }
+
             var eventSubject = _ctx.Trigger ?? _ctx.Target;
             return eventSubject ?? _ctx.Self;
         }
@@ -1270,4 +1277,3 @@ public sealed class KismetVm
         }
     }
 }
-

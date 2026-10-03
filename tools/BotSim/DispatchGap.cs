@@ -86,10 +86,16 @@ internal static class DispatchGapBaseline
     /// （`getCardsPlayedFromHandByTurn` 本来不在缺口集合里：它只被
     /// `GetCardsPlayedFromHandLastTurn` 调，而后者不是卡内私有函数、不在 IR 里。）
     /// </remarks>
-    public const int BaselineCount = 537;
+    /// 2026-10-03：537 → **536**（调用点 2778 → **2776**）。原因是补上了
+    /// `ChangeFrontlineLimiter`，对应 `card_unit_black_prince` 的前线容量规则。
+    /// 2026-10-03：536 → **534**（调用点 2776 → **2750**）。原因是补上了
+    /// `AddGameplayRestriction`、`RemoveGameplayRestriction` 和
+    /// `IsThereGameplayRestriction`，覆盖全局玩法限制的状态查询与修改。
+    /// 2026-10-03: 534 → **533** (2714 calls), implementing `MakeCardRetreat`.
+    public const int BaselineCount = 530;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "E674E0A25E96DAEA";
+    public const string BaselineFingerprint = "7A024C984F6E9873";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

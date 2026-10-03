@@ -543,13 +543,16 @@ public sealed class MatchEngine
         // 而"自己第 6 回合 + 战争机器 1 = 7" —— **正好花光，一分不差**。
         // 内核多算的那 2 点油费（3 vs 1）把它挤成了 2，于是最后那张 3 费牌打不出来。
         int slots = State.MaxKredits(side);
-        if (slots < NaturalKreditCap)
+        if (!State.HasGameplayRestriction(side,
+                GameplayRestrictionType.CannotKreditSlotAtTurnStart)
+            && slots < NaturalKreditCap)
         {
             slots++;
         }
 
         State.SetMaxKredits(side, Math.Min(MaxKreditCap, slots));
         State.SetKredits(side, State.MaxKredits(side));
+        State.DecrementGameplayRestrictions();
 
         // 「本回合打出过哪些牌」按回合清空（客户端 GetCardsPlayedThisTurn 的语义）。
         // ⚠️ 必须在这里清、而不是在 EndTurn 里清：回放路径上 XActionStartOfTurn 与
@@ -574,6 +577,7 @@ public sealed class MatchEngine
         foreach (var unit in State.Board(side).ToList())
         {
             unit.HasAttackedThisTurn = false;
+            unit.HasBeenAttackedThisTurn = false;
             unit.HasMovedThisTurn = false;
             unit.AttacksThisTurn = 0;
             unit.OperationsUsedThisTurn = 0;
@@ -593,7 +597,8 @@ public sealed class MatchEngine
         Api.FireTrigger("OnStartOfTurn", null, side, "OnOtherStartOfTurn");
 
         // 抽牌（全局回合 1 跳过，见 `draw` 参数说明）
-        if (doDraw)
+        if (doDraw && !State.HasGameplayRestriction(side,
+            GameplayRestrictionType.CannotDrawCardAtTurnStart))
         {
             // `StartOfTurnDraw = true` —— 出处 `BP_Logic::StartTurnBySide` i=1175 调
             // `DrawTopCardFromDeck(sideStartTurn, 0, False, False, **True**, 0.4, False, out)`，
@@ -841,6 +846,20 @@ public sealed class MatchEngine
         if (card.KreditCost > State.Kredits(card.Owner))
         {
             reason = "kredit 不足";
+            return false;
+        }
+
+        if (card.Definition.IsOrder && State.HasGameplayRestriction(card.Owner,
+            GameplayRestrictionType.CannotPlayOrders))
+        {
+            reason = "当前回合禁止打出指令";
+            return false;
+        }
+
+        if (card.Definition.IsUnit && State.HasGameplayRestriction(card.Owner,
+            GameplayRestrictionType.CannotDeployUnits))
+        {
+            reason = "当前回合禁止部署单位";
             return false;
         }
 
@@ -1611,6 +1630,15 @@ public sealed class MatchEngine
             return false;
         }
 
+        if (!attacker.IsHq
+            && attacker.Definition.Type is "infantry" or "tank" or "artillery"
+            && State.HasGameplayRestriction(attacker.Owner,
+                GameplayRestrictionType.CannotAttackWithGroundUnits))
+        {
+            reason = "当前回合禁止地面单位攻击";
+            return false;
+        }
+
         // 防御者合法性：**必须还在场上**。
         //
         // 为什么单独加这一条：`Attack` 原先对防御者**一个字都不校验**，
@@ -1768,8 +1796,8 @@ public sealed class MatchEngine
         // ⚠️ 本轮**只**修了 `OnBeforeAttack` / T13 那一对（接收者 + 先后，见下面那段）。
         //    `RemoveSmokescreen` 的位置（这里放在两个触发点**之前**）与压制门仍是旧行为
         //    —— 那是一处**独立的、已核实但未修**的偏差，留给后续任务。
-        if (!attacker.Keywords.Contains(Keyword.Suppressed)
-            && attacker.Keywords.Contains(Keyword.Smokescreen))
+        if (attacker.Keywords.Contains(Keyword.Smokescreen)
+            && !attacker.Keywords.Contains(Keyword.Suppressed))
         {
             Api.RemoveKeyword(attacker, Keyword.Smokescreen);
         }
@@ -1806,8 +1834,28 @@ public sealed class MatchEngine
         //    广播分支本身就排除主体，正好对上蓝图的 `item != _attackerCard`。
         Api.FireTrigger("OnBeforeOtherCardAttacks", attacker, attacker.Owner, broadcastName: true);
 
+        bool shockAttack = attacker.Keywords.Contains(Keyword.Shock);
+        bool ambushAttack = !defender.IsHq
+            && defender.Keywords.Contains(Keyword.Ambush)
+            && !defender.HasBeenAttackedThisTurn
+            && !attacker.Keywords.Contains(Keyword.Immune);
+
         int attackerDamage = attacker.Attack;
-        int defenderDamage = defender.IsHq ? 0 : defender.Attack;   // 反击
+        int defenderDamage = defender.IsHq || shockAttack ? 0 : defender.Attack;
+
+        // Ambush strikes before the attacker. If it kills the attacker, the
+        // Blueprint CalculateDamageDealt branch suppresses the forward hit.
+        if (ambushAttack && defenderDamage > 0)
+        {
+            Api.DealDamage(attacker, defenderDamage, defender,
+                isCombatDamage: true, counterDamage: true);
+            if (!attacker.AliveOnBoard)
+            {
+                attackerDamage = 0;
+            }
+        }
+
+        defender.HasBeenAttackedThisTurn = true;
 
         // 攻击日志：原先只记「谁被摧毁」「HQ 受伤」，看不出**谁打的、打了几次**。
         // 实测就因此说不清「PANTHER A ZIMMERIT 是不是一回合攻击了两次」——
@@ -1836,9 +1884,16 @@ public sealed class MatchEngine
         //    也决定伤害修正链的 `fromAttack` / `isDefenderDamage`
         //    （`CalculateDamageDealt` si=473/734）。不传等于「攻击不算战斗伤害」。
         Api.DealDamage(defender, attackerDamage, attacker, isCombatDamage: true);
-        if (!defender.IsHq && defender.IsAlive && defenderDamage > 0)
+        if (!ambushAttack && !defender.IsHq && defender.IsAlive && defenderDamage > 0)
         {
             Api.DealDamage(attacker, defenderDamage, defender, isCombatDamage: true, counterDamage: true);
+        }
+
+        // Shock is consumed by the attack itself, regardless of whether the
+        // target was an HQ or a unit. This is the AttackCard RemoveShock step.
+        if (shockAttack && attacker.Keywords.Contains(Keyword.Shock))
+        {
+            Api.RemoveKeyword(attacker, Keyword.Shock);
         }
 
         // ---- 「战斗存活」----
@@ -2219,6 +2274,15 @@ public sealed class MatchEngine
             }
         }
 
+        // BP_CardFunctions::CalculateDamageDealt: a combat source with the
+        // `lethal` custom ability converts any positive combat hit into lethal
+        // damage. Effects and non-combat damage do not use this branch.
+        if (isCombatDamage && source is not null
+            && Api.HasCustomAbility(source, "lethal") && amount > 0)
+        {
+            amount = target.Defense;
+        }
+
         target.Defense -= amount;
         if (target.IsHq)
         {
@@ -2444,4 +2508,3 @@ public sealed class MatchEngine
     /// <summary>该动作名是否是「效果」而不是纯查询 —— 用于统计未实现的效果调用。</summary>
     public IReadOnlyDictionary<string, int> UnimplementedCalls => State.UnimplementedCalls;
 }
-

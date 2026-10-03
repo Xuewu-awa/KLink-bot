@@ -275,6 +275,8 @@ internal static class SelfTest
         // CanAttack si=3637/3793（不能被打）+ AttackCard si=3511（自己攻击后消失）
         // + CardLocationMoved si=643/735（移到前线消失）
         new("烟幕：不能被攻击 / 自己攻击后消失（被压制则不移除）/ 移到前线消失", SmokescreenRules),
+        new("战斗伤害：Shock 取消反击并在攻击后消耗，Ambush 首次被攻击先反击", AmbushAndShockCombat),
+        new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
         // ---- P1：伤害修正链（2026-09-30）----
         // `BP_CardFunctions::ExecuteOnDealDamageAddDamage`（46 条语句）——
@@ -317,6 +319,14 @@ internal static class SelfTest
         new("GetCardsInSupportLineBySide：只回本方半场、unitsOnly 过滤、不含前线",
             SupportLineQuery),
         new("IsLocationFull：半场 5 格（**含 HQ**）判满，前线另算", LocationFullCapacity),
+        new("★ BP_CardFunctions::ChangeFrontlineLimiter：Black Prince 将前线容量限制为 2，离场后恢复", ChangeFrontlineLimiter),
+        new("★ GameplayRestriction：禁抽牌/加槽/指令/部署/地面攻击/手牌弃牌，并按来源与回合解除", GameplayRestrictions),
+        new("撤回：AA Barrage 半场回手、前线退半场；M16 无目标不撤自己", RetreatEndToEnd),
+        new("508065：Fifth Ohio 无目标部署不得摧毁自身；显式目标仍执行摧毁", FifthOhioNullableTarget),
+        new("快照：累计扣槽、限制来源/时长、伏击标记与钉住时长必须可区分", SnapshotTracksRuleState),
+        new("随机追踪：超过 64 项不截断，开关不改变随机结果与消费", RandomTraceIsObservational),
+        new("蓝图基础函数：支援线位置不回退阵营；AddUnique 去重并返回原下标", BlueprintArrayAndLocationQueries),
+        new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
         new("DestroyMultipleCards：数组里卡对象 / 整数 cardID 两种元素形状都要被摧毁",
             DestroyMultipleCardsBothShapes),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
@@ -543,6 +553,274 @@ internal static class SelfTest
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
         state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
         return (engine, state);
+    }
+
+    private static string? ChangeFrontlineLimiter(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var blackPrince = db.Find("card_unit_black_prince");
+        if (blackPrince is null)
+        {
+            return "找不到 card_unit_black_prince";
+        }
+
+        var limiter = state.CreateWithId(blackPrince.Name, Side.Left, 2,
+            CardLocation.BoardHqLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = limiter,
+            Controller = Side.Left,
+            Calls = new List<string> { "ChangeFrontlineLimiter" },
+        };
+
+        if (state.IsFrontlineLimited)
+        {
+            return "前置不成立：初始前线不应受限";
+        }
+
+        engine.Api.InvokeByName("ChangeFrontlineLimiter", limiter,
+            new object?[] { limiter.CardId, false }, ctx, out bool handledAdd);
+        if (!handledAdd || !state.IsFrontlineLimited
+            || state.FrontlineCapacity != GameState.LimitedFrontlineCapacity)
+        {
+            return $"加入 FrontlineLimiter 失败：handled={handledAdd}, limited={state.IsFrontlineLimited}, "
+                 + $"capacity={state.FrontlineCapacity}";
+        }
+
+        if (!state.FrontlineLimiters.Contains(limiter.CardId))
+        {
+            return "加入 FrontlineLimiter 后集合中没有限制者 cardID";
+        }
+
+        engine.Api.InvokeByName("ChangeFrontlineLimiter", limiter,
+            new object?[] { limiter.CardId, true }, ctx, out bool handledRemove);
+        if (!handledRemove || state.IsFrontlineLimited
+            || state.FrontlineCapacity != GameState.DefaultFrontlineCapacity)
+        {
+            return $"移除 FrontlineLimiter 失败：handled={handledRemove}, limited={state.IsFrontlineLimited}, "
+                 + $"capacity={state.FrontlineCapacity}";
+        }
+
+        if (state.FrontlineLimiters.Contains(limiter.CardId))
+        {
+            return "移除 FrontlineLimiter 后集合仍保留限制者 cardID";
+        }
+
+        return null;
+    }
+
+    private static string? GameplayRestrictions(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        int source = 900;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Controller = Side.Left,
+        };
+
+        void Add(GameplayRestrictionType type, int turns = 2)
+        {
+            engine.Api.InvokeByName("AddGameplayRestriction", null,
+                new object?[] { (int)Side.Left, (int)type, source, turns }, ctx, out _);
+        }
+
+        Add(GameplayRestrictionType.CannotDrawCardAtTurnStart);
+        Add(GameplayRestrictionType.CannotKreditSlotAtTurnStart);
+        Add(GameplayRestrictionType.CannotPlayOrders);
+        Add(GameplayRestrictionType.CannotDeployUnits);
+        Add(GameplayRestrictionType.CannotAttackWithGroundUnits);
+        Add(GameplayRestrictionType.CannotDiscardAnyCardFromHand);
+
+        foreach (var type in Enum.GetValues<GameplayRestrictionType>().Where(x => x != GameplayRestrictionType.NotAvailable))
+        {
+            if (!state.HasGameplayRestriction(Side.Left, type))
+            {
+                return $"限制 {type} 未加入";
+            }
+        }
+
+        var secondSource = 901;
+        engine.Api.InvokeByName("AddGameplayRestriction", null,
+            new object?[] { (int)Side.Left, (int)GameplayRestrictionType.CannotPlayOrders, secondSource, 2 },
+            ctx, out _);
+        engine.Api.InvokeByName("RemoveGameplayRestriction", null,
+            new object?[] { (int)Side.Left, (int)GameplayRestrictionType.CannotPlayOrders, source, false },
+            ctx, out bool handled);
+        if (!handled || !state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders))
+        {
+            return "按来源移除时错误地清空了同类型的另一条限制";
+        }
+
+        engine.Api.InvokeByName("RemoveGameplayRestriction", null,
+            new object?[] { (int)Side.Left, (int)GameplayRestrictionType.CannotPlayOrders, secondSource, true },
+            ctx, out _);
+        if (state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders))
+        {
+            return "RemoveAll 没有清空同类型限制";
+        }
+
+        state.DecrementGameplayRestrictions();
+        if (!state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotDrawCardAtTurnStart))
+        {
+            return "剩余回合数 2 的限制过早解除";
+        }
+
+        state.DecrementGameplayRestrictions();
+        if (state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotDrawCardAtTurnStart))
+        {
+            return "剩余回合数到期后限制仍存在";
+        }
+
+        return null;
+    }
+
+    private static string? RetreatEndToEnd(CardDatabase db)
+    {
+        foreach (bool frontline in new[] { false, true })
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var target = state.CreateWithId("card_unit_j2m_raiden", Side.Right, 42,
+                frontline ? CardLocation.BoardFrontline : CardLocation.BoardHqRight, 1);
+            var order = state.CreateWithId("card_event_aa_barrage", Side.Left, 2, CardLocation.HandLeft, 0);
+            int before = state.HqDefense(Side.Left);
+            if (!engine.PlayCard(order, target)) return "AA Barrage 出牌失败";
+            var expected = frontline ? CardLocation.BoardHqRight : CardLocation.HandRight;
+            if (target.Location != expected) return $"撤回落点 {target.Location}，应为 {expected}";
+            if (state.HqDefense(Side.Left) != before + 2) return "AA Barrage 未给 HQ +2";
+        }
+
+        var (emptyEngine, emptyState) = DeploymentBoard(db);
+        var m16 = emptyState.CreateWithId("card_unit_m16_halftrack", Side.Left, 2, CardLocation.HandLeft, 0);
+        if (!emptyEngine.PlayCard(m16)) return "无目标 M16 出牌失败";
+        return m16.Location == CardLocation.BoardHqLeft ? null : "无目标 M16 错误撤回自身";
+    }
+
+    private static string? LostSlotEnables238thDamage(CardDatabase db)
+    {
+        var (engine, state) = DeploymentBoard(db);
+        state.SetMaxKredits(Side.Left, 4);
+        state.SetKredits(Side.Left, 2);
+        var unit = state.CreateWithId("card_unit_238th_regiment", Side.Left, 30, CardLocation.BoardFrontline, 0);
+        unit.EnteredPlayOnTurn = -1;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Left };
+        if (engine.Api.ExecuteOnDealDamageAddDamage(unit, state.Hq(Side.Right), 2, true, false, false) != 2)
+            return "4 槽时不应双倍";
+        engine.Api.InvokeByName("LoseKreditSlot", unit, new object?[] { (int)Side.Left }, ctx, out bool handled);
+        if (!handled || state.MaxKredits(Side.Left) != 3 || state.Kredits(Side.Left) != 2)
+            return "扣槽必须只改变上限 4→3，当前费用仍为 2";
+        int hp = state.HqDefense(Side.Right);
+        if (!engine.Attack(unit, state.Hq(Side.Right), out string reason)) return reason;
+        if (state.HqDefense(Side.Right) != hp - 4) return "3 槽时 238 团应造成 4 点伤害";
+        state.SetMaxKredits(Side.Left, 0);
+        engine.Api.InvokeByName("LoseKreditSlot", unit, new object?[] { (int)Side.Left }, ctx, out _);
+        if (state.MaxKredits(Side.Left) != 0) return "槽位不能降为负数";
+        var loss = engine.Api.InvokeByName("GetTotalKreditsLostThisBattle", unit,
+            new object?[] { (int)Side.Left, null }, ctx, out bool queried);
+        if (!queried || loss is not int count || count != 2)
+            return "累计损失应为 2（包含零槽再次扣槽），查询必须写出整数";
+        if (state.KreditSlotsLost(Side.Right) != 0) return "累计损失串到对方";
+        engine.Api.GainKreditSlot(Side.Left, 1);
+        if (state.KreditSlotsLost(Side.Left) != 2) return "获得槽位不应抵消历史损失";
+        var infantry = state.CreateWithId("card_unit_144th_infantry_regiment", Side.Left, 32,
+            CardLocation.BoardHqLeft, 1);
+        int beforeDestruction = state.HqDefense(Side.Right);
+        engine.Destroy(infantry);
+        return state.HqDefense(Side.Right) == beforeDestruction - 2
+            ? null : "144 步兵团摧毁效果应按累计损失造成 2 点 HQ 伤害";
+    }
+
+    private static string? FifthOhioNullableTarget(CardDatabase db)
+    {
+        foreach (bool withTarget in new[] { false, true })
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var ohio = state.CreateWithId("card_unit_fifth_ohio", Side.Left, 2, CardLocation.HandLeft, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", Side.Right, 42, CardLocation.BoardHqRight, 1);
+            if (!engine.PlayCard(ohio, withTarget ? target : null)) return "Fifth Ohio 无法部署";
+            if (!ohio.AliveOnBoard) return "空目标被替换为施法者，导致 Fifth Ohio 自毁";
+            if (withTarget && target.Location != CardLocation.Discard) return "显式目标没有被摧毁";
+            if (!withTarget && !target.AliveOnBoard) return "无目标部署不应摧毁旁观单位";
+        }
+        return null;
+    }
+
+    private static string? SnapshotTracksRuleState(CardDatabase db)
+    {
+        var (_, state) = DeploymentBoard(db);
+        var unit = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 2, CardLocation.BoardHqLeft, 1);
+        string previous = state.SnapshotJson();
+        var changes = new Action[]
+        {
+            () => state.RecordKreditSlotLoss(Side.Left),
+            () => state.RecordKreditSlotLoss(Side.Right),
+            () => state.AddGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders, 2, 3),
+            () => state.DecrementGameplayRestrictions(),
+            () => state.AddGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders, 3, 2),
+            () => state.FrontlineLimiters.Add(2),
+            () => state.FrontlineLimiters.Add(3),
+            () => unit.HasBeenAttackedThisTurn = true,
+            () => unit.PinnedTurns = 2,
+            () => unit.PinnedTurns = 1,
+        };
+        for (int i = 0; i < changes.Length; i++)
+        {
+            changes[i]();
+            string next = state.SnapshotJson();
+            if (next == previous) return $"状态变化 {i} 未进入快照";
+            previous = next;
+        }
+        var saved = state.Snapshot();
+        state.DecrementGameplayRestrictions();
+        if (saved.Restrictions[0].TurnsRemaining != 2) return "快照共享可变限制对象";
+        return null;
+    }
+
+    private static string? RandomTraceIsObservational(CardDatabase db)
+    {
+        var (plain, state) = DeploymentBoard(db);
+        var (traced, tracedState) = DeploymentBoard(db);
+        var pool = Enumerable.Range(0, 65).Select(i => state.CreateWithId(
+            "card_unit_arado_ar_196", Side.Left, 100 + i, CardLocation.DeckLeft, i)).ToList();
+        var tracePool = Enumerable.Range(0, 65).Select(i => tracedState.CreateWithId(
+            "card_unit_arado_ar_196", Side.Left, 100 + i, CardLocation.DeckLeft, i)).ToList();
+        tracedState.CollectRandomTrace = true;
+        var a = plain.Api.GetRandomCard(pool);
+        var b = traced.Api.GetRandomCard(tracePool);
+        if (a?.CardId != b?.CardId || state.Random.Seed != tracedState.Random.Seed
+            || state.Random.ConsumedCount != tracedState.Random.ConsumedCount)
+            return "日志开关改变了随机行为";
+        string line = tracedState.RandomTrace.Single();
+        if (!line.Contains("cursor=0->1") || !line.Contains("seed=")) return "随机状态信息缺失";
+        if (line.Split("card_unit_arado_ar_196").Length - 1 != 66)
+            return "完整池应有 65 项，加选中项共出现 66 次";
+        return state.RandomTrace.Count == 0 ? null : "关闭追踪时不应生成日志";
+    }
+
+    private static string? BlueprintArrayAndLocationQueries(CardDatabase db)
+    {
+        var (engine, state) = DeploymentBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Right };
+        foreach (var (side, expected) in new[] { (0, 0), (1, 5), (2, 6), (99, 0) })
+        {
+            object? result = engine.Api.InvokeByName("GetSupportLineLocationBySide", null,
+                new object?[] { side, null }, ctx, out bool handled);
+            if (!handled || result is not int value || value != expected)
+                return $"支援线查询 side={side} 应为 {expected}，实际 {result}";
+        }
+        var card = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 2, CardLocation.HandLeft, 0);
+        var ids = new List<int>();
+        object? Add(object array, object item) => engine.Api.InvokeByName("Array_AddUnique", null,
+            new object?[] { array, item }, ctx, out _);
+        if (!Equals(Add(ids, card.CardId), 0) || !Equals(Add(ids, card), 0) || ids.Count != 1)
+            return "整数数组 AddUnique 未按 ID 去重";
+        var cards = new List<CardInstance>();
+        if (!Equals(Add(cards, card), 0) || !Equals(Add(cards, card.CardId), 0) || cards.Count != 1)
+            return "卡对象数组 AddUnique 未按 ID 去重";
+        return null;
     }
 
     /// <summary>
@@ -7978,6 +8256,100 @@ internal static class SelfTest
             {
                 return $"{smoke} 移到前线后烟幕应当消失（CardLocationMoved si=643/735）";
             }
+        }
+
+        return null;
+    }
+
+    private static string? AmbushAndShockCombat(CardDatabase db)
+    {
+        const string attackerName = "card_unit_arado_ar_196";
+        const string defenderName = "card_unit_arado_ar_196";
+        if (db.Find(attackerName) is null || db.Find(defenderName) is null)
+        {
+            return "缺少战斗测试卡";
+        }
+
+        // Shock: defender does not counterattack, and Shock is consumed.
+        {
+            var (engine, state, attacker) = GuardBoard(db, attackerName, (defenderName, 1));
+            var defender = state.Board(Side.Right).First(c => c.Name == defenderName);
+            engine.Api.GiveKeyword(attacker, Keyword.Shock);
+            int attackerDefense = attacker.Defense;
+            if (!engine.Attack(attacker, defender, out string reason))
+            {
+                return $"Shock 攻击被拒：{reason}";
+            }
+
+            if (attacker.Defense != attackerDefense)
+            {
+                return $"Shock 攻击不应受到反击，防御从 {attackerDefense} 变为 {attacker.Defense}";
+            }
+
+            if (attacker.Keywords.Contains(Keyword.Shock))
+            {
+                return "Shock 攻击后应被移除";
+            }
+        }
+
+        // Ambush: first attack is answered before the attacker's damage;
+        // a lethal ambush prevents the forward hit.
+        {
+            var (engine, state, attacker) = GuardBoard(db, attackerName, (defenderName, 1));
+            var ambusher = state.Board(Side.Right).First(c => c.Name == defenderName);
+            engine.Api.GiveKeyword(ambusher, Keyword.Ambush);
+            attacker.Attack = 1;
+            ambusher.Attack = 99;
+            ambusher.Defense = Math.Max(ambusher.Defense, 10);
+            int defenderBefore = ambusher.Defense;
+            if (!engine.Attack(attacker, ambusher, out string reason))
+            {
+                return $"Ambush 攻击被拒：{reason}";
+            }
+
+            if (attacker.IsAlive)
+            {
+                return "致命 Ambush 反击后攻击者仍存活";
+            }
+
+            if (ambusher.Defense != defenderBefore)
+            {
+                return "攻击者被 Ambush 击杀后，主攻击伤害不应再落到伏击者";
+            }
+        }
+
+        return null;
+    }
+
+    private static string? LethalCombatDamage(CardDatabase db)
+    {
+        const string attackerName = "card_unit_arado_ar_196";
+        const string defenderName = "card_unit_arado_ar_196";
+        var (engine, state, attacker) = GuardBoard(db, attackerName, (defenderName, 1));
+        var defender = state.Board(Side.Right).First(c => c.Name == defenderName);
+        attacker.Attack = 1;
+        defender.Defense = defender.MaxDefense = 5;
+        attacker.CustomAbility = "lethal";
+
+        if (!engine.Attack(attacker, defender, out string reason))
+        {
+            return $"lethal 攻击被拒：{reason}";
+        }
+
+        if (defender.IsAlive)
+        {
+            return "lethal 的正值战斗伤害没有摧毁目标";
+        }
+
+        var (effectEngine, effectState) = DeploymentBoard(db);
+        var effectTarget = PutOnBoard(effectState, defenderName, Side.Right, 80, 1);
+        var effectSource = PutOnBoard(effectState, attackerName, Side.Left, 81, 1);
+        effectSource.CustomAbility = "lethal";
+        var before = effectTarget.Defense;
+        effectEngine.Api.DealDamage(effectTarget, 1, effectSource);
+        if (effectTarget.Defense != before - 1)
+        {
+            return "lethal 不应把非战斗效果伤害变成致命伤害";
         }
 
         return null;

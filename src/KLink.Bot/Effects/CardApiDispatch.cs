@@ -104,6 +104,14 @@ public sealed partial class CardApi
             ["HasCustomAbilityFromCard"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && HasCustomAbility(x, StrArgOrNull(a, 0)),
             ["DoesSideControlTheFrontline"] = (c, r, a) => DoesSideControlTheFrontline(SideArg(r, a, 0)),
+            // BP_CardFunctions::GetSupportLineLocationBySide L_0033/L_0075.
+            // Invalid sides must not fall back to the controller or right-hand side.
+            ["GetSupportLineLocationBySide"] = (c, r, a) => IntArg(a, 0) switch
+            {
+                (int)Side.Left => (int)CardLocation.BoardHqLeft,
+                (int)Side.Right => (int)CardLocation.BoardHqRight,
+                _ => (int)CardLocation.NotAvailable,
+            },
             // ⚠️⚠️ 形状修正（2026-10-02）：`IsSameSideUnit` 是 **BaseCardObject 的成员函数**，
             //     权威形状是 `Context{卡}.IsSameSideUnit(side)` —— **接收者才是被查的那张卡**，
             //     唯一的实参是 `side`（int），第 2 项是 out 槽。
@@ -377,6 +385,53 @@ public sealed partial class CardApi
             ["SetKreditCost"] = (c, r, a) => DoSetKreditCost(c, r, a),
             ["ChangeOperationCost"] = (c, r, a) => DoChangeOperationCost(c, r, a),
             ["ChangeHeavyArmor"] = (c, r, a) => DoChangeHeavyArmor(c, r, a),
+            // `BP_CardFunctions::ChangeFrontlineLimiter` 只维护
+            // `BP_GameState_Battle.FrontlineLimiters`：Add 时限制前线为 2，Remove
+            // 时恢复默认容量。`GameState` 已按蓝图建模为卡 ID 集合，而不是计数器。
+            // 权威形状为 `(limiterCardID, remove, out qqq)`；这里的第一个参数
+            // 可能是卡实例，也可能是整数 cardID。
+            ["ChangeFrontlineLimiter"] = (c, r, a) =>
+            {
+                int limiterId = IdOf(a.ElementAtOrDefault(0));
+                if (limiterId == 0)
+                {
+                    limiterId = c.Self?.CardId ?? AsCard(r)?.CardId ?? 0;
+                }
+
+                if (limiterId != 0)
+                {
+                    if (TruthyArg(a, 1))
+                    {
+                        c.State.FrontlineLimiters.Remove(limiterId);
+                    }
+                    else
+                    {
+                        c.State.FrontlineLimiters.Add(limiterId);
+                    }
+                }
+
+                return null;
+            },
+            ["AddGameplayRestriction"] = (c, r, a) =>
+            {
+                var side = SideArg(r, a, 0, c.Controller);
+                var type = (GameplayRestrictionType)IntArg(a, 1);
+                int source = IntArg(a, 2, c.Self?.CardId ?? 0);
+                int turns = IntArg(a, 3, 1);
+                c.State.AddGameplayRestriction(side, type, source, turns);
+                return null;
+            },
+            ["RemoveGameplayRestriction"] = (c, r, a) =>
+            {
+                var side = SideArg(r, a, 0, c.Controller);
+                var type = (GameplayRestrictionType)IntArg(a, 1);
+                int source = IntArg(a, 2, c.Self?.CardId ?? 0);
+                c.State.RemoveGameplayRestriction(side, type, source, TruthyArg(a, 3));
+                return false;
+            },
+            ["IsThereGameplayRestriction"] = (c, r, a) =>
+                c.State.HasGameplayRestriction(SideArg(r, a, 0, c.Controller),
+                    (GameplayRestrictionType)IntArg(a, 1)),
             ["DamageCard"] = (c, r, a) => DoDamageCard(c, r, a),
             ["DamageMultipleCards"] = (c, r, a) => DoDamageMultipleCards(c, r, a),
 
@@ -416,6 +471,26 @@ public sealed partial class CardApi
             //    读 index 0 会拿到一张卡对象 → `SideArg` 退化成 receiver 的 owner，
             //    对"给对手加槽位"这类卡会加错边。
             ["GainKreditSlot"] = (c, r, a) => { GainKreditSlot(SideArg(r, a, 1, c.Controller), 1); return null; },
+            ["LoseKreditSlot"] = (c, r, a) =>
+            {
+                // BP_CardFunctions::LoseKreditSlot(side), L_0005:
+                // ChangeKreditSlotsBySide(side, -1, 0). Only slots change;
+                // the notifier carries the same current kredits before/after.
+                Side side = SideArg(r, a, 0, c.Controller);
+                c.State.AddMaxKredits(side, -1);
+                // LoseKreditSlot L_0026 is unconditional, including at zero slots.
+                c.State.RecordKreditSlotLoss(side);
+                c.Engine.FireSubAction("ZActionChangeKredits", new[]
+                {
+                    ActionValue2.Str("side", side.ToWire()),
+                    ActionValue2.Int("newMaxKredits", c.State.MaxKredits(side)),
+                    ActionValue2.Int("newKredits", c.State.Kredits(side)),
+                });
+                FireExtraKreditSlotGain(side, -1, giver: null);
+                return null;
+            },
+            ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
+                c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
             ["CustomAbilityRemove"] = (c, r, a) => DoCustomAbilityRemove(c, r, a),
             // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`
@@ -576,6 +651,18 @@ public sealed partial class CardApi
                 return false;
             },
             ["Array_LastIndex"] = (c, r, a) => EvalList(r, a).Count - 1,
+            ["Array_AddUnique"] = (c, r, a) =>
+            {
+                var arr = EvalList(r, a);
+                if (a.Length < 2) return -1;
+                for (int i = 0; i < arr.Count; i++)
+                {
+                    if (SameArrayValue(arr[i], a[1])) return i;
+                }
+                int before = arr.Count;
+                ArrayAppendOne(c, arr, a[1]);
+                return arr.Count > before ? before : -1;
+            },
             // ⚠️ `Array_Add` / `Array_Clear` / `Array_Append` 在蓝图里是
             //    **原地修改目标数组**（目标按引用传进去，`Array_Add` 的返回值只是新元素下标）。
             //
@@ -746,6 +833,7 @@ public sealed partial class CardApi
             // 退回手牌 / 回牌库 —— 这两个是 `ResetCardInBattle`（→ OnCardReset 族）的**唯一**触发路径。
             ["MoveUnitFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
             ["MoveCardFromBoardToOwnersHand"] = (c, r, a) => DoMoveUnitFromBoardToOwnersHand(c, r, a),
+            ["MakeCardRetreat"] = (c, r, a) => DoMakeCardRetreat(c, a),
             ["ResetCardInBattle"] = (c, r, a) =>
             {
                 if (AsCard(a.FirstOrDefault()) is { } rc)
@@ -2384,6 +2472,62 @@ public sealed partial class CardApi
 
         // i=626：回手之后重置这张卡的累积状态（→ OnCardReset / OnOtherCardReset）。
         ResetCardInBattle(card);
+        return null;
+    }
+
+    /// <summary>
+    /// `MakeCardRetreat(cards, instigatorID)` — front-line units retreat to
+    /// their own support line when it has room; support-line units, or units
+    /// whose support line is full, return to their owner's hand.
+    /// </summary>
+    private object? DoMakeCardRetreat(EffectContext c, object?[] a)
+    {
+        var targets = new List<CardInstance>();
+        if (a.ElementAtOrDefault(0) is System.Collections.IList list)
+        {
+            foreach (var value in list)
+            {
+                if (AsCardOrId(c, value) is { } card)
+                {
+                    targets.Add(card);
+                }
+            }
+        }
+        else if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } one)
+        {
+            targets.Add(one);
+        }
+
+        var support = targets.Where(x => x.Location != CardLocation.BoardFrontline)
+            .OrderBy(x => x.LocationNumber).ToList();
+        var frontline = targets.Where(x => x.Location == CardLocation.BoardFrontline)
+            .OrderBy(x => x.LocationNumber).ToList();
+
+        foreach (var card in support.Concat(frontline))
+        {
+            if (HasCustomAbility(card, "cantRetreat") || !c.Engine.Api.IsLocatedOnBoard(card))
+            {
+                continue;
+            }
+
+            // ApplyMakeCardRetreat dispatches these before choosing the destination.
+            if (!card.IsSuppressed)
+            {
+                FireTrigger("OnBeforeRetreat", card, card.Owner);
+            }
+            FireTrigger("OnOtherCardRetreat", card, card.Owner);
+
+            if (card.Location == CardLocation.BoardFrontline
+                && c.State.Cards(card.Owner, card.Owner.HqOf()).Count < GameState.HalfBoardCapacity)
+            {
+                c.State.Move(card, card.Owner.HqOf());
+            }
+            else
+            {
+                DoMoveUnitFromBoardToOwnersHand(c, card, new object?[] { card });
+            }
+        }
+
         return null;
     }
 
@@ -5008,4 +5152,3 @@ public sealed partial class CardApi
         return false;
     }
 }
-

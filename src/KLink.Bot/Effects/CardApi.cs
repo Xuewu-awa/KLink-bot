@@ -1826,6 +1826,13 @@ public sealed partial class CardApi
     /// </summary>
     public void DiscardCard(CardInstance card, CardInstance? discarder = null)
     {
+        if (card.Location == card.Owner.HandOf()
+            && State.HasGameplayRestriction(card.Owner,
+                GameplayRestrictionType.CannotDiscardAnyCardFromHand))
+        {
+            return;
+        }
+
         bool suppressed = card.Keywords.Contains(Keyword.Suppressed);
         State.Move(card, CardLocation.Discard);
         _engine.FireSubAction("ZActionDiscardCard", new[]
@@ -2679,19 +2686,22 @@ public sealed partial class CardApi
         // `RandomIntegerInRangeFromStream(cardsRandomStream, 0, Length-1)`
         // （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:21682-21698`）——
         // 一次消费、闭区间。游标探针记下候选集大小与选中下标，用来和客户端对账。
+        uint seedBefore = State.Random.Seed;
+        long cursorBefore = State.Random.ConsumedCount;
         int index = State.Random.Next(pool.Count);
         CardInstance picked = pool[index];
         // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。
         //
-        // ⚠️ 截断上限从 24 提到 **64**：854099/508065 那两类元的候选池正好是 **53** 张
-        //    （美国单位全表，按名字序），截在 24 就**看不到客户端那张卡的下标**，
-        //    也就分不清"池子排列不同"和"随机下标不同"——而这正是要判的那件事。
-        const int poolDumpLimit = 64;
-        string poolDump = pool.Count <= poolDumpLimit
-            ? string.Join(",", pool.Select(x => x.Name))
-            : string.Join(",", pool.Take(poolDumpLimit).Select(x => x.Name)) + ",…";
-        State.TraceRandom($"GetRandomCard n={pool.Count} idx={index} -> {picked.Name} 池=[{poolDump}]");
+        // 仅诊断开启时构造完整候选表，避免正常自对弈路径上的字符串分配。
+        if (State.CollectRandomTrace)
+        {
+            // Full order is required to distinguish a pool mismatch from an RNG mismatch.
+            string poolDump = string.Join(",", pool.Select(x => x.Name));
+            State.TraceRandom($"GetRandomCard n={pool.Count} idx={index} -> {picked.Name} " +
+                $"cursor={cursorBefore}->{State.Random.ConsumedCount} " +
+                $"seed={seedBefore}->{State.Random.Seed} 池=[{poolDump}]");
+        }
         return picked;
     }
 
@@ -2723,5 +2733,3 @@ public sealed partial class CardApi
         return buff;
     }
 }
-
-

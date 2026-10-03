@@ -1,5 +1,8 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
+> **工作树验证状态**：新增撤回与战斗规则仍在回放验收中；`508065` 已观察到应用率回归，
+> 尚不能将新增原语视为完成。当前记录与待办见 [当前执行记录](docs/当前执行记录.md)。
+
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
@@ -775,24 +778,24 @@ dotnet run --project tools\BotSim -c Release --no-build -- selftest
 dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
 ```
 
-本次重跑（播种 `20261002`）与仓库里那份 `out/audit/smoke-all-cards.txt` **逐位相同**：
+本次重跑（播种 `20261002`）结果如下；烟雾摘要属于可变审计产物，后续以命令重跑结果为准：
 
 ```
 用例=4088  卡=1570  入口=55
 
-  OK（跑通且有状态变化）    1586
+  OK（跑通且有状态变化）    1597
   A  抛异常 / 崩溃              0
-  B  撞未实现原语             763
+  B  撞未实现原语             731
   C  撞步数上限                 0
-  D  零状态变化              1739
+  D  零状态变化              1760
 ```
 
 | 段 | 数字 |
 |---|---|
 | (A) 抛异常 | **0 张 / 0 个用例** |
-| (B) 撞未实现原语 | **362 张 / 763 个用例 / 105 个原语** |
+| (B) 撞未实现原语 | **347 张 / 731 个用例 / 101 个原语** |
 | (C) 撞步数上限 | **0 张 / 0 个用例** |
-| (D) 零状态变化 | **657 张 / 1739 个用例** |
+| (D) 零状态变化 | **664 张 / 1760 个用例** |
 | 确定性（同种子两次逐位相同） | ✅ 全部用例一致（指纹 / RNG 消费次数 / 步数 / 未实现集合） |
 | 引擎会派发的活入口点 | **64 个**，本次跑到 **55 个**；IR 里**没有任何卡注册**的活入口点 **9 个** |
 | 未实现原语影响最大的几个 | `HasCampaignUpgrade` 35 张 / `ShouldGotchaTrigger` 34 张 / `MakeCardRetreat` 26 张 / `ConvertCard` 19 张 / `FullyHealCard` 17 张 |
@@ -805,8 +808,8 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 ```
 === 派发表静态缺口（IR 会调用、派发表没有、locals 也兜不住）===
-  种类：537    真缺口调用点：2778
-  指纹：E674E0A25E96DAEA
+  种类：534    真缺口调用点：2750
+  指纹：3CC26AEAEBDBE25B
 ```
 
 与冻结基线逐位相同（`tools/BotSim/DispatchGap.cs`）。**每次修完原语都要重跑并更新那两个常量**
@@ -1043,10 +1046,16 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 
 ### 9.3 结构性缺口
 
+> **规则来源说明（2026-10-03）**：通用规则的首要证据是反编译得到的
+> `BP_CardFunctions`，而不是当前 C# 的近似行为或卡面文字。仓库已有的
+> `out/bp-cardfn.json` / `out/xr-cardfunctions.bpasm`（若在本地取回原始产物）以及
+> `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`，用于确认控制流、参数形状
+> 和触发顺序。下面的“未实现”表示内核尚未完整接入，不表示蓝图语义未知。
+
 | 缺口 | 规模 | 出处 |
 |---|---|---|
-| **未实现原语** | **105 个**（影响 362 张卡 / 763 个用例） | `out/audit/smoke-all-cards.txt` |
-| **派发表真缺口**（`locals` 也兜不住） | **538 种 / 2788 个调用点**，指纹 `33D02CF8E0EEC7D5` | `dispatch-gap` 实测 |
+| **未实现原语** | **101 个**（影响 347 张卡 / 731 个用例；本次战斗路径修复后重测） | `out/audit/smoke-all-cards.txt` |
+| **派发表真缺口**（`locals` 也兜不住） | 当前 `533` 种 / `2714` 个调用点，指纹 `B24F1E59D20FC2D8`；其中混有 UI / 战役 / 表现层调用 | `dispatch-gap` 实测 |
 | **从不派发的玩法入口** | IR 入口名共 **449** 个，剔除 UI / 动画后仍有 **53 个玩法相关入口**内核从不派发；**23 张卡**的**全部**入口都是死入口 | `out/audit/semantic-reconcile-report.md` §5(N) |
 | ↳ 三条完整的死事件链 | **Pincer**（7 张）+ **Intel**（3 张）+ **Lose Smokescreen**（3 张）= 13 张卡，按「一条链一次修」性价比最高 | 同上 |
 | **`locals`-only 卡零覆盖** | **45 张**卡的 `entrypoints` 为空、逻辑全在 `locals`；烟雾测试按 `card.Entrypoints` 枚举用例 ⇒ 这 45 张**一个用例都没有**。连同 `entrypoints` 为空的共 **98 张**零覆盖 | `out/audit/semantic-reconcile-report.md` §5(L) |
