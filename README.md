@@ -95,6 +95,18 @@
 > 22 局**逐位不变**（这同时证明 22 局里没有卡带该属性）、自测 **164/164**（判死）。
 > 另：取证确认 `DiscardRandomCardFromHand`（20 点）**在 22 局里从未执行**，
 > 且审计的 `⑥a RNG 游标失同步` 是**按 ⑤c 合成的条目**、不是独立证据。
+>
+> **2026-10-04 第十九轮：`ref/` 里有四份参考 + 触发队列语义还原**（§8.28）——
+> ★★ **`ref/` 下有 4 份 `BP_CardFunctions.g.cs`，函数数 292 vs 294 不同**：
+> 只有 `ref/kards-sim.mine-pre-push/…/_deps/` 那份有 `AddToTriggerQueue`/`ResolveTriggerQueue`，
+> 而**内核 IR 明明调了它们**（6 点）⇒ **引用蓝图行号必须写明是哪一份**
+> （内核注释引用的行号与 `ref/kards-sim` 那份一致，已交叉验证）。
+> 已还原触发队列语义（**延迟出牌**：`AddToTriggerQueue` 塞 `TriggerMultiple+1` 次 →
+> `ResolveTriggerQueue` 逐张调 `OnPlayedFromHand`），但它是**一条链**，本轮不做。
+> 另取证否决了两条：`PlayCardDirectlyFromHand`（**422 行**）、
+> `ForceEndTurn`（只是 `NotifyForceEndTurn`，内核自己结束回合会**重复结束**）。
+> 本轮补上 **`IsTopDeckNavy`（7 点，没有链）** ⇒ 判据 ⑥ **512/2377 → 511/2370**；
+> 22 局逐位不变、自测 **165/165**（判死）。
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
