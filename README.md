@@ -1580,6 +1580,47 @@ T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
 `:4537-4540 → :4636-4641`）**内核没有实现** ⇒ 那条路上的 T68 也还没有落点。
 它与 §8.18 记的 T31 配套项是**同一处**。
 
+### 8.22 ★ 2026-10-04 第十三轮：**T62 `OnOtherUnitUnpinned` + 注册 `RemovePin`** —— P4 清单收尾
+
+蓝图 `RemovePin`（`:31799-31847`，本次逐行复核）：
+```
+:31799  card.pinnedTurns = 0                 ; ★ 内核这里**早就**实现了
+:31801  IsActionProcess → 假则跳过（内核未建模，一致近似）
+:31816  NotifyUnpinUnit(Notifier, cardID)
+:31818  FetchAllCardsWithEventTrigger(62)
+:31847      item.OnOtherUnitUnpinned(card)   ; 实参 = 被解除钉住的那张卡
+```
+
+⚠️ **两个坑**：
+1. **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 里 **3 个订阅者**）；
+   枚举名 `OnOtherUnitUnPinned`（`Trigger.g.cs`，大写 P）在 IR 里 **0 个订阅者**
+   —— 按枚举名查会得 0，必须按蓝图名发。（同族的还有 T33 / T68。）
+2. **`RemovePin` 此前根本不在派发表里**，而 IR 里 **10 张卡**调它
+   （`card_event_desert_push` / `card_event_desert_push_cam1` / `card_event_rally` /
+    `card_event_recuperation` / `card_event_sunny3_jungle_fever2` / `card_event_sunny4_scorching_sun` /
+    `card_unit_14_panzergrenadier` / `card_unit_79th_infantry_regiment` / `card_unit_fw_190_ta_152` /
+    `card_event_campaign_alamein3_riding_the_storm`）
+   ⇒ 那些卡的「解除钉住」一直是**静默 no-op**（只计进未实现统计）。
+
+**改动面**：注册 `["RemovePin"]`（委托给 `RemoveKeyword(_, Keyword.Pinned)`，
+因为 `pinnedTurns = 0` 那一步内核早就在那里做了）；并在 `RemoveKeyword` 里补 T62 广播。
+实参形状（IR 全量扫描）：`args = [卡, out 槽]`、`recv` 恒 `cardFunction`。
+
+**A/B 结果**：
+- 22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）；
+- ★ **判据 ② 变好了**：`dispatch-gap` 从 **522 种 / 2462 调用点 / `FFEC7E071E9518C0`**
+  降到 **521 种 / 2452 调用点 / `ACCAA64A21EF6CDE`** ——
+  这是本轮**唯一**一条真正推动了四条判据之一的改动（按项目规则已同步更新
+  `tools/BotSim/DispatchGap.cs` 的两个冻结常量）；
+- 自测 **158 → 159 全通过**（新用例做过判死验证：关掉 T62 广播 ⇒ 立刻失败）。
+
+⚠️ **回放侧无信号**：3 张 T62 订阅卡在 22 局语料里 **0 命中** ⇒ 判据是「蓝图原文 + 自测」
+＋ 上面那条 `dispatch-gap` 的结构性改善。
+
+**⇒ P4 清单（§9.5）至此全部收尾**：T35 / T22 / T3 / T61 / T48 / T45 / T49 / T68 / T62 都已接线，
+T31（P1）也已完成。剩下的只有**明确标注"不该做"**的（T1/T40/T67 蓝图无派发点、T18/T26 订阅 0）
+与**成本被低估**的（T30 / T34 / T60+T65 那三条链）。
+
 ---
 
 
@@ -1924,7 +1965,7 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 | **4** | ~~T61 `OnOtherUnitPinned`~~ ✅ **已做（2026-10-04，§8.13）** | 2 | ★ | ✗ |
 | **5** | ~~T48 `OnOtherCardLoseSmokescreen`~~ ✅ **已做（2026-10-04，§8.13）** | 3 | ★ | ✗ |
 | 6 | ~~T45 `OnOtherCardKreditCostChanged`~~ ✅ **已做（2026-10-04，§8.20）** | 4 | ★ | ✗ |
-| 7 | T62 `OnOtherUnitUnpinned` | 3 | ★★（要先补 `RemovePin` 派发键） | ✗ |
+| 7 | ~~T62 `OnOtherUnitUnpinned`~~ ✅ **已做（2026-10-04，§8.22）** | 3 | ★★ | ✗ |
 | 8 | ~~T49 `OnOtherCardMoveFromFrontline`~~ ✅ **已做（2026-10-04，§8.20）** | 3 | ★★ | ✗ |
 | 9 | ~~T68 `OnOtherCardOperationKreditsSpent`~~ ✅ **已做（2026-10-04，§8.21）** | 3 | ★★ | ⚠️ 1/3 |
 | — | **T31 `OnOtherCardAttacks`** | 20 | ★★★ | ✅ **已做（§8.18）** |
@@ -1933,9 +1974,10 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 | — | **T1 / T40 / T67** | 25/1/2 | — | **不该做** |
 | — | **T18 / T26** | 0/0 | — | **无事可做** |
 
-> ⚠️ **已接线的 8 条（T35 / T22 / T3 / T61 / T48 / T45 / T49 / T68）+ T31 都"回放侧无信号"**
-> （订阅卡在 22 局语料里 0 命中）—— 证据链是「蓝图原文 + 自测」，**不是**回放对拍。
-> **P4 清单里只剩 T62 `OnOtherUnitUnpinned` 一条**（它要先补 `RemovePin` 派发键）。
+> ✅ **P4 清单已全部收尾**（9 条全部接线）。其中 **T62 是唯一推动了四条判据之一的**：
+> 注册 `RemovePin` 让 `dispatch-gap` 从 **522/2462/`FFEC7E071E9518C0`** 降到
+> **521/2452/`ACCAA64A21EF6CDE`**（判据 ② 未实现原语种 ↓）。
+> 其余各条**回放侧 0 命中**，证据链是「蓝图原文 + 自测」，**不是**回放对拍。
 
 **两条硬结论**：
 

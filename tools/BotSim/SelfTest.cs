@@ -552,6 +552,9 @@ internal static class SelfTest
         new("★★ T68：移动到前线要发 `OnOperationKreditsSpent`；但**正常结算的攻击不发**——" +
             "它只挂在两条提前返回的分支上（蓝图 `:4637`/`:4651`）",
             OperationKreditsSpentTrigger),
+        new("★ T62：解除钉住要发 `OnOtherUnitUnpinned`（蓝图 `RemovePin` :31818/:31847）；" +
+            "`RemovePin` 此前**不在派发表**里、IR 里 10 张卡调它全是静默 no-op",
+            RemovePinTrigger),
     };
 
     public static int Run(CardDatabase db)
@@ -12649,6 +12652,104 @@ internal static class SelfTest
                        "（蓝图 `:4649 ExecuteStoppedAttack` → `:4651 ExecuteOnOperationKreditsSpent`）"
                      + Dump(state3, ("派发记录", trace3.Count == 0 ? "（空）" : string.Join(" | ", trace3)));
             }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ T62 `OnOtherUnitUnpinned` + 注册 `RemovePin`。
+    ///
+    /// 蓝图 `RemovePin`（`:31799-31847`，本次逐行复核）：
+    /// <code>
+    /// :31799  card.pinnedTurns = 0                 ; 内核这里早就实现了
+    /// :31816  NotifyUnpinUnit(Notifier, cardID)
+    /// :31818  FetchAllCardsWithEventTrigger(62)
+    /// :31847      item.OnOtherUnitUnpinned(card)
+    /// </code>
+    /// ⚠️ **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 3 个订阅者）；枚举名
+    /// `OnOtherUnitUnPinned`（大写 P）在 IR 里 **0 个订阅者** —— 按枚举名查会得 0。
+    ///
+    /// ⚠️ 而且 `RemovePin` **此前根本不在派发表里**，而 IR 里 **10 张卡**调它
+    ///（`card_event_desert_push` / `card_event_rally` / `card_event_recuperation` …）
+    /// ⇒ 那些卡的"解除钉住"一直是**静默 no-op**。本用例把"已注册"也断言上。
+    ///
+    /// 判别力：① 去掉 `RemovePin` 注册 ⇒ 前置断言失败；
+    /// ② 去掉 `RemoveKeyword` 里那段 T62 广播 ⇒ 断言 ① 失败；
+    /// ③ 把"没被钉住也发"当成实现 ⇒ 断言 ② 失败。
+    ///
+    /// ⚠️ **回放侧无信号**：3 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
+    /// </summary>
+    private static string? RemovePinTrigger(CardDatabase db)
+    {
+        const string probe = "card_unit_14_panzergrenadier";   // 订阅 OnOtherUnitUnpinned（也订阅 T61）
+        const string plain = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { probe, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
+        var victim = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardHqRight, 1);
+        victim.Defense = 9;
+        victim.MaxDefense = 9;
+
+        if (!engine.Api.ImplementedNames.Contains("RemovePin"))
+        {
+            return "派发表里没有 `RemovePin` —— IR 里 **10 张卡**调它，" +
+                   "此前那些卡的「解除钉住」全是**静默 no-op**";
+        }
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = w, Controller = Side.Left };
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+
+        // ---- ① 先钉住、再解除 ⇒ T62 要发，且 `pinnedTurns` 清零 ----
+        engine.Api.PinUnit(victim);
+        if (!victim.Keywords.Contains(Keyword.Pinned))
+        {
+            return "前置不成立：`PinUnit` 没把 `Pinned` 挂上";
+        }
+
+        trace.Clear();
+        engine.Api.InvokeByName("RemovePin", null, new object?[] { victim, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "`RemovePin` 没有被派发表处理";
+        }
+
+        if (!Reached(trace, "OnOtherUnitUnpinned", w))
+        {
+            return $"解除钉住之后 `OnOtherUnitUnpinned` 没有派发给 {probe}" +
+                   "（蓝图 `RemovePin` :31818/:31847）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (victim.Keywords.Contains(Keyword.Pinned))
+        {
+            return "`RemovePin` 之后 `Pinned` 关键字应当已被摘掉";
+        }
+
+        if (victim.PinnedTurns != 0)
+        {
+            return $"`RemovePin` 之后 `PinnedTurns` 应当清零（蓝图 :31799），实际 {victim.PinnedTurns}";
+        }
+
+        // ---- ② 对**没被钉住**的卡调 `RemovePin` ⇒ **不该**广播 ----
+        trace.Clear();
+        engine.Api.InvokeByName("RemovePin", null, new object?[] { victim, null }, ctx, out _);
+        if (Reached(trace, "OnOtherUnitUnpinned", w))
+        {
+            return "对**没被钉住**的卡调 `RemovePin` 时**不该**广播 T62" +
+                   "（`RemoveKeyword` 开头那道 `if (!target.Keywords.Remove(keyword)) return;`）"
+                 + Dump(state, ("派发记录", Trace()));
         }
 
         return null;

@@ -500,6 +500,28 @@ public sealed partial class CardApi
                 FireExtraKreditSlotGain(side, -1, giver: null);
                 return null;
             },
+            // `RemovePin(card, out qqq)` —— **解除钉住**。
+            //
+            // ⚠️ 它原先**不在派发表里**，而 IR 里 **10 张卡**调它
+            //（`card_event_desert_push` / `card_event_rally` / `card_event_recuperation` /
+            //  `card_unit_79th_infantry_regiment` / `card_unit_fw_190_ta_152` …）
+            // ⇒ 那些卡的"解除钉住"一直是**静默 no-op**（只计进未实现统计）。
+            //
+            // 蓝图 `RemovePin`（`BP_CardFunctions.g.cs:31799-31847`）：
+            // `:31799 card.pinnedTurns = 0` → `:31816 NotifyUnpinUnit` → `:31818 Fetch(62)`
+            // → `:31847 item.OnOtherUnitUnpinned(card)`。
+            // 内核的 `CardApi.RemoveKeyword(_, Keyword.Pinned)` 已经把前两步做掉了
+            //（`pinnedTurns = 0` 早就在那里），本轮又补上了 T62 广播 ⇒ **直接委托给它**。
+            // 实参形状（IR 全量扫描）：`args = [卡, out 槽]`、`recv` 恒 `cardFunction`。
+            ["RemovePin"] = (c, r, a) =>
+            {
+                if (TargetCard(c, r, a) is { } pinned)
+                {
+                    RemoveKeyword(pinned, Keyword.Pinned);
+                }
+
+                return null;
+            },
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),

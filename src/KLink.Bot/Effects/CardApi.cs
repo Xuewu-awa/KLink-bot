@@ -2296,6 +2296,31 @@ public sealed partial class CardApi
                 });
         }
 
+        // ---- T62 `OnOtherUnitUnpinned` ----
+        // 蓝图 `RemovePin`（`BP_CardFunctions.g.cs:31799-31847`，本次逐行复核）：
+        // <code>
+        // :31799  card.pinnedTurns = 0                 ; ★ 内核这里早就实现了（上面那一段）
+        // :31801  IsActionProcess → 假则跳过（内核未建模，一致近似）
+        // :31816  NotifyUnpinUnit(Notifier, cardID)
+        // :31818  FetchAllCardsWithEventTrigger(62)
+        // :31847      item.OnOtherUnitUnpinned(card)   ; 实参 = 被解除钉住的那张卡
+        // </code>
+        // ⚠️ **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 里 3 个订阅者）；
+        //   枚举名 `OnOtherUnitUnPinned`（`Trigger.g.cs`，大写 P）在 IR 里 **0 个订阅者**
+        //   —— 按枚举名查会得 0，必须按蓝图名发。
+        // ⚠️ 3 张订阅卡（`card_event_creeping_barrage` / `card_event_forced_surrender` /
+        //   `card_unit_14_panzergrenadier`）在 22 局语料里 **0 命中** ⇒ **回放侧无信号**。
+        if (keyword == Keyword.Pinned)
+        {
+            FireTrigger("OnOtherUnitUnpinned", target, target.Owner,
+                eventArgs: new object?[] { target },
+                eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = target,
+                });
+        }
+
         _engine.FireSubAction($"ZActionRemove{keyword}", new[]
         {
             ActionValue2.Int("giverID", target.CardId),
