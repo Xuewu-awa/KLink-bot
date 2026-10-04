@@ -204,15 +204,14 @@ public sealed partial class CardApi
         //    为什么不怕"死掉的单位也被派发"：卡蓝图里每个分支**开头都自带**
         //    `IsLocatedOnBoard` / `IsValid` 守卫（实测 85_pioneer 的每条分支、
         //    committed_crew 的每条分支都是这么写的），不在场的卡会被自己挡掉。
+        //
+        // ⚠️⚠️ **快照还必须包含「手牌」**（2026-10-04 修，见 `FillTriggerSnapshot`）。
+        //    原先只有「棋盘 + 弃牌堆」⇒ **手牌里的卡从收不到任何触发** ⇒
+        //    所有「在手牌里响应事件」的分支是死代码。
         var snapshot = SnapshotBuffer(_triggerDepth);
-        snapshot.Clear();
-        for (int i = 0; i < 2; i++)
-        {
-            Side s = i == 0 ? Side.Left : Side.Right;
-            snapshot.AddRange(State.Board(s));
-            snapshot.AddRange(State.Discard(s));
-        }
+        FillTriggerSnapshot(snapshot);
 
+        bool subjectSeen = false;
         foreach (var card in snapshot)
         {
             // ⚠️ 这里是 **`!= NotAvailable`**，不是 `IsAlive`。
@@ -230,6 +229,10 @@ public sealed partial class CardApi
 
             string name = card.Name;
             bool isSubject = ReferenceEquals(card, subject);
+            if (isSubject)
+            {
+                subjectSeen = true;
+            }
 
             // 主体那一路要跑的程序名（调用方可用 selfProgramName 覆盖）
             string selfProgram = selfProgramName ?? programName;
@@ -289,11 +292,17 @@ public sealed partial class CardApi
         // 事件主体可能不在场上（例如刚被打出、或已被移走），单独补一次。
         // ⚠️ 只补「自己那一路」：`OnOtherXxx` 是广播给**别人**的，
         //    把主体也算进去会让"刚抽到手的牌"响应自己的 `OnOtherCardDrawnFromDeck`。
+        //
+        // ⚠️⚠️ **补之前必须确认主体真的不在快照里**（2026-10-04 加）。
+        //    快照现在**含手牌**（见 `FillTriggerSnapshot`），而手牌里的卡满足
+        //    `IsAlive && !Location.IsBoard()` ⇒ 旧的兜底条件对它恒成立 ⇒
+        //    **同一个程序会跑两遍**（一遍走循环里 `isSubject` 那一路，一遍走这里）。
+        //    典型受害卡：`card_unit_5th_regiment` 的 `-2 费`（跑两遍 = -4 费）。
         string subjectProgram = selfProgramName ?? programName;
         bool subjectBroadcast = selfProgramName is null
                                 && (broadcastName
                                     || programName.StartsWith("OnOther", StringComparison.Ordinal));
-        if (!subjectBroadcast
+        if (!subjectBroadcast && !subjectSeen
             && subject is not null && subject.IsAlive && !subject.IsHq && !subject.Location.IsBoard()
             && library.FindProgram(subject.Name, subjectProgram) is not null)
         {
@@ -393,7 +402,7 @@ public sealed partial class CardApi
             return results;
         }
 
-        // 快照规则与 FireTrigger 一致：棋盘 + 弃牌堆，按嵌套深度分开缓冲。
+        // 快照规则与 FireTrigger 一致（含手牌）：见 `FillTriggerSnapshot`。
         // ⚠️ 必须先快照：被派发的程序内部会创建/销毁卡（`receiver` 可能被打死）。
         List<CardInstance> snapshot;
         if (only is not null)
@@ -403,13 +412,7 @@ public sealed partial class CardApi
         else
         {
             snapshot = SnapshotBuffer(_triggerDepth);
-            snapshot.Clear();
-            for (int i = 0; i < 2; i++)
-            {
-                Side s = i == 0 ? Side.Left : Side.Right;
-                snapshot.AddRange(State.Board(s));
-                snapshot.AddRange(State.Discard(s));
-            }
+            FillTriggerSnapshot(snapshot);
         }
 
         CardInstance? eventCard = eventSubject ?? subject;
@@ -686,6 +689,58 @@ public sealed partial class CardApi
         }
 
         return _triggerBuffers[depth];
+    }
+
+    /// <summary>
+    /// 触发派发的收件人快照：**双方棋盘 + 弃牌堆 + 手牌**（按 左场/左弃/左手/右场/右弃/右手 顺序）。
+    ///
+    /// ## 为什么要包含手牌（2026-10-04 修）
+    ///
+    /// 蓝图里**大量事件程序带着「在手牌里」的分支**，判据是它们自己第一条就调
+    /// `IsLocatedInHand()`。全卡池扫描 `card-ir.json`（只算 `entrypoints` 里
+    /// `On*` 程序体，复现命令见下）：
+    /// <code>
+    /// IsLocatedInHand： 42 个触发名 / 90 个 (卡,触发) 对
+    ///   例：OnPlayedFromHand 13 / OnCardDrawnFromDeck 6 / OnOtherCardPlayedFromHand 6 /
+    ///       OnEndOfTurn 6 / OnOtherCardDestroyed 6 / OnCardSpawnedInHand 5 /
+    ///       OnOtherCardEnterPlay 5 / OnStartOfTurn 2 / OnBeforeOtherCardPlayedFromHand 2 /
+    ///       OnCounterMeasureTriggered 2 / OnAfterExtraKreditSlotGain（见下）
+    /// IsLocatedInDeck： 12 个触发名 / 22 个 (卡,触发) 对
+    /// </code>
+    /// 只扫「棋盘 + 弃牌堆」时这些分支**永远不会执行** —— 它们是死代码。
+    ///
+    /// ★ **决定性证据（真实对局 711061 的 ⑤b 首漂开）**：
+    /// `card_unit_5th_regiment`（卡面原文「When you lose a kredit slot, this unit gets
+    /// +2+1 if on the battlefield or **-2 cost if in hand**.」）的整张卡**只有一个**
+    /// 入口 `OnAfterExtraKreditSlotGain`（IR `i=178`），体内两条路：
+    /// <code>
+    /// i=178  side == sideGaining &amp;&amp; isNegativeGain   （输了槽位、且是自己这一方）
+    /// i=268  IsLocatedOnBoard() 为假 ⇒ **jump to i=10**
+    /// i=10   IsLocatedInHand() 为真 ⇒ i=110 ChangeKreditCost(self, -2)
+    /// </code>
+    /// 711061 里 左方 t3 连丢两个槽位（`#10 air_land_sea`、`#12 40th_cavalry_regiment`），
+    /// 客户端因此把手里那张 5th_regiment 从 4 费降到 **0 费**；内核一直按 **4 费** 算，
+    /// 而此刻池子只有 `kredits=1` ⇒ `#23 t5 PC` 被拒 ⇒ 那张牌留在手里 ⇒
+    /// 下游 `#28 t7 ML`、`#41 t9 AC` 接连失败、右方 HQ 少掉 6 点伤害
+    /// （④ 人类 HQ 差 10 条全部由这一条派生）。A/B 见 `out/audit/`。
+    ///
+    /// ⚠️ 顺序要紧：手牌**追加在每一项之后**（左：场→弃→手；右：场→弃→手），
+    /// 这样原有的相对先后**逐位不变**，只是往后多了一批收件人。
+    ///
+    /// ⚠️ **不含牌库**：`IsLocatedInDeck` 只有 22 个 (卡,触发) 对，且回放快照里的
+    /// 牌库顺序是宿主用非确定性洗牌造的（README §9.1 第②类），收录它会把
+    /// **随机的牌序**变成触发收件人顺序 ⇒ 引入不可复现的差异。留作待确认项。
+    /// </summary>
+    private void FillTriggerSnapshot(List<CardInstance> snapshot)
+    {
+        snapshot.Clear();
+        for (int i = 0; i < 2; i++)
+        {
+            Side s = i == 0 ? Side.Left : Side.Right;
+            snapshot.AddRange(State.Board(s));
+            snapshot.AddRange(State.Discard(s));
+            snapshot.AddRange(State.Hand(s));
+        }
     }
 
     /// <summary>
@@ -2822,18 +2877,37 @@ public sealed partial class CardApi
     /// 「刚被打出的那张牌是不是反制卡」—— 那是**普通卡**，恒假 ⇒ 53 个调用点
     /// 全部静默失效。
     ///
-    /// ## 参考实现（唯一可读的第二个口径）
+    /// ## ★★ 还必须要求「**这张反制卡已经装填（盖着）**」—— 2026-10-04 补
     ///
-    /// `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348-1355`：
+    /// 参考实现（唯一可读的第二个口径）`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1350-1356`
+    /// 把语义**逐字写在注释里**：
     /// <code>
-    /// var self = h.Card_(a[0]);            // a[0] 在它那边就是 self（g.cs 的实参表）
-    /// should = self.Covert &amp;&amp; !self.Destroyed &amp;&amp; gotcha
+    /// // 参数：(triggerCard, out shouldIt)。**只有盖着的反制卡才响应**。
+    /// var self = h.Card_(a[0]);
+    /// var should = self is not null &amp;&amp; self.Covert &amp;&amp; !self.Destroyed
+    ///              &amp;&amp; h.Obj(self).Get("gotcha").AsBool();
     /// </code>
-    /// 去掉那两个恒假项之后，剩下的可核实语义是 **「未被销毁」** ——
-    /// 内核里对应 <see cref="CardInstance.IsAlive"/>（`!= Discard &amp;&amp; != NotAvailable`）。
+    /// 而 `IsGotcha` 那边（`:1342-1347`）也写着「Gotcha 是**盖在场上没翻开**的状态，
+    /// 等价于 covert + 未 reveal」。
+    ///
+    /// ⚠️ 旧实现是 `IsGotcha(self) &amp;&amp; self.IsAlive` —— **漏了"盖着"这一项**，
+    /// 于是**手里任何一张还没打出的反制卡，只要它的 `OnOther*` 程序被派发到，
+    /// 就会立刻触发**（不管它有没有被装填成陷阱）。
+    ///
+    /// **实测后果（回放 773639）**：右方手里那张未装填的
+    /// `card_event_unexpected_resistance`（"Pin a unit that moves to the frontline"）
+    /// 在左方单位 `card_unit_2nd_west_africa` 上前线时被触发，把它钉住 ⇒
+    /// 人类 `#92 t20 AC` 被内核拒绝（`攻击者被钉住`），而客户端打得出来。
+    ///
+    /// ⇒ 内核里"盖着"就是 <see cref="CardInstance.GotchaActivated"/> `&gt; 0`：
+    /// 它由 <see cref="AssignGotchaActivatedOnPlayFromHand"/> 在**打出反制卡时**赋值
+    /// （`BP_CardFunctions.g.cs:28316`，**唯一**写入方），
+    /// 而 <see cref="GetActiveGotchasOrdered"/> 早就用 `gotchaActivated &gt; 0` 过滤
+    /// （`BP_CardFunctions.g.cs:18733`，见 `CardApi.cs` 那段注释）。
+    /// 同一份状态，在这里也必须过同一道门。
     /// </summary>
     public bool ShouldGotchaTrigger(CardInstance? self)
-        => self is not null && IsGotcha(self) && self.IsAlive;
+        => self is not null && IsGotcha(self) && self.IsAlive && self.GotchaActivated > 0;
 
     /// <summary>
     /// `GetHandLocationBySide(side, out handLocation)`

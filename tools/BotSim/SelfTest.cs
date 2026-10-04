@@ -520,6 +520,15 @@ internal static class SelfTest
             GotchaStopFurtherActions),
         new("★ Intel：`SetCardsSeenByCipher` 只翻**对手**手牌里 min(n, 未见面数) 张，并消耗一次洗牌",
             SetCardsSeenByCipherRevealsOpponentUnseen),
+
+        // ---- ★★ 2026-10-04：触发派发的收件人快照必须**含手牌** ----
+        // 蓝图里 42 个触发名 / 90 个 (卡,触发) 对的程序体带 `IsLocatedInHand` 分支
+        // （`docs/card-ir.json` 实测），只扫「棋盘 + 弃牌堆」时它们全是死代码。
+        // 决定性实例：`card_unit_5th_regiment`「When you lose a kredit slot,
+        // this unit gets +2+1 if on the battlefield or **-2 cost if in hand**」。
+        new("★★ 触发派发必须送到**手牌**：`card_unit_5th_regiment` 输槽位 ⇒ 手牌里 -2 费 / " +
+            "在场 +2+1（蓝图 `OnAfterExtraKreditSlotGain` i=178→i=10→i=110）",
+            TriggerSnapshotIncludesHand),
     };
 
     public static int Run(CardDatabase db)
@@ -11281,7 +11290,7 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// ★★ `ShouldGotchaTrigger` 判的是 **self**，不是实参。
+    /// ★★ `ShouldGotchaTrigger` 判的是 **self**，不是实参；**并且要求这张反制卡已装填**。
     ///
     /// 蓝图调用点（`Generated/Britain/Base/events/card_event_interception.g.cs:53`）：
     /// <code>
@@ -11290,10 +11299,23 @@ internal static class SelfTest
     /// IR 形状（`docs/card-ir.json`，53 个调用点**全部**）：`args = [触发卡, out]`，
     /// **没有 `recv`** ⇒ self 是隐式的（`KismetVm.Eval` 的 `{self:true}` → `ctx.Self`）。
     ///
-    /// ⇒ 本测用**两个方向**把它钉死：
+    /// 参考实现把装填那一项**逐字写在注释里**
+    /// （`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1350-1356`）：
+    /// 「**只有盖着的反制卡才响应**」；
+    /// 内核里"盖着"= <see cref="CardInstance.GotchaActivated"/> `&gt; 0`
+    /// （唯一写入方 `AssignGotchaActivatedOnPlayFromHand`，
+    /// `BP_CardFunctions.g.cs:28316`；`GetActiveGotchasOrdered` 也用同一道 `&gt; 0` 门，
+    /// `:18733`）。
+    ///
+    /// ⇒ 本测用**四个方向**把它钉死：
     /// <list type="number">
-    /// <item>self = 反制卡、a[0] = 普通卡 ⇒ **真**；</item>
-    /// <item>self = 普通卡、a[0] = 反制卡 ⇒ **假**（这就是"判 a[0]"的错法会翻车的那一面）。</item>
+    /// <item>self = **已装填**的反制卡、a[0] = 普通卡 ⇒ **真**；</item>
+    /// <item>self = 普通卡、a[0] = 反制卡 ⇒ **假**（这就是"判 a[0]"的错法会翻车的那一面）；</item>
+    /// <item>反制卡已进弃牌堆 ⇒ **假**（`!Destroyed`）；</item>
+    /// <item>★ self = **未装填**的反制卡 ⇒ **假** —— 这一条是 2026-10-04 补的：
+    ///   漏掉它时，**手里任何一张还没打成陷阱的反制卡**都会被触发
+    ///   （实测回放 773639：未装填的 `card_event_unexpected_resistance`
+    ///   把左方刚上前线的单位钉住 ⇒ 人类 `#92 t20 AC` 被误拒）。</item>
     /// </list>
     /// </summary>
     private static string? GotchaShouldTriggerJudgesSelf(CardDatabase db)
@@ -11309,6 +11331,26 @@ internal static class SelfTest
         var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
             CardLocation.BoardHqLeft, 0);
 
+        // ④ 未装填 ⇒ 不该响应（先测这一条，因为下面要把它装填起来）
+        var ctxUnarmed = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
+        object? r0 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
+            new object?[] { normal, null }, ctxUnarmed, out bool handled0);
+        if (!handled0)
+        {
+            return "派发表里没有 `ShouldGotchaTrigger` —— IR 里 53 个调用点全部静默失效";
+        }
+
+        if (Truthy(r0))
+        {
+            return "**未装填**（`gotchaActivated == 0`）的反制卡也响应了 —— "
+                 + "参考实现 `EngineHost.cs:1352` 要求「只有盖着的反制卡才响应」，"
+                 + "内核对应 `GotchaActivated > 0`（= `AssignGotchaActivatedOnPlayFromHand` 的唯一写入）；"
+                 + "漏掉这道门时，手里没打成陷阱的反制卡会被任意 `OnOther*` 事件触发";
+        }
+
+        // 装填成"盖着的陷阱"
+        gotcha.GotchaActivated = 1;
+
         // ① self = 反制卡；实参 a[0] = 普通卡（蓝图里那是"触发这件事的卡"）
         var ctx1 = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
         object? r1 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
@@ -11320,8 +11362,8 @@ internal static class SelfTest
 
         if (!Truthy(r1))
         {
-            return "self 是反制卡、a[0] 是普通卡，`ShouldGotchaTrigger` 应当为**真**，"
-                 + $"实际 {r1 ?? "null"} —— 判据没落在 self 上";
+            return "self 是**已装填**的反制卡、a[0] 是普通卡，`ShouldGotchaTrigger` 应当为**真**，"
+                 + $"实际 {r1 ?? "null"} —— 判据没落在 self 上，或装填门开过头了";
         }
 
         // ② self = 普通卡；实参 a[0] = 反制卡 ⇒ 必须为假（判 a[0] 的实现会在这里返回真）
@@ -11733,6 +11775,142 @@ internal static class SelfTest
         if (state2.Random.ConsumedCount != before2)
         {
             return "对手手牌**全部已见**时不该消耗随机流（蓝图 :34150 的 `Array_IsNotEmpty` 门）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ 触发派发的收件人快照必须**含手牌**。
+    ///
+    /// ## 判据（蓝图原文）
+    ///
+    /// `card_unit_5th_regiment`（5th REGIMENT）卡面：
+    /// 「When you lose a kredit slot, this unit gets **+2+1 if on the battlefield
+    /// or -2 cost if in hand**.」
+    ///
+    /// 它**整张卡只有一个入口** `OnAfterExtraKreditSlotGain`，IR
+    /// （`docs/card-ir.json`）逐条：
+    /// <code>
+    /// i=178  side == K2Node_Event_sideGaining
+    /// i=216  BooleanAND(它, K2Node_Event_isNegativeGain)
+    /// i=254  jumpIfNot → 427（return）
+    /// i=268  IsLocatedOnBoard() → isIt
+    /// i=287  jumpIfNot(isIt) → **10**            ← ★ 不在场 ⇒ 跳去"在手牌"那一支
+    /// i=301  ChangeAttack(self, cardID, +2, …)
+    /// i=364  ChangeDefense(self, cardID, +1, …)
+    /// i=427  return
+    /// i=10   IsLocatedInHand() → isIt
+    /// i=29   jumpIfNot(isIt) → 427
+    /// i=43   getAndDecryptKredit() → decryptedKredit     ; = 这张卡当前的费
+    /// i=96   jumpIfNot(Greater(它, 0)) → 427             ; 费已经 0 就不再减
+    /// i=110  ChangeKreditCost(self, cardID, **-2**, …)   ← ★ 手牌里 -2 费
+    /// </code>
+    ///
+    /// ⇒ 一次「输掉一个槽位」必须**同时**命中两条路：场上的那张 +2+1、手牌里的那张 -2 费。
+    ///
+    /// ## 为什么这条用例必要（判死力）
+    ///
+    /// 内核的触发快照原先只有「棋盘 + 弃牌堆」（`CardApi.FireTrigger`），
+    /// **手牌里的卡从来收不到任何触发** ⇒ `i=10` 那半张卡是**死代码**。
+    /// 实测（真人对局 711061）：左方 t3 连丢两个槽位
+    /// （`#10 card_event_air_land_sea`、`#12 card_unit_40th_cavalry_regiment`），
+    /// 客户端因此把手里那张 5th_regiment 从 4 费降到 **0 费**；内核按 **4 费** 算，
+    /// 而此刻池子只有 1 点 ⇒ `#23 t5 PC` 被拒 ⇒ 那张牌留在手里 ⇒
+    /// 下游 `#28 t7 ML`、`#41 t9 AC` 接连失败、右方 HQ 少掉 6 点伤害。
+    ///
+    /// 判别力：把快照改回「只有棋盘 + 弃牌堆」⇒ 本用例在手牌那一半必然失败。
+    /// </summary>
+    private static string? TriggerSnapshotIncludesHand(CardDatabase db)
+    {
+        const string card = "card_unit_5th_regiment";
+        if (db.Find(card) is null)
+        {
+            return $"卡库里缺 {card}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+
+        // 同一张卡的两个实例：一个在手牌（-2 费那一支）、一个在场（+2+1 那一支）。
+        // 蓝图是**同一个程序**里的两条分支，所以一次派发要同时命中两者。
+        var inHand = state.CreateWithId(card, Side.Left, 200, CardLocation.HandLeft, 0);
+        var onBoard = state.CreateWithId(card, Side.Left, 201, CardLocation.BoardHqLeft, 1);
+        onBoard.EnteredPlayOnTurn = -99;
+
+        int cost0 = inHand.KreditCost;
+        int atk0 = onBoard.Attack;
+        int def0 = onBoard.Defense;
+        if (cost0 <= 0)
+        {
+            return $"前置不成立：{card} 的费应当 > 0（蓝图 i=96 的 `Greater(费, 0)` 门要用到它），实际 {cost0}";
+        }
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = inHand, Controller = Side.Left };
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        // ---- 输一次槽位：`LoseKreditSlot` 内部会 `FireExtraKreditSlotGain(side, -1)` ----
+        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `LoseKreditSlot`（前置不成立）";
+        }
+
+        string Dispatched() => Dump(state,
+            ("未实现", Unimpl(state)),
+            ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
+
+        // ① 机制断言（最强、且与数值口径无关）：派发**真的送到了手牌里那张卡**
+        if (!Reached(trace, "OnAfterExtraKreditSlotGain", inHand))
+        {
+            return $"`OnAfterExtraKreditSlotGain` **没有派发**给手牌里的 {card}#{inHand.CardId} —— " +
+                   "`CardApi.FireTrigger` 的收件人快照只扫「棋盘 + 弃牌堆」，手牌里的卡从收不到任何触发；" +
+                   "`docs/card-ir.json` 里 42 个触发名 / 90 个 (卡,触发) 对带 `IsLocatedInHand` 分支，" +
+                   "缺手牌时它们全是死代码" + Dispatched();
+        }
+
+        // ② 效果断言：手牌里的那张费**必须下降**。
+        //
+        // ⚠️ 这里**只断言方向**，不断言"恰好 -2" —— 因为 `ChangeKreditCost` 的
+        //    `changeType=1` 口径在本内核里是**已知偏差**（`CardApiDispatch.cs` 的
+        //    `ChangeTypeSetValue` 注释 + `EChangeType.h:6-17`：1 实际是 `permBuff`
+        //    = 相对永久；内核按"设成绝对值"处理，于是 `-2` 被算成 `-2 - 卡面费`）。
+        //    本用例要守的是「触发有没有送到手牌」，不是那个偏差本身
+        //    （修它要一次动 41 个调用点，得单独立一支）。
+        //    在该偏差下 4 费会一步到 0；修好之后是 4 → 2。两种都满足 `< cost0`。
+        if (inHand.KreditCost >= cost0)
+        {
+            return $"手牌里的 {card} 在输掉一个槽位后费**没有下降**（蓝图 i=110 " +
+                   $"`ChangeKreditCost(self, cardID, -2)`）：{cost0} → {inHand.KreditCost}" + Dispatched();
+        }
+
+        // ③ 同一次派发必须**同时**命中在场那一支（蓝图 i=301 `ChangeAttack(+2)` / i=364 `ChangeDefense(+1)`）。
+        //    攻/防的 `changeType=1` 走的是"相对永久"（正确口径），所以这里可以断言精确值。
+        if (onBoard.Attack != atk0 + 2 || onBoard.Defense != def0 + 1)
+        {
+            return $"场上的 {card} 在输掉一个槽位后应当 **+2+1**（蓝图 i=301 / i=364）：" +
+                   $"{atk0}/{def0} → {onBoard.Attack}/{onBoard.Defense} —— " +
+                   "触发**没有送到棋盘**（`FillTriggerSnapshot` 里的 `State.Board(s)` 那一批）" + Dispatched();
+        }
+
+        // ---- 第二次：场上必须再 +2+1（永久 buff 会叠加）----
+        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out _);
+        if (onBoard.Attack != atk0 + 4 || onBoard.Defense != def0 + 2)
+        {
+            return $"第二次输槽位后场上应当是 {atk0 + 4}/{def0 + 2}，" +
+                   $"实际 {onBoard.Attack}/{onBoard.Defense} —— 永久攻/防 buff 应当逐次叠加" + Dispatched();
+        }
+
+        // ---- 第三次：手牌费已 0 ⇒ 蓝图 i=96 的 `Greater(getAndDecryptKredit(), 0)` 门把它挡住，
+        //      费不能再往下走（不能出现负数）----
+        int costAfterTwo = inHand.KreditCost;
+        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out _);
+        if (inHand.KreditCost < 0 || inHand.KreditCost > costAfterTwo)
+        {
+            return $"手牌里的 {card} 费应当单调不增且不为负（蓝图 i=96 的 `Greater(费, 0)` 门）：" +
+                   $"{costAfterTwo} → {inHand.KreditCost}" + Dispatched();
         }
 
         return null;
