@@ -19,10 +19,12 @@
 > **先修 P6 的手牌虚增，再注册 `GetHandLocationBySide`**。
 >
 > **2026-10-04 第五轮（未改行为）**：手牌容量 —— 见 §8.14。
-> 新增 env 门控探针 `GameState.TraceHandOverflow`，**可证伪地**证明内核手牌越界
-> （最高 **13/9**，客户端不可能超过 9）；按蓝图原文补上两道容量门后
-> **793/835 → 735/835** ⇒ 回退。**三次独立实验（§8.12.1 / §8.12 / §8.14）都指向
-> 同一个上游根因：内核手牌比客户端大 —— 它必须先修。**
+> 新增 env 门控探针 `GameState.TraceHandOverflow`（带调用栈），点名了两条越界路径
+> （`DoDrawSpecific` / `SpawnCardInHand`）；按蓝图原文补上两道容量门后
+> **793/835 → 735/835** ⇒ 回退。
+> ⚠️ **并更正了一个我自己先写错的判断**：蓝图 `DrawSpecificCardFromDeckBySide`
+> （`:12406`，全函数 33 行）**根本没有容量门** ⇒ **「手牌 > 9」本身不是 bug**，
+> 不能拿它当"内核多进了一张"的判据（§8.14 ②/④）。
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
@@ -1198,22 +1200,34 @@ MoveCardFromBoardToOwnersHand（场上 → 手牌）：
 （= 内核 `GameState.HandCapacity = 9`）。内核的抽牌路径早就实现了同一语义
 （`MatchEngine.DrawCard`：「手牌已满 ⇒ 烧牌，不进手牌」）。
 
-#### ② 内核**可证伪地**违反了这个不变量
+#### ② 内核的越界**本身不是 bug** —— 这条我一开始判错了，如实更正
 
-新增一个 **env 门控探针**（`GameState.TraceHandOverflow`，`$env:KLINK_TRACE_HANDOVER='1'`）：
-**手牌一超过 9 就报一行**。为什么这是硬判据：手牌上限是 9，
-**客户端永远不会超过它** ⇒ 内核里出现 `10/9` **必然**是某条加牌路径漏了容量门。
+新增一个 env 门控探针（`GameState.TraceHandOverflow`，`$env:KLINK_TRACE_HANDOVER='1'`）：
+手牌一超过 9 就报一行（并打印调用栈，用来点名路径）。22 局实测越界很多：
+**10/9、11/9、12/9，最高 13/9**（`773639 t9`）。
 
-22 局语料实测：**10/9、11/9、12/9，最高 13/9**（`773639 t9`）。每局的**首次**越界都是
-`via Move(from DeckLeft)` —— 即**效果驱动的"从牌库拿牌进手"**
-（PAMS 开发、`meteor`、`colossus` 那一族），不是普通抽牌：
+⚠️ **但"超过 9 就一定是 bug"这个前提是错的**。蓝图只在**特定的几道门**上查容量
+（见 ①），而下面这条路径**根本没有容量门**：
 
 ```
-854099 t11 Left HandLeft=10/9 +card_event_pams#33 via Move(from DeckLeft)
-773639 t9  Left HandLeft=13/9 +card_event_iron_from_the_north#9001 via Create
-508065 t9  Left HandLeft=11/9 +card_event_aa_barrage#7001 via Move(from DeckLeft)
-389594 t15 Left HandLeft=10/9 +card_unit_meteor#7001 via Move(from DeckLeft)
+DrawSpecificCardFromDeckBySide   BP_CardFunctions.g.cs:12406（全函数仅 33 行）
+  —— 体内**没有任何** IsLocationFull / HandLocation / MaxQty 提及
+  ⇒ 「从牌库抽一张指定的牌进手」**允许**手牌超过 9
 ```
+
+（另外 `CreateCard` 那条门自己还带一个例外：`autoplay && spawnCardInHand` 时不改送弃牌堆，
+`:10702`。蓝图里还有一个专门的助手 `DiscardOnDrawingWithFullHands`（`:12126`），
+只被**有门的**抽牌路径调用。）
+
+探针点名的两条越界路径正是"效果驱动"的那两条，且**都属于不受门约束/带例外的**：
+
+```
+at CardApi.DoDrawSpecific            (CardApiDispatch.cs:1779)   ← DrawSpecificCardFromDeckBySide
+at CardApi.SpawnCardInHand           (CardApi.cs:1873)          ← CreateCard（带 autoplay 例外）
+```
+
+⇒ **`手牌 > 9` 不能当作"内核多进了一张"的判据**。探针的价值只剩"**指出可疑路径**"，
+要判它是不是 bug，必须**逐条对照该路径在蓝图里有没有门**。
 
 #### ③ 把两道门都装上 ⇒ **大幅变差**，所以回退
 
@@ -1224,27 +1238,27 @@ MoveCardFromBoardToOwnersHand（场上 → 手牌）：
 |---|---|---|---|
 | `out/_server-replays` | **793/835 → 735/835（−58）** | 26 → **64** | **4 局新增漂开**（389594 `#71`、773639 `#46`、854099 `#58`） |
 
-（探针同时确认：装上门之后**越界归零** —— 门本身按预期工作。）
+⇒ **回退**。现在原因清楚了（结合 ②）：**一部分越界是合法的**
+（`DrawSpecificCardFromDeckBySide` 那类路径客户端也会超），
+所以"一刀切在换区漏斗上按 9 封顶"会把客户端**留着**的牌丢掉。
 
-⇒ **回退**。原因是关键：门"生效"了，但内核的手牌在门触发**之前**就已经比客户端大，
-于是一个**正确的容量门**会把客户端**留着**的牌丢掉 ⇒ 后面一连串动作失败。
+#### ④ 更正后的结论（**不要**沿用 ⑤ 的旧说法）
 
-#### ④ 结论：三次独立实验指向同一个根因（这是本轮真正的产出）
+- ❌ **不能说**"三次实验共同证明内核手牌比客户端大"。**这个推断已被 ② 推翻**：
+  越界有合法来源，所以"内核手牌更大"缺少独立证据。
+- ✅ 能确定的：**内核缺的两道容量门是蓝图真有的**（① 的原文），
+  但**不能一刀切**——必须逐条路径对照蓝图是否设门
+  （有门：`CreateCard` / `MoveCardFromBoardToOwnersHand` / `DrawTopCardFromDeck`；
+  无门：`DrawSpecificCardFromDeckBySide`）。
+- ✅ 能确定的：`854099` 在注册 `GetHandLocationBySide` 之后掉 6 条动作，
+  触发点是 `night_raid` 的 `IsLocationFull(手牌)` 门（§8.12.1）——
+  这一条**仍然成立**，只是它的**根因还没定位**（不能再用"手牌虚增"当解释）。
 
-| 实验 | 现象 | 结论 |
-|---|---|---|
-| §8.12.1 注册 `GetHandLocationBySide` | `854099` 106→100 | `night_raid` 的 `IsLocationFull(手牌)` 门在内核"满手"时**跳过复制**，而客户端没满、复制了 |
-| §8.12 「打出的反制卡留在手牌」 | 应用 −4、⑥ 变差 | 反制卡程序跑起来后撞上同一个手牌偏差 |
-| §8.14 手牌容量门 | 793→735 | 门把客户端**留着**的牌丢进弃牌堆 |
-
-⇒ **三件事都指向「内核手牌比客户端大」这一个上游偏差**，而它**必须先修**：
-在手牌虚增修好之前，**任何**正确的容量/满手门都会让指标变差
-——这正是 README §7.3「两个错抵消」的放大版（这里是**多个**错互相抵消）。
-
-**下一步（已收窄到可执行）**：审计**效果驱动的"牌库 → 手牌"路径**
-（`DrawSpecificCardFromDeckBySide` / PAMS 的 `SpawnCardInDeckBySide` + 抽回 / `meteor` 那一族）
-看哪一条**比客户端多进了一张**；判据就用本轮的探针
-（`KLINK_TRACE_HANDOVER=1` 跑 22 局，要求**越界归零且四判据不后退**）。
+**下一步（收窄后）**：
+1. 逐条给"往手牌加牌"的路径**标注蓝图有没有门**（这是纯读蓝图的工作，不需要跑对拍）；
+2. 只给**蓝图有门、内核漏了**的路径补门，然后 A/B —— 不要再在换区漏斗上一刀切；
+3. 单独查 `854099 t11` 那一刻**内核手牌为什么是 9**：用 `KLINK_TRACE_HANDOVER=1` 的
+   调用栈逐条回溯该局 t1..t11 的每一次进手/出手，与动作流对账。
 
 ---
 

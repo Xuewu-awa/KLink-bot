@@ -544,6 +544,16 @@ public sealed class GameState
             Console.Error.WriteLine(
                 $"[HANDOVER] t={Turn} {card.Owner} {location}={n}/{HandCapacity} " +
                 $"+{card.Name}#{card.CardId} via {how}");
+            // 调用栈：用来**点名**是哪一条加牌路径多进了一张。
+            // 取前面若干帧（跳过本方法自身与 Move/Create）。
+            var frames = Environment.StackTrace
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Where(f => f.Contains("KLink", StringComparison.Ordinal))
+                .Take(6);
+            foreach (string f in frames)
+            {
+                Console.Error.WriteLine($"            {f.Trim()}");
+            }
         }
     }
 
