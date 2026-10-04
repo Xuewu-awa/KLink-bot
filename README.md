@@ -51,6 +51,13 @@
 > **522 种 / 2462 调用点 / `FFEC7E071E9518C0`** 降到 **521 / 2452 / `ACCAA64A21EF6CDE`**
 > （判据 ② 未实现原语种 ↓，已按规则更新 `tools/BotSim/DispatchGap.cs` 的冻结常量）。
 > 22 局逐位不变、自测 **159/159**。
+>
+> **2026-10-04 第十四轮**：**T30 `OnOtherCardAttackSwitchTarget` 接线**（P1 家族补齐）——
+> 写它的用例时又挖出**两个形状缺口**：① `GetCardFromID` 只认整数 cardID（拿到卡对象时返回 null）；
+> ② ★★★ **IR 生成器漏掉了 390 个调用点的出参槽**（`outs: []` 而把出参槽当实参传），
+> 已在 `KismetVm.ExecuteCall` 里按命名约定推断（`SpawnCardInHandBySide` 184 /
+> `DrawCardsFromDeckBySide` 150 / `SpawnCardOnBattlefield` 44 …）。见 §8.23。
+> 22 局**逐位不变**、自测 **160/160**（含判死）。
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
