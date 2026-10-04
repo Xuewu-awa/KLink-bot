@@ -2203,6 +2203,98 @@ ConvertCard(cardIDs, instigatorID=self.cardID, convertToCardName="…", convertI
 **A/B 结果**：22 局**逐位不变**（三套语料都核过）；自测 **166 → 167 全通过**
 （判死：去掉 `location != Discard` 那道门 ⇒ 立刻失败）。
 
+### 8.31 ★★★ 2026-10-04 第二十二轮：**`ConvertCard` 落地 —— 本会话第一次真正推动四条判据**
+
+按 §8.30 的规格实现 `CardApiDispatch.DoConvertCard` + `FireCardConverted`（T34）：
+
+```
+每张卡一遍：
+  :10164-10170  定目标卡名（convertToCardName；为空则取 convertIntoCardID 那张卡的名字）
+  :10172-10178  老卡在**弃牌堆(8)** ⇒ 新卡落**手牌**
+  :10126-10147  老卡离场（在场：离场触发 + 移出；否则：**裸写** location = 8）
+  :10206        造新卡：位置 / 位置号 / 金卡标记**继承老卡**
+  :10306-10361  ★ T34 广播（**按 newCardIDs 过滤订阅者**）
+  :10422        新卡在场上 ⇒ enterPlayOnTurn = 当前回合
+```
+
+★ **T34 不能用 `FireTrigger`**：`OnOther*` 的命名约定会把"发给某一个订阅者"
+变成"发给**除他之外**的所有卡"。用 `BroadcastWithOutParams` 的 `only:` 参数 ——
+它正是"逐张订阅者直接跑它自己的程序"的语义。
+
+**A/B（`docs/fresh-replays` 前后对比，`git stash` 取的基线）**：
+
+| 回放 | 应用 | ⑤b | ⑥ | ④ |
+|---|---|---|---|---|
+| **15** | **130/160 → 135/160** | `#8 t3 CS：CS④牌库族` **不变** | **5 → 4** | 40 → 40 |
+| 其余 6 局 | 不变 | 不变 | 不变 | 不变 |
+| **合计** | **628/710 → 633/710** | **无回归** ✓ | **−1** ✓ | 不变 |
+
+主对拍集 793/835 **不变**、live 132/140 **不变**；`dispatch-gap`
+**511/2370/`D601C3B70D4BD535` → 510/2344/`BC44670AFCD9720C`**；自测 **168/168**（判死）。
+
+⚠️ **如实标注的三处近似**（都不在语料走到的那条路上）：① 牌库那一段
+（`:10259-10283`）没做；② `convertIntoCardID > 0` 的 `SalvagedCardInfo` 没做
+（语料三个调用点全传 0）；③ `InjectCardIntoLocation`/`RefreshLocationStatus`
+用内核已有的落位手段代替。
+
+### 8.32 ★★ 2026-10-04 第二十三轮：**回放持久化（宿主侧）+ 场上容量门：实现、A/B、回退**
+
+#### 一、★★ 宿主侧：回放文件归档（已部署）
+
+**问题**：`MatchHistoryService` 的 `SaveSnapshotAsync`/`AppendActionsAsync` 开头都是
+`if (settings == null) return;` —— 本机 `setting.json` **没有数据库配置** ⇒ **什么都不写**；
+即使配了，`ServerBotService.cs:291` 也记着"**服务端一停就读不到了**"。
+⇒ 一局打完忘了手工导出，回放就没了（2026-10-04 的 `748616` 差点丢掉，是靠 `/replays` API 抢救出来的）。
+
+**做法**（`tem/fyserver`，提交 `697a3f7`）：加一层**与数据库无关**的文件归档，
+写三个与 HTTP API **逐字节同形**的文件 ⇒ 可直接喂 `tools/ServerBridgeTest --audit-replay`：
+
+| 文件 | 形状 |
+|---|---|
+| `replay-<id>.json` | `GET /replays/{id}` → `{summary, starting_info}` |
+| `replay-<id>.actions.json` | `GET /replays/{id}/actions` → `{match_id, next_action_id, has_more, actions}` |
+| `replays-index.json` | `GET /replays` → `{matches:[…]}` |
+
+触发点：开局快照 / 每次追加动作 / 结束（完成或中止），都在那道 `return` **之前**；
+目录 `KLINK_REPLAY_DIR` 优先、否则 `./data/replays`（实测 `rel/data/fyserver/data/replays/`）；
+失败写 stderr（不静默）、**绝不影响对局**。
+⚠️ `GET /replays` 仍读 FASTER/DB ⇒ 重启后 API 列表还是空的（归档文件在，API 看不到）。
+
+#### 二、★★ 场上容量门：**实现 → A/B 回归 → 回退**（归因不完整）
+
+**机制**（由用户指出的游戏通用机制 + 蓝图原文确认）：**放置前先查目标位置满没满**。
+蓝图 `CreateCard`：
+```
+:10510  IsLocationFull(_location) → wasFullBeforeCreating
+:10702  BooleanAND(Not(autoplay && spawnCardInHand), wasFullBeforeCreating)
+:10706      createdCard.location = 8      ; 建卡前该位置就满 ⇒ 卡停到**弃牌堆**（= 没加进去）
+```
+内核**只实现了手牌那条**（`SpawnCardInHand`，§8.16 那一族），**场上那条一直缺**。
+
+**现象**（`replay-748616`）：`card_unit_38th_independent`
+（"Cannot attack or move. Suppress it if you have 4+ copies.
+**Duplicate this unit when you lose a kredit slot.**"）靠 `SpawnCardOnBattlefield` 复制自己，
+越过 5 格上限刷出 **~30 个副本**（审计③：`BoardHqLeft#2,4,5,…,23`）⇒ 半场被自己塞满
+⇒ 人类 `#39 t7` 那张牌被判"半场已满"⇒ bot 判定漂开、**拒绝下棋**。
+
+**实验**：在 `SpawnOnBattlefield` 里加同样的门（满了 ⇒ 落弃牌堆）。
+
+| | 主对拍集 | 人类失败 | ④ | ⑤b |
+|---|---|---|---|---|
+| 基线 | 793/835 | 26 | 95 | — |
+| **加门（全位置）** | **791/835** | **29** | **99** | 不变 |
+| **加门（只半场）** | **791/835** | **29** | **99** | 不变 |
+
+⇒ **应用率下降 2 条**（新失败是 508065 `#104/#114`、854099 的几条，**全在各自 ⑤b 之后**）。
+按项目纪律（应用率不得下降）**回退**。
+
+★ **但回退前发现更重要的事实**：这道门**修掉了刷兵**（左半场 `38th_independent`
+**30 → 2**、左侧场上 **35 → 8**），**却没能修好那一局的 ⑤b**
+（`#39 t7 半场已满` **原样还在**，应用仍 61/63）
+⇒ **`#39` 的漂开不止"刷兵"这一个成因**，内核左半场在 t7 仍有**别的多余单位**。
+⇒ 归因**不完整**，如实记在这里；下一步需要**逐动作的场面导出**（审计工具目前没有，
+`--audit-replay` 只给终局 ③）。
+
 ---
 
 
