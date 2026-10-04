@@ -549,6 +549,9 @@ internal static class SelfTest
         new("★ T49：`OnMoveFromFrontline` 只在前线 → 半场 时发；自程序带压制门、" +
             "广播无条件（只被 `stopFurtherActions` 挡）",
             MoveFromFrontlineTrigger),
+        new("★★ T68：移动到前线要发 `OnOperationKreditsSpent`；但**正常结算的攻击不发**——" +
+            "它只挂在两条提前返回的分支上（蓝图 `:4637`/`:4651`）",
+            OperationKreditsSpentTrigger),
     };
 
     public static int Run(CardDatabase db)
@@ -12515,6 +12518,137 @@ internal static class SelfTest
         {
             return "`stopFurtherActions` 为真时**不该**发 T49 广播（蓝图 :15673-:15677）"
                  + Dump(state, ("派发记录", Trace()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ T68 `OnOperationKreditsSpent`（自程序）+ `OnOtherCardOperationKreditsSpent`（广播）。
+    ///
+    /// 蓝图 `ExecuteOnOperationKreditsSpent`（`:16743-16787`，本次逐行复核）：
+    /// `:16743 OnOperationKreditsSpent(cardOperated, kreditsSpent)`（自己，**先**）→
+    /// `:16745 Fetch(68)` → `:16772 NotEqual_ObjectObject(item, cardOperated)`（排除自己）→
+    /// `:16787 item.OnOtherCardOperationKreditsSpent(…)`。
+    ///
+    /// ★★ **它在攻击链上只在两条"提前返回"的分支发**（这是本用例最重要的一条）：
+    /// 蓝图 `AttackCard` 全文只有两个调用点 —— `:4637`（攻击者扣费后已不在场）
+    /// 与 `:4651`（`tmpAttackedAndStopped`），而**正常伤害路径从 `:4656 L_0EDF` 起、
+    /// 没有这个调用**。⇒ 挂到"正常扣油费之后"会是**多发**。
+    /// 另有一个调用点是 `MoveCardToFrontline :26998`（移动到前线付油费）。
+    ///
+    /// 判别力：① 去掉移动那一句 ⇒ 断言 ① 失败；
+    /// ② 把它挂到正常攻击路径 ⇒ 断言 ② 失败（正常攻击不该发）；
+    /// ③ 去掉中止分支那一句 ⇒ 断言 ③ 失败。
+    ///
+    /// ⚠️ **回放侧基本无信号**：3 张订阅卡里只有 `card_unit_2nd_michigan` 出现在语料文件里，
+    /// 且它是否真被花过油费**未核实** ⇒ 判据以「蓝图原文 + 本用例」为主。
+    /// </summary>
+    private static string? OperationKreditsSpentTrigger(CardDatabase db)
+    {
+        const string probe = "card_unit_2nd_michigan";          // 订阅两个名字
+        const string beau = "card_unit_beaufighter_tf_mk_x";    // T31 探针（攻击者会被它打死）
+        const string plain = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { probe, beau, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 30);
+        state.SetMaxKredits(Side.Left, 30);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
+        // ⚠️ **行动方也必须用订阅卡** —— `OnOperationKreditsSpent`（自程序）只发给
+        //   **订阅了它**的那张卡（`FireTrigger` 的"自己那一路"是 `FindProgram(卡名, 程序名)`）。
+        //   用一张不订阅的卡当行动方，自程序那一路就永远不会发（第一版用例就栽在这里）。
+        var mover = state.CreateWithId(probe, Side.Left, 301, CardLocation.BoardHqLeft, 0);
+        mover.EnteredPlayOnTurn = -1;
+
+        bool SelfFired(CardInstance c) => Reached(trace, "OnOperationKreditsSpent", c);
+        bool CastFired() => Reached(trace, "OnOtherCardOperationKreditsSpent", w);
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+
+        // ---- ① 移动到前线（付油费）⇒ 自程序 + 广播都要发 ----
+        trace.Clear();
+        if (!engine.MoveUnit(mover, 0, out string why1))
+        {
+            return $"前置不成立：移动到前线失败（{why1}）" + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        if (!SelfFired(mover))
+        {
+            return "移动到前线之后 `OnOperationKreditsSpent` 没有派发给**移动的那张卡**" +
+                   "（蓝图 `MoveCardToFrontline` :26998 → :16743）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (!CastFired())
+        {
+            return $"移动到前线之后 `OnOtherCardOperationKreditsSpent` 没有派发给 {probe}" +
+                   "（蓝图 :16745/:16787）" + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ② **正常攻击**（伤害正常结算）⇒ T68 **不该**发 ----
+        var atk = state.CreateWithId(probe, Side.Left, 302, CardLocation.BoardFrontline, 1);
+        var def = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
+        atk.EnteredPlayOnTurn = -1;
+        def.EnteredPlayOnTurn = -1;
+        def.Attack = 0;      // 不反击 ⇒ 攻击者活下来、走**正常伤害**路径
+        def.Defense = 30;
+        trace.Clear();
+        if (!engine.Attack(atk, def, out string why2))
+        {
+            return $"前置不成立：正常攻击打不出去（{why2}）" + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        if (SelfFired(atk) || CastFired())
+        {
+            return "**正常结算**的攻击**不该**发 T68 —— 蓝图 `AttackCard` 全文只有 `:4637`/`:4651` " +
+                   "两个调用点（都在提前返回的分支），正常路径从 `:4656 L_0EDF` 起、没有这个调用"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ③ 攻击被 `AttackedAndStopped` 中止 ⇒ T68 **要**发（蓝图 `:4651`）----
+        // ⚠️ 用**新棋盘**：上一段的 `def` 是 `card_unit_infantry_regiment_25`（带 Guard），
+        //    它留在前线会挡住对 `beau` 的攻击（"目标受守护保护"）。
+        {
+            var (engine3, state3) = EmptyBoard(db);
+            state3.ActiveSide = Side.Left;
+            state3.SetKredits(Side.Left, 30);
+            state3.SetMaxKredits(Side.Left, 30);
+            var trace3 = new List<string>();
+            engine3.Api.TriggerTrace = trace3;
+
+            state3.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
+            var atk3 = state3.CreateWithId(probe, Side.Left, 303, CardLocation.BoardFrontline, 0);
+            var beau3 = state3.CreateWithId(beau, Side.Right, 61, CardLocation.BoardFrontline, 0);
+            atk3.EnteredPlayOnTurn = -1;
+            beau3.EnteredPlayOnTurn = -1;
+            atk3.Attack = 2;
+            atk3.Defense = 1;
+            atk3.MaxDefense = 1;
+            beau3.Defense = 9;
+            beau3.MaxDefense = 9;
+
+            if (!engine3.Attack(atk3, beau3, out string why3))
+            {
+                return $"前置不成立：被反制的攻击打不出去（{why3}）"
+                     + Dump(state3, ("未实现", Unimpl(state3)));
+            }
+
+            if (!Reached(trace3, "OnOperationKreditsSpent", atk3))
+            {
+                return "攻击被 `AttackedAndStopped` 中止时**应当**发 T68" +
+                       "（蓝图 `:4649 ExecuteStoppedAttack` → `:4651 ExecuteOnOperationKreditsSpent`）"
+                     + Dump(state3, ("派发记录", trace3.Count == 0 ? "（空）" : string.Join(" | ", trace3)));
+            }
         }
 
         return null;

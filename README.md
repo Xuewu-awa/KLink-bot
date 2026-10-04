@@ -39,6 +39,12 @@
 > T22 `OnDeckShuffled`（5 卡）接线**（§8.19）—— 顺带补上 `ShuffleDeckBySide` 旧实现
 > **整个丢掉的** `skipSubAction` / `instigatorID` 两个实参，以及 `:34661` 的空牌库早退。
 > 22 局逐位不变、自测 **155/155**（判死验证过）。
+>
+> **2026-10-04 第十一/十二轮（回放侧无信号）**：**T45（4 卡）+ T49（3 卡）+ T68（3 卡）**
+> （§8.20 / §8.21）。其中 **T68 有一个"挂错地方就是多发"的发现**：蓝图 `AttackCard` 全文
+> 只有 `:4637`/`:4651` 两个调用点、**都在提前返回的分支上**，正常结算路径**没有**这个调用
+> ⇒ 攻击链上 T68 只在"攻击被中止"时发。22 局逐位不变、自测 **158/158**（含双向判死）。
+> **P4 清单至此只剩 T62 一条。**
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
@@ -1533,6 +1539,47 @@ T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
 补上"**手牌 → 半场**"（= 部署到半场）这个反例之后才真正判死成功。
 ⇒ **反例必须只违反被测的那一个条件**，否则用例是空的。
 
+### 8.21 ★★ 2026-10-04 第十二轮：**T68 `OnOperationKreditsSpent`（3 卡）—— 一个"挂错地方就是多发"的实例**
+
+蓝图 `ExecuteOnOperationKreditsSpent`（`:16743-16787`，本次逐行复核）：
+```
+:16743  OnOperationKreditsSpent(cardOperated, kreditsSpent)      ; ★ 自己那一路，**先**
+:16745  FetchAllCardsWithEventTrigger(68)
+:16772      NotEqual_ObjectObject(item, cardOperated) ⇒ 跳过     ; 排除被操作的卡自己
+:16787      item.OnOtherCardOperationKreditsSpent(cardOperated, kreditsSpent)
+```
+⚠️ **事件名是复数 `…KreditsSpent`**；枚举名 `OnOtherCardOperationKreditSpent`（`Trigger.g.cs`）
+是**拼错的单数**，IR 里 **0 个订阅者** ⇒ 必须按蓝图名发。
+
+★★ **全文件只有 3 个调用点**（`grep ExecuteOnOperationKreditsSpent`）：
+`AttackCard:4637`、`AttackCard:4651`、`MoveCardToFrontline:26998`。
+而 `:4637`/`:4651` **都在"提前返回"的分支上**：
+
+```
+:4636  L_0E38:  ExecuteOnOperationKreditsSpent(_attackerCard, costToPay)   ; 分支 A（攻击者已离场）
+:4639      success = True → return
+:4642  L_0E68:  if (!tmpAttackedAndStopped) goto L_0EDF
+:4649      ExecuteStoppedAttack(_attackerCard)
+:4651      ExecuteOnOperationKreditsSpent(_attackerCard, costToPay)        ; 分支 B（攻击被中止）
+:4653      success = True → return
+:4656  L_0EDF:  CalculateDamageDealt(…)                                    ; ★ 正常结算路径，**没有**这个调用
+```
+
+⇒ **在攻击链上 T68 只在"攻击被中止"时发，正常结算的攻击不发。**
+把它挂到"正常扣油费之后"会是**多发**（每打一次都发）——
+这正是 `MatchEngine.Attack` 里那句注释所强调的，也是本轮的**主要发现**。
+
+**改动面**：新增 `CardApi.FireOperationKreditsSpent(card, kreditsSpent)`（自程序 + 广播两个名字），
+挂在 **两处**：`MoveUnit` 的油费支付之后（蓝图 `:26998`）、`Attack` 的 `AttackedAndStopped` 分支里
+（蓝图 `:4651`）。**没有**挂在正常攻击路径上。
+
+**A/B 结果**：22 局**逐位不变**、`dispatch-gap` 逐位不变、自测 **157 → 158 全通过**。
+新用例做了**双向判死**：① 去掉移动那一句 ⇒ 断言① 失败；
+② 把调用挂到**正常攻击路径** ⇒ 断言② 失败（这一条正是本轮发现的守护）。
+⚠️ **未做（如实标注）**：蓝图的分支 A（攻击者在扣费与结算之间离场 ⇒ 整段伤害跳过，
+`:4537-4540 → :4636-4641`）**内核没有实现** ⇒ 那条路上的 T68 也还没有落点。
+它与 §8.18 记的 T31 配套项是**同一处**。
+
 ---
 
 
@@ -1876,19 +1923,19 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 | **3** | ~~T3 `OnAfterDeckChanged`~~ ✅ **已做（2026-10-04，§8.19）** | 3 | ★★ | ✗ |
 | **4** | ~~T61 `OnOtherUnitPinned`~~ ✅ **已做（2026-10-04，§8.13）** | 2 | ★ | ✗ |
 | **5** | ~~T48 `OnOtherCardLoseSmokescreen`~~ ✅ **已做（2026-10-04，§8.13）** | 3 | ★ | ✗ |
-| 6 | T45 `OnOtherCardKreditCostChanged` | 4 | ★（**两个门**：只有"改自己的费"才发；广播排除被改的那张卡） | ✗ |
+| 6 | ~~T45 `OnOtherCardKreditCostChanged`~~ ✅ **已做（2026-10-04，§8.20）** | 4 | ★ | ✗ |
 | 7 | T62 `OnOtherUnitUnpinned` | 3 | ★★（要先补 `RemovePin` 派发键） | ✗ |
-| 8 | T49 `OnOtherCardMoveFromFrontline` | 3 | ★★ | ✗ |
-| 9 | T68 `OnOtherCardOperationKreditsSpent` | 3 | ★★ | ⚠️ 1/3 |
+| 8 | ~~T49 `OnOtherCardMoveFromFrontline`~~ ✅ **已做（2026-10-04，§8.20）** | 3 | ★★ | ✗ |
+| 9 | ~~T68 `OnOtherCardOperationKreditsSpent`~~ ✅ **已做（2026-10-04，§8.21）** | 3 | ★★ | ⚠️ 1/3 |
 | — | **T31 `OnOtherCardAttacks`** | 20 | ★★★ | ✅ **已做（§8.18）** |
 | — | **T60 / T65（Covert）** | 15+1 | ★★★ | ✗ |
 | — | **T34 `OnOtherCardConverted`** | 3 | ★★★ | ✗ |
 | — | **T1 / T40 / T67** | 25/1/2 | — | **不该做** |
 | — | **T18 / T26** | 0/0 | — | **无事可做** |
 
-> ⚠️ **已接线的 5 条（T35 / T22 / T3 / T61 / T48）+ T31 都"回放侧无信号"**
+> ⚠️ **已接线的 8 条（T35 / T22 / T3 / T61 / T48 / T45 / T49 / T68）+ T31 都"回放侧无信号"**
 > （订阅卡在 22 局语料里 0 命中）—— 证据链是「蓝图原文 + 自测」，**不是**回放对拍。
-> 剩下的 T45 / T62 / T49 / T68 同样是 0 命中，**验收只能靠自测**。
+> **P4 清单里只剩 T62 `OnOtherUnitUnpinned` 一条**（它要先补 `RemovePin` 派发键）。
 
 **两条硬结论**：
 

@@ -1465,6 +1465,9 @@ public sealed class MatchEngine
         }
 
         State.AddKredits(unit.Owner, -unit.OperationCost);
+        // T68：蓝图 `MoveCardToFrontline` `:26998` 在付完油费之后调
+        // `ExecuteOnOperationKreditsSpent`。
+        Api.FireOperationKreditsSpent(unit, unit.OperationCost);
         unit.HasMovedThisTurn = true;
 
         RecordAction("XActionMoveCardToLine", unit.Owner, new Dictionary<string, object?>
@@ -1948,6 +1951,14 @@ public sealed class MatchEngine
             //    ⇒ 先按 `eventArgs[0] = attacker` 发，跑通后按卡体实际读的变量名校正。
             Api.FireTrigger("OnAttackStopped", attacker, attacker.Owner,
                 eventArgs: new object?[] { attacker });
+
+            // ---- T68 `OnOperationKreditsSpent`（蓝图 `:4651`）----
+            // ⚠️⚠️ **在攻击链上 T68 只在两条"提前返回"的分支发**，正常伤害路径**不发** ——
+            //   蓝图 `AttackCard` 全文只有两个调用点（`:4637` / `:4651`），
+            //   而正常结算从 `:4656 L_0EDF` 起、**没有**这个调用。
+            //   `:4651` 正是本条分支（`tmpAttackedAndStopped`），所以只能挂在这里。
+            //   ⇒ 把它挂到"正常扣油费之后"会是**多发**（每打一次都发）。
+            Api.FireOperationKreditsSpent(attacker, attacker.OperationCost);
             CheckDeaths();
             return true;
         }

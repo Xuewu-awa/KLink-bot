@@ -2009,6 +2009,49 @@ public sealed partial class CardApi
                 ["deckSide"] = (int)deckSide,
             });
 
+    /// <summary>
+    /// T68 `OnOperationKreditsSpent`（自程序）+ `OnOtherCardOperationKreditsSpent`（广播）
+    /// —— 「这张卡花掉了行动费（油费）」。
+    ///
+    /// ## 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ExecuteOnOperationKreditsSpent`）
+    /// <code>
+    /// :16743  OnOperationKreditsSpent(cardOperated, kreditsSpent)      ; ★ 自己那一路，**先**
+    /// :16745  FetchAllCardsWithEventTrigger(68)
+    /// :16772      NotEqual_ObjectObject(item, cardOperated) ⇒ 跳过     ; 排除被操作的卡自己
+    /// :16787      item.OnOtherCardOperationKreditsSpent(cardOperated, kreditsSpent)
+    /// </code>
+    /// 实参名逐字取 `_index.g.cs:1978` = `{ "cardOperated", "kreditsSpent" }`。
+    ///
+    /// ⚠️ **事件名是复数 `…KreditsSpent`**，而枚举名 `OnOtherCardOperationKreditSpent`
+    ///    （`Trigger.g.cs`）是**拼错的单数**、IR 里 **0 个订阅者** —— 必须按蓝图名发。
+    ///
+    /// 调用方（蓝图）：`AttackCard` `:4637` / `:4651`（攻击付油费）、
+    /// `MoveCardToFrontline` `:26998`（移动到前线付油费）。
+    /// 内核对应 `MatchEngine` 里**两处** `State.AddKredits(…, -OperationCost)`（移动 / 攻击）。
+    ///
+    /// ⚠️ **回放侧基本无信号**：3 张订阅卡里只有 `card_unit_2nd_michigan` 出现在语料文件里
+    ///   （另两张 0 命中），且它是否真的被花过油费**未核实** ⇒ 判据以「蓝图原文 + 自测」为主。
+    /// </summary>
+    public void FireOperationKreditsSpent(CardInstance card, int kreditsSpent)
+    {
+        var args = new object?[] { card, kreditsSpent };
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardOperated"] = card,
+            ["kreditsSpent"] = kreditsSpent,
+        };
+
+        // 自己那一路（蓝图 `:16743`，**先**）。⚠️ 这个名字**不以 `OnOther` 开头**，
+        // `FireTrigger` 的命名判据会把它当"只发给主体" —— 正好对上蓝图的自程序。
+        FireTrigger("OnOperationKreditsSpent", card, card.Owner,
+            eventArgs: args, namedArgs: named);
+
+        // 广播（蓝图 `:16745-:16787`）。"排除被操作的卡自己"由 `OnOther*` 广播分支
+        // 排除主体**天然满足**（subject 就是 `card`）。
+        FireTrigger("OnOtherCardOperationKreditsSpent", card, card.Owner,
+            eventArgs: args, namedArgs: named);
+    }
+
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
         // ★★ 手牌容量门（2026-10-04）—— 蓝图 `CreateCard` 的原文：
