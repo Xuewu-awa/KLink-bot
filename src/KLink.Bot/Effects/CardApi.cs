@@ -1981,6 +1981,34 @@ public sealed partial class CardApi
                 ["method"] = method,
             });
 
+    /// <summary>
+    /// T3 `OnAfterDeckChanged(deckSide)` —— 「牌库变了」。
+    ///
+    /// ## 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs`）
+    /// <code>
+    /// :14456  IsActionProcess → 假则整段跳过
+    /// :14467  FetchAllCardsWithEventTrigger(3)
+    /// :14494      item.OnAfterDeckChanged(deckSide)     ; 实参只有一个 deckSide，循环内无排除
+    /// </code>
+    /// 8 个调用方（蓝图）：`AdjustCardPositionInDeck` / `ConvertCard` / `DiscardCardFromDeck` /
+    /// `DrawTopCardFromDeck` / `MoveCardToTopOfDeck` / `ShuffleDeckBySide` /
+    /// `SpawnCardInDeckBySide` / `DrawSpecificCardFromDeckBySide`。
+    /// 内核里可达的是其中 6 个（`AdjustCardPositionInDeck` / `ConvertCard` 未实现）——
+    /// 这 6 处都已接上。
+    ///
+    /// ⚠️ **近似**：蓝图那道 `IsActionProcess` 门内核**没有建模**（全内核一致地当作
+    /// "是动作流程"处理，见 `CardApi.cs` 里几处同名注释）⇒ 这里也不加。
+    /// ⚠️ 3 张订阅卡（`card_unit_lovat_scouts` / `card_event_betasom` / `card_event_rm_roma`）
+    /// 在 22 局语料里 **0 命中** ⇒ **回放侧无信号**，判据是蓝图 + 自测。
+    /// </summary>
+    public void FireDeckChanged(Side deckSide)
+        => FireTrigger("OnAfterDeckChanged", subject: null, deckSide,
+            eventArgs: new object?[] { (int)deckSide },
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["deckSide"] = (int)deckSide,
+            });
+
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
         // ★★ 手牌容量门（2026-10-04）—— 蓝图 `CreateCard` 的原文：

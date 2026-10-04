@@ -1443,6 +1443,46 @@ t=11 DeckLeft->HandLeft  card_unit_2nd_west_africa#39 via ReplayRunner.Run
 另：T31 的收件人快照**不含牌库**（`FillTriggerSnapshot` 有意排除，理由见该方法的注释）
 —— 蓝图 `AllCardsInBattle` 是否含牌库**未核实**，如实标注。
 
+### 8.19 ★ 2026-10-04 第十轮：**T3 `OnAfterDeckChanged`（3 卡）+ T22 `OnDeckShuffled`（5 卡）接线**
+
+**蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ShuffleDeckBySide`）**：
+
+```
+:34655  GetDeckBySide(sideToShuffle) → localDeckCardIDs
+:34659  Array_IsEmpty(...)
+:34661  if (!IsEmpty) → :34672                ; ★ 空牌库**直接返回**（两个事件都不发）
+:34672  Array_ShuffleFromStream(…, cardsRandomStream)
+:34674  SetDeckBySide(…)
+:34676  ExecuteOnAfterDeckChanged(sideToShuffle)   ; ★ T3（在 T22 **之前**）
+:34680  if (!skipSubAction) goto L_02D9             ; ★ skipSubAction 假 ⇒ 跳过 T22
+:34691  FetchAllCardsWithEventTrigger(22)           ; ★ T22
+:34721      item.OnDeckShuffled(deckSide, instigatorCard)
+:34737  L_02D9: …                                   ; ★ T22 循环**之后** ⇒ 门的方向确认
+```
+
+T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
+`IsActionProcess` 门 → `Fetch(3)` → `item.OnAfterDeckChanged(deckSide)`。
+
+**改动面**：
+
+| 触发点 | 落点 |
+|---|---|
+| **T22**（5 卡） | `ShuffleDeckBySide` 的派发 lambda —— **同时**补上旧实现整个丢掉的 `a[1] = skipSubAction` 与 `a[2] = instigatorID`，并按 `:34680` **只在 `skipSubAction` 为真时**发 |
+| **T3**（3 卡） | 新增 `CardApi.FireDeckChanged(side)`，接在蓝图列出的 **6 个内核可达调用方**上：`ShuffleDeckBySide` / `DrawTopCardFromDeck`（`MatchEngine.DrawCard` 的**两条分支**）/ `DiscardCardFromDeck` / `MoveCardToTopOfDeck` / `SpawnCardInDeckBySide` / `DrawSpecificCardFromDeckBySide`（另两个 `AdjustCardPositionInDeck` / `ConvertCard` 内核未实现） |
+| 顺带 | `ShuffleDeckBySide` 补上 `:34661` 的**空牌库早退**（只影响"发不发事件"；空牌库本来也不消耗随机数） |
+
+⚠️ **两处如实标注**：
+1. 蓝图 T3 那道 `IsActionProcess` 门内核**没有建模**（全内核一致地当作"是动作流程"，
+   见 `CardApi.cs` 里几处同名注释）⇒ 本实现也不加，属**近似**。
+2. T3 必须接在 `DoDiscardCardFromDeck` 里、**不能**接进 `CardApi.DiscardCard` ——
+   后者同时服务"从手牌弃"（`DiscardCardFromHand`，蓝图**没有** T3）。
+
+**A/B 结果**：22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）、
+`dispatch-gap` 逐位不变、自测 **154 → 155 全通过**（新用例做过判死验证：
+去掉 `skipSubAction` 那道门 ⇒ 立刻失败）。
+⚠️ **回放侧无信号**：5 张 T22 订阅者 + 3 张 T3 订阅者在 22 局语料里 **0 命中**
+（已按快照逐局核对）⇒ 判据只有「蓝图原文 + 自测」。
+
 ---
 
 

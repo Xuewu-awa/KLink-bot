@@ -884,13 +884,45 @@ public sealed partial class CardApi
             ["ShuffleDeckBySide"] = (c, r, a) =>
             {
                 var side = SideArg(r, a, 0, c.Controller);
+                // 蓝图 `ShuffleDeckBySide`（`BP_CardFunctions.g.cs:34652-34721`）：
+                //   a[1] = `skipSubAction`、a[2] = `instigatorID` —— 旧实现把这两个**整个丢了**。
+                bool skipSubAction = TruthyArg(a, 1);
+                int instigatorId = IntArg(a, 2);
+
                 var deck = c.State.Deck(side);
+                if (deck.Count == 0)
+                {
+                    // 蓝图 `:34659-34661`：`Array_IsEmpty(localDeckCardIDs)` ⇒ **直接返回**
+                    //（连下面的洗牌与 T3/T22 都不走）。空牌库本来也不消耗随机数，
+                    // 所以这一句只影响"发不发事件"。
+                    return null;
+                }
+
                 var order = deck.ToList();
                 c.State.Random.Shuffle(order);
                 c.State.TraceRandom($"ShuffleDeckBySide {side} n={order.Count}");
                 for (int i = 0; i < order.Count; i++)
                 {
                     order[i].LocationNumber = i;
+                }
+
+                // ---- T3 `OnAfterDeckChanged`（蓝图 `:34676`，排在 T22 **之前**）----
+                FireDeckChanged(side);
+
+                // ---- T22 `OnDeckShuffled`（蓝图 `:34680` → `:34721`）----
+                // ⚠️ 只在 `skipSubAction == true` 时发：蓝图 `:34680 if (!skipSubAction) goto L_02D9`，
+                //    而 `L_02D9` 在 **:34737**，位于 T22 那个循环（`:34722-34736`）**之后**。
+                // 实参 = `(deckSide, instigatorCard)`；形参名逐字取 `_index.g.cs:4073`。
+                if (skipSubAction)
+                {
+                    var instigator = instigatorId > 0 ? c.State.ById(instigatorId) : null;
+                    FireTrigger("OnDeckShuffled", subject: null, side,
+                        eventArgs: new object?[] { (int)side, instigator },
+                        namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                        {
+                            ["deckSide"] = (int)side,
+                            ["instigatorCard"] = instigator,
+                        });
                 }
 
                 return null;
@@ -1784,6 +1816,9 @@ public sealed partial class CardApi
         }
 
         c.State.Move(match, side.HandOf());
+        // T3：蓝图 `DrawSpecificCardFromDeckBySide` 也调 `ExecuteOnAfterDeckChanged(side)`
+        //（8 个调用方之一）。
+        FireDeckChanged(side);
         return match;
     }
 
@@ -1934,6 +1969,8 @@ public sealed partial class CardApi
         //   → t15 `#71` 人类打出 `#7001`、`#72` 打右 HQ：客户端 21→**19**（2 点），
         //     我们 21→20（1 点）⇒ `#73` 起 HQ 校验和全程差 1。
         //   t15 再生成的 `#15001` 同理（我们 1/1，客户端应为 4/4）。
+        // T3：蓝图 `SpawnCardInDeckBySide` 是 8 个调用方之一。
+        FireDeckChanged(side);
         return spawned;
     }
 
@@ -2542,6 +2579,8 @@ public sealed partial class CardApi
             ResetCardInBattle(card);
         }
 
+        // T3：蓝图 `MoveCardToTopOfDeck` 是 8 个调用方之一。
+        FireDeckChanged(side);
         return null;
     }
 
@@ -3601,6 +3640,11 @@ public sealed partial class CardApi
         }
 
         DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
+        // T3：蓝图 `DiscardCardFromDeck` 是 8 个调用方之一
+        //（`L_0228 RemoveCardFromDeckBySide(side, cardID) + ExecuteOnAfterDeckChanged(side)`）。
+        // ⚠️ 必须放在**这里**而不是 `CardApi.DiscardCard` 里 —— 那个方法同时服务
+        //   "从手牌弃"（`DiscardCardFromHand`，蓝图**没有** T3）。
+        FireDeckChanged(card.Owner);
         return true;
     }
 

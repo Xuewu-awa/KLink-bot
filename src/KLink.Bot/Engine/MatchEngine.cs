@@ -719,6 +719,9 @@ public sealed class MatchEngine
         {
             Say($"{side.ToWire()} 手牌已满（{preQtyInHand}/{GameState.HandCapacity}），{card} 被弃掉");
             State.Move(card, CardLocation.Discard);
+            // T3 `OnAfterDeckChanged`：蓝图 `DrawTopCardFromDeck` 是 8 个调用方之一
+            //（`:12494`）—— **两条分支**（抽到手 / 手牌满烧掉）都在那个函数体内。
+            Api.FireDeckChanged(side);
             FireSubAction("ZActionDrawCardFromDeck", new[]
             {
                 ActionValue2.Int("cardID", card.CardId),
@@ -731,6 +734,8 @@ public sealed class MatchEngine
         }
 
         State.Move(card, side.HandOf());
+        // T3 `OnAfterDeckChanged`（蓝图 `DrawTopCardFromDeck:12494`）。
+        Api.FireDeckChanged(side);
         FireSubAction("ZActionDrawCardFromDeck", new[]
         {
             ActionValue2.Int("cardID", card.CardId),

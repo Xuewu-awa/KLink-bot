@@ -540,6 +540,9 @@ internal static class SelfTest
         new("★★ T31 `OnOtherCardAttacks` 被派发，且出参 `AttackedAndStopped` 被尊重" +
             "（BEAUFIGHTER 先打死攻击者 ⇒ 防御方零伤害，但油费/已攻击照记）",
             OtherCardAttacksStopsAttack),
+        new("★ T3/T22：洗牌要发 `OnAfterDeckChanged`（无条件）与 `OnDeckShuffled`" +
+            "（**只在 skipSubAction 为真时**）；空牌库两个都不发",
+            DeckShuffledAndDeckChangedTriggers),
     };
 
     public static int Run(CardDatabase db)
@@ -12192,6 +12195,114 @@ internal static class SelfTest
         {
             return "`AttackedAndStopped` 路应当把攻击者标记为已攻击" +
                    "（`ExecuteStoppedAttack` :17706 → `SetAttackerHasAttacked`）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ T3 `OnAfterDeckChanged` + T22 `OnDeckShuffled` —— 两条都挂在 `ShuffleDeckBySide` 上。
+    ///
+    /// 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs`）：
+    /// <code>
+    /// :34655  GetDeckBySide(sideToShuffle) → localDeckCardIDs
+    /// :34659  Array_IsEmpty(...)
+    /// :34661  if (!IsEmpty) → :34672（洗牌）        ; 空牌库**直接返回**（两个事件都不发）
+    /// :34672  Array_ShuffleFromStream(…, cardsRandomStream)
+    /// :34674  SetDeckBySide(…)
+    /// :34676  ExecuteOnAfterDeckChanged(sideToShuffle)   ; ★ T3（在 T22 **之前**）
+    /// :34680  if (!skipSubAction) goto L_02D9             ; ★ skipSubAction 假 ⇒ 跳过 T22
+    /// :34691  FetchAllCardsWithEventTrigger(22)           ; ★ T22
+    /// :34721      item.OnDeckShuffled(deckSide, instigatorCard)
+    /// :34737  L_02D9: …                                   ; T22 循环**之后**
+    /// </code>
+    /// T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
+    /// `IsActionProcess` 门 → `Fetch(3)` → `item.OnAfterDeckChanged(deckSide)`。
+    ///
+    /// ⚠️ **回放侧无信号**：5 张 T22 订阅者 + 3 张 T3 订阅者在 22 局语料里 **0 命中**
+    /// ⇒ 判据只有「蓝图原文 + 本用例」。
+    ///
+    /// 判别力：① 去掉 `FireDeckChanged` 那一句 ⇒ 断言 ①② 失败；
+    /// ② 去掉 `if (skipSubAction)` 那道门 ⇒ 断言 ② 失败；
+    /// ③ 去掉空牌库早退 ⇒ 断言 ③ 失败。
+    /// </summary>
+    private static string? DeckShuffledAndDeckChangedTriggers(CardDatabase db)
+    {
+        const string t3Probe = "card_unit_lovat_scouts";              // 订阅 OnAfterDeckChanged
+        const string t22Probe = "card_unit_110e_regiment_motorize";   // 订阅 OnDeckShuffled
+        foreach (string n in new[] { t3Probe, t22Probe })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var w3 = state.CreateWithId(t3Probe, Side.Left, 300, CardLocation.BoardHqLeft, 1);
+        var w22 = state.CreateWithId(t22Probe, Side.Left, 301, CardLocation.BoardHqLeft, 2);
+
+        // 牌库里要有牌（否则蓝图 `:34661` 直接返回，两个事件都不发）
+        var deckCard = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 302,
+            CardLocation.DeckLeft, 0);
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = w3, Controller = Side.Left };
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+        bool FiredT3() => Reached(trace, "OnAfterDeckChanged", w3);
+        bool FiredT22() => Reached(trace, "OnDeckShuffled", w22);
+
+        // ---- ① `skipSubAction = true` ⇒ T3 与 T22 **都要发** ----
+        trace.Clear();
+        engine.Api.InvokeByName("ShuffleDeckBySide", null,
+            new object?[] { Side.Left, true, w3.CardId }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `ShuffleDeckBySide`（前置不成立）";
+        }
+
+        if (!FiredT3())
+        {
+            return $"洗牌之后 `OnAfterDeckChanged` 没有派发给 {t3Probe}" +
+                   "（蓝图 :34676 `ExecuteOnAfterDeckChanged(sideToShuffle)`）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (!FiredT22())
+        {
+            return $"`skipSubAction=true` 时 `OnDeckShuffled` 没有派发给 {t22Probe}" +
+                   "（蓝图 :34680 / :34721）" + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ② `skipSubAction = false` ⇒ T3 发、T22 **不发** ----
+        trace.Clear();
+        engine.Api.InvokeByName("ShuffleDeckBySide", null,
+            new object?[] { Side.Left, false, w3.CardId }, ctx, out _);
+        if (!FiredT3())
+        {
+            return "`skipSubAction=false` 时 `OnAfterDeckChanged` 仍应发" +
+                   "（蓝图 :34676 在那道门**之前**）" + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (FiredT22())
+        {
+            return "`skipSubAction=false` 时**不该**发 `OnDeckShuffled`" +
+                   "（蓝图 :34680 `if (!skipSubAction) goto L_02D9`，而 L_02D9 在 T22 循环之后）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ③ 空牌库 ⇒ 两个都不发（蓝图 :34659-34661 直接返回）----
+        state.Move(deckCard, CardLocation.Discard);
+        trace.Clear();
+        engine.Api.InvokeByName("ShuffleDeckBySide", null,
+            new object?[] { Side.Left, true, w3.CardId }, ctx, out _);
+        if (FiredT3() || FiredT22())
+        {
+            return "空牌库时 `ShuffleDeckBySide` 应当**直接返回**、两个事件都不发" +
+                   "（蓝图 :34659-34661 `Array_IsEmpty` ⇒ return）" + Dump(state, ("派发记录", Trace()));
         }
 
         return null;
