@@ -555,6 +555,9 @@ internal static class SelfTest
         new("★ T62：解除钉住要发 `OnOtherUnitUnpinned`（蓝图 `RemovePin` :31818/:31847）；" +
             "`RemovePin` 此前**不在派发表**里、IR 里 10 张卡调它全是静默 no-op",
             RemovePinTrigger),
+        new("★★ T30：`OnOtherCardAttackSwitchTarget` 的出参 `newDefender` **真的改掉攻击目标**" +
+            "（COLD TRAP 生成 SISSI 当替身 ⇒ 原目标零伤害）",
+            AttackSwitchTargetTrigger),
     };
 
     public static int Run(CardDatabase db)
@@ -12750,6 +12753,100 @@ internal static class SelfTest
             return "对**没被钉住**的卡调 `RemovePin` 时**不该**广播 T62" +
                    "（`RemoveKeyword` 开头那道 `if (!target.Keywords.Remove(keyword)) return;`）"
                  + Dump(state, ("派发记录", Trace()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ T30 `OnOtherCardAttackSwitchTarget` —— 出参 `newDefender` **真的改掉攻击目标**。
+    ///
+    /// 探针 `card_event_cold_trap`（COLD TRAP，2 费 gotcha：「When an enemy unit attacks,
+    /// **add a SISSI as defender**.」），它的 `locals.OnOtherCardAttackSwitchTarget` 体：
+    /// <code>
+    /// i=0    ShouldGotchaTrigger(cardAttacking)      ; self = 陷阱自己（要求已装填）
+    /// i=28   jumpIfNot → i=230（newDefender = oldDefender）
+    /// i=42   oldDefender.side == self.side           ; 护的是**自己这边**被打的卡
+    /// i=192  IsLocationFull(oldDefender.location) ⇒ 满 ⇒ i=206 写回 oldDefender
+    /// i=…    GotchaTriggered(self, cardAttacking.cardID, false, false)
+    /// i=386  SpawnCardOnBattlefield(side, …, "card_unit_sissi", …,
+    ///                               oldDefender.locationNumber + 1, …)
+    /// i=612  newDefender = GetCardFromID(spawnedCardID)   ; ★ 换成新生成的 SISSI
+    /// </code>
+    ///
+    /// 判别力：① 不派发 T30 ⇒ 原目标掉 3 血（断言② 失败）；
+    /// ② 派发但丢掉出参 ⇒ 攻击者仍打原目标（断言② 失败）；
+    /// ③ 换目标成功但伤害仍打原目标 ⇒ 断言② 失败。
+    ///
+    /// ⚠️ **回放侧无信号**：2 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
+    /// </summary>
+    private static string? AttackSwitchTargetTrigger(CardDatabase db)
+    {
+        const string trap = "card_event_cold_trap";
+        const string sissi = "card_unit_sissi";
+        const string plain = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { trap, sissi, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Right;              // 由**右方**发动攻击
+        state.SetKredits(Side.Right, 30);
+        state.SetMaxKredits(Side.Right, 30);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        // 左方手里一张**已装填**的 COLD TRAP（`ShouldGotchaTrigger` 要求 `gotchaActivated > 0`）
+        var trapCard = state.CreateWithId(trap, Side.Left, 300, CardLocation.HandLeft, 0);
+        trapCard.GotchaActivated = 1;
+
+        // 左方半场一个待被攻击的单位（位置号 1；半场容量 5、当前只有 HQ+它 ⇒ **不满**）
+        var shield = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 1);
+        shield.Attack = 0;
+        shield.Defense = 9;
+        shield.MaxDefense = 9;
+        shield.EnteredPlayOnTurn = -1;
+
+        // 右方攻击者放**前线** ⇒ 打半场目标不需要射程
+        var attacker = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
+        attacker.EnteredPlayOnTurn = -1;
+        attacker.Attack = 3;
+        attacker.Defense = 9;
+        attacker.MaxDefense = 9;
+
+        int shieldBefore = shield.Defense;
+
+        if (!engine.Attack(attacker, shield, out string why))
+        {
+            return $"前置不成立：攻击打不出去（{why}）" + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        bool dispatched = trace.Any(t => t.Contains("OnOtherCardAttackSwitchTarget", StringComparison.Ordinal)
+                                         && t.Contains($"{trapCard.Name}#{trapCard.CardId}", StringComparison.Ordinal));
+        if (!dispatched)
+        {
+            return $"T30 `OnOtherCardAttackSwitchTarget` **没有派发**到 {trap}" +
+                   "（IR `locals` 2 张订阅者之一；内核原先从不派发 30）"
+                 + Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
+        }
+
+        if (shield.Defense != shieldBefore)
+        {
+            return "出参 `newDefender` **没有被尊重**：COLD TRAP 已经生成了 SISSI 当替身，" +
+                   $"伤害应当改由 SISSI 承担、原目标零伤害（蓝图 :4282/:4657），" +
+                   $"实际 {shieldBefore} → {shield.Defense}"
+                 + Dump(state, ("派发记录", string.Join(" | ", trace)));
+        }
+
+        var sissiCard = state.CardsUnordered().FirstOrDefault(c => c.Name == sissi);
+        if (sissiCard is null)
+        {
+            return "COLD TRAP 的 `SpawnCardOnBattlefield(\"card_unit_sissi\", …)` 没生效" +
+                   Dump(state, ("派发记录", string.Join(" | ", trace)));
         }
 
         return null;

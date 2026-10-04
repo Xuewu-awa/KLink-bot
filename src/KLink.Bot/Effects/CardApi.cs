@@ -537,6 +537,80 @@ public sealed partial class CardApi
     }
 
     /// <summary>
+    /// T30 `OnOtherCardAttackSwitchTarget`（枚举 30）—— 「攻击中途换目标」，只有 **2 张**订阅卡
+    /// （`card_event_cold_trap` / `card_event_decisive_defense`，**都是 gotcha**）。
+    ///
+    /// 蓝图 `AttackCard`（`:4214-4308`，本次逐行复核）：
+    /// <code>
+    /// :4214  FetchAllCardsWithEventTrigger(30)
+    /// :4216  Temp_bool_True_if_break_was_hit_Variable = false
+    /// :4221  while (!break_flag &amp;&amp; i &lt; len)
+    /// :4257      item.OnOtherCardAttackSwitchTarget(_attackerCard, _defenderCard, out newDefender)
+    /// :4259      NotEqual_ObjectObject(newDefender, _defenderCard)   ; ★ 变了才继续
+    /// :4261      if (!变了) → 下一个订阅者
+    /// :4282          _defenderCard = newDefender
+    /// :4284          defenderCardID = newDefender.cardID
+    /// :4288          _defenderLocation = _defenderCard.location
+    /// :4308          break_flag = true                                ; ★ 第一个改者胜出、跳出轮
+    /// </code>
+    /// ⇒ **第一个把 `newDefender` 改成别的卡的订阅者胜出**；"不改"的表达是**写回 `oldDefender`**
+    ///（`cold_trap` i=46/50、`decisive_defense` i=691 都是显式写回）——
+    /// 所以判据必须是 `newDefender != oldDefender`，不是"出参为空"。
+    ///
+    /// ⚠️ **与 T31 的两处差别（都按蓝图）**：
+    /// ① 这一轮**不排除攻击者**（`:4214` 的 Fetch 之后直接就是调用，没有 T31 那种
+    ///    `attackerCardID != item.cardID` 比对）⇒ 本方法**不传** `exclude`；
+    /// ② 换完目标**不重做任何合法性判据**（掩护 / 烟幕 / 射程 / `CanSelectAsTarget` 都不再查），
+    ///    伤害是对着**新目标**重算的（`:4657` 起用的就是 `_defenderCard`）。
+    ///
+    /// ⚠️ `seed` 把 `newDefender` 预置成 `defender`：蓝图那个出参槽是零初始化的
+    ///（`Val.Nothing`），理论上"程序不写出参"会让 `NotEqual(null, defender)` 为真、
+    /// 把目标置成 `null` —— 但**两张订阅卡都显式写回**，所以预置成 `defender`
+    /// 与实际行为等价、且不会把目标弄成 null。
+    ///
+    /// ⚠️ **回放侧无信号**：2 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据是「蓝图原文 + 自测」。
+    /// </summary>
+    public CardInstance SwitchAttackTargetIfAny(CardInstance attacker, CardInstance defender)
+    {
+        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardAttacking"] = attacker,
+            ["oldDefender"] = defender,
+            ["newDefender"] = defender,
+        };
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardAttacking"] = attacker,
+            ["oldDefender"] = defender,
+        };
+
+        foreach (var hit in BroadcastWithOutParams(
+                     "OnOtherCardAttackSwitchTarget", attacker, attacker.Owner,
+                     new[] { "newDefender" },
+                     seed: seed,
+                     eventArgs: new object?[] { attacker, defender },
+                     eventSubject: attacker,
+                     namedArgs: named))
+        {
+            if (Environment.GetEnvironmentVariable("KLINK_TRACE_T30") == "1")
+            {
+                object? raw = hit.Outs.GetValueOrDefault("newDefender");
+                Console.Error.WriteLine(
+                    $"[T30] hit={hit.Card.Name}#{hit.Card.CardId} outs=[{string.Join(",", hit.Outs.Keys)}] " +
+                    $"newDefender={raw?.GetType().Name ?? "null"}:{raw} oldDefender={defender.Name}#{defender.CardId}");
+            }
+
+            if (hit.Outs.GetValueOrDefault("newDefender") is CardInstance nd
+                && !ReferenceEquals(nd, defender))
+            {
+                return nd;   // 蓝图 `:4282-:4308`：胜出并跳出轮
+            }
+        }
+
+        return defender;
+    }
+
+    /// <summary>
     /// 攻击反制窗口的返回（蓝图 `AttackCard` 的两个出参）。
     /// </summary>
     /// <param name="StopAttack">

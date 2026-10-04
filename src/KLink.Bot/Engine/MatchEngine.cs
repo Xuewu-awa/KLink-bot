@@ -1831,6 +1831,19 @@ public sealed class MatchEngine
             return false;
         }
 
+        // ---- ★★ T30 `OnOtherCardAttackSwitchTarget`（蓝图 `AttackCard` :4214-4308）----
+        //
+        // ⚠️ 顺序：蓝图里 **T30 轮（`:4214`）在 T31 轮（`:4338`）之前**，两者都排在扣油费
+        //   （`:4513`）之前 ⇒ 这一段必须在下面 T31 窗口**之前**、`State.AddKredits` 之前。
+        // ⚠️ 换完目标**不重做任何合法性判据**（蓝图如此）—— 所以上面那道 `AttackTargetGate`
+        //   校验的是**原目标**，这是刻意的、与蓝图一致。
+        var switchedDefender = Api.SwitchAttackTargetIfAny(attacker, defender);
+        if (!ReferenceEquals(switchedDefender, defender))
+        {
+            Say($"↪ 攻击目标被 T30 改成 {switchedDefender}（原 {defender}）");
+            defender = switchedDefender;
+        }
+
         // ---- ★★ T31 `OnOtherCardAttacks` 反制窗口（蓝图 `AttackCard` :4334-4512）----
         //
         // ⚠️⚠️ **必须放在 `State.AddKredits` 之前**：蓝图这两段排在扣油费

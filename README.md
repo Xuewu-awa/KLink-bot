@@ -1627,6 +1627,90 @@ T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
 T31（P1）也已完成。剩下的只有**明确标注"不该做"**的（T1/T40/T67 蓝图无派发点、T18/T26 订阅 0）
 与**成本被低估**的（T30 / T34 / T60+T65 那三条链）。
 
+### 8.23 ★★★ 2026-10-04 第十四轮：**T30 接线 + 一个影响 390 个调用点的 IR/VM 缺口**
+
+本轮的主产出不是 T30 本身，而是**写 T30 的用例时暴露出来的两个"实参/出参形状"缺口**。
+
+#### 一、T30 `OnOtherCardAttackSwitchTarget`（2 卡）—— 出参 `newDefender` **真的换攻击目标**
+
+蓝图 `AttackCard`（`:4214-4308`，本次逐行复核）：
+```
+:4214  FetchAllCardsWithEventTrigger(30)          ; ★ 这一轮**不排除攻击者**（没有 T31 那种 cardID 比对）
+:4216  break_flag = false
+:4221  while (!break_flag && i < len)
+:4257      item.OnOtherCardAttackSwitchTarget(_attackerCard, _defenderCard, out newDefender)
+:4259      NotEqual_ObjectObject(newDefender, _defenderCard)   ; ★ 变了才继续
+:4282          _defenderCard = newDefender
+:4284          defenderCardID = newDefender.cardID
+:4308          break_flag = true                                ; ★ 第一个改者胜出、跳出轮
+```
+落点：`CardApi.SwitchAttackTargetIfAny` + `MatchEngine.Attack` 里**在 T31 窗口之前**接一段
+（蓝图 T30 轮 `:4214` 在 T31 轮 `:4338` 之前，两者都在扣油费 `:4513` 之前）。
+⚠️ 换完目标**不重做任何合法性判据**（蓝图如此）—— 所以 `AttackTargetGate` 校验的是**原目标**，这是刻意的。
+
+#### 二、★ `GetCardFromID` 只认整数 cardID ⇒ 拿到卡对象时返回 null
+
+`["GetCardFromID"]` 原先是 `GetCardFromID(IntArg(a, 0))`。但内核里**生成类原语的返回值是卡对象**
+（不是蓝图那个 `spawnedCardID` 整数），于是 `card_event_cold_trap` 的
+`newDefender = GetCardFromID(spawnedCardID)` **恒为 null** ⇒ 攻击目标永远换不掉。
+⇒ 改成 `AsCardOrId(c, a[0])`（**两种形状都认**）—— 与 README §9.3「同一原语多种实参形状」
+是同一个 bug 类，修法与 `AsCardOrId` 的其它落点一致。
+
+#### 三、★★★ **IR 生成器漏掉了 390 个调用点的出参槽**（本轮最重要的发现）
+
+T30 用例在修完 ① ② 之后**仍然失败**，继续挖才发现根因在 **IR 本身**：
+
+```json
+{"op":"call","fn":"SpawnCardOnBattlefield",
+ "args":[ … , {"var":"CallFunc_SpawnCardonBattlefield_spawnedCardID"}],
+ "outs": [],          ← ★★ 出参槽被当成**实参**传进来了，`outs` 却是空的
+ "i":450}
+```
+
+`KismetVm.ExecuteCall` 只按 `step.OutParams` 写回，`outs` 为空 ⇒ **那个槽永远不被写**
+⇒ 凡消费 `spawnedCardID` / `cardsIDs` 的卡**一律拿到 null**。
+
+**全 IR 实测分布**（`docs/card-ir.json` 扫描，判据 = `outs` 为空 **且** 某个实参是
+`CallFunc_<函数名>_…` 形状的变量，**大小写不保证一致**）：
+
+| 函数 | 调用点数 |
+|---|---|
+| `SpawnCardInHandBySide` | **184** |
+| `DrawCardsFromDeckBySide` | **150** |
+| `SpawnCardOnBattlefield` | **44** |
+| `getHasGameplayTag` | 7 |
+| `SpawnCardInDeckBySide` | 5 |
+| **合计** | **390** |
+
+**修法**（`KismetVm.ExecuteCall`，只在 `outs` 为空时推断，已标好的步骤一律不动）：
+```csharp
+var outParams = new List<int>(step.OutParams);
+if (outParams.Count == 0 && fn.Length > 0)
+{
+    string want = "CallFunc_" + fn;
+    for (int i = 0; i < step.Args.Count; i++)
+        if (step.Args[i].Var is string vn && vn.StartsWith(want, StringComparison.OrdinalIgnoreCase))
+        { outParams.Add(i); break; }
+}
+```
+然后写回改用 `outParams`（不再用只读的 `step.OutParams`）。
+⚠️ **为什么不重新生成 IR**：`gen-kismet-ir.py` 需要 `cards.full.json`（84 MB），
+**不在本仓库里**（README §3.2）⇒ 只能在 VM 侧推断。
+
+#### 验证与如实标注
+
+- 自测 **159 → 160 全通过**（T30 用例做过**判死**：拿到新目标但不真的换 ⇒ 立刻失败；
+  另外**修出参槽之前该用例是失败的** —— 那本身就是一次天然的判死）。
+- 22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）、
+  `dispatch-gap` 逐位不变。
+- 探针 `KLINK_TRACE_OUTSLOT=1` 实测：推断在**单个回放里就触发 10 次**
+  （`DrawCardsFromDeckBySide` ×7 / `SpawnCardInHandBySide` ×3）—— **确实在生效**，
+  只是这 22 局的可观测判据没被它推动。
+- ⚠️ **一处如实标注的不确定**：蓝图那些出参的**声明类型**是整数（`spawnedCardID` / `cardsIDs`），
+  而内核这些原语的返回值是**卡对象**。两边靠 `AsCardOrId` 互通，
+  所以"把出参当卡用"的消费者现在对了；**但把出参当整数做算术的消费者仍会拿到 0**。
+  这一层类型不匹配**未逐一核对**，如实记在这里。
+
 ---
 
 
@@ -1975,14 +2059,15 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 | 8 | ~~T49 `OnOtherCardMoveFromFrontline`~~ ✅ **已做（2026-10-04，§8.20）** | 3 | ★★ | ✗ |
 | 9 | ~~T68 `OnOtherCardOperationKreditsSpent`~~ ✅ **已做（2026-10-04，§8.21）** | 3 | ★★ | ⚠️ 1/3 |
 | — | **T31 `OnOtherCardAttacks`** | 20 | ★★★ | ✅ **已做（§8.18）** |
+| — | ~~**T30 `OnOtherCardAttackSwitchTarget`**~~ ✅ **已做（2026-10-04，§8.23）** | 2 | ★★★ | ✗ |
 | — | **T60 / T65（Covert）** | 15+1 | ★★★ | ✗ |
 | — | **T34 `OnOtherCardConverted`** | 3 | ★★★ | ✗ |
 | — | **T1 / T40 / T67** | 25/1/2 | — | **不该做** |
 | — | **T18 / T26** | 0/0 | — | **无事可做** |
 
-> ✅ **P4 清单已全部收尾**（9 条全部接线）。其中 **T62 是唯一推动了四条判据之一的**：
-> 注册 `RemovePin` 让 `dispatch-gap` 从 **522/2462/`FFEC7E071E9518C0`** 降到
-> **521/2452/`ACCAA64A21EF6CDE`**（判据 ② 未实现原语种 ↓）。
+> ✅ **P4 清单已全部收尾**（9 条全部接线），**P1 家族（T31 + T30）也已完成**。
+> 其中 **T62 是唯一推动了四条判据之一的**：注册 `RemovePin` 让 `dispatch-gap` 从
+> **522/2462/`FFEC7E071E9518C0`** 降到 **521/2452/`ACCAA64A21EF6CDE`**（判据 ② 未实现原语种 ↓）。
 > 其余各条**回放侧 0 命中**，证据链是「蓝图原文 + 自测」，**不是**回放对拍。
 
 **两条硬结论**：

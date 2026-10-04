@@ -179,7 +179,19 @@ public sealed partial class CardApi
             //    是第 3 常用的外部调用）。实测症状：card_unit_10_5_cm_lefh 的
             //    「Deployment: 对敌方 HQ 造成 2 点伤害」完全不生效。
             ["GetOppositeSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
-            ["GetCardFromID"] = (c, r, a) => GetCardFromID(IntArg(a, 0)),
+            // ⚠️⚠️ **实参有两种形状，必须都认**（2026-10-04 修，T30 用例暴露）：
+            //   · **整数 cardID** —— 蓝图签名就是 `GetCardFromID(int32 cardID)`
+            //     （`CardFunctionsStub`），绝大多数调用点传的是整数变量。
+            //   · **卡对象** —— 内核里 `SpawnCardOnBattlefield` / `SpawnCardInHandBySide` 这类
+            //     "生成"原语的返回值是**卡对象**（不是蓝图那个 `spawnedCardID` 整数），
+            //     于是 `GetCardFromID(CallFunc_SpawnCardonBattlefield_spawnedCardID)` 拿到的
+            //     是卡对象 ⇒ 旧实现 `IntArg(a, 0)` 读成 0 ⇒ **返回 null**。
+            //     实证（`card_event_cold_trap` 的 T30 体）：
+            //     `newDefender = GetCardFromID(spawnedCardID)` 恒为 null
+            //     ⇒ 出参等于"没改目标" ⇒ 攻击仍然打在原目标身上。
+            //     ⇒ 与 README §9.3 那条「同一原语多种实参形状」是同一个 bug 类，
+            //       修法与 `AsCardOrId` 的其它落点一致。
+            ["GetCardFromID"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)),
 
             // ⚠️ `GetStaticCard` **不在这里** —— 它是
             // `/Script/kards.FunctionLibrary` 的原生函数，在 IR 里是 `CallMath` 形状，
