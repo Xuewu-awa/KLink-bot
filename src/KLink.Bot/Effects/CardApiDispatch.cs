@@ -1776,6 +1776,13 @@ public sealed partial class CardApi
             return null;
         }
 
+        if (Environment.GetEnvironmentVariable("KLINK_TRACE_HAND") == "1")
+        {
+            Console.Error.WriteLine(
+                $"[DRAWSPEC] t={c.State.Turn} side={side} draw={match.Name}#{match.CardId} " +
+                $"self={c.Self?.Name}#{c.Self?.CardId} trigger={c.Trigger?.Name}#{c.Trigger?.CardId}");
+        }
+
         c.State.Move(match, side.HandOf());
         return match;
     }

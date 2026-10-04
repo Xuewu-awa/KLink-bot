@@ -1294,6 +1294,60 @@ at CardApi.SpawnCardInHand           (CardApi.cs:1873)          ← CreateCard�
 2. 本轮**没有**、也不该去动 `DoDrawSpecific` —— 它在蓝图里**本来就没有门**，
    §8.14 那次"一刀切"的失败正是把这一类合法越界也封掉了。
 
+### 8.16 ★ 2026-10-04 第七轮：`854099 t11` 的手牌差 —— 定位到**牌库内容**，不是容量门也不是循环
+
+按 §8.15 的下一步，给手牌加了一条**进出流水账探针**
+（`KLINK_TRACE_HAND=1`：每一次进/出手牌都打一行 + 调用栈；`KLINK_TRACE_HANDOVER=1` 只看越界）。
+854099 左方 t≤11 的账（摘）：
+
+```
+t=5  NotAvailable->HandLeft 7/9  card_event_night_raid#5001 via Create   ← develop 先建到手
+t=5  HandLeft->DeckLeft     6/9  card_event_night_raid#5001 via Move     ← 再塞进牌库
+t=11 DeckLeft->HandLeft     8/9  card_event_colossus#24 via Move          ← 回合开始抽
+t=11 DeckLeft->HandLeft     8/9  card_event_night_raid#5001 via DoDrawSpecific
+t=11 DeckLeft->HandLeft     9/9  card_event_baker_street_irregulars#9003 via DoDrawSpecific
+t=11 DeckLeft->HandLeft    10/9  card_event_pams#33 via DoDrawSpecific    ← ★ 越界在这里
+t=11 HandLeft->Discard      9/9  card_event_night_raid#5001 via PlayCard   ← 打出（→ 手牌 9）
+```
+
+**三条 `DoDrawSpecific` 的发起者已被点名**（新增探针 `[DRAWSPEC]`）：
+`self=card_unit_2nd_west_africa#39` —— 就是它自己的卡面效果：
+
+> **2nd WEST AFRICA**（英，1 费 1/2）：**Deployment: Draw the cheapest order from your deck.
+> Repeat if it did not start there.**
+
+它的 IR 循环（`docs/card-ir.json`）读出来是：
+
+```
+i=1349  flag = false ; counter = 1        ; flag = "didStartThere"
+i=990   NOT(flag) AND (counter <= 9)      ; ★ 重复条件
+i=1101      → 再找一次"牌库最便宜的指令"
+i=1106  DrawSpecificCardFromDeckBySide(…)
+i=1192  Greater(抽到那张的 cardID, 99)     ; ★ "did not start there" = **卡 ID > 99**
+i=1248      否 ⇒ i=1263: flag = true ⇒ 跳出
+            是 ⇒ counter++ 回到 i=990（重复，最多 9 次）
+```
+
+⇒ **"did not start there" 就是「这张牌不是开局就在牌库里的」**（开局牌 ID 1..81，
+对局中生成的卡 ID ≥ 1001）—— 即**抽到一张"生成出来的"指令就再来一次**，
+直到抽到一张开局就在牌库里的指令（或满 9 次）。
+
+**结论（如实）**：
+1. 内核的循环**忠实于蓝图**（它就是这个 IR 程序被解释执行），
+   3 次抽牌（`night_raid#5001` → `baker_street#9003` → `pams#33`，前两张 ID>99、第三张 ≤99 停）
+   **符合上面那条规则** ⇒ **循环本身不是 bug**。
+2. `DoDrawSpecific`（= `DrawSpecificCardFromDeckBySide`）在蓝图里**没有容量门** ⇒
+   手牌走到 `10/9` 也**不是**容量门的 bug（§8.14 ②）。
+3. ⇒ 真正的差异在**输入**：**内核牌库里"最便宜的指令"是哪些**。
+   该循环会**反复抽走生成出来的便宜指令**（PAMS 开发出来的 0 费卡正是"最便宜"且 ID>99），
+   所以**牌库里多一张生成出来的 0 费指令 ⇒ 这里就多抽一张 ⇒ 手牌多一张**。
+   ⇒ **手牌差 1 是"牌库内容差"的症状**，根因要往 `PAMS` / develop 那条链
+   （`DevelopChosenCard` → `SpawnCardInDeckBySide` → 费用设 0）去找。
+
+**下一步（已收窄到一条链）**：把 854099 t1..t11 里**每次进牌库**的卡逐条列出
+（`[HAND]` 探针已有 `DeckLeft` 侧的进出，再加一条牌库侧的就够），
+与客户端动作流能推出的牌库变化对账，找出**多进牌库的那一张**。
+
 ---
 
 

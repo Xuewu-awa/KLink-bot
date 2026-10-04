@@ -511,49 +511,66 @@ public sealed class GameState
             GeneratedCardIds.Add(card.CardId);
         }
 
-        TraceHandOverflow(card, location, "Create");
+        TraceHandChange(card, CardLocation.NotAvailable, location, "Create");
         return card;
     }
 
     /// <summary>
-    /// 诊断（env 门控）：手牌**超过容量**时报一行 —— 用来定位「手牌虚增」。
+    /// 诊断（env 门控）：手牌**进出流水账** —— 用来定位「手牌对不上」。
     ///
-    /// 为什么这是一个**可证伪的判据**（不依赖客户端数据）：手牌上限是
-    /// <see cref="HandCapacity"/> = 9，**客户端永远不会超过它**；
-    /// 所以内核里一旦出现 `10/9`，就**必然**是某条加牌路径漏了容量门。
-    /// （实测别处日志里确实出现过「手牌已满（10/9），…被弃掉」—— 那说明**进那一张之前**
-    /// 手牌就已经是 10 了。）
+    /// 两种模式：
+    /// <list type="bullet">
+    /// <item><c>KLINK_TRACE_HANDOVER=1</c>：只在手牌**超过容量**时报一行（带调用栈）。</item>
+    /// <item><c>KLINK_TRACE_HAND=1</c>：**每一次**进/出手牌都报一行（带调用栈）——
+    ///   用来和动作流逐条对账。</item>
+    /// </list>
     ///
-    /// 用法：`$env:KLINK_TRACE_HANDOVER='1'`，然后跑 `--audit-replay`。
+    /// ⚠️ **「手牌 &gt; 9」本身不是 bug 判据**（2026-10-04 更正）：手牌上限确实是
+    /// <see cref="HandCapacity"/> = 9（蓝图 `FetchCardsByLocation` case 3,4 → `IntConst(9)`），
+    /// 但蓝图只在**特定几道门**上查容量 —— `DrawSpecificCardFromDeckBySide`
+    /// （`BP_CardFunctions.g.cs:12406`，全函数 33 行）**根本没有门**，越界是**允许**的。
+    /// ⇒ 要判某一次进手是不是"多进了一张"，必须**先看该路径在蓝图里有没有门**
+    ///   （逐条对账表见 README §8.15）。
+    ///
+    /// 用法：`$env:KLINK_TRACE_HAND='1'`（或 `KLINK_TRACE_HANDOVER='1'`），然后跑 `--audit-replay`。
     /// </summary>
-    private void TraceHandOverflow(CardInstance card, CardLocation location, string how)
+    private void TraceHandChange(CardInstance card, CardLocation oldLocation, CardLocation location,
+                                 string how)
     {
-        if (Environment.GetEnvironmentVariable("KLINK_TRACE_HANDOVER") != "1")
+        bool overflowOnly = Environment.GetEnvironmentVariable("KLINK_TRACE_HANDOVER") == "1";
+        bool traceAll = Environment.GetEnvironmentVariable("KLINK_TRACE_HAND") == "1";
+        if (!overflowOnly && !traceAll)
         {
             return;
         }
 
-        if (location != CardLocation.HandLeft && location != CardLocation.HandRight)
+        bool into = location == CardLocation.HandLeft || location == CardLocation.HandRight;
+        bool from = oldLocation == CardLocation.HandLeft || oldLocation == CardLocation.HandRight;
+        if (!into && !from)
         {
             return;
         }
 
-        int n = Cards(card.Owner, location).Count;
-        if (n > HandCapacity)
+        // 调用点都在 `card.Location` 已经改完之后 ⇒ 这个计数就是"变化**之后**的手牌数"
+        // （出手那条路：`Cards(owner, oldLocation)` 已经不含这张卡了）。
+        int n = Cards(card.Owner, into ? location : oldLocation).Count;
+        if (overflowOnly && !(into && n > HandCapacity))
         {
-            Console.Error.WriteLine(
-                $"[HANDOVER] t={Turn} {card.Owner} {location}={n}/{HandCapacity} " +
-                $"+{card.Name}#{card.CardId} via {how}");
-            // 调用栈：用来**点名**是哪一条加牌路径多进了一张。
-            // 取前面若干帧（跳过本方法自身与 Move/Create）。
-            var frames = Environment.StackTrace
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Where(f => f.Contains("KLink", StringComparison.Ordinal))
-                .Take(6);
-            foreach (string f in frames)
-            {
-                Console.Error.WriteLine($"            {f.Trim()}");
-            }
+            return;
+        }
+
+        Console.Error.WriteLine(
+            $"[HAND] t={Turn} {card.Owner} {oldLocation}->{location} 手牌={n}/{HandCapacity} " +
+            $"{card.Name}#{card.CardId} via {how}");
+
+        var frames = Environment.StackTrace
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(f => f.Contains("KLink", StringComparison.Ordinal))
+            .Skip(1)   // 跳过本方法自己
+            .Take(4);
+        foreach (string f in frames)
+        {
+            Console.Error.WriteLine($"            {f.Trim()}");
         }
     }
 
@@ -748,7 +765,7 @@ public sealed class GameState
             CardMoved?.Invoke(card, oldLocation, location);
         }
 
-        TraceHandOverflow(card, location, $"Move(from {oldLocation})");
+        TraceHandChange(card, oldLocation, location, "Move");
     }
 
     /// <summary>
