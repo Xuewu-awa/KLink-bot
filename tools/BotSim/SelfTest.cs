@@ -163,7 +163,8 @@ internal static class SelfTest
             EventLayerSelfEvents),
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
         new("事件层：战斗存活事件（OnSurvivedCombat / OnOtherCardSurvivedCombat），打 HQ 不发", EventLayerSurvivedCombat),
-        new("事件层：压制会挡住广播（OnOtherCardBecomingVeteran / OnOtherCardDestroyed），但不挡自己那一路",
+        new("★★ 压制门的形状：`if (!isSuppressed) goto <自程序>` 只管**自己那一路**，" +
+            "**广播无条件发**（蓝图 `MakeVeteran` :26303 / `ExecuteOnBeforeOtherCardDestroyed` :14833）",
             EventLayerSuppressionGate),
 
         // ---- P0 第 2 族：同形「接收者/参数位」bug（2026-09-27）----
@@ -4720,13 +4721,17 @@ internal static class SelfTest
                 return $"压制/老兵布景出错：{err}";
             }
 
-            if (Reached(trace, "OnOtherCardBecomingVeteran", gate))
+            if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
             {
-                return "被压制的卡不该广播 OnOtherCardBecomingVeteran（蓝图 MakeVeteran si=2427）";
+                return "T32 广播**无条件发**：蓝图 `BP_CardFunctions.g.cs:26303` 的 " +
+                       "`if (!card.isSuppressed) goto L_0AF6;` 只跳过 `:26347` 的自程序，" +
+                       "`:26349 goto L_099F` 又跳回 `:26305` 的 Fetch ⇒ 被压制的卡也应当广播 " +
+                       "`OnOtherCardBecomingVeteran`（19 张订阅者里的旁观者）";
             }
 
-            // 被压制的那张卡自己仍然收到 OnBecomingVeteran —— 找一张有该程序的卡来验
-            var (trace2, _, err2) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
+            // 被压制的那张卡**自己那一路**（`OnBecomingVeteran`）不该发：
+            // 蓝图 `:26303 if (!card.isSuppressed) goto L_0AF6;` —— **未**压制才去自程序。
+            var (trace2, sup, err2) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
                     e.Api.SuppressUnit(p);
@@ -4738,19 +4743,22 @@ internal static class SelfTest
                 return $"压制/老兵布景出错(2)：{err2}";
             }
 
-            if (!trace2.Any(t => t.StartsWith("OnBecomingVeteran → ", StringComparison.Ordinal)))
+            if (Reached(trace2, "OnBecomingVeteran", sup))
             {
-                return "被压制的卡**自己**仍然应该收到 OnBecomingVeteran（蓝图 MakeVeteran si=2806）"
+                return "被压制的卡**自己那一路**不该收到 `OnBecomingVeteran`" +
+                       "（蓝图 `:26303 if (!card.isSuppressed) goto L_0AF6;` —— 未压制才去自程序）；" +
+                       "旧实现恰好装反：门住了广播、放开了自程序"
                      + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
             }
         }
 
-        // ② 没被压制 ⇒ 广播要发（证明 ① 的"没发"不是因为程序名写错/探针没订阅）
+        // ② 对照：**没**被压制 ⇒ 自己那一路要发
+        //    （证明 ① 的"没发"不是因为程序名写错 / 探针没订阅 / 门恒关）
         {
-            var (trace, gate, err) = Probe(db, "card_unit_6th_brigade_nz", CardLocation.BoardHqLeft,
+            var (trace, self, err) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
-                    e.Api.MakeVeteran(s.CreateWithId(victim, Side.Right, 61, CardLocation.BoardHqRight, 0));
+                    e.Api.MakeVeteran(p);
                     return p;
                 });
             if (err is not null)
@@ -4758,9 +4766,9 @@ internal static class SelfTest
                 return $"老兵布景出错：{err}";
             }
 
-            if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
+            if (!Reached(trace, "OnBecomingVeteran", self))
             {
-                return "没被压制的卡**应该**广播 OnOtherCardBecomingVeteran"
+                return "**没**被压制的卡应该收到自己那一路 `OnBecomingVeteran`（蓝图 `:26303` 未压制时跳向它）"
                      + $"\n       实际派发记录：{string.Join(" | ", trace)}";
             }
         }
@@ -4783,9 +4791,13 @@ internal static class SelfTest
 
             if (Reached(trace, "OnBeforeDestroyed", victimCard))
             {
-                return "被压制的卡不该收到 OnBeforeDestroyed（蓝图 ExecuteOnBeforeOtherCardDestroyed si=140）";
+                return "被压制的卡不该收到 `OnBeforeDestroyed`（蓝图 `:14833 if (!_cardDestroyed.isSuppressed) goto L_0208;`）";
             }
 
+            // ④ T15：被压制者被摧毁时，**旁观者仍应收到**广播
+            //    （蓝图 `:14833` 的门只跳过 `:14874` 的自程序；`:14876 goto L_00B0` 又跳回
+            //     `:14835` 的 Fetch ⇒ 广播无条件发。旧实现漏发，订阅者里的旁观者全哑。）
+        {
             var (trace2, other, err2) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
@@ -4799,14 +4811,17 @@ internal static class SelfTest
                 return $"摧毁布景出错(2)：{err2}";
             }
 
-            if (Reached(trace2, "OnBeforeOtherCardDestroyed", other))
+            if (!Reached(trace2, "OnBeforeOtherCardDestroyed", other))
             {
-                return "被压制的卡被摧毁时不该广播 OnBeforeOtherCardDestroyed（si=140 的守卫）";
+                return "T15 广播**无条件发**：蓝图 `:14833` 的门只跳过 `:14874` 的自程序，" +
+                       "`:14876 goto L_00B0` 又跳回 `:14835` 的 Fetch ⇒ 被压制的卡被摧毁时，" +
+                       "其他订阅者仍应收到 `OnBeforeOtherCardDestroyed`"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
             }
+        }
 
-            // ④ 没被压制 ⇒ 广播要发（对照，防止 ③ 恒真）
-            var (trace3, other3, err3) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,
-                (e, s, p) =>
+        // ⑤ 对照：没被压制 ⇒ 广播也要发（防止 ④ 恒真）
+            var (trace3, other3, err3) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,                (e, s, p) =>
                 {
                     e.Destroy(s.CreateWithId(victim, Side.Right, 63, CardLocation.BoardHqRight, 0));
                     return p;

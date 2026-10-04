@@ -1549,15 +1549,42 @@ public sealed partial class CardApi
         //   `OnAfterOtherCardGainDefense(UBaseCardObject* cardGainingDefense, int32 defenseGained)`
         //
         // ⚠️ **只有「增量」那条分支才发**（`SetValue` 分支发 T6，见上）。
+        //
+        // ★★ **2026-10-04 更正：那道门只管"自己那一路"，T7 广播是两条路都会到的。**
+        // 蓝图原文（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
+        // <code>
+        // :7954   if (!cardToChangeRef.isSuppressed) goto L_130F;  ; 未压制 ⇒ 跳去自程序
+        // :7956   L_10FD: FetchAllCardsWithEventTrigger(7)         ; ★ T7 广播：压制时直落这里
+        // :7974       EqualEqual(cardToChangeRef, item) ⇒ 跳过      ; 广播排除被改的那张卡
+        // :8017   L_130F: OnAfterGainDefense(target, …)            ; 自程序
+        // :8020           goto L_10FD                              ; ★ 跑完又跳回 T7 那轮循环
+        // </code>
+        // ⇒ **T7 广播无条件发**（README §9.5 P3 那条"别再改 T7"的警告说的是这件事，
+        //   旧实现无条件发广播**是对的**）；错的是它**同时无条件发了自程序**。
+        // 旧实现把 self 与 T7 混在一次 `FireTrigger` 里 ⇒ **无法分别设门** ⇒
+        // 被压制时多发了一次 `OnAfterGainDefense` 自程序。
+        // ⚠️ `OnAfterOtherCardGainDefense` 不以 `OnOther` 开头 ⇒ 必须显式
+        //   `broadcastName: true`（同一个坑见 `FireTrigger` 的 `broadcastName` 注释）。
+        // ⚠️ 广播排除"被改的那张卡"由 `FireTrigger` 的广播分支**排除主体**天然满足
+        //   （subject 就是 target = `cardToChangeRef`，蓝图 `:7974` 同义）。
         if (fireGainDefenseEvent && delta > 0)
         {
-            FireTrigger("OnAfterGainDefense", target, target.Owner, "OnAfterOtherCardGainDefense",
-                eventArgs: new object?[] { target, delta },
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["defenseGained"] = delta,
-                    ["cardGainingDefense"] = target,
-                });
+            var gainDefenseNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["defenseGained"] = delta,
+                ["cardGainingDefense"] = target,
+            };
+            var gainDefenseArgs = new object?[] { target, delta };
+
+            if (!target.Keywords.Contains(Keyword.Suppressed))
+            {
+                FireTrigger("OnAfterGainDefense", target, target.Owner,
+                    eventArgs: gainDefenseArgs, namedArgs: gainDefenseNamed);
+            }
+
+            FireTrigger("OnAfterOtherCardGainDefense", target, target.Owner,
+                broadcastName: true,
+                eventArgs: gainDefenseArgs, namedArgs: gainDefenseNamed);
         }
 
         if (target.Defense <= 0 && !target.IsHq)
@@ -2468,22 +2495,34 @@ public sealed partial class CardApi
                 ActionValue2.Int("cardID", target.CardId),
             });
 
-            // si=2427：被压制时**不广播** `OnOtherCardBecomingVeteran`（9 张订阅者）。
-            if (!target.Keywords.Contains(Keyword.Suppressed))
-            {
-                FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
-                    eventArgs: new object?[] { target },
-                    eventSubject: target,
-                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        ["card"] = target,
-                    });
-            }
+            // ★★ **2026-10-04 更正：门装反了。** 蓝图原文
+            // （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
+            // <code>
+            // :26303  if (!card.isSuppressed) goto L_0AF6;         ; 未压制 ⇒ 跳去自程序
+            // :26305  L_099F: FetchAllCardsWithEventTrigger(32)    ; ★ 广播：压制时**直落这里**
+            // :26323      item.OnOtherCardBecomingVeteran(card)
+            // :26335  L_0ADE: ExecuteOnOtherCardsAbilitiesChanged(self, card)
+            // :26347  L_0AF6: OnBecomingVeteran(card)              ; 自程序
+            // :26349  L_0B1A: goto L_099F                          ; ★ 自程序跑完**又跳回广播**
+            // </code>
+            // ⇒ T32 广播与「能力集变化」**无条件发**；被压制的卡只是**不发自己的**
+            //   `OnBecomingVeteran`。旧实现恰好相反：门住广播、放开自程序。
+            // ⚠️ 根因同 `MatchEngine.Destroy`：`JumpIfNot(cond) -> T` 是「cond 为假才跳」。
+            FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
+                eventArgs: new object?[] { target },
+                eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = target,
+                });
 
             // si=2782 ExecuteOnOtherCardsAbilitiesChanged(card)
             FireAbilitiesChanged(target);
 
-            FireTrigger("OnBecomingVeteran", target, target.Owner);
+            if (!target.Keywords.Contains(Keyword.Suppressed))
+            {
+                FireTrigger("OnBecomingVeteran", target, target.Owner);
+            }
         }
     }
 

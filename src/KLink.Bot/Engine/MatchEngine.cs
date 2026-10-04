@@ -2366,19 +2366,40 @@ public sealed class MatchEngine
         // ⇒ 一次 FireTrigger 同时覆盖"自己那一路"和"别人那一路"；
         //   被压制的卡**两个都不发**（旧实现无条件发 `OnBeforeDestroyed`）。
         // `DestroyedInCombat` 这个入参内核没有建模，恒传 false（近似，不猜）。
+        //
+        // ★★ **2026-10-04 更正：那道门只管"自己那一路"，广播是两条路都会到的。**
+        // 蓝图 `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs` 原文：
+        // <code>
+        // :14833  if (!_cardDestroyed.isSuppressed) goto L_0208;  ; 未压制 ⇒ 跳去自程序
+        // :14835  L_00B0: FetchAllCardsWithEventTrigger(15)      ; ★ 广播：压制时**直落这里**
+        // :14874  L_0208: _cardDestroyed.OnBeforeDestroyed(…)    ; 自程序
+        // :14876          goto L_00B0                            ; ★ 自程序跑完**又跳回广播**
+        // </code>
+        // ⇒ **广播无条件发**；被压制的卡只是不发**自己的** `OnBeforeDestroyed`。
+        // ⚠️ 旧实现把两个名字包在同一个 `if` 里 ⇒ 被压制的卡被摧毁时**漏发 T15 广播**
+        //   （19 张订阅者里，那些只订阅 `OnBeforeOtherCardDestroyed` 的会整条死掉）。
+        // ⚠️ 旧注释把 `JumpIfNot(cond) -> T` **读反了** —— 它是「**cond 为假**才跳」，
+        //   不是「cond 为真 ⇒ 两个都不发」。
+        // ⚠️ `OnBeforeOtherCardDestroyed` 不以 `OnOther` 开头 ⇒ 必须显式
+        //   `broadcastName: true`（同一个坑见 `CardApi.FireTrigger` 的 `broadcastName` 注释）。
+        var destroyNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardDestroyed"] = card,
+            ["attacker"] = destroyer,
+            ["TriggerNotDestroyed"] = false,
+            ["DestroyedInCombat"] = false,
+        };
+        var destroyArgs = new object?[] { card, destroyer, false, false };
+
         if (!card.Keywords.Contains(Keyword.Suppressed))
         {
-            Api.FireTrigger("OnBeforeDestroyed", card, card.Owner, "OnBeforeOtherCardDestroyed",
-                eventArgs: new object?[] { card, destroyer, false, false },
-                eventSubject: card,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardDestroyed"] = card,
-                    ["attacker"] = destroyer,
-                    ["TriggerNotDestroyed"] = false,
-                    ["DestroyedInCombat"] = false,
-                });
+            Api.FireTrigger("OnBeforeDestroyed", card, card.Owner,
+                eventArgs: destroyArgs, eventSubject: card, namedArgs: destroyNamed);
         }
+
+        Api.FireTrigger("OnBeforeOtherCardDestroyed", card, card.Owner,
+            broadcastName: true,
+            eventArgs: destroyArgs, eventSubject: card, namedArgs: destroyNamed);
 
         FireSubAction("ZActionDestroyUnit", new[]
         {
