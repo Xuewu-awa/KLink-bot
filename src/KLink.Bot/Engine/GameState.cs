@@ -539,34 +539,62 @@ public sealed class GameState
     {
         bool overflowOnly = Environment.GetEnvironmentVariable("KLINK_TRACE_HANDOVER") == "1";
         bool traceAll = Environment.GetEnvironmentVariable("KLINK_TRACE_HAND") == "1";
-        if (!overflowOnly && !traceAll)
+        bool traceDeck = Environment.GetEnvironmentVariable("KLINK_TRACE_DECK") == "1";
+        if (!overflowOnly && !traceAll && !traceDeck)
         {
             return;
         }
 
         bool into = location == CardLocation.HandLeft || location == CardLocation.HandRight;
         bool from = oldLocation == CardLocation.HandLeft || oldLocation == CardLocation.HandRight;
-        if (!into && !from)
+        bool intoDeck = location == CardLocation.DeckLeft || location == CardLocation.DeckRight;
+        bool fromDeck = oldLocation == CardLocation.DeckLeft || oldLocation == CardLocation.DeckRight;
+
+        if (!into && !from && !intoDeck && !fromDeck)
         {
             return;
         }
 
-        // 调用点都在 `card.Location` 已经改完之后 ⇒ 这个计数就是"变化**之后**的手牌数"
-        // （出手那条路：`Cards(owner, oldLocation)` 已经不含这张卡了）。
-        int n = Cards(card.Owner, into ? location : oldLocation).Count;
+        // 调用点都在 `card.Location` 已经改完之后 ⇒ 这个计数就是"变化**之后**的张数"
+        // （出手/出库那条路：`Cards(owner, oldLocation)` 已经不含这张卡了）。
+        int n = Cards(card.Owner, into ? location : intoDeck ? location : oldLocation).Count;
+
         if (overflowOnly && !(into && n > HandCapacity))
         {
             return;
         }
 
+        if (!overflowOnly && !traceAll && traceDeck)
+        {
+            // 只看牌库模式：手牌那两条不动（避免噪声）
+            if (!intoDeck && !fromDeck)
+            {
+                return;
+            }
+
+            if (!traceAll)
+            {
+                Console.Error.WriteLine(
+                    $"[DECK] t={Turn} {card.Owner} {oldLocation}->{location} 牌库={n} " +
+                    $"{card.Name}#{card.CardId} via {how}");
+                DumpFrames();
+                return;
+            }
+        }
+
         Console.Error.WriteLine(
             $"[HAND] t={Turn} {card.Owner} {oldLocation}->{location} 手牌={n}/{HandCapacity} " +
             $"{card.Name}#{card.CardId} via {how}");
+        DumpFrames();
+    }
 
+    /// <summary>诊断用：打印前几帧 KLink 调用栈（点名"是哪条原语做的"）。</summary>
+    private static void DumpFrames()
+    {
         var frames = Environment.StackTrace
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Where(f => f.Contains("KLink", StringComparison.Ordinal))
-            .Skip(1)   // 跳过本方法自己
+            .Skip(2)   // 跳过本方法与 TraceHandChange
             .Take(4);
         foreach (string f in frames)
         {
