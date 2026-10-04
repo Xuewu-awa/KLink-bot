@@ -662,6 +662,35 @@ public sealed partial class CardApi
                     && c.State.ById(topId) is { } top
                     && HasGameplayTag(top, "subtype.navy");
             },
+            // `SetCardLocationAndLocNumber(cardID, Location, LocationNumber)`
+            // 蓝图 `BP_CardFunctions.g.cs:33961-34000`（40 行，逐行复核）：
+            // <code>
+            // :33970  card = GetCardFromID(cardID)
+            // :33974  if (!IsValid(card)) → DirectClientLogger("…is called on an invalid card!") + 返回
+            // :33978  card.location = Location            ; ★ **裸写字段**，不发任何触发
+            // :33980  if (card.location == 8 /*Discard*/) → 直接跳到结尾
+            // :33990  card.locationNumber = LocationNumber
+            // </code>
+            // ⇒ 两个要点：① 是**裸写**，不走 `State.Move`（所以**不触发** `OnCardLocationMoved` 一族 ——
+            //   那些由调用方自己发，例如 `ConvertCard` 的 `:10400 ExecuteOnCardLocationMoved`）；
+            //   ② **`Discard(8)` 时位置号保持不动**（蓝图 `:33980` 那道跳转）。
+            //
+            // ⚠️ 它是 `ConvertCard` 链上的一个前置件（IR 里**直接调用点为 0**，只被库函数调）。
+            // 注册它的理由与既有的 `RearrangeLocation` 相同：让「名字 → 实现」可查、为链条铺路。
+            ["SetCardLocationAndLocNumber"] = (c, r, a) =>
+            {
+                if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } card)
+                {
+                    var location = (CardLocation)IntArg(a, 1);
+                    card.Location = location;
+                    if (location != CardLocation.Discard)
+                    {
+                        card.LocationNumber = IntArg(a, 2);
+                    }
+                }
+
+                return null;
+            },
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),

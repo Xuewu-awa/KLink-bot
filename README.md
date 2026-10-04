@@ -2109,6 +2109,90 @@ JSON_SetInt(self, "unitToRemove", spawnedCardID)
 
 ⇒ 那条"未逐一核对"的标注**可以撤掉了**：现在是**核对过**的，且只剩这一处、已修。
 
+### 8.30 ★★ 2026-10-04 第二十一轮：**`ConvertCard` 的收益先量出来 —— 它是 live-165924 唯一的 ⑥ 阻塞**
+
+#### 一、★★ 先量收益：`ConvertCard` **真的被执行**
+
+§8.24 只说了"消费者在语料里出现过"（那是**静态**判据）。本轮改成查**运行时 ⑥ 清单**
+（`--audit-replay` 的"⑥ 撞到但**没实现**的原语"）：
+
+| 回放 | 运行时 ⑥ 里的 `ConvertCard` | 该局 ⑥ 全貌 |
+|---|---|---|
+| `docs/fresh-replays/replay-15` | **×1** | `<local-ran:doIControl3opCostUnit>`×65、`<attack-on-non-board-target>`×2、`<frontline-blocked-by-opponent>`×1、`<card:card_unit_b_17_f>`×1、**`ConvertCard`×1** |
+| `docs/live-replays/replay-165924` | **×2** | **只有 `ConvertCard`×2** ★ |
+| `docs/live-replays/replay-130691` | 0（只在静态清单里 ×26） | 0 种（全实现） |
+| `docs/live-replays/replay-310284` | 0 | `<card:card_unit_grenadier_245>`×1 |
+| `docs/live-replays/replay-955337` | 0 | `<card:card_unit_grenadier_245>`×1 |
+
+⇒ ★ **`live-165924` 唯一没实现的原子就是 `ConvertCard`（撞到 2 次）** ——
+也就是说那一局是被**这一条**挡住的。链值得做。
+
+#### 二、★ 三个运行时调用点**形状完全一致**（都是"按名字转"）
+
+```json
+ConvertCard(cardIDs, instigatorID=self.cardID, convertToCardName="…", convertIntoCardID=0,
+            skipTrigger=false, out newCardIDs)
+```
+- `card_event_capitulation` → `"card_unit_routed_troops"`（`unitsToConvert` 一批）
+- `card_unit_108_panzergrenadier` → `"card_unit_routed_troops"`（单张）
+- `card_unit_jagdpanzer_iv` → `"card_event_production"`（单张）
+
+⇒ `convertIntoCardID > 0` 与 `SalvagedCardInfo` 那两条分支**在语料里没被走到**，
+`skipTrigger` 恒 `false`。
+
+#### 三、★ `ConvertCard` 的实现规格（已逐行读出，留给下一轮直接落）
+
+`BP_CardFunctions.g.cs:9882-10450`（569 行），**每张卡一遍**：
+```
+:10164-10178  目标卡名 = convertToCardName；若为空且 convertIntoCardID>0 → 取那张卡的名字
+              ⚠️ 老卡在**弃牌堆(8)** 时，新卡落到**手牌**（:10176 GetHandLocationBySide）
+:10126-10147  老卡离场：在场 ⇒ ApplyRemoveCardFromBoard(cardID, instigatorID, false,false,true,true)
+              否则 ⇒ SetCardLocationAndLocNumber(cardID, 8, 0)
+:10206        CreateCard(side=老卡.side, 名字, location=老卡.location, 0,
+                        locationNumber=老卡.locationNumber,
+                        spawnCardInHand = 老卡.location ∈ {3,4}, gold=老卡.isGoldCard,
+                        "", false, false, …) → spawnedCardID
+:10210        newCardIDs.Add(spawnedCardID)
+:10259-10283  老卡在牌库 ⇒ RemoveCardFromDeckBySide + AddCardToDeckBySide + ExecuteOnAfterDeckChanged
+:10306-10361  ★ T34 广播：FetchAllCardsWithEventTrigger(34)
+              → **只发给 `Array_Contains(newCardIDs, item.cardID)` 为真的订阅者**
+              → item.OnOtherCardConverted(cardIDs, newCardIDs, convertToCardName, instigatorID)
+:10384        ExecuteOnSpawnedInHandEvents(新卡.side, 新卡.cardID)
+:10394-10400  InjectCardIntoLocation(老位置, 老位置号, 新卡) + RefreshLocationStatus
+              + ExecuteOnCardLocationMoved(新卡, 0, 老位置, false, 13)
+:10422        新卡在场上 ⇒ enterPlayOnTurn = GetTurnNumber()
+```
+⚠️ **注意 T34 不是普通广播**：它按 `newCardIDs` 过滤订阅者，而且 `FireTrigger` 的
+`OnOther*` 命名约定会把"发给某一个订阅者"变成"发给除他之外的所有卡"
+⇒ 实现时必须**逐张订阅者直接跑它的程序**（照 `BroadcastWithOutParams` 的做法
+`FindProgram(卡名, "OnOtherCardConverted")`），不能直接用 `FireTrigger`。
+
+#### 四、本轮落地：链上**第一个精确可验证的前置件**
+
+`SetCardLocationAndLocNumber(cardID, Location, LocationNumber)`
+（`:33961-34000`，40 行）：
+```
+:33970  card = GetCardFromID(cardID)
+:33974  if (!IsValid(card)) → DirectClientLogger("…invalid card!") + 返回
+:33978  card.location = Location            ; ★ **裸写字段**（不发任何触发）
+:33980  if (card.location == 8 /*Discard*/) → 跳到结尾
+:33990  card.locationNumber = LocationNumber
+```
+⇒ 两个要点：① **裸写**，不走 `State.Move`，所以**不触发** `OnCardLocationMoved` 一族
+（那些由调用方自己发，例如 `ConvertCard` 的 `:10400`）；
+② **`Discard(8)` 时位置号保持不动**。
+
+⚠️ 它在 IR 里**直接调用点为 0**（只被库函数调）⇒ `dispatch-gap` **逐位不变**
+（511/2370/`D601C3B70D4BD535`）—— 注册它的理由与既有的 `RearrangeLocation` 相同：
+让「名字 → 实现」可查、为链条铺路。
+
+⚠️ **未做**：`InjectCardIntoLocation`（`:24086-24109`）**本身是一条小链**
+（要 `FetchCardsByLocationSorted` + `CreateLocationNumberGapForCard`）；
+`ConvertCard` 本体与 T34 广播**下一轮**落。
+
+**A/B 结果**：22 局**逐位不变**（三套语料都核过）；自测 **166 → 167 全通过**
+（判死：去掉 `location != Discard` 那道门 ⇒ 立刻失败）。
+
 ---
 
 

@@ -577,6 +577,9 @@ internal static class SelfTest
         new("★ `JSON_SetInt` 的值是**卡对象**时要取 `CardId`（不能按整数读成 0）——" +
             "§8.23 那个\"出参类型\"疑点的收口：全 IR 只有 1 处这么用",
             JsonSetIntAcceptsCardValue),
+        new("★ `SetCardLocationAndLocNumber`（ConvertCard 链的前置件，蓝图 `:33961-34000`）：" +
+            "裸写位置与位置号，但 **Discard(8) 时不写位置号**",
+            SetCardLocationAndLocNumberRaw),
     };
 
     public static int Run(CardDatabase db)
@@ -13435,6 +13438,62 @@ internal static class SelfTest
         if (engine.Api.JsonGetInt(host, "plainInt") != 7)
         {
             return "`JSON_SetInt` 的值是普通整数时应当原样写进（7）" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ `SetCardLocationAndLocNumber(cardID, Location, LocationNumber)` ——
+    /// 蓝图 `BP_CardFunctions.g.cs:33961-34000`（40 行，逐行复核）。
+    ///
+    /// 两个要点：① 是**裸写字段**（不走 `State.Move`，所以**不触发** `OnCardLocationMoved` 一族）；
+    /// ② **`Discard(8)` 时位置号保持不动**（蓝图 `:33980` 那道跳转直接跳到结尾）。
+    ///
+    /// ⚠️ 它是 `ConvertCard` 链上的前置件（IR 里直接调用点为 0），本轮先把它做对、可验证。
+    ///
+    /// 判别力：去掉 `location != Discard` 那道门 ⇒ 断言 ② 失败。
+    /// </summary>
+    private static string? SetCardLocationAndLocNumberRaw(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        var card = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
+
+        // ---- ① 普通位置：位置与位置号都写 ----
+        engine.Api.InvokeByName("SetCardLocationAndLocNumber", null,
+            new object?[] { card.CardId, (int)CardLocation.HandLeft, 3 }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `SetCardLocationAndLocNumber`（ConvertCard 链的前置件）";
+        }
+
+        if (card.Location != CardLocation.HandLeft || card.LocationNumber != 3)
+        {
+            return $"应当写成 HandLeft / 3，实际 {card.Location} / {card.LocationNumber}" + D();
+        }
+
+        // ---- ② `Discard(8)`：只改位置，**位置号保持不动**（蓝图 :33980）----
+        engine.Api.InvokeByName("SetCardLocationAndLocNumber", null,
+            new object?[] { card.CardId, (int)CardLocation.Discard, 7 }, ctx, out _);
+        if (card.Location != CardLocation.Discard)
+        {
+            return $"应当写成 Discard，实际 {card.Location}" + D();
+        }
+
+        if (card.LocationNumber != 3)
+        {
+            return "蓝图 `:33980` 规定 **`Discard(8)` 时不写位置号**（保持原值 3），" +
+                   $"实际被改成了 {card.LocationNumber}" + D();
         }
 
         return null;
