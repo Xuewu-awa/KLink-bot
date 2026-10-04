@@ -2647,8 +2647,24 @@ public sealed partial class CardApi
 
         // ★ 先置位再摘东西 —— 与蓝图同序（L_02D2 在 L_054E 之前）。
         //   顺序有观测意义：摘关键字会走 `RemoveKeyword` → `ZActionRemove*` +
-        //   `FireAbilitiesChanged`，而被抑制的卡在这些派发里应当**已经被抑制**
-        //   （`CardApi.FireTrigger` si=325/710：`cardTriggered.isSuppressed` ⇒ 整轮不派发）。
+        //   `FireAbilitiesChanged`，而被抑制的卡在这些派发里应当**已经被抑制**。
+        //
+        // ⚠️⚠️ **2026-10-04 更正**：这里原先写的是
+        //   「`CardApi.FireTrigger` si=325/710：`cardTriggered.isSuppressed` ⇒ 整轮不派发」——
+        //   **那是错的**。`si=325/710` 那道门在 `ExecuteOnDestructionEffectTriggered`
+        //   （**摧毁效果专用**，还带 `skipSuppressCheck` 形参），实现落点是
+        //   `CardApi.FireDestructionEffectTriggered`（见本文件 `:806-812`）。
+        //   **`FireTrigger` 本身没有"被抑制就不派发"的门**。
+        //
+        //   蓝图里 `isSuppressed` 一共 36 处，**形状统一**：都长成
+        //   `ExecuteOnXxxEvents` 开头那句
+        //   `if (!<触发因> .isSuppressed) goto …` —— 判的是**"引起这个事件的那张卡"**，
+        //   不是订阅者（例：`ExecuteOnCardLocationMoved:15475` 判 `cardToMove`、
+        //   `ExecuteOnEnterPlayEvents:16460` 判 `cardEnterPlay`、
+        //   `GainKreditSlot:18460` / `LoseKreditSlot:25727` 判那个槽位变化的卡）。
+        //   ⇒ **订阅者自己是否被抑制，蓝图不在这里判**（订阅者的程序体自己 guard）。
+        //   这条更正对 `card_unit_38th_independent` 的级联排查是**关键**：
+        //   不能拿"被抑制 ⇒ 收不到事件"当理由。
         target.Keywords.Add(Keyword.Suppressed);
 
         // 记下被抑制的回合号 —— 仅作诊断留痕，见 `CardInstance.SuppressedOnTurn`。
