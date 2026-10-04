@@ -46,7 +46,8 @@ internal static class Program
                 identityOnly: opts.GetValueOrDefault("identity-only"),
                 rngTrace: opts.ContainsKey("rng-trace"),
                 dumpLog: opts.ContainsKey("dump-log"),
-                dupStartKredit: opts.ContainsKey("dup-start-kredit"));
+                dupStartKredit: opts.ContainsKey("dup-start-kredit"),
+                boardTrace: opts.ContainsKey("board-trace"));
         }
 
         // `--kredit-table <目录>`：把目录下所有回放的**实际支付**导成 CSV，

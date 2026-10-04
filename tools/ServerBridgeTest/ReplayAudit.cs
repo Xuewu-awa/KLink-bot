@@ -41,7 +41,8 @@ internal static class ReplayAudit
     /// </param>
     public static int Run(string repoRoot, string replayBase, int verboseLimit = 0,
                           bool identityCorrection = false, string? identityOnly = null,
-                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false)
+                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false,
+                          bool boardTrace = false)
     {
         string snapPath = replayBase + ".json";
         string actsPath = replayBase + ".actions.json";
@@ -109,6 +110,32 @@ internal static class ReplayAudit
                 {
                     Console.WriteLine("      " + runner.EngineLog(seenLog++));
                 }
+            }
+
+            // ★ `--board-trace`：逐动作打印**双方半场与前线**的单位构成。
+            //
+            // 为什么需要它：审计的 ③ 只给**终局**场面，而"从哪一步开始比客户端多了一个单位"
+            // 必须看**中间态**。2026-10-04 的 `replay-748616` 就是卡在这里：
+            // 内核在 `#39 t7` 判人类"打不出：半场已满"，但终局场面看不出 t7 那一刻谁在场。
+            // 输出口径与 `MatchEngine.HalfBoardFull` **一致**（含 HQ、只按 location 过滤），
+            // 所以 `N/5` 里的 N 就是判满用的那个数。
+            if (boardTrace)
+            {
+                static string Units(GameState st, CardLocation loc) =>
+                    string.Join(" ", st.CardsUnordered()
+                        .Where(c => c.Location == loc)
+                        .OrderBy(c => c.LocationNumber)
+                        .Select(c => $"{c.Name}#{c.CardId}@{c.LocationNumber}"));
+
+                int leftSupport = st.Cards(Side.Left, Side.Left.HqOf()).Count();
+                int rightSupport = st.Cards(Side.Right, Side.Right.HqOf()).Count();
+                int frontline = st.CardsUnordered().Count(c => c.Location == CardLocation.BoardFrontline);
+                Console.WriteLine($"   [BOARD] 半场 {leftSupport}/{GameState.HalfBoardCapacity} vs " +
+                                  $"{rightSupport}/{GameState.HalfBoardCapacity}；" +
+                                  $"前线 {frontline}/{st.FrontlineCapacity}（归属={st.FrontlineOwner}）");
+                Console.WriteLine($"   [BOARD]   L半场: {Units(st, Side.Left.HqOf())}");
+                Console.WriteLine($"   [BOARD]   R半场: {Units(st, Side.Right.HqOf())}");
+                Console.WriteLine($"   [BOARD]   前线: {Units(st, CardLocation.BoardFrontline)}");
             }
 
             // ⚠️ **先**快照"这条动作之前谁已经死了" ——
