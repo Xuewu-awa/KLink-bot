@@ -565,6 +565,9 @@ internal static class SelfTest
             "`WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`" +
             "（后两个的写入方落在 `PlayCard` 里，端到端验）",
             CorpusConsumerPrimitives),
+        new("★ `getCardsBuffedByThisCard`（25 个调用点，13 条清单里最大的一条）：" +
+            "只返回**被这张卡贴过**的卡（19 张光环卡的刷新用法）",
+            CardsBuffedByThisCardQuery),
     };
 
     public static int Run(CardDatabase db)
@@ -13101,6 +13104,93 @@ internal static class SelfTest
         {
             return "打出**最右**那张（locationNumber=2，但不是最左）之后应当 " +
                    $"left=false / right=true，实际 left={rLeft} right={rRight}" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ `getCardsBuffedByThisCard(out cards)` —— 13 条清单里**最大的一条**（25 个调用点）。
+    ///
+    /// **原生函数**（不在 `BP_CardFunctions` 里），语义是按 19 张消费者的用法推断的：
+    /// 它们**全是光环卡**（"Your other X have +N attack"：`royal_west_kents` / `sdf` /
+    /// `1st_london_brigade` / `panzer_iii_l` / `wolves_of_tuscany` / `type_4_chi_to` …），
+    /// 用法都是同一套**光环刷新**（逐行确认于 `card_unit_royal_west_kents` 的 ubergraph）：
+    /// <code>
+    /// i=1490  RemoveBuff()                              ; 先撤掉自己贴的
+    /// i=1505  CardsBuffed = getCardsBuffedByThisCard()
+    /// i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
+    /// </code>
+    /// ⇒ 语义 = "所有 `BuffsBySource` 里含**来源为我**的条目的卡"（与 `isBuffedByCard` 对偶）。
+    ///
+    /// 判别力：① 删实现 ⇒ 报"派发表里没有"；
+    /// ② 实现改成"返回所有被贴过的卡"（不过滤来源）⇒ 断言 ① 会看到 1 张以外的卡而失败；
+    /// ③ 实现改成"返回空表" ⇒ 断言 ① 失败。
+    /// </summary>
+    private static string? CardsBuffedByThisCardQuery(CardDatabase db)
+    {
+        const string aura = "card_unit_royal_west_kents";
+        const string plain = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { aura, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        string D() => Dump(state);
+
+        var src = state.CreateWithId(aura, Side.Left, 300, CardLocation.BoardFrontline, 0);
+        var buffed = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardFrontline, 1);
+        state.CreateWithId(plain, Side.Left, 302, CardLocation.BoardHqLeft, 1);
+
+        // ⚠️ 来源取 `ctx.Self` —— `DoChangeAttack` 结尾就是 `ChangeAttack(target, delta, c.Self)`，
+        //    而且那里有注释明确说**故意不取** `SourceCardIdArg(a, 1, c.Self)`
+        //    （`CardApiDispatch.cs:3012-3013`）。所以这里必须让 `Self` = 光环那张卡。
+        var ctx = new EffectContext { Engine = engine, State = state, Self = src, Controller = Side.Left };
+
+        // 前置：用 `ChangeAttack(目标, 来源ID, …)` 贴一笔**带来源**的加成
+        engine.Api.InvokeByName("ChangeAttack", null,
+            new object?[] { buffed, src.CardId, 2, 0, false, null }, ctx, out bool handled1);
+        if (!handled1)
+        {
+            return "前置不成立：派发表里没有 `ChangeAttack`";
+        }
+
+        if (!buffed.BuffsBySource.Keys.Any(k => k.SourceCardId == src.CardId))
+        {
+            return "前置不成立：`ChangeAttack(目标, 来源ID, …)` 没有在 `BuffsBySource` 里" +
+                   "留下「来源 = 光环那张卡」的条目" + D();
+        }
+
+        // ---- ① 只返回**被这张卡贴过**的那张 ----
+        var ctxAura = new EffectContext { Engine = engine, State = state, Self = src, Controller = Side.Left };
+        object? r1 = engine.Api.InvokeByName("getCardsBuffedByThisCard", null,
+            new object?[] { null }, ctxAura, out bool handled2);
+        if (!handled2)
+        {
+            return "派发表里没有 `getCardsBuffedByThisCard`（IR 25 个调用点 / 19 张光环卡）";
+        }
+
+        var got = r1 as List<CardInstance> ?? new List<CardInstance>();
+        if (got.Count != 1 || !ReferenceEquals(got[0], buffed))
+        {
+            return $"`getCardsBuffedByThisCard` 应当**只**返回被这张卡贴过的那 1 张" +
+                   $"（语义 = `BuffsBySource` 里来源是我的那些卡），实际 {got.Count} 张" + D();
+        }
+
+        // ---- ② 没贴过任何卡的来源 ⇒ 空表 ----
+        var idle = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
+        var ctxIdle = new EffectContext { Engine = engine, State = state, Self = idle, Controller = Side.Right };
+        object? r2 = engine.Api.InvokeByName("getCardsBuffedByThisCard", null,
+            new object?[] { null }, ctxIdle, out _);
+        var none = r2 as List<CardInstance> ?? new List<CardInstance>();
+        if (none.Count != 0)
+        {
+            return $"没贴过卡的来源应当返回**空表**，实际 {none.Count} 张" + D();
         }
 
         return null;

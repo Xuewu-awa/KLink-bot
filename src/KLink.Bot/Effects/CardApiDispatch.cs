@@ -925,6 +925,34 @@ public sealed partial class CardApi
 
             // ---------------- 近似实现（语义未验证，保守处理）----------------
             ["GetDestroyedCardsCountBySide"] = (c, r, a) => c.State.Discard(SideArg(r, a, 0, c.Controller)).Count(),
+            // `getCardsBuffedByThisCard(out cards)` —— **原生函数**（不在 `BP_CardFunctions` 里）。
+            //
+            // 19 张消费者**全是光环卡**（"Your other X have +N attack"：
+            // `royal_west_kents` / `sdf` / `1st_london_brigade` / `panzer_iii_l` /
+            // `wolves_of_tuscany` / `type_4_chi_to` / `blitzkrieg` / `yamamoto` …），
+            // 用法都是同一套**光环刷新**（逐行确认于 `card_unit_royal_west_kents` 的 ubergraph）：
+            // <code>
+            //   i=1490  RemoveBuff()                        ; 先撤掉自己贴的
+            //   i=1505  CardsBuffed = getCardsBuffedByThisCard()
+            //   i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
+            // </code>
+            //
+            // 内核的贴膜账本是 `CardInstance.BuffsBySource`（键 = `(来源卡ID, 是否临时)`）
+            // ⇒ 语义 = "所有 `BuffsBySource` 里含**来源为我**的条目的卡"。
+            // ⚠️ 这是**按名字 + 19 张消费者的用法推断**出来的语义（原生函数没有蓝图可对），
+            //   与内核既有的 `isBuffedByCard` 正好对偶（那个问"我有没有被某来源贴过"）。
+            // ⚠️ 实参形状：`recv` 为 null 或 `{self:true}`、`args=[out 槽]`（3 种形状实测）⇒ 走 `SelfArg`。
+            ["getCardsBuffedByThisCard"] = (c, r, a) =>
+            {
+                if (SelfArg(c, r, a) is not { } aura)
+                {
+                    return new List<CardInstance>();
+                }
+
+                return c.State.CardsUnordered()
+                    .Where(x => x.BuffsBySource.Keys.Any(k => k.SourceCardId == aura.CardId))
+                    .ToList();
+            },
             ["isBuffedByCard"] = (c, r, a) => IsBuffedByCard(c, r, a),
             ["GetUnitTypeCountOnBoard"] = (c, r, a) => c.State.Board(SideArg(r, a, 0, c.Controller)).Count(u => IsUnit(u)),
             ["updateCustomJsonIfNeeded"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },

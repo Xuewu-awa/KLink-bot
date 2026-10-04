@@ -133,10 +133,14 @@ internal static class DispatchGapBaseline
     /// 86 种规则相关缺口按这个条件过滤后只剩 **13 种**，本轮补了其中自洽的四条 ——
     /// `GiveTwoKredits`（2 点）、`ResetUnitOperations`（3）、
     /// `WasLeftMostCardWhenPlayedFromHand`（6）、`WasRightMostCardWhenPlayedFromHand`（4）。
-    public const int BaselineCount = 513;
+    /// 2026-10-04：513 → **512**（调用点 2402 → **2377**，指纹 `D761A2F1EC183719`）。
+    /// 补的是 `getCardsBuffedByThisCard`（**25 个调用点，是 13 条清单里最大的一条**）——
+    /// 19 张消费者全是光环卡，语义按"用法一致 + 与 `isBuffedByCard` 对偶"推断：
+    /// "所有 `BuffsBySource` 里含**来源为我**的条目的卡"。
+    public const int BaselineCount = 512;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "1CD6C9FB13D94AD0";
+    public const string BaselineFingerprint = "D761A2F1EC183719";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

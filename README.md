@@ -1861,6 +1861,38 @@ if (outParams.Count == 0 && fn.Length > 0)
   但那些消费者在这 22 局里**没有走到**这些分支，所以**回放侧仍无信号**；
 - 自测 **161 → 162 全通过**（判死验证：关掉 `PlayCard` 里写标记那一段 ⇒ 立刻失败）。
 
+### 8.26 ★ 2026-10-04 第十七轮：**`getCardsBuffedByThisCard`（25 点，13 条清单里最大的一条）**
+
+**原生函数**（不在 `BP_CardFunctions` 里，没有蓝图可对），语义是按 **19 张消费者的用法**推断的：
+它们**全是光环卡**（"Your other X have +N attack"）——
+`royal_west_kents`（"Your other Guard units have +2 attack and Blitz"）/ `sdf` /
+`1st_london_brigade` / `panzer_iii_l` / `wolves_of_tuscany` / `type_4_chi_to` /
+`blitzkrieg` / `yamamoto` / `for_the_emperor` …
+
+逐行确认于 `card_unit_royal_west_kents` 的 ubergraph：
+```
+i=1490  RemoveBuff()                              ; 先撤掉自己贴的
+i=1505  CardsBuffed = getCardsBuffedByThisCard()
+i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
+```
+⇒ 就是**光环刷新**：拿到"我贴过的那些卡" → 逐个撤销/重贴。
+
+**实现**：内核的贴膜账本是 `CardInstance.BuffsBySource`（键 = `(来源卡ID, 是否临时)`）
+⇒ 语义 = "所有 `BuffsBySource` 里含**来源为我**的条目的卡"，与既有的 `isBuffedByCard`
+（问"我有没有被某来源贴过"）正好**对偶**。
+⚠️ 如实标注：这是**按名字 + 用法推断**的语义（原生函数无蓝图），但 19 张消费者的用法完全一致。
+
+**A/B 结果**：
+- ★ **判据 ⑥ 变好**：`dispatch-gap` **513 / 2402 / `1CD6C9FB13D94AD0`**
+  → **512 / 2377 / `D761A2F1EC183719`**（正好 −25 点 = 该原语的调用点数，已同步冻结常量）；
+- 22 局**逐位不变**（三套语料都核过）；
+- 自测 **162 → 163 全通过**（判死：去掉"来源过滤"、改成返回所有被贴过的卡 ⇒ 立刻失败）。
+
+⚠️ **写用例时又踩到一个坑**（值得记）：`ChangeAttack` 的来源**取 `c.Self`**，
+而**不是** `SourceCardIdArg(a, 1, c.Self)` —— `CardApiDispatch.cs:3012-3013` 有明确注释说这是**故意**的
+（"施加路径用的就是 `c.Self`，撤销必须落在同一个槽上才对得起来"）。
+第一版用例把来源写在实参里、`ctx.Self` 留空 ⇒ 贴出来的加成**没有来源** ⇒ 前置断言就失败了。
+
 ---
 
 
