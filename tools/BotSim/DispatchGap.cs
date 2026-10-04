@@ -137,10 +137,15 @@ internal static class DispatchGapBaseline
     /// 补的是 `getCardsBuffedByThisCard`（**25 个调用点，是 13 条清单里最大的一条**）——
     /// 19 张消费者全是光环卡，语义按"用法一致 + 与 `isBuffedByCard` 对偶"推断：
     /// "所有 `BuffsBySource` 里含**来源为我**的条目的卡"。
-    public const int BaselineCount = 512;
+    /// 2026-10-04：512 → **511**（调用点 2377 → **2370**，指纹 `D601C3B70D4BD535`）。
+    /// 补的是 `IsTopDeckNavy`（7 点，消费者 `card_event_uss_arcfish` 在语料里）——
+    /// 蓝图 `:24178-24218`：`GetDeckByside(deckSide)[0]` → `getHasGameplayTag(卡, "subtype.navy")`。
+    /// 两个依赖**早已就绪**（`GetDeckByside` 144 个调用点、`getHasGameplayTag` 已注册、
+    /// `GameplayTagTable` 里 `subtype.navy` 有数据）⇒ **没有链**的干净实现。
+    public const int BaselineCount = 511;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "D761A2F1EC183719";
+    public const string BaselineFingerprint = "D601C3B70D4BD535";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

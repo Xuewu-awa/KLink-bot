@@ -1971,6 +1971,79 @@ DiscardRandomCardFromHand(side, discarderID, out discardedCardID)
 （IR 实测 19 种形状，`SuffixHas`/`SuffixAdd` 就是 `card = AsCardOrId(a[0]) ?? SelfArg(...)`
 + `tag = StrArg(a, 0)`）—— 第一版把卡写在 `a[0]` 里 ⇒ 标签读成空串 ⇒ 前置断言失败。
 
+### 8.28 ★★ 2026-10-04 第十九轮：**`ref/` 里有四份参考、行号必须指名；触发队列的语义已还原**
+
+#### 一、★★ 方法学：`ref/` 下有 **4 份** `BP_CardFunctions.g.cs`，**内容不一样**
+
+| 路径 | 行数 | 函数数 | 有 `AddToTriggerQueue` / `ResolveTriggerQueue` |
+|---|---|---|---|
+| `ref/kards-sim/KardsSim/Generated/`（**内核注释引用的就是这份**） | 38018 | **292** | ✗ |
+| `ref/kards-sim.mine-pre-push/KardsSim/Generated/_deps/` | 38309 | **294** | ✅ |
+| `ref/kards-sim.old-20260926/…/Generated/` | 38018 | 292 | ✗ |
+| `ref/kards-sim.upstream-ccac81f/…/Generated/` | 38018 | 292 | ✗ |
+
+⚠️ **只有 `_deps` 那一份有那两个函数**，而**内核的 IR 里明明调了 `AddToTriggerQueue`（6 个调用点）**。
+⇒ **引用蓝图行号时必须写明是哪一份**；本仓库里内核注释引用的行号与**第一份**一致
+（已用 `PlayCardDirectlyFromHand` / `ForceEndTurn` 交叉验证过）。
+**本轮踩到的坑**：我先在 `ref/kards-sim` 里按行号读 `AddToTriggerQueue`，
+读到的却是 `ForceCardChangeLocation` 的入参 —— 因为那个行号属于**另一份文件**。
+
+#### 二、★ 触发队列（`AddToTriggerQueue` / `ResolveTriggerQueue`）的语义已还原
+
+在 `_deps` 那份里逐行读完（两个函数体都只是 `ExecuteUbergraph(1023/1141)` 的转发，
+真体在 ubergraph 的 `L_03FF` / `L_0475`）：
+
+```
+AddToTriggerQueue(Card):                       ; ubergraph case 1023
+  ExecuteOnDeploymentTriggered(Card, Card.cardID, out triggerMultiple)
+  self.TriggerMultiple = triggerMultiple
+  do { self.TriggerQueue.Add(Card) } while (++i <= self.TriggerMultiple)
+                                               ; ⇒ 往队列里塞 TriggerMultiple+1 次
+
+ResolveTriggerQueue():                         ; ubergraph case 1141
+  while (Array_Length(self.TriggerQueue) > 0):
+      card = self.TriggerQueue[0]
+      self.NextCardTrigger = card
+      Array_Remove(self.TriggerQueue, 0)
+      card.OnPlayedFromHand(card.currentTarget)     ; ★ 迟到的"从手牌打出"
+```
+
+⇒ 这是**延迟出牌**机制：`Develop` 一类的卡把卡塞进队列，之后 `ResolveTriggerQueue` 再逐张
+调它们的 `OnPlayedFromHand`。
+**本轮没做**（如实标注）：它是一条**链** —— 需要 `TriggerQueue` 状态、
+`ExecuteOnDeploymentTriggered`、`TriggerMultiple` 成员、以及 `ResolveTriggerQueue` 的调用点
+（`_deps` 那份的 `:24081`，在某个库函数里）。而内核目前**完全没有**触发队列概念。
+
+#### 三、另外两条的取证结论（都没做）
+
+- **`PlayCardDirectlyFromHand`（15 点）= 422 行蓝图**（`:28044-28465`），含 gotcha 激活、
+  `targetOverride`、落位与 `NotifyPlayFromHand` 等分支 ⇒ **单轮做不完**，且与 T31/T30 有耦合。
+- **`ForceEndTurn`（5 点）= `NotifyForceEndTurn(Notifier, true)`（`:17811`）** ——
+  **只是一个通知**，真正的"结束回合"在 game-mode 侧。内核若自己调 `MatchEngine.EndTurn`
+  会有**重复结束回合**的风险（回放流里 `XActionEndOfTurn` 也会来一次）⇒ **不做**，如实记录。
+  ⚠️ 顺带确认：`card_event_repel_the_attack` 的卡面是
+  "All enemy units Retreat. **End the turn unless played from right-most in hand.**"
+  —— 后半句正是 §8.25 实现的 `WasRightMostCardWhenPlayedFromHand`，两半现在**只差这一半**。
+
+#### 四、补上 `IsTopDeckNavy`（7 点，**没有链**的一条）
+
+蓝图 `:24178-24218`（逐行复核）：
+```
+deckCardIDs = GetDeckByside(deckSide)
+if (deckCardIDs[0] > 0):  isNavy = getHasGameplayTag(GetCardFromID(deckCardIDs[0]), ["subtype.navy"])
+else:                     isNavy = false
+```
+两个依赖**早已就绪**：`GetDeckByside` 早已注册（**144 个调用点**，返回的是**卡 ID 列表**）、
+`getHasGameplayTag` 早已注册、`GameplayTagTable` 里 `subtype.navy` 有数据
+（`card_event_hms_belfast` / `card_event_bismarck` / `card_event_admiral_hipper` …）
+⇒ 这是本轮唯一**没有链**的实现，消费者 `card_event_uss_arcfish` 在 22 局语料里出现过。
+
+**A/B 结果**：
+- ★ **判据 ⑥ 变好**：`dispatch-gap` **512 / 2377 / `D761A2F1EC183719`**
+  → **511 / 2370 / `D601C3B70D4BD535`**（正好 −7 点，已同步冻结常量）；
+- 22 局**逐位不变**（三套语料都核过）；
+- 自测 **164 → 165 全通过**（判死：让非海军也返回真 ⇒ 立刻失败）。
+
 ---
 
 

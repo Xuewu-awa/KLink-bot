@@ -643,6 +643,25 @@ public sealed partial class CardApi
                 (c, r, a) => ReadPlayedFromHandFlag(c, r, a, LeftMostWhenPlayedFromHandKey),
             ["WasRightMostCardWhenPlayedFromHand"] =
                 (c, r, a) => ReadPlayedFromHandFlag(c, r, a, RightMostWhenPlayedFromHandKey),
+            // `IsTopDeckNavy(deckSide, out isNavy)` —— 蓝图 `BP_CardFunctions.g.cs:24178-24218`（逐行复核）：
+            // <code>
+            //   deckCardIDs = GetDeckByside(deckSide)
+            //   if (deckCardIDs[0] > 0):
+            //       isNavy = getHasGameplayTag(GetCardFromID(deckCardIDs[0]), ["subtype.navy"])
+            //   else: isNavy = false
+            // </code>
+            // 两个依赖**都已就绪**：`GetDeckByside` 早已注册（**144 个调用点**，返回的是**卡 ID 列表**），
+            // `getHasGameplayTag` 也早已注册，且 `GameplayTagTable` 里 `subtype.navy` 有数据
+            //（`card_event_hms_belfast` / `card_event_bismarck` / `card_event_admiral_hipper` …）
+            // ⇒ 这一条是**没有链**的干净实现。消费者 `card_event_uss_arcfish` 在 22 局语料里出现过。
+            ["IsTopDeckNavy"] = (c, r, a) =>
+            {
+                var side = SideArg(r, a, 0, c.Controller);
+                int topId = GetDeckBySide(side).FirstOrDefault();
+                return topId > 0
+                    && c.State.ById(topId) is { } top
+                    && HasGameplayTag(top, "subtype.navy");
+            },
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),

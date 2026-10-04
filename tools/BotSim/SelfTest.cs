@@ -571,6 +571,9 @@ internal static class SelfTest
         new("★★ `GetRandomCard` 的第二个实参 `skipCustomAlways` 必须读：" +
             "176 个调用点里 153 个传 false（走\"必选集\"分支），旧实现恒按全池随机",
             GetRandomCardCustomAlways),
+        new("★ `IsTopDeckNavy`（7 点，消费者 `card_event_uss_arcfish` 在语料里）：" +
+            "牌库顶是海军卡为真、非海军为假、空牌库为假",
+            TopDeckNavyQuery),
     };
 
     public static int Run(CardDatabase db)
@@ -13305,6 +13308,76 @@ internal static class SelfTest
         {
             return "`skipCustomAlways = true` 时必选标记**不该**生效（蓝图 :21688 直接走 :21689 全池随机），" +
                    "但 12 次都没抽到别的卡" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ `IsTopDeckNavy(deckSide, out isNavy)` —— 蓝图 `BP_CardFunctions.g.cs:24178-24218`（逐行复核）：
+    /// <code>
+    ///   deckCardIDs = GetDeckByside(deckSide)
+    ///   if (deckCardIDs[0] > 0):
+    ///       isNavy = getHasGameplayTag(GetCardFromID(deckCardIDs[0]), ["subtype.navy"])
+    ///   else: isNavy = false
+    /// </code>
+    /// 两个依赖**早已就绪**（`GetDeckByside` 144 个调用点且返回**卡 ID 列表**、
+    /// `getHasGameplayTag` 已注册、`GameplayTagTable` 里 `subtype.navy` 有数据）
+    /// ⇒ 这一条是**没有链**的干净实现，消费者 `card_event_uss_arcfish` 在 22 局语料里出现过。
+    ///
+    /// 判别力：① 恒返回 true / 恒返回 false ⇒ 断言 ① 或 ② 失败；
+    /// ② 去掉"牌库空"那道门（`deckCardIDs[0] > 0`）⇒ 断言 ③ 失败。
+    /// </summary>
+    private static string? TopDeckNavyQuery(CardDatabase db)
+    {
+        const string navyCard = "card_event_hms_belfast";      // `GameplayTagTable` 里是 `subtype.navy`
+        const string landCard = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { navyCard, landCard })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        bool IsNavy(Side s)
+        {
+            object? r = engine.Api.InvokeByName("IsTopDeckNavy", null,
+                new object?[] { (int)s, null }, ctx, out bool handled);
+            if (!handled)
+            {
+                return false;
+            }
+
+            return r is true;
+        }
+
+        // ---- ① 牌库只有一张海军卡 ⇒ true ----
+        var navy = state.CreateWithId(navyCard, Side.Left, 300, CardLocation.DeckLeft, 0);
+        if (!IsNavy(Side.Left))
+        {
+            return $"牌库顶是海军卡（{navyCard}）时 `IsTopDeckNavy` 应当为**真**" +
+                   "（蓝图 :24178-24218）" + D();
+        }
+
+        // ---- ② 换成非海军卡 ⇒ false ----
+        state.Move(navy, CardLocation.Discard);
+        var land = state.CreateWithId(landCard, Side.Left, 301, CardLocation.DeckLeft, 0);
+        if (IsNavy(Side.Left))
+        {
+            return $"牌库顶不是海军卡（{landCard}）时 `IsTopDeckNavy` 应当为**假**" + D();
+        }
+
+        // ---- ③ 空牌库 ⇒ false（蓝图那道 `deckCardIDs[0] > 0` 门）----
+        state.Move(land, CardLocation.Discard);
+        if (IsNavy(Side.Left))
+        {
+            return "牌库为空时 `IsTopDeckNavy` 应当为**假**（蓝图 `deckCardIDs[0] > 0` 那道门）" + D();
         }
 
         return null;
