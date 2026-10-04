@@ -537,6 +537,9 @@ internal static class SelfTest
             CardCreatedPinnedSmokescreenTriggers),
         new("★ `SpawnCardInHand` 的手牌容量门：满手时新卡进弃牌堆（蓝图 `CreateCard` :10702-10706）",
             SpawnCardInHandRespectsCapacity),
+        new("★★ T31 `OnOtherCardAttacks` 被派发，且出参 `AttackedAndStopped` 被尊重" +
+            "（BEAUFIGHTER 先打死攻击者 ⇒ 防御方零伤害，但油费/已攻击照记）",
+            OtherCardAttacksStopsAttack),
     };
 
     public static int Run(CardDatabase db)
@@ -12081,6 +12084,114 @@ internal static class SelfTest
             return $"手牌没满（{state.Hand(Side.Left).Count}/{GameState.HandCapacity}）时 " +
                    $"`SpawnCardInHand` 应当把新卡放进手牌，实际 {created2.Location}"
                  + Dump(state);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ T31 `OnOtherCardAttacks` 被派发，且出参 `AttackedAndStopped` **真的被尊重**。
+    ///
+    /// 探针 `card_unit_beaufighter_tf_mk_x`（BEAUFIGHTER TF Mk X，6 费 4/4 轰炸机）：
+    /// 「**Any unit that attacks this unit takes 3 damage first.**」
+    /// 它是 20 张 T31 订阅者之一，且**不是 gotcha** ⇒ 没有 `ShouldGotchaTrigger` 那道门
+    /// （所以本用例测的是 T31 本身，不是 gotcha 子系统）。
+    /// 它的 `locals.OnOtherCardAttacks` 体：
+    /// <code>
+    /// i=0    defenderCard.cardID == self.cardID      ; ★ 自己是被打的那个（防御方也是收件人）
+    /// i=41   Array_Length(cardAttacking.cardsGivingImmunity) == 0
+    /// i=85   DamageCard(cardAttacking, 3, self, …)   ; 先打攻击者 3 点
+    /// i=91   stopAttack = False
+    /// i=93   AttackedAndStopped = Not(IsLocatedOnBoard(cardAttacking))
+    /// </code>
+    /// ⇒ 攻击者 1 防、吃 3 点必死 ⇒ `AttackedAndStopped = True`
+    /// ⇒ 蓝图 `:4643-4655`：**整段伤害跳过**（防御方一点不掉），
+    ///   而油费与"已攻击"记账**照做**（`ExecuteStoppedAttack` `:17706`）。
+    ///
+    /// 判别力：① 不派发 ⇒ 攻击者活、防御方掉 2 血；② 派发但丢掉出参 ⇒
+    /// 攻击者死、**防御方照样掉 2 血**（这正是接线前的行为）。
+    ///
+    /// ⚠️ **这条无法用回放验证**：10 局主对拍集里 T31 一共触发 58 次，
+    /// 但**订阅者出现 0 次**（探针 `KLINK_TRACE_T31=1` 实测）⇒ 判据只有「蓝图原文 + 本用例」。
+    /// </summary>
+    private static string? OtherCardAttacksStopsAttack(CardDatabase db)
+    {
+        const string probe = "card_unit_beaufighter_tf_mk_x";
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(probe) is null)
+        {
+            return $"卡库里缺 {probe}";
+        }
+
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var attacker = state.CreateWithId(plain, Side.Left, 21, CardLocation.BoardFrontline, 0);
+        var beau = state.CreateWithId(probe, Side.Right, 60, CardLocation.BoardFrontline, 0);
+        attacker.EnteredPlayOnTurn = -1;
+        beau.EnteredPlayOnTurn = -1;
+        attacker.Attack = 2;
+        attacker.Defense = 1;
+        attacker.MaxDefense = 1;
+        beau.Defense = 4;
+        beau.MaxDefense = 4;
+
+        int defBefore = beau.Defense;
+        int kreditsBefore = state.Kredits(Side.Left);
+        int opCost = attacker.OperationCost;
+
+        if (!engine.Attack(attacker, beau, out string why))
+        {
+            return $"前置不成立：攻击打不出去（{why}）" + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        // ⚠️ 出参那一族走 `BroadcastWithOutParams`，它的 trace 格式是
+        //    `OnOtherCardAttacks(out stopAttack/AttackedAndStopped) → 卡名#ID`
+        //    —— **不是** `Reached` 认的 `事件名 → 卡名#ID`（那个中间夹了 `(out …)`）。
+        bool Hit() => trace.Any(t => t.Contains("OnOtherCardAttacks", StringComparison.Ordinal)
+                                     && t.Contains($"{beau.Name}#{beau.CardId}", StringComparison.Ordinal));
+
+        if (!Hit())
+        {
+            return $"T31 `OnOtherCardAttacks` **没有派发**到订阅卡 {probe}" +
+                   "（IR `locals` 20 张订阅者之一；内核原先从不派发 31）"
+                 + Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
+        }
+
+        if (attacker.AliveOnBoard)
+        {
+            return $"T31 派发了，但 {probe} 的 `DamageCard(cardAttacking, 3)` 没生效：" +
+                   $"攻击者应当死亡，实际 Location={attacker.Location} 防御={attacker.Defense}"
+                 + Dump(state, ("派发记录", string.Join(" | ", trace)));
+        }
+
+        if (beau.Defense != defBefore)
+        {
+            return "出参 `AttackedAndStopped` **没有被尊重**：攻击者已被反制打死，" +
+                   $"防御方应当一点伤害都不吃（蓝图 :4643-4655），实际 {defBefore} → {beau.Defense}"
+                 + Dump(state);
+        }
+
+        if (state.Kredits(Side.Left) != kreditsBefore - opCost)
+        {
+            return $"`AttackedAndStopped` 路应当**照扣**行动费 {opCost}：" +
+                   $"{kreditsBefore} → {state.Kredits(Side.Left)}（蓝图 :4513 扣费在窗口之后）";
+        }
+
+        if (!attacker.HasAttackedThisTurn)
+        {
+            return "`AttackedAndStopped` 路应当把攻击者标记为已攻击" +
+                   "（`ExecuteStoppedAttack` :17706 → `SetAttackerHasAttacked`）";
         }
 
         return null;

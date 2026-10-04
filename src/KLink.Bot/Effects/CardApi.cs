@@ -393,7 +393,8 @@ public sealed partial class CardApi
         CardInstance? eventSubject = null,
         IReadOnlyDictionary<string, object?>? namedArgs = null,
         Func<CardInstance, IReadOnlyDictionary<string, object?>?>? seedFactory = null,
-        IReadOnlyList<CardInstance>? only = null)
+        IReadOnlyList<CardInstance>? only = null,
+        CardInstance? exclude = null)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -419,6 +420,17 @@ public sealed partial class CardApi
         foreach (var card in snapshot)
         {
             if (card.Location == CardLocation.NotAvailable)
+            {
+                continue;
+            }
+
+            // ★ `exclude`：蓝图里"广播**排除某一方**"是逐触发点写的，不是命名约定。
+            //   最典型的是 T31 `OnOtherCardAttacks` 的 `:4356
+            //   NotEqual_IntInt(attackerCardID, item.cardID)` —— **排除攻击者本人**
+            //   （而**防御方照收**：`card_unit_beaufighter_tf_mk_x` / `card_unit_33rd_livorno`
+            //   / `card_unit_bm_13n_us6` 就是靠"自己是被打的那个"来触发的）。
+            //   注意：`FireTrigger` 的广播分支是按"排除主体"实现的，与这里**不是**一回事。
+            if (exclude is not null && ReferenceEquals(card, exclude))
             {
                 continue;
             }
@@ -522,6 +534,107 @@ public sealed partial class CardApi
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 攻击反制窗口的返回（蓝图 `AttackCard` 的两个出参）。
+    /// </summary>
+    /// <param name="StopAttack">
+    /// 蓝图 `:4389 SetStopAttack(True)` → `:4487 GetStopAttack()`：
+    /// **整条攻击作废** —— 油费**不扣**（扣费在 `:4513`，在判定之后）、
+    /// 不记"已攻击"、伤害不结算、`OnAfterAttack` / T4 都不发。
+    /// </param>
+    /// <param name="AttackedAndStopped">
+    /// 蓝图 `:4643 if (tmpAttackedAndStopped)`：**油费照扣、照记"已攻击"，但整段伤害跳过**，
+    /// 改走 `ExecuteStoppedAttack`（`:17699-17721`）。
+    /// </param>
+    public readonly record struct AttackIntercept(bool StopAttack, bool AttackedAndStopped);
+
+    /// <summary>
+    /// T31 `OnOtherCardAttacks`（枚举 31）——「别人攻击时」的反制窗口，带两个出参。
+    ///
+    /// ## 蓝图原文（本次逐行复核，`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）
+    /// <code>
+    /// :4334  SetStopAttack(GameStateRef, False)                 ; 每轮先复位
+    /// :4336  tmpAttackedAndStopped = False
+    /// :4338  FetchAllCardsWithEventTrigger(31)                  ; ★ 唯一 Fetch 点
+    /// :4356      NotEqual_IntInt(attackerCardID, item.cardID)   ; ★ 排除**攻击者本人**
+    /// :4385/:4434  item.OnOtherCardAttacks(_attackerCard, _defenderCard,
+    ///                                      out stopAttack, out AttackedAndStopped)
+    /// :4389      if (stopAttack) SetStopAttack(True)
+    /// :4412      if (AttackedAndStopped) tmpAttackedAndStopped = True
+    /// :4487  GetStopAttack() 真 ⇒ :4510 success = True 后**直接返回**（不扣油费）
+    /// :4513  ChangeKreditsBySide(-costToPay)                    ; ★ 扣油费在窗口**之后**
+    /// :4643  if (tmpAttackedAndStopped) ⇒ ExecuteStoppedAttack(…)（跳过全部伤害）
+    /// </code>
+    ///
+    /// ## 三个必须照做的细节
+    /// <list type="number">
+    /// <item>**收件人是订阅表**（`docs/card-ir.json` 的 **`locals` 20 张**、`entrypoints` 0 张）
+    ///   —— 这也是 README §9.5 P1 的原始发现。</item>
+    /// <item>**只排除攻击者本人**（`:4356`）；**防御方照收**。内核
+    ///   `BroadcastWithOutParams` 的广播分支不排除主体（与 `FireTrigger` 不同），
+    ///   所以这里用新增的 `exclude: attacker` 精确表达"只排除攻击者"。</item>
+    /// <item>蓝图**不跳出轮**（`:4389`/`:4438` 只置全局标记）⇒ 必须**走完整轮再判定**；
+    ///   两个出参**可以同时为真**，而 `stopAttack` 优先（`:4487` 早于 `:4643`）。</item>
+    /// </list>
+    ///
+    /// ⚠️ 实参名逐字取 `Generated/_index.g.cs:4096`
+    /// = `{ "cardAttacking", "defenderCard", "stopAttack", "AttackedAndStopped" }`。
+    ///
+    /// ⚠️ **`stopAttack` 这条分支目前是死代码**：20 张订阅卡的全部出参写入里，
+    /// `stopAttack` 的字面量**只有 `false`**（`card-ir.json` 实测）。但机制必须留着 ——
+    /// 它是唯一的"整条攻击作废"通道，而且它与 `AttackedAndStopped` 的**代价不同**
+    /// （一个不扣油费、一个扣）。
+    /// </summary>
+    public AttackIntercept FireOtherCardAttacks(CardInstance attacker, CardInstance defender)
+    {
+        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardAttacking"] = attacker,
+            ["defenderCard"] = defender,
+            // 出参槽是零初始化：函数体没走到的分支读到的就是它
+            ["stopAttack"] = false,
+            ["AttackedAndStopped"] = false,
+        };
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardAttacking"] = attacker,
+            ["defenderCard"] = defender,
+        };
+
+        bool stop = false;
+        bool andStopped = false;
+        int hits = 0;
+        foreach (var hit in BroadcastWithOutParams(
+                     "OnOtherCardAttacks", attacker, attacker.Owner,
+                     new[] { "stopAttack", "AttackedAndStopped" },
+                     seed: seed,
+                     eventArgs: new object?[] { attacker, defender },
+                     eventSubject: attacker,
+                     namedArgs: named,
+                     exclude: attacker))
+        {
+            hits++;
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAttack")))
+            {
+                stop = true;
+            }
+
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("AttackedAndStopped")))
+            {
+                andStopped = true;
+            }
+        }
+
+        if (Environment.GetEnvironmentVariable("KLINK_TRACE_T31") == "1")
+        {
+            Console.Error.WriteLine(
+                $"[T31] t={State.Turn} {attacker.Name}#{attacker.CardId} -> {defender.Name}#{defender.CardId} " +
+                $"订阅者={hits} stopAttack={stop} AttackedAndStopped={andStopped}");
+        }
+
+        return new AttackIntercept(stop, andStopped);
     }
 
     /// <summary>

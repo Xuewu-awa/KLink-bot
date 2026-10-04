@@ -1771,6 +1771,28 @@ public sealed class MatchEngine
             return false;
         }
 
+        // ---- ★★ T31 `OnOtherCardAttacks` 反制窗口（蓝图 `AttackCard` :4334-4512）----
+        //
+        // ⚠️⚠️ **必须放在 `State.AddKredits` 之前**：蓝图这两段排在扣油费
+        //   （`:4513 ChangeKreditsBySide(-costToPay)`）**之前**，而 `stopAttack` 一旦为真
+        //   就直接 `:4510 success = True` → `:4512 return` —— **油费不扣**、
+        //   也不记"已攻击"（`SetAttackerHasAttacked` 只在 `ExecuteAttackCard` 与
+        //   `ExecuteStoppedAttack` 里被调）。放在扣费之后，这两条都会错。
+        //
+        // ⚠️ 20 张订阅者（`docs/card-ir.json` 的 **`locals`**，`entrypoints` 0 张）
+        //   —— 这就是 README §9.5 P1 说的那条"整条行为是死的"。
+        var intercept = Api.FireOtherCardAttacks(attacker, defender);
+        if (intercept.StopAttack)
+        {
+            // 蓝图 `:4487-4512`：`GetStopAttack()` 真 ⇒ `success = True` 后**什么都不做**。
+            // ⚠️ 返回值必须是 **true**（蓝图 `success = True`）：返回 false 在回放审计里
+            //   是"动作非法"，会把一次合法的"被反制掉"记成"内核拒绝了攻击"。
+            // ⚠️ 这条分支目前是**死代码**（20 张订阅卡的 `stopAttack` 写入全是字面量 false），
+            //   但机制必须留着 —— 它是唯一的"整条攻击作废"通道。
+            Say($"🛑 攻击被反制中止（stopAttack）：{attacker} → {defender}");
+            return true;
+        }
+
         State.AddKredits(attacker.Owner, -attacker.OperationCost);
         attacker.HasAttackedThisTurn = true;
         // 攻击额度 -1（蓝图 `SetAttackerHasAttacked`，`BP_CardFunctions.g.cs:33930-33942`：
@@ -1839,6 +1861,39 @@ public sealed class MatchEngine
         //    （与 `OnBeforeOtherCardPlayedFromHand` 同一个坑，见 `PlayCard` 里那段注释）。
         //    广播分支本身就排除主体，正好对上蓝图的 `item != _attackerCard`。
         Api.FireTrigger("OnBeforeOtherCardAttacks", attacker, attacker.Owner, broadcastName: true);
+
+        // ---- ★★ T31 第二半：`AttackedAndStopped` ⇒ 跳过**全部**伤害 ----
+        // 蓝图 `AttackCard`（`BP_CardFunctions.g.cs`）：
+        // <code>
+        // :4643  if (!tmpAttackedAndStopped) → :4656      ; 正常结算
+        // :4645  _defenderCard = Nothing;  :4647 damageToDefenderFinal = 0
+        // :4649  ExecuteStoppedAttack(self, _attackerCard)
+        //          → :17706 SetAttackerHasAttacked（本文件 1775/1780 已经做过，不重复）
+        //          → :17712 OnAttackStopped(attacker)     ; 订阅者 2 张
+        //          → :17714 NotifyStoppedAttack(cardID)   ; = ZActionStoppedAttack
+        // :4653  success = True
+        // </code>
+        // ⇒ 语义 =「**攻击已经发起**（油费与"已攻击"记账照做），**但没有发生战斗结算**」。
+        //   卡面互证：THE MERCHANT NAVY「Retreat it instead」/ BM-13N US6
+        //   「Retreat this unit **before damage is applied**」/ COUNTER STRIKE「destroy the unit」
+        //   / AIR DEFENSE 与 BEAUFIGHTER「attacker takes 3 damage first」
+        //   / TACTICAL RETREAT「send it to hand **before damage**」—— 正是写死 true 的那几张。
+        // ⚠️ 必须在这之前 return：`defender.HasBeenAttackedThisTurn = True` 在下面，
+        //   而蓝图里它属于 `ExecuteAttackCard`（`:12782`）⇒ 停止路**不设**它。
+        if (intercept.AttackedAndStopped)
+        {
+            Say($"✋ 攻击被中止（AttackedAndStopped）：{attacker} → {defender} 不结算伤害");
+            // `docs/对局协议参考.md`：`ZActionStoppedAttack` 的参数列为空 ⇒ 无参。
+            FireSubAction("ZActionStoppedAttack", Array.Empty<ActionValue2>());
+            // 蓝图 `:17712 OnAttackStopped(_attackerCard)`：订阅者 2 张
+            //（`card_unit_meteor` / `card_unit_salamander`，`docs/card-ir.json` 实测）。
+            // ⚠️ 事件载荷的确切变量名**未核实**（两者的入口都只是一个 jump 到 ubergraph）
+            //    ⇒ 先按 `eventArgs[0] = attacker` 发，跑通后按卡体实际读的变量名校正。
+            Api.FireTrigger("OnAttackStopped", attacker, attacker.Owner,
+                eventArgs: new object?[] { attacker });
+            CheckDeaths();
+            return true;
+        }
 
         bool shockAttack = attacker.Keywords.Contains(Keyword.Shock);
         bool ambushAttack = !defender.IsHq

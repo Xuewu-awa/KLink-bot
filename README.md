@@ -1386,6 +1386,54 @@ t=11 DeckLeft->HandLeft  card_unit_2nd_west_africa#39 via ReplayRunner.Run
    ⇒ 在「效果驱动的状态差」上，**"指标变差"必须配合"点名到具体原语 + 蓝图逐行对照"
    才能归因**；只凭指标方向会连续误判。
 
+### 8.18 ★★ 2026-10-04 第九轮：**T31 `OnOtherCardAttacks` 接线完成**（README §9.5 **P1** 的那条）
+
+20 张订阅卡（`docs/card-ir.json` 的 **`locals`**、`entrypoints` **0 张**）此前整条行为是死的。
+
+**蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `AttackCard`）**：
+
+```
+:4334  SetStopAttack(GameStateRef, False)                 ; 每轮先复位
+:4336  tmpAttackedAndStopped = False
+:4338  FetchAllCardsWithEventTrigger(31)                  ; ★ 唯一 Fetch 点
+:4356      NotEqual_IntInt(attackerCardID, item.cardID)   ; ★ 只排除**攻击者本人**（防御方照收）
+:4385/:4434  item.OnOtherCardAttacks(_attackerCard, _defenderCard, out stopAttack, out AttackedAndStopped)
+:4389      if (stopAttack) SetStopAttack(True)            ; 不跳出轮
+:4412      if (AttackedAndStopped) tmpAttackedAndStopped = True
+:4487  GetStopAttack() 真 ⇒ :4510 success = True → :4512 **直接返回**（油费**不扣**）
+:4513  ChangeKreditsBySide(-costToPay)                    ; ★ 扣油费在窗口**之后**
+:4643  if (tmpAttackedAndStopped) ⇒ ExecuteStoppedAttack(…)（**整段伤害跳过**）
+```
+
+**改动面（三处，全部照蓝图）**：
+
+| # | 落点 | 内容 |
+|---|---|---|
+| 1 | `CardApi.BroadcastWithOutParams` | 新增 `exclude` 参数（+ 循环里一行 skip）—— 表达 `:4356` 的"只排除攻击者"。⚠️ 这与 `FireTrigger` 广播分支的"排除**主体**"**不是**一回事：这里**防御方必须照收**（`beaufighter` / `33rd_livorno` / `bm_13n_us6` 就是靠"自己是被打的那个"触发）。 |
+| 2 | `CardApi.FireOtherCardAttacks` + `AttackIntercept` | 走完整轮再判定；两个出参**独立累加**、`stopAttack` **优先**（`:4487` 早于 `:4643`）。 |
+| 3 | `MatchEngine.Attack` 两处 | ① **在 `State.AddKredits` 之前**（`:4513` 在窗口之后；`stopAttack` 真时油费不扣、不记"已攻击"）；② T13 广播之后、伤害之前（`AttackedAndStopped` 早退，`ZActionStoppedAttack` + `OnAttackStopped`，**不设** `defender.HasBeenAttackedThisTurn` —— 它在蓝图的 `ExecuteAttackCard :12782` 里）。 |
+
+**`stopAttack` 是死代码（本次自己统计，`card-ir.json`）**：20 张订阅卡的 `stopAttack` 写入
+**33 处、全是字面量 `false`**；而 `AttackedAndStopped` 是 **5 处 `true` + 26 处 `false` + 2 处计算式**
+⇒ **活的杠杆是 `AttackedAndStopped`**。机制仍然留着（它是唯一的"整条攻击作废"通道，
+且两条路的**代价不同**：一个不扣油费、一个扣）。
+
+**A/B 结果**：
+- **22 局逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
+  `dispatch-gap` 逐位不变，自测 **153 → 154 全通过**（新用例做过判死验证）。
+- ⚠️ **回放侧验证不了**：新探针 `KLINK_TRACE_T31=1` 实测，10 局主对拍集里
+  T31 **触发 58 次、订阅者出现 0 次**（那 20 张卡一张都没进过局内）
+  ⇒ 判据只有「蓝图原文 + 自测」。自测用 `card_unit_beaufighter_tf_mk_x`
+  （「Any unit that attacks this unit takes 3 damage first.」，**非 gotcha** ⇒ 不受
+  `ShouldGotchaTrigger` 影响）：攻击者 1 防吃 3 点必死 ⇒ `AttackedAndStopped = true`
+  ⇒ **防御方零伤害、但油费照扣、照记"已攻击"**。
+
+**未做（如实标注）**：**T30 `OnOtherCardAttackSwitchTarget`**（2 张，出参 `newDefender`
+**真的改攻击目标**）**没有接** —— 它要求把 `Attack` 里的 `defender` 局部化并让下游所有门与结算
+都改用新目标（范围不小），按 §9.5 P1 的建议**单独一支**做。
+另：T31 的收件人快照**不含牌库**（`FillTriggerSnapshot` 有意排除，理由见该方法的注释）
+—— 蓝图 `AllCardsInBattle` 是否含牌库**未核实**，如实标注。
+
 ---
 
 
