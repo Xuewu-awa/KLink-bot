@@ -441,7 +441,13 @@ public sealed partial class CardApi
                 continue;
             }
 
-            TriggerTrace?.Add($"{programName}(out {string.Join("/", outParamNames)}) → {card.Name}#{card.CardId}" +
+            // ⚠️ `outParamNames` 为空时**不写 `(out )`** —— 否则 trace 变成
+            //    `事件名(out ) → 卡#id`，而 `SelfTest.Reached` 判的是
+            //    `StartsWith("事件名 → 卡#id")` ⇒ 无出参的广播会被误判成"没派发"。
+            string outSuffix = outParamNames.Length > 0
+                ? $"(out {string.Join("/", outParamNames)})"
+                : "";
+            TriggerTrace?.Add($"{programName}{outSuffix} → {card.Name}#{card.CardId}" +
                               $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
 
             var ctx = new EffectContext

@@ -580,6 +580,9 @@ internal static class SelfTest
         new("★ `SetCardLocationAndLocNumber`（ConvertCard 链的前置件，蓝图 `:33961-34000`）：" +
             "裸写位置与位置号，但 **Discard(8) 时不写位置号**",
             SetCardLocationAndLocNumberRaw),
+        new("★★ `ConvertCard` 端到端（蓝图 `:9882-10450`；`live-165924` 的 ⑥ 里只有它）：" +
+            "老卡离场、新卡继承位置/位置号、T34 `OnOtherCardConverted` 按 `newCardIDs` 过滤派发",
+            ConvertCardEndToEnd),
     };
 
     public static int Run(CardDatabase db)
@@ -13494,6 +13497,95 @@ internal static class SelfTest
         {
             return "蓝图 `:33980` 规定 **`Discard(8)` 时不写位置号**（保持原值 3），" +
                    $"实际被改成了 {card.LocationNumber}" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ `ConvertCard`（蓝图 `:9882-10450`，569 行）端到端 —— **这是 §8.30 量出来的
+    /// 运行时可达链**（`live-165924` 的 ⑥ 里只有它、撞到 ×2）。
+    ///
+    /// 覆盖：
+    /// <list type="number">
+    /// <item>老卡离场（在场 ⇒ 进弃牌堆）；</item>
+    /// <item>新卡**继承老卡的位置与位置号**（蓝图 `:10206` 的 `CreateCard` 实参）；</item>
+    /// <item>★ T34 `OnOtherCardConverted` 的**过滤语义**（蓝图 `:10340`
+    ///   `Array_Contains(newCardIDs, item.cardID)`）—— 所以这里**转成一张 T34 订阅者**
+    ///   （`card_unit_312th_novgorod`），让"刚转出来的那张卡"成为唯一合格订阅者。</item>
+    /// </list>
+    ///
+    /// 判别力：① 不派发 T34 ⇒ 断言 ③ 失败；
+    /// ② 过滤条件写反（发给**不在** newCardIDs 里的卡）⇒ 断言 ③ 也失败；
+    /// ③ 新卡不继承位置号 ⇒ 断言 ② 失败。
+    /// </summary>
+    private static string? ConvertCardEndToEnd(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        const string into = "card_unit_312th_novgorod";      // T34 `OnOtherCardConverted` 的 3 个订阅者之一
+        foreach (string n in new[] { plain, into })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        string D() => Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
+
+        var old = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = old, Controller = Side.Left };
+
+        // `ConvertCard(cardIDs, instigatorID, convertToCardName, convertIntoCardID, skipTrigger, out newCardIDs)`
+        object? r = engine.Api.InvokeByName("ConvertCard", null,
+            new object?[] { new List<CardInstance> { old }, old.CardId, into, 0, false, null },
+            ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `ConvertCard`（live-165924 的 ⑥ 里只有它）";
+        }
+
+        var newIds = r as List<int> ?? new List<int>();
+        if (newIds.Count != 1)
+        {
+            return $"`ConvertCard` 应当转出 1 张（`newCardIDs` 出参），实际 {newIds.Count}" + D();
+        }
+
+        // ---- ① 老卡离场 ----
+        if (old.Location != CardLocation.Discard)
+        {
+            return $"老卡应当离场进弃牌堆（蓝图 `:10126-10147`），实际 {old.Location}" + D();
+        }
+
+        // ---- ② 新卡继承老卡的位置与位置号 ----
+        var created = state.ById(newIds[0]);
+        if (created is null)
+        {
+            return "`newCardIDs` 里的 id 在内核里找不到卡" + D();
+        }
+
+        if (created.Name != into)
+        {
+            return $"新卡应当是 {into}，实际 {created.Name}" + D();
+        }
+
+        if (created.Location != CardLocation.BoardFrontline || created.LocationNumber != 0)
+        {
+            return "新卡应当**继承老卡的位置与位置号**（蓝图 `:10206` 的 `CreateCard` 实参：" +
+                   $"`location = 老卡.location`、`locationNumber = 老卡.locationNumber`），" +
+                   $"实际 {created.Location}/{created.LocationNumber}" + D();
+        }
+
+        // ---- ③ T34：刚转出来的那张自己就是订阅者 ⇒ 应当收到（`newCardIDs` 过滤）----
+        if (!Reached(trace, "OnOtherCardConverted", created))
+        {
+            return "T34 `OnOtherCardConverted` 应当派发给**刚转出来的那张卡**" +
+                   "（蓝图 `:10340` 的 `Array_Contains(newCardIDs, item.cardID)` 过滤；" +
+                   $"`{into}` 是 3 个订阅者之一）" + D();
         }
 
         return null;

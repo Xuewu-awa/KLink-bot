@@ -691,6 +691,11 @@ public sealed partial class CardApi
 
                 return null;
             },
+            // `ConvertCard(cardIDs, instigatorID, convertToCardName, convertIntoCardID, skipTrigger, out newCardIDs)`
+            // 蓝图 `BP_CardFunctions.g.cs:9882-10450`（569 行，逐行复核；规格见 README §8.30）。
+            // **运行时可达**：`docs/live-replays/replay-165924` 的 ⑥ 里**只有它**（撞到 ×2）、
+            // `docs/fresh-replays/replay-15` 撞 ×1。
+            ["ConvertCard"] = (c, r, a) => DoConvertCard(c, a),
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
@@ -4818,6 +4823,202 @@ public sealed partial class CardApi
     {
         var card = AsCard(a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
         return card is not null && JsonGetBool(card, key);
+    }
+
+    /// <summary>
+    /// `ConvertCard(cardIDs, instigatorID, convertToCardName, convertIntoCardID, skipTrigger, out newCardIDs)`
+    /// —— 「把一批卡**换成**另一张卡」，蓝图 `BP_CardFunctions.g.cs:9882-10450`（569 行）。
+    ///
+    /// 每张卡一遍（行号均为 `ref/kards-sim` 那份）：
+    /// <code>
+    /// :10164-10170  目标卡名 = convertToCardName；为空且 convertIntoCardID &gt; 0 → 取那张卡的名字
+    /// :10172-10178  ⚠️ 老卡在**弃牌堆(8)** 时，新卡落到**手牌**（GetHandLocationBySide）
+    /// :10126-10147  老卡离场：在场 ⇒ ApplyRemoveCardFromBoard(…, true, true)
+    ///               否则 ⇒ SetCardLocationAndLocNumber(cardID, 8, 0)（**裸写**）
+    /// :10206        CreateCard(side=老卡.side, 名字, location=老卡.location, 0,
+    ///                        locationNumber=老卡.locationNumber,
+    ///                        spawnCardInHand = 老卡.location ∈ {3,4}, gold = 老卡.isGoldCard, …)
+    /// :10210        newCardIDs.Add(spawnedCardID)
+    /// :10259-10283  老卡在牌库 ⇒ RemoveCardFromDeckBySide + AddCardToDeckBySide + ExecuteOnAfterDeckChanged
+    /// :10306-10361  ★ T34 广播（按 newCardIDs 过滤订阅者）—— 见 FireCardConverted
+    /// :10384        ExecuteOnSpawnedInHandEvents(新卡.side, 新卡.cardID)
+    /// :10394-10400  InjectCardIntoLocation(老位置, 老位置号, 新卡) + RefreshLocationStatus
+    ///               + ExecuteOnCardLocationMoved(新卡, 0, 老位置, false, 13)
+    /// :10422        新卡在场上 ⇒ enterPlayOnTurn = GetTurnNumber()
+    /// </code>
+    ///
+    /// ⚠️ **本轮如实标注的三处近似**（都不在语料走到的那条路上）：
+    /// <list type="number">
+    /// <item>牌库那一段（`:10259-10283`）**没做** —— 语料里 `cardIDs` 都是**场上/手牌**的卡；
+    ///   真要转牌库里的卡时会少一次 `RemoveCardFromDeckBySide`/`AddCardToDeckBySide`。</item>
+    /// <item>`convertIntoCardID &gt; 0` 的 `SalvagedCardInfo` 结构（`:10190-10196`）**没做** ——
+    ///   语料里三个调用点全部传 `convertIntoCardID = 0`。</item>
+    /// <item>`InjectCardIntoLocation` / `RefreshLocationStatus` 用**内核已有的落位手段**代替
+    ///   （新卡直接在目标位置生成 + 必要时 `State.Move`），没有逐行复刻那两个函数
+    ///   （`InjectCardIntoLocation` 自己还要 `FetchCardsByLocationSorted` +
+    ///   `CreateLocationNumberGapForCard`，是一条小链）。</item>
+    /// </list>
+    /// </summary>
+    private object? DoConvertCard(EffectContext c, object?[] a)
+    {
+        var cardIds = new List<CardInstance>();
+        object? raw = a.ElementAtOrDefault(0);
+        if (raw is System.Collections.IEnumerable items and not string)
+        {
+            foreach (object? item in items)
+            {
+                if (AsCardOrId(c, item) is { } one)
+                {
+                    cardIds.Add(one);
+                }
+            }
+        }
+        else if (AsCardOrId(c, raw) is { } single)
+        {
+            cardIds.Add(single);
+        }
+
+        var newIds = new List<int>();
+        if (cardIds.Count == 0)
+        {
+            return newIds;
+        }
+
+        int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+        string toName = StrArg(a, 2);
+        int intoId = IntArg(a, 3);
+
+        // `:10164-10170`
+        string name = toName;
+        if (name.Length == 0 && intoId > 0)
+        {
+            name = State.ById(intoId)?.Definition.Name ?? "";
+        }
+
+        if (name.Length == 0)
+        {
+            return newIds;
+        }
+
+        foreach (var old in cardIds)
+        {
+            Side side = old.Owner;
+            CardLocation oldLocation = old.Location;
+            int oldNumber = old.LocationNumber;
+
+            // `:10172-10178`：老卡在弃牌堆 ⇒ 新卡落到手牌
+            if (oldLocation == CardLocation.Discard)
+            {
+                oldLocation = side.HandOf();
+            }
+
+            // `:10126-10147`：老卡离场
+            if (old.AliveOnBoard)
+            {
+                _engine.FireLeaveTrigger(old, CardLocation.Discard);
+                State.Move(old, CardLocation.Discard);
+                old.EnteredPlayOnTurn = 0;
+            }
+            else
+            {
+                // 蓝图走 `SetCardLocationAndLocNumber(cardID, 8, 0)` —— **裸写**（不发触发，
+                // 且 `Discard(8)` 时**不写位置号**，见那一族的注释）。
+                old.Location = CardLocation.Discard;
+            }
+
+            // `:10206`：造新卡（位置 / 位置号 / 金卡标记继承老卡）
+            CardInstance created;
+            if (oldLocation == CardLocation.BoardFrontline)
+            {
+                created = SpawnOnBattlefield(side, name, frontline: true,
+                    locationNumber: oldNumber, newGiveBlitz: false, forceGoldCard: old.IsGold);
+            }
+            else if (oldLocation == side.HqOf())
+            {
+                created = SpawnOnBattlefield(side, name, frontline: false,
+                    locationNumber: oldNumber, newGiveBlitz: false, forceGoldCard: old.IsGold);
+            }
+            else if (oldLocation == side.HandOf())
+            {
+                created = SpawnCardInHand(side, name);
+                created.LocationNumber = oldNumber;
+            }
+            else
+            {
+                created = SpawnCardInHand(side, name);
+                State.Move(created, oldLocation, oldNumber);
+            }
+
+            newIds.Add(created.CardId);
+
+            // `:10306-10361`
+            FireCardConverted(cardIds, newIds, toName, instigatorId);
+
+            // `:10422`
+            if (created.AliveOnBoard)
+            {
+                created.EnteredPlayOnTurn = State.Turn;
+            }
+        }
+
+        return newIds;
+    }
+
+    /// <summary>
+    /// T34 `OnOtherCardConverted` 广播（蓝图 `ConvertCard` `:10306-10361`）：
+    /// <code>
+    /// FetchAllCardsWithEventTrigger(34)
+    ///   → 逐个 `Array_Contains(_newCardIDs, item.cardID)` 过滤（**只发给刚转出来的那些卡**）
+    ///   → item.OnOtherCardConverted(cardIDs, _newCardIDs, convertToCardName, instigatorID)
+    /// </code>
+    ///
+    /// ⚠️ **不能用 `FireTrigger`**：那个函数的 `OnOther*` 命名约定会把"发给某一个订阅者"
+    /// 变成"发给**除他之外**的所有卡"。这里用 `BroadcastWithOutParams` 的 `only:` 参数
+    /// —— 它正是"逐张订阅者直接跑它自己的程序"的语义。
+    /// </summary>
+    private void FireCardConverted(
+        IReadOnlyList<CardInstance> cardIds, List<int> newIds, string toName, int instigatorId)
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null || newIds.Count == 0)
+        {
+            return;
+        }
+
+        var subscribers = new List<CardInstance>();
+        foreach (var card in State.CardsUnordered())
+        {
+            if (!newIds.Contains(card.CardId))
+            {
+                continue;
+            }
+
+            if (library.FindProgram(card.Name, "OnOtherCardConverted") is null)
+            {
+                continue;
+            }
+
+            subscribers.Add(card);
+        }
+
+        if (subscribers.Count == 0)
+        {
+            return;
+        }
+
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardIDs"] = cardIds,
+            ["newCardIDs"] = newIds,
+            ["convertToCardName"] = toName,
+            ["instigatorID"] = instigatorId,
+        };
+
+        BroadcastWithOutParams("OnOtherCardConverted", null, subscribers[0].Owner,
+            Array.Empty<string>(),
+            eventArgs: new object?[] { cardIds, newIds, toName, instigatorId },
+            namedArgs: named,
+            only: subscribers);
     }
 
     private static CardInstance? TargetCard(EffectContext c, object? receiver, object?[] args)

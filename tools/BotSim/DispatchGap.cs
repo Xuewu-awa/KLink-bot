@@ -142,10 +142,14 @@ internal static class DispatchGapBaseline
     /// 蓝图 `:24178-24218`：`GetDeckByside(deckSide)[0]` → `getHasGameplayTag(卡, "subtype.navy")`。
     /// 两个依赖**早已就绪**（`GetDeckByside` 144 个调用点、`getHasGameplayTag` 已注册、
     /// `GameplayTagTable` 里 `subtype.navy` 有数据）⇒ **没有链**的干净实现。
-    public const int BaselineCount = 511;
+    /// 2026-10-04：511 → **510**（调用点 2370 → **2344**，指纹 `BC44670AFCD9720C`）。
+    /// 补的是 **`ConvertCard`（26 点）** —— §8.30 量出的**运行时可达链**：
+    /// `docs/live-replays/replay-165924` 的 ⑥ 里**只有它**（撞到 ×2）、
+    /// `docs/fresh-replays/replay-15` 撞 ×1。实现见 `CardApiDispatch.DoConvertCard`。
+    public const int BaselineCount = 510;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "D601C3B70D4BD535";
+    public const string BaselineFingerprint = "BC44670AFCD9720C";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)
