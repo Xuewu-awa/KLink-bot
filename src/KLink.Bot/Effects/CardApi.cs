@@ -3223,11 +3223,47 @@ public sealed partial class CardApi
     public int GetTotalAttack(Side s) => State.Board(s).Sum(u => u.Attack);
     public int GetTotalDefense(Side s) => State.Board(s).Sum(u => u.Defense);
 
-    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool)
+    /// <param name="applyCustomAlways">
+    /// ★ 2026-10-04：对应蓝图第二个实参 `skipCustomAlways` 的**取反**。
+    /// 蓝图 `GetRandomCard`（`BP_CardFunctions.g.cs:21669-21776`，本次逐行复核）：
+    /// <code>
+    /// :21686  if (!(Array_Length(cards) > 0)) → randomCard = null
+    /// :21688  if (!skipCustomAlways) goto L_0179      ; ★ false ⇒ 走"自定义必选"那条
+    /// :21689  L_007E:  r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len-1)
+    /// :21696           randomCard = cards[r]           ; ← 全池随机（也是"必选集为空"的落点）
+    /// :21705  L_0179:  收集 alwaysSelected = cards 里
+    ///                  `CustomName1HasAttribute(card, "AlwaysSelectedAsRandom")` 为真的那些
+    /// :21753  if (Array_Length(alwaysSelected) > 0):
+    /// :21763      r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len(alwaysSelected)-1)
+    /// :21765      randomCard = alwaysSelected[r]
+    /// :21757  else → goto L_007E                       ; 必选集为空 ⇒ 退回全池随机
+    /// </code>
+    /// ⇒ **两条路都只消费 1 次随机数**，只有"从哪个池里取"不同（所以游标对账不受影响）。
+    /// ⚠️ 全卡池 **176 个调用点里 153 个传 `skipCustomAlways = false`**（`true` 只有 23 个），
+    /// 而内核旧实现**恒按全池随机**（等于恒按 `true` 那条）⇒ 对那 153 个点是**走错了分支**。
+    /// ⚠️ 但"必选集"要非空才看得出差别，而 `AlwaysSelectedAsRandom` 这个属性
+    /// **在本仓库的卡数据里查不到**（`cards.live.json` 0 处；`card-effects.json` 里只有
+    /// `BP_CardFunctions` 自己的函数表提到这个字符串）⇒ 对当前 22 局语料
+    /// **大概率是恒等变换**（A/B 逐位不变就是它的证据）。
+    /// </param>
+    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool, bool applyCustomAlways = false)
     {
         if (pool.Count == 0)
         {
             return null;
+        }
+
+        // `skipCustomAlways == false` 那条：池里有"必选"卡就只在它们之间随机。
+        IReadOnlyList<CardInstance> candidates = pool;
+        if (applyCustomAlways)
+        {
+            var always = pool
+                .Where(x => CustomNameHasAttribute(x, "customName1", "AlwaysSelectedAsRandom"))
+                .ToList();
+            if (always.Count > 0)
+            {
+                candidates = always;
+            }
         }
 
         // `GetRandomCard(cards, skipCustomAlways, out randomCard)` 在蓝图里是
@@ -3236,8 +3272,8 @@ public sealed partial class CardApi
         // 一次消费、闭区间。游标探针记下候选集大小与选中下标，用来和客户端对账。
         uint seedBefore = State.Random.Seed;
         long cursorBefore = State.Random.ConsumedCount;
-        int index = State.Random.Next(pool.Count);
-        CardInstance picked = pool[index];
+        int index = State.Random.Next(candidates.Count);
+        CardInstance picked = candidates[index];
         // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。
         //
@@ -3245,8 +3281,8 @@ public sealed partial class CardApi
         if (State.CollectRandomTrace)
         {
             // Full order is required to distinguish a pool mismatch from an RNG mismatch.
-            string poolDump = string.Join(",", pool.Select(x => x.Name));
-            State.TraceRandom($"GetRandomCard n={pool.Count} idx={index} -> {picked.Name} " +
+            string poolDump = string.Join(",", candidates.Select(x => x.Name));
+            State.TraceRandom($"GetRandomCard n={candidates.Count} idx={index} -> {picked.Name} " +
                 $"cursor={cursorBefore}->{State.Random.ConsumedCount} " +
                 $"seed={seedBefore}->{State.Random.Seed} 池=[{poolDump}]");
         }

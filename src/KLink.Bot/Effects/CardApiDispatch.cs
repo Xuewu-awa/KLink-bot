@@ -294,7 +294,12 @@ public sealed partial class CardApi
             ["getTotalAttack"] = (c, r, a) => SelfArg(c, r, a)?.Attack ?? 0,
             ["getTotalDefense"] = (c, r, a) => SelfArg(c, r, a)?.Defense ?? 0,
             ["GetTurnNumber"] = (c, r, a) => GetTurnNumber(),
-            ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault())),
+            // ★ 2026-10-04：第二个实参 `skipCustomAlways` **必须读**。
+            // 蓝图 `GetRandomCard`（`:21688`）按它分流：`false`（**176 个调用点里 153 个**）
+            // 先收集 `CustomName1HasAttribute(card,"AlwaysSelectedAsRandom")` 的"必选集"，
+            // 非空就只在必选集里随机；`true`（23 个）才直接全池随机。
+            // 两条路都只消费 1 次随机数 ⇒ 游标对账不受影响。
+            ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault()), !TruthyArg(a, 1)),
             // ⚠️⚠️ **两个出参，不是返回值**（2026-10-02，目标合法性门落地时发现）。
             //
             // 权威签名（调用点形态，全卡池 **431 处全部同形**）：

@@ -1901,6 +1901,68 @@ i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
 （"施加路径用的就是 `c.Self`，撤销必须落在同一个槽上才对得起来"）。
 第一版用例把来源写在实参里、`ctx.Self` 留空 ⇒ 贴出来的加成**没有来源** ⇒ 前置断言就失败了。
 
+### 8.27 ★★ 2026-10-04 第十八轮：**`GetRandomCard` 的第二个实参被丢掉了 —— 153/176 个调用点走错分支**
+
+#### 一、先做取证：`DiscardRandomCardFromHand` 不是 RNG 元凶
+
+按上一轮的计划，先只读蓝图（`BP_CardFunctions.g.cs:12152-12241`，90 行）：
+```
+DiscardRandomCardFromHand(side, discarderID, out discardedCardID)
+  for card in GetAllCards():
+      if (GetHandLocationBySide(side) == card.location) && (card.side == side):
+          possibleCards.Add(card)
+  randomCard = GetRandomCard(possibleCards, false)        ; ★ 第二个实参是 false
+  if (randomCard.cardID > 0):
+      DiscardCardFromHand(randomCard.cardID, discarderID, false, false, …)
+```
+**但它根本没被执行过**：它的 `×20` 只出现在审计的**静态缺口清单**里
+（和 `AddToVerticalBox` / `ConvertCard` 并列），**不在任何一局的运行时 ⑥ 清单里**
+（逐局核对过 22 局）⇒ 它在这 22 局里**一次都没撞到**。
+另外它依赖 `GetHandLocationBySide` —— 正是 §8.16 里被 A/B **否决**过的那个键。
+⇒ **放弃它**（做了也是恒等变换，而且会连带触发 §8.16 那个已知回归）。
+
+#### 二、顺带澄清：`⑥a RNG 游标失同步` 不是独立证据
+
+审计里那 8 条 `<rng-cursor-desync:内核卡->动作码卡:消费N>` 是
+**`ReplayRunner` 按 ⑤c 身份不一致合成**出来的（`ServerBridgeTest` 里 `IsSynthetic` 那一段
+把三类合成条目从 ⑥ 里分出去），**不是**"少消费了一次随机数"的独立信号。
+⇒ 它只是 ⑤c 的另一种写法，别把它当成 RNG 侧的线索。
+
+#### 三、★★ 真发现：`GetRandomCard` 的第二个实参 `skipCustomAlways` 被丢掉了
+
+蓝图 `GetRandomCard(cards, skipCustomAlways, out randomCard)`（`:21669-21776`，逐行复核）：
+```
+:21686  if (!(Array_Length(cards) > 0)) → randomCard = null
+:21688  if (!skipCustomAlways) goto L_0179      ; ★ false ⇒ 走"自定义必选"那条
+:21689  L_007E:  r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len-1)
+:21696           randomCard = cards[r]           ; ← 全池随机（也是"必选集为空"的落点）
+:21705  L_0179:  收集 alwaysSelected = cards 里
+                 `CustomName1HasAttribute(card, "AlwaysSelectedAsRandom")` 为真的那些
+:21753  if (Array_Length(alwaysSelected) > 0):
+:21763      r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len(alwaysSelected)-1)
+:21765      randomCard = alwaysSelected[r]
+:21757  else → goto L_007E                       ; 必选集为空 ⇒ 退回全池随机
+```
+**全卡池 176 个调用点里 153 个传 `false`**（`true` 只有 23 个），
+而内核旧实现 `["GetRandomCard"] = … GetRandomCard(AsList(a[0]))` **恒按全池随机**
+—— 等于恒按 `true` 那条 ⇒ **对那 153 个点是走错了分支**。
+
+**两条路都只消费 1 次随机数**，只有"从哪个池里取"不同 ⇒ **RNG 游标对账不受影响**，
+所以这是一个**零对齐风险**的修正。
+
+⚠️ **如实标注**：差别要"必选集非空"才看得见，而 `AlwaysSelectedAsRandom` 这个属性
+**在本仓库的卡数据里查不到**（`cards.live.json` 0 处；`card-effects.json` 里只有
+`BP_CardFunctions` 自己的函数表提到这个字符串）⇒ 对当前 22 局语料**大概率是恒等变换**。
+
+**A/B 结果**：22 局**逐位不变**（三套语料都核过）——这同时也是
+**"当前 22 局里没有任何卡带 `AlwaysSelectedAsRandom`"的证据**；
+`dispatch-gap` 逐位不变（512/2377/`D761A2F1EC183719`，这是**语义修正**不是缺口修复）；
+自测 **163 → 164 全通过**（判死：把第二个实参丢掉 ⇒ 立刻失败）。
+
+⚠️ **写用例时踩到的第二个实参形状坑**：`CustomName1Add` 的**标签在 `a[0]`、卡在 `recv`**
+（IR 实测 19 种形状，`SuffixHas`/`SuffixAdd` 就是 `card = AsCardOrId(a[0]) ?? SelfArg(...)`
++ `tag = StrArg(a, 0)`）—— 第一版把卡写在 `a[0]` 里 ⇒ 标签读成空串 ⇒ 前置断言失败。
+
 ---
 
 

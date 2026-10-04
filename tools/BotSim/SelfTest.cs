@@ -568,6 +568,9 @@ internal static class SelfTest
         new("★ `getCardsBuffedByThisCard`（25 个调用点，13 条清单里最大的一条）：" +
             "只返回**被这张卡贴过**的卡（19 张光环卡的刷新用法）",
             CardsBuffedByThisCardQuery),
+        new("★★ `GetRandomCard` 的第二个实参 `skipCustomAlways` 必须读：" +
+            "176 个调用点里 153 个传 false（走\"必选集\"分支），旧实现恒按全池随机",
+            GetRandomCardCustomAlways),
     };
 
     public static int Run(CardDatabase db)
@@ -13191,6 +13194,117 @@ internal static class SelfTest
         if (none.Count != 0)
         {
             return $"没贴过卡的来源应当返回**空表**，实际 {none.Count} 张" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ `GetRandomCard` 的第二个实参 `skipCustomAlways` **必须读**（蓝图 `:21688`）。
+    ///
+    /// 蓝图 `GetRandomCard(cards, skipCustomAlways, out randomCard)` 按它分流：
+    /// <code>
+    /// :21688  if (!skipCustomAlways) goto L_0179   ; false ⇒ 去收集"必选集"
+    /// :21689  L_007E: 全池随机（也是"必选集为空"的落点）
+    /// :21705  L_0179: 收集 CustomName1HasAttribute(card,"AlwaysSelectedAsRandom") 的那些
+    /// :21753  非空 ⇒ 只在必选集里随机；空 ⇒ goto L_007E（退回全池随机）
+    /// </code>
+    /// **两条路都只消费 1 次随机数**，只有"从哪个池里取"不同。
+    ///
+    /// 全卡池 176 个调用点里 **153 个传 `false`**（`true` 只有 23 个），
+    /// 而内核旧实现恒按全池随机 ⇒ 对那 153 个点走错了分支。
+    ///
+    /// 判别力：① 不看第二个实参（恒全池随机）⇒ 断言 ② 失败（会抽到非必选卡）；
+    /// ② 反过来恒按必选集 ⇒ 断言 ③ 失败。
+    /// </summary>
+    private static string? GetRandomCardCustomAlways(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        var a = state.CreateWithId(plain, Side.Left, 300, CardLocation.HandLeft, 0);
+        var b = state.CreateWithId(plain, Side.Left, 301, CardLocation.HandLeft, 1);
+        var c2 = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 2);
+        var pool = new List<CardInstance> { a, b, c2 };
+
+        bool Draw(bool skipCustomAlways)
+        {
+            object? r = engine.Api.InvokeByName("GetRandomCard", null,
+                new object?[] { pool, skipCustomAlways, null }, ctx, out _);
+            return ReferenceEquals(r, b);
+        }
+
+        // ---- ① 池里**没有**必选卡 ⇒ 两条分支都应当能抽到别的卡（恒等变换）----
+        bool sawOtherFalse = false;
+        bool sawOtherTrue = false;
+        for (int i = 0; i < 12; i++)
+        {
+            if (!Draw(false))
+            {
+                sawOtherFalse = true;
+            }
+
+            if (!Draw(true))
+            {
+                sawOtherTrue = true;
+            }
+        }
+
+        if (!sawOtherFalse || !sawOtherTrue)
+        {
+            return "池里**没有**必选卡时，`GetRandomCard` 两条分支都应当能从全池里抽到非 b 的卡" +
+                   $"（蓝图 :21757 的 `else → L_007E` 就是退回全池随机）；" +
+                   $"实际 false 抽到过别的={sawOtherFalse} true 抽到过别的={sawOtherTrue}" + D();
+        }
+
+        // ---- ② 把 b 标成必选，`skipCustomAlways = false` ⇒ **只能**抽到 b ----
+        // ⚠️ 实参形状（IR 实测 19 种）：**标签在 `a[0]`、卡在 `recv`**（或退回 `c.Self`）——
+        //    `SuffixHas`/`SuffixAdd` 就是 `card = AsCardOrId(a[0]) ?? SelfArg(...)` + `tag = StrArg(a, 0)`。
+        engine.Api.InvokeByName("CustomName1Add", b,
+            new object?[] { "AlwaysSelectedAsRandom" }, ctx, out bool handledAdd);
+        if (!handledAdd)
+        {
+            return "派发表里没有 `CustomName1Add`（前置不成立）";
+        }
+
+        if (!CardApi.CustomNameHasAttribute(b, "customName1", "AlwaysSelectedAsRandom"))
+        {
+            return "前置不成立：`CustomName1Add(b, \"AlwaysSelectedAsRandom\")` 没生效";
+        }
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (!Draw(false))
+            {
+                return "池里有**必选卡**时，`skipCustomAlways = false` 只能抽到它" +
+                       "（蓝图 :21753-:21765：非空 ⇒ 只在必选集里随机）——" +
+                       "旧实现恒按全池随机，所以这一条能抓住它" + D();
+            }
+        }
+
+        // ---- ③ 同一池、`skipCustomAlways = true` ⇒ 必选标记**不生效**，应当能抽到别的 ----
+        bool sawOtherSkip = false;
+        for (int i = 0; i < 12; i++)
+        {
+            if (!Draw(true))
+            {
+                sawOtherSkip = true;
+                break;
+            }
+        }
+
+        if (!sawOtherSkip)
+        {
+            return "`skipCustomAlways = true` 时必选标记**不该**生效（蓝图 :21688 直接走 :21689 全池随机），" +
+                   "但 12 次都没抽到别的卡" + D();
         }
 
         return null;
