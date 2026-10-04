@@ -574,6 +574,9 @@ internal static class SelfTest
         new("★ `IsTopDeckNavy`（7 点，消费者 `card_event_uss_arcfish` 在语料里）：" +
             "牌库顶是海军卡为真、非海军为假、空牌库为假",
             TopDeckNavyQuery),
+        new("★ `JSON_SetInt` 的值是**卡对象**时要取 `CardId`（不能按整数读成 0）——" +
+            "§8.23 那个\"出参类型\"疑点的收口：全 IR 只有 1 处这么用",
+            JsonSetIntAcceptsCardValue),
     };
 
     public static int Run(CardDatabase db)
@@ -13378,6 +13381,60 @@ internal static class SelfTest
         if (IsNavy(Side.Left))
         {
             return "牌库为空时 `IsTopDeckNavy` 应当为**假**（蓝图 `deckCardIDs[0] > 0` 那道门）" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ `JSON_SetInt` 的值可能是**卡对象** —— 必须取它的 `CardId`，不能按整数读成 0。
+    ///
+    /// 背景（README §8.23 的**后续收口**）：蓝图那些"生成"原语的出参**声明是整数**
+    /// （`spawnedCardID`），而内核的实现 `return card`（**卡对象**）。
+    /// 全 IR 扫描：spawn 出参一共只有 **26 处**被消费，其中 **25 处**要么走
+    /// `GetCardFromID`（已改成 `AsCardOrId`）、要么消费 `SpawnCardInDeckBySide` 的
+    /// `spawnedCardIDs`（本来就返回 `List<int>`）—— **只有这一处**是按整数用的：
+    /// `card_event_area_bombardment` 的 `JSON_SetInt(self, "unitToRemove", spawnedCardID)`。
+    ///
+    /// 判别力：把 `AsCard(raw)?.CardId` 那一段去掉（退回 `IntArg(a, 2)`）⇒ 断言 ① 失败（写进 0）。
+    /// </summary>
+    private static string? JsonSetIntAcceptsCardValue(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        var host = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
+        var value = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardFrontline, 1);
+
+        // ---- ① 值是**卡对象** ⇒ 应当写进那张卡的 `CardId` ----
+        engine.Api.InvokeByName("JSON_SetInt", host,
+            new object?[] { host, "unitToRemove", value, null }, ctx, out bool handled1);
+        if (!handled1)
+        {
+            return "派发表里没有 `JSON_SetInt`（前置不成立）";
+        }
+
+        int stored = engine.Api.JsonGetInt(host, "unitToRemove");
+        if (stored != value.CardId)
+        {
+            return $"`JSON_SetInt` 的值是卡对象时应当写进它的 `CardId`（{value.CardId}），" +
+                   $"实际 {stored}（按整数读会得 0）" + D();
+        }
+
+        // ---- ② 值是普通整数 ⇒ 行为不变 ----
+        engine.Api.InvokeByName("JSON_SetInt", host,
+            new object?[] { host, "plainInt", 7, null }, ctx, out _);
+        if (engine.Api.JsonGetInt(host, "plainInt") != 7)
+        {
+            return "`JSON_SetInt` 的值是普通整数时应当原样写进（7）" + D();
         }
 
         return null;

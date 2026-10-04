@@ -758,7 +758,30 @@ public sealed partial class CardApi
             ["JSON_GetInt"] = (c, r, a) => AsCard(r) is { } x
                 ? new object?[] { JsonGetInt(x, StrArg(a, 1)), JsonHasKey(x, StrArg(a, 1)) }
                 : new object?[] { 0, false },
-            ["JSON_SetInt"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetInt(x, StrArg(a, 1), IntArg(a, 2)); return null; },
+            // ⚠️ 2026-10-04：值可能是**卡对象**，必须按卡对象取 `CardId`。
+            //
+            // 蓝图那些"生成"原语的出参声明是**整数**（`spawnedCardID`），但内核的实现返回的是
+            // **卡对象**（`DoSpawnOnBattlefield` / `DoSpawnInHand` 都是 `return card`）。
+            // 于是 `IntArg(a, 2)` 会读成 0。**实证**（全 IR 扫描：spawn 出参一共只有 26 处被消费，
+            // 这是其中**唯一**一处按整数用的）：
+            // `card_event_area_bombardment` 的
+            // `SpawnCardOnBattlefield(…, "card_unit_lancaster", …)` →
+            // `JSON_SetInt(self, "unitToRemove", spawnedCardID)`
+            // 会把 `unitToRemove` 写成 **0**，之后按 id 找"要移除的那个单位"就永远找不到。
+            // 其余 25 处消费要么走 `GetCardFromID`（已改成 `AsCardOrId`）、
+            // 要么消费的是 `SpawnCardInDeckBySide` 的 `spawnedCardIDs`（那一个本来就返回 `List<int>`）
+            // ⇒ 只有这一处需要修。
+            ["JSON_SetInt"] = (c, r, a) =>
+            {
+                if (AsCard(r) is { } x)
+                {
+                    object? raw = a.ElementAtOrDefault(2);
+                    int value = AsCard(raw) is { } asCard ? asCard.CardId : IntArg(a, 2);
+                    JsonSetInt(x, StrArg(a, 1), value);
+                }
+
+                return null;
+            },
             ["JSON_GetBool"] = (c, r, a) => AsCard(r) is { } x
                 ? new object?[] { JsonGetBool(x, StrArg(a, 1)), JsonHasKey(x, StrArg(a, 1)) }
                 : new object?[] { false, false },
