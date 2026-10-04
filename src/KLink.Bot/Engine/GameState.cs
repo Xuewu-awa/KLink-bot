@@ -511,7 +511,40 @@ public sealed class GameState
             GeneratedCardIds.Add(card.CardId);
         }
 
+        TraceHandOverflow(card, location, "Create");
         return card;
+    }
+
+    /// <summary>
+    /// 诊断（env 门控）：手牌**超过容量**时报一行 —— 用来定位「手牌虚增」。
+    ///
+    /// 为什么这是一个**可证伪的判据**（不依赖客户端数据）：手牌上限是
+    /// <see cref="HandCapacity"/> = 9，**客户端永远不会超过它**；
+    /// 所以内核里一旦出现 `10/9`，就**必然**是某条加牌路径漏了容量门。
+    /// （实测别处日志里确实出现过「手牌已满（10/9），…被弃掉」—— 那说明**进那一张之前**
+    /// 手牌就已经是 10 了。）
+    ///
+    /// 用法：`$env:KLINK_TRACE_HANDOVER='1'`，然后跑 `--audit-replay`。
+    /// </summary>
+    private void TraceHandOverflow(CardInstance card, CardLocation location, string how)
+    {
+        if (Environment.GetEnvironmentVariable("KLINK_TRACE_HANDOVER") != "1")
+        {
+            return;
+        }
+
+        if (location != CardLocation.HandLeft && location != CardLocation.HandRight)
+        {
+            return;
+        }
+
+        int n = Cards(card.Owner, location).Count;
+        if (n > HandCapacity)
+        {
+            Console.Error.WriteLine(
+                $"[HANDOVER] t={Turn} {card.Owner} {location}={n}/{HandCapacity} " +
+                $"+{card.Name}#{card.CardId} via {how}");
+        }
     }
 
     /// <summary>
@@ -704,6 +737,8 @@ public sealed class GameState
         {
             CardMoved?.Invoke(card, oldLocation, location);
         }
+
+        TraceHandOverflow(card, location, $"Move(from {oldLocation})");
     }
 
     /// <summary>
