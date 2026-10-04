@@ -128,10 +128,15 @@ internal static class DispatchGapBaseline
     /// 选它们的方式见 README §8.24：把缺口按**拥有者**分成
     /// 「`BP_*` / 其它 UI 蓝图（1067 点，**根本不会跑**）」「campaign/教程（951 点，**离线内核没有战役模式**）」
     /// 与「**规则相关（343 点 / 91 种）**」三档，只在前一档之外挑。
-    public const int BaselineCount = 517;
+    /// 2026-10-04：517 → **513**（调用点 2417 → **2402**，指纹 `1CD6C9FB13D94AD0`）。
+    /// 这一批的挑选依据换成了**"需要的卡真的在 22 局语料里出现过"**：
+    /// 86 种规则相关缺口按这个条件过滤后只剩 **13 种**，本轮补了其中自洽的四条 ——
+    /// `GiveTwoKredits`（2 点）、`ResetUnitOperations`（3）、
+    /// `WasLeftMostCardWhenPlayedFromHand`（6）、`WasRightMostCardWhenPlayedFromHand`（4）。
+    public const int BaselineCount = 513;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "562F23B0F92405BE";
+    public const string BaselineFingerprint = "1CD6C9FB13D94AD0";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

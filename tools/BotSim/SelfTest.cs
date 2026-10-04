@@ -561,6 +561,10 @@ internal static class SelfTest
         new("★ 四个规则相关的小缺口一次补齐：`GetAllCardsInFrontline` / `GetLeftMostCardInHand` / " +
             "`MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`",
             RulePrimitivesBatch),
+        new("★ 四个**有语料消费者**的小缺口：`GiveTwoKredits` / `ResetUnitOperations` / " +
+            "`WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`" +
+            "（后两个的写入方落在 `PlayCard` 里，端到端验）",
+            CorpusConsumerPrimitives),
     };
 
     public static int Run(CardDatabase db)
@@ -12981,6 +12985,122 @@ internal static class SelfTest
         {
             return $"`MoveMultipleCardsToTopOfOwnersDeck` 之后牌库应当多 2 张" +
                    $"（{deckBefore} → {state.Deck(Side.Left).Count()}）" + D();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ 四个**"有语料消费者"**的小缺口（README §8.25）：挑选依据不是"缺口最大"，
+    /// 而是"需要的卡真的在 22 局语料里出现过" —— 86 种规则相关缺口过滤后只剩 13 种，
+    /// 这是其中自洽的四条。
+    ///
+    /// <list type="bullet">
+    /// <item>`GiveTwoKredits()` —— 原生函数，给本方 +2 kredit（消费者 `card_unit_2nd_michigan`）。</item>
+    /// <item>`ResetUnitOperations(cardID, giverID, out)` 蓝图 `:33003-33060` ——
+    ///   `if (IsUnit(card) &amp;&amp; IsLocatedOnBoard(card)) { movementLeft = 1; attackLeft = getHasFury ? 2 : 1; }`。</item>
+    /// <item>`WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`
+    ///   蓝图 `:37653-37698` —— 读 JSON 标记；写入方 `SetRightLeftMostWhenPlayed`
+    ///   （`:34430-34535`）在 IR 里**直接调用点为 0**，所以落点在 `MatchEngine.PlayCard`。</item>
+    /// </list>
+    ///
+    /// 判别力：① 删任一实现 ⇒ 对应断言报"派发表里没有"；
+    /// ② `ResetUnitOperations` 去掉 `AliveOnBoard` 门 ⇒ 断言 ②b 失败；
+    /// ③ 去掉 `PlayCard` 里写标记那一段 ⇒ 断言 ③ 失败（left/right 都恒 false）。
+    /// </summary>
+    private static string? CorpusConsumerPrimitives(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 30);
+        state.SetMaxKredits(Side.Left, 30);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        // ---- ① `GiveTwoKredits`：给自己这一方 +2 ----
+        state.SetKredits(Side.Left, 3);
+        engine.Api.InvokeByName("GiveTwoKredits", null, Array.Empty<object?>(), ctx, out bool handled1);
+        if (!handled1)
+        {
+            return "派发表里没有 `GiveTwoKredits`（IR 2 个调用点；消费者 `card_unit_2nd_michigan` 在语料里）";
+        }
+
+        if (state.Kredits(Side.Left) != 5)
+        {
+            return $"`GiveTwoKredits` 应当给本方 +2 kredit（3 → 5），实际 {state.Kredits(Side.Left)}" + D();
+        }
+
+        // ---- ② `ResetUnitOperations`：场上单位的行动数全清零 ----
+        var unit = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
+        unit.HasMovedThisTurn = true;
+        unit.HasAttackedThisTurn = true;
+        unit.AttacksThisTurn = 1;
+        engine.Api.InvokeByName("ResetUnitOperations", null,
+            new object?[] { unit.CardId, unit.CardId, null }, ctx, out bool handled2);
+        if (!handled2)
+        {
+            return "派发表里没有 `ResetUnitOperations`（IR 3 个调用点）";
+        }
+
+        if (unit.HasMovedThisTurn || unit.HasAttackedThisTurn || unit.AttacksThisTurn != 0)
+        {
+            return "`ResetUnitOperations` 应当把 `HasMovedThisTurn` / `HasAttackedThisTurn` / " +
+                   "`AttacksThisTurn` 全清零（蓝图 :33003-33060）" + D();
+        }
+
+        // ---- ②b **不在场**的卡不受影响（蓝图那道 `IsLocatedOnBoard` 门）----
+        var inHand = state.CreateWithId(plain, Side.Left, 301, CardLocation.HandLeft, 0);
+        inHand.HasMovedThisTurn = true;
+        engine.Api.InvokeByName("ResetUnitOperations", null,
+            new object?[] { inHand.CardId, inHand.CardId, null }, ctx, out _);
+        if (!inHand.HasMovedThisTurn)
+        {
+            return "`ResetUnitOperations` 对**不在场**的卡**不该**生效" +
+                   "（蓝图 :33003 的 `IsUnit && IsLocatedOnBoard` 门）" + D();
+        }
+
+        // ---- ③ 打出手牌最左/最右的卡 ⇒ 两个标记要写对（`PlayCard` 里的落点）----
+        bool Flag(CardInstance card, string name)
+        {
+            object? r = engine.Api.InvokeByName(name, null, new object?[] { card, null }, ctx, out _);
+            return r is true;
+        }
+
+        state.SetKredits(Side.Left, 30);
+        var leftCard = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 0);
+        state.CreateWithId(plain, Side.Left, 303, CardLocation.HandLeft, 1);
+        var rightCard = state.CreateWithId(plain, Side.Left, 304, CardLocation.HandLeft, 2);
+
+        if (!engine.PlayCard(leftCard, null))
+        {
+            return "前置不成立：打不出手牌最左那张" + D();
+        }
+
+        bool lLeft = Flag(leftCard, "WasLeftMostCardWhenPlayedFromHand");
+        bool lRight = Flag(leftCard, "WasRightMostCardWhenPlayedFromHand");
+        if (!lLeft || lRight)
+        {
+            return "打出**最左**那张（locationNumber=0，但不是最右）之后应当 " +
+                   $"left=true / right=false，实际 left={lLeft} right={lRight}" + D();
+        }
+
+        if (!engine.PlayCard(rightCard, null))
+        {
+            return "前置不成立：打不出手牌最右那张" + D();
+        }
+
+        bool rLeft = Flag(rightCard, "WasLeftMostCardWhenPlayedFromHand");
+        bool rRight = Flag(rightCard, "WasRightMostCardWhenPlayedFromHand");
+        if (rLeft || !rRight)
+        {
+            return "打出**最右**那张（locationNumber=2，但不是最左）之后应当 " +
+                   $"left=false / right=true，实际 left={rLeft} right={rRight}" + D();
         }
 
         return null;

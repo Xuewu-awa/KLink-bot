@@ -1011,6 +1011,32 @@ public sealed class MatchEngine
             },
             broadcastName: true);
 
+        // ---- `SetRightLeftMostWhenPlayed`（蓝图 `BP_CardFunctions.g.cs:34430-34535`）----
+        //
+        // 蓝图那个函数在**打出时**给这张牌记两个 JSON 标记：
+        // <code>
+        // :34450  若 `card.locationNumber == 0`            ⇒ WasLeftMostWhenPlayedFromHandKey = true
+        // :34510  否则                                      ⇒ JSON_Clear(WasLeftMost…)
+        // :34518  若 `card.locationNumber == 手牌里最大号`  ⇒ WasRightMostWhenPlayedFromHandKey = true
+        // :34528  否则                                      ⇒ JSON_Clear(WasRightMost…)
+        // </code>
+        // 读取方是 `WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`
+        //（蓝图 `:37653-37698`，IR 里 **10 个调用点**，消费者 `card_unit_17th_infantry_brigade`
+        // 与 `card_event_repel_the_attack` 都在 22 局语料里）。
+        //
+        // ⚠️ `SetRightLeftMostWhenPlayed` 在 IR 里**直接调用点为 0** —— 它属于
+        //   "客户端在打牌流程里调"的那一类，所以落点必须在内核自己的打牌路径上，
+        //   而且必须在卡**离开手牌之前**（蓝图那两句 `GetCardsInHandBySide` 读的就是"还在手牌里"的此刻）。
+        // ⚠️ 蓝图对"不满足"走的是 `JSON_Clear`（删键），这里写 `false` ——
+        //   对读取方等价（`JsonGetBool` 在缺键与存 "0" 时都返回 false）。
+        if (card.Location == card.Owner.HandOf())
+        {
+            var handNow = State.Hand(card.Owner).ToList();
+            int greatestIndex = handNow.Count == 0 ? -1 : handNow.Max(x => x.LocationNumber);
+            Api.JsonSetBool(card, CardApi.LeftMostWhenPlayedFromHandKey, card.LocationNumber == 0);
+            Api.JsonSetBool(card, CardApi.RightMostWhenPlayedFromHandKey, card.LocationNumber == greatestIndex);
+        }
+
         // ---- ① 先离开手牌，再结算效果 ----
         //
         // ⚠️ 顺序**不能反**，这是从 `ref/kards-sim` 的可运行实现里逐行确认的

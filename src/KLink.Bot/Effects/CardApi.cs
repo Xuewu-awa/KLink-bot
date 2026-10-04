@@ -2126,6 +2126,19 @@ public sealed partial class CardApi
             eventArgs: args, namedArgs: named);
     }
 
+    /// <summary>
+    /// `WasLeftMostWhenPlayedFromHandKey` —— 蓝图 `SetRightLeftMostWhenPlayed`（`BP_CardFunctions.g.cs:34463`）
+    /// 写入、`WasLeftMostCardWhenPlayedFromHand`（`:37662`）读取的那个 JSON 键。
+    ///
+    /// ⚠️ 蓝图里它是 CDO 上的一个 **String 成员**，**字面值在本仓库拿不到**
+    /// （`cards.full.json` 不在仓库里，见 README §3.2）⇒ 这里用与成员同名的常量。
+    /// 写入与读取走同一个常量，**自洽**；这一对之外没有别的消费者，所以字面值不影响行为。
+    /// </summary>
+    public const string LeftMostWhenPlayedFromHandKey = "WasLeftMostWhenPlayedFromHand";
+
+    /// <inheritdoc cref="LeftMostWhenPlayedFromHandKey"/>
+    public const string RightMostWhenPlayedFromHandKey = "WasRightMostWhenPlayedFromHand";
+
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
         // ★★ 手牌容量门（2026-10-04）—— 蓝图 `CreateCard` 的原文：

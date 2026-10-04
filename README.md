@@ -1797,6 +1797,61 @@ if (outParams.Count == 0 && fn.Length > 0)
 （蓝图此时 `WasFound = false`、卡为 null，而 `First()` 会返回第一张）之后才真正判死成功。
 ⇒ 与 §8.20 那条是同一个教训：**反例必须只违反被测的那一个条件**。
 
+### 8.25 ★★ 2026-10-04 第十六轮：**把"规则相关缺口"再按"语料里真的有消费者"过滤 —— 只剩 13 种**
+
+§8.24 把缺口分成三档后还剩 **86 种 / 300 点**"规则相关"。本轮再叠一个条件：
+**需要它的那些卡，是否真的在 22 局语料里出现过**（把 22 个快照拼起来做子串匹配）。
+结果 **只剩 13 种**，这才是真正值得做的清单：
+
+| 调用点 | 缺口 | 语料里的消费者 |
+|---|---|---|
+| 26 | `ConvertCard` | `card_event_capitulation`、`card_unit_108_panzergrenadier`、`card_unit_jagdpanzer_iv` |
+| 25 | `getCardsBuffedByThisCard` | `card_unit_m20_scout_car` |
+| 20 | `DiscardRandomCardFromHand` | `card_event_kriegsmarine`、`card_event_wolfpack`、`card_unit_169_grenadiers` |
+| 15 | `PlayCardDirectlyFromHand` | `card_event_eagle_day` |
+| 7 | `IsTopDeckNavy` | `card_event_uss_arcfish` |
+| 6 | `WasLeftMostCardWhenPlayedFromHand` | `card_unit_17th_infantry_brigade` |
+| 6 | `AddToTriggerQueue` | `card_event_baker_street_irregulars` 等 |
+| 5 | `ForceEndTurn` | `card_event_repel_the_attack` |
+| 4 | `WasRightMostCardWhenPlayedFromHand` | `card_event_repel_the_attack` |
+| 3 | `ResetUnitOperations` | `card_unit_windhund_division` |
+| 2 | `GiveTwoKredits` | `card_unit_2nd_michigan` |
+| 1 | `DeactivateOtherSniped` | `card_event_sniped` |
+| 1 | `Map_Add` | `card_event_the_big_three` |
+
+#### 本轮补掉其中自洽的四条（15 个调用点）
+
+| 原语 | 蓝图 | 语义 |
+|---|---|---|
+| `GiveTwoKredits()` | **原生**（不在 `BP_CardFunctions`） | 给**本方** +2 kredit。IR 形状 `args=[]`、`recv=null`（隐式 self）。⚠️ 与内核自己的 `ChangeKredits` 一致地**不裁剪 `MaxKredits`**（`DoChangeKredits` 就是这么写的） |
+| `ResetUnitOperations` | `:33003-33060` | `if (IsUnit && IsLocatedOnBoard) { movementLeft = 1; attackLeft = getHasFury ? 2 : 1; }` ⇒ 内核清 `HasMovedThisTurn`/`HasAttackedThisTurn`/`AttacksThisTurn`（`MaxAttacksThisTurn` 本来就等于 `Fury ? 2 : 1`） |
+| `WasLeftMostCardWhenPlayedFromHand` | `:37653-37675` | 读卡上的 JSON 标记 |
+| `WasRightMostCardWhenPlayedFromHand` | `:37676-37698` | 同上 |
+
+★ **这两个"最左/最右"的写入方 `SetRightLeftMostWhenPlayed`（`:34430-34535`）在 IR 里直接调用点为 0**
+—— 它属于"**客户端在打牌流程里调**"的那一类（`card_*` 蓝图里没人调它）。
+⇒ 内核的落点必须在**自己的打牌路径**上，而且必须在卡**离开手牌之前**
+（蓝图那两句 `GetCardsInHandBySide` 读的就是"还在手牌里"的此刻）：
+`MatchEngine.PlayCard` 里、`OnBeforeOtherCardPlayedFromHand` 之后、"① 先离开手牌"之前。
+⚠️ 两个 JSON 键的字面值在蓝图 CDO 里（`cards.full.json` 不在仓库），用与成员同名的常量，
+**写入与读取走同一个常量、自洽**。
+
+#### 另外：T34 链的规模已量清
+
+`CreateCard` = **378 行**蓝图，签名
+`CreateCard(side, cardName, location, overrideCardID, overrideLocationNumber, spawnCardInHand, gold, newCardText, cardSeen, skipDrawAnimation, out cardID)`，
+内部调 **27 个**不同原语，其中 `getHasGameplayTag` / `Conv_NameToString` / `CreateCardObject` /
+`ExecuteOnSpawnedInHandEvents` / `AddAutoPlayCards` / `GetNextCardLocationNumber` / `GenerateNextCardID` /
+`IsLocationFull` / `FetchCardsByLocation` 等**都不在派发表**，而且 `GetHandLocationBySide`
+正是 §8.16 里**被 A/B 否决**过的那一个 ⇒ T34 链的规模确认是**多轮**。
+
+**A/B 结果**：
+- ★ **判据 ⑥ 变好**：`dispatch-gap` **517 / 2417 / `562F23B0F92405BE`**
+  → **513 / 2402 / `1CD6C9FB13D94AD0`**（已同步冻结常量）；
+- 22 局**逐位不变**（三套语料都核过）—— 这四条虽"有语料消费者"，
+  但那些消费者在这 22 局里**没有走到**这些分支，所以**回放侧仍无信号**；
+- 自测 **161 → 162 全通过**（判死验证：关掉 `PlayCard` 里写标记那一段 ⇒ 立刻失败）。
+
 ---
 
 

@@ -597,6 +597,47 @@ public sealed partial class CardApi
 
                 return 0;
             },
+            // ---- 2026-10-04：四个"**有语料消费者**"的小缺口（README §8.25）----
+            //
+            // 选它们的依据不是"缺口最大"，而是**"需要的卡真的在 22 局语料里出现过"** ——
+            // 把 86 种规则相关缺口按这个条件过滤后只剩 13 种，这是其中自洽的四条。
+            //
+            // `GiveTwoKredits()` —— **原生函数**（不在 `BP_CardFunctions` 里），
+            // 语义按名字 + 唯一消费者（`card_unit_2nd_michigan`，语料命中）定：给**自己这一方** 2 点 kredit。
+            // IR 形状：`args=[]`、`recv=null`（隐式 self）⇒ 阵营取 `SelfSide`。
+            // ⚠️ 与内核自己的 `ChangeKredits` 一致地**不裁剪 `MaxKredits`**（`DoChangeKredits` 就是这么写的）。
+            ["GiveTwoKredits"] = (c, r, a) => { State.AddKredits(SelfSide(c), 2); return null; },
+
+            // `ResetUnitOperations(cardID, giverID, out qqq)`
+            // 蓝图 `BP_CardFunctions.g.cs:33003-33060`：
+            //   if (IsUnit(card) && IsLocatedOnBoard(card)) {
+            //       card.movementLeft = 1;
+            //       card.attackLeft   = getHasFury(card) ? 2 : 1;
+            //   }
+            // 内核的对应物是 `HasMovedThisTurn` / `HasAttackedThisTurn` / `AttacksThisTurn`
+            //（`MaxAttacksThisTurn` 本来就等于 `Fury ? 2 : 1`，见 `CardInstance.cs:175`）
+            // ⇒ 三个都清零即可，不需要单独处理 Fury。
+            ["ResetUnitOperations"] = (c, r, a) =>
+            {
+                if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } unit && IsUnit(unit) && unit.AliveOnBoard)
+                {
+                    unit.HasMovedThisTurn = false;
+                    unit.HasAttackedThisTurn = false;
+                    unit.AttacksThisTurn = 0;
+                }
+
+                return 0;
+            },
+
+            // `WasLeftMostCardWhenPlayedFromHand(Card, out WasLeftMost)` / `WasRightMost…`
+            // 蓝图 `:37653-37675` / `:37676-37698`：读 `Card` 上的 JSON 标记。
+            // 写入方是 `SetRightLeftMostWhenPlayed`（蓝图 `:34430-34535`）——
+            // ⚠️ 那个函数在 IR 里**直接调用点为 0**（属于"客户端打牌流程里调"的那一类），
+            //    所以内核的落点在 `MatchEngine.PlayCard` 里（必须在卡**离开手牌之前**）。
+            ["WasLeftMostCardWhenPlayedFromHand"] =
+                (c, r, a) => ReadPlayedFromHandFlag(c, r, a, LeftMostWhenPlayedFromHandKey),
+            ["WasRightMostCardWhenPlayedFromHand"] =
+                (c, r, a) => ReadPlayedFromHandFlag(c, r, a, RightMostWhenPlayedFromHandKey),
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
@@ -4662,6 +4703,19 @@ public sealed partial class CardApi
     /// 当成"cardID=3"（`HealCard(0, 3)` 这种非指向性调用会凭空挑中 3 号卡）。
     /// 指向**自己**的卡 ID 也跳过 —— 那一支本来就该回退到接收者（老行为）。
     /// </summary>
+    /// <summary>
+    /// `WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand` 的共用实现
+    /// （蓝图 `BP_CardFunctions.g.cs:37653-37675` / `:37676-37698`）：
+    /// `JSON_GetBool(Card, &lt;key&gt;)` ⇒ 出参 `WasLeftMost` / `WasRightMost`。
+    ///
+    /// ⚠️ 是**实例方法**（不是 `static`）—— 它要调 <see cref="CardApi.JsonGetBool"/>。
+    /// </summary>
+    private object? ReadPlayedFromHandFlag(EffectContext c, object? r, object?[] a, string key)
+    {
+        var card = AsCard(a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+        return card is not null && JsonGetBool(card, key);
+    }
+
     private static CardInstance? TargetCard(EffectContext c, object? receiver, object?[] args)
     {
         foreach (var v in args)
