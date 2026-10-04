@@ -1255,10 +1255,38 @@ at CardApi.SpawnCardInHand           (CardApi.cs:1873)          ← CreateCard�
   这一条**仍然成立**，只是它的**根因还没定位**（不能再用"手牌虚增"当解释）。
 
 **下一步（收窄后）**：
-1. 逐条给"往手牌加牌"的路径**标注蓝图有没有门**（这是纯读蓝图的工作，不需要跑对拍）；
-2. 只给**蓝图有门、内核漏了**的路径补门，然后 A/B —— 不要再在换区漏斗上一刀切；
-3. 单独查 `854099 t11` 那一刻**内核手牌为什么是 9**：用 `KLINK_TRACE_HANDOVER=1` 的
+1. ✅ **已做**：逐条给"往手牌加牌"的路径标注蓝图有没有门 —— 结论是**唯一缺的只有 `CreateCard` 那条**
+   （见 §8.15）。
+2. ⏳ 单独查 `854099 t11` 那一刻**内核手牌为什么是 9**：用 `KLINK_TRACE_HANDOVER=1` 的
    调用栈逐条回溯该局 t1..t11 的每一次进手/出手，与动作流对账。
+
+### 8.15 ★ 2026-10-04 第六轮：按路径逐条对账后，补上**唯一**缺失的手牌容量门
+
+**逐条对账结果**（"往手牌加牌"的每一条路径 × 蓝图有没有门 × 内核有没有实现）：
+
+| 路径 | 蓝图 | 内核 | 结论 |
+|---|---|---|---|
+| 抽顶牌 `DrawCard` | **有**：`DrawTopCardFromDeck` `:12496-12500 isHandFull` | ✅ 已实现（`MatchEngine.cs:718-731`） | 一致 |
+| `DrawCardsFromDeckBySide` | 委托给 `DrawTopCardFromDeck`（`:12298-12405` 体内调它） | ✅ 走同一个 `DrawCard` | 一致 |
+| 抽指定牌 `DoDrawSpecific` | **没有门**：`DrawSpecificCardFromDeckBySide` `:12406`（全函数 33 行，无任何手牌提及） | 无门 | 一致（**允许**越界） |
+| 回手 `DoMoveUnitFromBoardToOwnersHand` | **有**：`MoveCardFromBoardToOwnersHand` `:26399-26407`（满 ⇒ `Discard(8)`） | ✅ 已实现（`CardApiDispatch.cs:2572-2574`） | 一致 |
+| 开发选牌 `selectCardToDraw` | **有**：`:33725-33737`（`isFull && !isEffect` ⇒ 不抽） | ✅ 已实现（`CardApiDispatch.cs:1469`） | 一致 |
+| **建卡到手 `SpawnCardInHand`** | **有**：`CreateCard` `:10510/:10702-10706`（满 ⇒ `Discard(8)`） | ❌ **缺** | **本轮补上** |
+| `SalvageMultipleUnits` | **有**：`:33276-33278` | 未实现（原语不在派发表） | 不适用 |
+
+⇒ **唯一缺的就是 `SpawnCardInHand` 这一条**（实测越界调用栈也正好指向它：
+`CardApi.SpawnCardInHand ← DoSpawnInHand`）。按蓝图原文补上（满手 ⇒ 新卡进**弃牌堆**）。
+
+**结果**：22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
+自测 **152 → 153 项全通过**（新用例做过判死验证：把 `where` 改回 `side.HandOf()` 即失败），
+`dispatch-gap` 逐位不变。探针确认 `SpawnCardInHand` 那条路径的越界不再叠加
+（该局手牌峰值从 13/9 降到 11/9；**其余越界仍来自蓝图允许的 `DoDrawSpecific` 那类路径**）。
+
+**如实标注两条**：
+1. 蓝图对这条门有一个例外（`autoplay && spawnCardInHand` 时不改送弃牌堆，`:10702`），
+   而内核**没有建模 `autoplay` 这个 gameplay tag** ⇒ 本实现是"无条件应用"，**是近似**。
+2. 本轮**没有**、也不该去动 `DoDrawSpecific` —— 它在蓝图里**本来就没有门**，
+   §8.14 那次"一刀切"的失败正是把这一类合法越界也封掉了。
 
 ---
 

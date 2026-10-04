@@ -535,6 +535,8 @@ internal static class SelfTest
         // 订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 自测」。
         new("★ T35/T61/T48 三个从未派发的触发点现在真的派发（建卡 / 钉住 / 失去烟幕）",
             CardCreatedPinnedSmokescreenTriggers),
+        new("★ `SpawnCardInHand` 的手牌容量门：满手时新卡进弃牌堆（蓝图 `CreateCard` :10702-10706）",
+            SpawnCardInHandRespectsCapacity),
     };
 
     public static int Run(CardDatabase db)
@@ -12019,6 +12021,66 @@ internal static class SelfTest
             return "T48：第二次摘同一个（已经不存在的）烟幕时**不该**再广播" +
                    "（蓝图 `RemoveSmokescreen` 只在真的摘掉之后走到那一段）"
                  + Dump(state, ("派发记录", Trace()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ `SpawnCardInHand` 的**手牌容量门** —— 蓝图 `CreateCard` 的原文
+    /// （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
+    /// <code>
+    /// :10510  IsLocationFull(_location) → :10512 wasFullBeforeCreating
+    /// :10702  BooleanAND(Not(autoplay &amp;&amp; spawnCardInHand), wasFullBeforeCreating)
+    /// :10706      createdCard.location = 8          ; ★ 建卡前手牌就满 ⇒ 直接进弃牌堆
+    /// </code>
+    ///
+    /// ## 为什么只补这一条路径（而不是在换区漏斗上一刀切）
+    /// "往手牌加牌"的各条路径在蓝图里**待遇不同**：`DrawSpecificCardFromDeckBySide`
+    /// （`:12406`，全函数 33 行）**根本没有容量门**；`DrawTopCardFromDeck`（`:12496`）与
+    /// `MoveCardFromBoardToOwnersHand`（`:26405`）**有** —— 而内核那两条**都已经实现了**
+    /// （`MatchEngine.DrawCard` / `DoMoveUnitFromBoardToOwnersHand`）。
+    /// 逐条对照后**唯一缺的就是这一条**。
+    /// ⇒ 反过来说：**「手牌 &gt; 9」本身不能当 bug 判据**（实测 22 局最高到 13/9，
+    ///    其中一部分是蓝图允许的），必须先看该路径在蓝图里有没有门。
+    ///
+    /// 判别力：把 `SpawnCardInHand` 里的 `where` 改回 `side.HandOf()` 即失败。
+    /// ⚠️ 蓝图那个例外（`autoplay &amp;&amp; spawnCardInHand` 时不改送弃牌堆）内核没有建模
+    ///    `autoplay` tag ⇒ 本实现是"无条件应用"，**近似**，自测按近似后的语义断言。
+    /// </summary>
+    private static string? SpawnCardInHandRespectsCapacity(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        string infantry = FindType(db, "infantry")!;
+
+        // ① 把左手填满到 HandCapacity
+        for (int i = 0; i < GameState.HandCapacity; i++)
+        {
+            state.CreateWithId(infantry, Side.Left, 400 + i, CardLocation.HandLeft, i);
+        }
+
+        if (state.Hand(Side.Left).Count != GameState.HandCapacity)
+        {
+            return $"前置不成立：左手应当正好 {GameState.HandCapacity} 张，实际 {state.Hand(Side.Left).Count}";
+        }
+
+        var created = engine.Api.SpawnCardInHand(Side.Left, infantry);
+        if (created.Location != CardLocation.Discard)
+        {
+            return $"手牌已满（{GameState.HandCapacity}/{GameState.HandCapacity}）时 `SpawnCardInHand` " +
+                   $"应当把新卡放进**弃牌堆(8)**（蓝图 `CreateCard` :10702-10706），实际 {created.Location}"
+                 + Dump(state);
+        }
+
+        // ② 对照：手牌没满 ⇒ 进手牌（防止 ① 恒真）
+        state.Move(state.Hand(Side.Left).Last(), CardLocation.Discard);
+        var created2 = engine.Api.SpawnCardInHand(Side.Left, infantry);
+        if (created2.Location != CardLocation.HandLeft)
+        {
+            return $"手牌没满（{state.Hand(Side.Left).Count}/{GameState.HandCapacity}）时 " +
+                   $"`SpawnCardInHand` 应当把新卡放进手牌，实际 {created2.Location}"
+                 + Dump(state);
         }
 
         return null;

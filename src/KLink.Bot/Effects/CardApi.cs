@@ -1870,11 +1870,32 @@ public sealed partial class CardApi
 
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
-        var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()));
+        // ★★ 手牌容量门（2026-10-04）—— 蓝图 `CreateCard` 的原文：
+        // `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`
+        // <code>
+        // :10510  IsLocationFull(_location) → :10512 wasFullBeforeCreating
+        // :10702  BooleanAND(Not(autoplay &amp;&amp; spawnCardInHand), wasFullBeforeCreating)
+        // :10704  if (!that) → 正常
+        // :10706      createdCard.location = 8          ; ★ 建卡前手牌就满 ⇒ 直接进弃牌堆
+        // </code>
+        //
+        // ⚠️ **只在这一条路径上补**，不在换区漏斗上一刀切 —— 因为"往手牌加牌"的各条路径
+        //    在蓝图里**待遇不同**：`DrawSpecificCardFromDeckBySide`（`:12406`，全函数 33 行）
+        //    **根本没有容量门**，`DrawTopCardFromDeck`（`:12496`）与
+        //    `MoveCardFromBoardToOwnersHand`（`:26405`）**有**，而内核这两条**都已经实现了**
+        //    （`MatchEngine.DrawCard` / `DoMoveUnitFromBoardToOwnersHand`）。
+        //    逐条对照后**唯一缺的就是这一条**（实测越界栈：`SpawnCardInHand` ← `DoSpawnInHand`）。
+        //
+        // ⚠️ 蓝图那个例外（`autoplay &amp;&amp; spawnCardInHand` 时不改送弃牌堆）内核**没有建模**
+        //    `autoplay` 这个 gameplay tag ⇒ 这里按"无条件应用"实现，**如实标注为近似**。
+        bool handWasFull = State.Hand(side).Count >= GameState.HandCapacity;
+        CardLocation where = handWasFull ? CardLocation.Discard : side.HandOf();
+
+        var card = State.Create(cardName, side, where, State.NextLocationNumber(side, where));
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Int("location", (int)side.HandOf()),
+            ActionValue2.Int("location", (int)where),
         });
 
         // ---- T35 `OnOtherCardCreatedAlterCard` ----
