@@ -1718,6 +1718,73 @@ if (outParams.Count == 0 && fn.Length > 0)
   所以"把出参当卡用"的消费者现在对了；**但把出参当整数做算术的消费者仍会拿到 0**。
   这一层类型不匹配**未逐一核对**，如实记在这里。
 
+### 8.24 ★★ 2026-10-04 第十五轮：**把"缺口"按"会不会真的跑"重新分档 + 补四个规则相关的**
+
+#### 一、★★ 判据 ⑥ 的口径问题：521 种缺口里**大半根本不会跑**
+
+`dispatch-gap` 只数"IR 调了、派发表没有、locals 也兜不住"，**不区分那本蓝图在对局里会不会被执行**。
+本轮按**拥有者**把 2452 个真缺口调用点分了档（复算：2447 点 / 520 种，与工具一致）：
+
+| 拥有者 | 调用点 | 占比 | 说明 |
+|---|---|---|---|
+| `card_*`（真卡） | 1294 | 53% | 其中 **951 点是 campaign/教程**（`HasCampaignUpgrade` 247、`CampaignSetText` 211、`CampaignAdd*` 118、`GiveStarForCampaign` 75、`ShowTutorialMessage` 30 …）—— **离线内核没有战役模式** |
+| `BP_*`（基类/UI 蓝图） | 1067 | 44% | `AddToVerticalBox` 41、`CreateHelpBubbleEntry` 39、`GetIsGoldCard` 24、`GetTutorialBP` 21、`SetActorHiddenInGame` 17、`BindToAnimation*` 30、`Reverse`(Timeline) 14 … —— **对局里根本不会执行** |
+| 其它 | 86 | 3% | `GetRenderCache` 17、`SetIsEnabled`/`SetIsChecked` … 同样是 UI |
+
+⇒ **规则相关的缺口只有 91 种 / 343 个调用点**（占真缺口的 14%），而且**长尾**（最大 26）。
+**这是本轮最有价值的一条**：判据 ⑥ 的头条数字（521/2452）**不是拟真度指标** ——
+它把"永远不会跑"和"战役模式"都算进去了。以后只应按 **343 点这一档**看。
+
+**规则相关缺口的前 25 条**（每条都带"哪张卡需要它"）：
+`ConvertCard` 26 / `getCardsBuffedByThisCard` 25 / `DiscardRandomCardFromHand` 20 /
+`PlayCardDirectlyFromHand` 15 / `getKreditTempBuffAmount` 11 / `SpawnMultipleCardsOnBattlefield` 11 /
+`GetLeftMostCardInHand` 9 / `MoveMultipleCardsToTopOfOwnersDeck` 9 / `SetCardSeen` 9 /
+`getAttackTempBuffAmount` 9 / `GetAllCardsInFrontline` 8 / `ForceCardChangeLocation` 8 /
+`IsTopDeckNavy` 7 / `JSON_RemoveFromIntArray` 7 / `MoveUnitFromSupportToFrontLine` 7 …
+
+#### 二、★ T34 `ConvertCard` 是**自底向上的多轮工程**，单做它就是死代码
+
+`ConvertCard` 有 **26 个调用点 / 25 张卡**，但它的 13 个子原语里**只有 2 个**
+（`GetTurnNumber` / `IsLocation`）在派发表里，其余 11 个全缺 ——
+其中包括 `CreateCard`（**本身又是 500 行蓝图函数**）。而**这 11 个子原语在 IR 里的直接调用点全是 0**
+（它们只被 `ConvertCard` 自己调）⇒ **先注册它们等于先造一批没人调的死代码**。
+⇒ 正确顺序是：`CreateCard` → 9 个包装（`ApplyRemoveCardFromBoard` / `SetCardLocationAndLocNumber` /
+`RemoveCardFromDeckBySide` / `AddCardToDeckBySide` / `InjectCardIntoLocation` /
+`ExecuteOnCardLocationMoved` / `ExecuteOnSpawnedInHandEvents` / `ApplySetCardsSeenByCipher` …）→ `ConvertCard`。
+**它确实值得做**：`card_event_capitulation` 出现在 `docs/fresh-replays/replay-15`，
+`card_unit_108_panzergrenadier` / `card_unit_jagdpanzer_iv` 出现在 4 局 live 语料里。
+
+#### 三、顺手把 508065 的 ⑤b 根因钉死了
+
+`#54 t13 PC：打不出：kredit 不足（kredits=5，费用=12）` —— 看着像**卡槽/费用规则**的 bug，
+实际是 **⑤c 身份不一致**：动作流里那张卡的卡组码是 `02` = **`card_event_aa_barrage`（费 1）**，
+而内核那张卡是 **`card_event_the_commonwealth`（费 12）**。
+⇒ 客户端花 1 费打出去当然合法，内核拿着 12 费的卡自然拒。
+**这是 §9.1 的随机/身份类，不是费用 bug** —— 与 README 原先的猜测一致，本轮给出了确证。
+
+#### 四、补上四个**规则相关**的小缺口
+
+从上面 343 点那一档里挑了最便宜的四条（共 35 个调用点），全部**逐行对照蓝图**：
+
+| 原语 | 蓝图 | 语义 |
+|---|---|---|
+| `GetAllCardsInFrontline` | `:19364-19449` | 遍历 `GetAllCardInBattle`，收 `location == 7` 且 `!IsUnrevealedCovertCard(item) \|\| includeCovertCards`。⚠️ 内核的 `IsUnrevealedCovertCard` 是**恒 false 的桩** ⇒ 过滤退化成"只看 `location == 7`" |
+| `GetLeftMostCardInHand` | `:20980-21058` | `Card.side` 手牌里 `locationNumber == 0` 的那张，出参 `(WasFound, LeftMostCard)` |
+| `MoveMultipleCardsToTopOfOwnersDeck` | `:27339-27399` | 对每张调 `MoveCardToTopOfDeck(item, instigatorID, positionFromTop, true)` |
+| `SetCardSeen` | `:34001-34036` | `GetCardFromID(cardID_Seen).cardSeen = True`（⚠️ 内核读得到这个字段，但 `KismetVm` 的成员表**还没接** `cardSeen` 的读，见 `CardInstance.cs:103-107`） |
+
+**A/B 结果**：
+- ★ **判据 ⑥ 变好**：`dispatch-gap` **521 种 / 2452 点 / `ACCAA64A21EF6CDE`**
+  → **517 种 / 2417 点 / `562F23B0F92405BE`**（已同步 `tools/BotSim/DispatchGap.cs` 的冻结常量）；
+- 22 局**逐位不变**（三套语料都核过）；
+- 自测 **160 → 161 全通过**。
+
+⚠️ **又一次被判死验证抓到空用例**：`GetLeftMostCardInHand` 的第一版只测了"有 0 号手牌"的正常布局 ——
+但 `State.Hand` 是按 `(LocationNumber, CardId)` **排好序**的，所以"图省事写成 `Hand(side).First()`"
+与蓝图结果**恰好一致**，判死失败。补上"**手牌里没有 0 号**"（`locationNumber = 1, 2`）这个反例
+（蓝图此时 `WasFound = false`、卡为 null，而 `First()` 会返回第一张）之后才真正判死成功。
+⇒ 与 §8.20 那条是同一个教训：**反例必须只违反被测的那一个条件**。
+
 ---
 
 

@@ -534,6 +534,69 @@ public sealed partial class CardApi
 
                 return null;
             },
+            // ---- 2026-10-04：四个**规则相关**的小缺口（README §8.24 的清单里最便宜的四条）----
+            //
+            // `GetAllCardsInFrontline(includeCovertCards, out cards)`
+            // 蓝图 `BP_CardFunctions.g.cs:19364-19449`：遍历 `GetAllCardInBattle`，收集
+            // `location == 7 /*BoardFrontline*/` 且 `!IsUnrevealedCovertCard(item) || includeCovertCards` 的卡。
+            // ⚠️ 内核的 `IsUnrevealedCovertCard` 是**恒 false 的桩** ⇒ 第一个条件恒真
+            //    ⇒ 过滤实际退化成"只看 `location == 7`"（`includeCovertCards` 不影响结果）。
+            ["GetAllCardsInFrontline"] = (c, r, a) =>
+            {
+                bool includeCovert = TruthyArg(a, 0);
+                var cards = c.State.Board(Side.Left).Concat(c.State.Board(Side.Right))
+                    .Where(x => x.Location == CardLocation.BoardFrontline)
+                    .Where(x => !IsUnrevealedCovertCard(x) || includeCovert)
+                    .ToList();
+                return cards;
+            },
+            // `GetLeftMostCardInHand(Card, out WasFound, out LeftMostCard)`
+            // 蓝图 `:20980-21058`：在 `Card.side` 的手牌里找 `locationNumber == 0` 的那张；
+            // 找不到 ⇒ `WasFound = false`、`LeftMostCard = null`。
+            ["GetLeftMostCardInHand"] = (c, r, a) =>
+            {
+                var card = AsCard(a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                var side = card?.Owner ?? c.Controller;
+                var leftMost = c.State.Hand(side).FirstOrDefault(x => x.LocationNumber == 0);
+                return new object?[] { leftMost is not null, leftMost };
+            },
+            // `MoveMultipleCardsToTopOfOwnersDeck(cardIDs, instigatorID, positionFromTop, out qqq)`
+            // 蓝图 `:27339-27399`：对 `cardIDs` 里每一张调
+            // `MoveCardToTopOfDeck(item, instigatorID, positionFromTop, true)`
+            // —— 内核的对应物就是 `DoMoveCardToTopOfOwnersDeck`（它读 a[0]=卡、a[2]=位置）。
+            ["MoveMultipleCardsToTopOfOwnersDeck"] = (c, r, a) =>
+            {
+                int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+                int position = IntArg(a, 2, 0);
+                if (a.ElementAtOrDefault(0) is System.Collections.IEnumerable items
+                    && a.ElementAtOrDefault(0) is not string)
+                {
+                    foreach (object? item in items)
+                    {
+                        if (AsCardOrId(c, item) is { } card)
+                        {
+                            DoMoveCardToTopOfOwnersDeck(c, new object?[] { card.CardId, instigatorId, position });
+                        }
+                    }
+                }
+
+                return 0;
+            },
+            // `SetCardSeen(cardID_Seen, instigatorID, out qqq)`
+            // 蓝图 `:34001-34036`：`GetCardFromID(cardID_Seen).cardSeen = True`
+            //（后面只有 `IsActionProcess` + `NotifyCardsSeen`；内核无 notifier，不实现通知）。
+            // ⚠️ 内核**读得到**这个字段（`CardInstance.CardSeen`），
+            //    而 `KismetVm` 的成员表**还没接** `cardSeen` 的读（见 `CardInstance.cs:103-107`
+            //    的如实标注）⇒ 写进去了，但那 11 张卡读它仍得 null。
+            ["SetCardSeen"] = (c, r, a) =>
+            {
+                if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } card)
+                {
+                    card.CardSeen = true;
+                }
+
+                return 0;
+            },
             ["GetTotalKreditsLostThisBattle"] = (c, r, a) =>
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),

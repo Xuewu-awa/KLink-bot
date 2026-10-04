@@ -558,6 +558,9 @@ internal static class SelfTest
         new("★★ T30：`OnOtherCardAttackSwitchTarget` 的出参 `newDefender` **真的改掉攻击目标**" +
             "（COLD TRAP 生成 SISSI 当替身 ⇒ 原目标零伤害）",
             AttackSwitchTargetTrigger),
+        new("★ 四个规则相关的小缺口一次补齐：`GetAllCardsInFrontline` / `GetLeftMostCardInHand` / " +
+            "`MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`",
+            RulePrimitivesBatch),
     };
 
     public static int Run(CardDatabase db)
@@ -12847,6 +12850,137 @@ internal static class SelfTest
         {
             return "COLD TRAP 的 `SpawnCardOnBattlefield(\"card_unit_sissi\", …)` 没生效" +
                    Dump(state, ("派发记录", string.Join(" | ", trace)));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ 四个**规则相关**的小缺口一次补齐（README §8.24 的清单里最便宜的四条）：
+    /// `GetAllCardsInFrontline` / `GetLeftMostCardInHand` /
+    /// `MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`。
+    ///
+    /// 蓝图出处（本次逐行复核）：
+    /// <list type="bullet">
+    /// <item>`GetAllCardsInFrontline` `:19364-19449` —— 遍历 `GetAllCardInBattle`，
+    ///   收 `location == 7` 且 `!IsUnrevealedCovertCard(item) || includeCovertCards` 的卡。
+    ///   ⚠️ 内核的 `IsUnrevealedCovertCard` 是**恒 false 的桩** ⇒ 第一个条件恒真。</item>
+    /// <item>`GetLeftMostCardInHand` `:20980-21058` —— `Card.side` 的手牌里 `locationNumber == 0` 的那张，
+    ///   出参 `(WasFound, LeftMostCard)`。</item>
+    /// <item>`MoveMultipleCardsToTopOfOwnersDeck` `:27339-27399` —— 对每张调
+    ///   `MoveCardToTopOfDeck(item, instigatorID, positionFromTop, true)`。</item>
+    /// <item>`SetCardSeen` `:34001-34036` —— `GetCardFromID(cardID_Seen).cardSeen = True`。</item>
+    /// </list>
+    ///
+    /// 判别力：把任一实现删掉 ⇒ 对应断言失败（"派发表里没有 X"）。
+    /// ⚠️ 这四条在 22 局语料里的可观测性**未逐条核实**；判据以「蓝图原文 + 本用例」为主。
+    /// </summary>
+    private static string? RulePrimitivesBatch(CardDatabase db)
+    {
+        const string plain = "card_unit_infantry_regiment_25";
+        if (db.Find(plain) is null)
+        {
+            return $"卡库里缺 {plain}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        string D() => Dump(state);
+
+        // ---- ① `GetAllCardsInFrontline`：只收前线(7)的卡 ----
+        var frontLeft = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
+        var frontRight = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
+        state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 1);
+        object? r1 = engine.Api.InvokeByName("GetAllCardsInFrontline", null,
+            new object?[] { false, null }, ctx, out bool handled1);
+        if (!handled1)
+        {
+            return "派发表里没有 `GetAllCardsInFrontline`（IR 里 8 个调用点）";
+        }
+
+        var front = r1 as List<CardInstance> ?? new List<CardInstance>();
+        if (front.Count != 2 || !front.Contains(frontLeft) || !front.Contains(frontRight))
+        {
+            return $"`GetAllCardsInFrontline` 应当正好返回前线那 2 张（蓝图 :19364-19449），" +
+                   $"实际 {front.Count} 张" + D();
+        }
+
+        // ---- ② `GetLeftMostCardInHand`：`locationNumber == 0` 的那张 ----
+        var handFirst = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 0);
+        var handSecond = state.CreateWithId(plain, Side.Left, 303, CardLocation.HandLeft, 1);
+        object? r2 = engine.Api.InvokeByName("GetLeftMostCardInHand", null,
+            new object?[] { handFirst, null, null }, ctx, out bool handled2);
+        if (!handled2)
+        {
+            return "派发表里没有 `GetLeftMostCardInHand`（IR 里 9 个调用点）";
+        }
+
+        if (r2 is not object?[] outs2 || outs2.Length < 2)
+        {
+            return $"`GetLeftMostCardInHand` 应当返回**两个**出参（WasFound / LeftMostCard），实际 {r2}";
+        }
+
+        if (!Truthy(outs2[0]) || !ReferenceEquals(outs2[1], handFirst))
+        {
+            return "`GetLeftMostCardInHand` 应当找到 `locationNumber == 0` 的那张" +
+                   "（蓝图 :20980-21058）" + D();
+        }
+
+        // ---- ②b ★ 手牌里**没有** `locationNumber == 0` 的卡 ⇒ `WasFound` 必须为假、卡为 null。
+        //      这一条才是能抓住"图省事写成 `Hand(side).First()`"的用例 ——
+        //      `State.Hand` 是按 `(LocationNumber, CardId)` 排好序的，
+        //      所以在"有 0 号"的正常布局下 `First()` 与蓝图结果**恰好一致**（② 抓不住）。
+        var orphanA = state.CreateWithId(plain, Side.Right, 70, CardLocation.HandRight, 1);
+        var orphanB = state.CreateWithId(plain, Side.Right, 71, CardLocation.HandRight, 2);
+        object? r2b = engine.Api.InvokeByName("GetLeftMostCardInHand", null,
+            new object?[] { orphanA, null, null }, ctx, out _);
+        if (r2b is not object?[] outs2b || outs2b.Length < 2)
+        {
+            return $"`GetLeftMostCardInHand`（无 0 号手牌）应当返回两个出参，实际 {r2b}";
+        }
+
+        if (Truthy(outs2b[0]) || outs2b[1] is not null)
+        {
+            return "手牌里**没有** `locationNumber == 0` 的卡时，`GetLeftMostCardInHand` 的 " +
+                   "`WasFound` 必须为**假**、`LeftMostCard` 必须为 **null**（蓝图 `:20980-21058` 是" +
+                   "在循环里找 `locationNumber == 0`，不是取第一张）" +
+                   $"—— 实际 WasFound={outs2b[0]} card={outs2b[1]}" + D();
+        }
+
+        // ---- ③ `SetCardSeen` ----
+        engine.Api.InvokeByName("SetCardSeen", null,
+            new object?[] { handSecond.CardId, handFirst.CardId, null }, ctx, out bool handled3);
+        if (!handled3)
+        {
+            return "派发表里没有 `SetCardSeen`（IR 里 9 个调用点）";
+        }
+
+        if (!handSecond.CardSeen)
+        {
+            return "`SetCardSeen` 应当把那张卡的 `cardSeen` 置真（蓝图 :34013）" + D();
+        }
+
+        // ---- ④ `MoveMultipleCardsToTopOfOwnersDeck` ----
+        int deckBefore = state.Deck(Side.Left).Count();
+        engine.Api.InvokeByName("MoveMultipleCardsToTopOfOwnersDeck", null,
+            new object?[] { new List<int> { handFirst.CardId, handSecond.CardId }, handFirst.CardId, 0, null },
+            ctx, out bool handled4);
+        if (!handled4)
+        {
+            return "派发表里没有 `MoveMultipleCardsToTopOfOwnersDeck`（IR 里 9 个调用点）";
+        }
+
+        if (handFirst.Location != CardLocation.DeckLeft || handSecond.Location != CardLocation.DeckLeft)
+        {
+            return "`MoveMultipleCardsToTopOfOwnersDeck` 应当把**两张都**移进牌库" +
+                   $"（蓝图 :27339-27399），实际 {handFirst.Location} / {handSecond.Location}" + D();
+        }
+
+        if (state.Deck(Side.Left).Count() != deckBefore + 2)
+        {
+            return $"`MoveMultipleCardsToTopOfOwnersDeck` 之后牌库应当多 2 张" +
+                   $"（{deckBefore} → {state.Deck(Side.Left).Count()}）" + D();
         }
 
         return null;

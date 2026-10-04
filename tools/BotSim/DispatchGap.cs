@@ -122,10 +122,16 @@ internal static class DispatchGapBaseline
     ///  `card_unit_79th_infantry_regiment` / `card_unit_fw_190_ta_152` …），
     /// 也就是说那些卡的「解除钉住」此前是**静默空转**。种类数与调用点**都降了**，
     /// 符合"只降不升"。同批还补上了 T62 `OnOtherUnitUnpinned` 的广播。
-    public const int BaselineCount = 521;
+    /// 2026-10-04：521 → **517**（调用点 2452 → **2417**，指纹 `562F23B0F92405BE`）。
+    /// 原因是补上四个**规则相关**的小缺口：`GetAllCardsInFrontline`（8 点）、
+    /// `GetLeftMostCardInHand`（9）、`MoveMultipleCardsToTopOfOwnersDeck`（9）、`SetCardSeen`（9）。
+    /// 选它们的方式见 README §8.24：把缺口按**拥有者**分成
+    /// 「`BP_*` / 其它 UI 蓝图（1067 点，**根本不会跑**）」「campaign/教程（951 点，**离线内核没有战役模式**）」
+    /// 与「**规则相关（343 点 / 91 种）**」三档，只在前一档之外挑。
+    public const int BaselineCount = 517;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "ACCAA64A21EF6CDE";
+    public const string BaselineFingerprint = "562F23B0F92405BE";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)
