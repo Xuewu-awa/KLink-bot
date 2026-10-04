@@ -152,6 +152,58 @@ public sealed class MatchEngine
             oldLocation: oldLocation,
             newLocation: newLocation);
 
+        // ---- T49 `OnMoveFromFrontline` / `OnOtherCardMoveFromFrontline` ----
+        //
+        // 入口条件（蓝图 `CardLocationMoved`，本次逐行复核 `BP_CardFunctions.g.cs`）：
+        // <code>
+        // :5689  EqualEqual_ByteByte_ReturnValue_3 = (oldLocation == 7)   ; 7 = BoardFrontline
+        // :5691  _4 = (newLocation == 6) ; :5693 _5 = (newLocation == 5)
+        // :5695  BooleanOR(_4, _5)              ; 退到**某一方的半场**
+        // :5697  BooleanAND(OR, _3)             ; ★ 只在前线 → 半场 时成立
+        // :5699  if (!AND) → 整段跳过
+        // :5715  IsActionProcess → 假则跳过（内核未建模，与全内核一致地近似）
+        // :5733  ExecuteOnCardMoveFromFrontline(self, tmpCard)
+        // </code>
+        // ⚠️ 注意入口**不含"退回手牌/弃牌堆"** —— 只含"退回半场(5/6)"。
+        //
+        // 那个函数自己是**层 B 的同一形状**（`:15646-15705`）：
+        // <code>
+        // :15646  if (!cardMoved.isSuppressed) goto L_015C   ; ★ 门**只管自程序**
+        // :15648  FetchAllCardsWithEventTrigger(49)           ; 广播（压制时直落这里）
+        // :15673      GetStopFurtherActions() → 真 ⇒ 跳出整段
+        // :15679  L_015C: OnMoveFromFrontline(cardMoved)      ; 自程序
+        // :15681      goto L_004A                             ; ★ 跑完又跳回广播
+        // :15691          EqualEqual(item.cardID, cardMoved.cardID) ⇒ 跳过  ; 排除被移动的卡
+        // :15705          item.OnOtherCardMoveFromFrontline(cardMoved)
+        // </code>
+        // ⇒ **自程序带压制门、广播无条件**（只被 `stopFurtherActions` 挡）；
+        //    "排除被移动的卡自己"由 `OnOther*` 广播分支排除主体天然满足。
+        // 实参名逐字取 `_index.g.cs:4115` = `{ "cardMoved" }`。
+        //
+        // ⚠️ 5 张订阅卡（`card_unit_flaming_matilda_anzac` / `card_unit_raaf_walrus` /
+        //   `card_location_soviet_scen2` 等）在 22 局语料里 **0 命中** ⇒ **回放侧无信号**。
+        if (oldLocation == CardLocation.BoardFrontline
+            && (newLocation == CardLocation.BoardHqLeft || newLocation == CardLocation.BoardHqRight))
+        {
+            var fromFrontlineArgs = new object?[] { card };
+            var fromFrontlineNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardMoved"] = card,
+            };
+
+            if (!card.Keywords.Contains(Keyword.Suppressed))
+            {
+                Api.FireTrigger("OnMoveFromFrontline", card, card.Owner,
+                    eventArgs: fromFrontlineArgs, namedArgs: fromFrontlineNamed);
+            }
+
+            if (!Api.GetStopFurtherActions())
+            {
+                Api.FireTrigger("OnOtherCardMoveFromFrontline", card, card.Owner,
+                    eventArgs: fromFrontlineArgs, namedArgs: fromFrontlineNamed);
+            }
+        }
+
         // ---- 前线归属重算（P0，2026-10-01 实测 replay-214436）----
         //
         // 出处 `out/bp-cardfn.json` → `CardLocationMoved`（61 条语句）：

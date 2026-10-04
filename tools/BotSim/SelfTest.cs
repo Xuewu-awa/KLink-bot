@@ -546,6 +546,9 @@ internal static class SelfTest
         new("★ T45：`OnOtherCardKreditCostChanged` 只在**改自己的费**时广播" +
             "（蓝图 `:8774/:8776` 的门），改别人的费不发",
             KreditCostChangedTrigger),
+        new("★ T49：`OnMoveFromFrontline` 只在前线 → 半场 时发；自程序带压制门、" +
+            "广播无条件（只被 `stopFurtherActions` 挡）",
+            MoveFromFrontlineTrigger),
     };
 
     public static int Run(CardDatabase db)
@@ -12379,6 +12382,138 @@ internal static class SelfTest
         {
             return "改**别人**的费时**不该**广播 `OnOtherCardKreditCostChanged`" +
                    "（蓝图 :8774 `EqualEqual_IntInt(cardToChange, localInstigatorID)` ⇒ :8776 跳走）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ T49 `OnMoveFromFrontline` / `OnOtherCardMoveFromFrontline`。
+    ///
+    /// **入口条件**（蓝图 `CardLocationMoved`，本次逐行复核 `BP_CardFunctions.g.cs`）：
+    /// <code>
+    /// :5689  _3 = (oldLocation == 7)                  ; 7 = BoardFrontline
+    /// :5691  _4 = (newLocation == 6) / :5693 _5 = (newLocation == 5)
+    /// :5695  OR(_4, _5)                               ; 退到某一方的**半场**
+    /// :5697  AND(OR, _3)                              ; ★ 只在前线 → 半场 时成立
+    /// :5733  ExecuteOnCardMoveFromFrontline(self, tmpCard)
+    /// </code>
+    /// ⇒ **"退回手牌 / 弃牌堆"不算**（那两条 newLocation ∉ {5,6}）。
+    ///
+    /// **那个函数自己是层 B 的同一形状**（`:15646-15705`）：
+    /// `:15646 if (!cardMoved.isSuppressed) goto L_015C` → 自程序；
+    /// `:15648 Fetch(49)` 是广播、**无条件**（`:15681 goto L_004A` 回边），
+    /// 只被 `:15673 GetStopFurtherActions()` 挡；`:15691` 排除被移动的卡自己。
+    ///
+    /// 判别力：去掉 `oldLocation == BoardFrontline` 判定 ⇒ 断言 ② 失败；
+    /// 去掉 `newLocation ∈ {5,6}` 判定 ⇒ 断言 ③ 失败；
+    /// 把压制门装到广播上（而不是自程序上）⇒ 断言 ④ 失败。
+    ///
+    /// ⚠️ **回放侧无信号**：订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
+    /// </summary>
+    private static string? MoveFromFrontlineTrigger(CardDatabase db)
+    {
+        const string moverName = "card_unit_raaf_walrus";             // 订阅 OnMoveFromFrontline（自程序）
+        const string bystanderName = "card_unit_flaming_matilda_anzac"; // 订阅 OnOtherCardMoveFromFrontline
+        foreach (string n in new[] { moverName, bystanderName })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var w = state.CreateWithId(bystanderName, Side.Left, 300, CardLocation.BoardHqLeft, 3);
+        var m = state.CreateWithId(moverName, Side.Left, 301, CardLocation.BoardFrontline, 0);
+
+        bool SelfFired() => Reached(trace, "OnMoveFromFrontline", m);
+        bool CastFired() => Reached(trace, "OnOtherCardMoveFromFrontline", w);
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+
+        // ---- ① 前线 → 半场 ⇒ 自程序与广播**都要发** ----
+        trace.Clear();
+        state.Move(m, CardLocation.BoardHqLeft);
+        if (!SelfFired() || !CastFired())
+        {
+            return "前线 → 半场 时 `OnMoveFromFrontline`(自程序) 与 `OnOtherCardMoveFromFrontline`(广播)" +
+                   "都应当派发（蓝图 :5689-:5697 的条件 + :15679/:15705）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ② 半场 → 前线 ⇒ 都不发（`oldLocation == 7` 不成立）----
+        trace.Clear();
+        state.Move(m, CardLocation.BoardFrontline);
+        if (SelfFired() || CastFired())
+        {
+            return "半场 → 前线 时**不该**发 T49（蓝图 :5689 `oldLocation == 7` 不成立）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ③ 前线 → 弃牌堆 ⇒ 都不发（`newLocation ∈ {5,6}` 不成立）----
+        trace.Clear();
+        state.Move(m, CardLocation.Discard);
+        if (SelfFired() || CastFired())
+        {
+            return "前线 → 弃牌堆 时**不该**发 T49（蓝图 :5691-:5697 要求 `newLocation ∈ {5,6}`）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ③b ★ 手牌 → 半场（= 部署一个单位到半场）⇒ 都不发
+        //      （`oldLocation == 7` 不成立）。这一条才是能抓住"漏判 oldLocation"的用例 ——
+        //      ② 那一条（半场 → 前线）抓不住，因为 `newLocation` 也不是 5/6。
+        //      实测：去掉 `oldLocation == BoardFrontline` 后，② 仍然通过、③b 失败。----
+        var fresh = state.CreateWithId(moverName, Side.Left, 302, CardLocation.HandLeft, 0);
+        trace.Clear();
+        state.Move(fresh, CardLocation.BoardHqLeft);
+        if (Reached(trace, "OnMoveFromFrontline", fresh) || CastFired())
+        {
+            return "**手牌 → 半场**（部署到半场）时**不该**发 T49" +
+                   "（蓝图 :5689 要求 `oldLocation == 7`）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ④ 被压制 ⇒ 自程序不发、**广播照发**（层 B 的形状）----
+        state.Move(m, CardLocation.BoardFrontline);
+        m.Keywords.Add(Keyword.Suppressed);
+        trace.Clear();
+        state.Move(m, CardLocation.BoardHqLeft);
+        if (SelfFired())
+        {
+            return "被压制的卡**不该**收到自己那一路 `OnMoveFromFrontline`" +
+                   "（蓝图 :15646 `if (!cardMoved.isSuppressed) goto L_015C`）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (!CastFired())
+        {
+            return "被压制只是跳过**自程序**；T49 广播仍应照发" +
+                   "（蓝图 :15648 直落广播、:15681 `goto L_004A` 回边）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ⑤ `stopFurtherActions` ⇒ 广播不发、自程序照发 ----
+        m.Keywords.Remove(Keyword.Suppressed);
+        state.Move(m, CardLocation.BoardFrontline);
+        state.StopFurtherActions = true;
+        trace.Clear();
+        state.Move(m, CardLocation.BoardHqLeft);
+        state.StopFurtherActions = false;
+        if (!SelfFired())
+        {
+            return "`stopFurtherActions` 只挡**广播**，不该挡自程序" +
+                   "（蓝图 :15646 跳到 L_015C 时**跳过**了 :15673 那道门）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        if (CastFired())
+        {
+            return "`stopFurtherActions` 为真时**不该**发 T49 广播（蓝图 :15673-:15677）"
                  + Dump(state, ("派发记录", Trace()));
         }
 

@@ -1488,6 +1488,51 @@ T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
 ⚠️ **回放侧无信号**：5 张 T22 订阅者 + 3 张 T3 订阅者在 22 局语料里 **0 命中**
 （已按快照逐局核对）⇒ 判据只有「蓝图原文 + 自测」。
 
+### 8.20 ★ 2026-10-04 第十一轮：**T45 `OnOtherCardKreditCostChanged`（4 卡）+ T49 `OnMoveFromFrontline`（3 卡）**
+
+#### T45 —— 「只有改**自己**的费才广播」
+
+蓝图 `ChangeKreditCost`（`BP_CardFunctions.g.cs`，本次逐行复核）：
+```
+:8772  NotifySetKreditCost(Notifier, cardToChange, getTotalKreditCost(…), …)
+:8774  EqualEqual_IntInt(cardToChange, localInstigatorID)
+:8776  if (!that) goto L_0942                  ; ★ 门①：只有"改**自己**的费"才继续
+:8778  FetchAllCardsWithEventTrigger(45)
+:8796      NotEqual_IntInt(item.cardID, cardToChange)   ; ★ 门②：排除被改的那张卡自己
+:8814      item.OnOtherCardKreditCostChanged(cardToChange)
+```
+落点 `DoChangeKreditCost`（它同时有 `target` 与 `sourceId`）：门① = `target.CardId == sourceId`；
+**门②由 `FireTrigger` 的 `OnOther*` 广播分支排除主体天然满足**。
+⚠️ **只覆盖主路径**：`changeType == 4`（`RemoveTheBuff` 一族）那条**提前 return** 的路没有发 T45
+—— 蓝图那条分支是否也走到 `:8774` **未核实**，如实标注为近似。
+
+#### T49 —— 入口是「前线 → 半场」，而且是层 B 的同一形状
+
+蓝图 `CardLocationMoved`（`:5689-5733`）：
+```
+:5689  _3 = (oldLocation == 7)                  ; 7 = BoardFrontline
+:5691  _4 = (newLocation == 6) / :5693 _5 = (newLocation == 5)
+:5695  OR(_4, _5)                               ; 退到**某一方的半场**
+:5697  AND(OR, _3)                              ; ★ 只在前线 → 半场 时成立
+:5733  ExecuteOnCardMoveFromFrontline(self, tmpCard)
+```
+⇒ **"退回手牌 / 弃牌堆"不算**（那两条 `newLocation ∉ {5,6}`）。
+而那个函数自己（`:15646-15705`）又是层 B 的同一形状：
+`:15646 if (!cardMoved.isSuppressed) goto L_015C`（门**只管自程序**）→
+`:15648 Fetch(49)` 广播（**无条件**，`:15681 goto L_004A` 回边）→
+`:15673 GetStopFurtherActions()` 真 ⇒ 跳出整段 → `:15691` 排除被移动的卡自己。
+落点 `MatchEngine.FireLocationMoved`（蓝图也是从 `CardLocationMoved` 调的）。
+
+**A/B 结果（两条一起）**：22 局**逐位不变**、`dispatch-gap` 逐位不变、
+自测 **155 → 157 全通过**（两条新用例都做过判死验证）。
+⚠️ **回放侧无信号**：4 张 T45 + 5 张 T49 订阅者在 22 局语料里 **0 命中**。
+
+⚠️ **一条方法论记录（判死验证抓到了我的疏漏）**：T49 用例的**第一版抓不住
+"漏判 `oldLocation == 7`"** —— 我原本用"半场 → 前线"当反例，但那条的 `newLocation`
+也不是 5/6，所以**去掉 `oldLocation` 判定后用例照样通过**（判死失败）。
+补上"**手牌 → 半场**"（= 部署到半场）这个反例之后才真正判死成功。
+⇒ **反例必须只违反被测的那一个条件**，否则用例是空的。
+
 ---
 
 
