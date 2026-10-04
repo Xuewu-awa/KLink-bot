@@ -352,6 +352,17 @@ public sealed partial class CardApi
                 c,
                 includeNotAttainable: TruthyArg(a, 0),
                 includeReserved: TruthyArg(a, 1)),
+            ["GetRandomBritishAir"] = (c, r, a) =>
+            {
+                int kredit = IntArg(a, 0);
+                bool includeReserved = c.Self is not null && CardPoolTable.IsReserved(c.Self.Name);
+                var pool = StaticCardPool(c, includeNotAttainable: false, includeReserved)
+                    .Where(x => x.Definition.FactionId == 2
+                        && IsAirUnit(x)
+                        && x.Definition.Kredits == kredit)
+                    .ToList();
+                return c.Engine.Api.GetRandomCard(pool);
+            },
             // 三个出参按调用点的顺序返回：[cards, markAsSeen, keepOrder]
             // （`BP_CardFunctions.selectCardToDraw` 的 L_0680 就是这个顺序）。
             // 多出参约定见 `KismetVm.ExecuteCall`：返回 object?[] 即按下标对应各 out 槽。
@@ -1257,6 +1268,21 @@ public sealed partial class CardApi
             // ④ 按参数过滤。**HQ 不算**：`GetAllCardInBattle` 含 HQ，但 HQ 也是 location 卡、
             // 不是单位 ⇒ 只要 `unitsOnly` 为真就天然被 ④ 挡掉；为假时保留（与蓝图同）。
             ["GetCardsInSupportLineBySide"] = (c, r, a) => DoGetCardsInSupportLine(c, r, a),
+            ["GetCardsInFrontlineBySide"] = (c, r, a) =>
+            {
+                Side side = SideArg(r, a, 0, c.Controller);
+                bool unitsOnly = TruthyArg(a, 1);
+                var cards = c.State.Cards(side, CardLocation.BoardFrontline);
+                return unitsOnly ? cards.FindAll(IsUnit) : cards;
+            },
+            ["FullyHealCard"] = (c, r, a) =>
+            {
+                var target = TargetArg(c, r, a);
+                if (target is null) return new object?[] { 0 };
+                return new object?[] { c.Engine.Api.FullyHealCard(target) };
+            },
+            ["GetCardsPlayedFromHandThisTurn"] = (c, r, a) =>
+                c.State.CardsPlayedThisTurn.Select(card => card.CardId).ToList(),
 
             // ── `IsLocationFull(location, out isFull)`（20 调用点 / 17 张卡）────
             // 出处：直译产物 `_deps/BP_CardFunctions.g.cs` 同名函数体 ——

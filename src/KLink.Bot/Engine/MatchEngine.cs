@@ -905,6 +905,11 @@ public sealed class MatchEngine
 
         State.AddKredits(card.Owner, -card.KreditCost);
 
+        // PlayCardDirectlyFromHand in BP_CardFunctions assigns activation
+        // numbers to Gotcha cards before the play broadcast. Normal play and
+        // direct play share the same activation state in the client.
+        Api.AssignGotchaActivatedOnPlayFromHand(card);
+
         RecordAction("XActionPlayCardFromHand", card.Owner, new Dictionary<string, object?>
         {
             ["cardID"] = card.CardId,
@@ -1037,6 +1042,7 @@ public sealed class MatchEngine
         //   ⇒ **客户端 `#39` 死、内核 `#39` 活** ⇒ 内核半场虚高 1
         //   ⇒ `#70 t15` 假「半场已满」（`#77/#79/#83/#90/#92/#102/#104/#109/#111/#116` 全是连锁）；
         //   随机游标也从 `#49` 起超前 1（审计 ④ 首条人类 HQ 失配 `#60 t13 期望 19 实际 20`）。
+        using var playedBroadcast = Api.BeginPlayedCardBroadcast(card.CardId);
         Api.FireTrigger("OnOtherCardPlayedFromHand", card, card.Owner, eventArgs: new object?[] { card });
 
         // ---- ⑤b 广播：`OnOtherCardEnterPlay`（触发号 43）----

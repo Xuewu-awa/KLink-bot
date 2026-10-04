@@ -114,10 +114,12 @@ internal static class DispatchGapBaseline
     /// </para>
     /// </item>
     /// </remarks>
-    public const int BaselineCount = 525;
+    /// 2026-10-03：525 → **522**（实际重跑：2462 调用点）。补上
+    /// `GetCardsInFrontlineBySide`、`FullyHealCard`、`GetCardsPlayedFromHandThisTurn`。
+    public const int BaselineCount = 522;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "5588ABD560840292";
+    public const string BaselineFingerprint = "FFEC7E071E9518C0";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

@@ -20,6 +20,23 @@ namespace KLink.Bot.Effects;
 /// </summary>
 public sealed partial class CardApi
 {
+    private readonly HashSet<int> _playedCardBroadcastDone = new();
+    private int _playedCardBroadcastDepth;
+
+    public IDisposable BeginPlayedCardBroadcast(int cardId)
+    {
+        if (_playedCardBroadcastDepth++ == 0) _playedCardBroadcastDone.Clear();
+        return new BroadcastScope(this);
+    }
+
+    public void EndPlayedCardBroadcast() => _playedCardBroadcastDepth = Math.Max(0, _playedCardBroadcastDepth - 1);
+
+    private sealed class BroadcastScope : IDisposable
+    {
+        private readonly CardApi _api;
+        public BroadcastScope(CardApi api) => _api = api;
+        public void Dispose() => _api.EndPlayedCardBroadcast();
+    }
     private readonly MatchEngine _engine;
 
     public CardApi(MatchEngine engine)
@@ -152,6 +169,11 @@ public sealed partial class CardApi
                             IReadOnlyDictionary<string, object?>? localsSeed = null)
     {
         CardInstance? eventCard = eventSubject ?? subject;
+        if (_playedCardBroadcastDepth > 0 && programName == "OnOtherCardPlayedFromHand"
+            && eventCard is not null && !_playedCardBroadcastDone.Add(eventCard.CardId))
+        {
+            return;
+        }
         var library = Blueprint.KismetLibrary.Default;
         if (library is null)
         {
@@ -1200,6 +1222,15 @@ public sealed partial class CardApi
                     ["cardRepaired"] = target,
                 });
         }
+    }
+
+    /// <summary>Blueprint `FullyHealCard`: set defense to max and return healed amount.</summary>
+    public int FullyHealCard(CardInstance target)
+    {
+        if (!target.IsAlive || target.Defense <= 0) return 0;
+        int amount = Math.Max(target.MaxDefense - target.Defense, 0);
+        if (amount > 0) HealCard(target, amount);
+        return amount;
     }
 
     /// <summary>
