@@ -530,6 +530,11 @@ internal static class SelfTest
         new("★★ 触发派发必须送到**手牌**：`card_unit_5th_regiment` 输槽位 ⇒ 手牌里 -2 费 / " +
             "在场 +2+1（蓝图 `OnAfterExtraKreditSlotGain` i=178→i=10→i=110）",
             TriggerSnapshotIncludesHand),
+
+        // ---- ★ 2026-10-04：三个此前从未派发的触发点（P4 清单里最便宜的三条）----
+        // 订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 自测」。
+        new("★ T35/T61/T48 三个从未派发的触发点现在真的派发（建卡 / 钉住 / 失去烟幕）",
+            CardCreatedPinnedSmokescreenTriggers),
     };
 
     public static int Run(CardDatabase db)
@@ -11926,6 +11931,94 @@ internal static class SelfTest
         {
             return $"手牌里的 {card} 费应当单调不增且不为负（蓝图 i=96 的 `Greater(费, 0)` 门）：" +
                    $"{costAfterTwo} → {inHand.KreditCost}" + Dispatched();
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ 三个**此前从未派发**的触发点现在真的派发了：T35 / T61 / T48。
+    ///
+    /// 三条都有**蓝图原文**（本次逐行复核，`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
+    /// <code>
+    /// T35 `CreateCard`          :10590 Fetch(35) → :10608 item.OnOtherCardCreatedAlterCard(createdCard, 0)
+    /// T61 `PinUnit`             :27982 Fetch(61) → :28010 item.OnOtherUnitPinned(_card)
+    /// T48 `RemoveSmokescreen`   :32691 Fetch(48) → :32709 item.OnOtherCardLoseSmokescreen(_cardFromID)
+    /// </code>
+    /// 实参名逐字取 `Generated/_index.g.cs`：T35 `{cardPlayed, method}` / T61 `{cardBeingPinned}` /
+    /// T48 `{card}`。
+    ///
+    /// ⚠️ **这三条都无法用回放验证**：三族订阅卡（11 / 2 / 3 张）在现有 22 局语料里
+    /// **一张都没出现过**（`docs/card-ir.json` 的 entrypoints 实测）。⇒ 判据只有
+    /// 「蓝图原文 + 本用例」，如实标注（README §7.4 那一类）。
+    ///
+    /// 判别力：三条各自独立断言"派发到了订阅者"，把对应那一句实现删掉即失败。
+    /// </summary>
+    private static string? CardCreatedPinnedSmokescreenTriggers(CardDatabase db)
+    {
+        const string t35Watcher = "card_unit_144th_infantry_regiment";
+        const string t61Watcher = "card_unit_cromwell_mk_iv";
+        const string t48Watcher = "card_unit_hirosaki_regiment";
+        foreach (string n in new[] { t35Watcher, t61Watcher, t48Watcher })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+
+        // ---- T35：生成一张卡 ⇒ 订阅者收到 `OnOtherCardCreatedAlterCard` ----
+        var w35 = state.CreateWithId(t35Watcher, Side.Left, 300, CardLocation.BoardHqLeft, 1);
+        trace.Clear();
+        engine.Api.SpawnOnBattlefield(Side.Left, FindType(db, "infantry")!, frontline: false);
+        if (!Reached(trace, "OnOtherCardCreatedAlterCard", w35))
+        {
+            return $"T35：生成一张卡之后 `OnOtherCardCreatedAlterCard` 没有派发给订阅者 {t35Watcher}" +
+                   "（蓝图 `CreateCard` :10590-10608）—— 11 张订阅者的整条效果会全死"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- T61：钉住一个单位 ⇒ 订阅者收到 `OnOtherUnitPinned` ----
+        var w61 = state.CreateWithId(t61Watcher, Side.Left, 301, CardLocation.BoardHqLeft, 2);
+        var victim = state.CreateWithId(FindType(db, "infantry")!, Side.Right, 302, CardLocation.BoardHqRight, 1);
+        victim.Defense = 9;
+        victim.MaxDefense = 9;
+        trace.Clear();
+        engine.Api.PinUnit(victim);
+        if (!Reached(trace, "OnOtherUnitPinned", w61))
+        {
+            return $"T61：钉住一个单位之后 `OnOtherUnitPinned` 没有派发给订阅者 {t61Watcher}" +
+                   "（蓝图 `PinUnit` :27982-28010）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- T48：摘掉烟幕 ⇒ 订阅者收到 `OnOtherCardLoseSmokescreen` ----
+        var w48 = state.CreateWithId(t48Watcher, Side.Left, 303, CardLocation.BoardHqLeft, 3);
+        var smoked = state.CreateWithId(FindType(db, "infantry")!, Side.Right, 304, CardLocation.BoardHqRight, 2);
+        engine.Api.GiveKeyword(smoked, Keyword.Smokescreen);
+        trace.Clear();
+        engine.Api.RemoveKeyword(smoked, Keyword.Smokescreen);
+        if (!Reached(trace, "OnOtherCardLoseSmokescreen", w48))
+        {
+            return $"T48：摘掉烟幕之后 `OnOtherCardLoseSmokescreen` 没有派发给订阅者 {t48Watcher}" +
+                   "（蓝图 `RemoveSmokescreen` :32691-32709）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- 反向断言：摘一个**本来就没有**的关键字 ⇒ 不该发（防"无条件发"）----
+        trace.Clear();
+        engine.Api.RemoveKeyword(smoked, Keyword.Smokescreen);
+        if (Reached(trace, "OnOtherCardLoseSmokescreen", w48))
+        {
+            return "T48：第二次摘同一个（已经不存在的）烟幕时**不该**再广播" +
+                   "（蓝图 `RemoveSmokescreen` 只在真的摘掉之后走到那一段）"
+                 + Dump(state, ("派发记录", Trace()));
         }
 
         return null;

@@ -10,6 +10,13 @@
 > **2026-10-04 第二轮已验收（回放侧无信号）**：压制门的**形状**改正三处
 > （T15 / T32 / T7，见 §8.11）—— 22 局逐位不变、自测 151/151（含一条被改写的旧用例，
 > 做过判死验证）。证据链是「蓝图原文 + 自测」，**不是**回放对拍。
+>
+> **2026-10-04 第四轮已验收（回放侧无信号）**：三个从未派发的触发点接线
+> （T35 11 卡 / T61 2 卡 / T48 3 卡，见 §8.13）—— 22 局逐位不变、自测 152/152
+> （新用例做过判死验证）、`dispatch-gap` 逐位不变、纯新增 +184/−0 行。
+> 另：把 §8.12 那条"试过但回退"的修补**定位到了具体一行**
+> （`night_raid` 的 `IsLocationFull(handLocation)`，见 §8.12.1）—— 结论是
+> **先修 P6 的手牌虚增，再注册 `GetHandLocationBySide`**。
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
@@ -1077,11 +1084,43 @@ T7 **广播**确实无条件发 —— 旧实现无条件发广播**是对的**�
 ⇒ **回退**（与项目已有政策一致：`CardApiDispatch.cs:1364-1368` 记着同一条规矩
 ——「任何一局应用率下降都算失败 ⇒ 回退」）。
 
-**为什么它会是负收益（已定位的阻塞）**：新跑起来的反制卡程序立刻撞上
+**为什么它会是负收益（已定位到具体卡与具体行）**：新跑起来的反制卡程序立刻撞上
 `GetHandLocationBySide`（回放 `542091` 一次审计里 `×82`），
-而那个原语**是内核故意不注册的** —— `CardApiDispatch.cs:1352-1372` 记着它自己的 A/B：
+而那个原语**是内核故意不注册的** —— `CardApiDispatch.cs` 记着它自己的 A/B：
 注册它会让 `854099` 从 **106/118 掉到 100/118**（其余 8 局逐位不变），
 属于典型的「**两个错抵消**」（README §7.3）⇒ 当时回退、只留缺口计数。
+
+### 8.12.1 ★ 2026-10-04：把那个「两个错抵消」**定位到了具体一行**（然后仍然回退）
+
+本轮实测复现了那次 A/B（**854099：应用 106→100、人类失败 9→16、⑤b `#78`→`#77`**），
+并加了一条**临时探针**（env 门控，取证后已移除）把调用点钉死 ——
+结论**推翻了原来的猜测**：
+
+```
+[HANDLOC] t=11 self=card_event_night_raid#5001@Discard side=Left -> 3
+          | handL=9/9 handR=4/9 isFullL=True
+```
+
+- 全 854099 里 `GetHandLocationBySide` **只被调用一次**，来自 **`card_event_night_raid`**
+  （不是 `aerial_reconaissance`，也不是反制卡路径 —— 原来的 5 张卡清单**不完整**）。
+- 那一行是 `night_raid` 的 `IsLocationFull(handLocation)` 门
+  （卡面「Copy random order from enemy deck. Add a No. 10 COMMANDO to support line.」）：
+  **手牌满 ⇒ 跳过"复制一张敌方指令"那一段**（`BP_CardFunctions.g.cs` 的 `:904 GetHandLocationBySide`
+  → `:1012 jumpIfNot(isFull) → :1295`）。
+- 那一刻内核的**左方手牌是 9/9 = 满** ⇒ 装上真判据后内核**跳过了复制**；
+  而不装时出参读成 `null(0)` ⇒ `IsLocationFull(NotAvailable)` 为假 ⇒ 内核**总是复制**
+  （于是手牌涨到 10/9，正是别处日志里那条「手牌已满（10/9）」的来源）。
+
+⇒ **被暴露的下游偏差是「内核手牌比客户端大」**（README §9.5 **P6** 那一族：
+`ReplayRunner` 对「PC 引用但不在手牌」的卡会硬塞进手牌）。
+也就是说：**客户端的 `night_raid` 当时并没有满手、确实复制了**，而内核的手牌已经被撑满，
+于是一个**正确的门**反而让内核少拿一张牌 ⇒ 后面 6 条人类动作连带失败。
+
+**仍然回退**，理由与验收口径一致：⑤b（§7.1 排第一的判据）后退了，
+而暴露出来的根因是**另一个子系统**（手牌容量/手牌虚增），不是这一行本身。
+⇒ **下一步顺序应当是：先修 P6 的手牌虚增，再注册 `GetHandLocationBySide`**，
+那时这个门才不会与客户端相反。**这条诊断是本轮真正的产出**（把"未知的下游偏差"
+变成了"一行 + 一个可复现探针 + 一个明确的先行修复项"）。
 
 ⇒ **结论：这是一簇"多个错互相抵消"的改动，必须整批做**：
 ① 注册 `GetHandLocationBySide`（先解决它自己那 5 张卡的抵消）；
@@ -1089,6 +1128,45 @@ T7 **广播**确实无条件发 —— 旧实现无条件发广播**是对的**�
 ③ 然后把 **T31 `OnOtherCardAttacks`**（20 张订阅，唯一有回放观测量的 `c` 类触发点，
 见 §9.5 P1）接上 —— 反制卡落点修好之后，那 14 张 gotcha 订阅者才可能真生效。
 **逐条验收口径**：⑤b 不得后退、⑥ 未实现种不得增加、应用率不得下降。
+
+### 8.13 ★ 2026-10-04 第四轮：三个**从未派发**的触发点接线（T35 / T61 / T48）
+
+> **22 局逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
+> `dispatch-gap` 逐位不变，自测 **151 → 152 项全通过**（新用例做过判死验证）。
+> **纯新增（+184 行 / −0 行）**。
+
+| 触发点 | 订阅卡 | 落点 | 蓝图原文（本次逐行复核） |
+|---|---|---|---|
+| **T35** `OnOtherCardCreatedAlterCard` | **11** | `CardApi.FireCardCreatedAlterCard`，在 `SpawnOnBattlefield` / `SpawnCardInHand` / `DoSpawnInDeck` 三处显式发 | `:10584 NotifyCreateNonVisualCard` → `:10586-10588 MakeVeteran` → `:10590 Fetch(35)` → `:10608 item.OnOtherCardCreatedAlterCard(createdCard, 0)` |
+| **T61** `OnOtherUnitPinned` | 2 | `CardApi.PinUnit` 末尾 | `:27980 NotifyPinUnit` → `:27982 Fetch(61)` → `:28010 item.OnOtherUnitPinned(_card)` |
+| **T48** `OnOtherCardLoseSmokescreen` | 3 | `CardApi.RemoveKeyword`（`keyword == Smokescreen`）末尾 | `:32691 Fetch(48)` → `:32709 item.OnOtherCardLoseSmokescreen(_cardFromID)` |
+
+三条的实参名逐字取 `Generated/_index.g.cs`：T35 `{cardPlayed, method}`（`method`：`CreateCard` 路径 = **0**）、
+T61 `{cardBeingPinned}`、T48 `{card}`。
+
+**三个实现细节（都是"照蓝图顺序"而不是"随便塞"）**：
+
+1. **T35 不能挂在 `GameState.CardCreated` 上**。那条钩子是**所有**建卡的漏斗，
+   而 `GameState.CreateWithId`（回放装载初始牌库 40+40 张）也走它
+   ⇒ 挂上去会让**开局**给 11 张订阅卡各广播一次"有新卡被生成"。
+   ⇒ 只在**生成类原语**里显式发（`DoSpawnInFrontline` 复用 `SpawnOnBattlefield`，不必重复）。
+2. **T35 在 `DoSpawnInDeck` 里必须排在那次随机数消耗之前**：
+   蓝图 `SpawnCardInDeckBySide` 的顺序是 `CreateCard`（含 T35 广播）→ `GetDeckByside` → `RandomIntegerInRangeFromStream`
+   （`:34856-34867`）⇒ 若订阅卡自己也消耗随机数，顺序错了游标就漂（§9.1 那一族）。
+3. **T48 排在 `ZActionRemove{keyword}` 与 `FireAbilitiesChanged` 之后**：
+   蓝图里它是 `RemoveSmokescreen` 的**最后一段**。而"烟幕真变了才发"由
+   `RemoveKeyword` 开头那道 `if (!target.Keywords.Remove(keyword)) return;` 天然满足
+   —— 自测里配了**反向断言**（第二次摘同一个不存在的烟幕时不该再广播）。
+
+**如实标注（这三条都无法用回放验证）**：三族订阅卡在现有 22 局语料里
+**一张都没出现过**（`docs/card-ir.json` 实测：T35 = `card_unit_144th_infantry_regiment` 等 11 张、
+T61 = `card_unit_cromwell_mk_iv` / `card_unit_14_panzergrenadier`、
+T48 = `card_unit_hirosaki_regiment` 等 3 张）
+⇒ **判据只有「蓝图原文 + 自测」**，不是回放对拍。A/B 全 22 局逐位不变，**既无回归也无改善**。
+
+⚠️ 一条族级偏差（未单独改，如实记）：内核 `FireTrigger` 的广播分支**排除主体**，
+而蓝图 T35 `:10590-10608` 的循环里**没有**排除 `createdCard` 自己
+⇒ 若某张卡自己订阅了 T35，内核会比客户端少发一次。与其它触发点同源。
 
 ---
 
@@ -1422,11 +1500,11 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 
 | 顺位 | 触发点 | 订阅 | 成本 | 回放可观测 |
 |---|---|---|---|---|
-| **1** | **T35 `OnOtherCardCreatedAlterCard`** | 11 | ★★（4/7 调用点已在派发表，落点 = 4 个 spawn 助手，**不要**挂在 `GameState.Create` 上——`CreateWithId` 会在开局把 40+40 张牌当"新生成"广播一遍） | ✗ |
+| **1** | ~~**T35 `OnOtherCardCreatedAlterCard`**~~ ✅ **已做（2026-10-04，§8.13）** | 11 | ★★ | ✗ |
 | 2 | T22 `OnDeckShuffled` | 5 | ★（`ShuffleDeckBySide`，但**必须先补 `skipSubAction` 门**，蓝图只在它为真时发） | ✗ |
 | 3 | T3 `OnAfterDeckChanged` | 3 | ★★（8 个调用方，内核对应 6 处牌库操作） | ✗ |
-| 4 | T61 `OnOtherUnitPinned` | 2 | ★（`CardApi.PinUnit` 末尾） | ✗ |
-| 5 | T48 `OnOtherCardLoseSmokescreen` | 3 | ★（`RemoveKeyword`，`keyword == Smokescreen`） | ✗ |
+| **4** | ~~T61 `OnOtherUnitPinned`~~ ✅ **已做（2026-10-04，§8.13）** | 2 | ★ | ✗ |
+| **5** | ~~T48 `OnOtherCardLoseSmokescreen`~~ ✅ **已做（2026-10-04，§8.13）** | 3 | ★ | ✗ |
 | 6 | T45 `OnOtherCardKreditCostChanged` | 4 | ★（**两个门**：只有"改自己的费"才发；广播排除被改的那张卡） | ✗ |
 | 7 | T62 `OnOtherUnitUnpinned` | 3 | ★★（要先补 `RemovePin` 派发键） | ✗ |
 | 8 | T49 `OnOtherCardMoveFromFrontline` | 3 | ★★ | ✗ |
@@ -1435,6 +1513,10 @@ T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上�
 | — | **T34 `OnOtherCardConverted`** | 3 | ★★★ | ✗ |
 | — | **T1 / T40 / T67** | 25/1/2 | — | **不该做** |
 | — | **T18 / T26** | 0/0 | — | **无事可做** |
+
+> ⚠️ **T35 / T61 / T48 已接线，但都"回放侧无信号"**（订阅卡在 22 局语料里 0 命中）
+> —— 它们的证据链是「蓝图原文 + 自测」，**不是**回放对拍（§8.13）。
+> 剩下的 T22 / T3 / T45 / T62 / T49 / T68 同样是 0 命中，**验收只能靠自测**。
 
 **两条硬结论**：
 

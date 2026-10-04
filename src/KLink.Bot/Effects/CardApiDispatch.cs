@@ -1867,6 +1867,13 @@ public sealed partial class CardApi
                 last = c.State.Create(cardName, side, side.DeckOf(), 0);
             }
 
+            // ---- T35 `OnOtherCardCreatedAlterCard` ----
+            // 蓝图 `SpawnCardInDeckBySide` 的顺序是「`CreateCard`（内含 T35 广播）
+            // → `GetDeckByside` → `RandomIntegerInRangeFromStream`」
+            //（`:34856-34867`）⇒ **必须排在那次随机数消耗之前**，
+            // 否则订阅卡若自己也消耗随机数，游标顺序就与客户端不一致。
+            FireCardCreatedAlterCard(last);
+
             // ★★ **必须消耗这一个随机数** —— 它是「随机效果与客户端不一致」这一类
             //    在**消费点**上的第二个独立成因（第一个是 RNG 算法本身）。
             //

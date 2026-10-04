@@ -1828,6 +1828,46 @@ public sealed partial class CardApi
     }
 
     /// <summary>把一张卡生成到手牌（对应 SpawnCardInHandBySide / doSpawnCardInHand）。</summary>
+    /// <summary>
+    /// T35 `OnOtherCardCreatedAlterCard` —— 「别的卡被生成 / 转化出来了」。
+    ///
+    /// ## 出处（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`，本次逐行复核）
+    /// <code>
+    /// :10584  NotifyCreateNonVisualCard(Notifier, createdCard)
+    /// :10586  if (makeVeteran) → :10588 MakeVeteran(createdCard)     ; 先老兵化
+    /// :10590  FetchAllCardsWithEventTrigger(35)                     ; ★ 广播（建卡 + 老兵化之后）
+    /// :10608      item.OnOtherCardCreatedAlterCard(createdCard, Val.Of(0))
+    /// </code>
+    /// 另外两个调用点：`SalvageMultipleUnits` `:33519`、`SpawnMultipleCardsOnBattlefield`
+    /// `:35410`，两处第 2 个实参都是 **3**。
+    ///
+    /// 实参 `(createdCard, method)`，形参名逐字取 `Generated/_index.g.cs:4100`
+    /// = `{ "cardPlayed", "method" }`。`method`：`CreateCard` 路径 = **0**。
+    ///
+    /// ## 为什么必须在**各个 spawn 助手里**显式发
+    /// 内核有一条"所有建卡的漏斗"钩子 `GameState.CardCreated`（`MatchEngine` 挂着它），
+    /// 但**不能**把 T35 挂上去：`GameState.CreateWithId`（回放装载初始牌库 40+40 张）
+    /// 也走那条路 ⇒ 挂上去会让**开局**给 11 张订阅卡各广播一次"有新卡被生成"。
+    /// ⇒ 只在**生成类原语**里显式发（`SpawnOnBattlefield` / `SpawnCardInHand` /
+    /// `DoSpawnInDeck`；`DoSpawnInFrontline` 复用 `SpawnOnBattlefield`）。
+    ///
+    /// ⚠️ **11 张订阅卡在现有 22 局回放语料里一张都没出现过** ⇒ 这条修复**无法用回放验证**，
+    /// 判据只有"蓝图原文 + 自测"（README §7.4 那类）。如实标注。
+    ///
+    /// ⚠️ 已知的族级偏差：内核 `FireTrigger` 的广播分支**排除主体**，
+    /// 而蓝图 `:10590-10608` 的循环里**没有**排除 `createdCard` 自己
+    /// ⇒ 若某张卡自己订阅了 T35，内核会比客户端少发一次。与其它触发点同源，未单独改。
+    /// </summary>
+    public void FireCardCreatedAlterCard(CardInstance created, int method = 0)
+        => FireTrigger("OnOtherCardCreatedAlterCard", created, created.Owner,
+            eventArgs: new object?[] { created, method },
+            eventSubject: created,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardPlayed"] = created,
+                ["method"] = method,
+            });
+
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
         var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()));
@@ -1836,6 +1876,11 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", card.CardId),
             ActionValue2.Int("location", (int)side.HandOf()),
         });
+
+        // ---- T35 `OnOtherCardCreatedAlterCard` ----
+        // 蓝图顺序：`CreateCard`（内含这次广播）**先于** `ExecuteOnSpawnedInHandEvents`
+        //（后者 = 下面两条 `OnCardSpawnedInHand` / `OnOtherCardSpawnedInHand`）。
+        FireCardCreatedAlterCard(card);
 
         // ⚠️ **两个事件都要发**，这是本轮的 bug 修复点之一。
         //
@@ -1938,6 +1983,12 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", card.CardId),
             ActionValue2.Int("location", (int)where),
         });
+
+        // ---- T35 `OnOtherCardCreatedAlterCard` ----
+        // 蓝图 `CreateCard` `:10590` 的广播在建卡/老兵化之后、`SpawnCardToBoard` 的
+        // 落位与后续通知之前；`CreateCard` 本身**带目标位置实参**，所以此处按
+        // "卡已在最终位置"发（与蓝图订阅者看到的状态一致）。
+        FireCardCreatedAlterCard(card);
         return card;
     }
 
@@ -2021,6 +2072,25 @@ public sealed partial class CardApi
             target.PinnedTurns = 0;
         }
 
+        // ---- T48 `OnOtherCardLoseSmokescreen` ----
+        // 蓝图 `RemoveSmokescreen` `:32691` Fetch(48) → `:32709 item.OnOtherCardLoseSmokescreen(_cardFromID)`
+        //（形参名 `card`，`_index.g.cs:4114`）。这一段是那个函数的**最后一段** ——
+        // 排在两条 `ChangeBuffsFromCards(…, "smokescreen")` 分支与客户端通知**之后**，
+        // 所以这里也放在 `FireSubAction` / `FireAbilitiesChanged` 之后。
+        // 上面那道 `Keywords.Remove` 返回假时已经 `return`，天然满足"烟幕真变了才发"。
+        // ⚠️ 3 张订阅卡（`card_unit_hirosaki_regiment` / `card_event_shock_attack` /
+        // `card_unit_p1y2_kasho`）在 22 局语料里都没出现过 ⇒ **回放侧无信号**，判据是蓝图 + 自测。
+        if (keyword == Keyword.Smokescreen)
+        {
+            FireTrigger("OnOtherCardLoseSmokescreen", target, target.Owner,
+                eventArgs: new object?[] { target },
+                eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = target,
+                });
+        }
+
         _engine.FireSubAction($"ZActionRemove{keyword}", new[]
         {
             ActionValue2.Int("giverID", target.CardId),
@@ -2055,6 +2125,20 @@ public sealed partial class CardApi
 
         int turns = IsSideActive(target.Owner) ? 3 : 2;
         target.PinnedTurns = Math.Max(target.PinnedTurns, turns);
+
+        // ---- T61 `OnOtherUnitPinned` ----
+        // 蓝图 `PinUnit` `:27980 NotifyPinUnit` → `:27982 Fetch(61)` → `:28010 item.OnOtherUnitPinned(_card)`
+        //（形参名 `cardBeingPinned`，`_index.g.cs:4129`）。
+        // 时机：`pinnedTurns` 写完、客户端通知**之后**。
+        // ⚠️ 2 张订阅卡（`card_unit_cromwell_mk_iv` / `card_unit_14_panzergrenadier`）
+        // 在 22 局语料里都没出现过 ⇒ **回放侧无信号**，判据是蓝图 + 自测。
+        FireTrigger("OnOtherUnitPinned", target, target.Owner,
+            eventArgs: new object?[] { target },
+            eventSubject: target,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardBeingPinned"] = target,
+            });
     }
 
     /// <summary>
