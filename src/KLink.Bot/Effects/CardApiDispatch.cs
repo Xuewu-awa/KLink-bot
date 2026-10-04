@@ -2969,6 +2969,36 @@ public sealed partial class CardApi
             ActionValue2.Int("instigatorID", sourceId),
         });
 
+        // ---- T45 `OnOtherCardKreditCostChanged` ----
+        // 蓝图 `ChangeKreditCost`（`BP_CardFunctions.g.cs`）：
+        // <code>
+        // :8772  NotifySetKreditCost(Notifier, cardToChange, getTotalKreditCost(…), …)
+        // :8774  EqualEqual_IntInt(cardToChange, localInstigatorID)
+        // :8776  if (!that) goto L_0942                 ; ★ 门①：只有"改**自己**的费"才继续
+        // :8778  FetchAllCardsWithEventTrigger(45)
+        // :8796      NotEqual_IntInt(item.cardID, cardToChange)   ; ★ 门②：排除被改的那张卡自己
+        // :8814      item.OnOtherCardKreditCostChanged(cardToChange)
+        // </code>
+        // 门②由 `FireTrigger` 的 `OnOther*` 广播分支**自动满足**（subject 就是 `target`
+        // = `cardToChange`，广播分支排除主体）——与蓝图 `:8796` 同义。
+        // 实参名逐字取 `_index.g.cs:4111` = `{ "cardChangingCost" }`。
+        //
+        // ⚠️ **只覆盖主路径**：上面 `changeType == 4`（`RemoveTheBuff` 一族）那条**提前 return**
+        //   的路**没有**发 T45 —— 蓝图那条分支是否也走到 `:8774` **未核实**，如实标注为近似。
+        // ⚠️ 4 张订阅卡（`card_unit_the_silent_seventh` / `card_brawl_test1` /
+        //   `card_unit_zero_a6m2_21` / `card_unit_soviet_promo1`）在 22 局语料里 **0 命中**
+        //   ⇒ **回放侧无信号**，判据是蓝图 + 自测。
+        if (target.CardId == sourceId)
+        {
+            FireTrigger("OnOtherCardKreditCostChanged", target, target.Owner,
+                eventArgs: new object?[] { target },
+                eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardChangingCost"] = target,
+                });
+        }
+
         return null;
     }
 

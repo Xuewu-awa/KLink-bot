@@ -543,6 +543,9 @@ internal static class SelfTest
         new("★ T3/T22：洗牌要发 `OnAfterDeckChanged`（无条件）与 `OnDeckShuffled`" +
             "（**只在 skipSubAction 为真时**）；空牌库两个都不发",
             DeckShuffledAndDeckChangedTriggers),
+        new("★ T45：`OnOtherCardKreditCostChanged` 只在**改自己的费**时广播" +
+            "（蓝图 `:8774/:8776` 的门），改别人的费不发",
+            KreditCostChangedTrigger),
     };
 
     public static int Run(CardDatabase db)
@@ -12303,6 +12306,80 @@ internal static class SelfTest
         {
             return "空牌库时 `ShuffleDeckBySide` 应当**直接返回**、两个事件都不发" +
                    "（蓝图 :34659-34661 `Array_IsEmpty` ⇒ return）" + Dump(state, ("派发记录", Trace()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★ T45 `OnOtherCardKreditCostChanged` —— **两个门**都要对。
+    ///
+    /// 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ChangeKreditCost`）：
+    /// <code>
+    /// :8772  NotifySetKreditCost(Notifier, cardToChange, getTotalKreditCost(…), …)
+    /// :8774  EqualEqual_IntInt(cardToChange, localInstigatorID)
+    /// :8776  if (!that) goto L_0942                  ; ★ 门①：只有"改**自己**的费"才继续
+    /// :8778  FetchAllCardsWithEventTrigger(45)
+    /// :8796      NotEqual_IntInt(item.cardID, cardToChange)   ; ★ 门②：排除被改的那张卡自己
+    /// :8814      item.OnOtherCardKreditCostChanged(cardToChange)
+    /// </code>
+    /// 门②由 `FireTrigger` 的 `OnOther*` 广播分支**自动满足**（subject 就是被改的那张卡）。
+    ///
+    /// 判别力：① 去掉 `target.CardId == sourceId` 那道门 ⇒ 断言 ② 失败
+    ///（"改别人的费"也会广播）；② 去掉整段 ⇒ 断言 ① 失败。
+    ///
+    /// ⚠️ **回放侧无信号**：4 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
+    /// </summary>
+    private static string? KreditCostChangedTrigger(CardDatabase db)
+    {
+        const string probe = "card_unit_the_silent_seventh";   // 订阅 OnOtherCardKreditCostChanged
+        const string plain = "card_unit_infantry_regiment_25";
+        foreach (string n in new[] { probe, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 1);
+        var self = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 2);
+        var other = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardHqRight, 1);
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
+        bool Fired() => Reached(trace, "OnOtherCardKreditCostChanged", w);
+        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
+
+        // ---- ① 改**自己**的费（cardToChange == instigatorID）⇒ 要发 ----
+        trace.Clear();
+        engine.Api.InvokeByName("ChangeKreditCost", null,
+            new object?[] { self, self.CardId, -1, 1, false, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `ChangeKreditCost`（前置不成立）";
+        }
+
+        if (!Fired())
+        {
+            return $"改**自己**的费之后 `OnOtherCardKreditCostChanged` 没有派发给 {probe}" +
+                   "（蓝图 :8774/:8776 门①为真 ⇒ :8778 Fetch(45)）"
+                 + Dump(state, ("派发记录", Trace()));
+        }
+
+        // ---- ② 改**别人**的费 ⇒ **不发**（门①为假）----
+        trace.Clear();
+        engine.Api.InvokeByName("ChangeKreditCost", null,
+            new object?[] { other, self.CardId, -1, 1, false, null }, ctx, out _);
+        if (Fired())
+        {
+            return "改**别人**的费时**不该**广播 `OnOtherCardKreditCostChanged`" +
+                   "（蓝图 :8774 `EqualEqual_IntInt(cardToChange, localInstigatorID)` ⇒ :8776 跳走）"
+                 + Dump(state, ("派发记录", Trace()));
         }
 
         return null;
