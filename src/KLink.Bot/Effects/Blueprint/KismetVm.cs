@@ -645,10 +645,28 @@ public sealed class KismetVm
                 }
             }
 
+            // ★ 取回值必须**优先取裸出参名**，不能取调用点那个 `CallFunc_<函数>_<出参>` 全名。
+            //
+            // 全 IR 实测（`temp/scan-local-outslots.py`，只读扫 1735 条 IR）：
+            //   · 函数体只写**裸名**、没写全名的调用点 = **170 个 / 163 个 (卡,函数) 对**
+            //   · 函数体写全名的 = **0 个**
+            // 而旧实现 `result = bag[outNames[0]]` 里的 `outNames[0]` 正是那个全名 ⇒
+            // `Frame.Get(全名)` 找不到槽（既不是本地槽、也不是卡的实例变量、CDO 里也没有）
+            // ⇒ **result 恒为 null** ⇒ 出参槽恒为空 ⇒ 下游 `jumpIfNot(那个槽)` 恒走假分支。
+            //
+            // 决定性实例（有语料消费者，`klink-docs/fresh-replays` 的 `replay-15`）：
+            // `card_unit_b_24_d` 的 `doIControl3opCostUnit`（函数体 `i=507` 写 `found3op`、
+            // `i=523` 写 `found3op`）被 `i=43` 调用、out 槽叫
+            // `CallFunc_doIControl3opCostUnit_found3op`（`i=80` 紧跟一个 `jumpIfNot`）⇒
+            // 该判断恒假、「场上有 3 费单位」的分支是死代码。
+            // 同族还有 `GetRandomBritishAir_randomCard`（`card_event_radar_alert`）、
+            // `didPlayBritishInfantryLastTurn_didSo`、`isSecondOrderThisTurn_isSecondOrder` 等。
+            string? bareOut = outNames.FirstOrDefault(name =>
+                !name.StartsWith("CallFunc_" + fn + "_", StringComparison.Ordinal));
             var bag = outNames.Count > 0
                 ? RunLocalProgramMulti(local, ctx, null, outNames.ToArray())
                 : RunLocalProgramMulti(local, ctx, null);
-            result = outNames.Count > 0 ? bag[outNames[0]] : null;
+            result = outNames.Count > 0 ? bag[bareOut ?? outNames[0]] : null;
             handled = true;
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }

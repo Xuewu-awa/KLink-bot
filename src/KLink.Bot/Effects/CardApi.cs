@@ -157,6 +157,89 @@ public sealed partial class CardApi
     /// si=1493      item.OnBeforeOtherCardPlayedFromHand(cardPlayed)
     /// </code>
     /// </param>
+    /// <summary>
+    /// ★★ **层 A：被抑制的卡不再收触发** —— 蓝图 `FetchAllCardsWithEventTrigger` 的全局门
+    /// （README §9.5 P3 的「层 A」，2026-10-05 落地）。
+    ///
+    /// ## 蓝图原文（逐行复核）
+    ///
+    /// `ref/kards-sim.mine-pre-push/KardsSim/Generated/_deps/BP_GameState_Battle.g.cs`
+    /// （**行号属于这一份**；其余三份 `BP_GameState_Battle.g.cs` 也有同名函数）：
+    /// <code>
+    /// :1040  AllCardsInBattle[cardID] → _value                 ; 每张在场卡的状态结构
+    /// :1057  Array_Contains(_value.suppressionExceptionTriggers, TriggerToFetch)
+    /// :1059  Not_PreBool(that)
+    /// :1061  BooleanAND(_value.isSuppressed, !that)
+    /// :1063  if (that) ⇒ 跳到循环尾（**跳过这张收件人**）
+    ///        else     ⇒ :1073 cardsWithThisTrigger.Add(cardID)
+    /// </code>
+    /// ⇒ 语义：**收件人自己被抑制 ⇒ 除「例外表里的触发」之外一律不收**。
+    /// 这与「层 B」（各触发点调用处 `if (!X.isSuppressed) goto L_SELF;` —— 只管**主体自己那个程序**，
+    /// 见 §8.11）是**两层独立机制**：层 A 管**广播的收件人集合**。
+    ///
+    /// ## 为什么必须有它（有语料消费者）
+    ///
+    /// `card_unit_38th_independent` 卡面：
+    /// 「Cannot attack or move. **Suppress it if you have 4+ copies.**
+    ///   **Duplicate this unit when you lose a kredit slot.**」
+    /// ⇒ 客户端：攒到第 4 个副本时这批副本被**自我抑制** ⇒ 抑制后不再收
+    /// `OnAfterExtraKreditSlotGain` ⇒ **不再继续复制**，半场稳定在 5 格。
+    /// 内核没有层 A ⇒ 被抑制的副本**照收触发、照复制** ⇒ 失控刷兵 ⇒
+    /// 半场塞满 ⇒ 真人 `#39 t7 PC`（`replay-748616`）、`#50/#53/#58 t11/t13 PC`（`replay-931082`）
+    /// 被判「半场已满」—— 这两局 ④ 人类 HQ 差**都是 0**，说明除这一条外整局逐位对齐。
+    ///
+    /// ## 例外表不是全局常量，是**逐卡数据**
+    ///
+    /// 出处 `ref/kards-sim/cards.json` 的 `suppressionExceptionTriggers`（全卡池**只有 11 张**非空，
+    /// 触发名分布 `OnStartofTurn`×5 / `OnEndOfTurn`×5 / `OnOtherCardDrawnFromDeck`×1）。
+    /// ⚠️ 两份数据的名字**大小写不同**（蓝图侧 `OnStartofTurn` / IR 侧 `OnStartOfTurn`）
+    /// ⇒ 比较用 `OrdinalIgnoreCase`。
+    ///
+    /// 复现脚本：`temp/map-suppression-exceptions.py`（把 ref 的 11 条按 `title` 映射到内核卡名）。
+    /// </summary>
+    private static readonly Dictionary<string, string[]> SuppressionExceptionTable =
+        new(StringComparer.Ordinal)
+        {
+            ["card_unit_1st_marines"] = new[] { "OnStartofTurn" },
+            ["card_unit_3rd_kure_snlf"] = new[] { "OnEndofTurn" },
+            ["card_unit_92nd_naval_brigade"] = new[] { "OnStartofTurn" },
+            ["card_unit_99th_kholm"] = new[] { "OnStartofTurn" },
+            ["card_unit_a20_havoc"] = new[] { "OnEndofTurn" },
+            ["card_unit_danuta"] = new[] { "OnEndofTurn" },
+            ["card_unit_gordon_highlanders"] = new[] { "OnOtherCardDrawnFromDeck" },
+            ["card_unit_infantry_regiment_36"] = new[] { "OnEndofTurn" },
+            ["card_unit_kurmark_aufklarungs"] = new[] { "OnEndofTurn" },
+            ["card_unit_kv_85"] = new[] { "OnStartofTurn" },
+            ["card_unit_panther_a"] = new[] { "OnStartofTurn" },
+        };
+
+    /// <summary>该卡是否对**这个触发**享有「被抑制也照收」的例外（见 <see cref="SuppressionExceptionTable"/>）。</summary>
+    public static bool HasSuppressionException(string cardName, string trigger)
+    {
+        if (!SuppressionExceptionTable.TryGetValue(cardName, out string[]? allowed))
+        {
+            return false;
+        }
+
+        foreach (string t in allowed)
+        {
+            if (string.Equals(t, trigger, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 层 A 的判据：这张卡作为**收件人**时，本次触发是否应当被跳过。
+    /// ⚠️ 只对「广播收件人」用，**不要**用它去掉主体自己的那一路（那是层 B 的职责）。
+    /// </summary>
+    private static bool SuppressedSkipsTrigger(CardInstance card, string trigger)
+        => card.Keywords.Contains(Keyword.Suppressed)
+           && !HasSuppressionException(card.Name, trigger);
+
     public void FireTrigger(string programName, CardInstance? subject, Side controller,
                             string? otherProgramName = null, string? selfProgramName = null,
                             IReadOnlyList<object?>? eventArgs = null,
@@ -257,7 +340,10 @@ public sealed partial class CardApi
             if (broadcast)
             {
                 // 广播：除主体之外的所有卡
-                if (!isSubject && library.FindProgram(name, programName) is not null)
+                // ★ 层 A（`:1057-:1063`）：被抑制的收件人跳过（除非该触发在它的例外表里）
+                if (!isSubject
+                    && !SuppressedSkipsTrigger(card, programName)
+                    && library.FindProgram(name, programName) is not null)
                 {
                     TriggerTrace?.Add($"{programName} → {name}#{card.CardId}" +
                                       $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
@@ -268,6 +354,14 @@ public sealed partial class CardApi
             else if (subject is null || isSubject)
             {
                 // 自己那一路：主体在场就只发主体；主体为 null（全局事件）时发给所有卡
+                // ★ 主体为 null 的「全局事件」（`OnStartOfTurn` / `OnEndOfTurn` …）在蓝图里
+                //   同样走 `FetchAllCardsWithEventTrigger` ⇒ 层 A 也要过滤；
+                //   而**主体自己那一路**（`isSubject`）由层 B 的调用点门负责，这里不动。
+                if (subject is null && SuppressedSkipsTrigger(card, selfProgram))
+                {
+                    continue;
+                }
+
                 if (library.FindProgram(name, selfProgram) is not null)
                 {
                     TriggerTrace?.Add($"{selfProgram} → {name}#{card.CardId}" +
@@ -280,6 +374,7 @@ public sealed partial class CardApi
             // 显式的「别的卡」那一路：除主体之外的所有卡
             if (otherProgramName is not null
                 && !isSubject
+                && !SuppressedSkipsTrigger(card, otherProgramName)
                 && library.FindProgram(name, otherProgramName) is not null)
             {
                 TriggerTrace?.Add($"{otherProgramName} → {name}#{card.CardId}" +
@@ -431,6 +526,14 @@ public sealed partial class CardApi
             //   / `card_unit_bm_13n_us6` 就是靠"自己是被打的那个"来触发的）。
             //   注意：`FireTrigger` 的广播分支是按"排除主体"实现的，与这里**不是**一回事。
             if (exclude is not null && ReferenceEquals(card, exclude))
+            {
+                continue;
+            }
+
+            // ★ 层 A：这一族（`BroadcastWithOutParams`）就是蓝图的
+            //   `FetchAllCardsWithEventTrigger(N)` + 逐张 `item.OnXxx(out …)`，
+            //   所以收件人过滤与 `FireTrigger` 的广播分支**同一个判据**。
+            if (SuppressedSkipsTrigger(card, programName))
             {
                 continue;
             }
@@ -2224,6 +2327,34 @@ public sealed partial class CardApi
                                            bool forceGoldCard = false)
     {
         CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+
+        // ⛔ **这里没有「场上容量门」** —— 2026-10-05 试过、A/B 之后回退，别再重加一遍。
+        //
+        // 蓝图原文（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`，**行号属于这一份**）
+        // 确实是「满了就**中止**」：
+        // <code>
+        // :35138  FetchCardsByLocation(location, out Qty, out isLocationFull, …)
+        // :35140  tmpLocationFull = isLocationFull      ; ★ 建卡**之前**先取
+        // :35152  if (!(!full || overrideCardID > 0)) goto L_02DE
+        //         L_02DE 起的尾段只有 GiveBlitz / Alpine / RefreshLocationStatus /
+        //         ExecuteOnCardLocationMoved —— **全程没有再建卡** ⇒ 整次生成中止
+        // </code>
+        // ⚠️ 它**不是**「改送弃牌堆」：那道"建卡之后把 `location` 改成 8"的门在
+        // `CreateCard :10510/:10702-:10706`，而且**只在 `skipAction` 为真**时才走
+        //（`:10694` 的 `if (!skipAction) goto L_0ACF`）。两道门后果不同：
+        // 前者不建卡、不消耗卡号；后者建了卡再扔进弃牌堆（消耗卡号、可被从弃牌堆复活）。
+        //
+        // A/B（2026-10-05，12 局主对拍集 = 原 10 局 + `replay-748616` + `replay-931082`）：
+        //   基线 913/961、人类失败 31、④ 95
+        //   ⇒ 加门 917/961、人类失败 28、④ **99**，且 **`508065` 单局 123/141 → 121/141**
+        //   ⇒ 按项目纪律（任何一局应用率下降即判失败）**回退**。
+        //
+        // ★ 回退的真实理由（探针取证，不是"指标不好看"）：`748616` / `931082` 那两处 ⑤b
+        // （`#39 t7 PC`、`#50 t11 PC 半场已满`）的根因**不在这道门**，而在
+        // **层 A（被抑制的收件人不收触发）缺失** —— 见 `CardApi.SuppressionExceptionTable`。
+        // 层 A 补上后这两局分别变成 **62/63** 与 **63/63（完全对齐）**，**不需要**这道门。
+        // `508065` 里被这道门误杀的那张 `card_unit_swordfish`（`hms_illustrious` 的部署生成物）
+        // 是"内核半场已经比客户端多一张"的既有偏差 + 门把它放大共同造成的。
         var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard);
         card.EnteredPlayOnTurn = State.Turn;
 

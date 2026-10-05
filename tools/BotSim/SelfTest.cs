@@ -230,6 +230,11 @@ internal static class SelfTest
             LocalFunctionBodiesPresent),
         new("私有函数：派发表认不出来时会**执行卡自己的函数体**（不再记 Unimplemented）",
             LocalFunctionActuallyRuns),
+        new("私有函数：出参必须真的读回来（旧实现取 `CallFunc_<fn>_<出参>` 全名 ⇒ 恒 null）",
+            LocalFunctionOutParamReachesCallSite),
+        new("★★ 层 A：被抑制的卡**不再收触发**（蓝图 `FetchAllCardsWithEventTrigger` 的全局门；"
+            + "38th_independent 刷兵的真正根因）",
+            SuppressedRecipientsSkipTriggers),
 
         // ---- P1：关键字基础设施（2026-09-30）----
         // 审计 §6 的 P1#27f / #27g：同一个判据在 IR 里有两种形状 ——
@@ -7539,6 +7544,192 @@ internal static class SelfTest
             ? "无"
             : string.Join(", ", state.UnimplementedCalls.OrderByDescending(kv => kv.Value)
                 .Take(8).Select(kv => $"{kv.Key}×{kv.Value}"));
+
+    /// <summary>
+    /// 端到端判死用例：**卡内私有函数的出参必须真的被读回来**。
+    ///
+    /// 旧实现（`KismetVm.ExecuteCall` 的 locals 兜底）把两个名字都放进 bag，
+    /// 却 `result = bag[outNames[0]]` —— `outNames[0]` 是**调用点那个全名**
+    /// `CallFunc_&lt;函数&gt;_&lt;出参&gt;`，而函数体写进去的是**裸出参名**
+    /// （全 IR 实测：只写裸名的调用点 **170 个**、写全名的 **0 个**）⇒ 取回值恒 null
+    /// ⇒ 出参槽恒空 ⇒ 下游 `jumpIfNot(那个槽)` 恒走假分支。
+    ///
+    /// 判据用一张**卡面文字可验证**的真卡：`card_unit_b_24_d`
+    /// 「Costs 3 less to deploy if you control a unit with 3 or more operation cost.」
+    /// 它的 `OnCardSpawnedInHand`（IR `i=10`）第一步就是
+    /// `i=43 doIControl3opCostUnit(out found3op)` → `i=80 jumpIfNot(found3op)`
+    /// → `i=279 ChangeKreditCost(self, cardID, -3, changeType=0)`。
+    /// 于是「有一张行动费 ≥3 的己方单位在场 ⇒ 手里这张必须便宜 3 费」是**可观测**的。
+    ///
+    /// 判死验证：把 `bareOut` 改回 `outNames[0]` ⇒ ② 立刻失败（费不降）。
+    /// </summary>
+    private static string? LocalFunctionOutParamReachesCallSite(CardDatabase db)
+    {
+        const string card = "card_unit_b_24_d";
+        const string fn = "doIControl3opCostUnit";
+
+        if (db.Find(card) is null)
+        {
+            return $"卡库里缺 {card}";
+        }
+
+        if (KismetLibrary.Default is null || KismetLibrary.Default.FindLocalProgram(card, fn) is null)
+        {
+            return $"{card} 的 locals 里没有 {fn} —— IR 没带函数体，这条用例失去判据";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+
+        var inHand = state.CreateWithId(card, Side.Left, 30, CardLocation.HandLeft, 1);
+        int baseCost = inHand.KreditCost;
+
+        void Fire() => engine.Api.FireTrigger("OnCardSpawnedInHand", inHand, Side.Left,
+            eventArgs: new object?[] { (int)Side.Left },
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["spawnedSide"] = (int)Side.Left,
+            });
+
+        // ① 空场：没有 ≥3 行动费的单位 ⇒ 不该降费（前置对照，同时防"恒降费"）
+        Fire();
+        if (inHand.KreditCost != baseCost)
+        {
+            return $"① 空场不该降费：{baseCost} → {inHand.KreditCost}"
+                 + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        // ② 场上放一张**行动费 = 3** 的己方单位 —— B-24D 自己的 operationcost 就是 3
+        //    ⇒ `doIControl3opCostUnit` 必须返回真 ⇒ 手里这张降 3 费。
+        var controlled = state.CreateWithId(card, Side.Left, 31, CardLocation.BoardHqLeft, 1);
+        if (controlled.Definition.OperationCost < 3)
+        {
+            return $"前置不成立：{card} 的 operationcost={controlled.Definition.OperationCost} < 3";
+        }
+
+        Fire();
+        if (inHand.KreditCost != baseCost - 3)
+        {
+            return $"② 场上有 3 行动费单位时应当 {baseCost} → {baseCost - 3}，"
+                 + $"实际 {inHand.KreditCost} —— 私有函数出参没被读回来"
+                 + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        // ③ 再触发一次不该**重复**降费（IR i=94 的 `isBuffedByCard` 门）——
+        //    这条顺带守住"出参真值参与了下游分支"，而不是"每次都恰好命中"。
+        Fire();
+        if (inHand.KreditCost != baseCost - 3)
+        {
+            return $"③ 重复触发不该再降费：期望 {baseCost - 3}，实际 {inHand.KreditCost}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ★★ 层 A：**被抑制的卡不再收触发**（蓝图 `FetchAllCardsWithEventTrigger` 的全局门，
+    /// `ref/kards-sim.mine-pre-push/.../_deps/BP_GameState_Battle.g.cs:1057-1063`）。
+    ///
+    /// 判据用**线上真人实测的那张卡**：`card_unit_38th_independent`
+    /// 「Cannot attack or move. **Suppress it if you have 4+ copies.**
+    ///   **Duplicate this unit when you lose a kredit slot.**」
+    /// ⇒ 客户端：第 4 个副本起它们被**自我抑制**，抑制后**不再收**
+    /// `OnAfterExtraKreditSlotGain` ⇒ 停止复制；内核没有层 A ⇒ 被抑制的副本照收照复制
+    /// ⇒ 半场 5 格被塞满 ⇒ 真人 `#39 t7 PC`（`replay-748616`）/ `#50 t11 PC`（`replay-931082`）
+    /// 被判「半场已满」（这两局 ④ 人类 HQ 差都是 0）。
+    ///
+    /// 四条断言：
+    /// ① 未抑制 ⇒ 失去一个卡槽必须复制一次（前置成立，说明这条链真的在跑）；
+    /// ② **把场上所有副本都抑制** ⇒ 再丢一个槽位**不能再复制**（层 A 的核心判据）；
+    /// ③ **反向断言（防"抑制=全哑"）**：例外表里的卡（`card_unit_panther_a`，
+    ///    `OnStartofTurn` 在例外表里）被抑制后**仍须收到** `OnStartOfTurn`；
+    /// ④ 对照组：被抑制且**没有**例外的卡不得收到 `OnStartOfTurn`。
+    ///
+    /// 判死验证：把 `FireTrigger` 广播分支里那句 `SuppressedSkipsTrigger` 去掉 ⇒ ② 失败；
+    /// 把 `HasSuppressionException` 改成恒真 ⇒ ④ 失败，恒假 ⇒ ③ 失败。
+    /// </summary>
+    private static string? SuppressedRecipientsSkipTriggers(CardDatabase db)
+    {
+        const string unit = "card_unit_38th_independent";
+        const string withException = "card_unit_panther_a";
+
+        if (db.Find(unit) is null)
+        {
+            return $"卡库里缺 {unit}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+
+        var probe = state.CreateWithId(unit, Side.Left, 20, Side.Left.HqOf(), 1);
+        int Copies() => state.CardsUnordered().Count(c => c.Name == unit);
+
+        // ① 未抑制：丢一个卡槽 ⇒ 复制一次
+        engine.Api.FireExtraKreditSlotGain(Side.Left, -1, giver: null);
+        if (Copies() != 2)
+        {
+            return $"① 前置不成立：未被抑制时丢槽位应当复制成 2 个，实际 {Copies()} 个"
+                 + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        // ② 把场上**所有**副本都抑制 ⇒ 再丢一个槽位不能复制（层 A）
+        foreach (var c in state.CardsUnordered().Where(c => c.Name == unit).ToList())
+        {
+            engine.Api.SuppressUnit(c);
+        }
+
+        if (!state.CardsUnordered().Where(c => c.Name == unit).All(c => c.IsSuppressed))
+        {
+            return "② 前置不成立：没能抑制住副本";
+        }
+
+        engine.Api.FireExtraKreditSlotGain(Side.Left, -1, giver: null);
+        if (Copies() != 2)
+        {
+            return $"② 被抑制的副本**不该**再收 `OnAfterExtraKreditSlotGain`，"
+                 + $"实际复制到 {Copies()} 个 —— 层 A（被抑制的收件人仍收触发）缺失";
+        }
+
+        // ③ 例外表反向断言：`card_unit_panther_a` 的 `OnStartofTurn` 在例外表里
+        if (db.Find(withException) is null)
+        {
+            return $"卡库里缺 {withException}（例外表判据无法验证）";
+        }
+
+        if (!CardApi.HasSuppressionException(withException, "OnStartOfTurn"))
+        {
+            return $"例外表判据不成立：{withException} 的 OnStartOfTurn 应当享有例外"
+                 + "（ref/kards-sim/cards.json 的 suppressionExceptionTriggers）";
+        }
+
+        var (engine2, state2) = EmptyBoard(db);
+        state2.ActiveSide = Side.Left;
+        var panther = state2.CreateWithId(withException, Side.Left, 21, Side.Left.HqOf(), 1);
+        engine2.Api.SuppressUnit(panther);
+
+        var trace = new List<string>();
+        engine2.Api.TriggerTrace = trace;
+        engine2.Api.FireTrigger("OnStartOfTurn", null, Side.Left);
+
+        if (!Reached(trace, "OnStartOfTurn", panther))
+        {
+            return $"③ 例外卡（{withException} / OnStartofTurn）被抑制后**仍须**收到触发，"
+                 + "实际没收到 —— 层 A 把例外表一起挡掉了（防\"抑制=全哑\"）";
+        }
+
+        // ④ 对照组：没有例外的被抑制卡不得收到
+        var other = state2.CreateWithId(unit, Side.Left, 22, Side.Left.HqOf(), 2);
+        engine2.Api.SuppressUnit(other);
+        trace.Clear();
+        engine2.Api.FireTrigger("OnStartOfTurn", null, Side.Left);
+        if (Reached(trace, "OnStartOfTurn", other))
+        {
+            return $"④ 被抑制且无例外的卡（{unit}）不该收到 OnStartOfTurn，实际收到了";
+        }
+
+        _ = probe;
+        return null;
+    }
 
     // ==================================================================
     //  P1：部署 Deployment（2026-09-30）

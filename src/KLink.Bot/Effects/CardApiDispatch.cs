@@ -505,6 +505,18 @@ public sealed partial class CardApi
                 // ChangeKreditSlotsBySide(side, -1, 0). Only slots change;
                 // the notifier carries the same current kredits before/after.
                 Side side = SideArg(r, a, 0, c.Controller);
+                // env 门控探针（默认关）：点名"谁丢了卡槽"。
+                // 2026-10-05 靠它把 `replay-931082 t11` 的刷兵链钉到
+                // `card_event_shinyo_motorboats`（卡面「Lose a kredit slot. …」）身上，
+                // 进而定位到真正的根因是**层 A 缺失**（见 `CardApi.SuppressionExceptionTable`）。
+                if (Environment.GetEnvironmentVariable("KLINK_TRACE_KREDSLOT") == "1")
+                {
+                    Console.Error.WriteLine(
+                        $"[KREDSLOT] t={c.State.Turn} LoseKreditSlot side={side} " +
+                        $"self={c.Self?.Name}#{c.Self?.CardId} " +
+                        $"calls={(c.Calls.Count == 0 ? "-" : string.Join(">", c.Calls.TakeLast(4)))}");
+                }
+
                 c.State.AddMaxKredits(side, -1);
                 // LoseKreditSlot L_0026 is unconditional, including at zero slots.
                 c.State.RecordKreditSlotLoss(side);
