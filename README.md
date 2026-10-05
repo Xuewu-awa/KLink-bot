@@ -1,5 +1,8 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
+> **2026-10-05 第二十七轮（不改行为）：`634651` 的 kredit 差取证** —— 归因到「光环对**抽到的**指令补挂 -1」这一层，
+> 并否掉了"重施加整体没实现"的假设；新增探针 `KLINK_TRACE_POOL=1`。详见 §8.36。
+>
 > **2026-10-05 第二十六轮：回合标记改读客户端自带的 `side`** —— 两局真人语料的 ⑤b 双双消失：
 > `fresh-replays` **634/710 → 636/710**、人类失败 **23 → 22**，`641464` 完全对齐、`replay-15` +1；
 > 主对拍集与 live 语料逐位不变。详见 §8.35。
@@ -2492,6 +2495,52 @@ ConvertCard(cardIDs, instigatorID=self.cardID, convertToCardName="…", convertI
 这是**回放驱动侧**的保真度修复（把客户端的字段读对），**不是**规则改动 ——
 它不改任何卡效果，只改"动作流怎么被解释"。两条异常记录的成因（服务端为何写错 `player_id`）
 **未查**，只按"哪个自洽就信哪个"取 `side`。
+
+### 8.36 2026-10-05 第二十七轮：**不改行为** —— 把 `634651` 的 kredit 差取证到「光环补挂抽到的指令」这一层
+
+> 本轮**没有任何行为改动**（自测 170/170、三套语料逐位不变）。
+> 产出是一条**可复现的归因链** + 两个 env 门控探针：
+> `KLINK_TRACE_POOL=1`（`StartTurn` 打印指挥点池、`PlayCard` 打印每次出牌收了多少费）。
+
+#### 一、现象
+
+`fresh-replays/replay-634651` 修完 §8.34/§8.35 之后的 ⑤b：
+`#46 t11 PC：打不出：kredit 不足（kredits=0，费用=1）`。
+
+#### 二、实测（探针原文）
+
+```
+[POOL] turn=11 side=Left max=6 kredits=6
+[PLAY] turn=11 card=card_event_the_land_girls#23      cost=2 kredits=6   → 4
+[PLAY] turn=11 card=card_event_the_rock_of_gibraltar#5 cost=4 kredits=4   → 0
+[HAND] t=11 Left DeckLeft->HandLeft 手牌=6/9 card_event_the_land_girls#23 via Move   ← 回合开始抽牌拿到
+```
+
+客户端那一刻的支出是 `2 + 4 + 1 = 7`，而池子只有 **6** ⇒ 只有一种自洽解释：
+`the_land_girls`（t11 的**第一张指令**）在客户端被
+`card_unit_85_pioneer_company`（「The first order you play each turn costs 1 less.」）
+减到了 **1**。而内核收的是 2。
+
+#### 三、归因到哪一层（含一条被否掉的假设）
+
+- 该光环 **t1..t11 一直在左方半场**（`--board-trace` 的左半场构成）。
+- 它在 **t10 回合结束**确实重新施加了一次（`OnEndOfTurn` → `ApplyTheBuff`），
+  但那次**只命中了一张牌**：当时手牌里只有 `card_event_repel_the_attack#4` 是指令 ——
+  `the_land_girls#23` 那时还在**牌库**里，t11 抽牌才进手。
+- ⇒ 该走的是蓝图那条**"别的卡抽到手"**的路：
+  `OnOtherCardDrawnFromDeck`（光环 IR 入口 `1330`）→ `tempCardID = K2Node_Event_drawnCardID`
+  → `jump 571` → `GetCardFromID` → `jump 10` → `IsOrder && IsLocatedInHand && 同阵营`
+  → `JSON_GetBool(self,"buffActive")` → `ChangeKreditCost(tempCard, cardID, -1, 0)`。
+  **这条没有生效**（否则 `#42` 应当是 1 费）。
+- ⚠️ **被否掉的假设**："光环的回合结束重施加整体没实现" —— 合成自测里它**是生效的**
+  （临时实验：`EndTurn` 之后再抽进来的指令会被减费；顺带说明既有用例
+  「还原之后再抽进来的指令不该被减费」的**前提只在同一回合内成立**，跨回合重施加是蓝图行为）。
+
+#### 四、下一步（留给下一轮）
+
+给 `CardApi` 那两处 `OnCardDrawnFromDeck` / `OnOtherCardDrawnFromDeck` 的派发接上
+`TriggerTrace`，确认光环的 `1330` 入口**有没有被跑到**、`K2Node_Event_drawnCardID` 读到的值是什么；
+再决定是补挂时机（派发顺序）还是事件入参解析的问题。
 
 ---
 

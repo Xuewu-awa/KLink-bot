@@ -646,6 +646,12 @@ public sealed class MatchEngine
         // 签名 `BaseCardObject.h:733 void OnBeforeStartOfTurn();`（无参，无"别人"变体）。
         Api.FireTrigger("OnBeforeStartOfTurn", null, side);
 
+        if (Environment.GetEnvironmentVariable("KLINK_TRACE_POOL") == "1")
+        {
+            Console.Error.WriteLine($"[POOL] turn={State.Turn} side={side} " +
+                $"max={State.MaxKredits(side)} kredits={State.Kredits(side)}");
+        }
+
         Api.FireTrigger("OnStartOfTurn", null, side, "OnOtherStartOfTurn");
 
         // 抽牌（全局回合 1 跳过，见 `draw` 参数说明）
@@ -958,6 +964,15 @@ public sealed class MatchEngine
         if (!CanPlay(card, out string reason))
         {
             return false;
+        }
+
+        // env 门控探针（默认关，`KLINK_TRACE_POOL=1`）：逐次出牌打印"收了多少钱、池子前后"。
+        // 用途：§9.2 的槽位/改费模型取证 —— 实测 `fresh-replays/replay-634651` 的 t11
+        // 内核池 6 而客户端的支出算下来需要 7（见 `docs/当前执行记录.md` 第二十六轮之后那节）。
+        if (Environment.GetEnvironmentVariable("KLINK_TRACE_POOL") == "1")
+        {
+            Console.Error.WriteLine($"[PLAY] turn={State.Turn} card={card.Name}#{card.CardId} " +
+                $"cost={card.KreditCost} kredits={State.Kredits(card.Owner)}");
         }
 
         State.AddKredits(card.Owner, -card.KreditCost);
