@@ -1,0 +1,640 @@
+{
+ "summary": {
+  "match_id": 748639,
+  "match_type": "pw",
+  "status": "completed",
+  "started_at": "2026-10-04T15:31:41.0596033Z",
+  "completed_at": "2026-10-04T15:34:14.1510044Z",
+  "left_player_id": 900012,
+  "left_player_name": "player-A",
+  "left_player_tag": "0000",
+  "right_player_id": -9178,
+  "right_player_name": "KLink",
+  "right_player_tag": "0000",
+  "turns": 11,
+  "action_count": 39,
+  "winner_side": "left"
+ },
+ "starting_info": {
+  "local_subactions": true,
+  "match_and_starting_data": {
+   "match": {
+    "action_player_id": -9178,
+    "action_side": "right",
+    "actions": [],
+    "actions_url": "http://127.0.0.1:5231/matches/v2/748616/actions",
+    "current_action_id": 0,
+    "current_turn": 1,
+    "deck_id_left": 754230,
+    "deck_id_right": -1,
+    "left_is_online": 1,
+    "match_id": 748616,
+    "match_type": "training",
+    "match_url": "http://127.0.0.1:5231/matches/v2/748616",
+    "modify_date": "2026-10-04T15:31:41.0775752Z",
+    "notifications": [],
+    "player_id_left": 900012,
+    "player_id_right": -9178,
+    "player_status_left": "not_done",
+    "player_status_right": "mulligan_done",
+    "right_is_online": 1,
+    "start_side": "left",
+    "status": "pending",
+    "winner_id": 0,
+    "winner_side": ""
+   },
+   "starting_data": {
+    "ally_faction_left": "Poland",
+    "ally_faction_right": "Finland",
+    "card_back_left": "cardback_starter_japan",
+    "card_back_right": "cardback_starter_germany",
+    "starting_hand_left": [
+     {
+      "card_id": 19,
+      "is_gold": false,
+      "location": "hand_left",
+      "location_number": 0,
+      "name": "card_unit_murase_battalion"
+     },
+     {
+      "card_id": 33,
+      "is_gold": false,
+      "location": "hand_left",
+      "location_number": 1,
+      "name": "card_unit_5th_regiment"
+     },
+     {
+      "card_id": 37,
+      "is_gold": false,
+      "location": "hand_left",
+      "location_number": 2,
+      "name": "card_event_anders_army"
+     },
+     {
+      "card_id": 26,
+      "is_gold": false,
+      "location": "hand_left",
+      "location_number": 3,
+      "name": "card_event_air_land_sea"
+     }
+    ],
+    "starting_hand_right": [
+     {
+      "card_id": 79,
+      "is_gold": false,
+      "location": "hand_right",
+      "location_number": 0,
+      "name": "card_event_breakout"
+     },
+     {
+      "card_id": 71,
+      "is_gold": false,
+      "location": "hand_right",
+      "location_number": 1,
+      "name": "card_event_aa_barrage"
+     },
+     {
+      "card_id": 44,
+      "is_gold": false,
+      "location": "hand_right",
+      "location_number": 2,
+      "name": "card_event_iron_from_the_north"
+     },
+     {
+      "card_id": 67,
+      "is_gold": false,
+      "location": "hand_right",
+      "location_number": 3,
+      "name": "card_unit_85_pioneer_company"
+     },
+     {
+      "card_id": 76,
+      "is_gold": false,
+      "location": "hand_right",
+      "location_number": 4,
+      "name": "card_event_baker_street_irregulars"
+     }
+    ],
+    "deck_left": [
+     {
+      "card_id": 25,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 4,
+      "name": "card_event_air_land_sea"
+     },
+     {
+      "card_id": 29,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 5,
+      "name": "card_event_shinyo_motorboats"
+     },
+     {
+      "card_id": 7,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 6,
+      "name": "card_event_rising_sun"
+     },
+     {
+      "card_id": 10,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 7,
+      "name": "card_unit_144th_infantry_regiment"
+     },
+     {
+      "card_id": 22,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 8,
+      "name": "card_event_one_roof"
+     },
+     {
+      "card_id": 9,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 9,
+      "name": "card_unit_144th_infantry_regiment"
+     },
+     {
+      "card_id": 24,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 10,
+      "name": "card_event_air_land_sea"
+     },
+     {
+      "card_id": 2,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 11,
+      "name": "card_event_deadly_duty"
+     },
+     {
+      "card_id": 8,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 12,
+      "name": "card_event_rising_sun"
+     },
+     {
+      "card_id": 21,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 13,
+      "name": "card_event_one_roof"
+     },
+     {
+      "card_id": 20,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 14,
+      "name": "card_unit_murase_battalion"
+     },
+     {
+      "card_id": 15,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 15,
+      "name": "card_unit_5th_sasebo_snlf"
+     },
+     {
+      "card_id": 13,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 16,
+      "name": "card_unit_40th_cavalry_regiment"
+     },
+     {
+      "card_id": 39,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 17,
+      "name": "card_event_anders_army"
+     },
+     {
+      "card_id": 3,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 18,
+      "name": "card_event_desperate_measures"
+     },
+     {
+      "card_id": 11,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 19,
+      "name": "card_event_ferocious_assault"
+     },
+     {
+      "card_id": 40,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 20,
+      "name": "card_event_anders_army"
+     },
+     {
+      "card_id": 28,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 21,
+      "name": "card_event_shinyo_motorboats"
+     },
+     {
+      "card_id": 30,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 22,
+      "name": "card_unit_238th_regiment"
+     },
+     {
+      "card_id": 6,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 23,
+      "name": "card_event_special_attack"
+     },
+     {
+      "card_id": 27,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 24,
+      "name": "card_event_shinyo_motorboats"
+     },
+     {
+      "card_id": 36,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 25,
+      "name": "card_unit_5th_regiment"
+     },
+     {
+      "card_id": 4,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 26,
+      "name": "card_event_great_expanse"
+     },
+     {
+      "card_id": 35,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 27,
+      "name": "card_unit_5th_regiment"
+     },
+     {
+      "card_id": 32,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 28,
+      "name": "card_unit_238th_regiment"
+     },
+     {
+      "card_id": 17,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 29,
+      "name": "card_unit_38th_independent"
+     },
+     {
+      "card_id": 31,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 30,
+      "name": "card_unit_238th_regiment"
+     },
+     {
+      "card_id": 16,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 31,
+      "name": "card_unit_5th_sasebo_snlf"
+     },
+     {
+      "card_id": 38,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 32,
+      "name": "card_event_anders_army"
+     },
+     {
+      "card_id": 23,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 33,
+      "name": "card_event_one_roof"
+     },
+     {
+      "card_id": 5,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 34,
+      "name": "card_unit_e13a_jake"
+     },
+     {
+      "card_id": 34,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 35,
+      "name": "card_unit_5th_regiment"
+     },
+     {
+      "card_id": 18,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 36,
+      "name": "card_unit_38th_independent"
+     },
+     {
+      "card_id": 14,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 37,
+      "name": "card_unit_40th_cavalry_regiment"
+     },
+     {
+      "card_id": 12,
+      "is_gold": false,
+      "location": "deck_left",
+      "location_number": 38,
+      "name": "card_event_ferocious_assault"
+     }
+    ],
+    "deck_right": [
+     {
+      "card_id": 47,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 5,
+      "name": "card_unit_gordon_highlanders"
+     },
+     {
+      "card_id": 54,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 6,
+      "name": "card_unit_10th_para_battalion"
+     },
+     {
+      "card_id": 69,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 7,
+      "name": "card_event_aa_barrage"
+     },
+     {
+      "card_id": 62,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 8,
+      "name": "card_unit_1st_airborne"
+     },
+     {
+      "card_id": 48,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 9,
+      "name": "card_event_royal_research"
+     },
+     {
+      "card_id": 46,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 10,
+      "name": "card_event_iron_from_the_north"
+     },
+     {
+      "card_id": 80,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 11,
+      "name": "card_unit_buffs"
+     },
+     {
+      "card_id": 66,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 12,
+      "name": "card_unit_5th_parachute_brigade"
+     },
+     {
+      "card_id": 68,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 13,
+      "name": "card_event_aa_barrage"
+     },
+     {
+      "card_id": 77,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 14,
+      "name": "card_event_breakout"
+     },
+     {
+      "card_id": 58,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 15,
+      "name": "card_unit_111th_indian_brigade"
+     },
+     {
+      "card_id": 45,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 16,
+      "name": "card_event_iron_from_the_north"
+     },
+     {
+      "card_id": 51,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 17,
+      "name": "card_event_unexpected_resistance"
+     },
+     {
+      "card_id": 55,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 18,
+      "name": "card_unit_10th_para_battalion"
+     },
+     {
+      "card_id": 73,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 19,
+      "name": "card_event_aerial_reconaissance"
+     },
+     {
+      "card_id": 78,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 20,
+      "name": "card_event_breakout"
+     },
+     {
+      "card_id": 49,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 21,
+      "name": "card_event_the_commonwealth"
+     },
+     {
+      "card_id": 63,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 22,
+      "name": "card_unit_5th_parachute_brigade"
+     },
+     {
+      "card_id": 74,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 23,
+      "name": "card_event_aerial_reconaissance"
+     },
+     {
+      "card_id": 56,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 24,
+      "name": "card_unit_10th_para_battalion"
+     },
+     {
+      "card_id": 65,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 25,
+      "name": "card_unit_5th_parachute_brigade"
+     },
+     {
+      "card_id": 64,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 26,
+      "name": "card_unit_5th_parachute_brigade"
+     },
+     {
+      "card_id": 43,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 27,
+      "name": "card_event_iron_from_the_north"
+     },
+     {
+      "card_id": 59,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 28,
+      "name": "card_unit_111th_indian_brigade"
+     },
+     {
+      "card_id": 75,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 29,
+      "name": "card_event_baker_street_irregulars"
+     },
+     {
+      "card_id": 70,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 30,
+      "name": "card_event_aa_barrage"
+     },
+     {
+      "card_id": 53,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 31,
+      "name": "card_event_unexpected_resistance"
+     },
+     {
+      "card_id": 61,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 32,
+      "name": "card_unit_1st_airborne"
+     },
+     {
+      "card_id": 50,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 33,
+      "name": "card_event_unexpected_resistance"
+     },
+     {
+      "card_id": 57,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 34,
+      "name": "card_unit_10th_para_battalion"
+     },
+     {
+      "card_id": 52,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 35,
+      "name": "card_event_unexpected_resistance"
+     },
+     {
+      "card_id": 60,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 36,
+      "name": "card_unit_1st_airborne"
+     },
+     {
+      "card_id": 72,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 37,
+      "name": "card_event_aerial_reconaissance"
+     },
+     {
+      "card_id": 42,
+      "is_gold": false,
+      "location": "deck_right",
+      "location_number": 38,
+      "name": "card_unit_panzer_ii_a"
+     }
+    ],
+    "equipment_left": [
+     "avatar_white_death",
+     "item_lugerinn"
+    ],
+    "equipment_right": [],
+    "is_ai_match": false,
+    "left_player_name": "player-A",
+    "left_player_officer": false,
+    "left_player_tag": "0000",
+    "location_card_left": {
+     "card_id": 1,
+     "is_gold": false,
+     "location": "board_hqleft",
+     "location_number": 0,
+     "name": "card_location_changchun",
+     "faction": "Japan"
+    },
+    "location_card_right": {
+     "card_id": 41,
+     "is_gold": false,
+     "location": "board_hqright",
+     "location_number": 0,
+     "name": "card_location_london",
+     "faction": "Germany"
+    },
+    "player_id_left": 900012,
+    "player_id_right": -9178,
+    "player_stars_left": 120,
+    "player_stars_right": 120,
+    "right_player_name": "KLink",
+    "right_player_officer": false,
+    "right_player_tag": "0000"
+   }
+  }
+ }
+}
