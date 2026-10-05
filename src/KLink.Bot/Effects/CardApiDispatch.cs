@@ -3202,6 +3202,7 @@ public sealed partial class CardApi
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
+
         if (changeType == ChangeTypeTempBuffRemove)
         {
             RemoveCostBuff(target, sourceId);
@@ -4283,6 +4284,27 @@ public sealed partial class CardApi
             ApplyAuraBuffTo(aura, explicitTarget);
             return null;
         }
+
+        // ★★ `buffActive = true` 是**无条件**的，必须排在循环**之前** —— 这是蓝图
+        // `ApplyTheBuff` 自己的头两步（`ref/kards-sim/.../card_unit_85_pioneer_company.g.cs`，
+        // IR 侧同一体的 `i=5..112`）：
+        // <code>
+        //   JSON_SetBool(cardFunction, "buffActive", True, out found)
+        //   PersistCustomFields(cardID, False)
+        //   GetAllCards(...) → 循环里才逐张判资格 + isBuffedByCard 去重
+        // </code>
+        // ⚠️ 2026-10-05 之前这里**只在真的写出了新 buff 时才置位**
+        //（`ApplyAuraKreditCost` 末尾的 `MarkBuffActive(aura, true)`，且它带"同值就早退"）。
+        // 后果（实测 `fresh-replays/replay-634651` 的 `#46 t11`）：
+        //   回合结束的重施加里，唯一候选 `repel_the_attack#4` 已带着**同值**的 -1 ⇒
+        //   `ApplyAuraKreditCost` **早退** ⇒ `buffActive` 一直是 `false`
+        //   ⇒ 之后那条**只认 `buffActive`** 的"别的卡抽到手"内联路（IR `571→10`）
+        //   整段被门挡掉 ⇒ **回合中/回合开始抽上来的指令拿不到「第一张指令 -1」**
+        //   ⇒ 命令点算多 1 点 ⇒ 那张 1 费指令打不出。
+        //
+        // ⚠️ 只加在**无实参那一路**（真正的 `ApplyTheBuff`）。带实参那一路对应的是
+        //   蓝图里的**内联**抽牌/生成路（`571→10`），那条**不写** `buffActive`，别一起改。
+        MarkBuffActive(aura, true);
 
         foreach (var target in c.State.AllCards)
         {

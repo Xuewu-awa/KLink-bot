@@ -1,5 +1,9 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
+> **2026-10-05 第二十八轮：P6 部分补丁**（回放硬塞进手牌的牌补发"抽到手"事件）——
+> `fresh-replays` **636/710 → 637/710**、人类失败 **22 → 21**、**④ 223 → 206（−17）**；
+> `634651` ⑤b 由 `#46 t11` 后移到 `#71 t15`、`989040` 的 ④ **24 → 7**；主对拍集与 live 逐位不变。详见 §8.37。
+>
 > **2026-10-05 第二十七轮（不改行为）：`634651` 的 kredit 差取证** —— 归因到「光环对**抽到的**指令补挂 -1」这一层，
 > 并否掉了"重施加整体没实现"的假设；新增探针 `KLINK_TRACE_POOL=1`。详见 §8.36。
 >
@@ -2541,6 +2545,59 @@ ConvertCard(cardIDs, instigatorID=self.cardID, convertToCardName="…", convertI
 给 `CardApi` 那两处 `OnCardDrawnFromDeck` / `OnOtherCardDrawnFromDeck` 的派发接上
 `TriggerTrace`，确认光环的 `1330` 入口**有没有被跑到**、`K2Node_Event_drawnCardID` 读到的值是什么；
 再决定是补挂时机（派发顺序）还是事件入参解析的问题。
+
+### 8.37 ★★ 2026-10-05 第二十八轮：**P6 部分补丁**（回放硬塞进手牌的牌，补发"抽到手"事件）+ 光环 `buffActive` 的蓝图口径
+
+> **A/B**：`fresh-replays` **636/710 → 637/710**、人类失败 **22 → 21**、
+> **④ 人类 HQ 差 223 → 206（−17）**；`634651` 218/236 → **219/236**（⑤b 由 `#46 t11` 后移到 `#71 t15`）、
+> `989040` 的 ④ 由 **24 → 7**；12 局主对拍集（**918/961 / 26 / 95**）与 live 语料（**132/140 / 0 / 18**）**逐位不变**；
+> 自测 **170/170**、`dispatch-gap` 逐位不变。
+
+#### 一、根因（`634651` 的 ⑤b 追到底）
+
+`#46 t11 PC：kredit 不足（kredits=0，费用=1）`。探针链（`KLINK_TRACE_POOL` / `KLINK_TRACE_KC` /
+`KLINK_TRACE_TRIGGERS`，后两个是本轮新增）逐条钉死：
+
+```
+[POOL] turn=11 side=Left max=6 kredits=6
+[PLAY] turn=11 card_event_the_land_girls#23       cost=2   ← 客户端那边这张应当是 1
+[PLAY] turn=11 card_event_the_rock_of_gibraltar#5 cost=4
+[HAND] t=11 Left DeckLeft->HandLeft card_event_the_land_girls#23 via Move   ← ★ 被**硬塞**进来的
+```
+
+- 客户端那一刻的支出是 `1 + 4 + 1 = 6`（池子正好 6）⇒ 客户端那张 `the_land_girls`
+  （t11 的**第一张指令**）被 `card_unit_85_pioneer_company` 的「每回合第一张指令 -1」减到了 **1**。
+- 内核收 2 的原因**不是**光环坏了：`[KC] t=11 target=card_event_fog_of_war#7002 src=3 amount=-1 ct=0
+  self=card_unit_85_pioneer_company#3` —— 光环"别的卡抽到手"那条路**正常工作**（t11 开局抽到的那张就挂上了）。
+- 真正的原因：`the_land_girls#23` 在内核里**不在手上**（牌序/手牌账与客户端不一致 —— README §9.1 第②类），
+  于是 `ReplayRunner` 把它从牌库**硬塞**进手牌（`ReplayRunner.cs` 的 `injected++` 那条，
+  README §9.5 **P6** 记的保真度缺口）。**硬塞不发任何事件** ⇒ 客户端"早先抽到时就该收到"的
+  光环补挂在内核里**整条没有** ⇒ 多收 1 点 ⇒ 那张 1 费指令打不出。
+
+#### 二、改动
+
+1. **`MatchEngine.FireEnteredHandFromDeckEvents(card, side, startOfTurnDraw)`** —— 把
+   `DrawCard` 里那两句 `OnCardDrawnFromDeck`（自己）+ `OnOtherCardDrawnFromDeck`（广播）抽成公开方法。
+2. **`ReplayRunner` 硬塞处补发**：仅当被塞的卡**真的来自牌库**（`CardLocation.DeckLeft/Right`）时补发
+   （"从弃牌堆/手牌再塞回来"在客户端**不是**抽牌，不补）。
+3. **`DoApplyTheBuff` 无条件置 `buffActive = true`**（蓝图 `ApplyTheBuff` 的头两步就是
+   `JSON_SetBool(buffActive, True)` + `PersistCustomFields`，**排在循环之前**）。
+   旧实现只在"真的写出了新 buff"时才置位（`ApplyAuraKreditCost` 末尾，且带"同值就早退"）
+   ⇒ 重施加全部命中"已挂过"时会留下 `buffActive = false`，而**抽牌内联路只认这个标志**。
+   ⚠️ **如实标注**：这一条单独 A/B **没有可测变化**（三套语料逐位不变）—— 它的判据是蓝图原文，
+   属"蓝图忠实性修复、回放侧无信号"那一类；带实参那一路（对应蓝图内联路）**不置位**，别一起改。
+
+#### 三、判死
+
+把 `ReplayRunner` 里补发事件那句关掉 ⇒ `634651` 立刻回到 **218/236** 且 `#46 t11` 重现、
+`989040` 的 ④ 回到 **24**（**实测过**）；恢复后 219/236、④ 7。
+
+#### 四、本轮新增探针
+
+| 探针 | 作用 |
+|---|---|
+| `KLINK_TRACE_POOL=1` | `StartTurn` 打印指挥点池 + `PlayCard` 打印每次出牌实际收了多少费 |
+| `KLINK_TRACE_TRIGGERS=<文件>` | 把 `CardApi.TriggerTrace`（`事件名 → 卡名#ID`）落盘 —— 回答"某个订阅者的某个入口到底有没有被跑到" |
 
 ---
 

@@ -329,6 +329,16 @@ public sealed class ReplayRunner
         Engine = engine;
         var state = engine.State;
 
+        // env 门控：触发派发流水账（`KLINK_TRACE_TRIGGERS=<输出文件>`）。
+        // 用途：回答"某个订阅者的某个入口到底有没有被跑到" —— 比逐个加 Console 探针省事。
+        // 典型问题：`replay-634651` 里 `card_unit_85_pioneer_company` 的
+        // `OnOtherCardDrawnFromDeck`（IR 入口 1330）到底有没有拿到那次抽牌。
+        string? triggerTracePath = Environment.GetEnvironmentVariable("KLINK_TRACE_TRIGGERS");
+        if (!string.IsNullOrEmpty(triggerTracePath))
+        {
+            engine.Api.TriggerTrace = new List<string>();
+        }
+
         // ★ 效果生成的卡按**客户端规则**发号（`回合号 × 1000 + 本回合第几张`）。
         //
         // 2026-10-02 修正：这条规则**对双方一致**，不再区分"官方客户端那一方"。
@@ -877,8 +887,25 @@ public sealed class ReplayRunner
 
                             if (card.Location != side.HandOf())
                             {
+                                // ★★ P6 部分补丁（2026-10-05）：客户端**手里有这张牌**
+                                //（我们只是牌序/手牌账对不上，才在这里硬塞），
+                                // 所以它在客户端**早先正常抽到过** ⇒ 依赖"进了手牌"的效果
+                                //（光环给手牌挂 -1、"抽到牌时"触发…）在客户端都发生过。
+                                // 硬塞不补事件 ⇒ 那些效果在内核里整条没有。
+                                // 判据：`fresh-replays/replay-634651` 的 `#46 t11` ——
+                                // `the_land_girls#23` 就是被硬塞进来的，没补事件 ⇒
+                                // 缺了光环的 -1 ⇒ 内核多收 1 点 ⇒ 那张 1 费指令打不出（⑤b）。
+                                // ⚠️ 只给**来自牌库**的硬塞补（从弃牌堆/手牌再塞回来不是抽牌）。
+                                bool cameFromDeck = card.Location is CardLocation.DeckLeft
+                                    or CardLocation.DeckRight;
                                 state.Move(card, side.HandOf());
                                 injected++;
+
+                                if (cameFromDeck)
+                                {
+                                    engine.FireEnteredHandFromDeckEvents(card, side,
+                                        startOfTurnDraw: false);
+                                }
                             }
 
                             var target = a.TargetId > 0 ? state.ById(a.TargetId) : null;
@@ -1164,6 +1191,19 @@ public sealed class ReplayRunner
             .OrderByDescending(kv => kv.Value)
             .ThenBy(kv => kv.Key, StringComparer.Ordinal)
             .ToList();
+
+        // 触发流水账落盘（探针开时）
+        if (!string.IsNullOrEmpty(triggerTracePath) && engine.Api.TriggerTrace is { } triggerTrace)
+        {
+            try
+            {
+                File.WriteAllLines(triggerTracePath, triggerTrace);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[TRIGGERS] 落盘失败：{ex.Message}");
+            }
+        }
 
         return new Report
         {

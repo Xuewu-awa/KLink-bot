@@ -819,6 +819,25 @@ public sealed class MatchEngine
         // `broadcast` 判定（`programName.StartsWith("OnOther")`）会**把主体自己排除**，
         // 兜底那一段又被 `subjectBroadcast` 挡住 ⇒ 22 张订阅 `OnCardDrawnFromDeck`
         // 的卡永远收不到（`card_event_guarilla_warfare_school` 这类"抽到牌时"效果全死）。
+        FireEnteredHandFromDeckEvents(card, side, startOfTurnDraw);
+        return card;
+    }
+
+    /// <summary>
+    /// 「一张牌**从牌库进了手牌**」的两个触发点：`OnCardDrawnFromDeck`（自己）
+    /// + `OnOtherCardDrawnFromDeck`（广播）。
+    ///
+    /// 抽出来单独成方法，是因为**回放驱动侧**也需要它：`ReplayRunner` 对
+    /// 「动作流引用了、但内核手里没有」的牌会从牌库**硬塞**进手牌
+    ///（README §9.5 **P6** 记的那个保真度缺口）。客户端那边这张牌是**早先正常抽到**的，
+    /// 于是它该收到的事件（光环给手牌挂 -1、"抽到牌时"效果…）在客户端**早就发生过**；
+    /// 而硬塞如果不补事件，这些效果在内核里就是**整条没有**。
+    ///
+    /// ⚠️ 只给**真的来自牌库**的硬塞补（`ReplayRunner` 里按 `CardLocation.DeckLeft/Right`
+    /// 判）——"从弃牌堆/手牌再塞回来"的路径在客户端**不是**抽牌，不该补这两个事件。
+    /// </summary>
+    public void FireEnteredHandFromDeckEvents(CardInstance card, Side side, bool startOfTurnDraw)
+    {
         var drawnNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["drawnCardID"] = card.CardId,
@@ -833,7 +852,6 @@ public sealed class MatchEngine
         Api.FireTrigger("OnOtherCardDrawnFromDeck", card, side,
             eventArgs: new object?[] { card.CardId, startOfTurnDraw, (int)side },
             eventSubject: card, namedArgs: drawnNamed);
-        return card;
     }
 
     // ==================== 部署 ====================
