@@ -2258,12 +2258,16 @@ internal static class SelfTest
     {
         const string aura = "card_unit_85_pioneer_company";
 
-        // ⚠️ 用一张**费用 ≥ 2** 的指令来测，不能用 `card_event_pams`（1 费）：
-        //    -1 之后会被「费用下限 1」夹回 1，看不出变化。
         const string order = "card_event_mi_5";          // 3 费英国指令
-        if (db.Find(aura) is null || db.Find(order) is null)
+        // ★ 1 费指令也要一起测：2026-10-05 之前内核给「普通改费」留了下限 1，
+        //   于是 1 费指令减 1 之后**仍是 1 费**。判据是真人回放
+        //   `fresh-replays/replay-634651` 的 t1：`#2` 打出这张光环（费 1，花掉先手 t1 唯一的
+        //   1 点指挥点）之后，`#3` **紧接着又打出 1 费的 `card_event_pams`** 并被客户端放行
+        //   ⇒ 客户端的 1 费指令确实降到了 **0**（见 `CardInstance.EffectiveKreditCost` 的注释）。
+        const string cheap = "card_event_pams";          // 1 费英国指令
+        if (db.Find(aura) is null || db.Find(order) is null || db.Find(cheap) is null)
         {
-            return $"卡库里缺 {aura} 或 {order}";
+            return $"卡库里缺 {aura} / {order} / {cheap}";
         }
 
         var (engine, state) = EmptyBoard(db);
@@ -2271,17 +2275,23 @@ internal static class SelfTest
         state.SetMaxKredits(Side.Left, 12);
         state.ActiveSide = Side.Left;
 
-        // 手牌：两张指令（同一张卡建两次，cardID 不同）
+        // 手牌：两张指令（同一张卡建两次，cardID 不同）+ 一张 1 费指令
         var orderA = state.CreateWithId(order, Side.Left, 2, CardLocation.HandLeft, 0);
         var orderB = state.CreateWithId(order, Side.Left, 3, CardLocation.HandLeft, 1);
+        var cheapOrder = state.CreateWithId(cheap, Side.Left, 6, CardLocation.HandLeft, 2);
         int baseCost = orderA.KreditCost;
         if (baseCost < 2)
         {
-            return $"前置不成立：{order} 的费用是 {baseCost}，减 1 会被下限夹住、测不出效果";
+            return $"前置不成立：{order} 的费用是 {baseCost}，测不出 -1 的效果";
+        }
+
+        if (cheapOrder.KreditCost != 1)
+        {
+            return $"前置不成立：{cheap} 应当是 1 费，实际 {cheapOrder.KreditCost}";
         }
 
         // 光环进场（走真实路径：PlayCard → OnEnterPlay）
-        var buffCard = state.CreateWithId(aura, Side.Left, 4, CardLocation.HandLeft, 2);
+        var buffCard = state.CreateWithId(aura, Side.Left, 4, CardLocation.HandLeft, 3);
         if (!engine.PlayCard(buffCard))
         {
             return "光环打不出来";
@@ -2290,6 +2300,14 @@ internal static class SelfTest
         if (orderA.KreditCost != baseCost - 1)
         {
             return $"光环进场后指令费用应为 {baseCost - 1}，实际 {orderA.KreditCost}"
+                 + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        // ★★ 判死点：1 费指令必须降到 **0**（恢复 `MinKreditCost = 1` 那道下限 ⇒ 这里立刻失败）
+        if (cheapOrder.KreditCost != 0)
+        {
+            return $"光环进场后 1 费指令应当降到 0（replay-634651 t1 的客户端行为），"
+                 + $"实际 {cheapOrder.KreditCost} —— 是不是又把改费下限夹回 1 了？"
                  + Dump(state, ("未实现", Unimpl(state)));
         }
 
