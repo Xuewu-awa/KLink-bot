@@ -319,6 +319,16 @@ public sealed class CardInstance
     public bool IsSuppressed => Keywords.Contains(Keyword.Suppressed);
 
     /// <summary>
+    /// 被抑制时仍允许接收的触发程序名。
+    ///
+    /// 蓝图的全局派发门是
+    /// <c>isSuppressed &amp;&amp; !suppressionExceptionTriggers.Contains(trigger)</c>；
+    /// 当前卡数据没有可加载的白名单来源，因此默认为空，保留一个可扩展的
+    /// 运行时集合，待取得逐卡证据后再填充。
+    /// </summary>
+    public HashSet<string> SuppressionExceptionTriggers { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// 被**抑制**时的回合号 —— **仅作诊断留痕**（2026-10-02 第三轮改写）。
     ///
     /// ⚠️⚠️ **蓝图里没有这个东西，别把它当成客户端行为。**
@@ -634,41 +644,37 @@ public sealed class CardInstance
     }
 
     /// <summary>
-    /// 有效费用 = 卡面费用 + 各来源的改费之和，**下限 0**。
+    /// 有效费用 = 卡面费用 + 各来源的改费之和，并按卡面规则夹下限。
     ///
-    /// ## 下线为什么是 0 而不是 1（2026-10-05 更正）
+    /// 下限规则（实测来自 `card_event_committed_crew` 与 `card_unit_85_pioneer_company`
+    /// 两张光环的差别）：
+    /// - 普通改费（`ChangeKreditCost` 的 changeType=0，例如 85 先驱的「指令 -1」）
+    ///   **下限 1** —— 卡面上写的就是「costs 1 less」，1 费指令不该变成 0 费；
+    /// - 显式设费（changeType=1，例如 committed_crew 的 `getTotalKreditCost * -1`）
+    ///   允许到 0 —— 它的卡面明说「Spitfires cost 0 to deploy」。
     ///
-    /// 旧实现给「普通改费」（`ChangeKreditCost` 的 changeType=0，例如
-    /// `card_unit_85_pioneer_company` 的「指令 -1」）留了一道**下限 1**，
-    /// 理由是「卡面写 costs 1 less，1 费指令不该变成 0 费」。**那条推断是错的**，判据：
-    ///
-    /// `klink bot/docs/fresh-replays/replay-634651` 的 **t1**（真人 ground truth）：
-    /// `#2 PC` 打出 `card_unit_85_pioneer_company`（费 1，带走先手 t1 **唯一的 1 点指挥点**），
-    /// `#3 PC` **紧接着又打出 `card_event_pams`（卡面费 1）** —— 客户端放行了它，
-    /// 只有「85 先驱的 -1 把它降到 **0**」才凑得出这笔账
-    /// （先手 t1 的槽位数由真人规则参考 `KARDS基础规则参考.md:27`「每回合自然增加 1 个槽」定死 = 1）。
-    /// 内核留了下限 ⇒ `pams` 仍是 1 费 ⇒ `#3` 被拒（这就是那一局的 ⑤b）。
-    ///
-    /// 改完 A/B：`fresh-replays` **633/710 → 634/710**、人类失败 **24 → 23**、
-    /// `634651` 的 ⑤b 从 `#3 t1` **后移到 `#46 t11`**；12 局主对拍集与 live 语料**逐位不变**；
-    /// 自测 170/170 全通过（含新增的判死用例 `AuraDiscountCanReachZero`）。
-    /// ⚠️ 未排除的替代解释（如实标注）：也可能是客户端 t1 的槽位是 2 而不是 1；
-    /// 但那样要动 §9.2 的槽位模型（README 明确写了"槽位规则由真人玩家描述定案"），
-    /// 而本轮这条只动改费下限、且四条语料**零回归** ⇒ 取这条。
+    /// 只要某个来源声明了「可到 0」，整体下限就放开：committed_crew 的
+    /// 「-当前总费用」本来就是把费用设成绝对 0，不该被 1 卡住。
     /// </summary>
     public int EffectiveKreditCost
     {
         get
         {
             int total = Definition.Kredits;
+            bool mayReachZero = Definition.Kredits <= 0;
             foreach (var buff in BuffsBySource.Values)
             {
                 total += buff.KreditCost;
+                mayReachZero |= buff.KreditCostSetsAbsoluteValue;
             }
 
-            return Math.Max(0, total);
+            int floor = mayReachZero ? 0 : MinKreditCost;
+            return Math.Max(floor, total);
         }
     }
+
+    /// <summary>非「可到 0」卡的改费下限。见 <see cref="EffectiveKreditCost"/>。</summary>
+    public const int MinKreditCost = 1;
 
     /// <summary>有效行动费用 = 卡面行动费用 + 各来源的加减（下限 0）。</summary>
     public int EffectiveOperationCost

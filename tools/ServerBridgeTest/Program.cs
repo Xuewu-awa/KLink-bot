@@ -38,15 +38,18 @@ internal static class Program
         //
         // 可加两个**归因实验**开关（见 `ReplayRunner.IdentityCorrection`）：
         //   `--no-identity-fix`        关掉身份校正 ⇒ 得到「修复前」的基线
+        // 默认开启身份校正：动作流携带的卡组码是客户端对随机生成卡的权威身份声明。
+        // `--dup-start-kredit` 用于正式回放口径；`--no-dup-start-kredit` 可复现旧模型。
         //   `--identity-only <卡名>`   只对某一张卡校正 ⇒ 把一次改动的因果钉死
+        // `--board-trace` 打印每条动作后的半场/前线构成，定位容量与复制链问题。
         if (opts.TryGetValue("audit-replay", out string? auditBase))
         {
             return ReplayAudit.Run(FindRepoRoot(), auditBase, 0,
-                identityCorrection: opts.ContainsKey("identity-fix"),
+                identityCorrection: !opts.ContainsKey("no-identity-fix"),
                 identityOnly: opts.GetValueOrDefault("identity-only"),
                 rngTrace: opts.ContainsKey("rng-trace"),
                 dumpLog: opts.ContainsKey("dump-log"),
-                dupStartKredit: opts.ContainsKey("dup-start-kredit"),
+                dupStartKredit: !opts.ContainsKey("no-dup-start-kredit"),
                 boardTrace: opts.ContainsKey("board-trace"));
         }
 

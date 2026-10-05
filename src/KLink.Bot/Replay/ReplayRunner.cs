@@ -29,6 +29,7 @@ namespace KLink.Bot.Replay;
 public sealed class ReplayRunner
 {
     private readonly CardDatabase _db;
+    private readonly Dictionary<int, CardInstance> _cardAliases = new();
 
     public ReplayRunner(CardDatabase db) => _db = db;
 
@@ -322,22 +323,13 @@ public sealed class ReplayRunner
     /// </param>
     public Report Run(ReplayData replay, bool verbose, Action<WireAction, GameState>? onStepped)
     {
+        _cardAliases.Clear();
         // ---- 1) 卡池：快照里每个 cardID 都是唯一的，直接全建成「牌库」，
         //         真正需要时再按需注入手牌（见类注释的保真度缺口 1） ----
         var engine = new MatchEngine(_db, Array.Empty<string>(), Array.Empty<string>(),
                                      seed: (ulong)replay.MatchId);
         Engine = engine;
         var state = engine.State;
-
-        // env 门控：触发派发流水账（`KLINK_TRACE_TRIGGERS=<输出文件>`）。
-        // 用途：回答"某个订阅者的某个入口到底有没有被跑到" —— 比逐个加 Console 探针省事。
-        // 典型问题：`replay-634651` 里 `card_unit_85_pioneer_company` 的
-        // `OnOtherCardDrawnFromDeck`（IR 入口 1330）到底有没有拿到那次抽牌。
-        string? triggerTracePath = Environment.GetEnvironmentVariable("KLINK_TRACE_TRIGGERS");
-        if (!string.IsNullOrEmpty(triggerTracePath))
-        {
-            engine.Api.TriggerTrace = new List<string>();
-        }
 
         // ★ 效果生成的卡按**客户端规则**发号（`回合号 × 1000 + 本回合第几张`）。
         //
@@ -669,23 +661,8 @@ public sealed class ReplayRunner
             int turn = a.TurnNumber;
             Side side = replay.SideOf(a.PlayerId);
 
-            // ★★ 回合标记（`XActionStartOfTurn` / `XActionEndOfTurn`）自带
-            // `action_data["side"]` —— 那是**客户端自己写的**回合归属，比从 `player_id`
-            // 推更可信：`player_id` 是**服务端转发时的元数据**，实测**会与 side 不一致**。
-            //
-            // 全 24 局 779 条回合标记里只有 **2 条**不一致（`temp/scan-side-vs-pid.py`）：
-            //   · `fresh-replays/replay-641464` 的 `#10 t4 XActionEndOfTurn`
-            //     —— `pid=900002`（= 左方）而 `side=right`；
-            //   · `fresh-replays/replay-15` 的 `#122 t25 XActionStartOfTurn`
-            //     —— `pid=2`（= 右方）而 `side=left`。
-            // 按 `player_id` 推的后果（641464 实证）：`#10` 被当成**左方**结束回合
-            // ⇒ `EndTurn(Left)` ⇒ 内核行动方变成 right ⇒ 紧接着的 `#11 t5
-            // XActionStartOfTurn left` 被判「回合归属不符」，**那正是该局的 ⑤b**。
-            // 而按 `side` 读则整条链自洽（`#9` 右方开始 t4 → `#10` 右方结束 t4 →
-            // `#11` 左方开始 t5）。
-            //
-            // 只在**两个来源都给出**时优先 `side`；没有 `side` 的动作（`PC`/`AC`/`ML`
-            // 多数不带这个字段）照旧用 `player_id` ⇒ 777/779 条行为不变。
+            // 回合标记自带客户端写入的 side。它比服务端转发的 player_id 更可靠；
+            // PC/ML/AC 等动作没有该字段时仍沿用 player_id 推断。
             if (a.ActionType is "XActionStartOfTurn" or "XActionEndOfTurn"
                 && SideFromWire(a.Get("side")) is { } explicitSide
                 && explicitSide != Side.NotAvailable)
@@ -761,14 +738,20 @@ public sealed class ReplayRunner
                 {
                     // 归因实验（默认关）：见 `KreditSlotOnDuplicateStart` 的长注释 ——
                     // 据"客户端那一步确实付得起"这条硬证据，补一次槽位自然增长。
-                    int slots = state.MaxKredits(side);
+                    int previousSlots = state.MaxKredits(side);
+                    int previousKredits = state.Kredits(side);
+                    int slots = Math.Max(state.KreditNaturalSlots(side), previousSlots);
                     if (slots < MatchEngine.NaturalKreditCap)
                     {
                         slots++;
                     }
 
                     state.SetMaxKredits(side, Math.Min(MatchEngine.MaxKreditCap, slots));
-                    state.SetKredits(side, state.MaxKredits(side));
+                    state.SetKreditNaturalSlots(side, slots);
+                    int refilled = previousKredits > previousSlots
+                        ? previousKredits + 1
+                        : state.MaxKredits(side);
+                    state.SetKredits(side, refilled);
                 }
 
                 lastStartSide = side;
@@ -887,20 +870,14 @@ public sealed class ReplayRunner
 
                             if (card.Location != side.HandOf())
                             {
-                                // ★★ P6 部分补丁（2026-10-05）：客户端**手里有这张牌**
-                                //（我们只是牌序/手牌账对不上，才在这里硬塞），
-                                // 所以它在客户端**早先正常抽到过** ⇒ 依赖"进了手牌"的效果
-                                //（光环给手牌挂 -1、"抽到牌时"触发…）在客户端都发生过。
-                                // 硬塞不补事件 ⇒ 那些效果在内核里整条没有。
-                                // 判据：`fresh-replays/replay-634651` 的 `#46 t11` ——
-                                // `the_land_girls#23` 就是被硬塞进来的，没补事件 ⇒
-                                // 缺了光环的 -1 ⇒ 内核多收 1 点 ⇒ 那张 1 费指令打不出（⑤b）。
-                                // ⚠️ 只给**来自牌库**的硬塞补（从弃牌堆/手牌再塞回来不是抽牌）。
                                 bool cameFromDeck = card.Location is CardLocation.DeckLeft
                                     or CardLocation.DeckRight;
                                 state.Move(card, side.HandOf());
                                 injected++;
 
+                                // 动作流引用的牌可能已经在客户端正常抽到手里，而本地牌序
+                                // 不同导致它仍在牌库。补进手牌时也要补发抽牌触发，
+                                // 否则光环减费与 OnCardDrawnFromDeck 效果会整条缺失。
                                 if (cameFromDeck)
                                 {
                                     engine.FireEnteredHandFromDeckEvents(card, side,
@@ -1192,19 +1169,6 @@ public sealed class ReplayRunner
             .ThenBy(kv => kv.Key, StringComparer.Ordinal)
             .ToList();
 
-        // 触发流水账落盘（探针开时）
-        if (!string.IsNullOrEmpty(triggerTracePath) && engine.Api.TriggerTrace is { } triggerTrace)
-        {
-            try
-            {
-                File.WriteAllLines(triggerTracePath, triggerTrace);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"[TRIGGERS] 落盘失败：{ex.Message}");
-            }
-        }
-
         return new Report
         {
             MatchId = replay.MatchId,
@@ -1235,10 +1199,6 @@ public sealed class ReplayRunner
     /// 键位：<c>0</c>=命令名，<c>1</c>=目标阵营，<c>2</c>=参数，<c>3</c>=目标区域。
     /// 目前实测到 <c>SetKredits</c> 与 <c>SpawnCard</c> 两条。
     /// </summary>
-    /// <summary>
-    /// `action_data["side"]` 的 `"left"` / `"right"` → <see cref="Side"/>；
-    /// 其它（含字段缺失）回 <see cref="Side.NotAvailable"/>。见调用点那段"回合标记优先 side"的注释。
-    /// </summary>
     private static Side SideFromWire(string? raw) => raw switch
     {
         "left" => Side.Left,
@@ -1256,6 +1216,7 @@ public sealed class ReplayRunner
             "right" => Side.Right,
             _ => fallbackSide,
         };
+
         switch (op)
         {
             case "SetKredits":
@@ -1577,10 +1538,29 @@ public sealed class ReplayRunner
             return existing;
         }
 
+        if (_cardAliases.TryGetValue(a.CardId, out var aliased))
+        {
+            return aliased;
+        }
+
         string? name = NameOf(a, replay, 0) ?? NameOf(a, replay, 1);
         if (name is null)
         {
             return null;
+        }
+
+        // Some replay streams renumber an effect-generated card between its creation and
+        // later actions. Reuse only an unambiguous same-owner, same-definition instance.
+        var aliases = state.Cards(owner)
+            .Where(c => c.CardId != a.CardId
+                && c.Name == name
+                && state.GeneratedCardIds.Contains(c.CardId)
+                && !_cardAliases.Values.Contains(c))
+            .ToArray();
+        if (aliases.Length == 1)
+        {
+            _cardAliases[a.CardId] = aliases[0];
+            return aliases[0];
         }
 
         // 归属：PC/ML/AC 的 0 号键都是行动方自己的卡
@@ -1624,6 +1604,11 @@ public sealed class ReplayRunner
         if (state.ById(a.SecondId) is { } existing)
         {
             return existing;
+        }
+
+        if (_cardAliases.TryGetValue(a.SecondId, out var aliased))
+        {
+            return aliased;
         }
 
         string? name = NameOf(a, replay, 1);

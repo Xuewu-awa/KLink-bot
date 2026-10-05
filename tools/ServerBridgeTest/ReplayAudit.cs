@@ -73,7 +73,7 @@ internal static class ReplayAudit
 
         // 逐条动作后的状态取样
         var deaths = new List<string>();          // 观察到的"从场上离场"
-        var deadMoves = new List<string>();       // 死亡单位仍被移动/攻击
+        var deadMoveAttempts = new List<(int ActionId, string Text)>();
         var seenDead = new HashSet<int>();        // 已经判死的 cardID
         var lastLoc = new Dictionary<int, CardLocation>();
         var wasOnBoard = new HashSet<int>();
@@ -112,24 +112,18 @@ internal static class ReplayAudit
                 }
             }
 
-            // ★ `--board-trace`：逐动作打印**双方半场与前线**的单位构成。
-            //
-            // 为什么需要它：审计的 ③ 只给**终局**场面，而"从哪一步开始比客户端多了一个单位"
-            // 必须看**中间态**。2026-10-04 的 `replay-748616` 就是卡在这里：
-            // 内核在 `#39 t7` 判人类"打不出：半场已满"，但终局场面看不出 t7 那一刻谁在场。
-            // 输出口径与 `MatchEngine.HalfBoardFull` **一致**（含 HQ、只按 location 过滤），
-            // 所以 `N/5` 里的 N 就是判满用的那个数。
             if (boardTrace)
             {
-                static string Units(GameState st, CardLocation loc) =>
-                    string.Join(" ", st.CardsUnordered()
-                        .Where(c => c.Location == loc)
+                static string Units(GameState state, CardLocation location) =>
+                    string.Join(" ", state.CardsUnordered()
+                        .Where(c => c.Location == location)
                         .OrderBy(c => c.LocationNumber)
                         .Select(c => $"{c.Name}#{c.CardId}@{c.LocationNumber}"));
 
                 int leftSupport = st.Cards(Side.Left, Side.Left.HqOf()).Count();
                 int rightSupport = st.Cards(Side.Right, Side.Right.HqOf()).Count();
-                int frontline = st.CardsUnordered().Count(c => c.Location == CardLocation.BoardFrontline);
+                int frontline = st.CardsUnordered()
+                    .Count(c => c.Location == CardLocation.BoardFrontline);
                 Console.WriteLine($"   [BOARD] 半场 {leftSupport}/{GameState.HalfBoardCapacity} vs " +
                                   $"{rightSupport}/{GameState.HalfBoardCapacity}；" +
                                   $"前线 {frontline}/{st.FrontlineCapacity}（归属={st.FrontlineOwner}）");
@@ -178,8 +172,9 @@ internal static class ReplayAudit
                 int id = act.CardId;
                 if (deadBefore.Contains(id))
                 {
-                    deadMoves.Add($"    #{act.ActionId} t{act.TurnNumber} **{act.ActionType} 动了已判死的单位** " +
-                                  $"{st.ById(id)?.Name}#{id}");
+                    deadMoveAttempts.Add((act.ActionId,
+                        $"    #{act.ActionId} t{act.TurnNumber} **{act.ActionType} 动了已判死的单位** " +
+                        $"{st.ById(id)?.Name}#{id}"));
                 }
             }
 
@@ -200,9 +195,24 @@ internal static class ReplayAudit
         if (deaths.Count > 40) Console.WriteLine($"    …（共 {deaths.Count} 条）");
         Console.WriteLine();
 
-        Console.WriteLine($"=== ② 死亡单位仍被移动/攻击：{deadMoves.Count} 次 ===");
-        foreach (string d in deadMoves.Take(40)) Console.WriteLine(d);
-        if (deadMoves.Count == 0) Console.WriteLine("    （没有）");
+        var appliedDeadMoves = deadMoveAttempts
+            .Where(x => report.Steps.FirstOrDefault(s => s.ActionId == x.ActionId)?.Applied == true)
+            .Select(x => x.Text)
+            .ToList();
+        var rejectedDeadMoves = deadMoveAttempts
+            .Where(x => report.Steps.FirstOrDefault(s => s.ActionId == x.ActionId)?.Applied != true)
+            .Select(x => x.Text)
+            .ToList();
+
+        Console.WriteLine($"=== ② 死亡单位仍被移动/攻击：{appliedDeadMoves.Count} 次 ===");
+        foreach (string d in appliedDeadMoves.Take(40)) Console.WriteLine(d);
+        if (appliedDeadMoves.Count == 0) Console.WriteLine("    （没有 —— 所有此类动作都被规则门拒绝）");
+        if (rejectedDeadMoves.Count > 0)
+        {
+            Console.WriteLine($"=== ②a 死亡单位动作被拒：{rejectedDeadMoves.Count} 次 ===");
+            foreach (string d in rejectedDeadMoves.Take(40)) Console.WriteLine(d);
+            Console.WriteLine("    （这些是动作流中的旧/过期尝试，不代表内核放行了死亡单位）");
+        }
         Console.WriteLine();
 
         // ④ ★★ **HQ 对不上** —— 这是"我们的状态与客户端漂开"的**直接信号**。
@@ -265,8 +275,16 @@ internal static class ReplayAudit
             Console.WriteLine($"    #{firstHumanFail.ActionId} t{firstHumanFail.Turn} " +
                               $"{firstHumanFail.ActionType}：{firstHumanFail.Failure}");
             Console.WriteLine($"    （之前 {report.Steps.Count(s => s.ActionId < firstHumanFail.ActionId && !s.Applied)} 条失败都是 bot 自己的动作，不算信号）");
-            Console.WriteLine("    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。");
-            Console.WriteLine("       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。");
+            if (firstHumanFail.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true
+                && firstHumanFail.ActionType is "ML" or "AC")
+            {
+                Console.WriteLine("    ⇒ 这是对已离场单位的过期动作；内核已正确拒绝，不作为状态漂开点。");
+            }
+            else
+            {
+                Console.WriteLine("    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。");
+                Console.WriteLine("       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。");
+            }
         }
         Console.WriteLine();
 
@@ -469,13 +487,17 @@ internal static class ReplayAudit
             Console.WriteLine("     很可能根本没实现 ⇒ 我们这边的血量一直没扣 ⇒ 状态漂开。");
             Console.WriteLine("     这解释了「客户端认为已死、我们移动它」。");
         }
-        else if (deadMoves.Count > 0)
+        else if (appliedDeadMoves.Count > 0)
         {
             Console.WriteLine("  ⚠️ 有**死亡单位被移动** ⇒ 内核自己的门漏了（不是漂开）。");
         }
         else
         {
             Console.WriteLine("  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。");
+            if (rejectedDeadMoves.Count > 0)
+            {
+                Console.WriteLine("     另有死亡单位动作被拒，属于动作流中的旧/过期尝试，不算内核放行。");
+            }
         }
 
         return 0;

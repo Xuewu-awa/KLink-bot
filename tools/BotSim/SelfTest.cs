@@ -34,6 +34,8 @@ internal static class SelfTest
         // ★ 这条才是 773639「HQ 追踪漂开」的**根因断言**（修复前必红）。
         new("回放发号：连续同侧 StartOfTurn（中间无 EndOfTurn）只能算一个客户端回合",
             ReplayClientTurnDedup),
+        new("回放动态卡别名：未知动作 ID 复用唯一已生成卡且后续攻击仍命中",
+            ReplayGeneratedCardAlias),
         // ★ 发号**口径**本身（2026-10-02）：蓝图 `GenerateNextCardID` 没有 side、
         //   计数器全局、每回合归零。历史实现按 side 分号段 ⇒ 客户端认不出我们发的号。
         new("发号口径：效果生成卡 = 回合号×1000 + 本回合第几张，计数器全局且双方共用（无 side）",
@@ -52,6 +54,7 @@ internal static class SelfTest
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
         new("PAMS：选中一张后被生成成新卡并塞进牌库（走完 CS 答复的整条链）", PamsDevelopEndToEnd),
+        new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
         // ---- GetDeckByside 的出参形状（2026-10-02，对局 542091 t7 的根因）----
         // 蓝图出参是 `TArray<int> deckCardIDs`（卡 **ID**），内核曾实现成卡**实例**。
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
@@ -59,6 +62,16 @@ internal static class SelfTest
             GetDeckBySideReturnsCardIds),
         new("PAMS：开发出来的那张牌费用必须被设成 0（IR i=348 的 ChangeKreditCost 真的执行）",
             PamsDevelopedCardCostZero),
+        new("批量回牌库：按输入顺序逐张置顶，且隔离拥有者牌库",
+            MoveMultipleCardsToTopOfOwnersDeck),
+        new("PlayCardDirectlyFromHand：免费出牌、指定前线/槽位、跨行动方且回写 qqq",
+            PlayCardDirectlyFromHand),
+        new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
+            MoveUnitFromSupportToFrontLine),
+        new("LoseKreditSlot：保留临时 kredit，下一回合自然增长不被降槽吞掉",
+            LoseKreditSlotPreservesTemporaryKredits),
+        new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
+            ConvertCard),
 
         // ---- 候选池口径（2026-10-02）----
         // `GetAllActiveStaticCards` 原来**直接返回整个卡库**（2021 张），
@@ -103,6 +116,8 @@ internal static class SelfTest
         // ---- 三个规则 bug 的回归断言（2026-09-27）----
         new("3 掷弹兵：只有**德国**单位操作才 +1+1（别的阵营不算）", PanzergrenadierFactionGate),
         new("Attack 必须拒绝已经进弃牌堆的目标", AttackRejectsDeadTarget),
+        new("T30 OnOtherCardAttackSwitchTarget：Cold Trap 把攻击改到 SISSI", OtherCardAttackSwitchesTarget),
+        new("T31 OnOtherCardAttacks：Merchant Navy 能中止敌方攻击并撤回攻击者", OtherCardAttacksStopsAttack),
 
         // ---- §①.9 三条基本规则（蓝图定案，2026-09-27）----
         // 这四条守的是「棋盘模型」本身。回放对拍只有 6 局、而且 `MoveUnit` 几乎跑不到
@@ -162,9 +177,36 @@ internal static class SelfTest
         new("事件层：'自己'那一族能派发到主体（抽牌/生成/重置/压制/老兵/换区/离场/修复/回合开始）",
             EventLayerSelfEvents),
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
+        new("事件层：OnOtherCardReset 传递 cardReset/resetCardID（真实 Coastwatchers 订阅）",
+            ResetEventCarriesPayload),
+        new("事件层：OnOtherCardDealDamage 传递来源/目标/伤害载荷（真实 15th RECCE 订阅）",
+            DealDamageEventCarriesPayload),
+        new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
+            CreatedAlterEventCarriesPayload),
+        new("事件层：OnOtherCardLocationMoved 传递敌方推进主体并触发 35th Infantry Regiment 光环",
+            LocationMovedEventCarriesPayload),
+        new("事件层：OnOtherCardDiscarded 传递弃牌主体并触发 NAKAJIMA B5N 伤害",
+            DiscardedEventCarriesPayload),
+        new("事件层：OnOtherCardLoseSmokescreen 传递目标并触发 HIROSAKI REGIMENT 光环",
+            LoseSmokescreenEventCarriesPayload),
+        new("事件层：OnDeckShuffled 传递牌库阵营并触发 110e REGIMENT 光环",
+            DeckShuffledEventCarriesPayload),
+        new("事件层：OnOtherCardBlitzChanged 传递目标并触发 PANZER III L 光环",
+            BlitzChangedEventCarriesPayload),
+        new("原语：getCardsBuffedByThisCard 返回来源卡实际增益目标 ID",
+            CardsBuffedByThisCardReturnsIds),
+        new("原语：FullyHealCard 返回实际治疗量、满血幂等且拒绝死亡目标",
+            FullyHealCardPrimitive),
+        new("原语：GetAllCardsInFrontline 返回双方前线卡且排除半场/HQ",
+            GetAllCardsInFrontlinePrimitive),
+        new("事件层：钉住/解除钉住广播真实目标参数，并触发订阅卡效果", PinnedEventLayer),
+        new("事件层：MakeCardRetreat 广播真实撤退目标参数", RetreatEventLayer),
+        new("事件层：推进广播 cardMoved/ForceMove/moveCost（真实 Blue Legion 订阅）",
+            MoveToFrontlineEventPayload),
+        new("事件层：受伤广播 fromCard/toCard/fromAttack/damage（真实 Panzer III 订阅）",
+            ReceiveDamageEventPayload),
         new("事件层：战斗存活事件（OnSurvivedCombat / OnOtherCardSurvivedCombat），打 HQ 不发", EventLayerSurvivedCombat),
-        new("★★ 压制门的形状：`if (!isSuppressed) goto <自程序>` 只管**自己那一路**，" +
-            "**广播无条件发**（蓝图 `MakeVeteran` :26303 / `ExecuteOnBeforeOtherCardDestroyed` :14833）",
+        new("事件层：压制会挡住广播（OnOtherCardBecomingVeteran / OnOtherCardDestroyed），但不挡自己那一路",
             EventLayerSuppressionGate),
 
         // ---- P0 第 2 族：同形「接收者/参数位」bug（2026-09-27）----
@@ -230,11 +272,6 @@ internal static class SelfTest
             LocalFunctionBodiesPresent),
         new("私有函数：派发表认不出来时会**执行卡自己的函数体**（不再记 Unimplemented）",
             LocalFunctionActuallyRuns),
-        new("私有函数：出参必须真的读回来（旧实现取 `CallFunc_<fn>_<出参>` 全名 ⇒ 恒 null）",
-            LocalFunctionOutParamReachesCallSite),
-        new("★★ 层 A：被抑制的卡**不再收触发**（蓝图 `FetchAllCardsWithEventTrigger` 的全局门；"
-            + "38th_independent 刷兵的真正根因）",
-            SuppressedRecipientsSkipTriggers),
 
         // ---- P1：关键字基础设施（2026-09-30）----
         // 审计 §6 的 P1#27f / #27g：同一个判据在 IR 里有两种形状 ——
@@ -319,6 +356,7 @@ internal static class SelfTest
             DecryptAttackDefenseRealValues),
         new("IsBomber / IsFighter：轰炸机 / 战斗机判据必须为真（旧实现 out 槽恒 null ⇒ 恒假）",
             BomberFighterPredicates),
+        new("GetIsGoldCard：隐式 self 正确返回金卡标记", GoldCardPredicate),
         new("IsPinned / HasBond：关键字授予之后判据必须为真", PinnedBondPredicates),
         new("CustomName1/2 三件套：Add → HasAttribute → Remove 往返（关掉 CardApi.cs:631 的 TODO）",
             CustomNameSuffixRoundTrip),
@@ -332,10 +370,14 @@ internal static class SelfTest
         new("快照：累计扣槽、限制来源/时长、伏击标记与钉住时长必须可区分", SnapshotTracksRuleState),
         new("随机追踪：超过 64 项不截断，开关不改变随机结果与消费", RandomTraceIsObservational),
         new("蓝图基础函数：支援线位置不回退阵营；AddUnique 去重并返回原下标", BlueprintArrayAndLocationQueries),
+        new("GetLeft/RightMostCardInHand：按手牌位置号返回双出参，空手返回 found=false", HandEdgeQueries),
+        new("SetCountdown：按目标 cardID 写入 countdown_timer 并持久化，不误写施动卡", SetCountdown),
         new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
         new("DestroyMultipleCards：数组里卡对象 / 整数 cardID 两种元素形状都要被摧毁",
             DestroyMultipleCardsBothShapes),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
+        new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
+            DiscardRandomCardFromHand),
         new("★ CustomName1 接上事件24 的门：`StopDestructionEffect` 必须能压掉摧毁效果（关掉 CardApi.cs:631 的 TODO）",
             StopDestructionEffectGate),
 
@@ -494,6 +536,8 @@ internal static class SelfTest
         // **先** T51（`:6462`）**后** T43（`:6464`）。内核旧实现先 T43 后 T51。
         new("★ `PlayCard`：同一张旁观卡必须**先** `OnOtherCardPlayedFromHand`(T51) **后** `OnOtherCardEnterPlay`(T43)" +
             "（蓝图 :6462 → :6464；旧实现反了）", PlayCardOtherTriggersOrder),
+        new("★ `PlayCard`：战吼生成的新卡不得收到本次 T51 广播（早快照）",
+            PlayCardBroadcastUsesEarlySnapshot),
 
         // ---- ★★ 2026-10-03：攻击前触发点的**接收者**与**先后** ----
         // 蓝图 `AttackCard`：`OnBeforeAttack` 的接收者是 `_attackerCard`（`:4633`，**不是防御方**），
@@ -526,68 +570,6 @@ internal static class SelfTest
             GotchaStopFurtherActions),
         new("★ Intel：`SetCardsSeenByCipher` 只翻**对手**手牌里 min(n, 未见面数) 张，并消耗一次洗牌",
             SetCardsSeenByCipherRevealsOpponentUnseen),
-
-        // ---- ★★ 2026-10-04：触发派发的收件人快照必须**含手牌** ----
-        // 蓝图里 42 个触发名 / 90 个 (卡,触发) 对的程序体带 `IsLocatedInHand` 分支
-        // （`docs/card-ir.json` 实测），只扫「棋盘 + 弃牌堆」时它们全是死代码。
-        // 决定性实例：`card_unit_5th_regiment`「When you lose a kredit slot,
-        // this unit gets +2+1 if on the battlefield or **-2 cost if in hand**」。
-        new("★★ 触发派发必须送到**手牌**：`card_unit_5th_regiment` 输槽位 ⇒ 手牌里 -2 费 / " +
-            "在场 +2+1（蓝图 `OnAfterExtraKreditSlotGain` i=178→i=10→i=110）",
-            TriggerSnapshotIncludesHand),
-
-        // ---- ★ 2026-10-04：三个此前从未派发的触发点（P4 清单里最便宜的三条）----
-        // 订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 自测」。
-        new("★ T35/T61/T48 三个从未派发的触发点现在真的派发（建卡 / 钉住 / 失去烟幕）",
-            CardCreatedPinnedSmokescreenTriggers),
-        new("★ `SpawnCardInHand` 的手牌容量门：满手时新卡进弃牌堆（蓝图 `CreateCard` :10702-10706）",
-            SpawnCardInHandRespectsCapacity),
-        new("★★ T31 `OnOtherCardAttacks` 被派发，且出参 `AttackedAndStopped` 被尊重" +
-            "（BEAUFIGHTER 先打死攻击者 ⇒ 防御方零伤害，但油费/已攻击照记）",
-            OtherCardAttacksStopsAttack),
-        new("★ T3/T22：洗牌要发 `OnAfterDeckChanged`（无条件）与 `OnDeckShuffled`" +
-            "（**只在 skipSubAction 为真时**）；空牌库两个都不发",
-            DeckShuffledAndDeckChangedTriggers),
-        new("★ T45：`OnOtherCardKreditCostChanged` 只在**改自己的费**时广播" +
-            "（蓝图 `:8774/:8776` 的门），改别人的费不发",
-            KreditCostChangedTrigger),
-        new("★ T49：`OnMoveFromFrontline` 只在前线 → 半场 时发；自程序带压制门、" +
-            "广播无条件（只被 `stopFurtherActions` 挡）",
-            MoveFromFrontlineTrigger),
-        new("★★ T68：移动到前线要发 `OnOperationKreditsSpent`；但**正常结算的攻击不发**——" +
-            "它只挂在两条提前返回的分支上（蓝图 `:4637`/`:4651`）",
-            OperationKreditsSpentTrigger),
-        new("★ T62：解除钉住要发 `OnOtherUnitUnpinned`（蓝图 `RemovePin` :31818/:31847）；" +
-            "`RemovePin` 此前**不在派发表**里、IR 里 10 张卡调它全是静默 no-op",
-            RemovePinTrigger),
-        new("★★ T30：`OnOtherCardAttackSwitchTarget` 的出参 `newDefender` **真的改掉攻击目标**" +
-            "（COLD TRAP 生成 SISSI 当替身 ⇒ 原目标零伤害）",
-            AttackSwitchTargetTrigger),
-        new("★ 四个规则相关的小缺口一次补齐：`GetAllCardsInFrontline` / `GetLeftMostCardInHand` / " +
-            "`MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`",
-            RulePrimitivesBatch),
-        new("★ 四个**有语料消费者**的小缺口：`GiveTwoKredits` / `ResetUnitOperations` / " +
-            "`WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`" +
-            "（后两个的写入方落在 `PlayCard` 里，端到端验）",
-            CorpusConsumerPrimitives),
-        new("★ `getCardsBuffedByThisCard`（25 个调用点，13 条清单里最大的一条）：" +
-            "只返回**被这张卡贴过**的卡（19 张光环卡的刷新用法）",
-            CardsBuffedByThisCardQuery),
-        new("★★ `GetRandomCard` 的第二个实参 `skipCustomAlways` 必须读：" +
-            "176 个调用点里 153 个传 false（走\"必选集\"分支），旧实现恒按全池随机",
-            GetRandomCardCustomAlways),
-        new("★ `IsTopDeckNavy`（7 点，消费者 `card_event_uss_arcfish` 在语料里）：" +
-            "牌库顶是海军卡为真、非海军为假、空牌库为假",
-            TopDeckNavyQuery),
-        new("★ `JSON_SetInt` 的值是**卡对象**时要取 `CardId`（不能按整数读成 0）——" +
-            "§8.23 那个\"出参类型\"疑点的收口：全 IR 只有 1 处这么用",
-            JsonSetIntAcceptsCardValue),
-        new("★ `SetCardLocationAndLocNumber`（ConvertCard 链的前置件，蓝图 `:33961-34000`）：" +
-            "裸写位置与位置号，但 **Discard(8) 时不写位置号**",
-            SetCardLocationAndLocNumberRaw),
-        new("★★ `ConvertCard` 端到端（蓝图 `:9882-10450`；`live-165924` 的 ⑥ 里只有它）：" +
-            "老卡离场、新卡继承位置/位置号、T34 `OnOtherCardConverted` 按 `newCardIDs` 过滤派发",
-            ConvertCardEndToEnd),
     };
 
     public static int Run(CardDatabase db)
@@ -1222,6 +1204,50 @@ internal static class SelfTest
     }
 
     /// <summary>
+    /// 508065 的 PAMS 生成卡在创建时是 #14001，但后续动作引用为 #83。
+    /// 回放器应把 #83 解析为同一张已生成卡，而不是造一张裸占位卡；后续
+    /// #107/#119 的攻击也必须继续命中这张卡。
+    /// </summary>
+    private static string? ReplayGeneratedCardAlias(CardDatabase db)
+    {
+        string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..", "out", "_server-replays"));
+        string snapshot = Path.Combine(root, "replay-508065.json");
+        string actions = Path.Combine(root, "replay-508065.actions.json");
+        if (!File.Exists(snapshot) || !File.Exists(actions))
+        {
+            return $"缺少动态卡别名回归语料：{snapshot} / {actions}";
+        }
+
+        var report = new KLink.Bot.Replay.ReplayRunner(db)
+        {
+            IdentityCorrection = true,
+            KreditSlotOnDuplicateStart = true,
+        }.Run(KLink.Bot.Replay.ReplayData.Load(snapshot, actions), verbose: false);
+
+        if (report.Steps.Count(s => s.Applied) != 139)
+        {
+            return $"508065 应应用 139 条动作，实际 {report.Steps.Count(s => s.Applied)}";
+        }
+
+        if (report.Unimplemented.Any(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal)))
+        {
+            return "动态卡别名仍产生 unresolved-cardid 占位记录："
+                + string.Join(", ", report.Unimplemented
+                    .Where(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal))
+                    .Select(x => $"{x.Key}×{x.Value}"));
+        }
+
+        var commando = report.Steps.FirstOrDefault(s => s.ActionId == 119);
+        if (commando is null || !commando.Applied)
+        {
+            return "#119 对动态生成的 No.43 Commando 攻击未成功应用";
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// **效果生成卡的发号口径** —— 蓝图 `BP_GameState_Battle::GenerateNextCardID(turnNumber, out id)`
     /// （`ref/kards-sim/KardsSim/Generated/_deps/BP_GameState_Battle.g.cs:1545`）的签名里
     /// **只有 `turnNumber` 与一个 out 槽，没有 side**：
@@ -1783,6 +1809,52 @@ internal static class SelfTest
     }
 
     /// <summary>
+    /// `OpponentActionsCardToDrawSelected` 的 Develop 路径在新卡完成
+    /// `OnHandTargetSelected` 后，还要调用 `DevelopAndForecastCheck`。
+    /// 这里用唯一订阅者 `card_event_yank_the_army_weekly` 做端到端探针：
+    /// 它会读取 `cardDeveloped` 与 `instigatorID`，并把 `hasDeveloped` 写到自己身上。
+    /// </summary>
+    private static string? OtherCardDevelopedAfterHandTargetSelected(CardDatabase db)
+    {
+        const string watcherName = "card_event_yank_the_army_weekly";
+        const string selectingName = "card_event_pams";
+        const string developedName = "card_event_fog_of_war";
+        if (db.Find(watcherName) is null || db.Find(selectingName) is null || db.Find(developedName) is null)
+        {
+            return $"卡库里缺 {watcherName} / {selectingName} / {developedName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var selecting = state.CreateWithId(selectingName, Side.Left, 21, CardLocation.HandLeft, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var developed = engine.Api.DevelopChosenCard(selecting, developedName);
+        if (developed is null)
+        {
+            return "DevelopChosenCard 没有生成卡";
+        }
+
+        if (!trace.Any(t => t.StartsWith($"OnOtherCardDeveloped → {watcherName}#20", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardDeveloped 没有广播到订阅者"
+                 + $"；实际派发记录：{string.Join(" | ", trace.Take(12))}";
+        }
+
+        int handTargetIndex = trace.FindIndex(t => t.StartsWith("OnHandTargetSelected →", StringComparison.Ordinal));
+        int developedIndex = trace.FindIndex(t => t.StartsWith($"OnOtherCardDeveloped → {watcherName}#20", StringComparison.Ordinal));
+        if (handTargetIndex < 0 || developedIndex < 0 || handTargetIndex >= developedIndex)
+        {
+            return "OnOtherCardDeveloped 的派发顺序不在 OnHandTargetSelected 之后"
+                 + $"；实际派发记录：{string.Join(" | ", trace.Take(12))}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// `GetDeckByside` 的出参**形状**必须是「卡 ID 列表」，不是「卡实例列表」。
     ///
     /// ## 蓝图侧证据（三条，互相独立）
@@ -2258,16 +2330,12 @@ internal static class SelfTest
     {
         const string aura = "card_unit_85_pioneer_company";
 
+        // ⚠️ 用一张**费用 ≥ 2** 的指令来测，不能用 `card_event_pams`（1 费）：
+        //    -1 之后会被「费用下限 1」夹回 1，看不出变化。
         const string order = "card_event_mi_5";          // 3 费英国指令
-        // ★ 1 费指令也要一起测：2026-10-05 之前内核给「普通改费」留了下限 1，
-        //   于是 1 费指令减 1 之后**仍是 1 费**。判据是真人回放
-        //   `fresh-replays/replay-634651` 的 t1：`#2` 打出这张光环（费 1，花掉先手 t1 唯一的
-        //   1 点指挥点）之后，`#3` **紧接着又打出 1 费的 `card_event_pams`** 并被客户端放行
-        //   ⇒ 客户端的 1 费指令确实降到了 **0**（见 `CardInstance.EffectiveKreditCost` 的注释）。
-        const string cheap = "card_event_pams";          // 1 费英国指令
-        if (db.Find(aura) is null || db.Find(order) is null || db.Find(cheap) is null)
+        if (db.Find(aura) is null || db.Find(order) is null)
         {
-            return $"卡库里缺 {aura} / {order} / {cheap}";
+            return $"卡库里缺 {aura} 或 {order}";
         }
 
         var (engine, state) = EmptyBoard(db);
@@ -2275,23 +2343,17 @@ internal static class SelfTest
         state.SetMaxKredits(Side.Left, 12);
         state.ActiveSide = Side.Left;
 
-        // 手牌：两张指令（同一张卡建两次，cardID 不同）+ 一张 1 费指令
+        // 手牌：两张指令（同一张卡建两次，cardID 不同）
         var orderA = state.CreateWithId(order, Side.Left, 2, CardLocation.HandLeft, 0);
         var orderB = state.CreateWithId(order, Side.Left, 3, CardLocation.HandLeft, 1);
-        var cheapOrder = state.CreateWithId(cheap, Side.Left, 6, CardLocation.HandLeft, 2);
         int baseCost = orderA.KreditCost;
         if (baseCost < 2)
         {
-            return $"前置不成立：{order} 的费用是 {baseCost}，测不出 -1 的效果";
-        }
-
-        if (cheapOrder.KreditCost != 1)
-        {
-            return $"前置不成立：{cheap} 应当是 1 费，实际 {cheapOrder.KreditCost}";
+            return $"前置不成立：{order} 的费用是 {baseCost}，减 1 会被下限夹住、测不出效果";
         }
 
         // 光环进场（走真实路径：PlayCard → OnEnterPlay）
-        var buffCard = state.CreateWithId(aura, Side.Left, 4, CardLocation.HandLeft, 3);
+        var buffCard = state.CreateWithId(aura, Side.Left, 4, CardLocation.HandLeft, 2);
         if (!engine.PlayCard(buffCard))
         {
             return "光环打不出来";
@@ -2300,14 +2362,6 @@ internal static class SelfTest
         if (orderA.KreditCost != baseCost - 1)
         {
             return $"光环进场后指令费用应为 {baseCost - 1}，实际 {orderA.KreditCost}"
-                 + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        // ★★ 判死点：1 费指令必须降到 **0**（恢复 `MinKreditCost = 1` 那道下限 ⇒ 这里立刻失败）
-        if (cheapOrder.KreditCost != 0)
-        {
-            return $"光环进场后 1 费指令应当降到 0（replay-634651 t1 的客户端行为），"
-                 + $"实际 {cheapOrder.KreditCost} —— 是不是又把改费下限夹回 1 了？"
                  + Dump(state, ("未实现", Unimpl(state)));
         }
 
@@ -2381,6 +2435,15 @@ internal static class SelfTest
         if (cheap.KreditCost != 4)
         {
             return $"1 费牌应被抬到 4，实际 {cheap.KreditCost}" + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        var tempAmount = engine.Api.InvokeByName("getKreditTempBuffAmount", cheap,
+            new object?[] { auraCard.CardId, null },
+            new EffectContext { Engine = engine, State = state, Self = auraCard, Controller = Side.Left },
+            out bool tempHandled);
+        if (!tempHandled || tempAmount is not int amount || amount != 3)
+        {
+            return $"getKreditTempBuffAmount 应返回来源 {auraCard.CardId} 的 +3 改费偏移，实际 {tempAmount}";
         }
 
         if (pricey.KreditCost != 4)
@@ -2857,6 +2920,140 @@ internal static class SelfTest
         if (state.HqDefense(Side.Right) != hqBefore)
         {
             return "被拒的攻击不该改 HQ";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// T31 没有 entrypoint，20 张卡的实现都在 locals。Merchant Navy 是最小的
+    /// 可观测探针：收到敌方单位攻击后返回 <c>AttackedAndStopped=true</c>，
+    /// 触发 gotcha 并把攻击者撤回，攻击伤害本身不应结算。
+    /// </summary>
+    private static string? OtherCardAttacksStopsAttack(CardDatabase db)
+    {
+        const string attackerName = "card_unit_arado_ar_196";
+        const string defenderName = "card_unit_85_pioneer_company";
+        const string merchantName = "card_event_merchant_navy";
+        foreach (var name in new[] { attackerName, defenderName, merchantName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Right;
+        state.SetKredits(Side.Right, 12);
+        state.SetMaxKredits(Side.Right, 12);
+
+        var attacker = state.CreateWithId(attackerName, Side.Right, 200, CardLocation.BoardFrontline, 0);
+        var defender = state.CreateWithId(defenderName, Side.Left, 201, CardLocation.BoardFrontline, 0);
+        var merchant = state.CreateWithId(merchantName, Side.Left, 202, CardLocation.BoardHqLeft, 1);
+        attacker.EnteredPlayOnTurn = -1;
+        defender.EnteredPlayOnTurn = -1;
+        merchant.EnteredPlayOnTurn = -1;
+        engine.Api.RemoveKeyword(defender, Keyword.Smokescreen);
+
+        int defenderBefore = defender.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        if (!engine.Attack(attacker, defender, out string reason))
+        {
+            return $"带 Merchant Navy 的攻击没有进入攻击结算：{reason}";
+        }
+
+        if (!trace.Any(x => x.StartsWith("OnOtherCardAttacks", StringComparison.Ordinal)
+                         && x.Contains(merchantName, StringComparison.Ordinal)))
+        {
+            return "T31 locals 没有派发到 Merchant Navy"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (defender.Defense != defenderBefore)
+        {
+            return $"Merchant Navy 已中止攻击，但目标仍受到伤害：{defenderBefore} → {defender.Defense}";
+        }
+
+        if (attacker.Location != CardLocation.BoardHqRight)
+        {
+            return $"Merchant Navy 已中止攻击，但攻击者没有撤回到支援线：位置={attacker.Location}";
+        }
+
+        if (merchant.Location != CardLocation.Discard)
+        {
+            return $"触发后的 Merchant Navy 应进入弃牌堆，实际位置={merchant.Location}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// T30 的两个订阅者都在卡片 locals 中。Cold Trap 应在攻击伤害结算前
+    /// 生成 SISSI 并把目标改成它；原目标不应承受这次攻击。
+    /// </summary>
+    private static string? OtherCardAttackSwitchesTarget(CardDatabase db)
+    {
+        const string attackerName = "card_unit_arado_ar_196";
+        const string defenderName = "card_unit_85_pioneer_company";
+        const string trapName = "card_event_cold_trap";
+        const string replacementName = "card_unit_sissi";
+        foreach (var name in new[] { attackerName, defenderName, trapName, replacementName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Right;
+        state.SetKredits(Side.Right, 12);
+        state.SetMaxKredits(Side.Right, 12);
+
+        var attacker = state.CreateWithId(attackerName, Side.Right, 210,
+            CardLocation.BoardFrontline, 0);
+        var defender = state.CreateWithId(defenderName, Side.Left, 211,
+            CardLocation.BoardFrontline, 0);
+        var trap = state.CreateWithId(trapName, Side.Left, 212,
+            CardLocation.BoardHqLeft, 1);
+        attacker.EnteredPlayOnTurn = -1;
+        defender.EnteredPlayOnTurn = -1;
+        trap.EnteredPlayOnTurn = -1;
+        engine.Api.RemoveKeyword(defender, Keyword.Smokescreen);
+
+        int defenderBefore = defender.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        if (!engine.Attack(attacker, defender, out string reason))
+        {
+            return $"带 Cold Trap 的攻击没有进入攻击结算：{reason}";
+        }
+
+        if (!trace.Any(x => x.StartsWith("OnOtherCardAttackSwitchTarget", StringComparison.Ordinal)
+                         && x.Contains(trapName, StringComparison.Ordinal)))
+        {
+            return "T30 locals 没有派发到 Cold Trap"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (defender.Defense != defenderBefore)
+        {
+            return $"Cold Trap 已改目标，但原目标仍受到伤害：{defenderBefore} → {defender.Defense}"
+                 + $"\n       trace={string.Join(" | ", trace)}"
+                 + $"\n       cards={string.Join(" | ", state.AllCards.Where(c => c.Name == replacementName).Select(c => $"{c.CardId}@{c.Location}/{c.Defense}"))}";
+        }
+
+        var sissi = state.AllCards.FirstOrDefault(c => c.Name == replacementName);
+        if (sissi is null)
+        {
+            return "Cold Trap 没有生成 SISSI";
+        }
+
+        if (sissi.Location != CardLocation.Discard)
+        {
+            return $"攻击应落到 SISSI 并摧毁它，实际位置={sissi.Location} 防御={sissi.Defense}";
         }
 
         return null;
@@ -4275,6 +4472,8 @@ internal static class SelfTest
                 (e, s, p) => e.DrawCard(Side.Left) ?? p),
             ("OnCreateCard", "card_unit_185th_folgore_cov", CardLocation.NotAvailable,
                 (e, s, p) => s.Create("card_unit_185th_folgore_cov", Side.Left, CardLocation.DeckLeft, 0)),
+            ("OnOtherCardCreatedAlterCard", "card_unit_67th_baranovichi", CardLocation.BoardHqLeft,
+                (e, s, p) => { s.Create("card_unit_185th_folgore_cov", Side.Left, CardLocation.DeckLeft, 0); return p; }),
             ("OnCardSpawnedInHand", "card_unit_13e_dragons", CardLocation.NotAvailable,
                 (e, s, p) => e.Api.SpawnCardInHand(Side.Left, "card_unit_13e_dragons")),
         };
@@ -4319,6 +4518,18 @@ internal static class SelfTest
                 (e, s, p) => { e.Api.MakeVeteran(Plain(s, victim, 63)); return p; }),
             ("OnOtherCardAbilitiesChanged", "card_unit_royal_west_kents",
                 (e, s, p) => { e.Api.GiveKeyword(Plain(s, victim, 64), Keyword.Blitz); return p; }),
+            ("OnOtherCardBlitzChanged", "card_unit_panzer_iii_l",
+                (e, s, p) => { var changed = Plain(s, victim, 65); e.Api.GiveKeyword(changed, Keyword.Blitz); e.Api.RemoveKeyword(changed, Keyword.Blitz); return p; }),
+            ("OnOtherCardLoseSmokescreen", "card_unit_hirosaki_regiment",
+                (e, s, p) =>
+                {
+                    var changed = s.CreateWithId(victim, Side.Left, 73, CardLocation.BoardHqLeft, 2);
+                    e.Api.GiveKeyword(changed, Keyword.Smokescreen);
+                    e.Api.RemoveKeyword(changed, Keyword.Smokescreen);
+                    return p;
+                }),
+            ("OnOtherCardKreditCostChanged", "card_unit_the_silent_seventh",
+                (e, s, p) => { e.Api.ChangeKreditCost(Plain(s, victim, 66), 1); return p; }),
             ("OnOtherCardDealDamage", "card_unit_blenheim_mk_i",
                 (e, s, p) =>
                 {
@@ -4330,12 +4541,24 @@ internal static class SelfTest
                 }),
             ("OnOtherCardLocationMoved", "card_unit_spitfire_mk_ii",
                 (e, s, p) => { s.Move(Plain(s, victim, 67), CardLocation.BoardFrontline, 0); return p; }),
+            ("OnOtherCardMoveFromFrontline", "card_unit_raaf_walrus",
+                (e, s, p) => { var moved = Plain(s, victim, 68); s.Move(moved, CardLocation.BoardFrontline, 0); s.Move(moved, CardLocation.BoardHqLeft, 0); return p; }),
+            ("OnDeckShuffled", "card_unit_110e_regiment_motorize",
+                (e, s, p) =>
+                {
+                    var deckCard = Plain(s, victim, 72);
+                    s.Move(deckCard, CardLocation.DeckLeft, 0);
+                    e.Api.InvokeByName("ShuffleDeckBySide", p,
+                        new object?[] { (int)Side.Left, false, 0, null },
+                        new EffectContext { Engine = e, State = s, Self = p, Controller = Side.Left }, out _);
+                    return p;
+                }),
             ("OnOtherCardDestroyed", "card_unit_hudson",
-                (e, s, p) => { e.Destroy(Plain(s, victim, 68)); return p; }),
-            ("OnBeforeOtherCardDestroyed", "card_unit_marder_iii_h",
                 (e, s, p) => { e.Destroy(Plain(s, victim, 69)); return p; }),
+            ("OnBeforeOtherCardDestroyed", "card_unit_marder_iii_h",
+                (e, s, p) => { e.Destroy(Plain(s, victim, 70)); return p; }),
             ("OnOtherCardDiscarded", "card_unit_7th_brigade_anzac",
-                (e, s, p) => { e.Api.DiscardCard(Plain(s, victim, 70)); return p; }),
+                (e, s, p) => { e.Api.DiscardCard(Plain(s, victim, 71)); return p; }),
             ("OnAfterExtraKreditSlotGain", "card_unit_144th_infantry_regiment",
                 (e, s, p) => { e.Api.GainKreditSlot(Side.Left, 1); return p; }),
             ("OnBeforeOtherCardPlayedFromHand", "card_unit_flaming_matilda_anzac",
@@ -4371,6 +4594,850 @@ internal static class SelfTest
         // 敌方一张普通单位（没有订阅任何东西），当"事件的受害者"
         static CardInstance Plain(GameState s, string name, int id)
             => s.CreateWithId(name, Side.Right, id, CardLocation.BoardHqRight, id - 59);
+    }
+
+    /// <summary>
+    /// `OnOtherCardReset` 的两个槽位不能靠事件主体兜底：
+    /// `cardReset` 是被重置的卡对象，`resetCardID` 是同一张卡的 ID。
+    ///
+    /// Coastwatchers 的真实蓝图会读取 `resetCardID`，通过 `GetCardFromID`
+    /// 找回重置的手牌天气牌，再把它的费用降低 1。若载荷缺失，VM 会把
+    /// 事件主体/当前接收者当成 ID，真实效果就会静默跳过。
+    /// </summary>
+    private static string? ResetEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_coastwatchers";
+        const string weatherName = "card_event_rain2_deluge";
+        if (db.Find(watcherName) is null || db.Find(weatherName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {weatherName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var weather = state.CreateWithId(weatherName, Side.Left, 60,
+            CardLocation.HandLeft, 1);
+        int before = weather.EffectiveKreditCost;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.ResetCardInBattle(weather);
+        }
+        catch (Exception ex)
+        {
+            return $"ResetCardInBattle 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardReset → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={weather.Name}#{weather.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardReset 没有把被重置的天气牌作为事件主体传给 Coastwatchers";
+        }
+
+        int after = weather.EffectiveKreditCost;
+        if (after != Math.Max(CardInstance.MinKreditCost, before - 1))
+        {
+            return $"Coastwatchers 没有按 resetCardID 给天气牌减费：重置前={before}，重置后={after}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `OnOtherCardDealDamage` 的六个事件参数必须传给真实订阅程序：
+    /// 15th RECCE 读取 `cardDealingDamage`，只在带有 `targetAbility` 的伤害来源
+    /// 造成伤害时给自己 +1/+1 并获得 Guard。仅验证 TriggerTrace 不能证明
+    /// 来源卡槽位被正确填充，因为缺载荷时事件仍然会留下广播记录。
+    /// </summary>
+    private static string? DealDamageEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_15th_recon_regiment";
+        const string sourceName = PlainUnit;
+        const string victimName = PlainUnit;
+        if (db.Find(watcherName) is null || db.Find(sourceName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {sourceName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = PutOnBoard(state, watcherName, Side.Left, 20, 1);
+        var source = PutOnBoard(state, sourceName, Side.Left, 21, 2);
+        var victim = PutOnBoard(state, victimName, Side.Right, 60, 1);
+        source.CustomAbility = "targetAbility";
+        victim.Defense = 20;
+
+        int attack = watcher.Attack;
+        int defense = watcher.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        try
+        {
+            engine.Api.DealDamage(victim, 1, source);
+        }
+        catch (Exception ex)
+        {
+            return $"DealDamage 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardDealDamage → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={source.Name}#{source.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardDealDamage 没有把伤害来源作为事件主体传给 15th RECCE"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (watcher.Attack != attack + 1 || watcher.Defense != defense + 1)
+        {
+            return $"15th RECCE 未消费 cardDealingDamage=source：期望攻防={attack + 1}/{defense + 1}，"
+                 + $"实际={watcher.Attack}/{watcher.Defense}（来源 CustomAbility={source.CustomAbility}）";
+        }
+
+        if (!watcher.Keywords.Contains(Keyword.Guard, StringComparer.Ordinal))
+        {
+            return "15th RECCE 收到伤害事件后应获得 Guard，但关键字没有写入";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `OnOtherCardCreatedAlterCard` 的 `cardPlayed` 载荷必须指向实际新建的卡。
+    /// 67th BARANOVICHI 的真实蓝图据此给同阵营 `card_unit_light_infantry`
+    /// 授予 Alpine，并拒绝敌方同名单位。
+    /// </summary>
+    private static string? CreatedAlterEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_67th_baranovichi";
+        const string lightInfantry = "card_unit_light_infantry";
+        if (db.Find(watcherName) is null || db.Find(lightInfantry) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {lightInfantry}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var enemy = state.CreateWithId(lightInfantry, Side.Right, 61,
+            CardLocation.BoardHqRight, 1);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var ally = state.CreateWithId(lightInfantry, Side.Left, 62,
+            CardLocation.BoardHqLeft, 2);
+
+        if (!ally.Keywords.Contains(Keyword.Alpine, StringComparer.Ordinal))
+        {
+            return "67th BARANOVICHI 没有按 cardPlayed 载荷给己方 light infantry 授予 Alpine";
+        }
+
+        if (enemy.Keywords.Contains(Keyword.Alpine, StringComparer.Ordinal))
+        {
+            return "OnOtherCardCreatedAlterCard 错把敌方 light infantry 当成己方目标并授予 Alpine";
+        }
+
+        if (!trace.Any(t => t.StartsWith($"OnOtherCardCreatedAlterCard → {watcher.Name}#{watcher.CardId}",
+                                         StringComparison.Ordinal)
+                         && t.Contains($"eventCard={ally.Name}#{ally.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardCreatedAlterCard 没有记录实际创建的 cardPlayed 事件主体";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `OnOtherCardLocationMoved` 的事件主体必须是实际换区的卡，并且新位置参数
+    /// 要能让真实 35th INFANTRY REGIMENT 蓝图识别「敌方单位进入前线」。
+    /// 该效果随后只给己方场上单位 +1/+1，敌方单位不得被误 buff。
+    /// </summary>
+    private static string? LocationMovedEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_35th_infantry_regiment";
+        const string allyName = PlainUnit;
+        const string enemyName = PlainUnit;
+        if (db.Find(watcherName) is null || db.Find(allyName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {allyName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Right;
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var ally = state.CreateWithId(allyName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var enemy = state.CreateWithId(enemyName, Side.Right, 60,
+            CardLocation.BoardHqRight, 1);
+        int allyAttack = ally.Attack;
+        int allyDefense = ally.Defense;
+        int enemyAttack = enemy.Attack;
+        int enemyDefense = enemy.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            state.Move(enemy, CardLocation.BoardFrontline, 0);
+        }
+        catch (Exception ex)
+        {
+            return $"移动敌方单位到前线抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardLocationMoved → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={enemy.Name}#{enemy.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardLocationMoved 没有把实际推进的敌方单位作为事件主体传给 35th INFANTRY REGIMENT"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (enemy.Location != CardLocation.BoardFrontline)
+        {
+            return $"测试布景失败：敌方单位未进入前线（实际位置={enemy.Location}）";
+        }
+
+        if (ally.Attack != allyAttack + 1 || ally.Defense != allyDefense + 1)
+        {
+            return $"35th INFANTRY REGIMENT 未给己方单位 +1/+1：期望={allyAttack + 1}/{allyDefense + 1}，"
+                 + $"实际={ally.Attack}/{ally.Defense}";
+        }
+
+        if (enemy.Attack != enemyAttack || enemy.Defense != enemyDefense)
+        {
+            return $"35th INFANTRY REGIMENT 错给敌方单位加 buff：期望={enemyAttack}/{enemyDefense}，"
+                 + $"实际={enemy.Attack}/{enemy.Defense}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `OnOtherCardDiscarded` 的事件主体必须是实际被弃掉的卡。
+    /// NAKAJIMA B5N 据此对敌方场上单位造成 1 点伤害；友方单位不应被波及。
+    /// </summary>
+    private static string? DiscardedEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_nakajima_b5n";
+        const string discardedName = PlainUnit;
+        if (db.Find(watcherName) is null || db.Find(discardedName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {discardedName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var ally = state.CreateWithId(discardedName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var enemy = state.CreateWithId(discardedName, Side.Right, 60,
+            CardLocation.BoardHqRight, 1);
+        var discarded = state.CreateWithId(discardedName, Side.Left, 61,
+            CardLocation.HandLeft, 3);
+        int allyDefense = ally.Defense;
+        int enemyDefense = enemy.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.DiscardCard(discarded, watcher);
+        }
+        catch (Exception ex)
+        {
+            return $"DiscardCard 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardDiscarded → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={discarded.Name}#{discarded.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardDiscarded 没有把实际被弃掉的卡作为事件主体传给 NAKAJIMA B5N"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (discarded.Location != CardLocation.Discard)
+        {
+            return $"测试布景失败：被弃卡没有进入弃牌堆（实际位置={discarded.Location}）";
+        }
+
+        if (enemy.Defense != enemyDefense - 1)
+        {
+            return $"NAKAJIMA B5N 未对敌方单位造成 1 点伤害：期望防御={enemyDefense - 1}，实际={enemy.Defense}";
+        }
+
+        if (ally.Defense != allyDefense)
+        {
+            return $"NAKAJIMA B5N 错误伤害己方单位：期望防御={allyDefense}，实际={ally.Defense}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// HIROSAKI REGIMENT 读取 `cardLostSmokescreen`，为同阵营目标 +1/+1 并降低 1 点行动费。
+    /// </summary>
+    private static string? LoseSmokescreenEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_hirosaki_regiment";
+        const string targetName = PlainUnit;
+        if (db.Find(watcherName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId(targetName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        engine.Api.GiveKeyword(target, Keyword.Smokescreen);
+        int attack = target.Attack;
+        int defense = target.Defense;
+        int operationCost = target.OperationCost;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.RemoveKeyword(target, Keyword.Smokescreen);
+        }
+        catch (Exception ex)
+        {
+            return $"RemoveKeyword(Smokescreen) 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardLoseSmokescreen → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={target.Name}#{target.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardLoseSmokescreen 没有把失去烟幕的实际目标作为事件主体传给 HIROSAKI REGIMENT"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (target.Keywords.Contains(Keyword.Smokescreen, StringComparer.Ordinal))
+        {
+            return "测试布景失败：目标仍保留 Smokescreen";
+        }
+
+        if (target.Attack != attack + 1 || target.Defense != defense + 1)
+        {
+            return $"HIROSAKI REGIMENT 未给目标 +1/+1：期望={attack + 1}/{defense + 1}，"
+                 + $"实际={target.Attack}/{target.Defense}";
+        }
+
+        if (target.OperationCost != Math.Max(0, operationCost - 1))
+        {
+            return $"HIROSAKI REGIMENT 未降低目标行动费：期望={Math.Max(0, operationCost - 1)}，"
+                 + $"实际={target.OperationCost}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 110e REGIMENT MOTORIZE 读取 deckSide/instigatorCard：己方首次洗牌时，
+    /// 其它己方单位获得 +1/+1，敌方单位不应被影响。
+    /// </summary>
+    private static string? DeckShuffledEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_110e_regiment_motorize";
+        const string unitName = PlainUnit;
+        if (db.Find(watcherName) is null || db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var ally = state.CreateWithId(unitName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var enemy = state.CreateWithId(unitName, Side.Right, 60,
+            CardLocation.BoardHqRight, 1);
+        var deckCard = state.CreateWithId(unitName, Side.Left, 72,
+            CardLocation.DeckLeft, 0);
+        int allyAttack = ally.Attack;
+        int allyDefense = ally.Defense;
+        int enemyAttack = enemy.Attack;
+        int enemyDefense = enemy.Defense;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.InvokeByName("ShuffleDeckBySide", watcher,
+                new object?[] { (int)Side.Left, false, watcher.CardId, null },
+                new EffectContext
+                {
+                    Engine = engine,
+                    State = state,
+                    Self = watcher,
+                    Controller = Side.Left,
+                }, out _);
+        }
+        catch (Exception ex)
+        {
+            return $"ShuffleDeckBySide 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnDeckShuffled → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={watcher.Name}#{watcher.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnDeckShuffled 没有把实际施动卡作为事件主体传给 110e REGIMENT MOTORIZE"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (deckCard.Location != CardLocation.DeckLeft)
+        {
+            return $"测试布景失败：牌库卡位置被错误改变（实际位置={deckCard.Location}）";
+        }
+
+        if (ally.Attack != allyAttack + 1 || ally.Defense != allyDefense + 1)
+        {
+            return $"110e REGIMENT MOTORIZE 未给己方单位 +1/+1：期望={allyAttack + 1}/{allyDefense + 1}，"
+                 + $"实际={ally.Attack}/{ally.Defense}";
+        }
+
+        if (enemy.Attack != enemyAttack || enemy.Defense != enemyDefense)
+        {
+            return $"110e REGIMENT MOTORIZE 错误给敌方单位加 buff：期望={enemyAttack}/{enemyDefense}，"
+                 + $"实际={enemy.Attack}/{enemy.Defense}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// PANZER III L 的真实订阅程序只应给己方带 Blitz 的其它坦克 +2 攻击，
+    /// 并在 Blitz 移除时撤销该来源的增益。
+    /// </summary>
+    private static string? BlitzChangedEventCarriesPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_panzer_iii_l";
+        const string targetName = "card_unit_t_34_85";
+        if (db.Find(watcherName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {watcherName} 或 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var ally = state.CreateWithId(targetName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var enemy = state.CreateWithId(targetName, Side.Right, 60,
+            CardLocation.BoardHqRight, 1);
+        int allyAttack = ally.Attack;
+        int enemyAttack = enemy.Attack;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        try
+        {
+            engine.Api.GiveKeyword(ally, Keyword.Blitz);
+        }
+        catch (Exception ex)
+        {
+            return $"GiveKeyword(Blitz) 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string prefix = $"OnOtherCardAbilitiesChanged → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={ally.Name}#{ally.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardAbilitiesChanged 没有把实际获得 Blitz 的己方坦克作为事件主体传给 PANZER III L"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (ally.Attack != allyAttack + 2)
+        {
+            return $"PANZER III L 未给己方 Blitz 坦克 +2 攻击：期望={allyAttack + 2}，实际={ally.Attack}"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (enemy.Attack != enemyAttack)
+        {
+            return $"PANZER III L 错误给敌方坦克加攻：期望={enemyAttack}，实际={enemy.Attack}";
+        }
+
+        try
+        {
+            engine.Api.RemoveKeyword(ally, Keyword.Blitz);
+        }
+        catch (Exception ex)
+        {
+            return $"RemoveKeyword(Blitz) 抛出 {ex.GetType().Name}: {ex.Message}";
+        }
+
+        string removePrefix = $"OnOtherCardBlitzChanged → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(removePrefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={ally.Name}#{ally.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardBlitzChanged 没有把实际失去 Blitz 的己方坦克作为事件主体传给 PANZER III L"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (ally.Attack != allyAttack)
+        {
+            return $"移除 Blitz 后 PANZER III L 增益未撤销：期望={allyAttack}，实际={ally.Attack}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `getCardsBuffedByThisCard` 的蓝图出参是来源卡维护的 int[]。
+    /// 内核同时覆盖直接 ChangeAttack/ChangeDefense 形成的 BuffsBySource 账本，
+    /// 因此这里用两个不同目标、一个无关来源验证并集口径。
+    /// </summary>
+    private static string? CardsBuffedByThisCardReturnsIds(CardDatabase db)
+    {
+        const string sourceName = "card_unit_panzer_iii_l";
+        const string targetName = "card_unit_t_34_85";
+        if (db.Find(sourceName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {sourceName} 或 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 801, CardLocation.BoardHqLeft, 1);
+        var attackTarget = state.CreateWithId(targetName, Side.Left, 802, CardLocation.BoardHqLeft, 2);
+        var defenseTarget = state.CreateWithId(targetName, Side.Left, 803, CardLocation.BoardHqLeft, 3);
+        var unrelatedSource = state.CreateWithId(sourceName, Side.Left, 804, CardLocation.BoardHqLeft, 4);
+        var unrelatedTarget = state.CreateWithId(targetName, Side.Left, 805, CardLocation.BoardHqLeft, 5);
+
+        engine.Api.ChangeAttack(attackTarget, 2, source);
+        engine.Api.ChangeDefense(defenseTarget, 1, source);
+        engine.Api.ChangeAttack(unrelatedTarget, 1, unrelatedSource);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = source.Owner,
+        };
+        object? raw = engine.Api.InvokeByName("getCardsBuffedByThisCard", null,
+            new object?[] { null }, ctx, out bool handled);
+
+        if (!handled)
+        {
+            return "getCardsBuffedByThisCard 没进派发表";
+        }
+
+        if (raw is not System.Collections.IList list)
+        {
+            return $"getCardsBuffedByThisCard 返回 {raw?.GetType().Name ?? "null"}，应为 int[] 出参";
+        }
+
+        var ids = list.Cast<object?>().OfType<int>().ToHashSet();
+        if (!ids.Contains(attackTarget.CardId) || !ids.Contains(defenseTarget.CardId))
+        {
+            return $"来源卡未列出全部增益目标：实际=[{string.Join(",", ids.OrderBy(x => x))}]，"
+                 + $"期望包含 {attackTarget.CardId}/{defenseTarget.CardId}";
+        }
+
+        if (ids.Contains(unrelatedTarget.CardId) || ids.Contains(unrelatedSource.CardId))
+        {
+            return $"来源卡错误列出无关卡：实际=[{string.Join(",", ids.OrderBy(x => x))}]";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `FullyHealCard` 的 out 参数是实际恢复量，而不是目标的最大防御或请求量。
+    /// 同时守住满血幂等和弃牌堆目标门，避免静默改变状态。
+    /// </summary>
+    private static string? FullyHealCardPrimitive(CardDatabase db)
+    {
+        const string cardName = "card_unit_t_34_85";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里缺 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(cardName, Side.Left, 806,
+            CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = target,
+            Controller = target.Owner,
+        };
+
+        int max = target.MaxDefense;
+        if (max < 2)
+        {
+            return $"测试卡 {cardName} 的 MaxDefense={max}，不足以构造受伤目标";
+        }
+
+        target.Defense = max - 2;
+        object? raw = engine.Api.InvokeByName("FullyHealCard", null,
+            new object?[] { target }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "FullyHealCard 没进派发表";
+        }
+
+        if (raw is not object?[] result || result.Length != 1 || result[0] is not int healed)
+        {
+            return $"FullyHealCard 返回形状错误：{raw?.GetType().Name ?? "null"}，应为 [int]";
+        }
+
+        if (healed != 2 || target.Defense != max)
+        {
+            return $"受伤目标应恢复 2 点并回到 {max}，实际返回 {healed}、防御 {target.Defense}";
+        }
+
+        raw = engine.Api.InvokeByName("FullyHealCard", null,
+            new object?[] { target }, ctx, out handled);
+        if (!handled || raw is not object?[] fullResult || fullResult.Length != 1
+            || fullResult[0] is not int fullHealed || fullHealed != 0
+            || target.Defense != max)
+        {
+            return $"满血目标应返回 0 且保持 {max}，实际返回 {raw ?? "null"}、防御 {target.Defense}";
+        }
+
+        target.Location = CardLocation.Discard;
+        raw = engine.Api.InvokeByName("FullyHealCard", null,
+            new object?[] { target }, ctx, out handled);
+        if (!handled || raw is not object?[] deadResult || deadResult.Length != 1
+            || deadResult[0] is not int deadHealed || deadHealed != 0
+            || target.Defense != max)
+        {
+            return $"弃牌堆目标应返回 0 且不变更防御，实际返回 {raw ?? "null"}、防御 {target.Defense}";
+        }
+
+        return null;
+    }
+
+    private static string? GetAllCardsInFrontlinePrimitive(CardDatabase db)
+    {
+        const string cardName = "card_unit_t_34_85";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里缺 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftFront = state.CreateWithId(cardName, Side.Left, 807,
+            CardLocation.BoardFrontline, 0);
+        var rightFront = state.CreateWithId(cardName, Side.Right, 808,
+            CardLocation.BoardFrontline, 0);
+        var leftSupport = state.CreateWithId(cardName, Side.Left, 809,
+            CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = leftSupport,
+            Controller = leftSupport.Owner,
+        };
+
+        object? raw = engine.Api.InvokeByName("GetAllCardsInFrontline", null,
+            Array.Empty<object?>(), ctx, out bool handled);
+        if (!handled)
+        {
+            return "GetAllCardsInFrontline 没进派发表";
+        }
+
+        if (raw is not System.Collections.IList list)
+        {
+            return $"GetAllCardsInFrontline 返回 {raw?.GetType().Name ?? "null"}，应为卡数组";
+        }
+
+        var ids = list.Cast<object?>().OfType<CardInstance>().Select(card => card.CardId).ToHashSet();
+        if (!ids.SetEquals(new[] { leftFront.CardId, rightFront.CardId }))
+        {
+            return $"前线查询应只返回双方前线卡 {leftFront.CardId}/{rightFront.CardId}，实际=[{string.Join(",", ids.OrderBy(x => x))}]";
+        }
+
+        return null;
+    }
+
+    private static string? PinnedEventLayer(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        var watcher = state.CreateWithId("card_unit_cromwell_mk_iv", Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId("card_unit_arado_ar_196", Side.Right, 60,
+            CardLocation.BoardFrontline, 1);
+        var unpinWatcher = state.CreateWithId("card_event_creeping_barrage", Side.Left, 21,
+            CardLocation.Discard, 0);
+        unpinWatcher.CustomJson["affectedCard"] = target.CardId.ToString();
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        engine.Api.PinUnit(target);
+        if (!target.Keywords.Contains(Keyword.Pinned))
+        {
+            return "PinUnit 没有写入 Pinned";
+        }
+
+        string pinTrace = $"OnOtherUnitPinned → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(pinTrace, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={target.Name}#{target.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherUnitPinned 没有把被钉目标作为事件参数传给 Cromwell";
+        }
+
+        if (!target.IsSuppressed)
+        {
+            return "Cromwell 收到 OnOtherUnitPinned 后没有抑制被钉目标";
+        }
+
+        engine.Api.RemoveKeyword(target, Keyword.Pinned);
+        string unpinTrace = $"OnOtherUnitUnpinned → {unpinWatcher.Name}#{unpinWatcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(unpinTrace, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={target.Name}#{target.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherUnitUnpinned 没有把解除钉住的目标作为事件参数传给订阅卡";
+        }
+
+        if (target.Keywords.Contains(Keyword.Pinned) || target.Location != CardLocation.BoardHqRight)
+        {
+            return $"解除钉住后的订阅效果未执行：pinned={target.Keywords.Contains(Keyword.Pinned)}，位置={target.Location}";
+        }
+
+        return null;
+    }
+
+    private static string? RetreatEventLayer(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId("card_unit_3_panzergrenadier", Side.Right, 60,
+            CardLocation.BoardFrontline, 1);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = watcher,
+            Controller = watcher.Owner,
+        };
+        engine.Api.InvokeByName("MakeCardRetreat", watcher,
+            new object?[] { new List<CardInstance> { target }, watcher.CardId }, ctx, out bool handled);
+
+        if (!handled)
+        {
+            return "MakeCardRetreat 没有进入派发表";
+        }
+
+        string prefix = $"OnOtherCardRetreat → {watcher.Name}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={target.Name}#{target.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardRetreat 没有把实际撤退目标传给 Typhoon 订阅程序";
+        }
+
+        if (target.Location != CardLocation.BoardHqRight)
+        {
+            return $"前线单位撤退后应回到右侧半场，实际位置={target.Location}";
+        }
+
+        return null;
+    }
+
+    private static string? MoveToFrontlineEventPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_blue_legion";
+        if (db.Find(watcherName) is null) return $"卡库里缺 {watcherName}";
+        if (db.Find(InfRange1) is null) return $"卡库里缺 {InfRange1}";
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+
+        // Blue Legion 的 OnOtherCardMoveToFrontline 会把 moveCost 作为推进目标的
+        // 攻防增量，因此它能同时证明 cardMoved 目标和具名/位置载荷都正确。
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        watcher.EnteredPlayOnTurn = -99;
+        var mover = state.CreateWithId(InfRange1, Side.Left, 60,
+            CardLocation.BoardHqLeft, 2);
+        mover.EnteredPlayOnTurn = -99;
+        int cost = mover.OperationCost;
+        int attack = mover.Attack;
+        int defense = mover.Defense;
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        if (!engine.MoveUnit(mover, 0, out string why))
+        {
+            return $"测试单位推进失败：{why}";
+        }
+
+        string prefix = $"OnOtherCardMoveToFrontline → {watcherName}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={mover.Name}#{mover.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardMoveToFrontline 没有把实际推进目标传给 Blue Legion"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (mover.Attack != attack + cost || mover.Defense != defense + cost)
+        {
+            return $"Blue Legion 未消费正确 moveCost：期望攻防={attack + cost}/{defense + cost}，"
+                 + $"实际={mover.Attack}/{mover.Defense}（cost={cost}）";
+        }
+
+        return null;
+    }
+
+    private static string? ReceiveDamageEventPayload(CardDatabase db)
+    {
+        const string watcherName = "card_unit_panzer_iii_j_late";
+        const string victimName = "card_unit_arado_ar_196";
+        if (db.Find(watcherName) is null) return $"卡库里缺 {watcherName}";
+        if (db.Find(victimName) is null) return $"卡库里缺 {victimName}";
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(watcherName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var source = state.CreateWithId(victimName, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        // Panzer III 的蓝图用 IsLocation(toCard) 判敌方 HQ；这里直接让真实 HQ
+        // 受伤，避免把“卡牌类型 Location”和“棋盘位置”混为一谈。
+        var victim = state.Hq(Side.Right);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        engine.Api.DealDamage(victim, 1, source);
+
+        string prefix = $"OnOtherCardReceiveDamage → {watcherName}#{watcher.CardId}";
+        if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                         && t.Contains($"eventCard={victim.Name}#{victim.CardId}", StringComparison.Ordinal)))
+        {
+            return "OnOtherCardReceiveDamage 没有把受伤目标传给 Panzer III"
+                 + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (watcher.CustomJson.GetValueOrDefault("total_damage") != "1")
+        {
+            return "Panzer III 没有消费正确的 fromCard/toCard/damage 载荷"
+                 + $"（total_damage={watcher.CustomJson.GetValueOrDefault("total_damage", "<缺>")}，"
+                 + $"trace={string.Join(" | ", trace)}）";
+        }
+
+        return null;
     }
 
     private static string? EventLayerSurvivedCombat(CardDatabase db)
@@ -4639,6 +5706,65 @@ internal static class SelfTest
     }
 
     /// <summary>
+    /// The played-card broadcasts must use the recipient list captured before
+    /// the card's own effect.  NIGHT RAID creates a COMMANDO; that new unit
+    /// also subscribes to T51, but must not react to the order that created it.
+    /// </summary>
+    private static string? PlayCardBroadcastUsesEarlySnapshot(CardDatabase db)
+    {
+        const string raidName = "card_event_night_raid";
+        const string commandoName = "card_unit_commandos";
+        const string victimName = "card_unit_85_pioneer_company";
+        const string deckName = "card_unit_arado_ar_196";
+        foreach (string name in new[] { raidName, commandoName, victimName, deckName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+
+        var victim = state.CreateWithId(victimName, Side.Right, 60,
+            CardLocation.BoardHqRight, 1);
+        victim.EnteredPlayOnTurn = -1;
+        victim.Defense = 10;
+        state.CreateWithId(deckName, Side.Right, 61, CardLocation.DeckRight, 0);
+        var raid = state.CreateWithId(raidName, Side.Left, 2, CardLocation.HandLeft, 0);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        int victimBefore = victim.Defense;
+        if (!engine.PlayCard(raid))
+        {
+            return "NIGHT RAID 打出失败：" + string.Join(" | ", trace);
+        }
+
+        var commandos = state.AllCards.Where(c => c.Name == commandoName).ToList();
+        if (commandos.Count != 1)
+        {
+            return $"NIGHT RAID 应生成 1 张 COMMANDO，实际 {commandos.Count} 张";
+        }
+
+        if (trace.Any(x => x.StartsWith("OnOtherCardPlayedFromHand", StringComparison.Ordinal)
+                        && x.Contains($"{commandoName}#", StringComparison.Ordinal)))
+        {
+            return "战吼新生成的 COMMANDO 错误收到创建它的 T51 广播";
+        }
+
+        if (victim.Defense != victimBefore)
+        {
+            return $"新生成的 COMMANDO 错误触发 T51 并伤害敌方单位：{victimBefore} → {victim.Defense}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// 攻击前触发点的**接收者**与**先后**（2026-10-03 蓝图定案）。
     ///
     /// 蓝图 `BP_CardFunctions::AttackCard` 的控制流（`L_xxxx` = 十六进制字节偏移，
@@ -4797,17 +5923,13 @@ internal static class SelfTest
                 return $"压制/老兵布景出错：{err}";
             }
 
-            if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
+            if (Reached(trace, "OnOtherCardBecomingVeteran", gate))
             {
-                return "T32 广播**无条件发**：蓝图 `BP_CardFunctions.g.cs:26303` 的 " +
-                       "`if (!card.isSuppressed) goto L_0AF6;` 只跳过 `:26347` 的自程序，" +
-                       "`:26349 goto L_099F` 又跳回 `:26305` 的 Fetch ⇒ 被压制的卡也应当广播 " +
-                       "`OnOtherCardBecomingVeteran`（19 张订阅者里的旁观者）";
+                return "被压制的卡不该广播 OnOtherCardBecomingVeteran（蓝图 MakeVeteran si=2427）";
             }
 
-            // 被压制的那张卡**自己那一路**（`OnBecomingVeteran`）不该发：
-            // 蓝图 `:26303 if (!card.isSuppressed) goto L_0AF6;` —— **未**压制才去自程序。
-            var (trace2, sup, err2) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
+            // 被压制的那张卡自己仍然收到 OnBecomingVeteran —— 找一张有该程序的卡来验
+            var (trace2, _, err2) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
                     e.Api.SuppressUnit(p);
@@ -4819,22 +5941,19 @@ internal static class SelfTest
                 return $"压制/老兵布景出错(2)：{err2}";
             }
 
-            if (Reached(trace2, "OnBecomingVeteran", sup))
+            if (!trace2.Any(t => t.StartsWith("OnBecomingVeteran → ", StringComparison.Ordinal)))
             {
-                return "被压制的卡**自己那一路**不该收到 `OnBecomingVeteran`" +
-                       "（蓝图 `:26303 if (!card.isSuppressed) goto L_0AF6;` —— 未压制才去自程序）；" +
-                       "旧实现恰好装反：门住了广播、放开了自程序"
+                return "被压制的卡**自己**仍然应该收到 OnBecomingVeteran（蓝图 MakeVeteran si=2806）"
                      + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
             }
         }
 
-        // ② 对照：**没**被压制 ⇒ 自己那一路要发
-        //    （证明 ① 的"没发"不是因为程序名写错 / 探针没订阅 / 门恒关）
+        // ② 没被压制 ⇒ 广播要发（证明 ① 的"没发"不是因为程序名写错/探针没订阅）
         {
-            var (trace, self, err) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
+            var (trace, gate, err) = Probe(db, "card_unit_6th_brigade_nz", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
-                    e.Api.MakeVeteran(p);
+                    e.Api.MakeVeteran(s.CreateWithId(victim, Side.Right, 61, CardLocation.BoardHqRight, 0));
                     return p;
                 });
             if (err is not null)
@@ -4842,9 +5961,9 @@ internal static class SelfTest
                 return $"老兵布景出错：{err}";
             }
 
-            if (!Reached(trace, "OnBecomingVeteran", self))
+            if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
             {
-                return "**没**被压制的卡应该收到自己那一路 `OnBecomingVeteran`（蓝图 `:26303` 未压制时跳向它）"
+                return "没被压制的卡**应该**广播 OnOtherCardBecomingVeteran"
                      + $"\n       实际派发记录：{string.Join(" | ", trace)}";
             }
         }
@@ -4867,13 +5986,9 @@ internal static class SelfTest
 
             if (Reached(trace, "OnBeforeDestroyed", victimCard))
             {
-                return "被压制的卡不该收到 `OnBeforeDestroyed`（蓝图 `:14833 if (!_cardDestroyed.isSuppressed) goto L_0208;`）";
+                return "被压制的卡不该收到 OnBeforeDestroyed（蓝图 ExecuteOnBeforeOtherCardDestroyed si=140）";
             }
 
-            // ④ T15：被压制者被摧毁时，**旁观者仍应收到**广播
-            //    （蓝图 `:14833` 的门只跳过 `:14874` 的自程序；`:14876 goto L_00B0` 又跳回
-            //     `:14835` 的 Fetch ⇒ 广播无条件发。旧实现漏发，订阅者里的旁观者全哑。）
-        {
             var (trace2, other, err2) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
@@ -4887,17 +6002,14 @@ internal static class SelfTest
                 return $"摧毁布景出错(2)：{err2}";
             }
 
-            if (!Reached(trace2, "OnBeforeOtherCardDestroyed", other))
+            if (Reached(trace2, "OnBeforeOtherCardDestroyed", other))
             {
-                return "T15 广播**无条件发**：蓝图 `:14833` 的门只跳过 `:14874` 的自程序，" +
-                       "`:14876 goto L_00B0` 又跳回 `:14835` 的 Fetch ⇒ 被压制的卡被摧毁时，" +
-                       "其他订阅者仍应收到 `OnBeforeOtherCardDestroyed`"
-                     + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
+                return "被压制的卡被摧毁时不该广播 OnBeforeOtherCardDestroyed（si=140 的守卫）";
             }
-        }
 
-        // ⑤ 对照：没被压制 ⇒ 广播也要发（防止 ④ 恒真）
-            var (trace3, other3, err3) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,                (e, s, p) =>
+            // ④ 没被压制 ⇒ 广播要发（对照，防止 ③ 恒真）
+            var (trace3, other3, err3) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,
+                (e, s, p) =>
                 {
                     e.Destroy(s.CreateWithId(victim, Side.Right, 63, CardLocation.BoardHqRight, 0));
                     return p;
@@ -4911,6 +6023,65 @@ internal static class SelfTest
             {
                 return "没被压制的卡被摧毁时**应该**广播 OnBeforeOtherCardDestroyed"
                      + $"\n       实际派发记录：{string.Join(" | ", trace3)}";
+            }
+        }
+
+        // ⑤ 全局 suppression gate：普通广播的旁观接收者被抑制时跳过，
+        // 未被抑制时仍应收到。直接调用能力变化事件，避免把 SuppressUnit
+        // 自身产生的多次关键词变化混进断言。
+        {
+            const string watcherName = "card_unit_royal_west_kents";
+            if (db.Find(watcherName) is null)
+            {
+                return $"卡库里缺 {watcherName}";
+            }
+
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            var changing = state.CreateWithId(victim, Side.Right, 64, CardLocation.BoardHqRight, 0);
+            var watcher = state.CreateWithId(watcherName, Side.Left, 65, CardLocation.BoardHqLeft, 1);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+
+            engine.Api.FireAbilitiesChanged(changing);
+            if (!Reached(trace, "OnOtherCardAbilitiesChanged", watcher))
+            {
+                return "未被抑制的旁观卡应该收到 OnOtherCardAbilitiesChanged"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
+
+            trace.Clear();
+            watcher.Keywords.Add(Keyword.Suppressed);
+            engine.Api.FireAbilitiesChanged(changing);
+            if (Reached(trace, "OnOtherCardAbilitiesChanged", watcher))
+            {
+                return "被抑制的旁观卡不该收到 OnOtherCardAbilitiesChanged"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
+
+            trace.Clear();
+            watcher.SuppressionExceptionTriggers.Add("OnOtherCardAbilitiesChanged");
+            engine.Api.FireAbilitiesChanged(changing);
+            if (!Reached(trace, "OnOtherCardAbilitiesChanged", watcher))
+            {
+                return "suppressionExceptionTriggers 命中的程序应该允许被抑制旁观卡接收"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
+        }
+
+        // ⑥ T7 的蓝图专属门：被抑制的目标不收到自己的 OnAfterGainDefense。
+        {
+            const string targetName = "card_unit_kyushu_j7w3";
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(targetName, Side.Left, 66, CardLocation.BoardHqLeft, 1);
+            target.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(target, 1, null);
+            if (Reached(trace, "OnAfterGainDefense", target))
+            {
+                return "被抑制的目标不该收到自己的 OnAfterGainDefense（蓝图 T7 :7954 门）"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
             }
         }
 
@@ -7563,192 +8734,6 @@ internal static class SelfTest
             : string.Join(", ", state.UnimplementedCalls.OrderByDescending(kv => kv.Value)
                 .Take(8).Select(kv => $"{kv.Key}×{kv.Value}"));
 
-    /// <summary>
-    /// 端到端判死用例：**卡内私有函数的出参必须真的被读回来**。
-    ///
-    /// 旧实现（`KismetVm.ExecuteCall` 的 locals 兜底）把两个名字都放进 bag，
-    /// 却 `result = bag[outNames[0]]` —— `outNames[0]` 是**调用点那个全名**
-    /// `CallFunc_&lt;函数&gt;_&lt;出参&gt;`，而函数体写进去的是**裸出参名**
-    /// （全 IR 实测：只写裸名的调用点 **170 个**、写全名的 **0 个**）⇒ 取回值恒 null
-    /// ⇒ 出参槽恒空 ⇒ 下游 `jumpIfNot(那个槽)` 恒走假分支。
-    ///
-    /// 判据用一张**卡面文字可验证**的真卡：`card_unit_b_24_d`
-    /// 「Costs 3 less to deploy if you control a unit with 3 or more operation cost.」
-    /// 它的 `OnCardSpawnedInHand`（IR `i=10`）第一步就是
-    /// `i=43 doIControl3opCostUnit(out found3op)` → `i=80 jumpIfNot(found3op)`
-    /// → `i=279 ChangeKreditCost(self, cardID, -3, changeType=0)`。
-    /// 于是「有一张行动费 ≥3 的己方单位在场 ⇒ 手里这张必须便宜 3 费」是**可观测**的。
-    ///
-    /// 判死验证：把 `bareOut` 改回 `outNames[0]` ⇒ ② 立刻失败（费不降）。
-    /// </summary>
-    private static string? LocalFunctionOutParamReachesCallSite(CardDatabase db)
-    {
-        const string card = "card_unit_b_24_d";
-        const string fn = "doIControl3opCostUnit";
-
-        if (db.Find(card) is null)
-        {
-            return $"卡库里缺 {card}";
-        }
-
-        if (KismetLibrary.Default is null || KismetLibrary.Default.FindLocalProgram(card, fn) is null)
-        {
-            return $"{card} 的 locals 里没有 {fn} —— IR 没带函数体，这条用例失去判据";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-
-        var inHand = state.CreateWithId(card, Side.Left, 30, CardLocation.HandLeft, 1);
-        int baseCost = inHand.KreditCost;
-
-        void Fire() => engine.Api.FireTrigger("OnCardSpawnedInHand", inHand, Side.Left,
-            eventArgs: new object?[] { (int)Side.Left },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["spawnedSide"] = (int)Side.Left,
-            });
-
-        // ① 空场：没有 ≥3 行动费的单位 ⇒ 不该降费（前置对照，同时防"恒降费"）
-        Fire();
-        if (inHand.KreditCost != baseCost)
-        {
-            return $"① 空场不该降费：{baseCost} → {inHand.KreditCost}"
-                 + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        // ② 场上放一张**行动费 = 3** 的己方单位 —— B-24D 自己的 operationcost 就是 3
-        //    ⇒ `doIControl3opCostUnit` 必须返回真 ⇒ 手里这张降 3 费。
-        var controlled = state.CreateWithId(card, Side.Left, 31, CardLocation.BoardHqLeft, 1);
-        if (controlled.Definition.OperationCost < 3)
-        {
-            return $"前置不成立：{card} 的 operationcost={controlled.Definition.OperationCost} < 3";
-        }
-
-        Fire();
-        if (inHand.KreditCost != baseCost - 3)
-        {
-            return $"② 场上有 3 行动费单位时应当 {baseCost} → {baseCost - 3}，"
-                 + $"实际 {inHand.KreditCost} —— 私有函数出参没被读回来"
-                 + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        // ③ 再触发一次不该**重复**降费（IR i=94 的 `isBuffedByCard` 门）——
-        //    这条顺带守住"出参真值参与了下游分支"，而不是"每次都恰好命中"。
-        Fire();
-        if (inHand.KreditCost != baseCost - 3)
-        {
-            return $"③ 重复触发不该再降费：期望 {baseCost - 3}，实际 {inHand.KreditCost}";
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ 层 A：**被抑制的卡不再收触发**（蓝图 `FetchAllCardsWithEventTrigger` 的全局门，
-    /// `ref/kards-sim.mine-pre-push/.../_deps/BP_GameState_Battle.g.cs:1057-1063`）。
-    ///
-    /// 判据用**线上真人实测的那张卡**：`card_unit_38th_independent`
-    /// 「Cannot attack or move. **Suppress it if you have 4+ copies.**
-    ///   **Duplicate this unit when you lose a kredit slot.**」
-    /// ⇒ 客户端：第 4 个副本起它们被**自我抑制**，抑制后**不再收**
-    /// `OnAfterExtraKreditSlotGain` ⇒ 停止复制；内核没有层 A ⇒ 被抑制的副本照收照复制
-    /// ⇒ 半场 5 格被塞满 ⇒ 真人 `#39 t7 PC`（`replay-748616`）/ `#50 t11 PC`（`replay-931082`）
-    /// 被判「半场已满」（这两局 ④ 人类 HQ 差都是 0）。
-    ///
-    /// 四条断言：
-    /// ① 未抑制 ⇒ 失去一个卡槽必须复制一次（前置成立，说明这条链真的在跑）；
-    /// ② **把场上所有副本都抑制** ⇒ 再丢一个槽位**不能再复制**（层 A 的核心判据）；
-    /// ③ **反向断言（防"抑制=全哑"）**：例外表里的卡（`card_unit_panther_a`，
-    ///    `OnStartofTurn` 在例外表里）被抑制后**仍须收到** `OnStartOfTurn`；
-    /// ④ 对照组：被抑制且**没有**例外的卡不得收到 `OnStartOfTurn`。
-    ///
-    /// 判死验证：把 `FireTrigger` 广播分支里那句 `SuppressedSkipsTrigger` 去掉 ⇒ ② 失败；
-    /// 把 `HasSuppressionException` 改成恒真 ⇒ ④ 失败，恒假 ⇒ ③ 失败。
-    /// </summary>
-    private static string? SuppressedRecipientsSkipTriggers(CardDatabase db)
-    {
-        const string unit = "card_unit_38th_independent";
-        const string withException = "card_unit_panther_a";
-
-        if (db.Find(unit) is null)
-        {
-            return $"卡库里缺 {unit}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-
-        var probe = state.CreateWithId(unit, Side.Left, 20, Side.Left.HqOf(), 1);
-        int Copies() => state.CardsUnordered().Count(c => c.Name == unit);
-
-        // ① 未抑制：丢一个卡槽 ⇒ 复制一次
-        engine.Api.FireExtraKreditSlotGain(Side.Left, -1, giver: null);
-        if (Copies() != 2)
-        {
-            return $"① 前置不成立：未被抑制时丢槽位应当复制成 2 个，实际 {Copies()} 个"
-                 + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        // ② 把场上**所有**副本都抑制 ⇒ 再丢一个槽位不能复制（层 A）
-        foreach (var c in state.CardsUnordered().Where(c => c.Name == unit).ToList())
-        {
-            engine.Api.SuppressUnit(c);
-        }
-
-        if (!state.CardsUnordered().Where(c => c.Name == unit).All(c => c.IsSuppressed))
-        {
-            return "② 前置不成立：没能抑制住副本";
-        }
-
-        engine.Api.FireExtraKreditSlotGain(Side.Left, -1, giver: null);
-        if (Copies() != 2)
-        {
-            return $"② 被抑制的副本**不该**再收 `OnAfterExtraKreditSlotGain`，"
-                 + $"实际复制到 {Copies()} 个 —— 层 A（被抑制的收件人仍收触发）缺失";
-        }
-
-        // ③ 例外表反向断言：`card_unit_panther_a` 的 `OnStartofTurn` 在例外表里
-        if (db.Find(withException) is null)
-        {
-            return $"卡库里缺 {withException}（例外表判据无法验证）";
-        }
-
-        if (!CardApi.HasSuppressionException(withException, "OnStartOfTurn"))
-        {
-            return $"例外表判据不成立：{withException} 的 OnStartOfTurn 应当享有例外"
-                 + "（ref/kards-sim/cards.json 的 suppressionExceptionTriggers）";
-        }
-
-        var (engine2, state2) = EmptyBoard(db);
-        state2.ActiveSide = Side.Left;
-        var panther = state2.CreateWithId(withException, Side.Left, 21, Side.Left.HqOf(), 1);
-        engine2.Api.SuppressUnit(panther);
-
-        var trace = new List<string>();
-        engine2.Api.TriggerTrace = trace;
-        engine2.Api.FireTrigger("OnStartOfTurn", null, Side.Left);
-
-        if (!Reached(trace, "OnStartOfTurn", panther))
-        {
-            return $"③ 例外卡（{withException} / OnStartofTurn）被抑制后**仍须**收到触发，"
-                 + "实际没收到 —— 层 A 把例外表一起挡掉了（防\"抑制=全哑\"）";
-        }
-
-        // ④ 对照组：没有例外的被抑制卡不得收到
-        var other = state2.CreateWithId(unit, Side.Left, 22, Side.Left.HqOf(), 2);
-        engine2.Api.SuppressUnit(other);
-        trace.Clear();
-        engine2.Api.FireTrigger("OnStartOfTurn", null, Side.Left);
-        if (Reached(trace, "OnStartOfTurn", other))
-        {
-            return $"④ 被抑制且无例外的卡（{unit}）不该收到 OnStartOfTurn，实际收到了";
-        }
-
-        _ = probe;
-        return null;
-    }
-
     // ==================================================================
     //  P1：部署 Deployment（2026-09-30）
     //
@@ -9330,6 +10315,137 @@ internal static class SelfTest
             return $"挂上 Bond 之后 `HasBond` 应当为真，实际 {bond ?? "null"}";
         }
 
+        card.PinnedTurns = 2;
+        var removed = engine.Api.InvokeByName("RemovePin", card, new object?[] { null }, ctx,
+            out bool removeHandled);
+        if (!removeHandled || card.Keywords.Contains(Keyword.Pinned) || card.PinnedTurns != 0)
+        {
+            return $"RemovePin 应移除 Pinned 并清零时长（handled={removeHandled}, turns={card.PinnedTurns}）";
+        }
+
+        return null;
+    }
+
+    private static string? SetCountdown(CardDatabase db)
+    {
+        const string targetName = "card_unit_2nd_parachute";
+        if (db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {targetName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, "card_unit_14th_guards_rifles", Side.Left, 20, 1);
+        var target = PutOnBoard(state, targetName, Side.Right, 40, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "SetCountdown", source, new object?[] { target.CardId, 3, null }, ctx,
+            out bool handled);
+
+        if (!handled || result is not true)
+        {
+            return $"SetCountdown 应报告成功（handled={handled}, result={result ?? "null"}）";
+        }
+
+        if (engine.Api.JsonGetInt(target, "countdown_timer") != 3)
+        {
+            return "SetCountdown 未把倒计时写到目标卡的 countdown_timer";
+        }
+
+        if (engine.Api.JsonGetInt(source, "countdown_timer") != 0)
+        {
+            return "SetCountdown 错把倒计时写到了施动卡";
+        }
+
+        return null;
+    }
+
+    private static string? HandEdgeQueries(CardDatabase db)
+    {
+        const string sourceName = "card_unit_2nd_parachute";
+        const string leftName = "card_unit_14th_guards_rifles";
+        const string rightName = "card_unit_7th_brigade_anzac";
+        if (db.Find(sourceName) is null || db.Find(leftName) is null || db.Find(rightName) is null)
+        {
+            return "手牌边界查询所需卡库条目缺失";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+        state.CreateWithId(leftName, Side.Left, 90, CardLocation.HandLeft, 1);
+        state.CreateWithId(rightName, Side.Left, 91, CardLocation.HandLeft, 4);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? leftRaw = engine.Api.InvokeByName(
+            "GetLeftMostCardInHand", source, new object?[] { source, null, null }, ctx,
+            out bool leftHandled);
+        object? rightRaw = engine.Api.InvokeByName(
+            "GetRightMostCardInHand", source, new object?[] { source, null, null }, ctx,
+            out bool rightHandled);
+
+        if (!leftHandled || !rightHandled || leftRaw is not object?[] left || rightRaw is not object?[] right)
+        {
+            return "手牌边界查询没有注册或未返回双出参";
+        }
+
+        if (left.Length < 2 || left[0] is not true || (left[1] as CardInstance)?.CardId != 90)
+        {
+            return "GetLeftMostCardInHand 未返回位置号最小的手牌";
+        }
+
+        if (right.Length < 2 || right[0] is not true || (right[1] as CardInstance)?.CardId != 91)
+        {
+            return "GetRightMostCardInHand 未返回位置号最大的手牌";
+        }
+
+        state.Move(state.ById(90)!, CardLocation.Discard, 0);
+        state.Move(state.ById(91)!, CardLocation.Discard, 0);
+        object? emptyRaw = engine.Api.InvokeByName(
+            "GetLeftMostCardInHand", source, new object?[] { source, null, null }, ctx,
+            out bool emptyHandled);
+        if (!emptyHandled || emptyRaw is not object?[] empty || empty.Length < 2
+            || empty[0] is not false || empty[1] is not null)
+        {
+            return "空手时 GetLeftMostCardInHand 应返回 found=false/card=null";
+        }
+
+        return null;
+    }
+
+    private static string? GoldCardPredicate(CardDatabase db)
+    {
+        const string name = "card_unit_2nd_parachute";
+        if (db.Find(name) is null)
+        {
+            return $"卡库里缺 {name}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var regular = PutOnBoard(state, name, Side.Left, 20, 1);
+        var gold = state.CreateWithId(name, Side.Left, 90, CardLocation.HandLeft, 2, isGold: true);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = regular, Controller = Side.Left,
+        };
+
+        object? regularRaw = engine.Api.InvokeByName(
+            "GetIsGoldCard", regular, new object?[] { null }, ctx, out bool regularHandled);
+        ctx.Self = gold;
+        object? goldRaw = engine.Api.InvokeByName(
+            "GetIsGoldCard", gold, new object?[] { null }, ctx, out bool goldHandled);
+
+        if (!regularHandled || !goldHandled || regularRaw is not false || goldRaw is not true)
+        {
+            return $"GetIsGoldCard 返回错误（普通={regularRaw ?? "null"}, 金卡={goldRaw ?? "null"}）";
+        }
+
         return null;
     }
 
@@ -9623,6 +10739,384 @@ internal static class SelfTest
     }
 
     /// <summary>
+    /// `MoveMultipleCardsToTopOfOwnersDeck` 的批量顺序回归。
+    ///
+    /// 蓝图逐项调用单卡移动，故 [leftA,leftB] 结算后应为 leftB、leftA、其余卡；
+    /// 另一方牌库不应被触碰。空数组是成功的 no-op，无效 ID 则报告失败但不改变局面。
+    /// </summary>
+    private static string? MoveMultipleCardsToTopOfOwnersDeck(CardDatabase db)
+    {
+        const string cardName = "card_unit_2nd_parachute";
+        const string actorName = "card_unit_10_5_cm_lefh";
+        if (db.Find(cardName) is null || db.Find(actorName) is null)
+        {
+            return $"卡库里缺 {cardName} / {actorName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var actor = PutOnBoard(state, actorName, Side.Left, 20, 1);
+        var leftA = state.CreateWithId(cardName, Side.Left, 21, CardLocation.DeckLeft, 2);
+        var leftB = state.CreateWithId(cardName, Side.Left, 22, CardLocation.DeckLeft, 3);
+        var leftRest = state.CreateWithId(cardName, Side.Left, 23, CardLocation.DeckLeft, 0);
+        var right = state.CreateWithId(cardName, Side.Right, 31, CardLocation.DeckRight, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = actor,
+            Controller = Side.Left,
+        };
+
+        var result = engine.Api.InvokeByName(
+            "MoveMultipleCardsToTopOfOwnersDeck",
+            actor,
+            new object?[] { new List<int> { leftA.CardId, leftB.CardId }, actor.CardId, 0, null },
+            ctx,
+            out bool handled);
+
+        if (!handled)
+        {
+            return "派发表里没有 `MoveMultipleCardsToTopOfOwnersDeck`";
+        }
+
+        if (result is not true)
+        {
+            return $"两个有效 ID 批量移动应返回 true，实际 {result ?? "null"}";
+        }
+
+        var leftDeck = state.Deck(Side.Left).ToList();
+        if (!leftDeck.SequenceEqual(new[] { leftB, leftA, leftRest }))
+        {
+            return "批量移动后的左侧牌库顺序不对：应为 [后输入卡, 先输入卡, 原有卡]";
+        }
+
+        if (right.Location != CardLocation.DeckRight || right.LocationNumber != 0)
+        {
+            return "批量移动不应改变另一拥有者的牌库";
+        }
+
+        var empty = engine.Api.InvokeByName(
+            "MoveMultipleCardsToTopOfOwnersDeck",
+            actor,
+            new object?[] { new List<int>(), actor.CardId, 0, null },
+            ctx,
+            out _);
+        if (empty is not true)
+        {
+            return $"空数组应是成功 no-op，实际 {empty ?? "null"}";
+        }
+
+        var invalid = engine.Api.InvokeByName(
+            "MoveMultipleCardsToTopOfOwnersDeck",
+            actor,
+            new object?[] { new List<int> { 999999 }, actor.CardId, 0, null },
+            ctx,
+            out _);
+        if (invalid is not false)
+        {
+            return $"无效 ID 应返回 false，实际 {invalid ?? "null"}";
+        }
+
+        if (!state.Deck(Side.Left).SequenceEqual(new[] { leftB, leftA, leftRest }))
+        {
+            return "无效 ID 不应改变已有牌库顺序";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `PlayCardDirectlyFromHand` 的最小端到端回归：
+    /// 不扣 kredit、不要求当前行动方；单位可直接进前线；显式 locationNumber
+    /// 参与目标位置排序；无效卡回写 false。
+    /// </summary>
+    private static string? PlayCardDirectlyFromHand(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var unitDef = db.Find("card_unit_arado_ar_196");
+        var gotchaDef = db.Find("card_event_interception");
+        if (unitDef is null || gotchaDef is null)
+        {
+            return "卡库里缺 card_unit_arado_ar_196 / card_event_interception";
+        }
+
+        state.SetKredits(Side.Left, 0);
+        state.SetKredits(Side.Right, 0);
+        var existing = state.CreateWithId(unitDef.Name, Side.Left, 2,
+            CardLocation.BoardHqLeft, 2);
+        var support = state.CreateWithId(unitDef.Name, Side.Left, 3,
+            CardLocation.HandLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.Hq(Side.Left),
+            Controller = Side.Left,
+        };
+
+        var result = engine.Api.InvokeByName(
+            "PlayCardDirectlyFromHand", support,
+            new object?[] { support, false, 9001, null, 1 },
+            ctx, out bool handled);
+        if (!handled || result is not true)
+        {
+            return $"免费从手牌直接打出应成功且 handled=true，实际 handled={handled}, result={result ?? "null"}";
+        }
+
+        if (support.Location != CardLocation.BoardHqLeft || support.LocationNumber != 1
+            || existing.LocationNumber != 2)
+        {
+            return $"显式 locationNumber=1 未按槽位排序：support={support.Location}/{support.LocationNumber}, "
+                 + $"existing={existing.LocationNumber}";
+        }
+
+        if (state.Kredits(Side.Left) != 0)
+        {
+            return "直接出牌不应扣除 kredit";
+        }
+
+        var frontExisting = state.CreateWithId(unitDef.Name, Side.Right, 43,
+            CardLocation.BoardFrontline, 0);
+        var frontline = state.CreateWithId(unitDef.Name, Side.Right, 42,
+            CardLocation.HandRight, 0);
+        var frontlineResult = engine.Api.InvokeByName(
+            "PlayCardDirectlyFromHand", frontline,
+            new object?[] { frontline, true, 9002, null, 1 },
+            ctx, out bool frontlineHandled);
+        if (!frontlineHandled || frontlineResult is not true
+            || frontline.Location != CardLocation.BoardFrontline
+            || frontline.LocationNumber != 1 || frontExisting.LocationNumber != 0)
+        {
+            return $"非当前行动方单位应能直接进前线：handled={frontlineHandled}, result={frontlineResult ?? "null"}, "
+                 + $"location={frontline.Location}/{frontline.LocationNumber}, existing={frontExisting.LocationNumber}";
+        }
+
+        var invalid = engine.Api.InvokeByName(
+            "PlayCardDirectlyFromHand", frontline,
+            new object?[] { frontline, false, 9003, null, -1 },
+            ctx, out bool invalidHandled);
+        if (!invalidHandled || invalid is not false)
+        {
+            return $"不在手牌的卡应回写 qqq=false：handled={invalidHandled}, result={invalid ?? "null"}";
+        }
+
+        var gotcha = state.CreateWithId(gotchaDef.Name, Side.Left, 4,
+            CardLocation.HandLeft, 1);
+        var gotchaResult = engine.Api.InvokeByName(
+            "PlayCardDirectlyFromHand", gotcha,
+            new object?[] { gotcha, false, 9004, null, -1 },
+            ctx, out bool gotchaHandled);
+        if (!gotchaHandled || gotchaResult is not true || gotcha.GotchaActivated != 1)
+        {
+            return $"直接出牌必须接通 Gotcha 激活序号：handled={gotchaHandled}, result={gotchaResult ?? "null"}, "
+                 + $"activated={gotcha.GotchaActivated}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `MoveUnitFromSupportToFrontLine(card, instigatorID, out qqq)` 的效果位移回归：
+    /// 不要求当前行动方、不扣油费、不消耗本回合移动额度，也不受召唤失调/压制影响；
+    /// `cantMove`、敌方占据前线和我方前线已满时必须拒绝并回写 false。
+    /// </summary>
+    private static string? MoveUnitFromSupportToFrontLine(CardDatabase db)
+    {
+        const string unitName = "card_unit_arado_ar_196";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        static EffectContext Context(MatchEngine engine, GameState state, CardInstance self) => new()
+        {
+            Engine = engine,
+            State = state,
+            Self = self,
+            Controller = self.Owner,
+        };
+
+        // ① 免费效果位移：即使不是当前行动方、已移动/已攻击、本回合刚进场且被压制，
+        //    也应当被送入前线；kredit 和 HasMovedThisTurn 均保持不变。
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Right, 0);
+            var unit = state.CreateWithId(unitName, Side.Right, 42,
+                CardLocation.BoardHqRight, 0);
+            unit.HasMovedThisTurn = true;
+            unit.HasAttackedThisTurn = true;
+            unit.EnteredPlayOnTurn = state.Turn;
+            unit.Keywords.Add(Keyword.Pinned);
+            var result = engine.Api.InvokeByName(
+                "MoveUnitFromSupportToFrontLine", unit,
+                new object?[] { unit, 9001 }, Context(engine, state, unit), out bool handled);
+
+            if (!handled || result is not true)
+            {
+                return $"合法效果位移应成功且 handled=true，实际 handled={handled}, result={result ?? "null"}";
+            }
+
+            if (unit.Location != CardLocation.BoardFrontline
+                || state.FrontlineOwner != Side.Right)
+            {
+                return $"效果位移应进入右侧前线，实际 location={unit.Location}, owner={state.FrontlineOwner}";
+            }
+
+            if (state.Kredits(Side.Right) != 0 || !unit.HasMovedThisTurn)
+            {
+                return $"效果位移不应扣油费或清除既有移动标记：kredit={state.Kredits(Side.Right)}, "
+                     + $"hasMoved={unit.HasMovedThisTurn}";
+            }
+        }
+
+        // ② cantMove 是这条蓝图路径唯一的单位能力拒绝门，失败不得改变位置。
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId(unitName, Side.Left, 2,
+                CardLocation.BoardHqLeft, 0);
+            unit.CustomAbility = "cantMove";
+            var result = engine.Api.InvokeByName(
+                "MoveUnitFromSupportToFrontLine", unit,
+                new object?[] { unit, 9002 }, Context(engine, state, unit), out bool handled);
+            if (!handled || result is not false || unit.Location != CardLocation.BoardHqLeft)
+            {
+                return $"cantMove 目标应被拒绝且 qqq=false：handled={handled}, result={result ?? "null"}, "
+                     + $"location={unit.Location}";
+            }
+        }
+
+        // ③ 敌方占据前线时，另一方不能借效果越过互斥门。
+        {
+            var (engine, state) = EmptyBoard(db);
+            var enemy = state.CreateWithId(unitName, Side.Right, 42,
+                CardLocation.BoardHqRight, 0);
+            state.Move(enemy, CardLocation.BoardFrontline, 0);
+            var unit = state.CreateWithId(unitName, Side.Left, 2,
+                CardLocation.BoardHqLeft, 0);
+            var result = engine.Api.InvokeByName(
+                "MoveUnitFromSupportToFrontLine", unit,
+                new object?[] { unit, 9003 }, Context(engine, state, unit), out bool handled);
+            if (!handled || result is not false || unit.Location != CardLocation.BoardHqLeft)
+            {
+                return $"对方占据前线时应拒绝且 qqq=false：handled={handled}, result={result ?? "null"}, "
+                     + $"location={unit.Location}";
+            }
+        }
+
+        // ④ 我方前线达到容量后，第六个单位必须被拒绝。
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 0; i < GameState.DefaultFrontlineCapacity; i++)
+            {
+                var occupied = state.CreateWithId(unitName, Side.Left, 2 + i,
+                    CardLocation.BoardHqLeft, i);
+                state.Move(occupied, CardLocation.BoardFrontline, i);
+            }
+
+            var extra = state.CreateWithId(unitName, Side.Left, 20,
+                CardLocation.BoardHqLeft, 0);
+            var result = engine.Api.InvokeByName(
+                "MoveUnitFromSupportToFrontLine", extra,
+                new object?[] { extra, 9004 }, Context(engine, state, extra), out bool handled);
+            if (!handled || result is not false
+                || extra.Location != CardLocation.BoardHqLeft
+                || state.Cards(Side.Left, CardLocation.BoardFrontline).Count
+                    != GameState.DefaultFrontlineCapacity)
+            {
+                return $"我方前线已满时应拒绝且保持容量：handled={handled}, result={result ?? "null"}, "
+                     + $"location={extra.Location}, count={state.Cards(Side.Left, CardLocation.BoardFrontline).Count}";
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ConvertCard(CardDatabase db)
+    {
+        const string sourceName = "card_unit_arado_ar_196";
+        const string targetName = "card_unit_routed_troops";
+        if (db.Find(sourceName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var card = state.CreateWithId(sourceName, Side.Left, 77, CardLocation.BoardHqLeft, 3);
+        card.CustomJson["probe"] = "stale";
+        card.CustomAbility = "staleAbility";
+        card.BuffsBySource[(123, true)] = new CardBuff { SourceCardId = 123, Attack = 4, Defense = 2 };
+        card.HasMovedThisTurn = true;
+        card.HasAttackedThisTurn = true;
+        card.PinnedTurns = 2;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+        var result = engine.Api.InvokeByName("ConvertCard", card,
+            new object?[] { new[] { card.CardId }, 9001, targetName, 0, false, null }, ctx, out bool handled);
+        if (!handled || result is not System.Collections.IEnumerable ids)
+        {
+            return $"ConvertCard 应被处理并返回 ID 数组：handled={handled}, result={result ?? "null"}";
+        }
+
+        var convertedIds = ids.Cast<object?>().Select(Convert.ToInt32).ToArray();
+        if (convertedIds.Length != 1 || convertedIds[0] != 77)
+        {
+            return $"转换出参应为原 cardID=77，实际 [{string.Join(",", convertedIds)}]";
+        }
+
+        if (card.CardId != 77 || card.Owner != Side.Left || card.Location != CardLocation.BoardHqLeft
+            || card.LocationNumber != 3 || card.Name != targetName
+            || card.Definition.Name != targetName)
+        {
+            return $"转换应保留 ID/owner/location/locNo 并替换身份，实际 {card.CardId}/{card.Owner}/"
+                 + $"{card.Location}/{card.LocationNumber}/{card.Name}";
+        }
+
+        var target = db.Require(targetName);
+        if (card.Attack != target.Attack || card.Defense != target.Defense
+            || card.MaxDefense != target.Defense
+            || target.Keywords.Any(keyword => !card.Keywords.Contains(keyword)))
+        {
+            return $"转换后应使用新卡面攻防/关键字，实际 {card.Attack}/{card.Defense}/{card.MaxDefense}";
+        }
+
+        if (card.CustomJson.Count != 0 || card.CustomAbility is not null || card.BuffsBySource.Count != 0
+            || card.HasMovedThisTurn || card.HasAttackedThisTurn || card.PinnedTurns != 0)
+        {
+            return "转换后旧卡的 CustomJson/CustomAbility/buff/行动标记未清理";
+        }
+
+        return null;
+    }
+
+    private static string? LoseKreditSlotPreservesTemporaryKredits(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.SetMaxKredits(Side.Left, 4);
+        state.SetKredits(Side.Left, 4);
+        var source = state.CreateWithId("card_event_air_land_sea", Side.Left, 2,
+            CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        engine.Api.InvokeByName("LoseKreditSlot", source,
+            new object?[] { (int)Side.Left }, ctx, out bool handled);
+        if (!handled || state.MaxKredits(Side.Left) != 3 || state.Kredits(Side.Left) != 4)
+        {
+            return $"降槽应只改上限并保留当前 kredit：handled={handled}, "
+                 + $"state={state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}";
+        }
+
+        engine.StartTurn(Side.Left, draw: false);
+        if (state.MaxKredits(Side.Left) != 5 || state.Kredits(Side.Left) != 5)
+        {
+            return $"下一回合应从临时 4 点自然增长到 5："
+                 + $"实际 {state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// `DiscardCardFromDeck(cardID, discarderID, skipTriggers, skipVisuals, out success)`
     /// —— 11 调用点 / 11 张卡。
     ///
@@ -9676,6 +11170,105 @@ internal static class SelfTest
         if (bad is true)
         {
             return "手牌里的卡被调用时 success 应当是 false";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `DiscardRandomCardFromHand(side, instigatorID, out discardedCardID)`：
+    /// 空候选不应消费随机流；单候选直接弃牌；多候选必须使用同一条 UE 随机流，
+    /// 并复用 `DiscardCard` 的 `OnOtherCardDiscarded` 广播。
+    /// </summary>
+    private static string? DiscardRandomCardFromHand(CardDatabase db)
+    {
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        const string watcherName = "card_unit_nakajima_b5n";
+        if (db.Find(sourceName) is null || db.Find(watcherName) is null || db.Find(PlainUnit) is null)
+        {
+            return $"卡库里缺 {sourceName} / {watcherName} / {PlainUnit}";
+        }
+
+        // 空手：不应写出伪造的卡 ID，也不应推进随机游标。
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            long before = state.Random.ConsumedCount;
+            var result = engine.Api.InvokeByName("DiscardRandomCardFromHand", source,
+                new object?[] { (int)Side.Left, source.CardId, null }, ctx, out bool handled);
+            if (!handled)
+            {
+                return "派发表里没有 `DiscardRandomCardFromHand`（**修复前就是这个状态**）";
+            }
+
+            if (result is not 0 || state.Random.ConsumedCount != before)
+            {
+                return $"空手应返回 discardedCardID=0 且不消费随机流，实际 result={result ?? "null"}、"
+                     + $"cursor {before}->{state.Random.ConsumedCount}";
+            }
+        }
+
+        // 单牌 + 事件：结果 ID、位置、随机消费和旁观订阅都必须正确。
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var watcher = state.CreateWithId(watcherName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            var enemy = state.CreateWithId(PlainUnit, Side.Right, 60, CardLocation.BoardHqRight, 1);
+            var victim = state.CreateWithId(PlainUnit, Side.Left, 61, CardLocation.HandLeft, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = watcher, Controller = Side.Left };
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            int enemyDefense = enemy.Defense;
+
+            var result = engine.Api.InvokeByName("DiscardRandomCardFromHand", watcher,
+                new object?[] { (int)Side.Left, watcher.CardId, null }, ctx, out bool handled);
+            if (!handled)
+            {
+                return "单牌调用未被派发";
+            }
+
+            if ((int)(result ?? 0) != victim.CardId || victim.Location != CardLocation.Discard)
+            {
+                return $"单牌应弃掉 #{victim.CardId} 并返回该 ID，实际 result={result ?? "null"}、位置={victim.Location}";
+            }
+
+            string prefix = $"OnOtherCardDiscarded → {watcher.Name}#{watcher.CardId}";
+            if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
+                             && t.Contains($"eventCard={victim.Name}#{victim.CardId}", StringComparison.Ordinal)))
+            {
+                return "随机弃牌没有复用 OnOtherCardDiscarded 事件链"
+                     + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+            }
+
+            if (enemy.Defense != enemyDefense - 1)
+            {
+                return $"NAKAJIMA B5N 未收到随机弃牌事件：期望敌方防御 {enemyDefense - 1}，实际 {enemy.Defense}";
+            }
+        }
+
+        // 多牌：固定种子下必须与独立 UE 流预测的下标一致，并且只弃一张。
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+            var first = state.CreateWithId(PlainUnit, Side.Left, 61, CardLocation.HandLeft, 0);
+            var second = state.CreateWithId(PlainUnit, Side.Left, 62, CardLocation.HandLeft, 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            int expectedIndex = new UeRandomStream(1).Next(2);
+            var result = engine.Api.InvokeByName("DiscardRandomCardFromHand", source,
+                new object?[] { (int)Side.Left, source.CardId, null }, ctx, out bool handled);
+            if (!handled)
+            {
+                return "多牌调用未被派发";
+            }
+
+            var expected = expectedIndex == 0 ? first : second;
+            var other = expectedIndex == 0 ? second : first;
+            if ((int)(result ?? 0) != expected.CardId || expected.Location != CardLocation.Discard
+                || other.Location == CardLocation.Discard || state.Random.ConsumedCount != 1)
+            {
+                return $"多牌随机结果不符：期望 #{expected.CardId}，实际 result={result ?? "null"}，"
+                     + $"位置={first.Location}/{second.Location}，cursor={state.Random.ConsumedCount}";
+            }
         }
 
         return null;
@@ -11567,7 +13160,7 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// ★★ `ShouldGotchaTrigger` 判的是 **self**，不是实参；**并且要求这张反制卡已装填**。
+    /// ★★ `ShouldGotchaTrigger` 判的是 **self**，不是实参。
     ///
     /// 蓝图调用点（`Generated/Britain/Base/events/card_event_interception.g.cs:53`）：
     /// <code>
@@ -11576,23 +13169,10 @@ internal static class SelfTest
     /// IR 形状（`docs/card-ir.json`，53 个调用点**全部**）：`args = [触发卡, out]`，
     /// **没有 `recv`** ⇒ self 是隐式的（`KismetVm.Eval` 的 `{self:true}` → `ctx.Self`）。
     ///
-    /// 参考实现把装填那一项**逐字写在注释里**
-    /// （`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1350-1356`）：
-    /// 「**只有盖着的反制卡才响应**」；
-    /// 内核里"盖着"= <see cref="CardInstance.GotchaActivated"/> `&gt; 0`
-    /// （唯一写入方 `AssignGotchaActivatedOnPlayFromHand`，
-    /// `BP_CardFunctions.g.cs:28316`；`GetActiveGotchasOrdered` 也用同一道 `&gt; 0` 门，
-    /// `:18733`）。
-    ///
-    /// ⇒ 本测用**四个方向**把它钉死：
+    /// ⇒ 本测用**两个方向**把它钉死：
     /// <list type="number">
-    /// <item>self = **已装填**的反制卡、a[0] = 普通卡 ⇒ **真**；</item>
-    /// <item>self = 普通卡、a[0] = 反制卡 ⇒ **假**（这就是"判 a[0]"的错法会翻车的那一面）；</item>
-    /// <item>反制卡已进弃牌堆 ⇒ **假**（`!Destroyed`）；</item>
-    /// <item>★ self = **未装填**的反制卡 ⇒ **假** —— 这一条是 2026-10-04 补的：
-    ///   漏掉它时，**手里任何一张还没打成陷阱的反制卡**都会被触发
-    ///   （实测回放 773639：未装填的 `card_event_unexpected_resistance`
-    ///   把左方刚上前线的单位钉住 ⇒ 人类 `#92 t20 AC` 被误拒）。</item>
+    /// <item>self = 反制卡、a[0] = 普通卡 ⇒ **真**；</item>
+    /// <item>self = 普通卡、a[0] = 反制卡 ⇒ **假**（这就是"判 a[0]"的错法会翻车的那一面）。</item>
     /// </list>
     /// </summary>
     private static string? GotchaShouldTriggerJudgesSelf(CardDatabase db)
@@ -11608,26 +13188,6 @@ internal static class SelfTest
         var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
             CardLocation.BoardHqLeft, 0);
 
-        // ④ 未装填 ⇒ 不该响应（先测这一条，因为下面要把它装填起来）
-        var ctxUnarmed = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
-        object? r0 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
-            new object?[] { normal, null }, ctxUnarmed, out bool handled0);
-        if (!handled0)
-        {
-            return "派发表里没有 `ShouldGotchaTrigger` —— IR 里 53 个调用点全部静默失效";
-        }
-
-        if (Truthy(r0))
-        {
-            return "**未装填**（`gotchaActivated == 0`）的反制卡也响应了 —— "
-                 + "参考实现 `EngineHost.cs:1352` 要求「只有盖着的反制卡才响应」，"
-                 + "内核对应 `GotchaActivated > 0`（= `AssignGotchaActivatedOnPlayFromHand` 的唯一写入）；"
-                 + "漏掉这道门时，手里没打成陷阱的反制卡会被任意 `OnOther*` 事件触发";
-        }
-
-        // 装填成"盖着的陷阱"
-        gotcha.GotchaActivated = 1;
-
         // ① self = 反制卡；实参 a[0] = 普通卡（蓝图里那是"触发这件事的卡"）
         var ctx1 = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
         object? r1 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
@@ -11639,8 +13199,8 @@ internal static class SelfTest
 
         if (!Truthy(r1))
         {
-            return "self 是**已装填**的反制卡、a[0] 是普通卡，`ShouldGotchaTrigger` 应当为**真**，"
-                 + $"实际 {r1 ?? "null"} —— 判据没落在 self 上，或装填门开过头了";
+            return "self 是反制卡、a[0] 是普通卡，`ShouldGotchaTrigger` 应当为**真**，"
+                 + $"实际 {r1 ?? "null"} —— 判据没落在 self 上";
         }
 
         // ② self = 普通卡；实参 a[0] = 反制卡 ⇒ 必须为假（判 a[0] 的实现会在这里返回真）
@@ -12052,1749 +13612,6 @@ internal static class SelfTest
         if (state2.Random.ConsumedCount != before2)
         {
             return "对手手牌**全部已见**时不该消耗随机流（蓝图 :34150 的 `Array_IsNotEmpty` 门）";
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ 触发派发的收件人快照必须**含手牌**。
-    ///
-    /// ## 判据（蓝图原文）
-    ///
-    /// `card_unit_5th_regiment`（5th REGIMENT）卡面：
-    /// 「When you lose a kredit slot, this unit gets **+2+1 if on the battlefield
-    /// or -2 cost if in hand**.」
-    ///
-    /// 它**整张卡只有一个入口** `OnAfterExtraKreditSlotGain`，IR
-    /// （`docs/card-ir.json`）逐条：
-    /// <code>
-    /// i=178  side == K2Node_Event_sideGaining
-    /// i=216  BooleanAND(它, K2Node_Event_isNegativeGain)
-    /// i=254  jumpIfNot → 427（return）
-    /// i=268  IsLocatedOnBoard() → isIt
-    /// i=287  jumpIfNot(isIt) → **10**            ← ★ 不在场 ⇒ 跳去"在手牌"那一支
-    /// i=301  ChangeAttack(self, cardID, +2, …)
-    /// i=364  ChangeDefense(self, cardID, +1, …)
-    /// i=427  return
-    /// i=10   IsLocatedInHand() → isIt
-    /// i=29   jumpIfNot(isIt) → 427
-    /// i=43   getAndDecryptKredit() → decryptedKredit     ; = 这张卡当前的费
-    /// i=96   jumpIfNot(Greater(它, 0)) → 427             ; 费已经 0 就不再减
-    /// i=110  ChangeKreditCost(self, cardID, **-2**, …)   ← ★ 手牌里 -2 费
-    /// </code>
-    ///
-    /// ⇒ 一次「输掉一个槽位」必须**同时**命中两条路：场上的那张 +2+1、手牌里的那张 -2 费。
-    ///
-    /// ## 为什么这条用例必要（判死力）
-    ///
-    /// 内核的触发快照原先只有「棋盘 + 弃牌堆」（`CardApi.FireTrigger`），
-    /// **手牌里的卡从来收不到任何触发** ⇒ `i=10` 那半张卡是**死代码**。
-    /// 实测（真人对局 711061）：左方 t3 连丢两个槽位
-    /// （`#10 card_event_air_land_sea`、`#12 card_unit_40th_cavalry_regiment`），
-    /// 客户端因此把手里那张 5th_regiment 从 4 费降到 **0 费**；内核按 **4 费** 算，
-    /// 而此刻池子只有 1 点 ⇒ `#23 t5 PC` 被拒 ⇒ 那张牌留在手里 ⇒
-    /// 下游 `#28 t7 ML`、`#41 t9 AC` 接连失败、右方 HQ 少掉 6 点伤害。
-    ///
-    /// 判别力：把快照改回「只有棋盘 + 弃牌堆」⇒ 本用例在手牌那一半必然失败。
-    /// </summary>
-    private static string? TriggerSnapshotIncludesHand(CardDatabase db)
-    {
-        const string card = "card_unit_5th_regiment";
-        if (db.Find(card) is null)
-        {
-            return $"卡库里缺 {card}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-
-        // 同一张卡的两个实例：一个在手牌（-2 费那一支）、一个在场（+2+1 那一支）。
-        // 蓝图是**同一个程序**里的两条分支，所以一次派发要同时命中两者。
-        var inHand = state.CreateWithId(card, Side.Left, 200, CardLocation.HandLeft, 0);
-        var onBoard = state.CreateWithId(card, Side.Left, 201, CardLocation.BoardHqLeft, 1);
-        onBoard.EnteredPlayOnTurn = -99;
-
-        int cost0 = inHand.KreditCost;
-        int atk0 = onBoard.Attack;
-        int def0 = onBoard.Defense;
-        if (cost0 <= 0)
-        {
-            return $"前置不成立：{card} 的费应当 > 0（蓝图 i=96 的 `Greater(费, 0)` 门要用到它），实际 {cost0}";
-        }
-
-        var ctx = new EffectContext { Engine = engine, State = state, Self = inHand, Controller = Side.Left };
-
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        // ---- 输一次槽位：`LoseKreditSlot` 内部会 `FireExtraKreditSlotGain(side, -1)` ----
-        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out bool handled);
-        if (!handled)
-        {
-            return "派发表里没有 `LoseKreditSlot`（前置不成立）";
-        }
-
-        string Dispatched() => Dump(state,
-            ("未实现", Unimpl(state)),
-            ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
-
-        // ① 机制断言（最强、且与数值口径无关）：派发**真的送到了手牌里那张卡**
-        if (!Reached(trace, "OnAfterExtraKreditSlotGain", inHand))
-        {
-            return $"`OnAfterExtraKreditSlotGain` **没有派发**给手牌里的 {card}#{inHand.CardId} —— " +
-                   "`CardApi.FireTrigger` 的收件人快照只扫「棋盘 + 弃牌堆」，手牌里的卡从收不到任何触发；" +
-                   "`docs/card-ir.json` 里 42 个触发名 / 90 个 (卡,触发) 对带 `IsLocatedInHand` 分支，" +
-                   "缺手牌时它们全是死代码" + Dispatched();
-        }
-
-        // ② 效果断言：手牌里的那张费**必须下降**。
-        //
-        // ⚠️ 这里**只断言方向**，不断言"恰好 -2" —— 因为 `ChangeKreditCost` 的
-        //    `changeType=1` 口径在本内核里是**已知偏差**（`CardApiDispatch.cs` 的
-        //    `ChangeTypeSetValue` 注释 + `EChangeType.h:6-17`：1 实际是 `permBuff`
-        //    = 相对永久；内核按"设成绝对值"处理，于是 `-2` 被算成 `-2 - 卡面费`）。
-        //    本用例要守的是「触发有没有送到手牌」，不是那个偏差本身
-        //    （修它要一次动 41 个调用点，得单独立一支）。
-        //    在该偏差下 4 费会一步到 0；修好之后是 4 → 2。两种都满足 `< cost0`。
-        if (inHand.KreditCost >= cost0)
-        {
-            return $"手牌里的 {card} 在输掉一个槽位后费**没有下降**（蓝图 i=110 " +
-                   $"`ChangeKreditCost(self, cardID, -2)`）：{cost0} → {inHand.KreditCost}" + Dispatched();
-        }
-
-        // ③ 同一次派发必须**同时**命中在场那一支（蓝图 i=301 `ChangeAttack(+2)` / i=364 `ChangeDefense(+1)`）。
-        //    攻/防的 `changeType=1` 走的是"相对永久"（正确口径），所以这里可以断言精确值。
-        if (onBoard.Attack != atk0 + 2 || onBoard.Defense != def0 + 1)
-        {
-            return $"场上的 {card} 在输掉一个槽位后应当 **+2+1**（蓝图 i=301 / i=364）：" +
-                   $"{atk0}/{def0} → {onBoard.Attack}/{onBoard.Defense} —— " +
-                   "触发**没有送到棋盘**（`FillTriggerSnapshot` 里的 `State.Board(s)` 那一批）" + Dispatched();
-        }
-
-        // ---- 第二次：场上必须再 +2+1（永久 buff 会叠加）----
-        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out _);
-        if (onBoard.Attack != atk0 + 4 || onBoard.Defense != def0 + 2)
-        {
-            return $"第二次输槽位后场上应当是 {atk0 + 4}/{def0 + 2}，" +
-                   $"实际 {onBoard.Attack}/{onBoard.Defense} —— 永久攻/防 buff 应当逐次叠加" + Dispatched();
-        }
-
-        // ---- 第三次：手牌费已 0 ⇒ 蓝图 i=96 的 `Greater(getAndDecryptKredit(), 0)` 门把它挡住，
-        //      费不能再往下走（不能出现负数）----
-        int costAfterTwo = inHand.KreditCost;
-        engine.Api.InvokeByName("LoseKreditSlot", null, new object?[] { Side.Left }, ctx, out _);
-        if (inHand.KreditCost < 0 || inHand.KreditCost > costAfterTwo)
-        {
-            return $"手牌里的 {card} 费应当单调不增且不为负（蓝图 i=96 的 `Greater(费, 0)` 门）：" +
-                   $"{costAfterTwo} → {inHand.KreditCost}" + Dispatched();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ 三个**此前从未派发**的触发点现在真的派发了：T35 / T61 / T48。
-    ///
-    /// 三条都有**蓝图原文**（本次逐行复核，`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
-    /// <code>
-    /// T35 `CreateCard`          :10590 Fetch(35) → :10608 item.OnOtherCardCreatedAlterCard(createdCard, 0)
-    /// T61 `PinUnit`             :27982 Fetch(61) → :28010 item.OnOtherUnitPinned(_card)
-    /// T48 `RemoveSmokescreen`   :32691 Fetch(48) → :32709 item.OnOtherCardLoseSmokescreen(_cardFromID)
-    /// </code>
-    /// 实参名逐字取 `Generated/_index.g.cs`：T35 `{cardPlayed, method}` / T61 `{cardBeingPinned}` /
-    /// T48 `{card}`。
-    ///
-    /// ⚠️ **这三条都无法用回放验证**：三族订阅卡（11 / 2 / 3 张）在现有 22 局语料里
-    /// **一张都没出现过**（`docs/card-ir.json` 的 entrypoints 实测）。⇒ 判据只有
-    /// 「蓝图原文 + 本用例」，如实标注（README §7.4 那一类）。
-    ///
-    /// 判别力：三条各自独立断言"派发到了订阅者"，把对应那一句实现删掉即失败。
-    /// </summary>
-    private static string? CardCreatedPinnedSmokescreenTriggers(CardDatabase db)
-    {
-        const string t35Watcher = "card_unit_144th_infantry_regiment";
-        const string t61Watcher = "card_unit_cromwell_mk_iv";
-        const string t48Watcher = "card_unit_hirosaki_regiment";
-        foreach (string n in new[] { t35Watcher, t61Watcher, t48Watcher })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-
-        // ---- T35：生成一张卡 ⇒ 订阅者收到 `OnOtherCardCreatedAlterCard` ----
-        var w35 = state.CreateWithId(t35Watcher, Side.Left, 300, CardLocation.BoardHqLeft, 1);
-        trace.Clear();
-        engine.Api.SpawnOnBattlefield(Side.Left, FindType(db, "infantry")!, frontline: false);
-        if (!Reached(trace, "OnOtherCardCreatedAlterCard", w35))
-        {
-            return $"T35：生成一张卡之后 `OnOtherCardCreatedAlterCard` 没有派发给订阅者 {t35Watcher}" +
-                   "（蓝图 `CreateCard` :10590-10608）—— 11 张订阅者的整条效果会全死"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- T61：钉住一个单位 ⇒ 订阅者收到 `OnOtherUnitPinned` ----
-        var w61 = state.CreateWithId(t61Watcher, Side.Left, 301, CardLocation.BoardHqLeft, 2);
-        var victim = state.CreateWithId(FindType(db, "infantry")!, Side.Right, 302, CardLocation.BoardHqRight, 1);
-        victim.Defense = 9;
-        victim.MaxDefense = 9;
-        trace.Clear();
-        engine.Api.PinUnit(victim);
-        if (!Reached(trace, "OnOtherUnitPinned", w61))
-        {
-            return $"T61：钉住一个单位之后 `OnOtherUnitPinned` 没有派发给订阅者 {t61Watcher}" +
-                   "（蓝图 `PinUnit` :27982-28010）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- T48：摘掉烟幕 ⇒ 订阅者收到 `OnOtherCardLoseSmokescreen` ----
-        var w48 = state.CreateWithId(t48Watcher, Side.Left, 303, CardLocation.BoardHqLeft, 3);
-        var smoked = state.CreateWithId(FindType(db, "infantry")!, Side.Right, 304, CardLocation.BoardHqRight, 2);
-        engine.Api.GiveKeyword(smoked, Keyword.Smokescreen);
-        trace.Clear();
-        engine.Api.RemoveKeyword(smoked, Keyword.Smokescreen);
-        if (!Reached(trace, "OnOtherCardLoseSmokescreen", w48))
-        {
-            return $"T48：摘掉烟幕之后 `OnOtherCardLoseSmokescreen` 没有派发给订阅者 {t48Watcher}" +
-                   "（蓝图 `RemoveSmokescreen` :32691-32709）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- 反向断言：摘一个**本来就没有**的关键字 ⇒ 不该发（防"无条件发"）----
-        trace.Clear();
-        engine.Api.RemoveKeyword(smoked, Keyword.Smokescreen);
-        if (Reached(trace, "OnOtherCardLoseSmokescreen", w48))
-        {
-            return "T48：第二次摘同一个（已经不存在的）烟幕时**不该**再广播" +
-                   "（蓝图 `RemoveSmokescreen` 只在真的摘掉之后走到那一段）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ `SpawnCardInHand` 的**手牌容量门** —— 蓝图 `CreateCard` 的原文
-    /// （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
-    /// <code>
-    /// :10510  IsLocationFull(_location) → :10512 wasFullBeforeCreating
-    /// :10702  BooleanAND(Not(autoplay &amp;&amp; spawnCardInHand), wasFullBeforeCreating)
-    /// :10706      createdCard.location = 8          ; ★ 建卡前手牌就满 ⇒ 直接进弃牌堆
-    /// </code>
-    ///
-    /// ## 为什么只补这一条路径（而不是在换区漏斗上一刀切）
-    /// "往手牌加牌"的各条路径在蓝图里**待遇不同**：`DrawSpecificCardFromDeckBySide`
-    /// （`:12406`，全函数 33 行）**根本没有容量门**；`DrawTopCardFromDeck`（`:12496`）与
-    /// `MoveCardFromBoardToOwnersHand`（`:26405`）**有** —— 而内核那两条**都已经实现了**
-    /// （`MatchEngine.DrawCard` / `DoMoveUnitFromBoardToOwnersHand`）。
-    /// 逐条对照后**唯一缺的就是这一条**。
-    /// ⇒ 反过来说：**「手牌 &gt; 9」本身不能当 bug 判据**（实测 22 局最高到 13/9，
-    ///    其中一部分是蓝图允许的），必须先看该路径在蓝图里有没有门。
-    ///
-    /// 判别力：把 `SpawnCardInHand` 里的 `where` 改回 `side.HandOf()` 即失败。
-    /// ⚠️ 蓝图那个例外（`autoplay &amp;&amp; spawnCardInHand` 时不改送弃牌堆）内核没有建模
-    ///    `autoplay` tag ⇒ 本实现是"无条件应用"，**近似**，自测按近似后的语义断言。
-    /// </summary>
-    private static string? SpawnCardInHandRespectsCapacity(CardDatabase db)
-    {
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        string infantry = FindType(db, "infantry")!;
-
-        // ① 把左手填满到 HandCapacity
-        for (int i = 0; i < GameState.HandCapacity; i++)
-        {
-            state.CreateWithId(infantry, Side.Left, 400 + i, CardLocation.HandLeft, i);
-        }
-
-        if (state.Hand(Side.Left).Count != GameState.HandCapacity)
-        {
-            return $"前置不成立：左手应当正好 {GameState.HandCapacity} 张，实际 {state.Hand(Side.Left).Count}";
-        }
-
-        var created = engine.Api.SpawnCardInHand(Side.Left, infantry);
-        if (created.Location != CardLocation.Discard)
-        {
-            return $"手牌已满（{GameState.HandCapacity}/{GameState.HandCapacity}）时 `SpawnCardInHand` " +
-                   $"应当把新卡放进**弃牌堆(8)**（蓝图 `CreateCard` :10702-10706），实际 {created.Location}"
-                 + Dump(state);
-        }
-
-        // ② 对照：手牌没满 ⇒ 进手牌（防止 ① 恒真）
-        state.Move(state.Hand(Side.Left).Last(), CardLocation.Discard);
-        var created2 = engine.Api.SpawnCardInHand(Side.Left, infantry);
-        if (created2.Location != CardLocation.HandLeft)
-        {
-            return $"手牌没满（{state.Hand(Side.Left).Count}/{GameState.HandCapacity}）时 " +
-                   $"`SpawnCardInHand` 应当把新卡放进手牌，实际 {created2.Location}"
-                 + Dump(state);
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ T31 `OnOtherCardAttacks` 被派发，且出参 `AttackedAndStopped` **真的被尊重**。
-    ///
-    /// 探针 `card_unit_beaufighter_tf_mk_x`（BEAUFIGHTER TF Mk X，6 费 4/4 轰炸机）：
-    /// 「**Any unit that attacks this unit takes 3 damage first.**」
-    /// 它是 20 张 T31 订阅者之一，且**不是 gotcha** ⇒ 没有 `ShouldGotchaTrigger` 那道门
-    /// （所以本用例测的是 T31 本身，不是 gotcha 子系统）。
-    /// 它的 `locals.OnOtherCardAttacks` 体：
-    /// <code>
-    /// i=0    defenderCard.cardID == self.cardID      ; ★ 自己是被打的那个（防御方也是收件人）
-    /// i=41   Array_Length(cardAttacking.cardsGivingImmunity) == 0
-    /// i=85   DamageCard(cardAttacking, 3, self, …)   ; 先打攻击者 3 点
-    /// i=91   stopAttack = False
-    /// i=93   AttackedAndStopped = Not(IsLocatedOnBoard(cardAttacking))
-    /// </code>
-    /// ⇒ 攻击者 1 防、吃 3 点必死 ⇒ `AttackedAndStopped = True`
-    /// ⇒ 蓝图 `:4643-4655`：**整段伤害跳过**（防御方一点不掉），
-    ///   而油费与"已攻击"记账**照做**（`ExecuteStoppedAttack` `:17706`）。
-    ///
-    /// 判别力：① 不派发 ⇒ 攻击者活、防御方掉 2 血；② 派发但丢掉出参 ⇒
-    /// 攻击者死、**防御方照样掉 2 血**（这正是接线前的行为）。
-    ///
-    /// ⚠️ **这条无法用回放验证**：10 局主对拍集里 T31 一共触发 58 次，
-    /// 但**订阅者出现 0 次**（探针 `KLINK_TRACE_T31=1` 实测）⇒ 判据只有「蓝图原文 + 本用例」。
-    /// </summary>
-    private static string? OtherCardAttacksStopsAttack(CardDatabase db)
-    {
-        const string probe = "card_unit_beaufighter_tf_mk_x";
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(probe) is null)
-        {
-            return $"卡库里缺 {probe}";
-        }
-
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        state.SetKredits(Side.Left, 12);
-        state.SetMaxKredits(Side.Left, 12);
-
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var attacker = state.CreateWithId(plain, Side.Left, 21, CardLocation.BoardFrontline, 0);
-        var beau = state.CreateWithId(probe, Side.Right, 60, CardLocation.BoardFrontline, 0);
-        attacker.EnteredPlayOnTurn = -1;
-        beau.EnteredPlayOnTurn = -1;
-        attacker.Attack = 2;
-        attacker.Defense = 1;
-        attacker.MaxDefense = 1;
-        beau.Defense = 4;
-        beau.MaxDefense = 4;
-
-        int defBefore = beau.Defense;
-        int kreditsBefore = state.Kredits(Side.Left);
-        int opCost = attacker.OperationCost;
-
-        if (!engine.Attack(attacker, beau, out string why))
-        {
-            return $"前置不成立：攻击打不出去（{why}）" + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        // ⚠️ 出参那一族走 `BroadcastWithOutParams`，它的 trace 格式是
-        //    `OnOtherCardAttacks(out stopAttack/AttackedAndStopped) → 卡名#ID`
-        //    —— **不是** `Reached` 认的 `事件名 → 卡名#ID`（那个中间夹了 `(out …)`）。
-        bool Hit() => trace.Any(t => t.Contains("OnOtherCardAttacks", StringComparison.Ordinal)
-                                     && t.Contains($"{beau.Name}#{beau.CardId}", StringComparison.Ordinal));
-
-        if (!Hit())
-        {
-            return $"T31 `OnOtherCardAttacks` **没有派发**到订阅卡 {probe}" +
-                   "（IR `locals` 20 张订阅者之一；内核原先从不派发 31）"
-                 + Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
-        }
-
-        if (attacker.AliveOnBoard)
-        {
-            return $"T31 派发了，但 {probe} 的 `DamageCard(cardAttacking, 3)` 没生效：" +
-                   $"攻击者应当死亡，实际 Location={attacker.Location} 防御={attacker.Defense}"
-                 + Dump(state, ("派发记录", string.Join(" | ", trace)));
-        }
-
-        if (beau.Defense != defBefore)
-        {
-            return "出参 `AttackedAndStopped` **没有被尊重**：攻击者已被反制打死，" +
-                   $"防御方应当一点伤害都不吃（蓝图 :4643-4655），实际 {defBefore} → {beau.Defense}"
-                 + Dump(state);
-        }
-
-        if (state.Kredits(Side.Left) != kreditsBefore - opCost)
-        {
-            return $"`AttackedAndStopped` 路应当**照扣**行动费 {opCost}：" +
-                   $"{kreditsBefore} → {state.Kredits(Side.Left)}（蓝图 :4513 扣费在窗口之后）";
-        }
-
-        if (!attacker.HasAttackedThisTurn)
-        {
-            return "`AttackedAndStopped` 路应当把攻击者标记为已攻击" +
-                   "（`ExecuteStoppedAttack` :17706 → `SetAttackerHasAttacked`）";
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ T3 `OnAfterDeckChanged` + T22 `OnDeckShuffled` —— 两条都挂在 `ShuffleDeckBySide` 上。
-    ///
-    /// 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs`）：
-    /// <code>
-    /// :34655  GetDeckBySide(sideToShuffle) → localDeckCardIDs
-    /// :34659  Array_IsEmpty(...)
-    /// :34661  if (!IsEmpty) → :34672（洗牌）        ; 空牌库**直接返回**（两个事件都不发）
-    /// :34672  Array_ShuffleFromStream(…, cardsRandomStream)
-    /// :34674  SetDeckBySide(…)
-    /// :34676  ExecuteOnAfterDeckChanged(sideToShuffle)   ; ★ T3（在 T22 **之前**）
-    /// :34680  if (!skipSubAction) goto L_02D9             ; ★ skipSubAction 假 ⇒ 跳过 T22
-    /// :34691  FetchAllCardsWithEventTrigger(22)           ; ★ T22
-    /// :34721      item.OnDeckShuffled(deckSide, instigatorCard)
-    /// :34737  L_02D9: …                                   ; T22 循环**之后**
-    /// </code>
-    /// T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
-    /// `IsActionProcess` 门 → `Fetch(3)` → `item.OnAfterDeckChanged(deckSide)`。
-    ///
-    /// ⚠️ **回放侧无信号**：5 张 T22 订阅者 + 3 张 T3 订阅者在 22 局语料里 **0 命中**
-    /// ⇒ 判据只有「蓝图原文 + 本用例」。
-    ///
-    /// 判别力：① 去掉 `FireDeckChanged` 那一句 ⇒ 断言 ①② 失败；
-    /// ② 去掉 `if (skipSubAction)` 那道门 ⇒ 断言 ② 失败；
-    /// ③ 去掉空牌库早退 ⇒ 断言 ③ 失败。
-    /// </summary>
-    private static string? DeckShuffledAndDeckChangedTriggers(CardDatabase db)
-    {
-        const string t3Probe = "card_unit_lovat_scouts";              // 订阅 OnAfterDeckChanged
-        const string t22Probe = "card_unit_110e_regiment_motorize";   // 订阅 OnDeckShuffled
-        foreach (string n in new[] { t3Probe, t22Probe })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var w3 = state.CreateWithId(t3Probe, Side.Left, 300, CardLocation.BoardHqLeft, 1);
-        var w22 = state.CreateWithId(t22Probe, Side.Left, 301, CardLocation.BoardHqLeft, 2);
-
-        // 牌库里要有牌（否则蓝图 `:34661` 直接返回，两个事件都不发）
-        var deckCard = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 302,
-            CardLocation.DeckLeft, 0);
-
-        var ctx = new EffectContext { Engine = engine, State = state, Self = w3, Controller = Side.Left };
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-        bool FiredT3() => Reached(trace, "OnAfterDeckChanged", w3);
-        bool FiredT22() => Reached(trace, "OnDeckShuffled", w22);
-
-        // ---- ① `skipSubAction = true` ⇒ T3 与 T22 **都要发** ----
-        trace.Clear();
-        engine.Api.InvokeByName("ShuffleDeckBySide", null,
-            new object?[] { Side.Left, true, w3.CardId }, ctx, out bool handled);
-        if (!handled)
-        {
-            return "派发表里没有 `ShuffleDeckBySide`（前置不成立）";
-        }
-
-        if (!FiredT3())
-        {
-            return $"洗牌之后 `OnAfterDeckChanged` 没有派发给 {t3Probe}" +
-                   "（蓝图 :34676 `ExecuteOnAfterDeckChanged(sideToShuffle)`）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (!FiredT22())
-        {
-            return $"`skipSubAction=true` 时 `OnDeckShuffled` 没有派发给 {t22Probe}" +
-                   "（蓝图 :34680 / :34721）" + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ② `skipSubAction = false` ⇒ T3 发、T22 **不发** ----
-        trace.Clear();
-        engine.Api.InvokeByName("ShuffleDeckBySide", null,
-            new object?[] { Side.Left, false, w3.CardId }, ctx, out _);
-        if (!FiredT3())
-        {
-            return "`skipSubAction=false` 时 `OnAfterDeckChanged` 仍应发" +
-                   "（蓝图 :34676 在那道门**之前**）" + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (FiredT22())
-        {
-            return "`skipSubAction=false` 时**不该**发 `OnDeckShuffled`" +
-                   "（蓝图 :34680 `if (!skipSubAction) goto L_02D9`，而 L_02D9 在 T22 循环之后）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ③ 空牌库 ⇒ 两个都不发（蓝图 :34659-34661 直接返回）----
-        state.Move(deckCard, CardLocation.Discard);
-        trace.Clear();
-        engine.Api.InvokeByName("ShuffleDeckBySide", null,
-            new object?[] { Side.Left, true, w3.CardId }, ctx, out _);
-        if (FiredT3() || FiredT22())
-        {
-            return "空牌库时 `ShuffleDeckBySide` 应当**直接返回**、两个事件都不发" +
-                   "（蓝图 :34659-34661 `Array_IsEmpty` ⇒ return）" + Dump(state, ("派发记录", Trace()));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ T45 `OnOtherCardKreditCostChanged` —— **两个门**都要对。
-    ///
-    /// 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ChangeKreditCost`）：
-    /// <code>
-    /// :8772  NotifySetKreditCost(Notifier, cardToChange, getTotalKreditCost(…), …)
-    /// :8774  EqualEqual_IntInt(cardToChange, localInstigatorID)
-    /// :8776  if (!that) goto L_0942                  ; ★ 门①：只有"改**自己**的费"才继续
-    /// :8778  FetchAllCardsWithEventTrigger(45)
-    /// :8796      NotEqual_IntInt(item.cardID, cardToChange)   ; ★ 门②：排除被改的那张卡自己
-    /// :8814      item.OnOtherCardKreditCostChanged(cardToChange)
-    /// </code>
-    /// 门②由 `FireTrigger` 的 `OnOther*` 广播分支**自动满足**（subject 就是被改的那张卡）。
-    ///
-    /// 判别力：① 去掉 `target.CardId == sourceId` 那道门 ⇒ 断言 ② 失败
-    ///（"改别人的费"也会广播）；② 去掉整段 ⇒ 断言 ① 失败。
-    ///
-    /// ⚠️ **回放侧无信号**：4 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
-    /// </summary>
-    private static string? KreditCostChangedTrigger(CardDatabase db)
-    {
-        const string probe = "card_unit_the_silent_seventh";   // 订阅 OnOtherCardKreditCostChanged
-        const string plain = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { probe, plain })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 1);
-        var self = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 2);
-        var other = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardHqRight, 1);
-
-        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
-        bool Fired() => Reached(trace, "OnOtherCardKreditCostChanged", w);
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-
-        // ---- ① 改**自己**的费（cardToChange == instigatorID）⇒ 要发 ----
-        trace.Clear();
-        engine.Api.InvokeByName("ChangeKreditCost", null,
-            new object?[] { self, self.CardId, -1, 1, false, null }, ctx, out bool handled);
-        if (!handled)
-        {
-            return "派发表里没有 `ChangeKreditCost`（前置不成立）";
-        }
-
-        if (!Fired())
-        {
-            return $"改**自己**的费之后 `OnOtherCardKreditCostChanged` 没有派发给 {probe}" +
-                   "（蓝图 :8774/:8776 门①为真 ⇒ :8778 Fetch(45)）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ② 改**别人**的费 ⇒ **不发**（门①为假）----
-        trace.Clear();
-        engine.Api.InvokeByName("ChangeKreditCost", null,
-            new object?[] { other, self.CardId, -1, 1, false, null }, ctx, out _);
-        if (Fired())
-        {
-            return "改**别人**的费时**不该**广播 `OnOtherCardKreditCostChanged`" +
-                   "（蓝图 :8774 `EqualEqual_IntInt(cardToChange, localInstigatorID)` ⇒ :8776 跳走）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ T49 `OnMoveFromFrontline` / `OnOtherCardMoveFromFrontline`。
-    ///
-    /// **入口条件**（蓝图 `CardLocationMoved`，本次逐行复核 `BP_CardFunctions.g.cs`）：
-    /// <code>
-    /// :5689  _3 = (oldLocation == 7)                  ; 7 = BoardFrontline
-    /// :5691  _4 = (newLocation == 6) / :5693 _5 = (newLocation == 5)
-    /// :5695  OR(_4, _5)                               ; 退到某一方的**半场**
-    /// :5697  AND(OR, _3)                              ; ★ 只在前线 → 半场 时成立
-    /// :5733  ExecuteOnCardMoveFromFrontline(self, tmpCard)
-    /// </code>
-    /// ⇒ **"退回手牌 / 弃牌堆"不算**（那两条 newLocation ∉ {5,6}）。
-    ///
-    /// **那个函数自己是层 B 的同一形状**（`:15646-15705`）：
-    /// `:15646 if (!cardMoved.isSuppressed) goto L_015C` → 自程序；
-    /// `:15648 Fetch(49)` 是广播、**无条件**（`:15681 goto L_004A` 回边），
-    /// 只被 `:15673 GetStopFurtherActions()` 挡；`:15691` 排除被移动的卡自己。
-    ///
-    /// 判别力：去掉 `oldLocation == BoardFrontline` 判定 ⇒ 断言 ② 失败；
-    /// 去掉 `newLocation ∈ {5,6}` 判定 ⇒ 断言 ③ 失败；
-    /// 把压制门装到广播上（而不是自程序上）⇒ 断言 ④ 失败。
-    ///
-    /// ⚠️ **回放侧无信号**：订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
-    /// </summary>
-    private static string? MoveFromFrontlineTrigger(CardDatabase db)
-    {
-        const string moverName = "card_unit_raaf_walrus";             // 订阅 OnMoveFromFrontline（自程序）
-        const string bystanderName = "card_unit_flaming_matilda_anzac"; // 订阅 OnOtherCardMoveFromFrontline
-        foreach (string n in new[] { moverName, bystanderName })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var w = state.CreateWithId(bystanderName, Side.Left, 300, CardLocation.BoardHqLeft, 3);
-        var m = state.CreateWithId(moverName, Side.Left, 301, CardLocation.BoardFrontline, 0);
-
-        bool SelfFired() => Reached(trace, "OnMoveFromFrontline", m);
-        bool CastFired() => Reached(trace, "OnOtherCardMoveFromFrontline", w);
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-
-        // ---- ① 前线 → 半场 ⇒ 自程序与广播**都要发** ----
-        trace.Clear();
-        state.Move(m, CardLocation.BoardHqLeft);
-        if (!SelfFired() || !CastFired())
-        {
-            return "前线 → 半场 时 `OnMoveFromFrontline`(自程序) 与 `OnOtherCardMoveFromFrontline`(广播)" +
-                   "都应当派发（蓝图 :5689-:5697 的条件 + :15679/:15705）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ② 半场 → 前线 ⇒ 都不发（`oldLocation == 7` 不成立）----
-        trace.Clear();
-        state.Move(m, CardLocation.BoardFrontline);
-        if (SelfFired() || CastFired())
-        {
-            return "半场 → 前线 时**不该**发 T49（蓝图 :5689 `oldLocation == 7` 不成立）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ③ 前线 → 弃牌堆 ⇒ 都不发（`newLocation ∈ {5,6}` 不成立）----
-        trace.Clear();
-        state.Move(m, CardLocation.Discard);
-        if (SelfFired() || CastFired())
-        {
-            return "前线 → 弃牌堆 时**不该**发 T49（蓝图 :5691-:5697 要求 `newLocation ∈ {5,6}`）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ③b ★ 手牌 → 半场（= 部署一个单位到半场）⇒ 都不发
-        //      （`oldLocation == 7` 不成立）。这一条才是能抓住"漏判 oldLocation"的用例 ——
-        //      ② 那一条（半场 → 前线）抓不住，因为 `newLocation` 也不是 5/6。
-        //      实测：去掉 `oldLocation == BoardFrontline` 后，② 仍然通过、③b 失败。----
-        var fresh = state.CreateWithId(moverName, Side.Left, 302, CardLocation.HandLeft, 0);
-        trace.Clear();
-        state.Move(fresh, CardLocation.BoardHqLeft);
-        if (Reached(trace, "OnMoveFromFrontline", fresh) || CastFired())
-        {
-            return "**手牌 → 半场**（部署到半场）时**不该**发 T49" +
-                   "（蓝图 :5689 要求 `oldLocation == 7`）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ④ 被压制 ⇒ 自程序不发、**广播照发**（层 B 的形状）----
-        state.Move(m, CardLocation.BoardFrontline);
-        m.Keywords.Add(Keyword.Suppressed);
-        trace.Clear();
-        state.Move(m, CardLocation.BoardHqLeft);
-        if (SelfFired())
-        {
-            return "被压制的卡**不该**收到自己那一路 `OnMoveFromFrontline`" +
-                   "（蓝图 :15646 `if (!cardMoved.isSuppressed) goto L_015C`）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (!CastFired())
-        {
-            return "被压制只是跳过**自程序**；T49 广播仍应照发" +
-                   "（蓝图 :15648 直落广播、:15681 `goto L_004A` 回边）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ⑤ `stopFurtherActions` ⇒ 广播不发、自程序照发 ----
-        m.Keywords.Remove(Keyword.Suppressed);
-        state.Move(m, CardLocation.BoardFrontline);
-        state.StopFurtherActions = true;
-        trace.Clear();
-        state.Move(m, CardLocation.BoardHqLeft);
-        state.StopFurtherActions = false;
-        if (!SelfFired())
-        {
-            return "`stopFurtherActions` 只挡**广播**，不该挡自程序" +
-                   "（蓝图 :15646 跳到 L_015C 时**跳过**了 :15673 那道门）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (CastFired())
-        {
-            return "`stopFurtherActions` 为真时**不该**发 T49 广播（蓝图 :15673-:15677）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ T68 `OnOperationKreditsSpent`（自程序）+ `OnOtherCardOperationKreditsSpent`（广播）。
-    ///
-    /// 蓝图 `ExecuteOnOperationKreditsSpent`（`:16743-16787`，本次逐行复核）：
-    /// `:16743 OnOperationKreditsSpent(cardOperated, kreditsSpent)`（自己，**先**）→
-    /// `:16745 Fetch(68)` → `:16772 NotEqual_ObjectObject(item, cardOperated)`（排除自己）→
-    /// `:16787 item.OnOtherCardOperationKreditsSpent(…)`。
-    ///
-    /// ★★ **它在攻击链上只在两条"提前返回"的分支发**（这是本用例最重要的一条）：
-    /// 蓝图 `AttackCard` 全文只有两个调用点 —— `:4637`（攻击者扣费后已不在场）
-    /// 与 `:4651`（`tmpAttackedAndStopped`），而**正常伤害路径从 `:4656 L_0EDF` 起、
-    /// 没有这个调用**。⇒ 挂到"正常扣油费之后"会是**多发**。
-    /// 另有一个调用点是 `MoveCardToFrontline :26998`（移动到前线付油费）。
-    ///
-    /// 判别力：① 去掉移动那一句 ⇒ 断言 ① 失败；
-    /// ② 把它挂到正常攻击路径 ⇒ 断言 ② 失败（正常攻击不该发）；
-    /// ③ 去掉中止分支那一句 ⇒ 断言 ③ 失败。
-    ///
-    /// ⚠️ **回放侧基本无信号**：3 张订阅卡里只有 `card_unit_2nd_michigan` 出现在语料文件里，
-    /// 且它是否真被花过油费**未核实** ⇒ 判据以「蓝图原文 + 本用例」为主。
-    /// </summary>
-    private static string? OperationKreditsSpentTrigger(CardDatabase db)
-    {
-        const string probe = "card_unit_2nd_michigan";          // 订阅两个名字
-        const string beau = "card_unit_beaufighter_tf_mk_x";    // T31 探针（攻击者会被它打死）
-        const string plain = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { probe, beau, plain })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        state.SetKredits(Side.Left, 30);
-        state.SetMaxKredits(Side.Left, 30);
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
-        // ⚠️ **行动方也必须用订阅卡** —— `OnOperationKreditsSpent`（自程序）只发给
-        //   **订阅了它**的那张卡（`FireTrigger` 的"自己那一路"是 `FindProgram(卡名, 程序名)`）。
-        //   用一张不订阅的卡当行动方，自程序那一路就永远不会发（第一版用例就栽在这里）。
-        var mover = state.CreateWithId(probe, Side.Left, 301, CardLocation.BoardHqLeft, 0);
-        mover.EnteredPlayOnTurn = -1;
-
-        bool SelfFired(CardInstance c) => Reached(trace, "OnOperationKreditsSpent", c);
-        bool CastFired() => Reached(trace, "OnOtherCardOperationKreditsSpent", w);
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-
-        // ---- ① 移动到前线（付油费）⇒ 自程序 + 广播都要发 ----
-        trace.Clear();
-        if (!engine.MoveUnit(mover, 0, out string why1))
-        {
-            return $"前置不成立：移动到前线失败（{why1}）" + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        if (!SelfFired(mover))
-        {
-            return "移动到前线之后 `OnOperationKreditsSpent` 没有派发给**移动的那张卡**" +
-                   "（蓝图 `MoveCardToFrontline` :26998 → :16743）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (!CastFired())
-        {
-            return $"移动到前线之后 `OnOtherCardOperationKreditsSpent` 没有派发给 {probe}" +
-                   "（蓝图 :16745/:16787）" + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ② **正常攻击**（伤害正常结算）⇒ T68 **不该**发 ----
-        var atk = state.CreateWithId(probe, Side.Left, 302, CardLocation.BoardFrontline, 1);
-        var def = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
-        atk.EnteredPlayOnTurn = -1;
-        def.EnteredPlayOnTurn = -1;
-        def.Attack = 0;      // 不反击 ⇒ 攻击者活下来、走**正常伤害**路径
-        def.Defense = 30;
-        trace.Clear();
-        if (!engine.Attack(atk, def, out string why2))
-        {
-            return $"前置不成立：正常攻击打不出去（{why2}）" + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        if (SelfFired(atk) || CastFired())
-        {
-            return "**正常结算**的攻击**不该**发 T68 —— 蓝图 `AttackCard` 全文只有 `:4637`/`:4651` " +
-                   "两个调用点（都在提前返回的分支），正常路径从 `:4656 L_0EDF` 起、没有这个调用"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        // ---- ③ 攻击被 `AttackedAndStopped` 中止 ⇒ T68 **要**发（蓝图 `:4651`）----
-        // ⚠️ 用**新棋盘**：上一段的 `def` 是 `card_unit_infantry_regiment_25`（带 Guard），
-        //    它留在前线会挡住对 `beau` 的攻击（"目标受守护保护"）。
-        {
-            var (engine3, state3) = EmptyBoard(db);
-            state3.ActiveSide = Side.Left;
-            state3.SetKredits(Side.Left, 30);
-            state3.SetMaxKredits(Side.Left, 30);
-            var trace3 = new List<string>();
-            engine3.Api.TriggerTrace = trace3;
-
-            state3.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
-            var atk3 = state3.CreateWithId(probe, Side.Left, 303, CardLocation.BoardFrontline, 0);
-            var beau3 = state3.CreateWithId(beau, Side.Right, 61, CardLocation.BoardFrontline, 0);
-            atk3.EnteredPlayOnTurn = -1;
-            beau3.EnteredPlayOnTurn = -1;
-            atk3.Attack = 2;
-            atk3.Defense = 1;
-            atk3.MaxDefense = 1;
-            beau3.Defense = 9;
-            beau3.MaxDefense = 9;
-
-            if (!engine3.Attack(atk3, beau3, out string why3))
-            {
-                return $"前置不成立：被反制的攻击打不出去（{why3}）"
-                     + Dump(state3, ("未实现", Unimpl(state3)));
-            }
-
-            if (!Reached(trace3, "OnOperationKreditsSpent", atk3))
-            {
-                return "攻击被 `AttackedAndStopped` 中止时**应当**发 T68" +
-                       "（蓝图 `:4649 ExecuteStoppedAttack` → `:4651 ExecuteOnOperationKreditsSpent`）"
-                     + Dump(state3, ("派发记录", trace3.Count == 0 ? "（空）" : string.Join(" | ", trace3)));
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ T62 `OnOtherUnitUnpinned` + 注册 `RemovePin`。
-    ///
-    /// 蓝图 `RemovePin`（`:31799-31847`，本次逐行复核）：
-    /// <code>
-    /// :31799  card.pinnedTurns = 0                 ; 内核这里早就实现了
-    /// :31816  NotifyUnpinUnit(Notifier, cardID)
-    /// :31818  FetchAllCardsWithEventTrigger(62)
-    /// :31847      item.OnOtherUnitUnpinned(card)
-    /// </code>
-    /// ⚠️ **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 3 个订阅者）；枚举名
-    /// `OnOtherUnitUnPinned`（大写 P）在 IR 里 **0 个订阅者** —— 按枚举名查会得 0。
-    ///
-    /// ⚠️ 而且 `RemovePin` **此前根本不在派发表里**，而 IR 里 **10 张卡**调它
-    ///（`card_event_desert_push` / `card_event_rally` / `card_event_recuperation` …）
-    /// ⇒ 那些卡的"解除钉住"一直是**静默 no-op**。本用例把"已注册"也断言上。
-    ///
-    /// 判别力：① 去掉 `RemovePin` 注册 ⇒ 前置断言失败；
-    /// ② 去掉 `RemoveKeyword` 里那段 T62 广播 ⇒ 断言 ① 失败；
-    /// ③ 把"没被钉住也发"当成实现 ⇒ 断言 ② 失败。
-    ///
-    /// ⚠️ **回放侧无信号**：3 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
-    /// </summary>
-    private static string? RemovePinTrigger(CardDatabase db)
-    {
-        const string probe = "card_unit_14_panzergrenadier";   // 订阅 OnOtherUnitUnpinned（也订阅 T61）
-        const string plain = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { probe, plain })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        var w = state.CreateWithId(probe, Side.Left, 300, CardLocation.BoardHqLeft, 3);
-        var victim = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardHqRight, 1);
-        victim.Defense = 9;
-        victim.MaxDefense = 9;
-
-        if (!engine.Api.ImplementedNames.Contains("RemovePin"))
-        {
-            return "派发表里没有 `RemovePin` —— IR 里 **10 张卡**调它，" +
-                   "此前那些卡的「解除钉住」全是**静默 no-op**";
-        }
-
-        var ctx = new EffectContext { Engine = engine, State = state, Self = w, Controller = Side.Left };
-        string Trace() => trace.Count == 0 ? "（空）" : string.Join(" | ", trace);
-
-        // ---- ① 先钉住、再解除 ⇒ T62 要发，且 `pinnedTurns` 清零 ----
-        engine.Api.PinUnit(victim);
-        if (!victim.Keywords.Contains(Keyword.Pinned))
-        {
-            return "前置不成立：`PinUnit` 没把 `Pinned` 挂上";
-        }
-
-        trace.Clear();
-        engine.Api.InvokeByName("RemovePin", null, new object?[] { victim, null }, ctx, out bool handled);
-        if (!handled)
-        {
-            return "`RemovePin` 没有被派发表处理";
-        }
-
-        if (!Reached(trace, "OnOtherUnitUnpinned", w))
-        {
-            return $"解除钉住之后 `OnOtherUnitUnpinned` 没有派发给 {probe}" +
-                   "（蓝图 `RemovePin` :31818/:31847）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        if (victim.Keywords.Contains(Keyword.Pinned))
-        {
-            return "`RemovePin` 之后 `Pinned` 关键字应当已被摘掉";
-        }
-
-        if (victim.PinnedTurns != 0)
-        {
-            return $"`RemovePin` 之后 `PinnedTurns` 应当清零（蓝图 :31799），实际 {victim.PinnedTurns}";
-        }
-
-        // ---- ② 对**没被钉住**的卡调 `RemovePin` ⇒ **不该**广播 ----
-        trace.Clear();
-        engine.Api.InvokeByName("RemovePin", null, new object?[] { victim, null }, ctx, out _);
-        if (Reached(trace, "OnOtherUnitUnpinned", w))
-        {
-            return "对**没被钉住**的卡调 `RemovePin` 时**不该**广播 T62" +
-                   "（`RemoveKeyword` 开头那道 `if (!target.Keywords.Remove(keyword)) return;`）"
-                 + Dump(state, ("派发记录", Trace()));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ T30 `OnOtherCardAttackSwitchTarget` —— 出参 `newDefender` **真的改掉攻击目标**。
-    ///
-    /// 探针 `card_event_cold_trap`（COLD TRAP，2 费 gotcha：「When an enemy unit attacks,
-    /// **add a SISSI as defender**.」），它的 `locals.OnOtherCardAttackSwitchTarget` 体：
-    /// <code>
-    /// i=0    ShouldGotchaTrigger(cardAttacking)      ; self = 陷阱自己（要求已装填）
-    /// i=28   jumpIfNot → i=230（newDefender = oldDefender）
-    /// i=42   oldDefender.side == self.side           ; 护的是**自己这边**被打的卡
-    /// i=192  IsLocationFull(oldDefender.location) ⇒ 满 ⇒ i=206 写回 oldDefender
-    /// i=…    GotchaTriggered(self, cardAttacking.cardID, false, false)
-    /// i=386  SpawnCardOnBattlefield(side, …, "card_unit_sissi", …,
-    ///                               oldDefender.locationNumber + 1, …)
-    /// i=612  newDefender = GetCardFromID(spawnedCardID)   ; ★ 换成新生成的 SISSI
-    /// </code>
-    ///
-    /// 判别力：① 不派发 T30 ⇒ 原目标掉 3 血（断言② 失败）；
-    /// ② 派发但丢掉出参 ⇒ 攻击者仍打原目标（断言② 失败）；
-    /// ③ 换目标成功但伤害仍打原目标 ⇒ 断言② 失败。
-    ///
-    /// ⚠️ **回放侧无信号**：2 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据只有「蓝图原文 + 本用例」。
-    /// </summary>
-    private static string? AttackSwitchTargetTrigger(CardDatabase db)
-    {
-        const string trap = "card_event_cold_trap";
-        const string sissi = "card_unit_sissi";
-        const string plain = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { trap, sissi, plain })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Right;              // 由**右方**发动攻击
-        state.SetKredits(Side.Right, 30);
-        state.SetMaxKredits(Side.Right, 30);
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-
-        // 左方手里一张**已装填**的 COLD TRAP（`ShouldGotchaTrigger` 要求 `gotchaActivated > 0`）
-        var trapCard = state.CreateWithId(trap, Side.Left, 300, CardLocation.HandLeft, 0);
-        trapCard.GotchaActivated = 1;
-
-        // 左方半场一个待被攻击的单位（位置号 1；半场容量 5、当前只有 HQ+它 ⇒ **不满**）
-        var shield = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 1);
-        shield.Attack = 0;
-        shield.Defense = 9;
-        shield.MaxDefense = 9;
-        shield.EnteredPlayOnTurn = -1;
-
-        // 右方攻击者放**前线** ⇒ 打半场目标不需要射程
-        var attacker = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
-        attacker.EnteredPlayOnTurn = -1;
-        attacker.Attack = 3;
-        attacker.Defense = 9;
-        attacker.MaxDefense = 9;
-
-        int shieldBefore = shield.Defense;
-
-        if (!engine.Attack(attacker, shield, out string why))
-        {
-            return $"前置不成立：攻击打不出去（{why}）" + Dump(state, ("未实现", Unimpl(state)));
-        }
-
-        bool dispatched = trace.Any(t => t.Contains("OnOtherCardAttackSwitchTarget", StringComparison.Ordinal)
-                                         && t.Contains($"{trapCard.Name}#{trapCard.CardId}", StringComparison.Ordinal));
-        if (!dispatched)
-        {
-            return $"T30 `OnOtherCardAttackSwitchTarget` **没有派发**到 {trap}" +
-                   "（IR `locals` 2 张订阅者之一；内核原先从不派发 30）"
-                 + Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
-        }
-
-        if (shield.Defense != shieldBefore)
-        {
-            return "出参 `newDefender` **没有被尊重**：COLD TRAP 已经生成了 SISSI 当替身，" +
-                   $"伤害应当改由 SISSI 承担、原目标零伤害（蓝图 :4282/:4657），" +
-                   $"实际 {shieldBefore} → {shield.Defense}"
-                 + Dump(state, ("派发记录", string.Join(" | ", trace)));
-        }
-
-        var sissiCard = state.CardsUnordered().FirstOrDefault(c => c.Name == sissi);
-        if (sissiCard is null)
-        {
-            return "COLD TRAP 的 `SpawnCardOnBattlefield(\"card_unit_sissi\", …)` 没生效" +
-                   Dump(state, ("派发记录", string.Join(" | ", trace)));
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ 四个**规则相关**的小缺口一次补齐（README §8.24 的清单里最便宜的四条）：
-    /// `GetAllCardsInFrontline` / `GetLeftMostCardInHand` /
-    /// `MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`。
-    ///
-    /// 蓝图出处（本次逐行复核）：
-    /// <list type="bullet">
-    /// <item>`GetAllCardsInFrontline` `:19364-19449` —— 遍历 `GetAllCardInBattle`，
-    ///   收 `location == 7` 且 `!IsUnrevealedCovertCard(item) || includeCovertCards` 的卡。
-    ///   ⚠️ 内核的 `IsUnrevealedCovertCard` 是**恒 false 的桩** ⇒ 第一个条件恒真。</item>
-    /// <item>`GetLeftMostCardInHand` `:20980-21058` —— `Card.side` 的手牌里 `locationNumber == 0` 的那张，
-    ///   出参 `(WasFound, LeftMostCard)`。</item>
-    /// <item>`MoveMultipleCardsToTopOfOwnersDeck` `:27339-27399` —— 对每张调
-    ///   `MoveCardToTopOfDeck(item, instigatorID, positionFromTop, true)`。</item>
-    /// <item>`SetCardSeen` `:34001-34036` —— `GetCardFromID(cardID_Seen).cardSeen = True`。</item>
-    /// </list>
-    ///
-    /// 判别力：把任一实现删掉 ⇒ 对应断言失败（"派发表里没有 X"）。
-    /// ⚠️ 这四条在 22 局语料里的可观测性**未逐条核实**；判据以「蓝图原文 + 本用例」为主。
-    /// </summary>
-    private static string? RulePrimitivesBatch(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        // ---- ① `GetAllCardsInFrontline`：只收前线(7)的卡 ----
-        var frontLeft = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
-        var frontRight = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
-        state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardHqLeft, 1);
-        object? r1 = engine.Api.InvokeByName("GetAllCardsInFrontline", null,
-            new object?[] { false, null }, ctx, out bool handled1);
-        if (!handled1)
-        {
-            return "派发表里没有 `GetAllCardsInFrontline`（IR 里 8 个调用点）";
-        }
-
-        var front = r1 as List<CardInstance> ?? new List<CardInstance>();
-        if (front.Count != 2 || !front.Contains(frontLeft) || !front.Contains(frontRight))
-        {
-            return $"`GetAllCardsInFrontline` 应当正好返回前线那 2 张（蓝图 :19364-19449），" +
-                   $"实际 {front.Count} 张" + D();
-        }
-
-        // ---- ② `GetLeftMostCardInHand`：`locationNumber == 0` 的那张 ----
-        var handFirst = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 0);
-        var handSecond = state.CreateWithId(plain, Side.Left, 303, CardLocation.HandLeft, 1);
-        object? r2 = engine.Api.InvokeByName("GetLeftMostCardInHand", null,
-            new object?[] { handFirst, null, null }, ctx, out bool handled2);
-        if (!handled2)
-        {
-            return "派发表里没有 `GetLeftMostCardInHand`（IR 里 9 个调用点）";
-        }
-
-        if (r2 is not object?[] outs2 || outs2.Length < 2)
-        {
-            return $"`GetLeftMostCardInHand` 应当返回**两个**出参（WasFound / LeftMostCard），实际 {r2}";
-        }
-
-        if (!Truthy(outs2[0]) || !ReferenceEquals(outs2[1], handFirst))
-        {
-            return "`GetLeftMostCardInHand` 应当找到 `locationNumber == 0` 的那张" +
-                   "（蓝图 :20980-21058）" + D();
-        }
-
-        // ---- ②b ★ 手牌里**没有** `locationNumber == 0` 的卡 ⇒ `WasFound` 必须为假、卡为 null。
-        //      这一条才是能抓住"图省事写成 `Hand(side).First()`"的用例 ——
-        //      `State.Hand` 是按 `(LocationNumber, CardId)` 排好序的，
-        //      所以在"有 0 号"的正常布局下 `First()` 与蓝图结果**恰好一致**（② 抓不住）。
-        var orphanA = state.CreateWithId(plain, Side.Right, 70, CardLocation.HandRight, 1);
-        var orphanB = state.CreateWithId(plain, Side.Right, 71, CardLocation.HandRight, 2);
-        object? r2b = engine.Api.InvokeByName("GetLeftMostCardInHand", null,
-            new object?[] { orphanA, null, null }, ctx, out _);
-        if (r2b is not object?[] outs2b || outs2b.Length < 2)
-        {
-            return $"`GetLeftMostCardInHand`（无 0 号手牌）应当返回两个出参，实际 {r2b}";
-        }
-
-        if (Truthy(outs2b[0]) || outs2b[1] is not null)
-        {
-            return "手牌里**没有** `locationNumber == 0` 的卡时，`GetLeftMostCardInHand` 的 " +
-                   "`WasFound` 必须为**假**、`LeftMostCard` 必须为 **null**（蓝图 `:20980-21058` 是" +
-                   "在循环里找 `locationNumber == 0`，不是取第一张）" +
-                   $"—— 实际 WasFound={outs2b[0]} card={outs2b[1]}" + D();
-        }
-
-        // ---- ③ `SetCardSeen` ----
-        engine.Api.InvokeByName("SetCardSeen", null,
-            new object?[] { handSecond.CardId, handFirst.CardId, null }, ctx, out bool handled3);
-        if (!handled3)
-        {
-            return "派发表里没有 `SetCardSeen`（IR 里 9 个调用点）";
-        }
-
-        if (!handSecond.CardSeen)
-        {
-            return "`SetCardSeen` 应当把那张卡的 `cardSeen` 置真（蓝图 :34013）" + D();
-        }
-
-        // ---- ④ `MoveMultipleCardsToTopOfOwnersDeck` ----
-        int deckBefore = state.Deck(Side.Left).Count();
-        engine.Api.InvokeByName("MoveMultipleCardsToTopOfOwnersDeck", null,
-            new object?[] { new List<int> { handFirst.CardId, handSecond.CardId }, handFirst.CardId, 0, null },
-            ctx, out bool handled4);
-        if (!handled4)
-        {
-            return "派发表里没有 `MoveMultipleCardsToTopOfOwnersDeck`（IR 里 9 个调用点）";
-        }
-
-        if (handFirst.Location != CardLocation.DeckLeft || handSecond.Location != CardLocation.DeckLeft)
-        {
-            return "`MoveMultipleCardsToTopOfOwnersDeck` 应当把**两张都**移进牌库" +
-                   $"（蓝图 :27339-27399），实际 {handFirst.Location} / {handSecond.Location}" + D();
-        }
-
-        if (state.Deck(Side.Left).Count() != deckBefore + 2)
-        {
-            return $"`MoveMultipleCardsToTopOfOwnersDeck` 之后牌库应当多 2 张" +
-                   $"（{deckBefore} → {state.Deck(Side.Left).Count()}）" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ 四个**"有语料消费者"**的小缺口（README §8.25）：挑选依据不是"缺口最大"，
-    /// 而是"需要的卡真的在 22 局语料里出现过" —— 86 种规则相关缺口过滤后只剩 13 种，
-    /// 这是其中自洽的四条。
-    ///
-    /// <list type="bullet">
-    /// <item>`GiveTwoKredits()` —— 原生函数，给本方 +2 kredit（消费者 `card_unit_2nd_michigan`）。</item>
-    /// <item>`ResetUnitOperations(cardID, giverID, out)` 蓝图 `:33003-33060` ——
-    ///   `if (IsUnit(card) &amp;&amp; IsLocatedOnBoard(card)) { movementLeft = 1; attackLeft = getHasFury ? 2 : 1; }`。</item>
-    /// <item>`WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`
-    ///   蓝图 `:37653-37698` —— 读 JSON 标记；写入方 `SetRightLeftMostWhenPlayed`
-    ///   （`:34430-34535`）在 IR 里**直接调用点为 0**，所以落点在 `MatchEngine.PlayCard`。</item>
-    /// </list>
-    ///
-    /// 判别力：① 删任一实现 ⇒ 对应断言报"派发表里没有"；
-    /// ② `ResetUnitOperations` 去掉 `AliveOnBoard` 门 ⇒ 断言 ②b 失败；
-    /// ③ 去掉 `PlayCard` 里写标记那一段 ⇒ 断言 ③ 失败（left/right 都恒 false）。
-    /// </summary>
-    private static string? CorpusConsumerPrimitives(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        state.SetKredits(Side.Left, 30);
-        state.SetMaxKredits(Side.Left, 30);
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        // ---- ① `GiveTwoKredits`：给自己这一方 +2 ----
-        state.SetKredits(Side.Left, 3);
-        engine.Api.InvokeByName("GiveTwoKredits", null, Array.Empty<object?>(), ctx, out bool handled1);
-        if (!handled1)
-        {
-            return "派发表里没有 `GiveTwoKredits`（IR 2 个调用点；消费者 `card_unit_2nd_michigan` 在语料里）";
-        }
-
-        if (state.Kredits(Side.Left) != 5)
-        {
-            return $"`GiveTwoKredits` 应当给本方 +2 kredit（3 → 5），实际 {state.Kredits(Side.Left)}" + D();
-        }
-
-        // ---- ② `ResetUnitOperations`：场上单位的行动数全清零 ----
-        var unit = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
-        unit.HasMovedThisTurn = true;
-        unit.HasAttackedThisTurn = true;
-        unit.AttacksThisTurn = 1;
-        engine.Api.InvokeByName("ResetUnitOperations", null,
-            new object?[] { unit.CardId, unit.CardId, null }, ctx, out bool handled2);
-        if (!handled2)
-        {
-            return "派发表里没有 `ResetUnitOperations`（IR 3 个调用点）";
-        }
-
-        if (unit.HasMovedThisTurn || unit.HasAttackedThisTurn || unit.AttacksThisTurn != 0)
-        {
-            return "`ResetUnitOperations` 应当把 `HasMovedThisTurn` / `HasAttackedThisTurn` / " +
-                   "`AttacksThisTurn` 全清零（蓝图 :33003-33060）" + D();
-        }
-
-        // ---- ②b **不在场**的卡不受影响（蓝图那道 `IsLocatedOnBoard` 门）----
-        var inHand = state.CreateWithId(plain, Side.Left, 301, CardLocation.HandLeft, 0);
-        inHand.HasMovedThisTurn = true;
-        engine.Api.InvokeByName("ResetUnitOperations", null,
-            new object?[] { inHand.CardId, inHand.CardId, null }, ctx, out _);
-        if (!inHand.HasMovedThisTurn)
-        {
-            return "`ResetUnitOperations` 对**不在场**的卡**不该**生效" +
-                   "（蓝图 :33003 的 `IsUnit && IsLocatedOnBoard` 门）" + D();
-        }
-
-        // ---- ③ 打出手牌最左/最右的卡 ⇒ 两个标记要写对（`PlayCard` 里的落点）----
-        bool Flag(CardInstance card, string name)
-        {
-            object? r = engine.Api.InvokeByName(name, null, new object?[] { card, null }, ctx, out _);
-            return r is true;
-        }
-
-        state.SetKredits(Side.Left, 30);
-        var leftCard = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 0);
-        state.CreateWithId(plain, Side.Left, 303, CardLocation.HandLeft, 1);
-        var rightCard = state.CreateWithId(plain, Side.Left, 304, CardLocation.HandLeft, 2);
-
-        if (!engine.PlayCard(leftCard, null))
-        {
-            return "前置不成立：打不出手牌最左那张" + D();
-        }
-
-        bool lLeft = Flag(leftCard, "WasLeftMostCardWhenPlayedFromHand");
-        bool lRight = Flag(leftCard, "WasRightMostCardWhenPlayedFromHand");
-        if (!lLeft || lRight)
-        {
-            return "打出**最左**那张（locationNumber=0，但不是最右）之后应当 " +
-                   $"left=true / right=false，实际 left={lLeft} right={lRight}" + D();
-        }
-
-        if (!engine.PlayCard(rightCard, null))
-        {
-            return "前置不成立：打不出手牌最右那张" + D();
-        }
-
-        bool rLeft = Flag(rightCard, "WasLeftMostCardWhenPlayedFromHand");
-        bool rRight = Flag(rightCard, "WasRightMostCardWhenPlayedFromHand");
-        if (rLeft || !rRight)
-        {
-            return "打出**最右**那张（locationNumber=2，但不是最左）之后应当 " +
-                   $"left=false / right=true，实际 left={rLeft} right={rRight}" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ `getCardsBuffedByThisCard(out cards)` —— 13 条清单里**最大的一条**（25 个调用点）。
-    ///
-    /// **原生函数**（不在 `BP_CardFunctions` 里），语义是按 19 张消费者的用法推断的：
-    /// 它们**全是光环卡**（"Your other X have +N attack"：`royal_west_kents` / `sdf` /
-    /// `1st_london_brigade` / `panzer_iii_l` / `wolves_of_tuscany` / `type_4_chi_to` …），
-    /// 用法都是同一套**光环刷新**（逐行确认于 `card_unit_royal_west_kents` 的 ubergraph）：
-    /// <code>
-    /// i=1490  RemoveBuff()                              ; 先撤掉自己贴的
-    /// i=1505  CardsBuffed = getCardsBuffedByThisCard()
-    /// i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
-    /// </code>
-    /// ⇒ 语义 = "所有 `BuffsBySource` 里含**来源为我**的条目的卡"（与 `isBuffedByCard` 对偶）。
-    ///
-    /// 判别力：① 删实现 ⇒ 报"派发表里没有"；
-    /// ② 实现改成"返回所有被贴过的卡"（不过滤来源）⇒ 断言 ① 会看到 1 张以外的卡而失败；
-    /// ③ 实现改成"返回空表" ⇒ 断言 ① 失败。
-    /// </summary>
-    private static string? CardsBuffedByThisCardQuery(CardDatabase db)
-    {
-        const string aura = "card_unit_royal_west_kents";
-        const string plain = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { aura, plain })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        string D() => Dump(state);
-
-        var src = state.CreateWithId(aura, Side.Left, 300, CardLocation.BoardFrontline, 0);
-        var buffed = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardFrontline, 1);
-        state.CreateWithId(plain, Side.Left, 302, CardLocation.BoardHqLeft, 1);
-
-        // ⚠️ 来源取 `ctx.Self` —— `DoChangeAttack` 结尾就是 `ChangeAttack(target, delta, c.Self)`，
-        //    而且那里有注释明确说**故意不取** `SourceCardIdArg(a, 1, c.Self)`
-        //    （`CardApiDispatch.cs:3012-3013`）。所以这里必须让 `Self` = 光环那张卡。
-        var ctx = new EffectContext { Engine = engine, State = state, Self = src, Controller = Side.Left };
-
-        // 前置：用 `ChangeAttack(目标, 来源ID, …)` 贴一笔**带来源**的加成
-        engine.Api.InvokeByName("ChangeAttack", null,
-            new object?[] { buffed, src.CardId, 2, 0, false, null }, ctx, out bool handled1);
-        if (!handled1)
-        {
-            return "前置不成立：派发表里没有 `ChangeAttack`";
-        }
-
-        if (!buffed.BuffsBySource.Keys.Any(k => k.SourceCardId == src.CardId))
-        {
-            return "前置不成立：`ChangeAttack(目标, 来源ID, …)` 没有在 `BuffsBySource` 里" +
-                   "留下「来源 = 光环那张卡」的条目" + D();
-        }
-
-        // ---- ① 只返回**被这张卡贴过**的那张 ----
-        var ctxAura = new EffectContext { Engine = engine, State = state, Self = src, Controller = Side.Left };
-        object? r1 = engine.Api.InvokeByName("getCardsBuffedByThisCard", null,
-            new object?[] { null }, ctxAura, out bool handled2);
-        if (!handled2)
-        {
-            return "派发表里没有 `getCardsBuffedByThisCard`（IR 25 个调用点 / 19 张光环卡）";
-        }
-
-        var got = r1 as List<CardInstance> ?? new List<CardInstance>();
-        if (got.Count != 1 || !ReferenceEquals(got[0], buffed))
-        {
-            return $"`getCardsBuffedByThisCard` 应当**只**返回被这张卡贴过的那 1 张" +
-                   $"（语义 = `BuffsBySource` 里来源是我的那些卡），实际 {got.Count} 张" + D();
-        }
-
-        // ---- ② 没贴过任何卡的来源 ⇒ 空表 ----
-        var idle = state.CreateWithId(plain, Side.Right, 60, CardLocation.BoardFrontline, 0);
-        var ctxIdle = new EffectContext { Engine = engine, State = state, Self = idle, Controller = Side.Right };
-        object? r2 = engine.Api.InvokeByName("getCardsBuffedByThisCard", null,
-            new object?[] { null }, ctxIdle, out _);
-        var none = r2 as List<CardInstance> ?? new List<CardInstance>();
-        if (none.Count != 0)
-        {
-            return $"没贴过卡的来源应当返回**空表**，实际 {none.Count} 张" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ `GetRandomCard` 的第二个实参 `skipCustomAlways` **必须读**（蓝图 `:21688`）。
-    ///
-    /// 蓝图 `GetRandomCard(cards, skipCustomAlways, out randomCard)` 按它分流：
-    /// <code>
-    /// :21688  if (!skipCustomAlways) goto L_0179   ; false ⇒ 去收集"必选集"
-    /// :21689  L_007E: 全池随机（也是"必选集为空"的落点）
-    /// :21705  L_0179: 收集 CustomName1HasAttribute(card,"AlwaysSelectedAsRandom") 的那些
-    /// :21753  非空 ⇒ 只在必选集里随机；空 ⇒ goto L_007E（退回全池随机）
-    /// </code>
-    /// **两条路都只消费 1 次随机数**，只有"从哪个池里取"不同。
-    ///
-    /// 全卡池 176 个调用点里 **153 个传 `false`**（`true` 只有 23 个），
-    /// 而内核旧实现恒按全池随机 ⇒ 对那 153 个点走错了分支。
-    ///
-    /// 判别力：① 不看第二个实参（恒全池随机）⇒ 断言 ② 失败（会抽到非必选卡）；
-    /// ② 反过来恒按必选集 ⇒ 断言 ③ 失败。
-    /// </summary>
-    private static string? GetRandomCardCustomAlways(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        var a = state.CreateWithId(plain, Side.Left, 300, CardLocation.HandLeft, 0);
-        var b = state.CreateWithId(plain, Side.Left, 301, CardLocation.HandLeft, 1);
-        var c2 = state.CreateWithId(plain, Side.Left, 302, CardLocation.HandLeft, 2);
-        var pool = new List<CardInstance> { a, b, c2 };
-
-        bool Draw(bool skipCustomAlways)
-        {
-            object? r = engine.Api.InvokeByName("GetRandomCard", null,
-                new object?[] { pool, skipCustomAlways, null }, ctx, out _);
-            return ReferenceEquals(r, b);
-        }
-
-        // ---- ① 池里**没有**必选卡 ⇒ 两条分支都应当能抽到别的卡（恒等变换）----
-        bool sawOtherFalse = false;
-        bool sawOtherTrue = false;
-        for (int i = 0; i < 12; i++)
-        {
-            if (!Draw(false))
-            {
-                sawOtherFalse = true;
-            }
-
-            if (!Draw(true))
-            {
-                sawOtherTrue = true;
-            }
-        }
-
-        if (!sawOtherFalse || !sawOtherTrue)
-        {
-            return "池里**没有**必选卡时，`GetRandomCard` 两条分支都应当能从全池里抽到非 b 的卡" +
-                   $"（蓝图 :21757 的 `else → L_007E` 就是退回全池随机）；" +
-                   $"实际 false 抽到过别的={sawOtherFalse} true 抽到过别的={sawOtherTrue}" + D();
-        }
-
-        // ---- ② 把 b 标成必选，`skipCustomAlways = false` ⇒ **只能**抽到 b ----
-        // ⚠️ 实参形状（IR 实测 19 种）：**标签在 `a[0]`、卡在 `recv`**（或退回 `c.Self`）——
-        //    `SuffixHas`/`SuffixAdd` 就是 `card = AsCardOrId(a[0]) ?? SelfArg(...)` + `tag = StrArg(a, 0)`。
-        engine.Api.InvokeByName("CustomName1Add", b,
-            new object?[] { "AlwaysSelectedAsRandom" }, ctx, out bool handledAdd);
-        if (!handledAdd)
-        {
-            return "派发表里没有 `CustomName1Add`（前置不成立）";
-        }
-
-        if (!CardApi.CustomNameHasAttribute(b, "customName1", "AlwaysSelectedAsRandom"))
-        {
-            return "前置不成立：`CustomName1Add(b, \"AlwaysSelectedAsRandom\")` 没生效";
-        }
-
-        for (int i = 0; i < 12; i++)
-        {
-            if (!Draw(false))
-            {
-                return "池里有**必选卡**时，`skipCustomAlways = false` 只能抽到它" +
-                       "（蓝图 :21753-:21765：非空 ⇒ 只在必选集里随机）——" +
-                       "旧实现恒按全池随机，所以这一条能抓住它" + D();
-            }
-        }
-
-        // ---- ③ 同一池、`skipCustomAlways = true` ⇒ 必选标记**不生效**，应当能抽到别的 ----
-        bool sawOtherSkip = false;
-        for (int i = 0; i < 12; i++)
-        {
-            if (!Draw(true))
-            {
-                sawOtherSkip = true;
-                break;
-            }
-        }
-
-        if (!sawOtherSkip)
-        {
-            return "`skipCustomAlways = true` 时必选标记**不该**生效（蓝图 :21688 直接走 :21689 全池随机），" +
-                   "但 12 次都没抽到别的卡" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ `IsTopDeckNavy(deckSide, out isNavy)` —— 蓝图 `BP_CardFunctions.g.cs:24178-24218`（逐行复核）：
-    /// <code>
-    ///   deckCardIDs = GetDeckByside(deckSide)
-    ///   if (deckCardIDs[0] > 0):
-    ///       isNavy = getHasGameplayTag(GetCardFromID(deckCardIDs[0]), ["subtype.navy"])
-    ///   else: isNavy = false
-    /// </code>
-    /// 两个依赖**早已就绪**（`GetDeckByside` 144 个调用点且返回**卡 ID 列表**、
-    /// `getHasGameplayTag` 已注册、`GameplayTagTable` 里 `subtype.navy` 有数据）
-    /// ⇒ 这一条是**没有链**的干净实现，消费者 `card_event_uss_arcfish` 在 22 局语料里出现过。
-    ///
-    /// 判别力：① 恒返回 true / 恒返回 false ⇒ 断言 ① 或 ② 失败；
-    /// ② 去掉"牌库空"那道门（`deckCardIDs[0] > 0`）⇒ 断言 ③ 失败。
-    /// </summary>
-    private static string? TopDeckNavyQuery(CardDatabase db)
-    {
-        const string navyCard = "card_event_hms_belfast";      // `GameplayTagTable` 里是 `subtype.navy`
-        const string landCard = "card_unit_infantry_regiment_25";
-        foreach (string n in new[] { navyCard, landCard })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        bool IsNavy(Side s)
-        {
-            object? r = engine.Api.InvokeByName("IsTopDeckNavy", null,
-                new object?[] { (int)s, null }, ctx, out bool handled);
-            if (!handled)
-            {
-                return false;
-            }
-
-            return r is true;
-        }
-
-        // ---- ① 牌库只有一张海军卡 ⇒ true ----
-        var navy = state.CreateWithId(navyCard, Side.Left, 300, CardLocation.DeckLeft, 0);
-        if (!IsNavy(Side.Left))
-        {
-            return $"牌库顶是海军卡（{navyCard}）时 `IsTopDeckNavy` 应当为**真**" +
-                   "（蓝图 :24178-24218）" + D();
-        }
-
-        // ---- ② 换成非海军卡 ⇒ false ----
-        state.Move(navy, CardLocation.Discard);
-        var land = state.CreateWithId(landCard, Side.Left, 301, CardLocation.DeckLeft, 0);
-        if (IsNavy(Side.Left))
-        {
-            return $"牌库顶不是海军卡（{landCard}）时 `IsTopDeckNavy` 应当为**假**" + D();
-        }
-
-        // ---- ③ 空牌库 ⇒ false（蓝图那道 `deckCardIDs[0] > 0` 门）----
-        state.Move(land, CardLocation.Discard);
-        if (IsNavy(Side.Left))
-        {
-            return "牌库为空时 `IsTopDeckNavy` 应当为**假**（蓝图 `deckCardIDs[0] > 0` 那道门）" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ `JSON_SetInt` 的值可能是**卡对象** —— 必须取它的 `CardId`，不能按整数读成 0。
-    ///
-    /// 背景（README §8.23 的**后续收口**）：蓝图那些"生成"原语的出参**声明是整数**
-    /// （`spawnedCardID`），而内核的实现 `return card`（**卡对象**）。
-    /// 全 IR 扫描：spawn 出参一共只有 **26 处**被消费，其中 **25 处**要么走
-    /// `GetCardFromID`（已改成 `AsCardOrId`）、要么消费 `SpawnCardInDeckBySide` 的
-    /// `spawnedCardIDs`（本来就返回 `List<int>`）—— **只有这一处**是按整数用的：
-    /// `card_event_area_bombardment` 的 `JSON_SetInt(self, "unitToRemove", spawnedCardID)`。
-    ///
-    /// 判别力：把 `AsCard(raw)?.CardId` 那一段去掉（退回 `IntArg(a, 2)`）⇒ 断言 ① 失败（写进 0）。
-    /// </summary>
-    private static string? JsonSetIntAcceptsCardValue(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        var host = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
-        var value = state.CreateWithId(plain, Side.Left, 301, CardLocation.BoardFrontline, 1);
-
-        // ---- ① 值是**卡对象** ⇒ 应当写进那张卡的 `CardId` ----
-        engine.Api.InvokeByName("JSON_SetInt", host,
-            new object?[] { host, "unitToRemove", value, null }, ctx, out bool handled1);
-        if (!handled1)
-        {
-            return "派发表里没有 `JSON_SetInt`（前置不成立）";
-        }
-
-        int stored = engine.Api.JsonGetInt(host, "unitToRemove");
-        if (stored != value.CardId)
-        {
-            return $"`JSON_SetInt` 的值是卡对象时应当写进它的 `CardId`（{value.CardId}），" +
-                   $"实际 {stored}（按整数读会得 0）" + D();
-        }
-
-        // ---- ② 值是普通整数 ⇒ 行为不变 ----
-        engine.Api.InvokeByName("JSON_SetInt", host,
-            new object?[] { host, "plainInt", 7, null }, ctx, out _);
-        if (engine.Api.JsonGetInt(host, "plainInt") != 7)
-        {
-            return "`JSON_SetInt` 的值是普通整数时应当原样写进（7）" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★ `SetCardLocationAndLocNumber(cardID, Location, LocationNumber)` ——
-    /// 蓝图 `BP_CardFunctions.g.cs:33961-34000`（40 行，逐行复核）。
-    ///
-    /// 两个要点：① 是**裸写字段**（不走 `State.Move`，所以**不触发** `OnCardLocationMoved` 一族）；
-    /// ② **`Discard(8)` 时位置号保持不动**（蓝图 `:33980` 那道跳转直接跳到结尾）。
-    ///
-    /// ⚠️ 它是 `ConvertCard` 链上的前置件（IR 里直接调用点为 0），本轮先把它做对、可验证。
-    ///
-    /// 判别力：去掉 `location != Discard` 那道门 ⇒ 断言 ② 失败。
-    /// </summary>
-    private static string? SetCardLocationAndLocNumberRaw(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        if (db.Find(plain) is null)
-        {
-            return $"卡库里缺 {plain}";
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
-        string D() => Dump(state);
-
-        var card = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
-
-        // ---- ① 普通位置：位置与位置号都写 ----
-        engine.Api.InvokeByName("SetCardLocationAndLocNumber", null,
-            new object?[] { card.CardId, (int)CardLocation.HandLeft, 3 }, ctx, out bool handled);
-        if (!handled)
-        {
-            return "派发表里没有 `SetCardLocationAndLocNumber`（ConvertCard 链的前置件）";
-        }
-
-        if (card.Location != CardLocation.HandLeft || card.LocationNumber != 3)
-        {
-            return $"应当写成 HandLeft / 3，实际 {card.Location} / {card.LocationNumber}" + D();
-        }
-
-        // ---- ② `Discard(8)`：只改位置，**位置号保持不动**（蓝图 :33980）----
-        engine.Api.InvokeByName("SetCardLocationAndLocNumber", null,
-            new object?[] { card.CardId, (int)CardLocation.Discard, 7 }, ctx, out _);
-        if (card.Location != CardLocation.Discard)
-        {
-            return $"应当写成 Discard，实际 {card.Location}" + D();
-        }
-
-        if (card.LocationNumber != 3)
-        {
-            return "蓝图 `:33980` 规定 **`Discard(8)` 时不写位置号**（保持原值 3），" +
-                   $"实际被改成了 {card.LocationNumber}" + D();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// ★★ `ConvertCard`（蓝图 `:9882-10450`，569 行）端到端 —— **这是 §8.30 量出来的
-    /// 运行时可达链**（`live-165924` 的 ⑥ 里只有它、撞到 ×2）。
-    ///
-    /// 覆盖：
-    /// <list type="number">
-    /// <item>老卡离场（在场 ⇒ 进弃牌堆）；</item>
-    /// <item>新卡**继承老卡的位置与位置号**（蓝图 `:10206` 的 `CreateCard` 实参）；</item>
-    /// <item>★ T34 `OnOtherCardConverted` 的**过滤语义**（蓝图 `:10340`
-    ///   `Array_Contains(newCardIDs, item.cardID)`）—— 所以这里**转成一张 T34 订阅者**
-    ///   （`card_unit_312th_novgorod`），让"刚转出来的那张卡"成为唯一合格订阅者。</item>
-    /// </list>
-    ///
-    /// 判别力：① 不派发 T34 ⇒ 断言 ③ 失败；
-    /// ② 过滤条件写反（发给**不在** newCardIDs 里的卡）⇒ 断言 ③ 也失败；
-    /// ③ 新卡不继承位置号 ⇒ 断言 ② 失败。
-    /// </summary>
-    private static string? ConvertCardEndToEnd(CardDatabase db)
-    {
-        const string plain = "card_unit_infantry_regiment_25";
-        const string into = "card_unit_312th_novgorod";      // T34 `OnOtherCardConverted` 的 3 个订阅者之一
-        foreach (string n in new[] { plain, into })
-        {
-            if (db.Find(n) is null)
-            {
-                return $"卡库里缺 {n}";
-            }
-        }
-
-        var (engine, state) = EmptyBoard(db);
-        state.ActiveSide = Side.Left;
-        var trace = new List<string>();
-        engine.Api.TriggerTrace = trace;
-        string D() => Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace)));
-
-        var old = state.CreateWithId(plain, Side.Left, 300, CardLocation.BoardFrontline, 0);
-        var ctx = new EffectContext { Engine = engine, State = state, Self = old, Controller = Side.Left };
-
-        // `ConvertCard(cardIDs, instigatorID, convertToCardName, convertIntoCardID, skipTrigger, out newCardIDs)`
-        object? r = engine.Api.InvokeByName("ConvertCard", null,
-            new object?[] { new List<CardInstance> { old }, old.CardId, into, 0, false, null },
-            ctx, out bool handled);
-        if (!handled)
-        {
-            return "派发表里没有 `ConvertCard`（live-165924 的 ⑥ 里只有它）";
-        }
-
-        var newIds = r as List<int> ?? new List<int>();
-        if (newIds.Count != 1)
-        {
-            return $"`ConvertCard` 应当转出 1 张（`newCardIDs` 出参），实际 {newIds.Count}" + D();
-        }
-
-        // ---- ① 老卡离场 ----
-        if (old.Location != CardLocation.Discard)
-        {
-            return $"老卡应当离场进弃牌堆（蓝图 `:10126-10147`），实际 {old.Location}" + D();
-        }
-
-        // ---- ② 新卡继承老卡的位置与位置号 ----
-        var created = state.ById(newIds[0]);
-        if (created is null)
-        {
-            return "`newCardIDs` 里的 id 在内核里找不到卡" + D();
-        }
-
-        if (created.Name != into)
-        {
-            return $"新卡应当是 {into}，实际 {created.Name}" + D();
-        }
-
-        if (created.Location != CardLocation.BoardFrontline || created.LocationNumber != 0)
-        {
-            return "新卡应当**继承老卡的位置与位置号**（蓝图 `:10206` 的 `CreateCard` 实参：" +
-                   $"`location = 老卡.location`、`locationNumber = 老卡.locationNumber`），" +
-                   $"实际 {created.Location}/{created.LocationNumber}" + D();
-        }
-
-        // ---- ③ T34：刚转出来的那张自己就是订阅者 ⇒ 应当收到（`newCardIDs` 过滤）----
-        if (!Reached(trace, "OnOtherCardConverted", created))
-        {
-            return "T34 `OnOtherCardConverted` 应当派发给**刚转出来的那张卡**" +
-                   "（蓝图 `:10340` 的 `Array_Contains(newCardIDs, item.cardID)` 过滤；" +
-                   $"`{into}` 是 3 个订阅者之一）" + D();
         }
 
         return null;

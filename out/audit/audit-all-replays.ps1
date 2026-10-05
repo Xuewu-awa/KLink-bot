@@ -10,7 +10,9 @@
 [CmdletBinding()]
 param(
     [string]$Dir = 'out\_server-replays',
-    [string]$Proj = 'tools\ServerBridgeTest'
+    [string]$Proj = 'tools\ServerBridgeTest',
+    [switch]$NoIdentityFix,
+    [switch]$NoDuplicateStartKredit
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,7 +42,9 @@ try {
         $base = $f.FullName -replace '\.actions\.json$', ''
         $mid = ($f.Name -replace '^replay-', '') -replace '\.actions\.json$', ''
 
-        $out = & dotnet run --project $Proj -c Release --no-build -- --audit-replay $base 2>&1
+        $identityArg = if ($NoIdentityFix) { '--no-identity-fix' } else { '--identity-fix' }
+        $duplicateArg = if ($NoDuplicateStartKredit) { @() } else { @('--dup-start-kredit') }
+        $out = & dotnet run --project $Proj -c Release --no-build -- --audit-replay $base $identityArg $duplicateArg 2>&1
         $text = $out -join "`n"
 
         # "应用 121/141 条（⚠ 20 条没应用）"

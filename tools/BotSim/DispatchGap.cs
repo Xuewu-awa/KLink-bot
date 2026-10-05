@@ -116,40 +116,26 @@ internal static class DispatchGapBaseline
     /// </remarks>
     /// 2026-10-03：525 → **522**（实际重跑：2462 调用点）。补上
     /// `GetCardsInFrontlineBySide`、`FullyHealCard`、`GetCardsPlayedFromHandThisTurn`。
-    /// 2026-10-04：522 → **521**（调用点 2462 → **2452**，指纹 `ACCAA64A21EF6CDE`）。
-    /// 原因是**注册了 `RemovePin`** —— 它在缺口集合里原本有 **10 个调用点**
-    /// （`card_event_desert_push` / `card_event_rally` / `card_event_recuperation` /
-    ///  `card_unit_79th_infantry_regiment` / `card_unit_fw_190_ta_152` …），
-    /// 也就是说那些卡的「解除钉住」此前是**静默空转**。种类数与调用点**都降了**，
-    /// 符合"只降不升"。同批还补上了 T62 `OnOtherUnitUnpinned` 的广播。
-    /// 2026-10-04：521 → **517**（调用点 2452 → **2417**，指纹 `562F23B0F92405BE`）。
-    /// 原因是补上四个**规则相关**的小缺口：`GetAllCardsInFrontline`（8 点）、
-    /// `GetLeftMostCardInHand`（9）、`MoveMultipleCardsToTopOfOwnersDeck`（9）、`SetCardSeen`（9）。
-    /// 选它们的方式见 README §8.24：把缺口按**拥有者**分成
-    /// 「`BP_*` / 其它 UI 蓝图（1067 点，**根本不会跑**）」「campaign/教程（951 点，**离线内核没有战役模式**）」
-    /// 与「**规则相关（343 点 / 91 种）**」三档，只在前一档之外挑。
-    /// 2026-10-04：517 → **513**（调用点 2417 → **2402**，指纹 `1CD6C9FB13D94AD0`）。
-    /// 这一批的挑选依据换成了**"需要的卡真的在 22 局语料里出现过"**：
-    /// 86 种规则相关缺口按这个条件过滤后只剩 **13 种**，本轮补了其中自洽的四条 ——
-    /// `GiveTwoKredits`（2 点）、`ResetUnitOperations`（3）、
-    /// `WasLeftMostCardWhenPlayedFromHand`（6）、`WasRightMostCardWhenPlayedFromHand`（4）。
-    /// 2026-10-04：513 → **512**（调用点 2402 → **2377**，指纹 `D761A2F1EC183719`）。
-    /// 补的是 `getCardsBuffedByThisCard`（**25 个调用点，是 13 条清单里最大的一条**）——
-    /// 19 张消费者全是光环卡，语义按"用法一致 + 与 `isBuffedByCard` 对偶"推断：
-    /// "所有 `BuffsBySource` 里含**来源为我**的条目的卡"。
-    /// 2026-10-04：512 → **511**（调用点 2377 → **2370**，指纹 `D601C3B70D4BD535`）。
-    /// 补的是 `IsTopDeckNavy`（7 点，消费者 `card_event_uss_arcfish` 在语料里）——
-    /// 蓝图 `:24178-24218`：`GetDeckByside(deckSide)[0]` → `getHasGameplayTag(卡, "subtype.navy")`。
-    /// 两个依赖**早已就绪**（`GetDeckByside` 144 个调用点、`getHasGameplayTag` 已注册、
-    /// `GameplayTagTable` 里 `subtype.navy` 有数据）⇒ **没有链**的干净实现。
-    /// 2026-10-04：511 → **510**（调用点 2370 → **2344**，指纹 `BC44670AFCD9720C`）。
-    /// 补的是 **`ConvertCard`（26 点）** —— §8.30 量出的**运行时可达链**：
-    /// `docs/live-replays/replay-165924` 的 ⑥ 里**只有它**（撞到 ×2）、
-    /// `docs/fresh-replays/replay-15` 撞 ×1。实现见 `CardApiDispatch.DoConvertCard`。
-    public const int BaselineCount = 510;
+    /// 2026-10-05：522 → 521 → **520**（实际重跑：2429 调用点）。补上
+    /// `GetAllCardsInFrontline`，返回双方当前前线卡列表。
+    /// 2026-10-05：519 → 518 → **517**（实际重跑：2388 调用点）。补上
+    /// `getKreditTempBuffAmount`，按来源读取目标卡的改费 buff 偏移。
+    /// `RemovePin`，复用钉住关键字的解除、时长清零和事件广播。
+    /// 2026-10-05：517 → **516**（实际重跑：2373 调用点）。补上
+    /// `SetCountdown`，按蓝图包装写入目标卡的 `countdown_timer` 私有字段并持久化。
+    /// 2026-10-05：516 → **514**（实际重跑：2361 调用点）。补上
+    /// `GetLeftMostCardInHand` 与 `GetRightMostCardInHand`，返回稳定的双出参手牌边界查询。
+    /// 2026-10-05：514 → 513 → **512**（实际重跑：2328 调用点）。补上
+    /// `GetIsGoldCard`，按隐式 self 返回卡牌的 `IsGold` 标记；随后补上
+    /// `MoveMultipleCardsToTopOfOwnersDeck`，按蓝图数组顺序逐张置顶。
+    /// 2026-10-05：512 → **511**（实际重跑：2313 调用点）。补上
+    /// `PlayCardDirectlyFromHand`，复用完整出牌触发链并支持指定前线/槽位。
+    /// 2026-10-05：510 → **509**（实际重跑：2280 调用点）。补上
+    /// `ConvertCard`，覆盖就地换身份、临时状态清理和转换事件广播。
+    public const int BaselineCount = 509;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "BC44670AFCD9720C";
+    public const string BaselineFingerprint = "4112C4289B1BBB54";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

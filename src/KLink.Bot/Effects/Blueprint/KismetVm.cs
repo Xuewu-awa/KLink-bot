@@ -536,38 +536,7 @@ public sealed class KismetVm
         }
 
         // 求值入参。输出槽位置传 null —— 它们不是输入。
-        //
-        // ★★ 2026-10-04：**推断被生成器漏掉的出参槽**。
-        //   IR 里有 **390 个 call 步骤** `outs` 为空、却把出参槽当成**实参**传在 `args` 里，
-        //   命名约定是 `CallFunc_<函数名>_<出参名>`（**大小写不保证一致**，例如
-        //   `SpawnCardOnBattlefield` → `CallFunc_SpawnCardonBattlefield_spawnedCardID`）。
-        //   实测分布：`SpawnCardInHandBySide` ×184 / `DrawCardsFromDeckBySide` ×150 /
-        //   `SpawnCardOnBattlefield` ×44 / `getHasGameplayTag` ×7 / `SpawnCardInDeckBySide` ×5。
-        //   ⇒ 不推断的话，凡消费 `spawnedCardID` / `cardsIDs` 的卡**一律拿到 null**
-        //     （实证：`card_event_cold_trap` 的 T30 体 `newDefender = GetCardFromID(spawnedCardID)`
-        //      恒为 null ⇒ 攻击目标永远换不掉）。
-        //   ⚠️ 只在 `outs` **为空**时推断：生成器已经标好的步骤一律不动。
-        var outParams = new List<int>(step.OutParams);
-        if (outParams.Count == 0 && fn.Length > 0)
-        {
-            string want = "CallFunc_" + fn;
-            for (int i = 0; i < step.Args.Count; i++)
-            {
-                if (step.Args[i].Var is string vn
-                    && vn.StartsWith(want, StringComparison.OrdinalIgnoreCase))
-                {
-                    outParams.Add(i);
-                    if (Environment.GetEnvironmentVariable("KLINK_TRACE_OUTSLOT") == "1")
-                    {
-                        Console.Error.WriteLine($"[OUTSLOT] {fn} -> args[{i}] {vn}");
-                    }
-
-                    break;   // 出参槽通常只有一个
-                }
-            }
-        }
-
-        var outSet = new HashSet<int>(outParams);
+        var outSet = new HashSet<int>(step.OutParams);
         var raw = new object?[step.Args.Count];
         SeedArrayTarget(fn, step.Args, frame);
         for (int i = 0; i < step.Args.Count; i++)
@@ -623,17 +592,14 @@ public sealed class KismetVm
         // 2. **出参名从调用点的 out 槽名反推**：蓝图里 out 槽叫 `CallFunc_<函数名>_<出参名>`
         //    （实测 `CallFunc_HasCustomAbilityFromCard_doesIt` → `doesIt`），
         //    于是把函数名前缀剥掉就是函数体里那个变量名。剥不出来就只跑副作用。
-        // 3. **入参不 seed**：dump 里**没有参数名**（`cards.full.json` 的函数项只有
-        //    `expr_count` + `bytecode`）。所以函数体只能靠帧默认值（`cardFunction` = `ctx.Self`、
-        //    `side`、`cardID`、实例变量）工作 —— 这正好覆盖这一族的主流形态
-        //    （实测 `ApplyBuff` 体读的是 `_tmp_card`(自身局部) / `side` / `cardFunction`；
-        //     `didPlayBritishInfantryLastTurn` 读 `side` / `cardFunction`）。
-        //    **需要真入参的私有函数会拿到 null**，这一点用 `<local-ran:名字>` 计数器留痕，
-        //    不假装它对 —— 要是回归数字恶化，就把这条兜底关掉。
+        // 3. **显式形参仍没有元数据**：dump 里没有参数名（`cards.full.json` 的函数项只有
+        //    `expr_count` + `bytecode`）。局部函数现在会继承调用方帧中的局部槽（例如
+        //    `_tmp_card`），覆盖绝大多数由调用方先写槽、再调用 helper 的形态；但需要
+        //    独立形参绑定的私有函数仍可能拿到 null，用 `<local-ran:名字>` 留痕。
         if (!handled && LocalProgramFor(ctx, fn) is { } local)
         {
             var outNames = new List<string>();
-            foreach (int p in outParams)
+            foreach (int p in step.OutParams)
             {
                 if (p < step.Args.Count && step.Args[p].Var is { } slot)
                 {
@@ -645,28 +611,18 @@ public sealed class KismetVm
                 }
             }
 
-            // ★ 取回值必须**优先取裸出参名**，不能取调用点那个 `CallFunc_<函数>_<出参>` 全名。
-            //
-            // 全 IR 实测（`temp/scan-local-outslots.py`，只读扫 1735 条 IR）：
-            //   · 函数体只写**裸名**、没写全名的调用点 = **170 个 / 163 个 (卡,函数) 对**
-            //   · 函数体写全名的 = **0 个**
-            // 而旧实现 `result = bag[outNames[0]]` 里的 `outNames[0]` 正是那个全名 ⇒
-            // `Frame.Get(全名)` 找不到槽（既不是本地槽、也不是卡的实例变量、CDO 里也没有）
-            // ⇒ **result 恒为 null** ⇒ 出参槽恒为空 ⇒ 下游 `jumpIfNot(那个槽)` 恒走假分支。
-            //
-            // 决定性实例（有语料消费者，`klink-docs/fresh-replays` 的 `replay-15`）：
-            // `card_unit_b_24_d` 的 `doIControl3opCostUnit`（函数体 `i=507` 写 `found3op`、
-            // `i=523` 写 `found3op`）被 `i=43` 调用、out 槽叫
-            // `CallFunc_doIControl3opCostUnit_found3op`（`i=80` 紧跟一个 `jumpIfNot`）⇒
-            // 该判断恒假、「场上有 3 费单位」的分支是死代码。
-            // 同族还有 `GetRandomBritishAir_randomCard`（`card_event_radar_alert`）、
-            // `didPlayBritishInfantryLastTurn_didSo`、`isSecondOrderThisTurn_isSecondOrder` 等。
-            string? bareOut = outNames.FirstOrDefault(name =>
-                !name.StartsWith("CallFunc_" + fn + "_", StringComparison.Ordinal));
+            // A local function call executes in the caller's Blueprint frame.  In
+            // particular, private helpers such as Panzer III L's ApplyAttackBuff
+            // consume scratch locals (`_tmp_card`) populated immediately before
+            // the call.  Starting a fresh frame without those values silently
+            // turns the helper into a no-op.  Copy the current frame as the seed;
+            // the local program still gets its own frame, so writes do not leak
+            // back except through the engine state mutations they intentionally do.
+            var localSeed = frame.Snapshot();
             var bag = outNames.Count > 0
-                ? RunLocalProgramMulti(local, ctx, null, outNames.ToArray())
-                : RunLocalProgramMulti(local, ctx, null);
-            result = outNames.Count > 0 ? bag[bareOut ?? outNames[0]] : null;
+                ? RunLocalProgramMulti(local, ctx, localSeed, outNames.ToArray())
+                : RunLocalProgramMulti(local, ctx, localSeed);
+            result = outNames.Count > 0 ? bag[outNames[0]] : null;
             handled = true;
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }
@@ -677,6 +633,18 @@ public sealed class KismetVm
             _api.NotifyUnimplemented(fn);
             StepTrace?.Add($"      [!] {fn} 未实现");
             return;
+        }
+
+        // Standalone card functions lose the generated out-parameter metadata
+        // for SpawnCardOnBattlefield/SpawnCardInFrontline.  Their final argument
+        // is still the spawned-card-ID slot, so restore that write here.
+        if (step.OutParams.Count == 0
+            && fn is "SpawnCardOnBattlefield" or "SpawnCardInFrontline"
+            && result is CardInstance spawned
+            && step.Args.Count > 0
+            && step.Args[^1].Var is { } implicitOut)
+        {
+            frame.Set(implicitOut, spawned.CardId);
         }
 
         // 诊断开关关闭时不要插值（这是每次原语调用的必经之路）
@@ -697,11 +665,11 @@ public sealed class KismetVm
         //   · `JSON_GetInt` 的第二个 out 同理
         // 约定：原语返回 `object?[]` 表示"按下标对应各 out 槽"；
         // 返回别的类型仍然只写第一个槽（普通单返回值）。
-        if (outParams.Count > 1 && result is object?[] multi)
+        if (step.OutParams.Count > 1 && result is object?[] multi)
         {
-            for (int i = 0; i < outParams.Count; i++)
+            for (int i = 0; i < step.OutParams.Count; i++)
             {
-                if (step.Args[outParams[i]].Var is not { } slot)
+                if (step.Args[step.OutParams[i]].Var is not { } slot)
                 {
                     continue;
                 }
@@ -709,15 +677,15 @@ public sealed class KismetVm
                 frame.Set(slot, i < multi.Length ? multi[i] : null);
             }
 
-            StepTrace?.Add($"      写入多输出 {string.Join(", ", outParams.Select((p, i) =>
+            StepTrace?.Add($"      写入多输出 {string.Join(", ", step.OutParams.Select((p, i) =>
                 $"{step.Args[p].Var}={((i < multi.Length ? multi[i] : null) ?? "null")}"))}");
             return;
         }
 
         // 把返回值写进第一个输出槽
-        if (outParams.Count > 0 && result is not null)
+        if (step.OutParams.Count > 0 && result is not null)
         {
-            var slotExpr = step.Args[outParams[0]];
+            var slotExpr = step.Args[step.OutParams[0]];
             if (slotExpr.Var is { } slot)
             {
                 frame.Set(slot, result);
@@ -731,7 +699,7 @@ public sealed class KismetVm
                 StepTrace?.Add($"      [!] {fn} 的输出槽不是变量: {slotExpr}");
             }
         }
-        else if (outParams.Count > 0)
+        else if (step.OutParams.Count > 0)
         {
             StepTrace?.Add($"      [!] {fn} 返回 null，输出槽未写入");
         }
@@ -1233,7 +1201,16 @@ public sealed class KismetVm
             // sd_kfz_10_38 / winter_regiment），全是这一族。
             if (bare is "instigatorID" or "instigatorId")
             {
-                return _ctx.EventArg(argIndex) ?? _ctx.Self?.CardId ?? 0;
+                // 事件桩的槽位后缀不是稳定的参数下标；广播方提供具名载荷时，
+                // 必须优先按 `instigatorID` 取值。没有具名载荷的旧事件再回退
+                // 到位置参数，最后才使用当前执行卡作为兼容兜底。
+                return (_ctx.NamedArgs.Count > 0
+                        && _ctx.NamedArgs.TryGetValue(bare, out var namedInstigator)
+                        ? namedInstigator
+                        : null)
+                       ?? _ctx.EventArg(argIndex)
+                       ?? _ctx.Self?.CardId
+                       ?? 0;
             }
 
             // ⚠️ 具名载荷**优先于**位置推断，而且必须排在下面那条 `…ID ⇒ 事件主体` 之前。
@@ -1278,10 +1255,12 @@ public sealed class KismetVm
                 case "spawnedSide":
                 case "side":
                 case "sideGaining":
+                    // 阵营类入参：优先使用按名字传入的载荷，再回退到位置参数。
+                    return _ctx.EventArg(argIndex) ?? (int?)(subject?.Owner ?? _ctx.Controller);
                 case "isNegativeGain":
-                    // 阵营类入参：派发方按事件语义放进 EventArgs；
-                    // 拿不到就退回「事件主体所属阵营」。
-                    return _ctx.EventArg(argIndex) ?? (int?)(subject?.Owner ?? _ctx.Controller);                case "method":
+                    // 这是独立的布尔入参，不能套用阵营的默认值。
+                    return _ctx.EventArg(argIndex);
+                case "method":
                 case "StartOfTurnDraw":
                     return _ctx.EventArg(argIndex);
             }
@@ -1301,7 +1280,12 @@ public sealed class KismetVm
             }
 
             var eventSubject = _ctx.Trigger ?? _ctx.Target;
-            return eventSubject ?? _ctx.Self;
+
+            // 事件变量没有主体时必须保持 null。把它兜底成 Self 会把「无目标」
+            // 误解成「效果卡自己」，尤其会让 IsValid(K2Node_Event_targetCard)
+            // 这类守卫错误放行。真正的隐式 self 只由 Frame 的已知槽位提供；
+            // 这里处理的是事件入参，不能再猜一个卡实例。
+            return eventSubject;
         }
 
         public void Set(string name, object? value)
@@ -1311,6 +1295,10 @@ public sealed class KismetVm
                 _locals[name] = value;
             }
         }
+
+        /// <summary>复制当前 Blueprint 帧，供卡内私有函数调用继承调用方局部槽。</summary>
+        public IReadOnlyDictionary<string, object?> Snapshot()
+            => new Dictionary<string, object?>(_locals, StringComparer.Ordinal);
 
         public void SetOutSlot(KismetStep step, object? value)
         {

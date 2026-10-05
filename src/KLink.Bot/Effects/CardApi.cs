@@ -23,6 +23,38 @@ public sealed partial class CardApi
     private readonly HashSet<int> _playedCardBroadcastDone = new();
     private int _playedCardBroadcastDepth;
 
+    // 蓝图 FetchAllCardsWithEventTrigger 的逐卡抑制例外表。
+    // 卡面 CDO 未随当前数据集导出，因此在派发层固定记录已从蓝图核实的 11 张卡。
+    private static readonly Dictionary<string, string[]> SuppressionExceptionTable =
+        new(StringComparer.Ordinal)
+        {
+            ["card_unit_1st_marines"] = new[] { "OnStartofTurn" },
+            ["card_unit_3rd_kure_snlf"] = new[] { "OnEndofTurn" },
+            ["card_unit_92nd_naval_brigade"] = new[] { "OnStartofTurn" },
+            ["card_unit_99th_kholm"] = new[] { "OnStartofTurn" },
+            ["card_unit_a20_havoc"] = new[] { "OnEndofTurn" },
+            ["card_unit_danuta"] = new[] { "OnEndofTurn" },
+            ["card_unit_gordon_highlanders"] = new[] { "OnOtherCardDrawnFromDeck" },
+            ["card_unit_infantry_regiment_36"] = new[] { "OnEndofTurn" },
+            ["card_unit_kurmark_aufklarungs"] = new[] { "OnEndofTurn" },
+            ["card_unit_kv_85"] = new[] { "OnStartofTurn" },
+            ["card_unit_panther_a"] = new[] { "OnStartofTurn" },
+        };
+
+    private static bool HasSuppressionException(CardInstance card, string trigger)
+    {
+        if (card.SuppressionExceptionTriggers.Contains(trigger))
+        {
+            return true;
+        }
+
+        return SuppressionExceptionTable.TryGetValue(card.Name, out string[]? allowed)
+               && allowed.Any(x => string.Equals(x, trigger, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool SuppressedSkipsTrigger(CardInstance card, string trigger)
+        => card.IsSuppressed && !HasSuppressionException(card, trigger);
+
     public IDisposable BeginPlayedCardBroadcast(int cardId)
     {
         if (_playedCardBroadcastDepth++ == 0) _playedCardBroadcastDone.Clear();
@@ -36,6 +68,26 @@ public sealed partial class CardApi
         private readonly CardApi _api;
         public BroadcastScope(CardApi api) => _api = api;
         public void Dispose() => _api.EndPlayedCardBroadcast();
+    }
+
+    /// <summary>
+    /// Capture the cards eligible to receive a later broadcast.
+    ///
+    /// Blueprint trigger queries materialize their recipient array before the
+    /// played card's own effect runs.  Keeping the object references lets the
+    /// later dispatch preserve that membership even when the effect creates
+    /// new cards.
+    /// </summary>
+    public IReadOnlyList<CardInstance> CaptureTriggerSnapshot()
+    {
+        var snapshot = new List<CardInstance>();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            snapshot.AddRange(State.Board(side));
+            snapshot.AddRange(State.Discard(side));
+        }
+
+        return snapshot;
     }
     private readonly MatchEngine _engine;
 
@@ -157,89 +209,6 @@ public sealed partial class CardApi
     /// si=1493      item.OnBeforeOtherCardPlayedFromHand(cardPlayed)
     /// </code>
     /// </param>
-    /// <summary>
-    /// ★★ **层 A：被抑制的卡不再收触发** —— 蓝图 `FetchAllCardsWithEventTrigger` 的全局门
-    /// （README §9.5 P3 的「层 A」，2026-10-05 落地）。
-    ///
-    /// ## 蓝图原文（逐行复核）
-    ///
-    /// `ref/kards-sim.mine-pre-push/KardsSim/Generated/_deps/BP_GameState_Battle.g.cs`
-    /// （**行号属于这一份**；其余三份 `BP_GameState_Battle.g.cs` 也有同名函数）：
-    /// <code>
-    /// :1040  AllCardsInBattle[cardID] → _value                 ; 每张在场卡的状态结构
-    /// :1057  Array_Contains(_value.suppressionExceptionTriggers, TriggerToFetch)
-    /// :1059  Not_PreBool(that)
-    /// :1061  BooleanAND(_value.isSuppressed, !that)
-    /// :1063  if (that) ⇒ 跳到循环尾（**跳过这张收件人**）
-    ///        else     ⇒ :1073 cardsWithThisTrigger.Add(cardID)
-    /// </code>
-    /// ⇒ 语义：**收件人自己被抑制 ⇒ 除「例外表里的触发」之外一律不收**。
-    /// 这与「层 B」（各触发点调用处 `if (!X.isSuppressed) goto L_SELF;` —— 只管**主体自己那个程序**，
-    /// 见 §8.11）是**两层独立机制**：层 A 管**广播的收件人集合**。
-    ///
-    /// ## 为什么必须有它（有语料消费者）
-    ///
-    /// `card_unit_38th_independent` 卡面：
-    /// 「Cannot attack or move. **Suppress it if you have 4+ copies.**
-    ///   **Duplicate this unit when you lose a kredit slot.**」
-    /// ⇒ 客户端：攒到第 4 个副本时这批副本被**自我抑制** ⇒ 抑制后不再收
-    /// `OnAfterExtraKreditSlotGain` ⇒ **不再继续复制**，半场稳定在 5 格。
-    /// 内核没有层 A ⇒ 被抑制的副本**照收触发、照复制** ⇒ 失控刷兵 ⇒
-    /// 半场塞满 ⇒ 真人 `#39 t7 PC`（`replay-748616`）、`#50/#53/#58 t11/t13 PC`（`replay-931082`）
-    /// 被判「半场已满」—— 这两局 ④ 人类 HQ 差**都是 0**，说明除这一条外整局逐位对齐。
-    ///
-    /// ## 例外表不是全局常量，是**逐卡数据**
-    ///
-    /// 出处 `ref/kards-sim/cards.json` 的 `suppressionExceptionTriggers`（全卡池**只有 11 张**非空，
-    /// 触发名分布 `OnStartofTurn`×5 / `OnEndOfTurn`×5 / `OnOtherCardDrawnFromDeck`×1）。
-    /// ⚠️ 两份数据的名字**大小写不同**（蓝图侧 `OnStartofTurn` / IR 侧 `OnStartOfTurn`）
-    /// ⇒ 比较用 `OrdinalIgnoreCase`。
-    ///
-    /// 复现脚本：`temp/map-suppression-exceptions.py`（把 ref 的 11 条按 `title` 映射到内核卡名）。
-    /// </summary>
-    private static readonly Dictionary<string, string[]> SuppressionExceptionTable =
-        new(StringComparer.Ordinal)
-        {
-            ["card_unit_1st_marines"] = new[] { "OnStartofTurn" },
-            ["card_unit_3rd_kure_snlf"] = new[] { "OnEndofTurn" },
-            ["card_unit_92nd_naval_brigade"] = new[] { "OnStartofTurn" },
-            ["card_unit_99th_kholm"] = new[] { "OnStartofTurn" },
-            ["card_unit_a20_havoc"] = new[] { "OnEndofTurn" },
-            ["card_unit_danuta"] = new[] { "OnEndofTurn" },
-            ["card_unit_gordon_highlanders"] = new[] { "OnOtherCardDrawnFromDeck" },
-            ["card_unit_infantry_regiment_36"] = new[] { "OnEndofTurn" },
-            ["card_unit_kurmark_aufklarungs"] = new[] { "OnEndofTurn" },
-            ["card_unit_kv_85"] = new[] { "OnStartofTurn" },
-            ["card_unit_panther_a"] = new[] { "OnStartofTurn" },
-        };
-
-    /// <summary>该卡是否对**这个触发**享有「被抑制也照收」的例外（见 <see cref="SuppressionExceptionTable"/>）。</summary>
-    public static bool HasSuppressionException(string cardName, string trigger)
-    {
-        if (!SuppressionExceptionTable.TryGetValue(cardName, out string[]? allowed))
-        {
-            return false;
-        }
-
-        foreach (string t in allowed)
-        {
-            if (string.Equals(t, trigger, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// 层 A 的判据：这张卡作为**收件人**时，本次触发是否应当被跳过。
-    /// ⚠️ 只对「广播收件人」用，**不要**用它去掉主体自己的那一路（那是层 B 的职责）。
-    /// </summary>
-    private static bool SuppressedSkipsTrigger(CardInstance card, string trigger)
-        => card.Keywords.Contains(Keyword.Suppressed)
-           && !HasSuppressionException(card.Name, trigger);
-
     public void FireTrigger(string programName, CardInstance? subject, Side controller,
                             string? otherProgramName = null, string? selfProgramName = null,
                             IReadOnlyList<object?>? eventArgs = null,
@@ -249,7 +218,8 @@ public sealed partial class CardApi
                             CardLocation? oldLocation = null,
                             CardLocation? newLocation = null,
                             bool broadcastName = false,
-                            IReadOnlyDictionary<string, object?>? localsSeed = null)
+                            IReadOnlyDictionary<string, object?>? localsSeed = null,
+                            IReadOnlyList<CardInstance>? recipientSnapshot = null)
     {
         CardInstance? eventCard = eventSubject ?? subject;
         if (_playedCardBroadcastDepth > 0 && programName == "OnOtherCardPlayedFromHand"
@@ -287,14 +257,27 @@ public sealed partial class CardApi
         //    为什么不怕"死掉的单位也被派发"：卡蓝图里每个分支**开头都自带**
         //    `IsLocatedOnBoard` / `IsValid` 守卫（实测 85_pioneer 的每条分支、
         //    committed_crew 的每条分支都是这么写的），不在场的卡会被自己挡掉。
-        //
-        // ⚠️⚠️ **快照还必须包含「手牌」**（2026-10-04 修，见 `FillTriggerSnapshot`）。
-        //    原先只有「棋盘 + 弃牌堆」⇒ **手牌里的卡从收不到任何触发** ⇒
-        //    所有「在手牌里响应事件」的分支是死代码。
-        var snapshot = SnapshotBuffer(_triggerDepth);
-        FillTriggerSnapshot(snapshot);
+        var snapshot = recipientSnapshot is null
+            ? SnapshotBuffer(_triggerDepth)
+            : new List<CardInstance>(recipientSnapshot);
+        if (recipientSnapshot is null)
+        {
+            snapshot.Clear();
+            for (int i = 0; i < 2; i++)
+            {
+                Side s = i == 0 ? Side.Left : Side.Right;
+                snapshot.AddRange(State.Board(s));
+                snapshot.AddRange(State.Discard(s));
+                // Kredit 槽位事件的订阅者包含手牌单位（例如 5th Regiment：
+                // 失槽时在手牌减费），因此该事件必须覆盖手牌；其它事件仍按
+                // 原有棋盘+弃牌堆快照执行。
+                if (programName == "OnAfterExtraKreditSlotGain")
+                {
+                    snapshot.AddRange(State.Hand(s));
+                }
+            }
+        }
 
-        bool subjectSeen = false;
         foreach (var card in snapshot)
         {
             // ⚠️ 这里是 **`!= NotAvailable`**，不是 `IsAlive`。
@@ -312,10 +295,12 @@ public sealed partial class CardApi
 
             string name = card.Name;
             bool isSubject = ReferenceEquals(card, subject);
-            if (isSubject)
-            {
-                subjectSeen = true;
-            }
+
+            // 蓝图在所有触发点外层都有同一扇 suppression gate：被抑制的
+            // 接收者默认跳过，只有逐卡白名单里的程序名例外。主体自己的
+            // 事件仍由下面的 subject 分支保留，因为已有行为证据明确要求
+            // OnSuppressed / OnBecomingVeteran 这类事件继续送达主体。
+            bool suppressed = card.IsSuppressed;
 
             // 主体那一路要跑的程序名（调用方可用 selfProgramName 覆盖）
             string selfProgram = selfProgramName ?? programName;
@@ -340,9 +325,8 @@ public sealed partial class CardApi
             if (broadcast)
             {
                 // 广播：除主体之外的所有卡
-                // ★ 层 A（`:1057-:1063`）：被抑制的收件人跳过（除非该触发在它的例外表里）
                 if (!isSubject
-                    && !SuppressedSkipsTrigger(card, programName)
+                    && (!suppressed || HasSuppressionException(card, programName))
                     && library.FindProgram(name, programName) is not null)
                 {
                     TriggerTrace?.Add($"{programName} → {name}#{card.CardId}" +
@@ -354,15 +338,8 @@ public sealed partial class CardApi
             else if (subject is null || isSubject)
             {
                 // 自己那一路：主体在场就只发主体；主体为 null（全局事件）时发给所有卡
-                // ★ 主体为 null 的「全局事件」（`OnStartOfTurn` / `OnEndOfTurn` …）在蓝图里
-                //   同样走 `FetchAllCardsWithEventTrigger` ⇒ 层 A 也要过滤；
-                //   而**主体自己那一路**（`isSubject`）由层 B 的调用点门负责，这里不动。
-                if (subject is null && SuppressedSkipsTrigger(card, selfProgram))
-                {
-                    continue;
-                }
-
-                if (library.FindProgram(name, selfProgram) is not null)
+                if ((!suppressed || isSubject || HasSuppressionException(card, selfProgram))
+                    && library.FindProgram(name, selfProgram) is not null)
                 {
                     TriggerTrace?.Add($"{selfProgram} → {name}#{card.CardId}" +
                                       $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
@@ -374,7 +351,7 @@ public sealed partial class CardApi
             // 显式的「别的卡」那一路：除主体之外的所有卡
             if (otherProgramName is not null
                 && !isSubject
-                && !SuppressedSkipsTrigger(card, otherProgramName)
+                && (!suppressed || HasSuppressionException(card, otherProgramName))
                 && library.FindProgram(name, otherProgramName) is not null)
             {
                 TriggerTrace?.Add($"{otherProgramName} → {name}#{card.CardId}" +
@@ -387,17 +364,11 @@ public sealed partial class CardApi
         // 事件主体可能不在场上（例如刚被打出、或已被移走），单独补一次。
         // ⚠️ 只补「自己那一路」：`OnOtherXxx` 是广播给**别人**的，
         //    把主体也算进去会让"刚抽到手的牌"响应自己的 `OnOtherCardDrawnFromDeck`。
-        //
-        // ⚠️⚠️ **补之前必须确认主体真的不在快照里**（2026-10-04 加）。
-        //    快照现在**含手牌**（见 `FillTriggerSnapshot`），而手牌里的卡满足
-        //    `IsAlive && !Location.IsBoard()` ⇒ 旧的兜底条件对它恒成立 ⇒
-        //    **同一个程序会跑两遍**（一遍走循环里 `isSubject` 那一路，一遍走这里）。
-        //    典型受害卡：`card_unit_5th_regiment` 的 `-2 费`（跑两遍 = -4 费）。
         string subjectProgram = selfProgramName ?? programName;
         bool subjectBroadcast = selfProgramName is null
                                 && (broadcastName
                                     || programName.StartsWith("OnOther", StringComparison.Ordinal));
-        if (!subjectBroadcast && !subjectSeen
+        if (!subjectBroadcast
             && subject is not null && subject.IsAlive && !subject.IsHq && !subject.Location.IsBoard()
             && library.FindProgram(subject.Name, subjectProgram) is not null)
         {
@@ -413,6 +384,7 @@ public sealed partial class CardApi
 
     /// <summary>触发派发用的快照缓冲，按嵌套深度索引（FireTrigger 会重入）。</summary>
     private readonly List<List<CardInstance>> _triggerBuffers = new();
+
 
     /// <summary>
     /// 广播一个**带出参**的事件，并把每个订阅者写回的出参收集起来。
@@ -488,8 +460,7 @@ public sealed partial class CardApi
         CardInstance? eventSubject = null,
         IReadOnlyDictionary<string, object?>? namedArgs = null,
         Func<CardInstance, IReadOnlyDictionary<string, object?>?>? seedFactory = null,
-        IReadOnlyList<CardInstance>? only = null,
-        CardInstance? exclude = null)
+        IReadOnlyList<CardInstance>? only = null)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -498,7 +469,7 @@ public sealed partial class CardApi
             return results;
         }
 
-        // 快照规则与 FireTrigger 一致（含手牌）：见 `FillTriggerSnapshot`。
+        // 快照规则与 FireTrigger 一致：棋盘 + 弃牌堆，按嵌套深度分开缓冲。
         // ⚠️ 必须先快照：被派发的程序内部会创建/销毁卡（`receiver` 可能被打死）。
         List<CardInstance> snapshot;
         if (only is not null)
@@ -508,7 +479,13 @@ public sealed partial class CardApi
         else
         {
             snapshot = SnapshotBuffer(_triggerDepth);
-            FillTriggerSnapshot(snapshot);
+            snapshot.Clear();
+            for (int i = 0; i < 2; i++)
+            {
+                Side s = i == 0 ? Side.Left : Side.Right;
+                snapshot.AddRange(State.Board(s));
+                snapshot.AddRange(State.Discard(s));
+            }
         }
 
         CardInstance? eventCard = eventSubject ?? subject;
@@ -519,20 +496,6 @@ public sealed partial class CardApi
                 continue;
             }
 
-            // ★ `exclude`：蓝图里"广播**排除某一方**"是逐触发点写的，不是命名约定。
-            //   最典型的是 T31 `OnOtherCardAttacks` 的 `:4356
-            //   NotEqual_IntInt(attackerCardID, item.cardID)` —— **排除攻击者本人**
-            //   （而**防御方照收**：`card_unit_beaufighter_tf_mk_x` / `card_unit_33rd_livorno`
-            //   / `card_unit_bm_13n_us6` 就是靠"自己是被打的那个"来触发的）。
-            //   注意：`FireTrigger` 的广播分支是按"排除主体"实现的，与这里**不是**一回事。
-            if (exclude is not null && ReferenceEquals(card, exclude))
-            {
-                continue;
-            }
-
-            // ★ 层 A：这一族（`BroadcastWithOutParams`）就是蓝图的
-            //   `FetchAllCardsWithEventTrigger(N)` + 逐张 `item.OnXxx(out …)`，
-            //   所以收件人过滤与 `FireTrigger` 的广播分支**同一个判据**。
             if (SuppressedSkipsTrigger(card, programName))
             {
                 continue;
@@ -544,13 +507,7 @@ public sealed partial class CardApi
                 continue;
             }
 
-            // ⚠️ `outParamNames` 为空时**不写 `(out )`** —— 否则 trace 变成
-            //    `事件名(out ) → 卡#id`，而 `SelfTest.Reached` 判的是
-            //    `StartsWith("事件名 → 卡#id")` ⇒ 无出参的广播会被误判成"没派发"。
-            string outSuffix = outParamNames.Length > 0
-                ? $"(out {string.Join("/", outParamNames)})"
-                : "";
-            TriggerTrace?.Add($"{programName}{outSuffix} → {card.Name}#{card.CardId}" +
+            TriggerTrace?.Add($"{programName}(out {string.Join("/", outParamNames)}) → {card.Name}#{card.CardId}" +
                               $"（eventCard={eventCard?.Name ?? "null"}#{eventCard?.CardId}）");
 
             var ctx = new EffectContext
@@ -578,6 +535,96 @@ public sealed partial class CardApi
                 var perCardSeed = seedFactory?.Invoke(card) ?? seed;
                 results.Add(new OutParamHit(card,
                     Vm.RunLocalProgramMulti(program, ctx, perCardSeed, outParamNames)));
+            }
+            finally
+            {
+                _triggerDepth--;
+            }
+        }
+
+        return results;
+    }
+
+    /// <summary>
+    /// 广播一个只存在于卡片 <c>locals</c> 中的带出参事件。
+    ///
+    /// 这与 <see cref="BroadcastWithOutParams"/> 的订阅模型相同，但必须使用
+    /// <see cref="Blueprint.KismetLibrary.FindLocalProgram"/>：T30/T31
+    ///（<c>OnOtherCardAttackSwitchTarget</c> / <c>OnOtherCardAttacks</c>）没有 entrypoint，
+    /// 订阅者全在 locals。
+    /// </summary>
+    public List<OutParamHit> BroadcastLocalWithOutParams(
+        string functionName, CardInstance? subject, string[] outParamNames,
+        IReadOnlyDictionary<string, object?>? seed = null,
+        IReadOnlyList<CardInstance>? only = null)
+    {
+        var results = new List<OutParamHit>();
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null)
+        {
+            return results;
+        }
+
+        List<CardInstance> snapshot;
+        if (only is not null)
+        {
+            snapshot = new List<CardInstance>(only);
+        }
+        else
+        {
+            snapshot = SnapshotBuffer(_triggerDepth);
+            snapshot.Clear();
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                snapshot.AddRange(State.Board(side));
+                snapshot.AddRange(State.Discard(side));
+            }
+        }
+
+        foreach (var card in snapshot)
+        {
+            if (card.Location == CardLocation.NotAvailable || ReferenceEquals(card, subject))
+            {
+                continue;
+            }
+
+            if (SuppressedSkipsTrigger(card, functionName))
+            {
+                continue;
+            }
+
+            var program = library.FindLocalProgram(card.Definition.Name, functionName);
+            if (program is null)
+            {
+                continue;
+            }
+
+            TriggerTrace?.Add($"{functionName}(out {string.Join("/", outParamNames)}) → " +
+                              $"{card.Name}#{card.CardId}（locals 广播，eventCard={subject?.Name ?? "null"}#{subject?.CardId}）");
+
+            var ctx = new EffectContext
+            {
+                Engine = _engine,
+                State = State,
+                Self = card,
+                Target = subject,
+                Trigger = subject,
+                Controller = card.Owner,
+                NamedArgs = EffectContext.EmptyNamedArgsPublic,
+            };
+
+            if (_triggerDepth >= MaxTriggerDepth)
+            {
+                Vm.UnsupportedOps["<trigger-depth-limit>"] =
+                    Vm.UnsupportedOps.GetValueOrDefault("<trigger-depth-limit>") + 1;
+                continue;
+            }
+
+            _triggerDepth++;
+            try
+            {
+                results.Add(new OutParamHit(card,
+                    Vm.RunLocalProgramMulti(program, ctx, seed, outParamNames)));
             }
             finally
             {
@@ -643,181 +690,6 @@ public sealed partial class CardApi
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// T30 `OnOtherCardAttackSwitchTarget`（枚举 30）—— 「攻击中途换目标」，只有 **2 张**订阅卡
-    /// （`card_event_cold_trap` / `card_event_decisive_defense`，**都是 gotcha**）。
-    ///
-    /// 蓝图 `AttackCard`（`:4214-4308`，本次逐行复核）：
-    /// <code>
-    /// :4214  FetchAllCardsWithEventTrigger(30)
-    /// :4216  Temp_bool_True_if_break_was_hit_Variable = false
-    /// :4221  while (!break_flag &amp;&amp; i &lt; len)
-    /// :4257      item.OnOtherCardAttackSwitchTarget(_attackerCard, _defenderCard, out newDefender)
-    /// :4259      NotEqual_ObjectObject(newDefender, _defenderCard)   ; ★ 变了才继续
-    /// :4261      if (!变了) → 下一个订阅者
-    /// :4282          _defenderCard = newDefender
-    /// :4284          defenderCardID = newDefender.cardID
-    /// :4288          _defenderLocation = _defenderCard.location
-    /// :4308          break_flag = true                                ; ★ 第一个改者胜出、跳出轮
-    /// </code>
-    /// ⇒ **第一个把 `newDefender` 改成别的卡的订阅者胜出**；"不改"的表达是**写回 `oldDefender`**
-    ///（`cold_trap` i=46/50、`decisive_defense` i=691 都是显式写回）——
-    /// 所以判据必须是 `newDefender != oldDefender`，不是"出参为空"。
-    ///
-    /// ⚠️ **与 T31 的两处差别（都按蓝图）**：
-    /// ① 这一轮**不排除攻击者**（`:4214` 的 Fetch 之后直接就是调用，没有 T31 那种
-    ///    `attackerCardID != item.cardID` 比对）⇒ 本方法**不传** `exclude`；
-    /// ② 换完目标**不重做任何合法性判据**（掩护 / 烟幕 / 射程 / `CanSelectAsTarget` 都不再查），
-    ///    伤害是对着**新目标**重算的（`:4657` 起用的就是 `_defenderCard`）。
-    ///
-    /// ⚠️ `seed` 把 `newDefender` 预置成 `defender`：蓝图那个出参槽是零初始化的
-    ///（`Val.Nothing`），理论上"程序不写出参"会让 `NotEqual(null, defender)` 为真、
-    /// 把目标置成 `null` —— 但**两张订阅卡都显式写回**，所以预置成 `defender`
-    /// 与实际行为等价、且不会把目标弄成 null。
-    ///
-    /// ⚠️ **回放侧无信号**：2 张订阅卡在 22 局语料里 **0 命中** ⇒ 判据是「蓝图原文 + 自测」。
-    /// </summary>
-    public CardInstance SwitchAttackTargetIfAny(CardInstance attacker, CardInstance defender)
-    {
-        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardAttacking"] = attacker,
-            ["oldDefender"] = defender,
-            ["newDefender"] = defender,
-        };
-        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardAttacking"] = attacker,
-            ["oldDefender"] = defender,
-        };
-
-        foreach (var hit in BroadcastWithOutParams(
-                     "OnOtherCardAttackSwitchTarget", attacker, attacker.Owner,
-                     new[] { "newDefender" },
-                     seed: seed,
-                     eventArgs: new object?[] { attacker, defender },
-                     eventSubject: attacker,
-                     namedArgs: named))
-        {
-            if (Environment.GetEnvironmentVariable("KLINK_TRACE_T30") == "1")
-            {
-                object? raw = hit.Outs.GetValueOrDefault("newDefender");
-                Console.Error.WriteLine(
-                    $"[T30] hit={hit.Card.Name}#{hit.Card.CardId} outs=[{string.Join(",", hit.Outs.Keys)}] " +
-                    $"newDefender={raw?.GetType().Name ?? "null"}:{raw} oldDefender={defender.Name}#{defender.CardId}");
-            }
-
-            if (hit.Outs.GetValueOrDefault("newDefender") is CardInstance nd
-                && !ReferenceEquals(nd, defender))
-            {
-                return nd;   // 蓝图 `:4282-:4308`：胜出并跳出轮
-            }
-        }
-
-        return defender;
-    }
-
-    /// <summary>
-    /// 攻击反制窗口的返回（蓝图 `AttackCard` 的两个出参）。
-    /// </summary>
-    /// <param name="StopAttack">
-    /// 蓝图 `:4389 SetStopAttack(True)` → `:4487 GetStopAttack()`：
-    /// **整条攻击作废** —— 油费**不扣**（扣费在 `:4513`，在判定之后）、
-    /// 不记"已攻击"、伤害不结算、`OnAfterAttack` / T4 都不发。
-    /// </param>
-    /// <param name="AttackedAndStopped">
-    /// 蓝图 `:4643 if (tmpAttackedAndStopped)`：**油费照扣、照记"已攻击"，但整段伤害跳过**，
-    /// 改走 `ExecuteStoppedAttack`（`:17699-17721`）。
-    /// </param>
-    public readonly record struct AttackIntercept(bool StopAttack, bool AttackedAndStopped);
-
-    /// <summary>
-    /// T31 `OnOtherCardAttacks`（枚举 31）——「别人攻击时」的反制窗口，带两个出参。
-    ///
-    /// ## 蓝图原文（本次逐行复核，`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）
-    /// <code>
-    /// :4334  SetStopAttack(GameStateRef, False)                 ; 每轮先复位
-    /// :4336  tmpAttackedAndStopped = False
-    /// :4338  FetchAllCardsWithEventTrigger(31)                  ; ★ 唯一 Fetch 点
-    /// :4356      NotEqual_IntInt(attackerCardID, item.cardID)   ; ★ 排除**攻击者本人**
-    /// :4385/:4434  item.OnOtherCardAttacks(_attackerCard, _defenderCard,
-    ///                                      out stopAttack, out AttackedAndStopped)
-    /// :4389      if (stopAttack) SetStopAttack(True)
-    /// :4412      if (AttackedAndStopped) tmpAttackedAndStopped = True
-    /// :4487  GetStopAttack() 真 ⇒ :4510 success = True 后**直接返回**（不扣油费）
-    /// :4513  ChangeKreditsBySide(-costToPay)                    ; ★ 扣油费在窗口**之后**
-    /// :4643  if (tmpAttackedAndStopped) ⇒ ExecuteStoppedAttack(…)（跳过全部伤害）
-    /// </code>
-    ///
-    /// ## 三个必须照做的细节
-    /// <list type="number">
-    /// <item>**收件人是订阅表**（`docs/card-ir.json` 的 **`locals` 20 张**、`entrypoints` 0 张）
-    ///   —— 这也是 README §9.5 P1 的原始发现。</item>
-    /// <item>**只排除攻击者本人**（`:4356`）；**防御方照收**。内核
-    ///   `BroadcastWithOutParams` 的广播分支不排除主体（与 `FireTrigger` 不同），
-    ///   所以这里用新增的 `exclude: attacker` 精确表达"只排除攻击者"。</item>
-    /// <item>蓝图**不跳出轮**（`:4389`/`:4438` 只置全局标记）⇒ 必须**走完整轮再判定**；
-    ///   两个出参**可以同时为真**，而 `stopAttack` 优先（`:4487` 早于 `:4643`）。</item>
-    /// </list>
-    ///
-    /// ⚠️ 实参名逐字取 `Generated/_index.g.cs:4096`
-    /// = `{ "cardAttacking", "defenderCard", "stopAttack", "AttackedAndStopped" }`。
-    ///
-    /// ⚠️ **`stopAttack` 这条分支目前是死代码**：20 张订阅卡的全部出参写入里，
-    /// `stopAttack` 的字面量**只有 `false`**（`card-ir.json` 实测）。但机制必须留着 ——
-    /// 它是唯一的"整条攻击作废"通道，而且它与 `AttackedAndStopped` 的**代价不同**
-    /// （一个不扣油费、一个扣）。
-    /// </summary>
-    public AttackIntercept FireOtherCardAttacks(CardInstance attacker, CardInstance defender)
-    {
-        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardAttacking"] = attacker,
-            ["defenderCard"] = defender,
-            // 出参槽是零初始化：函数体没走到的分支读到的就是它
-            ["stopAttack"] = false,
-            ["AttackedAndStopped"] = false,
-        };
-        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardAttacking"] = attacker,
-            ["defenderCard"] = defender,
-        };
-
-        bool stop = false;
-        bool andStopped = false;
-        int hits = 0;
-        foreach (var hit in BroadcastWithOutParams(
-                     "OnOtherCardAttacks", attacker, attacker.Owner,
-                     new[] { "stopAttack", "AttackedAndStopped" },
-                     seed: seed,
-                     eventArgs: new object?[] { attacker, defender },
-                     eventSubject: attacker,
-                     namedArgs: named,
-                     exclude: attacker))
-        {
-            hits++;
-            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAttack")))
-            {
-                stop = true;
-            }
-
-            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("AttackedAndStopped")))
-            {
-                andStopped = true;
-            }
-        }
-
-        if (Environment.GetEnvironmentVariable("KLINK_TRACE_T31") == "1")
-        {
-            Console.Error.WriteLine(
-                $"[T31] t={State.Turn} {attacker.Name}#{attacker.CardId} -> {defender.Name}#{defender.CardId} " +
-                $"订阅者={hits} stopAttack={stop} AttackedAndStopped={andStopped}");
-        }
-
-        return new AttackIntercept(stop, andStopped);
     }
 
     /// <summary>
@@ -985,58 +857,6 @@ public sealed partial class CardApi
         }
 
         return _triggerBuffers[depth];
-    }
-
-    /// <summary>
-    /// 触发派发的收件人快照：**双方棋盘 + 弃牌堆 + 手牌**（按 左场/左弃/左手/右场/右弃/右手 顺序）。
-    ///
-    /// ## 为什么要包含手牌（2026-10-04 修）
-    ///
-    /// 蓝图里**大量事件程序带着「在手牌里」的分支**，判据是它们自己第一条就调
-    /// `IsLocatedInHand()`。全卡池扫描 `card-ir.json`（只算 `entrypoints` 里
-    /// `On*` 程序体，复现命令见下）：
-    /// <code>
-    /// IsLocatedInHand： 42 个触发名 / 90 个 (卡,触发) 对
-    ///   例：OnPlayedFromHand 13 / OnCardDrawnFromDeck 6 / OnOtherCardPlayedFromHand 6 /
-    ///       OnEndOfTurn 6 / OnOtherCardDestroyed 6 / OnCardSpawnedInHand 5 /
-    ///       OnOtherCardEnterPlay 5 / OnStartOfTurn 2 / OnBeforeOtherCardPlayedFromHand 2 /
-    ///       OnCounterMeasureTriggered 2 / OnAfterExtraKreditSlotGain（见下）
-    /// IsLocatedInDeck： 12 个触发名 / 22 个 (卡,触发) 对
-    /// </code>
-    /// 只扫「棋盘 + 弃牌堆」时这些分支**永远不会执行** —— 它们是死代码。
-    ///
-    /// ★ **决定性证据（真实对局 711061 的 ⑤b 首漂开）**：
-    /// `card_unit_5th_regiment`（卡面原文「When you lose a kredit slot, this unit gets
-    /// +2+1 if on the battlefield or **-2 cost if in hand**.」）的整张卡**只有一个**
-    /// 入口 `OnAfterExtraKreditSlotGain`（IR `i=178`），体内两条路：
-    /// <code>
-    /// i=178  side == sideGaining &amp;&amp; isNegativeGain   （输了槽位、且是自己这一方）
-    /// i=268  IsLocatedOnBoard() 为假 ⇒ **jump to i=10**
-    /// i=10   IsLocatedInHand() 为真 ⇒ i=110 ChangeKreditCost(self, -2)
-    /// </code>
-    /// 711061 里 左方 t3 连丢两个槽位（`#10 air_land_sea`、`#12 40th_cavalry_regiment`），
-    /// 客户端因此把手里那张 5th_regiment 从 4 费降到 **0 费**；内核一直按 **4 费** 算，
-    /// 而此刻池子只有 `kredits=1` ⇒ `#23 t5 PC` 被拒 ⇒ 那张牌留在手里 ⇒
-    /// 下游 `#28 t7 ML`、`#41 t9 AC` 接连失败、右方 HQ 少掉 6 点伤害
-    /// （④ 人类 HQ 差 10 条全部由这一条派生）。A/B 见 `out/audit/`。
-    ///
-    /// ⚠️ 顺序要紧：手牌**追加在每一项之后**（左：场→弃→手；右：场→弃→手），
-    /// 这样原有的相对先后**逐位不变**，只是往后多了一批收件人。
-    ///
-    /// ⚠️ **不含牌库**：`IsLocatedInDeck` 只有 22 个 (卡,触发) 对，且回放快照里的
-    /// 牌库顺序是宿主用非确定性洗牌造的（README §9.1 第②类），收录它会把
-    /// **随机的牌序**变成触发收件人顺序 ⇒ 引入不可复现的差异。留作待确认项。
-    /// </summary>
-    private void FillTriggerSnapshot(List<CardInstance> snapshot)
-    {
-        snapshot.Clear();
-        for (int i = 0; i < 2; i++)
-        {
-            Side s = i == 0 ? Side.Left : Side.Right;
-            snapshot.AddRange(State.Board(s));
-            snapshot.AddRange(State.Discard(s));
-            snapshot.AddRange(State.Hand(s));
-        }
     }
 
     /// <summary>
@@ -1462,7 +1282,18 @@ public sealed partial class CardApi
             ActionValue2.Int("attackerCardID", source?.CardId ?? 0),
         });
 
-        FireTrigger("OnReceiveDamage", target, target.Owner, "OnOtherCardReceiveDamage");
+        var receiveEventArgs = new object?[] { source, target, isCombatDamage, amount };
+        var receiveNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["fromCard"] = source,
+            ["toCard"] = target,
+            ["fromAttack"] = isCombatDamage,
+            ["damage"] = amount,
+        };
+        FireTrigger("OnReceiveDamage", target, target.Owner, "OnOtherCardReceiveDamage",
+            eventArgs: receiveEventArgs,
+            eventSubject: target,
+            namedArgs: receiveNamedArgs);
 
         // ---- 「造成伤害」事件 ----
         //
@@ -1702,7 +1533,7 @@ public sealed partial class CardApi
     /// SpawnCardToBoard              si=872    ↔ 内核 CardApi.SpawnOnBattlefield
     /// SpawnMultipleCardsOnBattlefield si=2968 ↔ 内核没有；IR 里也没有调用点
     /// PlayCardFromHand              si=2207   ↔ 内核 MatchEngine.PlayCard 那条链
-    /// PlayCardDirectlyFromHand      si=3053   ↔ 内核没有；IR 里 2 个调用点 ⇒ 记 Unimplemented
+    /// PlayCardDirectlyFromHand      si=3053   ↔ 内核 MatchEngine 直接出牌路径
     /// AfterWaitCardPlayFromHand     si=974    ↔ 内核没有；IR 里 0 个调用点
     /// </code>
     /// `PlayCardFromHand` 那一路还有个互斥门：si=2147 `GameStateRef.GetExecuteWaitPlayFromHand`
@@ -1845,42 +1676,15 @@ public sealed partial class CardApi
         //   `OnAfterOtherCardGainDefense(UBaseCardObject* cardGainingDefense, int32 defenseGained)`
         //
         // ⚠️ **只有「增量」那条分支才发**（`SetValue` 分支发 T6，见上）。
-        //
-        // ★★ **2026-10-04 更正：那道门只管"自己那一路"，T7 广播是两条路都会到的。**
-        // 蓝图原文（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
-        // <code>
-        // :7954   if (!cardToChangeRef.isSuppressed) goto L_130F;  ; 未压制 ⇒ 跳去自程序
-        // :7956   L_10FD: FetchAllCardsWithEventTrigger(7)         ; ★ T7 广播：压制时直落这里
-        // :7974       EqualEqual(cardToChangeRef, item) ⇒ 跳过      ; 广播排除被改的那张卡
-        // :8017   L_130F: OnAfterGainDefense(target, …)            ; 自程序
-        // :8020           goto L_10FD                              ; ★ 跑完又跳回 T7 那轮循环
-        // </code>
-        // ⇒ **T7 广播无条件发**（README §9.5 P3 那条"别再改 T7"的警告说的是这件事，
-        //   旧实现无条件发广播**是对的**）；错的是它**同时无条件发了自程序**。
-        // 旧实现把 self 与 T7 混在一次 `FireTrigger` 里 ⇒ **无法分别设门** ⇒
-        // 被压制时多发了一次 `OnAfterGainDefense` 自程序。
-        // ⚠️ `OnAfterOtherCardGainDefense` 不以 `OnOther` 开头 ⇒ 必须显式
-        //   `broadcastName: true`（同一个坑见 `FireTrigger` 的 `broadcastName` 注释）。
-        // ⚠️ 广播排除"被改的那张卡"由 `FireTrigger` 的广播分支**排除主体**天然满足
-        //   （subject 就是 target = `cardToChangeRef`，蓝图 `:7974` 同义）。
-        if (fireGainDefenseEvent && delta > 0)
+        if (fireGainDefenseEvent && delta > 0 && !target.IsSuppressed)
         {
-            var gainDefenseNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["defenseGained"] = delta,
-                ["cardGainingDefense"] = target,
-            };
-            var gainDefenseArgs = new object?[] { target, delta };
-
-            if (!target.Keywords.Contains(Keyword.Suppressed))
-            {
-                FireTrigger("OnAfterGainDefense", target, target.Owner,
-                    eventArgs: gainDefenseArgs, namedArgs: gainDefenseNamed);
-            }
-
-            FireTrigger("OnAfterOtherCardGainDefense", target, target.Owner,
-                broadcastName: true,
-                eventArgs: gainDefenseArgs, namedArgs: gainDefenseNamed);
+            FireTrigger("OnAfterGainDefense", target, target.Owner, "OnAfterOtherCardGainDefense",
+                eventArgs: new object?[] { target, delta },
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["defenseGained"] = delta,
+                    ["cardGainingDefense"] = target,
+                });
         }
 
         if (target.Defense <= 0 && !target.IsHq)
@@ -1918,13 +1722,27 @@ public sealed partial class CardApi
 
     public void ChangeKreditCost(CardInstance target, int delta)
     {
+        int before = target.KreditCost;
         target.KreditCost = Math.Max(0, target.KreditCost + delta);
         _engine.FireSubAction("ZActionSetKreditCost", new[]
         {
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("kreditCost", target.KreditCost),
         });
+        if (target.KreditCost != before)
+        {
+            FireKreditCostChanged(target, target.KreditCost);
+        }
     }
+
+    /// <summary>广播「其它卡的 Kredit 费用发生变化」(T45)。契约参数是新费用整数。</summary>
+    public void FireKreditCostChanged(CardInstance card, int newCost)
+        => FireTrigger("OnOtherCardKreditCostChanged", card, card.Owner,
+            eventArgs: new object?[] { newCost }, eventSubject: card,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardChangingCost"] = newCost,
+            });
 
     public void ChangeOperationCost(CardInstance target, int delta, CardInstance? source)
         => ChangeOperationCost(target, delta, source?.CardId ?? 0);
@@ -2124,164 +1942,14 @@ public sealed partial class CardApi
     }
 
     /// <summary>把一张卡生成到手牌（对应 SpawnCardInHandBySide / doSpawnCardInHand）。</summary>
-    /// <summary>
-    /// T35 `OnOtherCardCreatedAlterCard` —— 「别的卡被生成 / 转化出来了」。
-    ///
-    /// ## 出处（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`，本次逐行复核）
-    /// <code>
-    /// :10584  NotifyCreateNonVisualCard(Notifier, createdCard)
-    /// :10586  if (makeVeteran) → :10588 MakeVeteran(createdCard)     ; 先老兵化
-    /// :10590  FetchAllCardsWithEventTrigger(35)                     ; ★ 广播（建卡 + 老兵化之后）
-    /// :10608      item.OnOtherCardCreatedAlterCard(createdCard, Val.Of(0))
-    /// </code>
-    /// 另外两个调用点：`SalvageMultipleUnits` `:33519`、`SpawnMultipleCardsOnBattlefield`
-    /// `:35410`，两处第 2 个实参都是 **3**。
-    ///
-    /// 实参 `(createdCard, method)`，形参名逐字取 `Generated/_index.g.cs:4100`
-    /// = `{ "cardPlayed", "method" }`。`method`：`CreateCard` 路径 = **0**。
-    ///
-    /// ## 为什么必须在**各个 spawn 助手里**显式发
-    /// 内核有一条"所有建卡的漏斗"钩子 `GameState.CardCreated`（`MatchEngine` 挂着它），
-    /// 但**不能**把 T35 挂上去：`GameState.CreateWithId`（回放装载初始牌库 40+40 张）
-    /// 也走那条路 ⇒ 挂上去会让**开局**给 11 张订阅卡各广播一次"有新卡被生成"。
-    /// ⇒ 只在**生成类原语**里显式发（`SpawnOnBattlefield` / `SpawnCardInHand` /
-    /// `DoSpawnInDeck`；`DoSpawnInFrontline` 复用 `SpawnOnBattlefield`）。
-    ///
-    /// ⚠️ **11 张订阅卡在现有 22 局回放语料里一张都没出现过** ⇒ 这条修复**无法用回放验证**，
-    /// 判据只有"蓝图原文 + 自测"（README §7.4 那类）。如实标注。
-    ///
-    /// ⚠️ 已知的族级偏差：内核 `FireTrigger` 的广播分支**排除主体**，
-    /// 而蓝图 `:10590-10608` 的循环里**没有**排除 `createdCard` 自己
-    /// ⇒ 若某张卡自己订阅了 T35，内核会比客户端少发一次。与其它触发点同源，未单独改。
-    /// </summary>
-    public void FireCardCreatedAlterCard(CardInstance created, int method = 0)
-        => FireTrigger("OnOtherCardCreatedAlterCard", created, created.Owner,
-            eventArgs: new object?[] { created, method },
-            eventSubject: created,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardPlayed"] = created,
-                ["method"] = method,
-            });
-
-    /// <summary>
-    /// T3 `OnAfterDeckChanged(deckSide)` —— 「牌库变了」。
-    ///
-    /// ## 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs`）
-    /// <code>
-    /// :14456  IsActionProcess → 假则整段跳过
-    /// :14467  FetchAllCardsWithEventTrigger(3)
-    /// :14494      item.OnAfterDeckChanged(deckSide)     ; 实参只有一个 deckSide，循环内无排除
-    /// </code>
-    /// 8 个调用方（蓝图）：`AdjustCardPositionInDeck` / `ConvertCard` / `DiscardCardFromDeck` /
-    /// `DrawTopCardFromDeck` / `MoveCardToTopOfDeck` / `ShuffleDeckBySide` /
-    /// `SpawnCardInDeckBySide` / `DrawSpecificCardFromDeckBySide`。
-    /// 内核里可达的是其中 6 个（`AdjustCardPositionInDeck` / `ConvertCard` 未实现）——
-    /// 这 6 处都已接上。
-    ///
-    /// ⚠️ **近似**：蓝图那道 `IsActionProcess` 门内核**没有建模**（全内核一致地当作
-    /// "是动作流程"处理，见 `CardApi.cs` 里几处同名注释）⇒ 这里也不加。
-    /// ⚠️ 3 张订阅卡（`card_unit_lovat_scouts` / `card_event_betasom` / `card_event_rm_roma`）
-    /// 在 22 局语料里 **0 命中** ⇒ **回放侧无信号**，判据是蓝图 + 自测。
-    /// </summary>
-    public void FireDeckChanged(Side deckSide)
-        => FireTrigger("OnAfterDeckChanged", subject: null, deckSide,
-            eventArgs: new object?[] { (int)deckSide },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["deckSide"] = (int)deckSide,
-            });
-
-    /// <summary>
-    /// T68 `OnOperationKreditsSpent`（自程序）+ `OnOtherCardOperationKreditsSpent`（广播）
-    /// —— 「这张卡花掉了行动费（油费）」。
-    ///
-    /// ## 蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ExecuteOnOperationKreditsSpent`）
-    /// <code>
-    /// :16743  OnOperationKreditsSpent(cardOperated, kreditsSpent)      ; ★ 自己那一路，**先**
-    /// :16745  FetchAllCardsWithEventTrigger(68)
-    /// :16772      NotEqual_ObjectObject(item, cardOperated) ⇒ 跳过     ; 排除被操作的卡自己
-    /// :16787      item.OnOtherCardOperationKreditsSpent(cardOperated, kreditsSpent)
-    /// </code>
-    /// 实参名逐字取 `_index.g.cs:1978` = `{ "cardOperated", "kreditsSpent" }`。
-    ///
-    /// ⚠️ **事件名是复数 `…KreditsSpent`**，而枚举名 `OnOtherCardOperationKreditSpent`
-    ///    （`Trigger.g.cs`）是**拼错的单数**、IR 里 **0 个订阅者** —— 必须按蓝图名发。
-    ///
-    /// 调用方（蓝图）：`AttackCard` `:4637` / `:4651`（攻击付油费）、
-    /// `MoveCardToFrontline` `:26998`（移动到前线付油费）。
-    /// 内核对应 `MatchEngine` 里**两处** `State.AddKredits(…, -OperationCost)`（移动 / 攻击）。
-    ///
-    /// ⚠️ **回放侧基本无信号**：3 张订阅卡里只有 `card_unit_2nd_michigan` 出现在语料文件里
-    ///   （另两张 0 命中），且它是否真的被花过油费**未核实** ⇒ 判据以「蓝图原文 + 自测」为主。
-    /// </summary>
-    public void FireOperationKreditsSpent(CardInstance card, int kreditsSpent)
-    {
-        var args = new object?[] { card, kreditsSpent };
-        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardOperated"] = card,
-            ["kreditsSpent"] = kreditsSpent,
-        };
-
-        // 自己那一路（蓝图 `:16743`，**先**）。⚠️ 这个名字**不以 `OnOther` 开头**，
-        // `FireTrigger` 的命名判据会把它当"只发给主体" —— 正好对上蓝图的自程序。
-        FireTrigger("OnOperationKreditsSpent", card, card.Owner,
-            eventArgs: args, namedArgs: named);
-
-        // 广播（蓝图 `:16745-:16787`）。"排除被操作的卡自己"由 `OnOther*` 广播分支
-        // 排除主体**天然满足**（subject 就是 `card`）。
-        FireTrigger("OnOtherCardOperationKreditsSpent", card, card.Owner,
-            eventArgs: args, namedArgs: named);
-    }
-
-    /// <summary>
-    /// `WasLeftMostWhenPlayedFromHandKey` —— 蓝图 `SetRightLeftMostWhenPlayed`（`BP_CardFunctions.g.cs:34463`）
-    /// 写入、`WasLeftMostCardWhenPlayedFromHand`（`:37662`）读取的那个 JSON 键。
-    ///
-    /// ⚠️ 蓝图里它是 CDO 上的一个 **String 成员**，**字面值在本仓库拿不到**
-    /// （`cards.full.json` 不在仓库里，见 README §3.2）⇒ 这里用与成员同名的常量。
-    /// 写入与读取走同一个常量，**自洽**；这一对之外没有别的消费者，所以字面值不影响行为。
-    /// </summary>
-    public const string LeftMostWhenPlayedFromHandKey = "WasLeftMostWhenPlayedFromHand";
-
-    /// <inheritdoc cref="LeftMostWhenPlayedFromHandKey"/>
-    public const string RightMostWhenPlayedFromHandKey = "WasRightMostWhenPlayedFromHand";
-
     public CardInstance SpawnCardInHand(Side side, string cardName)
     {
-        // ★★ 手牌容量门（2026-10-04）—— 蓝图 `CreateCard` 的原文：
-        // `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`
-        // <code>
-        // :10510  IsLocationFull(_location) → :10512 wasFullBeforeCreating
-        // :10702  BooleanAND(Not(autoplay &amp;&amp; spawnCardInHand), wasFullBeforeCreating)
-        // :10704  if (!that) → 正常
-        // :10706      createdCard.location = 8          ; ★ 建卡前手牌就满 ⇒ 直接进弃牌堆
-        // </code>
-        //
-        // ⚠️ **只在这一条路径上补**，不在换区漏斗上一刀切 —— 因为"往手牌加牌"的各条路径
-        //    在蓝图里**待遇不同**：`DrawSpecificCardFromDeckBySide`（`:12406`，全函数 33 行）
-        //    **根本没有容量门**，`DrawTopCardFromDeck`（`:12496`）与
-        //    `MoveCardFromBoardToOwnersHand`（`:26405`）**有**，而内核这两条**都已经实现了**
-        //    （`MatchEngine.DrawCard` / `DoMoveUnitFromBoardToOwnersHand`）。
-        //    逐条对照后**唯一缺的就是这一条**（实测越界栈：`SpawnCardInHand` ← `DoSpawnInHand`）。
-        //
-        // ⚠️ 蓝图那个例外（`autoplay &amp;&amp; spawnCardInHand` 时不改送弃牌堆）内核**没有建模**
-        //    `autoplay` 这个 gameplay tag ⇒ 这里按"无条件应用"实现，**如实标注为近似**。
-        bool handWasFull = State.Hand(side).Count >= GameState.HandCapacity;
-        CardLocation where = handWasFull ? CardLocation.Discard : side.HandOf();
-
-        var card = State.Create(cardName, side, where, State.NextLocationNumber(side, where));
+        var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()));
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Int("location", (int)where),
+            ActionValue2.Int("location", (int)side.HandOf()),
         });
-
-        // ---- T35 `OnOtherCardCreatedAlterCard` ----
-        // 蓝图顺序：`CreateCard`（内含这次广播）**先于** `ExecuteOnSpawnedInHandEvents`
-        //（后者 = 下面两条 `OnCardSpawnedInHand` / `OnOtherCardSpawnedInHand`）。
-        FireCardCreatedAlterCard(card);
 
         // ⚠️ **两个事件都要发**，这是本轮的 bug 修复点之一。
         //
@@ -2327,34 +1995,6 @@ public sealed partial class CardApi
                                            bool forceGoldCard = false)
     {
         CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
-
-        // ⛔ **这里没有「场上容量门」** —— 2026-10-05 试过、A/B 之后回退，别再重加一遍。
-        //
-        // 蓝图原文（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`，**行号属于这一份**）
-        // 确实是「满了就**中止**」：
-        // <code>
-        // :35138  FetchCardsByLocation(location, out Qty, out isLocationFull, …)
-        // :35140  tmpLocationFull = isLocationFull      ; ★ 建卡**之前**先取
-        // :35152  if (!(!full || overrideCardID > 0)) goto L_02DE
-        //         L_02DE 起的尾段只有 GiveBlitz / Alpine / RefreshLocationStatus /
-        //         ExecuteOnCardLocationMoved —— **全程没有再建卡** ⇒ 整次生成中止
-        // </code>
-        // ⚠️ 它**不是**「改送弃牌堆」：那道"建卡之后把 `location` 改成 8"的门在
-        // `CreateCard :10510/:10702-:10706`，而且**只在 `skipAction` 为真**时才走
-        //（`:10694` 的 `if (!skipAction) goto L_0ACF`）。两道门后果不同：
-        // 前者不建卡、不消耗卡号；后者建了卡再扔进弃牌堆（消耗卡号、可被从弃牌堆复活）。
-        //
-        // A/B（2026-10-05，12 局主对拍集 = 原 10 局 + `replay-748616` + `replay-931082`）：
-        //   基线 913/961、人类失败 31、④ 95
-        //   ⇒ 加门 917/961、人类失败 28、④ **99**，且 **`508065` 单局 123/141 → 121/141**
-        //   ⇒ 按项目纪律（任何一局应用率下降即判失败）**回退**。
-        //
-        // ★ 回退的真实理由（探针取证，不是"指标不好看"）：`748616` / `931082` 那两处 ⑤b
-        // （`#39 t7 PC`、`#50 t11 PC 半场已满`）的根因**不在这道门**，而在
-        // **层 A（被抑制的收件人不收触发）缺失** —— 见 `CardApi.SuppressionExceptionTable`。
-        // 层 A 补上后这两局分别变成 **62/63** 与 **63/63（完全对齐）**，**不需要**这道门。
-        // `508065` 里被这道门误杀的那张 `card_unit_swordfish`（`hms_illustrious` 的部署生成物）
-        // 是"内核半场已经比客户端多一张"的既有偏差 + 门把它放大共同造成的。
         var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard);
         card.EnteredPlayOnTurn = State.Turn;
 
@@ -2412,12 +2052,6 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", card.CardId),
             ActionValue2.Int("location", (int)where),
         });
-
-        // ---- T35 `OnOtherCardCreatedAlterCard` ----
-        // 蓝图 `CreateCard` `:10590` 的广播在建卡/老兵化之后、`SpawnCardToBoard` 的
-        // 落位与后续通知之前；`CreateCard` 本身**带目标位置实参**，所以此处按
-        // "卡已在最终位置"发（与蓝图订阅者看到的状态一致）。
-        FireCardCreatedAlterCard(card);
         return card;
     }
 
@@ -2501,56 +2135,41 @@ public sealed partial class CardApi
             target.PinnedTurns = 0;
         }
 
-        // ---- T48 `OnOtherCardLoseSmokescreen` ----
-        // 蓝图 `RemoveSmokescreen` `:32691` Fetch(48) → `:32709 item.OnOtherCardLoseSmokescreen(_cardFromID)`
-        //（形参名 `card`，`_index.g.cs:4114`）。这一段是那个函数的**最后一段** ——
-        // 排在两条 `ChangeBuffsFromCards(…, "smokescreen")` 分支与客户端通知**之后**，
-        // 所以这里也放在 `FireSubAction` / `FireAbilitiesChanged` 之后。
-        // 上面那道 `Keywords.Remove` 返回假时已经 `return`，天然满足"烟幕真变了才发"。
-        // ⚠️ 3 张订阅卡（`card_unit_hirosaki_regiment` / `card_event_shock_attack` /
-        // `card_unit_p1y2_kasho`）在 22 局语料里都没出现过 ⇒ **回放侧无信号**，判据是蓝图 + 自测。
-        if (keyword == Keyword.Smokescreen)
-        {
-            FireTrigger("OnOtherCardLoseSmokescreen", target, target.Owner,
-                eventArgs: new object?[] { target },
-                eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = target,
-                });
-        }
-
-        // ---- T62 `OnOtherUnitUnpinned` ----
-        // 蓝图 `RemovePin`（`BP_CardFunctions.g.cs:31799-31847`，本次逐行复核）：
-        // <code>
-        // :31799  card.pinnedTurns = 0                 ; ★ 内核这里早就实现了（上面那一段）
-        // :31801  IsActionProcess → 假则跳过（内核未建模，一致近似）
-        // :31816  NotifyUnpinUnit(Notifier, cardID)
-        // :31818  FetchAllCardsWithEventTrigger(62)
-        // :31847      item.OnOtherUnitUnpinned(card)   ; 实参 = 被解除钉住的那张卡
-        // </code>
-        // ⚠️ **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 里 3 个订阅者）；
-        //   枚举名 `OnOtherUnitUnPinned`（`Trigger.g.cs`，大写 P）在 IR 里 **0 个订阅者**
-        //   —— 按枚举名查会得 0，必须按蓝图名发。
-        // ⚠️ 3 张订阅卡（`card_event_creeping_barrage` / `card_event_forced_surrender` /
-        //   `card_unit_14_panzergrenadier`）在 22 局语料里 **0 命中** ⇒ **回放侧无信号**。
-        if (keyword == Keyword.Pinned)
-        {
-            FireTrigger("OnOtherUnitUnpinned", target, target.Owner,
-                eventArgs: new object?[] { target },
-                eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = target,
-                });
-        }
-
         _engine.FireSubAction($"ZActionRemove{keyword}", new[]
         {
             ActionValue2.Int("giverID", target.CardId),
         });
 
         FireAbilitiesChanged(target);
+        if (keyword == Keyword.Blitz)
+        {
+            FireTrigger("OnOtherCardBlitzChanged", target, target.Owner,
+                eventArgs: new object?[] { target }, eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardChanged"] = target,
+                });
+        }
+
+        if (keyword == Keyword.Smokescreen)
+        {
+            FireTrigger("OnOtherCardLoseSmokescreen", target, target.Owner,
+                eventArgs: new object?[] { target }, eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = target,
+                });
+        }
+
+        if (keyword == Keyword.Pinned)
+        {
+            FireTrigger("OnOtherUnitUnpinned", target, target.Owner,
+                eventArgs: new object?[] { target }, eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = target,
+                });
+        }
     }
 
     /// <summary>
@@ -2580,15 +2199,8 @@ public sealed partial class CardApi
         int turns = IsSideActive(target.Owner) ? 3 : 2;
         target.PinnedTurns = Math.Max(target.PinnedTurns, turns);
 
-        // ---- T61 `OnOtherUnitPinned` ----
-        // 蓝图 `PinUnit` `:27980 NotifyPinUnit` → `:27982 Fetch(61)` → `:28010 item.OnOtherUnitPinned(_card)`
-        //（形参名 `cardBeingPinned`，`_index.g.cs:4129`）。
-        // 时机：`pinnedTurns` 写完、客户端通知**之后**。
-        // ⚠️ 2 张订阅卡（`card_unit_cromwell_mk_iv` / `card_unit_14_panzergrenadier`）
-        // 在 22 局语料里都没出现过 ⇒ **回放侧无信号**，判据是蓝图 + 自测。
         FireTrigger("OnOtherUnitPinned", target, target.Owner,
-            eventArgs: new object?[] { target },
-            eventSubject: target,
+            eventArgs: new object?[] { target }, eventSubject: target,
             namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 ["cardBeingPinned"] = target,
@@ -2778,24 +2390,8 @@ public sealed partial class CardApi
 
         // ★ 先置位再摘东西 —— 与蓝图同序（L_02D2 在 L_054E 之前）。
         //   顺序有观测意义：摘关键字会走 `RemoveKeyword` → `ZActionRemove*` +
-        //   `FireAbilitiesChanged`，而被抑制的卡在这些派发里应当**已经被抑制**。
-        //
-        // ⚠️⚠️ **2026-10-04 更正**：这里原先写的是
-        //   「`CardApi.FireTrigger` si=325/710：`cardTriggered.isSuppressed` ⇒ 整轮不派发」——
-        //   **那是错的**。`si=325/710` 那道门在 `ExecuteOnDestructionEffectTriggered`
-        //   （**摧毁效果专用**，还带 `skipSuppressCheck` 形参），实现落点是
-        //   `CardApi.FireDestructionEffectTriggered`（见本文件 `:806-812`）。
-        //   **`FireTrigger` 本身没有"被抑制就不派发"的门**。
-        //
-        //   蓝图里 `isSuppressed` 一共 36 处，**形状统一**：都长成
-        //   `ExecuteOnXxxEvents` 开头那句
-        //   `if (!<触发因> .isSuppressed) goto …` —— 判的是**"引起这个事件的那张卡"**，
-        //   不是订阅者（例：`ExecuteOnCardLocationMoved:15475` 判 `cardToMove`、
-        //   `ExecuteOnEnterPlayEvents:16460` 判 `cardEnterPlay`、
-        //   `GainKreditSlot:18460` / `LoseKreditSlot:25727` 判那个槽位变化的卡）。
-        //   ⇒ **订阅者自己是否被抑制，蓝图不在这里判**（订阅者的程序体自己 guard）。
-        //   这条更正对 `card_unit_38th_independent` 的级联排查是**关键**：
-        //   不能拿"被抑制 ⇒ 收不到事件"当理由。
+        //   `FireAbilitiesChanged`，而被抑制的卡在这些派发里应当**已经被抑制**
+        //   （`CardApi.FireTrigger` si=325/710：`cardTriggered.isSuppressed` ⇒ 整轮不派发）。
         target.Keywords.Add(Keyword.Suppressed);
 
         // 记下被抑制的回合号 —— 仅作诊断留痕，见 `CardInstance.SuppressedOnTurn`。
@@ -3049,34 +2645,22 @@ public sealed partial class CardApi
                 ActionValue2.Int("cardID", target.CardId),
             });
 
-            // ★★ **2026-10-04 更正：门装反了。** 蓝图原文
-            // （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`）：
-            // <code>
-            // :26303  if (!card.isSuppressed) goto L_0AF6;         ; 未压制 ⇒ 跳去自程序
-            // :26305  L_099F: FetchAllCardsWithEventTrigger(32)    ; ★ 广播：压制时**直落这里**
-            // :26323      item.OnOtherCardBecomingVeteran(card)
-            // :26335  L_0ADE: ExecuteOnOtherCardsAbilitiesChanged(self, card)
-            // :26347  L_0AF6: OnBecomingVeteran(card)              ; 自程序
-            // :26349  L_0B1A: goto L_099F                          ; ★ 自程序跑完**又跳回广播**
-            // </code>
-            // ⇒ T32 广播与「能力集变化」**无条件发**；被压制的卡只是**不发自己的**
-            //   `OnBecomingVeteran`。旧实现恰好相反：门住广播、放开自程序。
-            // ⚠️ 根因同 `MatchEngine.Destroy`：`JumpIfNot(cond) -> T` 是「cond 为假才跳」。
-            FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
-                eventArgs: new object?[] { target },
-                eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = target,
-                });
+            // si=2427：被压制时**不广播** `OnOtherCardBecomingVeteran`（9 张订阅者）。
+            if (!target.Keywords.Contains(Keyword.Suppressed))
+            {
+                FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
+                    eventArgs: new object?[] { target },
+                    eventSubject: target,
+                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        ["card"] = target,
+                    });
+            }
 
             // si=2782 ExecuteOnOtherCardsAbilitiesChanged(card)
             FireAbilitiesChanged(target);
 
-            if (!target.Keywords.Contains(Keyword.Suppressed))
-            {
-                FireTrigger("OnBecomingVeteran", target, target.Owner);
-            }
+            FireTrigger("OnBecomingVeteran", target, target.Owner);
         }
     }
 
@@ -3099,8 +2683,8 @@ public sealed partial class CardApi
     /// <code>
     /// i=749  cardToChange.ResetCardAttributes()      ; 原生函数，实现体不在客户端
     /// i=782  IsActionProcess()
-    /// i=815  cardToChange.OnCardReset()              ; ★ 自己（此前从未派发，64 张订阅）
-    /// i=851  FetchAllCardsWithEventTrigger(53)       ; 53 = OnOtherCardReset
+    /// i=815  cardToChange.OnCardReset()              ; ★ 自己（64 张订阅）
+    /// i=851  FetchAllCardsWithEventTrigger(53)       ; 53 = OnOtherCardReset（39 张订阅）
     /// i=1120 item.OnOtherCardReset(cardReset, resetCardID)
     /// </code>
     /// 触发号 53 的依据：`ERegisteredCardFunction.h` 逐项数下来第 54 项 = `OnOtherCardReset`。
@@ -3336,6 +2920,15 @@ public sealed partial class CardApi
     public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.BoardInBattleOrder(s);
     public IEnumerable<CardInstance> GetAllUnitsOnBoard() => State.Board(Side.Left).Concat(State.Board(Side.Right));
     public IEnumerable<CardInstance> GetAllCardsOnBoard() => GetAllUnitsOnBoard().Concat(new[] { State.Hq(Side.Left), State.Hq(Side.Right) });
+    /// <summary>
+    /// Blueprint `GetAllCardsInFrontline`: return every card currently in the
+    /// shared frontline, regardless of owner. Covert visibility is not modeled,
+    /// so the only effective filter is the location.
+    /// </summary>
+    public IEnumerable<CardInstance> GetAllCardsInFrontline()
+        => State.BattleCardsInOrder(Side.Left)
+            .Concat(State.BattleCardsInOrder(Side.Right))
+            .Where(card => card.Location == CardLocation.BoardFrontline);
     public IEnumerable<CardInstance> GetAllCards() => State.AllCards;
     public IEnumerable<CardInstance> GetCardsInHandBySide(Side s) => State.Hand(s);
     /// <summary>
@@ -3376,47 +2969,11 @@ public sealed partial class CardApi
     public int GetTotalAttack(Side s) => State.Board(s).Sum(u => u.Attack);
     public int GetTotalDefense(Side s) => State.Board(s).Sum(u => u.Defense);
 
-    /// <param name="applyCustomAlways">
-    /// ★ 2026-10-04：对应蓝图第二个实参 `skipCustomAlways` 的**取反**。
-    /// 蓝图 `GetRandomCard`（`BP_CardFunctions.g.cs:21669-21776`，本次逐行复核）：
-    /// <code>
-    /// :21686  if (!(Array_Length(cards) > 0)) → randomCard = null
-    /// :21688  if (!skipCustomAlways) goto L_0179      ; ★ false ⇒ 走"自定义必选"那条
-    /// :21689  L_007E:  r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len-1)
-    /// :21696           randomCard = cards[r]           ; ← 全池随机（也是"必选集为空"的落点）
-    /// :21705  L_0179:  收集 alwaysSelected = cards 里
-    ///                  `CustomName1HasAttribute(card, "AlwaysSelectedAsRandom")` 为真的那些
-    /// :21753  if (Array_Length(alwaysSelected) > 0):
-    /// :21763      r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len(alwaysSelected)-1)
-    /// :21765      randomCard = alwaysSelected[r]
-    /// :21757  else → goto L_007E                       ; 必选集为空 ⇒ 退回全池随机
-    /// </code>
-    /// ⇒ **两条路都只消费 1 次随机数**，只有"从哪个池里取"不同（所以游标对账不受影响）。
-    /// ⚠️ 全卡池 **176 个调用点里 153 个传 `skipCustomAlways = false`**（`true` 只有 23 个），
-    /// 而内核旧实现**恒按全池随机**（等于恒按 `true` 那条）⇒ 对那 153 个点是**走错了分支**。
-    /// ⚠️ 但"必选集"要非空才看得出差别，而 `AlwaysSelectedAsRandom` 这个属性
-    /// **在本仓库的卡数据里查不到**（`cards.live.json` 0 处；`card-effects.json` 里只有
-    /// `BP_CardFunctions` 自己的函数表提到这个字符串）⇒ 对当前 22 局语料
-    /// **大概率是恒等变换**（A/B 逐位不变就是它的证据）。
-    /// </param>
-    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool, bool applyCustomAlways = false)
+    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool)
     {
         if (pool.Count == 0)
         {
             return null;
-        }
-
-        // `skipCustomAlways == false` 那条：池里有"必选"卡就只在它们之间随机。
-        IReadOnlyList<CardInstance> candidates = pool;
-        if (applyCustomAlways)
-        {
-            var always = pool
-                .Where(x => CustomNameHasAttribute(x, "customName1", "AlwaysSelectedAsRandom"))
-                .ToList();
-            if (always.Count > 0)
-            {
-                candidates = always;
-            }
         }
 
         // `GetRandomCard(cards, skipCustomAlways, out randomCard)` 在蓝图里是
@@ -3425,8 +2982,8 @@ public sealed partial class CardApi
         // 一次消费、闭区间。游标探针记下候选集大小与选中下标，用来和客户端对账。
         uint seedBefore = State.Random.Seed;
         long cursorBefore = State.Random.ConsumedCount;
-        int index = State.Random.Next(candidates.Count);
-        CardInstance picked = candidates[index];
+        int index = State.Random.Next(pool.Count);
+        CardInstance picked = pool[index];
         // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。
         //
@@ -3434,8 +2991,8 @@ public sealed partial class CardApi
         if (State.CollectRandomTrace)
         {
             // Full order is required to distinguish a pool mismatch from an RNG mismatch.
-            string poolDump = string.Join(",", candidates.Select(x => x.Name));
-            State.TraceRandom($"GetRandomCard n={candidates.Count} idx={index} -> {picked.Name} " +
+            string poolDump = string.Join(",", pool.Select(x => x.Name));
+            State.TraceRandom($"GetRandomCard n={pool.Count} idx={index} -> {picked.Name} " +
                 $"cursor={cursorBefore}->{State.Random.ConsumedCount} " +
                 $"seed={seedBefore}->{State.Random.Seed} 池=[{poolDump}]");
         }
@@ -3506,37 +3063,18 @@ public sealed partial class CardApi
     /// 「刚被打出的那张牌是不是反制卡」—— 那是**普通卡**，恒假 ⇒ 53 个调用点
     /// 全部静默失效。
     ///
-    /// ## ★★ 还必须要求「**这张反制卡已经装填（盖着）**」—— 2026-10-04 补
+    /// ## 参考实现（唯一可读的第二个口径）
     ///
-    /// 参考实现（唯一可读的第二个口径）`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1350-1356`
-    /// 把语义**逐字写在注释里**：
+    /// `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348-1355`：
     /// <code>
-    /// // 参数：(triggerCard, out shouldIt)。**只有盖着的反制卡才响应**。
-    /// var self = h.Card_(a[0]);
-    /// var should = self is not null &amp;&amp; self.Covert &amp;&amp; !self.Destroyed
-    ///              &amp;&amp; h.Obj(self).Get("gotcha").AsBool();
+    /// var self = h.Card_(a[0]);            // a[0] 在它那边就是 self（g.cs 的实参表）
+    /// should = self.Covert &amp;&amp; !self.Destroyed &amp;&amp; gotcha
     /// </code>
-    /// 而 `IsGotcha` 那边（`:1342-1347`）也写着「Gotcha 是**盖在场上没翻开**的状态，
-    /// 等价于 covert + 未 reveal」。
-    ///
-    /// ⚠️ 旧实现是 `IsGotcha(self) &amp;&amp; self.IsAlive` —— **漏了"盖着"这一项**，
-    /// 于是**手里任何一张还没打出的反制卡，只要它的 `OnOther*` 程序被派发到，
-    /// 就会立刻触发**（不管它有没有被装填成陷阱）。
-    ///
-    /// **实测后果（回放 773639）**：右方手里那张未装填的
-    /// `card_event_unexpected_resistance`（"Pin a unit that moves to the frontline"）
-    /// 在左方单位 `card_unit_2nd_west_africa` 上前线时被触发，把它钉住 ⇒
-    /// 人类 `#92 t20 AC` 被内核拒绝（`攻击者被钉住`），而客户端打得出来。
-    ///
-    /// ⇒ 内核里"盖着"就是 <see cref="CardInstance.GotchaActivated"/> `&gt; 0`：
-    /// 它由 <see cref="AssignGotchaActivatedOnPlayFromHand"/> 在**打出反制卡时**赋值
-    /// （`BP_CardFunctions.g.cs:28316`，**唯一**写入方），
-    /// 而 <see cref="GetActiveGotchasOrdered"/> 早就用 `gotchaActivated &gt; 0` 过滤
-    /// （`BP_CardFunctions.g.cs:18733`，见 `CardApi.cs` 那段注释）。
-    /// 同一份状态，在这里也必须过同一道门。
+    /// 去掉那两个恒假项之后，剩下的可核实语义是 **「未被销毁」** ——
+    /// 内核里对应 <see cref="CardInstance.IsAlive"/>（`!= Discard &amp;&amp; != NotAvailable`）。
     /// </summary>
     public bool ShouldGotchaTrigger(CardInstance? self)
-        => self is not null && IsGotcha(self) && self.IsAlive && self.GotchaActivated > 0;
+        => self is not null && IsGotcha(self) && self.IsAlive;
 
     /// <summary>
     /// `GetHandLocationBySide(side, out handLocation)`
@@ -3984,9 +3522,8 @@ public sealed partial class CardApi
     /// 没有它，`gotchaActivated` 恒为 0 ⇒ `GetActiveGotchasOrdered` 的 `&gt; 0` 过滤
     /// 恒空 ⇒ 整个反制子系统空转。
     ///
-    /// ⚠️ **调用点未接线**：蓝图里这段在 `PlayCardDirectlyFromHand` 内部，而那个库函数
-    /// 在本内核的派发表里**仍是缺口**（15 个 IR 调用点）⇒ 本方法目前**只能被自测调用**，
-    /// 出牌流水线还没有走到它。如实标注为「写入方已就位、接线未做」。
+    /// `PlayCardDirectlyFromHand` 的派发入口已接到 `MatchEngine.PlayCardDirectlyFromHand`；
+    /// 普通出牌与直接出牌都会在离手前经过这里，因此 Gotcha 序号与蓝图保持一致。
     /// </summary>
     public void AssignGotchaActivatedOnPlayFromHand(CardInstance card)
     {

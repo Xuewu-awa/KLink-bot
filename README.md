@@ -1,162 +1,16 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
-> **2026-10-05 第二十九轮：重测 `--identity-fix`** —— `508065` **123/141 → 139/141**（失败 17 → 1）、
-> `634651` 219 → 225，但 `773639` **仍回归**（134/137 → 123/137）⇒ **维持默认关闭**；
-> 并确认 `508065` 的失败里 16/17 属身份/随机类（离线数据不可得）。详见 §8.38。
->
-> **2026-10-05 第二十八轮（续）：语料 12 → 15 局** —— 宿主剩下的三局真人实测入库（均完全对齐，做防回归守卫）；
-> 15 局新基线 **1028/1071（96.0%）**、人类失败 26、④ 95。
->
-> **2026-10-05 第二十八轮：P6 部分补丁**（回放硬塞进手牌的牌补发"抽到手"事件）——
-> `fresh-replays` **636/710 → 637/710**、人类失败 **22 → 21**、**④ 223 → 206（−17）**；
-> `634651` ⑤b 由 `#46 t11` 后移到 `#71 t15`、`989040` 的 ④ **24 → 7**；主对拍集与 live 逐位不变。详见 §8.37。
->
-> **2026-10-05 第二十七轮（不改行为）：`634651` 的 kredit 差取证** —— 归因到「光环对**抽到的**指令补挂 -1」这一层，
-> 并否掉了"重施加整体没实现"的假设；新增探针 `KLINK_TRACE_POOL=1`。详见 §8.36。
->
-> **2026-10-05 第二十六轮：回合标记改读客户端自带的 `side`** —— 两局真人语料的 ⑤b 双双消失：
-> `fresh-replays` **634/710 → 636/710**、人类失败 **23 → 22**，`641464` 完全对齐、`replay-15` +1；
-> 主对拍集与 live 语料逐位不变。详见 §8.35。
->
-> **2026-10-05 第二十五轮：改费下限 1 → 0** —— 新语料 resh-replays/replay-634651 的 t1（⑤b）
-> 定死了「1 费指令能被减到 0」：resh-replays **633/710 → 634/710**、人类失败 **24 → 23**、
-> 634651 的 ⑤b 从 #3 t1 **后移到 #46 t11**；12 局主对拍集与 live 语料**逐位不变**。
-> 详见 §8.34。
->
-> **2026-10-05 第二十四轮：层 A 落地（被抑制的收件人不收触发）** ——
-> `out/_server-replays` **913/961 → 918/961**、人类失败 **31 → 26**；
-> 新增的两局真人语料 `748616`（61/63 → **62/63**）与 `931082`（59/63 → **63/63**）的 ⑤b **双双消失**，
-> 其余 10 局**逐位不变**；自测 **168 → 170**（判死验证过）、`dispatch-gap` 逐位不变。
-> 同一轮：**场上容量门**试过、A/B 后回退（并纠正 §8.32 的机制描述）；PR #1 审查后**只移植一条**
-> （见 [`PR1审查与移植记录.md`](klink%20bot/docs/PR1审查与移植记录.md)）。详见 §8.33。
->
-> **工作树验证状态**：新增撤回与战斗规则仍在回放验收中；`508065` 已观察到应用率回归，
-> 尚不能将新增原语视为完成。当前记录与待办见 [当前执行记录](docs/当前执行记录.md)。
->
-> **2026-10-04 本轮已验收**：触发派发含手牌 + 反制卡装填门（见 §8.10）——
-> 主对拍集 `787/835 → 793/835`、人类失败 `32 → 26`、④ 人类 HQ 差 `108 → 95`、
-> 完全对齐 `6/10 → 8/10`，另外 12 局**逐位不变**，自测 151/151、`dispatch-gap` 逐位不变。
->
-> **2026-10-04 第二轮已验收（回放侧无信号）**：压制门的**形状**改正三处
-> （T15 / T32 / T7，见 §8.11）—— 22 局逐位不变、自测 151/151（含一条被改写的旧用例，
-> 做过判死验证）。证据链是「蓝图原文 + 自测」，**不是**回放对拍。
->
-> **2026-10-04 第四轮已验收（回放侧无信号）**：三个从未派发的触发点接线
-> （T35 11 卡 / T61 2 卡 / T48 3 卡，见 §8.13）—— 22 局逐位不变、自测 152/152
-> （新用例做过判死验证）、`dispatch-gap` 逐位不变、纯新增 +184/−0 行。
-> 另：把 §8.12 那条"试过但回退"的修补**定位到了具体一行**
-> （`night_raid` 的 `IsLocationFull(handLocation)`，见 §8.12.1）—— 结论是
-> **先修 P6 的手牌虚增，再注册 `GetHandLocationBySide`**。
->
-> **2026-10-04 第五轮（未改行为）**：手牌容量 —— 见 §8.14。
-> 新增 env 门控探针 `GameState.TraceHandOverflow`（带调用栈），点名了两条越界路径
-> （`DoDrawSpecific` / `SpawnCardInHand`）；按蓝图原文补上两道容量门后
-> **793/835 → 735/835** ⇒ 回退。
-> ⚠️ **并更正了一个我自己先写错的判断**：蓝图 `DrawSpecificCardFromDeckBySide`
-> （`:12406`，全函数 33 行）**根本没有容量门** ⇒ **「手牌 > 9」本身不是 bug**，
-> 不能拿它当"内核多进了一张"的判据（§8.14 ②/④）。
->
-> **2026-10-04 第六~九轮（回放侧无信号，但都是真缺口）**：
-> ⑥ 逐条对账后补上**唯一**缺失的手牌容量门 `SpawnCardInHand`（§8.15）；
-> ⑦/⑧ 手牌/牌库**双向流水账探针**，把 `854099 t11` 的手牌差**最终归因到牌库顺序**
-> （§9.1 第②类，**数据不可得，不是代码 bug** —— 这条线索到此为止，见 §8.16/§8.17）；
-> ⑨ **T31 `OnOtherCardAttacks` 接线完成**（§8.18，README §9.5 **P1** 那条，20 张订阅卡）。
-> 自测 **152 → 154 项全通过**（每条都做过判死验证）；22 局**逐位不变**、`dispatch-gap` 逐位不变。
-> ⚠️ **这一轮没有推动四条判据**（都是"回放侧 0 命中"的正确性修复）；
-> 能推动判据的那条（`GetHandLocationBySide` / 反制卡落点）被**数据**卡住，已如实记录。
->
-> **2026-10-04 第十轮（回放侧无信号）**：**T3 `OnAfterDeckChanged`（3 卡）+
-> T22 `OnDeckShuffled`（5 卡）接线**（§8.19）—— 顺带补上 `ShuffleDeckBySide` 旧实现
-> **整个丢掉的** `skipSubAction` / `instigatorID` 两个实参，以及 `:34661` 的空牌库早退。
-> 22 局逐位不变、自测 **155/155**（判死验证过）。
->
-> **2026-10-04 第十一/十二轮（回放侧无信号）**：**T45（4 卡）+ T49（3 卡）+ T68（3 卡）**
-> （§8.20 / §8.21）。其中 **T68 有一个"挂错地方就是多发"的发现**：蓝图 `AttackCard` 全文
-> 只有 `:4637`/`:4651` 两个调用点、**都在提前返回的分支上**，正常结算路径**没有**这个调用
-> ⇒ 攻击链上 T68 只在"攻击被中止"时发。22 局逐位不变、自测 **158/158**（含双向判死）。
->
-> **2026-10-04 第十三轮：P4 清单收尾**（§8.22）—— **T62 `OnOtherUnitUnpinned` + 注册 `RemovePin`**
-> （IR 里 **10 张卡**调 `RemovePin`，此前全是**静默 no-op**）。
-> ★ **这是本轮唯一推动四条判据之一的改动**：`dispatch-gap` 从
-> **522 种 / 2462 调用点 / `FFEC7E071E9518C0`** 降到 **521 / 2452 / `ACCAA64A21EF6CDE`**
-> （判据 ② 未实现原语种 ↓，已按规则更新 `tools/BotSim/DispatchGap.cs` 的冻结常量）。
-> 22 局逐位不变、自测 **159/159**。
->
-> **2026-10-04 第十四轮**：**T30 `OnOtherCardAttackSwitchTarget` 接线**（P1 家族补齐）——
-> 写它的用例时又挖出**两个形状缺口**：① `GetCardFromID` 只认整数 cardID（拿到卡对象时返回 null）；
-> ② ★★★ **IR 生成器漏掉了 390 个调用点的出参槽**（`outs: []` 而把出参槽当实参传），
-> 已在 `KismetVm.ExecuteCall` 里按命名约定推断（`SpawnCardInHandBySide` 184 /
-> `DrawCardsFromDeckBySide` 150 / `SpawnCardOnBattlefield` 44 …）。见 §8.23。
-> 22 局**逐位不变**、自测 **160/160**（含判死）。
->
-> **2026-10-04 第十五轮：判据 ⑥ 的口径纠正 + 补四个规则相关缺口**（§8.24）——
-> ★★ 把 2452 个真缺口按**拥有者**分档后发现：**`BP_*` UI 蓝图 1067 点（对局里根本不会跑）
-> + campaign/教程 951 点（离线内核没有战役模式）**，**规则相关的只有 91 种 / 343 点（14%）**。
-> ⇒ **判据 ⑥ 的头条数字（521 种）不是拟真度指标**，以后只看 343 点这一档。
-> 另把 T34 `ConvertCard` 定为**自底向上的多轮工程**（13 个子原语缺 11 个、且它们直接调用点全为 0
-> ⇒ 单做它是死代码）。本轮从 343 点那档挑了四条最便宜的补上：
-> `GetAllCardsInFrontline` / `GetLeftMostCardInHand` / `MoveMultipleCardsToTopOfOwnersDeck` / `SetCardSeen`
-> ⇒ 判据 ⑥ **521/2452/`ACCAA64A21EF6CDE` → 517/2417/`562F23B0F92405BE`**；
-> 22 局逐位不变、自测 **161/161**（判死）。
-> 顺带**钉死**了 508065 的 ⑤b 根因：`#54` 是 **⑤c 身份不一致**（动作码 `02` = `aa_barrage` 费 1
-> vs 内核 `the_commonwealth` 费 12），**§9.1 随机类，不是费用 bug**。
->
-> **2026-10-04 第十六轮：规则相关缺口再按"语料里真的有消费者"过滤**（§8.25）——
-> 86 种规则相关缺口里，**只有 13 种**的消费者真的在 22 局语料里出现过（这才是优先级清单）。
-> 本轮补掉其中自洽的四条（`GiveTwoKredits` / `ResetUnitOperations` /
-> `WasLeftMostCardWhenPlayedFromHand` / `WasRightMostCardWhenPlayedFromHand`）——
-> 其中"最左/最右"的写入方 `SetRightLeftMostWhenPlayed` **在 IR 里直接调用点为 0**
-> （属于"客户端打牌流程里调"的那一类），落点因此放在内核自己的 `MatchEngine.PlayCard` 里。
-> ⇒ 判据 ⑥ **517/2417/`562F23B0F92405BE` → 513/2402/`1CD6C9FB13D94AD0`**；
-> 22 局逐位不变、自测 **162/162**（判死）。
->
-> **2026-10-04 第十七轮：`getCardsBuffedByThisCard`（25 点，13 条清单里最大的一条）**（§8.26）——
-> 原生函数，语义按 **19 张光环卡**（"Your other X have +N attack"）的**刷新用法**推断：
-> `RemoveBuff()` → `CardsBuffed = getCardsBuffedByThisCard()` → 非空则重贴
-> ⇒ "所有 `BuffsBySource` 里含**来源为我**的条目的卡"，与既有 `isBuffedByCard` **对偶**。
-> ⇒ 判据 ⑥ **513/2402 → 512/2377**（正好 −25 点）；22 局逐位不变、自测 **163/163**（判死）。
-> ⚠️ 顺带记一个坑：`ChangeAttack` 的来源**取 `c.Self`**（`CardApiDispatch.cs:3012-3013`
-> 有注释说这是**故意**的），不是实参里那个 ID —— 写用例时先踩了一次。
->
-> **2026-10-04 第十八轮：`GetRandomCard` 的第二个实参被丢掉了**（§8.27）——
-> 蓝图 `:21688` 按 `skipCustomAlways` 分流，**176 个调用点里 153 个传 `false`**
-> （走"必选集"分支：池里有 `AlwaysSelectedAsRandom` 的卡就只在它们之间随机），
-> 而旧实现恒按全池随机。**两条路都只消费 1 次随机数** ⇒ 零对齐风险。
-> 22 局**逐位不变**（这同时证明 22 局里没有卡带该属性）、自测 **164/164**（判死）。
-> 另：取证确认 `DiscardRandomCardFromHand`（20 点）**在 22 局里从未执行**，
-> 且审计的 `⑥a RNG 游标失同步` 是**按 ⑤c 合成的条目**、不是独立证据。
->
-> **2026-10-04 第十九轮：`ref/` 里有四份参考 + 触发队列语义还原**（§8.28）——
-> ★★ **`ref/` 下有 4 份 `BP_CardFunctions.g.cs`，函数数 292 vs 294 不同**：
-> 只有 `ref/kards-sim.mine-pre-push/…/_deps/` 那份有 `AddToTriggerQueue`/`ResolveTriggerQueue`，
-> 而**内核 IR 明明调了它们**（6 点）⇒ **引用蓝图行号必须写明是哪一份**
-> （内核注释引用的行号与 `ref/kards-sim` 那份一致，已交叉验证）。
-> 已还原触发队列语义（**延迟出牌**：`AddToTriggerQueue` 塞 `TriggerMultiple+1` 次 →
-> `ResolveTriggerQueue` 逐张调 `OnPlayedFromHand`），但它是**一条链**，本轮不做。
-> 另取证否决了两条：`PlayCardDirectlyFromHand`（**422 行**）、
-> `ForceEndTurn`（只是 `NotifyForceEndTurn`，内核自己结束回合会**重复结束**）。
-> 本轮补上 **`IsTopDeckNavy`（7 点，没有链）** ⇒ 判据 ⑥ **512/2377 → 511/2370**；
-> 22 局逐位不变、自测 **165/165**（判死）。
->
-> **2026-10-04 第二十轮：触发队列卡在"谁来排空"；§8.23 的出参类型疑点收口**（§8.29）——
-> ⚠️ **更正上一轮**：`HandleExtraPlayTriggersAfterSelectHandCard` **在** `ref/kards-sim` 那份里
-> （`:23915`），上轮误判成"只在 `_deps` 里"；但它在 `BP_CardFunctions` 里**没有任何调用者**
-> ⇒ 触发队列的**排空时机在外部**（UI/game-mode），猜错就是死代码或错时刻排空 ⇒ **不做**。
-> ★ 另把 §8.23 那句"把出参当整数用的消费者**未逐一核对**"**收口**了：
-> 全 IR 生成类原语的出参只有 **26 处**被消费，**唯一**按整数用的是
-> `card_event_area_bombardment` 的 `JSON_SetInt(self, "unitToRemove", spawnedCardID)`
-> —— 它此前把 `unitToRemove` 写成 **0**（找不到要移除的单位），已修。
-> 22 局逐位不变、自测 **166/166**（判死信息正好是"实际 0"）。
->
-> **2026-10-04 第二十一轮：`ConvertCard` 链开工**（§8.30）——
-> ★★ 先量**运行时可达性**（比 §8.24 的静态判据强）：`ConvertCard` **真的被执行** ——
-> `docs/live-replays/replay-165924` 的运行时 ⑥ **只有它**（撞到 ×2），`fresh-replays/replay-15` 撞 ×1
-> ⇒ **165924 那一局就是被这一条挡住的**，链值得做。
-> 三个运行时调用点**形状一致**（都按名字转，`convertIntoCardID=0`）；
-> 569 行的实现规格已逐行读出（含"**T34 按 `newCardIDs` 过滤、必须逐张订阅者直接跑程序**"
-> 这个不能直接用 `FireTrigger` 的要点）。本轮落地链上**第一个精确前置件**
-> `SetCardLocationAndLocNumber`（**裸写**位置、**`Discard(8)` 时不写位置号**）。
-> 22 局逐位不变、自测 **167/167**（判死）。**下一轮落 `ConvertCard` 本体 + T34 广播。**
+> **工作树验证状态（2026-10-05）**：T30/T31、PlayCard 早快照、全局 suppression gate、T7 抑制门和
+> `OnOtherCardDeveloped`（Develop 后置广播）、`OnOtherUnitPinned/Unpinned`（钉住状态广播）与
+> `OnOtherCardMoveToFrontline`（推进事件载荷）、`OnOtherCardReceiveDamage`（受伤事件载荷）、
+> `OnOtherCardReset`（`cardReset/resetCardID` 载荷）、`OnOtherCardDealDamage`（来源/目标/伤害载荷）
+> 与 `OnOtherCardCreatedAlterCard`（`cardPlayed/method` 载荷）、`OnOtherCardLocationMoved`
+> （真实换区主体载荷）、`OnOtherCardDiscarded`（真实弃牌主体载荷）、`OnOtherCardLoseSmokescreen`
+> （真实烟幕目标载荷）、`OnDeckShuffled`（真实洗牌阵营/施动卡载荷）
+> 已接入；P2 的自身效果/广播时序仍待新的客户端证据。当前合并上游 15 局语料后的本地审计基线为
+> `1054/1071（98.4%）`、人类动作失败 `1`、死亡单位误动作 `0`（`--identity-fix --dup-start-kredit`）。
+> 新增 `748635/748636/748639/931082` 完全对齐，`748616` 仅有 1 条 bot 旧动作被拒。
+> 当前记录与待办见 [内部现状与路线图](klink%20bot/docs/内部现状与路线图.md)。
 
 > **把一款商业卡牌游戏（KARDS）的蓝图字节码，逆向成一个不需要游戏客户端、可以离线执行、并且与真实客户端逐位可复现的规则内核；再用它自对弈、训练神经网络，最后把 AI 接回真实对局当对手。**
 
@@ -174,7 +28,7 @@
 > 启动器与私服**不在本仓库里，但都是开源的** —— 见 §5.6。
 > **许可：GPL-3.0**（与来源仓库逐字节一致），详见 §10.5。
 >
-> 本文档核实时间：**2026-10-02**（提交 `d2d0f5c` 的工作树）。
+> 本文档核实时间：**2026-10-05**（工作树实测）。
 > 作者的内部追踪文档在 [`klink bot/docs/内部现状与路线图.md`](klink%20bot/docs/内部现状与路线图.md)。
 
 ---
@@ -602,7 +456,8 @@ dotnet run --project tools\ServerBridgeTest -c Release --no-build -- --audit-rep
 `⑥b 派发表静态缺口` / `⑥c 发号侧信号` / `⑦ RNG 游标计数`。
 
 常用开关：`--rng-trace`（逐次 RNG 消费流水）/ `--dump-log` / `--identity-fix` /
-`--identity-only <卡名>` / `--dup-start-kredit`。
+`--identity-only <卡名>` / `--dup-start-kredit`。身份校正与重复回合标记的槽位增长默认开启；使用
+`--no-identity-fix`、`--no-dup-start-kredit` 可分别复现旧基线。
 
 ### 5.4 全卡池烟雾测试
 
@@ -716,11 +571,7 @@ dotnet build tools\AotProbe         -c Release
 dotnet run --project tools\BotSim -c Release --no-build -- selftest
 ```
 
-实测：**120 项 / 1 失败**（进程退出码 1）。那 1 项是**已知且刻意保留**的：
-
-```
-❌ 手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须真的落实（0 费 + 回牌库顶）
-```
+实测：**169 项全部通过**（2026-10-05）。
 
 ### 6.4 跑全卡池烟雾测试
 
@@ -887,8 +738,10 @@ out/_server-replays/ 里 6 局回放，每局各含 43 个不同的 card_* 名�
 
 | 命令 | 结果 |
 |---|---|
-| `dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release` | **0 error**，1 warning（`CS8602` @ `BotTurnService.cs:191`） |
-| `dotnet build tools\{BotSim,ServerBridgeTest,NNTrain,NNPlay,AotProbe} -c Release` | **全部 0 error** |
+| `dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release` | **0 error，0 warning** |
+| `dotnet build tools\BotSim\BotSim.csproj -c Release` | **0 error**，依赖内核构建通过 |
+| `dotnet build tools\ServerBridgeTest\ServerBridgeTest.csproj -c Release` | **0 error** |
+| `NNTrain` / `NNPlay` / `AotProbe` | 环境缺少 `obj/project.assets.json`，未进行完整解决方案构建 |
 
 ### 8.2 自测
 
@@ -896,8 +749,26 @@ out/_server-replays/ 里 6 局回放，每局各含 43 个不同的 card_* 名�
 dotnet run --project tools\BotSim -c Release --no-build -- selftest
 ```
 
-⇒ **133 项 / 1 失败**（2026-10-03）。失败项为已知的 `gordon_highlanders` 手牌目标用例
-（它自己的机制已查清：`JSON_Clear` 会清空整张卡 JSON ⇒ `found` 出参从不写入，见 §9.3）。
+⇒ **174 项全部通过**（2026-10-05）。其中包含全局 suppression gate 的正反向断言，以及
+`OnOtherUnitPinned/Unpinned` 的真实订阅回归、Coastwatchers 对 `OnOtherCardReset` 载荷的回归，
+以及 15th RECCE 对 `OnOtherCardDealDamage` 来源载荷、67th BARANOVICHI 对
+`OnOtherCardCreatedAlterCard` 创建载荷、35th INFANTRY REGIMENT 对
+`OnOtherCardLocationMoved` 换区主体与位置载荷、NAKAJIMA B5N 对
+`OnOtherCardDiscarded` 弃牌主体载荷、HIROSAKI REGIMENT 对
+`OnOtherCardLoseSmokescreen` 烟幕目标载荷、110e REGIMENT MOTORIZE 对
+`OnDeckShuffled` 洗牌阵营/施动卡载荷的真实订阅回归：
+Panzer III L 对 `OnOtherCardAbilitiesChanged` / `OnOtherCardBlitzChanged` 的 Blitz 光环回归，
+以及卡内私有函数继承调用方局部槽（`_tmp_card`）的验证：
+`getCardsBuffedByThisCard` 返回来源卡实际增益目标 ID 的原语回归：
+`FullyHealCard` 返回实际治疗量、满血幂等与弃牌堆目标门的原语回归：
+`GetAllCardsInFrontline` 返回双方前线卡且排除半场/HQ 的原语回归：
+`GetIsGoldCard` 覆盖隐式 self 下普通卡与金卡的 `IsGold` 标记查询；
+`MoveMultipleCardsToTopOfOwnersDeck` 覆盖按输入顺序逐张置顶、拥有者牌库隔离、空数组与无效 ID：
+`DiscardRandomCardFromHand` 覆盖空手不消费随机流、单牌弃牌、多牌 UE 随机选牌及
+`OnOtherCardDiscarded` 事件广播：
+手牌边界查询（`GetLeftMostCardInHand` / `GetRightMostCardInHand`）覆盖位置号排序、空手返回值与双出参行为：
+未抑制旁观者收到 `OnOtherCardAbilitiesChanged`，抑制旁观者被跳过；T7 被抑制目标不收自身事件；主体自己的
+`OnSuppressed` / `OnBecomingVeteran` 语义保持不变。
 
 ### 8.3 六局回放审计
 
@@ -927,6 +798,25 @@ dotnet run --project tools\BotSim -c Release --no-build -- selftest
 
 ⚠️ 只有【人类失败】是保真度信号；`bot 失败`（未列出）是旧内核动作被拒，属正常。
 
+**2026-10-05 全量审计（10 局）**：使用同一命令自动发现 `out/_server-replays/` 与服务端语料，
+默认身份校正与重复回合标记槽位增长后的结果为 `819/835（98.1%）`、人类动作失败 `1`；
+关闭重复回合标记槽位增长时为 `802/835（96.0%）`、失败 `18`。逐局应用率/失败数：
+
+动态卡别名回放修复已加入 SelfTest（当前 `179/179`），并使 `508065` 的兜底造卡从 2 条降为 0 条。
+
+| 回放 | 应用 | 人类失败 |
+|---|---:|---:|
+| 214436 | 59/61 | 0 |
+| 389594 | 95/97 | 0 |
+| 508065 | 139/141 | 1 |
+| 542091 | 77/78 | 0 |
+| 653657 | 41/42 | 0 |
+| 705344 | 49/50 | 0 |
+| 711061 | 56/57 | 0 |
+| 770857 | 53/54 | 0 |
+| 773639 | 134/137 | 0 |
+| 854099 | 116/118 | 0 |
+
 ### 8.4 全卡池烟雾测试
 
 ```powershell
@@ -953,7 +843,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- smoke-all-cards
 | (D) 零状态变化 | **664 张 / 1760 个用例** |
 | 确定性（同种子两次逐位相同） | ✅ 全部用例一致（指纹 / RNG 消费次数 / 步数 / 未实现集合） |
 | 引擎会派发的活入口点 | **64 个**，本次跑到 **55 个**；IR 里**没有任何卡注册**的活入口点 **9 个** |
-| 未实现原语影响最大的几个 | `HasCampaignUpgrade` 35 张 / `ShouldGotchaTrigger` 34 张 / `MakeCardRetreat` 26 张 / `ConvertCard` 19 张 / `FullyHealCard` 17 张 |
+| 未实现原语影响最大的几个 | `HasCampaignUpgrade` 35 张 / `ShouldGotchaTrigger` 34 张 / `MakeCardRetreat` 26 张 / `ConvertCard` 19 张 |
 
 ### 8.5 派发表静态缺口
 
@@ -963,20 +853,19 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 ```
 === 派发表静态缺口（IR 会调用、派发表没有、locals 也兜不住）===
-  种类：534    真缺口调用点：2750
-  指纹：3CC26AEAEBDBE25B
+  种类：510    真缺口调用点：2306
+  指纹：4112C4289B1BBB54
 ```
 
 与冻结基线逐位相同（`tools/BotSim/DispatchGap.cs`）。**每次修完原语都要重跑并更新那两个常量**
-（历史：2026-10-02 `538/2788/33D02CF8E0EEC7D5` → 补 `GetCardsPlayedFromHandLastTurn` 后
-`537/2778/E674E0A25E96DAEA`；`MakeCardRetreat` 补丁 B 单独会把调用点降到 `2742`、
-指纹变 `07EE956F68DC804A`，见 §9.5 P0）。
+（历史：2026-10-02 `538/2788/33D02CF8E0EEC7D5`；随后补入本轮已实现原语与
+`locals` 继承后降至当前基线，详见 `tools/BotSim/DispatchGap.cs`。）
 
 缺口最大的几个（真缺口调用点数）：
 `HasCampaignUpgrade` 247 / `CampaignSetText` 211 / `CampaignAddKreditCost` 79 /
 `GiveStarForCampaign` 75 / `CampaignAddAttack` 59 / `CampaignAddDefense` 59 /
 `GotchaTriggered` 54 / `ShouldGotchaTrigger` 53 / `CreateHelpBubbleEntry` 39 /
-`MakeCardRetreat` 36 / `FullyHealCard` 33 / `ConvertCard` 26。
+`MakeCardRetreat` 36 / `ConvertCard` 26。
 
 ⚠️ 这个集合里**混着大量 UI / 动画 / 战役（Campaign）专用函数**，
 它们**不需要**在对局内核里实现。判据本身只负责「集合不再悄悄变大」，
@@ -1043,1601 +932,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 **请以本 README 为准。** 本次没有改它（避免与其他正在进行的改动冲突）。
 
-### 8.10 ★ 2026-10-04 本轮：触发派发含手牌 + 反制卡装填门（两处修复，A/B 见下）
-
-> 本轮**没有新增原语**（`dispatch-gap` 逐位不变：`522 / 2462 / FFEC7E071E9518C0`），
-> 只修了两处**派发口径**。所有数字都是本机跑出来的，命令随附。
-
-#### 修复 ①（根因级）触发派发的收件人快照**漏了手牌**
-
-- **落点**：`src/KLink.Bot/Effects/CardApi.cs` 新增 `FillTriggerSnapshot`，
-  `FireTrigger` 与 `BroadcastWithOutParams` 两处共用；快照从「棋盘 + 弃牌堆」
-  扩成「**棋盘 + 弃牌堆 + 手牌**」（顺序：左场/左弃/左手/右场/右弃/右手，
-  原有相对先后逐位不变，只是往后多了一批收件人）。
-- **判据**：蓝图里**大量**事件程序带「在手牌里」的分支。`docs/card-ir.json` 实测
-  （只算 `entrypoints` 的 `On*` 程序体）：
-  `IsLocatedInHand` **42 个触发名 / 90 个 (卡,触发) 对**；
-  `IsLocatedInDeck` **12 个 / 22 个**。
-  只扫「棋盘 + 弃牌堆」时这些分支是**死代码**。
-- **决定性实例（真人对局 `711061` 的 ⑤b 首漂开）**：
-  `card_unit_5th_regiment`（卡面「When you lose a kredit slot, this unit gets
-  **+2+1 if on the battlefield or -2 cost if in hand**.」）**整张卡只有一个入口**
-  `OnAfterExtraKreditSlotGain`（IR `i=178`），体内两条路：
-  `i=287 jumpIfNot(IsLocatedOnBoard) → i=10`（在手牌那一支）→
-  `i=110 ChangeKreditCost(self, -2)`。
-  711061 里左方 t3 连丢两个槽位（`#10 air_land_sea`、`#12 40th_cavalry_regiment`），
-  客户端因此把手里那张 5th_regiment 降费；内核一直按 **4 费** 算，
-  而此刻池子只有 `kredits=1` ⇒ `#23 t5 PC` 被拒 ⇒ 那张牌留在手里 ⇒
-  下游 `#28 t7 ML`、`#41 t9 AC` 接连失败 ⇒ 右方 HQ 少掉 6 点伤害
-  （该局 ④ 人类 HQ 差 10 条**全部**由这一条派生）。
-- **同时补的一道护栏**：`FireTrigger` 末尾「主体不在棋盘上时补发一次」的兜底分支
-  加了 `subjectSeen` 判定 —— 手牌里的卡满足 `IsAlive && !IsBoard()`
-  ⇒ 旧的兜底条件对它恒成立 ⇒ 同一个程序会**跑两遍**。
-
-#### 修复 ②（被 ①暴露出来）`ShouldGotchaTrigger` 漏了「这张反制卡已装填」
-
-- **落点**：`CardApi.ShouldGotchaTrigger` 从 `IsGotcha(self) && self.IsAlive`
-  改成 **`... && self.GotchaActivated > 0`**。
-- **判据**：参考实现把语义逐字写在注释里
-  （`ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1350-1356`）：
-  「参数：(triggerCard, out shouldIt)。**只有盖着的反制卡才响应**。」
-  而 `IsGotcha` 那边（`:1342-1347`）也写着「Gotcha 是**盖在场上没翻开**的状态」。
-  内核里"盖着"就是 `GotchaActivated > 0`（唯一写入方
-  `AssignGotchaActivatedOnPlayFromHand`，`BP_CardFunctions.g.cs:28316`；
-  `GetActiveGotchasOrdered` 早就用同一道 `> 0` 门过滤，`:18733`）。
-- **为什么它是被 ① 暴露的**：修复 ① 之前手牌里的卡从不收触发，
-  所以"未装填的反制卡在手牌里被任意 `OnOther*` 事件触发"这条错误路径**没被走到**。
-  修复 ① 一开，`773639` 立刻多出一个**假钉住**：
-  右方未装填的 `card_event_unexpected_resistance`（"Pin a unit that moves to the
-  frontline."）把左方刚上前线的 `card_unit_2nd_west_africa` 钉住
-  （`[PIN] t=17 self=card_event_unexpected_resistance#53@Discard`，
-  由临时探针取证、改完已移除）⇒ 人类 `#92 t20 AC` 被内核误拒。
-  装上装填门后该局**完全恢复**（见下表）。
-- **自测**：`GotchaShouldTriggerJudgesSelf` 从 3 条断言扩到 4 条
-  （新增「未装填 ⇒ 必须为假」那一条），四条一起把「判 self / 判 a[0] / 已销毁 / 未装填」钉死。
-
-#### 自测与回放 A/B（命令随附）
-
-```powershell
-dotnet build src\KLink.Bot\KLink.Bot.csproj -c Release
-dotnet build tools\BotSim -c Release ; dotnet build tools\ServerBridgeTest -c Release
-dotnet run --project tools\BotSim -c Release --no-build -- selftest        # 150 → 151 项，全通过
-dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap    # 逐位不变
-& "out\audit\audit-4metrics.ps1"
-```
-
-**主对拍集 `out/_server-replays`（10 局，2026-10-04 实测）**：
-
-| 回放 | 应用 前→后 | 人类失败 前→后 | ④HQ差(人) 前→后 | ⑤b 首个漂开 前→后 |
-|---|---|---|---|---|
-| 214436 | 59/61 → 59/61 | 0 → 0 | 3 → 3 | 无 → 无 |
-| 389594 | 95/97 → 95/97 | 0 → 0 | 0 → 0 | 无 → 无 |
-| 508065 | 123/141 → 123/141 | 17 → 17 | 43 → 43 | `#54 t13 PC` → 不变 |
-| 542091 | 77/78 → 77/78 | 0 → 0 | 0 → 0 | 无 → 无 |
-| 653657 | 41/42 → 41/42 | 0 → 0 | 0 → 0 | 无 → 无 |
-| **705344** | 46/50 → **49/50** | 3 → **0** | 3 → **0** | `#21 t5 PC` → **无（完全对齐）** |
-| **711061** | 53/57 → **56/57** | 3 → **0** | 10 → **0** | `#23 t5 PC` → **无（完全对齐）** |
-| 770857 | 53/54 → 53/54 | 0 → 0 | 13 → 13 | 无 → 无 |
-| 773639 | 134/137 → 134/137 | 0 → 0 | 0 → 0 | 无 → 无 |
-| 854099 | 106/118 → 106/118 | 9 → 9 | 36 → 36 | `#78 t17 ML` → 不变 |
-| **合计** | **787/835 → 793/835（94.3% → 95.0%）** | **32 → 26** | **108 → 95** | 完全对齐 **6/10 → 8/10** |
-
-**另外 12 局（`docs/fresh-replays` 7 局 + `docs/live-replays` 5 局）**：
-
-| 语料 | 应用 | 人类失败 | ④人类HQ差 |
-|---|---|---|---|
-| `fresh-replays` | 628/710 → **628/710（不变）** | 24 → **24** | 217 → **217** |
-| `live-replays` | 132/140 → **132/140（不变）** | 0 → **0** | 18 → **18** |
-
-⇒ **修复的效果精确落在它该落的 2 局上，另外 12 局逐位不变、无任何回归。**
-这是本轮最值得记的一条：**一个根因级修复可以只影响 2/22 局**，
-所以「改了没动」不等于「没生效」（README §7.4 的同一件事的另一面）。
-
-**两条如实标注**：
-
-1. `711061` 的对齐**依赖一处已知偏差**：`ChangeKreditCost` 的 `changeType=1`
-   在本内核里被当成"设成绝对值"，而 `EChangeType.h:6-17` 说 **1 = `permBuff`（相对永久）**
-   （`CardApiDispatch.cs` 的 `ChangeTypeSetValue` 注释自己记了这件事，涉及 **41 个调用点**）。
-   于是 5th_regiment 的 `-2` 被算成 `-2 - 卡面费`、4 费**一步到 0**；
-   正确口径应是 4 → 2 → 0。**两种口径在 `#23 t5` 那一刻都是 0 费**，
-   所以这一局的对齐结论成立，但**中间值不是逐位一致的**。
-   自测因此**只断言"费确实下降"**、不断言"恰好 −2"（见
-   `SelfTest.TriggerSnapshotIncludesHand` 的注释）；修那个偏差要一次动 41 个调用点，须单独立一支。
-2. `card_unit_5th_regiment` 在**修复前后**的「棋盘那一支」都是 +2+1（`changeType=1`
-   对攻/防走的是正确的相对语义）—— 所以本轮的净效果**只在手牌那一支**上。
-
-### 8.11 ★ 2026-10-04 本轮第二轮：压制门的**形状**改正（三处）
-
-> **结论：三条判据在全部 22 局上逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` /
-> `132/140, 0, 18`），自测 151/151（其中一条**被改写的旧用例**做了判死验证）。
-> ⇒ 这是一个**证据链只有「蓝图原文 + 自测」、回放侧无信号**的修复（README §7.4 那类），
-> **如实标注**。
-
-**根因**：内核把 `JumpIfNot(cond) -> target` **读反了**。它的语义是「**cond 为假才跳**」，
-而三处注释都把它当成「cond 为真 ⇒ 整段跳过」。三处蓝图原文（本次独立复核）：
-
-| 触发点 | 蓝图原文（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`） |
-|---|---|
-| T32 `MakeVeteran` | `:26303 if (!card.isSuppressed) goto L_0AF6;` → `:26305 L_099F: Fetch(32)` → `:26347 L_0AF6: OnBecomingVeteran` → `:26349 L_0B1A: goto L_099F` |
-| T15 `ExecuteOnBeforeOtherCardDestroyed` | `:14833 if (!_cardDestroyed.isSuppressed) goto L_0208;` → `:14835 L_00B0: Fetch(15)` → `:14874 L_0208: OnBeforeDestroyed` → `:14876 goto L_00B0` |
-| T7 `ChangeDefense`（增量分支） | `:7954 if (!cardToChangeRef.isSuppressed) goto L_130F;` → `:7956 L_10FD: Fetch(7)` → `:8017 L_130F: OnAfterGainDefense` → `:8020 goto L_10FD` |
-
-三处**同一个惯用法**：门跳过的是**主体自己那个程序**，而紧跟在自程序后面的
-`goto <Fetch 标签>` **又跳回广播段** ⇒ **广播是两条路都会到的（无条件发）**。
-
-**改了三处（症状各不相同）**：
-
-| 处 | 旧行为 | 新行为 | 方向 |
-|---|---|---|---|
-| `MatchEngine.Destroy`（T15） | 被压制 ⇒ **自程序 + 广播都不发** | 自程序不发、**广播照发** | 少发 → 补上 |
-| `CardApi.MakeVeteran`（T32） | 门装在**广播**上、自程序无条件发 | 广播无条件、**自程序带门** | **完全颠倒 → 掰正** |
-| `CardApi.ApplyDefenseDelta`（T7） | self 与 T7 混在一次 `FireTrigger` 里 ⇒ **无法分别设门**，被压制时多发自程序 | self 带门、T7 广播无条件 | 多发 → 收敛 |
-
-⚠️ 两处广播名（`OnBeforeOtherCardDestroyed` / `OnAfterOtherCardGainDefense`）
-**不以 `OnOther` 开头**，必须显式传 `broadcastName: true`
-（否则命名判据会把它当成"只发主体"——同一个坑 `CardApi.FireTrigger` 的参数注释里写过）。
-
-⚠️ **README §9.5 P3 那条"别把 `ChangeDefense` 的 T7 当成本族"的警告仍然成立**：
-T7 **广播**确实无条件发 —— 旧实现无条件发广播**是对的**；错的是它**同时**无条件发了自程序。
-
-**自测改动（重要）**：已有的 `EventLayerSuppressionGate` 断言的是**旧的（错的）**语义
-（"被压制 ⇒ 不广播"），本轮**按蓝图原文改写**成：
-① T32 被压制 ⇒ **广播照发**且**自程序不发**；② 对照：未压制 ⇒ 自程序发；
-③ T15 被压制 ⇒ 自程序不发；④ T15 被压制者被摧毁 ⇒ **旁观者仍收到广播**；⑤ 对照。
-⇒ 该用例**做过判死验证**：把 T32 的广播门装回去 ⇒ 用例立刻失败。
-
-### 8.12 ⛔ 2026-10-04 第三轮：**试过但回退** —— 「打出的反制卡留在手牌」
-
-> 记在这里是因为它**蓝图依据很硬、但实测是负收益**，而且**回退的理由与项目已有政策一致**。
-> 谁要再捡起来，从这里开始。
-
-**蓝图依据（本次独立复核，逐行）**：`BP_CardFunctions.g.cs` 的 `PlayCardFromHand` 里，
-反制卡（Gotcha）打出时**两条路都不换位置**：
-
-```
-:28080/:28082  location == 4 || location == 3          ; 在手牌里
-:28088         IsGotcha(card)
-:28092         gotchaActivated > 0                     ; 已经装填过 ⇒ 这次是"正常打出"
-:28096             card.gotchaActivated = 0            ;   ⇒ 取消激活
-:28316         否则 card.gotchaActivated = next + 1    ;   ⇒ 装填成陷阱（从 1 起）
-:28098 / :28318 两条路都 → L_01B9: `_newLocation = _oldLocation`   ; ★★ 都不换位置
-:28114         NotifyPlayFromHand(…, _newLocation, …)
-```
-
-⇒ **打出的反制卡应当留在手牌（盖着）**，`gotchaActivated > 0` 期间它才响应事件。
-
-**内核现状（错的）**：`MatchEngine.PlayCard` 只判 `IsUnit || IsLocationCard` 才留场，
-反制卡落到 `else` 分支 **进弃牌堆** ⇒ `IsAlive` 在 Discard 为假 ⇒
-`ShouldGotchaTrigger` **恒假** ⇒ **52 张反制卡的整条效果全是死的**
-（14 张订阅 `OnOtherCardAttacks`、13 张订阅 `OnCounterMeasureTriggered`）。
-
-**实测 A/B（把它改成"留在手牌"）**：
-
-| 语料 | 应用 | 人类失败 | ④人类HQ差 | ⑥未实现种 |
-|---|---|---|---|---|
-| `out/_server-replays` | **793/835 → 789/835（−4）** | 26 → 26 | 95 → 95 | **变差**（多局 +1，如 542091 `2 → 4`、389594 `1 → 2`） |
-| `fresh-replays` | 628/710 → 628/710 | 24 → 24 | **217 → 208（变好）** | — |
-| `live-replays` | 132/140 → 132/140 | 0 → 0 | 18 → 18 | — |
-
-⑤b 与人类失败**都没动**（没有哪一局的"首个人类动作失败点"变差），
-但**判据 ② 未实现原语种类变差**、应用率下降 ⇒ 按 §7.1 的可靠性排序**净负**，
-⇒ **回退**（与项目已有政策一致：`CardApiDispatch.cs:1364-1368` 记着同一条规矩
-——「任何一局应用率下降都算失败 ⇒ 回退」）。
-
-**为什么它会是负收益（已定位到具体卡与具体行）**：新跑起来的反制卡程序立刻撞上
-`GetHandLocationBySide`（回放 `542091` 一次审计里 `×82`），
-而那个原语**是内核故意不注册的** —— `CardApiDispatch.cs` 记着它自己的 A/B：
-注册它会让 `854099` 从 **106/118 掉到 100/118**（其余 8 局逐位不变），
-属于典型的「**两个错抵消**」（README §7.3）⇒ 当时回退、只留缺口计数。
-
-### 8.12.1 ★ 2026-10-04：把那个「两个错抵消」**定位到了具体一行**（然后仍然回退）
-
-本轮实测复现了那次 A/B（**854099：应用 106→100、人类失败 9→16、⑤b `#78`→`#77`**），
-并加了一条**临时探针**（env 门控，取证后已移除）把调用点钉死 ——
-结论**推翻了原来的猜测**：
-
-```
-[HANDLOC] t=11 self=card_event_night_raid#5001@Discard side=Left -> 3
-          | handL=9/9 handR=4/9 isFullL=True
-```
-
-- 全 854099 里 `GetHandLocationBySide` **只被调用一次**，来自 **`card_event_night_raid`**
-  （不是 `aerial_reconaissance`，也不是反制卡路径 —— 原来的 5 张卡清单**不完整**）。
-- 那一行是 `night_raid` 的 `IsLocationFull(handLocation)` 门
-  （卡面「Copy random order from enemy deck. Add a No. 10 COMMANDO to support line.」）：
-  **手牌满 ⇒ 跳过"复制一张敌方指令"那一段**（`BP_CardFunctions.g.cs` 的 `:904 GetHandLocationBySide`
-  → `:1012 jumpIfNot(isFull) → :1295`）。
-- 那一刻内核的**左方手牌是 9/9 = 满** ⇒ 装上真判据后内核**跳过了复制**；
-  而不装时出参读成 `null(0)` ⇒ `IsLocationFull(NotAvailable)` 为假 ⇒ 内核**总是复制**
-  （于是手牌涨到 10/9，正是别处日志里那条「手牌已满（10/9）」的来源）。
-
-⇒ **被暴露的下游偏差是「内核手牌比客户端大」**（README §9.5 **P6** 那一族：
-`ReplayRunner` 对「PC 引用但不在手牌」的卡会硬塞进手牌）。
-也就是说：**客户端的 `night_raid` 当时并没有满手、确实复制了**，而内核的手牌已经被撑满，
-于是一个**正确的门**反而让内核少拿一张牌 ⇒ 后面 6 条人类动作连带失败。
-
-**仍然回退**，理由与验收口径一致：⑤b（§7.1 排第一的判据）后退了，
-而暴露出来的根因是**另一个子系统**（手牌容量/手牌虚增），不是这一行本身。
-⇒ **下一步顺序应当是：先修 P6 的手牌虚增，再注册 `GetHandLocationBySide`**，
-那时这个门才不会与客户端相反。**这条诊断是本轮真正的产出**（把"未知的下游偏差"
-变成了"一行 + 一个可复现探针 + 一个明确的先行修复项"）。
-
-⇒ **结论：这是一簇"多个错互相抵消"的改动，必须整批做**：
-① 注册 `GetHandLocationBySide`（先解决它自己那 5 张卡的抵消）；
-② 再把「打出的反制卡留在手牌」改对；
-③ 然后把 **T31 `OnOtherCardAttacks`**（20 张订阅，唯一有回放观测量的 `c` 类触发点，
-见 §9.5 P1）接上 —— 反制卡落点修好之后，那 14 张 gotcha 订阅者才可能真生效。
-**逐条验收口径**：⑤b 不得后退、⑥ 未实现种不得增加、应用率不得下降。
-
-### 8.13 ★ 2026-10-04 第四轮：三个**从未派发**的触发点接线（T35 / T61 / T48）
-
-> **22 局逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
-> `dispatch-gap` 逐位不变，自测 **151 → 152 项全通过**（新用例做过判死验证）。
-> **纯新增（+184 行 / −0 行）**。
-
-| 触发点 | 订阅卡 | 落点 | 蓝图原文（本次逐行复核） |
-|---|---|---|---|
-| **T35** `OnOtherCardCreatedAlterCard` | **11** | `CardApi.FireCardCreatedAlterCard`，在 `SpawnOnBattlefield` / `SpawnCardInHand` / `DoSpawnInDeck` 三处显式发 | `:10584 NotifyCreateNonVisualCard` → `:10586-10588 MakeVeteran` → `:10590 Fetch(35)` → `:10608 item.OnOtherCardCreatedAlterCard(createdCard, 0)` |
-| **T61** `OnOtherUnitPinned` | 2 | `CardApi.PinUnit` 末尾 | `:27980 NotifyPinUnit` → `:27982 Fetch(61)` → `:28010 item.OnOtherUnitPinned(_card)` |
-| **T48** `OnOtherCardLoseSmokescreen` | 3 | `CardApi.RemoveKeyword`（`keyword == Smokescreen`）末尾 | `:32691 Fetch(48)` → `:32709 item.OnOtherCardLoseSmokescreen(_cardFromID)` |
-
-三条的实参名逐字取 `Generated/_index.g.cs`：T35 `{cardPlayed, method}`（`method`：`CreateCard` 路径 = **0**）、
-T61 `{cardBeingPinned}`、T48 `{card}`。
-
-**三个实现细节（都是"照蓝图顺序"而不是"随便塞"）**：
-
-1. **T35 不能挂在 `GameState.CardCreated` 上**。那条钩子是**所有**建卡的漏斗，
-   而 `GameState.CreateWithId`（回放装载初始牌库 40+40 张）也走它
-   ⇒ 挂上去会让**开局**给 11 张订阅卡各广播一次"有新卡被生成"。
-   ⇒ 只在**生成类原语**里显式发（`DoSpawnInFrontline` 复用 `SpawnOnBattlefield`，不必重复）。
-2. **T35 在 `DoSpawnInDeck` 里必须排在那次随机数消耗之前**：
-   蓝图 `SpawnCardInDeckBySide` 的顺序是 `CreateCard`（含 T35 广播）→ `GetDeckByside` → `RandomIntegerInRangeFromStream`
-   （`:34856-34867`）⇒ 若订阅卡自己也消耗随机数，顺序错了游标就漂（§9.1 那一族）。
-3. **T48 排在 `ZActionRemove{keyword}` 与 `FireAbilitiesChanged` 之后**：
-   蓝图里它是 `RemoveSmokescreen` 的**最后一段**。而"烟幕真变了才发"由
-   `RemoveKeyword` 开头那道 `if (!target.Keywords.Remove(keyword)) return;` 天然满足
-   —— 自测里配了**反向断言**（第二次摘同一个不存在的烟幕时不该再广播）。
-
-**如实标注（这三条都无法用回放验证）**：三族订阅卡在现有 22 局语料里
-**一张都没出现过**（`docs/card-ir.json` 实测：T35 = `card_unit_144th_infantry_regiment` 等 11 张、
-T61 = `card_unit_cromwell_mk_iv` / `card_unit_14_panzergrenadier`、
-T48 = `card_unit_hirosaki_regiment` 等 3 张）
-⇒ **判据只有「蓝图原文 + 自测」**，不是回放对拍。A/B 全 22 局逐位不变，**既无回归也无改善**。
-
-⚠️ 一条族级偏差（未单独改，如实记）：内核 `FireTrigger` 的广播分支**排除主体**，
-而蓝图 T35 `:10590-10608` 的循环里**没有**排除 `createdCard` 自己
-⇒ 若某张卡自己订阅了 T35，内核会比客户端少发一次。与其它触发点同源。
-
-### 8.14 ★ 2026-10-04 第五轮：手牌容量 —— 把「虚增」变成**可证伪的探针 + 两次证伪的修复**
-
-> **本轮没有改行为**（22 局逐位不变），产出是**一个探针 + 一条被两次实验钉死的结论**。
-
-#### ① 蓝图的两道手牌容量门（本次逐行复核，`BP_CardFunctions.g.cs`）
-
-两条"往手牌里加牌"的漏斗**都**有这道门，且**都**改成 `Discard(8)`：
-
-```
-CreateCard（建卡到某位置）：
-  :10510  IsLocationFull(_location) → :10512 wasFullBeforeCreating
-  :10702  BooleanAND(Not(autoplay && spawnCardInHand), wasFullBeforeCreating)
-  :10706      createdCard.location = 8          ; ★ Discard
-
-MoveCardFromBoardToOwnersHand（场上 → 手牌）：
-  :26399  FetchCardsByLocation(NewLocation) → isLocationFull
-  :26405  if (!tmpNewLcationFull) → 正常路径
-  :26407      tmpNewLocation = 8                ; ★ Discard
-```
-
-容量本身也是权威的：`FetchCardsByLocation` 的 **case 3,4 → `MaxQty = IntConst(9)`**
-（= 内核 `GameState.HandCapacity = 9`）。内核的抽牌路径早就实现了同一语义
-（`MatchEngine.DrawCard`：「手牌已满 ⇒ 烧牌，不进手牌」）。
-
-#### ② 内核的越界**本身不是 bug** —— 这条我一开始判错了，如实更正
-
-新增一个 env 门控探针（`GameState.TraceHandOverflow`，`$env:KLINK_TRACE_HANDOVER='1'`）：
-手牌一超过 9 就报一行（并打印调用栈，用来点名路径）。22 局实测越界很多：
-**10/9、11/9、12/9，最高 13/9**（`773639 t9`）。
-
-⚠️ **但"超过 9 就一定是 bug"这个前提是错的**。蓝图只在**特定的几道门**上查容量
-（见 ①），而下面这条路径**根本没有容量门**：
-
-```
-DrawSpecificCardFromDeckBySide   BP_CardFunctions.g.cs:12406（全函数仅 33 行）
-  —— 体内**没有任何** IsLocationFull / HandLocation / MaxQty 提及
-  ⇒ 「从牌库抽一张指定的牌进手」**允许**手牌超过 9
-```
-
-（另外 `CreateCard` 那条门自己还带一个例外：`autoplay && spawnCardInHand` 时不改送弃牌堆，
-`:10702`。蓝图里还有一个专门的助手 `DiscardOnDrawingWithFullHands`（`:12126`），
-只被**有门的**抽牌路径调用。）
-
-探针点名的两条越界路径正是"效果驱动"的那两条，且**都属于不受门约束/带例外的**：
-
-```
-at CardApi.DoDrawSpecific            (CardApiDispatch.cs:1779)   ← DrawSpecificCardFromDeckBySide
-at CardApi.SpawnCardInHand           (CardApi.cs:1873)          ← CreateCard（带 autoplay 例外）
-```
-
-⇒ **`手牌 > 9` 不能当作"内核多进了一张"的判据**。探针的价值只剩"**指出可疑路径**"，
-要判它是不是 bug，必须**逐条对照该路径在蓝图里有没有门**。
-
-#### ③ 把两道门都装上 ⇒ **大幅变差**，所以回退
-
-按 ① 的原文在**唯一换区漏斗**（`GameState.Move` + `Create`）上加容量门
-（"进入已满手牌 ⇒ 改送弃牌堆"）：
-
-| 语料 | 应用 | 人类失败 | ⑤b |
-|---|---|---|---|
-| `out/_server-replays` | **793/835 → 735/835（−58）** | 26 → **64** | **4 局新增漂开**（389594 `#71`、773639 `#46`、854099 `#58`） |
-
-⇒ **回退**。现在原因清楚了（结合 ②）：**一部分越界是合法的**
-（`DrawSpecificCardFromDeckBySide` 那类路径客户端也会超），
-所以"一刀切在换区漏斗上按 9 封顶"会把客户端**留着**的牌丢掉。
-
-#### ④ 更正后的结论（**不要**沿用 ⑤ 的旧说法）
-
-- ❌ **不能说**"三次实验共同证明内核手牌比客户端大"。**这个推断已被 ② 推翻**：
-  越界有合法来源，所以"内核手牌更大"缺少独立证据。
-- ✅ 能确定的：**内核缺的两道容量门是蓝图真有的**（① 的原文），
-  但**不能一刀切**——必须逐条路径对照蓝图是否设门
-  （有门：`CreateCard` / `MoveCardFromBoardToOwnersHand` / `DrawTopCardFromDeck`；
-  无门：`DrawSpecificCardFromDeckBySide`）。
-- ✅ 能确定的：`854099` 在注册 `GetHandLocationBySide` 之后掉 6 条动作，
-  触发点是 `night_raid` 的 `IsLocationFull(手牌)` 门（§8.12.1）——
-  这一条**仍然成立**，只是它的**根因还没定位**（不能再用"手牌虚增"当解释）。
-
-**下一步（收窄后）**：
-1. ✅ **已做**：逐条给"往手牌加牌"的路径标注蓝图有没有门 —— 结论是**唯一缺的只有 `CreateCard` 那条**
-   （见 §8.15）。
-2. ⏳ **已试过「从动作流反推手牌数」——不可行，如实记录**：
-   854099 到 t11 为止，左方**自己的回合开始 5 次**（开局 4 张 + 4 次摸牌 = 8 张进手），
-   而它**打出过 8 张 `PC`**，t11 时内核手里还有 **9** 张
-   ⇒ **到 t11 为止至少 9 张是"效果驱动"进手的**（PAMS 开发 / `colossus` 的「复制三张指令」/
-   `atlantic_convoy` / `iron_from_the_north` 那一族都在场）。
-   也就是说**光靠动作流数不出客户端的真实手牌**（效果进手占了大头，且没有逐条的客户端计数）。
-   ⇒ 下一步只能**逐效果审计**：用 `KLINK_TRACE_HANDOVER=1` 的调用栈把该局 t1..t11
-   每一次进手逐条列出来，再对每一种效果问"客户端这一步会不会也进一张"。
-
-### 8.15 ★ 2026-10-04 第六轮：按路径逐条对账后，补上**唯一**缺失的手牌容量门
-
-**逐条对账结果**（"往手牌加牌"的每一条路径 × 蓝图有没有门 × 内核有没有实现）：
-
-| 路径 | 蓝图 | 内核 | 结论 |
-|---|---|---|---|
-| 抽顶牌 `DrawCard` | **有**：`DrawTopCardFromDeck` `:12496-12500 isHandFull` | ✅ 已实现（`MatchEngine.cs:718-731`） | 一致 |
-| `DrawCardsFromDeckBySide` | 委托给 `DrawTopCardFromDeck`（`:12298-12405` 体内调它） | ✅ 走同一个 `DrawCard` | 一致 |
-| 抽指定牌 `DoDrawSpecific` | **没有门**：`DrawSpecificCardFromDeckBySide` `:12406`（全函数 33 行，无任何手牌提及） | 无门 | 一致（**允许**越界） |
-| 回手 `DoMoveUnitFromBoardToOwnersHand` | **有**：`MoveCardFromBoardToOwnersHand` `:26399-26407`（满 ⇒ `Discard(8)`） | ✅ 已实现（`CardApiDispatch.cs:2572-2574`） | 一致 |
-| 开发选牌 `selectCardToDraw` | **有**：`:33725-33737`（`isFull && !isEffect` ⇒ 不抽） | ✅ 已实现（`CardApiDispatch.cs:1469`） | 一致 |
-| **建卡到手 `SpawnCardInHand`** | **有**：`CreateCard` `:10510/:10702-10706`（满 ⇒ `Discard(8)`） | ❌ **缺** | **本轮补上** |
-| `SalvageMultipleUnits` | **有**：`:33276-33278` | 未实现（原语不在派发表） | 不适用 |
-
-⇒ **唯一缺的就是 `SpawnCardInHand` 这一条**（实测越界调用栈也正好指向它：
-`CardApi.SpawnCardInHand ← DoSpawnInHand`）。按蓝图原文补上（满手 ⇒ 新卡进**弃牌堆**）。
-
-**结果**：22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
-自测 **152 → 153 项全通过**（新用例做过判死验证：把 `where` 改回 `side.HandOf()` 即失败），
-`dispatch-gap` 逐位不变。探针确认 `SpawnCardInHand` 那条路径的越界不再叠加
-（该局手牌峰值从 13/9 降到 11/9；**其余越界仍来自蓝图允许的 `DoDrawSpecific` 那类路径**）。
-
-**如实标注两条**：
-1. 蓝图对这条门有一个例外（`autoplay && spawnCardInHand` 时不改送弃牌堆，`:10702`），
-   而内核**没有建模 `autoplay` 这个 gameplay tag** ⇒ 本实现是"无条件应用"，**是近似**。
-2. 本轮**没有**、也不该去动 `DoDrawSpecific` —— 它在蓝图里**本来就没有门**，
-   §8.14 那次"一刀切"的失败正是把这一类合法越界也封掉了。
-
-### 8.16 ★ 2026-10-04 第七轮：`854099 t11` 的手牌差 —— 定位到**牌库内容**，不是容量门也不是循环
-
-按 §8.15 的下一步，给手牌加了一条**进出流水账探针**
-（`KLINK_TRACE_HAND=1`：每一次进/出手牌都打一行 + 调用栈；`KLINK_TRACE_HANDOVER=1` 只看越界）。
-854099 左方 t≤11 的账（摘）：
-
-```
-t=5  NotAvailable->HandLeft 7/9  card_event_night_raid#5001 via Create   ← develop 先建到手
-t=5  HandLeft->DeckLeft     6/9  card_event_night_raid#5001 via Move     ← 再塞进牌库
-t=11 DeckLeft->HandLeft     8/9  card_event_colossus#24 via Move          ← 回合开始抽
-t=11 DeckLeft->HandLeft     8/9  card_event_night_raid#5001 via DoDrawSpecific
-t=11 DeckLeft->HandLeft     9/9  card_event_baker_street_irregulars#9003 via DoDrawSpecific
-t=11 DeckLeft->HandLeft    10/9  card_event_pams#33 via DoDrawSpecific    ← ★ 越界在这里
-t=11 HandLeft->Discard      9/9  card_event_night_raid#5001 via PlayCard   ← 打出（→ 手牌 9）
-```
-
-**三条 `DoDrawSpecific` 的发起者已被点名**（新增探针 `[DRAWSPEC]`）：
-`self=card_unit_2nd_west_africa#39` —— 就是它自己的卡面效果：
-
-> **2nd WEST AFRICA**（英，1 费 1/2）：**Deployment: Draw the cheapest order from your deck.
-> Repeat if it did not start there.**
-
-它的 IR 循环（`docs/card-ir.json`）读出来是：
-
-```
-i=1349  flag = false ; counter = 1        ; flag = "didStartThere"
-i=990   NOT(flag) AND (counter <= 9)      ; ★ 重复条件
-i=1101      → 再找一次"牌库最便宜的指令"
-i=1106  DrawSpecificCardFromDeckBySide(…)
-i=1192  Greater(抽到那张的 cardID, 99)     ; ★ "did not start there" = **卡 ID > 99**
-i=1248      否 ⇒ i=1263: flag = true ⇒ 跳出
-            是 ⇒ counter++ 回到 i=990（重复，最多 9 次）
-```
-
-⇒ **"did not start there" 就是「这张牌不是开局就在牌库里的」**（开局牌 ID 1..81，
-对局中生成的卡 ID ≥ 1001）—— 即**抽到一张"生成出来的"指令就再来一次**，
-直到抽到一张开局就在牌库里的指令（或满 9 次）。
-
-**结论（如实）**：
-1. 内核的循环**忠实于蓝图**（它就是这个 IR 程序被解释执行），
-   3 次抽牌（`night_raid#5001` → `baker_street#9003` → `pams#33`，前两张 ID>99、第三张 ≤99 停）
-   **符合上面那条规则** ⇒ **循环本身不是 bug**。
-2. `DoDrawSpecific`（= `DrawSpecificCardFromDeckBySide`）在蓝图里**没有容量门** ⇒
-   手牌走到 `10/9` 也**不是**容量门的 bug（§8.14 ②）。
-3. ⇒ 真正的差异在**输入**：**内核牌库里"最便宜的指令"是哪些**。
-   该循环会**反复抽走生成出来的便宜指令**（PAMS 开发出来的 0 费卡正是"最便宜"且 ID>99），
-   所以**牌库里多一张生成出来的 0 费指令 ⇒ 这里就多抽一张 ⇒ 手牌多一张**。
-   ⇒ **手牌差 1 是"牌库内容差"的症状**，根因要往 `PAMS` / develop 那条链
-   （`DevelopChosenCard` → `SpawnCardInDeckBySide` → 费用设 0）去找。
-
-**下一步（已收窄到一条链）**：把 854099 t1..t11 里**每次进牌库**的卡逐条列出
-（`[HAND]` 探针已有 `DeckLeft` 侧的进出，再加一条牌库侧的就够），
-与客户端动作流能推出的牌库变化对账，找出**多进牌库的那一张**。
-
-### 8.17 ★★ 2026-10-04 第八轮：`854099 t11` 的**最终归因** —— **牌库顺序**，不是代码 bug（这条别再追）
-
-加了牌库侧流水账（`KLINK_TRACE_DECK=1`）后，854099 左方 t≤11 的**进牌库/出牌库**全部列出。
-两条**决定性**记录：
-
-```
-t=7  DeckLeft->HandLeft  card_unit_2nd_west_africa#40 via ReplayRunner.Run
-t=11 DeckLeft->HandLeft  card_unit_2nd_west_africa#39 via ReplayRunner.Run
-```
-
-`ReplayRunner.Run` 那一帧就是内核自认的**保真度缺口**（`ReplayRunner.cs:853-857`）：
-人类动作引用了「**PC 但不在手牌**」的卡 ⇒ 内核从**牌库**把它**硬塞进手牌**（`injected++`）。
-
-⇒ 也就是说：**客户端手里有 `2nd_west_africa`（人类从手牌打出它），而内核把它留在牌库里**
-⇒ 内核**早先的抽牌抽到了别的卡** ⇒ **两边牌库顺序不同**。
-对照：内核 t11 的回合开始抽到的是 `colossus#24`，而人类 t11 打出的却是
-`2nd_west_africa#39`（客户端 t11 抽到的应该就是它）。
-
-**这就是 README §9.1 的第 ② 类**，原文已经写明：
-
-> **② 牌库派生池**：快照的牌库顺序是宿主用非确定性的 `Random.Shared` 假洗出来的 ⇒ **修不了**
-> （需要能拿到真实初始牌序的快照）。
-
-⇒ **结论（这条线索到此为止）**：
-1. §8.12.1 那条「注册 `GetHandLocationBySide` 让 854099 掉 6 条动作」的**真正阻塞是数据**：
-   初始牌序拿不到 ⇒ 内核的牌库顺序与客户端不同 ⇒ 依赖牌库顺序的效果
-   （`2nd_west_africa` 的「抽最便宜的指令」、`night_raid` 的「满手就不复制」）
-   会在**内核自己的牌库状态**上做出与客户端不同的判断。
-   **不是**容量门写错、**不是**循环写错、**不是** `night_raid` 写错。
-2. 因此 §8.12.1 的实验**继续维持回退**，并且**不应该**再花时间追这条 ——
-   除非能拿到**带真实初始牌序**的快照（那才是解锁点）。
-3. 反过来，§8.14/§8.15 补的**容量门**是独立的正确性修复（蓝图逐行有据），该留；
-   §8.13 的三个触发点接线同理。
-4. ⚠️ **一个方法论要点**：这条链上我**三次**以为找到了内核 bug
-   （手牌虚增 → 容量门缺失 → 循环条件错），**三次都被自己的探针推翻**。
-   ⇒ 在「效果驱动的状态差」上，**"指标变差"必须配合"点名到具体原语 + 蓝图逐行对照"
-   才能归因**；只凭指标方向会连续误判。
-
-### 8.18 ★★ 2026-10-04 第九轮：**T31 `OnOtherCardAttacks` 接线完成**（README §9.5 **P1** 的那条）
-
-20 张订阅卡（`docs/card-ir.json` 的 **`locals`**、`entrypoints` **0 张**）此前整条行为是死的。
-
-**蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `AttackCard`）**：
-
-```
-:4334  SetStopAttack(GameStateRef, False)                 ; 每轮先复位
-:4336  tmpAttackedAndStopped = False
-:4338  FetchAllCardsWithEventTrigger(31)                  ; ★ 唯一 Fetch 点
-:4356      NotEqual_IntInt(attackerCardID, item.cardID)   ; ★ 只排除**攻击者本人**（防御方照收）
-:4385/:4434  item.OnOtherCardAttacks(_attackerCard, _defenderCard, out stopAttack, out AttackedAndStopped)
-:4389      if (stopAttack) SetStopAttack(True)            ; 不跳出轮
-:4412      if (AttackedAndStopped) tmpAttackedAndStopped = True
-:4487  GetStopAttack() 真 ⇒ :4510 success = True → :4512 **直接返回**（油费**不扣**）
-:4513  ChangeKreditsBySide(-costToPay)                    ; ★ 扣油费在窗口**之后**
-:4643  if (tmpAttackedAndStopped) ⇒ ExecuteStoppedAttack(…)（**整段伤害跳过**）
-```
-
-**改动面（三处，全部照蓝图）**：
-
-| # | 落点 | 内容 |
-|---|---|---|
-| 1 | `CardApi.BroadcastWithOutParams` | 新增 `exclude` 参数（+ 循环里一行 skip）—— 表达 `:4356` 的"只排除攻击者"。⚠️ 这与 `FireTrigger` 广播分支的"排除**主体**"**不是**一回事：这里**防御方必须照收**（`beaufighter` / `33rd_livorno` / `bm_13n_us6` 就是靠"自己是被打的那个"触发）。 |
-| 2 | `CardApi.FireOtherCardAttacks` + `AttackIntercept` | 走完整轮再判定；两个出参**独立累加**、`stopAttack` **优先**（`:4487` 早于 `:4643`）。 |
-| 3 | `MatchEngine.Attack` 两处 | ① **在 `State.AddKredits` 之前**（`:4513` 在窗口之后；`stopAttack` 真时油费不扣、不记"已攻击"）；② T13 广播之后、伤害之前（`AttackedAndStopped` 早退，`ZActionStoppedAttack` + `OnAttackStopped`，**不设** `defender.HasBeenAttackedThisTurn` —— 它在蓝图的 `ExecuteAttackCard :12782` 里）。 |
-
-**`stopAttack` 是死代码（本次自己统计，`card-ir.json`）**：20 张订阅卡的 `stopAttack` 写入
-**33 处、全是字面量 `false`**；而 `AttackedAndStopped` 是 **5 处 `true` + 26 处 `false` + 2 处计算式**
-⇒ **活的杠杆是 `AttackedAndStopped`**。机制仍然留着（它是唯一的"整条攻击作废"通道，
-且两条路的**代价不同**：一个不扣油费、一个扣）。
-
-**A/B 结果**：
-- **22 局逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`），
-  `dispatch-gap` 逐位不变，自测 **153 → 154 全通过**（新用例做过判死验证）。
-- ⚠️ **回放侧验证不了**：新探针 `KLINK_TRACE_T31=1` 实测，10 局主对拍集里
-  T31 **触发 58 次、订阅者出现 0 次**（那 20 张卡一张都没进过局内）
-  ⇒ 判据只有「蓝图原文 + 自测」。自测用 `card_unit_beaufighter_tf_mk_x`
-  （「Any unit that attacks this unit takes 3 damage first.」，**非 gotcha** ⇒ 不受
-  `ShouldGotchaTrigger` 影响）：攻击者 1 防吃 3 点必死 ⇒ `AttackedAndStopped = true`
-  ⇒ **防御方零伤害、但油费照扣、照记"已攻击"**。
-
-**未做（如实标注）**：**T30 `OnOtherCardAttackSwitchTarget`**（2 张，出参 `newDefender`
-**真的改攻击目标**）**没有接** —— 它要求把 `Attack` 里的 `defender` 局部化并让下游所有门与结算
-都改用新目标（范围不小），按 §9.5 P1 的建议**单独一支**做。
-另：T31 的收件人快照**不含牌库**（`FillTriggerSnapshot` 有意排除，理由见该方法的注释）
-—— 蓝图 `AllCardsInBattle` 是否含牌库**未核实**，如实标注。
-
-### 8.19 ★ 2026-10-04 第十轮：**T3 `OnAfterDeckChanged`（3 卡）+ T22 `OnDeckShuffled`（5 卡）接线**
-
-**蓝图原文（本次逐行复核，`BP_CardFunctions.g.cs` 的 `ShuffleDeckBySide`）**：
-
-```
-:34655  GetDeckBySide(sideToShuffle) → localDeckCardIDs
-:34659  Array_IsEmpty(...)
-:34661  if (!IsEmpty) → :34672                ; ★ 空牌库**直接返回**（两个事件都不发）
-:34672  Array_ShuffleFromStream(…, cardsRandomStream)
-:34674  SetDeckBySide(…)
-:34676  ExecuteOnAfterDeckChanged(sideToShuffle)   ; ★ T3（在 T22 **之前**）
-:34680  if (!skipSubAction) goto L_02D9             ; ★ skipSubAction 假 ⇒ 跳过 T22
-:34691  FetchAllCardsWithEventTrigger(22)           ; ★ T22
-:34721      item.OnDeckShuffled(deckSide, instigatorCard)
-:34737  L_02D9: …                                   ; ★ T22 循环**之后** ⇒ 门的方向确认
-```
-
-T3 自己的函数体 `ExecuteOnAfterDeckChanged`（`:14456-14494`）：
-`IsActionProcess` 门 → `Fetch(3)` → `item.OnAfterDeckChanged(deckSide)`。
-
-**改动面**：
-
-| 触发点 | 落点 |
-|---|---|
-| **T22**（5 卡） | `ShuffleDeckBySide` 的派发 lambda —— **同时**补上旧实现整个丢掉的 `a[1] = skipSubAction` 与 `a[2] = instigatorID`，并按 `:34680` **只在 `skipSubAction` 为真时**发 |
-| **T3**（3 卡） | 新增 `CardApi.FireDeckChanged(side)`，接在蓝图列出的 **6 个内核可达调用方**上：`ShuffleDeckBySide` / `DrawTopCardFromDeck`（`MatchEngine.DrawCard` 的**两条分支**）/ `DiscardCardFromDeck` / `MoveCardToTopOfDeck` / `SpawnCardInDeckBySide` / `DrawSpecificCardFromDeckBySide`（另两个 `AdjustCardPositionInDeck` / `ConvertCard` 内核未实现） |
-| 顺带 | `ShuffleDeckBySide` 补上 `:34661` 的**空牌库早退**（只影响"发不发事件"；空牌库本来也不消耗随机数） |
-
-⚠️ **两处如实标注**：
-1. 蓝图 T3 那道 `IsActionProcess` 门内核**没有建模**（全内核一致地当作"是动作流程"，
-   见 `CardApi.cs` 里几处同名注释）⇒ 本实现也不加，属**近似**。
-2. T3 必须接在 `DoDiscardCardFromDeck` 里、**不能**接进 `CardApi.DiscardCard` ——
-   后者同时服务"从手牌弃"（`DiscardCardFromHand`，蓝图**没有** T3）。
-
-**A/B 结果**：22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）、
-`dispatch-gap` 逐位不变、自测 **154 → 155 全通过**（新用例做过判死验证：
-去掉 `skipSubAction` 那道门 ⇒ 立刻失败）。
-⚠️ **回放侧无信号**：5 张 T22 订阅者 + 3 张 T3 订阅者在 22 局语料里 **0 命中**
-（已按快照逐局核对）⇒ 判据只有「蓝图原文 + 自测」。
-
-### 8.20 ★ 2026-10-04 第十一轮：**T45 `OnOtherCardKreditCostChanged`（4 卡）+ T49 `OnMoveFromFrontline`（3 卡）**
-
-#### T45 —— 「只有改**自己**的费才广播」
-
-蓝图 `ChangeKreditCost`（`BP_CardFunctions.g.cs`，本次逐行复核）：
-```
-:8772  NotifySetKreditCost(Notifier, cardToChange, getTotalKreditCost(…), …)
-:8774  EqualEqual_IntInt(cardToChange, localInstigatorID)
-:8776  if (!that) goto L_0942                  ; ★ 门①：只有"改**自己**的费"才继续
-:8778  FetchAllCardsWithEventTrigger(45)
-:8796      NotEqual_IntInt(item.cardID, cardToChange)   ; ★ 门②：排除被改的那张卡自己
-:8814      item.OnOtherCardKreditCostChanged(cardToChange)
-```
-落点 `DoChangeKreditCost`（它同时有 `target` 与 `sourceId`）：门① = `target.CardId == sourceId`；
-**门②由 `FireTrigger` 的 `OnOther*` 广播分支排除主体天然满足**。
-⚠️ **只覆盖主路径**：`changeType == 4`（`RemoveTheBuff` 一族）那条**提前 return** 的路没有发 T45
-—— 蓝图那条分支是否也走到 `:8774` **未核实**，如实标注为近似。
-
-#### T49 —— 入口是「前线 → 半场」，而且是层 B 的同一形状
-
-蓝图 `CardLocationMoved`（`:5689-5733`）：
-```
-:5689  _3 = (oldLocation == 7)                  ; 7 = BoardFrontline
-:5691  _4 = (newLocation == 6) / :5693 _5 = (newLocation == 5)
-:5695  OR(_4, _5)                               ; 退到**某一方的半场**
-:5697  AND(OR, _3)                              ; ★ 只在前线 → 半场 时成立
-:5733  ExecuteOnCardMoveFromFrontline(self, tmpCard)
-```
-⇒ **"退回手牌 / 弃牌堆"不算**（那两条 `newLocation ∉ {5,6}`）。
-而那个函数自己（`:15646-15705`）又是层 B 的同一形状：
-`:15646 if (!cardMoved.isSuppressed) goto L_015C`（门**只管自程序**）→
-`:15648 Fetch(49)` 广播（**无条件**，`:15681 goto L_004A` 回边）→
-`:15673 GetStopFurtherActions()` 真 ⇒ 跳出整段 → `:15691` 排除被移动的卡自己。
-落点 `MatchEngine.FireLocationMoved`（蓝图也是从 `CardLocationMoved` 调的）。
-
-**A/B 结果（两条一起）**：22 局**逐位不变**、`dispatch-gap` 逐位不变、
-自测 **155 → 157 全通过**（两条新用例都做过判死验证）。
-⚠️ **回放侧无信号**：4 张 T45 + 5 张 T49 订阅者在 22 局语料里 **0 命中**。
-
-⚠️ **一条方法论记录（判死验证抓到了我的疏漏）**：T49 用例的**第一版抓不住
-"漏判 `oldLocation == 7`"** —— 我原本用"半场 → 前线"当反例，但那条的 `newLocation`
-也不是 5/6，所以**去掉 `oldLocation` 判定后用例照样通过**（判死失败）。
-补上"**手牌 → 半场**"（= 部署到半场）这个反例之后才真正判死成功。
-⇒ **反例必须只违反被测的那一个条件**，否则用例是空的。
-
-### 8.21 ★★ 2026-10-04 第十二轮：**T68 `OnOperationKreditsSpent`（3 卡）—— 一个"挂错地方就是多发"的实例**
-
-蓝图 `ExecuteOnOperationKreditsSpent`（`:16743-16787`，本次逐行复核）：
-```
-:16743  OnOperationKreditsSpent(cardOperated, kreditsSpent)      ; ★ 自己那一路，**先**
-:16745  FetchAllCardsWithEventTrigger(68)
-:16772      NotEqual_ObjectObject(item, cardOperated) ⇒ 跳过     ; 排除被操作的卡自己
-:16787      item.OnOtherCardOperationKreditsSpent(cardOperated, kreditsSpent)
-```
-⚠️ **事件名是复数 `…KreditsSpent`**；枚举名 `OnOtherCardOperationKreditSpent`（`Trigger.g.cs`）
-是**拼错的单数**，IR 里 **0 个订阅者** ⇒ 必须按蓝图名发。
-
-★★ **全文件只有 3 个调用点**（`grep ExecuteOnOperationKreditsSpent`）：
-`AttackCard:4637`、`AttackCard:4651`、`MoveCardToFrontline:26998`。
-而 `:4637`/`:4651` **都在"提前返回"的分支上**：
-
-```
-:4636  L_0E38:  ExecuteOnOperationKreditsSpent(_attackerCard, costToPay)   ; 分支 A（攻击者已离场）
-:4639      success = True → return
-:4642  L_0E68:  if (!tmpAttackedAndStopped) goto L_0EDF
-:4649      ExecuteStoppedAttack(_attackerCard)
-:4651      ExecuteOnOperationKreditsSpent(_attackerCard, costToPay)        ; 分支 B（攻击被中止）
-:4653      success = True → return
-:4656  L_0EDF:  CalculateDamageDealt(…)                                    ; ★ 正常结算路径，**没有**这个调用
-```
-
-⇒ **在攻击链上 T68 只在"攻击被中止"时发，正常结算的攻击不发。**
-把它挂到"正常扣油费之后"会是**多发**（每打一次都发）——
-这正是 `MatchEngine.Attack` 里那句注释所强调的，也是本轮的**主要发现**。
-
-**改动面**：新增 `CardApi.FireOperationKreditsSpent(card, kreditsSpent)`（自程序 + 广播两个名字），
-挂在 **两处**：`MoveUnit` 的油费支付之后（蓝图 `:26998`）、`Attack` 的 `AttackedAndStopped` 分支里
-（蓝图 `:4651`）。**没有**挂在正常攻击路径上。
-
-**A/B 结果**：22 局**逐位不变**、`dispatch-gap` 逐位不变、自测 **157 → 158 全通过**。
-新用例做了**双向判死**：① 去掉移动那一句 ⇒ 断言① 失败；
-② 把调用挂到**正常攻击路径** ⇒ 断言② 失败（这一条正是本轮发现的守护）。
-⚠️ **未做（如实标注）**：蓝图的分支 A（攻击者在扣费与结算之间离场 ⇒ 整段伤害跳过，
-`:4537-4540 → :4636-4641`）**内核没有实现** ⇒ 那条路上的 T68 也还没有落点。
-它与 §8.18 记的 T31 配套项是**同一处**。
-
-### 8.22 ★ 2026-10-04 第十三轮：**T62 `OnOtherUnitUnpinned` + 注册 `RemovePin`** —— P4 清单收尾
-
-蓝图 `RemovePin`（`:31799-31847`，本次逐行复核）：
-```
-:31799  card.pinnedTurns = 0                 ; ★ 内核这里**早就**实现了
-:31801  IsActionProcess → 假则跳过（内核未建模，一致近似）
-:31816  NotifyUnpinUnit(Notifier, cardID)
-:31818  FetchAllCardsWithEventTrigger(62)
-:31847      item.OnOtherUnitUnpinned(card)   ; 实参 = 被解除钉住的那张卡
-```
-
-⚠️ **两个坑**：
-1. **事件名是小写 p 的 `OnOtherUnitUnpinned`**（IR 里 **3 个订阅者**）；
-   枚举名 `OnOtherUnitUnPinned`（`Trigger.g.cs`，大写 P）在 IR 里 **0 个订阅者**
-   —— 按枚举名查会得 0，必须按蓝图名发。（同族的还有 T33 / T68。）
-2. **`RemovePin` 此前根本不在派发表里**，而 IR 里 **10 张卡**调它
-   （`card_event_desert_push` / `card_event_desert_push_cam1` / `card_event_rally` /
-    `card_event_recuperation` / `card_event_sunny3_jungle_fever2` / `card_event_sunny4_scorching_sun` /
-    `card_unit_14_panzergrenadier` / `card_unit_79th_infantry_regiment` / `card_unit_fw_190_ta_152` /
-    `card_event_campaign_alamein3_riding_the_storm`）
-   ⇒ 那些卡的「解除钉住」一直是**静默 no-op**（只计进未实现统计）。
-
-**改动面**：注册 `["RemovePin"]`（委托给 `RemoveKeyword(_, Keyword.Pinned)`，
-因为 `pinnedTurns = 0` 那一步内核早就在那里做了）；并在 `RemoveKeyword` 里补 T62 广播。
-实参形状（IR 全量扫描）：`args = [卡, out 槽]`、`recv` 恒 `cardFunction`。
-
-**A/B 结果**：
-- 22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）；
-- ★ **判据 ② 变好了**：`dispatch-gap` 从 **522 种 / 2462 调用点 / `FFEC7E071E9518C0`**
-  降到 **521 种 / 2452 调用点 / `ACCAA64A21EF6CDE`** ——
-  这是本轮**唯一**一条真正推动了四条判据之一的改动（按项目规则已同步更新
-  `tools/BotSim/DispatchGap.cs` 的两个冻结常量）；
-- 自测 **158 → 159 全通过**（新用例做过判死验证：关掉 T62 广播 ⇒ 立刻失败）。
-
-⚠️ **回放侧无信号**：3 张 T62 订阅卡在 22 局语料里 **0 命中** ⇒ 判据是「蓝图原文 + 自测」
-＋ 上面那条 `dispatch-gap` 的结构性改善。
-
-**⇒ P4 清单（§9.5）至此全部收尾**：T35 / T22 / T3 / T61 / T48 / T45 / T49 / T68 / T62 都已接线，
-T31（P1）也已完成。剩下的只有**明确标注"不该做"**的（T1/T40/T67 蓝图无派发点、T18/T26 订阅 0）
-与**成本被低估**的（T30 / T34 / T60+T65 那三条链）。
-
-### 8.23 ★★★ 2026-10-04 第十四轮：**T30 接线 + 一个影响 390 个调用点的 IR/VM 缺口**
-
-本轮的主产出不是 T30 本身，而是**写 T30 的用例时暴露出来的两个"实参/出参形状"缺口**。
-
-#### 一、T30 `OnOtherCardAttackSwitchTarget`（2 卡）—— 出参 `newDefender` **真的换攻击目标**
-
-蓝图 `AttackCard`（`:4214-4308`，本次逐行复核）：
-```
-:4214  FetchAllCardsWithEventTrigger(30)          ; ★ 这一轮**不排除攻击者**（没有 T31 那种 cardID 比对）
-:4216  break_flag = false
-:4221  while (!break_flag && i < len)
-:4257      item.OnOtherCardAttackSwitchTarget(_attackerCard, _defenderCard, out newDefender)
-:4259      NotEqual_ObjectObject(newDefender, _defenderCard)   ; ★ 变了才继续
-:4282          _defenderCard = newDefender
-:4284          defenderCardID = newDefender.cardID
-:4308          break_flag = true                                ; ★ 第一个改者胜出、跳出轮
-```
-落点：`CardApi.SwitchAttackTargetIfAny` + `MatchEngine.Attack` 里**在 T31 窗口之前**接一段
-（蓝图 T30 轮 `:4214` 在 T31 轮 `:4338` 之前，两者都在扣油费 `:4513` 之前）。
-⚠️ 换完目标**不重做任何合法性判据**（蓝图如此）—— 所以 `AttackTargetGate` 校验的是**原目标**，这是刻意的。
-
-#### 二、★ `GetCardFromID` 只认整数 cardID ⇒ 拿到卡对象时返回 null
-
-`["GetCardFromID"]` 原先是 `GetCardFromID(IntArg(a, 0))`。但内核里**生成类原语的返回值是卡对象**
-（不是蓝图那个 `spawnedCardID` 整数），于是 `card_event_cold_trap` 的
-`newDefender = GetCardFromID(spawnedCardID)` **恒为 null** ⇒ 攻击目标永远换不掉。
-⇒ 改成 `AsCardOrId(c, a[0])`（**两种形状都认**）—— 与 README §9.3「同一原语多种实参形状」
-是同一个 bug 类，修法与 `AsCardOrId` 的其它落点一致。
-
-#### 三、★★★ **IR 生成器漏掉了 390 个调用点的出参槽**（本轮最重要的发现）
-
-T30 用例在修完 ① ② 之后**仍然失败**，继续挖才发现根因在 **IR 本身**：
-
-```json
-{"op":"call","fn":"SpawnCardOnBattlefield",
- "args":[ … , {"var":"CallFunc_SpawnCardonBattlefield_spawnedCardID"}],
- "outs": [],          ← ★★ 出参槽被当成**实参**传进来了，`outs` 却是空的
- "i":450}
-```
-
-`KismetVm.ExecuteCall` 只按 `step.OutParams` 写回，`outs` 为空 ⇒ **那个槽永远不被写**
-⇒ 凡消费 `spawnedCardID` / `cardsIDs` 的卡**一律拿到 null**。
-
-**全 IR 实测分布**（`docs/card-ir.json` 扫描，判据 = `outs` 为空 **且** 某个实参是
-`CallFunc_<函数名>_…` 形状的变量，**大小写不保证一致**）：
-
-| 函数 | 调用点数 |
-|---|---|
-| `SpawnCardInHandBySide` | **184** |
-| `DrawCardsFromDeckBySide` | **150** |
-| `SpawnCardOnBattlefield` | **44** |
-| `getHasGameplayTag` | 7 |
-| `SpawnCardInDeckBySide` | 5 |
-| **合计** | **390** |
-
-**修法**（`KismetVm.ExecuteCall`，只在 `outs` 为空时推断，已标好的步骤一律不动）：
-```csharp
-var outParams = new List<int>(step.OutParams);
-if (outParams.Count == 0 && fn.Length > 0)
-{
-    string want = "CallFunc_" + fn;
-    for (int i = 0; i < step.Args.Count; i++)
-        if (step.Args[i].Var is string vn && vn.StartsWith(want, StringComparison.OrdinalIgnoreCase))
-        { outParams.Add(i); break; }
-}
-```
-然后写回改用 `outParams`（不再用只读的 `step.OutParams`）。
-⚠️ **为什么不重新生成 IR**：`gen-kismet-ir.py` 需要 `cards.full.json`（84 MB），
-**不在本仓库里**（README §3.2）⇒ 只能在 VM 侧推断。
-
-#### 验证与如实标注
-
-- 自测 **159 → 160 全通过**（T30 用例做过**判死**：拿到新目标但不真的换 ⇒ 立刻失败；
-  另外**修出参槽之前该用例是失败的** —— 那本身就是一次天然的判死）。
-- 22 局**逐位不变**（`793/835, 26, 95` / `628/710, 24, 217` / `132/140, 0, 18`）、
-  `dispatch-gap` 逐位不变。
-- 探针 `KLINK_TRACE_OUTSLOT=1` 实测：推断在**单个回放里就触发 10 次**
-  （`DrawCardsFromDeckBySide` ×7 / `SpawnCardInHandBySide` ×3）—— **确实在生效**，
-  只是这 22 局的可观测判据没被它推动。
-- ⚠️ **一处如实标注的不确定**：蓝图那些出参的**声明类型**是整数（`spawnedCardID` / `cardsIDs`），
-  而内核这些原语的返回值是**卡对象**。两边靠 `AsCardOrId` 互通，
-  所以"把出参当卡用"的消费者现在对了；**但把出参当整数做算术的消费者仍会拿到 0**。
-  这一层类型不匹配**未逐一核对**，如实记在这里。
-
-### 8.24 ★★ 2026-10-04 第十五轮：**把"缺口"按"会不会真的跑"重新分档 + 补四个规则相关的**
-
-#### 一、★★ 判据 ⑥ 的口径问题：521 种缺口里**大半根本不会跑**
-
-`dispatch-gap` 只数"IR 调了、派发表没有、locals 也兜不住"，**不区分那本蓝图在对局里会不会被执行**。
-本轮按**拥有者**把 2452 个真缺口调用点分了档（复算：2447 点 / 520 种，与工具一致）：
-
-| 拥有者 | 调用点 | 占比 | 说明 |
-|---|---|---|---|
-| `card_*`（真卡） | 1294 | 53% | 其中 **951 点是 campaign/教程**（`HasCampaignUpgrade` 247、`CampaignSetText` 211、`CampaignAdd*` 118、`GiveStarForCampaign` 75、`ShowTutorialMessage` 30 …）—— **离线内核没有战役模式** |
-| `BP_*`（基类/UI 蓝图） | 1067 | 44% | `AddToVerticalBox` 41、`CreateHelpBubbleEntry` 39、`GetIsGoldCard` 24、`GetTutorialBP` 21、`SetActorHiddenInGame` 17、`BindToAnimation*` 30、`Reverse`(Timeline) 14 … —— **对局里根本不会执行** |
-| 其它 | 86 | 3% | `GetRenderCache` 17、`SetIsEnabled`/`SetIsChecked` … 同样是 UI |
-
-⇒ **规则相关的缺口只有 91 种 / 343 个调用点**（占真缺口的 14%），而且**长尾**（最大 26）。
-**这是本轮最有价值的一条**：判据 ⑥ 的头条数字（521/2452）**不是拟真度指标** ——
-它把"永远不会跑"和"战役模式"都算进去了。以后只应按 **343 点这一档**看。
-
-**规则相关缺口的前 25 条**（每条都带"哪张卡需要它"）：
-`ConvertCard` 26 / `getCardsBuffedByThisCard` 25 / `DiscardRandomCardFromHand` 20 /
-`PlayCardDirectlyFromHand` 15 / `getKreditTempBuffAmount` 11 / `SpawnMultipleCardsOnBattlefield` 11 /
-`GetLeftMostCardInHand` 9 / `MoveMultipleCardsToTopOfOwnersDeck` 9 / `SetCardSeen` 9 /
-`getAttackTempBuffAmount` 9 / `GetAllCardsInFrontline` 8 / `ForceCardChangeLocation` 8 /
-`IsTopDeckNavy` 7 / `JSON_RemoveFromIntArray` 7 / `MoveUnitFromSupportToFrontLine` 7 …
-
-#### 二、★ T34 `ConvertCard` 是**自底向上的多轮工程**，单做它就是死代码
-
-`ConvertCard` 有 **26 个调用点 / 25 张卡**，但它的 13 个子原语里**只有 2 个**
-（`GetTurnNumber` / `IsLocation`）在派发表里，其余 11 个全缺 ——
-其中包括 `CreateCard`（**本身又是 500 行蓝图函数**）。而**这 11 个子原语在 IR 里的直接调用点全是 0**
-（它们只被 `ConvertCard` 自己调）⇒ **先注册它们等于先造一批没人调的死代码**。
-⇒ 正确顺序是：`CreateCard` → 9 个包装（`ApplyRemoveCardFromBoard` / `SetCardLocationAndLocNumber` /
-`RemoveCardFromDeckBySide` / `AddCardToDeckBySide` / `InjectCardIntoLocation` /
-`ExecuteOnCardLocationMoved` / `ExecuteOnSpawnedInHandEvents` / `ApplySetCardsSeenByCipher` …）→ `ConvertCard`。
-**它确实值得做**：`card_event_capitulation` 出现在 `docs/fresh-replays/replay-15`，
-`card_unit_108_panzergrenadier` / `card_unit_jagdpanzer_iv` 出现在 4 局 live 语料里。
-
-#### 三、顺手把 508065 的 ⑤b 根因钉死了
-
-`#54 t13 PC：打不出：kredit 不足（kredits=5，费用=12）` —— 看着像**卡槽/费用规则**的 bug，
-实际是 **⑤c 身份不一致**：动作流里那张卡的卡组码是 `02` = **`card_event_aa_barrage`（费 1）**，
-而内核那张卡是 **`card_event_the_commonwealth`（费 12）**。
-⇒ 客户端花 1 费打出去当然合法，内核拿着 12 费的卡自然拒。
-**这是 §9.1 的随机/身份类，不是费用 bug** —— 与 README 原先的猜测一致，本轮给出了确证。
-
-#### 四、补上四个**规则相关**的小缺口
-
-从上面 343 点那一档里挑了最便宜的四条（共 35 个调用点），全部**逐行对照蓝图**：
-
-| 原语 | 蓝图 | 语义 |
-|---|---|---|
-| `GetAllCardsInFrontline` | `:19364-19449` | 遍历 `GetAllCardInBattle`，收 `location == 7` 且 `!IsUnrevealedCovertCard(item) \|\| includeCovertCards`。⚠️ 内核的 `IsUnrevealedCovertCard` 是**恒 false 的桩** ⇒ 过滤退化成"只看 `location == 7`" |
-| `GetLeftMostCardInHand` | `:20980-21058` | `Card.side` 手牌里 `locationNumber == 0` 的那张，出参 `(WasFound, LeftMostCard)` |
-| `MoveMultipleCardsToTopOfOwnersDeck` | `:27339-27399` | 对每张调 `MoveCardToTopOfDeck(item, instigatorID, positionFromTop, true)` |
-| `SetCardSeen` | `:34001-34036` | `GetCardFromID(cardID_Seen).cardSeen = True`（⚠️ 内核读得到这个字段，但 `KismetVm` 的成员表**还没接** `cardSeen` 的读，见 `CardInstance.cs:103-107`） |
-
-**A/B 结果**：
-- ★ **判据 ⑥ 变好**：`dispatch-gap` **521 种 / 2452 点 / `ACCAA64A21EF6CDE`**
-  → **517 种 / 2417 点 / `562F23B0F92405BE`**（已同步 `tools/BotSim/DispatchGap.cs` 的冻结常量）；
-- 22 局**逐位不变**（三套语料都核过）；
-- 自测 **160 → 161 全通过**。
-
-⚠️ **又一次被判死验证抓到空用例**：`GetLeftMostCardInHand` 的第一版只测了"有 0 号手牌"的正常布局 ——
-但 `State.Hand` 是按 `(LocationNumber, CardId)` **排好序**的，所以"图省事写成 `Hand(side).First()`"
-与蓝图结果**恰好一致**，判死失败。补上"**手牌里没有 0 号**"（`locationNumber = 1, 2`）这个反例
-（蓝图此时 `WasFound = false`、卡为 null，而 `First()` 会返回第一张）之后才真正判死成功。
-⇒ 与 §8.20 那条是同一个教训：**反例必须只违反被测的那一个条件**。
-
-### 8.25 ★★ 2026-10-04 第十六轮：**把"规则相关缺口"再按"语料里真的有消费者"过滤 —— 只剩 13 种**
-
-§8.24 把缺口分成三档后还剩 **86 种 / 300 点**"规则相关"。本轮再叠一个条件：
-**需要它的那些卡，是否真的在 22 局语料里出现过**（把 22 个快照拼起来做子串匹配）。
-结果 **只剩 13 种**，这才是真正值得做的清单：
-
-| 调用点 | 缺口 | 语料里的消费者 |
-|---|---|---|
-| 26 | `ConvertCard` | `card_event_capitulation`、`card_unit_108_panzergrenadier`、`card_unit_jagdpanzer_iv` |
-| 25 | `getCardsBuffedByThisCard` | `card_unit_m20_scout_car` |
-| 20 | `DiscardRandomCardFromHand` | `card_event_kriegsmarine`、`card_event_wolfpack`、`card_unit_169_grenadiers` |
-| 15 | `PlayCardDirectlyFromHand` | `card_event_eagle_day` |
-| 7 | `IsTopDeckNavy` | `card_event_uss_arcfish` |
-| 6 | `WasLeftMostCardWhenPlayedFromHand` | `card_unit_17th_infantry_brigade` |
-| 6 | `AddToTriggerQueue` | `card_event_baker_street_irregulars` 等 |
-| 5 | `ForceEndTurn` | `card_event_repel_the_attack` |
-| 4 | `WasRightMostCardWhenPlayedFromHand` | `card_event_repel_the_attack` |
-| 3 | `ResetUnitOperations` | `card_unit_windhund_division` |
-| 2 | `GiveTwoKredits` | `card_unit_2nd_michigan` |
-| 1 | `DeactivateOtherSniped` | `card_event_sniped` |
-| 1 | `Map_Add` | `card_event_the_big_three` |
-
-#### 本轮补掉其中自洽的四条（15 个调用点）
-
-| 原语 | 蓝图 | 语义 |
-|---|---|---|
-| `GiveTwoKredits()` | **原生**（不在 `BP_CardFunctions`） | 给**本方** +2 kredit。IR 形状 `args=[]`、`recv=null`（隐式 self）。⚠️ 与内核自己的 `ChangeKredits` 一致地**不裁剪 `MaxKredits`**（`DoChangeKredits` 就是这么写的） |
-| `ResetUnitOperations` | `:33003-33060` | `if (IsUnit && IsLocatedOnBoard) { movementLeft = 1; attackLeft = getHasFury ? 2 : 1; }` ⇒ 内核清 `HasMovedThisTurn`/`HasAttackedThisTurn`/`AttacksThisTurn`（`MaxAttacksThisTurn` 本来就等于 `Fury ? 2 : 1`） |
-| `WasLeftMostCardWhenPlayedFromHand` | `:37653-37675` | 读卡上的 JSON 标记 |
-| `WasRightMostCardWhenPlayedFromHand` | `:37676-37698` | 同上 |
-
-★ **这两个"最左/最右"的写入方 `SetRightLeftMostWhenPlayed`（`:34430-34535`）在 IR 里直接调用点为 0**
-—— 它属于"**客户端在打牌流程里调**"的那一类（`card_*` 蓝图里没人调它）。
-⇒ 内核的落点必须在**自己的打牌路径**上，而且必须在卡**离开手牌之前**
-（蓝图那两句 `GetCardsInHandBySide` 读的就是"还在手牌里"的此刻）：
-`MatchEngine.PlayCard` 里、`OnBeforeOtherCardPlayedFromHand` 之后、"① 先离开手牌"之前。
-⚠️ 两个 JSON 键的字面值在蓝图 CDO 里（`cards.full.json` 不在仓库），用与成员同名的常量，
-**写入与读取走同一个常量、自洽**。
-
-#### 另外：T34 链的规模已量清
-
-`CreateCard` = **378 行**蓝图，签名
-`CreateCard(side, cardName, location, overrideCardID, overrideLocationNumber, spawnCardInHand, gold, newCardText, cardSeen, skipDrawAnimation, out cardID)`，
-内部调 **27 个**不同原语，其中 `getHasGameplayTag` / `Conv_NameToString` / `CreateCardObject` /
-`ExecuteOnSpawnedInHandEvents` / `AddAutoPlayCards` / `GetNextCardLocationNumber` / `GenerateNextCardID` /
-`IsLocationFull` / `FetchCardsByLocation` 等**都不在派发表**，而且 `GetHandLocationBySide`
-正是 §8.16 里**被 A/B 否决**过的那一个 ⇒ T34 链的规模确认是**多轮**。
-
-**A/B 结果**：
-- ★ **判据 ⑥ 变好**：`dispatch-gap` **517 / 2417 / `562F23B0F92405BE`**
-  → **513 / 2402 / `1CD6C9FB13D94AD0`**（已同步冻结常量）；
-- 22 局**逐位不变**（三套语料都核过）—— 这四条虽"有语料消费者"，
-  但那些消费者在这 22 局里**没有走到**这些分支，所以**回放侧仍无信号**；
-- 自测 **161 → 162 全通过**（判死验证：关掉 `PlayCard` 里写标记那一段 ⇒ 立刻失败）。
-
-### 8.26 ★ 2026-10-04 第十七轮：**`getCardsBuffedByThisCard`（25 点，13 条清单里最大的一条）**
-
-**原生函数**（不在 `BP_CardFunctions` 里，没有蓝图可对），语义是按 **19 张消费者的用法**推断的：
-它们**全是光环卡**（"Your other X have +N attack"）——
-`royal_west_kents`（"Your other Guard units have +2 attack and Blitz"）/ `sdf` /
-`1st_london_brigade` / `panzer_iii_l` / `wolves_of_tuscany` / `type_4_chi_to` /
-`blitzkrieg` / `yamamoto` / `for_the_emperor` …
-
-逐行确认于 `card_unit_royal_west_kents` 的 ubergraph：
-```
-i=1490  RemoveBuff()                              ; 先撤掉自己贴的
-i=1505  CardsBuffed = getCardsBuffedByThisCard()
-i=1613  if (Array_IsNotEmpty(CardsBuffed)) → 重贴
-```
-⇒ 就是**光环刷新**：拿到"我贴过的那些卡" → 逐个撤销/重贴。
-
-**实现**：内核的贴膜账本是 `CardInstance.BuffsBySource`（键 = `(来源卡ID, 是否临时)`）
-⇒ 语义 = "所有 `BuffsBySource` 里含**来源为我**的条目的卡"，与既有的 `isBuffedByCard`
-（问"我有没有被某来源贴过"）正好**对偶**。
-⚠️ 如实标注：这是**按名字 + 用法推断**的语义（原生函数无蓝图），但 19 张消费者的用法完全一致。
-
-**A/B 结果**：
-- ★ **判据 ⑥ 变好**：`dispatch-gap` **513 / 2402 / `1CD6C9FB13D94AD0`**
-  → **512 / 2377 / `D761A2F1EC183719`**（正好 −25 点 = 该原语的调用点数，已同步冻结常量）；
-- 22 局**逐位不变**（三套语料都核过）；
-- 自测 **162 → 163 全通过**（判死：去掉"来源过滤"、改成返回所有被贴过的卡 ⇒ 立刻失败）。
-
-⚠️ **写用例时又踩到一个坑**（值得记）：`ChangeAttack` 的来源**取 `c.Self`**，
-而**不是** `SourceCardIdArg(a, 1, c.Self)` —— `CardApiDispatch.cs:3012-3013` 有明确注释说这是**故意**的
-（"施加路径用的就是 `c.Self`，撤销必须落在同一个槽上才对得起来"）。
-第一版用例把来源写在实参里、`ctx.Self` 留空 ⇒ 贴出来的加成**没有来源** ⇒ 前置断言就失败了。
-
-### 8.27 ★★ 2026-10-04 第十八轮：**`GetRandomCard` 的第二个实参被丢掉了 —— 153/176 个调用点走错分支**
-
-#### 一、先做取证：`DiscardRandomCardFromHand` 不是 RNG 元凶
-
-按上一轮的计划，先只读蓝图（`BP_CardFunctions.g.cs:12152-12241`，90 行）：
-```
-DiscardRandomCardFromHand(side, discarderID, out discardedCardID)
-  for card in GetAllCards():
-      if (GetHandLocationBySide(side) == card.location) && (card.side == side):
-          possibleCards.Add(card)
-  randomCard = GetRandomCard(possibleCards, false)        ; ★ 第二个实参是 false
-  if (randomCard.cardID > 0):
-      DiscardCardFromHand(randomCard.cardID, discarderID, false, false, …)
-```
-**但它根本没被执行过**：它的 `×20` 只出现在审计的**静态缺口清单**里
-（和 `AddToVerticalBox` / `ConvertCard` 并列），**不在任何一局的运行时 ⑥ 清单里**
-（逐局核对过 22 局）⇒ 它在这 22 局里**一次都没撞到**。
-另外它依赖 `GetHandLocationBySide` —— 正是 §8.16 里被 A/B **否决**过的那个键。
-⇒ **放弃它**（做了也是恒等变换，而且会连带触发 §8.16 那个已知回归）。
-
-#### 二、顺带澄清：`⑥a RNG 游标失同步` 不是独立证据
-
-审计里那 8 条 `<rng-cursor-desync:内核卡->动作码卡:消费N>` 是
-**`ReplayRunner` 按 ⑤c 身份不一致合成**出来的（`ServerBridgeTest` 里 `IsSynthetic` 那一段
-把三类合成条目从 ⑥ 里分出去），**不是**"少消费了一次随机数"的独立信号。
-⇒ 它只是 ⑤c 的另一种写法，别把它当成 RNG 侧的线索。
-
-#### 三、★★ 真发现：`GetRandomCard` 的第二个实参 `skipCustomAlways` 被丢掉了
-
-蓝图 `GetRandomCard(cards, skipCustomAlways, out randomCard)`（`:21669-21776`，逐行复核）：
-```
-:21686  if (!(Array_Length(cards) > 0)) → randomCard = null
-:21688  if (!skipCustomAlways) goto L_0179      ; ★ false ⇒ 走"自定义必选"那条
-:21689  L_007E:  r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len-1)
-:21696           randomCard = cards[r]           ; ← 全池随机（也是"必选集为空"的落点）
-:21705  L_0179:  收集 alwaysSelected = cards 里
-                 `CustomName1HasAttribute(card, "AlwaysSelectedAsRandom")` 为真的那些
-:21753  if (Array_Length(alwaysSelected) > 0):
-:21763      r = RandomIntegerInRangeFromStream(cardsRandomStream, 0, len(alwaysSelected)-1)
-:21765      randomCard = alwaysSelected[r]
-:21757  else → goto L_007E                       ; 必选集为空 ⇒ 退回全池随机
-```
-**全卡池 176 个调用点里 153 个传 `false`**（`true` 只有 23 个），
-而内核旧实现 `["GetRandomCard"] = … GetRandomCard(AsList(a[0]))` **恒按全池随机**
-—— 等于恒按 `true` 那条 ⇒ **对那 153 个点是走错了分支**。
-
-**两条路都只消费 1 次随机数**，只有"从哪个池里取"不同 ⇒ **RNG 游标对账不受影响**，
-所以这是一个**零对齐风险**的修正。
-
-⚠️ **如实标注**：差别要"必选集非空"才看得见，而 `AlwaysSelectedAsRandom` 这个属性
-**在本仓库的卡数据里查不到**（`cards.live.json` 0 处；`card-effects.json` 里只有
-`BP_CardFunctions` 自己的函数表提到这个字符串）⇒ 对当前 22 局语料**大概率是恒等变换**。
-
-**A/B 结果**：22 局**逐位不变**（三套语料都核过）——这同时也是
-**"当前 22 局里没有任何卡带 `AlwaysSelectedAsRandom`"的证据**；
-`dispatch-gap` 逐位不变（512/2377/`D761A2F1EC183719`，这是**语义修正**不是缺口修复）；
-自测 **163 → 164 全通过**（判死：把第二个实参丢掉 ⇒ 立刻失败）。
-
-⚠️ **写用例时踩到的第二个实参形状坑**：`CustomName1Add` 的**标签在 `a[0]`、卡在 `recv`**
-（IR 实测 19 种形状，`SuffixHas`/`SuffixAdd` 就是 `card = AsCardOrId(a[0]) ?? SelfArg(...)`
-+ `tag = StrArg(a, 0)`）—— 第一版把卡写在 `a[0]` 里 ⇒ 标签读成空串 ⇒ 前置断言失败。
-
-### 8.28 ★★ 2026-10-04 第十九轮：**`ref/` 里有四份参考、行号必须指名；触发队列的语义已还原**
-
-#### 一、★★ 方法学：`ref/` 下有 **4 份** `BP_CardFunctions.g.cs`，**内容不一样**
-
-| 路径 | 行数 | 函数数 | 有 `AddToTriggerQueue` / `ResolveTriggerQueue` |
-|---|---|---|---|
-| `ref/kards-sim/KardsSim/Generated/`（**内核注释引用的就是这份**） | 38018 | **292** | ✗ |
-| `ref/kards-sim.mine-pre-push/KardsSim/Generated/_deps/` | 38309 | **294** | ✅ |
-| `ref/kards-sim.old-20260926/…/Generated/` | 38018 | 292 | ✗ |
-| `ref/kards-sim.upstream-ccac81f/…/Generated/` | 38018 | 292 | ✗ |
-
-⚠️ **只有 `_deps` 那一份有那两个函数**，而**内核的 IR 里明明调了 `AddToTriggerQueue`（6 个调用点）**。
-⇒ **引用蓝图行号时必须写明是哪一份**；本仓库里内核注释引用的行号与**第一份**一致
-（已用 `PlayCardDirectlyFromHand` / `ForceEndTurn` 交叉验证过）。
-**本轮踩到的坑**：我先在 `ref/kards-sim` 里按行号读 `AddToTriggerQueue`，
-读到的却是 `ForceCardChangeLocation` 的入参 —— 因为那个行号属于**另一份文件**。
-
-#### 二、★ 触发队列（`AddToTriggerQueue` / `ResolveTriggerQueue`）的语义已还原
-
-在 `_deps` 那份里逐行读完（两个函数体都只是 `ExecuteUbergraph(1023/1141)` 的转发，
-真体在 ubergraph 的 `L_03FF` / `L_0475`）：
-
-```
-AddToTriggerQueue(Card):                       ; ubergraph case 1023
-  ExecuteOnDeploymentTriggered(Card, Card.cardID, out triggerMultiple)
-  self.TriggerMultiple = triggerMultiple
-  do { self.TriggerQueue.Add(Card) } while (++i <= self.TriggerMultiple)
-                                               ; ⇒ 往队列里塞 TriggerMultiple+1 次
-
-ResolveTriggerQueue():                         ; ubergraph case 1141
-  while (Array_Length(self.TriggerQueue) > 0):
-      card = self.TriggerQueue[0]
-      self.NextCardTrigger = card
-      Array_Remove(self.TriggerQueue, 0)
-      card.OnPlayedFromHand(card.currentTarget)     ; ★ 迟到的"从手牌打出"
-```
-
-⇒ 这是**延迟出牌**机制：`Develop` 一类的卡把卡塞进队列，之后 `ResolveTriggerQueue` 再逐张
-调它们的 `OnPlayedFromHand`。
-**本轮没做**（如实标注）：它是一条**链** —— 需要 `TriggerQueue` 状态、
-`ExecuteOnDeploymentTriggered`、`TriggerMultiple` 成员、以及 `ResolveTriggerQueue` 的调用点
-（`_deps` 那份的 `:24081`，在某个库函数里）。而内核目前**完全没有**触发队列概念。
-
-#### 三、另外两条的取证结论（都没做）
-
-- **`PlayCardDirectlyFromHand`（15 点）= 422 行蓝图**（`:28044-28465`），含 gotcha 激活、
-  `targetOverride`、落位与 `NotifyPlayFromHand` 等分支 ⇒ **单轮做不完**，且与 T31/T30 有耦合。
-- **`ForceEndTurn`（5 点）= `NotifyForceEndTurn(Notifier, true)`（`:17811`）** ——
-  **只是一个通知**，真正的"结束回合"在 game-mode 侧。内核若自己调 `MatchEngine.EndTurn`
-  会有**重复结束回合**的风险（回放流里 `XActionEndOfTurn` 也会来一次）⇒ **不做**，如实记录。
-  ⚠️ 顺带确认：`card_event_repel_the_attack` 的卡面是
-  "All enemy units Retreat. **End the turn unless played from right-most in hand.**"
-  —— 后半句正是 §8.25 实现的 `WasRightMostCardWhenPlayedFromHand`，两半现在**只差这一半**。
-
-#### 四、补上 `IsTopDeckNavy`（7 点，**没有链**的一条）
-
-蓝图 `:24178-24218`（逐行复核）：
-```
-deckCardIDs = GetDeckByside(deckSide)
-if (deckCardIDs[0] > 0):  isNavy = getHasGameplayTag(GetCardFromID(deckCardIDs[0]), ["subtype.navy"])
-else:                     isNavy = false
-```
-两个依赖**早已就绪**：`GetDeckByside` 早已注册（**144 个调用点**，返回的是**卡 ID 列表**）、
-`getHasGameplayTag` 早已注册、`GameplayTagTable` 里 `subtype.navy` 有数据
-（`card_event_hms_belfast` / `card_event_bismarck` / `card_event_admiral_hipper` …）
-⇒ 这是本轮唯一**没有链**的实现，消费者 `card_event_uss_arcfish` 在 22 局语料里出现过。
-
-**A/B 结果**：
-- ★ **判据 ⑥ 变好**：`dispatch-gap` **512 / 2377 / `D761A2F1EC183719`**
-  → **511 / 2370 / `D601C3B70D4BD535`**（正好 −7 点，已同步冻结常量）；
-- 22 局**逐位不变**（三套语料都核过）；
-- 自测 **164 → 165 全通过**（判死：让非海军也返回真 ⇒ 立刻失败）。
-
-### 8.29 ★ 2026-10-04 第二十轮：**触发队列卡在"谁来排空"上；§8.23 的出参类型疑点收口**
-
-#### 一、触发队列：语义已读透，但**排空时机在外部** ⇒ 不做
-
-上一轮说"要做触发队列链"。本轮把最后一环查清了，结论是**不能做**：
-`ResolveTriggerQueue` 的**唯一调用者**是 `HandleExtraPlayTriggersAfterSelectHandCard`
-—— ⚠️ **先更正上一轮的一句话**：它**在** `ref/kards-sim` 那份里（`:23915-23916`），
-上一轮我是在 `_deps` 那份里按调用形态搜的，误判成"只在 `_deps` 里"。
-
-但关键是：**它在 `BP_CardFunctions` 里没有任何调用者**（只在函数表里注册，
-`_index.g.cs:3855` 有它的签名 `["Card"]`）⇒ 调用来自**外部**（UI / game-mode 蓝图，
-名字本身就是"选完手牌之后"）。
-⇒ 内核要在**正确的时刻**排空队列，就得先知道客户端那一刻在哪 —— 猜错会变成
-"要么永不排空（死代码）、要么在不该排空的时刻排空（行为漂开）"。
-按项目纪律（**不半成品、不猜**）⇒ **本轮不做**，如实记在这里。
-
-#### 二、★★ §8.23 的"出参类型"疑点**收口**：全 IR 只有 **1 处**真的按整数用
-
-§8.23 修完 390 个出参槽之后，我留了一句"把出参当整数做算术的消费者仍会拿到 0，**未逐一核对**"。
-本轮把它**量出来**了（全 IR 扫描：生成类原语的出参一共只有 **26 处**被消费，11 个不同消费者）：
-
-| 消费方式 | 处数 | 是否受影响 |
-|---|---|---|
-| `GetCardFromID(出参)` | 6 | ✅ 已由 `AsCardOrId` 兼容（§8.23 一并修的） |
-| `Array_Get` / `Array_Length`（消费 `SpawnCardInDeckBySide` 的 `spawnedCardIDs`） | 9 | ✅ 那个原语本来就返回 `List<int>` |
-| `CustomAbilityAdd` / `GiveBlitz` / 赋值转存 | 10 | ✅ 卡对象消费者 |
-| **`JSON_SetInt(卡, 键, 出参)`** | **1** | ❌ **会写成 0** |
-
-**唯一那一处**是 `card_event_area_bombardment`：
-```
-SpawnCardOnBattlefield(…, "card_unit_lancaster", …, out spawnedCardID)
-JSON_SetInt(self, "unitToRemove", spawnedCardID)
-```
-`JSON_SetInt` 用 `IntArg(a, 2)` ⇒ `AsInt(卡对象) = 0` ⇒ **`unitToRemove` 被写成 0**，
-之后按 id 找"要移除的那个单位"**永远找不到**。
-⇒ 修法：值先走 `AsCard`，是卡对象就取 `CardId`，否则仍按整数读（普通整数路径不变）。
-
-**A/B 结果**：22 局**逐位不变**（三套语料都核过）；`dispatch-gap` 逐位不变
-（这是**语义修正**，不是缺口修复）；自测 **165 → 166 全通过**
-（判死：去掉卡对象分支 ⇒ 失败信息正好是"实际 **0**"，与预测一致）。
-
-⇒ 那条"未逐一核对"的标注**可以撤掉了**：现在是**核对过**的，且只剩这一处、已修。
-
-### 8.30 ★★ 2026-10-04 第二十一轮：**`ConvertCard` 的收益先量出来 —— 它是 live-165924 唯一的 ⑥ 阻塞**
-
-#### 一、★★ 先量收益：`ConvertCard` **真的被执行**
-
-§8.24 只说了"消费者在语料里出现过"（那是**静态**判据）。本轮改成查**运行时 ⑥ 清单**
-（`--audit-replay` 的"⑥ 撞到但**没实现**的原语"）：
-
-| 回放 | 运行时 ⑥ 里的 `ConvertCard` | 该局 ⑥ 全貌 |
-|---|---|---|
-| `docs/fresh-replays/replay-15` | **×1** | `<local-ran:doIControl3opCostUnit>`×65、`<attack-on-non-board-target>`×2、`<frontline-blocked-by-opponent>`×1、`<card:card_unit_b_17_f>`×1、**`ConvertCard`×1** |
-| `docs/live-replays/replay-165924` | **×2** | **只有 `ConvertCard`×2** ★ |
-| `docs/live-replays/replay-130691` | 0（只在静态清单里 ×26） | 0 种（全实现） |
-| `docs/live-replays/replay-310284` | 0 | `<card:card_unit_grenadier_245>`×1 |
-| `docs/live-replays/replay-955337` | 0 | `<card:card_unit_grenadier_245>`×1 |
-
-⇒ ★ **`live-165924` 唯一没实现的原子就是 `ConvertCard`（撞到 2 次）** ——
-也就是说那一局是被**这一条**挡住的。链值得做。
-
-#### 二、★ 三个运行时调用点**形状完全一致**（都是"按名字转"）
-
-```json
-ConvertCard(cardIDs, instigatorID=self.cardID, convertToCardName="…", convertIntoCardID=0,
-            skipTrigger=false, out newCardIDs)
-```
-- `card_event_capitulation` → `"card_unit_routed_troops"`（`unitsToConvert` 一批）
-- `card_unit_108_panzergrenadier` → `"card_unit_routed_troops"`（单张）
-- `card_unit_jagdpanzer_iv` → `"card_event_production"`（单张）
-
-⇒ `convertIntoCardID > 0` 与 `SalvagedCardInfo` 那两条分支**在语料里没被走到**，
-`skipTrigger` 恒 `false`。
-
-#### 三、★ `ConvertCard` 的实现规格（已逐行读出，留给下一轮直接落）
-
-`BP_CardFunctions.g.cs:9882-10450`（569 行），**每张卡一遍**：
-```
-:10164-10178  目标卡名 = convertToCardName；若为空且 convertIntoCardID>0 → 取那张卡的名字
-              ⚠️ 老卡在**弃牌堆(8)** 时，新卡落到**手牌**（:10176 GetHandLocationBySide）
-:10126-10147  老卡离场：在场 ⇒ ApplyRemoveCardFromBoard(cardID, instigatorID, false,false,true,true)
-              否则 ⇒ SetCardLocationAndLocNumber(cardID, 8, 0)
-:10206        CreateCard(side=老卡.side, 名字, location=老卡.location, 0,
-                        locationNumber=老卡.locationNumber,
-                        spawnCardInHand = 老卡.location ∈ {3,4}, gold=老卡.isGoldCard,
-                        "", false, false, …) → spawnedCardID
-:10210        newCardIDs.Add(spawnedCardID)
-:10259-10283  老卡在牌库 ⇒ RemoveCardFromDeckBySide + AddCardToDeckBySide + ExecuteOnAfterDeckChanged
-:10306-10361  ★ T34 广播：FetchAllCardsWithEventTrigger(34)
-              → **只发给 `Array_Contains(newCardIDs, item.cardID)` 为真的订阅者**
-              → item.OnOtherCardConverted(cardIDs, newCardIDs, convertToCardName, instigatorID)
-:10384        ExecuteOnSpawnedInHandEvents(新卡.side, 新卡.cardID)
-:10394-10400  InjectCardIntoLocation(老位置, 老位置号, 新卡) + RefreshLocationStatus
-              + ExecuteOnCardLocationMoved(新卡, 0, 老位置, false, 13)
-:10422        新卡在场上 ⇒ enterPlayOnTurn = GetTurnNumber()
-```
-⚠️ **注意 T34 不是普通广播**：它按 `newCardIDs` 过滤订阅者，而且 `FireTrigger` 的
-`OnOther*` 命名约定会把"发给某一个订阅者"变成"发给除他之外的所有卡"
-⇒ 实现时必须**逐张订阅者直接跑它的程序**（照 `BroadcastWithOutParams` 的做法
-`FindProgram(卡名, "OnOtherCardConverted")`），不能直接用 `FireTrigger`。
-
-#### 四、本轮落地：链上**第一个精确可验证的前置件**
-
-`SetCardLocationAndLocNumber(cardID, Location, LocationNumber)`
-（`:33961-34000`，40 行）：
-```
-:33970  card = GetCardFromID(cardID)
-:33974  if (!IsValid(card)) → DirectClientLogger("…invalid card!") + 返回
-:33978  card.location = Location            ; ★ **裸写字段**（不发任何触发）
-:33980  if (card.location == 8 /*Discard*/) → 跳到结尾
-:33990  card.locationNumber = LocationNumber
-```
-⇒ 两个要点：① **裸写**，不走 `State.Move`，所以**不触发** `OnCardLocationMoved` 一族
-（那些由调用方自己发，例如 `ConvertCard` 的 `:10400`）；
-② **`Discard(8)` 时位置号保持不动**。
-
-⚠️ 它在 IR 里**直接调用点为 0**（只被库函数调）⇒ `dispatch-gap` **逐位不变**
-（511/2370/`D601C3B70D4BD535`）—— 注册它的理由与既有的 `RearrangeLocation` 相同：
-让「名字 → 实现」可查、为链条铺路。
-
-⚠️ **未做**：`InjectCardIntoLocation`（`:24086-24109`）**本身是一条小链**
-（要 `FetchCardsByLocationSorted` + `CreateLocationNumberGapForCard`）；
-`ConvertCard` 本体与 T34 广播**下一轮**落。
-
-**A/B 结果**：22 局**逐位不变**（三套语料都核过）；自测 **166 → 167 全通过**
-（判死：去掉 `location != Discard` 那道门 ⇒ 立刻失败）。
-
-### 8.31 ★★★ 2026-10-04 第二十二轮：**`ConvertCard` 落地 —— 本会话第一次真正推动四条判据**
-
-按 §8.30 的规格实现 `CardApiDispatch.DoConvertCard` + `FireCardConverted`（T34）：
-
-```
-每张卡一遍：
-  :10164-10170  定目标卡名（convertToCardName；为空则取 convertIntoCardID 那张卡的名字）
-  :10172-10178  老卡在**弃牌堆(8)** ⇒ 新卡落**手牌**
-  :10126-10147  老卡离场（在场：离场触发 + 移出；否则：**裸写** location = 8）
-  :10206        造新卡：位置 / 位置号 / 金卡标记**继承老卡**
-  :10306-10361  ★ T34 广播（**按 newCardIDs 过滤订阅者**）
-  :10422        新卡在场上 ⇒ enterPlayOnTurn = 当前回合
-```
-
-★ **T34 不能用 `FireTrigger`**：`OnOther*` 的命名约定会把"发给某一个订阅者"
-变成"发给**除他之外**的所有卡"。用 `BroadcastWithOutParams` 的 `only:` 参数 ——
-它正是"逐张订阅者直接跑它自己的程序"的语义。
-
-**A/B（`docs/fresh-replays` 前后对比，`git stash` 取的基线）**：
-
-| 回放 | 应用 | ⑤b | ⑥ | ④ |
-|---|---|---|---|---|
-| **15** | **130/160 → 135/160** | `#8 t3 CS：CS④牌库族` **不变** | **5 → 4** | 40 → 40 |
-| 其余 6 局 | 不变 | 不变 | 不变 | 不变 |
-| **合计** | **628/710 → 633/710** | **无回归** ✓ | **−1** ✓ | 不变 |
-
-主对拍集 793/835 **不变**、live 132/140 **不变**；`dispatch-gap`
-**511/2370/`D601C3B70D4BD535` → 510/2344/`BC44670AFCD9720C`**；自测 **168/168**（判死）。
-
-⚠️ **如实标注的三处近似**（都不在语料走到的那条路上）：① 牌库那一段
-（`:10259-10283`）没做；② `convertIntoCardID > 0` 的 `SalvagedCardInfo` 没做
-（语料三个调用点全传 0）；③ `InjectCardIntoLocation`/`RefreshLocationStatus`
-用内核已有的落位手段代替。
-
-### 8.32 ★★ 2026-10-04 第二十三轮：**回放持久化（宿主侧）+ 场上容量门：实现、A/B、回退**
-
-#### 一、★★ 宿主侧：回放文件归档（已部署）
-
-**问题**：`MatchHistoryService` 的 `SaveSnapshotAsync`/`AppendActionsAsync` 开头都是
-`if (settings == null) return;` —— 本机 `setting.json` **没有数据库配置** ⇒ **什么都不写**；
-即使配了，`ServerBotService.cs:291` 也记着"**服务端一停就读不到了**"。
-⇒ 一局打完忘了手工导出，回放就没了（2026-10-04 的 `748616` 差点丢掉，是靠 `/replays` API 抢救出来的）。
-
-**做法**（`tem/fyserver`，提交 `697a3f7`）：加一层**与数据库无关**的文件归档，
-写三个与 HTTP API **逐字节同形**的文件 ⇒ 可直接喂 `tools/ServerBridgeTest --audit-replay`：
-
-| 文件 | 形状 |
-|---|---|
-| `replay-<id>.json` | `GET /replays/{id}` → `{summary, starting_info}` |
-| `replay-<id>.actions.json` | `GET /replays/{id}/actions` → `{match_id, next_action_id, has_more, actions}` |
-| `replays-index.json` | `GET /replays` → `{matches:[…]}` |
-
-触发点：开局快照 / 每次追加动作 / 结束（完成或中止），都在那道 `return` **之前**；
-目录 `KLINK_REPLAY_DIR` 优先、否则 `./data/replays`（实测 `rel/data/fyserver/data/replays/`）；
-失败写 stderr（不静默）、**绝不影响对局**。
-⚠️ `GET /replays` 仍读 FASTER/DB ⇒ 重启后 API 列表还是空的（归档文件在，API 看不到）。
-
-#### 二、★★ 场上容量门：**实现 → A/B 回归 → 回退**（归因不完整）
-
-**机制**（由用户指出的游戏通用机制 + 蓝图原文确认）：**放置前先查目标位置满没满**。
-蓝图 `CreateCard`：
-```
-:10510  IsLocationFull(_location) → wasFullBeforeCreating
-:10702  BooleanAND(Not(autoplay && spawnCardInHand), wasFullBeforeCreating)
-:10706      createdCard.location = 8      ; 建卡前该位置就满 ⇒ 卡停到**弃牌堆**（= 没加进去）
-```
-内核**只实现了手牌那条**（`SpawnCardInHand`，§8.16 那一族），**场上那条一直缺**。
-
-**现象**（`replay-748616`）：`card_unit_38th_independent`
-（"Cannot attack or move. Suppress it if you have 4+ copies.
-**Duplicate this unit when you lose a kredit slot.**"）靠 `SpawnCardOnBattlefield` 复制自己，
-越过 5 格上限刷出 **~30 个副本**（审计③：`BoardHqLeft#2,4,5,…,23`）⇒ 半场被自己塞满
-⇒ 人类 `#39 t7` 那张牌被判"半场已满"⇒ bot 判定漂开、**拒绝下棋**。
-
-**实验**：在 `SpawnOnBattlefield` 里加同样的门（满了 ⇒ 落弃牌堆）。
-
-> ⚠️ **2026-10-05 §8.33 更正（两处）**：① 蓝图那道门的语义是「**整次生成中止**」
-> （`:35152` 跳到的尾段**全程不再建卡**），**不是**"落弃牌堆"—— 后者是 `CreateCard` 里另一道门；
-> ② 这一局 ⑤b 的**真正根因是层 A 缺失**（被抑制的副本仍收触发 ⇒ 继续复制），
-> 补上层 A 之后 `748616` 从 61/63 变成 **62/63**、`931082` 从 59/63 变成 **63/63**，
-> **不需要**这道容量门。下面这段实验记录保留作历史。
-
-| | 主对拍集 | 人类失败 | ④ | ⑤b |
-|---|---|---|---|---|
-| 基线 | 793/835 | 26 | 95 | — |
-| **加门（全位置）** | **791/835** | **29** | **99** | 不变 |
-| **加门（只半场）** | **791/835** | **29** | **99** | 不变 |
-
-⇒ **应用率下降 2 条**（新失败是 508065 `#104/#114`、854099 的几条，**全在各自 ⑤b 之后**）。
-按项目纪律（应用率不得下降）**回退**。
-
-★ **但回退前发现更重要的事实**：这道门**修掉了刷兵**（左半场 `38th_independent`
-**30 → 2**、左侧场上 **35 → 8**），**却没能修好那一局的 ⑤b**
-（`#39 t7 半场已满` **原样还在**，应用仍 61/63）
-⇒ **`#39` 的漂开不止"刷兵"这一个成因**，内核左半场在 t7 仍有**别的多余单位**。
-⇒ 归因**不完整**，如实记在这里；下一步需要**逐动作的场面导出**（审计工具目前没有，
-`--audit-replay` 只给终局 ③）。
-
-### 8.33 ★★★ 2026-10-05 第二十四轮：**层 A 落地**（被抑制的收件人不收触发）——
-两局真人新语料由「半场已满」变成**完全对齐**
-
-> ★ **这是本会话第二次真正推动四条判据**（第一次是 §8.31 的 `ConvertCard`）：
-> `out/_server-replays` **913/961 → 918/961**、人类失败 **31 → 26**，
-> 两局真人语料 `748616`（61/63 → **62/63**）与 `931082`（59/63 → **63/63**）的 ⑤b **双双消失**，
-> 其余 10 局**逐位不变**。自测 **168 → 170**（两条新用例都做过判死验证）；
-> `dispatch-gap` **逐位不变**（本轮不加原语）。
-
-#### 一、语料：`out/_server-replays` 10 → **12 局**（两局真人实测，④ 人类 HQ 差都是 0）
-
-| 局 | 来源 | 修前应用 | 人类失败 | ⑤b 首漂开 |
-|---|---|---|---|---|
-| `748616` | 宿主归档 `temp/replay-748616`（63 条动作） | 61/63 | 1 | `#39 t7 PC：打不出（半场已满）` |
-| `931082` | 宿主 `data/replays`（63 条动作） | 59/63 | 4 | `#50 t11 PC：打不出（半场已满）` |
-
-脱敏口径与既有语料一致（`900008`/`900009` + `player-A` + `0000`），脚本 `temp/add-replay.py`；
-复制前后 JSON 逐字段比对，**只有那 4 个脱敏字段不同**。
-
-#### 二、根因：`card_unit_38th_independent` × **层 A 缺失**
-
-卡面：「Cannot attack or move. **Suppress it if you have 4+ copies.**
-**Duplicate this unit when you lose a kredit slot.**」
-⇒ 客户端：攒到第 4 个副本时这批副本**自我抑制**，抑制后**不再收**
-`OnAfterExtraKreditSlotGain` ⇒ 停止复制，半场稳定；
-内核**没有层 A** ⇒ 被抑制的副本**照收照复制** ⇒ 失控刷兵 ⇒ 半场塞满 ⇒ 真人后续出牌被拒。
-
-探针实测（`931082 t11`）：一次丢槽位触发 **12 次**复制尝试（4 次落位成功 + 8 次被容量顶掉）。
-⇒ 这也**解释了 §8.32 的"归因不完整"**：那道容量门挡的是**结果**，不是**原因**。
-
-#### 三、蓝图原文（层 A）
-
-`ref/kards-sim.mine-pre-push/KardsSim/Generated/_deps/BP_GameState_Battle.g.cs`
-（**行号属于这一份**；其余三份同名文件也有这个函数）：
-
-```
-:1057  Array_Contains(card.suppressionExceptionTriggers, TriggerToFetch)
-:1059  Not_PreBool(that)
-:1061  BooleanAND(card.isSuppressed, !that)
-:1063  if (that) ⇒ 跳过这张收件人      ; else ⇒ :1073 cardsWithThisTrigger.Add(cardID)
-```
-
-**层 A 管"广播的收件人集合"，层 B（§8.11）管"主体自己那个程序"** —— 两层独立，别混。
-例外表是**逐卡数据**（全卡池只有 **11 张**非空，出处 `ref/kards-sim/cards.json`）：
-`OnStartofTurn`×5 / `OnEndofTurn`×5 / `OnOtherCardDrawnFromDeck`×1。
-⚠️ 蓝图侧写 `OnStartofTurn`、IR 侧写 `OnStartOfTurn` ⇒ 比较用 `OrdinalIgnoreCase`。
-
-**落点**：`CardApi.SuppressionExceptionTable` + `HasSuppressionException` + `SuppressedSkipsTrigger`，
-接在 `FireTrigger` 的**广播分支**、`subject is null` 的**全局事件**那一路、`otherProgramName` 那一路，
-以及 `BroadcastWithOutParams`（它就是蓝图那个 fetch + 逐张 `item.OnXxx(out …)`）。
-**主体自己那一路（`isSubject`）不动**。
-
-#### 四、A/B
-
-| 语料 | 应用 前→后 | 人类失败 前→后 | ④ 人类HQ差 前→后 |
-|---|---|---|---|
-| `out/_server-replays`（**12 局**） | **913/961 → 918/961** | **31 → 26** | 95 → 95 |
-| `docs/fresh-replays`（7 局） | 633/710（不变） | 24（不变） | **217 → 222** |
-| `docs/live-replays`（5 局） | 132/140（不变） | 0（不变） | 18（不变） |
-
-**如实标注**：`fresh-replays` 的 ④ 涨 5 条（`989040` 19 → 24），而该局应用率/失败/⑤b **都没动**；
-④ 是四条判据里最弱的一条（§7.1），本轮**没有**把它归因到层 A，只记事实。
-
-#### 五、⛔ 场上容量门：试过、A/B 后**回退**，并**纠正 §8.32 的机制描述**
-
-蓝图 `SpawnCardToBoard`（`ref/kards-sim/.../BP_CardFunctions.g.cs:35138-35152`）确实是"满了就**中止**"：
-`:35152 if (!(!full || overrideCardID > 0)) goto L_02DE`，而 `L_02DE` 起的尾段**全程不再建卡**
-（`cardSpawnedID = 0`）—— **不是** §8.32 写的"卡停弃牌堆"。
-那道"建卡之后把 `location` 改成 8"的门在 `CreateCard :10510/:10702-:10706`，
-且**只在 `skipAction` 为真**时才走（`:10694` 的 `if (!skipAction) goto L_0ACF`）。
-
-12 局 A/B：加门 ⇒ **917/961、人类失败 28、④ 99**，且 **`508065` 单局 123/141 → 121/141**
-⇒ 按纪律**回退**。探针点名唯一一处误杀：`508065 t19` 由 `card_event_hms_illustrious`
-生成的 `card_unit_swordfish`，当时内核左半场 **5/5** —— 是"内核半场已比客户端多一张"的既有偏差。
-⇒ **层 A 才是根因**；门已删，替代它的是 `CardApi.SpawnOnBattlefield` 开头那段 ⛔ 注释（含蓝图行号 + A/B 数字）。
-
-#### 六、PR #1 的选择性移植（见 [`PR1审查与移植记录.md`](klink%20bot/docs/PR1审查与移植记录.md)）
-
-**不整体合入**（混合了更老的树 + 对 main 已定案修复的回退 + 过期冻结基线）。本轮只移植一条：
-**卡内私有函数的出参必须优先取"裸名"**（`KismetVm` 的 locals 兜底）——
-全 IR 实测 **170 个调用点**函数体只写裸名、**0 个**写 `CallFunc_<函数>_<出参>` 全名，
-而旧实现取的正是全名 ⇒ 取回值**恒 null**。端到端判据 `card_unit_b_24_d`（控制行动费 ≥3 的单位时少花 3 费）。
-⚠️ **22 局逐位不变**（与 `docs/内核补全队列.md:9375-9387` 那次"试过、零效果、已回退"一致）；
-本轮增量是**全 IR 量化 + 可判死的端到端用例**。
-
-### 8.34 ★★ 2026-10-05 第二十五轮：改费**下限 1 → 0**（1 费指令能被减到 0）
-
-> **判据来源**：新语料 `fresh-replays/replay-634651` 的 **t1**（= 该局的 ⑤b）。
-> **A/B**：`fresh-replays` **633/710 → 634/710**、人类失败 **24 → 23**、
-> `634651` 的 ⑤b 从 `#3 t1 PC` **后移到 `#46 t11 PC`**；
-> 12 局主对拍集（**918/961 / 26 / 95**）与 live 语料（**132/140 / 0 / 18**）**逐位不变**；
-> 自测 **170/170**（把 85 先驱那条用例扩成"1 费指令必须降到 0"，**判死验证过**）；
-> `dispatch-gap` 逐位不变（不动原语集合）。
-
-#### 一、现象（真人 ground truth）
-
-`replay-634651` t1：`#2 PC` 打出 `card_unit_85_pioneer_company`
-（费 1，「The first order you play each turn costs 1 less.」），
-`#3 PC` **紧接着又打出 `card_event_pams`（卡面费 1）** —— 客户端放行。
-真人规则参考 `KARDS基础规则参考.md:27`「每回合自然增加 **1** 个指挥点槽」
-⇒ 先手 t1 只有 **1** 点 ⇒ 客户端必须是把 `pams` 降到了 **0** 才打得出。
-内核给「普通改费」（`changeType=0`）留了一道**下限 1** ⇒ `pams` 仍是 1 费 ⇒ `#3` 被拒。
-
-#### 二、取证链（探针）
-
-蓝图里那道改费来自**光环的私有函数** `ApplyTheBuff`（`locals`，逐行读过）：
-遍历**所有卡**，对手牌里同阵营的指令 `ChangeKreditCost(卡, 自己, -1, changeType=0)`。
-临时探针实测：
-
-```
-[AURA]       card_unit_85_pioneer_company#3 -> card_event_pams#31 amount=-1 ct=0 cost=1 inHand=True
-[AURA-AFTER] card_event_pams#31 KreditCost=1 Effective=1 buffs=[3:-1]
-```
-
-⇒ **buff 记上了（`buffs=[3:-1]`）、费用却没动** ⇒ 问题在 `EffectiveKreditCost` 的夹取，不在光环。
-（对照：同为手牌指令的 `card_event_mi_5` 3 → 2 正常，因为它没撞到那道下限。）
-
-#### 三、改动与判死
-
-`CardInstance.EffectiveKreditCost` 去掉「非绝对设费 ⇒ 下限 1」的夹取，统一 `Math.Max(0, total)`；
-删掉 `MinKreditCost` 常量（只有那一处用它）。旧注释里那条"理由"（"卡面写 costs 1 less，
-1 费指令不该变成 0 费"）**是推断、与回放相矛盾**，已在注释里写明更正与判据。
-
-**判死**：把 `Math.Max(mayReachZero ? 0 : 1, total)` 改回去 ⇒ 扩展后的
-`PioneerCompanyAura` 用例**立刻失败（1/170）**，而大红一师 / 阿穆尔 / 敢死队三条光环用例仍通过
-（说明这条断言精确定位到"普通改费的下限"，不是把绝对设费一起夹掉）。
-
-#### 四、如实标注（未排除的替代解释）
-
-也可能是**客户端先手 t1 的槽位是 2** 而不是 1。但那条改动要动 §9.2 的槽位模型
-（README 明确写着"槽位规则由**真人玩家描述**定案"，且 §7.3 记过它"两个错抵消"），
-而本轮这条只动改费下限、三套语料**零回归**、⑤b 后移 ⇒ 取这条，并把这个替代解释留在这里。
-
-### 8.35 ★★ 2026-10-05 第二十六轮：回合标记改读客户端自带的 `side`（两局真人语料的 ⑤b 双双消失）
-
-> **A/B**：`fresh-replays` **634/710 → 636/710**、人类失败 **23 → 22**；
-> `641464` 11/13 → **12/13（⑤b 消失，完全对齐）**、`replay-15` 135/160 → **136/160**；
-> 12 局主对拍集（**918/961 / 26 / 95**）与 live 语料（**132/140 / 0 / 18**）**逐位不变**；
-> 自测 **170/170**、`dispatch-gap` 逐位不变。
-
-#### 一、现象
-
-`fresh-replays/replay-641464` 的 ⑤b 是 `#11 t5 XActionStartOfTurn：回合归属不符：流里是 left，
-内核当前行动方是 right`。往前看一条就见到根因：
-
-```
-#9  t4  XActionStartOfTurn  pid=900001(=右)  side=right
-#10 t4  XActionEndOfTurn    pid=900002(=左)  side=right     ← ★ pid 与 side 不一致
-#11 t5  XActionStartOfTurn  pid=900002(=左)  side=left
-```
-
-`ReplayRunner` 一直用 `replay.SideOf(a.PlayerId)` 定阵营（`ReplayRunner.cs:660`），
-于是 `#10` 被当成**左方**结束回合 ⇒ `EndTurn(Left)` ⇒ 内核行动方变成 right
-⇒ `#11`（左方开始 t5）被判「回合归属不符」。按 `side` 读则整条链自洽。
-
-#### 二、改动（只在两个字段都给出时优先 `side`）
-
-`XActionStartOfTurn` / `XActionEndOfTurn` 若带 `action_data["side"]`，用它覆盖 `player_id` 推出来的阵营。
-`side` 是**客户端自己写的**回合归属，`player_id` 是**服务端转发时的元数据**。
-其余动作（`PC`/`AC`/`ML` 多数不带 `side`）照旧用 `player_id`。
-
-**全 24 局 779 条回合标记的对账**（`temp/scan-side-vs-pid.py`）：只有 **2 条**不一致 ——
-`641464` 的 `#10`，与 `replay-15` 的 `#122 t25 XActionStartOfTurn`（`pid=2`= 右方，`side=left`）。
-⇒ 777/779 条行为不变；两条例外都靠这条改动修好（`replay-15` 也 +1 条应用）。
-
-#### 三、判死
-
-把那段分支去掉（`if (false && …)`）⇒ `641464` 立刻回到 **11/13** 且
-`#11 t5 回合归属不符` 重现（**实测过**）；恢复后 12/13。
-
-#### 四、如实标注
-
-这是**回放驱动侧**的保真度修复（把客户端的字段读对），**不是**规则改动 ——
-它不改任何卡效果，只改"动作流怎么被解释"。两条异常记录的成因（服务端为何写错 `player_id`）
-**未查**，只按"哪个自洽就信哪个"取 `side`。
-
-### 8.36 2026-10-05 第二十七轮：**不改行为** —— 把 `634651` 的 kredit 差取证到「光环补挂抽到的指令」这一层
-
-> 本轮**没有任何行为改动**（自测 170/170、三套语料逐位不变）。
-> 产出是一条**可复现的归因链** + 两个 env 门控探针：
-> `KLINK_TRACE_POOL=1`（`StartTurn` 打印指挥点池、`PlayCard` 打印每次出牌收了多少费）。
-
-#### 一、现象
-
-`fresh-replays/replay-634651` 修完 §8.34/§8.35 之后的 ⑤b：
-`#46 t11 PC：打不出：kredit 不足（kredits=0，费用=1）`。
-
-#### 二、实测（探针原文）
-
-```
-[POOL] turn=11 side=Left max=6 kredits=6
-[PLAY] turn=11 card=card_event_the_land_girls#23      cost=2 kredits=6   → 4
-[PLAY] turn=11 card=card_event_the_rock_of_gibraltar#5 cost=4 kredits=4   → 0
-[HAND] t=11 Left DeckLeft->HandLeft 手牌=6/9 card_event_the_land_girls#23 via Move   ← 回合开始抽牌拿到
-```
-
-客户端那一刻的支出是 `2 + 4 + 1 = 7`，而池子只有 **6** ⇒ 只有一种自洽解释：
-`the_land_girls`（t11 的**第一张指令**）在客户端被
-`card_unit_85_pioneer_company`（「The first order you play each turn costs 1 less.」）
-减到了 **1**。而内核收的是 2。
-
-#### 三、归因到哪一层（含一条被否掉的假设）
-
-- 该光环 **t1..t11 一直在左方半场**（`--board-trace` 的左半场构成）。
-- 它在 **t10 回合结束**确实重新施加了一次（`OnEndOfTurn` → `ApplyTheBuff`），
-  但那次**只命中了一张牌**：当时手牌里只有 `card_event_repel_the_attack#4` 是指令 ——
-  `the_land_girls#23` 那时还在**牌库**里，t11 抽牌才进手。
-- ⇒ 该走的是蓝图那条**"别的卡抽到手"**的路：
-  `OnOtherCardDrawnFromDeck`（光环 IR 入口 `1330`）→ `tempCardID = K2Node_Event_drawnCardID`
-  → `jump 571` → `GetCardFromID` → `jump 10` → `IsOrder && IsLocatedInHand && 同阵营`
-  → `JSON_GetBool(self,"buffActive")` → `ChangeKreditCost(tempCard, cardID, -1, 0)`。
-  **这条没有生效**（否则 `#42` 应当是 1 费）。
-- ⚠️ **被否掉的假设**："光环的回合结束重施加整体没实现" —— 合成自测里它**是生效的**
-  （临时实验：`EndTurn` 之后再抽进来的指令会被减费；顺带说明既有用例
-  「还原之后再抽进来的指令不该被减费」的**前提只在同一回合内成立**，跨回合重施加是蓝图行为）。
-
-#### 四、下一步（留给下一轮）
-
-给 `CardApi` 那两处 `OnCardDrawnFromDeck` / `OnOtherCardDrawnFromDeck` 的派发接上
-`TriggerTrace`，确认光环的 `1330` 入口**有没有被跑到**、`K2Node_Event_drawnCardID` 读到的值是什么；
-再决定是补挂时机（派发顺序）还是事件入参解析的问题。
-
-### 8.37 ★★ 2026-10-05 第二十八轮：**P6 部分补丁**（回放硬塞进手牌的牌，补发"抽到手"事件）+ 光环 `buffActive` 的蓝图口径
-
-> **A/B**：`fresh-replays` **636/710 → 637/710**、人类失败 **22 → 21**、
-> **④ 人类 HQ 差 223 → 206（−17）**；`634651` 218/236 → **219/236**（⑤b 由 `#46 t11` 后移到 `#71 t15`）、
-> `989040` 的 ④ 由 **24 → 7**；12 局主对拍集（**918/961 / 26 / 95**）与 live 语料（**132/140 / 0 / 18**）**逐位不变**；
-> 自测 **170/170**、`dispatch-gap` 逐位不变。
-
-#### 一、根因（`634651` 的 ⑤b 追到底）
-
-`#46 t11 PC：kredit 不足（kredits=0，费用=1）`。探针链（`KLINK_TRACE_POOL` / `KLINK_TRACE_KC` /
-`KLINK_TRACE_TRIGGERS`，后两个是本轮新增）逐条钉死：
-
-```
-[POOL] turn=11 side=Left max=6 kredits=6
-[PLAY] turn=11 card_event_the_land_girls#23       cost=2   ← 客户端那边这张应当是 1
-[PLAY] turn=11 card_event_the_rock_of_gibraltar#5 cost=4
-[HAND] t=11 Left DeckLeft->HandLeft card_event_the_land_girls#23 via Move   ← ★ 被**硬塞**进来的
-```
-
-- 客户端那一刻的支出是 `1 + 4 + 1 = 6`（池子正好 6）⇒ 客户端那张 `the_land_girls`
-  （t11 的**第一张指令**）被 `card_unit_85_pioneer_company` 的「每回合第一张指令 -1」减到了 **1**。
-- 内核收 2 的原因**不是**光环坏了：`[KC] t=11 target=card_event_fog_of_war#7002 src=3 amount=-1 ct=0
-  self=card_unit_85_pioneer_company#3` —— 光环"别的卡抽到手"那条路**正常工作**（t11 开局抽到的那张就挂上了）。
-- 真正的原因：`the_land_girls#23` 在内核里**不在手上**（牌序/手牌账与客户端不一致 —— README §9.1 第②类），
-  于是 `ReplayRunner` 把它从牌库**硬塞**进手牌（`ReplayRunner.cs` 的 `injected++` 那条，
-  README §9.5 **P6** 记的保真度缺口）。**硬塞不发任何事件** ⇒ 客户端"早先抽到时就该收到"的
-  光环补挂在内核里**整条没有** ⇒ 多收 1 点 ⇒ 那张 1 费指令打不出。
-
-#### 二、改动
-
-1. **`MatchEngine.FireEnteredHandFromDeckEvents(card, side, startOfTurnDraw)`** —— 把
-   `DrawCard` 里那两句 `OnCardDrawnFromDeck`（自己）+ `OnOtherCardDrawnFromDeck`（广播）抽成公开方法。
-2. **`ReplayRunner` 硬塞处补发**：仅当被塞的卡**真的来自牌库**（`CardLocation.DeckLeft/Right`）时补发
-   （"从弃牌堆/手牌再塞回来"在客户端**不是**抽牌，不补）。
-3. **`DoApplyTheBuff` 无条件置 `buffActive = true`**（蓝图 `ApplyTheBuff` 的头两步就是
-   `JSON_SetBool(buffActive, True)` + `PersistCustomFields`，**排在循环之前**）。
-   旧实现只在"真的写出了新 buff"时才置位（`ApplyAuraKreditCost` 末尾，且带"同值就早退"）
-   ⇒ 重施加全部命中"已挂过"时会留下 `buffActive = false`，而**抽牌内联路只认这个标志**。
-   ⚠️ **如实标注**：这一条单独 A/B **没有可测变化**（三套语料逐位不变）—— 它的判据是蓝图原文，
-   属"蓝图忠实性修复、回放侧无信号"那一类；带实参那一路（对应蓝图内联路）**不置位**，别一起改。
-
-#### 三、判死
-
-把 `ReplayRunner` 里补发事件那句关掉 ⇒ `634651` 立刻回到 **218/236** 且 `#46 t11` 重现、
-`989040` 的 ④ 回到 **24**（**实测过**）；恢复后 219/236、④ 7。
-
-#### 四、本轮新增探针
-
-| 探针 | 作用 |
-|---|---|
-| `KLINK_TRACE_POOL=1` | `StartTurn` 打印指挥点池 + `PlayCard` 打印每次出牌实际收了多少费 |
-| `KLINK_TRACE_TRIGGERS=<文件>` | 把 `CardApi.TriggerTrace`（`事件名 → 卡名#ID`）落盘 —— 回答"某个订阅者的某个入口到底有没有被跑到" |
-
-#### 五、语料 12 → **15 局**
-
-宿主 `rel/data/fyserver/data/replays/` 里还剩的三局真人实测（`748635` / `748636` / `748639`，
-同一名玩家、35/36/39 条动作）一并入库（脱敏口径同前，左方 `900010`/`900011`/`900012`）。
-三局**全部完全对齐**（`35/35`、`36/36`、`39/39`）——`748639` 原先那条 `#39 t7 PC 半场已满`
-已被 §8.33 的层 A 修掉。它们不推动四条判据，作用是**给后续改动加一道"逐位不变"的守卫**。
-⇒ 15 局新基线：**1028/1071（96.0%）**、人类失败 **26**、④ 人类 HQ 差 **95**。
-
-### 8.38 2026-10-05 第二十九轮：**重测 `--identity-fix`**（结论不变：仍不能全局打开）
-
-> 项目在 §9.1/§8.12 里记过：身份校正（`ReplayRunner.IdentityCorrection`，默认**关**）
-> 对 `508065` 有效、却会让 `773639` 回归 ⇒ 当时回退。本轮代码已经变了四处
->（层 A、改费下限、回合标记 `side`、P6 补丁），所以**重测一次**。
-
-| 回放 | 基线 | `--identity-fix` | 结论 |
-|---|---|---|---|
-| `508065` | 123/141、失败 **17**、⑤b `#54 t13` | **139/141**、失败 **1**、⑤b `#127 t23` | 大幅变好 |
-| `634651` | 219/236、失败 **12** | **225/236**、失败 **7**（⑤b 仍 `#71`） | 变好 |
-| `773639` | 134/137、失败 **0**、④ 0 | **123/137**、失败 **11**、④ 33、⑤b `#83 t18 ML（油费不足）` | ★ **仍然回归** |
-| `542091` | 77/78、失败 0 | 77/78、失败 0 | 无变化 |
-
-⇒ **维持默认关闭**（与 §8.12 的结论一致）。这也是「两个错抵消」的另一面：
-`773639` 里内核那张卡的**身份本来是对的**，按动作自带的卡组码去改反而把对的改错
-（或改成了另一张、连带油费/费用不对）。要打开它，必须先找到一个**有原则的判别式**
-（§9.1 当年试过"避让跳号""卡属性"两条，都没分开）——**不硬凑**。
-
-⚠️ 顺带记一条**可复用的收益**：这条实验说明 `508065` 的 17 条失败里 **16 条**
-是身份/随机类（§9.1 第②类，离线数据不可得），**不是**规则实现缺失 ⇒
-不要再去规则层找 `508065` 的 ⑤b。
-
 ---
-
 
 ## 9. 路线图 / 已知缺口
 
@@ -2804,7 +1099,7 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 | 缺口 | 规模 | 出处 |
 |---|---|---|
 | **未实现原语** | **101 个**（影响 347 张卡 / 731 个用例；本次战斗路径修复后重测） | `out/audit/smoke-all-cards.txt` |
-| **派发表真缺口**（`locals` 也兜不住） | 当前 `533` 种 / `2714` 个调用点，指纹 `B24F1E59D20FC2D8`；其中混有 UI / 战役 / 表现层调用 | `dispatch-gap` 实测 |
+| **派发表真缺口**（`locals` 也兜不住） | 当前 `509` 种 / `2280` 个调用点，指纹 `4112C4289B1BBB54`；其中混有 UI / 战役 / 表现层调用 | `dispatch-gap` 实测 |
 | **从不派发的玩法入口** | IR 入口名共 **449** 个，剔除 UI / 动画后仍有 **53 个玩法相关入口**内核从不派发；**23 张卡**的**全部**入口都是死入口 | `out/audit/semantic-reconcile-report.md` §5(N) |
 | ↳ 三条完整的死事件链 | **Pincer**（7 张）+ **Intel**（3 张）+ **Lose Smokescreen**（3 张）= 13 张卡，按「一条链一次修」性价比最高 | 同上 |
 | **`locals`-only 卡零覆盖** | **45 张**卡的 `entrypoints` 为空、逻辑全在 `locals`；烟雾测试按 `card.Entrypoints` 枚举用例 ⇒ 这 45 张**一个用例都没有**。连同 `entrypoints` 为空的共 **98 张**零覆盖 | `out/audit/semantic-reconcile-report.md` §5(L) |
@@ -2857,42 +1152,16 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 - **验收（可证伪）**：修好 fallback 后应用 B 补丁 ⇒
   **六局 ≥ 601/632、五局 ≥ 132/140、770857 的 ⑤b 消失**，三者同时成立才算过。
 
-#### P1 ★ `OnOtherCardAttacks`（T31，**20 张卡**）—— ✅ **已完成（2026-10-04，见 §8.18）**
+#### P1 ✅ `OnOtherCardAttacks`（T31，**20 张卡**）—— locals 订阅者已接入
 
-> ✅ **2026-10-04：已接线并验收**（§8.18）。三处改动、自测 154/154（判死验证）、22 局逐位不变。
-> ⚠️ 但**回放侧验证不了**：10 局里 T31 触发 58 次、**订阅者出现 0 次**
-> ⇒ 判据只有「蓝图原文 + 自测」。**T30 仍未接**（见下）。
+`MatchEngine.cs:1818-1823` 的注释写「`OnOtherCardAttacks` 在全部 1636 张卡的 **`entrypoints`**
+里一个订阅者都没有」—— **只查了 `entrypoints`**。实测：它在 **0 张 `entrypoints`**、
+**20 张 `locals`** 里（`KismetIr.cs:339-349` 明写 `locals` 是独立事件函数）。
+蓝图 `:4385/:4434` 调它，**出参 `stopAttack`/`AttackedAndStopped` 能中止攻击**
+⇒ 已由 `MatchEngine.Attack` 调用 locals 出参广播，并尊重 `stopAttack` /
+`AttackedAndStopped`；`OtherCardAttacksStopsAttack` 自测覆盖。
 
-**（以下是接线前的分析与勘误，保留作历史）**
-
-> ⚠️ **本节 2026-10-04 更正（未实施，只是把事实改对）**。
-
-**事实（子代理按当前工作树复核，本次未逐条独立复核）**：
-
-- 那句「`entrypoints` 里一个订阅者都没有」的注释**不在** `:1818-1823`（那里是另一条讲
-  `OnBeforeAttack`/T13 合并的注释）；真正那句在 **`MatchEngine.cs:1940-1945`**。
-- 结论本身仍然成立：T31 在 **0 张 `entrypoints`**、**20 张 `locals`** 里
-  （复现：`python -c "…; print(len([k for k,v in d.items() if 'OnOtherCardAttacks' in v.get('locals',{})]))"` ⇒ 20）。
-- ⚠️ 但**缺口比原文说的小**：出参广播机制**早就存在**
-  —— `CardApi.BroadcastWithOutParam` / `BroadcastWithOutParams`
-  （T14/T23/T24 在用，`Vm.RunLocalProgramMulti` 从 `Frame` 读出参）。
-  真正缺的只有三件：① `BroadcastWithOutParams` 加一个 `exclude`（蓝图 `:4356` 排除攻击者本人）；
-  ② 两个钩子方法（`FireOtherCardAttacks` / `SwitchAttackTargetIfAny`）；
-  ③ `MatchEngine.Attack` 三处接线（**必须在 `State.AddKredits` 之前** —— 蓝图里
-  T30/T31 两轮排在扣油费 `:4513` 之前，且 `stopAttack` 为真时油费不扣）。
-- **出参语义不是同义词**：`stopAttack=true` ⇒ 整条攻击作废（油费不扣、不记"已攻击"）；
-  `AttackedAndStopped=true` ⇒ 油费照扣、照记"已攻击"，但**整段伤害跳过**。
-  20 张订阅卡的 44 处出参写入里 **`stopAttack` 的字面量只有 `false`**（该分支目前是死代码），
-  活的是 `AttackedAndStopped`（5 张写死 `true` + 2 张按"攻击者还在不在场"算）。
-- ⚠️ **真正的前置阻塞不是 T31，而是反制卡的落点**：内核把打出的 gotcha 送进弃牌堆
-  （`IsAlive` 在 Discard 为假）⇒ `ShouldGotchaTrigger` 对它们恒假 ⇒ 14 张 gotcha 订阅者
-  接完 T31 仍然原地返回。⇒ 建议**先**按蓝图把"打出的 gotcha 留在手牌"修掉（独立一支），
-  再接 T31；否则只有 6 张非 gotcha 卡真正生效。
-- **验收**：该钩子被派发、出参被尊重；**另外**：`card_unit_3_panzergrenadier` 那句话要删
-  —— 它订阅的是 **T4 `OnAfterOtherCardAttacks`**（内核已在派发），**不订阅 T31**。
-
----
-#### P2 ★ 「**早快照 + 自身效果在前 + 广播在后**」—— 修掉一处「症状对、机制错」
+#### P2 ★ 「**早快照 + 自身效果在前 + 广播在后**」—— **早快照已接入，时序仍待验收**
 
 `MatchEngine.PlayCard` 里，`otherCards` 在蓝图里是 **`:6060-6066` 的早快照**、广播在 **`:6462`**，
 而卡自己的 `OnPlayedFromHand` 在 **`:6396`** ⇒ 蓝图是「早快照 + **自身效果在前** + 广播在后」。
@@ -2901,128 +1170,55 @@ pams 蓝图里 `keepOrder = false` 是**硬编码字面量**；内核 IR 里 pam
 ⇒ 要**加上这个能力**，并把顺序**改回**蓝图那样。**验收**：新生成单位仍收不到广播，
 且 5 个触发点的先后与蓝图逐条一致。
 
-#### P3 「压制门」那一族（**所有触发点**）
+**2026-10-04 实测结论**：已在 `CardApi.CaptureTriggerSnapshot` 接入早快照，
+并由 `PlayCard` 将同一快照用于 T51/T43；NIGHT RAID 自测确认新生成的 COMMANDO
+不会收到创建它的 T51。尝试把实际广播移到 `RunDeploymentEffect` 之后后，回放
+`854099` 从 `106/118、9 条人类失败` 退化为 `100/118、16 条人类失败`，因此已恢复
+当前回放验证过的「广播 → 自身效果」时序。**在获得新的客户端行为证据前，不宣称 P2 完成**。
 
-> ⚠️ **本节 2026-10-04 被大幅更正**。原文把蓝图的两层机制混成了一层，而且方向搞反了。
+#### P3 ✅ 「压制门」那一族（**所有触发点**）
 
-蓝图里有**两层独立**的压制机制：
-
-| 层 | 位置 | 作用面 |
-|---|---|---|
-| **A（全局门）** | `_deps/BP_GameState_Battle.g.cs:1057-1063`，在 `FetchAllCardsWithEventTrigger`（起 `:1003`）收订阅者时：`isSuppressed && !suppressionExceptionTriggers.Contains(trigger)` ⇒ 跳过该候选卡 | **广播的收件人** |
-| **B（调用点自门）** | ~30 处 `if (!<主体>.isSuppressed) goto L_SELF;` | **主体自己的那个程序** |
-
-★★ **层 B 的统一形状（本次独立复核，读了 `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs` 三处原文）**：
-
-```
-L_…:  if (!X.isSuppressed) goto L_SELF;     ; 未压制 ⇒ 跳去自程序
-L_FETCH:  FetchAllCardsWithEventTrigger(N)  ; ★ 广播：压制时**直接落到这里**
-          loop → item.OnOtherXxx(…)
-L_SELF:  X.OnXxx(…)                         ; 自程序
-         goto L_FETCH                       ; ★ 跑完自程序**又跳回广播**
-```
-
-⇒ **层 B 的门只管"主体自己那个程序"；广播是两条路都会到的（即无条件发）。**
-
-实测三处（行号即 g.cs 行号，原文可查）：
-
-| 触发点 | 门 | 广播 | 自程序 | 跳回 |
-|---|---|---|---|---|
-| T15 `OnBeforeOtherCardDestroyed` | `:14833 if (!_cardDestroyed.isSuppressed) goto L_0208;` | `:14835 Fetch(15)` | `L_0208:14874 OnBeforeDestroyed` | `:14876 goto L_00B0` → 回 `:14835` |
-| T32 `OnOtherCardBecomingVeteran` | `:26303 if (!card.isSuppressed) goto L_0AF6;` | `:26305 Fetch(32)` | `L_0AF6:26347 OnBecomingVeteran` | 回 `:26305` |
-| T7 `OnAfterOtherCardGainDefense` | `:7954 if (!cardToChangeRef.isSuppressed) goto L_130F;` | `:7956 Fetch(7)` | `L_130F:8017 OnAfterGainDefense` | `:8020 goto L_10FD` → 回 `:7956` |
-
-⚠️ **方法论教训（本轮最有价值的一条）**：内核的注释把
-`JumpIfNot(cond) -> target` **读反了**。它的语义是「**cond 为假才跳**」，
-所以 `JumpIfNot(isSuppressed) -> L_SELF` 的意思是「**未**压制 ⇒ 去自程序」，
-而不是「压制 ⇒ 两个都不发」。内核目前三处都按后一种（错的）读法实现：
-- `MatchEngine` 的 T15：`if (!Suppressed) { FireTrigger(自 + 广播) }`
-  ⇒ **被压制的卡被摧毁时，内核漏发了 T15 广播**（蓝图无条件发）；
-- `CardApi.MakeVeteran`：门装在了 **T32 广播**上、自程序反而无条件发 ⇒ **完全颠倒**；
-- `CardApi.ApplyDefenseDelta`：self 与 T7 混在一次 `FireTrigger` 里，无法分别设门
-  ⇒ 被压制时**多发**了 `OnAfterGainDefense` 自程序。
-
-**层 A（全局门）内核完全没实现**（`grep SuppressionException src/` ⇒ 0 命中），
-所以已实现的 30 多个 a/b 触发点**都还没有这道收件人过滤**。
-
-**例外集合不是全局常量，是逐卡数据**：蓝图的 `suppressionExceptionTriggers` 来自卡数据
-（`ref/kards-sim/cards.json`）。⚠️ 下面的具体名单**来自子代理的统计、本次未独立复核**：
-11 张卡 / 3 个触发点（`OnStartofTurn` / `OnEndOfTurn` / `OnOtherCardDrawnFromDeck`）。
-
-**建议的下一步（按风险从小到大）**：
-1. ✅ **已做**（2026-10-04 第二轮，见 §8.11）：**只改层 B 的三处形状**（T15 / T32 / T7），
-   配自测「被压制 ⇒ 自程序不发、广播照发」，并**改写了原先断言旧（错）语义的那条用例**。
-   结果：22 局逐位不变（回放侧无信号，如实标注）。
-2. ✅ **已做（2026-10-05，见 §8.33）**：**层 A 全局门 + 例外表（11 张卡）** ——
-   收件人过滤落在 `FireTrigger` 的广播分支 / `subject is null` 的全局事件那一路 /
-   `otherProgramName` 那一路 + `BroadcastWithOutParams`；例外表 11 条来自
-   `ref/kards-sim/cards.json` 的 `suppressionExceptionTriggers`（名字大小写与 IR 不同 ⇒ 忽略大小写）。
-   结果：`out/_server-replays` **913/961 → 918/961**、人类失败 **31 → 26**，
-   两局真人语料 ⑤b **消失**（`748616` 62/63、`931082` **63/63 完全对齐**），其余 10 局逐位不变；
-   自测 168 → 170（含「例外卡被抑制后仍须收到」的反向断言）。⚠️ `fresh-replays` 的 ④ 涨 5 条（未归因，如实记）。
-   **仍未做**：`AttackCard`（`:4542`）等其余 ~7 处层 B 门**未逐处核实**。
-
-⚠️ **更正一条旧结论**：原文说「内核只在 `MatchEngine.cs:2238`（T15）自己加了一道」。
-子代理核对称该行是**重甲减伤**的注释、与压制无关，内核实际有约 10 处压制门
-（**本次未独立复核**这一条）。`MatchEngine` 里那道 T15 门现在的实际位置见上面第 1 条。
+蓝图 `_deps/BP_GameState_Battle.g.cs:1057-1063` 对**每一个**触发点都跳过
+`isSuppressed && !suppressionExceptionTriggers.Contains(trigger)` 的卡；
+内核已在 `CardApi.FireTrigger`、出参广播和 locals 广播路径接入统一门；
+`CardInstance.SuppressionExceptionTriggers` 默认空，未知白名单暂不硬编码。
+T7 的 `!isSuppressed` 目标门也已接入 `CardApi.cs:1629`；
+`RemoveSmokescreen` 的攻击前相对顺序仍保留为待证项，避免用单一回放结果强行改序。
+⚠️ **别把 `ChangeDefense` 的 T7 当成本族**：`BP_CardFunctions.g.cs:7954` 那道门后面
+`L_130F:8017` 紧跟 `goto L_10FD` **又跳回 T7 那轮循环** ⇒ T7 两条路都会发，
+内核无条件发 T7 是**对的**（这条已查死，别再改）。
 
 #### P4 其余「内核完全没有」的触发点（按订阅数）
 
-> ⚠️ **本节 2026-10-04 更正 + 重排（子代理按当前工作树逐条复核，本次未独立复核）**。
-
-**勘误**：`OnCounterMeasureTriggered`(T21) / `OnIntelTriggered`(T28) / `OnOtherCardRetreat`(T54)
-**已经实现了**（T21 在 `CardApi.cs` 的 Gotcha 区段，由 `GotchaTriggered` 驱动；
-T28 在 `SetCardsSeenByCipher` 内；T54 在 `CardApiDispatch` 的撤回链上）。
-⇒ 原来的第一梯队名单是**过期**的。
-
-**重排后（按「成本 ÷ 收益」，且以**能否被现有语料观测**为准）**：
-
-| 顺位 | 触发点 | 订阅 | 成本 | 回放可观测 |
-|---|---|---|---|---|
-| **1** | ~~**T35 `OnOtherCardCreatedAlterCard`**~~ ✅ **已做（2026-10-04，§8.13）** | 11 | ★★ | ✗ |
-| **2** | ~~T22 `OnDeckShuffled`~~ ✅ **已做（2026-10-04，§8.19）** | 5 | ★ | ✗ |
-| **3** | ~~T3 `OnAfterDeckChanged`~~ ✅ **已做（2026-10-04，§8.19）** | 3 | ★★ | ✗ |
-| **4** | ~~T61 `OnOtherUnitPinned`~~ ✅ **已做（2026-10-04，§8.13）** | 2 | ★ | ✗ |
-| **5** | ~~T48 `OnOtherCardLoseSmokescreen`~~ ✅ **已做（2026-10-04，§8.13）** | 3 | ★ | ✗ |
-| 6 | ~~T45 `OnOtherCardKreditCostChanged`~~ ✅ **已做（2026-10-04，§8.20）** | 4 | ★ | ✗ |
-| 7 | ~~T62 `OnOtherUnitUnpinned`~~ ✅ **已做（2026-10-04，§8.22）** | 3 | ★★ | ✗ |
-| 8 | ~~T49 `OnOtherCardMoveFromFrontline`~~ ✅ **已做（2026-10-04，§8.20）** | 3 | ★★ | ✗ |
-| 9 | ~~T68 `OnOtherCardOperationKreditsSpent`~~ ✅ **已做（2026-10-04，§8.21）** | 3 | ★★ | ⚠️ 1/3 |
-| — | **T31 `OnOtherCardAttacks`** | 20 | ★★★ | ✅ **已做（§8.18）** |
-| — | ~~**T30 `OnOtherCardAttackSwitchTarget`**~~ ✅ **已做（2026-10-04，§8.23）** | 2 | ★★★ | ✗ |
-| — | **T60 / T65（Covert）** | 15+1 | ★★★ | ✗ |
-| — | **T34 `OnOtherCardConverted`** | 3 | ★★★ | ✗ |
-| — | **T1 / T40 / T67** | 25/1/2 | — | **不该做** |
-| — | **T18 / T26** | 0/0 | — | **无事可做** |
-
-> ✅ **P4 清单已全部收尾**（9 条全部接线），**P1 家族（T31 + T30）也已完成**。
-> 其中 **T62 是唯一推动了四条判据之一的**：注册 `RemovePin` 让 `dispatch-gap` 从
-> **522/2462/`FFEC7E071E9518C0`** 降到 **521/2452/`ACCAA64A21EF6CDE`**（判据 ② 未实现原语种 ↓）。
-> 其余各条**回放侧 0 命中**，证据链是「蓝图原文 + 自测」，**不是**回放对拍。
-
-**两条硬结论**：
-
-1. ★ **T31 是唯一有回放观测量的 `c` 类触发点**（20 张订阅里 **4 张**在语料里出现过）；
-   其余全部 0 张命中 ⇒ **T35/T22/T3/T45/T61/T62 等的验收只能靠自测，不能靠回放**。
-2. **三条不该单做**：
-   - **T60/T65（Covert）**：派发点严格在一道门里面
-     （`IsUnrevealedCovertCard`，内核里是**恒 false 的桩**，`CardApi.cs`）。
-     为发 T60 而把门改成真，会让**每一张普通卡被打出时**都给 15 张订阅卡广播一次
-     —— 比不实现更糟（§9.3「半吊子实现比不实现更糟」）。⇒ 要做就 **T55 `RevealCard`
-     + T60 + T65 + 攻击路径的两处 `RevealCard`** 一条链一次做，并且要知道它会
-     **顺带改变 `CanCardBeBuffed` 对 11 张 Covert 卡的行为**（必须配回归自测）。
-   - **T34 `OnOtherCardConverted`**：派发点在 `ConvertCard` 里，而 `ConvertCard`
-     **不在派发表**（IR 里 26 个调用点 / 25 张卡）⇒ 单做 T34 是死代码。
-   - **T1 / T40 / T67**：全 `Generated` 目录**没有任何** `FetchAllCardsWithEventTrigger`
-     调用它们（T1 的 25 张是战役地点卡、调用方在客户端 C++ 里）⇒ **不该做**。
-   - **T18 / T26**：订阅数 **0** ⇒ 纯空转。
-
-**一个命名坑**（会让人查不到订阅）：三个触发点的**蓝图名与枚举名不同**
-—— T33 `OnOtherCardBlitzChange` → 蓝图 `OnOtherCardBlitz**ed**`、
-T62 `OnOtherUnitUnPinned` → `OnOtherUnitUn**p**inned`、
-T68 `OnOtherCardOperationKreditSpent` → `OnOtherCardOperationKredit**s**Spent`（复数）。
-
+`OnOtherCovertCardPlayedFromHand`(T60, 15 卡) / `OnCounterMeasureTriggered`(T21, 13) /
+`OnIntelTriggered`(T28, 6) …；T35 `OnOtherCardCreatedAlterCard` 已接入创建回调并有 67th
+BARANOVICHI 真实载荷自测（仍需更多真实回放覆盖）。
+T47 `OnOtherCardLocationMoved` 已接入 `FireLocationMoved`，并由 35th INFANTRY REGIMENT
+真实订阅回归验证敌方单位进入前线时的主体/位置载荷及己方 +1/+1 光环。
+T41 `OnOtherCardDiscarded` 已接入 `DiscardCard`，并由 NAKAJIMA B5N 真实订阅回归验证
+弃牌主体、敌方伤害和友方边界。
+T48 `OnOtherCardLoseSmokescreen` 已接入 `RemoveKeyword(Smokescreen)`，并由 HIROSAKI REGIMENT
+真实订阅回归验证目标主体、+1/+1 和行动费降低。
+T22 `OnDeckShuffled` 已接入 `ShuffleDeckBySide`，并由 110e REGIMENT MOTORIZE 真实订阅回归
+验证牌库阵营、施动卡主体、己方 +1/+1 及敌方边界。
+T49 `OnOtherCardMoveFromFrontline` 也已接入 `FireLocationMoved`，只在旧位置为前线时广播。
+T22 `OnDeckShuffled` 已接入 `ShuffleDeckBySide`，传递牌库阵营和施动卡。
+T33 `OnOtherCardBlitzChanged` 已接入蓝图确认的 `RemoveBlitz` 路径；同时补齐获得 Blitz 时的
+`OnOtherCardAbilitiesChanged` 载荷，Panzer III L 真实订阅回归验证目标坦克 +2 攻击、敌方边界与移除时撤销。
+T40 `OnOtherCardDeveloped` 已接入 `DevelopChosenCard`：先执行 `OnHandTargetSelected`，再广播
+`cardDeveloped` 与 `instigatorID`；`KismetVm` 对该具名事件参数优先按名字解析。
+T48 `OnOtherCardLoseSmokescreen` 已接入 `RemoveKeyword(Smokescreen)`，覆盖攻击后、进入前线和卡牌效果三条成功移除路径。
+T61/T62 `OnOtherUnitPinned` / `OnOtherUnitUnpinned` 已接入 `PinUnit`、主动摘除及钉住到期解除路径；真实订阅卡回归测试通过。
+T54 `OnOtherCardRetreat` 已在 `MakeCardRetreat` 中显式传递 `cardRetreated`，并由 TYPHOON 真实订阅回归覆盖。
+T50 `OnOtherCardMoveToFrontline` 已在 `MoveUnit` 中显式传递 `cardMoved/ForceMove/moveCost`；
+普通推进保存扣费前的 `moveCost`，并由 Blue Legion 真实订阅回归验证 `moveCost` 攻防增量。
+T52 `OnOtherCardReceiveDamage` 已在 `ApplyCalculatedDamage` 中显式传递
+`fromCard/toCard/fromAttack/damage`；由 Panzer III 真实订阅回归验证敌方 HQ 受伤累计。
 完整对照表见 [`docs/触发点普查表.md`](docs/触发点普查表.md)（68 项 × 蓝图行号 × 内核行号 × 判定 × 订阅数）。
+
+**2026-10-04 已补 T30 `OnOtherCardAttackSwitchTarget`**：攻击前派发 locals 订阅者并采用 `newDefender`；
+`COLD TRAP` 的自测验证攻击转向新生成的 SISSI，原目标不受伤。独立函数的生成原语缺失 out 元数据时，
+VM 按签名恢复生成卡 ID 输出。
 
 #### P5 原语实参形状普查的剩余项
 
@@ -3053,13 +1249,14 @@ T68 `OnOtherCardOperationKreditSpent` → `OnOtherCardOperationKredit**s**Spent`
 
 ### 9.6 补充审计语料
 
-**当前主对拍集是 12 局**（2026-10-05 更新）：
+**现在的语料是 12 局**（2026-10-03 更新）：
 
 | 来源 | 局数 | 说明 |
 |---|---|---|
-| `out/_server-replays/` | **15** | 原 10 局（`214436 389594 508065 542091 653657 705344 711061 770857 773639 854099`）+ **5 局真人实测**：`748616` / `931082`（§8.33）、`748635` / `748636` / `748639`（§8.37 末尾，三局均**完全对齐**、做防回归用） |
-| `klink bot/docs/live-replays/` | **5** | `130691 165924 310284 563868 955337`（其中 3 局只有 3 条动作） |
-| `klink bot/docs/fresh-replays/` | **7** | 另一批真人语料 |
+| `out/_server-replays/` | **6** | 主对拍集：`214436 389594 508065 542091 773639 854099`（同一对卡组，§7.4） |
+| `tem/fyserver/…/data/live-replays/` | **5** | `130691 165924 310284 563868 955337`（从**服务端数据目录**里找到的，其中 3 局只有 3 条动作） |
+| `out/_server-replays/replay-770857` | **1** | ★ **真人对局**（2026-10-03 抓），54 条动作，首漂开 `#35 t9` 由 `MakeCardRetreat` 未实现引起 |
+| `fresh-replays/` | 7 | 另有 |
 
 ★ **新增能力：可以在服务端**运行时**把当前对局抓下来**（不必等回放落盘）：
 
