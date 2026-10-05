@@ -658,6 +658,31 @@ public sealed class ReplayRunner
         {
             int turn = a.TurnNumber;
             Side side = replay.SideOf(a.PlayerId);
+
+            // ★★ 回合标记（`XActionStartOfTurn` / `XActionEndOfTurn`）自带
+            // `action_data["side"]` —— 那是**客户端自己写的**回合归属，比从 `player_id`
+            // 推更可信：`player_id` 是**服务端转发时的元数据**，实测**会与 side 不一致**。
+            //
+            // 全 24 局 779 条回合标记里只有 **2 条**不一致（`temp/scan-side-vs-pid.py`）：
+            //   · `fresh-replays/replay-641464` 的 `#10 t4 XActionEndOfTurn`
+            //     —— `pid=900002`（= 左方）而 `side=right`；
+            //   · `fresh-replays/replay-15` 的 `#122 t25 XActionStartOfTurn`
+            //     —— `pid=2`（= 右方）而 `side=left`。
+            // 按 `player_id` 推的后果（641464 实证）：`#10` 被当成**左方**结束回合
+            // ⇒ `EndTurn(Left)` ⇒ 内核行动方变成 right ⇒ 紧接着的 `#11 t5
+            // XActionStartOfTurn left` 被判「回合归属不符」，**那正是该局的 ⑤b**。
+            // 而按 `side` 读则整条链自洽（`#9` 右方开始 t4 → `#10` 右方结束 t4 →
+            // `#11` 左方开始 t5）。
+            //
+            // 只在**两个来源都给出**时优先 `side`；没有 `side` 的动作（`PC`/`AC`/`ML`
+            // 多数不带这个字段）照旧用 `player_id` ⇒ 777/779 条行为不变。
+            if (a.ActionType is "XActionStartOfTurn" or "XActionEndOfTurn"
+                && SideFromWire(a.Get("side")) is { } explicitSide
+                && explicitSide != Side.NotAvailable)
+            {
+                side = explicitSide;
+            }
+
             string sideStr = side.ToWire() is { Length: > 0 } s ? s : "?";
 
             // 动作结算**前**采样对手 HQ
@@ -1170,6 +1195,17 @@ public sealed class ReplayRunner
     /// 键位：<c>0</c>=命令名，<c>1</c>=目标阵营，<c>2</c>=参数，<c>3</c>=目标区域。
     /// 目前实测到 <c>SetKredits</c> 与 <c>SpawnCard</c> 两条。
     /// </summary>
+    /// <summary>
+    /// `action_data["side"]` 的 `"left"` / `"right"` → <see cref="Side"/>；
+    /// 其它（含字段缺失）回 <see cref="Side.NotAvailable"/>。见调用点那段"回合标记优先 side"的注释。
+    /// </summary>
+    private static Side SideFromWire(string? raw) => raw switch
+    {
+        "left" => Side.Left,
+        "right" => Side.Right,
+        _ => Side.NotAvailable,
+    };
+
     private bool ApplyCheat(WireAction a, Side fallbackSide, GameState state, ref string? failure)
     {
         string op = a.Get("0") ?? "";
@@ -1180,7 +1216,6 @@ public sealed class ReplayRunner
             "right" => Side.Right,
             _ => fallbackSide,
         };
-
         switch (op)
         {
             case "SetKredits":
