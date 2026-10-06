@@ -403,6 +403,13 @@ public sealed partial class CardApi
                 c,
                 includeNotAttainable: TruthyArg(a, 0),
                 includeReserved: TruthyArg(a, 1)),
+            // `CheckHasUnitToSpawn(card, out hasUnitToSpawn)` is a private
+            // legality helper duplicated by four Soviet event blueprints.
+            // It must use the same static-card pool and predicates as the
+            // corresponding random-spawn local function; returning a generic
+            // "any unit exists" answer would make CanPlayFromHand disagree
+            // with the card's actual spawn path.
+            ["CheckHasUnitToSpawn"] = (c, r, a) => HasUnitToSpawn(c, a),
             ["GetRandomBritishAir"] = (c, r, a) =>
             {
                 int kredit = IntArg(a, 0);
@@ -2387,6 +2394,64 @@ public sealed partial class CardApi
 
         // 每次返回一份新的 List（调用方会 Array_Clear / Array_Add 原地改它）
         return new List<CardInstance>(filtered);
+    }
+
+    /// <summary>
+    /// Implements the four card-local <c>CheckHasUnitToSpawn</c> exports:
+    /// <c>red_banner</c> (+2 same-faction unit), <c>ural_factories</c>
+    /// (+1 same-faction unit), <c>refit</c> (+3 same-faction tank), and
+    /// <c>stand_together_brothers</c> (same-cost Soviet tank).
+    ///
+    /// The helper is called from each card's <c>CanPlayFromHand</c>, so the
+    /// receiver context (<see cref="EffectContext.Self"/>) identifies which
+    /// card-specific predicate applies.  The target is an explicit first
+    /// argument in all four Blueprint call sites.
+    /// </summary>
+    private bool HasUnitToSpawn(EffectContext c, object?[] args)
+    {
+        var target = AsCardOrId(c, args.ElementAtOrDefault(0));
+        if (target is null || c.Self is null)
+        {
+            return false;
+        }
+
+        string cardName = c.Self.Definition.Name;
+        int expectedCost;
+        int expectedFaction;
+        bool requireTank;
+
+        switch (cardName)
+        {
+            case "card_event_red_banner":
+                expectedCost = target.KreditCost + 2;
+                expectedFaction = target.Definition.FactionId;
+                requireTank = false;
+                break;
+            case "card_event_ural_factories":
+                expectedCost = target.KreditCost + 1;
+                expectedFaction = target.Definition.FactionId;
+                requireTank = false;
+                break;
+            case "card_event_refit":
+                expectedCost = target.KreditCost + 3;
+                expectedFaction = target.Definition.FactionId;
+                requireTank = true;
+                break;
+            case "card_event_stand_together_brothers":
+                expectedCost = target.KreditCost;
+                expectedFaction = 4; // Soviet, as in RandomlyChooseTank.
+                requireTank = true;
+                break;
+            default:
+                NotifyUnimplemented($"<CheckHasUnitToSpawn:{cardName}>");
+                return false;
+        }
+
+        bool includeReserved = CardPoolTable.IsReserved(c.Self.Name);
+        return StaticCardPool(c, includeNotAttainable: false, includeReserved)
+            .Any(card => card.Definition.FactionId == expectedFaction
+                && card.KreditCost == expectedCost
+                && (requireTank ? IsTank(card) : IsUnit(card)));
     }
 
     private static CardDatabase? _staticPoolDb;

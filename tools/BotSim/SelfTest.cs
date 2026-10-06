@@ -105,6 +105,8 @@ internal static class SelfTest
             StaticPoolCardSetFilter),
         new("候选池口径：预备卡默认不进池，includeReserved=true 时必须在池里",
             StaticPoolReservedFilter),
+        new("CheckHasUnitToSpawn：四张苏联随机生成事件与其候选池条件一致",
+            CheckHasUnitToSpawn),
         new("候选池口径：atlantic_convoy 的『美国费≤3单位』候选池 = 53 张，成员与顺序正确",
             AtlanticConvoyCandidatePool),
         new("★ 同一流下标抽到同一张卡：match_id=508065 复刻到 t9，两次抽签 = 507th_pir / fifth_ohio",
@@ -2464,6 +2466,71 @@ internal static class SelfTest
         if (withReserved.Count <= filtered.Count)
         {
             return $"includeReserved=true 的池子 {withReserved.Count} 张没有比 false 的 {filtered.Count} 张大";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The four card-local helpers must answer the same question as their
+    /// random-spawn functions: whether at least one eligible static template
+    /// exists.  This covers each cost/type variant and a no-match boundary.
+    /// </summary>
+    private static string? CheckHasUnitToSpawn(CardDatabase db)
+    {
+        string[] required =
+        {
+            "card_event_red_banner",
+            "card_event_ural_factories",
+            "card_event_refit",
+            "card_event_stand_together_brothers",
+            "card_unit_t_34",
+            "card_unit_bt_7",
+        };
+        foreach (string name in required)
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺少 CheckHasUnitToSpawn 回归素材 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        int nextId = 100;
+        var cases = new[]
+        {
+            ("card_event_red_banner", "card_unit_t_34", true),       // 5 -> 7 Soviet unit
+            ("card_event_ural_factories", "card_unit_t_34", true),   // 5 -> 6 Soviet unit
+            ("card_event_refit", "card_unit_t_34", true),            // 5 -> 8 Soviet tank
+            ("card_event_stand_together_brothers", "card_unit_bt_7", true), // Soviet cost 2 tank
+        };
+
+        foreach (var (eventName, targetName, expected) in cases)
+        {
+            var source = state.CreateWithId(eventName, Side.Left, nextId++, CardLocation.Discard, 0);
+            var target = state.CreateWithId(targetName, Side.Left, nextId++, CardLocation.BoardFrontline, 0);
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = source,
+                Controller = Side.Left,
+            };
+
+            object? result = engine.Api.InvokeByName(
+                "CheckHasUnitToSpawn", null, new object?[] { target }, ctx, out bool handled);
+            if (!handled || result is not bool actual || actual != expected)
+            {
+                return $"{eventName} 正例应返回 true，handled={handled}, result={result ?? "null"}";
+            }
+
+            target.KreditCost = 99;
+            result = engine.Api.InvokeByName(
+                "CheckHasUnitToSpawn", null, new object?[] { target }, ctx, out handled);
+            if (!handled || result is not bool noMatch || noMatch)
+            {
+                return $"{eventName} 无候选费用边界应返回 false，handled={handled}, result={result ?? "null"}";
+            }
         }
 
         return null;
