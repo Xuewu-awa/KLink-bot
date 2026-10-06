@@ -83,6 +83,8 @@ internal static class SelfTest
             SpawnNextToCard),
         new("ResetUnitOperations：只恢复棋盘单位的移动/攻击额度，Fury 恢复两次攻击",
             ResetUnitOperations),
+        new("GiveRandomCombatKeyword：双出参、已有关键字排除与 Smokescreen 特殊过滤",
+            GiveRandomCombatKeyword),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -12025,6 +12027,93 @@ internal static class SelfTest
             || !order.HasMovedThisTurn || !order.HasAttackedThisTurn || order.AttacksThisTurn != 1)
         {
             return "非棋盘单位或非单位目标不应被 ResetUnitOperations 改写";
+        }
+
+        return null;
+    }
+
+    private static string? GiveRandomCombatKeyword(CardDatabase db)
+    {
+        const string unitName = "card_unit_arado_ar_196";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        // GetCombatKeywords must expose the enum values, not CardInstance objects,
+        // and must write both Blueprint out parameters.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = PutOnBoard(state, unitName, Side.Left, 100, 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = Side.Left };
+            var raw = engine.Api.InvokeByName("GetCombatKeywords", target,
+                new object?[] { null, null }, ctx, out bool handled);
+            if (!handled || raw is not object?[] outputs
+                || outputs.Length != 2 || outputs[0] is not List<int> keywords
+                || outputs[1] is not int count || count != keywords.Count
+                || keywords.Count != 0)
+            {
+                return $"GetCombatKeywords 应返回 [ECombatKeyword[], count]，实际 handled={handled}, "
+                     + $"result={raw ?? "null"}";
+            }
+
+            var random = engine.Api.InvokeByName("GiveRandomCombatKeyword", target,
+                new object?[] { target.CardId, target.CardId, null, null }, ctx, out bool randomHandled);
+            if (!randomHandled || random is not object?[] randomOutputs
+                || randomOutputs.Length != 2 || Convert.ToInt32(randomOutputs[0] ?? -1) != 0
+                || randomOutputs[1] is not false)
+            {
+                return "GiveRandomCombatKeyword 的成功路径必须保留蓝图 out=0/false 的实际行为";
+            }
+
+            string[] combatKeywords =
+            [Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard,
+             Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen];
+            if (!target.Keywords.Any(combatKeywords.Contains))
+            {
+                return "GiveRandomCombatKeyword 成功调用没有授予任何战斗关键字";
+            }
+        }
+
+        // Guard targets must never receive Smokescreen, even when it is the only
+        // remaining combat keyword allowed by the random candidate filter.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = PutOnBoard(state, unitName, Side.Left, 101, 1);
+            engine.Api.GiveKeyword(target, Keyword.Guard);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = Side.Left };
+            engine.Api.InvokeByName("GiveRandomCombatKeyword", target,
+                new object?[] { target.CardId, target.CardId, null, null }, ctx, out bool handled);
+            if (!handled || target.Keywords.Contains(Keyword.Smokescreen))
+            {
+                return "已有 Guard 的目标不应从 GiveRandomCombatKeyword 获得 Smokescreen";
+            }
+        }
+
+        // With every enum value already present there is no candidate and no
+        // state mutation.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = PutOnBoard(state, unitName, Side.Left, 102, 1);
+            foreach (string keyword in new[]
+                     {
+                         Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard,
+                         Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen,
+                     })
+            {
+                engine.Api.GiveKeyword(target, keyword);
+            }
+
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = Side.Left };
+            var before = target.Keywords.Count;
+            var result = engine.Api.InvokeByName("GiveRandomCombatKeyword", target,
+                new object?[] { target.CardId, target.CardId, null, null }, ctx, out bool handled);
+            if (!handled || result is not object?[] outputs
+                || Convert.ToInt32(outputs[0] ?? -1) != 0 || outputs[1] is not false
+                || target.Keywords.Count != before)
+            {
+                return "无可用战斗关键字时应返回 0/false 且不改变目标";
+            }
         }
 
         return null;

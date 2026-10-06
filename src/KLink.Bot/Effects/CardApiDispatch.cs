@@ -660,6 +660,7 @@ public sealed partial class CardApi
             ["GiveSalvage"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Salvage),
             ["GiveShock"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Shock),
             ["GiveBond"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Bond),
+            ["GiveRandomCombatKeyword"] = (c, r, a) => DoGiveRandomCombatKeyword(c, r, a),
             ["RemoveBlitz"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Blitz),
             ["RemoveAmbush"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Ambush),
             ["RemoveFury"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Fury),
@@ -1171,14 +1172,10 @@ public sealed partial class CardApi
             // </code>
             // 也就是和 `getTotalKreditCost` **完全同形**，主语在接收者，走 `SelfArg`。
             ["getAndDecryptKredit"] = (c, r, a) => SelfArg(c, r, a)?.KreditCost ?? 0,
-            ["GetCombatKeywords"] = (c, r, a) =>
-            {
-                // 战斗相关关键字列表（Guard/Blitz/Fury/…），供卡牌读取
-                var card = AsCard(r) ?? c.Target;
-                return card is null
-                    ? new List<CardInstance>()
-                    : new List<CardInstance>();
-            },
+            // `GetCombatKeywords(out Keywords, out numberOfKeywords)` 是
+            // `UBaseCardObject` 的成员函数。蓝图出参是 `ECombatKeyword[]`（字节枚举）
+            // 加数量，**不是卡实例列表**；VM 用 object[] 按序写回两个 out 槽。
+            ["GetCombatKeywords"] = (c, r, a) => DoGetCombatKeywords(c, r, a),
             ["GetCardsToTheLeft"] = (c, r, a) =>
             {
                 // 同一战线上、位置编号比它小的卡
@@ -5079,6 +5076,86 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    // ECombatKeyword values from the shipped enum.  None (0) is a sentinel and
+    // is deliberately excluded from random candidates.
+    private static readonly (int Value, string Keyword)[] CombatKeywordEntries =
+    [
+        (1, Keyword.Ambush),
+        (2, Keyword.Blitz),
+        (3, Keyword.Fury),
+        (4, Keyword.Guard),
+        (5, Keyword.HeavyArmor),
+        (6, Keyword.Shock),
+        (7, Keyword.Smokescreen),
+    ];
+
+    private static object? DoGetCombatKeywords(EffectContext c, object? receiver, object?[] args)
+    {
+        var card = SelfArg(c, receiver, args);
+        if (card is null)
+        {
+            return new object?[] { new List<int>(), 0 };
+        }
+
+        var keywords = CombatKeywordEntries
+            .Where(entry => card.Keywords.Contains(entry.Keyword)
+                || (entry.Keyword == Keyword.HeavyArmor && card.HeavyArmor > 0))
+            .Select(entry => entry.Value)
+            .ToList();
+        return new object?[] { keywords, keywords.Count };
+    }
+
+    /// <summary>
+    /// `GiveRandomCombatKeyword(cardID, instigatorID, out keywordGiven, out success)`。
+    ///
+    /// The Blueprint builds the candidate set from enum values 1..7, removes the
+    /// target's existing combat keywords, and removes Smokescreen for frontline
+    /// cards, Fighters, or cards that already have Guard.  The success path in the
+    /// shipped bytecode never writes either out variable, so the observable out
+    /// values remain `0/false` even though the selected keyword is granted.
+    /// </summary>
+    private object? DoGiveRandomCombatKeyword(EffectContext c, object? receiver, object?[] args)
+    {
+        var target = AsCardOrId(c, args.ElementAtOrDefault(0));
+        if (target is null || !CanCardBeBuffed(target))
+        {
+            return new object?[] { 0, false };
+        }
+
+        bool excludeSmokescreen = target.Location == CardLocation.BoardFrontline
+            || string.Equals(target.Definition.Type, "fighter", StringComparison.OrdinalIgnoreCase)
+            || target.Keywords.Contains(Keyword.Guard);
+        var candidates = CombatKeywordEntries
+            .Where(entry => !target.Keywords.Contains(entry.Keyword)
+                && (entry.Keyword != Keyword.Smokescreen || !excludeSmokescreen))
+            .Select(entry => entry.Value)
+            .ToList();
+        if (candidates.Count == 0)
+        {
+            return new object?[] { 0, false };
+        }
+
+        int index = c.State.Random.RandRange(0, candidates.Count - 1);
+        int selected = candidates[index];
+        c.State.TraceRandom($"GiveRandomCombatKeyword({target.CardId}) -> {selected}");
+        int instigatorId = IntArg(args, 1, c.Self?.CardId ?? 0);
+        switch (selected)
+        {
+            case 1: GiveKeyword(target, Keyword.Ambush); break;
+            case 2: GiveKeyword(target, Keyword.Blitz); break;
+            case 3: GiveKeyword(target, Keyword.Fury); break;
+            case 4: GiveKeyword(target, Keyword.Guard); break;
+            case 5:
+                DoChangeHeavyArmor(c, receiver,
+                    new object?[] { target, instigatorId, 1, 1, false, null });
+                break;
+            case 6: GiveKeyword(target, Keyword.Shock); break;
+            case 7: GiveKeyword(target, Keyword.Smokescreen); break;
+        }
+
+        return new object?[] { 0, false };
     }
 
     /// <summary>
