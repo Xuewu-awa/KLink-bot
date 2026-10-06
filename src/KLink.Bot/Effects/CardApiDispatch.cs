@@ -186,6 +186,9 @@ public sealed partial class CardApi
                 c.State.GetHQDamagedAmountThisTurn(SideArg(r, a, 0, c.Controller)),
             ["GetOperationKreditsSpentThisTurn"] = (c, r, a) =>
                 c.State.OperationKreditsSpentThisTurn,
+            // Despite its historical name, the Blueprint function returns
+            // the boolean IsFrontlineLimited flag, not the numeric capacity.
+            ["getFrontlineLimit"] = (c, r, a) => c.State.IsFrontlineLimited,
 
             // ---------------- 取值 / 选择器 ----------------
             // ⚠️ `GetOppositeSide` **没有入参** —— 它的"我方"取自卡本身。

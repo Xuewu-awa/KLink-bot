@@ -750,6 +750,13 @@ internal static class SelfTest
             return "前置不成立：初始前线不应受限";
         }
 
+        object? initialLimit = engine.Api.InvokeByName("getFrontlineLimit", limiter,
+            new object?[] { null }, ctx, out bool initialHandled);
+        if (!initialHandled || initialLimit is not bool initialLimited || initialLimited)
+        {
+            return $"getFrontlineLimit 初始值错误：handled={initialHandled}, value={initialLimit ?? "null"}";
+        }
+
         engine.Api.InvokeByName("ChangeFrontlineLimiter", limiter,
             new object?[] { limiter.CardId, false }, ctx, out bool handledAdd);
         if (!handledAdd || !state.IsFrontlineLimited
@@ -757,6 +764,13 @@ internal static class SelfTest
         {
             return $"加入 FrontlineLimiter 失败：handled={handledAdd}, limited={state.IsFrontlineLimited}, "
                  + $"capacity={state.FrontlineCapacity}";
+        }
+
+        object? limitedFlag = engine.Api.InvokeByName("getFrontlineLimit", limiter,
+            new object?[] { null }, ctx, out bool limitedHandled);
+        if (!limitedHandled || limitedFlag is not bool limited || !limited)
+        {
+            return $"getFrontlineLimit 受限值错误：handled={limitedHandled}, value={limitedFlag ?? "null"}";
         }
 
         if (!state.FrontlineLimiters.Contains(limiter.CardId))
