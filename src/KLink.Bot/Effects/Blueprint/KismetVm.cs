@@ -988,10 +988,11 @@ public sealed class KismetVm
             //   实测对局 773639 `#29 t7`：人类用雾战移除 bot 的 `card_unit_1st_airborne#60`，
             //   两张复制品应当进 **Right** 牌库，旧实现进了 Left。
             //
-            //   本内核没有建模「控制权转移」（`Side.Owner` 就是归属），
-            //   所以 `originalSide` 与 `side` 同值 —— 这是近似，不是猜：两者
-            //   在没有偷取/转换的对局里本来就相等。
-            "originalSide" => (int)card.Owner,
+            //   `CardInstance.OriginalOwner` 保留创建时归属；旧的手工测试卡
+            //   没有填该字段时才回退到当前归属。
+            "originalSide" => (int)(card.OriginalOwner is Side.Left or Side.Right
+                ? card.OriginalOwner : card.Owner),
+            "underEnemyControl" => card.UnderEnemyControl,
             "faction" => card.Definition.FactionId,
             "name" => card.Name,
             "cardID" => card.CardId,

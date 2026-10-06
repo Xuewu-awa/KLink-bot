@@ -23,7 +23,17 @@ public sealed class CardInstance
     /// </summary>
     public required string Name { get; set; }
 
-    public required Side Owner { get; init; }
+    /// <summary>当前控制方。夺取控制权时会改变；卡的原始归属见 <see cref="OriginalOwner"/>。</summary>
+    public required Side Owner { get; set; }
+
+    /// <summary>
+    /// 创建时的原始归属（蓝图 <c>originalSide</c>）。
+    /// 旧的手工测试卡没有填这个字段时，读取方会回退到当前归属。
+    /// </summary>
+    public Side OriginalOwner { get; init; } = Side.NotAvailable;
+
+    /// <summary>当前是否由原始敌方控制（蓝图 <c>underEnemyControl</c>）。</summary>
+    public bool UnderEnemyControl { get; set; }
 
     /// <summary>卡面定义。同 <see cref="Name"/>：可被 <see cref="Reidentify"/> 就地换掉。</summary>
     public required CardDefinition Definition { get; set; }

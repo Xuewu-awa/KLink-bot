@@ -439,6 +439,35 @@ public sealed partial class CardApi
                 c.Engine.RequestForceEndTurn(c.State.ActiveSide, c.Self?.CardId ?? 0);
                 return null;
             },
+            ["TakeControlOfEnemyUnit"] = (c, r, a) =>
+            {
+                var card = AsCardOrId(c, a.ElementAtOrDefault(0));
+                if (card is null)
+                {
+                    return null;
+                }
+
+                int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+                c.Engine.ChangeUnitOwnership(card, instigatorId, card.Owner,
+                    card.Owner.Opposite(), CardLocation.NotAvailable, releaseControl: false);
+                return null;
+            },
+            ["ReleaseControlOfEnemyUnit"] = (c, r, a) =>
+            {
+                var card = AsCardOrId(c, a.ElementAtOrDefault(0));
+                if (card is null)
+                {
+                    return null;
+                }
+
+                int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+                Side originalOwner = card.OriginalOwner is Side.Left or Side.Right
+                    ? card.OriginalOwner : card.Owner.Opposite();
+                var originalLocation = (CardLocation)IntArg(a, 2, (int)originalOwner.HqOf());
+                c.Engine.ChangeUnitOwnership(card, instigatorId, card.Owner,
+                    card.Owner.Opposite(), originalLocation, releaseControl: true);
+                return null;
+            },
             ["RandomIntFromRangeWithStream"] = (c, r, a) => DoRandomIntFromRange(c, a),
             ["GetPlayingSide"] = (c, r, a) => (int)c.Controller,
             ["GetStartingSide"] = (c, r, a) => (int)c.State.StartingSide,

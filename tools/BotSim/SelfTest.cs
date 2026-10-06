@@ -58,6 +58,8 @@ internal static class SelfTest
         new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
         new("回合结束队列：普通→endofturn1→endofturn2、抑制门、临时 buff 清理", EndOfTurnQueueSemantics),
         new("ForceEndTurn：效果完成后只结束一次，并记录来源卡 ID", ForceEndTurnDeferred),
+        new("控制权：夺取/释放维护当前归属、原始归属、位置索引与协议子动作",
+            UnitOwnershipTransfer),
         // ---- GetDeckByside 的出参形状（2026-10-02，对局 542091 t7 的根因）----
         // 蓝图出参是 `TArray<int> deckCardIDs`（卡 **ID**），内核曾实现成卡**实例**。
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
@@ -660,6 +662,58 @@ internal static class SelfTest
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
         state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
         return (engine, state);
+    }
+
+    private static string? UnitOwnershipTransfer(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var unit = state.CreateWithId("card_unit_1st_infantry_regiment_us", Side.Right, 42,
+            CardLocation.BoardHqRight, 1);
+        var source = state.CreateWithId("card_event_confusion", Side.Left, 43,
+            CardLocation.Discard, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("TakeControlOfEnemyUnit", source,
+            new object?[] { unit, source.CardId }, ctx, out bool takeHandled);
+        if (!takeHandled)
+        {
+            return "TakeControlOfEnemyUnit 未接入派发表";
+        }
+
+        if (unit.Owner != Side.Left || unit.OriginalOwner != Side.Right
+            || !unit.UnderEnemyControl || unit.Location != CardLocation.BoardHqLeft
+            || state.Cards(Side.Right, CardLocation.BoardHqRight).Contains(unit)
+            || !state.Cards(Side.Left, CardLocation.BoardHqLeft).Contains(unit))
+        {
+            return $"夺取后状态错误：owner={unit.Owner}, original={unit.OriginalOwner}, "
+                 + $"under={unit.UnderEnemyControl}, location={unit.Location}";
+        }
+
+        engine.Api.InvokeByName("ReleaseControlOfEnemyUnit", source,
+            new object?[] { unit, source.CardId, (int)CardLocation.BoardHqRight, 0 },
+            ctx, out bool releaseHandled);
+        if (!releaseHandled)
+        {
+            return "ReleaseControlOfEnemyUnit 未接入派发表";
+        }
+
+        if (unit.Owner != Side.Right || unit.UnderEnemyControl
+            || unit.Location != CardLocation.BoardHqRight
+            || !state.Cards(Side.Right, CardLocation.BoardHqRight).Contains(unit))
+        {
+            return $"释放后状态错误：owner={unit.Owner}, under={unit.UnderEnemyControl}, "
+                 + $"location={unit.Location}";
+        }
+
+        var action = state.ActionLog.LastOrDefault(x => x.SubActions.Any(s =>
+            s.Name == "ZActionChangeUnitOwnership"));
+        return action is null ? "缺少 ZActionChangeUnitOwnership 子动作" : null;
     }
 
     private static string? ChangeFrontlineLimiter(CardDatabase db)

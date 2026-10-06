@@ -137,14 +137,15 @@ public sealed class MatchEngine
     ///    本内核**没有建模这张枚举表**，一律传空串 —— 这是近似，不是复刻。
     ///    影响面：`MoveReason` 的订阅者（读它的卡）会拿到空串。
     /// </summary>
-    private void FireLocationMoved(CardInstance card, CardLocation oldLocation, CardLocation newLocation)
+    private void FireLocationMoved(CardInstance card, CardLocation oldLocation,
+                                   CardLocation newLocation, bool changeOwner)
     {
         var named = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["cardMoved"] = card,
             ["oldLocation"] = (int)oldLocation,
             ["newLocation"] = (int)newLocation,
-            ["ChangeOwner"] = false,
+            ["ChangeOwner"] = changeOwner,
             ["MoveReason"] = "",
         };
 
@@ -168,7 +169,7 @@ public sealed class MatchEngine
         }
 
         Api.FireTrigger("OnCardLocationMoved", card, card.Owner, "OnOtherCardLocationMoved",
-            eventArgs: new object?[] { card, (int)oldLocation, (int)newLocation, false, "" },
+            eventArgs: new object?[] { card, (int)oldLocation, (int)newLocation, changeOwner, "" },
             eventSubject: card,
             namedArgs: named,
             oldLocation: oldLocation,
@@ -2845,4 +2846,76 @@ public sealed class MatchEngine
 
     /// <summary>该动作名是否是「效果」而不是纯查询 —— 用于统计未实现的效果调用。</summary>
     public IReadOnlyDictionary<string, int> UnimplementedCalls => State.UnimplementedCalls;
+
+    /// <summary>
+    /// `ChangeUnitOwnership` 的无头实现。夺取控制权时把单位放到新控制方半场，
+    /// 释放时按调用方保存的原始位置恢复；两条路径都维护阵营索引、换区事件和协议子动作。
+    /// </summary>
+    public bool ChangeUnitOwnership(CardInstance card, int instigatorId, Side fromSide,
+                                    Side toSide, CardLocation originalLocation,
+                                    bool releaseControl)
+    {
+        if (!card.Definition.IsUnit || !card.Location.IsBoard()
+            || card.Owner != fromSide || toSide is Side.NotAvailable
+            || fromSide == toSide)
+        {
+            return false;
+        }
+
+        CardLocation oldLocation = card.Location;
+        Side oldOwner = card.Owner;
+        CardLocation destination = releaseControl ? originalLocation : toSide.HqOf();
+        if (destination is not (CardLocation.BoardHqLeft or CardLocation.BoardHqRight
+            or CardLocation.BoardFrontline))
+        {
+            destination = toSide.HqOf();
+        }
+
+        // Blueprint rejects a full destination during normal targeting. The release
+        // path can encounter it later, in which case the card retreats to the
+        // restored owner's hand instead of silently overfilling the support line.
+        bool destinationFull = destination switch
+        {
+            CardLocation.BoardFrontline => State.Cards(Side.Left, CardLocation.BoardFrontline).Count
+                + State.Cards(Side.Right, CardLocation.BoardFrontline).Count
+                - (oldLocation == CardLocation.BoardFrontline ? 1 : 0) >= State.FrontlineCapacity,
+            CardLocation.BoardHqLeft or CardLocation.BoardHqRight
+                => State.Cards(toSide, destination).Count >= GameState.HalfBoardCapacity,
+            _ => false,
+        };
+        if (destinationFull)
+        {
+            destination = toSide.HandOf();
+        }
+
+        FireLeaveTrigger(card, destination);
+        if (!State.ChangeOwner(card, toSide))
+        {
+            return false;
+        }
+
+        card.UnderEnemyControl = !releaseControl;
+        State.Move(card, destination, locationNumber: null, changeOwner: true);
+        card.HasMovedThisTurn = false;
+        card.AttacksThisTurn = 0;
+        card.HasAttackedThisTurn = false;
+
+        FireSubAction("ZActionChangeUnitOwnership", new[]
+        {
+            ActionValue2.Bool("releaseControl", releaseControl),
+            ActionValue2.Int("newLocation", (int)destination),
+            ActionValue2.Str("newSide", toSide.ToWire()),
+            ActionValue2.Int("oldLocation", (int)oldLocation),
+            ActionValue2.Str("oldSide", oldOwner.ToWire()),
+            ActionValue2.Int("instigatorID", instigatorId),
+        });
+
+        if (destination.IsBoard())
+        {
+            Api.FireTrigger("OnEnterPlay", card, card.Owner,
+                eventArgs: new object?[] { card, 0 });
+        }
+
+        return true;
+    }
 }

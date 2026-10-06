@@ -486,6 +486,7 @@ public sealed class GameState
             CardId = sequentialId ? NextSequentialCardId(owner) : NextCardId(owner),
             Name = cardName,
             Owner = owner,
+            OriginalOwner = owner,
             Definition = def,
             IsGold = isGold,
             Location = location,
@@ -543,6 +544,7 @@ public sealed class GameState
             CardId = cardId,
             Name = cardName,
             Owner = owner,
+            OriginalOwner = owner,
             Definition = def,
             IsGold = isGold,
             Location = location,
@@ -689,7 +691,8 @@ public sealed class GameState
     }
 
     /// <summary>把卡移动到新位置，并重排目标位置的 location_number（与客户端语义一致）。</summary>
-    public void Move(CardInstance card, CardLocation location, int? locationNumber = null)
+    public void Move(CardInstance card, CardLocation location, int? locationNumber = null,
+                     bool changeOwner = false)
     {
         CardLocation oldLocation = card.Location;
         bool moved = oldLocation != location;
@@ -710,7 +713,7 @@ public sealed class GameState
         //    同区重排（改 locationNumber）不走它。
         if (moved)
         {
-            CardMoved?.Invoke(card, oldLocation, location);
+            CardMoved?.Invoke(card, oldLocation, location, changeOwner);
         }
     }
 
@@ -719,7 +722,26 @@ public sealed class GameState
     /// <c>OnOtherCardLocationMoved</c> 上）。
     /// GameState 不认识 CardApi，所以只留一个钩子。
     /// </summary>
-    public Action<CardInstance, CardLocation, CardLocation>? CardMoved { get; set; }
+    public Action<CardInstance, CardLocation, CardLocation, bool>? CardMoved { get; set; }
+
+    /// <summary>
+    /// 改变当前控制方，同时维护按阵营索引。位置本身由调用方随后通过
+    /// <see cref="Move"/> 更新，这样换区触发器仍能看到旧位置。
+    /// </summary>
+    public bool ChangeOwner(CardInstance card, Side newOwner)
+    {
+        if (newOwner is Side.NotAvailable || card.Owner == newOwner)
+        {
+            return false;
+        }
+
+        Side oldOwner = card.Owner;
+        _cardsBySide[(int)oldOwner].Remove(card);
+        card.Owner = newOwner;
+        _cardsBySide[(int)newOwner].Add(card);
+        NormalizeLocationNumbers(oldOwner, card.Location);
+        return true;
+    }
 
     /// <summary>卡对象被创建时的回调（对应蓝图 <c>CreateCardObject</c> 里的 <c>OnCreateCard</c>）。</summary>
     public Action<CardInstance>? CardCreated { get; set; }
