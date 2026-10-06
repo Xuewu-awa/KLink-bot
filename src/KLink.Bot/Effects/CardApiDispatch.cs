@@ -510,6 +510,7 @@ public sealed partial class CardApi
             ["DrawCardFromDeck"] = (c, r, a) => { DrawCards(SideArg(r, a, 0, c.Controller), IntArg(a, 1, 1)); return null; },
             ["SpawnCardInHandBySide"] = (c, r, a) => DoSpawnInHand(c, r, a),
             ["SpawnCardOnBattlefield"] = (c, r, a) => DoSpawnOnBattlefield(c, r, a),
+            ["SpawnMultipleCardsOnBattlefield"] = (c, r, a) => DoSpawnMultipleOnBattlefield(c, r, a),
             ["ChangeKredits"] = (c, r, a) => DoChangeKredits(c, r, a),
             // ⚠️ 实参是 `(卡, side)` —— side 在 **index 1**，不是 0。
             //    实测两种写法：`GainKreditSlot(self, side)`（47 次）
@@ -3866,6 +3867,61 @@ public sealed partial class CardApi
         }
 
         return card;
+    }
+
+    /// <summary>
+    /// `SpawnMultipleCardsOnBattlefield(side, Frontline, cardNames, spawnerID,
+    /// giveBlitz, out spawnedCardIDs, makeVeteran)`。
+    ///
+    /// 蓝图先要求卡名数组非空且 <c>spawnerID &gt; 0</c>，再按数组顺序逐张生成。
+    /// 半场在包含 HQ 的 5 格达到上限时停止；前线沿用蓝图的特殊路径，不在此处
+    /// 额外截断。生成卡继承生成者的金卡标记，出参是实际生成卡的 ID 数组。
+    /// </summary>
+    private object? DoSpawnMultipleOnBattlefield(EffectContext c, object? r, object?[] a)
+    {
+        var side = SideArg(r, a, 0, c.Controller);
+        var names = EvalList(r, a)
+            .Cast<object?>()
+            .Select(AsString)
+            .Where(name => name is not null
+                && name.StartsWith("card_", StringComparison.Ordinal)
+                && c.State.Database.Find(name) is not null)
+            .Select(name => name!)
+            .ToList();
+        int spawnerId = IntArg(a, 3);
+        if (names.Count == 0 || spawnerId <= 0)
+        {
+            return new List<int>();
+        }
+
+        bool frontline = TruthyArg(a, 1);
+        bool giveBlitz = TruthyArg(a, 4);
+        bool makeVeteran = TruthyArg(a, 6);
+        bool forceGoldCard = c.State.ById(spawnerId)?.IsGold ?? false;
+        var spawnedIds = new List<int>(names.Count);
+
+        foreach (string name in names)
+        {
+            if (!frontline
+                && c.State.Cards(side, side.HqOf()).Count >= GameState.HalfBoardCapacity)
+            {
+                break;
+            }
+
+            var card = SpawnOnBattlefield(side, name,
+                frontline: frontline,
+                locationNumber: -1,
+                newGiveBlitz: giveBlitz,
+                forceGoldCard: forceGoldCard);
+            if (makeVeteran)
+            {
+                MakeVeteran(card);
+            }
+
+            spawnedIds.Add(card.CardId);
+        }
+
+        return spawnedIds;
     }
 
     // ==================== 2026-10-02：补缺口的辅助实现 ====================

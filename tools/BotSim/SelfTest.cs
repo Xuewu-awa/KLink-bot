@@ -72,6 +72,8 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
+            SpawnMultipleCardsOnBattlefield),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
             LoseKreditSlotRefillsFromCurrentSlot),
         new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
@@ -11413,6 +11415,63 @@ internal static class SelfTest
         {
             return $"cantMove 应拒绝且不改位置：handled={blockedHandled}, result={blocked ?? "null"}, "
                  + $"target={target.Location}/{target.LocationNumber}";
+        }
+
+        return null;
+    }
+
+    private static string? SpawnMultipleCardsOnBattlefield(CardDatabase db)
+    {
+        const string unitName = "card_unit_arado_ar_196";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var spawner = state.CreateWithId(unitName, Side.Left, 2,
+            CardLocation.HandLeft, 0, isGold: true);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = spawner, Controller = Side.Left,
+        };
+        var names = new List<string> { unitName, unitName, unitName, unitName, unitName };
+        var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", spawner,
+            new object?[] { (int)Side.Left, false, names, spawner.CardId, true, null, true },
+            ctx, out bool handled);
+
+        if (!handled || result is not List<int> ids)
+        {
+            return $"派发表缺少 SpawnMultipleCardsOnBattlefield 或出参类型错误：handled={handled}, result={result ?? "null"}";
+        }
+
+        // 左方 HQ 占半场 1 格，所以 5 张请求只能实际生成 4 张。
+        if (ids.Count != 4)
+        {
+            return $"半场满位前应生成 4 张，实际 {ids.Count} 张：{string.Join(",", ids)}";
+        }
+
+        var spawned = ids.Select(state.ById).ToList();
+        if (spawned.Any(card => card is null
+                || card.Location != CardLocation.BoardHqLeft
+                || !card.IsGold
+                || !card.Keywords.Contains(Keyword.Blitz)
+                || !card.Keywords.Contains(Keyword.Veteran)))
+        {
+            return "生成卡必须按顺序落在左方半场，并继承金卡、Blitz 和 Veteran 状态";
+        }
+
+        if (state.Cards(Side.Left, CardLocation.BoardHqLeft).Count != 5)
+        {
+            return $"半场应包含 HQ + 4 张生成卡，实际 {state.Cards(Side.Left, CardLocation.BoardHqLeft).Count} 张";
+        }
+
+        var noSpawner = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", spawner,
+            new object?[] { (int)Side.Left, false, names, 0, false, null, false },
+            ctx, out bool noSpawnerHandled);
+        if (!noSpawnerHandled || noSpawner is not List<int> empty || empty.Count != 0)
+        {
+            return "spawnerID<=0 时应返回空数组且不生成卡";
         }
 
         return null;
