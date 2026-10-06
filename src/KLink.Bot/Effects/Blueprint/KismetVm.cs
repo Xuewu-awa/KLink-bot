@@ -539,6 +539,7 @@ public sealed class KismetVm
         var outSet = new HashSet<int>(step.OutParams);
         var raw = new object?[step.Args.Count];
         SeedArrayTarget(fn, step.Args, frame);
+        SeedSetTarget(fn, step.Args, frame);
         for (int i = 0; i < step.Args.Count; i++)
         {
             raw[i] = outSet.Contains(i) ? null : Eval(step.Args[i], frame, ctx);
@@ -737,6 +738,13 @@ public sealed class KismetVm
         "Array_Remove", "Array_RemoveItem", "Array_Set",
     };
 
+    // Blueprint TSet nodes mutate a local set by reference.  The IR omits the
+    // element type, so locally-created sets use HashSet<object?>.
+    private static readonly HashSet<string> InPlaceSetOps = new(StringComparer.Ordinal)
+    {
+        "Set_Add", "Set_Clear", "Set_Remove", "Set_RemoveItems", "Set_ToArray",
+    };
+
     private static void SeedArrayTarget(string fn, IReadOnlyList<KismetExpr> argExprs, Frame frame)
     {
         if (!InPlaceArrayOps.Contains(fn) || argExprs.Count == 0)
@@ -748,6 +756,20 @@ public sealed class KismetVm
         if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
         {
             frame.Set(name, new List<CardInstance>());
+        }
+    }
+
+    private static void SeedSetTarget(string fn, IReadOnlyList<KismetExpr> argExprs, Frame frame)
+    {
+        if (!InPlaceSetOps.Contains(fn) || argExprs.Count == 0)
+        {
+            return;
+        }
+
+        KismetExpr first = argExprs[0];
+        if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
+        {
+            frame.Set(name, frame.EnsureBlueprintSet(name) ?? new HashSet<object?>());
         }
     }
 
@@ -788,6 +810,7 @@ public sealed class KismetVm
         {
             // 同上：**不摘** `args[0]` 的 `{self:true}` —— 它是第一个实参。
             SeedArrayTarget(c, expr.Args, frame);
+            SeedSetTarget(c, expr.Args, frame);
             var callArgs = expr.Args.Select(a => Eval(a, frame, ctx)).ToArray();
             object? recv = expr.Context is not null ? Eval(expr.Context, frame, ctx) : null;
             var r = _api.InvokeByName(c, recv, callArgs, ctx, out bool handled);
@@ -1053,7 +1076,7 @@ public sealed class KismetVm
             "friendlyAttacked" => "friendlyAttacked",
             "A6M2Effect" => "A6M2Effect",
 
-            _ => null,
+            _ => card.BlueprintSets.TryGetValue(member, out var set) ? set : null,
         };
     }
 
@@ -1296,6 +1319,22 @@ public sealed class KismetVm
             {
                 _locals[name] = value;
             }
+        }
+
+        public HashSet<object?>? EnsureBlueprintSet(string name)
+        {
+            if (_ctx.Self is not { } self || name != "pinned_units_with_override")
+            {
+                return null;
+            }
+
+            if (!self.BlueprintSets.TryGetValue(name, out var set))
+            {
+                set = new HashSet<object?>();
+                self.BlueprintSets[name] = set;
+            }
+
+            return set;
         }
 
         /// <summary>复制当前 Blueprint 帧，供卡内私有函数调用继承调用方局部槽。</summary>

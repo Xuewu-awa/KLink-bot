@@ -501,6 +501,13 @@ public sealed class CardInstance
     public Dictionary<string, string> CustomJson { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Blueprint TSet members that must survive separate event/function VM
+    /// frames.  Values remain object-typed because the generated IR omits the
+    /// native element type (the gameplay member currently stores card refs).
+    /// </summary>
+    public Dictionary<string, HashSet<object?>> BlueprintSets { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// buff 记录：(来源卡, 是否临时) → 该来源施加的修正。
     /// 用于 `RemoveTheBuff` / `checkAndUpdateBuffOnCard` / 回合结束清理。
     ///
@@ -725,6 +732,11 @@ public sealed class CardInstance
         {
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
+            BlueprintSets = BlueprintSets
+                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                .ToDictionary(kv => kv.Key,
+                    kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
+                        .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
         };
 }
 
@@ -833,6 +845,7 @@ public sealed record CardSnapshot(
 {
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
+    public Dictionary<string, int[]> BlueprintSets { get; init; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>

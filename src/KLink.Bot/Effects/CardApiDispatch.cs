@@ -869,6 +869,62 @@ public sealed partial class CardApi
                 return null;
             },
 
+            // ---------------- 集合（Blueprint TSet）----------------
+            // Set nodes receive the target by reference.  KismetVm seeds a
+            // missing local target with HashSet<object?>; values are compared
+            // using the same card-ID-aware rule as Array_Contains.
+            ["Set_Add"] = (c, r, a) =>
+            {
+                var set = EvalSet(r, a);
+                if (a.Length > 1 && !set.Any(v => SameArrayValue(v, a[1])))
+                {
+                    set.Add(a[1]);
+                }
+
+                return null;
+            },
+            ["Set_Clear"] = (c, r, a) => { EvalSet(r, a).Clear(); return null; },
+            ["Set_Contains"] = (c, r, a) =>
+            {
+                var set = EvalSet(r, a);
+                return a.Length > 1 && set.Any(v => SameArrayValue(v, a[1]));
+            },
+            ["Set_Length"] = (c, r, a) => EvalSet(r, a).Count,
+            ["Set_Remove"] = (c, r, a) =>
+            {
+                var set = EvalSet(r, a);
+                if (a.Length < 2)
+                {
+                    return false;
+                }
+
+                object? found = set.FirstOrDefault(v => SameArrayValue(v, a[1]));
+                if (found is null && !set.Any(v => v is null && a[1] is null))
+                {
+                    return false;
+                }
+
+                return set.Remove(found);
+            },
+            ["Set_RemoveItems"] = (c, r, a) =>
+            {
+                var set = EvalSet(r, a);
+                if (a.Length > 1 && a[1] is System.Collections.IEnumerable values and not string)
+                {
+                    foreach (object? value in values.Cast<object?>().ToArray())
+                    {
+                        object? found = set.FirstOrDefault(v => SameArrayValue(v, value));
+                        if (found is not null || set.Any(v => v is null && value is null))
+                        {
+                            set.Remove(found);
+                        }
+                    }
+                }
+
+                return null;
+            },
+            ["Set_ToArray"] = (c, r, a) => EvalSet(r, a).ToList(),
+
             // ---------------- 卡牌私有 JSON 的数组变体 ----------------
             ["JSON_GetIntArray"] = (c, r, a) => AsCard(r) is { } x ? JsonGetIntArray(x, StrArg(a, 1)) : new List<int>(),
             ["JSON_SetIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return null; },

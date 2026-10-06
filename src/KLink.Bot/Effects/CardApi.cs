@@ -3318,6 +3318,29 @@ public sealed partial class CardApi
         return new List<CardInstance>();
     }
 
+    /// <summary>
+    /// Resolve a Blueprint <c>TSet</c> target.  KismetVm stores local sets as
+    /// <see cref="HashSet{T}"/> with object elements because the generated IR
+    /// does not preserve the native element type.
+    /// </summary>
+    internal static HashSet<object?> EvalSet(object? receiver, object?[] args)
+    {
+        if (receiver is HashSet<object?> rs)
+        {
+            return rs;
+        }
+
+        foreach (object? value in args)
+        {
+            if (value is HashSet<object?> set)
+            {
+                return set;
+            }
+        }
+
+        return new HashSet<object?>();
+    }
+
     internal static List<int> AsIntList(object? v) => v switch
     {
         List<int> list => list,

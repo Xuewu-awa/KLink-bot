@@ -85,6 +85,8 @@ internal static class SelfTest
             ResetUnitOperations),
         new("GiveRandomCombatKeyword：双出参、已有关键字排除与 Smokescreen 特殊过滤",
             GiveRandomCombatKeyword),
+        new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
+            BlueprintSetPrimitives),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -12114,6 +12116,83 @@ internal static class SelfTest
             {
                 return "无可用战斗关键字时应返回 0/false 且不改变目标";
             }
+        }
+
+        return null;
+    }
+
+    private static string? BlueprintSetPrimitives(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 103,
+            CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+        var set = new HashSet<object?> { 1 };
+
+        engine.Api.InvokeByName("Set_Add", null, new object?[] { set, 2 }, ctx, out bool addHandled);
+        engine.Api.InvokeByName("Set_Add", null, new object?[] { set, 2 }, ctx, out bool duplicateHandled);
+        var contains = engine.Api.InvokeByName("Set_Contains", null,
+            new object?[] { set, 2 }, ctx, out bool containsHandled);
+        var length = engine.Api.InvokeByName("Set_Length", null,
+            new object?[] { set }, ctx, out bool lengthHandled);
+        var array = engine.Api.InvokeByName("Set_ToArray", null,
+            new object?[] { set, null }, ctx, out bool arrayHandled);
+
+        if (!addHandled || !duplicateHandled || !containsHandled || !lengthHandled || !arrayHandled
+            || contains is not true || length is not 2
+            || array is not List<object?> values || values.Count != 2
+            || !values.Contains(1) || !values.Contains(2))
+        {
+            return "Set_Add/Contains/Length/ToArray 的集合语义不正确";
+        }
+
+        var removed = engine.Api.InvokeByName("Set_Remove", null,
+            new object?[] { set, 1 }, ctx, out bool removeHandled);
+        if (!removeHandled || removed is not true || set.Count != 1 || set.Contains(1))
+        {
+            return "Set_Remove 应移除指定元素并返回 true";
+        }
+
+        var removeItems = new List<object?> { 2 };
+        engine.Api.InvokeByName("Set_RemoveItems", null,
+            new object?[] { set, removeItems }, ctx, out bool removeItemsHandled);
+        if (!removeItemsHandled || set.Count != 0)
+        {
+            return "Set_RemoveItems 应移除数组中的指定元素";
+        }
+
+        // `pinned_units_with_override` is a card member, not a transient local:
+        // its Add/Remove helpers run in separate VM frames across events.
+        var owner = state.CreateWithId("card_unit_14_panzergrenadier", Side.Left, 104,
+            CardLocation.BoardHqLeft, 2);
+        var target = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 105,
+            CardLocation.BoardHqLeft, 3);
+        var local = KismetLibrary.Default?.FindLocalProgram(owner.Name, "AddPinnedOverride");
+        if (local is null)
+        {
+            return "14th Panzergrenadier 的 AddPinnedOverride 局部函数未加载";
+        }
+
+        var localCtx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = owner,
+            Controller = Side.Left,
+            Target = target,
+        };
+        engine.Api.Vm.RunLocalProgram(local, localCtx,
+            new Dictionary<string, object?> { ["pinnedCard"] = target }, "unused");
+        if (!owner.BlueprintSets.TryGetValue("pinned_units_with_override", out var persistent)
+            || !persistent.Contains(target))
+        {
+            return "卡对象成员 TSet 未跨局部 VM 帧持久化";
+        }
+
+        engine.Api.InvokeByName("Set_Clear", null, new object?[] { set }, ctx, out bool clearHandled);
+        if (!clearHandled || set.Count != 0)
+        {
+            return "Set_Clear 未原地清空目标集合";
         }
 
         return null;
