@@ -2836,6 +2836,29 @@ public sealed partial class CardApi
         JsonSetIntArray(card, key, list);
     }
 
+    /// <summary>
+    /// `JSON_RemoveFromIntArray(card, variableName, value, out found)`。
+    /// 蓝图只删除整数数组中第一个等值元素；缺少字段或没有匹配值时保持 JSON 不变。
+    /// </summary>
+    public bool JsonRemoveFromIntArray(CardInstance card, string key, int value)
+    {
+        if (!card.CustomJson.ContainsKey(key))
+        {
+            return false;
+        }
+
+        var list = JsonGetIntArray(card, key);
+        int index = list.IndexOf(value);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        list.RemoveAt(index);
+        JsonSetIntArray(card, key, list);
+        return true;
+    }
+
     /// <summary>把 VM 传来的值当作卡牌数组。</summary>
     internal static List<CardInstance> EvalArray(object? receiver, object?[] args)
     {

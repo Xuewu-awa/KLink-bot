@@ -429,6 +429,8 @@ internal static class SelfTest
         // 有 **46 张卡**读 `CallFunc_JSON_Clear_found`。
         new("★ `JSON_Clear` 只删指定键、并回报键是否存在（旧实现清空整表且不写 found）",
             JsonClearRemovesOnlyNamedKey),
+        new("★ `JSON_RemoveFromIntArray` 只移除首个匹配值并正确回报 found",
+            JsonRemoveFromIntArray),
 
         // ---- ★★ 防回归守卫：派发表静态缺口（2026-10-02）----
         //
@@ -3972,6 +3974,49 @@ internal static class SelfTest
         if (engine.Api.JsonClear(card, "nope"))
         {
             return "**`JsonClear` 对**不存在**的键回报 true**（应 false）";
+        }
+
+        return null;
+    }
+
+    private static string? JsonRemoveFromIntArray(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var card = engine.Api.SpawnOnBattlefield(Side.Left, InfRange1, frontline: false);
+        engine.Api.JsonSetInt(card, "keep", 7);
+        engine.Api.JsonSetIntArray(card, "values", new[] { 4, 7, 4, 9 });
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = card, Controller = Side.Left,
+        };
+
+        object? removed = engine.Api.InvokeByName("JSON_RemoveFromIntArray", card,
+            new object?[] { card, "values", 4, null }, ctx, out bool handled);
+        if (!handled || removed is not true
+            || !engine.Api.JsonGetIntArray(card, "values").SequenceEqual(new[] { 7, 4, 9 }))
+        {
+            return $"应只移除第一个匹配值并返回 found=true（handled={handled}, result={removed ?? "null"}, "
+                 + $"values={string.Join(",", engine.Api.JsonGetIntArray(card, "values"))}）";
+        }
+
+        if (engine.Api.JsonGetInt(card, "keep") != 7)
+        {
+            return "移除数组元素不应影响同卡其他 JSON 字段";
+        }
+
+        object? absent = engine.Api.InvokeByName("JSON_RemoveFromIntArray", card,
+            new object?[] { card, "values", 5, null }, ctx, out bool absentHandled);
+        if (!absentHandled || absent is not false
+            || !engine.Api.JsonGetIntArray(card, "values").SequenceEqual(new[] { 7, 4, 9 }))
+        {
+            return "移除不存在的值应返回 found=false 且保持数组不变";
+        }
+
+        object? missing = engine.Api.InvokeByName("JSON_RemoveFromIntArray", card,
+            new object?[] { card, "missing", 1, null }, ctx, out bool missingHandled);
+        if (!missingHandled || missing is not false || card.CustomJson.ContainsKey("missing"))
+        {
+            return "缺少 JSON 数组字段时应返回 found=false，且不能新建字段";
         }
 
         return null;

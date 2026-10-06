@@ -829,6 +829,13 @@ public sealed partial class CardApi
             ["JSON_GetIntArray"] = (c, r, a) => AsCard(r) is { } x ? JsonGetIntArray(x, StrArg(a, 1)) : new List<int>(),
             ["JSON_SetIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return null; },
             ["JSON_AddToIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonAddToIntArray(x, StrArg(a, 1), IntArg(a, 2)); return null; },
+            // `JSON_RemoveFromIntArray(card, key, value, out found)`：调用点使用
+            // 隐式 self，返回 bool 供唯一的 found 出参写回。
+            ["JSON_RemoveFromIntArray"] = (c, r, a) =>
+            {
+                var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                return card is not null && JsonRemoveFromIntArray(card, StrArg(a, 1), IntArg(a, 2));
+            },
 
             // ---------------- 纯表现层调用：无头环境下直接吃掉 ----------------
             // 这些是 UI / 特效 / 音效，不改变规则状态。显式列出来是为了让
