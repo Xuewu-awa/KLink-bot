@@ -20,6 +20,14 @@ namespace KLink.Bot.Effects;
 /// </summary>
 public sealed partial class CardApi
 {
+    private static readonly HashSet<string> EndOfTurnSpawnSkipNames = new(StringComparer.Ordinal)
+    {
+        "card_unit_mosquito_fighter",
+        "card_unit_mosquito_fighter_bal",
+        "card_unit_mosquito_bomber",
+        "card_unit_mosquito_bomber_bal",
+    };
+
     private readonly HashSet<int> _playedCardBroadcastDone = new();
     private int _playedCardBroadcastDepth;
     private bool _resolvingTriggerQueue;
@@ -68,6 +76,124 @@ public sealed partial class CardApi
         {
             _resolvingTriggerQueue = false;
         }
+    }
+
+    /// <summary>
+    /// 执行蓝图 <c>ExecuteEndOfTurnEvents</c> / <c>ExecuteEndOfTurnQueue</c>。
+    ///
+    /// 每个批次先执行普通卡，再执行 <c>endofturn1</c>，最后执行
+    /// <c>endofturn2</c>；批次结束后重新抓取当前订阅者，把本批未处理的新卡
+    /// 递归加入。临时 buff 只在所有批次完成（或递归保护触发）后清理。
+    /// </summary>
+    public void ExecuteEndOfTurnEvents()
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null)
+        {
+            RemoveTemporaryBuffs();
+            return;
+        }
+
+        var resolved = new HashSet<CardInstance>();
+        var initial = EndOfTurnRecipients(library);
+        ExecuteEndOfTurnQueue(library, resolved, initial, recursionLoop: 0);
+    }
+
+    private void ExecuteEndOfTurnQueue(Blueprint.KismetLibrary library,
+                                        HashSet<CardInstance> resolved,
+                                        IReadOnlyList<CardInstance> cardsToResolve,
+                                        int recursionLoop)
+    {
+        var endOfTurn1 = new List<CardInstance>();
+        var endOfTurn2 = new List<CardInstance>();
+
+        foreach (var card in cardsToResolve)
+        {
+            if (CustomNameHasAttribute(card, "customName1", "endofturn2"))
+            {
+                endOfTurn2.Add(card);
+            }
+            else if (CustomNameHasAttribute(card, "customName1", "endofturn1"))
+            {
+                endOfTurn1.Add(card);
+            }
+            else
+            {
+                RunEndOfTurnCard(library, card);
+            }
+        }
+
+        foreach (var card in endOfTurn1)
+        {
+            RunEndOfTurnCard(library, card);
+        }
+
+        foreach (var card in endOfTurn2)
+        {
+            RunEndOfTurnCard(library, card);
+        }
+
+        foreach (var card in cardsToResolve)
+        {
+            resolved.Add(card);
+        }
+
+        var next = EndOfTurnRecipients(library)
+            .Where(card => !resolved.Contains(card)
+                           && !EndOfTurnSpawnSkipNames.Contains(card.Name))
+            .ToList();
+
+        if (next.Count == 0 || recursionLoop > 5)
+        {
+            RemoveTemporaryBuffs();
+            return;
+        }
+
+        ExecuteEndOfTurnQueue(library, resolved, next, recursionLoop + 1);
+    }
+
+    private List<CardInstance> EndOfTurnRecipients(Blueprint.KismetLibrary library)
+    {
+        var result = new List<CardInstance>();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            foreach (var card in State.Board(side))
+            {
+                if (card.Location != CardLocation.NotAvailable
+                    && !SuppressedSkipsTrigger(card, "OnEndOfTurn")
+                    && library.FindProgram(card.Name, "OnEndOfTurn") is not null)
+                {
+                    result.Add(card);
+                }
+            }
+
+            foreach (var card in State.Discard(side))
+            {
+                if (card.Location != CardLocation.NotAvailable
+                    && !SuppressedSkipsTrigger(card, "OnEndOfTurn")
+                    && library.FindProgram(card.Name, "OnEndOfTurn") is not null)
+                {
+                    result.Add(card);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void RunEndOfTurnCard(Blueprint.KismetLibrary library, CardInstance card)
+    {
+        if (card.Location == CardLocation.NotAvailable
+            || SuppressedSkipsTrigger(card, "OnEndOfTurn")
+            || library.FindProgram(card.Name, "OnEndOfTurn") is null)
+        {
+            return;
+        }
+
+        TriggerTrace?.Add($"OnEndOfTurn → {card.Name}#{card.CardId}"
+                          + $"（eventCard=null#，turn={State.Turn}）");
+        RunTriggerProgram(library, card, card.Name, "OnEndOfTurn", trigger: null,
+                          eventArgs: new object?[] { State.Turn });
     }
 
     // 蓝图 FetchAllCardsWithEventTrigger 的逐卡抑制例外表。
@@ -1994,7 +2120,8 @@ public sealed partial class CardApi
     /// 内核用 <see cref="CardBuff.Temporary"/> 直接标在 buff 上 —— 两者等价，
     /// 因为清理的粒度就是「(目标卡, 来源) 这一个 buff」。
     ///
-    /// 调用点：`MatchEngine.EndTurn` 里 `OnEndOfTurn` 触发**之后**、回合数递增之前。
+    /// 调用点：`ExecuteEndOfTurnEvents` 完成整个延迟队列之后、
+    /// `MatchEngine.EndTurn` 的回合数递增之前。
     /// 顺序有依据 —— 蓝图 `ExecuteEndOfTurnEvents` 先广播 `OnEndOfTurn`，
     /// 卡自己的收尾逻辑跑完才轮到统一清理。
     /// </summary>

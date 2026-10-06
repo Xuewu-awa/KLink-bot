@@ -649,15 +649,9 @@ public sealed class MatchEngine
 
     public void EndTurn(Side side)
     {
-        Api.FireTrigger("OnEndOfTurn", null, side, "OnOtherEndOfTurn",
-            eventArgs: new object?[] { State.Turn });
-
-        // 「到回合结束为止」的修正在这里撤销 —— 对应
-        // `BP_CardFunctions.RemoveBuffsEndOfTurn`（71 条语句），由
-        // `ExecuteEndOfTurnEvents` 在广播完 `OnEndOfTurn` 之后调用。
-        // 顺序要紧：卡自己的收尾逻辑（例如 `OnEndOfTurn` 里再读一次当前攻击力）
-        // 必须看到**还没撤销**的值。
-        Api.RemoveTemporaryBuffs();
+        // Blueprint ExecuteEndOfTurnEvents owns the complete queue, including
+        // endofturn1/endofturn2 ordering and recursive subscribers.
+        Api.ExecuteEndOfTurnEvents();
 
         // ★★ 抑制（Suppress）**永不解除** ⇒ 这里**没有**任何清理（2026-10-02 第三轮删除）。
         //

@@ -56,6 +56,7 @@ internal static class SelfTest
         new("PAMS：选中一张后被生成成新卡并塞进牌库（走完 CS 答复的整条链）", PamsDevelopEndToEnd),
         new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
         new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
+        new("回合结束队列：普通→endofturn1→endofturn2、抑制门、临时 buff 清理", EndOfTurnQueueSemantics),
         // ---- GetDeckByside 的出参形状（2026-10-02，对局 542091 t7 的根因）----
         // 蓝图出参是 `TArray<int> deckCardIDs`（卡 **ID**），内核曾实现成卡**实例**。
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
@@ -1869,6 +1870,63 @@ internal static class SelfTest
         if (state.Hand(Side.Left).Any(x => ReferenceEquals(x, developed)))
         {
             return $"{chosen} 还在手牌里 —— pams 的 OnHandTargetSelected 没跑完";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `ExecuteEndOfTurnEvents` 的批次顺序、抑制门、事件回合号和临时 buff
+    /// 都必须在同一次队列结算中保持蓝图语义。
+    /// </summary>
+    private static string? EndOfTurnQueueSemantics(CardDatabase db)
+    {
+        const string cardName = "card_event_national_fire_service";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里没有 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var ordinary = state.CreateWithId(cardName, Side.Left, 101, CardLocation.BoardHqLeft, 1);
+        var end1 = state.CreateWithId(cardName, Side.Left, 102, CardLocation.BoardHqLeft, 2);
+        var end2 = state.CreateWithId(cardName, Side.Left, 103, CardLocation.BoardHqLeft, 3);
+        var suppressed = state.CreateWithId(cardName, Side.Left, 104, CardLocation.BoardHqLeft, 4);
+        end1.CustomJson["customName1"] = "endofturn1";
+        end2.CustomJson["customName1"] = "endofturn2";
+        suppressed.CustomJson["customName1"] = "endofturn1";
+        suppressed.Keywords.Add(Keyword.Suppressed);
+
+        int baseAttack = ordinary.Attack;
+        engine.Api.AddAttackUntilEndOfTurn(ordinary, ordinary, 3);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        engine.Api.ExecuteEndOfTurnEvents();
+
+        int[] observed = trace
+            .Where(x => x.StartsWith("OnEndOfTurn → ", StringComparison.Ordinal))
+            .Select(x =>
+            {
+                int marker = x.IndexOf('#');
+                int end = x.IndexOf('（', marker);
+                return marker >= 0 && end > marker
+                    && int.TryParse(x[(marker + 1)..end], out int id) ? id : -1;
+            })
+            .ToArray();
+        if (!observed.SequenceEqual(new[] { ordinary.CardId, end1.CardId, end2.CardId }))
+        {
+            return $"回合结束队列顺序错误：{string.Join(",", observed)}";
+        }
+
+        if (trace.Any(x => x.Contains($"#{suppressed.CardId}（", StringComparison.Ordinal))
+            || !trace.All(x => x.Contains("turn=1", StringComparison.Ordinal)))
+        {
+            return "抑制门未生效，或 OnEndOfTurn 没有使用递增前的回合号";
+        }
+
+        if (ordinary.Attack != baseAttack)
+        {
+            return $"所有回合结束批次完成后才清理临时 buff：{ordinary.Attack} != {baseAttack}";
         }
 
         return null;
