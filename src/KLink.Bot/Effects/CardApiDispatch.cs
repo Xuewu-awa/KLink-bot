@@ -566,6 +566,7 @@ public sealed partial class CardApi
             ["SpawnCardInHandBySide"] = (c, r, a) => DoSpawnInHand(c, r, a),
             ["SpawnCardOnBattlefield"] = (c, r, a) => DoSpawnOnBattlefield(c, r, a),
             ["SpawnMultipleCardsOnBattlefield"] = (c, r, a) => DoSpawnMultipleOnBattlefield(c, r, a),
+            ["SpawnNextToCard"] = (c, r, a) => DoSpawnNextToCard(c, a),
             ["ChangeKredits"] = (c, r, a) => DoChangeKredits(c, r, a),
             // ⚠️ 实参是 `(卡, side)` —— side 在 **index 1**，不是 0。
             //    实测两种写法：`GainKreditSlot(self, side)`（47 次）
@@ -4023,6 +4024,76 @@ public sealed partial class CardApi
         }
 
         return spawnedIds;
+    }
+
+    /// <summary>
+    /// `SpawnNextToCard(card_name, spawnerId, side, out spawnedCardID,
+    /// copySpawnerAttack, copySpawnerDefense, salvageFaction, makeVeteran)`.
+    ///
+    /// 蓝图实际把生成者的 side/location/locationNumber+1、金卡标记和 spawnerID
+    /// 传给 `SpawnCardToBoard`；`copySpawnerAttack` 为真时再把生成卡的攻击力调到
+    /// 与生成者一致。`copySpawnerDefense` 在当前函数体中没有被读取，故保持无效。
+    /// </summary>
+    private object? DoSpawnNextToCard(EffectContext c, object?[] a)
+    {
+        string? cardName = a.ElementAtOrDefault(0) as string;
+        int spawnerId = IntArg(a, 1);
+        var spawner = c.State.ById(spawnerId);
+        if (spawner is null
+            || string.IsNullOrWhiteSpace(cardName)
+            || c.State.Database.Find(cardName) is null)
+        {
+            return 0;
+        }
+
+        bool frontline = spawner.Location == CardLocation.BoardFrontline;
+        if (!frontline && spawner.Location != spawner.Owner.HqOf())
+        {
+            return 0;
+        }
+
+        CardLocation location = spawner.Location;
+        int insertNumber = spawner.LocationNumber + 1;
+        var existing = c.State.Cards(spawner.Owner, location)
+            .Where(card => !card.IsHq)
+            .ToList();
+        var originalNumbers = existing.ToDictionary(card => card, card => card.LocationNumber);
+
+        var spawned = SpawnOnBattlefield(spawner.Owner, cardName,
+            frontline,
+            insertNumber,
+            newGiveBlitz: false,
+            forceGoldCard: spawner.IsGold);
+
+        // `GameState.Move` normalizes a newly appended card by insertion order.
+        // The Blueprint's `SpawnCardToBoard` instead inserts at the requested slot
+        // and shifts cards already occupying that slot, so restore that numbering
+        // after the shared spawn path has emitted its normal events.
+        foreach (var card in existing)
+        {
+            int originalNumber = originalNumbers[card];
+            card.LocationNumber = originalNumber >= insertNumber
+                ? originalNumber + 1
+                : originalNumber;
+        }
+
+        spawned.LocationNumber = insertNumber;
+
+        if (TruthyArg(a, 4))
+        {
+            int delta = spawner.Attack - spawned.Attack;
+            if (delta != 0)
+            {
+                ChangeAttack(spawned, delta, spawned);
+            }
+        }
+
+        if (TruthyArg(a, 7))
+        {
+            MakeVeteran(spawned);
+        }
+
+        return spawned.CardId;
     }
 
     // ==================== 2026-10-02：补缺口的辅助实现 ====================

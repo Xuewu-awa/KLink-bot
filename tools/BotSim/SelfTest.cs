@@ -79,6 +79,8 @@ internal static class SelfTest
             ForceCardChangeLocation),
         new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
             SpawnMultipleCardsOnBattlefield),
+        new("SpawnNextToCard：沿生成者战区插入到相邻位置，并支持金卡、老兵和攻击力复制",
+            SpawnNextToCard),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -11892,6 +11894,55 @@ internal static class SelfTest
         if (!noSpawnerHandled || noSpawner is not List<int> empty || empty.Count != 0)
         {
             return "spawnerID<=0 时应返回空数组且不生成卡";
+        }
+
+        return null;
+    }
+
+    private static string? SpawnNextToCard(CardDatabase db)
+    {
+        const string spawnerName = "card_unit_arado_ar_196";
+        const string spawnedName = "card_unit_brewster_f2a";
+        if (db.Find(spawnerName) is null || db.Find(spawnedName) is null)
+        {
+            return $"卡库里缺 {spawnerName} 或 {spawnedName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var spawner = state.CreateWithId(spawnerName, Side.Left, 100,
+            CardLocation.BoardFrontline, 2, isGold: true);
+        spawner.Attack = 11;
+        var existing = state.CreateWithId(spawnerName, Side.Left, 101,
+            CardLocation.BoardFrontline, 3);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = spawner, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("SpawnNextToCard", spawner,
+            new object?[] { spawnedName, spawner.CardId, (int)Side.Left, null, true, false, 0, true },
+            ctx, out bool handled);
+        if (!handled || result is not int spawnedId || spawnedId <= 0)
+        {
+            return $"SpawnNextToCard 未进入派发表或未返回 spawnedCardID：handled={handled}, result={result ?? "null"}";
+        }
+
+        var spawned = state.ById(spawnedId);
+        if (spawned is null
+            || spawned.Location != CardLocation.BoardFrontline
+            || spawned.LocationNumber != 3
+            || !spawned.IsGold
+            || !spawned.Keywords.Contains(Keyword.Veteran)
+            || spawned.Attack != spawner.Attack)
+        {
+            return $"生成卡应在前线位置 3、继承金卡/老兵并复制攻击力，实际="
+                 + $"{spawned?.Location}/{spawned?.LocationNumber}, gold={spawned?.IsGold}, "
+                 + $"veteran={spawned?.Keywords.Contains(Keyword.Veteran)}, attack={spawned?.Attack}";
+        }
+
+        if (existing.LocationNumber != 4)
+        {
+            return $"插入相邻卡后原有位置应顺延到 4，实际 {existing.LocationNumber}";
         }
 
         return null;
