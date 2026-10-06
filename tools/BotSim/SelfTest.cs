@@ -81,6 +81,8 @@ internal static class SelfTest
             SpawnMultipleCardsOnBattlefield),
         new("SpawnNextToCard：沿生成者战区插入到相邻位置，并支持金卡、老兵和攻击力复制",
             SpawnNextToCard),
+        new("ResetUnitOperations：只恢复棋盘单位的移动/攻击额度，Fury 恢复两次攻击",
+            ResetUnitOperations),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -11943,6 +11945,86 @@ internal static class SelfTest
         if (existing.LocationNumber != 4)
         {
             return $"插入相邻卡后原有位置应顺延到 4，实际 {existing.LocationNumber}";
+        }
+
+        return null;
+    }
+
+    private static string? ResetUnitOperations(CardDatabase db)
+    {
+        const string furyName = "card_unit_111th_indian_brigade";
+        const string plainName = "card_unit_arado_ar_196";
+        const string orderName = "card_event_rain2_deluge";
+        if (db.Find(furyName) is null || db.Find(plainName) is null || db.Find(orderName) is null)
+        {
+            return $"卡库里缺 {furyName}、{plainName} 或 {orderName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var fury = state.CreateWithId(furyName, Side.Left, 100,
+            CardLocation.BoardHqLeft, 1);
+        fury.EnteredPlayOnTurn = -1;
+        fury.HasMovedThisTurn = true;
+        fury.HasAttackedThisTurn = true;
+        fury.AttacksThisTurn = 2;
+        fury.OperationsUsedThisTurn = 7;
+
+        var plain = state.CreateWithId(plainName, Side.Left, 101,
+            CardLocation.BoardHqLeft, 2);
+        plain.EnteredPlayOnTurn = -1;
+        plain.HasMovedThisTurn = true;
+        plain.HasAttackedThisTurn = true;
+        plain.AttacksThisTurn = 1;
+
+        var handUnit = state.CreateWithId(plainName, Side.Left, 102,
+            CardLocation.HandLeft, 0);
+        handUnit.HasMovedThisTurn = true;
+        handUnit.HasAttackedThisTurn = true;
+        handUnit.AttacksThisTurn = 1;
+
+        var order = state.CreateWithId(orderName, Side.Left, 103,
+            CardLocation.BoardHqLeft, 3);
+        order.HasMovedThisTurn = true;
+        order.HasAttackedThisTurn = true;
+        order.AttacksThisTurn = 1;
+
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = fury, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("ResetUnitOperations", fury,
+            new object?[] { fury.CardId, fury.CardId, null }, ctx, out bool handled);
+        if (!handled || result is not null)
+        {
+            return $"ResetUnitOperations 未正确进入派发表：handled={handled}, result={result ?? "null"}";
+        }
+
+        if (fury.HasMovedThisTurn || fury.HasAttackedThisTurn || fury.AttacksThisTurn != 0
+            || fury.OperationsUsedThisTurn != 7 || !fury.HasAttackLeft)
+        {
+            return $"Fury 单位应恢复移动/攻击额度但保留操作计数：move={fury.HasMovedThisTurn}, "
+                 + $"attack={fury.HasAttackedThisTurn}, attacks={fury.AttacksThisTurn}, "
+                 + $"ops={fury.OperationsUsedThisTurn}, left={fury.HasAttackLeft}";
+        }
+
+        engine.Api.InvokeByName("ResetUnitOperations", plain,
+            new object?[] { plain.CardId, fury.CardId, null }, ctx, out bool plainHandled);
+        if (!plainHandled || plain.HasMovedThisTurn || plain.HasAttackedThisTurn
+            || plain.AttacksThisTurn != 0 || !plain.HasAttackLeft)
+        {
+            return "普通棋盘单位应恢复为一次可攻击且可移动";
+        }
+
+        engine.Api.InvokeByName("ResetUnitOperations", handUnit,
+            new object?[] { handUnit.CardId, fury.CardId, null }, ctx, out bool handHandled);
+        engine.Api.InvokeByName("ResetUnitOperations", order,
+            new object?[] { order.CardId, fury.CardId, null }, ctx, out bool orderHandled);
+        if (!handHandled || !orderHandled
+            || !handUnit.HasMovedThisTurn || !handUnit.HasAttackedThisTurn || handUnit.AttacksThisTurn != 1
+            || !order.HasMovedThisTurn || !order.HasAttackedThisTurn || order.AttacksThisTurn != 1)
+        {
+            return "非棋盘单位或非单位目标不应被 ResetUnitOperations 改写";
         }
 
         return null;

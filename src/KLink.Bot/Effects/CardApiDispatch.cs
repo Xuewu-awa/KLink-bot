@@ -567,6 +567,7 @@ public sealed partial class CardApi
             ["SpawnCardOnBattlefield"] = (c, r, a) => DoSpawnOnBattlefield(c, r, a),
             ["SpawnMultipleCardsOnBattlefield"] = (c, r, a) => DoSpawnMultipleOnBattlefield(c, r, a),
             ["SpawnNextToCard"] = (c, r, a) => DoSpawnNextToCard(c, a),
+            ["ResetUnitOperations"] = (c, r, a) => DoResetUnitOperations(c, a),
             ["ChangeKredits"] = (c, r, a) => DoChangeKredits(c, r, a),
             // ⚠️ 实参是 `(卡, side)` —— side 在 **index 1**，不是 0。
             //    实测两种写法：`GainKreditSlot(self, side)`（47 次）
@@ -4094,6 +4095,28 @@ public sealed partial class CardApi
         }
 
         return spawned.CardId;
+    }
+
+    /// <summary>
+    /// `ResetUnitOperations(cardID, giverID, out qqq)`.
+    ///
+    /// 蓝图先要求目标是棋盘上的单位，然后把 movementLeft 设为 1，
+    /// 把 attackLeft 设为 Fury ? 2 : 1。内核用本回合移动/攻击状态和
+    /// 攻击次数表示这两个额度；`NotifyResetUnitOperations` 只是动作流程
+    /// 下的客户端通知，本无头内核没有 notifier，故不产生表现层状态。
+    /// </summary>
+    private object? DoResetUnitOperations(EffectContext c, object?[] a)
+    {
+        var card = AsCardOrId(c, a.ElementAtOrDefault(0));
+        if (card is null || !IsLocatedOnBoard(card) || !IsUnit(card))
+        {
+            return null;
+        }
+
+        card.HasMovedThisTurn = false;
+        card.HasAttackedThisTurn = false;
+        card.AttacksThisTurn = 0;
+        return null;
     }
 
     // ==================== 2026-10-02：补缺口的辅助实现 ====================

@@ -163,10 +163,10 @@ internal static class DispatchGapBaseline
     /// `TakeControlOfEnemyUnit` 与 `ReleaseControlOfEnemyUnit`，接通控制权转移链。
     /// 2026-10-07：491 → **490**（实际重跑：2173 调用点）。补上
     /// `SpawnNextToCard`，复用带相邻槽位插入、金卡继承和老兵/攻击复制的生成链。
-    public const int BaselineCount = 490;
+    public const int BaselineCount = 489;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "F15AFC1535857152";
+    public const string BaselineFingerprint = "02B1B399147422F7";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)
