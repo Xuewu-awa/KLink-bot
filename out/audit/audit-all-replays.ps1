@@ -43,7 +43,7 @@ try {
         $mid = ($f.Name -replace '^replay-', '') -replace '\.actions\.json$', ''
 
         $identityArg = if ($NoIdentityFix) { '--no-identity-fix' } else { '--identity-fix' }
-        $duplicateArg = if ($NoDuplicateStartKredit) { @() } else { @('--dup-start-kredit') }
+        $duplicateArg = if ($NoDuplicateStartKredit) { @('--no-dup-start-kredit') } else { @('--dup-start-kredit') }
         $out = & dotnet run --project $Proj -c Release --no-build -- --audit-replay $base $identityArg $duplicateArg 2>&1
         $text = $out -join "`n"
 
@@ -51,7 +51,11 @@ try {
         $applied = $null; $total = $null
         if ($text -match '应用\s+(\d+)/(\d+)\s+条') { $applied = [int]$Matches[1]; $total = [int]$Matches[2] }
 
-        $leftFail  = ([regex]::Matches($text, '（left）：')).Count
+        # ⑤b 的机器可读计数已排除「单位已在弃牌堆的过期 ML/AC」。
+        $leftFail = 0
+        if ($text -match '⑤b 可归因人类失败：(\d+) 条') { $leftFail = [int]$Matches[1] }
+        $staleFail = 0
+        if ($text -match '⑤b 过期弃牌动作：(\d+) 条') { $staleFail = [int]$Matches[1] }
         $rightFail = ([regex]::Matches($text, '（right）：')).Count
 
         # 撞到但没实现的原语种类数
@@ -67,6 +71,7 @@ try {
             应用      = if ($applied -ne $null) { "$applied/$total" } else { '?' }
             应用率    = if ($applied -ne $null -and $total -gt 0) { '{0,5:N1}%' -f (100.0 * $applied / $total) } else { '?' }
             '人类失败' = $leftFail
+            '过期弃牌' = $staleFail
             'bot失败'  = $rightFail
             死亡仍动  = $deadMoves
             未实现种  = $unimpl
@@ -79,9 +84,9 @@ try {
     $sumT = ($rows | Where-Object { $_.应用 -ne '?' } | ForEach-Object { [int]($_.应用 -split '/')[1] } | Measure-Object -Sum).Sum
     $sumL = ($rows | Measure-Object '人类失败' -Sum).Sum
     Write-Host ""
-    Write-Host ("合计：应用 {0}/{1}（{2:N1}%）；**人类动作失败 {3} 条**" -f `
+    Write-Host ("合计：应用 {0}/{1}（{2:N1}%）；**可归因人类动作失败 {3} 条**" -f `
         $sumA, $sumT, (100.0 * $sumA / [Math]::Max(1, $sumT)), $sumL) -ForegroundColor Cyan
-    Write-Host "⚠️ 只有「人类失败」是保真度信号 —— bot 的动作是旧内核生成的，被拒属正常。" -ForegroundColor DarkGray
+    Write-Host "⚠️ 只有「可归因人类失败」是保真度信号；过期弃牌动作已单列 —— bot 的动作是旧内核生成的，被拒属正常。" -ForegroundColor DarkGray
 }
 finally {
     Pop-Location

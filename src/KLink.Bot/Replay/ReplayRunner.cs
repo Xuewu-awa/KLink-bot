@@ -738,20 +738,14 @@ public sealed class ReplayRunner
                 {
                     // 归因实验（默认关）：见 `KreditSlotOnDuplicateStart` 的长注释 ——
                     // 据"客户端那一步确实付得起"这条硬证据，补一次槽位自然增长。
-                    int previousSlots = state.MaxKredits(side);
-                    int previousKredits = state.Kredits(side);
-                    int slots = Math.Max(state.KreditNaturalSlots(side), previousSlots);
+                    int slots = state.MaxKredits(side);
                     if (slots < MatchEngine.NaturalKreditCap)
                     {
                         slots++;
                     }
 
                     state.SetMaxKredits(side, Math.Min(MatchEngine.MaxKreditCap, slots));
-                    state.SetKreditNaturalSlots(side, slots);
-                    int refilled = previousKredits > previousSlots
-                        ? previousKredits + 1
-                        : state.MaxKredits(side);
-                    state.SetKredits(side, refilled);
+                    state.SetKredits(side, state.MaxKredits(side));
                 }
 
                 lastStartSide = side;

@@ -4,12 +4,13 @@
 # 而修 bug 时真正可靠的判据有**四条**，其中前两条比"人类失败数"稳得多：
 #   1. 首个漂开点（⑤b）是否后移/消失     ← 最稳
 #   2. 未实现原语（⑥）是否减少
-#   3. HQ 对不上（④ 的【人类】那一栏）是否减少
-#   4. 人类失败总数                       ← 只在无随机效果参与时可靠
+#   3. HQ 对不上（④ 的【人类】那一栏）是否减少；需结合 ④a 分类
+#   4. 可归因人类失败总数                 ← 只在无随机效果参与时可靠
 # 这个脚本把四条一起打出来，省得每次人工从长文本里抠。
 #
 # ⚠️ ④ 的「全部」那一栏会因 bot 侧旧动作引用旧号段而变差，那是**预期副作用**，
-#    所以这里只取【人类 left】那一栏。
+#    所以这里只取【人类 left】那一栏。④a 另分出同回合收敛的采样假象，
+#    以及持续到 EndOfTurn 的差异；后者仍可能由 bot 侧旧动作或身份差异污染。
 [CmdletBinding()]
 param(
     [string]$Dir = 'out\_server-replays',
@@ -46,20 +47,29 @@ try {
         $unapplied = 0
         if ($text -match '=== ⑤ 未应用的动作：(\d+) 条 ===') { $unapplied = [int]$Matches[1] }
 
-        # ⑤ 人类失败（= 保真度信号）
+        # ⑤b 可归因人类失败（已排除过期弃牌 ML/AC）
         $humanFail = 0
-        if ($text -match '=== ⑤ 未应用的动作：\d+ 条 ===') {
-            $sec5 = $text.Substring($Matches[0].Length)
-            $humanFail = ([regex]::Matches($sec5, '（left）：')).Count
-        }
+        if ($text -match '⑤b 可归因人类失败：(\d+) 条') { $humanFail = [int]$Matches[1] }
 
         # ④ HQ 对不上 —— 只取【人类 left】那一栏
         $hqHuman = -1
         if ($text -match '其中人类 left (\d+) 条') { $hqHuman = [int]$Matches[1] }
 
+        # ④a HQ 差异分类：同回合 EndOfTurn 收敛 = 采样时序假象；其余为持续差异。
+        $hqTransient = 0
+        $hqPersistent = 0
+        if ($text -match '④a 人类 HQ 差异分类：(\d+) 条') {
+            if ($text -match '同回合 EndOfTurn 重新对上（采样假象）：(\d+) 条') {
+                $hqTransient = [int]$Matches[1]
+            }
+            if ($text -match '到同回合 EndOfTurn 仍未对上：(\d+) 条') {
+                $hqPersistent = [int]$Matches[1]
+            }
+        }
+
         # ⑤b 首个人类失败点
         $firstHuman = '—'
-        if ($text -match '✅ \*\*没有人类动作失败\*\*') { $firstHuman = '无（完全对齐）' }
+        if ($text -match '✅ \*\*没有可归因的人类动作失败\*\*') { $firstHuman = '无（完全对齐）' }
         elseif ($text -match '=== ⑤b [^\r\n]*===\r?\n\s*#(\d+) t(\d+) (\S+)：([^\r\n]*)') {
             $firstHuman = "#$($Matches[1]) t$($Matches[2]) $($Matches[3])"
         }
@@ -75,8 +85,10 @@ try {
         $rows += [PSCustomObject]@{
             回放        = $mid
             应用        = $applied
-            人类失败    = $humanFail
+            '可归因人类失败' = $humanFail
             '④HQ差(人)' = $hqHuman
+            '④采样假象' = $hqTransient
+            '④持续差异' = $hqPersistent
             '⑤b首漂开'  = $firstHuman
             '⑥未实现种' = $unimpl
             RNG         = $rng
@@ -88,12 +100,12 @@ try {
 
     $sumA = ($rows | Where-Object { $_.应用 -ne '?' } | ForEach-Object { [int]($_.应用 -split '/')[0] } | Measure-Object -Sum).Sum
     $sumT = ($rows | Where-Object { $_.应用 -ne '?' } | ForEach-Object { [int]($_.应用 -split '/')[1] } | Measure-Object -Sum).Sum
-    $sumL = ($rows | Measure-Object '人类失败' -Sum).Sum
+    $sumL = ($rows | Measure-Object '可归因人类失败' -Sum).Sum
     $sumH = ($rows | Where-Object { $_.'④HQ差(人)' -ge 0 } | Measure-Object '④HQ差(人)' -Sum).Sum
     Write-Host ""
-    Write-Host ("合计：应用 {0}/{1}（{2:N1}%）；人类失败 {3} 条；④ 人类 HQ 差 {4} 条" -f `
+    Write-Host ("合计：应用 {0}/{1}（{2:N1}%）；可归因人类失败 {3} 条；④ 人类 HQ 差 {4} 条" -f `
         $sumA, $sumT, (100.0 * $sumA / [Math]::Max(1, $sumT)), $sumL, $sumH) -ForegroundColor Cyan
-    Write-Host "判据可靠性：⑤b 首漂开 > ⑥ 未实现种 > ④ 人类HQ差 > 人类失败总数" -ForegroundColor DarkGray
+    Write-Host "判据可靠性：⑤b 首漂开 > ⑥ 未实现种 > ④ 人类HQ差 > 可归因人类失败总数" -ForegroundColor DarkGray
 }
 finally {
     Pop-Location

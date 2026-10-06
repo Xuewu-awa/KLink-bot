@@ -1,0 +1,173 @@
+=== 回放审计 replay-705344 ===
+  卡 80 张，动作 50 条，左=900003 右=-9178
+
+-- #1 t1 XActionStartOfTurn 900003 --  [内核 回合=1 HQ 左=20 右=20]
+-- #2 t1 PC 900003 --  [内核 回合=1 HQ 左=18 右=20]
+      [T1/left] HQ left 受到 2 伤害，剩余 18
+-- #3 t1 XActionEndOfTurn 900003 --  [内核 回合=2 HQ 左=18 右=20]
+-- #4 t2 XActionStartOfTurn -9178 --  [内核 回合=2 HQ 左=18 右=20]
+-- #5 t3 PC -9178 --  [内核 回合=2 HQ 左=18 右=20]
+      [T2/right] [58]card_unit_111th_indian_brigade@BoardHqRight#1 1/3 部署到半场 BoardHqRight 槽位 1
+-- #6 t3 PC -9178 --  [内核 回合=2 HQ 左=18 右=20]
+-- #7 t3 XActionEndOfTurn -9178 --  [内核 回合=3 HQ 左=18 右=20]
+-- #8 t2 XActionEndOfTurn -9178 --  [内核 回合=3 HQ 左=18 右=20]
+-- #9 t3 XActionStartOfTurn 900003 --  [内核 回合=3 HQ 左=18 右=20]
+-- #10 t3 PC 900003 --  [内核 回合=3 HQ 左=18 右=20]
+      [T3/left] [19]card_unit_murase_battalion@BoardHqLeft#1 1/3 部署到半场 BoardHqLeft 槽位 1
+-- #11 t3 PC 900003 --  [内核 回合=3 HQ 左=18 右=20]
+-- #12 t3 CS 900003 --  [内核 回合=3 HQ 左=18 右=20]
+-- #13 t3 PC 900003 --  [内核 回合=3 HQ 左=18 右=20]
+      [T3/left] [14]card_unit_40th_cavalry_regiment@BoardHqLeft#2 4/3 部署到半场 BoardHqLeft 槽位 2
+-- #14 t3 XActionEndOfTurn 900003 --  [内核 回合=4 HQ 左=18 右=20]
+-- #15 t4 XActionStartOfTurn -9178 --  [内核 回合=4 HQ 左=18 右=20]
+-- #16 t5 PC -9178 --  [内核 回合=4 HQ 左=18 右=20]
+      [T4/right] [54]card_unit_10th_para_battalion@BoardHqRight#2 2/1 部署到半场 BoardHqRight 槽位 2
+-- #17 t5 ML -9178 --  [内核 回合=4 HQ 左=18 右=20]
+-- #18 t5 XActionEndOfTurn -9178 --  [内核 回合=5 HQ 左=18 右=20]
+-- #19 t4 XActionEndOfTurn -9178 --  [内核 回合=5 HQ 左=18 右=20]
+-- #20 t5 XActionStartOfTurn 900003 --  [内核 回合=5 HQ 左=18 右=20]
+-- #21 t5 PC 900003 --  [内核 回合=5 HQ 左=18 右=20]
+      [T5/left] [33]card_unit_5th_regiment@BoardHqLeft#3 4/4 部署到半场 BoardHqLeft 槽位 3
+-- #22 t5 AC 900003 --  [内核 回合=5 HQ 左=18 右=20]
+      [T5/left] ⚔ [14]card_unit_40th_cavalry_regiment@BoardHqLeft#2 4/3 → [58]card_unit_111th_indian_brigade@BoardFrontline#0 1/3  伤害 4（攻 4，行动费 0，余 kredit 3）  目标剩 -1  反击 1
+      [T5/left] [58]card_unit_111th_indian_brigade@BoardFrontline#0 1/-1 被摧毁
+-- #23 t5 PC 900003 --  [内核 回合=5 HQ 左=18 右=20]
+      [T5/left] [15]card_unit_5th_sasebo_snlf@BoardHqLeft#4 1/1 部署到半场 BoardHqLeft 槽位 4
+-- #24 t5 XActionEndOfTurn 900003 --  [内核 回合=6 HQ 左=18 右=20]
+-- #25 t6 XActionStartOfTurn -9178 --  [内核 回合=6 HQ 左=18 右=20]
+-- #26 t6 XActionEndOfTurn -9178 --  [内核 回合=7 HQ 左=18 右=20]
+-- #27 t7 XActionStartOfTurn 900003 --  [内核 回合=7 HQ 左=18 右=20]
+-- #28 t7 ML 900003 --  [内核 回合=7 HQ 左=18 右=20]
+-- #29 t7 ML 900003 --  [内核 回合=7 HQ 左=18 右=20]
+-- #30 t7 PC 900003 --  [内核 回合=7 HQ 左=18 右=20]
+      [T7/left] [54]card_unit_10th_para_battalion@BoardHqRight#2 2/-3 被摧毁
+-- #31 t7 PC 900003 --  [内核 回合=7 HQ 左=18 右=20]
+      [T7/left] [32]card_unit_238th_regiment@BoardHqLeft#2 2/3 部署到半场 BoardHqLeft 槽位 3
+-- #32 t7 ML 900003 --  [内核 回合=7 HQ 左=18 右=20]
+-- #33 t7 PC 900003 --  [内核 回合=7 HQ 左=18 右=20]
+      [T7/left] [3001]card_unit_238th_regiment@BoardHqLeft#3 2/3 部署到半场 BoardHqLeft 槽位 3
+-- #34 t7 ML 900003 --  [内核 回合=7 HQ 左=18 右=20]
+-- #35 t7 XActionEndOfTurn 900003 --  [内核 回合=8 HQ 左=18 右=20]
+-- #36 t8 XActionStartOfTurn -9178 --  [内核 回合=8 HQ 左=18 右=20]
+-- #37 t8 XActionEndOfTurn -9178 --  [内核 回合=9 HQ 左=18 右=20]
+-- #38 t9 XActionStartOfTurn 900003 --  [内核 回合=9 HQ 左=18 右=20]
+-- #39 t9 PC 900003 --  [内核 回合=9 HQ 左=16 右=20]
+      [T9/left] HQ left 受到 2 伤害，剩余 16
+-- #40 t9 AC 900003 --  [内核 回合=9 HQ 左=16 右=18]
+      [T9/left] ⚔ [3001]card_unit_238th_regiment@BoardFrontline#3 2/3 → right HQ  伤害 2（攻 2，行动费 0，余 kredit 4）  目标剩 18
+      [238th] card_unit_238th_regiment#3001 -> card_location_london#41 kredit=4/5 damage=2->2 fromAttack=True fromFight=False suppressed=False
+      [T9/left] HQ right 受到 2 伤害，剩余 18
+-- #41 t9 AC 900003 --  [内核 回合=9 HQ 左=16 右=16]
+      [T9/left] ⚔ [32]card_unit_238th_regiment@BoardFrontline#2 2/3 → right HQ  伤害 2（攻 2，行动费 0，余 kredit 4）  目标剩 16
+      [238th] card_unit_238th_regiment#32 -> card_location_london#41 kredit=4/5 damage=2->2 fromAttack=True fromFight=False suppressed=False
+      [T9/left] HQ right 受到 2 伤害，剩余 16
+-- #42 t9 AC 900003 --  [内核 回合=9 HQ 左=16 右=12]
+      [T9/left] ⚔ [14]card_unit_40th_cavalry_regiment@BoardFrontline#0 4/3 → right HQ  伤害 4（攻 4，行动费 0，余 kredit 4）  目标剩 12
+      [T9/left] HQ right 受到 4 伤害，剩余 12
+-- #43 t9 AC 900003 --  [内核 回合=9 HQ 左=16 右=6]
+      [T9/left] ⚔ [33]card_unit_5th_regiment@BoardFrontline#1 6/5 → right HQ  伤害 6（攻 6，行动费 0，余 kredit 4）  目标剩 6
+      [T9/left] HQ right 受到 6 伤害，剩余 6
+-- #44 t9 XActionEndOfTurn 900003 --  [内核 回合=10 HQ 左=16 右=6]
+-- #45 t10 XActionStartOfTurn -9178 --  [内核 回合=10 HQ 左=16 右=6]
+-- #46 t10 XActionEndOfTurn -9178 --  [内核 回合=11 HQ 左=16 右=6]
+-- #47 t11 XActionStartOfTurn 900003 --  [内核 回合=11 HQ 左=16 右=6]
+-- #48 t11 AC 900003 --  [内核 回合=11 HQ 左=16 右=4]
+      [T11/left] ⚔ [32]card_unit_238th_regiment@BoardFrontline#2 2/3 → right HQ  伤害 2（攻 2，行动费 0，余 kredit 6）  目标剩 4
+      [238th] card_unit_238th_regiment#32 -> card_location_london#41 kredit=6/6 damage=2->2 fromAttack=True fromFight=False suppressed=False
+      [T11/left] HQ right 受到 2 伤害，剩余 4
+-- #49 t11 ActionEndMatch 900003 --  [内核 回合=11 HQ 左=16 右=4]
+-- #50 t11  0 --  [内核 回合=11 HQ 左=16 右=4]
+  应用 49/50 条（⚠ 1 条没应用）
+
+=== ① 内核观察到的「判死」事件：2 次 ===
+    #22 t5 AC 之后：card_unit_111th_indian_brigade#58 离场（BoardFrontline → Discard）
+    #30 t7 PC 之后：card_unit_10th_para_battalion#54 离场（BoardHqRight → Discard）
+
+=== ② 死亡单位仍被移动/攻击：0 次 ===
+    （没有 —— 所有此类动作都被规则门拒绝）
+
+=== ④ HQ 对不上的动作：7 条 ===
+    （其中人类 left 6 条、bot right 1 条）
+    #26 t6 XActionEndOfTurn（right） 期望 17 实际 18
+    #41 t9 AC（left） 期望 16 实际 18
+    #42 t9 AC（left） 期望 12 实际 16
+    #43 t9 AC（left） 期望 8 实际 12
+    #44 t9 XActionEndOfTurn（left） 期望 2 实际 6
+    #47 t11 XActionStartOfTurn（left） 期望 2 实际 6
+    #48 t11 AC（left） 期望 2 实际 6
+
+=== ④a 人类 HQ 差异分类：6 条 ===
+    同回合 EndOfTurn 重新对上（采样假象）：0 条
+    到同回合 EndOfTurn 仍未对上：6 条
+    按动作类型：AC=4；XActionEndOfTurn=1；XActionStartOfTurn=1
+    按差值（实际-期望）：+2=1；+4=5
+
+    ⚠️ 判读须知（2026-10-02，214436 查死）：`XActionStartOfTurn` 那一条
+       客户端是在**自己回合开始触发器跑之前**采样的，而本器是在
+       `EndTurn(对方) → StartTurn(我方)` 里**先跑触发器、后处理这条标记**
+       ⇒ 只要有一张「回合开始时对敌方 HQ 造成伤害」的卡在场
+       （`card_unit_garrison`：「At the start of your turn, deal 1 damage
+       to the enemy HQ if this unit was not attacked last turn.」），
+       这条 StartOfTurn 就会**必然**差那笔伤害 —— 而**同一回合的
+       EndOfTurn 会重新对上**（两边的状态是收敛的，只是采样点不同）。
+       判据：StartOfTurn 差、同回合 EndOfTurn 不差 ⇒ 采样假象，不是漂开。
+
+=== ⑤ 未应用的动作：1 条 ===
+    #50 t11 （?）：无法确定行动方
+
+⑤b 可归因人类失败：0 条
+⑤b 过期弃牌动作：0 条
+=== ⑤b ★ 首个「可归因人类动作」失败点（根因通常在这里）===
+    ✅ **没有可归因的人类动作失败** ⇒ 这一局没有发现可归因的状态漂移点
+
+=== ⑤c ★ 身份不一致（动作自带卡组码 ≠ 内核里那张卡的卡组码）：0 条 / 0 张卡（已校正 0 条）===
+    （没有 —— 内核选的卡与客户端一直一致）
+
+⑤c 汇总：条数=0 张数=0 已校正=0 内核码未知=0
+
+=== ⑤d ★ 目标过不了客户端的门（客户端会静默不执行）：0 条 ===
+    （没有 —— 动作流里每一条出牌的目标，客户端的门都认）
+
+=== ⑥ 撞到但**没实现**的原语：0 种 ===
+    （没有）
+
+=== ⑥a ★ RNG 游标失同步信号：0 条 ===
+    （没有 —— 内核选中的卡与客户端声明的卡组码一直一致）
+
+=== ⑥c ★ 发号侧信号：兜底造卡 0 条 / 避让跳号 0 条 ===
+    （没有 —— 动作引用的卡ID我们全都自己发出来过，且号段没有跳号）
+
+=== ⑦ ★ RNG 游标：本局共消耗 0 个随机数 ===
+    （客户端 `cardsRandomStream` 的游标；漏一个消费点就少、多一个就多。
+     用 `--rng-trace` 可以打印逐次消费的流水账。）
+
+=== ⑥b ★ 派发表静态缺口（全集，与卡组无关）：509 种 / 2280 个真缺口调用点 ===
+    指纹 4112C4289B1BBB54（守卫基线在 tools/BotSim/DispatchGap.cs，只降不升）
+    HasCampaignUpgrade ×247
+    CampaignSetText ×211
+    CampaignAddKreditCost ×79
+    GiveStarForCampaign ×75
+    CampaignAddAttack ×59
+    CampaignAddDefense ×59
+    AddToVerticalBox ×41
+    CreateHelpBubbleEntry ×39
+    ShowTutorialMessage ×30
+    CampaignAddBlitz ×23
+    GetTutorialBP ×21
+    CampaignAddOpCost ×19
+    WhichStrategy ×18
+    GetRenderCache ×17
+    SetActorHiddenInGame ×17
+
+=== ③ 终局场上状态（右侧 = bot）===
+  left：HQ 16，场上 6 个
+     #14 card_unit_40th_cavalry_regiment @BoardFrontline#0 4/3 活着=True
+     #15 card_unit_5th_sasebo_snlf @BoardHqLeft#2 1/1 活着=True
+     #19 card_unit_murase_battalion @BoardHqLeft#1 1/3 活着=True
+     #32 card_unit_238th_regiment @BoardFrontline#2 2/3 活着=True
+     #33 card_unit_5th_regiment @BoardFrontline#1 6/5 活着=True
+     #3001 card_unit_238th_regiment @BoardFrontline#3 2/3 活着=True
+  right：HQ 4，场上 0 个
+
+=== 判读 ===
+  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。

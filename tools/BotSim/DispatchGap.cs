@@ -132,10 +132,20 @@ internal static class DispatchGapBaseline
     /// `PlayCardDirectlyFromHand`，复用完整出牌触发链并支持指定前线/槽位。
     /// 2026-10-05：510 → **509**（实际重跑：2280 调用点）。补上
     /// `ConvertCard`，覆盖就地换身份、临时状态清理和转换事件广播。
-    public const int BaselineCount = 509;
+    /// 2026-10-06：509 → **508**（实际重跑：2271 调用点）。补上
+    /// `getAttackTempBuffAmount`，按来源读取目标卡的攻击 buff 偏移。
+    /// 2026-10-06：508 → **507**（实际重跑：2262 调用点）。补上了
+    /// `SetCardSeen`，按蓝图第一个 cardID 标记目标卡的 `cardSeen`。
+    /// 2026-10-06：507 → **506**（实际重跑：2255 调用点）。补上了
+    /// `IsTopDeckNavy`，按显式 side 检查牌库顶牌的 `subtype.navy` 标签。
+    /// 2026-10-06：506 → **505**（实际重跑：2254 调用点）。补上了
+    /// `ChangedPinnedTurns`，按蓝图将有效在场单位的 pinnedTurns 增量夹到 0..5。
+    /// 2026-10-06：505 → **504**（实际重跑：2250 调用点）。补上了
+    /// `WasRightMostCardWhenPlayedFromHand`，读取正版 JSON 位置标记。
+    public const int BaselineCount = 504;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "4112C4289B1BBB54";
+    public const string BaselineFingerprint = "4AEF1FC263964960";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

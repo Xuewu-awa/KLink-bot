@@ -60,6 +60,8 @@ internal static class SelfTest
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
         new("牌库查询：`GetDeckByside` 的元素必须是卡 ID（蓝图 TArray<int> deckCardIDs）",
             GetDeckBySideReturnsCardIds),
+        new("IsTopDeckNavy：按显式 side 检查牌库顶牌 subtype.navy，空牌库为 false",
+            IsTopDeckNavy),
         new("PAMS：开发出来的那张牌费用必须被设成 0（IR i=348 的 ChangeKreditCost 真的执行）",
             PamsDevelopedCardCostZero),
         new("批量回牌库：按输入顺序逐张置顶，且隔离拥有者牌库",
@@ -68,8 +70,8 @@ internal static class SelfTest
             PlayCardDirectlyFromHand),
         new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
             MoveUnitFromSupportToFrontLine),
-        new("LoseKreditSlot：保留临时 kredit，下一回合自然增长不被降槽吞掉",
-            LoseKreditSlotPreservesTemporaryKredits),
+        new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
+            LoseKreditSlotRefillsFromCurrentSlot),
         new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
             ConvertCard),
 
@@ -93,6 +95,7 @@ internal static class SelfTest
         // BoardCompare 那 6 局里这 4 张卡都没被打出过，所以回放对拍**测不到**它们，
         // 必须有这组最小断言兜底。
         new("85 先驱连：手牌指令 -1 费、第一张指令打出后还原、重复施加不叠加", PioneerCompanyAura),
+        new("通用费用下限：普通减费可将单位、指令和反制卡降到 0", KreditCostFloorIsZero),
         new("大红一师：手牌全部变 4 费、抽牌补 buff、离场还原", BigRedOneAura),
         new("第 214 阿穆尔：己方 T-34 +1 重甲 / 行动费 -1、离场还原", AmurTankAura),
         new("敢死队（committed crew）：Spitfire 变 0 费、部署 +3+3", CommittedCrewAura),
@@ -372,6 +375,13 @@ internal static class SelfTest
         new("蓝图基础函数：支援线位置不回退阵营；AddUnique 去重并返回原下标", BlueprintArrayAndLocationQueries),
         new("GetLeft/RightMostCardInHand：按手牌位置号返回双出参，空手返回 found=false", HandEdgeQueries),
         new("SetCountdown：按目标 cardID 写入 countdown_timer 并持久化，不误写施动卡", SetCountdown),
+        new("SetCardSeen：按目标 cardID 标记情报已见，不误写施动卡", SetCardSeen),
+        new("ChangedPinnedTurns：有效在场单位的 pinnedTurns 按蓝图增量并夹到 0..5",
+            ChangedPinnedTurns),
+        new("WasRightMostCardWhenPlayedFromHand：读取正版 JSON 标记并支持显式 cardPlayed",
+            WasRightMostCardWhenPlayedFromHand),
+        new("GetDeckLocationBySide：按正版枚举映射返回 DeckLeft/DeckRight",
+            GetDeckLocationBySide),
         new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
         new("DestroyMultipleCards：数组里卡对象 / 整数 cardID 两种元素形状都要被摧毁",
             DestroyMultipleCardsBothShapes),
@@ -520,6 +530,12 @@ internal static class SelfTest
         // ⇒ **9 张真的读它的卡**整段恒空。
         new("★ `DrawCardsFromDeckBySide` 的出参 `cardsIDs` 必须写入抽到的卡 ID（旧实现 `return null`）",
             DrawCardsFromDeckBySideWritesCardsIDs),
+
+        new("★ `DrawSpecificCardFromDeckBySide` 先置顶再走完整抽牌路径（含满手烧牌）",
+            DrawSpecificCardUsesDrawPath),
+
+        new("★ `ChangeKreditCost/ChangeOperationCost` 的 changeType=0 进入临时 buff 槽并可撤销",
+            TemporaryResourceCostBuffsExpire),
 
         // ---- ★★ 2026-10-03：`DamageCard` 的第 3 参是**整数 `damagerCardID`**，不是卡对象 ----
         // 权威签名（`BP_CardFunctions.g.cs:11606-11618`）：`2: damagerCardID`，
@@ -783,6 +799,14 @@ internal static class SelfTest
         var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Left };
         if (engine.Api.ExecuteOnDealDamageAddDamage(unit, state.Hq(Side.Right), 2, true, false, false) != 2)
             return "4 槽时不应双倍";
+
+        // 238th 的判据是 MaxKredits <= 3；当前余额不是判据。
+        // 这里把 4/3 两个边界直接隔离出来，避免回放里的攻击/事件链掩盖槽位判断。
+        state.SetMaxKredits(Side.Left, 3);
+        if (engine.Api.ExecuteOnDealDamageAddDamage(unit, state.Hq(Side.Right), 2, true, false, false) != 4)
+            return "3 槽时 238 团应直接双倍（MaxKredits 边界）";
+        state.SetMaxKredits(Side.Left, 4);
+
         engine.Api.InvokeByName("LoseKreditSlot", unit, new object?[] { (int)Side.Left }, ctx, out bool handled);
         if (!handled || state.MaxKredits(Side.Left) != 3 || state.Kredits(Side.Left) != 2)
             return "扣槽必须只改变上限 4→3，当前费用仍为 2";
@@ -797,7 +821,34 @@ internal static class SelfTest
         if (!queried || loss is not int count || count != 2)
             return "累计损失应为 2（包含零槽再次扣槽），查询必须写出整数";
         if (state.KreditSlotsLost(Side.Right) != 0) return "累计损失串到对方";
-        engine.Api.GainKreditSlot(Side.Left, 1);
+        int beforeGainKredits = state.Kredits(Side.Left);
+        int beforeGainSlots = state.MaxKredits(Side.Left);
+        var gainWatcher = state.CreateWithId("card_unit_144th_infantry_regiment", Side.Left, 33,
+            CardLocation.BoardHqLeft, 1);
+        var gainTrace = new List<string>();
+        engine.Api.TriggerTrace = gainTrace;
+        engine.Api.GainKreditSlot(Side.Left, 1, unit);
+        if (state.MaxKredits(Side.Left) != beforeGainSlots + 1
+            || state.Kredits(Side.Left) != beforeGainKredits)
+        {
+            return $"GainKreditSlot 应只增加槽位、不增加当前 kredit："
+                 + $"之前 {beforeGainKredits}/{beforeGainSlots}，"
+                 + $"之后 {state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}";
+        }
+        if (!gainTrace.Any(x => x.Contains("OnAfterExtraKreditSlotGain", StringComparison.Ordinal)
+                             && x.Contains("eventCard=card_unit_238th_regiment#30", StringComparison.Ordinal)))
+        {
+            return "GainKreditSlot 的 OnAfterExtraKreditSlotGain 未携带发起卡："
+                 + string.Join(" | ", gainTrace.Take(6));
+        }
+        state.SetMaxKredits(Side.Left, MatchEngine.MaxKreditCap);
+        state.SetKredits(Side.Left, MatchEngine.MaxKreditCap);
+        engine.Api.GainKreditSlot(Side.Left, 1, unit);
+        if (state.MaxKredits(Side.Left) != MatchEngine.MaxKreditCap
+            || state.Kredits(Side.Left) != MatchEngine.MaxKreditCap)
+        {
+            return "GainKreditSlot 不得突破线上 getMaxPossibleKredits 上限 24";
+        }
         if (state.KreditSlotsLost(Side.Left) != 2) return "获得槽位不应抵消历史损失";
         var infantry = state.CreateWithId("card_unit_144th_infantry_regiment", Side.Left, 32,
             CardLocation.BoardHqLeft, 1);
@@ -2330,8 +2381,7 @@ internal static class SelfTest
     {
         const string aura = "card_unit_85_pioneer_company";
 
-        // ⚠️ 用一张**费用 ≥ 2** 的指令来测，不能用 `card_event_pams`（1 费）：
-        //    -1 之后会被「费用下限 1」夹回 1，看不出变化。
+        // 用一张费用 ≥ 2 的指令验证光环的普通减费路径；0 费下限另有专项断言。
         const string order = "card_event_mi_5";          // 3 费英国指令
         if (db.Find(aura) is null || db.Find(order) is null)
         {
@@ -2396,6 +2446,45 @@ internal static class SelfTest
         if (orderC.KreditCost != faceCost)
         {
             return $"第一张指令已打出，之后入手的指令不该再减费（期望 {faceCost}，实际 {orderC.KreditCost}）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 普通 `ChangeKreditCost` 的通用下限是 0，而不是 1。
+    /// 覆盖单位、指令和反制卡三种类型，避免只验证显式设费（changeType=1）。
+    /// </summary>
+    private static string? KreditCostFloorIsZero(CardDatabase db)
+    {
+        string[] names =
+        {
+            "card_unit_panzer_ii_c",
+            "card_event_pams",
+            "card_event_interception",
+        };
+
+        var (engine, state) = EmptyBoard(db);
+        int id = 700;
+        foreach (string name in names)
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+
+            var card = state.CreateWithId(name, Side.Left, id++, CardLocation.HandLeft, id - 700);
+            int before = card.Definition.Kredits;
+            if (before <= 0)
+            {
+                return $"测试卡 {name} 的卡面费用不是正数：{before}";
+            }
+
+            engine.Api.ChangeKreditCost(card, -before - 1);
+            if (card.KreditCost != 0)
+            {
+                return $"{name} 普通减费后应为 0，实际 {card.KreditCost}";
+            }
         }
 
         return null;
@@ -10364,6 +10453,250 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? SetCardSeen(CardDatabase db)
+    {
+        const string targetName = "card_unit_2nd_parachute";
+        if (db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_14th_guards_rifles", Side.Left,
+            20, CardLocation.HandLeft, 0);
+        var target = state.CreateWithId(targetName, Side.Right, 40,
+            CardLocation.HandRight, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "SetCardSeen", source,
+            new object?[] { target.CardId, source.CardId, null }, ctx,
+            out bool handled);
+
+        if (!handled || result is not 0)
+        {
+            return $"SetCardSeen 应处理并返回 qqq=0（handled={handled}, result={result ?? "null"}）";
+        }
+
+        if (!target.CardSeen)
+        {
+            return "SetCardSeen 未把第一个 cardID 参数对应的目标卡标记为已见";
+        }
+
+        if (source.CardSeen)
+        {
+            return "SetCardSeen 错把 instigatorID 对应的施动卡标记为已见";
+        }
+
+        object? invalid = engine.Api.InvokeByName(
+            "SetCardSeen", source,
+            new object?[] { 999999, source.CardId, null }, ctx,
+            out bool invalidHandled);
+        if (!invalidHandled || invalid is not 0)
+        {
+            return $"无效 cardID 也应安全返回 qqq=0（handled={invalidHandled}, result={invalid ?? "null"}）";
+        }
+
+        return null;
+    }
+
+    private static string? IsTopDeckNavy(CardDatabase db)
+    {
+        const string navyName = "card_event_hms_belfast";
+        const string ordinaryName = "card_unit_2nd_parachute";
+        if (db.Find(navyName) is null || db.Find(ordinaryName) is null)
+        {
+            return "IsTopDeckNavy 自测所需卡库条目缺失";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftHq = state.ById(1)!;
+        state.CreateWithId(navyName, Side.Left, 101, CardLocation.DeckLeft, 0);
+        state.CreateWithId(ordinaryName, Side.Left, 102, CardLocation.DeckLeft, 1);
+        state.CreateWithId(ordinaryName, Side.Right, 201, CardLocation.DeckRight, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = leftHq, Controller = Side.Left,
+        };
+
+        object? leftRaw = engine.Api.InvokeByName(
+            "IsTopDeckNavy", leftHq, new object?[] { (int)Side.Left, null }, ctx,
+            out bool leftHandled);
+        if (!leftHandled || leftRaw is not true)
+        {
+            return $"左方牌库顶为 HMS Belfast 时应返回 true（handled={leftHandled}, result={leftRaw ?? "null"}）";
+        }
+
+        object? rightRaw = engine.Api.InvokeByName(
+            "IsTopDeckNavy", leftHq, new object?[] { (int)Side.Right, null }, ctx,
+            out bool rightHandled);
+        if (!rightHandled || rightRaw is not false)
+        {
+            return $"显式传入右方 side 时应读取右方非 Navy 顶牌并返回 false（handled={rightHandled}, result={rightRaw ?? "null"}）";
+        }
+
+        var (emptyEngine, emptyState) = EmptyBoard(db);
+        var emptyHq = emptyState.ById(1)!;
+        var emptyCtx = new EffectContext
+        {
+            Engine = emptyEngine, State = emptyState, Self = emptyHq, Controller = Side.Left,
+        };
+        object? emptyRaw = emptyEngine.Api.InvokeByName(
+            "IsTopDeckNavy", emptyHq, new object?[] { (int)Side.Left, null }, emptyCtx,
+            out bool emptyHandled);
+        if (!emptyHandled || emptyRaw is not false)
+        {
+            return $"空牌库应返回 false（handled={emptyHandled}, result={emptyRaw ?? "null"}）";
+        }
+
+        var (ordinaryEngine, ordinaryState) = EmptyBoard(db);
+        var ordinaryHq = ordinaryState.ById(1)!;
+        ordinaryState.CreateWithId(ordinaryName, Side.Left, 301, CardLocation.DeckLeft, 0);
+        var ordinaryCtx = new EffectContext
+        {
+            Engine = ordinaryEngine, State = ordinaryState, Self = ordinaryHq, Controller = Side.Left,
+        };
+        object? ordinaryRaw = ordinaryEngine.Api.InvokeByName(
+            "IsTopDeckNavy", ordinaryHq, new object?[] { (int)Side.Left, null }, ordinaryCtx,
+            out bool ordinaryHandled);
+        if (!ordinaryHandled || ordinaryRaw is not false)
+        {
+            return $"非 Navy 顶牌应返回 false（handled={ordinaryHandled}, result={ordinaryRaw ?? "null"}）";
+        }
+
+        return null;
+    }
+
+    private static string? ChangedPinnedTurns(CardDatabase db)
+    {
+        const string unitName = "card_unit_2nd_parachute";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.ById(1)!;
+        var target = PutOnBoard(state, unitName, Side.Left, 20, 1);
+        target.PinnedTurns = 4;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("ChangedPinnedTurns", source,
+            new object?[] { target.CardId, source.CardId, 2, null }, ctx,
+            out bool handled);
+        if (!handled || target.PinnedTurns != 5)
+        {
+            return $"有效在场单位应将 pinnedTurns=4 按 +2 夹到 5（handled={handled}, actual={target.PinnedTurns}）";
+        }
+
+        if (state.ActionLog.LastOrDefault()?.SubActions.FirstOrDefault()?.Name
+            != "ZActionChangePinnedTurns")
+        {
+            return "ChangedPinnedTurns 应记录 ZActionChangePinnedTurns 子动作";
+        }
+
+        engine.Api.InvokeByName("ChangedPinnedTurns", source,
+            new object?[] { target.CardId, source.CardId, -9, null }, ctx,
+            out bool lowerHandled);
+        if (!lowerHandled || target.PinnedTurns != 0)
+        {
+            return $"负增量应将 pinnedTurns 夹到 0（handled={lowerHandled}, actual={target.PinnedTurns}）";
+        }
+
+        var hand = state.CreateWithId(unitName, Side.Left, 301, CardLocation.HandLeft, 0);
+        engine.Api.InvokeByName("ChangedPinnedTurns", source,
+            new object?[] { hand.CardId, source.CardId, 2, null }, ctx,
+            out bool handHandled);
+        if (!handHandled || hand.PinnedTurns != 0)
+        {
+            return "不在场上的单位不应修改 pinnedTurns";
+        }
+
+        return null;
+    }
+
+    private static string? WasRightMostCardWhenPlayedFromHand(CardDatabase db)
+    {
+        const string sourceName = "card_unit_2nd_parachute";
+        const string explicitName = "card_unit_14th_guards_rifles";
+        if (db.Find(sourceName) is null || db.Find(explicitName) is null)
+        {
+            return "WasRightMostCardWhenPlayedFromHand 自测所需卡库条目缺失";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 401, CardLocation.HandLeft, 0);
+        var explicitCard = state.CreateWithId(explicitName, Side.Left, 402, CardLocation.HandLeft, 1);
+        const string key = "WasRightMostWhenPlayedFromHandKey";
+        engine.Api.JsonSetBool(source, key, true);
+        engine.Api.JsonSetBool(explicitCard, key, true);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? implicitRaw = engine.Api.InvokeByName(
+            "WasRightMostCardWhenPlayedFromHand", source,
+            new object?[] { source, null }, ctx, out bool implicitHandled);
+        if (!implicitHandled || implicitRaw is not true)
+        {
+            return $"隐式 self 形状应读到 JSON true（handled={implicitHandled}, result={implicitRaw ?? "null"}）";
+        }
+
+        engine.Api.JsonSetBool(source, key, false);
+        object? explicitRaw = engine.Api.InvokeByName(
+            "WasRightMostCardWhenPlayedFromHand", source,
+            new object?[] { explicitCard, null }, ctx, out bool explicitHandled);
+        if (!explicitHandled || explicitRaw is not true)
+        {
+            return $"显式 cardPlayed 形状应读取参数卡而非施动卡（handled={explicitHandled}, result={explicitRaw ?? "null"}）";
+        }
+
+        object? absentRaw = engine.Api.InvokeByName(
+            "WasRightMostCardWhenPlayedFromHand", source,
+            new object?[] { source, null }, ctx, out bool absentHandled);
+        if (!absentHandled || absentRaw is not false)
+        {
+            return $"JSON 标记为 false 时应返回 false（handled={absentHandled}, result={absentRaw ?? "null"}）";
+        }
+
+        return null;
+    }
+
+    private static string? GetDeckLocationBySide(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.ById(1)!;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? leftRaw = engine.Api.InvokeByName(
+            "GetDeckLocationBySide", source, new object?[] { (int)Side.Left, null }, ctx,
+            out bool leftHandled);
+        if (!leftHandled || leftRaw is not (int)CardLocation.DeckLeft)
+        {
+            return $"Left 应映射到 DeckLeft=1（handled={leftHandled}, result={leftRaw ?? "null"}）";
+        }
+
+        object? rightRaw = engine.Api.InvokeByName(
+            "GetDeckLocationBySide", source, new object?[] { (int)Side.Right, null }, ctx,
+            out bool rightHandled);
+        if (!rightHandled || rightRaw is not (int)CardLocation.DeckRight)
+        {
+            return $"Right 应映射到 DeckRight=2（handled={rightHandled}, result={rightRaw ?? "null"}）";
+        }
+
+        return null;
+    }
+
     private static string? HandEdgeQueries(CardDatabase db)
     {
         const string sourceName = "card_unit_2nd_parachute";
@@ -11089,7 +11422,7 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? LoseKreditSlotPreservesTemporaryKredits(CardDatabase db)
+    private static string? LoseKreditSlotRefillsFromCurrentSlot(CardDatabase db)
     {
         var (engine, state) = EmptyBoard(db);
         state.SetMaxKredits(Side.Left, 4);
@@ -11107,9 +11440,9 @@ internal static class SelfTest
         }
 
         engine.StartTurn(Side.Left, draw: false);
-        if (state.MaxKredits(Side.Left) != 5 || state.Kredits(Side.Left) != 5)
+        if (state.MaxKredits(Side.Left) != 4 || state.Kredits(Side.Left) != 4)
         {
-            return $"下一回合应从临时 4 点自然增长到 5："
+            return $"下一回合应从当前槽位 3 自然恢复到 4："
                  + $"实际 {state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)}";
         }
 
@@ -12973,6 +13306,167 @@ internal static class SelfTest
         if (state.Deck(Side.Left).Any())
         {
             return $"牌库里还剩 {state.Deck(Side.Left).Count()} 张，出参却是 2 个";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 线上 `DrawSpecificCardFromDeckBySide` 的控制流是「RemoveCardFromDeckBySide
+    /// → AddCardToDeckBySide(top) → DrawTopCardFromDeck」，不能直接把目标卡移进手牌。
+    /// 这个回归同时守住指定目标、手牌上限和抽牌子动作三件事。
+    /// </summary>
+    private static string? DrawSpecificCardUsesDrawPath(CardDatabase db)
+    {
+        const int decoyId = 6101;
+        const int targetId = 6102;
+        const string cardName = "card_event_fog_of_war";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里缺 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId(cardName, Side.Left, decoyId, CardLocation.DeckLeft, 0);
+        var target = state.CreateWithId(cardName, Side.Left, targetId, CardLocation.DeckLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+
+        object? raw = engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", null,
+            new object?[] { 99, targetId, (int)Side.Left, false }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "DrawSpecificCardFromDeckBySide 没进派发表";
+        }
+
+        if (raw is not CardInstance drawn || drawn.CardId != targetId
+            || target.Location != CardLocation.HandLeft
+            || state.ById(decoyId)?.Location != CardLocation.DeckLeft)
+        {
+            return $"指定抽牌应只把 #{targetId} 抽入手牌；实际返回 #{(raw as CardInstance)?.CardId}, "
+                 + $"target={target.Location}, decoy={state.ById(decoyId)?.Location}";
+        }
+
+        if (!state.ActionLog.SelectMany(a => a.SubActions)
+                .Any(s => s.Name == "ZActionDrawCardFromDeck"
+                    && s.Values.Any(v => v.Name == "cardID" && v.Value == targetId)))
+        {
+            return "指定抽牌没有记录 ZActionDrawCardFromDeck，说明绕过了 DrawTopCardFromDeck 路径";
+        }
+
+        // 手牌填满后，线上 DrawTopCardFromDeck 会把指定卡烧进弃牌堆，仍然完成抽牌动作。
+        var (fullEngine, fullState) = EmptyBoard(db);
+        for (int i = 0; i < GameState.HandCapacity; i++)
+        {
+            fullState.CreateWithId(cardName, Side.Left, 6200 + i, CardLocation.HandLeft, i);
+        }
+
+        var burned = fullState.CreateWithId(cardName, Side.Left, 6299, CardLocation.DeckLeft, 0);
+        var fullCtx = new EffectContext { Engine = fullEngine, State = fullState, Controller = Side.Left };
+        fullEngine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", null,
+            new object?[] { 99, burned.CardId, (int)Side.Left, false }, fullCtx, out bool fullHandled);
+        if (!fullHandled || burned.Location != CardLocation.Discard)
+        {
+            return $"满手指定抽牌应烧牌；handled={fullHandled}, location={burned.Location}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 线上两个改费函数的 changeType=0 写入独立的临时字段；changeType=4
+    /// 只撤销该临时字段。验证重复应用会叠加，且不会污染永久来源槽。
+    /// </summary>
+    private static string? TemporaryResourceCostBuffsExpire(CardDatabase db)
+    {
+        const string targetName = "card_unit_a26_invader";
+        const string sourceName = "card_event_aans";
+        if (db.Find(targetName) is null || db.Find(sourceName) is null)
+        {
+            return $"卡库缺少 {targetName} 或 {sourceName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(targetName, Side.Left, 6301, CardLocation.HandLeft, 0);
+        var source = state.CreateWithId(sourceName, Side.Left, 6302, CardLocation.BoardHqLeft, 1);
+        int baseKredit = target.KreditCost;
+        int baseOperation = target.OperationCost;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        engine.Api.InvokeByName("ChangeKreditCost", target,
+            new object?[] { target, source.CardId, -1, 0, false, null }, ctx, out bool kredit1);
+        engine.Api.InvokeByName("ChangeKreditCost", target,
+            new object?[] { target, source.CardId, -1, 0, false, null }, ctx, out bool kredit2);
+        if (!kredit1 || !kredit2 || target.KreditCost != Math.Max(0, baseKredit - 2)
+            || !target.BuffsBySource.TryGetValue((source.CardId, true), out var kreditBuff)
+            || kreditBuff.KreditCost != -2
+            || target.BuffsBySource.ContainsKey((source.CardId, false)))
+        {
+            return $"临时 kredit buff 未正确叠加：base={baseKredit}, actual={target.KreditCost}, "
+                 + $"slots={string.Join(",", target.BuffsBySource.Keys.Select(k => $"{k.SourceCardId}/{k.Temporary}"))}";
+        }
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 1, 0, false, false, false }, ctx, out bool operation1);
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 1, 0, false, false, false }, ctx, out bool operation2);
+        if (!operation1 || !operation2 || target.OperationCost != baseOperation + 2)
+        {
+            return $"临时 operation cost buff 未正确叠加：base={baseOperation}, actual={target.OperationCost}";
+        }
+
+        target.BuffsBySource[(source.CardId, true)] = new CardBuff
+        {
+            SourceCardId = source.CardId,
+            Temporary = true,
+            Attack = 2,
+        };
+        var attackTemp = engine.Api.InvokeByName("getAttackTempBuffAmount", target,
+            new object?[] { source.CardId, null }, ctx, out bool attackTempHandled);
+        if (!attackTempHandled || attackTemp is not int attackAmount || attackAmount != 2)
+        {
+            return $"getAttackTempBuffAmount 应返回来源 {source.CardId} 的 +2，实际 {attackTemp}";
+        }
+        target.BuffsBySource.Remove((source.CardId, true));
+        target.RecalculateStats();
+
+        engine.Api.RemoveTemporaryBuffs();
+        if (target.OperationCost != baseOperation || target.BuffsBySource.Count != 0)
+        {
+            return $"绝对设值前的临时 operation cost 清理失败：actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
+        }
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 0, 2, false, false, false }, ctx, out bool setAbsolute);
+        if (!setAbsolute || target.OperationCost != 0
+            || !target.BuffsBySource.TryGetValue((source.CardId, false), out var absoluteOpBuff)
+            || !absoluteOpBuff.OperationCostSetsAbsoluteValue
+            || absoluteOpBuff.OperationCost != -baseOperation)
+        {
+            return $"绝对 operation cost=0 未正确记录：handled={setAbsolute}, actual={target.OperationCost}";
+        }
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 1, 0, false, false, false }, ctx, out bool relativeAfterSet);
+        if (!relativeAfterSet || target.OperationCost != 1)
+        {
+            return $"绝对 operation cost 后的临时 +1 未叠加：actual={target.OperationCost}";
+        }
+
+        engine.Api.RemoveTemporaryBuffs();
+        if (target.KreditCost != baseKredit || target.OperationCost != 0
+            || target.BuffsBySource.Count != 1
+            || !target.BuffsBySource.TryGetValue((source.CardId, false), out var retainedAbsolute)
+            || !retainedAbsolute.OperationCostSetsAbsoluteValue)
+        {
+            return $"临时改费清理后未保留绝对设值：费用 {target.KreditCost}/{baseKredit}，"
+                 + $"行动费 {target.OperationCost}/0，buff槽={target.BuffsBySource.Count}";
+        }
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeAbsolute);
+        if (!removeAbsolute || target.OperationCost != baseOperation || target.BuffsBySource.Count != 0)
+        {
+            return $"绝对 operation cost 撤销后未恢复：handled={removeAbsolute}, actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
         }
 
         return null;

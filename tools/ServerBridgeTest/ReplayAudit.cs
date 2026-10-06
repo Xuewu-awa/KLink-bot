@@ -23,6 +23,19 @@ namespace KLink.Bot.ServerBridgeTest;
 /// </summary>
 internal static class ReplayAudit
 {
+    // 动作流可能在单位已经离场后仍保留旧的移动/攻击尝试。
+    // 这类动作被内核拒绝是正确行为，不应被计入状态漂移的可归因失败。
+    private static bool IsAttributableHumanFailure(ReplayRunner.StepResult step)
+    {
+        if (step.Applied || !string.Equals(step.PlayerSide, "left", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return !((step.ActionType is "ML" or "AC")
+                 && step.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true);
+    }
+
     /// <param name="identityCorrection">
     /// 是否启用身份校正（见 <c>ReplayRunner.TryCorrectIdentity</c>）。
     /// 关掉它 = **修复前**的基线，用来做前后对比与单卡门控归因。
@@ -232,6 +245,59 @@ internal static class ReplayAudit
         }
         if (hqBad.Count == 0) Console.WriteLine("    （没有 —— 我们算的 HQ 与动作流一直一致）");
         Console.WriteLine();
+
+        // ④a：把「采样点暂时不同」与「差异持续到回合结束」分开。
+        // 每个 StepResult 的 HQ 都是在该动作结算前采样；如果同一侧、同一回合的
+        // 后续 EndOfTurn 已重新对上，则差异只存在于回合开始/动作前采样点。
+        var humanHqBad = hqBad
+            .Where(s => string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
+            .ToList();
+        var transientHumanHq = new List<ReplayRunner.StepResult>();
+        foreach (var badStep in humanHqBad)
+        {
+            int index = -1;
+            for (int i = 0; i < report.Steps.Count; i++)
+            {
+                if (report.Steps[i].ActionId == badStep.ActionId)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0)
+            {
+                continue;
+            }
+
+            var sameTurnEnd = report.Steps
+                .Skip(index + 1)
+                .TakeWhile(s => s.Turn == badStep.Turn)
+                .FirstOrDefault(s => s.ActionType == "XActionEndOfTurn"
+                    && string.Equals(s.PlayerSide, badStep.PlayerSide, StringComparison.Ordinal));
+            if (sameTurnEnd is not null && sameTurnEnd.HqMatches)
+            {
+                transientHumanHq.Add(badStep);
+            }
+        }
+
+        Console.WriteLine($"=== ④a 人类 HQ 差异分类：{humanHqBad.Count} 条 ===");
+        Console.WriteLine($"    同回合 EndOfTurn 重新对上（采样假象）：{transientHumanHq.Count} 条");
+        Console.WriteLine($"    到同回合 EndOfTurn 仍未对上：{humanHqBad.Count - transientHumanHq.Count} 条");
+        Console.WriteLine("    按动作类型：" +
+            (humanHqBad.Count == 0
+                ? "（没有）"
+                : string.Join("；", humanHqBad
+                    .GroupBy(s => s.ActionType)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => $"{g.Key}={g.Count()}"))));
+        Console.WriteLine("    按差值（实际-期望）：" +
+            (humanHqBad.Count == 0
+                ? "（没有）"
+                : string.Join("；", humanHqBad
+                    .GroupBy(s => s.ActualHq - s.ExpectedHq)
+                    .OrderBy(g => g.Key)
+                    .Select(g => $"{g.Key:+#;-#;0}={g.Count()}"))));
+        Console.WriteLine();
         Console.WriteLine("    ⚠️ 判读须知（2026-10-02，214436 查死）：`XActionStartOfTurn` 那一条");
         Console.WriteLine("       客户端是在**自己回合开始触发器跑之前**采样的，而本器是在");
         Console.WriteLine("       `EndTurn(对方) → StartTurn(我方)` 里**先跑触发器、后处理这条标记**");
@@ -253,38 +319,50 @@ internal static class ReplayAudit
         if (bad.Count == 0) Console.WriteLine("    （没有）");
         Console.WriteLine();
 
-        // ⑤b ★★ **首个「人类动作」失败点** —— 这才是要查的地方
+        // ⑤b ★★ **首个「可归因人类动作」失败点** —— 这才是要查的地方
         //
         // 为什么单独标出来：**第一次漂开的位置才是根因**，后面全是它的连锁后果。
         // 而且只有**人类动作**是 ground truth —— bot 自己的动作是**旧内核**生成的，
         // 用新内核重放自然会被拒，那不是保真度信号。
         //
         // ⚠️ 这条以前没有，所以每次都要人工从一长串失败里找"第一条人类的"。
-        var firstHumanFail = report.Steps
+        var rawHumanFailures = report.Steps
             .Where(s => !s.Applied && string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
+            .OrderBy(s => s.ActionId)
+            .ToList();
+        var attributableHumanFailures = rawHumanFailures
+            .Where(IsAttributableHumanFailure)
+            .ToList();
+        var staleDiscardFailures = rawHumanFailures
+            .Where(s => !IsAttributableHumanFailure(s))
+            .ToList();
+        var firstHumanFail = attributableHumanFailures
             .OrderBy(s => s.ActionId)
             .FirstOrDefault();
 
-        Console.WriteLine("=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===");
+        // 机器可读：汇总脚本必须使用这个数字，而不是从 ⑤ 的展示文本猜测。
+        Console.WriteLine($"⑤b 可归因人类失败：{attributableHumanFailures.Count} 条");
+        Console.WriteLine($"⑤b 过期弃牌动作：{staleDiscardFailures.Count} 条");
+        Console.WriteLine("=== ⑤b ★ 首个「可归因人类动作」失败点（根因通常在这里）===");
         if (firstHumanFail is null)
         {
-            Console.WriteLine("    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐");
+            Console.WriteLine("    ✅ **没有可归因的人类动作失败** ⇒ 这一局没有发现可归因的状态漂移点");
         }
         else
         {
+            int priorBotFailures = report.Steps.Count(s =>
+                s.ActionId < firstHumanFail.ActionId
+                && !s.Applied
+                && !string.Equals(s.PlayerSide, "left", StringComparison.Ordinal));
+            int priorStaleFailures = rawHumanFailures.Count(s =>
+                s.ActionId < firstHumanFail.ActionId
+                && !IsAttributableHumanFailure(s));
             Console.WriteLine($"    #{firstHumanFail.ActionId} t{firstHumanFail.Turn} " +
                               $"{firstHumanFail.ActionType}：{firstHumanFail.Failure}");
-            Console.WriteLine($"    （之前 {report.Steps.Count(s => s.ActionId < firstHumanFail.ActionId && !s.Applied)} 条失败都是 bot 自己的动作，不算信号）");
-            if (firstHumanFail.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true
-                && firstHumanFail.ActionType is "ML" or "AC")
-            {
-                Console.WriteLine("    ⇒ 这是对已离场单位的过期动作；内核已正确拒绝，不作为状态漂开点。");
-            }
-            else
-            {
-                Console.WriteLine("    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。");
-                Console.WriteLine("       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。");
-            }
+            Console.WriteLine($"    （之前 {priorBotFailures} 条 bot 失败不算信号；" +
+                              $"另有 {priorStaleFailures} 条过期弃牌动作被排除）");
+            Console.WriteLine("    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。");
+            Console.WriteLine("       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。");
         }
         Console.WriteLine();
 

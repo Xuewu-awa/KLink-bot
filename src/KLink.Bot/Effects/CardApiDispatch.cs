@@ -61,6 +61,15 @@ public sealed partial class CardApi
             ["IsLocatedInHand"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsLocatedInHand(x),
             ["IsLocatedInDeck"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsLocatedInDeck(x),
             ["IsSideActive"] = (c, r, a) => IsSideActive(SideArg(r, a, 0)),
+            // `IsTopDeckNavy(side, out isNavy)`：蓝图先取指定阵营牌库的第 0 张，
+            // 再用 `getHasGameplayTag(subtype.navy)` 判定。空牌库必须返回 false，
+            // 且 side 是显式参数，不能用 receiver 的阵营替代。
+            ["IsTopDeckNavy"] = (c, r, a) =>
+            {
+                var side = SideArg(r, a, 0, c.Controller);
+                var top = c.State.Deck(side).FirstOrDefault();
+                return top is not null && HasGameplayTag(top, "subtype.navy");
+            },
             ["IsValid"] = (c, r, a) => AsCard(a.FirstOrDefault()) is not null || SelfArg(c, r, a) is not null,
             // `IsCardReserved(InCardName, out IsReserved)` ——
             // `BP_CardFunctions.g.cs:24131-24151` 只是把
@@ -112,6 +121,12 @@ public sealed partial class CardApi
                 (int)Side.Right => (int)CardLocation.BoardHqRight,
                 _ => (int)CardLocation.NotAvailable,
             },
+            // `GetDeckLocationBySide(side, out deckLocation)` is a pure Blueprint
+            // enum mapping: Left -> DeckLeft, every other supported side -> DeckRight.
+            ["GetDeckLocationBySide"] = (c, r, a) =>
+                SideArgOrNull(a, 0) is Side.Left
+                    ? (int)CardLocation.DeckLeft
+                    : (int)CardLocation.DeckRight,
             // ⚠️⚠️ 形状修正（2026-10-02）：`IsSameSideUnit` 是 **BaseCardObject 的成员函数**，
             //     权威形状是 `Context{卡}.IsSameSideUnit(side)` —— **接收者才是被查的那张卡**，
             //     唯一的实参是 `side`（int），第 2 项是 out 槽。
@@ -502,15 +517,18 @@ public sealed partial class CardApi
             //    第一个参数都是"哪张卡发起的"，第二个才是阵营。
             //    读 index 0 会拿到一张卡对象 → `SideArg` 退化成 receiver 的 owner，
             //    对"给对手加槽位"这类卡会加错边。
-            ["GainKreditSlot"] = (c, r, a) => { GainKreditSlot(SideArg(r, a, 1, c.Controller), 1); return null; },
+            ["GainKreditSlot"] = (c, r, a) =>
+            {
+                var giver = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                GainKreditSlot(SideArg(r, a, 1, c.Controller), 1, giver);
+                return null;
+            },
             ["LoseKreditSlot"] = (c, r, a) =>
             {
                 // BP_CardFunctions::LoseKreditSlot(side), L_0005:
                 // ChangeKreditSlotsBySide(side, -1, 0). Only slots change;
                 // the notifier carries the same current kredits before/after.
                 Side side = SideArg(r, a, 0, c.Controller);
-                c.State.SetKreditNaturalSlots(side,
-                    Math.Max(c.State.KreditNaturalSlots(side), c.State.MaxKredits(side)));
                 c.State.AddMaxKredits(side, -1);
                 // LoseKreditSlot L_0026 is unconditional, including at zero slots.
                 c.State.RecordKreditSlotLoss(side);
@@ -597,6 +615,9 @@ public sealed partial class CardApi
             // `RemovePin(card, out qqq)` 与 `UnpinUnit` 共享同一条蓝图落点：
             // 移除 Pinned，同时由 CardApi 清零 pinnedTurns 并广播解除事件。
             ["RemovePin"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Pinned),
+            // `ChangedPinnedTurns(cardID, instigatorID, turnsToChange, out qqq)`：
+            // 蓝图只允许对有效、在场的单位修改，并将结果夹在 [0, 5]。
+            ["ChangedPinnedTurns"] = (c, r, a) => DoChangedPinnedTurns(c, a),
             ["SuppressUnit"] = (c, r, a) => DoSuppressUnit(c, r, a),
 
             // ★★ 2026-10-02 补：`SuppressMultipleUnits` **原来没有派发键** ⇒
@@ -1020,6 +1041,28 @@ public sealed partial class CardApi
                     : 0;
             },
 
+            // `getAttackTempBuffAmount(cardID, out amount)` has the same
+            // receiver/source shape as the kredit query: read the amount
+            // contributed by one source from the target card's buff ledger.
+            ["getAttackTempBuffAmount"] = (c, r, a) =>
+            {
+                var target = SelfArg(c, r, a);
+                if (target is null)
+                {
+                    return 0;
+                }
+
+                int sourceId = IntArg(a, 0);
+                if (target.BuffsBySource.TryGetValue((sourceId, true), out var temporary))
+                {
+                    return temporary.Attack;
+                }
+
+                return target.BuffsBySource.TryGetValue((sourceId, false), out var permanent)
+                    ? permanent.Attack
+                    : 0;
+            },
+
             // `getAndDecryptKredit` —— 「这张卡当前的费用」，和 `getTotalKreditCost` 同义。
             //
             // ## 为什么必须有它（2026-10-01，对局 508065 #36）
@@ -1285,6 +1328,12 @@ public sealed partial class CardApi
             // `GetIsGoldCard` is the native `isGoldCard` getter.  Its 24 IR call
             // sites use implicit self and expose only the boolean out slot.
             ["GetIsGoldCard"] = (c, r, a) => SelfArg(c, r, a)?.IsGold ?? false,
+            // `WasRightMostCardWhenPlayedFromHand` is a Blueprint wrapper around
+            // `JSON_GetBool(Card, "WasRightMostWhenPlayedFromHandKey", ...)`.
+            // The first argument is either implicit self or an explicit cardPlayed.
+            ["WasRightMostCardWhenPlayedFromHand"] = (c, r, a) =>
+                (AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a)) is { } card
+                && JsonGetBool(card, "WasRightMostWhenPlayedFromHandKey"),
             ["hasActivePincerEffect"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pincer),
 
@@ -1476,6 +1525,9 @@ public sealed partial class CardApi
                 SetCardsSeenByCipher(IntArg(a, 0), IntArg(a, 1), SideArg(r, a, 2));
                 return null;
             },
+            // `SetCardSeen(cardID_Seen, instigatorID, out qqq)`。
+            // 蓝图的目标是 a[0]，a[1] 只用于客户端通知；qqq 固定为 0。
+            ["SetCardSeen"] = (c, r, a) => SetCardSeen(IntArg(a, 0), IntArg(a, 1)),
             // `AddIntelToCard(cardID, instigatorID, amount, out qqq)`
             // 3 个调用点（全在 `card_unit_lublin_r_xiii`），a[0] 是**整数 cardID**。
             ["AddIntelToCard"] = (c, r, a) =>
@@ -1866,8 +1918,11 @@ public sealed partial class CardApi
             return null;
         }
 
-        c.State.Move(match, side.HandOf());
-        return match;
+        // 线上函数不是“直接塞进手牌”：它先把目标卡放回牌库顶，
+        // 再调用 DrawTopCardFromDeck。这样才能保留手牌满时烧牌、抽牌动作日志、
+        // OnCardDrawnFromDeck / OnOtherCardDrawnFromDeck 以及位置号规范化。
+        c.State.Move(match, side.DeckOf(), -1);
+        return c.Engine.DrawCard(side);
     }
 
     /// <summary>
@@ -3110,10 +3165,8 @@ public sealed partial class CardApi
         // 签名（实测 136 个调用点）：ChangeKreditCost(卡, instigatorID, 数值, changeType, bool, out)
         //   a[1] = 来源卡 ID —— **必须带上**，光环的 `isBuffedByCard` / RemoveTheBuff 都按来源记账
         //   a[2] = 数值
-        //   a[3] = changeType。实测只出现 0 / 1 / 4 三种：
-        //            0 = 在卡面费用基础上的偏移（正常减费）
-        //            1 = 把费用设成绝对值（`card_event_committed_crew` 用 `-getTotalKreditCost`）
-        //            4 = **撤销这个来源的临时改费**（`RemoveTheBuff` 一族传数值 0）
+        //   a[3] = changeType：0=临时相对修正，1=永久相对修正，2/3=直接设值，
+        //            4=撤销该来源的临时修正。
         //
         // ⚠️ 这里**不能**像旧版那样做 `target.KreditCost += delta`：
         //    旧版既不看 a[1]（来源）也不看 a[3]（changeType），于是
@@ -3127,22 +3180,34 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
-            RemoveCostBuff(target, sourceId);
+            // 蓝图按 buff 字段撤销；既有手写光环使用永久来源槽，
+            // 所以临时槽优先，找不到时兼容回退到永久槽。
+            RemoveCostBuff(target, sourceId, temporary: true,
+                fallbackToPermanent: true);
             return null;
         }
 
-        if (changeType == ChangeTypeSetValue || changeType == ChangeTypeSetValueReal)
+        bool temporary = changeType == ChangeTypeTempBuffGive;
+        if (changeType is ChangeTypeSetValueReal or ChangeTypeSuppress)
         {
-            // 绝对值语义：不管卡面多少，最终就是 amount。存成「相对卡面费用的偏移」，
-            // 这样和别的来源叠加时仍然是加法。
+            // 设值语义：不管卡面多少，最终就是 amount。存成「相对卡面费用的偏移」，
+            // 这样和其它来源叠加时仍然是加法。
             amount -= target.Definition.Kredits;
         }
 
         int previousCost = target.KreditCost;
-        var buff = GetOrCreateBuff(target, sourceId);
-        buff.KreditCost = amount;
+        var buff = GetOrCreateBuff(target, sourceId, temporary);
+        if (temporary || changeType == ChangeTypePermBuff)
+        {
+            // Live fields are additive for both temporary and permanent buff modes.
+            buff.KreditCost += amount;
+        }
+        else
+        {
+            buff.KreditCost = amount;
+        }
         buff.KreditCostSetsAbsoluteValue =
-            changeType is ChangeTypeSetValue or ChangeTypeSetValueReal;
+            changeType is ChangeTypeSetValueReal or ChangeTypeSuppress;
         target.RecalculateStats();
 
         _engine.FireSubAction("ZActionSetKreditCost", new[]
@@ -3167,12 +3232,18 @@ public sealed partial class CardApi
     /// `ChangeAttack`（撤销该来源的攻 buff）/ `ChangeDefense`（非法值，no-op）复用 ——
     /// 名字里的 "Cost" 只是它当初的落点，别再按"只属于费用"来理解。
     /// </summary>
-    private const int ChangeTypeOffset = 0;        // 相对卡面费用加减
-    private const int ChangeTypeSetValue = 1;      // 设成绝对值
+    private const int ChangeTypeTempBuffGive = 0;  // 临时相对费用加减
+    private const int ChangeTypeSetValue = 1;      // 兼容手写光环的绝对值标记
+    private const int ChangeTypePermBuff = 1;     // 永久相对费用加减
+    private const int ChangeTypeSuppress = 3;     // 设值/抑制分支
+    private const int ChangeTypeOffset = 0;        // 兼容旧的手写光环调用
     private const int ChangeTypeTempBuffRemove = 4; // 撤销该来源的临时改费
+    private const int ChangeTypeOperationCostSetValue = 2;
+    private const int ChangeTypeOperationCostSuppress = 3;
+    private const int ChangeTypeOperationCostVeteranSet = 5;
 
     /// <summary>
-    /// ⚠️ `EChangeType::SetValue` 的**真实枚举值**是 <b>2</b>，不是 <see cref="ChangeTypeSetValue"/> 的 1。
+    /// ⚠️ `EChangeType::SetValue` 的**真实枚举值**是 <b>2</b>，不是手写光环兼容常量 1。
     ///
     /// 出处：`<kards-src>\Source\kards\Public\EChangeType.h:6-17`
     /// <code>
@@ -3186,11 +3257,8 @@ public sealed partial class CardApi
     /// };
     /// </code>
     ///
-    /// 本内核历史上把 **1** 当成"设成绝对值"（见 <see cref="ChangeTypeSetValue"/> 的注释），
-    /// 和这份枚举对不上 —— 1 实际是 `permBuff`（相对值、永久）。
-    /// 那一处差异影响 **41 个调用点**（`out/gcs/scan-changetype.py` 的统计：
-    /// changeType=0 ×58 / **1 ×41** / **2 ×7** / 4 ×30），
-    /// 本轮**没有动它** —— 它不在本轮的 A/B 两件事范围内，改了会把对拍结论搅在一起。
+    /// 线上 1 实际是 `permBuff`（相对值、永久）；2 才是 `SetValue`。
+    /// 全池统计为 changeType=0 ×58 / 1 ×41 / 2 ×7 / 4 ×30。
     /// 这里只**新增** 2 的处理，因为 `card_event_pams` 用它做
     /// 「Add it to your deck with a cost of 0.」（卡面原文，7 个调用点全是 `amount=0`）。
     /// </summary>
@@ -3199,13 +3267,18 @@ public sealed partial class CardApi
     /// <summary>
     /// 撤销某个来源在目标卡上的**费用** buff（其余 buff 保留）。
     ///
-    /// ⚠️ 只动**永久**那个槽位：调用方是光环的 `RemoveTheBuff`（离场还原 / 回合结束重挂），
-    /// 它们施加的本来就是永久修正（`ChangeKreditCost` 的 changeType 0/1，不是 4）。
-    /// 临时改费是另一条路径（`changeType=4`，见 `DoChangeKreditCost`）。
+    /// 默认清理永久来源槽；`changeType=4` 会先清临时槽，找不到时回退到永久槽，
+    /// 以兼容已经按来源记账的手写光环。
     /// </summary>
-    private void RemoveCostBuff(CardInstance target, int sourceId)
+    private void RemoveCostBuff(CardInstance target, int sourceId, bool temporary = false,
+                                bool fallbackToPermanent = false)
     {
-        var key = (sourceId, false);
+        var key = (sourceId, temporary);
+        if (temporary && !target.BuffsBySource.ContainsKey(key) && fallbackToPermanent)
+        {
+            key = (sourceId, false);
+        }
+
         if (!target.BuffsBySource.TryGetValue(key, out var buff))
         {
             return;
@@ -3312,12 +3385,16 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
-            if (target.BuffsBySource.TryGetValue((sourceId, false), out var existing))
+            var key = target.BuffsBySource.ContainsKey((sourceId, true))
+                ? (sourceId, true)
+                : (sourceId, false);
+            if (target.BuffsBySource.TryGetValue(key, out var existing))
             {
                 existing.OperationCost = 0;
+                existing.OperationCostSetsAbsoluteValue = false;
                 if (existing.IsEmpty)
                 {
-                    target.BuffsBySource.Remove((sourceId, false));
+                    target.BuffsBySource.Remove(key);
                 }
 
                 target.RecalculateStats();
@@ -3326,8 +3403,27 @@ public sealed partial class CardApi
             return null;
         }
 
-        var buff = GetOrCreateBuff(target, sourceId);
-        buff.OperationCost = amount;
+        bool temporary = changeType == ChangeTypeTempBuffGive;
+        var buff = GetOrCreateBuff(target, sourceId, temporary);
+        bool setsAbsolute = changeType is ChangeTypeOperationCostSetValue
+            or ChangeTypeOperationCostSuppress
+            or ChangeTypeOperationCostVeteranSet;
+        if (setsAbsolute)
+        {
+            amount -= target.Definition.OperationCost;
+            buff.OperationCost = amount;
+            buff.OperationCostSetsAbsoluteValue = true;
+        }
+        else if (temporary || changeType == ChangeTypePermBuff)
+        {
+            buff.OperationCost += amount;
+            buff.OperationCostSetsAbsoluteValue = false;
+        }
+        else
+        {
+            buff.OperationCost = amount;
+            buff.OperationCostSetsAbsoluteValue = false;
+        }
         target.RecalculateStats();
 
         _engine.FireSubAction("ZActionChangeOperationCost", new[]
@@ -4095,7 +4191,7 @@ public sealed partial class CardApi
     // ==================== 光环（aura）的实现 ====================
     //
     // 四张光环卡：
-    //   card_unit_85_pioneer_company  本回合第一张指令 -1 费（下限 1）
+    //   card_unit_85_pioneer_company  本回合第一张指令 -1 费（通用下限 0）
     //   card_unit_big_red_one         手牌里的牌都是 4 费
     //   card_unit_214th_amur          己方 T-34 +1 重甲、行动费 -1
     //   card_event_committed_crew     本回合 Spitfire 0 费、部署时 +3+3
@@ -4443,9 +4539,11 @@ public sealed partial class CardApi
     private void RemoveAuraBuffFrom(CardInstance aura, CardInstance target)
     {
         AuraTrace?.Add($"RemoveTheBuff: {aura.Definition.Name} → {target.Name}#{target.CardId}" +
-                       $"（buff槽={target.BuffsBySource.Count} 含本来源={target.BuffsBySource.ContainsKey((aura.CardId, false))}）");
+                       $"（buff槽={target.BuffsBySource.Count} 含本来源={target.BuffsBySource.ContainsKey((aura.CardId, false)) || target.BuffsBySource.ContainsKey((aura.CardId, true))}）");
 
-        if (!target.BuffsBySource.ContainsKey((aura.CardId, false)))
+        bool removed = target.BuffsBySource.Remove((aura.CardId, false));
+        removed |= target.BuffsBySource.Remove((aura.CardId, true));
+        if (!removed)
         {
             return;
         }
@@ -4455,7 +4553,7 @@ public sealed partial class CardApi
         //    但如果将来某张卡的 RemoveTheBuff 只想撤费用、保留攻防，
         //    就必须改成按字段撤销 —— 客户端的 ChangeKreditCost(…, changeType=4)
         //    只清 KreditCost，不清 Attack/Defense。
-        RemoveBuffFromSource(target, aura.CardId);
+        target.RecalculateStats();
     }
 
     /// <summary>
@@ -4723,6 +4821,16 @@ public sealed partial class CardApi
         if (target is not null)
         {
             PinUnit(target);
+        }
+
+        return null;
+    }
+
+    private object? DoChangedPinnedTurns(EffectContext c, object?[] a)
+    {
+        if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } target)
+        {
+            ChangePinnedTurns(target, IntArg(a, 2), IntArg(a, 1));
         }
 
         return null;

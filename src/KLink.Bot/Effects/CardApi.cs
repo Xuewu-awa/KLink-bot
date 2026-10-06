@@ -1168,7 +1168,22 @@ public sealed partial class CardApi
         }
 
         // si=1300：Clamp(.., 0, 99)
-        return Math.Clamp(calculated, 0, 99);
+        calculated = Math.Clamp(calculated, 0, 99);
+
+        // 238th Regiment 的回放归因需要同时看到当前余额和槽位上限：
+        // 卡面判据读的是 MaxKredits（不是当前剩余 kredit），而两者在自然槽位
+        // 实验里可能只差 1。只对这张卡留诊断，避免污染普通回放日志。
+        if (dealer?.Name == "card_unit_238th_regiment")
+        {
+            _engine.Log.Add($"[238th] {dealer.Name}#{dealer.CardId} -> " +
+                            $"{receiver.Name}#{receiver.CardId} " +
+                            $"kredit={State.Kredits(dealer.Owner)}/{State.MaxKredits(dealer.Owner)} " +
+                            $"damage={damage}->{calculated} " +
+                            $"fromAttack={fromAttack} fromFight={fromFight} " +
+                            $"suppressed={dealer.Keywords.Contains(Keyword.Suppressed)}");
+        }
+
+        return calculated;
     }
 
     /// <summary>「造成伤害。所有伤害都走这里，保证事件顺序一致。」</summary>
@@ -1852,11 +1867,16 @@ public sealed partial class CardApi
         }
     }
 
-    /// <summary>增加 kredit 槽位上上限并回满（ZActionChangeKredits 的常见用法）。</summary>
-    public void GainKreditSlot(Side side, int count)
+    /// <summary>
+    /// 增加 kredit 槽位上限，但不改变当前 kredit。
+    /// 线上 `BP_CardFunctions::GainKreditSlot` 只调用
+    /// `ChangeKreditSlotsBySide(side, 1, cardID)`；当前资源的变化由
+    /// `ChangeKreditsBySide` / `SetKreditsAndKreditSlots` 单独负责。
+    /// </summary>
+    public void GainKreditSlot(Side side, int count, CardInstance? giver = null)
     {
-        State.AddMaxKredits(side, count);
-        State.AddKredits(side, count);
+        int newMax = Math.Clamp(State.MaxKredits(side) + count, 0, MatchEngine.MaxKreditCap);
+        State.SetMaxKredits(side, newMax);
         _engine.FireSubAction("ZActionChangeKredits", new[]
         {
             ActionValue2.Str("side", side.ToWire()),
@@ -1864,7 +1884,7 @@ public sealed partial class CardApi
             ActionValue2.Int("newKredits", State.Kredits(side)),
         });
 
-        FireExtraKreditSlotGain(side, count, giver: null);
+        FireExtraKreditSlotGain(side, count, giver);
     }
 
     /// <summary>
@@ -1877,6 +1897,7 @@ public sealed partial class CardApi
     public void FireExtraKreditSlotGain(Side side, int count, CardInstance? giver)
         => FireTrigger("OnAfterExtraKreditSlotGain", null, side,
             eventArgs: new object?[] { giver, (int)side, count < 0 },
+            eventSubject: giver,
             namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 ["cardGivingKredit"] = giver,
@@ -2205,6 +2226,27 @@ public sealed partial class CardApi
             {
                 ["cardBeingPinned"] = target,
             });
+    }
+
+    /// <summary>
+    /// 按正版 `ChangedPinnedTurns` 修改在场单位的钉住剩余回合数。
+    /// 蓝图先验证卡有效、在场且为单位，再执行
+    /// <c>Clamp(card.pinnedTurns + turnsToChange, 0, 5)</c>，
+    /// 并在动作流程中记录 `ZActionChangePinnedTurns`。
+    /// </summary>
+    public void ChangePinnedTurns(CardInstance target, int turnsToChange, int instigatorId)
+    {
+        if (!target.Location.IsBoard() || target.IsHq || !IsUnit(target))
+        {
+            return;
+        }
+
+        target.PinnedTurns = Math.Clamp(target.PinnedTurns + turnsToChange, 0, 5);
+        _engine.FireSubAction("ZActionChangePinnedTurns", new[]
+        {
+            ActionValue2.Int("turnsToChange", turnsToChange),
+            ActionValue2.Int("instigatorID", instigatorId),
+        });
     }
 
     /// <summary>
@@ -3174,6 +3216,24 @@ public sealed partial class CardApi
 
             card.CardSeen = true;
         }
+    }
+
+    /// <summary>
+    /// `SetCardSeen(cardID_Seen, instigatorID, out qqq)`。
+    ///
+    /// 蓝图先按第一个参数解析目标卡，再写入该卡的 `cardSeen = true`；
+    /// 第二个参数只用于客户端通知，内核没有通知层，因此不参与状态判定。
+    /// `qqq` 在正版函数中固定写为 0。
+    /// </summary>
+    public int SetCardSeen(int cardIdSeen, int instigatorId)
+    {
+        _ = instigatorId;
+        if (GetCardFromID(cardIdSeen) is { } card)
+        {
+            card.CardSeen = true;
+        }
+
+        return 0;
     }
 
     /// <summary>

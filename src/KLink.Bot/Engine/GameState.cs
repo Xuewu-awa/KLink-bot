@@ -51,14 +51,6 @@ public sealed class GameState
     public int KreditSlotsLost(Side side) => Math.Abs(_kreditSlotsLost[(int)side]);
     public void RecordKreditSlotLoss(Side side) => _kreditSlotsLost[(int)side]--;
 
-    // Natural growth is based on the side's lifetime slot progression, while
-    // LoseKreditSlot only lowers the current cap. This preserves the growth
-    // baseline for later turns without changing the visible current cap.
-    private readonly int[] _kreditNaturalSlots = new int[3];
-    public int KreditNaturalSlots(Side side) => _kreditNaturalSlots[(int)side];
-    public void SetKreditNaturalSlots(Side side, int value)
-        => _kreditNaturalSlots[(int)side] = Math.Max(0, value);
-
     /// <summary>
     /// Active global restrictions from `FGameplayRestrictionEffect`.
     /// A restriction is keyed by affected side, type, and source card ID;

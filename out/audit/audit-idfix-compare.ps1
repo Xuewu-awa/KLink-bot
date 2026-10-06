@@ -69,9 +69,9 @@ try {
             $m.人类HQ不匹配 = [int]$Matches[1]
         }
 
-        # ⑤ 段里按 side 数人类失败（left）
-        if ($text -match '=== ⑤ 未应用的动作：(\d+) 条') { $m.人类失败 = [int]$Matches[1] }
-        # 人类失败数只数 left —— 用 ⑤ 段逐行统计
+        # ⑤b 的机器可读计数已排除过期弃牌 ML/AC。
+        if ($text -match '⑤b 可归因人类失败：(\d+) 条') { $m.人类失败 = [int]$Matches[1] }
+        # bot 失败仍从 ⑤ 展示段逐行统计；人类失败不再从展示文本猜测。
         $inSec = $false; $left = 0; $right = 0
         foreach ($line in ($text -split "`n")) {
             if ($line -match '=== ⑤ 未应用的动作') { $inSec = $true; continue }
@@ -79,7 +79,6 @@ try {
             elseif ($inSec -and $line -match '^\s*#\d+ t\d+ \S+（right）') { $right++ }
             elseif ($inSec -and $line -match '=== ') { $inSec = $false }
         }
-        $m.人类失败 = $left
         $m.bot失败 = $right
 
         if ($text -match '=== ④ HQ 对不上的动作：(\d+) 条') { $m.HQ不匹配 = [int]$Matches[1] }

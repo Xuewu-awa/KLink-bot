@@ -498,8 +498,9 @@ public sealed class MatchEngine
         // `the_war_machine` 抬到 13，下一回合被我们吃回 12；到 t21 真实槽位已 21、
         // 我们只算 12 ⇒ 人类打得出的牌我们打不出 ⇒ 从 t21 起动作接连失败。
         //
-        // ★★ **已定案（2026-10-02）：自然增长是「自己每一个回合 +1」，不是「全局回合号」。**
-        // 下面这段（只给**行动方** +1）就是正确实现，**不要再改**。
+        // ★★ 线上 pak 的 `BP_Logic::StartTurnBySide` 直接读取当前
+        // `getKreditSlotBySide`，满足条件时加 1，再用同一个新值同时写回
+        // kredit 与 kredit slot；这里不能维护一个隐藏的生命周期槽位基线。
         //
         // ---- 证据 1（权威）：真人玩家给出的规则描述 ----
         // 逐字引用（问的就是"槽位到底怎么涨"）：
@@ -514,9 +515,8 @@ public sealed class MatchEngine
         // ⇒ 「我第 1 个自己回合 = 1」「对面第 1 个自己回合**也** = 1」
         //   「我第 2 个自己回合 = 2」「对面第 2 个自己回合**也** = 2」
         //   「战争机器 +1 → 3」「**我的**下个回合自然增长 → 4」。
-        //   即 **槽位 = 自己第几个回合（+ 卡牌效果的额外槽）**，与 `State.Turn` 无关。
-        //   顺带确认了下面这段的两个细节：回满发生在**每个自己回合开始时**，
-        //   且卡牌效果抬上去的槽位**参与**下一次自然增长（3 → 4）。
+        //   即正常情况下每个自己的回合开始时当前槽位 +1；卡牌效果抬高的
+        //   当前槽位也会参与下一次增长（3 → 4），但降槽后的 3 也只能恢复到 4。
         //
         // ---- 证据 2（重算的花费表，**实际支付**口径）----
         // 工具：`tools/ServerBridgeTest --kredit-table`（成本取内核
@@ -575,9 +575,7 @@ public sealed class MatchEngine
         // 而"自己第 6 回合 + 战争机器 1 = 7" —— **正好花光，一分不差**。
         // 内核多算的那 2 点油费（3 vs 1）把它挤成了 2，于是最后那张 3 费牌打不出来。
         int previousSlots = State.MaxKredits(side);
-        int previousKredits = State.Kredits(side);
-        int naturalSlots = Math.Max(State.KreditNaturalSlots(side), previousSlots);
-        int slots = naturalSlots;
+        int slots = previousSlots;
         if (!State.HasGameplayRestriction(side,
                 GameplayRestrictionType.CannotKreditSlotAtTurnStart)
             && slots < NaturalKreditCap)
@@ -586,16 +584,10 @@ public sealed class MatchEngine
         }
 
         State.SetMaxKredits(side, Math.Min(MaxKreditCap, slots));
-        State.SetKreditNaturalSlots(side, slots);
-
-        // Effects such as "Lose a kredit slot" can leave temporary kredit above
-        // the reduced slot cap. Preserve that bonus across the next start and
-        // apply the natural +1 growth; ordinary spent kredit still refills to
-        // the new slot count.
-        int refilled = previousKredits > previousSlots
-            ? previousKredits + 1
-            : State.MaxKredits(side);
-        State.SetKredits(side, refilled);
+        // BP_Logic::StartTurnBySide calls SetKreditsAndKreditSlots with the
+        // same new slot value for both kredit and slot.  A temporary kredit
+        // bonus therefore does not survive the next start-of-turn refill.
+        State.SetKredits(side, State.MaxKredits(side));
         State.DecrementGameplayRestrictions();
 
         // 「本回合打出过哪些牌」按回合清空（客户端 GetCardsPlayedThisTurn 的语义）。
