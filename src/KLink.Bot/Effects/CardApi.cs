@@ -290,6 +290,19 @@ public sealed partial class CardApi
     /// </summary>
     public void RunCardEffect(CardInstance card, CardInstance? target)
     {
+        _engine.BeginEffectResolution();
+        try
+        {
+            RunCardEffectCore(card, target);
+        }
+        finally
+        {
+            _engine.EndEffectResolution();
+        }
+    }
+
+    private void RunCardEffectCore(CardInstance card, CardInstance? target)
+    {
         var ctx = new EffectContext
         {
             Engine = _engine,
@@ -1286,6 +1299,7 @@ public sealed partial class CardApi
         _triggerDepth++;
         try
         {
+            _engine.BeginEffectResolution();
             if (localsSeed is null)
             {
                 Vm.Run(program, ctx);
@@ -1310,6 +1324,7 @@ public sealed partial class CardApi
         }
         finally
         {
+            _engine.EndEffectResolution();
             _triggerDepth--;
         }
     }

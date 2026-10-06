@@ -57,6 +57,7 @@ internal static class SelfTest
         new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
         new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
         new("回合结束队列：普通→endofturn1→endofturn2、抑制门、临时 buff 清理", EndOfTurnQueueSemantics),
+        new("ForceEndTurn：效果完成后只结束一次，并记录来源卡 ID", ForceEndTurnDeferred),
         // ---- GetDeckByside 的出参形状（2026-10-02，对局 542091 t7 的根因）----
         // 蓝图出参是 `TArray<int> deckCardIDs`（卡 **ID**），内核曾实现成卡**实例**。
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
@@ -1927,6 +1928,46 @@ internal static class SelfTest
         if (ordinary.Attack != baseAttack)
         {
             return $"所有回合结束批次完成后才清理临时 buff：{ordinary.Attack} != {baseAttack}";
+        }
+
+        return null;
+    }
+
+    private static string? ForceEndTurnDeferred(CardDatabase db)
+    {
+        const string cardName = "card_event_calm_before_the_storm";
+        if (db.Find(cardName) is null)
+        {
+            return $"卡库里没有 {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var card = state.CreateWithId(cardName, Side.Left, 501, CardLocation.HandLeft, 0);
+        int startingTurn = state.Turn;
+        if (!engine.PlayCardDirectlyFromHand(card, toFrontline: false,
+                instigatorID: card.CardId, locationNumber: -1))
+        {
+            return "Calm Before the Storm 直接出牌失败";
+        }
+
+        var hits = state.ActionLog
+            .SelectMany(x => x.SubActions)
+            .Where(x => x.Name == "ZActionForceEndTurn")
+            .ToList();
+        if (hits.Count != 1)
+        {
+            return $"ForceEndTurn 应只记录一次，实际 {hits.Count} 次";
+        }
+
+        var instigator = hits[0].Values.FirstOrDefault(x => x.Name == "instigatorID");
+        if (instigator is null || instigator.Value != card.CardId)
+        {
+            return $"ForceEndTurn instigatorID 错误：{instigator?.Value.ToString() ?? "缺失"}";
+        }
+
+        if (state.Turn != startingTurn + 1 || state.ActiveSide != Side.Right)
+        {
+            return $"ForceEndTurn 未准确结束当前回合：turn={state.Turn}, active={state.ActiveSide}";
         }
 
         return null;

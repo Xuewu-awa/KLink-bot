@@ -18,6 +18,11 @@ namespace KLink.Bot.Engine;
 /// </summary>
 public sealed class MatchEngine
 {
+    private int _effectResolutionDepth;
+    private bool _processingForcedEndTurn;
+    private Side? _pendingForcedEndTurnSide;
+    private int _pendingForcedEndTurnInstigator;
+
     /// <summary>HQ 初始防御。依据：fyserver 注入的 bot 动作里出现 <c>{"side":"right","75":"20"}</c>。</summary>
     public const int InitialHqDefense = 20;
 
@@ -696,6 +701,66 @@ public sealed class MatchEngine
         StartTurn(side.Opposite());
     }
 
+    /// <summary>
+    /// Marks the current effect chain for a deferred ForceEndTurn request.
+    /// The blueprint notifier is deliberately asynchronous from the headless
+    /// engine's point of view: the current VM/trigger program must return first.
+    /// </summary>
+    internal void RequestForceEndTurn(Side side, int instigatorID)
+    {
+        if (_pendingForcedEndTurnSide is null)
+        {
+            _pendingForcedEndTurnSide = side;
+            _pendingForcedEndTurnInstigator = instigatorID;
+        }
+    }
+
+    internal void BeginEffectResolution()
+        => _effectResolutionDepth++;
+
+    internal void EndEffectResolution()
+    {
+        if (_effectResolutionDepth <= 0)
+        {
+            return;
+        }
+
+        _effectResolutionDepth--;
+        if (_effectResolutionDepth == 0)
+        {
+            ConsumePendingForcedEndTurn();
+        }
+    }
+
+    private void ConsumePendingForcedEndTurn()
+    {
+        if (_processingForcedEndTurn
+            || _pendingForcedEndTurnSide is not { } side)
+        {
+            return;
+        }
+
+        int instigatorID = _pendingForcedEndTurnInstigator;
+        _pendingForcedEndTurnSide = null;
+        _pendingForcedEndTurnInstigator = 0;
+
+        FireSubAction("ZActionForceEndTurn", new[]
+        {
+            ActionValue2.Int("instigatorID", instigatorID),
+        });
+
+        _processingForcedEndTurn = true;
+        try
+        {
+            EndTurn(side);
+        }
+        finally
+        {
+            _processingForcedEndTurn = false;
+            ConsumePendingForcedEndTurn();
+        }
+    }
+
     // ==================== 抽牌 ====================
 
     /// <summary>
@@ -973,6 +1038,23 @@ public sealed class MatchEngine
                                       bool skipLeaveTrigger, bool chargeKredits,
                                       bool recordAction, bool toFrontline,
                                       int locationNumber, int instigatorID)
+    {
+        BeginEffectResolution();
+        try
+        {
+            return PlayCardFromHandCoreImpl(card, target, skipLeaveTrigger, chargeKredits,
+                recordAction, toFrontline, locationNumber, instigatorID);
+        }
+        finally
+        {
+            EndEffectResolution();
+        }
+    }
+
+    private bool PlayCardFromHandCoreImpl(CardInstance card, CardInstance? target,
+                                          bool skipLeaveTrigger, bool chargeKredits,
+                                          bool recordAction, bool toFrontline,
+                                          int locationNumber, int instigatorID)
     {
         if (chargeKredits)
         {

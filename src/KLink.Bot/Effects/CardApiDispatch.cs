@@ -430,6 +430,15 @@ public sealed partial class CardApi
                     && c.Engine.PlayCardDirectlyFromHand(card, toFrontline, instigatorID, locationNumber);
                 return success;
             },
+            ["ForceEndTurn"] = (c, r, a) =>
+            {
+                // BP_CardFunctions::ForceEndTurn has no parameters and only
+                // forwards NotifyForceEndTurn(true). The protocol carries the
+                // source card ID, so defer the actual turn transition until
+                // the surrounding VM/trigger scope has returned.
+                c.Engine.RequestForceEndTurn(c.State.ActiveSide, c.Self?.CardId ?? 0);
+                return null;
+            },
             ["RandomIntFromRangeWithStream"] = (c, r, a) => DoRandomIntFromRange(c, a),
             ["GetPlayingSide"] = (c, r, a) => (int)c.Controller,
             ["GetStartingSide"] = (c, r, a) => (int)c.State.StartingSide,
