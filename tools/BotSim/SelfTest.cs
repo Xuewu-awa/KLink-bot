@@ -431,6 +431,8 @@ internal static class SelfTest
             JsonClearRemovesOnlyNamedKey),
         new("★ `JSON_RemoveFromIntArray` 只移除首个匹配值并正确回报 found",
             JsonRemoveFromIntArray),
+        new("★ 动态 GameplayTag 按目标 cardID 添加/删除、幂等且不污染 CustomAbility",
+            CustomGameplayTagDispatch),
 
         // ---- ★★ 防回归守卫：派发表静态缺口（2026-10-02）----
         //
@@ -4017,6 +4019,68 @@ internal static class SelfTest
         if (!missingHandled || missing is not false || card.CustomJson.ContainsKey("missing"))
         {
             return "缺少 JSON 数组字段时应返回 found=false，且不能新建字段";
+        }
+
+        return null;
+    }
+
+    private static string? CustomGameplayTagDispatch(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = engine.Api.SpawnOnBattlefield(Side.Left, InfRange1, frontline: false);
+        var target = engine.Api.SpawnOnBattlefield(Side.Left, InfRange1, frontline: false);
+        engine.Api.JsonSetInt(target, "keep", 7);
+        engine.Api.CustomAbilityAdd(target, "destruction", source);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Target = target, Controller = Side.Left,
+        };
+
+        object? added = engine.Api.InvokeByName("AddCustomGameplayTag", source,
+            new object?[] { new List<string> { "Subtype.Navy" }, target.CardId, source.CardId, null },
+            ctx, out bool addHandled);
+        if (!addHandled || added is not null || !engine.Api.HasCustomGameplayTag(target, "subtype.navy"))
+        {
+            return $"AddCustomGameplayTag 未按目标 cardID 生效（handled={addHandled}, tag={engine.Api.HasCustomGameplayTag(target, "subtype.navy")})";
+        }
+
+        engine.Api.InvokeByName("AddCustomGameplayTag", source,
+            new object?[] { new List<string> { "subtype.navy" }, target.CardId, source.CardId, null }, ctx, out _);
+        if (target.CustomJson.GetValueOrDefault("__customGameplayTags") != "subtype.navy")
+        {
+            return "重复添加 GameplayTag 不应产生重复存储";
+        }
+
+        if (!engine.Api.HasCustomGameplayTag(target, "subtype.navy")
+            || !engine.Api.HasCustomAbility(target, "destruction")
+            || engine.Api.JsonGetInt(target, "keep") != 7)
+        {
+            return "动态 GameplayTag 不应污染 CustomAbility 或其他 JSON 字段";
+        }
+
+        object? removed = engine.Api.InvokeByName("RemoveCustomGameplayTag", source,
+            new object?[] { new List<string> { "SUBTYPE.NAVY" }, target.CardId, source.CardId, false, null },
+            ctx, out bool removeHandled);
+        if (!removeHandled || removed is not null || engine.Api.HasCustomGameplayTag(target, "subtype.navy")
+            || target.CustomJson.ContainsKey("__customGameplayTags"))
+        {
+            return "RemoveCustomGameplayTag 未正确删除动态标签";
+        }
+
+        var staticNavy = db.Find("card_event_hms_belfast");
+        if (staticNavy is not null)
+        {
+            var staticCard = engine.Api.SpawnOnBattlefield(Side.Left, staticNavy.Name, frontline: false);
+            var staticCtx = new EffectContext
+            {
+                Engine = engine, State = state, Self = staticCard, Controller = Side.Left,
+            };
+            object? result = engine.Api.InvokeByName("getHasGameplayTag", staticCard,
+                new object?[] { new List<string> { "subtype.navy" }, null }, staticCtx, out bool handled);
+            if (!handled || result is not true)
+            {
+                return "删除动态标签不应影响卡面静态 GameplayTag 查询";
+            }
         }
 
         return null;

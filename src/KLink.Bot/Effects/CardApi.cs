@@ -2755,6 +2755,80 @@ public sealed partial class CardApi
     public bool HasCustomAbility(CardInstance card, string? ability = null)
         => card.CustomAbility is not null && (ability is null || card.CustomAbility == ability);
 
+    // Dynamic GameplayTags are card state, not custom abilities. Keep them in
+    // private JSON so snapshots persist them without overloading CustomAbility.
+    internal const string DynamicGameplayTagsKey = "__customGameplayTags";
+
+    public void AddCustomGameplayTag(CardInstance card, string tag)
+    {
+        string normalized = NormalizeGameplayTag(tag);
+        if (normalized.Length == 0)
+        {
+            return;
+        }
+
+        var tags = GetCustomGameplayTags(card);
+        if (tags.Contains(normalized, StringComparer.Ordinal))
+        {
+            return;
+        }
+
+        tags.Add(normalized);
+        JsonSetString(card, DynamicGameplayTagsKey, string.Join(JsonListSeparator, tags));
+    }
+
+    public bool RemoveCustomGameplayTag(CardInstance card, string tag)
+    {
+        string normalized = NormalizeGameplayTag(tag);
+        if (normalized.Length == 0)
+        {
+            return false;
+        }
+
+        var tags = GetCustomGameplayTags(card);
+        bool removed = tags.RemoveAll(x => string.Equals(x, normalized, StringComparison.Ordinal)) > 0;
+        if (!removed)
+        {
+            return false;
+        }
+
+        if (tags.Count == 0)
+        {
+            card.CustomJson.Remove(DynamicGameplayTagsKey);
+        }
+        else
+        {
+            JsonSetString(card, DynamicGameplayTagsKey, string.Join(JsonListSeparator, tags));
+        }
+
+        return true;
+    }
+
+    public bool HasCustomGameplayTag(CardInstance card, string tag)
+    {
+        string normalized = NormalizeGameplayTag(tag);
+        return normalized.Length > 0
+            && GetCustomGameplayTags(card).Contains(normalized, StringComparer.Ordinal);
+    }
+
+    private static string NormalizeGameplayTag(string tag)
+        => tag.Trim().ToLowerInvariant();
+
+    private static List<string> GetCustomGameplayTags(CardInstance card)
+    {
+        if (!card.CustomJson.TryGetValue(DynamicGameplayTagsKey, out string? raw)
+            || string.IsNullOrWhiteSpace(raw))
+        {
+            return new List<string>();
+        }
+
+        return raw.Split(JsonListSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Select(NormalizeGameplayTag)
+            .Where(x => x.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+    }
+
     /// <summary>对应 PersistCustomFields —— 游戏用它把卡上的临时状态写进子动作。</summary>
     public void PersistCustomFields(CardInstance card)
     {

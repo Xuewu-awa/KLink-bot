@@ -562,6 +562,8 @@ public sealed partial class CardApi
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
             ["CustomAbilityRemove"] = (c, r, a) => DoCustomAbilityRemove(c, r, a),
+            ["AddCustomGameplayTag"] = (c, r, a) => DoAddCustomGameplayTag(c, r, a),
+            ["RemoveCustomGameplayTag"] = (c, r, a) => DoRemoveCustomGameplayTag(c, r, a),
             // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`
             //    只认接收者，而 `r` 恒为 `cardFunction`（= `ctx.Self`，施法的那张牌自己）
             //    ⇒ **永远持久化施法者，`a[0]` 指的别人那张卡的临时字段从没被写出去**。
@@ -4767,7 +4769,8 @@ public sealed partial class CardApi
         // 数组语义是「命中任意一个即为真」（客户端把单 tag 也包成一元数组）
         foreach (string tag in wanted)
         {
-            if (GameplayTagTable.Has(card.Name, tag))
+            if (c.Engine.Api.HasCustomGameplayTag(card, tag)
+                || GameplayTagTable.Has(card.Name, tag))
             {
                 return true;
             }
@@ -4777,7 +4780,10 @@ public sealed partial class CardApi
     }
 
     private static bool HasGameplayTag(CardInstance card, string tag)
-        => GameplayTagTable.Has(card.Name, tag);
+        => card.CustomJson.TryGetValue(CardApi.DynamicGameplayTagsKey, out string? raw)
+            && raw.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Any(x => string.Equals(x, tag, StringComparison.OrdinalIgnoreCase))
+            || GameplayTagTable.Has(card.Name, tag);
 
     private static void CollectTagStrings(object? v, List<string> into)
     {
@@ -4817,6 +4823,46 @@ public sealed partial class CardApi
         if (target is not null && ability.Length > 0)
         {
             CustomAbilityAdd(target, ability, c.Self);
+        }
+
+        return null;
+    }
+
+    private object? DoAddCustomGameplayTag(EffectContext c, object? r, object?[] a)
+    {
+        var tags = new List<string>();
+        if (a.Length > 0)
+        {
+            CollectTagStrings(a[0], tags);
+        }
+
+        var target = AsCardOrId(c, a.ElementAtOrDefault(1)) ?? c.Target ?? AsCard(r) ?? c.Self;
+        if (target is not null)
+        {
+            foreach (string tag in tags)
+            {
+                c.Engine.Api.AddCustomGameplayTag(target, tag);
+            }
+        }
+
+        return null;
+    }
+
+    private object? DoRemoveCustomGameplayTag(EffectContext c, object? r, object?[] a)
+    {
+        var tags = new List<string>();
+        if (a.Length > 0)
+        {
+            CollectTagStrings(a[0], tags);
+        }
+
+        var target = AsCardOrId(c, a.ElementAtOrDefault(1)) ?? c.Target ?? AsCard(r) ?? c.Self;
+        if (target is not null)
+        {
+            foreach (string tag in tags)
+            {
+                c.Engine.Api.RemoveCustomGameplayTag(target, tag);
+            }
         }
 
         return null;
