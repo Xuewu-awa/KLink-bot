@@ -503,6 +503,7 @@ public sealed class MatchEngine
         bool doDraw = draw ?? (State.Turn != 1);
 
         State.ActiveSide = side;
+        State.ResetTurnGameplayCounters();
 
         // ---- kredit 槽位 +1，并回满 ----
         //
@@ -1622,6 +1623,7 @@ public sealed class MatchEngine
         // 任何费用重算让订阅卡读到错误值。
         int moveCost = unit.OperationCost;
         State.AddKredits(unit.Owner, -moveCost);
+        State.AddOperationKreditsSpentThisTurn(moveCost);
         unit.HasMovedThisTurn = true;
 
         RecordAction("XActionMoveCardToLine", unit.Owner, new Dictionary<string, object?>
@@ -2052,6 +2054,7 @@ public sealed class MatchEngine
         }
 
         State.AddKredits(attacker.Owner, -attacker.OperationCost);
+        State.AddOperationKreditsSpentThisTurn(attacker.OperationCost);
         attacker.HasAttackedThisTurn = true;
         // 攻击额度 -1（蓝图 `SetAttackerHasAttacked`，`BP_CardFunctions.g.cs:33930-33942`：
         // `attackLeft -= 1` / `hasAttackedThisTurn = True` / `attackCountThisTurn += 1`）。
@@ -2625,6 +2628,7 @@ public sealed class MatchEngine
         target.Defense -= amount;
         if (target.IsHq)
         {
+            State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
             Say($"HQ {target.Owner.ToWire()} 受到 {amount} 伤害，剩余 {target.Defense}");
             if (target.Defense <= 0)
             {

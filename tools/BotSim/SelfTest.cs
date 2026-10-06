@@ -22,6 +22,7 @@ internal static class SelfTest
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
+        new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -1175,6 +1176,44 @@ internal static class SelfTest
 
         int after = state.HqDefense(Side.Right);
         return after == before - 2 ? null : $"期望 {before - 2}，实际 {after}";
+    }
+
+    private static string? TurnScopedGameplayCounters(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = state.ById(1),
+            Controller = Side.Left,
+        };
+
+        state.UpdateHQDamagedAmountThisTurn(Side.Right, 3);
+        state.AddOperationKreditsSpentThisTurn(2);
+
+        object? hqDamage = engine.Api.InvokeByName(
+            "GetHQ_DamagedAmountThisTurnBySide", null,
+            new object?[] { (int)Side.Right, null }, ctx, out bool hqHandled);
+        object? operationSpend = engine.Api.InvokeByName(
+            "GetOperationKreditsSpentThisTurn", null,
+            new object?[] { null }, ctx, out bool spendHandled);
+        if (!hqHandled || !spendHandled)
+        {
+            return "本回合计数查询没有注册到派发表里";
+        }
+
+        if (Convert.ToInt32(hqDamage) != 3 || Convert.ToInt32(operationSpend) != 2)
+        {
+            return $"计数查询错误：HQ={hqDamage ?? "null"}，行动费={operationSpend ?? "null"}";
+        }
+
+        engine.StartTurn(Side.Left, draw: false);
+        return state.GetHQDamagedAmountThisTurn(Side.Right) == 0
+               && state.OperationKreditsSpentThisTurn == 0
+            ? null
+            : $"开始回合未清零：HQ={state.GetHQDamagedAmountThisTurn(Side.Right)}，"
+              + $"行动费={state.OperationKreditsSpentThisTurn}";
     }
 
     /// <summary>

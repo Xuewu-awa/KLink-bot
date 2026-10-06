@@ -169,11 +169,15 @@ internal static class DispatchGapBaseline
     /// Set_Contains / Set_Length / Set_Remove / Set_RemoveItems 的表达式路径）。
     /// 表现层/战役相关 Set 调用仍按缺口保留，不纳入实现。
     /// </para>
+    /// 2026-10-07：485 → **483**（2146 → 2140 个调用点）。补上
+    /// `GetHQ_DamagedAmountThisTurnBySide` 与
+    /// `GetOperationKreditsSpentThisTurn`，接通本回合 HQ 伤害和行动费
+    /// 统计查询；两个计数器按蓝图在每个开始回合重置。
     /// </remarks>
-    public const int BaselineCount = 485;
+    public const int BaselineCount = 483;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "5A96090BE69C6C16";
+    public const string BaselineFingerprint = "08B5EE1FD8390567";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

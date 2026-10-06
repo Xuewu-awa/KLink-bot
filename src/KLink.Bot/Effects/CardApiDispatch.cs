@@ -179,6 +179,13 @@ public sealed partial class CardApi
             ["IsVeteran"] = (c, r, a) => SelfArg(c, r, a) is { } v && v.Keywords.Contains(Keyword.Veteran),
             ["GetKreditsBySide"] = (c, r, a) => c.State.Kredits(SideArg(r, a, 0, c.Controller)),
             ["GetMaxKreditsBySide"] = (c, r, a) => c.State.MaxKredits(SideArg(r, a, 0, c.Controller)),
+            // BP_CardFunctions forwards these pure queries to the
+            // BP_GameState_Battle counters. Invalid enum values leave the
+            // Blueprint out parameter at its default zero.
+            ["GetHQ_DamagedAmountThisTurnBySide"] = (c, r, a) =>
+                c.State.GetHQDamagedAmountThisTurn(SideArg(r, a, 0, c.Controller)),
+            ["GetOperationKreditsSpentThisTurn"] = (c, r, a) =>
+                c.State.OperationKreditsSpentThisTurn,
 
             // ---------------- 取值 / 选择器 ----------------
             // ⚠️ `GetOppositeSide` **没有入参** —— 它的"我方"取自卡本身。

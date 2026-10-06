@@ -118,6 +118,32 @@ public sealed class GameState
     private readonly int[] _kredits = new int[3];
     private readonly int[] _maxKredits = new int[3];
 
+    // Blueprint BP_GameState_Battle keeps these counters outside the card
+    // objects: HQ damage is tracked per side, while operation spend is one
+    // match-wide value for the active turn.
+    private readonly int[] _hqDamagedThisTurn = new int[3];
+    public int OperationKreditsSpentThisTurn { get; private set; }
+
+    public int GetHQDamagedAmountThisTurn(Side side)
+        => side is Side.Left or Side.Right ? _hqDamagedThisTurn[(int)side] : 0;
+
+    public void UpdateHQDamagedAmountThisTurn(Side side, int amount)
+    {
+        if (side is Side.Left or Side.Right)
+        {
+            _hqDamagedThisTurn[(int)side] += amount;
+        }
+    }
+
+    public void AddOperationKreditsSpentThisTurn(int amount)
+        => OperationKreditsSpentThisTurn += amount;
+
+    public void ResetTurnGameplayCounters()
+    {
+        Array.Clear(_hqDamagedThisTurn);
+        OperationKreditsSpentThisTurn = 0;
+    }
+
     /// <summary>疲劳计数（牌库空后每次抽牌递增）。</summary>
     private readonly int[] _fatigue = new int[3];
     public int Fatigue(Side s) => _fatigue[(int)s];
@@ -795,6 +821,9 @@ public sealed class GameState
         {
             LeftKreditSlotsLost = KreditSlotsLost(Side.Left),
             RightKreditSlotsLost = KreditSlotsLost(Side.Right),
+            LeftHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Left),
+            RightHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Right),
+            OperationKreditsSpentThisTurn = OperationKreditsSpentThisTurn,
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
             Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(
@@ -844,6 +873,9 @@ public sealed record MatchSnapshot(
 {
     public int LeftKreditSlotsLost { get; init; }
     public int RightKreditSlotsLost { get; init; }
+    public int LeftHQDamagedThisTurn { get; init; }
+    public int RightHQDamagedThisTurn { get; init; }
+    public int OperationKreditsSpentThisTurn { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
     public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();
 }
