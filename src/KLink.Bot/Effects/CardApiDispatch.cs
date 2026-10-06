@@ -514,6 +514,7 @@ public sealed partial class CardApi
             ["AddAttackUntilEndOfTurn"] = (c, r, a) => DoAddAttackUntilEndOfTurn(c, a),
             ["HealCard"] = (c, r, a) => DoHealCard(c, r, a),
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
+            ["TriggerDestruction"] = (c, r, a) => DoTriggerDestruction(c, r, a),
             // ⚠️ 第 5 参 `cardsIDs` 是**出参**（权威签名 `BP_CardFunctions.g.cs:12298-12310`），
             //    蓝图体把循环里抽到的每张牌的 cardID 攒成 `drawnCards` 再 `Invoke` 出去
             //    （`g.cs:12386` / `g.cs:12400`）。旧实现 `DrawCards(...); return null;`
@@ -3827,6 +3828,19 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    private object? DoTriggerDestruction(EffectContext c, object? r, object?[] a)
+    {
+        var target = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? c.Target ?? AsCard(r) ?? c.Self;
+        var instigator = AsCardOrId(c, a.ElementAtOrDefault(1)) ?? c.Self;
+        if (target is null)
+        {
+            return 0;
+        }
+
+        return c.Engine.Api.TriggerDestruction(target, instigator,
+            TruthyArg(a, 2), TruthyArg(a, 3));
     }
 
     private object? DoSpawnInHand(EffectContext c, object? r, object?[] a)

@@ -308,6 +308,8 @@ internal static class SelfTest
             DestructionEffectTriggered),
         new("摧毁：事件24 的翻倍数（114 步兵连「friendly Destruction effect … triggers twice」）",
             DestructionTriggerMultiple),
+        new("摧毁：TriggerDestruction 只触发效果、不移动目标，并支持 RemoveDestruction",
+            TriggerDestructionDispatch),
 
         // ---- P1：摧毁事件必须带 killer 载荷（2026-10-03）----
         // 派发方 `ExecuteOnCardDestroyedFunction` stmt 50 的第二个出参就是 killer，
@@ -9511,6 +9513,53 @@ internal static class SelfTest
             {
                 return $"{doubler} 在对面时不该翻倍（敌 HQ 应 −3），实际 −{delta}";
             }
+        }
+
+        return null;
+    }
+
+    private static string? TriggerDestructionDispatch(CardDatabase db)
+    {
+        const string victim = "card_unit_hayabusa";
+        const string watcher = "card_unit_matsumoto_regiment";
+        const string plain = "card_unit_arado_ar_196";
+        foreach (string n in new[] { victim, watcher, plain })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, watcher, Side.Left, 70, 1);
+        var target = PutOnBoard(state, victim, Side.Left, 71, 2);
+        int before = state.Hq(Side.Right).Defense;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Target = target, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("TriggerDestruction", source,
+            new object?[] { target, source.CardId, false, false, null }, ctx, out bool handled);
+        int delta = before - state.Hq(Side.Right).Defense;
+        if (!handled || target.Location != CardLocation.BoardHqLeft || !target.IsAlive || delta != 3)
+        {
+            return $"TriggerDestruction 应只触发 Hayabusa(2)+Matsumoto(1) 且不移动目标（handled={handled}, result={result}, "
+                 + $"delta={delta}, location={target.Location}, alive={target.IsAlive}）";
+        }
+
+        var temporary = PutOnBoard(state, plain, Side.Left, 72, 3);
+        engine.Api.CustomAbilityAdd(temporary, "destruction", source);
+        var removeCtx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Target = temporary, Controller = Side.Left,
+        };
+        engine.Api.InvokeByName("TriggerDestruction", source,
+            new object?[] { temporary.CardId, source.CardId, false, true, null }, removeCtx, out bool removeHandled);
+        if (!removeHandled || engine.Api.HasCustomAbility(temporary, "destruction"))
+        {
+            return "TriggerDestruction 的 RemoveDestruction=true 应移除临时 destruction 能力";
         }
 
         return null;

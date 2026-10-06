@@ -835,6 +835,141 @@ public sealed partial class CardApi
            && (card.Keywords.Contains(Keyword.Destruction) || HasCustomAbility(card, "destruction"));
 
     /// <summary>
+    /// `TriggerDestruction(card, instigatorID, StealSide, RemoveDestruction, out qqq)`。
+    ///
+    /// 这是主动触发一张卡的摧毁效果，不移动卡牌到弃牌堆；蓝图只调用该卡的
+    /// `OnDestroyed(NoObject, true)`，随后派发事件 24。真正的卡牌摧毁仍走
+    /// <see cref="MatchEngine.Destroy"/>，避免把两个不同语义混在一起。
+    /// </summary>
+    public int TriggerDestruction(CardInstance card, CardInstance? instigator,
+        bool stealSide, bool removeDestruction)
+    {
+        if (!card.IsAlive || !ShouldTriggerDestructionEffect(card))
+        {
+            return 0;
+        }
+
+        if (stealSide)
+        {
+            JsonSetInt(card, "destructionTriggerStolenOnTurn", GetTurnNumber());
+        }
+
+        // 蓝图的 StealSide 分支通过 ConstructAndCopyCard 生成一个不加入牌局的
+        // 临时对象，再把它的阵营反转。保留原 cardID 很重要：事件 24 用原卡 ID
+        // 构造 CardsToDestroy，订阅者据此判断 SelfAlsoDestroyed。
+        CardInstance triggerCard = stealSide ? CopyForStealSide(card) : card;
+
+        _engine.FireSubAction("ZActionTriggerDestruction", new[]
+        {
+            ActionValue2.Bool("RemoveDestruction", removeDestruction),
+            ActionValue2.Bool("StealSide", stealSide),
+            ActionValue2.Int("instigatorID", instigator?.CardId ?? 0),
+        });
+
+        var destroyedArgs = new object?[] { null, true };
+        var destroyedNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["killer"] = null,
+            ["TriggerNotDestroyed"] = true,
+            ["destroyedLocation"] = (int)card.Location,
+        };
+        if (stealSide && Blueprint.KismetLibrary.Default is { } library)
+        {
+            // ConstructAndCopyCard 的对象不在 GameState 快照中，不能经由 FireTrigger
+            // 的“主体不在棋盘”兜底派发；直接跑它自己的入口等价于 OnDestroyed。
+            RunTriggerProgram(library, triggerCard, triggerCard.Name, "OnDestroyed", triggerCard,
+                destroyedArgs, namedArgs: destroyedNamed);
+        }
+        else
+        {
+            FireTrigger("OnDestroyed", triggerCard, triggerCard.Owner,
+                eventArgs: destroyedArgs,
+                eventSubject: triggerCard,
+                namedArgs: destroyedNamed);
+        }
+
+        int triggerMultiple = FireDestructionEffectTriggered(triggerCard, instigator);
+        for (int i = 0; i < triggerMultiple; i++)
+        {
+            FireDestructionEffectTriggered(triggerCard, instigator);
+        }
+
+        if (removeDestruction && HasCustomAbility(card, "destruction"))
+        {
+            card.CustomAbility = null;
+        }
+
+        return triggerMultiple;
+    }
+
+    private static CardInstance CopyForStealSide(CardInstance source)
+    {
+        var copy = new CardInstance
+        {
+            CardId = source.CardId,
+            Name = source.Name,
+            Owner = source.Owner.Opposite(),
+            Definition = source.Definition,
+            IsGold = source.IsGold,
+            Location = source.Location,
+            LocationNumber = source.LocationNumber,
+            Attack = source.Attack,
+            Defense = source.Defense,
+            MaxDefense = source.MaxDefense,
+            KreditCost = source.KreditCost,
+            OperationCost = source.OperationCost,
+            EnteredPlayOnTurn = source.EnteredPlayOnTurn,
+            OperationsUsedThisTurn = source.OperationsUsedThisTurn,
+            HasAttackedThisTurn = source.HasAttackedThisTurn,
+            GotchaActivated = source.GotchaActivated,
+            CardSeen = source.CardSeen,
+            Cipher = source.Cipher,
+            AttacksThisTurn = source.AttacksThisTurn,
+            HasBeenAttackedThisTurn = source.HasBeenAttackedThisTurn,
+            ChooseOne = source.ChooseOne,
+            HasMovedThisTurn = source.HasMovedThisTurn,
+            SuppressedOnTurn = source.SuppressedOnTurn,
+            HeavyArmorZeroedBySuppress = source.HeavyArmorZeroedBySuppress,
+            SuppressStrippedCustomAbility = source.SuppressStrippedCustomAbility,
+            PinnedTurns = source.PinnedTurns,
+            CustomAbility = source.CustomAbility,
+            KreditsTaxAsEnemyTarget = source.KreditsTaxAsEnemyTarget,
+        };
+
+        foreach (string keyword in source.Keywords)
+        {
+            copy.Keywords.Add(keyword);
+        }
+
+        foreach (string trigger in source.SuppressionExceptionTriggers)
+        {
+            copy.SuppressionExceptionTriggers.Add(trigger);
+        }
+
+        copy.SuppressStrippedKeywords = source.SuppressStrippedKeywords is null
+            ? null
+            : new List<string>(source.SuppressStrippedKeywords);
+        copy.SuppressStrippedBuffs = source.SuppressStrippedBuffs is null
+            ? null
+            : source.SuppressStrippedBuffs
+                .Select(x => new KeyValuePair<(int SourceCardId, bool Temporary), CardBuff>(
+                    x.Key, x.Value.Clone()))
+                .ToList();
+
+        foreach (var (key, value) in source.CustomJson)
+        {
+            copy.CustomJson[key] = value;
+        }
+
+        foreach (var (key, value) in source.BuffsBySource)
+        {
+            copy.BuffsBySource[key] = value.Clone();
+        }
+
+        return copy;
+    }
+
+    /// <summary>
     /// `CustomName{1,2}HasAttribute(标记)` 的**静态读法**（引擎内部用，不走派发表）。
     ///
     /// 存储键与派发表里的 <c>SuffixAdd</c>/<c>SuffixHas</c> 完全一致
