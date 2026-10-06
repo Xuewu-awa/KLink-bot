@@ -268,6 +268,22 @@ public sealed partial class CardApi
             ["GetAllCardsOnBoard"] = (c, r, a) => GetAllCardsOnBoard().ToList(),
             ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline().ToList(),
             ["GetAllCards"] = (c, r, a) => GetAllCards().ToList(),
+            // `Get_X_AndMoreAttackCardsOnBoard(side, out cardsIDs, attack, includeCovert)`。
+            // 蓝图过滤顺序是单位、存活防御、在场、阵营、隐蔽可见性和攻击阈值，
+            // 最终回写的是 cardID。`a[1]` 是 out 槽，故 attack/includeCovert 在 2/3。
+            ["Get_X_AndMoreAttackCardsOnBoard"] = (c, r, a) =>
+            {
+                var side = SideArg(r, a, 0, c.Controller);
+                int attack = IntArg(a, 2);
+                bool includeCovert = TruthyArg(a, 3);
+                if (includeCovert)
+                {
+                    c.State.UnimplementedCalls["Get_X_AndMoreAttackCardsOnBoard<includeCovert>"] =
+                        c.State.UnimplementedCalls.GetValueOrDefault("Get_X_AndMoreAttackCardsOnBoard<includeCovert>") + 1;
+                }
+
+                return GetXAndMoreAttackCardsOnBoard(side, attack, includeCovert);
+            },
             // ⚠️ 这两个是 **`BaseCardObject` 的原生成员函数**（UHT 签名
             //    `void getTotalAttack(int32& totalAttack)` / `void getTotalDefense(int32& totalDefense)`），
             //    语义是「**接收者那张卡自己的**总攻击 / 总防御」，

@@ -3008,6 +3008,22 @@ public sealed partial class CardApi
     /// </summary>
     public List<int> GetDeckBySide(Side s) => State.Deck(s).Select(c => c.CardId).ToList();
 
+    /// <summary>
+    /// `Get_X_AndMoreAttackCardsOnBoard(side, out cardsIDs, attack, includeCovert)`。
+    ///
+    /// 蓝图遍历 `GetAllCardInBattle()`，但 side 过滤后只需要保留该方在场卡的
+    /// 入场顺序。输出是卡 ID，不是卡实例；HQ 会被 `IsLocatedOnBoard` 排除。
+    /// </summary>
+    public List<int> GetXAndMoreAttackCardsOnBoard(Side side, int attack, bool includeCovert)
+        => State.BattleCardsInOrder(side)
+            .Where(card => IsUnit(card)
+                && card.Defense > 0
+                && IsLocatedOnBoard(card)
+                && (includeCovert || !IsUnrevealedCovertCard(card))
+                && card.Attack >= attack)
+            .Select(card => card.CardId)
+            .ToList();
+
     public int GetTotalAttack(Side s) => State.Board(s).Sum(u => u.Attack);
     public int GetTotalDefense(Side s) => State.Board(s).Sum(u => u.Defense);
 

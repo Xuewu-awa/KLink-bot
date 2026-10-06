@@ -5,17 +5,17 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 - 卡/程序条目：1735
 - IR call 调用点：17949
 - 唯一调用名：786
-- 无头规则真缺口：75 种 / 196 个调用点
+- 无头规则真缺口：74 种 / 189 个调用点
 - 其中未知语义 unknown_gameplay：17 种 / 25 个调用点
 
 ## 分类统计
 
 | 分类 | 函数数 |
 |---|---:|
-| `blueprint_function` | 33 |
+| `blueprint_function` | 32 |
 | `blueprint_member` | 23 |
 | `campaign_ui` | 432 |
-| `dispatch` | 222 |
+| `dispatch` | 223 |
 | `local_fallback` | 59 |
 | `unknown_gameplay` | 17 |
 
@@ -24,7 +24,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | 调用名 | 分类 | 调用点 | 卡数 | 未被本地函数覆盖 | 示例卡 |
 |---|---|---:|---:|---:|---|
 | `Set_Add` | `blueprint_member` | 14 | 4 | 16 | BP_CardHelp, card_event_focused_attack_ger, card_unit_14_panzergrenadier |
-| `Get_X_AndMoreAttackCardsOnBoard` | `blueprint_function` | 7 | 5 | 7 | card_event_case_blue, card_event_shock_tactics, card_unit_49th_infantry_regiment |
 | `JSON_RemoveFromIntArray` | `blueprint_function` | 7 | 5 | 7 | card_unit_10th_engineering_battalion, card_unit_392nd_rifles, card_unit_bryansk_irregulars |
 | `AddToTriggerQueue` | `blueprint_function` | 6 | 6 | 6 | card_event_air_escort, card_event_baker_street_irregulars, card_event_bpf |
 | `TriggerDestruction` | `blueprint_function` | 6 | 5 | 6 | card_event_fortunes_of_war, card_event_jungle_warfare, card_event_out_with_the_old |

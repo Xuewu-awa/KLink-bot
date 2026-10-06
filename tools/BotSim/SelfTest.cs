@@ -74,6 +74,8 @@ internal static class SelfTest
             ForceCardChangeLocation),
         new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
             SpawnMultipleCardsOnBattlefield),
+        new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
+            GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
             LoseKreditSlotRefillsFromCurrentSlot),
         new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
@@ -11472,6 +11474,65 @@ internal static class SelfTest
         if (!noSpawnerHandled || noSpawner is not List<int> empty || empty.Count != 0)
         {
             return "spawnerID<=0 时应返回空数组且不生成卡";
+        }
+
+        return null;
+    }
+
+    private static string? GetXAndMoreAttackCardsOnBoard(CardDatabase db)
+    {
+        const string unitName = "card_unit_arado_ar_196";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var leftKeep = state.CreateWithId(unitName, Side.Left, 100, CardLocation.BoardHqLeft, 1);
+        leftKeep.Attack = 5;
+        leftKeep.Defense = 3;
+        var leftLowAttack = state.CreateWithId(unitName, Side.Left, 101, CardLocation.BoardHqLeft, 2);
+        leftLowAttack.Attack = 3;
+        leftLowAttack.Defense = 3;
+        var leftDestroyed = state.CreateWithId(unitName, Side.Left, 102, CardLocation.BoardHqLeft, 3);
+        leftDestroyed.Attack = 8;
+        leftDestroyed.Defense = 0;
+        var rightKeep = state.CreateWithId(unitName, Side.Right, 103, CardLocation.BoardHqRight, 1);
+        rightKeep.Attack = 6;
+        rightKeep.Defense = 2;
+        var handUnit = state.CreateWithId(unitName, Side.Left, 104, CardLocation.HandLeft, 0);
+        handUnit.Attack = 9;
+        handUnit.Defense = 9;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var leftResult = engine.Api.InvokeByName("Get_X_AndMoreAttackCardsOnBoard", null,
+            new object?[] { (int)Side.Left, null, 4, false }, ctx, out bool leftHandled);
+        if (!leftHandled || leftResult is not List<int> leftIds
+            || !leftIds.SequenceEqual(new[] { leftKeep.CardId }))
+        {
+            return $"左方应只返回攻击≥4且防御>0的在场单位 ID，实际 handled={leftHandled} "
+                 + $"result={leftResult ?? "null"}";
+        }
+
+        var rightResult = engine.Api.InvokeByName("Get_X_AndMoreAttackCardsOnBoard", null,
+            new object?[] { (int)Side.Right, null, 4, false }, ctx, out bool rightHandled);
+        if (!rightHandled || rightResult is not List<int> rightIds
+            || !rightIds.SequenceEqual(new[] { rightKeep.CardId }))
+        {
+            return $"右方应只返回本方符合条件的卡 ID，实际 handled={rightHandled} "
+                 + $"result={rightResult ?? "null"}";
+        }
+
+        var allThreshold = engine.Api.InvokeByName("Get_X_AndMoreAttackCardsOnBoard", null,
+            new object?[] { (int)Side.Left, null, 0, false }, ctx, out bool allHandled);
+        if (!allHandled || allThreshold is not List<int> allIds
+            || allIds.Contains(state.Hq(Side.Left).CardId)
+            || allIds.Contains(handUnit.CardId)
+            || allIds.Contains(leftDestroyed.CardId)
+            || !allIds.Contains(leftKeep.CardId))
+        {
+            return $"攻击阈值为 0 时仍须排除 HQ、手牌和防御为 0 的卡，实际 handled={allHandled} "
+                 + $"result={allThreshold ?? "null"}";
         }
 
         return null;
