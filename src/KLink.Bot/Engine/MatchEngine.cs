@@ -486,6 +486,19 @@ public sealed class MatchEngine
     /// </param>
     public void StartTurn(Side side, bool? draw = null)
     {
+        BeginEffectResolution();
+        try
+        {
+            StartTurnCore(side, draw);
+        }
+        finally
+        {
+            EndEffectResolution();
+        }
+    }
+
+    private void StartTurnCore(Side side, bool? draw = null)
+    {
         bool doDraw = draw ?? (State.Turn != 1);
 
         State.ActiveSide = side;
@@ -653,6 +666,19 @@ public sealed class MatchEngine
     }
 
     public void EndTurn(Side side)
+    {
+        BeginEffectResolution();
+        try
+        {
+            EndTurnCore(side);
+        }
+        finally
+        {
+            EndEffectResolution();
+        }
+    }
+
+    private void EndTurnCore(Side side)
     {
         // Blueprint ExecuteEndOfTurnEvents owns the complete queue, including
         // endofturn1/endofturn2 ordering and recursive subscribers.
