@@ -70,6 +70,8 @@ internal static class SelfTest
             PlayCardDirectlyFromHand),
         new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
             MoveUnitFromSupportToFrontLine),
+        new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
+            ForceCardChangeLocation),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
             LoseKreditSlotRefillsFromCurrentSlot),
         new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
@@ -11360,6 +11362,57 @@ internal static class SelfTest
                 return $"我方前线已满时应拒绝且保持容量：handled={handled}, result={result ?? "null"}, "
                      + $"location={extra.Location}, count={state.Cards(Side.Left, CardLocation.BoardFrontline).Count}";
             }
+        }
+
+        return null;
+    }
+
+    private static string? ForceCardChangeLocation(CardDatabase db)
+    {
+        const string unitName = "card_unit_arado_ar_196";
+        if (db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_event_air_land_sea", Side.Left, 2,
+            CardLocation.HandLeft, 0);
+        var target = state.CreateWithId(unitName, Side.Right, 42,
+            CardLocation.BoardHqRight, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        var result = engine.Api.InvokeByName("ForceCardChangeLocation", source,
+            new object?[] { target.CardId, source.CardId, (int)CardLocation.BoardFrontline, 0, null, null, null },
+            ctx, out bool handled);
+        if (!handled || result is not object?[] outs || outs.Length < 3
+            || outs[0] is not true || Convert.ToInt32(outs[1]) != (int)CardLocation.BoardHqRight
+            || Convert.ToInt32(outs[2]) != 1
+            || target.Location != CardLocation.BoardFrontline || target.LocationNumber != 0)
+        {
+            return $"移动应成功并回写旧位置：handled={handled}, result={result ?? "null"}, "
+                 + $"target={target.Location}/{target.LocationNumber}";
+        }
+
+        var noOp = engine.Api.InvokeByName("ForceCardChangeLocation", source,
+            new object?[] { target.CardId, source.CardId, (int)CardLocation.BoardFrontline, 0, null, null, null },
+            ctx, out bool noOpHandled);
+        if (!noOpHandled || noOp is not object?[] noOpOuts || noOpOuts.Length < 3
+            || noOpOuts[0] is not false || target.Location != CardLocation.BoardFrontline)
+        {
+            return $"相同位置/槽位应 no-op：handled={noOpHandled}, result={noOp ?? "null"}, "
+                 + $"target={target.Location}/{target.LocationNumber}";
+        }
+
+        target.CustomAbility = "cantMove";
+        var blocked = engine.Api.InvokeByName("ForceCardChangeLocation", source,
+            new object?[] { target.CardId, source.CardId, (int)CardLocation.BoardHqRight, 1, null, null, null },
+            ctx, out bool blockedHandled);
+        if (!blockedHandled || blocked is not object?[] blockedOuts || blockedOuts.Length < 3
+            || blockedOuts[0] is not false || target.Location != CardLocation.BoardFrontline)
+        {
+            return $"cantMove 应拒绝且不改位置：handled={blockedHandled}, result={blocked ?? "null"}, "
+                 + $"target={target.Location}/{target.LocationNumber}";
         }
 
         return null;

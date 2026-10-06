@@ -1440,6 +1440,14 @@ public sealed partial class CardApi
             // 「逐张 Destroy」。这里直接按顺序逐张 `DestroyCard`（同序，避免额外依赖）。
             ["DestroyMultipleCards"] = (c, r, a) => DoDestroyMultipleCards(c, r, a),
 
+            // `ForceCardChangeLocation(cardID, instigatorID, newLocation,
+            // newLocationNumber, out moved, out oldLocation, out oldLocationNumber)`.
+            // The Blueprint rejects invalid / cantMove cards and treats an
+            // identical location+slot as a no-op.  The actual transition goes
+            // through GameState.Move so the normal location trigger remains the
+            // single movement path.
+            ["ForceCardChangeLocation"] = (c, r, a) => DoForceCardChangeLocation(c, a),
+
             // ── `DiscardCardFromDeck(cardID, discarderID, skipTriggers, skipVisuals, out)` ─
             // 出处：直译产物同名函数体（`_deps/BP_CardFunctions.g.cs`）：
             //   ① `cardID > 0` 且卡有效 ② 卡在牌库里（location 1/2）
@@ -4105,6 +4113,29 @@ public sealed partial class CardApi
         }
 
         return n;
+    }
+
+    private object? DoForceCardChangeLocation(EffectContext c, object?[] a)
+    {
+        var card = AsCardOrId(c, a.ElementAtOrDefault(0));
+        if (card is null || HasCustomAbility(card, "cantMove"))
+        {
+            return new object?[] { false, (int)CardLocation.NotAvailable, 0 };
+        }
+
+        var oldLocation = card.Location;
+        int oldLocationNumber = card.LocationNumber;
+        var newLocation = (CardLocation)IntArg(a, 2);
+        int requestedNumber = IntArg(a, 3);
+
+        if (oldLocation == newLocation && oldLocationNumber == requestedNumber)
+        {
+            return new object?[] { false, (int)oldLocation, oldLocationNumber };
+        }
+
+        // Blueprint callers use -1 as "append" for generated moves.
+        c.State.Move(card, newLocation, requestedNumber < 0 ? null : requestedNumber);
+        return new object?[] { true, (int)oldLocation, oldLocationNumber };
     }
 
     // ---- 自定义名后缀（`CustomName1*` / `CustomName2*`）--------------------
