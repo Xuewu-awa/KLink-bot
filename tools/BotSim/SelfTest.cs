@@ -386,6 +386,8 @@ internal static class SelfTest
             ChangedPinnedTurns),
         new("WasRightMostCardWhenPlayedFromHand：读取正版 JSON 标记并支持显式 cardPlayed",
             WasRightMostCardWhenPlayedFromHand),
+        new("WasLeftMostCardWhenPlayedFromHand：读取正版 JSON 标记并支持显式 cardPlayed",
+            WasLeftMostCardWhenPlayedFromHand),
         new("GetDeckLocationBySide：按正版枚举映射返回 DeckLeft/DeckRight",
             GetDeckLocationBySide),
         new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
@@ -10666,6 +10668,54 @@ internal static class SelfTest
 
         object? absentRaw = engine.Api.InvokeByName(
             "WasRightMostCardWhenPlayedFromHand", source,
+            new object?[] { source, null }, ctx, out bool absentHandled);
+        if (!absentHandled || absentRaw is not false)
+        {
+            return $"JSON 标记为 false 时应返回 false（handled={absentHandled}, result={absentRaw ?? "null"}）";
+        }
+
+        return null;
+    }
+
+    private static string? WasLeftMostCardWhenPlayedFromHand(CardDatabase db)
+    {
+        const string sourceName = "card_unit_2nd_parachute";
+        const string explicitName = "card_unit_14th_guards_rifles";
+        if (db.Find(sourceName) is null || db.Find(explicitName) is null)
+        {
+            return "WasLeftMostCardWhenPlayedFromHand 自测所需卡库条目缺失";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 411, CardLocation.HandLeft, 0);
+        var explicitCard = state.CreateWithId(explicitName, Side.Left, 412, CardLocation.HandLeft, 1);
+        const string key = "WasLeftMostWhenPlayedFromHandKey";
+        engine.Api.JsonSetBool(source, key, true);
+        engine.Api.JsonSetBool(explicitCard, key, true);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? implicitRaw = engine.Api.InvokeByName(
+            "WasLeftMostCardWhenPlayedFromHand", source,
+            new object?[] { source, null }, ctx, out bool implicitHandled);
+        if (!implicitHandled || implicitRaw is not true)
+        {
+            return $"隐式 self 形状应读到 JSON true（handled={implicitHandled}, result={implicitRaw ?? "null"}）";
+        }
+
+        engine.Api.JsonSetBool(source, key, false);
+        object? explicitRaw = engine.Api.InvokeByName(
+            "WasLeftMostCardWhenPlayedFromHand", source,
+            new object?[] { explicitCard, null }, ctx, out bool explicitHandled);
+        if (!explicitHandled || explicitRaw is not true)
+        {
+            return $"显式 cardPlayed 形状应读取参数卡而非施动卡（handled={explicitHandled}, result={explicitRaw ?? "null"}）";
+        }
+
+        object? absentRaw = engine.Api.InvokeByName(
+            "WasLeftMostCardWhenPlayedFromHand", source,
             new object?[] { source, null }, ctx, out bool absentHandled);
         if (!absentHandled || absentRaw is not false)
         {

@@ -148,10 +148,12 @@ internal static class DispatchGapBaseline
     /// `SpawnMultipleCardsOnBattlefield`，按数组顺序生成并回写卡 ID。
     /// 2026-10-06：502 → **501**（实际重跑：2224 调用点）。补上
     /// `Get_X_AndMoreAttackCardsOnBoard`，按蓝图过滤本方在场单位并返回卡 ID。
-    public const int BaselineCount = 501;
+    /// 2026-10-06：501 → **500**（实际重跑：2218 调用点）。补上
+    /// `WasLeftMostCardWhenPlayedFromHand`，读取正版 JSON 的左侧手牌位置标记。
+    public const int BaselineCount = 500;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "E1D0329D6F3D8FAA";
+    public const string BaselineFingerprint = "E95892AB86529A97";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

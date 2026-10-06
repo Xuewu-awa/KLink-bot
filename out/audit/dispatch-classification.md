@@ -5,17 +5,17 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 - 卡/程序条目：1735
 - IR call 调用点：17949
 - 唯一调用名：786
-- 无头规则真缺口：74 种 / 189 个调用点
+- 无头规则真缺口：73 种 / 183 个调用点
 - 其中未知语义 unknown_gameplay：17 种 / 25 个调用点
 
 ## 分类统计
 
 | 分类 | 函数数 |
 |---|---:|
-| `blueprint_function` | 32 |
+| `blueprint_function` | 31 |
 | `blueprint_member` | 23 |
 | `campaign_ui` | 432 |
-| `dispatch` | 223 |
+| `dispatch` | 224 |
 | `local_fallback` | 59 |
 | `unknown_gameplay` | 17 |
 
@@ -27,7 +27,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | `JSON_RemoveFromIntArray` | `blueprint_function` | 7 | 5 | 7 | card_unit_10th_engineering_battalion, card_unit_392nd_rifles, card_unit_bryansk_irregulars |
 | `AddToTriggerQueue` | `blueprint_function` | 6 | 6 | 6 | card_event_air_escort, card_event_baker_street_irregulars, card_event_bpf |
 | `TriggerDestruction` | `blueprint_function` | 6 | 5 | 6 | card_event_fortunes_of_war, card_event_jungle_warfare, card_event_out_with_the_old |
-| `WasLeftMostCardWhenPlayedFromHand` | `blueprint_function` | 6 | 6 | 6 | card_event_task_force_44, card_event_z_special_unit, card_unit_14th_brigade_nz |
 | `AddCustomGameplayTag` | `blueprint_function` | 5 | 5 | 5 | card_event_betasom, card_event_rm_roma, card_event_semper_fi |
 | `ForceEndTurn` | `blueprint_function` | 5 | 5 | 5 | card_event_banzai_charge, card_event_calm_before_the_storm, card_event_protect_the_pocket |
 | `GetHandLocationBySide` | `blueprint_function` | 5 | 5 | 5 | card_event_aerial_reconaissance, card_event_night_raid, card_event_orp_blyskawica |
