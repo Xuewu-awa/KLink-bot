@@ -55,6 +55,7 @@ internal static class SelfTest
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
         new("PAMS：选中一张后被生成成新卡并塞进牌库（走完 CS 答复的整条链）", PamsDevelopEndToEnd),
         new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
+        new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
         // ---- GetDeckByside 的出参形状（2026-10-02，对局 542091 t7 的根因）----
         // 蓝图出参是 `TArray<int> deckCardIDs`（卡 **ID**），内核曾实现成卡**实例**。
         // 这两条直接断言中间状态与最终状态，不依赖随机抽样。
@@ -1868,6 +1869,62 @@ internal static class SelfTest
         if (state.Hand(Side.Left).Any(x => ReferenceEquals(x, developed)))
         {
             return $"{chosen} 还在手牌里 —— pams 的 OnHandTargetSelected 没跑完";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `AddToTriggerQueue` 使用蓝图的 FIFO Array_Add 语义，且延迟执行时
+    /// 把原始卡对象的 `currentTarget` 传给 OnPlayedFromHand。
+    /// </summary>
+    private static string? TriggerQueueFifoAndTarget(CardDatabase db)
+    {
+        const string orderName = "card_event_air_corps_ferrying";
+        if (db.Find(orderName) is null)
+        {
+            return $"卡库里没有 {orderName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.SetKredits(Side.Left, 1);
+        state.SetMaxKredits(Side.Left, 1);
+        var targetA = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var targetB = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var first = state.CreateWithId(orderName, Side.Left, 30, CardLocation.HandLeft, 0);
+        var second = state.CreateWithId(orderName, Side.Left, 31, CardLocation.HandLeft, 1);
+        first.CurrentTarget = targetA;
+        second.CurrentTarget = targetB;
+
+        engine.Api.AddToTriggerQueue(first);
+        engine.Api.AddToTriggerQueue(second);
+        if (state.TriggerQueue.Count != 2
+            || !ReferenceEquals(state.TriggerQueue[0], first)
+            || !ReferenceEquals(state.TriggerQueue[1], second))
+        {
+            return "队列没有按 Array_Add 追加，或 FIFO 顺序不正确";
+        }
+
+        int firstAttack = targetA.Attack;
+        int firstDefense = targetA.Defense;
+        int secondAttack = targetB.Attack;
+        int secondDefense = targetB.Defense;
+        engine.Api.ResolveTriggerQueue();
+
+        if (state.TriggerQueue.Count != 0)
+        {
+            return $"ResolveTriggerQueue 后仍有 {state.TriggerQueue.Count} 张卡未处理";
+        }
+
+        if (targetA.Attack != firstAttack + 1 || targetA.Defense != firstDefense + 1
+            || targetB.Attack != secondAttack + 1 || targetB.Defense != secondDefense + 1
+            || first.CurrentTarget is not { CardId: 20 }
+            || second.CurrentTarget is not { CardId: 21 })
+        {
+            return $"延迟目标没有正确传递：A={targetA.Attack}/{targetA.Defense} "
+                 + $"B={targetB.Attack}/{targetB.Defense}";
         }
 
         return null;

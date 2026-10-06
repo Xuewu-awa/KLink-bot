@@ -58,6 +58,14 @@ public sealed class GameState
     /// </summary>
     public List<GameplayRestriction> GameplayRestrictions { get; } = new();
 
+    /// <summary>
+    /// 卡牌蓝图的延迟触发队列（<c>AddToTriggerQueue</c>）。
+    ///
+    /// 这是对局状态而不是派发器状态：卡牌效果可以先把卡加入队列，
+    /// 在一次手牌选择链结束后由 <c>ResolveTriggerQueue</c> 按 FIFO 执行。
+    /// </summary>
+    public List<CardInstance> TriggerQueue { get; } = new();
+
     public bool HasGameplayRestriction(Side side, GameplayRestrictionType type)
         => GameplayRestrictions.Any(x => x.Side == side && x.Type == type && x.TurnsRemaining != 0);
 

@@ -22,6 +22,53 @@ public sealed partial class CardApi
 {
     private readonly HashSet<int> _playedCardBroadcastDone = new();
     private int _playedCardBroadcastDepth;
+    private bool _resolvingTriggerQueue;
+
+    /// <summary>把卡追加到蓝图的延迟触发队列（<c>Array_Add</c>，不去重）。</summary>
+    public void AddToTriggerQueue(CardInstance card)
+    {
+        State.TriggerQueue.Add(card);
+    }
+
+    /// <summary>
+    /// 以 FIFO 顺序执行延迟的 <c>OnPlayedFromHand</c> 调用。
+    /// 队列中的卡可以继续入队；嵌套调用只由最外层的循环处理。
+    /// </summary>
+    public void ResolveTriggerQueue()
+    {
+        if (_resolvingTriggerQueue)
+        {
+            return;
+        }
+
+        _resolvingTriggerQueue = true;
+        try
+        {
+            const int maxTriggers = 10_000;
+            int processed = 0;
+            while (State.TriggerQueue.Count > 0 && processed++ < maxTriggers)
+            {
+                CardInstance card = State.TriggerQueue[0];
+                State.TriggerQueue.RemoveAt(0);
+
+                // Removed cards are no longer present in the state ID map.
+                // Discarded cards remain valid queued objects, matching a
+                // direct OnPlayedFromHand call.
+                if (State.ById(card.CardId) is not { } live
+                    || !ReferenceEquals(live, card)
+                    || card.Location == CardLocation.NotAvailable)
+                {
+                    continue;
+                }
+
+                RunCardEffect(card, card.CurrentTarget);
+            }
+        }
+        finally
+        {
+            _resolvingTriggerQueue = false;
+        }
+    }
 
     // 蓝图 FetchAllCardsWithEventTrigger 的逐卡抑制例外表。
     // 卡面 CDO 未随当前数据集导出，因此在派发层固定记录已从蓝图核实的 11 张卡。

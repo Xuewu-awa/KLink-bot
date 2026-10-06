@@ -157,10 +157,12 @@ internal static class DispatchGapBaseline
     /// 维护动态 GameplayTag，查询与卡面静态标签合并。
     /// 2026-10-06：497 → **496**（实际重跑：2195 调用点）。补上
     /// `TriggerDestruction`，接通主动摧毁效果触发与事件 24 派发。
-    public const int BaselineCount = 496;
+    /// 2026-10-07：496 → **494**（实际重跑：2188 调用点）。补上
+    /// `AddToTriggerQueue` 与 `ResolveTriggerQueue`，接通 Develop 延迟触发链。
+    public const int BaselineCount = 494;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "0751ED7441A85221";
+    public const string BaselineFingerprint = "EAAC4B635ABB2C3A";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

@@ -878,6 +878,21 @@ public sealed partial class CardApi
             //    2nd_west_africa 这些 Develop 类）的选牌因此全部落空。
             ["selectCardToDraw"] = (c, r, a) => SelectCardToDraw(c, r, a),
             ["selectTargetFromHand"] = (c, r, a) => DoSelectTargetFromHand(c, r, a),
+            ["AddToTriggerQueue"] = (c, r, a) =>
+            {
+                var card = AsCard(r) ?? c.Self;
+                if (card is not null)
+                {
+                    AddToTriggerQueue(card);
+                }
+
+                return null;
+            },
+            ["ResolveTriggerQueue"] = (c, r, a) =>
+            {
+                ResolveTriggerQueue();
+                return null;
+            },
 
             // 三选一（`Choose One`）的分支：**读卡自己存的 `ChooseOne`**，
             // 由驱动在出牌时按动作流的 `PC[3]` 写进去（见 CardInstance.ChooseOne 的注释）。
@@ -1828,6 +1843,8 @@ public sealed partial class CardApi
                     eventArgs: new object?[] { chosen.CardId, selecting.CardId },
                     eventSubject: chosen);
 
+        ResolveTriggerQueue();
+
         return chosen;
     }
 
@@ -2680,6 +2697,8 @@ public sealed partial class CardApi
                         ["cardDeveloped"] = created,
                         ["instigatorID"] = selecting.CardId,
                     });
+
+        ResolveTriggerQueue();
 
         return created;
     }

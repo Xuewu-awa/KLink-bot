@@ -18,19 +18,19 @@
     "card_count": 1735,
     "callsite_count": 17949,
     "unique_function_count": 786,
-    "direct_dispatch_count": 286,
+    "direct_dispatch_count": 288,
     "bp_function_count": 294,
     "vm_builtin_count": 70,
     "category_function_counts": {
-      "blueprint_function": 27,
+      "blueprint_function": 25,
       "blueprint_member": 23,
       "campaign_ui": 432,
-      "dispatch": 228,
+      "dispatch": 230,
       "local_fallback": 59,
       "unknown_gameplay": 17
     },
-    "headless_gap_calls": 160,
-    "headless_gap_functions": 69,
+    "headless_gap_calls": 153,
+    "headless_gap_functions": 67,
     "unknown_gameplay_calls": 25,
     "unknown_gameplay_functions": 17
   },
@@ -7383,15 +7383,15 @@
     },
     {
       "name": "AddToTriggerQueue",
-      "category": "blueprint_function",
+      "category": "dispatch",
       "calls": 6,
       "distinct_cards": 6,
       "entrypoint_calls": 5,
       "local_calls": 1,
       "local_fallback_calls": 0,
-      "uncovered_calls": 6,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 6,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 6,
       "gameplay_calls": 6,
       "campaign_calls": 0,
@@ -17581,15 +17581,15 @@
     },
     {
       "name": "ResolveTriggerQueue",
-      "category": "blueprint_function",
+      "category": "dispatch",
       "calls": 1,
       "distinct_cards": 1,
       "entrypoint_calls": 0,
       "local_calls": 1,
       "local_fallback_calls": 0,
-      "uncovered_calls": 1,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 1,
       "gameplay_calls": 1,
       "campaign_calls": 0,
@@ -20170,32 +20170,6 @@
       ]
     },
     {
-      "name": "AddToTriggerQueue",
-      "category": "blueprint_function",
-      "calls": 6,
-      "distinct_cards": 6,
-      "entrypoint_calls": 5,
-      "local_calls": 1,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 6,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 6,
-      "receiver_calls": 6,
-      "gameplay_calls": 6,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 6,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_event_air_escort",
-        "card_event_baker_street_irregulars",
-        "card_event_bpf",
-        "card_event_retribution4",
-        "card_event_the_rock_of_gibraltar",
-        "card_event_yank_the_army_weekly"
-      ]
-    },
-    {
       "name": "Map_Add",
       "category": "blueprint_member",
       "calls": 6,
@@ -21201,27 +21175,6 @@
       "excluded_cards": [],
       "sample_cards": [
         "card_unit_raf_mitchell"
-      ]
-    },
-    {
-      "name": "ResolveTriggerQueue",
-      "category": "blueprint_function",
-      "calls": 1,
-      "distinct_cards": 1,
-      "entrypoint_calls": 0,
-      "local_calls": 1,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 1,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
-      "receiver_calls": 1,
-      "gameplay_calls": 1,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 1,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_event_air_escort"
       ]
     },
     {

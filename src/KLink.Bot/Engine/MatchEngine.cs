@@ -1159,6 +1159,9 @@ public sealed class MatchEngine
         Api.FireTrigger("OnOtherCardEnterPlay", card, card.Owner,
             eventArgs: new object?[] { card, 0 }, recipientSnapshot: playedCardTriggerSnapshot);
 
+        // `AddToTriggerQueue` later invokes this card's own OnPlayedFromHand
+        // with the target captured at the original play time.
+        card.CurrentTarget = target;
         RunDeploymentEffect(card, target);
 
         // ---- ⑥ 山地加成（`GiveAlpineBonus`）----

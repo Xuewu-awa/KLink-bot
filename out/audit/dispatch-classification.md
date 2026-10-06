@@ -5,17 +5,17 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 - 卡/程序条目：1735
 - IR call 调用点：17949
 - 唯一调用名：786
-- 无头规则真缺口：69 种 / 160 个调用点
+- 无头规则真缺口：67 种 / 153 个调用点
 - 其中未知语义 unknown_gameplay：17 种 / 25 个调用点
 
 ## 分类统计
 
 | 分类 | 函数数 |
 |---|---:|
-| `blueprint_function` | 27 |
+| `blueprint_function` | 25 |
 | `blueprint_member` | 23 |
 | `campaign_ui` | 432 |
-| `dispatch` | 228 |
+| `dispatch` | 230 |
 | `local_fallback` | 59 |
 | `unknown_gameplay` | 17 |
 
@@ -24,7 +24,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | 调用名 | 分类 | 调用点 | 卡数 | 未被本地函数覆盖 | 示例卡 |
 |---|---|---:|---:|---:|---|
 | `Set_Add` | `blueprint_member` | 14 | 4 | 16 | BP_CardHelp, card_event_focused_attack_ger, card_unit_14_panzergrenadier |
-| `AddToTriggerQueue` | `blueprint_function` | 6 | 6 | 6 | card_event_air_escort, card_event_baker_street_irregulars, card_event_bpf |
 | `ForceEndTurn` | `blueprint_function` | 5 | 5 | 5 | card_event_banzai_charge, card_event_calm_before_the_storm, card_event_protect_the_pocket |
 | `GetHandLocationBySide` | `blueprint_function` | 5 | 5 | 5 | card_event_aerial_reconaissance, card_event_night_raid, card_event_orp_blyskawica |
 | `TakeControlOfEnemyUnit` | `blueprint_function` | 5 | 5 | 5 | card_event_confusion, card_event_lost_cause_skirm, card_event_minority_recruits |
@@ -70,7 +69,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | `Remove the Buff` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_l4_grasshopper |
 | `RemoveBond` | `blueprint_function` | 1 | 1 | 1 | card_event_rationing |
 | `RemoveSalvage` | `blueprint_function` | 1 | 1 | 1 | card_unit_raf_mitchell |
-| `ResolveTriggerQueue` | `blueprint_function` | 1 | 1 | 1 | card_event_air_escort |
 | `SelfCustomEventOnCardDealDamage` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_su_100 |
 | `Set_ToArray` | `blueprint_member` | 1 | 1 | 2 | BP_RenderedCardCache, card_unit_14_panzergrenadier |
 | `doOnAfterOtherCardLeaveBoardOrOwner` | `blueprint_member` | 1 | 1 | 1 | card_brawl_test1 |

@@ -34,6 +34,13 @@ public sealed class CardInstance
     public CardLocation Location { get; set; }
     public int LocationNumber { get; set; }
 
+    /// <summary>
+    /// 这张卡最近一次从手牌触发时收到的目标。
+    /// 蓝图的 <c>OnPlayedFromHand</c> 延迟调用会从 queued card 的
+    /// <c>currentTarget</c> 读取它，而不是重新推导目标。
+    /// </summary>
+    public CardInstance? CurrentTarget { get; set; }
+
     // ---- 数值（可被效果修改，所以与 Definition 分开）----
     public int Attack { get; set; }
     public int Defense { get; set; }
