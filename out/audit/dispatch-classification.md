@@ -5,17 +5,17 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 - 卡/程序条目：1735
 - IR call 调用点：17949
 - 唯一调用名：786
-- 无头规则真缺口：67 种 / 153 个调用点
+- 无头规则真缺口：66 种 / 148 个调用点
 - 其中未知语义 unknown_gameplay：17 种 / 25 个调用点
 
 ## 分类统计
 
 | 分类 | 函数数 |
 |---|---:|
-| `blueprint_function` | 25 |
+| `blueprint_function` | 24 |
 | `blueprint_member` | 23 |
 | `campaign_ui` | 432 |
-| `dispatch` | 230 |
+| `dispatch` | 231 |
 | `local_fallback` | 59 |
 | `unknown_gameplay` | 17 |
 
@@ -24,7 +24,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | 调用名 | 分类 | 调用点 | 卡数 | 未被本地函数覆盖 | 示例卡 |
 |---|---|---:|---:|---:|---|
 | `Set_Add` | `blueprint_member` | 14 | 4 | 16 | BP_CardHelp, card_event_focused_attack_ger, card_unit_14_panzergrenadier |
-| `ForceEndTurn` | `blueprint_function` | 5 | 5 | 5 | card_event_banzai_charge, card_event_calm_before_the_storm, card_event_protect_the_pocket |
 | `GetHandLocationBySide` | `blueprint_function` | 5 | 5 | 5 | card_event_aerial_reconaissance, card_event_night_raid, card_event_orp_blyskawica |
 | `TakeControlOfEnemyUnit` | `blueprint_function` | 5 | 5 | 5 | card_event_confusion, card_event_lost_cause_skirm, card_event_minority_recruits |
 | `CheckHasUnitToSpawn` | `unknown_gameplay` | 4 | 4 | 4 | card_event_red_banner, card_event_refit, card_event_stand_together_brothers |
