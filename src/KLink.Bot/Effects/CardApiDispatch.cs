@@ -712,6 +712,18 @@ public sealed partial class CardApi
                 c.State.KreditSlotsLost(SideArg(r, a, 0, c.Controller)),
             ["CustomAbilityAdd"] = (c, r, a) => DoCustomAbilityAdd(c, r, a),
             ["CustomAbilityRemove"] = (c, r, a) => DoCustomAbilityRemove(c, r, a),
+            // `DeactivateOtherSniped()` is an implicit-self card helper.  Its
+            // Blueprint body scans the resolving card's side of the hand.
+            ["DeactivateOtherSniped"] = (c, r, a) =>
+            {
+                var source = SelfArg(c, r, a);
+                if (source is not null)
+                {
+                    DeactivateOtherSniped(source);
+                }
+
+                return null;
+            },
             ["AddCustomGameplayTag"] = (c, r, a) => DoAddCustomGameplayTag(c, r, a),
             ["RemoveCustomGameplayTag"] = (c, r, a) => DoRemoveCustomGameplayTag(c, r, a),
             // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`

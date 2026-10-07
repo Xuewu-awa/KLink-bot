@@ -275,6 +275,8 @@ internal static class SelfTest
             SameSideUnitShape),
         new("同形bug：MakeVeteran 的目标在 a[0]（旧写法只认接收者 ⇒ 45 处里 3 处把施法者自己变成老兵）",
             MakeVeteranTargetArg),
+        new("Sniped：触发后只禁用同阵营手牌中的其他 Sniped",
+            DeactivateOtherSniped),
 
         // ---- P0 第 4 族：三条「实现了但语义错」（2026-09-27）----
         new("掩护：邻卡有 Guard ⇒ 该卡不可打；掩护卡自己可打；孤立单位可打；HQ 只在被邻卡掩护时不可打",
@@ -7747,6 +7749,40 @@ internal static class SelfTest
         if (armor != armoredCard.HeavyArmor || armor <= 0)
         {
             return $"隐式 self 的 getTotalHeavyArmor 恒 0（{armored} 卡面重甲 {armoredCard.HeavyArmor}，实际拿到 {armor}）";
+        }
+
+        return null;
+    }
+
+    private static string? DeactivateOtherSniped(CardDatabase db)
+    {
+        const string sniped = "card_event_sniped";
+        if (db.Find(sniped) is null)
+        {
+            return $"卡库里缺 {sniped}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var resolving = state.CreateWithId(sniped, Side.Left, 30, CardLocation.HandLeft, 0);
+        var other = state.CreateWithId(sniped, Side.Left, 31, CardLocation.HandLeft, 1);
+        var enemy = state.CreateWithId(sniped, Side.Right, 32, CardLocation.HandRight, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = resolving, Controller = Side.Left };
+
+        engine.Api.InvokeByName("DeactivateOtherSniped", null, Array.Empty<object?>(), ctx, out _);
+
+        if (!engine.Api.HasCustomAbility(other, "DisableOtherSniped"))
+        {
+            return "同阵营手牌中的其他 Sniped 未添加 DisableOtherSniped";
+        }
+
+        if (engine.Api.HasCustomAbility(resolving, "DisableOtherSniped"))
+        {
+            return "正在结算的 Sniped 不应标记自身";
+        }
+
+        if (engine.Api.HasCustomAbility(enemy, "DisableOtherSniped"))
+        {
+            return "不应标记对手手牌中的 Sniped";
         }
 
         return null;

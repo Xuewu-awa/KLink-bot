@@ -217,10 +217,10 @@ internal static class DispatchGapBaseline
     /// 事件入口回退执行，并将 `toCard` 等具名事件载荷提供给卡内包装函数；
     /// 覆盖 220th Rifles、Kyushu J7W3 与 SU-100 的伤害事件链。
     /// </remarks>
-    public const int BaselineCount = 384;
+    public const int BaselineCount = 383;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "9465B3CE3B54800B";
+    public const string BaselineFingerprint = "F774FBF925F2389E";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

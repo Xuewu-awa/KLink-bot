@@ -3281,6 +3281,24 @@ public sealed partial class CardApi
     public bool HasCustomAbility(CardInstance card, string? ability = null)
         => card.CustomAbility is not null && (ability is null || card.CustomAbility == ability);
 
+    /// <summary>
+    /// `card_event_sniped::DeactivateOtherSniped` marks the other Sniped
+    /// gotchas in this side's hand so only the first one can respond to an
+    /// attack.  The Blueprint scans the hand, compares names, and excludes
+    /// the card currently resolving.
+    /// </summary>
+    public void DeactivateOtherSniped(CardInstance source)
+    {
+        foreach (var card in State.Hand(source.Owner))
+        {
+            if (card.CardId != source.CardId
+                && string.Equals(card.Name, "card_event_sniped", StringComparison.Ordinal))
+            {
+                CustomAbilityAdd(card, "DisableOtherSniped", source);
+            }
+        }
+    }
+
     // Dynamic GameplayTags are card state, not custom abilities. Keep them in
     // private JSON so snapshots persist them without overloading CustomAbility.
     internal const string DynamicGameplayTagsKey = "__customGameplayTags";
