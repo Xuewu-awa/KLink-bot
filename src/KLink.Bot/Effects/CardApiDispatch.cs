@@ -290,6 +290,9 @@ public sealed partial class CardApi
             ["GetAllCardsOnBoard"] = (c, r, a) => GetAllCardsOnBoard().ToList(),
             ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline().ToList(),
             ["GetAllCards"] = (c, r, a) => GetAllCards().ToList(),
+            // SDF's private ApplyAndCorrectBuff counts the controller's board Guards.
+            ["CountFriendlyGuardUnits"] = (c, r, a) => c.State.Board(c.Controller)
+                .Count(card => IsUnit(card) && card.Keywords.Contains(Keyword.Guard)),
             // `Get_X_AndMoreAttackCardsOnBoard(side, out cardsIDs, attack, includeCovert)`。
             // 蓝图过滤顺序是单位、存活防御、在场、阵营、隐蔽可见性和攻击阈值，
             // 最终回写的是 cardID。`a[1]` 是 out 槽，故 attack/includeCovert 在 2/3。

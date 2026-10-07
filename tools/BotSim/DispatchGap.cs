@@ -197,11 +197,13 @@ internal static class DispatchGapBaseline
     /// `SalvageMultipleUnits`，接通两张日本事件卡的打捞复制链。
     /// 2026-10-07：464 → **463**（2104 → 2103 个调用点）。补上
     /// `ExecuteOnDeploymentTriggered` 派发适配并覆盖 triggerMultiple 出参。
+    /// 2026-10-07：463 → **462**（2103 → 2102 个调用点）。补上
+    /// `CountFriendlyGuardUnits`，接通 SDF 的 Guard 数量光环。
     /// </remarks>
-    public const int BaselineCount = 463;
+    public const int BaselineCount = 462;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "48AA6073675208E6";
+    public const string BaselineFingerprint = "6824328BC03D8587";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

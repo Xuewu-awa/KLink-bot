@@ -124,6 +124,7 @@ internal static class SelfTest
         // BoardCompare 那 6 局里这 4 张卡都没被打出过，所以回放对拍**测不到**它们，
         // 必须有这组最小断言兜底。
         new("85 先驱连：手牌指令 -1 费、第一张指令打出后还原、重复施加不叠加", PioneerCompanyAura),
+        new("SDF：CountFriendlyGuardUnits 只计本方在场 Guard，并据此更新友军攻击力", SdfCountsFriendlyGuards),
         new("通用费用下限：普通减费可将单位、指令和反制卡降到 0", KreditCostFloorIsZero),
         new("大红一师：手牌全部变 4 费、抽牌补 buff、离场还原", BigRedOneAura),
         new("第 214 阿穆尔：己方 T-34 +1 重甲 / 行动费 -1、离场还原", AmurTankAura),
@@ -3338,6 +3339,64 @@ internal static class SelfTest
     // ==================================================================
     //  ① 三个原语 + 4 张光环
     // ==================================================================
+
+    /// <summary>
+    /// `card_unit_sdf` 的 ApplyAndCorrectBuff：友军单位获得「本方场上 Guard 数量」的临时攻击力。
+    /// </summary>
+    private static string? SdfCountsFriendlyGuards(CardDatabase db)
+    {
+        const string sdfName = "card_unit_sdf";
+        const string guardName = "card_unit_coldstream_guards";
+        const string plainName = "card_unit_arado_ar_196";
+        foreach (string name in new[] { sdfName, guardName, plainName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var sdf = PutOnBoard(state, sdfName, Side.Left, 2100, 1);
+        var firstGuard = PutOnBoard(state, guardName, Side.Left, 2101, 2);
+        var secondGuard = PutOnBoard(state, guardName, Side.Left, 2102, 3);
+        var friendly = PutOnBoard(state, plainName, Side.Left, 2103, 4);
+        var enemyGuard = PutOnBoard(state, guardName, Side.Right, 2104, 1);
+        int sdfAttack = sdf.Attack;
+        int friendlyAttack = friendly.Attack;
+        int firstGuardAttack = firstGuard.Attack;
+        int secondGuardAttack = secondGuard.Attack;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = sdf, Controller = Side.Left,
+        };
+
+        object? count = engine.Api.InvokeByName("CountFriendlyGuardUnits", null,
+            new object?[] { null }, ctx, out bool handled);
+        if (!handled || count is not int guardCount || guardCount != 2)
+        {
+            return $"CountFriendlyGuardUnits 应只计 2 个本方 Guard，handled={handled}, result={count}";
+        }
+
+        engine.Api.FireTrigger("OnEnterPlay", sdf, Side.Left,
+            eventArgs: new object?[] { sdf, 0 });
+
+        if (friendly.Attack != friendlyAttack + 2
+            || firstGuard.Attack != firstGuardAttack + 2
+            || secondGuard.Attack != secondGuardAttack + 2)
+        {
+            return "SDF 进场后所有其它友方单位都应获得 +2 攻击"
+                 + Dump(state, ("普通友军", friendly.Attack.ToString()),
+                     ("友方 Guard", firstGuard.Attack.ToString()));
+        }
+
+        if (sdf.Attack != sdfAttack || enemyGuard.Attack != enemyGuard.Definition.Attack)
+        {
+            return "SDF 不应给自己加攻击，敌方 Guard 也不应受本方光环影响";
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// `card_unit_85_pioneer_company` —— "The first order you play each turn costs 1 less."
