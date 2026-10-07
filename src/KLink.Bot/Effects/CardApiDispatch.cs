@@ -1597,6 +1597,13 @@ public sealed partial class CardApi
             // 「逐张 Destroy」。这里直接按顺序逐张 `DestroyCard`（同序，避免额外依赖）。
             ["DestroyMultipleCards"] = (c, r, a) => DoDestroyMultipleCards(c, r, a),
 
+            // `AddDefenseToMultipleCards(receiverIDs, amount, giverCardID, out qqq)`
+            // is the batch primitive used by Root Out the Enemy and 119 Grenadier.
+            // The Blueprint walks an integer ID array in order, applies the same
+            // relative defense change as `ChangeDefense`, then adjusts maxDefense
+            // by the amount for surviving cards and destroys cards reduced to 0.
+            ["AddDefenseToMultipleCards"] = (c, r, a) => DoAddDefenseToMultipleCards(c, r, a),
+
             // `ForceCardChangeLocation(cardID, instigatorID, newLocation,
             // newLocationNumber, out moved, out oldLocation, out oldLocationNumber)`.
             // The Blueprint rejects invalid / cantMove cards and treats an
@@ -4492,6 +4499,47 @@ public sealed partial class CardApi
         }
 
         return n;
+    }
+
+    /// <summary>
+    /// `AddDefenseToMultipleCards(receiverIDs, amount, giverCardID, out qqq)`.
+    ///
+    /// The Blueprint's receiver array is <c>TArray&lt;int&gt;</c>, so resolve each
+    /// ID independently and preserve the input order.  Its post-pass lowers or
+    /// raises <c>maxDefense</c> by the same amount for cards that remain alive;
+    /// that matters for later repair and <c>IsDamaged</c> checks, especially for
+    /// the -2 debuff used by the two current callers.
+    /// </summary>
+    private object? DoAddDefenseToMultipleCards(EffectContext c, object? r, object?[] a)
+    {
+        var receivers = EvalList(r, a);
+        int amount = IntArg(a, 1);
+        CardInstance? source = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
+
+        foreach (object? value in receivers)
+        {
+            var target = AsCardOrId(c, value);
+            if (target is null || !target.IsAlive)
+            {
+                continue;
+            }
+
+            int oldMaxDefense = target.MaxDefense;
+            ChangeDefense(target, amount, source);
+
+            if (target.IsAlive)
+            {
+                target.MaxDefense = Math.Max(0, oldMaxDefense + amount);
+                if (target.MaxDefense < target.Defense)
+                {
+                    target.MaxDefense = target.Defense;
+                }
+            }
+        }
+
+        // The native out parameter is an Int. Current callers do not consume it;
+        // return a deterministic success value rather than exposing a bool.
+        return 0;
     }
 
     private object? DoForceCardChangeLocation(EffectContext c, object?[] a)

@@ -411,6 +411,8 @@ internal static class SelfTest
         new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
         new("DestroyMultipleCards：数组里卡对象 / 整数 cardID 两种元素形状都要被摧毁",
             DestroyMultipleCardsBothShapes),
+        new("AddDefenseToMultipleCards：按 ID 顺序改防御、同步 MaxDefense，降至 0 的单位被摧毁",
+            AddDefenseToMultipleCards),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
         new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
             DiscardRandomCardFromHand),
@@ -11618,6 +11620,71 @@ internal static class SelfTest
         if ((int)(result ?? -1) != 2)
         {
             return $"返回的摧毁张数应当是 2，实际 {result ?? "null"}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `AddDefenseToMultipleCards(receiverIDs, amount, giverCardID, out qqq)`
+    /// uses an integer ID array, applies each change once in input order, and
+    /// sends targets that reach zero through the normal destruction path.
+    /// </summary>
+    private static string? AddDefenseToMultipleCards(CardDatabase db)
+    {
+        const string unit = "card_unit_2nd_parachute";
+        const string actorName = "card_unit_10_5_cm_lefh";
+        if (db.Find(unit) is null || db.Find(actorName) is null)
+        {
+            return $"卡库里缺 {unit} / {actorName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var actor = PutOnBoard(state, actorName, Side.Left, 20, 1);
+        var first = PutOnBoard(state, unit, Side.Left, 21, 2);
+        var second = PutOnBoard(state, unit, Side.Left, 22, 3);
+        first.Defense = first.MaxDefense = 3;
+        second.Defense = second.MaxDefense = 4;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = actor, Controller = Side.Left,
+        };
+
+        var result = engine.Api.InvokeByName(
+            "AddDefenseToMultipleCards", actor,
+            new object?[] { new List<int> { second.CardId, first.CardId, 999999 }, 2, actor.CardId, null },
+            ctx, out bool handled);
+        if (!handled)
+        {
+            return "派发表里没有 `AddDefenseToMultipleCards`";
+        }
+
+        if (first.Defense != 5 || first.MaxDefense != 5
+            || second.Defense != 6 || second.MaxDefense != 6)
+        {
+            return $"正向批量防御应按 ID 逐项 +2 且同步 MaxDefense，实际 first={first.Defense}/{first.MaxDefense} "
+                 + $"second={second.Defense}/{second.MaxDefense}";
+        }
+
+        if ((int)(result ?? -1) != 0)
+        {
+            return $"qqq 是 Int 出参，当前应返回 0，实际 {result ?? "null"}";
+        }
+
+        var doomed = PutOnBoard(state, unit, Side.Left, 23, 4);
+        doomed.Defense = doomed.MaxDefense = 1;
+        result = engine.Api.InvokeByName(
+            "AddDefenseToMultipleCards", actor,
+            new object?[] { new List<int> { doomed.CardId, 999999 }, -2, actor.CardId, null },
+            ctx, out handled);
+        if (!handled)
+        {
+            return "负值调用未进入 `AddDefenseToMultipleCards` 派发";
+        }
+
+        if (doomed.Location != CardLocation.Discard)
+        {
+            return $"防御 1 受 -2 后必须被摧毁，实际位置={doomed.Location} 防御={doomed.Defense}";
         }
 
         return null;
