@@ -457,7 +457,7 @@ public sealed partial class CardApi
                 // Kredit 槽位事件的订阅者包含手牌单位（例如 5th Regiment：
                 // 失槽时在手牌减费），因此该事件必须覆盖手牌；其它事件仍按
                 // 原有棋盘+弃牌堆快照执行。
-                if (programName == "OnAfterExtraKreditSlotGain")
+                if (programName is "OnAfterExtraKreditSlotGain" or "OnFrontlineOwnershipChange")
                 {
                     snapshot.AddRange(State.Hand(s));
                 }

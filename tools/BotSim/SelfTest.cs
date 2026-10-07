@@ -200,6 +200,8 @@ internal static class SelfTest
             FrontlineRetakeableAfterOwnerDied),
         new("前线归属：归属真的变化时 `OnFrontlineOwnershipChange` 派发到订阅卡",
             FrontlineOwnershipTriggerDispatched),
+        new("前线归属：手牌中的 Pz. BEFEHLSWAGEN 35t 响应夺取前线并自动上前线",
+            FrontlineOwnershipTriggerReachesHand),
 
         // ---- 跨前线射程（蓝图定案，cardsCheckFunctions::CanAttack i=90-99）----
         // 判据只有一条：`attacker.location != 7 && defender.location != 7 && attacker.range < 2`
@@ -5558,6 +5560,43 @@ internal static class SelfTest
                  + "`OnFrontlineOwnershipChange` 却没派发 —— 旧代码就是连这一步都没有"
                  + Dump(state, ("未实现", Unimpl(state)),
                         ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace.Take(8))));
+        }
+
+        return null;
+    }
+
+    private static string? FrontlineOwnershipTriggerReachesHand(CardDatabase db)
+    {
+        const string probe = "card_unit_panzer_35t_commander";
+        if (db.Find(probe) is null) return $"卡库里缺 {probe}";
+
+        var (engine, state) = EmptyBoard(db);
+        state.SetKredits(Side.Left, 20);
+        state.SetMaxKredits(Side.Left, 20);
+        state.ActiveSide = Side.Left;
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        var handProbe = state.CreateWithId(probe, Side.Left, 500, CardLocation.HandLeft, 0);
+        var mover = state.CreateWithId(InfRange1, Side.Left, 501, CardLocation.BoardHqLeft, 1);
+        mover.EnteredPlayOnTurn = -99;
+
+        if (!engine.MoveUnit(mover, 0, out string reason))
+        {
+            return $"前线归属变化前置失败：{reason}";
+        }
+
+        if (handProbe.Location != CardLocation.BoardFrontline)
+        {
+            return $"手牌 Pz 未响应 OnFrontlineOwnershipChange：位置={handProbe.Location}，"
+                 + Dump(state, ("派发记录", trace.Count == 0 ? "（空）" : string.Join(" | ", trace.Take(12))));
+        }
+
+        if (!trace.Any(x => x.StartsWith($"OnFrontlineOwnershipChange → {probe}#",
+                                          StringComparison.Ordinal)))
+        {
+            return "手牌 Pz 已上前线但没有对应触发记录，事件载荷/诊断口径不完整";
         }
 
         return null;

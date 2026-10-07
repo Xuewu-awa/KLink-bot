@@ -1817,7 +1817,22 @@ public sealed class MatchEngine
             return;
         }
 
-        Api.FireTrigger("OnFrontlineOwnershipChange", subject, subject.Owner, "OnOtherFrontlineOwnershipChange");
+        // `UpdateFrontlineIfNeeded` uses FetchAllCardsWithEventTrigger(27) and
+        // invokes the same `OnFrontlineOwnershipChange` program on every
+        // subscriber.  This is a global event, despite its name lacking the
+        // usual `OnOther` prefix.  Keep the mover as the event payload while
+        // letting FireTrigger iterate every live card, including hand cards.
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["instigator"] = subject.CardId,
+            ["instigatorID"] = subject.CardId,
+            ["oldSide"] = (int)oldOwner,
+            ["newSide"] = (int)State.FrontlineOwner,
+        };
+        Api.FireTrigger("OnFrontlineOwnershipChange", subject: null, controller: subject.Owner,
+            eventArgs: new object?[] { subject.CardId, (int)oldOwner, (int)State.FrontlineOwner },
+            eventSubject: subject,
+            namedArgs: named);
     }
 
     // ==================== 离场触发点 ====================
