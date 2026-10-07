@@ -2229,12 +2229,51 @@ public sealed partial class CardApi
 
     public void ChangeOperationCost(CardInstance target, int delta, int instigatorId)
     {
+        int before = target.OperationCost;
         target.OperationCost = Math.Max(0, target.OperationCost + delta);
         _engine.FireSubAction("ZActionChangeOperationCost", new[]
         {
             ActionValue2.Int("instigatorID", instigatorId),
             ActionValue2.Int("amount", delta),
         });
+
+        if (target.OperationCost != before)
+        {
+            FireOperationCostChanged(target, instigatorId);
+        }
+    }
+
+    /// <summary>行动费变更后的主体/其它卡事件链。</summary>
+    public void FireOperationCostChanged(CardInstance card, int instigatorId,
+                                         bool runResetEvents = false)
+    {
+        if (!card.IsSuppressed)
+        {
+            FireTrigger("OnAfterOperationCostChanged", card, card.Owner,
+                eventArgs: new object?[] { instigatorId },
+                eventSubject: card,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["instigator"] = instigatorId,
+                    ["instigatorID"] = instigatorId,
+                });
+        }
+
+        if (runResetEvents)
+        {
+            FireOperationCostBuffsReset(card, instigatorId);
+        }
+
+        FireTrigger("OnAfterOtherCardOperactionCostChanged", card, card.Owner,
+            eventArgs: new object?[] { card.CardId, instigatorId },
+            eventSubject: card,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardToChange"] = card.CardId,
+                ["instigator"] = instigatorId,
+                ["instigatorID"] = instigatorId,
+            },
+            broadcastName: true);
     }
 
     /// <summary>
@@ -2334,7 +2373,8 @@ public sealed partial class CardApi
                 card.RecalculateStats();
                 if (operationCostReset)
                 {
-                    FireOperationCostBuffsReset(card, key.SourceCardId);
+                    FireOperationCostChanged(card, key.SourceCardId,
+                        runResetEvents: true);
                 }
             }
         }

@@ -626,6 +626,8 @@ internal static class SelfTest
             TemporaryResourceCostBuffsExpire),
         new("Light Anti-Air Battery：行动费临时 buff 清理后由 reset 事件重新施加，离场后撤销",
             LightAntiAirBatteryOperationCostReset),
+        new("行动费变更事件：目标排除、零值不触发、抑制接收者跳过",
+            OperationCostChangeEvents),
 
         // ---- ★★ 2026-10-03：`DamageCard` 的第 3 参是**整数 `damagerCardID`**，不是卡对象 ----
         // 权威签名（`BP_CardFunctions.g.cs:11606-11618`）：`2: damagerCardID`，
@@ -16446,6 +16448,71 @@ internal static class SelfTest
             return $"电池离场后 ct=4 应彻底撤销：handled={handled}, "
                  + $"actual={plane.OperationCost}, "
                  + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
+        }
+
+        return null;
+    }
+
+    private static string? OperationCostChangeEvents(CardDatabase db)
+    {
+        const string probeName = "card_unit_b_24_d";
+        if (db.Find(probeName) is null)
+        {
+            return $"卡库缺少 {probeName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(probeName, Side.Left, 6311,
+            CardLocation.BoardHqLeft, 1);
+        var watcher = state.CreateWithId(probeName, Side.Left, 6312,
+            CardLocation.BoardHqLeft, 2);
+        var source = state.CreateWithId("card_event_confusion", Side.Left, 6313,
+            CardLocation.Discard, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 1, 0, false, false, false },
+            ctx, out bool handled);
+        if (!handled)
+        {
+            return "ChangeOperationCost 未接入派发表";
+        }
+
+        string Prefix(CardInstance card)
+            => $"OnAfterOtherCardOperactionCostChanged → {card.Name}#{card.CardId}";
+        int firstCount = trace.Count(t => t.StartsWith(Prefix(watcher), StringComparison.Ordinal));
+        if (firstCount != 1
+            || trace.Any(t => t.StartsWith(Prefix(target), StringComparison.Ordinal)))
+        {
+            return $"行动费变更广播接收者错误：watcher={firstCount}，"
+                 + $"target={trace.Count(t => t.StartsWith(Prefix(target), StringComparison.Ordinal))}";
+        }
+
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 0, 0, false, false, false },
+            ctx, out handled);
+        int zeroCount = trace.Count(t => t.StartsWith(Prefix(watcher), StringComparison.Ordinal));
+        if (!handled || zeroCount != firstCount)
+        {
+            return $"行动费 amount=0 不应派发变更事件：handled={handled}, count={zeroCount}";
+        }
+
+        watcher.Keywords.Add(Keyword.Suppressed);
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 1, 0, false, false, false },
+            ctx, out handled);
+        int suppressedCount = trace.Count(t => t.StartsWith(Prefix(watcher), StringComparison.Ordinal));
+        if (!handled || suppressedCount != zeroCount)
+        {
+            return $"被抑制的行动费事件接收者不应触发：handled={handled}, count={suppressedCount}";
         }
 
         return null;

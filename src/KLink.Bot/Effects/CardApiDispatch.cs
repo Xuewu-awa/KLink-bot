@@ -4028,13 +4028,16 @@ public sealed partial class CardApi
                 target.RecalculateStats();
                 if (operationCostReset)
                 {
-                    c.Engine.Api.FireOperationCostBuffsReset(target, sourceId);
+                    c.Engine.Api.FireOperationCostChanged(target, sourceId,
+                        runResetEvents: true);
                 }
             }
 
             return null;
         }
 
+        int beforeOperationCost = target.OperationCost;
+        bool valueChanged;
         bool temporary = changeType == ChangeTypeTempBuffGive;
         var buff = GetOrCreateBuff(target, sourceId, temporary);
         bool setsAbsolute = changeType is ChangeTypeOperationCostSetValue
@@ -4042,17 +4045,21 @@ public sealed partial class CardApi
             or ChangeTypeOperationCostVeteranSet;
         if (setsAbsolute)
         {
-            amount -= target.Definition.OperationCost;
+            int requestedOperationCost = Math.Clamp(amount, 0, 99);
+            valueChanged = beforeOperationCost != requestedOperationCost;
+            amount = requestedOperationCost - target.Definition.OperationCost;
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = true;
         }
         else if (temporary || changeType == ChangeTypePermBuff)
         {
+            valueChanged = amount != 0;
             buff.OperationCost += amount;
             buff.OperationCostSetsAbsoluteValue = false;
         }
         else
         {
+            valueChanged = amount != 0;
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = false;
         }
@@ -4063,6 +4070,11 @@ public sealed partial class CardApi
             ActionValue2.Int("instigatorID", sourceId),
             ActionValue2.Int("amount", amount),
         });
+
+        if (valueChanged)
+        {
+            c.Engine.Api.FireOperationCostChanged(target, sourceId);
+        }
 
         return null;
     }
