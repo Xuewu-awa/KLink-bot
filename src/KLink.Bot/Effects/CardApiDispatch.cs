@@ -437,6 +437,7 @@ public sealed partial class CardApi
             },
             ["MoveCardToTopOfOwnersDeck"] = (c, r, a) => DoMoveCardToTopOfOwnersDeck(c, a),
             ["MoveMultipleCardsToTopOfOwnersDeck"] = (c, r, a) => DoMoveMultipleCardsToTopOfOwnersDeck(c, a),
+            ["AdjustCardPositionInDeck"] = (c, r, a) => DoAdjustCardPositionInDeck(c, r, a),
             ["StealCardFromBoardToDeck"] = (c, r, a) => DoStealCardFromBoardToDeck(c, r, a),
             ["PlayCardDirectlyFromHand"] = (c, r, a) =>
             {
@@ -3016,6 +3017,53 @@ public sealed partial class CardApi
         }
 
         return allMoved;
+    }
+
+    /// <summary>
+    /// `AdjustCardPositionInDeck(deckSide, cardToAdjust, positionFromTop, out qqq)`.
+    ///
+    /// The Blueprint implementation is deliberately a remove/reinsert pair:
+    /// `RemoveCardFromDeckBySide` followed by `AddCardToDeckBySide` and then
+    /// `ExecuteOnAfterDeckChanged`.  Keeping the card in the same location while
+    /// rewriting the ordered location numbers matches that state-level contract
+    /// without emitting a spurious location-moved event.
+    /// </summary>
+    private object? DoAdjustCardPositionInDeck(EffectContext c, object? r, object?[] a)
+    {
+        Side side = SideArg(r, a, 0, c.Controller);
+        CardInstance? card = AsCardOrId(c, a.ElementAtOrDefault(1));
+        if (card is null || card.Owner != side || card.Location != side.DeckOf())
+        {
+            return null;
+        }
+
+        var deck = c.State.Deck(side);
+        int currentIndex = deck.FindIndex(x => ReferenceEquals(x, card));
+        if (currentIndex < 0)
+        {
+            return null;
+        }
+
+        deck.RemoveAt(currentIndex);
+        int targetIndex = Math.Clamp(IntArg(a, 2, 0), 0, deck.Count);
+        for (int i = 0; i < deck.Count; i++)
+        {
+            deck[i].LocationNumber = i < targetIndex ? i : i + 1;
+        }
+
+        card.LocationNumber = targetIndex;
+
+        // ExecuteOnAfterDeckChanged broadcasts to every registered subscriber;
+        // namedArgs is required because the event stub's suffix is not a stable
+        // positional index across generated Blueprint signatures.
+        FireTrigger("OnAfterDeckChanged", subject: null, side,
+            eventArgs: new object?[] { (int)side },
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["deckSide"] = (int)side,
+            });
+
+        return null;
     }
 
     /// <summary>

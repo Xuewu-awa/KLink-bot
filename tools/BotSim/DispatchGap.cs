@@ -183,11 +183,14 @@ internal static class DispatchGapBaseline
     /// `RemoveSalvage`，清除目标卡的收缴关键字；随后 478 → **477**
     ///（2129 → 2128 个调用点），补上 `RemoveBond` 的羁绊移除覆盖标记；
     /// 477 → **476**（2128 → 2126 个调用点），补上 `StealCardFromBoardToDeck`。
+    /// 2026-10-07：476 → **475**（2126 → 2124 个调用点）。补上
+    /// `AdjustCardPositionInDeck`，按蓝图移除/按顶部位置插回牌库，并派发
+    /// `OnAfterDeckChanged`。
     /// </remarks>
-    public const int BaselineCount = 476;
+    public const int BaselineCount = 475;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "7DD866ED23436232";
+    public const string BaselineFingerprint = "9CB96333E3E3E6AD";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

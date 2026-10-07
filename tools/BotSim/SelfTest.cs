@@ -72,6 +72,8 @@ internal static class SelfTest
             PamsDevelopedCardCostZero),
         new("批量回牌库：按输入顺序逐张置顶，且隔离拥有者牌库",
             MoveMultipleCardsToTopOfOwnersDeck),
+        new("调整牌库位置：移除后按 positionFromTop 插回，并派发 OnAfterDeckChanged",
+            AdjustCardPositionInDeck),
         new("PlayCardDirectlyFromHand：免费出牌、指定前线/槽位、跨行动方且回写 qqq",
             PlayCardDirectlyFromHand),
         new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
@@ -1220,6 +1222,78 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? AdjustCardPositionInDeck(CardDatabase db)
+    {
+        const string moverName = "card_event_fog_of_war";
+        const string watcherName = "card_event_betasom";
+        if (db.Find(moverName) is null || db.Find(watcherName) is null)
+        {
+            return $"卡库里缺 {moverName} / {watcherName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.Turn = 1;
+        var watcher = state.CreateWithId(watcherName, Side.Left, 9300,
+            CardLocation.BoardHqLeft, 1);
+        watcher.EnteredPlayOnTurn = 1;
+
+        var leftFirst = state.CreateWithId(moverName, Side.Left, 9301,
+            CardLocation.DeckLeft, 0);
+        var leftTarget = state.CreateWithId(moverName, Side.Left, 9302,
+            CardLocation.DeckLeft, 1);
+        var leftLast = state.CreateWithId(moverName, Side.Left, 9303,
+            CardLocation.DeckLeft, 2);
+        var rightOnly = state.CreateWithId(moverName, Side.Right, 9304,
+            CardLocation.DeckRight, 0);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = watcher, Controller = Side.Left,
+        };
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        object? result = engine.Api.InvokeByName("AdjustCardPositionInDeck", watcher,
+            new object?[] { (int)Side.Left, leftTarget.CardId, 0, null }, ctx,
+            out bool handled);
+        var leftOrder = state.Deck(Side.Left).Select(x => x.CardId).ToArray();
+        if (!handled || result is not null
+            || !leftOrder.SequenceEqual(new[] { leftTarget.CardId, leftFirst.CardId, leftLast.CardId })
+            || leftTarget.LocationNumber != 0
+            || !trace.Any(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#9300",
+                StringComparison.Ordinal))
+            || !engine.Api.HasCustomGameplayTag(leftTarget, "subtype.navy"))
+        {
+            return "左方牌库调整应将目标插到顶端并触发 Betasom 的 OnAfterDeckChanged；"
+                 + $"handled={handled}, result={result?.GetType().Name ?? "null"}, "
+                 + $"order=[{string.Join(",", leftOrder)}], targetLoc={leftTarget.LocationNumber}, "
+                 + $"trace={string.Join(" | ", trace.Take(4))}";
+        }
+
+        // Event payload must carry the changed deck side.  A left-side watcher
+        // must ignore a right-side adjustment, and the other deck must remain
+        // isolated from the left reorder.
+        trace.Clear();
+        engine.Api.InvokeByName("AdjustCardPositionInDeck", watcher,
+            new object?[] { (int)Side.Right, rightOnly.CardId, 0, null }, ctx,
+            out bool rightHandled);
+        if (!rightHandled || state.Deck(Side.Right).Select(x => x.CardId).SequenceEqual(new[] { rightOnly.CardId }) == false
+            || state.Deck(Side.Left).Select(x => x.CardId).FirstOrDefault() != leftTarget.CardId)
+        {
+            return "右方牌库调整不应污染左方牌库或跳过合法处理";
+        }
+
+        // An invalid card must be a no-op, including no deck-change trigger.
+        trace.Clear();
+        engine.Api.InvokeByName("AdjustCardPositionInDeck", watcher,
+            new object?[] { (int)Side.Left, watcher.CardId, 0, null }, ctx,
+            out bool invalidHandled);
+        return invalidHandled && state.Deck(Side.Left).FirstOrDefault()?.CardId == leftTarget.CardId
+            && !trace.Any(x => x.StartsWith("OnAfterDeckChanged", StringComparison.Ordinal))
+            ? null
+            : "不在牌库中的卡调用 AdjustCardPositionInDeck 必须保持无变化且不派发事件";
     }
 
     /// <summary>
