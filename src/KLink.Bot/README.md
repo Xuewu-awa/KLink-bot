@@ -210,7 +210,8 @@ ML  900009  {0:74, 1:1,  2:yD,              84:11}   → 移动 card_unit_wolfho
   默认 0（与 kardsim 的 `ChooseOne` 钩子一致），**不再用随机数**
 - `ShowNotification` / `PlaySoundEffect` / `SetVisibility` 等表现层调用：显式 no-op，
   避免污染「未实现」指标
-- `Forecast`（预报）机制语义未确认，先当 no-op 并计数
+- `IsForecastCard` / `GetAllForecastCards` 已按正版天气 subtype 与静态卡池实现；
+  `Forecast` 的客户端候选选择通知仍保持 no-op，待补齐无头侧的选择答复协议
 - 触发递归深度上限 8（真实客户端用动作队列串行化，不会无限递归）
 
 ### 5. 状态对拍资料仍需补全

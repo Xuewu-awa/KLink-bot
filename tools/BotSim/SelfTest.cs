@@ -216,6 +216,8 @@ internal static class SelfTest
             DealDamageEventCarriesPayload),
         new("事件 38：48th Armored Infantry 按相邻单位数减少最终伤害",
             DealDamageAfterCalcAdjacentDefense),
+        new("Forecast：天气卡判定与三类天气候选池按蓝图标签筛选",
+            ForecastCardPrimitives),
         new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
             CreatedAlterEventCarriesPayload),
         new("事件层：OnOtherCardLocationMoved 传递敌方推进主体并触发 35th Infantry Regiment 光环",
@@ -5974,6 +5976,59 @@ internal static class SelfTest
         {
             return $"事件 38 应将 5 点伤害减为 1 点，实际防御 {before} → {left.Defense}"
                  + Dump(state, ("目标", left.ToString()));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 天气候选池的正版蓝图只按 subtype.rain/storm/sunny 筛选活动静态卡；
+    /// `ability.forecast` 是触发 Forecast 的能力标签，不能混作天气卡判据。
+    /// </summary>
+    private static string? ForecastCardPrimitives(CardDatabase db)
+    {
+        const string weatherName = "card_event_rain2_deluge";
+        if (db.Find(weatherName) is null || db.Find(PlainUnit) is null)
+        {
+            return $"卡库里缺 {weatherName} 或 {PlainUnit}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var weather = PutOnBoard(state, weatherName, Side.Left, 20, 1);
+        var unit = PutOnBoard(state, PlainUnit, Side.Left, 21, 2);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = weather, Controller = Side.Left,
+        };
+
+        object? weatherResult = engine.Api.InvokeByName("IsForecastCard", null,
+            new object?[] { null }, ctx, out bool weatherHandled);
+        if (!weatherHandled || weatherResult is not bool isWeather || !isWeather)
+        {
+            return $"天气卡应被 IsForecastCard 判真，handled={weatherHandled}, result={weatherResult}";
+        }
+
+        ctx.Self = unit;
+        object? unitResult = engine.Api.InvokeByName("IsForecastCard", null,
+            new object?[] { null }, ctx, out bool unitHandled);
+        if (!unitHandled || unitResult is not bool isUnit || isUnit)
+        {
+            return $"普通单位不应被判为天气卡，handled={unitHandled}, result={unitResult}";
+        }
+
+        ctx.Self = weather;
+        object? candidates = engine.Api.InvokeByName("GetAllForecastCards", null,
+            new object?[] { true, false, null }, ctx, out bool poolHandled);
+        if (!poolHandled || candidates is not IEnumerable<CardInstance> pool)
+        {
+            return $"GetAllForecastCards 未返回候选池，handled={poolHandled}, result={candidates}";
+        }
+
+        var list = pool.ToList();
+        if (list.Count == 0 || list.Any(card => !card.Definition.IsOrder)
+            || list.All(card => !string.Equals(card.Name, weatherName, StringComparison.Ordinal)))
+        {
+            return $"天气候选池应包含天气模板且排除普通卡，数量={list.Count}";
         }
 
         return null;

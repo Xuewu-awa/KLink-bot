@@ -86,7 +86,12 @@ public sealed partial class CardApi
             //      （例：`card_event_atlantic_convoy.g.cs:182-184`）。
             //      原来恒 false ⇒ 预备卡永远进候选池（见 `StaticCardPool`）。
             ["IsCardReserved"] = (c, r, a) => CardPoolTable.IsReserved(StrArgOrNull(a, 0)),
-            ["IsForecastCard"] = (c, r, a) => false,            // TODO 未知语义
+            // `IsForecastCard` is the weather-card predicate, not the
+            // `ability.forecast` keyword carried by cards that trigger Forecast.
+            // The Blueprint `GetAllForecastCards` implementation uses these same
+            // three subtype tags: rain, storm, and sunny.
+            ["IsForecastCard"] = (c, r, a) => SelfArg(c, r, a) is { } forecast
+                && IsForecastCard(forecast),
             ["HasIntel"] = (c, r, a) => SelfArg(c, r, a) is { } x && JsonGetBool(x, "intel"),
 
             // ⚠️ 这两个是**同形参数位错**（审计 §5.2），一起修：
@@ -1139,10 +1144,15 @@ public sealed partial class CardApi
             ["AppendNumberToCardText"] = (c, r, a) => null,
             ["GetEmptyText"] = (c, r, a) => "",
 
-            // ---------------- 尚未弄清的机制（显式记名，别静默吞掉）----------------
-            // Forecast（预报）是较新的机制，语义还没从反编译里确认。
-            // 先当 no-op 并计数，等真实回放或进一步反编译再说。
+            // Forecast's client selection notification is intentionally kept out
+            // of the headless rules layer. The pure candidate query is fully
+            // specified by Blueprint and returns static weather-card templates.
             ["Forecast"] = (c, r, a) => null,
+            ["GetAllForecastCards"] = (c, r, a) => StaticCardPool(
+                    c, includeNotAttainable: TruthyArg(a, 0),
+                    includeReserved: TruthyArg(a, 1))
+                .Where(IsForecastCard)
+                .ToList(),
             ["GetForecastedCards"] = (c, r, a) => new List<CardInstance>(),
             ["IsForecasted"] = (c, r, a) => false,
 
@@ -5423,6 +5433,11 @@ public sealed partial class CardApi
             && raw.Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Any(x => string.Equals(x, tag, StringComparison.OrdinalIgnoreCase))
             || GameplayTagTable.Has(card.Name, tag);
+
+    private static bool IsForecastCard(CardInstance card)
+        => HasGameplayTag(card, "subtype.rain")
+            || HasGameplayTag(card, "subtype.storm")
+            || HasGameplayTag(card, "subtype.sunny");
 
     private static bool HasBond(CardInstance card)
         => !string.Equals(card.CustomAbility, "bond_removed", StringComparison.Ordinal)
