@@ -1508,6 +1508,7 @@ public sealed partial class CardApi
             //    不是猜的。按卡名分派，因为同一个名字在不同卡上语义不同。
             ["ApplyTheBuff"] = (c, r, a) => DoApplyTheBuff(c, a),
             ["RemoveTheBuff"] = (c, r, a) => DoRemoveTheBuff(c, a),
+            ["Apply The Buff"] = (c, r, a) => DoApplyTheBuffSpaced(c, a),
             ["anyOrderPlayedThisTurn"] = (c, r, a) => AnyOrderPlayedThisTurn(c),
             ["_isBigRedOne"] = (c, r, a) => a.Length > 0 && AsCard(a[0]) is { } x
                                             && string.Equals(x.Name, c.Self?.Name, StringComparison.Ordinal),
@@ -5211,6 +5212,30 @@ public sealed partial class CardApi
             ApplyAuraBuffTo(aura, target);
         }
 
+        return null;
+    }
+
+    /// <summary>
+    /// `card_unit_sturmovik_pol` 的私有函数名带空格，不能落到通用光环函数。
+    /// 蓝图语义是对 self 或显式 survivor 永久叠加 +1/+1，来源统一记为这张卡。
+    /// </summary>
+    private object? DoApplyTheBuffSpaced(EffectContext c, object?[] a)
+    {
+        var source = c.Self;
+        if (source is null || !string.Equals(source.Definition.Name,
+                "card_unit_sturmovik_pol", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var target = a.Length > 0 ? AsCard(a[0]) : source;
+        if (target is null)
+        {
+            return null;
+        }
+
+        ChangeAttack(target, 1, source);
+        ChangeDefense(target, 1, source);
         return null;
     }
 

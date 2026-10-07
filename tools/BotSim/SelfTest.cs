@@ -99,6 +99,8 @@ internal static class SelfTest
             BlueprintSetPrimitives),
         new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
             BlueprintArrayResize),
+        new("Sturmovik Polish：带空格 Apply The Buff 叠加幸存单位攻防",
+            SturmovikPolishBuff),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -13706,6 +13708,45 @@ internal static class SelfTest
         return negativeHandled && result is null && values.Count == 0
             ? null
             : "Array_Resize 的负长度必须按 0 处理并清空数组";
+    }
+
+    private static string? SturmovikPolishBuff(CardDatabase db)
+    {
+        const string sourceName = "card_unit_sturmovik_pol";
+        const string targetName = "card_unit_t_34_pol";
+        if (db.Find(sourceName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 107, CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId(targetName, Side.Left, 108, CardLocation.BoardHqLeft, 2);
+        int sourceAttack = source.Attack;
+        int sourceDefense = source.Defense;
+        int targetAttack = target.Attack;
+        int targetDefense = target.Defense;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        object? result = engine.Api.InvokeByName("Apply The Buff", source,
+            new object?[] { source }, ctx, out bool selfHandled);
+        if (!selfHandled || result is not null
+            || source.Attack != sourceAttack + 1 || source.Defense != sourceDefense + 1)
+        {
+            return $"self 目标应永久 +1/+1：handled={selfHandled}, "
+                 + $"actual={source.Attack}/{source.Defense}, expected={sourceAttack + 1}/{sourceDefense + 1}";
+        }
+
+        result = engine.Api.InvokeByName("Apply The Buff", source,
+            new object?[] { target }, ctx, out bool targetHandled);
+        if (!targetHandled || result is not null
+            || target.Attack != targetAttack + 1 || target.Defense != targetDefense + 1)
+        {
+            return $"显式 survivor 目标应永久 +1/+1：handled={targetHandled}, "
+                 + $"actual={target.Attack}/{target.Defense}, expected={targetAttack + 1}/{targetDefense + 1}";
+        }
+
+        return null;
     }
 
     private static string? GetXAndMoreAttackCardsOnBoard(CardDatabase db)
