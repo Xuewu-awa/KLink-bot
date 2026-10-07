@@ -847,25 +847,27 @@ public sealed partial class CardApi
     ///     —— 两条分支都写 false（它只加 buff，不取消）
     /// </summary>
     /// <returns>被取消了就返回 true。</returns>
-    public bool FireDeploymentCancelHook(CardInstance card)
+    public bool FireDeploymentCancelHook(CardInstance card, int? instigatorId = null)
     {
+        int sourceId = instigatorId ?? card.CardId;
         var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             // 函数体里的裸变量名（见 IR 的 locals 表）：
             //   card_unit_petlyakov_pe_2ft / card_event_evasive_action / card_unit_buffs
             //   都读 `cardDeploying`；`card_event_close_call` 还读 `cardDeploying.currentTarget`。
             ["cardDeploying"] = card,
-            ["instigatorID"] = card.CardId,
+            ["instigatorID"] = sourceId,
         };
 
         var named = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["cardDeploying"] = card,
+            ["instigatorID"] = sourceId,
         };
 
         var outs = BroadcastWithOutParam(
             "OnBeforeOtherCardDeploymentTrigger", card, card.Owner, "cancelDeploymentEffect",
-            seed: seed, eventArgs: new object?[] { card }, eventSubject: card, namedArgs: named);
+            seed: seed, eventArgs: new object?[] { card, sourceId }, eventSubject: card, namedArgs: named);
 
         foreach (var v in outs)
         {
@@ -896,23 +898,24 @@ public sealed partial class CardApi
     /// 它的函数体正是 `cardTriggered.side == self.side &amp;&amp; self.IsLocatedOnBoard()`
     /// ⇒ `TriggerMultiple = 1`（于是效果跑 `1 + 1 = 2` 次）。
     /// </summary>
-    public int SumDeploymentTriggerMultiple(CardInstance card)
+    public int SumDeploymentTriggerMultiple(CardInstance card, int? instigatorId = null)
     {
+        int sourceId = instigatorId ?? card.CardId;
         var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["cardTriggered"] = card,
-            ["instigatorID"] = card.CardId,
+            ["instigatorID"] = sourceId,
         };
 
         var named = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["cardTriggered"] = card,
-            ["instigatorID"] = card.CardId,
+            ["instigatorID"] = sourceId,
         };
 
         var outs = BroadcastWithOutParam(
             "OnDeploymentEffectTriggered", card, card.Owner, "TriggerMultiple",
-            seed: seed, eventArgs: new object?[] { card, card.CardId }, eventSubject: card,
+            seed: seed, eventArgs: new object?[] { card, sourceId }, eventSubject: card,
             namedArgs: named);
 
         int total = 0;
@@ -922,6 +925,21 @@ public sealed partial class CardApi
         }
 
         return total;
+    }
+
+    /// <summary>
+    /// 主动触发一张在场卡的非目标部署效果（<c>TriggerDeployment</c>）。
+    /// 该原语只执行部署链，不移动卡牌，也不替调用方重新设置目标；卡自己的
+    /// <c>currentTarget</c> 会由效果上下文继续传给 <c>OnPlayedFromHand</c>。
+    /// </summary>
+    public void TriggerDeployment(CardInstance card, int instigatorId)
+    {
+        if (!card.IsAlive || !card.Keywords.Contains(Keyword.Deployment))
+        {
+            return;
+        }
+
+        _engine.RunDeploymentEffectForTrigger(card, instigatorId);
     }
 
     /// <summary>

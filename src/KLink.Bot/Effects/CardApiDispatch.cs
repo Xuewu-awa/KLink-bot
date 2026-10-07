@@ -607,6 +607,7 @@ public sealed partial class CardApi
             ["HealCard"] = (c, r, a) => DoHealCard(c, r, a),
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
             ["TriggerDestruction"] = (c, r, a) => DoTriggerDestruction(c, r, a),
+            ["TriggerDeployment"] = (c, r, a) => DoTriggerDeployment(c, r, a),
             // ⚠️ 第 5 参 `cardsIDs` 是**出参**（权威签名 `BP_CardFunctions.g.cs:12298-12310`），
             //    蓝图体把循环里抽到的每张牌的 cardID 攒成 `drawnCards` 再 `Invoke` 出去
             //    （`g.cs:12386` / `g.cs:12400`）。旧实现 `DrawCards(...); return null;`
@@ -4233,6 +4234,18 @@ public sealed partial class CardApi
 
         return c.Engine.Api.TriggerDestruction(target, instigator,
             TruthyArg(a, 2), TruthyArg(a, 3));
+    }
+
+    private object? DoTriggerDeployment(EffectContext c, object? r, object?[] a)
+    {
+        var target = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? c.Target ?? AsCard(r);
+        if (target is null)
+        {
+            return 0;
+        }
+
+        c.Engine.Api.TriggerDeployment(target, IntArg(a, 1, c.Self?.CardId ?? 0));
+        return 0;
     }
 
     private object? DoSpawnInHand(EffectContext c, object? r, object?[] a)

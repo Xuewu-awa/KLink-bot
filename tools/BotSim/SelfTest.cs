@@ -319,6 +319,8 @@ internal static class SelfTest
         new("部署：事件14 取消钩子（PE-2FT「Deployment effects do not trigger.」）", DeploymentCancelHook),
         new("部署：事件23 翻倍数（B-26「Your non-targeting deployment effects trigger twice.」）",
             DeploymentTriggerMultiple),
+        new("部署：TriggerDeployment 按目标卡触发非目标部署效果并忽略无 Deployment 目标",
+            TriggerDeploymentDispatch),
 
         // ---- P1：摧毁 Destruction（2026-09-30）----
         // TriggerDestruction si=905 门 → si=1237 OnDestroyed → si=1286 事件24
@@ -9982,6 +9984,52 @@ internal static class SelfTest
             if (delta != 2)
             {
                 return $"没有观察者时只该打一次（敌 HQ −2），实际 −{delta}";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `SM.79` 的真实调用形状是 `TriggerDeployment(targetCard, cardID, out qqq)`。
+    /// 这里直接跑它的 OnPlayedFromHand，守住目标解析、Deployment 门和 qqq 无副作用。
+    /// </summary>
+    private static string? TriggerDeploymentDispatch(CardDatabase db)
+    {
+        const string trigger = "card_unit_sm_79";
+        const string deployment = "card_unit_10_5_cm_lefh";
+        const string nonDeployment = "card_event_aans";
+        foreach (string n in new[] { trigger, deployment, nonDeployment })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        {
+            var (engine, state) = DeploymentBoard(db);
+            PutOnBoard(state, "card_unit_b_26_marauder", Side.Left, 80, 1);
+            var target = PutOnBoard(state, deployment, Side.Left, 81, 1);
+            var source = state.CreateWithId(trigger, Side.Left, 82, CardLocation.HandLeft, 1);
+            int before = state.Hq(Side.Right).Defense;
+            engine.Api.RunCardEffect(source, target);
+            if (before - state.Hq(Side.Right).Defense != 4)
+            {
+                return $"SM.79 应触发并翻倍友方非目标部署（敌 HQ 应 −4），实际 −{before - state.Hq(Side.Right).Defense}"
+                     + Dump(state, ("未实现", Unimpl(state)));
+            }
+        }
+
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var target = PutOnBoard(state, nonDeployment, Side.Left, 83, 1);
+            var source = state.CreateWithId(trigger, Side.Left, 84, CardLocation.HandLeft, 1);
+            int before = state.Hq(Side.Right).Defense;
+            engine.Api.RunCardEffect(source, target);
+            if (before != state.Hq(Side.Right).Defense)
+            {
+                return "SM.79 不应对没有 Deployment 的目标触发效果";
             }
         }
 

@@ -1321,7 +1321,8 @@ public sealed class MatchEngine
     /// —— 内核里 `NotifySideEffectTrigger` 整条原语都没有实现（副作用通知通道），
     /// 不是本次范围，这里不猜它的子动作名。
     /// </summary>
-    private void RunDeploymentEffect(CardInstance card, CardInstance? target)
+    private void RunDeploymentEffect(CardInstance card, CardInstance? target, int? instigatorId = null,
+        bool nonTargeting = false)
     {
         // si=3640：没有 hasDeployment 的卡（全部指令 + 21 张没这个字段的单位）走 si=5840，
         // 那条路上 `_triggerMultiple` 恒 0 ⇒ 只跑一次，且**没有取消钩子**。
@@ -1332,19 +1333,27 @@ public sealed class MatchEngine
         }
 
         // si=3676..4278：事件 14 的取消钩子。
-        if (Api.FireDeploymentCancelHook(card))
+        if (Api.FireDeploymentCancelHook(card, instigatorId))
         {
             return;   // si=4297..4881：取消 ⇒ 整条部署效果不跑
         }
 
         // si=5702/5750：只在「非指向性」部署时取翻倍数（targetCardID == 0）。
-        int triggerMultiple = target is null ? Api.SumDeploymentTriggerMultiple(card) : 0;
+        int triggerMultiple = nonTargeting || target is null
+            ? Api.SumDeploymentTriggerMultiple(card, instigatorId)
+            : 0;
 
         // si=6114（第 1 次）+ si=6230..6434（再 triggerMultiple 次）。
         for (int i = 0; i <= triggerMultiple; i++)
         {
             Api.RunCardEffect(card, target);
         }
+    }
+
+    /// <summary>供 <c>CardApi.TriggerDeployment</c> 调用的主动部署效果入口。</summary>
+    public void RunDeploymentEffectForTrigger(CardInstance card, int instigatorId)
+    {
+        RunDeploymentEffect(card, card.CurrentTarget, instigatorId, nonTargeting: true);
     }
 
     /// <summary>
