@@ -2730,6 +2730,99 @@ public sealed partial class CardApi
         FireAbilitiesChanged(target);
     }
 
+    /// <summary>
+    /// Grant Mobilize from a card source. Unlike ordinary keywords, the
+    /// Blueprint records each giver and ignores a repeated giver.
+    /// </summary>
+    public void GiveMobilize(CardInstance target, int instigatorId)
+    {
+        const string giversKey = "mobilizeGivers";
+        var givers = JsonGetIntArray(target, giversKey);
+        if (instigatorId > 0 && givers.Contains(instigatorId))
+        {
+            return;
+        }
+
+        if (instigatorId > 0)
+        {
+            givers.Add(instigatorId);
+            JsonSetIntArray(target, giversKey, givers);
+        }
+
+        // A card can already have innate Mobilize. The Blueprint still runs
+        // the gain hook for a newly accepted source in that case.
+        target.Keywords.Add(Keyword.Mobilize);
+
+        _engine.FireSubAction("ZActionGiveMobilize", new[]
+        {
+            ActionValue2.Int("giverID", instigatorId),
+        });
+
+        // Blueprint order: NotifyGiveMobilize, ability-change broadcast
+        // (unless suppressed), then the target's own OnGainMobilize hook.
+        if (!target.IsSuppressed)
+        {
+            FireAbilitiesChanged(target);
+        }
+
+        FireTrigger("OnGainMobilize", target, target.Owner);
+    }
+
+    /// <summary>
+    /// Remove Mobilize and all recorded sources. The Blueprint first offers
+    /// every other subscriber a chance to set dontLoseMobilize, then clears
+    /// the keyword and runs OnLoseMobilize on the target.
+    /// </summary>
+    public void RemoveMobilize(CardInstance target, int instigatorId = 0)
+    {
+        if (!target.Keywords.Contains(Keyword.Mobilize)
+            && JsonGetIntArray(target, "mobilizeGivers").Count == 0)
+        {
+            return;
+        }
+
+        var recipients = CaptureTriggerSnapshot()
+            .Where(card => !ReferenceEquals(card, target))
+            .ToList();
+        var before = BroadcastWithOutParams(
+            "OnBeforeOtherCardLoseMobilize", target, target.Owner,
+            new[] { "dontLoseMobilize" },
+            eventArgs: new object?[] { target },
+            eventSubject: target,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = target,
+            },
+            seedFactory: _ => new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = target,
+            },
+            only: recipients);
+
+        if (before.Any(hit => hit.Outs.GetValueOrDefault("dontLoseMobilize") is bool veto && veto))
+        {
+            return;
+        }
+
+        JsonSetIntArray(target, "mobilizeGivers", Array.Empty<int>());
+        if (!target.Keywords.Remove(Keyword.Mobilize))
+        {
+            return;
+        }
+
+        _engine.FireSubAction("ZActionRemoveMobilize", new[]
+        {
+            ActionValue2.Int("giverID", instigatorId),
+        });
+
+        if (!target.IsSuppressed)
+        {
+            FireAbilitiesChanged(target);
+        }
+
+        FireTrigger("OnLoseMobilize", target, target.Owner);
+    }
+
     public void RemoveKeyword(CardInstance target, string keyword)
     {
         if (!target.Keywords.Remove(keyword))
@@ -3062,7 +3155,14 @@ public sealed partial class CardApi
         {
             if (target.Keywords.Contains(keyword))
             {
-                RemoveKeyword(target, keyword);
+                if (keyword == Keyword.Mobilize)
+                {
+                    RemoveMobilize(target, target.CardId);
+                }
+                else
+                {
+                    RemoveKeyword(target, keyword);
+                }
                 target.SuppressStrippedKeywords.Add(keyword);
             }
         }

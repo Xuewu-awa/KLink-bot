@@ -464,6 +464,8 @@ internal static class SelfTest
             AddDefenseToMultipleCards),
         new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
             RemoveAlpine),
+        new("Mobilize：按来源去重并触发 Gain/Lose 联动（48e Guard、43e 全军修复）",
+            MobilizeEvents),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
         new("SalvageMultipleUnits：复制到施动方手牌并保留金卡/来源状态，满手跳过",
             SalvageMultipleUnits),
@@ -13585,6 +13587,83 @@ internal static class SelfTest
             {
                 return "卡面自带 Alpine 不应被 RemoveAlpine 摘掉";
             }
+        }
+
+        return null;
+    }
+
+    private static string? MobilizeEvents(CardDatabase db)
+    {
+        const string guardUnitName = "card_unit_48e_regiment";
+        const string repairUnitName = "card_unit_43e_regiment_motorise";
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        const string damagedName = "card_unit_2nd_parachute";
+        foreach (string name in new[] { guardUnitName, repairUnitName, sourceName, damagedName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+        var guardUnit = PutOnBoard(state, guardUnitName, Side.Left, 21, 2);
+        var repairUnit = PutOnBoard(state, repairUnitName, Side.Left, 22, 3);
+        var damaged = PutOnBoard(state, damagedName, Side.Left, 23, 4);
+        damaged.Defense = Math.Max(1, damaged.MaxDefense - 2);
+
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        object? Invoke(string name, CardInstance target)
+        {
+            var result = engine.Api.InvokeByName(
+                name,
+                source,
+                new object?[] { target.CardId, source.CardId, null },
+                ctx,
+                out bool handled);
+            if (!handled)
+            {
+                throw new InvalidOperationException($"{name} 未进入派发表");
+            }
+
+            return result;
+        }
+
+        // Removing innate Mobilize must run OnLoseMobilize, which grants Guard
+        // to the 48e regiment. Re-adding it runs OnGainMobilize and removes it.
+        Invoke("RemoveMobilize", guardUnit);
+        if (guardUnit.Keywords.Contains(Keyword.Mobilize)
+            || !guardUnit.Keywords.Contains(Keyword.Guard))
+        {
+            return "48e Regiment 失去 Mobilize 后应获得 Guard";
+        }
+
+        Invoke("GiveMobilize", guardUnit);
+        if (!guardUnit.Keywords.Contains(Keyword.Mobilize)
+            || guardUnit.Keywords.Contains(Keyword.Guard))
+        {
+            return "48e Regiment 获得 Mobilize 后应移除 Guard";
+        }
+
+        Invoke("GiveMobilize", guardUnit);
+        if (engine.Api.JsonGetIntArray(guardUnit, "mobilizeGivers").Count != 1)
+        {
+            return "同一来源重复 GiveMobilize 不应重复记录来源";
+        }
+
+        // 43e Regiment's OnLoseMobilize repairs every friendly unit.
+        Invoke("RemoveMobilize", repairUnit);
+        if (damaged.Defense != damaged.MaxDefense)
+        {
+            return $"43e Regiment 失去 Mobilize 后应修复友军，实际 {damaged.Defense}/{damaged.MaxDefense}";
         }
 
         return null;

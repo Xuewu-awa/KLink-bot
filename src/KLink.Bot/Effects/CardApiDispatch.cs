@@ -780,7 +780,7 @@ public sealed partial class CardApi
             ["GiveImmune"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Immune),
             ["GiveSmokescreen"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Smokescreen),
             ["GiveAlpine"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Alpine),
-            ["GiveMobilize"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Mobilize),
+            ["GiveMobilize"] = (c, r, a) => DoGiveMobilize(c, r, a),
             ["GiveSalvage"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Salvage),
             ["GiveShock"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Shock),
             ["GiveBond"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Bond),
@@ -790,6 +790,7 @@ public sealed partial class CardApi
             ["RemoveFury"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Fury),
             ["RemoveGuard"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Guard),
             ["RemoveImmune"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Immune),
+            ["RemoveMobilize"] = (c, r, a) => DoRemoveMobilize(c, r, a),
             ["RemoveSmokescreen"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Smokescreen),
             ["RemoveAlpine"] = (c, r, a) => DoRemoveAlpine(c, r, a),
             ["RemoveSalvage"] = (c, r, a) => DoRemoveSalvage(c, r, a),
@@ -5918,6 +5919,20 @@ public sealed partial class CardApi
         return null;
     }
 
+    private object? DoGiveMobilize(EffectContext c, object? r, object?[] a)
+    {
+        var target = TargetArg(c, r, a);
+        if (target is not null)
+        {
+            // GiveMobilize(cardID, instigatorID, out qqq): the Blueprint keeps
+            // each source in receivedAbilitiesFromCards and ignores duplicate
+            // sources. The compact runtime stores that source list in JSON.
+            c.Engine.Api.GiveMobilize(target, IntArg(a, 1));
+        }
+
+        return null;
+    }
+
     private object? DoRemoveAlpine(EffectContext c, object? r, object?[] a)
     {
         var target = TargetArg(c, r, a);
@@ -5976,6 +5991,17 @@ public sealed partial class CardApi
         if (target is not null)
         {
             RemoveKeyword(target, keyword);
+        }
+
+        return null;
+    }
+
+    private object? DoRemoveMobilize(EffectContext c, object? r, object?[] a)
+    {
+        var target = TargetArg(c, r, a);
+        if (target is not null)
+        {
+            c.Engine.Api.RemoveMobilize(target, IntArg(a, 1));
         }
 
         return null;
