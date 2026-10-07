@@ -1184,6 +1184,29 @@ public sealed partial class CardApi
 
                 return null;
             },
+            // `IncOpCountAndCheckVeteran()` is Landwehr's private helper:
+            // count operations in custom JSON and promote after the third one.
+            ["IncOpCountAndCheckVeteran"] = (c, r, a) =>
+            {
+                var card = SelfArg(c, r, a) ?? c.Self;
+                if (card is null)
+                {
+                    return null;
+                }
+
+                int count = JsonGetInt(card, "opCount") + 1;
+                JsonSetInt(card, "opCount", count);
+                if (count > 2)
+                {
+                    MakeVeteran(card);
+                }
+                else
+                {
+                    PersistCustomFields(card);
+                }
+
+                return null;
+            },
             ["AddToBattleLog"] = (c, r, a) => null,      // 纯日志
             ["ApplyPincerEffects"] = (c, r, a) =>
             {

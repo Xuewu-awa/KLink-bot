@@ -194,10 +194,10 @@ internal static class DispatchGapBaseline
     /// 2026-10-07：472 → **471**（2118 → 2116 个调用点）。补上
     /// `GiveCredits` 并在移动/攻击支付行动费时派发两个蓝图事件。
     /// </remarks>
-    public const int BaselineCount = 468;
+    public const int BaselineCount = 467;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "9159D10770FAA730";
+    public const string BaselineFingerprint = "0E4A5783DB57FA97";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

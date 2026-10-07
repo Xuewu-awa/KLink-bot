@@ -25,6 +25,8 @@ internal static class SelfTest
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
         new("Seagull：GetReducedDamage 按本方 HQ 本回合剩余减伤额度截断", GetReducedDamage),
         new("Landwehr：操作扣费事件按蓝图返还 Veteran 的实际行动费", LandwehrOperationCredits),
+        new("Landwehr：第三次操作后由 IncOpCountAndCheckVeteran 晋升 Veteran",
+            LandwehrOperationCountPromotion),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -1781,6 +1783,57 @@ internal static class SelfTest
             {
                 return $"普通 Landwehr 行动费计数错误：实际 {state.OperationKreditsSpentThisTurn}，期望 {cost}";
             }
+        }
+
+        return null;
+    }
+
+    private static string? LandwehrOperationCountPromotion(CardDatabase db)
+    {
+        const string name = "card_unit_182_landwehr";
+        if (db.Find(name) is null)
+        {
+            return $"卡库里缺 {name}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var landwehr = PutOnBoard(state, name, Side.Left, 1510, 1);
+        var context = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = landwehr,
+            Controller = Side.Left,
+        };
+
+        for (int i = 1; i <= 2; i++)
+        {
+            engine.Api.InvokeByName("IncOpCountAndCheckVeteran", null,
+                Array.Empty<object?>(), context, out bool handled);
+            if (!handled || engine.Api.JsonGetInt(landwehr, "opCount") != i
+                || landwehr.Keywords.Contains(Keyword.Veteran))
+            {
+                int actual = engine.Api.JsonGetInt(landwehr, "opCount");
+                return $"第 {i} 次操作计数错误：opCount={actual}";
+            }
+
+            if (LastPersistedCardId(state) != landwehr.CardId)
+            {
+                return $"第 {i} 次操作应持久化 Landwehr 的 opCount";
+            }
+        }
+
+        engine.Api.InvokeByName("IncOpCountAndCheckVeteran", null,
+            Array.Empty<object?>(), context, out bool thirdHandled);
+        if (!thirdHandled || engine.Api.JsonGetInt(landwehr, "opCount") != 0
+            || !landwehr.Keywords.Contains(Keyword.Veteran))
+        {
+            return $"第三次操作后 Landwehr 应晋升 Veteran 并由 OnBecomingVeteran 清理 opCount，实际 opCount={engine.Api.JsonGetInt(landwehr, "opCount")}";
+        }
+
+        if (LastPersistedCardId(state) != landwehr.CardId)
+        {
+            return "晋升 Veteran 后清理 opCount 应持久化 Landwehr";
         }
 
         return null;
