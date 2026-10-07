@@ -177,11 +177,13 @@ internal static class DispatchGapBaseline
     /// `getFrontlineLimit`，按蓝图返回 `IsFrontlineLimited` 布尔标志。
     /// 2026-10-07：481 → **480**（2134 → 2132 个调用点）。补上
     /// `AddDefenseToMultipleCards` 的批量防御结算。
+    /// 2026-10-07：480 → **479**（2132 → 2130 个调用点）。补上
+    /// `RemoveAlpine`，按来源移除动态 Alpine，并保留卡面自带 Alpine。
     /// </remarks>
-    public const int BaselineCount = 480;
+    public const int BaselineCount = 479;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "A62FAC52EADD55CF";
+    public const string BaselineFingerprint = "E2C1E3C66CCA7392";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

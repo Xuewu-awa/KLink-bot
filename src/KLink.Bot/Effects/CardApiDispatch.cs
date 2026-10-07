@@ -684,6 +684,7 @@ public sealed partial class CardApi
             ["RemoveGuard"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Guard),
             ["RemoveImmune"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Immune),
             ["RemoveSmokescreen"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Smokescreen),
+            ["RemoveAlpine"] = (c, r, a) => DoRemoveAlpine(c, r, a),
             // ⚠️ `PinUnit` 不再直接走 `DoGiveKeyword` —— 它还要记**时长**
             //    （`BP_CardFunctions::PinUnit` i=955 `pinnedTurns = Max(…, 3或2)`）。
             //    走 `CardApi.PinUnit` 才能和 `UnpinUnit`/到期递减对上。
@@ -5375,10 +5376,63 @@ public sealed partial class CardApi
         var target = TargetArg(c, r, a);
         if (target is not null)
         {
+            if (keyword == Keyword.Alpine)
+            {
+                // `GiveAlpine(card, out qqq, giverID)` keeps the giver in the
+                // target's received-ability list.  The compact runtime stores
+                // that list in card-private JSON so RemoveAlpine can remove one
+                // source without stripping another source or an innate Alpine.
+                int giverId = IntArg(a, 2);
+                if (giverId > 0)
+                {
+                    const string key = "alpineGivers";
+                    var givers = JsonGetIntArray(target, key);
+                    if (!givers.Contains(giverId))
+                    {
+                        givers.Add(giverId);
+                        JsonSetIntArray(target, key, givers);
+                    }
+                }
+            }
+
             GiveKeyword(target, keyword);
         }
 
         return null;
+    }
+
+    private object? DoRemoveAlpine(EffectContext c, object? r, object?[] a)
+    {
+        var target = TargetArg(c, r, a);
+        if (target is null)
+        {
+            return 0;
+        }
+
+        const string key = "alpineGivers";
+        var givers = JsonGetIntArray(target, key);
+        int giverId = IntArg(a, 3);
+
+        if (giverId > 0)
+        {
+            givers.Remove(giverId);
+        }
+        else
+        {
+            givers.Clear();
+        }
+
+        JsonSetIntArray(target, key, givers);
+
+        // Keep card-defined Alpine and any remaining dynamic source. Only the
+        // final source removal should emit the normal keyword-change event.
+        bool innate = target.Definition.Keywords.Contains(Keyword.Alpine);
+        if (!innate && givers.Count == 0)
+        {
+            RemoveKeyword(target, Keyword.Alpine);
+        }
+
+        return 0;
     }
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)

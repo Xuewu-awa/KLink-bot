@@ -413,6 +413,8 @@ internal static class SelfTest
             DestroyMultipleCardsBothShapes),
         new("AddDefenseToMultipleCards：按 ID 顺序改防御、同步 MaxDefense，降至 0 的单位被摧毁",
             AddDefenseToMultipleCards),
+        new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
+            RemoveAlpine),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
         new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
             DiscardRandomCardFromHand),
@@ -11685,6 +11687,84 @@ internal static class SelfTest
         if (doomed.Location != CardLocation.Discard)
         {
             return $"防御 1 受 -2 后必须被摧毁，实际位置={doomed.Location} 防御={doomed.Defense}";
+        }
+
+        return null;
+    }
+
+    private static string? RemoveAlpine(CardDatabase db)
+    {
+        const string targetName = "card_unit_2nd_parachute";
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        if (db.Find(targetName) is null || db.Find(sourceName) is null)
+        {
+            return $"卡库里缺 {targetName} / {sourceName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var sourceA = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+        var sourceB = PutOnBoard(state, sourceName, Side.Left, 21, 2);
+        var target = PutOnBoard(state, targetName, Side.Left, 22, 3);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = sourceA, Controller = Side.Left,
+        };
+
+        void Give(int giverId)
+        {
+            engine.Api.InvokeByName("GiveAlpine", sourceA,
+                new object?[] { target.CardId, null, giverId }, ctx, out bool handled);
+            if (!handled)
+            {
+                throw new InvalidOperationException("GiveAlpine 未进入派发表");
+            }
+        }
+
+        void Remove(int giverId)
+        {
+            engine.Api.InvokeByName("RemoveAlpine", sourceA,
+                new object?[] { target.CardId, null, false, giverId }, ctx, out bool handled);
+            if (!handled)
+            {
+                throw new InvalidOperationException("RemoveAlpine 未进入派发表");
+            }
+        }
+
+        Give(sourceA.CardId);
+        Give(sourceB.CardId);
+        if (!target.Keywords.Contains(Keyword.Alpine))
+        {
+            return "GiveAlpine 后目标必须拥有 Alpine";
+        }
+
+        Remove(sourceA.CardId);
+        if (!target.Keywords.Contains(Keyword.Alpine))
+        {
+            return "移除一个来源后仍有另一来源，不能摘掉 Alpine";
+        }
+
+        Remove(sourceB.CardId);
+        if (target.Keywords.Contains(Keyword.Alpine))
+        {
+            return "移除最后一个来源后必须摘掉动态 Alpine";
+        }
+
+        var innateDefinition = db.All.FirstOrDefault(d => d.Keywords.Contains(Keyword.Alpine));
+        if (innateDefinition is not null)
+        {
+            var innate = state.CreateWithId(innateDefinition.Name, Side.Left, 23,
+                CardLocation.BoardHqLeft, 4);
+            Give(sourceA.CardId);
+            // Reuse the target variable's call path for an innate card by invoking
+            // the primitive directly with the new card ID.
+            engine.Api.InvokeByName("GiveAlpine", sourceA,
+                new object?[] { innate.CardId, null, sourceA.CardId }, ctx, out _);
+            engine.Api.InvokeByName("RemoveAlpine", sourceA,
+                new object?[] { innate.CardId, null, false, sourceA.CardId }, ctx, out _);
+            if (!innate.Keywords.Contains(Keyword.Alpine))
+            {
+                return "卡面自带 Alpine 不应被 RemoveAlpine 摘掉";
+            }
         }
 
         return null;
