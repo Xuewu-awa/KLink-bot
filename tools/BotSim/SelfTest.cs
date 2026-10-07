@@ -624,6 +624,8 @@ internal static class SelfTest
 
         new("★ `ChangeKreditCost/ChangeOperationCost` 的 changeType=0 进入临时 buff 槽并可撤销",
             TemporaryResourceCostBuffsExpire),
+        new("Light Anti-Air Battery：行动费临时 buff 清理后由 reset 事件重新施加，离场后撤销",
+            LightAntiAirBatteryOperationCostReset),
 
         // ---- ★★ 2026-10-03：`DamageCard` 的第 3 参是**整数 `damagerCardID`**，不是卡对象 ----
         // 权威签名（`BP_CardFunctions.g.cs:11606-11618`）：`2: damagerCardID`，
@@ -16363,6 +16365,87 @@ internal static class SelfTest
         if (!removeAbsolute || target.OperationCost != baseOperation || target.BuffsBySource.Count != 0)
         {
             return $"绝对 operation cost 撤销后未恢复：handled={removeAbsolute}, actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `card_unit_light_anti_air_battery` 的 +2 行动费是临时来源 buff，
+    /// 但光环本身跨回合持续。正版 `ChangeOperationCost(changeType=4)`
+    /// 清掉目标的临时槽后，会广播 reset 事件，让电池重新施加 +2。
+    /// </summary>
+    private static string? LightAntiAirBatteryOperationCostReset(CardDatabase db)
+    {
+        const string batteryName = "card_unit_light_anti_air_battery";
+        const string planeName = "card_unit_arado_ar_196";
+        if (db.Find(batteryName) is null || db.Find(planeName) is null)
+        {
+            return $"卡库缺少 {batteryName} 或 {planeName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+        state.ActiveSide = Side.Left;
+
+        var plane = state.CreateWithId(planeName, Side.Right, 6301,
+            CardLocation.BoardHqRight, 1);
+        int baseOperation = plane.OperationCost;
+        var battery = state.CreateWithId(batteryName, Side.Left, 6302,
+            CardLocation.HandLeft, 0);
+        if (!engine.PlayCard(battery))
+        {
+            return "Light Anti-Air Battery 打不出来";
+        }
+
+        if (plane.OperationCost != baseOperation + 2
+            || !plane.BuffsBySource.ContainsKey((battery.CardId, true)))
+        {
+            return $"电池进场后应给敌方空军 +2 行动费：base={baseOperation}, "
+                 + $"actual={plane.OperationCost}, "
+                 + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
+        }
+
+        // 回合末统一清理临时槽；reset 广播应让电池立即挂回同一个临时来源。
+        engine.Api.RemoveTemporaryBuffs();
+        if (plane.OperationCost != baseOperation + 2
+            || !plane.BuffsBySource.ContainsKey((battery.CardId, true)))
+        {
+            return $"临时行动费清理后 reset 事件未重施加：base={baseOperation}, "
+                 + $"actual={plane.OperationCost}, "
+                 + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
+        }
+
+        // 显式 ct=4 也必须走同一条 reset 事件链。
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = battery,
+            Controller = Side.Left,
+        };
+        engine.Api.InvokeByName("ChangeOperationCost", plane,
+            new object?[] { plane, battery.CardId, -2, 4, true, false, false },
+            ctx, out bool handled);
+        if (!handled || plane.OperationCost != baseOperation + 2
+            || !plane.BuffsBySource.ContainsKey((battery.CardId, true)))
+        {
+            return $"显式 ct=4 后 reset 事件未重施加：handled={handled}, "
+                 + $"actual={plane.OperationCost}";
+        }
+
+        // 来源离开棋盘后不在接收快照里，清理不能把光环重新挂回来。
+        state.Move(battery, CardLocation.HandLeft);
+        engine.Api.InvokeByName("ChangeOperationCost", plane,
+            new object?[] { plane, battery.CardId, -2, 4, true, false, false },
+            ctx, out handled);
+        if (!handled || plane.OperationCost != baseOperation
+            || plane.BuffsBySource.ContainsKey((battery.CardId, true)))
+        {
+            return $"电池离场后 ct=4 应彻底撤销：handled={handled}, "
+                 + $"actual={plane.OperationCost}, "
+                 + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
         }
 
         return null;

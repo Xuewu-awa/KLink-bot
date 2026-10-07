@@ -4016,6 +4016,8 @@ public sealed partial class CardApi
                 : (sourceId, false);
             if (target.BuffsBySource.TryGetValue(key, out var existing))
             {
+                bool operationCostReset = existing.OperationCost != 0
+                    || existing.OperationCostSetsAbsoluteValue;
                 existing.OperationCost = 0;
                 existing.OperationCostSetsAbsoluteValue = false;
                 if (existing.IsEmpty)
@@ -4024,6 +4026,10 @@ public sealed partial class CardApi
                 }
 
                 target.RecalculateStats();
+                if (operationCostReset)
+                {
+                    c.Engine.Api.FireOperationCostBuffsReset(target, sourceId);
+                }
             }
 
             return null;

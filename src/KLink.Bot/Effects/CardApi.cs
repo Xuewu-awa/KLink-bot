@@ -2303,6 +2303,9 @@ public sealed partial class CardApi
             {
                 card.BuffsBySource.Remove(key);
 
+                bool operationCostReset = buff.OperationCost != 0
+                    || buff.OperationCostSetsAbsoluteValue;
+
                 // ⚠️ 必须显式做**逆运算**，不能靠 `RecalculateStats()` ——
                 //    那个函数只重算费用/行动费/重甲（见它的注释：「落点：KreditCost、
                 //    OperationCost、重甲关键字」），**不动 Attack/Defense**。
@@ -2327,10 +2330,37 @@ public sealed partial class CardApi
                     ActionValue2.Int("gained", -buff.Attack),
                     ActionValue2.Int("newAttackValue", card.Attack),
                 });
-            }
 
-            card.RecalculateStats();
+                card.RecalculateStats();
+                if (operationCostReset)
+                {
+                    FireOperationCostBuffsReset(card, key.SourceCardId);
+                }
+            }
         }
+    }
+
+    /// <summary>
+    /// 广播行动费临时 buff 被重置后的事件。
+    ///
+    /// `ChangeOperationCost` 的蓝图在 changeType=4 实际移除来源 buff 后，
+    /// 用 `FetchAllCardsWithEventTrigger(9)` 广播
+    /// `OnAfterOtherCardOperactionCostBuffsReset(cardToChange, instigator)`，
+    /// 排除被重置的目标卡，并跳过受压制的接收者。这个事件让
+    /// Light Anti-Air Battery 等持续光环在回合末重新挂回临时行动费修正。
+    /// </summary>
+    public void FireOperationCostBuffsReset(CardInstance target, int instigatorId)
+    {
+        FireTrigger("OnAfterOtherCardOperactionCostBuffsReset", target, target.Owner,
+            eventArgs: new object?[] { target.CardId, instigatorId },
+            eventSubject: target,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardToChange"] = target.CardId,
+                ["instigator"] = instigatorId,
+                ["instigatorID"] = instigatorId,
+            },
+            broadcastName: true);
     }
 
     /// <summary>
