@@ -432,6 +432,8 @@ internal static class SelfTest
         new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
             RemoveAlpine),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
+        new("SalvageMultipleUnits：复制到施动方手牌并保留金卡/来源状态，满手跳过",
+            SalvageMultipleUnits),
         new("RemoveBond：按目标 cardID 写入 bond_removed、清掉动态 Bond 且屏蔽静态 Bond", RemoveBond),
         new("StealCardFromBoardToDeck：原卡走离场、复制金卡到指定阵营牌库并洗牌", StealCardFromBoardToDeck),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
@@ -1164,6 +1166,57 @@ internal static class SelfTest
         return target.Keywords.Contains(Keyword.Salvage)
             ? "RemoveSalvage 后目标仍保留 Salvage"
             : null;
+    }
+
+    private static string? SalvageMultipleUnits(CardDatabase db)
+    {
+        const string sourceName = "card_unit_raf_mitchell";
+        const string instigatorName = "card_unit_10_5_cm_lefh";
+        if (db.Find(sourceName) is null || db.Find(instigatorName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {instigatorName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var instigator = PutOnBoard(state, instigatorName, Side.Left, 20, 1);
+        var original = state.Create(sourceName, Side.Right, CardLocation.Discard, 0, isGold: true);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = instigator, Controller = Side.Left,
+        };
+
+        var result = engine.Api.InvokeByName("SalvageMultipleUnits", instigator,
+            new object?[] { new[] { original.CardId }, instigator.CardId, null }, ctx,
+            out bool handled);
+        if (!handled || result is not IReadOnlyList<int> ids || ids.Count != 1)
+        {
+            return $"应返回 1 个新卡 ID，handled={handled} result={result ?? "null"}";
+        }
+
+        var copy = state.ById(ids[0]);
+        if (copy is null || copy.Location != CardLocation.HandLeft || copy.Owner != Side.Left)
+        {
+            return "打捞副本必须进入施动方左手牌";
+        }
+
+        if (!copy.IsGold || !copy.IsSalvaged || copy.SalvagedCardId != original.CardId ||
+            copy.SalvageFaction != original.Definition.Faction)
+        {
+            return "打捞副本未保留金卡、isSalvaged、来源 cardID 或原卡阵营";
+        }
+
+        for (int i = 0; i < GameState.HandCapacity - 1; i++)
+        {
+            state.Create(instigatorName, Side.Left, CardLocation.HandLeft,
+                state.NextLocationNumber(Side.Left, CardLocation.HandLeft));
+        }
+
+        var fullResult = engine.Api.InvokeByName("SalvageMultipleUnits", instigator,
+            new object?[] { new[] { original.CardId }, instigator.CardId, null }, ctx,
+            out bool fullHandled);
+        return fullHandled && fullResult is IReadOnlyList<int> fullIds && fullIds.Count == 0
+            ? null
+            : "满手时 SalvageMultipleUnits 必须跳过生成";
     }
 
     private static string? RemoveBond(CardDatabase db)

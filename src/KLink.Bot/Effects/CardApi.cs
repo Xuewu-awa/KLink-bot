@@ -1128,6 +1128,9 @@ public sealed partial class CardApi
             GotchaActivated = source.GotchaActivated,
             CardSeen = source.CardSeen,
             IsRevealed = source.IsRevealed,
+            IsSalvaged = source.IsSalvaged,
+            SalvageFaction = source.SalvageFaction,
+            SalvagedCardId = source.SalvagedCardId,
             Cipher = source.Cipher,
             AttacksThisTurn = source.AttacksThisTurn,
             HasBeenAttackedThisTurn = source.HasBeenAttackedThisTurn,
@@ -2335,16 +2338,69 @@ public sealed partial class CardApi
             ActionValue2.Int("location", (int)side.HandOf()),
         });
 
-        // ⚠️ **两个事件都要发**，这是本轮的 bug 修复点之一。
-        //
-        // 出处：`out/bp-cardfn.json` 函数 `ExecuteOnSpawnedInHandEvents(spawnedCardID, spawnedSide)`
-        //   i=132  `spawnedCard.OnCardSpawnedInHand()`        ← **自己**（此前从未派发）
-        //   i=177  FetchAllCardsWithEventTrigger(57)         ; 57 = OnOtherCardSpawnedInHand
-        //   i=750  `item.OnOtherCardSpawnedInHand(spawnedCardID, spawnedSide)`
-        //
-        // 旧实现只发了 `OnOtherCardSpawnedInHand`，而 `CardApi.FireTrigger` 的
-        // `broadcast` 判定（`programName.StartsWith("OnOther")`）会**把主体自己排除**，
-        // 于是"刚被生成到手牌的那张卡自己的进场逻辑"永远不跑（21 张卡订阅它）。
+        ExecuteOnSpawnedInHandEvents(card, side);
+        return card;
+    }
+
+    /// <summary>
+    /// `SalvageMultipleUnits(cardsToSalvage, instigatorID, out createdCardIDs)`。
+    ///
+    /// 蓝图先收集可创建的副本，再统一执行手牌生成事件，最后广播 Salvaged 事件。
+    /// 这与普通 SpawnCardInHand 的视觉生成路径分开，避免重复产生 SpawnCard 子动作。
+    /// </summary>
+    public IReadOnlyList<int> SalvageMultipleUnits(IReadOnlyList<int> cardIds, int instigatorId)
+    {
+        var instigator = State.ById(instigatorId);
+        if (instigator is null)
+        {
+            return Array.Empty<int>();
+        }
+
+        Side side = instigator.Owner;
+        CardLocation hand = side.HandOf();
+        var created = new List<(int OriginalId, CardInstance Copy)>();
+
+        foreach (int cardId in cardIds)
+        {
+            var original = State.ById(cardId);
+            if (original is null || State.Cards(side, hand).Count >= GameState.HandCapacity)
+            {
+                continue;
+            }
+
+            var copy = State.Create(original.Name, side, hand,
+                State.NextLocationNumber(side, hand), original.IsGold,
+                isSalvaged: true,
+                salvageFaction: original.Definition.Faction,
+                salvagedCardId: original.CardId);
+            created.Add((original.CardId, copy));
+        }
+
+        // The Blueprint batches ExecuteOnSpawnedInHandEvents after all copies exist.
+        foreach (var (_, copy) in created)
+        {
+            ExecuteOnSpawnedInHandEvents(copy, side);
+        }
+
+        foreach (var (originalId, copy) in created)
+        {
+            FireTrigger("OnOtherCardSalvaged", copy, side,
+                eventArgs: new object?[] { originalId, copy.CardId, instigatorId },
+                eventSubject: copy,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardSalvagedID"] = originalId,
+                    ["newCardSalvagedID"] = copy.CardId,
+                    ["instigatorID"] = instigatorId,
+                });
+        }
+
+        return created.Select(x => x.Copy.CardId).ToArray();
+    }
+
+    private void ExecuteOnSpawnedInHandEvents(CardInstance card, Side side)
+    {
+        // `ExecuteOnSpawnedInHandEvents`: own event first, then the broadcast event.
         FireTrigger("OnCardSpawnedInHand", card, side,
             eventArgs: new object?[] { (int)side },
             namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
@@ -2360,7 +2416,6 @@ public sealed partial class CardApi
                 ["spawnedCardID"] = card.CardId,
                 ["spawnedSide"] = (int)side,
             });
-        return card;
     }
 
     /// <summary>把一张卡生成到战场（对应 `SpawnCardOnBattlefield`）。</summary>

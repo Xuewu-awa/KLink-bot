@@ -128,6 +128,15 @@ public sealed class CardInstance
     /// <summary>蓝图 `isRevealed`：Covert 卡公开后持续保留的状态。</summary>
     public bool IsRevealed { get; set; }
 
+    /// <summary>蓝图 `isSalvaged`：由 Salvage 生成的手牌复制品标记。</summary>
+    public bool IsSalvaged { get; set; }
+
+    /// <summary>蓝图 `salvageFaction`：被打捞原卡的阵营名称。</summary>
+    public string? SalvageFaction { get; set; }
+
+    /// <summary>蓝图 `salvagedCardID`：被打捞原卡的 cardID。</summary>
+    public int SalvagedCardId { get; set; }
+
     /// <summary>
     /// `cipher` —— 卡的**情报值**（`AddIntelToCard` 写、`SetCardsSeenByCipher` /
     /// `GotchaTriggered` 读）。蓝图出处见 <see cref="Effects.CardApi.AddIntelToCard"/>。
@@ -736,6 +745,9 @@ public sealed class CardInstance
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
             IsRevealed = IsRevealed,
+            IsSalvaged = IsSalvaged,
+            SalvageFaction = SalvageFaction,
+            SalvagedCardId = SalvagedCardId,
             BlueprintSets = BlueprintSets
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
                 .ToDictionary(kv => kv.Key,
@@ -850,6 +862,9 @@ public sealed record CardSnapshot(
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
     public bool IsRevealed { get; init; }
+    public bool IsSalvaged { get; init; }
+    public string? SalvageFaction { get; init; }
+    public int SalvagedCardId { get; init; }
     public Dictionary<string, int[]> BlueprintSets { get; init; } = new(StringComparer.Ordinal);
 }
 

@@ -560,7 +560,9 @@ public sealed class GameState
     /// （理由见 <see cref="NextCardId"/> 的长注释）。
     /// </param>
     public CardInstance Create(string cardName, Side owner, CardLocation location, int locationNumber,
-                               bool isGold = false, bool sequentialId = false)
+                               bool isGold = false, bool sequentialId = false,
+                               bool isSalvaged = false, string? salvageFaction = null,
+                               int salvagedCardId = 0)
     {
         CardDefinition def = Database.Require(cardName);
         var card = new CardInstance
@@ -591,6 +593,9 @@ public sealed class GameState
             OriginalOwner = owner,
             Definition = def,
             IsGold = isGold,
+            IsSalvaged = isSalvaged,
+            SalvageFaction = salvageFaction,
+            SalvagedCardId = salvagedCardId,
             Location = location,
             LocationNumber = locationNumber,
             Attack = def.Attack,
@@ -633,7 +638,9 @@ public sealed class GameState
     /// 后续动作全是按这些 ID 引用的。
     /// </summary>
     public CardInstance CreateWithId(string cardName, Side owner, int cardId, CardLocation location,
-                                     int locationNumber, bool isGold = false)
+                                     int locationNumber, bool isGold = false,
+                                     bool isSalvaged = false, string? salvageFaction = null,
+                                     int salvagedCardId = 0)
     {
         if (_byCardId.ContainsKey(cardId))
         {
@@ -649,6 +656,9 @@ public sealed class GameState
             OriginalOwner = owner,
             Definition = def,
             IsGold = isGold,
+            IsSalvaged = isSalvaged,
+            SalvageFaction = salvageFaction,
+            SalvagedCardId = salvagedCardId,
             Location = location,
             LocationNumber = locationNumber,
             Attack = def.Attack,

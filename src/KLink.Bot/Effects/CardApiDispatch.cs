@@ -1716,6 +1716,7 @@ public sealed partial class CardApi
             // `ApplyDestroyMultipleCards` 也是缺失键，本内核没有；但它做的事就是
             // 「逐张 Destroy」。这里直接按顺序逐张 `DestroyCard`（同序，避免额外依赖）。
             ["DestroyMultipleCards"] = (c, r, a) => DoDestroyMultipleCards(c, r, a),
+            ["SalvageMultipleUnits"] = (c, r, a) => DoSalvageMultipleUnits(c, r, a),
 
             // `AddDefenseToMultipleCards(receiverIDs, amount, giverCardID, out qqq)`
             // is the batch primitive used by Root Out the Enemy and 119 Grenadier.
@@ -4747,6 +4748,25 @@ public sealed partial class CardApi
         }
 
         return n;
+    }
+
+    /// <summary>
+    /// `SalvageMultipleUnits(cardsToSalvage, instigatorID, out createdCardIDs)`。
+    /// The input array is card IDs; the result is the newly created card ID array.
+    /// </summary>
+    private object? DoSalvageMultipleUnits(EffectContext c, object? r, object?[] a)
+    {
+        var ids = new List<int>();
+        foreach (object? value in EvalList(r, a))
+        {
+            int id = value is int cardId ? cardId : AsCard(value)?.CardId ?? 0;
+            if (id > 0)
+            {
+                ids.Add(id);
+            }
+        }
+        int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+        return SalvageMultipleUnits(ids, instigatorId).ToArray();
     }
 
     /// <summary>
