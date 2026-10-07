@@ -123,6 +123,44 @@ internal static class ReplayAudit
                 {
                     Console.WriteLine("      " + runner.EngineLog(seenLog++));
                 }
+                Console.WriteLine("      [HAND LEFT] " + string.Join(" | ",
+                    st.Hand(Side.Left).Select(c => $"{c.Name}#{c.CardId} cost={c.KreditCost}")));
+                Console.WriteLine("      [DECK LEFT] " + string.Join(",", st.Deck(Side.Left).Select(c => c.CardId)));
+                Console.WriteLine("      [HAND RIGHT] " + string.Join(" | ", st.Hand(Side.Right).Select(c => $"{c.Name}#{c.CardId}")));
+                Console.WriteLine("      [DECK RIGHT] " + string.Join(" | ", st.Deck(Side.Right).Select(c => $"{c.Name}#{c.CardId}")));
+
+                // 648999 的第 23 条动作是 Shinyo Motorboats：它丢 kredit 槽，
+                // 然后应广播 OnAfterExtraKreditSlotGain。把相关卡的资源状态和
+                // 触发追踪一起打印出来，用于区分「卡不在手牌」与「触发没命中」。
+                if (act.ActionId is 23 or 25 or 26)
+                {
+                    foreach (int cardId in new[] { 21, 33, 40 })
+                    {
+                        if (st.ById(cardId) is { } traced)
+                        {
+                            Console.WriteLine($"      [KREDIT-TRACE] #{act.ActionId} " +
+                                              $"card={traced.Name}#{cardId} loc={traced.Location} " +
+                                              $"cost={traced.KreditCost} atk={traced.Attack}/{traced.Defense} " +
+                                              $"kredit L={st.Kredits(Side.Left)}/{st.MaxKredits(Side.Left)} " +
+                                              $"lost={st.KreditSlotsLost(Side.Left)}");
+                        }
+                    }
+
+                    if (runner.Engine is { } tracedEngine)
+                    {
+                        tracedEngine.Api.TriggerTrace ??= new List<string>();
+                        foreach (string trace in tracedEngine.Api.TriggerTrace)
+                        {
+                            if (trace.Contains("OnAfterExtraKreditSlotGain", StringComparison.Ordinal)
+                                || trace.Contains("card_unit_murase_battalion#21", StringComparison.Ordinal)
+                                || trace.Contains("card_unit_5th_regiment#40", StringComparison.Ordinal))
+                            {
+                                Console.WriteLine("      [KREDIT-TRACE] " + trace);
+                            }
+                        }
+                        tracedEngine.Api.TriggerTrace.Clear();
+                    }
+                }
             }
 
             if (boardTrace)

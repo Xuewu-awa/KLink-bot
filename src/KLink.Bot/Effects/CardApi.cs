@@ -3024,7 +3024,7 @@ public sealed partial class CardApi
         // 一次消费、闭区间。游标探针记下候选集大小与选中下标，用来和客户端对账。
         uint seedBefore = State.Random.Seed;
         long cursorBefore = State.Random.ConsumedCount;
-        int index = State.Random.Next(pool.Count);
+        int index = BlueprintRandomRange(0, pool.Count - 1);
         CardInstance picked = pool[index];
         // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。

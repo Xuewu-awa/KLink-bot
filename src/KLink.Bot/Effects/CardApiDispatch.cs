@@ -1689,6 +1689,16 @@ public sealed partial class CardApi
         //
         //    （回放路径本来也不需要它：答复自带卡名，不依赖候选表的顺序。）
         _ = keepOrder;
+        // 离线 A/B：648999 的客户端三张抽牌顺序可由候选洗牌复现，
+        // 但其它回放仍需验证；默认不改变服务端行为。
+        if (!keepOrder && Environment.GetEnvironmentVariable("KLINK_EXPERIMENT_DEVELOP_SHUFFLE") == "1")
+        {
+            // 缓存首次未命中时返回的是缓存持有的列表；不能原地打乱它。
+            candidates = new List<CardInstance>(candidates);
+            c.State.Random.Shuffle(candidates);
+            c.State.TraceRandom($"EXPERIMENT candidate shuffle {selecting.Name} n={candidates.Count}");
+            c.State.TraceRandom("EXPERIMENT first3 " + string.Join(",", candidates.Take(3).Select(x => $"{x.Name}:cost={x.KreditCost}")));
+        }
 
         CardInstance? picked;
         if (c.Engine.ChooseSpawnCard is { } chooseDevelop)
@@ -2036,7 +2046,15 @@ public sealed partial class CardApi
             // 而客户端（动作流揭示的 3001/3002）是 `[iron_from_north, royal_research, …]`
             // —— 第一次对、第二次就不对了，正是"落后 1"的特征。
             int deckLen = c.State.Deck(side).Count;
-            int rand = c.State.Random.RandRange(0, deckLen);
+            int rand = BlueprintRandomRange(0, deckLen);
+            if (Environment.GetEnvironmentVariable("KLINK_EXPERIMENT_DECK_INSERT") == "1")
+            {
+                var ordered = c.State.Deck(side).Where(x => x != last).ToList();
+                int position = TruthyArg(a, 9) ? Math.Clamp(rand, 0, ordered.Count)
+                    : TruthyArg(a, 6) ? ordered.Count : 0;
+                ordered.Insert(position, last);
+                for (int i = 0; i < ordered.Count; i++) ordered[i].LocationNumber = i;
+            }
             c.State.TraceRandom($"SpawnCardInDeckBySide {side} deckLen={deckLen} rand={rand} " +
                                 $"-> #{last.CardId} {cardName}");
 
@@ -2186,7 +2204,18 @@ public sealed partial class CardApi
         if (!ReferenceEquals(_staticPoolDb, db) || _staticPool is null)
         {
             var pool = new List<CardInstance>(db.Count);
-            foreach (var def in db.All.OrderBy(d => d.Name, StringComparer.Ordinal))
+            IEnumerable<CardDefinition> definitions = db.All.OrderBy(d => d.Name, StringComparer.Ordinal);
+            // Offline diagnostic: preserve the observed client's full static-pool order.
+            // This is evidence input, not a permanent per-card ordering rule.
+            if (Environment.GetEnvironmentVariable("KLINK_EXPERIMENT_POOL_ORDER") is { Length: > 0 } orderFile)
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(orderFile));
+                var rank = doc.RootElement.GetProperty("cardNames").EnumerateArray()
+                    .Select((x, i) => (Name: x.GetString()!, Index: i))
+                    .ToDictionary(x => x.Name, x => x.Index, StringComparer.Ordinal);
+                definitions = db.All.Where(d => rank.ContainsKey(d.Name)).OrderBy(d => rank[d.Name]);
+            }
+            foreach (var def in definitions)
             {
                 pool.Add(TemplateInstance(def, c.Controller));
             }
@@ -2944,13 +2973,25 @@ public sealed partial class CardApi
     ///    <c>Min + (int)(GetFraction() * (Max - Min + 1))</c> —— 除数是 `Max-Min+1`，
     ///    也就是**两端都取得到**。
     /// </summary>
+    // BP_CardFunctions::RandomIntFromRangeWithStream consumes 1..10 dummy
+    // draws before the result. Raw Array_ShuffleFromStream does not use it.
+    private int BlueprintRandomRange(int min, int max)
+    {
+        if (Environment.GetEnvironmentVariable("KLINK_EXPERIMENT_RANDOM_WRAPPER") == "1")
+        {
+            int consume = State.Random.RandRange(1, 10);
+            for (int i = 0; i < consume; i++) State.Random.RandRange(0, 1);
+        }
+        return State.Random.RandRange(min, max);
+    }
+
     private object? DoRandomIntFromRange(EffectContext c, object?[] a)
     {
         int lo = IntArg(a, 0);
         int hi = IntArg(a, 1);
         uint seedBefore = c.State.Random.Seed;
         long cursorBefore = c.State.Random.ConsumedCount;
-        int v = c.State.Random.RandRange(lo, hi);
+        int v = BlueprintRandomRange(lo, hi);
         c.State.TraceRandom($"RandomIntFromRangeWithStream({lo},{hi}) -> {v} " +
                             $"cursor={cursorBefore}->{c.State.Random.ConsumedCount} " +
                             $"seed={seedBefore}->{c.State.Random.Seed}");
