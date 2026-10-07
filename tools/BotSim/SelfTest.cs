@@ -81,6 +81,8 @@ internal static class SelfTest
             AdjustCardPositionInDeck),
         new("MoveCardInHandToLeftMost：重排目标手牌并拒绝无效/重复移动",
             MoveCardInHandToLeftMost),
+        new("手牌重排：MoveCardInHandToNewIndex 后广播 OnOtherCardMovedToLocationInHand，并覆盖手牌接收者",
+            OtherCardMovedToLocationInHand),
         new("PlayCardDirectlyFromHand：免费出牌、指定前线/槽位、跨行动方且回写 qqq",
             PlayCardDirectlyFromHand),
         new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
@@ -1515,6 +1517,48 @@ internal static class SelfTest
                 .SequenceEqual(new[] { target.CardId, first.CardId, last.CardId })
             ? null
             : "非手牌目标必须拒绝且不得改变手牌顺序";
+    }
+
+    private static string? OtherCardMovedToLocationInHand(CardDatabase db)
+    {
+        const string auraName = "card_event_guerilla_warfare_school";
+        const string moverName = "card_event_aans";
+        if (db.Find(auraName) is null || db.Find(moverName) is null)
+        {
+            return $"卡库里缺 {auraName} / {moverName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var aura = state.CreateWithId(auraName, Side.Left, 3010, CardLocation.HandLeft, 0);
+        var mover = state.CreateWithId(moverName, Side.Left, 3011, CardLocation.HandLeft, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = mover,
+            Controller = Side.Left,
+        };
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+
+        int initialCost = aura.KreditCost;
+        object? result = engine.Api.InvokeByName("MoveCardInHandToLeftMost", mover,
+            new object?[] { mover, null }, ctx, out bool handled);
+
+        bool broadcastSeen = trace.Any(x => x.StartsWith(
+            $"OnOtherCardMovedToLocationInHand → {auraName}#{aura.CardId}",
+            StringComparison.Ordinal));
+        if (!handled || result is not bool moved || !moved
+            || aura.LocationNumber != 1
+            || aura.KreditCost != Math.Max(0, initialCost - 1)
+            || !broadcastSeen)
+        {
+            return $"手牌重排后应广播到手牌中的游击战学校并按最右位置减费："
+                 + $"handled={handled}, result={result}, location={aura.LocationNumber}, "
+                 + $"cost={aura.KreditCost}/{initialCost}, trace={string.Join(" | ", trace)}";
+        }
+
+        return null;
     }
 
     /// <summary>

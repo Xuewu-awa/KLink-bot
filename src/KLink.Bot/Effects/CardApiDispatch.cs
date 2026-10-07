@@ -3301,6 +3301,12 @@ public sealed partial class CardApi
             hand[i].LocationNumber = i;
         }
 
+        // Blueprint `MoveCardInHandToNewIndex` invokes `ExecuteOnCardMovedInHand`
+        // after the location numbers are rewritten. That helper broadcasts the
+        // parameterless `OnOtherCardMovedToLocationInHand` event to all cards,
+        // including hand subscribers such as Guerilla Warfare School.
+        FireTrigger("OnOtherCardMovedToLocationInHand", subject: null, card.Owner);
+
         return true;
     }
 
