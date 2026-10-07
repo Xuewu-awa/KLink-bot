@@ -404,6 +404,7 @@ internal static class SelfTest
         new("蓝图基础函数：支援线位置不回退阵营；AddUnique 去重并返回原下标", BlueprintArrayAndLocationQueries),
         new("GetLeft/RightMostCardInHand：按手牌位置号返回双出参，空手返回 found=false", HandEdgeQueries),
         new("SetCountdown：按目标 cardID 写入 countdown_timer 并持久化，不误写施动卡", SetCountdown),
+        new("DecrementCountdown：只递减存在的目标倒计时，正确回写双出参并持久化", DecrementCountdown),
         new("SetCardSeen：按目标 cardID 标记情报已见，不误写施动卡", SetCardSeen),
         new("ChangedPinnedTurns：有效在场单位的 pinnedTurns 按蓝图增量并夹到 0..5",
             ChangedPinnedTurns),
@@ -11431,6 +11432,60 @@ internal static class SelfTest
         if (engine.Api.JsonGetInt(source, "countdown_timer") != 0)
         {
             return "SetCountdown 错把倒计时写到了施动卡";
+        }
+
+        return null;
+    }
+
+    private static string? DecrementCountdown(CardDatabase db)
+    {
+        const string targetName = "card_unit_2nd_parachute";
+        if (db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {targetName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, "card_unit_14th_guards_rifles", Side.Left, 20, 1);
+        var target = PutOnBoard(state, targetName, Side.Right, 40, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        engine.Api.JsonSetInt(target, "countdown_timer", 2);
+        object? first = engine.Api.InvokeByName("DecrementCountdown", source,
+            new object?[] { target.CardId, null, null }, ctx, out bool firstHandled);
+        if (!firstHandled || first is not object?[] { Length: 2 } firstOut
+            || firstOut[0] is not false || firstOut[1] is not true
+            || engine.Api.JsonGetInt(target, "countdown_timer") != 1)
+        {
+            return "倒计时 2→1 应报告 [未结束, 已找到]，并只修改目标卡";
+        }
+
+        object? second = engine.Api.InvokeByName("DecrementCountdown", source,
+            new object?[] { target.CardId, null, null }, ctx, out bool secondHandled);
+        if (!secondHandled || second is not object?[] { Length: 2 } secondOut
+            || secondOut[0] is not true || secondOut[1] is not true
+            || engine.Api.JsonGetInt(target, "countdown_timer") != 0)
+        {
+            return "倒计时 1→0 应报告 [已结束, 已找到]";
+        }
+
+        object? missing = engine.Api.InvokeByName("DecrementCountdown", source,
+            new object?[] { source.CardId, null, null }, ctx, out bool missingHandled);
+        if (!missingHandled || missing is not object?[] { Length: 2 } missingOut
+            || missingOut[0] is not false || missingOut[1] is not false
+            || source.CustomJson.ContainsKey("countdown_timer"))
+        {
+            return "缺少倒计时字段时应报告 [未结束, 未找到] 且不创建字段";
+        }
+
+        if (!state.ActionLog.SelectMany(action => action.SubActions)
+            .Any(subAction => subAction.Name == "ZActionPersistCustomFields"
+                && subAction.Values.Any(value => value.Name == "cardID" && value.Value == target.CardId)))
+        {
+            return "递减倒计时后应持久化目标卡 custom fields";
         }
 
         return null;

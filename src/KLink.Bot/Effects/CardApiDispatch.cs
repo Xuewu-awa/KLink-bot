@@ -1181,7 +1181,22 @@ public sealed partial class CardApi
                 return null;
             },
             ["AddToBattleLog"] = (c, r, a) => null,      // 纯日志
-            ["DecrementCountdown"] = (c, r, a) => null,  // 倒计时机制，语义待确认
+            // BP_CardFunctions::DecrementCountdown(cardID, out countdownFinished,
+            // out countdownFound): decrement only when countdown_timer exists, persist
+            // the new value, and report finished when the decremented value is <= 0.
+            ["DecrementCountdown"] = (c, r, a) =>
+            {
+                var target = AsCardOrId(c, a.ElementAtOrDefault(0));
+                if (target is null || !target.CustomJson.ContainsKey("countdown_timer"))
+                {
+                    return new object?[] { false, false };
+                }
+
+                int remaining = JsonGetInt(target, "countdown_timer") - 1;
+                JsonSetInt(target, "countdown_timer", remaining);
+                PersistCustomFields(target);
+                return new object?[] { remaining <= 0, true };
+            },
             // `SetCountdown(cardID, countdown, out qqq)` 是 BP_CardFunctions 的
             // 纯包装：解析目标卡、写入卡牌私有 JSON 的 `countdown_timer`，再持久化。
             // 目标在 a[0]，不能退回 receiver（receiver 是施动卡的 cardFunction）。
