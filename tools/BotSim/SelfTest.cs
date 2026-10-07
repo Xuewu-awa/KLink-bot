@@ -307,6 +307,8 @@ internal static class SelfTest
             PinnedWithOperateAbilityCanAct),
         new("钉住到期：**于单位所有者下个回合结束时**解除（`pinnedTurns` 3/2 递减；不是永久）",
             PinnedExpiresAtOwnerNextTurnEnd),
+        new("钉住：`cantBePinned`、非在场卡和 HQ/非单位必须被蓝图守卫拒绝",
+            PinUnitHonorsBlueprintGuards),
         new("开发选牌：内核会**留痕**（触发卡 / 候选下标 / 卡码）—— 供发出 `CS` 给客户端", DevelopPickIsRecorded),
         new("开发选牌：**真打开发牌**能走到选牌那一步（诊断哪些卡可达）", DevelopCardsReachable),
         new("AOE 伤害：`forward_observers`（对敌方所有单位 2 点）**必须真的扣血**", AoeDamageApplies),
@@ -9363,6 +9365,38 @@ internal static class SelfTest
         if (unit2.Keywords.Contains(Keyword.Pinned))
         {
             return "自己回合被钉住时**没有**在自己下个回合结束时解除";
+        }
+
+        return null;
+    }
+
+    private static string? PinUnitHonorsBlueprintGuards(CardDatabase db)
+    {
+        var made = MakeBoard(db, PlainUnit);
+        if (made is null) return $"卡库里缺 {PlainUnit}";
+        var (engine, target) = made.Value;
+
+        target.CustomAbility = "cantBePinned";
+        engine.Api.PinUnit(target);
+        if (target.Keywords.Contains(Keyword.Pinned) || target.PinnedTurns != 0)
+        {
+            return "cantBePinned 目标不应获得 Pinned 或 pinnedTurns";
+        }
+
+        target.CustomAbility = null;
+        var hand = engine.State.CreateWithId(PlainUnit, Side.Right, 901,
+            CardLocation.HandRight, 0);
+        engine.Api.PinUnit(hand);
+        if (hand.Keywords.Contains(Keyword.Pinned) || hand.PinnedTurns != 0)
+        {
+            return "不在棋盘上的单位不应被 PinUnit 处理";
+        }
+
+        var hq = engine.State.Hq(Side.Right);
+        engine.Api.PinUnit(hq);
+        if (hq.Keywords.Contains(Keyword.Pinned) || hq.PinnedTurns != 0)
+        {
+            return "HQ（非单位）不应被 PinUnit 处理";
         }
 
         return null;

@@ -2727,12 +2727,19 @@ public sealed partial class CardApi
     /// · 我回合钉**敌方** → 2 次回合结束（我的、他的）⇒ 他的回合结束解除；
     /// · 我回合钉**自己** → 3 次回合结束（我的、他的、我的）⇒ 我的下回合结束解除。
     ///
-    /// ⚠️ 蓝图在这之后还有三条守卫（`i=99` `cantBePinned` / `i=215` `IsLocatedOnBoard`
-    ///    / `i=266` `IsUnit`），命中就**只写 `pinnedTurns`、不加关键字**。内核这里
-    ///    **没有**实现那三条守卫（是另一个独立的缺口，不在本次改动范围内，如实记录）。
+    /// 蓝图在这里先检查三条守卫（`i=99` `cantBePinned` / `i=215`
+    /// `IsLocatedOnBoard` / `i=266` `IsUnit`）；任一不满足都直接返回，不写
+    /// `pinnedTurns`、不加关键字、也不派发钉住事件。
     /// </summary>
     public void PinUnit(CardInstance target)
     {
+        if (HasCustomAbility(target, "cantBePinned")
+            || !IsLocatedOnBoard(target)
+            || !IsUnit(target))
+        {
+            return;
+        }
+
         GiveKeyword(target, Keyword.Pinned);
 
         int turns = IsSideActive(target.Owner) ? 3 : 2;
