@@ -405,6 +405,7 @@ internal static class SelfTest
         new("GetLeft/RightMostCardInHand：按手牌位置号返回双出参，空手返回 found=false", HandEdgeQueries),
         new("SetCountdown：按目标 cardID 写入 countdown_timer 并持久化，不误写施动卡", SetCountdown),
         new("DecrementCountdown：只递减存在的目标倒计时，正确回写双出参并持久化", DecrementCountdown),
+        new("Pincer：建立 receiver/givers 关系、派发收到事件并完整解除", PincerRelationship),
         new("SetCardSeen：按目标 cardID 标记情报已见，不误写施动卡", SetCardSeen),
         new("ChangedPinnedTurns：有效在场单位的 pinnedTurns 按蓝图增量并夹到 0..5",
             ChangedPinnedTurns),
@@ -11486,6 +11487,51 @@ internal static class SelfTest
                 && subAction.Values.Any(value => value.Name == "cardID" && value.Value == target.CardId)))
         {
             return "递减倒计时后应持久化目标卡 custom fields";
+        }
+
+        return null;
+    }
+
+    private static string? PincerRelationship(CardDatabase db)
+    {
+        const string giverName = "card_unit_t_28_pincer";
+        const string receiverName = "card_unit_91st_astrakhan";
+        if (db.Find(giverName) is null || db.Find(receiverName) is null)
+        {
+            return $"卡库里缺 {giverName} 或 {receiverName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var giver = PutOnBoard(state, giverName, Side.Left, 20, 1);
+        var receiver = PutOnBoard(state, receiverName, Side.Left, 21, 2);
+        int attackBefore = receiver.Attack;
+        int defenseBefore = receiver.Defense;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = giver, Controller = Side.Left,
+        };
+
+        object? applied = engine.Api.InvokeByName("ApplyPincerEffects", giver,
+            new object?[] { giver.CardId, receiver.CardId }, ctx, out bool applyHandled);
+        if (!applyHandled || applied is not null
+            || engine.Api.JsonGetInt(giver, "pincer_receiver") != receiver.CardId
+            || !engine.Api.JsonGetIntArray(receiver, "pincer_givers").Contains(giver.CardId))
+        {
+            return "ApplyPincerEffects 应写入双方的 Pincer 关系字段";
+        }
+
+        if (receiver.Attack != attackBefore + 1 || receiver.Defense != defenseBefore + 2)
+        {
+            return "OnPincerEffectReceived 未按 91st Astrakhan 的蓝图加成 +1/+2";
+        }
+
+        engine.Api.InvokeByName("RemovePincerEffects", giver,
+            new object?[] { giver.CardId }, ctx, out bool removeHandled);
+        if (!removeHandled
+            || giver.CustomJson.ContainsKey("pincer_receiver")
+            || engine.Api.JsonGetIntArray(receiver, "pincer_givers").Contains(giver.CardId))
+        {
+            return "RemovePincerEffects 应清掉 receiver/givers 双向关系";
         }
 
         return null;

@@ -1181,6 +1181,27 @@ public sealed partial class CardApi
                 return null;
             },
             ["AddToBattleLog"] = (c, r, a) => null,      // 纯日志
+            ["ApplyPincerEffects"] = (c, r, a) =>
+            {
+                var played = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                var targeted = AsCardOrId(c, a.ElementAtOrDefault(1));
+                if (played is not null && targeted is not null)
+                {
+                    ApplyPincerEffects(played, targeted);
+                }
+
+                return null;
+            },
+            ["RemovePincerEffects"] = (c, r, a) =>
+            {
+                var leaving = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
+                if (leaving is not null)
+                {
+                    RemovePincerEffects(leaving);
+                }
+
+                return null;
+            },
             // BP_CardFunctions::DecrementCountdown(cardID, out countdownFinished,
             // out countdownFound): decrement only when countdown_timer exists, persist
             // the new value, and report finished when the decremented value is <= 0.

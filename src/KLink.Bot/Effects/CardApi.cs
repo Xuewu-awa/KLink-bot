@@ -2737,10 +2737,9 @@ public sealed partial class CardApi
     ///   本轮补上（原先只查"在场 + 未被抑制"）⇒ `card_event_maginot_line` /
     ///   `card_event_no_retreat` / `card_unit_10th_guards_regiment` 这类
     ///   「Cannot Retreat or be Suppressed.」的卡不会再被误抑制。</item>
-    /// <item>`RemovePincerEffects`（`L_083A`）内核没有实现（IR 里 0 个调用点，
-    ///   `pincer_receiver`/`pincer_givers` 那套 JSON 也完全没建模）——
-    ///   但**钳击给的加成本身在 `BuffsBySource` 里**，会被本函数的增益清洗一并摘掉，
-    ///   所以可观测效果一致；`Pincer` 关键字按蓝图**不摘**。</item>
+    /// <item>`RemovePincerEffects`（`L_083A`）现在维护
+    ///   `pincer_receiver`/`pincer_givers` 关系并派发解除事件；`Pincer` 关键字本身
+    ///   仍按蓝图**不摘**，只有关系和由关系产生的卡牌能力进入解除链。</item>
     /// </list>
     /// </summary>
     public void SuppressUnit(CardInstance target)
@@ -2812,7 +2811,16 @@ public sealed partial class CardApi
             target.CustomAbility = null;
         }
 
-        // ---- ①b 清 customJson：只保留 `suppressionException`（L_0925-0B38）----
+        // ---- ①b 解除 Pincer 关系（L_0803/L_083A）----
+        // 必须先解除并派发 OnPincerEffectRemoved，再清空 customJson；否则伙伴卡
+        // 仍会保留指向这张卡的 receiver/giver 记录。
+        if (target.CustomJson.ContainsKey("pincer_receiver")
+            || target.CustomJson.ContainsKey("pincer_givers"))
+        {
+            RemovePincerEffects(target);
+        }
+
+        // ---- ①c 清 customJson：只保留 `suppressionException`（L_0925-0B38）----
         // `suppressionException` 是**卡自己的**恢复机制：抑制会洗掉整个 customJson，
         // 唯独把它原样写回，卡（如 `card_unit_gordon_highlanders`）才能在抑制后
         // 把自己保存的状态读回来。IR 里这个键出现 26 次。
@@ -2825,7 +2833,7 @@ public sealed partial class CardApi
             target.CustomJson["suppressionException"] = exception;
         }
 
-        // ---- ①c KreditsTax_AsEnemyTarget = 0（L_08BB）----
+        // ---- ①d KreditsTax_AsEnemyTarget = 0（L_08BB）----
         target.KreditsTaxAsEnemyTarget = 0;
 
         // ---- ② 老兵变回普通形态（L_12B3 `JSON_Clear(card,"veteran")`）----
@@ -3232,6 +3240,124 @@ public sealed partial class CardApi
         var list = JsonGetIntArray(card, key);
         list.Add(value);
         JsonSetIntArray(card, key, list);
+    }
+
+    /// <summary>
+    /// `ApplyPincerEffects(cardPlayed, cardTargeted)` —— 建立一条有方向的
+    /// Pincer 关系，并按蓝图顺序通知两端。施加方记录它的 receiver，
+    /// 承受方记录全部 givers；这些字段必须保留在 customJson，因为卡牌自身的
+    /// `OnPincerEffectApplied` / `OnPincerEffectRemoved` 会直接读取它们。
+    /// </summary>
+    public void ApplyPincerEffects(CardInstance cardPlayed, CardInstance cardTargeted)
+    {
+        if (cardPlayed.Location == CardLocation.Discard)
+        {
+            return;
+        }
+
+        FireTrigger("OnPincerEffectApplied", cardPlayed, cardPlayed.Owner,
+            eventArgs: new object?[] { cardPlayed },
+            eventSubject: cardPlayed,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = cardPlayed,
+            });
+
+        JsonSetInt(cardPlayed, "pincer_receiver", cardTargeted.CardId);
+        PersistCustomFields(cardPlayed);
+
+        FireTrigger("OnPincerEffectReceived", cardPlayed, cardPlayed.Owner,
+            eventArgs: new object?[] { cardPlayed },
+            eventSubject: cardPlayed,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["PincerGiver"] = cardPlayed,
+            });
+
+        FireTrigger("OnPincerEffectApplied", cardTargeted, cardTargeted.Owner,
+            eventArgs: new object?[] { cardTargeted },
+            eventSubject: cardTargeted,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["card"] = cardTargeted,
+            });
+
+        JsonAddToIntArray(cardTargeted, "pincer_givers", cardPlayed.CardId);
+        PersistCustomFields(cardTargeted);
+
+        FireTrigger("OnPincerEffectReceived", cardTargeted, cardTargeted.Owner,
+            eventArgs: new object?[] { cardPlayed },
+            eventSubject: cardPlayed,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["PincerGiver"] = cardPlayed,
+            });
+    }
+
+    /// <summary>
+    /// `RemovePincerEffects(cardLeaving)` —— 解除离场卡作为 receiver 的关系，
+    /// 以及它作为 giver 记录的所有关系。事件在字段清理前派发，和正版函数的
+    /// `JSON_Get* → OnPincerEffectRemoved → JSON_Clear/Persist` 顺序一致。
+    /// </summary>
+    public void RemovePincerEffects(CardInstance cardLeaving)
+    {
+        CardInstance? receiver = null;
+        if (cardLeaving.CustomJson.ContainsKey("pincer_receiver"))
+        {
+            receiver = State.ById(JsonGetInt(cardLeaving, "pincer_receiver"));
+        }
+
+        if (receiver is not null)
+        {
+            FireTrigger("OnPincerEffectRemoved", receiver, receiver.Owner,
+                eventArgs: new object?[] { receiver },
+                eventSubject: receiver,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = receiver,
+                });
+            FireTrigger("OnPincerEffectRemoved", cardLeaving, cardLeaving.Owner,
+                eventArgs: new object?[] { cardLeaving },
+                eventSubject: cardLeaving,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = cardLeaving,
+                });
+
+            JsonRemoveFromIntArray(receiver, "pincer_givers", cardLeaving.CardId);
+            PersistCustomFields(receiver);
+        }
+
+        foreach (int giverId in JsonGetIntArray(cardLeaving, "pincer_givers").Distinct().ToList())
+        {
+            CardInstance? giver = State.ById(giverId);
+            if (giver is null)
+            {
+                continue;
+            }
+
+            FireTrigger("OnPincerEffectRemoved", giver, giver.Owner,
+                eventArgs: new object?[] { giver },
+                eventSubject: giver,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = giver,
+                });
+            FireTrigger("OnPincerEffectRemoved", cardLeaving, cardLeaving.Owner,
+                eventArgs: new object?[] { cardLeaving },
+                eventSubject: cardLeaving,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["card"] = cardLeaving,
+                });
+
+            JsonClear(giver, "pincer_receiver");
+            PersistCustomFields(giver);
+        }
+
+        JsonClear(cardLeaving, "pincer_receiver");
+        JsonClear(cardLeaving, "pincer_givers");
+        PersistCustomFields(cardLeaving);
     }
 
     /// <summary>
