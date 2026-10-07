@@ -471,6 +471,8 @@ internal static class SelfTest
         // ⇒ 前线归属仍留在 Right ⇒ 人类 t9 推前线被互斥门拒。
         new("★ 雾战（fog_of_war）：把目标单位移出战场 + 前线归属必须跟着释放（773639 #45 的根因）",
             FogOfWarRemovesTargetFromBattlefield),
+        new("SpawnCardInDeckBySide：按 bottom 布尔参数落顶/底，不受 side=2 干扰",
+            SpawnCardInDeckHonorsBottom),
 
         // ---- ★★ 2026-10-02：kredit 槽位增长模型**已定案**，那条用例**不恢复** ----
         // 曾有一条 `KreditSlotsGrowEveryTurn`（断言"每回合双方各 +1"）—— **它的模型是错的**，
@@ -4993,6 +4995,65 @@ internal static class SelfTest
         {
             return "雾战执行期间撞到了新的未实现原语"
                  + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        return null;
+    }
+
+    private static string? SpawnCardInDeckHonorsBottom(CardDatabase db)
+    {
+        const string sourceName = "card_event_confusion";
+        const string existingName = "card_unit_arado_ar_196";
+        const string spawnedName = "card_unit_1st_infantry_regiment_us";
+        foreach (string name in new[] { sourceName, existingName, spawnedName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 2, CardLocation.Discard, 0);
+        var first = state.CreateWithId(existingName, Side.Right, 42, CardLocation.DeckRight, 0);
+        var second = state.CreateWithId(existingName, Side.Right, 43, CardLocation.DeckRight, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        // side=Right is the integer 2; it must not override bottom=true.
+        object? bottomResult = engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+            new object?[] { (int)Side.Right, spawnedName, source.CardId, 1, "", false,
+                true, false, false, false, null }, ctx, out bool bottomHandled);
+        if (!bottomHandled || bottomResult is not System.Collections.IEnumerable)
+        {
+            return "SpawnCardInDeckBySide(bottom=true) 未接入派发表";
+        }
+
+        var deck = state.Deck(Side.Right);
+        if (deck.Count != 3 || !ReferenceEquals(deck[0], first) || !ReferenceEquals(deck[1], second)
+            || deck[2].Name != spawnedName)
+        {
+            return $"bottom=true 应把新卡放到牌库底，实际顺序：{string.Join(",", deck.Select(x => x.Name))}";
+        }
+
+        object? topResult = engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+            new object?[] { (int)Side.Right, spawnedName, source.CardId, 1, "", false,
+                false, false, false, false, null }, ctx, out bool topHandled);
+        if (!topHandled || topResult is not System.Collections.IEnumerable)
+        {
+            return "SpawnCardInDeckBySide(bottom=false) 未接入派发表";
+        }
+
+        deck = state.Deck(Side.Right);
+        if (deck.Count != 4 || deck[0].Name != spawnedName || !ReferenceEquals(deck[1], first)
+            || !ReferenceEquals(deck[2], second))
+        {
+            return $"bottom=false 应把新卡放到牌库顶，实际顺序：{string.Join(",", deck.Select(x => x.Name))}";
         }
 
         return null;

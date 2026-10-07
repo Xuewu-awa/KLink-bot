@@ -2356,13 +2356,11 @@ public sealed partial class CardApi
     /// 「Put **two** copies on top of owner's deck.」—— 对局 `773639` `#29 t7`
     /// 那张雾战因此少塞了 1 张。
     ///
-    /// ⚠️ **仍未修（如实记录，别当成已实现）**：
+    /// ⚠️ **仍未完整对齐（随机插入仍待单独回归）**：
     /// <list type="bullet">
-    /// <item><c>bottom</c>（a[6]）/ <c>shuffle</c>（a[7]）是**两个 bool**，
-    ///   而这里用的是「扫到某个 int 等于 2 就当放牌库顶」的旧启发式 ——
-    ///   在 `numberOfCards == 2` 时碰巧对，`numberOfCards == 1`（28 个调用点里 21 个）
-    ///   时会把本该放**顶**的卡放到**底**。没改是因为它会同时挪动 19 个调用点的落点，
-    ///   需要单独一轮对拍归因。</item>
+    /// <item><c>bottom</c>（a[6]）/ <c>shuffle</c>（a[7]）是**两个 bool**。
+    ///   不能再扫任意整数猜位置：右阵营的 <c>side=2</c> 会把本应放底的卡误判成放顶，
+    ///   而多张置顶时也必须按每次生成后的当前牌库重排。</item>
     /// <item><c>RandomWithoutShuffle</c>（a[9]）为假时，蓝图按
     ///   `RandomIntegerInRangeFromStream(0, 牌库数)` 把卡插到**随机位置**；
     ///   这里只做顶/底两档。</item>
@@ -2389,29 +2387,22 @@ public sealed partial class CardApi
             count = 1;
         }
 
-        var deck = c.State.Deck(side).ToList();
-        bool toBottom = true;
-        foreach (object? v in a)
-        {
-            if (v is int i && i == (int)SpawnInDeckLocation.Top)
-            {
-                toBottom = false;
-            }
-        }
+        bool toBottom = TruthyArg(a, 6);
 
         CardInstance? last = null;
         var spawned = new List<int>();
         for (int n = 0; n < count; n++)
         {
+            var currentDeck = c.State.Deck(side);
             if (toBottom)
             {
                 last = c.State.Create(cardName, side, side.DeckOf(),
-                                      c.State.NextLocationNumber(side, side.DeckOf()));
+                                      currentDeck.Count);
             }
             else
             {
                 // 放到牌库顶：把现有牌整体后移一位
-                foreach (var existing in deck)
+                foreach (var existing in currentDeck)
                 {
                     existing.LocationNumber++;
                 }
