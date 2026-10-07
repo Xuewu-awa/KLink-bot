@@ -1153,6 +1153,22 @@ public sealed class MatchEngine
             FireLeaveTrigger(card, CardLocation.BoardFrontline);
         }
 
+        // ---- 未揭示隐蔽牌的专用触发点 ----
+        //
+        // 蓝图 `CardPlayedFromHand` 的顺序是：先由出牌卡自己收到
+        // `OnCovertCardPlayedFromHand`，再取触发点 60 的接收者并派发
+        // `OnOtherCovertCardPlayedFromHand`，随后才进入普通的
+        // `OnBeforeOtherCardPlayedFromHand`。主体事件可能改变场面，故广播
+        // 接收者快照必须在主体事件完成后取得。
+        if (CardApi.IsUnrevealedCovertCard(card))
+        {
+            Api.FireTrigger("OnCovertCardPlayedFromHand", card, card.Owner);
+            var covertTriggerSnapshot = Api.CaptureTriggerSnapshot();
+            Api.FireTrigger("OnOtherCovertCardPlayedFromHand", card, card.Owner,
+                eventArgs: new object?[] { card }, eventSubject: card,
+                recipientSnapshot: covertTriggerSnapshot);
+        }
+
         // ---- 「别的卡**即将**从手牌被打出」----
         //
         // 出处 `out/bp-cardfn.json` 函数 `CardPlayedFromHand`：

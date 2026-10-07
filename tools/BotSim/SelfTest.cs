@@ -648,6 +648,8 @@ internal static class SelfTest
             "（蓝图 :6462 → :6464；旧实现反了）", PlayCardOtherTriggersOrder),
         new("★ `PlayCard`：战吼生成的新卡不得收到本次 T51 广播（早快照）",
             PlayCardBroadcastUsesEarlySnapshot),
+        new("★ `PlayCard`：未揭示 Covert 牌先派发专用主体/旁观触发，普通牌不派发",
+            PlayCardCovertTriggers),
 
         // ---- ★★ 2026-10-03：攻击前触发点的**接收者**与**先后** ----
         // 蓝图 `AttackCard`：`OnBeforeAttack` 的接收者是 `_attackerCard`（`:4633`，**不是防御方**），
@@ -7518,6 +7520,79 @@ internal static class SelfTest
         if (victim.Defense != victimBefore)
         {
             return $"新生成的 COMMANDO 错误触发 T51 并伤害敌方单位：{victimBefore} → {victim.Defense}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 蓝图 `CardPlayedFromHand` 的未揭示 Covert 专用分支：
+    /// `OnCovertCardPlayedFromHand`（主体）→ `OnOtherCovertCardPlayedFromHand`
+    ///（排除主体）→ 普通出牌前触发。这里只验证可观测的旁观广播与载荷，
+    /// 并确认普通牌不会误触发该分支。
+    /// </summary>
+    private static string? PlayCardCovertTriggers(CardDatabase db)
+    {
+        const string watcherName = "card_unit_sissiosasto_5d";
+        const string covertName = "card_unit_115th_separate_btn";
+        const string ordinaryName = "card_unit_1st_infantry_regiment_us";
+        foreach (string name in new[] { watcherName, covertName, ordinaryName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        static (MatchEngine Engine, GameState State, CardInstance Watcher, CardInstance Played)
+            Setup(CardDatabase db, string playedName)
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Right;
+            state.SetKredits(Side.Right, 12);
+            state.SetMaxKredits(Side.Right, 12);
+            var watcher = state.CreateWithId("card_unit_sissiosasto_5d", Side.Left, 20,
+                CardLocation.BoardHqLeft, 1);
+            var played = state.CreateWithId(playedName, Side.Right, 42,
+                CardLocation.HandRight, 0);
+            return (engine, state, watcher, played);
+        }
+
+        var ordinary = Setup(db, ordinaryName);
+        var ordinaryTrace = new List<string>();
+        ordinary.Engine.Api.TriggerTrace = ordinaryTrace;
+        if (!ordinary.Engine.PlayCard(ordinary.Played))
+        {
+            return $"普通牌打出失败：{string.Join(" | ", ordinaryTrace)}";
+        }
+
+        if (ordinaryTrace.Any(x => x.StartsWith("OnOtherCovertCardPlayedFromHand",
+                                                  StringComparison.Ordinal)))
+        {
+            return "普通牌错误触发 OnOtherCovertCardPlayedFromHand";
+        }
+
+        var covert = Setup(db, covertName);
+        var covertTrace = new List<string>();
+        covert.Engine.Api.TriggerTrace = covertTrace;
+        if (!covert.Engine.PlayCard(covert.Played))
+        {
+            return $"Covert 牌打出失败：{string.Join(" | ", covertTrace)}";
+        }
+
+        string? eventTrace = covertTrace.FirstOrDefault(x =>
+            x.StartsWith($"OnOtherCovertCardPlayedFromHand → {covert.Watcher.Name}#{covert.Watcher.CardId}",
+                         StringComparison.Ordinal));
+        if (eventTrace is null)
+        {
+            return "未揭示 Covert 牌没有派发到旁观卡，实际记录："
+                   + string.Join(" | ", covertTrace.Take(16));
+        }
+
+        if (!eventTrace.Contains($"eventCard={covert.Played.Name}#{covert.Played.CardId}",
+                                 StringComparison.Ordinal))
+        {
+            return $"Covert 广播载荷错误：{eventTrace}";
         }
 
         return null;
