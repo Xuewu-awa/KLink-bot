@@ -1659,6 +1659,8 @@ public sealed class MatchEngine
             eventSubject: unit,
             namedArgs: moveNamedArgs);
 
+        FireOperationKreditsSpent(unit, moveCost);
+
         return true;
     }
 
@@ -1846,6 +1848,39 @@ public sealed class MatchEngine
             ActionValue2.Int("instigatorID", card.CardId),
             ActionValue2.Int("goingToLocation", goingToLocation),
         });
+
+    /// <summary>
+    /// Dispatch the operation-cost event pair used by cards such as Landwehr.
+    /// The Blueprint helper broadcasts to other subscribers first, then calls
+    /// the operated card itself; a suppressed operated card skips both paths.
+    /// </summary>
+    private void FireOperationKreditsSpent(CardInstance operated, int cost)
+    {
+        if (operated.IsSuppressed)
+        {
+            return;
+        }
+
+        var otherNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardOperated"] = operated,
+            ["kreditsSpent"] = cost,
+        };
+        Api.FireTrigger("OnOtherCardOperationKreditsSpent", operated, operated.Owner,
+            eventArgs: new object?[] { operated, cost },
+            eventSubject: operated,
+            namedArgs: otherNamedArgs,
+            broadcastName: true);
+
+        var selfNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["kreditsSpent"] = cost,
+        };
+        Api.FireTrigger("OnOperationKreditsSpent", operated, operated.Owner,
+            eventArgs: new object?[] { cost },
+            eventSubject: operated,
+            namedArgs: selfNamedArgs);
+    }
 
     // ==================== 攻击 ====================
 
@@ -2060,8 +2095,9 @@ public sealed class MatchEngine
             return false;
         }
 
-        State.AddKredits(attacker.Owner, -attacker.OperationCost);
-        State.AddOperationKreditsSpentThisTurn(attacker.OperationCost);
+        int attackCost = attacker.OperationCost;
+        State.AddKredits(attacker.Owner, -attackCost);
+        State.AddOperationKreditsSpentThisTurn(attackCost);
         attacker.HasAttackedThisTurn = true;
         // 攻击额度 -1（蓝图 `SetAttackerHasAttacked`，`BP_CardFunctions.g.cs:33930-33942`：
         // `attackLeft -= 1` / `hasAttackedThisTurn = True` / `attackCountThisTurn += 1`）。
@@ -2167,6 +2203,13 @@ public sealed class MatchEngine
             "OnOtherCardAttacks", attacker,
             new[] { "stopAttack", "AttackedAndStopped" },
             attackEventSeed);
+
+        // `ExecuteOnOperationKreditsSpent` runs after the pre-attack hooks and
+        // before either the normal damage path or the stopped-attack path.
+        // Keep it here so a stopped attack still counts as one operation, but
+        // the operation card is never charged twice.
+        FireOperationKreditsSpent(attacker, attackCost);
+
         if (stoppedAttack.Any(hit => hit.Outs.GetValueOrDefault("stopAttack") is true
             || hit.Outs.GetValueOrDefault("AttackedAndStopped") is true))
         {

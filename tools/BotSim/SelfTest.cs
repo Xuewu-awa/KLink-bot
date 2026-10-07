@@ -24,6 +24,7 @@ internal static class SelfTest
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
         new("Seagull：GetReducedDamage 按本方 HQ 本回合剩余减伤额度截断", GetReducedDamage),
+        new("Landwehr：操作扣费事件按蓝图返还 Veteran 的实际行动费", LandwehrOperationCredits),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -1643,6 +1644,136 @@ internal static class SelfTest
                 return $"施法方 HQ {hqDefense} / 被指方 HQ {targetHq} 时，目标 HQ 应掉 {expected} 点"
                      + $"（{before} → {before - expected}），实际 {before} → {after}"
                      + Dump(state, ("未实现", Unimpl(state)));
+            }
+        }
+
+        return null;
+    }
+
+    private static string? LandwehrOperationCredits(CardDatabase db)
+    {
+        const string landwehrName = "card_unit_182_landwehr";
+        const string moverName = "card_unit_arado_ar_196";
+        if (db.Find(landwehrName) is null || db.Find(moverName) is null)
+        {
+            return "卡库缺少 Landwehr 或移动测试单位";
+        }
+
+        // `GiveCredits` 没有事件载荷时必须是严格 no-op。
+        {
+            var (engine, state) = EmptyBoard(db);
+            var landwehr = state.CreateWithId(landwehrName, Side.Left, 1500,
+                CardLocation.BoardHqLeft, 1);
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = landwehr,
+                Controller = Side.Left,
+            };
+            state.SetKredits(Side.Left, 7);
+            engine.Api.InvokeByName("GiveCredits", null, Array.Empty<object?>(), ctx, out bool handled);
+            if (!handled || state.Kredits(Side.Left) != 7)
+            {
+                return "GiveCredits 缺少 kreditsSpent 事件载荷时不应返还 kredit";
+            }
+        }
+
+        // Veteran Landwehr operating itself: pay once, then refund the same
+        // effective operation cost once.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 9);
+            var landwehr = state.CreateWithId(landwehrName, Side.Left, 1501,
+                CardLocation.BoardHqLeft, 1);
+            landwehr.EnteredPlayOnTurn = state.Turn - 1;
+            engine.Api.MakeVeteran(landwehr);
+            int cost = landwehr.OperationCost;
+            if (!engine.MoveUnit(landwehr, 0, out string reason))
+            {
+                return $"Veteran Landwehr 移动失败：{reason}";
+            }
+
+            if (state.Kredits(Side.Left) != 9)
+            {
+                return $"Veteran Landwehr 自己操作后应净不变，实际 kredit={state.Kredits(Side.Left)}（行动费={cost}）";
+            }
+
+            if (state.OperationKreditsSpentThisTurn != cost)
+            {
+                return $"行动费计数应只累计实际支出 {cost}，实际 {state.OperationKreditsSpentThisTurn}";
+            }
+        }
+
+        // A friendly unit operating nearby must trigger Landwehr's
+        // OnOtherCardOperationKreditsSpent path and refund that unit's cost.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 9);
+            var landwehr = state.CreateWithId(landwehrName, Side.Left, 1502,
+                CardLocation.BoardHqLeft, 1);
+            landwehr.EnteredPlayOnTurn = state.Turn - 1;
+            engine.Api.MakeVeteran(landwehr);
+            var mover = state.CreateWithId(moverName, Side.Left, 1503,
+                CardLocation.BoardHqLeft, 2);
+            mover.EnteredPlayOnTurn = state.Turn - 1;
+            int cost = mover.OperationCost;
+            if (!engine.MoveUnit(mover, 0, out string reason))
+            {
+                return $"友方单位移动失败：{reason}";
+            }
+
+            if (state.Kredits(Side.Left) != 9)
+            {
+                return $"Veteran Landwehr 未返还友方单位行动费 {cost}，实际 kredit={state.Kredits(Side.Left)}";
+            }
+        }
+
+        // The attack path uses the same event pair as ordinary movement.
+        {
+            var (engine, state, landwehr) = GuardBoard(db, landwehrName, (moverName, 1));
+            state.SetKredits(Side.Left, 9);
+            engine.Api.MakeVeteran(landwehr);
+            var defender = state.Cards(Side.Right, CardLocation.BoardHqRight)
+                .First(card => card.Name == moverName);
+            int cost = landwehr.OperationCost;
+            if (!engine.Attack(landwehr, defender, out string reason))
+            {
+                return $"Veteran Landwehr 攻击失败：{reason}";
+            }
+
+            if (state.Kredits(Side.Left) != 9
+                || state.OperationKreditsSpentThisTurn != cost)
+            {
+                return $"Veteran Landwehr 攻击返还/计数错误：kredit={state.Kredits(Side.Left)}，"
+                     + $"行动费计数={state.OperationKreditsSpentThisTurn}，实际费用={cost}";
+            }
+        }
+
+        // A non-veteran Landwehr counts the operation but must not refund it.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 9);
+            var landwehr = state.CreateWithId(landwehrName, Side.Left, 1504,
+                CardLocation.BoardHqLeft, 1);
+            landwehr.EnteredPlayOnTurn = state.Turn - 1;
+            int cost = landwehr.OperationCost;
+            if (!engine.MoveUnit(landwehr, 0, out string reason))
+            {
+                return $"普通 Landwehr 移动失败：{reason}";
+            }
+
+            if (state.Kredits(Side.Left) != 9 - cost)
+            {
+                return $"普通 Landwehr 不应返还行动费，实际 kredit={state.Kredits(Side.Left)}，期望 {9 - cost}";
+            }
+
+            if (state.OperationKreditsSpentThisTurn != cost)
+            {
+                return $"普通 Landwehr 行动费计数错误：实际 {state.OperationKreditsSpentThisTurn}，期望 {cost}";
             }
         }
 

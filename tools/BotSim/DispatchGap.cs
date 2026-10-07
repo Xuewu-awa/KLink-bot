@@ -191,11 +191,13 @@ internal static class DispatchGapBaseline
     /// 来源卡维护 GameplayEffect，并让 `sideeffect.blockgotcha` 接入 Gotcha 判定。
     /// 2026-10-07：473 → **472**（2120 → 2118 个调用点）。补上
     /// `GetReducedDamage`，按 Seagull 蓝图将本方 HQ 本回合减伤额度限制为 4 点。
+    /// 2026-10-07：472 → **471**（2118 → 2116 个调用点）。补上
+    /// `GiveCredits` 并在移动/攻击支付行动费时派发两个蓝图事件。
     /// </remarks>
-    public const int BaselineCount = 472;
+    public const int BaselineCount = 471;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "EFF8025A9E0E696A";
+    public const string BaselineFingerprint = "F7E68FDAC455AAEC";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

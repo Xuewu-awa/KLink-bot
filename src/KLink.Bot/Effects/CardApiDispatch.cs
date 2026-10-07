@@ -1159,6 +1159,27 @@ public sealed partial class CardApi
                 c.State.AddKredits(side, IntArg(a, 1));
                 return null;
             },
+            // `GiveCredits()` is the Landwehr card's private helper.  Its
+            // amount is supplied by the operation event frame, not by call
+            // arguments: `opCost > 0` then `GiveKreditsBySide(self.side,
+            // opCost, ...)`.  Missing event data must be a no-op rather than
+            // accidentally refunding a default amount.
+            ["GiveCredits"] = (c, r, a) =>
+            {
+                if (c.Self is null
+                    || !c.NamedArgs.TryGetValue("kreditsSpent", out var spentValue))
+                {
+                    return null;
+                }
+
+                int amount = AsInt(spentValue);
+                if (amount > 0)
+                {
+                    c.State.AddKredits(c.Self.Owner, amount);
+                }
+
+                return null;
+            },
             ["AddToBattleLog"] = (c, r, a) => null,      // 纯日志
             ["DecrementCountdown"] = (c, r, a) => null,  // 倒计时机制，语义待确认
             // `SetCountdown(cardID, countdown, out qqq)` 是 BP_CardFunctions 的
