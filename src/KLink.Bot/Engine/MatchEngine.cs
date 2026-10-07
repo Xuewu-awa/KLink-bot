@@ -235,6 +235,38 @@ public sealed class MatchEngine
         }
     }
 
+    /// <summary>
+    /// Public adapter for Blueprint `ExecuteOnCardLocationMoved` callers that
+    /// perform a logical reveal without changing the card's stored location.
+    /// </summary>
+    public void ExecuteOnCardLocationMoved(CardInstance card, CardLocation oldLocation,
+                                           CardLocation newLocation, bool changeOwner = false)
+    {
+        var args = new object?[] { card, (int)oldLocation, (int)newLocation, changeOwner, "" };
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardMoved"] = card,
+            ["oldLocation"] = (int)oldLocation,
+            ["newLocation"] = (int)newLocation,
+            ["ChangeOwner"] = changeOwner,
+            ["MoveReason"] = "",
+        };
+
+        if (!card.IsSuppressed)
+        {
+            Api.FireTrigger("OnCardLocationMoved", card, card.Owner,
+                eventArgs: args, eventSubject: card, namedArgs: named,
+                oldLocation: oldLocation, newLocation: newLocation);
+        }
+
+        // The Blueprint's observer loop follows the subject hook.  A
+        // suppressed card skips only its own hook but still reaches observers.
+        Api.FireTrigger("OnOtherCardLocationMoved", card, card.Owner,
+            eventArgs: args, eventSubject: card, namedArgs: named,
+            oldLocation: oldLocation, newLocation: newLocation,
+            broadcastName: true);
+    }
+
     public GameState State { get; }
 
     public IReadOnlyList<string> LeftDeckList { get; }
@@ -2491,9 +2523,8 @@ public sealed class MatchEngine
     /// 2. **自己有 Guard ⇒ 恒 false**（掩护卡自己不免疫，si=686/718）；
     /// 3. 否则 ⟺ **同一条线上 locationNumber ± 1 的邻卡有 Guard**（si=847/1276/1405）。
     ///
-    /// ⚠️ 蓝图里还有一条 `!IsUnrevealedCovertCard` 的过滤（si=564/1206）——
-    /// 本内核没有建模 Covert（P1），所有卡都不是"未揭示的隐蔽卡"，
-    /// 所以这个条件恒真、不改变结果。**这是已知的近似，不是遗漏。**
+    /// 蓝图里还有一条 `!IsUnrevealedCovertCard` 的过滤（si=564/1206），
+    /// 由卡面 Covert 关键字和 `IsRevealed` 状态共同判定。
     /// </summary>
     public bool IsBeingGuarded(CardInstance card)
     {

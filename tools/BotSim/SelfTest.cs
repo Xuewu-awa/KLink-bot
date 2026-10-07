@@ -298,6 +298,8 @@ internal static class SelfTest
         new("手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须**真的落实**（0 费 + 回牌库顶）", HandTargetSelectWorks),
         new("CanCardBeBuffed：门对所有位置放行（si=41 极性修正）+ 未揭示隐蔽卡的位置表逐条核对",
             CanCardBeBuffedTruthTable),
+        new("RevealCard：清除 Covert、持久化揭示状态并按蓝图派发揭示/入场触发",
+            RevealCardSemantics),
 
         // ---- P0 第 3 族：卡内私有函数（locals 管道，2026-09-27）----
         new("私有函数：IR 里带了卡自己的函数体（ApplyBuff / didPlayBritishInfantryLastTurn …）",
@@ -9677,10 +9679,7 @@ internal static class SelfTest
     /// 三条同资产内语义自明的校准点钉死极性（`ChangeAttack` si=57 / `GiveSalvage` si=141 /
     /// `ChangeAttack` si=934），取证见 `klink bot/docs/CanCardBeBuffed矛盾调查.md`。
     ///
-    /// 本内核**没有建模 Covert 的「已揭示/未揭示」状态**（P1 只到 `Keyword.Covert` 判据面），
-    /// 所以 `IsUnrevealedCovertCard` 恒假 ⇒ 这道门对**所有**位置都放行。
-    /// 用例分两半：① 全体位置 true；② 显式钉住「恒假」这个前提 ——
-    /// Covert 状态一落地，② 会先炸，逼人回来把位置表接上（而不是让 ① 悄悄失效）。
+    /// 普通卡不受位置表限制；未揭示 Covert 卡才走该位置表。
     /// </summary>
     private static string? CanCardBeBuffedTruthTable(CardDatabase db)
     {
@@ -9692,15 +9691,14 @@ internal static class SelfTest
         var (engine, state) = EmptyBoard(db);
         var card = state.CreateWithId(PlainUnit, Side.Left, 20, CardLocation.DeckLeft, 0);
 
-        // ② 前提：内核没有 Covert 揭示状态 ⇒ 这道门的第一支恒真。
+        // 普通卡无论在哪个位置都跳过 Covert 专用表。
         card.Location = CardLocation.BoardFrontline;
         if (CardApi.IsUnrevealedCovertCard(card))
         {
-            return "内核没有建模 Covert 的揭示状态，IsUnrevealedCovertCard 应当恒假；"
-                 + "现在返回 true ⇒ CanCardBeBuffed 会走位置表，这条用例的 ① 要跟着改";
+            return "普通卡不应被判成未揭示 Covert";
         }
 
-        // ① 修好极性之后：门对**所有**位置都放行。
+        // 蓝图 JumpIfNot(IsUnrevealedCovertCard) 对普通卡直接返回 true。
         foreach (CardLocation where in Enum.GetValues<CardLocation>())
         {
             card.Location = where;
@@ -9713,8 +9711,7 @@ internal static class SelfTest
         }
 
         // ③ 位置表本体（si=55..711 / 落点 si=746/762）逐条核对。
-        //    内核拿不到「未揭示的隐蔽卡」，所以只能直接调表本体 ——
-        //    这也是把表抽成 `CanUnrevealedCovertBeBuffed` 的唯一理由。
+        //    位置表单独抽出，便于在有/无揭示状态时分别核对蓝图分支。
         var table = new (CardLocation Where, bool Expect)[]
         {
             (CardLocation.DeckLeft, true),        // 1  si=762
@@ -9738,7 +9735,93 @@ internal static class SelfTest
             }
         }
 
+        var covert = state.CreateWithId("card_unit_115th_separate_btn", Side.Left, 21,
+            CardLocation.BoardHqLeft, 1);
+        if (!CardApi.IsUnrevealedCovertCard(covert) || CardApi.CanCardBeBuffed(covert))
+        {
+            return "未揭示 Covert 单位在棋盘上应命中位置表并禁止 buff";
+        }
+
+        covert.Location = CardLocation.HandLeft;
+        if (!CardApi.CanCardBeBuffed(covert))
+        {
+            return "未揭示 Covert 单位在手牌中应允许 buff";
+        }
+
         _ = engine;
+        return null;
+    }
+
+    private static string? RevealCardSemantics(CardDatabase db)
+    {
+        const string targetName = "card_unit_133rd_ironman";
+        const string revealObserverName = "card_unit_186th_recon_company";
+        const string enterObserverName = "card_unit_argyllshire_highlanders";
+        foreach (string name in new[] { targetName, revealObserverName, enterObserverName })
+        {
+            if (db.Find(name) is null) return $"卡库里缺 {name}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var target = state.CreateWithId(targetName, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var revealObserver = state.CreateWithId(revealObserverName, Side.Right, 42,
+            CardLocation.BoardHqRight, 1);
+        state.CreateWithId(enterObserverName, Side.Right, 43, CardLocation.BoardHqRight, 2);
+        var source = state.CreateWithId("card_event_hidden_plans", Side.Left, 44,
+            CardLocation.Discard, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("RevealCard", source,
+            new object?[] { target, source.CardId, null }, ctx, out bool handled);
+        if (!handled) return "RevealCard 未接入派发表";
+        if (result is not int outValue || outValue != 0)
+            return $"qqq 应保持蓝图默认值 0，实际 {result ?? "null"}";
+        if (!target.IsRevealed || target.Keywords.Contains(Keyword.Covert)
+            || CardApi.IsUnrevealedCovertCard(target) || !CardApi.CanCardBeBuffed(target))
+        {
+            return "揭示后应持久化 isRevealed、移除 Covert，且不再受未揭示 Covert 的 buff 限制";
+        }
+
+        if (!Reached(trace, "OnCardRevealed", target)
+            || !Reached(trace, "OnOtherCardRevealed", revealObserver)
+            || !Reached(trace, "OnOtherCardEnterPlay", state.ById(43)!)
+            || !Reached(trace, "OnCardLocationMoved", target))
+        {
+            return "揭示/入场事件未按蓝图到达主体与旁观订阅卡："
+                 + string.Join(" | ", trace.Take(12));
+        }
+
+        int selfReveal = trace.FindIndex(t => t.StartsWith($"OnCardRevealed → {target.Name}#{target.CardId}", StringComparison.Ordinal));
+        int otherReveal = trace.FindIndex(t => t.StartsWith($"OnOtherCardRevealed → {revealObserver.Name}#{revealObserver.CardId}", StringComparison.Ordinal));
+        int otherEnter = trace.FindIndex(t => t.StartsWith($"OnOtherCardEnterPlay → {state.ById(43)!.Name}#43", StringComparison.Ordinal));
+        if (selfReveal < 0 || otherReveal <= selfReveal || otherEnter <= otherReveal)
+        {
+            return "揭示事件顺序应为主体 OnCardRevealed → 旁观 OnOtherCardRevealed → 旁观 OnOtherCardEnterPlay";
+        }
+
+        var suppressed = state.CreateWithId("card_unit_103rd_cavalry_recon", Side.Left, 22,
+            CardLocation.BoardHqLeft, 3);
+        suppressed.Keywords.Add(Keyword.Suppressed);
+        trace.Clear();
+        engine.Api.RevealCard(suppressed, source.CardId);
+        if (Reached(trace, "OnCardRevealed", suppressed))
+        {
+            return "被抑制目标不应触发自身 OnCardRevealed";
+        }
+
+        if (!trace.Any(t => t.StartsWith("OnOtherCardRevealed →", StringComparison.Ordinal)))
+        {
+            return "被抑制目标仍应广播 OnOtherCardRevealed";
+        }
+
         return null;
     }
 

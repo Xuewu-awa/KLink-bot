@@ -702,6 +702,9 @@ public sealed partial class CardApi
             // 用 `TargetArg`（先实参、再 `c.Target`、最后接收者）后，42 处 self 形状
             // 解析结果**逐位不变**（`AsCardOrId(ctx.Self)` ≡ 旧 `AsCard(r)`），3 处修正。
             ["MakeVeteran"] = (c, r, a) => { if (TargetArg(c, r, a) is { } x) MakeVeteran(x); return null; },
+            ["RevealCard"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)) is { } target
+                ? RevealCard(target, IntArg(a, 1, c.Self?.CardId ?? 0))
+                : 0,
 
             // 关键字
             ["GiveBlitz"] = (c, r, a) => DoGiveKeyword(c, r, a, Keyword.Blitz),
@@ -1575,9 +1578,7 @@ public sealed partial class CardApi
 
             // B2：`CardApi.IsUnrevealedCovertCard`（`CardApi.cs:1194`）与
             //     `MatchEngine.IsBomber`（`MatchEngine.cs:1529`）都是**同名现成方法**。
-            //     ⚠️ `IsUnrevealedCovertCard` 目前是**有意的恒 false 桩**（本内核没建模
-            //     Covert 的「已揭示/未揭示」位，理由见它自己的注释）；这里只是把名字接上，
-            //     **不改变任何行为**，目的是让它不再计进 `UnimplementedCalls`。
+            //     `IsUnrevealedCovertCard` 读取卡面的 Covert 关键字与持久化揭示位。
             //     `IsBomber` 则是真修复：13 张卡用它做判据，以前 out 槽恒 null ⇒ 恒假。
             // 形状（`IsBomber` 19 点 / `IsUnrevealedCovertCard` 28 点，全部同一形状）：
             //     recv=被查的卡, a[0]=out —— 用 `SelfArg` 而不是 `AsCard(r)`，
@@ -1679,7 +1680,7 @@ public sealed partial class CardApi
             //   ③ `!IsUnrevealedCovertCard(card) || includeCovertCards`
             //   ④ `unitsOnly` 为真时再要求 `IsUnit(card)`
             // 本内核里「半场」就是 `side.HqOf()`（`BoardHqLeft/Right`，见 `Enums.cs` 的注释），
-            // 所以 ② 直接等价；③ 恒真（`IsUnrevealedCovertCard` 是恒 false 的桩）；
+            // 所以 ② 直接等价；③ 按 `IsUnrevealedCovertCard` 过滤；
             // ④ 按参数过滤。**HQ 不算**：`GetAllCardInBattle` 含 HQ，但 HQ 也是 location 卡、
             // 不是单位 ⇒ 只要 `unitsOnly` 为真就天然被 ④ 挡掉；为假时保留（与蓝图同）。
             ["GetCardsInSupportLineBySide"] = (c, r, a) => DoGetCardsInSupportLine(c, r, a),
@@ -3370,6 +3371,7 @@ public sealed partial class CardApi
             card.MaxDefense = def.Defense;
             card.HeavyArmorZeroedBySuppress = false;
             card.SuppressedOnTurn = -1;
+            card.IsRevealed = false;
             card.SuppressStrippedKeywords?.Clear();
             card.SuppressStrippedCustomAbility = null;
             card.PinnedTurns = 0;
@@ -4667,9 +4669,7 @@ public sealed partial class CardApi
     /// <list type="bullet">
     /// <item>② 半场就是 <see cref="SideExtensions.HqOf"/>（`BoardHqLeft/Right`，
     ///       见 <c>Engine/Enums.cs</c> 的注释：`GetSupportLineLocationBySide(side)` = 5/6）。</item>
-    /// <item>③ <see cref="CardApi.IsUnrevealedCovertCard"/> 在本内核是**恒 false 的桩**
-    ///       （没建模「已揭示/未揭示」位）⇒ 条件恒真。**这不是遗漏**，
-    ///       是有意的一致：同一个桩在别处（`CanCardBeBuffed` 的门）也这么用。</item>
+    /// <item>③ <see cref="CardApi.IsUnrevealedCovertCard"/> 按卡面 Covert 与揭示位过滤。</item>
     /// <item>④ 按参数过滤。**HQ 不排除**：蓝图里 `GetAllCardInBattle` 含 HQ、
     ///       过滤只按 location；`unitsOnly=false` 的调用点会拿到 HQ（与蓝图同）。
     ///       实测 41 个调用点里 `unitsOnly` 全是 true 或变量。</item>
@@ -6164,8 +6164,7 @@ public sealed partial class CardApi
     ///   不是内核 `CardApi.IsLocatedOnBoard`（那个排除 HQ，见 `MakeCardsFight` 的注释）。
     ///   用错会把「指定 HQ」全部拒掉（`card_event_the_commonwealth` 这类牌直接废掉）。</item>
     /// <item>未揭示隐蔽卡 + 从手牌打出 + 施法方没有 `canTargetCovert`
-    ///   → 拒，`cant_target_unrevealed`。（本内核 `IsUnrevealedCovertCard` 是
-    ///   **恒 false 的桩**，所以这一支实际不会触发 —— 照抄形状是为了将来 Covert 落地时不用再翻一遍）</item>
+    ///   → 拒，`cant_target_unrevealed`。（按 `IsUnrevealedCovertCard` 的当前状态判定）</item>
     /// <item>目标是敌方指令的禁指对象（`cantBeTargetedByEnemyOrder`）→ 拒，
     ///   `cant_be_targeted_by_enemy_orders`。（卡池里 5 张，与卡面串名一致）</item>
     /// <item>费用：`kredit(Targeting.side) - (byPlayFromHand ? 卡费 : 行动费) &lt; 0` → 拒，
@@ -6202,7 +6201,7 @@ public sealed partial class CardApi
             return new TargetCheck(false, "not_on_board", "", "");
         }
 
-        // ③ 未揭示的隐蔽卡（内核桩：IsUnrevealedCovertCard 恒 false）
+        // ③ 未揭示的隐蔽卡
         if (IsUnrevealedCovertCard(targeted) && byPlayFromHand
             && !CustomNameHasAttribute(targeting, "customName1", "canTargetCovert"))
         {

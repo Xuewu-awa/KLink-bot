@@ -125,6 +125,9 @@ public sealed class CardInstance
     /// </summary>
     public bool CardSeen { get; set; }
 
+    /// <summary>蓝图 `isRevealed`：Covert 卡公开后持续保留的状态。</summary>
+    public bool IsRevealed { get; set; }
+
     /// <summary>
     /// `cipher` —— 卡的**情报值**（`AddIntelToCard` 写、`SetCardsSeenByCipher` /
     /// `GotchaTriggered` 读）。蓝图出处见 <see cref="Effects.CardApi.AddIntelToCard"/>。
@@ -732,6 +735,7 @@ public sealed class CardInstance
         {
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
+            IsRevealed = IsRevealed,
             BlueprintSets = BlueprintSets
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
                 .ToDictionary(kv => kv.Key,
@@ -845,6 +849,7 @@ public sealed record CardSnapshot(
 {
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
+    public bool IsRevealed { get; init; }
     public Dictionary<string, int[]> BlueprintSets { get; init; } = new(StringComparer.Ordinal);
 }
 

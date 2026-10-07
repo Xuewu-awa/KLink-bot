@@ -1127,6 +1127,7 @@ public sealed partial class CardApi
             HasAttackedThisTurn = source.HasAttackedThisTurn,
             GotchaActivated = source.GotchaActivated,
             CardSeen = source.CardSeen,
+            IsRevealed = source.IsRevealed,
             Cipher = source.Cipher,
             AttacksThisTurn = source.AttacksThisTurn,
             HasBeenAttackedThisTurn = source.HasBeenAttackedThisTurn,
@@ -1806,11 +1807,8 @@ public sealed partial class CardApi
     /// `GiveBond`/`GiveFury`/`GiveShock`/`GiveSmokescreen` 一族各 si=94/126，
     /// 以及 `GiveAlpineBonus` si=5。
     ///
-    /// ⚠️ **本内核里这道门恒为 true**：`IsUnrevealedCovertCard` 需要 Covert 的
-    /// 「已揭示 / 未揭示」状态机，而内核只做到 `Keyword.Covert` + `getHasCovert` 的**判据面**
-    /// （P1 §2），没有揭示状态 ⇒ 恒假 ⇒ 恒走 `si=730` 那一支。
-    /// 位置表保留在下面**不是为了留死代码**，而是等 Covert 状态落地时只改
-    /// <see cref="IsUnrevealedCovertCard"/> 一处。
+    /// `IsUnrevealedCovertCard` 由卡面 Covert 关键字和持久化揭示位共同判定；
+    /// 普通卡仍直接走 `si=730`，未揭示 Covert 卡才进入下面的位置表。
     /// </summary>
     public static bool CanCardBeBuffed(CardInstance card)
     {
@@ -1843,15 +1841,38 @@ public sealed partial class CardApi
     /// <summary>
     /// `UBaseCardObject::IsUnrevealedCovertCard`（`CanCardBeBuffed` si=0 读的谓词）。
     ///
-    /// ⚠️ **恒 false，如实说：内核没有建模「隐蔽卡的已揭示/未揭示」状态**。
-    /// P1 §2 只打通了 `Keyword.Covert` 常量 + `getHasCovert` / 成员读 `hasCovert`
-    /// 这一层**判据面**（11 张卡），揭示状态机（`IsUnrevealedCovertCard` 的真判据、
-    /// 以及揭示时机）整条都还没做。
-    ///
-    /// 单独抽成函数而不是在门里写 `if (true)`：这样 Covert 状态落地时只改这一处，
-    /// 而且调用方（`CanCardBeBuffed`）的形状与蓝图逐字一致。
+    /// 蓝图判据：卡仍有 Covert 且尚未被 `RevealCard` 揭示。
     /// </summary>
-    public static bool IsUnrevealedCovertCard(CardInstance card) => false;
+    public static bool IsUnrevealedCovertCard(CardInstance card)
+        => card.Keywords.Contains(Keyword.Covert) && !card.IsRevealed;
+
+    /// <summary>逐蓝图执行 `RevealCard(cardID, instigatorID, out qqq)`。</summary>
+    public int RevealCard(CardInstance card, int instigatorId)
+    {
+        card.IsRevealed = true;
+        card.Keywords.Remove(Keyword.Covert);
+
+        // RevealCard's JumpIfNot(isSuppressed) sends ordinary targets through
+        // their own reveal hook before the observer broadcast. Suppressed
+        // targets skip only their own OnCardRevealed hook.
+        if (!card.IsSuppressed)
+        {
+            FireTrigger("OnCardRevealed", card, card.Owner);
+        }
+
+        FireTrigger("OnOtherCardRevealed", card, card.Owner,
+            eventArgs: new object?[] { card }, eventSubject: card,
+            broadcastName: true);
+
+        FireTrigger("OnEnterPlay", card, card.Owner,
+            eventArgs: new object?[] { card, 4 });
+        FireTrigger("OnOtherCardEnterPlay", card, card.Owner,
+            eventArgs: new object?[] { card, 4 }, eventSubject: card,
+            broadcastName: true);
+
+        _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, card.Location);
+        return 0;
+    }
 
     /// <summary>
     /// **山地（Alpine）加成** —— `BP_CardFunctions::GiveAlpineBonus`（39 条语句）。
