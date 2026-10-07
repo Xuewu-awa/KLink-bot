@@ -1531,6 +1531,99 @@ public sealed partial class CardApi
         return calculated;
     }
 
+    /// <summary>
+    /// 蓝图 `ExecuteOnDealDamageAddDamageAfterCalc`（事件 38）：伤害已经经过
+    /// 事件 37 后，再让来源卡和观察者按顺序调整最终伤害。
+    /// </summary>
+    public int ExecuteOnDealDamageAddDamageAfterCalc(
+        CardInstance? dealer, CardInstance receiver, int damage,
+        bool isCombatDamage, bool isAttackingDamage, bool isRedirected)
+    {
+        if (receiver.Keywords.Contains(Keyword.Immune))
+        {
+            return 0;
+        }
+
+        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["damageDealer"] = dealer,
+            ["cardDealingDamage"] = dealer,
+            ["toCard"] = receiver,
+            ["damageAmount"] = damage,
+            ["damage"] = damage,
+            ["tmpDamage"] = damage,
+            ["isCombatDamage"] = isCombatDamage,
+            ["isAttackingDamage"] = isAttackingDamage,
+            ["fromAttack"] = isCombatDamage,
+            ["isRedirected"] = isRedirected,
+        };
+
+        int finalDamage = damage;
+        if (dealer is not null && !dealer.Keywords.Contains(Keyword.Suppressed))
+        {
+            var own = RunOwnLocal(dealer, "OnDealDamageAddDamageAfterCalc", seed, "damageToAdd");
+            if (own is not null)
+            {
+                finalDamage = Math.Max(finalDamage + AsInt(own.GetValueOrDefault("damageToAdd")), 0);
+            }
+        }
+
+        // National Fire Service is deliberately deferred by the Blueprint so a
+        // gotcha response observes the already-adjusted damage.
+        var snapshot = new List<CardInstance>();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            snapshot.AddRange(State.Board(side));
+            snapshot.AddRange(State.Discard(side));
+        }
+
+        var firstPass = snapshot
+            .Where(card => !string.Equals(card.Name, "card_event_national_fire_service",
+                StringComparison.Ordinal))
+            .ToList();
+        var delayed = snapshot
+            .Where(card => string.Equals(card.Name, "card_event_national_fire_service",
+                StringComparison.Ordinal))
+            .ToList();
+
+        IReadOnlyDictionary<string, object?> SeedFor(int amount)
+        {
+            var copy = new Dictionary<string, object?>(seed, StringComparer.Ordinal)
+            {
+                ["damageAmount"] = amount,
+                ["damage"] = amount,
+                ["tmpDamage"] = amount,
+            };
+            return copy;
+        }
+
+        foreach (var hit in BroadcastLocalWithOutParams(
+                     "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
+                     new[] { "damageToAdd", "stopAdding" },
+                     SeedFor(finalDamage), firstPass))
+        {
+            finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAdding")))
+            {
+                break;
+            }
+        }
+
+        foreach (var hit in BroadcastLocalWithOutParams(
+                     "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
+                     new[] { "damageToAdd", "stopAdding" },
+                     SeedFor(finalDamage), delayed))
+        {
+            finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAdding")))
+            {
+                break;
+            }
+        }
+
+        return finalDamage;
+    }
+
     /// <summary>「造成伤害。所有伤害都走这里，保证事件顺序一致。」</summary>
     /// <param name="isCombatDamage">
     /// 是不是战斗伤害（攻击结算）。判据来自蓝图：`ExecuteAttackCard` 调
@@ -1572,6 +1665,10 @@ public sealed partial class CardApi
         {
             amount = ExecuteOnDealDamageAddDamage(source, target, amount,
                                                   isCombatDamage, fromFight, counterDamage);
+            amount = ExecuteOnDealDamageAddDamageAfterCalc(source, target, amount,
+                                                           isCombatDamage,
+                                                           isCombatDamage && !counterDamage,
+                                                           isRedirected);
         }
 
         ApplyCalculatedDamage(target, amount, source, isCombatDamage, counterDamage, isRedirected);

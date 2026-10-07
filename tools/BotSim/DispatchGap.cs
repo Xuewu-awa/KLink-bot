@@ -199,11 +199,14 @@ internal static class DispatchGapBaseline
     /// `ExecuteOnDeploymentTriggered` 派发适配并覆盖 triggerMultiple 出参。
     /// 2026-10-07：463 → **462**（2103 → 2102 个调用点）。补上
     /// `CountFriendlyGuardUnits`，接通 SDF 的 Guard 数量光环。
+    /// 2026-10-07：462 → **461**（2102 → 2101 个调用点）。补上
+    /// `GetDefenseBuffFromAdjacentUnits` 与事件 38 的最终伤害修正链，接通
+    /// 48th Armored Infantry 的相邻单位减伤。
     /// </remarks>
-    public const int BaselineCount = 462;
+    public const int BaselineCount = 461;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "6824328BC03D8587";
+    public const string BaselineFingerprint = "F0104F2F22928354";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

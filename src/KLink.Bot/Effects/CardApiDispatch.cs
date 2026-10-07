@@ -1417,6 +1417,16 @@ public sealed partial class CardApi
                     .Where(x => Math.Abs(x.LocationNumber - card.LocationNumber) == 1)
                     .ToList();
             },
+            // `card_unit_48th_armored_infantry` counts adjacent units around itself.
+            ["GetDefenseBuffFromAdjacentUnits"] = (c, r, a) =>
+            {
+                var card = c.Self ?? TargetArg(c, r, a);
+                return card is null
+                    ? 0
+                    : 2 * c.State.Board(card.Owner)
+                        .Count(x => Math.Abs(x.LocationNumber - card.LocationNumber) == 1
+                            && IsUnit(x));
+            },
             ["DrawSpecificCardFromDeckBySide"] = (c, r, a) => DoDrawSpecific(c, r, a),
 
             // ---------------- 光环（aura）原语：卡自带的私有函数 ----------------

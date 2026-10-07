@@ -214,6 +214,8 @@ internal static class SelfTest
             ResetEventCarriesPayload),
         new("事件层：OnOtherCardDealDamage 传递来源/目标/伤害载荷（真实 15th RECCE 订阅）",
             DealDamageEventCarriesPayload),
+        new("事件 38：48th Armored Infantry 按相邻单位数减少最终伤害",
+            DealDamageAfterCalcAdjacentDefense),
         new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
             CreatedAlterEventCarriesPayload),
         new("事件层：OnOtherCardLocationMoved 传递敌方推进主体并触发 35th Infantry Regiment 光环",
@@ -5932,6 +5934,46 @@ internal static class SelfTest
         if (!watcher.Keywords.Contains(Keyword.Guard, StringComparer.Ordinal))
         {
             return "15th RECCE 收到伤害事件后应获得 Guard，但关键字没有写入";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 48th Armored Infantry 的事件 38 订阅：最终伤害每有一个相邻单位减少 2。
+    /// 这条必须在统一 DealDamage 漏斗中验证，单独调用私有函数无法证明事件已接通。
+    /// </summary>
+    private static string? DealDamageAfterCalcAdjacentDefense(CardDatabase db)
+    {
+        const string armoredName = "card_unit_48th_armored_infantry";
+        const string unitName = PlainUnit;
+        if (db.Find(armoredName) is null || db.Find(unitName) is null)
+        {
+            return $"卡库里缺 {armoredName} 或 {unitName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var left = PutOnBoard(state, armoredName, Side.Left, 20, 2);
+        PutOnBoard(state, unitName, Side.Left, 21, 1);
+        PutOnBoard(state, unitName, Side.Left, 22, 3);
+        var source = PutOnBoard(state, unitName, Side.Right, 60, 1);
+        int before = left.Defense;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = left, Controller = Side.Left,
+        };
+        object? adjacent = engine.Api.InvokeByName("GetDefenseBuffFromAdjacentUnits", null,
+            new object?[] { null }, ctx, out bool handled);
+        if (!handled || adjacent is not int amount || amount != 4)
+        {
+            return $"两个相邻单位应提供 4 点防御修正，handled={handled}, result={adjacent}";
+        }
+
+        engine.Api.DealDamage(left, 5, source, isCombatDamage: true);
+        if (left.Defense != before - 1)
+        {
+            return $"事件 38 应将 5 点伤害减为 1 点，实际防御 {before} → {left.Defense}"
+                 + Dump(state, ("目标", left.ToString()));
         }
 
         return null;
