@@ -18,21 +18,21 @@
     "card_count": 1735,
     "callsite_count": 17949,
     "unique_function_count": 786,
-    "direct_dispatch_count": 332,
+    "direct_dispatch_count": 334,
     "bp_function_count": 294,
     "vm_builtin_count": 70,
     "category_function_counts": {
       "blueprint_function": 2,
       "blueprint_member": 17,
       "campaign_ui": 431,
-      "dispatch": 267,
+      "dispatch": 269,
       "local_fallback": 59,
-      "unknown_gameplay": 10
+      "unknown_gameplay": 8
     },
-    "headless_gap_calls": 65,
-    "headless_gap_functions": 31,
-    "unknown_gameplay_calls": 11,
-    "unknown_gameplay_functions": 10
+    "headless_gap_calls": 62,
+    "headless_gap_functions": 29,
+    "unknown_gameplay_calls": 8,
+    "unknown_gameplay_functions": 8
   },
   "functions": [
     {
@@ -10793,15 +10793,15 @@
     },
     {
       "name": "Apply The Buff",
-      "category": "unknown_gameplay",
+      "category": "dispatch",
       "calls": 2,
       "distinct_cards": 1,
       "entrypoint_calls": 2,
       "local_calls": 0,
       "local_fallback_calls": 0,
-      "uncovered_calls": 2,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 2,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 0,
       "gameplay_calls": 2,
       "campaign_calls": 0,
@@ -17449,15 +17449,15 @@
     },
     {
       "name": "Remove the Buff",
-      "category": "unknown_gameplay",
+      "category": "dispatch",
       "calls": 1,
       "distinct_cards": 1,
       "entrypoint_calls": 1,
       "local_calls": 0,
       "local_fallback_calls": 0,
-      "uncovered_calls": 1,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 0,
       "gameplay_calls": 1,
       "campaign_calls": 0,
@@ -20194,27 +20194,6 @@
       ]
     },
     {
-      "name": "Apply The Buff",
-      "category": "unknown_gameplay",
-      "calls": 2,
-      "distinct_cards": 1,
-      "entrypoint_calls": 2,
-      "local_calls": 0,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 2,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 2,
-      "receiver_calls": 0,
-      "gameplay_calls": 2,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 1,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_unit_sturmovik_pol"
-      ]
-    },
-    {
       "name": "CustomEventOnCardDealDamage",
       "category": "unknown_gameplay",
       "calls": 1,
@@ -20380,27 +20359,6 @@
       "excluded_cards": [],
       "sample_cards": [
         "card_unit_obice_da_75_13"
-      ]
-    },
-    {
-      "name": "Remove the Buff",
-      "category": "unknown_gameplay",
-      "calls": 1,
-      "distinct_cards": 1,
-      "entrypoint_calls": 1,
-      "local_calls": 0,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 1,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
-      "receiver_calls": 0,
-      "gameplay_calls": 1,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 1,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_unit_l4_grasshopper"
       ]
     },
     {

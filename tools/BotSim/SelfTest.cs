@@ -101,6 +101,8 @@ internal static class SelfTest
             BlueprintArrayResize),
         new("Sturmovik Polish：带空格 Apply The Buff 叠加幸存单位攻防",
             SturmovikPolishBuff),
+        new("L4 Grasshopper：带空格 Remove the Buff 撤销 Sherman 光环",
+            L4GrasshopperRemoveBuff),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -13747,6 +13749,42 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? L4GrasshopperRemoveBuff(CardDatabase db)
+    {
+        const string sourceName = "card_unit_l4_grasshopper";
+        const string handName = "card_unit_m4a2";
+        const string boardName = "card_unit_m4_sherman";
+        if (db.Find(sourceName) is null || db.Find(handName) is null || db.Find(boardName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {handName} / {boardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 109, CardLocation.BoardHqLeft, 1);
+        var hand = state.CreateWithId(handName, Side.Left, 110, CardLocation.HandLeft, 0);
+        var board = state.CreateWithId(boardName, Side.Left, 111, CardLocation.BoardHqLeft, 2);
+        int handCost = hand.KreditCost;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        engine.Api.InvokeByName("ChangeKreditCost", source,
+            new object?[] { hand, source.CardId, -1, 0, false, null }, ctx, out bool costHandled);
+        engine.Api.InvokeByName("GiveBlitz", source,
+            new object?[] { board.CardId, source.CardId }, ctx, out bool blitzHandled);
+        if (!costHandled || !blitzHandled || hand.KreditCost != Math.Max(0, handCost - 1)
+            || !board.Keywords.Contains(Keyword.Blitz))
+        {
+            return "L4 光环前置状态未正确施加到 Sherman 手牌/场面";
+        }
+
+        object? result = engine.Api.InvokeByName("Remove the Buff", source,
+            Array.Empty<object?>(), ctx, out bool handled);
+        return handled && result is null && hand.KreditCost == handCost
+            && !board.Keywords.Contains(Keyword.Blitz)
+            ? null
+            : $"Remove the Buff 未撤销 Sherman 光环：handled={handled}, "
+              + $"cost={hand.KreditCost}/{handCost}, blitz={board.Keywords.Contains(Keyword.Blitz)}";
     }
 
     private static string? GetXAndMoreAttackCardsOnBoard(CardDatabase db)

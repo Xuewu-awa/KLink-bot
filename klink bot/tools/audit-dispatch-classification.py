@@ -41,7 +41,10 @@ def existing(*paths: Path) -> Path:
 
 def direct_dispatch_names(path: Path) -> set[str]:
     """Read only dictionary registrations, excluding switch/case diagnostics."""
-    pattern = re.compile(r'^\s*\[\s*"([A-Za-z_][A-Za-z0-9_]*)"\s*\]\s*=')
+    # Blueprint helper names are not restricted to identifiers; two real
+    # gameplay private functions contain spaces (`Apply The Buff` and
+    # `Remove the Buff`). Keep the key parser aligned with CardApi's map.
+    pattern = re.compile(r'^\s*\[\s*"([A-Za-z_][A-Za-z0-9_ ]*)"\s*\]\s*=')
     return {
         match.group(1)
         for line in path.read_text(encoding="utf-8").splitlines()

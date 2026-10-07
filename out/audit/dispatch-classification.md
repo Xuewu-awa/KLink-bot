@@ -5,8 +5,8 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 - 卡/程序条目：1735
 - IR call 调用点：17949
 - 唯一调用名：786
-- 无头规则真缺口：31 种 / 65 个调用点
-- 其中未知语义 unknown_gameplay：10 种 / 11 个调用点
+- 无头规则真缺口：29 种 / 62 个调用点
+- 其中未知语义 unknown_gameplay：8 种 / 8 个调用点
 
 ## 分类统计
 
@@ -15,16 +15,15 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | `blueprint_function` | 2 |
 | `blueprint_member` | 17 |
 | `campaign_ui` | 431 |
-| `dispatch` | 267 |
+| `dispatch` | 269 |
 | `local_fallback` | 59 |
-| `unknown_gameplay` | 10 |
+| `unknown_gameplay` | 8 |
 
 ## 无头规则候选 TOP 100
 
 | 调用名 | 分类 | 调用点 | 卡数 | 未被本地函数覆盖 | 示例卡 |
 |---|---|---:|---:|---:|---|
 | `GetHandLocationBySide` | `blueprint_function` | 5 | 5 | 5 | card_event_aerial_reconaissance, card_event_night_raid, card_event_orp_blyskawica |
-| `Apply The Buff` | `unknown_gameplay` | 2 | 1 | 2 | card_unit_sturmovik_pol |
 | `CustomEventOnCardDealDamage` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_220th_rifles |
 | `CustomOnDealDamageToSelf` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_kyushu_j7w3 |
 | `DeactivateOtherNFS` | `unknown_gameplay` | 1 | 1 | 1 | card_event_national_fire_service |
@@ -34,7 +33,6 @@ UI、战役、教程和客户端专用调用只做库存记录，不进入核心
 | `GetMainNationForSide` | `blueprint_function` | 1 | 1 | 1 | card_event_pilot_escape |
 | `Map_Add` | `blueprint_member` | 1 | 1 | 6 | BP_RenderedCardCache, card_event_the_big_three, createCard_NUI_Widget |
 | `OnEnterPlay` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_obice_da_75_13 |
-| `Remove the Buff` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_l4_grasshopper |
 | `SelfCustomEventOnCardDealDamage` | `unknown_gameplay` | 1 | 1 | 1 | card_unit_su_100 |
 | `doOnAfterOtherCardLeaveBoardOrOwner` | `blueprint_member` | 1 | 1 | 1 | card_brawl_test1 |
 | `doOnCardDrawn` | `blueprint_member` | 1 | 1 | 1 | card_brawl_test1 |

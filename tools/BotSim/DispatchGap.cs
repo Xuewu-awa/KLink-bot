@@ -211,11 +211,13 @@ internal static class DispatchGapBaseline
     /// `Array_Resize`，按 UE 原地裁剪/扩容蓝图数组。
     /// 2026-10-08：457 → **456**（2096 → 2094 个调用点）。接通
     /// `card_unit_sturmovik_pol` 带空格的 `Apply The Buff` 私有函数。
+    /// 2026-10-08：456 → **455**（2094 → 2093 个调用点）。接通
+    /// `card_unit_l4_grasshopper` 带空格的 `Remove the Buff` 私有函数。
     /// </remarks>
-    public const int BaselineCount = 456;
+    public const int BaselineCount = 455;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "F0085A6DE214B8DA";
+    public const string BaselineFingerprint = "3FF8B075085013C8";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

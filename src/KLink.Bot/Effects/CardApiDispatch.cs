@@ -1509,6 +1509,7 @@ public sealed partial class CardApi
             ["ApplyTheBuff"] = (c, r, a) => DoApplyTheBuff(c, a),
             ["RemoveTheBuff"] = (c, r, a) => DoRemoveTheBuff(c, a),
             ["Apply The Buff"] = (c, r, a) => DoApplyTheBuffSpaced(c, a),
+            ["Remove the Buff"] = (c, r, a) => DoRemoveTheBuffSpaced(c),
             ["anyOrderPlayedThisTurn"] = (c, r, a) => AnyOrderPlayedThisTurn(c),
             ["_isBigRedOne"] = (c, r, a) => a.Length > 0 && AsCard(a[0]) is { } x
                                             && string.Equals(x.Name, c.Self?.Name, StringComparison.Ordinal),
@@ -5236,6 +5237,38 @@ public sealed partial class CardApi
 
         ChangeAttack(target, 1, source);
         ChangeDefense(target, 1, source);
+        return null;
+    }
+
+    /// <summary>
+    /// `card_unit_l4_grasshopper` 的带空格私有函数。其调用方已遍历所有卡，
+    /// 但该局部函数只需对同方 Sherman 撤销本来源的减费与 Blitz；按集合处理
+    /// 可覆盖 IR 中没有显式形参的调用形状，并保持重复调用幂等。
+    /// </summary>
+    private object? DoRemoveTheBuffSpaced(EffectContext c)
+    {
+        var source = c.Self;
+        if (source is null || !string.Equals(source.Definition.Name,
+                "card_unit_l4_grasshopper", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        foreach (var target in c.State.AllCards.Where(card => card.Owner == source.Owner
+                     && HasGameplayTag(card, "subtype.sherman")))
+        {
+            if (IsLocatedInHand(target))
+            {
+                RemoveCostBuff(target, source.CardId, temporary: true,
+                    fallbackToPermanent: true);
+            }
+            else if (IsLocatedOnBoard(target)
+                     && !target.Definition.Keywords.Contains(Keyword.Blitz))
+            {
+                RemoveKeyword(target, Keyword.Blitz);
+            }
+        }
+
         return null;
     }
 
