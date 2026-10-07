@@ -186,6 +186,18 @@ public sealed partial class CardApi
                 c.State.GetHQDamagedAmountThisTurn(SideArg(r, a, 0, c.Controller)),
             ["GetOperationKreditsSpentThisTurn"] = (c, r, a) =>
                 c.State.OperationKreditsSpentThisTurn,
+            // `card_unit_seagull.GetReducedDamage(damage, out DamageReduction)`。
+            // 蓝图函数体：Clamp(4 - GetHQ_DamagedAmountThisTurnBySide(self.side), 0, damage)。
+            // 这是卡自己的局部函数，但其语义只依赖本方 HQ 的回合计数和输入伤害，
+            // 因此可以忠实地作为通用派发键实现，不需要猜测调用方的 VM 局部槽。
+            ["GetReducedDamage"] = (c, r, a) =>
+            {
+                int damage = IntArg(a, 0);
+                Side side = c.Self?.Owner is Side owner and (Side.Left or Side.Right)
+                    ? owner : c.Controller;
+                int remaining = 4 - c.State.GetHQDamagedAmountThisTurn(side);
+                return Math.Clamp(remaining, 0, damage);
+            },
             // Despite its historical name, the Blueprint function returns
             // the boolean IsFrontlineLimited flag, not the numeric capacity.
             ["getFrontlineLimit"] = (c, r, a) => c.State.IsFrontlineLimited,

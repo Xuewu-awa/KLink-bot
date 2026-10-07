@@ -23,6 +23,7 @@ internal static class SelfTest
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
+        new("Seagull：GetReducedDamage 按本方 HQ 本回合剩余减伤额度截断", GetReducedDamage),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -1540,6 +1541,43 @@ internal static class SelfTest
             ? null
             : $"开始回合未清零：HQ={state.GetHQDamagedAmountThisTurn(Side.Right)}，"
               + $"行动费={state.OperationKreditsSpentThisTurn}";
+    }
+
+    private static string? GetReducedDamage(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var seagull = state.CreateWithId("card_unit_seagull", Side.Left, 1500,
+            CardLocation.BoardHqLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = seagull,
+            Controller = Side.Left,
+        };
+
+        object? first = engine.Api.InvokeByName("GetReducedDamage", seagull,
+            new object?[] { 7, null }, ctx, out bool handled);
+        if (!handled || first is not int firstReduction || firstReduction != 4)
+            return $"HQ 未受伤时应减免 4 点，实际 {first ?? "null"}";
+
+        state.UpdateHQDamagedAmountThisTurn(Side.Left, 3);
+        object? second = engine.Api.InvokeByName("GetReducedDamage", seagull,
+            new object?[] { 7, null }, ctx, out _);
+        if (second is not int secondReduction || secondReduction != 1)
+            return $"HQ 已受伤 3 点时应只减免 1 点，实际 {second ?? "null"}";
+
+        state.UpdateHQDamagedAmountThisTurn(Side.Left, 2);
+        object? third = engine.Api.InvokeByName("GetReducedDamage", seagull,
+            new object?[] { 7, null }, ctx, out _);
+        if (third is not int thirdReduction || thirdReduction != 0)
+            return $"HQ 已达到 4 点上限后应减免 0 点，实际 {third ?? "null"}";
+
+        state.ResetTurnGameplayCounters();
+        object? clamped = engine.Api.InvokeByName("GetReducedDamage", seagull,
+            new object?[] { 2, null }, ctx, out _);
+        return clamped is int clampedReduction && clampedReduction == 2
+            ? null : $"输入伤害 2 时减免不能超过输入，实际 {clamped ?? "null"}";
     }
 
     /// <summary>
