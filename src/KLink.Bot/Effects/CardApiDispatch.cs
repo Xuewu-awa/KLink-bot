@@ -1136,6 +1136,9 @@ public sealed partial class CardApi
                 var side = SideArg(r, a, 0, c.Controller);
                 return c.State.Discard(side).Select(x => x.CardId).ToList();
             },
+            ["GetDestroyedCardsIDsByTurn"] = (c, r, a) =>
+                c.State.DestroyedCardsIdsByTurn(IntArg(a, 0, c.State.Turn)).ToList(),
+            ["GetUnitDestroyedThisTurn"] = (c, r, a) => c.State.UnitDestroyedThisTurn,
             ["ShuffleDeckBySide"] = (c, r, a) =>
             {
                 var side = SideArg(r, a, 0, c.Controller);

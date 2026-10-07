@@ -157,6 +157,38 @@ public sealed class GameState
     public Side ActiveSide { get; set; } = Side.Left;
     public Side StartingSide { get; set; } = Side.Left;
 
+    /// <summary>Blueprint `DestroyedCardIDsByTurnNumber`, indexed by battle turn.</summary>
+    public Dictionary<int, List<int>> DestroyedCardIdsByTurn { get; } = new();
+
+    /// <summary>Blueprint `UnitDestroyedThisTurn`.</summary>
+    public bool UnitDestroyedThisTurn { get; private set; }
+
+    public IReadOnlyList<int> DestroyedCardsIdsByTurn(int turn)
+        => DestroyedCardIdsByTurn.TryGetValue(turn, out var ids)
+            ? ids
+            : Array.Empty<int>();
+
+    public void RecordDestroyedCard(int cardId, bool isUnit)
+    {
+        if (!DestroyedCardIdsByTurn.TryGetValue(Turn, out var ids))
+        {
+            ids = new List<int>();
+            DestroyedCardIdsByTurn[Turn] = ids;
+        }
+
+        if (!ids.Contains(cardId))
+        {
+            ids.Add(cardId);
+        }
+
+        if (isUnit)
+        {
+            UnitDestroyedThisTurn = true;
+        }
+    }
+
+    public void ResetDestroyedThisTurn() => UnitDestroyedThisTurn = false;
+
     public int Kredits(Side s) => _kredits[(int)s];
     public int MaxKredits(Side s) => _maxKredits[(int)s];
     private readonly int[] _kredits = new int[3];

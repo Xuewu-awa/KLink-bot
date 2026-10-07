@@ -504,6 +504,7 @@ public sealed class MatchEngine
 
         State.ActiveSide = side;
         State.ResetTurnGameplayCounters();
+        State.ResetDestroyedThisTurn();
 
         // ---- kredit 槽位 +1，并回满 ----
         //
@@ -2798,6 +2799,11 @@ public sealed class MatchEngine
         // stmt 36  MoveCardZBeforeDiscard(cardID, oldLocation)            ; 最后才搬
         // </code>
         var destroyedLocation = (int)card.Location;
+
+        if (((CardLocation)destroyedLocation).IsBoard())
+        {
+            State.RecordDestroyedCard(card.CardId, Api.IsUnit(card) && !card.IsHq);
+        }
 
         State.Move(card, CardLocation.Discard);
 

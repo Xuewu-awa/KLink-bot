@@ -332,6 +332,8 @@ internal static class SelfTest
             DestructionTriggerMultiple),
         new("摧毁：TriggerDestruction 只触发效果、不移动目标，并支持 RemoveDestruction",
             TriggerDestructionDispatch),
+        new("摧毁状态：按回合记录卡 ID，并维护本回合单位摧毁标记",
+            DestroyedCardTurnState),
 
         // ---- P1：摧毁事件必须带 killer 载荷（2026-10-03）----
         // 派发方 `ExecuteOnCardDestroyedFunction` stmt 50 的第二个出参就是 killer，
@@ -10427,6 +10429,53 @@ internal static class SelfTest
         if (!removeHandled || engine.Api.HasCustomAbility(temporary, "destruction"))
         {
             return "TriggerDestruction 的 RemoveDestruction=true 应移除临时 destruction 能力";
+        }
+
+        return null;
+    }
+
+    private static string? DestroyedCardTurnState(CardDatabase db)
+    {
+        const string unit = "card_unit_10_5_cm_lefh";
+        if (db.Find(unit) is null)
+        {
+            return $"卡库里缺 {unit}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var destroyedUnit = PutOnBoard(state, unit, Side.Left, 901, 1);
+        engine.Destroy(destroyedUnit);
+
+        object? ids = engine.Api.InvokeByName("GetDestroyedCardsIDsByTurn", null,
+            new object?[] { state.Turn }, new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = null,
+                Controller = Side.Left,
+            }, out bool handled);
+        if (!handled || ids is not List<int> turnIds || !turnIds.SequenceEqual(new[] { 901 }))
+        {
+            return $"GetDestroyedCardsIDsByTurn 返回错误：{ids}";
+        }
+
+        object? flag = engine.Api.InvokeByName("GetUnitDestroyedThisTurn", null,
+            Array.Empty<object?>(), new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = null,
+                Controller = Side.Left,
+            }, out handled);
+        if (!handled || flag is not true)
+        {
+            return $"GetUnitDestroyedThisTurn 应为 true，实际 {flag}";
+        }
+
+        engine.StartTurn(Side.Left, draw: false);
+        if (state.UnitDestroyedThisTurn)
+        {
+            return "新回合未清除 UnitDestroyedThisTurn";
         }
 
         return null;
