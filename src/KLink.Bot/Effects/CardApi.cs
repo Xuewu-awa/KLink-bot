@@ -1310,6 +1310,9 @@ public sealed partial class CardApi
             Self = card,
             Target = trigger,
             Trigger = trigger,
+            EventTarget = namedArgs?.TryGetValue("toCard", out var eventTarget) == true
+                ? eventTarget as CardInstance
+                : null,
             Controller = card.Owner,
             EventArgs = eventArgs ?? Array.Empty<object?>(),
             GoingToLocation = goingToLocation,

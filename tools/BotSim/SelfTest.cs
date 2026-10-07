@@ -224,6 +224,8 @@ internal static class SelfTest
             ResetEventCarriesPayload),
         new("事件层：OnOtherCardDealDamage 传递来源/目标/伤害载荷（真实 15th RECCE 订阅）",
             DealDamageEventCarriesPayload),
+        new("卡内伤害自定义事件入口：220th / Kyushu / SU-100 真实执行",
+            CustomDamageEventEntrypoints),
         new("事件 38：48th Armored Infantry 按相邻单位数减少最终伤害",
             DealDamageAfterCalcAdjacentDefense),
         new("Forecast：天气卡判定与三类天气候选池按蓝图标签筛选",
@@ -6005,6 +6007,79 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? CustomDamageEventEntrypoints(CardDatabase db)
+    {
+        const string riflesName = "card_unit_220th_rifles";
+        const string kyushuName = "card_unit_kyushu_j7w3";
+        const string suName = "card_unit_su_100";
+        if (db.Find(riflesName) is null || db.Find(kyushuName) is null || db.Find(suName) is null)
+        {
+            return $"卡库里缺 {riflesName} / {kyushuName} / {suName}";
+        }
+
+        // 220th Rifles: the wrapper calls CustomEventOnCardDealDamage, which
+        // must count a damaged unit and apply the live +2 attack buff.
+        var (engine, state) = EmptyBoard(db);
+        var rifles = PutOnBoard(state, riflesName, Side.Left, 300, 1);
+        var damaged = PutOnBoard(state, PlainUnit, Side.Left, 301, 2);
+        damaged.Defense = Math.Max(0, damaged.MaxDefense - 1);
+        int riflesAttack = rifles.Attack;
+        FireSelfDamageEvent(engine, rifles, damaged);
+        if (rifles.Attack != riflesAttack + 2)
+        {
+            return $"220th Rifles 自定义伤害事件未执行：期望攻击 {riflesAttack + 2}，实际 {rifles.Attack}";
+        }
+
+        // Kyushu J7W3: its own damage event removes the one-time +2/Fury buff
+        // after the unit becomes damaged.
+        var (kyushuEngine, kyushuState) = EmptyBoard(db);
+        var kyushu = PutOnBoard(kyushuState, kyushuName, Side.Left, 310, 1);
+        kyushuEngine.Api.FireTrigger("OnEnterPlay", kyushu, Side.Left,
+            eventSubject: kyushu);
+        kyushu.Defense = Math.Max(0, kyushu.MaxDefense - 1);
+        int kyushuAttack = kyushu.Attack;
+        if (!kyushu.Keywords.Contains(Keyword.Fury) || kyushuAttack <= kyushu.Definition.Attack)
+        {
+            return $"Kyushu 入场 buff 未建立：期望基础攻击 {kyushu.Definition.Attack} 以上且带 Fury，"
+                 + $"实际={kyushuAttack}/{kyushu.Keywords.Contains(Keyword.Fury)}";
+        }
+        FireSelfDamageEvent(kyushuEngine, kyushu, kyushu);
+        if (kyushu.Attack != kyushuAttack - 2 || kyushu.Keywords.Contains(Keyword.Fury))
+        {
+            return $"Kyushu 自定义伤害事件未执行：期望攻击/Fury={kyushuAttack - 2}/false，"
+                 + $"实际={kyushu.Attack}/{kyushu.Keywords.Contains(Keyword.Fury)}";
+        }
+
+        // SU-100: a damaged source dealing damage runs SelfCustomEventOnCardDealDamage
+        // and receives its +4 attack buff.
+        var (suEngine, suState) = EmptyBoard(db);
+        var su = PutOnBoard(suState, suName, Side.Left, 320, 1);
+        var suTarget = PutOnBoard(suState, PlainUnit, Side.Right, 321, 1);
+        su.Defense = Math.Max(0, su.MaxDefense - 1);
+        int suAttack = su.Attack;
+        FireSelfDamageEvent(suEngine, su, suTarget);
+        return su.Attack == suAttack + 4
+            ? null
+            : $"SU-100 自定义伤害事件未执行：期望攻击 {suAttack + 4}，实际 {su.Attack}";
+    }
+
+    private static void FireSelfDamageEvent(MatchEngine engine, CardInstance source, CardInstance target)
+    {
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardDealingDamage"] = source,
+            ["toCard"] = target,
+            ["Damage"] = 1,
+            ["damage"] = 1,
+            ["isCombatDamage"] = false,
+            ["CounterDamage"] = false,
+            ["isRedirected"] = false,
+        };
+        engine.Api.FireTrigger("OnCardDealDamage", source, source.Owner,
+            eventArgs: new object?[] { source, target, 1, false, false, false },
+            eventSubject: source, namedArgs: named);
     }
 
     /// <summary>

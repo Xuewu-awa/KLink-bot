@@ -628,6 +628,21 @@ public sealed class KismetVm
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }
 
+        // Some card blueprints call a second, same-card event entrypoint from
+        // their event wrapper (for example `CustomEventOnCardDealDamage`).
+        // These are not ordinary locals, so the local fallback above cannot
+        // see them. Run only no-output entrypoints here; output-bearing calls
+        // still require an explicit implementation to preserve out semantics.
+        if (!handled
+            && step.OutParams.Count == 0
+            && ctx.Self is { } entryCard
+            && KismetLibrary.Default?.FindProgram(entryCard.Definition.Name, fn) is { } entrypoint)
+        {
+            RunCore(entrypoint, ctx, frame.Snapshot(), null, null, EventStepBudget(ctx));
+            handled = true;
+            _api.NotifyUnimplemented($"<entrypoint-ran:{fn}>");
+        }
+
         if (!handled)
         {
             UnimplementedCalls[fn] = UnimplementedCalls.GetValueOrDefault(fn) + 1;
@@ -1146,6 +1161,16 @@ public sealed class KismetVm
                 return ResolveEventVar(name);
             }
 
+            // Card-local event wrappers can pass the event payload straight
+            // through as a bare variable (for example Kyushu's
+            // OnCardDealDamage reads `toCard`, not
+            // `K2Node_Event_toCard`). Keep explicit frame locals above this
+            // lookup, then expose named event payloads before card members.
+            if (_ctx.NamedArgs.Count > 0 && _ctx.NamedArgs.TryGetValue(name, out var named))
+            {
+                return named;
+            }
+
             // 既不是本地槽、也不是事件入参 —— 按「效果自己那张卡的实例变量」读。
             // 实测需要的有 `enterPlayOnTurn`（`card_event_committed_crew` 用它判
             // 「这张牌是不是本回合打出的」）、`faction`、`attack` 等；
@@ -1250,6 +1275,11 @@ public sealed class KismetVm
             if (_ctx.NamedArgs.Count > 0 && _ctx.NamedArgs.TryGetValue(bare, out var named))
             {
                 return named;
+            }
+
+            if (bare is "toCard" && _ctx.EventTarget is not null)
+            {
+                return _ctx.EventTarget;
             }
 
             if (bare.EndsWith("CardID", StringComparison.Ordinal)
