@@ -79,6 +79,8 @@ internal static class SelfTest
             MoveMultipleCardsToTopOfOwnersDeck),
         new("调整牌库位置：移除后按 positionFromTop 插回，并派发 OnAfterDeckChanged",
             AdjustCardPositionInDeck),
+        new("MoveCardInHandToLeftMost：重排目标手牌并拒绝无效/重复移动",
+            MoveCardInHandToLeftMost),
         new("PlayCardDirectlyFromHand：免费出牌、指定前线/槽位、跨行动方且回写 qqq",
             PlayCardDirectlyFromHand),
         new("MoveUnitFromSupportToFrontLine：免费效果位移、忽略普通移动限制并正确拒绝非法目标",
@@ -1427,6 +1429,60 @@ internal static class SelfTest
             && !trace.Any(x => x.StartsWith("OnAfterDeckChanged", StringComparison.Ordinal))
             ? null
             : "不在牌库中的卡调用 AdjustCardPositionInDeck 必须保持无变化且不派发事件";
+    }
+
+    private static string? MoveCardInHandToLeftMost(CardDatabase db)
+    {
+        const string sourceName = "card_event_hmas_warramunga";
+        const string cardName = "card_unit_10_5_cm_lefh";
+        if (db.Find(sourceName) is null || db.Find(cardName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {cardName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 3000, CardLocation.Discard, 0);
+        var first = state.CreateWithId(cardName, Side.Left, 3001, CardLocation.HandLeft, 0);
+        var target = state.CreateWithId(cardName, Side.Left, 3002, CardLocation.HandLeft, 1);
+        var last = state.CreateWithId(cardName, Side.Left, 3003, CardLocation.HandLeft, 2);
+        var otherSide = state.CreateWithId(cardName, Side.Right, 3004, CardLocation.HandRight, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("MoveCardInHandToLeftMost", source,
+            new object?[] { target, null }, ctx, out bool handled);
+        var leftOrder = state.Hand(Side.Left).Select(x => x.CardId).ToArray();
+        var rightOrder = state.Hand(Side.Right).Select(x => x.CardId).ToArray();
+        if (!handled || result is not bool moved || !moved
+            || !leftOrder.SequenceEqual(new[] { target.CardId, first.CardId, last.CardId })
+            || target.LocationNumber != 0 || first.LocationNumber != 1 || last.LocationNumber != 2
+            || !rightOrder.SequenceEqual(new[] { otherSide.CardId }))
+        {
+            return $"目标应移到左侧手牌第 0 格：handled={handled}, result={result}, "
+                 + $"left=[{string.Join(",", leftOrder)}], right=[{string.Join(",", rightOrder)}]";
+        }
+
+        result = engine.Api.InvokeByName("MoveCardInHandToLeftMost", source,
+            new object?[] { target, null }, ctx, out bool repeatedHandled);
+        if (!repeatedHandled || result is not bool repeatedMoved || repeatedMoved
+            || !state.Hand(Side.Left).Select(x => x.CardId)
+                .SequenceEqual(new[] { target.CardId, first.CardId, last.CardId }))
+        {
+            return "已经位于最左侧的手牌重复调用必须是成功处理但不移动";
+        }
+
+        result = engine.Api.InvokeByName("MoveCardInHandToLeftMost", source,
+            new object?[] { source, null }, ctx, out bool invalidHandled);
+        return invalidHandled && result is bool invalidMoved && !invalidMoved
+            && state.Hand(Side.Left).Select(x => x.CardId)
+                .SequenceEqual(new[] { target.CardId, first.CardId, last.CardId })
+            ? null
+            : "非手牌目标必须拒绝且不得改变手牌顺序";
     }
 
     /// <summary>

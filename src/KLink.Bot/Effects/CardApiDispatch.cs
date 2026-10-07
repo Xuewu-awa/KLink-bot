@@ -254,6 +254,7 @@ public sealed partial class CardApi
             // GameState.Hand uses the same location-number ordering as the client.
             ["GetLeftMostCardInHand"] = (c, r, a) => GetEdgeCardInHand(c, r, a, rightMost: false),
             ["GetRightMostCardInHand"] = (c, r, a) => GetEdgeCardInHand(c, r, a, rightMost: true),
+            ["MoveCardInHandToLeftMost"] = (c, r, a) => DoMoveCardInHandToLeftMost(c, r, a),
 
             // ⚠️ `GetStaticCard` **不在这里** —— 它是
             // `/Script/kards.FunctionLibrary` 的原生函数，在 IR 里是 `CallMath` 形状，
@@ -3221,6 +3222,39 @@ public sealed partial class CardApi
         }
 
         return allMoved;
+    }
+
+    /// <summary>
+    /// `MoveCardInHandToLeftMost(card, out success)` delegates to the Blueprint
+    /// `MoveCardInHandToNewIndex(card, 0, out success)` helper.  Rebuild the
+    /// ordered hand explicitly so the target gets slot 0 and every card that
+    /// was before it shifts right by one; cards in the other hand are untouched.
+    /// </summary>
+    private object? DoMoveCardInHandToLeftMost(EffectContext c, object? receiver, object?[] args)
+    {
+        var card = AsCardOrId(c, args.ElementAtOrDefault(0)) ?? AsCard(receiver);
+        if (card is null || card.Location is not (CardLocation.HandLeft or CardLocation.HandRight))
+        {
+            return false;
+        }
+
+        var hand = c.State.Hand(card.Owner);
+        int currentIndex = hand.FindIndex(x => ReferenceEquals(x, card));
+        if (currentIndex <= 0)
+        {
+            // Blueprint rejects an invalid card and treats an already-leftmost
+            // card as a no-op because its current location equals desiredIndex.
+            return false;
+        }
+
+        hand.RemoveAt(currentIndex);
+        hand.Insert(0, card);
+        for (int i = 0; i < hand.Count; i++)
+        {
+            hand[i].LocationNumber = i;
+        }
+
+        return true;
     }
 
     /// <summary>
