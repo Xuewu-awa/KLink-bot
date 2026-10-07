@@ -304,6 +304,10 @@ public sealed partial class CardApi
                     ? GetCardsOnBoardBySide(side).ToList()
                     : c.State.BattleCardsInOrder(side).ToList();
             },
+            // `GetHighestBomberAttack(out highestAttack)` is a card-local helper
+            // used by Precision Bombing's cost update.  Its implicit side is the
+            // effect controller; it scans live board attack values, not templates.
+            ["GetHighestBomberAttack"] = (c, r, a) => GetHighestBomberAttack(c.Controller),
             ["GetCardsInHandBySide"] = (c, r, a) => GetCardsInHandBySide(SideArg(r, a, 0)).ToList(),
             // ⚠️ 出参是 `TArray<int> deckCardIDs`（卡 **ID**），不是卡实例 ——
             //    46 张调用它的卡的用法清单见 `CardApi.GetDeckBySide` 的注释。

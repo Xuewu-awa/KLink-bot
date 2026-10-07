@@ -3721,6 +3721,17 @@ public sealed partial class CardApi
     /// 的第三个成因（`GetRandomCard` 的注释里写过）。
     /// </summary>
     public IEnumerable<CardInstance> GetCardsOnBoardBySide(Side s) => State.BoardInBattleOrder(s);
+    /// <summary>
+    /// Blueprint `GetHighestBomberAttack`：在指定一方当前场面中筛选轰炸机，
+    /// 并返回其实时总攻击力的最大值；没有轰炸机时返回 0。
+    /// </summary>
+    public int GetHighestBomberAttack(Side side)
+        => GetCardsOnBoardBySide(side)
+            .Where(MatchEngine.IsBomber)
+            .Select(card => card.Attack)
+            .DefaultIfEmpty(0)
+            .Max();
+
     public IEnumerable<CardInstance> GetAllUnitsOnBoard() => State.Board(Side.Left).Concat(State.Board(Side.Right));
     public IEnumerable<CardInstance> GetAllCardsOnBoard() => GetAllUnitsOnBoard().Concat(new[] { State.Hq(Side.Left), State.Hq(Side.Right) });
     /// <summary>

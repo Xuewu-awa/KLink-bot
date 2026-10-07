@@ -105,6 +105,8 @@ internal static class SelfTest
             L4GrasshopperRemoveBuff),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
+        new("Precision Bombing：GetHighestBomberAttack 取本方轰炸机实时最高攻击",
+            GetHighestBomberAttack),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
             LoseKreditSlotRefillsFromCurrentSlot),
         new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
@@ -13844,6 +13846,49 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? GetHighestBomberAttack(CardDatabase db)
+    {
+        string? bomberName = FindType(db, "bomber");
+        string? fighterName = FindType(db, "fighter");
+        if (bomberName is null || fighterName is null)
+        {
+            return "卡库里缺 bomber 或 fighter（无法测）";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var weaker = state.CreateWithId(bomberName, Side.Left, 120, CardLocation.BoardHqLeft, 1);
+        weaker.Attack = 3;
+        var stronger = state.CreateWithId(bomberName, Side.Left, 121, CardLocation.BoardHqLeft, 2);
+        stronger.Attack = 7;
+        var enemy = state.CreateWithId(bomberName, Side.Right, 122, CardLocation.BoardHqRight, 1);
+        enemy.Attack = 99;
+        var nonBomber = state.CreateWithId(fighterName, Side.Left, 123, CardLocation.BoardHqLeft, 3);
+        nonBomber.Attack = 99;
+
+        var ctx = new EffectContext { Engine = engine, State = state, Self = weaker, Controller = Side.Left };
+        var result = engine.Api.InvokeByName("GetHighestBomberAttack", null,
+            new object?[] { null }, ctx, out bool handled);
+        if (!handled || Convert.ToInt32(result ?? -1) != 7)
+        {
+            return $"应返回本方轰炸机最高实时攻击 7，实际 handled={handled}, result={result ?? "null"}";
+        }
+
+        stronger.Location = CardLocation.Discard;
+        result = engine.Api.InvokeByName("GetHighestBomberAttack", null,
+            new object?[] { null }, ctx, out handled);
+        if (!handled || Convert.ToInt32(result ?? -1) != 3)
+        {
+            return $"离场后应只剩攻击 3 的轰炸机，实际 handled={handled}, result={result ?? "null"}";
+        }
+
+        weaker.Location = CardLocation.Discard;
+        result = engine.Api.InvokeByName("GetHighestBomberAttack", null,
+            new object?[] { null }, ctx, out handled);
+        return handled && Convert.ToInt32(result ?? -1) == 0
+            ? null
+            : $"本方没有轰炸机时应返回 0，实际 handled={handled}, result={result ?? "null"}";
     }
 
     private static string? ConvertCard(CardDatabase db)
