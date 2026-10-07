@@ -193,11 +193,13 @@ internal static class DispatchGapBaseline
     /// `GetReducedDamage`，按 Seagull 蓝图将本方 HQ 本回合减伤额度限制为 4 点。
     /// 2026-10-07：472 → **471**（2118 → 2116 个调用点）。补上
     /// `GiveCredits` 并在移动/攻击支付行动费时派发两个蓝图事件。
+    /// 2026-10-07：467 → **466**（2110 → 2108 个调用点）。补上
+    /// `GiveTwoKredits`，接通 2nd Michigan 的 3+ 行动费返还。
     /// </remarks>
-    public const int BaselineCount = 467;
+    public const int BaselineCount = 466;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "0E4A5783DB57FA97";
+    public const string BaselineFingerprint = "53B0CD9DBCDC84A0";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

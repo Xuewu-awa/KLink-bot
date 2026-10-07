@@ -27,6 +27,7 @@ internal static class SelfTest
         new("Landwehr：操作扣费事件按蓝图返还 Veteran 的实际行动费", LandwehrOperationCredits),
         new("Landwehr：第三次操作后由 IncOpCountAndCheckVeteran 晋升 Veteran",
             LandwehrOperationCountPromotion),
+        new("2nd Michigan：操作费达到 3 时返还 2 kredit", SecondMichiganGiveTwoKredits),
 
         // ---- GetPlayFromHandDamage（2026-09-27）----
         // 它**不是**引擎的通用函数，而是每张卡蓝图各自实现的普通函数
@@ -1834,6 +1835,36 @@ internal static class SelfTest
         if (LastPersistedCardId(state) != landwehr.CardId)
         {
             return "晋升 Veteran 后清理 opCount 应持久化 Landwehr";
+        }
+
+        return null;
+    }
+
+    private static string? SecondMichiganGiveTwoKredits(CardDatabase db)
+    {
+        const string name = "card_unit_2nd_michigan";
+        if (db.Find(name) is null)
+        {
+            return $"卡库里缺 {name}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 9);
+        var michigan = state.CreateWithId(name, Side.Left, 1520,
+            CardLocation.BoardHqLeft, 1);
+        michigan.EnteredPlayOnTurn = state.Turn - 1;
+
+        if (!engine.MoveUnit(michigan, 0, out string reason))
+        {
+            return $"2nd Michigan 操作失败：{reason}";
+        }
+
+        int expected = 9 - michigan.OperationCost + 2;
+        if (state.Kredits(Side.Left) != expected)
+        {
+            return $"操作费达到 {michigan.OperationCost} 后应返还 2 kredit，"
+                 + $"实际={state.Kredits(Side.Left)}，期望={expected}";
         }
 
         return null;

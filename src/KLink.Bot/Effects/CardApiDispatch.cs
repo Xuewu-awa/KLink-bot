@@ -1184,6 +1184,17 @@ public sealed partial class CardApi
 
                 return null;
             },
+            // `GiveTwoKredits()` is 2nd Michigan's private helper.  Its
+            // blueprint body calls GiveKreditsBySide(self.side, 2, self.cardID).
+            ["GiveTwoKredits"] = (c, r, a) =>
+            {
+                if (c.Self is { } card)
+                {
+                    c.State.AddKredits(card.Owner, 2);
+                }
+
+                return null;
+            },
             // `IncOpCountAndCheckVeteran()` is Landwehr's private helper:
             // count operations in custom JSON and promote after the third one.
             ["IncOpCountAndCheckVeteran"] = (c, r, a) =>
