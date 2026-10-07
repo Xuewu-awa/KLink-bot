@@ -2356,12 +2356,13 @@ public sealed partial class CardApi
     /// 「Put **two** copies on top of owner's deck.」—— 对局 `773639` `#29 t7`
     /// 那张雾战因此少塞了 1 张。
     ///
-    /// ⚠️ **仍未完整对齐（洗牌分支仍待单独回归）**：
+    /// ⚠️ **`SkipDrawAnimation` / 客户端通知仍是表现层 no-op**：
     /// <list type="bullet">
     /// <item><c>bottom</c>（a[6]）/ <c>shuffle</c>（a[7]）是**两个 bool**。
     ///   不能再扫任意整数猜位置：右阵营的 <c>side=2</c> 会把本应放底的卡误判成放顶，
     ///   而多张置顶时也必须按每次生成后的当前牌库重排。</item>
-    /// <item><c>shuffle</c>（a[7]）为真时，蓝图在循环后还会洗牌；这一层仍待单独回归。</item>
+    /// <item><c>shuffle</c>（a[7]）为真时，蓝图在循环后调用
+    ///   `ShuffleDeckBySide(side, true, spawnerID, …)`；内核保留洗牌与事件，忽略纯客户端通知。</item>
     /// </list>
     ///
     /// ★ 出参 <c>spawnedCardIDs</c> **已经改成数组**（2026-10-02，见函数末尾的注释）：
@@ -2386,6 +2387,7 @@ public sealed partial class CardApi
         }
 
         bool toBottom = TruthyArg(a, 6);
+        bool shuffle = TruthyArg(a, 7);
         bool randomWithoutShuffle = TruthyArg(a, 9);
 
         CardInstance? last = null;
@@ -2440,6 +2442,12 @@ public sealed partial class CardApi
             }
 
             spawned.Add(last.CardId);
+        }
+
+        if (shuffle)
+        {
+            var instigator = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
+            ShuffleDeckBySide(c, side, instigator);
         }
 
         // ★★ 出参必须是**数组**（`TArray<int32>` 的卡 ID），不是单张卡。
