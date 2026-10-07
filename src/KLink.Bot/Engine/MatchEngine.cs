@@ -2276,15 +2276,18 @@ public sealed class MatchEngine
             new[] { "stopAttack", "AttackedAndStopped" },
             attackEventSeed);
 
-        // `ExecuteOnOperationKreditsSpent` runs after the pre-attack hooks and
-        // before either the normal damage path or the stopped-attack path.
-        // Keep it here so a stopped attack still counts as one operation, but
-        // the operation card is never charged twice.
-        FireOperationKreditsSpent(attacker, attackCost);
-
         if (stoppedAttack.Any(hit => hit.Outs.GetValueOrDefault("stopAttack") is true
             || hit.Outs.GetValueOrDefault("AttackedAndStopped") is true))
         {
+            // Blueprint `ExecuteStoppedAttack` runs before the operation-cost
+            // event.  This is a real gameplay hook: Meteor and Salamander use
+            // `OnAttackStopped` for their attack-after cleanup.
+            Api.FireTrigger("OnAttackStopped", attacker, attacker.Owner);
+
+            // `ExecuteOnOperationKreditsSpent` still runs for a stopped attack,
+            // but the operation card must never be charged twice.
+            FireOperationKreditsSpent(attacker, attackCost);
+
             FireSubAction("ZActionAttackCard", new[]
             {
                 ActionValue2.Int("attackerCardID", attacker.CardId),
@@ -2297,6 +2300,10 @@ public sealed class MatchEngine
             CheckDeaths();
             return true;
         }
+
+        // Normal attacks dispatch the operation-cost event after the stopped
+        // branch has been ruled out and before damage resolution.
+        FireOperationKreditsSpent(attacker, attackCost);
 
         bool shockAttack = attacker.Keywords.Contains(Keyword.Shock);
         bool ambushAttack = !defender.IsHq

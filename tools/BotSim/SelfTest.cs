@@ -161,6 +161,8 @@ internal static class SelfTest
         new("Attack 必须拒绝已经进弃牌堆的目标", AttackRejectsDeadTarget),
         new("T30 OnOtherCardAttackSwitchTarget：Cold Trap 把攻击改到 SISSI", OtherCardAttackSwitchesTarget),
         new("T31 OnOtherCardAttacks：Merchant Navy 能中止敌方攻击并撤回攻击者", OtherCardAttacksStopsAttack),
+        new("攻击被中止后仍派发攻击者 OnAttackStopped（Meteor 清理并生成副本）",
+            AttackStoppedTriggersSelfEvent),
 
         // ---- §①.9 三条基本规则（蓝图定案，2026-09-27）----
         // 这四条守的是「棋盘模型」本身。回放对拍只有 6 局、而且 `MoveUnit` 几乎跑不到
@@ -4202,6 +4204,68 @@ internal static class SelfTest
         if (merchant.Location != CardLocation.Discard)
         {
             return $"触发后的 Merchant Navy 应进入弃牌堆，实际位置={merchant.Location}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `ExecuteStoppedAttack` 必须在 T31 中止攻击后仍执行攻击者自己的
+    /// `OnAttackStopped`。Meteor 的卡面清理挂在这个事件上；若漏派，
+    /// 被 Merchant Navy 中止的攻击会错误地让 Meteor 留在场上。
+    /// </summary>
+    private static string? AttackStoppedTriggersSelfEvent(CardDatabase db)
+    {
+        const string attackerName = "card_unit_meteor";
+        const string defenderName = "card_unit_85_pioneer_company";
+        const string merchantName = "card_event_merchant_navy";
+        foreach (var name in new[] { attackerName, defenderName, merchantName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Right;
+        state.SetKredits(Side.Right, 12);
+        state.SetMaxKredits(Side.Right, 12);
+
+        var attacker = state.CreateWithId(attackerName, Side.Right, 200,
+            CardLocation.BoardFrontline, 0);
+        var defender = state.CreateWithId(defenderName, Side.Left, 201,
+            CardLocation.BoardFrontline, 0);
+        var merchant = state.CreateWithId(merchantName, Side.Left, 202,
+            CardLocation.BoardHqLeft, 1);
+        attacker.EnteredPlayOnTurn = state.Turn - 1;
+        defender.EnteredPlayOnTurn = state.Turn - 1;
+        merchant.EnteredPlayOnTurn = state.Turn - 1;
+        engine.Api.RemoveKeyword(defender, Keyword.Smokescreen);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        if (!engine.Attack(attacker, defender, out string reason))
+        {
+            return $"Merchant Navy 中止 Meteor 攻击失败：{reason}";
+        }
+
+        if (!trace.Any(x => x.StartsWith($"OnAttackStopped → {attacker.Name}#{attacker.CardId}",
+                                           StringComparison.Ordinal)))
+        {
+            return "攻击被中止后没有派发攻击者 OnAttackStopped"
+                   + $"\n       实际派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (attacker.Location.IsBoard())
+        {
+            return $"Meteor 收到 OnAttackStopped 后应离场，实际位置={attacker.Location}";
+        }
+
+        if (!state.Deck(Side.Right).Any(c => c.Name == attackerName
+                                             && c.Attack == 2 && c.Defense == 2))
+        {
+            return "Meteor 的 OnAttackStopped 应生成一张 2/2 牌库副本";
         }
 
         return null;
