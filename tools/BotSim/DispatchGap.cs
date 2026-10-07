@@ -179,11 +179,13 @@ internal static class DispatchGapBaseline
     /// `AddDefenseToMultipleCards` 的批量防御结算。
     /// 2026-10-07：480 → **479**（2132 → 2130 个调用点）。补上
     /// `RemoveAlpine`，按来源移除动态 Alpine，并保留卡面自带 Alpine。
+    /// 2026-10-07：479 → **478**（2130 → 2129 个调用点）。补上
+    /// `RemoveSalvage`，清除目标卡的收缴关键字。
     /// </remarks>
-    public const int BaselineCount = 479;
+    public const int BaselineCount = 478;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "E2C1E3C66CCA7392";
+    public const string BaselineFingerprint = "1DC9FE1B35FE976E";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

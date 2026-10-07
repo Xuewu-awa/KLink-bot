@@ -415,6 +415,7 @@ internal static class SelfTest
             AddDefenseToMultipleCards),
         new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
             RemoveAlpine),
+        new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
         new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
             DiscardRandomCardFromHand),
@@ -1046,6 +1047,48 @@ internal static class SelfTest
         if (!Equals(Add(cards, card), 0) || !Equals(Add(cards, card.CardId), 0) || cards.Count != 1)
             return "卡对象数组 AddUnique 未按 ID 去重";
         return null;
+    }
+
+    private static string? RemoveSalvage(CardDatabase db)
+    {
+        const string targetName = "card_unit_raf_mitchell";
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        if (db.Find(targetName) is null || db.Find(sourceName) is null)
+        {
+            return $"卡库里缺 {targetName} / {sourceName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+        var target = PutOnBoard(state, targetName, Side.Left, 21, 2);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("GiveSalvage", source,
+            new object?[] { target.CardId, null, source.CardId }, ctx, out bool giveHandled);
+        if (!giveHandled || !target.Keywords.Contains(Keyword.Salvage))
+        {
+            return "GiveSalvage 后目标必须拥有 Salvage";
+        }
+
+        object? result = engine.Api.InvokeByName("RemoveSalvage", source,
+            new object?[] { target.CardId, source.CardId, null, false }, ctx,
+            out bool removeHandled);
+        if (!removeHandled)
+        {
+            return "RemoveSalvage 未进入派发表";
+        }
+
+        if (result is not int value || value != 0)
+        {
+            return $"RemoveSalvage 的 qqq 应返回 0，实际 {result ?? "null"}";
+        }
+
+        return target.Keywords.Contains(Keyword.Salvage)
+            ? "RemoveSalvage 后目标仍保留 Salvage"
+            : null;
     }
 
     /// <summary>

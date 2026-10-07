@@ -685,6 +685,7 @@ public sealed partial class CardApi
             ["RemoveImmune"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Immune),
             ["RemoveSmokescreen"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Smokescreen),
             ["RemoveAlpine"] = (c, r, a) => DoRemoveAlpine(c, r, a),
+            ["RemoveSalvage"] = (c, r, a) => DoRemoveSalvage(c, r, a),
             // ⚠️ `PinUnit` 不再直接走 `DoGiveKeyword` —— 它还要记**时长**
             //    （`BP_CardFunctions::PinUnit` i=955 `pinnedTurns = Max(…, 3或2)`）。
             //    走 `CardApi.PinUnit` 才能和 `UnpinUnit`/到期递减对上。
@@ -5432,6 +5433,12 @@ public sealed partial class CardApi
             RemoveKeyword(target, Keyword.Alpine);
         }
 
+        return 0;
+    }
+
+    private object? DoRemoveSalvage(EffectContext c, object? r, object?[] a)
+    {
+        DoRemoveKeyword(c, r, a, Keyword.Salvage);
         return 0;
     }
 
