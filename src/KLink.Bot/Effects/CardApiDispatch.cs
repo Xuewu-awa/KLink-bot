@@ -2356,14 +2356,12 @@ public sealed partial class CardApi
     /// 「Put **two** copies on top of owner's deck.」—— 对局 `773639` `#29 t7`
     /// 那张雾战因此少塞了 1 张。
     ///
-    /// ⚠️ **仍未完整对齐（随机插入仍待单独回归）**：
+    /// ⚠️ **仍未完整对齐（洗牌分支仍待单独回归）**：
     /// <list type="bullet">
     /// <item><c>bottom</c>（a[6]）/ <c>shuffle</c>（a[7]）是**两个 bool**。
     ///   不能再扫任意整数猜位置：右阵营的 <c>side=2</c> 会把本应放底的卡误判成放顶，
     ///   而多张置顶时也必须按每次生成后的当前牌库重排。</item>
-    /// <item><c>RandomWithoutShuffle</c>（a[9]）为假时，蓝图按
-    ///   `RandomIntegerInRangeFromStream(0, 牌库数)` 把卡插到**随机位置**；
-    ///   这里只做顶/底两档。</item>
+    /// <item><c>shuffle</c>（a[7]）为真时，蓝图在循环后还会洗牌；这一层仍待单独回归。</item>
     /// </list>
     ///
     /// ★ 出参 <c>spawnedCardIDs</c> **已经改成数组**（2026-10-02，见函数末尾的注释）：
@@ -2388,27 +2386,15 @@ public sealed partial class CardApi
         }
 
         bool toBottom = TruthyArg(a, 6);
+        bool randomWithoutShuffle = TruthyArg(a, 9);
 
         CardInstance? last = null;
         var spawned = new List<int>();
         for (int n = 0; n < count; n++)
         {
-            var currentDeck = c.State.Deck(side);
-            if (toBottom)
-            {
-                last = c.State.Create(cardName, side, side.DeckOf(),
-                                      currentDeck.Count);
-            }
-            else
-            {
-                // 放到牌库顶：把现有牌整体后移一位
-                foreach (var existing in currentDeck)
-                {
-                    existing.LocationNumber++;
-                }
-
-                last = c.State.Create(cardName, side, side.DeckOf(), 0);
-            }
+            // 蓝图先以 locationNumber=0 创建卡，所以随机范围包含刚创建的这张卡；
+            // AddCardToDeckBySide 随后会先移除它，再以 deckPosition 插回当前牌库。
+            last = c.State.Create(cardName, side, side.DeckOf(), 0);
 
             // ★★ **必须消耗这一个随机数** —— 它是「随机效果与客户端不一致」这一类
             //    在**消费点**上的第二个独立成因（第一个是 RNG 算法本身）。
@@ -2437,6 +2423,21 @@ public sealed partial class CardApi
             int rand = c.State.Random.RandRange(0, deckLen);
             c.State.TraceRandom($"SpawnCardInDeckBySide {side} deckLen={deckLen} rand={rand} " +
                                 $"-> #{last.CardId} {cardName}");
+
+            // `SelectInt(rand, -1, RandomWithoutShuffle)`：随机模式传 rand，
+            // 否则传 -1，再由 AddCardToDeckBySide 的 addToTop=Not(bottom)
+            // 分支决定顶/底。直接重排字段，不走 Move，避免产生跨区事件。
+            var ordered = c.State.Deck(side)
+                .Where(card => !ReferenceEquals(card, last))
+                .ToList();
+            int insertAt = randomWithoutShuffle
+                ? Math.Clamp(rand, 0, ordered.Count)
+                : (toBottom ? ordered.Count : 0);
+            ordered.Insert(insertAt, last);
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                ordered[i].LocationNumber = i;
+            }
 
             spawned.Add(last.CardId);
         }

@@ -473,6 +473,8 @@ internal static class SelfTest
             FogOfWarRemovesTargetFromBattlefield),
         new("SpawnCardInDeckBySide：按 bottom 布尔参数落顶/底，不受 side=2 干扰",
             SpawnCardInDeckHonorsBottom),
+        new("SpawnCardInDeckBySide：RandomWithoutShuffle 按随机索引插入并逐张消费随机流",
+            SpawnCardInDeckRandomInsertion),
 
         // ---- ★★ 2026-10-02：kredit 槽位增长模型**已定案**，那条用例**不恢复** ----
         // 曾有一条 `KreditSlotsGrowEveryTurn`（断言"每回合双方各 +1"）—— **它的模型是错的**，
@@ -5054,6 +5056,62 @@ internal static class SelfTest
             || !ReferenceEquals(deck[2], second))
         {
             return $"bottom=false 应把新卡放到牌库顶，实际顺序：{string.Join(",", deck.Select(x => x.Name))}";
+        }
+
+        return null;
+    }
+
+    private static string? SpawnCardInDeckRandomInsertion(CardDatabase db)
+    {
+        const string sourceName = "card_event_confusion";
+        const string existingName = "card_unit_arado_ar_196";
+        const string spawnedName = "card_unit_1st_infantry_regiment_us";
+        foreach (string name in new[] { sourceName, existingName, spawnedName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 2, CardLocation.Discard, 0);
+        var first = state.CreateWithId(existingName, Side.Right, 42, CardLocation.DeckRight, 0);
+        var second = state.CreateWithId(existingName, Side.Right, 43, CardLocation.DeckRight, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        var expectedRandom = new UeRandomStream(1);
+        int firstIndex = expectedRandom.RandRange(0, 3);
+        int secondIndex = expectedRandom.RandRange(0, 4);
+        object? result = engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+            new object?[] { (int)Side.Right, spawnedName, source.CardId, 2, "", false,
+                true, false, false, true, null }, ctx, out bool handled);
+        if (!handled || result is not System.Collections.IEnumerable)
+        {
+            return "SpawnCardInDeckBySide(RandomWithoutShuffle=true) 未接入派发表";
+        }
+
+        var spawnedIds = (result as System.Collections.IEnumerable)!
+            .Cast<int>().ToList();
+        if (spawnedIds.Count != 2 || state.Random.ConsumedCount != 2)
+        {
+            return $"随机模式应生成 2 张且消费 2 次随机流，实际生成 {spawnedIds.Count} 张、消费 {state.Random.ConsumedCount} 次";
+        }
+
+        var expected = new List<int> { first.CardId, second.CardId };
+        expected.Insert(Math.Min(firstIndex, expected.Count), spawnedIds[0]);
+        expected.Insert(Math.Min(secondIndex, expected.Count), spawnedIds[1]);
+        var actual = state.Deck(Side.Right).Select(card => card.CardId).ToList();
+        if (!actual.SequenceEqual(expected))
+        {
+            return $"随机模式应按索引插入（first={firstIndex}, second={secondIndex}），实际顺序：" +
+                   string.Join(",", actual) + "，期望：" + string.Join(",", expected);
         }
 
         return null;
