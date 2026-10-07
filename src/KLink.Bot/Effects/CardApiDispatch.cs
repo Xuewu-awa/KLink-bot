@@ -946,6 +946,35 @@ public sealed partial class CardApi
                 return null;
             },
             ["Array_Clear"] = (c, r, a) => { EvalList(r, a).Clear(); return null; },
+            // UE 的 Array_Resize 原地调整长度；Semper Fi 用它把候选牌库裁到前 8 张。
+            // 扩容时按元素类型填充默认值，缩容则从尾部截断。
+            ["Array_Resize"] = (c, r, a) =>
+            {
+                var arr = EvalList(r, a);
+                int desired = Math.Max(0, IntArg(a, 1));
+                while (arr.Count > desired)
+                {
+                    arr.RemoveAt(arr.Count - 1);
+                }
+
+                while (arr.Count < desired)
+                {
+                    if (arr is List<int> ids)
+                    {
+                        ids.Add(0);
+                    }
+                    else if (arr is List<CardInstance> cards)
+                    {
+                        cards.Add(null!);
+                    }
+                    else
+                    {
+                        arr.Add(null);
+                    }
+                }
+
+                return null;
+            },
             // UE 的 `Array_Remove(目标数组, 项)` 按**值**删掉**所有**匹配项（原地）。
             ["Array_Remove"] = (c, r, a) =>
             {

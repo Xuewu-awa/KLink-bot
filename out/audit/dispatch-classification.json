@@ -18,19 +18,19 @@
     "card_count": 1735,
     "callsite_count": 17949,
     "unique_function_count": 786,
-    "direct_dispatch_count": 330,
+    "direct_dispatch_count": 332,
     "bp_function_count": 294,
     "vm_builtin_count": 70,
     "category_function_counts": {
-      "blueprint_function": 3,
-      "blueprint_member": 18,
+      "blueprint_function": 2,
+      "blueprint_member": 17,
       "campaign_ui": 431,
-      "dispatch": 265,
+      "dispatch": 267,
       "local_fallback": 59,
       "unknown_gameplay": 10
     },
-    "headless_gap_calls": 67,
-    "headless_gap_functions": 33,
+    "headless_gap_calls": 65,
+    "headless_gap_functions": 31,
     "unknown_gameplay_calls": 11,
     "unknown_gameplay_functions": 10
   },
@@ -13611,15 +13611,15 @@
     },
     {
       "name": "Array_Resize",
-      "category": "blueprint_member",
+      "category": "dispatch",
       "calls": 1,
       "distinct_cards": 1,
       "entrypoint_calls": 1,
       "local_calls": 0,
       "local_fallback_calls": 0,
-      "uncovered_calls": 1,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 1,
       "gameplay_calls": 1,
       "campaign_calls": 0,
@@ -16315,15 +16315,15 @@
     },
     {
       "name": "MoveCardInHandToLeftMost",
-      "category": "blueprint_function",
+      "category": "dispatch",
       "calls": 1,
       "distinct_cards": 1,
       "entrypoint_calls": 1,
       "local_calls": 0,
       "local_fallback_calls": 0,
-      "uncovered_calls": 1,
+      "uncovered_calls": 0,
       "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
+      "gameplay_gap_calls": 0,
       "receiver_calls": 1,
       "gameplay_calls": 1,
       "campaign_calls": 0,
@@ -20215,27 +20215,6 @@
       ]
     },
     {
-      "name": "Array_Resize",
-      "category": "blueprint_member",
-      "calls": 1,
-      "distinct_cards": 1,
-      "entrypoint_calls": 1,
-      "local_calls": 0,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 1,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
-      "receiver_calls": 1,
-      "gameplay_calls": 1,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 1,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_event_semper_fi"
-      ]
-    },
-    {
       "name": "CustomEventOnCardDealDamage",
       "category": "unknown_gameplay",
       "calls": 1,
@@ -20380,27 +20359,6 @@
       "excluded_cards": [],
       "sample_cards": [
         "card_event_pilot_escape"
-      ]
-    },
-    {
-      "name": "MoveCardInHandToLeftMost",
-      "category": "blueprint_function",
-      "calls": 1,
-      "distinct_cards": 1,
-      "entrypoint_calls": 1,
-      "local_calls": 0,
-      "local_fallback_calls": 0,
-      "uncovered_calls": 1,
-      "gameplay_fallback_calls": 0,
-      "gameplay_gap_calls": 1,
-      "receiver_calls": 1,
-      "gameplay_calls": 1,
-      "campaign_calls": 0,
-      "ui_calls": 0,
-      "gameplay_cards": 1,
-      "excluded_cards": [],
-      "sample_cards": [
-        "card_event_hmas_warramunga"
       ]
     },
     {

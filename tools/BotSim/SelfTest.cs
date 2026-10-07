@@ -97,6 +97,8 @@ internal static class SelfTest
             GiveRandomCombatKeyword),
         new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
             BlueprintSetPrimitives),
+        new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
+            BlueprintArrayResize),
         new("Get_X_AndMoreAttackCardsOnBoard：按阵营、单位、存活、防御和攻击阈值返回卡 ID",
             GetXAndMoreAttackCardsOnBoard),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
@@ -13672,6 +13674,38 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? BlueprintArrayResize(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 106,
+            CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        var values = new List<int> { 11, 22, 33, 44, 55 };
+        object? result = engine.Api.InvokeByName("Array_Resize", null,
+            new object?[] { values, 3 }, ctx, out bool shrinkHandled);
+        if (!shrinkHandled || result is not null || !values.SequenceEqual(new[] { 11, 22, 33 }))
+        {
+            return $"Array_Resize(3) 应保留前 3 项：handled={shrinkHandled}, "
+                 + $"result={result ?? "null"}, values=[{string.Join(",", values)}]";
+        }
+
+        result = engine.Api.InvokeByName("Array_Resize", null,
+            new object?[] { values, 5 }, ctx, out bool growHandled);
+        if (!growHandled || result is not null || values.Count != 5
+            || !values.Take(3).SequenceEqual(new[] { 11, 22, 33 })
+            || values[3] != 0 || values[4] != 0)
+        {
+            return "Array_Resize(5) 应保留原值并用 0 填充整数数组";
+        }
+
+        result = engine.Api.InvokeByName("Array_Resize", null,
+            new object?[] { values, -4 }, ctx, out bool negativeHandled);
+        return negativeHandled && result is null && values.Count == 0
+            ? null
+            : "Array_Resize 的负长度必须按 0 处理并清空数组";
     }
 
     private static string? GetXAndMoreAttackCardsOnBoard(CardDatabase db)

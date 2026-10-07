@@ -734,7 +734,7 @@ public sealed class KismetVm
     /// </summary>
     private static readonly HashSet<string> InPlaceArrayOps = new(StringComparer.Ordinal)
     {
-        "Array_Add", "Array_AddUnique", "Array_Clear", "Array_Append", "Array_Insert",
+        "Array_Add", "Array_AddUnique", "Array_Clear", "Array_Append", "Array_Insert", "Array_Resize",
         "Array_Remove", "Array_RemoveItem", "Array_Set",
     };
 
