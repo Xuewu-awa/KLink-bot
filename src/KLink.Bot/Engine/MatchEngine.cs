@@ -2167,11 +2167,10 @@ public sealed class MatchEngine
         //   → `RemoveSmokescreen`。**被压制的攻击者照样会走到 si=3511**（si=2966 只是跳到
         //   si=3590，随后 si=3635 又跳回 si=3002），所以 `RemoveSmokescreen` **没有**压制门。
         //
-        // ⚠️ 本轮**只**修了 `OnBeforeAttack` / T13 那一对（接收者 + 先后，见下面那段）。
-        //    `RemoveSmokescreen` 的位置（这里放在两个触发点**之前**）与压制门仍是旧行为
-        //    —— 那是一处**独立的、已核实但未修**的偏差，留给后续任务。
-        if (attacker.Keywords.Contains(Keyword.Smokescreen)
-            && !attacker.Keywords.Contains(Keyword.Suppressed))
+        // `RemoveSmokescreen` 没有压制门：被抑制的攻击者也会走到蓝图
+        // `si=3511`，因此攻击后仍应消耗烟幕。被抑制只跳过上面的
+        // `OnBeforeAttack` 自身事件，不影响这一条攻击后清理。
+        if (attacker.Keywords.Contains(Keyword.Smokescreen))
         {
             Api.RemoveKeyword(attacker, Keyword.Smokescreen);
         }

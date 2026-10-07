@@ -380,7 +380,7 @@ internal static class SelfTest
         // ---- P1：烟幕 Smokescreen（2026-09-30）----
         // CanAttack si=3637/3793（不能被打）+ AttackCard si=3511（自己攻击后消失）
         // + CardLocationMoved si=643/735（移到前线消失）
-        new("烟幕：不能被攻击 / 自己攻击后消失（被压制则不移除）/ 移到前线消失", SmokescreenRules),
+        new("烟幕：不能被攻击 / 自己攻击后消失（被压制也会移除）/ 移到前线消失", SmokescreenRules),
         new("战斗伤害：Shock 取消反击并在攻击后消耗，Ambush 首次被攻击先反击", AmbushAndShockCombat),
         new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
@@ -11271,7 +11271,8 @@ internal static class SelfTest
     ///  ① `CanAttack` si=3596/3637/3688/3702/3782：带烟幕的单位**不能被攻击**
     ///     （`location_has_smokescreen` / `defender_has_smokescreen`）
     ///  ② `AttackCard` si=2911/2952/2966/3511：**自己攻击之后消失**
-    ///     —— 两个门槛：攻击者不在场、被压制，都跳过
+    ///     —— 攻击者不在场会跳过；被压制只跳过自身 `OnBeforeAttack`，
+    ///        仍会在攻击后走到 `RemoveSmokescreen`
     ///  ③ `CardLocationMoved` si=643/674/684/725/735：**移到前线(7)就消失**
     /// </summary>
     private static string? SmokescreenRules(CardDatabase db)
@@ -11338,16 +11339,20 @@ internal static class SelfTest
             }
         }
 
-        // ②b 被压制的攻击者**不**移除烟幕（`AttackCard` si=2966 `JumpIfNot 3590 if isSuppressed`）
+        // ②b 被压制的攻击者仍然移除烟幕：si=2966 只跳过自身
+        // `OnBeforeAttack`，随后控制流回到 si=3002 并继续到 si=3511。
         {
             var (engine, state, atk) = GuardBoard(db, attacker, (plain, 1));
             engine.Api.GiveKeyword(atk, Keyword.Smokescreen);
             engine.Api.GiveKeyword(atk, Keyword.Suppressed);
             var target = state.Board(Side.Right).First(c => c.Name == plain);
-            engine.Attack(atk, target);
-            if (!atk.Keywords.Contains(Keyword.Smokescreen))
+            if (!engine.Attack(atk, target))
             {
-                return $"被压制的攻击者不该移除烟幕（AttackCard si=2966 跳过整段）";
+                return "被压制的攻击者仍应能完成攻击（抑制不是行动禁止）";
+            }
+            if (atk.Keywords.Contains(Keyword.Smokescreen))
+            {
+                return "被压制的攻击者攻击后仍应移除烟幕（AttackCard si=3511）";
             }
         }
 
