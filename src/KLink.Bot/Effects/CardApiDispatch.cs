@@ -608,6 +608,23 @@ public sealed partial class CardApi
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
             ["TriggerDestruction"] = (c, r, a) => DoTriggerDestruction(c, r, a),
             ["TriggerDeployment"] = (c, r, a) => DoTriggerDeployment(c, r, a),
+            // `ExecuteOnDeploymentTriggered(cardTriggered, instigatorID, out triggerMultiple)`
+            // is the BP_CardFunctions helper used by trigger-queue paths.  Keep its
+            // out value aligned with the same observer aggregation as TriggerDeployment.
+            ["ExecuteOnDeploymentTriggered"] = (c, r, a) =>
+            {
+                var card = AsCardOrId(c, a.ElementAtOrDefault(0))
+                           ?? c.Target
+                           ?? AsCard(r)
+                           ?? c.Self;
+                if (card is null)
+                {
+                    return 0;
+                }
+
+                return c.Engine.Api.SumDeploymentTriggerMultiple(
+                    card, IntArg(a, 1, c.Self?.CardId ?? card.CardId));
+            },
             // ⚠️ 第 5 参 `cardsIDs` 是**出参**（权威签名 `BP_CardFunctions.g.cs:12298-12310`），
             //    蓝图体把循环里抽到的每张牌的 cardID 攒成 `drawnCards` 再 `Invoke` 出去
             //    （`g.cs:12386` / `g.cs:12400`）。旧实现 `DrawCards(...); return null;`

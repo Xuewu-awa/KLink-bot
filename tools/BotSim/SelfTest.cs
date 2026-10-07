@@ -324,6 +324,8 @@ internal static class SelfTest
         new("部署：事件14 取消钩子（PE-2FT「Deployment effects do not trigger.」）", DeploymentCancelHook),
         new("部署：事件23 翻倍数（B-26「Your non-targeting deployment effects trigger twice.」）",
             DeploymentTriggerMultiple),
+        new("部署：ExecuteOnDeploymentTriggered 写回 triggerMultiple 出参",
+            ExecuteOnDeploymentTriggeredDispatch),
         new("部署：TriggerDeployment 按目标卡触发非目标部署效果并忽略无 Deployment 目标",
             TriggerDeploymentDispatch),
 
@@ -10253,6 +10255,46 @@ internal static class SelfTest
             {
                 return "SM.79 不应对没有 Deployment 的目标触发效果";
             }
+        }
+
+        return null;
+    }
+
+    private static string? ExecuteOnDeploymentTriggeredDispatch(CardDatabase db)
+    {
+        const string observer = "card_unit_b_26_marauder";
+        const string deployment = "card_unit_10_5_cm_lefh";
+        foreach (string n in new[] { observer, deployment })
+        {
+            if (db.Find(n) is null)
+            {
+                return $"卡库里缺 {n}";
+            }
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, observer, Side.Left, 80, 1);
+        var target = PutOnBoard(state, deployment, Side.Left, 81, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Target = target,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName(
+            "ExecuteOnDeploymentTriggered", source,
+            new object?[] { target, source.CardId, null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "ExecuteOnDeploymentTriggered 未接入派发表";
+        }
+
+        if (result is not int triggerMultiple || triggerMultiple != 1)
+        {
+            return $"ExecuteOnDeploymentTriggered 应返回友方观察者的翻倍数 1，实际 {result ?? "null"}";
         }
 
         return null;
