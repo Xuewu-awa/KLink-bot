@@ -417,6 +417,7 @@ internal static class SelfTest
             RemoveAlpine),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
         new("RemoveBond：按目标 cardID 写入 bond_removed、清掉动态 Bond 且屏蔽静态 Bond", RemoveBond),
+        new("StealCardFromBoardToDeck：原卡走离场、复制金卡到指定阵营牌库并洗牌", StealCardFromBoardToDeck),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
         new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
             DiscardRandomCardFromHand),
@@ -1162,6 +1163,63 @@ internal static class SelfTest
         return !staticRemoveHandled || !staticAfterHandled || staticAfter is not false
             ? "RemoveBond 应通过 bond_removed 覆盖卡面静态 Bond"
             : null;
+    }
+
+    private static string? StealCardFromBoardToDeck(CardDatabase db)
+    {
+        const string sourceName = "card_event_cobelligerents";
+        const string targetName = "card_unit_18_infantry_regiment";
+        if (db.Find(sourceName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {targetName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 900, 1);
+        var target = PutOnBoard(state, targetName, Side.Right, 901, 2);
+        target.IsGold = true;
+        int targetId = target.CardId;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Target = target, Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("StealCardFromBoardToDeck", source,
+            new object?[] { targetId, source.CardId, (int)Side.Left, null }, ctx,
+            out bool handled);
+        var copies = state.Deck(Side.Left).Where(x => x.Name == targetName).ToList();
+        var stealSubAction = state.ActionLog
+            .SelectMany(x => x.SubActions)
+            .LastOrDefault(x => x.Name == "ZActionStealCardFromBoardToDeck");
+        var payload = stealSubAction?.Values.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        if (!handled || result is not int value || value != 0
+            || target.Location != CardLocation.Discard
+            || copies.Count != 1 || copies[0].CardId == targetId || !copies[0].IsGold
+            || copies[0].Owner != Side.Left || copies[0].Location != CardLocation.DeckLeft
+            || payload is null
+            || stealSubAction is null
+            || !stealSubAction.Values.Select(x => x.Name).SequenceEqual(
+                new[] { "oldLocation", "deckSide", "instigatorID" }, StringComparer.Ordinal)
+            || !payload.TryGetValue("oldLocation", out var oldLocation)
+            || oldLocation.Value != (int)CardLocation.BoardHqRight
+            || !payload.TryGetValue("deckSide", out var deckSide)
+            || deckSide.Text != Side.Left.ToWire()
+            || !payload.TryGetValue("instigatorID", out var instigator)
+            || instigator.Value != source.CardId)
+        {
+            return $"应将原卡移入弃牌堆，并把新的金卡副本放入左方牌库 "
+                 + $"(handled={handled}, result={result}, old={target.Location}, "
+                 + $"copies={copies.Count}, gold={copies.FirstOrDefault()?.IsGold}, "
+                 + $"payload={string.Join(",", stealSubAction?.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}")
+                     ?? Array.Empty<string>())})";
+        }
+
+        if (state.Deck(Side.Right).Any(x => x.Name == targetName))
+        {
+            return "复制卡不应进入原卡拥有方（右方）的牌库";
+        }
+
+        return null;
     }
 
     /// <summary>

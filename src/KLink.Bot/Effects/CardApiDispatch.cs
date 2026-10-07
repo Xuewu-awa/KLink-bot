@@ -437,6 +437,7 @@ public sealed partial class CardApi
             },
             ["MoveCardToTopOfOwnersDeck"] = (c, r, a) => DoMoveCardToTopOfOwnersDeck(c, a),
             ["MoveMultipleCardsToTopOfOwnersDeck"] = (c, r, a) => DoMoveMultipleCardsToTopOfOwnersDeck(c, a),
+            ["StealCardFromBoardToDeck"] = (c, r, a) => DoStealCardFromBoardToDeck(c, r, a),
             ["PlayCardDirectlyFromHand"] = (c, r, a) =>
             {
                 var card = AsCardOrId(c, a.ElementAtOrDefault(0));
@@ -1102,26 +1103,7 @@ public sealed partial class CardApi
             {
                 var side = SideArg(r, a, 0, c.Controller);
                 var instigator = AsCard(r) ?? c.Self;
-                var deck = c.State.Deck(side);
-                var order = deck.ToList();
-                c.State.Random.Shuffle(order);
-                c.State.TraceRandom($"ShuffleDeckBySide {side} n={order.Count}");
-                for (int i = 0; i < order.Count; i++)
-                {
-                    order[i].LocationNumber = i;
-                }
-
-                // T22：洗牌完成后通知订阅者。契约参数是牌库阵营与施动卡；
-                // 开局建牌库没有效果上下文，不会经过此派发表。
-                c.Engine.Api.FireTrigger("OnDeckShuffled", subject: null, side,
-                    eventSubject: instigator,
-                    eventArgs: new object?[] { (int)side, instigator },
-                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        ["deckSide"] = (int)side,
-                        ["instigatorCard"] = instigator,
-                    });
-
+                ShuffleDeckBySide(c, side, instigator);
                 return null;
             },
             // ⚠️ **数额在 `a[1]`，不在 `a[0]`**（审计 §5.2b）。
@@ -2928,6 +2910,76 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// `StealCardFromBoardToDeck(cardID, instigatorID, deckSide, out qqq)`.
+    /// The Blueprint removes the original through the normal non-destruction
+    /// leave-board path, creates a fresh copy in the requested side's deck,
+    /// inserts it at the top, then shuffles that deck.
+    /// </summary>
+    private object? DoStealCardFromBoardToDeck(EffectContext c, object? r, object?[] a)
+    {
+        var original = AsCardOrId(c, a.ElementAtOrDefault(0));
+        if (original is null || original.IsHq || !original.Location.IsBoard())
+        {
+            return 0;
+        }
+
+        int instigatorId = IntArg(a, 1, c.Self?.CardId ?? 0);
+        var instigator = c.State.ById(instigatorId) ?? c.Self;
+        CardLocation oldLocation = original.Location;
+        Side deckSide = SideArg(r, a, 2, c.Controller);
+
+        // ApplyRemoveCardFromBoard(destroyed=false, converting=false) only
+        // runs the before-leave chain; after-leave belongs to destroy/convert.
+        c.Engine.FireLeaveTrigger(original, CardLocation.Discard,
+            includeAfterEvents: false);
+        c.State.Move(original, CardLocation.Discard);
+
+        var copy = c.State.Create(original.Name, deckSide, deckSide.DeckOf(), 0,
+            isGold: original.IsGold);
+
+        var deck = c.State.Deck(deckSide).Where(x => !ReferenceEquals(x, copy)).ToList();
+        foreach (var existing in deck)
+        {
+            existing.LocationNumber++;
+        }
+
+        copy.LocationNumber = 0;
+        // `IsActionProcess` is a Blueprint-only routing predicate; the
+        // headless action path is always the gameplay path.
+        c.Engine.FireSubAction("ZActionStealCardFromBoardToDeck", new[]
+        {
+            ActionValue2.Int("oldLocation", (int)oldLocation),
+            ActionValue2.Str("deckSide", deckSide.ToWire()),
+            ActionValue2.Int("instigatorID", instigator?.CardId ?? 0),
+        });
+
+        // The Blueprint always shuffles after inserting the copy.
+        ShuffleDeckBySide(c, deckSide, instigator);
+        return 0;
+    }
+
+    private static void ShuffleDeckBySide(EffectContext c, Side side, CardInstance? instigator)
+    {
+        var order = c.State.Deck(side).ToList();
+        c.State.Random.Shuffle(order);
+        c.State.TraceRandom($"ShuffleDeckBySide {side} n={order.Count}");
+        for (int i = 0; i < order.Count; i++)
+        {
+            order[i].LocationNumber = i;
+        }
+
+        // Open-game deck construction has no effect context and does not pass here.
+        c.Engine.Api.FireTrigger("OnDeckShuffled", subject: null, side,
+            eventSubject: instigator,
+            eventArgs: new object?[] { (int)side, instigator },
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["deckSide"] = (int)side,
+                ["instigatorCard"] = instigator,
+            });
     }
 
     /// <summary>

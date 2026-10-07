@@ -1792,7 +1792,9 @@ public sealed class MatchEngine
     ///   名字里的 After 指的是「在其它触发点之后」，实测它和上面那个同一个入口）
     /// </summary>
     /// <param name="goingToLocation">卡要去哪（卡牌蓝图的第 1 个入参就是它）。</param>
-    public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation)
+    /// <param name="includeAfterEvents">是否执行销毁/转换路径的 after 离场事件。</param>
+    public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation,
+                                 bool includeAfterEvents = true)
     {
         if (card.IsHq)
         {
@@ -1816,6 +1818,11 @@ public sealed class MatchEngine
             "OnOtherCardLeaveBoardOrOwner", "OnLeaveBoardOrOwner", eventArgs, goingToLocation);
         Api.FireTrigger("OnLeaveBoardOrOwner", subject, subject.Owner,
             "OnAfterOtherCardLeaveBoardOrOwner", "OnLeaveBoardOrOwner", eventArgs, goingToLocation);
+
+        if (!includeAfterEvents)
+        {
+            return;
+        }
 
         // 「离场之后」—— 出处 `out/bp-cardfn.json` 函数
         // `ExecuteOnAfterLeaveBoardOrOwnerEvents`：
