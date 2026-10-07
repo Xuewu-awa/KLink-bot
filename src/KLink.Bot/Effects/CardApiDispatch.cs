@@ -686,6 +686,10 @@ public sealed partial class CardApi
             ["RemoveSmokescreen"] = (c, r, a) => DoRemoveKeyword(c, r, a, Keyword.Smokescreen),
             ["RemoveAlpine"] = (c, r, a) => DoRemoveAlpine(c, r, a),
             ["RemoveSalvage"] = (c, r, a) => DoRemoveSalvage(c, r, a),
+            // `RemoveBond(cardID, instigatorID, out qqq)` stores the same
+            // `bond_removed` override as the Blueprint and clears the
+            // dynamic `ability.bond` tag. Visual delegates are client-only.
+            ["RemoveBond"] = (c, r, a) => DoRemoveBond(c, r, a),
             // ⚠️ `PinUnit` 不再直接走 `DoGiveKeyword` —— 它还要记**时长**
             //    （`BP_CardFunctions::PinUnit` i=955 `pinnedTurns = Max(…, 3或2)`）。
             //    走 `CardApi.PinUnit` 才能和 `UnpinUnit`/到期递减对上。
@@ -1478,7 +1482,7 @@ public sealed partial class CardApi
             // 恒假/恒 0 是**错的**（`IsFighter` 15 点、`getAndDecryptAttack` 33 点）。
             ["IsFighter"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Definition.Type == "fighter",
             ["IsPinned"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pinned),
-            ["HasBond"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Bond),
+            ["HasBond"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasBond(x),
             // `GetIsGoldCard` is the native `isGoldCard` getter.  Its 24 IR call
             // sites use implicit self and expose only the boolean out slot.
             ["GetIsGoldCard"] = (c, r, a) => SelfArg(c, r, a)?.IsGold ?? false,
@@ -5128,6 +5132,10 @@ public sealed partial class CardApi
                 .Any(x => string.Equals(x, tag, StringComparison.OrdinalIgnoreCase))
             || GameplayTagTable.Has(card.Name, tag);
 
+    private static bool HasBond(CardInstance card)
+        => !string.Equals(card.CustomAbility, "bond_removed", StringComparison.Ordinal)
+            && (card.Keywords.Contains(Keyword.Bond) || HasGameplayTag(card, "ability.bond"));
+
     private static void CollectTagStrings(object? v, List<string> into)
     {
         switch (v)
@@ -5395,6 +5403,14 @@ public sealed partial class CardApi
                     }
                 }
             }
+            else if (keyword == Keyword.Bond)
+            {
+                c.Engine.Api.AddCustomGameplayTag(target, "ability.bond");
+                if (string.Equals(target.CustomAbility, "bond_removed", StringComparison.Ordinal))
+                {
+                    target.CustomAbility = null;
+                }
+            }
 
             GiveKeyword(target, keyword);
         }
@@ -5439,6 +5455,18 @@ public sealed partial class CardApi
     private object? DoRemoveSalvage(EffectContext c, object? r, object?[] a)
     {
         DoRemoveKeyword(c, r, a, Keyword.Salvage);
+        return 0;
+    }
+
+    private object? DoRemoveBond(EffectContext c, object? r, object?[] a)
+    {
+        var target = TargetArg(c, r, a);
+        if (target is not null)
+        {
+            CustomAbilityAdd(target, "bond_removed", c.Self);
+            c.Engine.Api.RemoveCustomGameplayTag(target, "ability.bond");
+        }
+
         return 0;
     }
 

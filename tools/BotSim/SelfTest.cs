@@ -416,6 +416,7 @@ internal static class SelfTest
         new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
             RemoveAlpine),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
+        new("RemoveBond：按目标 cardID 写入 bond_removed、清掉动态 Bond 且屏蔽静态 Bond", RemoveBond),
         new("DiscardCardFromDeck：只对**牌库里的卡**生效，弃完进弃牌堆", DiscardFromDeck),
         new("DiscardRandomCardFromHand：空手不消费随机流，单牌必弃，多牌按引擎随机并广播事件",
             DiscardRandomCardFromHand),
@@ -1088,6 +1089,78 @@ internal static class SelfTest
 
         return target.Keywords.Contains(Keyword.Salvage)
             ? "RemoveSalvage 后目标仍保留 Salvage"
+            : null;
+    }
+
+    private static string? RemoveBond(CardDatabase db)
+    {
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        const string staticBondName = "card_unit_18_infantry_regiment";
+        if (db.Find(sourceName) is null || db.Find(staticBondName) is null)
+        {
+            return $"卡库里缺 {sourceName} / {staticBondName}";
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 30, 1);
+        var target = PutOnBoard(state, sourceName, Side.Left, 31, 2);
+        var targetCtx = new EffectContext
+        {
+            Engine = engine, State = state, Self = target, Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("GiveBond", source,
+            new object?[] { target.CardId, null, source.CardId }, targetCtx, out bool giveHandled);
+        object? hasBefore = engine.Api.InvokeByName("HasBond", target,
+            new object?[] { null }, targetCtx, out bool hasBeforeHandled);
+        if (!giveHandled || !hasBeforeHandled || hasBefore is not true)
+        {
+            return "GiveBond 后目标的 HasBond 应为真";
+        }
+
+        var invokeCtx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Target = target, Controller = Side.Left,
+        };
+        object? result = engine.Api.InvokeByName("RemoveBond", source,
+            new object?[] { target.CardId, source.CardId, null }, invokeCtx, out bool handled);
+        object? hasAfter = engine.Api.InvokeByName("HasBond", target,
+            new object?[] { null }, targetCtx, out bool hasAfterHandled);
+        if (!handled || result is not int value || value != 0
+            || !hasAfterHandled || hasAfter is not false
+            || target.CustomAbility != "bond_removed")
+        {
+            return $"RemoveBond 未按目标 ID 写入覆盖标记并屏蔽 Bond（handled={handled}, result={result}, "
+                 + $"hasAfter={hasAfter}, ability={target.CustomAbility})";
+        }
+
+        engine.Api.InvokeByName("GiveBond", source,
+            new object?[] { target.CardId, null, source.CardId }, targetCtx, out bool reGiveHandled);
+        object? hasRegained = engine.Api.InvokeByName("HasBond", target,
+            new object?[] { null }, targetCtx, out bool hasRegainedHandled);
+        if (!reGiveHandled || !hasRegainedHandled || hasRegained is not true)
+        {
+            return "GiveBond 重新授予时应清除 bond_removed 覆盖并恢复 HasBond";
+        }
+
+        var staticCard = PutOnBoard(state, staticBondName, Side.Left, 32, 3);
+        var staticCtx = new EffectContext
+        {
+            Engine = engine, State = state, Self = staticCard, Controller = Side.Left,
+        };
+        object? staticBefore = engine.Api.InvokeByName("HasBond", staticCard,
+            new object?[] { null }, staticCtx, out bool staticBeforeHandled);
+        if (!staticBeforeHandled || staticBefore is not true)
+        {
+            return "卡面静态 ability.bond 应被 HasBond 识别";
+        }
+
+        engine.Api.InvokeByName("RemoveBond", source,
+            new object?[] { staticCard.CardId, source.CardId, null }, invokeCtx, out bool staticRemoveHandled);
+        object? staticAfter = engine.Api.InvokeByName("HasBond", staticCard,
+            new object?[] { null }, staticCtx, out bool staticAfterHandled);
+        return !staticRemoveHandled || !staticAfterHandled || staticAfter is not false
+            ? "RemoveBond 应通过 bond_removed 覆盖卡面静态 Bond"
             : null;
     }
 
