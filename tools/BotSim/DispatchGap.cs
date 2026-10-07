@@ -186,11 +186,14 @@ internal static class DispatchGapBaseline
     /// 2026-10-07：476 → **475**（2126 → 2124 个调用点）。补上
     /// `AdjustCardPositionInDeck`，按蓝图移除/按顶部位置插回牌库，并派发
     /// `OnAfterDeckChanged`。
+    /// 2026-10-07：475 → **473**（2124 → 2120 个调用点）。补上
+    /// `ApplyGameplaySideEffect` 与 `RemoveGameplaySideEffect`，按阵营、标签和
+    /// 来源卡维护 GameplayEffect，并让 `sideeffect.blockgotcha` 接入 Gotcha 判定。
     /// </remarks>
-    public const int BaselineCount = 475;
+    public const int BaselineCount = 473;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "9CB96333E3E3E6AD";
+    public const string BaselineFingerprint = "C9F2B4C0575ED40E";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

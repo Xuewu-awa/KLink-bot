@@ -3576,7 +3576,8 @@ public sealed partial class CardApi
     /// 内核里对应 <see cref="CardInstance.IsAlive"/>（`!= Discard &amp;&amp; != NotAvailable`）。
     /// </summary>
     public bool ShouldGotchaTrigger(CardInstance? self)
-        => self is not null && IsGotcha(self) && self.IsAlive;
+        => self is not null && IsGotcha(self) && self.IsAlive
+           && !State.HasGameplaySideEffect(self.Owner, "sideeffect.blockgotcha");
 
     /// <summary>
     /// `GetHandLocationBySide(side, out handLocation)`

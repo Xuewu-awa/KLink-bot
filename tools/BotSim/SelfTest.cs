@@ -394,6 +394,7 @@ internal static class SelfTest
         new("IsLocationFull：半场 5 格（**含 HQ**）判满，前线另算", LocationFullCapacity),
         new("★ BP_CardFunctions::ChangeFrontlineLimiter：Black Prince 将前线容量限制为 2，离场后恢复", ChangeFrontlineLimiter),
         new("★ GameplayRestriction：禁抽牌/加槽/指令/部署/地面攻击/手牌弃牌，并按来源与回合解除", GameplayRestrictions),
+        new("★ GameplaySideEffect：按阵营/标签/来源维护 blockgotcha，并真实阻止反制触发", GameplaySideEffects),
         new("撤回：AA Barrage 半场回手、前线退半场；M16 无目标不撤自己", RetreatEndToEnd),
         new("508065：Fifth Ohio 无目标部署不得摧毁自身；显式目标仍执行摧毁", FifthOhioNullableTarget),
         new("快照：累计扣槽、限制来源/时长、伏击标记与钉住时长必须可区分", SnapshotTracksRuleState),
@@ -990,6 +991,7 @@ internal static class SelfTest
             () => state.AddGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders, 2, 3),
             () => state.DecrementGameplayRestrictions(),
             () => state.AddGameplayRestriction(Side.Left, GameplayRestrictionType.CannotPlayOrders, 3, 2),
+            () => state.ApplyGameplaySideEffect(Side.Left, "sideeffect.blockgotcha", 77, 3, 0),
             () => state.FrontlineLimiters.Add(2),
             () => state.FrontlineLimiters.Add(3),
             () => unit.HasBeenAttackedThisTurn = true,
@@ -1006,6 +1008,62 @@ internal static class SelfTest
         var saved = state.Snapshot();
         state.DecrementGameplayRestrictions();
         if (saved.Restrictions[0].TurnsRemaining != 2) return "快照共享可变限制对象";
+        state.RemoveGameplaySideEffect(Side.Left, "sideeffect.blockgotcha", 77);
+        if (saved.SideEffects.Length != 1 || saved.SideEffects[0].SourceCardId != 77)
+            return "快照共享可变 side-effect 状态";
+        return null;
+    }
+
+    private static string? GameplaySideEffects(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_c6n_saiun", Side.Left, 1500,
+            CardLocation.BoardHqLeft, 0);
+        var secondSource = state.CreateWithId("card_unit_c6n_saiun", Side.Left, 1501,
+            CardLocation.BoardHqLeft, 1);
+        var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1502,
+            CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        object? applied = engine.Api.InvokeByName("ApplyGameplaySideEffect", source,
+            new object?[] { (int)Side.Left, "sideeffect.blockgotcha", source.CardId, 3, 0, null },
+            ctx, out bool handledApply);
+        if (!handledApply || applied is not int)
+            return "ApplyGameplaySideEffect 未派发或没有写入 int 出参";
+        engine.Api.InvokeByName("ApplyGameplaySideEffect", source,
+            new object?[] { (int)Side.Left, "sideeffect.blockgotcha", source.CardId, 3, 0, null },
+            ctx, out _);
+        engine.Api.InvokeByName("ApplyGameplaySideEffect", secondSource,
+            new object?[] { (int)Side.Left, "sideeffect.blockgotcha", secondSource.CardId, 3, 0, null },
+            ctx, out _);
+        engine.Api.InvokeByName("ApplyGameplaySideEffect", source,
+            new object?[] { (int)Side.Right, "sideeffect.blockgotcha", source.CardId, 3, 0, null },
+            ctx, out _);
+
+        if (state.GameplaySideEffects.Count != 3)
+            return $"相同来源应用应更新、不同来源/阵营应并存，实际记录 {state.GameplaySideEffects.Count} 条";
+        if (engine.Api.ShouldGotchaTrigger(gotcha))
+            return "己方 blockgotcha 生效时，Gotcha 仍允许触发";
+
+        engine.Api.InvokeByName("RemoveGameplaySideEffect", source,
+            new object?[] { (int)Side.Left, "sideeffect.blockgotcha", source.CardId, null },
+            ctx, out bool handledRemove);
+        if (!handledRemove || engine.Api.ShouldGotchaTrigger(gotcha))
+            return "移除一个来源后错误清除了另一来源，或 RemoveGameplaySideEffect 未派发";
+
+        engine.Api.InvokeByName("RemoveGameplaySideEffect", secondSource,
+            new object?[] { (int)Side.Left, "sideeffect.blockgotcha", secondSource.CardId, null },
+            ctx, out _);
+        if (!engine.Api.ShouldGotchaTrigger(gotcha))
+            return "所有己方 blockgotcha 移除后，Gotcha 未恢复触发";
+        if (!state.HasGameplaySideEffect(Side.Right, "sideeffect.blockgotcha"))
+            return "移除己方来源时错误清除了敌方 side-effect";
+
+        engine.Api.InvokeByName("RemoveGameplaySideEffect", source,
+            new object?[] { (int)Side.Right, "sideeffect.blockgotcha", source.CardId, null },
+            ctx, out _);
+        if (state.GameplaySideEffects.Count != 0)
+            return "移除双方来源后仍保留 GameplaySideEffect";
         return null;
     }
 

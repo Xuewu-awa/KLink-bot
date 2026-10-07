@@ -19,6 +19,16 @@ public sealed class GameState
         public int TurnsRemaining { get; set; }
     }
 
+    public sealed class GameplaySideEffect
+    {
+        public required Side Side { get; init; }
+        public required string Tag { get; init; }
+        public required int SourceCardId { get; init; }
+        public required int DurationPolicy { get; set; }
+        public int TurnsRemaining { get; set; }
+        public int EffectValue { get; init; }
+    }
+
     /// <summary>左/右两侧，索引 1/2（与 <see cref="Side"/> 对齐，0 位弃用）。</summary>
     private readonly List<CardInstance>[] _cardsBySide = { new(), new(), new() };
 
@@ -57,6 +67,40 @@ public sealed class GameState
     /// multiple sources of the same type may coexist.
     /// </summary>
     public List<GameplayRestriction> GameplayRestrictions { get; } = new();
+
+    public List<GameplaySideEffect> GameplaySideEffects { get; } = new();
+
+    public bool HasGameplaySideEffect(Side side, string tag)
+        => GameplaySideEffects.Any(x => x.Side == side
+            && string.Equals(x.Tag, tag, StringComparison.Ordinal));
+
+    public void ApplyGameplaySideEffect(Side side, string tag, int sourceCardId,
+        int durationPolicy, int turnsRemaining, int effectValue = 0)
+    {
+        var existing = GameplaySideEffects.FirstOrDefault(x => x.Side == side
+            && x.SourceCardId == sourceCardId
+            && string.Equals(x.Tag, tag, StringComparison.Ordinal));
+        if (existing is not null)
+        {
+            existing.DurationPolicy = durationPolicy;
+            existing.TurnsRemaining = turnsRemaining;
+            return;
+        }
+
+        GameplaySideEffects.Add(new GameplaySideEffect
+        {
+            Side = side,
+            Tag = tag,
+            SourceCardId = sourceCardId,
+            DurationPolicy = durationPolicy,
+            TurnsRemaining = turnsRemaining,
+            EffectValue = effectValue,
+        });
+    }
+
+    public void RemoveGameplaySideEffect(Side side, string tag, int sourceCardId)
+        => GameplaySideEffects.RemoveAll(x => x.Side == side && x.SourceCardId == sourceCardId
+            && string.Equals(x.Tag, tag, StringComparison.Ordinal));
 
     /// <summary>
     /// 卡牌蓝图的延迟触发队列（<c>AddToTriggerQueue</c>）。
@@ -828,6 +872,8 @@ public sealed class GameState
             // Preserve list order: future dispatch can depend on insertion order.
             Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(
                 x.Side, x.Type, x.SourceCardId, x.TurnsRemaining)).ToArray(),
+            SideEffects = GameplaySideEffects.Select(x => new GameplaySideEffectSnapshot(
+                x.Side, x.Tag, x.SourceCardId, x.DurationPolicy, x.TurnsRemaining, x.EffectValue)).ToArray(),
         };
 
     public string SnapshotJson() => System.Text.Json.JsonSerializer.Serialize(
@@ -878,10 +924,14 @@ public sealed record MatchSnapshot(
     public int OperationKreditsSpentThisTurn { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
     public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();
+    public GameplaySideEffectSnapshot[] SideEffects { get; init; } = Array.Empty<GameplaySideEffectSnapshot>();
 }
 
 public sealed record GameplayRestrictionSnapshot(Side Side, GameplayRestrictionType Type,
     int SourceCardId, int TurnsRemaining);
+
+public sealed record GameplaySideEffectSnapshot(Side Side, string Tag, int SourceCardId,
+    int DurationPolicy, int TurnsRemaining, int EffectValue);
 
 /// <summary>一条已结算的动作 —— 与协议里的 action 信封对应。</summary>
 public sealed record GameAction(

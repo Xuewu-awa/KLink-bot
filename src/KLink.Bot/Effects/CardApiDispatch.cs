@@ -552,6 +552,29 @@ public sealed partial class CardApi
             ["IsThereGameplayRestriction"] = (c, r, a) =>
                 c.State.HasGameplayRestriction(SideArg(r, a, 0, c.Controller),
                     (GameplayRestrictionType)IntArg(a, 1)),
+            ["ApplyGameplaySideEffect"] = (c, r, a) =>
+            {
+                string? tag = GameplayTagArg(a.ElementAtOrDefault(1));
+                CardInstance? source = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
+                if (SideArgOrNull(a, 0) is { } side && tag is not null && source is not null)
+                {
+                    c.State.ApplyGameplaySideEffect(side, tag, source.CardId,
+                        IntArg(a, 3), IntArg(a, 4), 0);
+                }
+
+                return 0;
+            },
+            ["RemoveGameplaySideEffect"] = (c, r, a) =>
+            {
+                string? tag = GameplayTagArg(a.ElementAtOrDefault(1));
+                CardInstance? source = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
+                if (SideArgOrNull(a, 0) is { } side && tag is not null && source is not null)
+                {
+                    c.State.RemoveGameplaySideEffect(side, tag, source.CardId);
+                }
+
+                return 0;
+            },
             ["DamageCard"] = (c, r, a) => DoDamageCard(c, r, a),
             ["DamageMultipleCards"] = (c, r, a) => DoDamageMultipleCards(c, r, a),
 
@@ -5844,6 +5867,27 @@ public sealed partial class CardApi
     };
 
     internal static string? AsString(object? v) => v as string;
+
+    private static string? GameplayTagArg(object? value)
+    {
+        if (value is string tag)
+        {
+            return tag;
+        }
+
+        if (value is System.Collections.IEnumerable values)
+        {
+            foreach (object? item in values)
+            {
+                if (item is string nestedTag)
+                {
+                    return nestedTag;
+                }
+            }
+        }
+
+        return null;
+    }
 
     internal static int IntArg(object?[] a, int i, int fallback = 0)
         => i < a.Length ? AsInt(a[i]) : fallback;
