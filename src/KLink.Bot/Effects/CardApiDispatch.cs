@@ -182,6 +182,30 @@ public sealed partial class CardApi
             // `ignoreSuppress`（a[0]）的语义**读不出来**（`BaseCardObject.h` 只有签名），
             // 不实现、也不假装实现。
             ["IsVeteran"] = (c, r, a) => SelfArg(c, r, a) is { } v && v.Keywords.Contains(Keyword.Veteran),
+            // The veteran upgrade queries are backed by the card data's explicit
+            // `_vet` variants.  `CardDatabase.Find` intentionally falls back from
+            // `foo_vet` to `foo`, so use an exact-name scan here; otherwise every
+            // card would appear to have a veteran upgrade.
+            ["getHasVeteranUpgrade"] = (c, r, a) =>
+            {
+                var card = SelfArg(c, r, a);
+                return card is not null && FindVeteranDefinition(c.State.Database, card) is not null;
+            },
+            ["getStaticVeteranUpgrade"] = (c, r, a) =>
+            {
+                var card = SelfArg(c, r, a);
+                if (card is null)
+                {
+                    return null;
+                }
+
+                // Cards without a distinct `_vet` definition keep their base
+                // static values when an external effect has already made them
+                // Veteran (for example 37mm M1 AA GUN).
+                CardDefinition definition = FindVeteranDefinition(c.State.Database, card)
+                    ?? card.Definition;
+                return TemplateInstance(definition, card.Owner);
+            },
             ["GetKreditsBySide"] = (c, r, a) => c.State.Kredits(SideArg(r, a, 0, c.Controller)),
             ["GetMaxKreditsBySide"] = (c, r, a) => c.State.MaxKredits(SideArg(r, a, 0, c.Controller)),
             // BP_CardFunctions forwards these pure queries to the
@@ -2856,6 +2880,14 @@ public sealed partial class CardApi
 
         card.InitializeFromDefinition();
         return card;
+    }
+
+    private static CardDefinition? FindVeteranDefinition(CardDatabase database, CardInstance card)
+    {
+        string baseName = CardDatabase.ResolveBaseName(card.Definition.Name);
+        string veteranName = $"{baseName}_vet";
+        return database.All.FirstOrDefault(definition =>
+            string.Equals(definition.Name, veteranName, StringComparison.Ordinal));
     }
 
     /// <summary>

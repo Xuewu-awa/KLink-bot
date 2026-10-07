@@ -212,6 +212,8 @@ ML  900009  {0:74, 1:1,  2:yD,              84:11}   → 移动 card_unit_wolfho
   避免污染「未实现」指标
 - `IsForecastCard` / `GetAllForecastCards` 已按正版天气 subtype 与静态卡池实现；
   `Forecast` 的客户端候选选择通知仍保持 no-op，待补齐无头侧的选择答复协议
+- `getHasVeteranUpgrade` / `getStaticVeteranUpgrade` 已按卡库显式 `_vet` 变体实现；
+  没有独立老兵定义的卡回退到基础静态模板，避免把数据库的变体回退误当成升级
 - 触发递归深度上限 8（真实客户端用动作队列串行化，不会无限递归）
 
 ### 5. 状态对拍资料仍需补全

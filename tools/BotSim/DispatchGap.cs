@@ -202,11 +202,14 @@ internal static class DispatchGapBaseline
     /// 2026-10-07：462 → **461**（2102 → 2101 个调用点）。补上
     /// `GetDefenseBuffFromAdjacentUnits` 与事件 38 的最终伤害修正链，接通
     /// 48th Armored Infantry 的相邻单位减伤。
+    /// 2026-10-07：461 → **459**（2101 → 2098 个调用点）。按卡库里显式的
+    /// `_vet` 卡定义实现 `getHasVeteranUpgrade` / `getStaticVeteranUpgrade`，
+    /// 接通 Battle Valor、266th Guards Rifles 与 37mm M1 AA Gun 的老兵升级查询。
     /// </remarks>
-    public const int BaselineCount = 461;
+    public const int BaselineCount = 459;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "F0104F2F22928354";
+    public const string BaselineFingerprint = "560477A4391E2239";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

@@ -218,6 +218,8 @@ internal static class SelfTest
             DealDamageAfterCalcAdjacentDefense),
         new("Forecast：天气卡判定与三类天气候选池按蓝图标签筛选",
             ForecastCardPrimitives),
+        new("Veteran：按显式 `_vet` 卡库变体查询升级并返回静态老兵模板",
+            VeteranUpgradeQueries),
         new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
             CreatedAlterEventCarriesPayload),
         new("事件层：OnOtherCardLocationMoved 传递敌方推进主体并触发 35th Infantry Regiment 光环",
@@ -6029,6 +6031,66 @@ internal static class SelfTest
             || list.All(card => !string.Equals(card.Name, weatherName, StringComparison.Ordinal)))
         {
             return $"天气候选池应包含天气模板且排除普通卡，数量={list.Count}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Veteran upgrade queries use the explicit `_vet` card definitions rather
+    /// than the database's variant fallback.  Cards without a distinct variant
+    /// still return their base static definition for attack/defense lookups.
+    /// </summary>
+    private static string? VeteranUpgradeQueries(CardDatabase db)
+    {
+        const string upgradeCard = "card_unit_266th_guards_rifles";
+        const string noUpgradeCard = "card_unit_37mm_m1_aa_gun";
+        if (db.Find(upgradeCard) is null || db.Find(upgradeCard + "_vet") is null
+            || db.Find(noUpgradeCard) is null)
+        {
+            return $"卡库里缺 {upgradeCard}(_vet) 或 {noUpgradeCard}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_event_battle_valor", Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId(upgradeCard, Side.Left, 21,
+            CardLocation.BoardHqLeft, 2);
+        var plain = state.CreateWithId(noUpgradeCard, Side.Left, 22,
+            CardLocation.BoardHqLeft, 3);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        object? hasUpgrade = engine.Api.InvokeByName("getHasVeteranUpgrade", target,
+            new object?[] { null }, ctx, out bool upgradeHandled);
+        if (!upgradeHandled || hasUpgrade is not bool canUpgrade || !canUpgrade)
+        {
+            return $"{upgradeCard} 应识别为有 `_vet` 变体，handled={upgradeHandled}, result={hasUpgrade}";
+        }
+
+        object? noUpgrade = engine.Api.InvokeByName("getHasVeteranUpgrade", plain,
+            new object?[] { null }, ctx, out bool plainHandled);
+        if (!plainHandled || noUpgrade is not bool hasNoUpgrade || hasNoUpgrade)
+        {
+            return $"{noUpgradeCard} 不应伪造 `_vet` 升级，handled={plainHandled}, result={noUpgrade}";
+        }
+
+        object? veteran = engine.Api.InvokeByName("getStaticVeteranUpgrade", target,
+            new object?[] { null }, ctx, out bool staticHandled);
+        if (!staticHandled || veteran is not CardInstance veteranCard
+            || veteranCard.Name != upgradeCard + "_vet")
+        {
+            return $"静态老兵模板应为 {upgradeCard}_vet，handled={staticHandled}, result={veteran}";
+        }
+
+        object? baseStatic = engine.Api.InvokeByName("getStaticVeteranUpgrade", plain,
+            new object?[] { null }, ctx, out bool baseHandled);
+        if (!baseHandled || baseStatic is not CardInstance baseCard
+            || baseCard.Name != noUpgradeCard)
+        {
+            return $"无升级卡应回退基础静态模板，handled={baseHandled}, result={baseStatic}";
         }
 
         return null;
