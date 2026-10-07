@@ -372,6 +372,8 @@ internal static class SelfTest
         // 而 `MatchEngine.Destroy` 原先**一个载荷都没传** ⇒ 订阅方读到自己。
         new("摧毁：`OnOtherCardDestroyed` 必须把 **killer**（击杀者）传给订阅卡（142 步兵连「摧毁敌方单位时 HQ +2 防」）",
             DestroyEventCarriesKiller),
+        new("摧毁：事件 24 与收缴处理完成后，再派发主体 `OnAfterDestroyed`",
+            AfterDestroyedDispatch),
 
         // ---- P1：重甲 HeavyArmor（2026-09-30；2026-10-02 修正为**只管战斗伤害**）----
         // CalculateDamageDealt g.cs:5207-5225：
@@ -11240,6 +11242,50 @@ internal static class SelfTest
                 return $"{plain} 没有 hasDestruction ⇒ 事件24 不该派发（敌 HQ 应 −0），实际 −{delta}"
                      + Dump(state, ("未实现", Unimpl(state)));
             }
+        }
+
+        return null;
+    }
+
+    private static string? AfterDestroyedDispatch(CardDatabase db)
+    {
+        const string victimName = "card_unit_641st_rifles";
+        const string killerName = "card_unit_142nd_infantry_regiment";
+        foreach (string name in new[] { victimName, killerName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = DeploymentBoard(db);
+        var victim = PutOnBoard(state, victimName, Side.Left, 6314, 1);
+        var killer = PutOnBoard(state, killerName, Side.Right, 6315, 2);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        try
+        {
+            engine.Destroy(victim, killer);
+        }
+        catch (Exception ex)
+        {
+            return $"Destroy 触发 OnAfterDestroyed 时抛异常：{ex.GetType().Name}: {ex.Message}";
+        }
+
+        if (!Reached(trace, "OnAfterDestroyed", victim))
+        {
+            return "被摧毁卡没有收到主体 OnAfterDestroyed";
+        }
+
+        int destroyedIndex = trace.FindIndex(t =>
+            t.StartsWith($"OnDestroyed → {victim.Name}#{victim.CardId}", StringComparison.Ordinal));
+        int afterIndex = trace.FindIndex(t =>
+            t.StartsWith($"OnAfterDestroyed → {victim.Name}#{victim.CardId}", StringComparison.Ordinal));
+        if (destroyedIndex < 0 || afterIndex <= destroyedIndex)
+        {
+            return $"OnAfterDestroyed 时序错误：OnDestroyed={destroyedIndex}, "
+                 + $"OnAfterDestroyed={afterIndex}";
         }
 
         return null;

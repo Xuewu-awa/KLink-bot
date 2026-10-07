@@ -2938,6 +2938,17 @@ public sealed class MatchEngine
                 Api.FireDestructionEffectTriggered(card, destroyer);
             }
         }
+
+        // 蓝图 ExecuteOnCardDestroyedFunction 的最后一个触发点：收缴与事件 24
+        // 完成后，再给被摧毁卡自己派发 OnAfterDestroyed(killer, false)。
+        Api.FireTrigger("OnAfterDestroyed", card, card.Owner,
+            eventArgs: new object?[] { destroyer, false },
+            eventSubject: card,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["killer"] = destroyer,
+                ["TriggerNotDestroyed"] = false,
+            });
     }
 
     // ==================== 动作记录 ====================
