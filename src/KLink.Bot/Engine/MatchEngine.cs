@@ -2419,14 +2419,12 @@ public sealed class MatchEngine
         var enemy = attacker.Owner.Opposite();
         var enemyUnits = State.Board(enemy).Where(u => u.IsAlive).ToList();
 
-        // 前线有敌方单位时不能越过打后方（本内核的**简化模型**，TODO 待回放确认；
-        // 蓝图 `CanAttack` 里对应的规则是射程判据，见 CanReachAcrossFrontline）。
-        var enemyFrontline = enemyUnits
-            .Where(u => u.Location == CardLocation.BoardFrontline).ToList();
-
-        List<CardInstance> targets = enemyFrontline.Count > 0
-            ? new List<CardInstance>(enemyFrontline)
-            : new List<CardInstance>(enemyUnits) { State.Hq(enemy) };
+        // `CanAttack` 不把敌方前线当成嘲讽或硬性阻挡：它只按位置和攻击者
+        // `range` 拒绝距离不足的目标（CanReachAcrossFrontline）。因此候选集
+        // 必须先包含敌方全体单位与 HQ，再由统一的射程/掩护/目标门过滤。
+        // 旧实现有敌方前线时只列前线，导致 range>=2 的炮兵/飞机无法攻击后方，
+        // 也把“候选枚举”和蓝图的 CanAttack 语义分开了。
+        List<CardInstance> targets = new(enemyUnits) { State.Hq(enemy) };
 
         // ---- 掩护（Guard）----
         //

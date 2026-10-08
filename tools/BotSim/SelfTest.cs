@@ -219,6 +219,7 @@ internal static class SelfTest
         new("跨前线：半场战斗机/轰炸机(range=2) 能跨前线打", CrossFrontlineFighterBomberAllowed),
         new("跨前线：前线单位（任一方在前线）任何射程都够得着", FrontlineAlwaysInRange),
         new("跨前线：CanReachAcrossFrontline 的真值表（距离 2 需要 range≥2）", CrossFrontlineTruthTable),
+        new("攻击候选：敌方前线存在时仍按射程保留后方合法目标", FrontlineDoesNotBlockRangedTargets),
 
         // ---- P0 第 1 族：事件层派发（2026-09-27）----
         // 这四条守的是「事件真的派发到订阅它的卡上了吗」—— 光有 FireTrigger 字面量
@@ -6060,6 +6061,36 @@ internal static class SelfTest
         if (MatchEngine.CanReachAcrossFrontline(order, right))
         {
             return $"range=0 的卡不该够得着（实际 range={order.Definition.Range}）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `CanAttack` 没有“前线嘲讽”分支；敌方前线存在时，range=2 的攻击者
+    /// 仍可选择敌方半场/HQ，range=1 则只会被射程门过滤掉后方目标。
+    /// </summary>
+    private static string? FrontlineDoesNotBlockRangedTargets(CardDatabase db)
+    {
+        var (rangedEngine, rangedState, ranged, rangedFront) =
+            RangeSetup(db, ArtRange2, CardLocation.BoardHqLeft, CardLocation.BoardFrontline);
+        var rangedBack = rangedState.CreateWithId(InfRange1, Side.Right, 43, CardLocation.BoardHqRight, 1);
+        var rangedTargets = rangedEngine.LegalTargets(ranged).Select(c => c.CardId).ToHashSet();
+        if (!rangedTargets.Contains(rangedFront.CardId) || !rangedTargets.Contains(rangedBack.CardId)
+            || !rangedTargets.Contains(rangedState.Hq(Side.Right).CardId))
+        {
+            return "敌方前线存在时，range=2 攻击者应仍能列出前线、后方单位和 HQ";
+        }
+
+        var (shortEngine, shortState, shortRangeAttacker, shortFront) =
+            RangeSetup(db, InfRange1, CardLocation.BoardHqLeft, CardLocation.BoardFrontline);
+        var shortBack = shortState.CreateWithId(InfRange1, Side.Right, 43, CardLocation.BoardHqRight, 1);
+        var shortTargets = shortEngine.LegalTargets(shortRangeAttacker).Select(c => c.CardId).ToHashSet();
+        if (!shortTargets.Contains(shortFront.CardId)
+            || shortTargets.Contains(shortBack.CardId)
+            || shortTargets.Contains(shortState.Hq(Side.Right).CardId))
+        {
+            return "敌方前线存在时，range=1 攻击者只能保留前线目标";
         }
 
         return null;
