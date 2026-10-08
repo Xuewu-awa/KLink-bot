@@ -965,7 +965,7 @@ public sealed class MatchEngine
     public bool BlockUntrustedOrders { get; set; } = true;
 
     /// <summary>能否打出这张牌（费用 + 目标 + 身份可信）。</summary>
-    public bool CanPlay(CardInstance card, out string reason)
+    public bool CanPlay(CardInstance card, out string reason, CardInstance? target = null)
     {
         reason = "";
 
@@ -1009,7 +1009,7 @@ public sealed class MatchEngine
             return false;
         }
 
-        if (card.KreditCost > State.Kredits(card.Owner))
+        if (GetPlayCardCost(card, target) > State.Kredits(card.Owner))
         {
             reason = "kredit 不足";
             return false;
@@ -1039,6 +1039,21 @@ public sealed class MatchEngine
     }
 
     /// <summary>
+    /// 蓝图 <c>PayCardCost</c> 的普通出牌费用：指定敌方卡牌时，目标的
+    /// <c>KreditsTax_AsEnemyTarget</c> 叠加到当前卡费。同阵营目标不加税，
+    /// 免费直出路径不调用这里的扣费分支。
+    /// </summary>
+    private static int GetPlayCardCost(CardInstance card, CardInstance? target)
+    {
+        if (target is null || target.Owner == card.Owner || target.KreditsTaxAsEnemyTarget <= 0)
+        {
+            return card.KreditCost;
+        }
+
+        return card.KreditCost + target.KreditsTaxAsEnemyTarget;
+    }
+
+    /// <summary>
     /// 半场是不是满了（单位出不来）。
     ///
     /// ⚠️ **半场和前线是两个独立上限**，不能合计 —— 这里原先写的是
@@ -1064,7 +1079,7 @@ public sealed class MatchEngine
     /// </param>
     public bool PlayCard(CardInstance card, CardInstance? target = null, bool skipLeaveTrigger = false)
     {
-        if (!CanPlay(card, out string reason))
+        if (!CanPlay(card, out string reason, target))
         {
             return false;
         }
@@ -1119,7 +1134,7 @@ public sealed class MatchEngine
     {
         if (chargeKredits)
         {
-            State.AddKredits(card.Owner, -card.KreditCost);
+            State.AddKredits(card.Owner, -GetPlayCardCost(card, target));
         }
 
         // PlayCardDirectlyFromHand in BP_CardFunctions assigns activation

@@ -594,6 +594,8 @@ internal static class SelfTest
             TargetGateIrHasCanPlayFromHand),
         new("目标门：规则库门 `CanSelectAsTarget` —— 不在场上 / kredit 不足 / 不在场上的卡",
             TargetGateLibraryChecks),
+        new("PayCardCost：敌方目标税计入普通出牌费用，同阵营不收税，余额不足不改变状态",
+            PlayCardEnemyTargetTax),
 
         // ---- ★★ 攻击路径的目标合法性门（2026-10-02 第三轮）----
         //
@@ -16556,6 +16558,87 @@ internal static class SelfTest
             if (engine.Api.CanTarget(card, null).Can)
             {
                 return "`CanTarget(card, null)` 放行了 —— null 必须当成「没有目标」拒绝";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `PayCardCost` adds an enemy target's tax to the current card cost before
+    /// checking and charging kredit. Friendly targets do not add the tax.
+    /// </summary>
+    private static string? PlayCardEnemyTargetTax(CardDatabase db)
+    {
+        const string Order = "card_event_aa_barrage";
+        const string AirUnit = "card_unit_j2m_raiden";
+        const int Tax = 2;
+
+        if (db.Find(Order) is null) return $"卡库里缺 {Order}";
+        if (db.Find(AirUnit) is null) return $"卡库里缺 {AirUnit}";
+
+        // Enemy target: the tax is part of the amount actually charged.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            var order = state.CreateWithId(Order, Side.Left, 2, CardLocation.HandLeft, 0);
+            var target = PlaceUnit(state, AirUnit, Side.Right, 42, 1);
+            target.KreditsTaxAsEnemyTarget = Tax;
+            int total = order.KreditCost + Tax;
+            state.SetKredits(Side.Left, total);
+
+            if (!engine.PlayCard(order, target))
+            {
+                return $"敌方目标税为 {Tax} 时，余额 {total} 的出牌被拒";
+            }
+
+            if (state.Kredits(Side.Left) != 0)
+            {
+                return $"敌方目标税未计入扣费：剩余 {state.Kredits(Side.Left)}，应为 0";
+            }
+        }
+
+        // Friendly target: the same tax value must not be charged.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            var order = state.CreateWithId(Order, Side.Left, 2, CardLocation.HandLeft, 0);
+            var target = PlaceUnit(state, AirUnit, Side.Left, 42, 1);
+            target.KreditsTaxAsEnemyTarget = Tax;
+            int baseCost = order.KreditCost;
+            state.SetKredits(Side.Left, baseCost);
+
+            if (!engine.PlayCard(order, target))
+            {
+                return "同阵营目标不应因目标税而被拒";
+            }
+
+            if (state.Kredits(Side.Left) != 0)
+            {
+                return $"同阵营目标错误收税：剩余 {state.Kredits(Side.Left)}，应为 0";
+            }
+        }
+
+        // One kredit short of the taxed cost: reject without changing state.
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            var order = state.CreateWithId(Order, Side.Left, 2, CardLocation.HandLeft, 0);
+            var target = PlaceUnit(state, AirUnit, Side.Right, 42, 1);
+            target.KreditsTaxAsEnemyTarget = Tax;
+            int available = Math.Max(0, order.KreditCost + Tax - 1);
+            state.SetKredits(Side.Left, available);
+
+            if (engine.PlayCard(order, target))
+            {
+                return "余额不足以支付敌方目标税时仍然出牌成功";
+            }
+
+            if (state.Kredits(Side.Left) != available
+                || order.Location != CardLocation.HandLeft
+                || target.Location != CardLocation.BoardHqRight)
+            {
+                return "敌方目标税支付失败后修改了 kredit、出牌卡或目标位置";
             }
         }
 

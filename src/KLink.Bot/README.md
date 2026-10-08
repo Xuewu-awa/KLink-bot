@@ -182,7 +182,8 @@ ML  900009  {0:74, 1:1,  2:yD,              84:11}   → 移动 card_unit_wolfho
 - `BP_CardFunctions::UpdateGuarded` 的真实语义是相邻 Guard 计算；当前实现仍是近似目标过滤。
 - `PinUnit` 的 `pinnedTurns`、到期解除及 `OnOtherUnitPinned/Unpinned` 已建模；
   `cantBePinned` / 位置 / 单位类型三道守卫，以及卡牌直接调用的 `RemovePin` / `ChangedPinnedTurns` 仍待补齐。
-- `PayCardCost` 的 `KreditsTax_AsEnemyTarget`、`PayMovementCost` 的行动费用触发尚未完整接入。
+- `PayCardCost` 的 `KreditsTax_AsEnemyTarget` 已接入普通出牌的预检和扣费；
+  `PayMovementCost` 的行动费用触发仍尚未完整接入。
 - `ChangeFrontlineLimiter` 已接入；`GameplayRestriction` 的来源、时长、查询及抽牌/加槽/出牌/攻击/弃牌限制已接入，仍需用更多真实回放验证时机细节。
 - `MakeCardRetreat` 已按蓝图实现：前线优先退到本方半场，半场满或本来在半场时退回拥有者手牌；`cantRetreat` 和非在场目标不变。
 - `BP_CardFunctions` 的通用函数是规则首要证据来源；相关蓝图反编译结果见仓库审计文档，
