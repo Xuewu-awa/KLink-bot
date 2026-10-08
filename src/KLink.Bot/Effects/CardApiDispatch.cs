@@ -4866,13 +4866,16 @@ public sealed partial class CardApi
     private object? DoDiscardCardFromHand(EffectContext c, object? r, object?[] a)
     {
         var card = AsCard(a.ElementAtOrDefault(0)) ?? AsCardOrId(c, a.ElementAtOrDefault(0));
-        if (card is null)
+        if (card is null || card.Location != card.Owner.HandOf())
         {
             return false;
         }
 
         DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
-        return true;
+        // `DiscardCard` can be blocked by a gameplay restriction.  The
+        // Blueprint `success` out parameter reflects the actual transition,
+        // so report false when the card stayed in hand.
+        return card.Location == CardLocation.Discard;
     }
 
     /// <summary>

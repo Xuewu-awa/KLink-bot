@@ -13141,6 +13141,47 @@ internal static class SelfTest
             }
         }
 
+        // The hand-discard restriction must leave the card in hand and make
+        // the Blueprint success out parameter false.
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var actor = PutOnBoard(state, self, Side.Left, 80, 1);
+            var victim = state.CreateWithId(unit, Side.Left, 81, CardLocation.HandLeft, 1);
+            state.AddGameplayRestriction(Side.Left,
+                GameplayRestrictionType.CannotDiscardAnyCardFromHand, actor.CardId, 2);
+            var ctx = new EffectContext
+            {
+                Engine = engine, State = state, Self = actor, Controller = Side.Left,
+            };
+            object? result = engine.Api.InvokeByName("DiscardCardFromHand", actor,
+                new object?[] { victim.CardId, actor.CardId, false, false, null },
+                ctx, out bool handled);
+            if (!handled || result is not false || victim.Location != CardLocation.HandLeft)
+            {
+                return $"弃牌限制下应返回 success=false 且保留手牌：handled={handled},"
+                     + $"result={result}, location={victim.Location}";
+            }
+        }
+
+        // A non-hand target is invalid for this helper and must not be moved.
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var actor = PutOnBoard(state, self, Side.Left, 82, 1);
+            var victim = PutOnBoard(state, unit, Side.Left, 83, 2);
+            var ctx = new EffectContext
+            {
+                Engine = engine, State = state, Self = actor, Controller = Side.Left,
+            };
+            object? result = engine.Api.InvokeByName("DiscardCardFromHand", actor,
+                new object?[] { victim.CardId, actor.CardId, false, false, null },
+                ctx, out bool handled);
+            if (!handled || result is not false || victim.Location != CardLocation.BoardHqLeft)
+            {
+                return $"非手牌目标应拒绝弃牌：handled={handled}, result={result},"
+                     + $" location={victim.Location}";
+            }
+        }
+
         return null;
     }
 
