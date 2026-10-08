@@ -240,6 +240,8 @@ internal static class SelfTest
             DealDamageAfterCalcAdjacentDefense),
         new("Forecast：天气卡判定与三类天气候选池按蓝图标签筛选",
             ForecastCardPrimitives),
+        new("天气牌：每个己方回合最多打出一张，回合开始重置且不影响普通指令",
+            WeatherCardPerTurn),
         new("Forecast：同步广播 OnOtherCardForecasted，并触发 H8K 抽牌与 2nd Pioneers 增益",
             ForecastBroadcastGameplay),
         new("511th Regiment：老兵步兵 1 防御时获得 +2 攻击，条件失效后撤回",
@@ -6629,6 +6631,63 @@ internal static class SelfTest
             || list.All(card => !string.Equals(card.Name, weatherName, StringComparison.Ordinal)))
         {
             return $"天气候选池应包含天气模板且排除普通卡，数量={list.Count}";
+        }
+
+        return null;
+    }
+
+    private static string? WeatherCardPerTurn(CardDatabase db)
+    {
+        const string weatherName = "card_event_rain2_deluge";
+        const string ordinaryOrderName = "card_event_forward_observers";
+        if (db.Find(weatherName) is null || db.Find(ordinaryOrderName) is null)
+        {
+            return $"卡库里缺 {weatherName} 或 {ordinaryOrderName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 40);
+        state.SetMaxKredits(Side.Left, 40);
+
+        var firstWeather = state.Create(weatherName, Side.Left, CardLocation.HandLeft, 0);
+        var secondWeather = state.Create(weatherName, Side.Left, CardLocation.HandLeft, 1);
+        var ordinaryOrder = state.Create(ordinaryOrderName, Side.Left, CardLocation.HandLeft, 2);
+
+        if (!engine.CanPlay(firstWeather, out string firstReason))
+        {
+            return $"第一张天气牌不应被拒绝：{firstReason}";
+        }
+
+        if (!engine.PlayCard(firstWeather))
+        {
+            return "第一张天气牌实际打出失败";
+        }
+
+        if (!state.HasPlayedWeatherCardThisTurn)
+        {
+            return "打出天气牌后未设置本回合标志";
+        }
+
+        if (engine.CanPlay(secondWeather, out string secondReason))
+        {
+            return "同一回合第二张天气牌未被拒绝";
+        }
+
+        if (!engine.CanPlay(ordinaryOrder, out string ordinaryReason))
+        {
+            return $"天气限制错误地拒绝普通指令：{ordinaryReason}";
+        }
+
+        engine.StartTurn(Side.Left, draw: false);
+        if (state.HasPlayedWeatherCardThisTurn)
+        {
+            return "开始新回合后天气标志未清零";
+        }
+
+        if (!engine.CanPlay(secondWeather, out string resetReason))
+        {
+            return $"天气标志清零后第二张天气牌仍被拒绝：{resetReason}";
         }
 
         return null;

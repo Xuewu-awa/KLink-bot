@@ -220,6 +220,14 @@ public sealed class GameState
         OperationKreditsSpentThisTurn = 0;
     }
 
+    /// <summary>Blueprint <c>hasPlayedWeatherCardThisTurn</c>。</summary>
+    public bool HasPlayedWeatherCardThisTurn { get; private set; }
+
+    public bool CanPlayWeatherCard() => !HasPlayedWeatherCardThisTurn;
+
+    public void SetHasPlayedWeatherCardThisTurn(bool value)
+        => HasPlayedWeatherCardThisTurn = value;
+
     /// <summary>疲劳计数（牌库空后每次抽牌递增）。</summary>
     private readonly int[] _fatigue = new int[3];
     public int Fatigue(Side s) => _fatigue[(int)s];
@@ -925,6 +933,7 @@ public sealed class GameState
             LeftHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Left),
             RightHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Right),
             OperationKreditsSpentThisTurn = OperationKreditsSpentThisTurn,
+            HasPlayedWeatherCardThisTurn = HasPlayedWeatherCardThisTurn,
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
             Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(
@@ -979,6 +988,7 @@ public sealed record MatchSnapshot(
     public int LeftHQDamagedThisTurn { get; init; }
     public int RightHQDamagedThisTurn { get; init; }
     public int OperationKreditsSpentThisTurn { get; init; }
+    public bool HasPlayedWeatherCardThisTurn { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
     public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();
     public GameplaySideEffectSnapshot[] SideEffects { get; init; } = Array.Empty<GameplaySideEffectSnapshot>();

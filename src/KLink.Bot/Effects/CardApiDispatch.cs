@@ -5755,10 +5755,12 @@ public sealed partial class CardApi
                 .Any(x => string.Equals(x, tag, StringComparison.OrdinalIgnoreCase))
             || GameplayTagTable.Has(card.Name, tag);
 
-    private static bool IsForecastCard(CardInstance card)
+    internal static bool IsWeatherCard(CardInstance card)
         => HasGameplayTag(card, "subtype.rain")
             || HasGameplayTag(card, "subtype.storm")
             || HasGameplayTag(card, "subtype.sunny");
+
+    private static bool IsForecastCard(CardInstance card) => IsWeatherCard(card);
 
     private static bool HasBond(CardInstance card)
         => !string.Equals(card.CustomAbility, "bond_removed", StringComparison.Ordinal)

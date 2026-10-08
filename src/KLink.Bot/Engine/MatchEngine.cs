@@ -536,6 +536,7 @@ public sealed class MatchEngine
 
         State.ActiveSide = side;
         State.ResetTurnGameplayCounters();
+        State.SetHasPlayedWeatherCardThisTurn(false);
         State.ResetDestroyedThisTurn();
 
         // ---- kredit 槽位 +1，并回满 ----
@@ -1009,6 +1010,12 @@ public sealed class MatchEngine
             return false;
         }
 
+        if (CardApi.IsWeatherCard(card) && !State.CanPlayWeatherCard())
+        {
+            reason = "本回合已经打过天气牌";
+            return false;
+        }
+
         if (GetPlayCardCost(card, target) > State.Kredits(card.Owner))
         {
             reason = "kredit 不足";
@@ -1132,6 +1139,11 @@ public sealed class MatchEngine
                                           bool recordAction, bool toFrontline,
                                           int locationNumber, int instigatorID)
     {
+        if (CardApi.IsWeatherCard(card))
+        {
+            State.SetHasPlayedWeatherCardThisTurn(true);
+        }
+
         if (chargeKredits)
         {
             State.AddKredits(card.Owner, -GetPlayCardCost(card, target));
