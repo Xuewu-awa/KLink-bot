@@ -1150,6 +1150,10 @@ public sealed class KismetVm
             "maxDefense" => card.MaxDefense,
             "enterPlayOnTurn" => card.EnteredPlayOnTurn,
             "currentTarget" => card.CurrentTarget,
+            "hasAttackedThisTurn" => card.HasAttackedThisTurn,
+            "hasBeenAttackedThisTurn" => card.HasBeenAttackedThisTurn,
+            "isSuppressed" => card.IsSuppressed,
+            "gotchaActivated" => card.GotchaActivated,
             // 「三选一」卡把自己选的分支存在卡的 `ChooseOne` 成员上再回读
             // （kardsim 注释里点名的例子：card_event_strategic_focus 用
             //  `Switch(GetMember(self,"ChooseOne"), [(0,IsGroundUnit),(1,IsAirUnit)])`）。

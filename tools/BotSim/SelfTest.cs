@@ -354,6 +354,7 @@ internal static class SelfTest
         new("关键字：getHas* 一族进派发表（旧实现一个键都没有 ⇒ 静默取假）", GetHasDispatch),
         new("关键字：成员读 hasXxx 覆盖 15 个（旧成员表只有 7 个）", KeywordMemberReads),
         new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
+        new("Blueprint 运行时状态成员读：攻击/受击/抑制/反制序号", RuntimeStateMemberReads),
         new("isSalvaged 成员读与抑制：打捞复制品必须保留 1/1 静态基准", SalvagedMemberAndSuppressionBaseline),
 
         // ---- P1：部署 Deployment（2026-09-30）----
@@ -11538,6 +11539,41 @@ internal static class SelfTest
         return bag.GetValueOrDefault("__probe") is true
             ? null
             : "CardInstance.CardSeen=true，但 Blueprint IR 的 cardSeen 成员读没有返回 true";
+    }
+
+    private static string? RuntimeStateMemberReads(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var probe = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        probe.HasAttackedThisTurn = true;
+        probe.HasBeenAttackedThisTurn = true;
+        probe.Keywords.Add(Keyword.Suppressed);
+        probe.GotchaActivated = 7;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = probe, Controller = Side.Left };
+
+        foreach (var (member, expected) in new (string Name, object Value)[]
+        {
+            ("hasAttackedThisTurn", true),
+            ("hasBeenAttackedThisTurn", true),
+            ("isSuppressed", true),
+            ("gotchaActivated", 7),
+        })
+        {
+            var steps = new KismetStep[]
+            {
+                new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = member }, null, -1, "__probe", null),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    null, null, -1, null, null),
+            };
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+            if (!Equals(bag.GetValueOrDefault("__probe"), expected))
+            {
+                return $"Blueprint 成员 {member} 应读取 {expected}，实际 {bag.GetValueOrDefault("__probe") ?? "null"}";
+            }
+        }
+
+        return null;
     }
 
     private static string? SalvagedMemberAndSuppressionBaseline(CardDatabase db)
