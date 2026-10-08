@@ -1659,6 +1659,35 @@ public sealed partial class CardApi
 
                 return false;
             },
+            // `isSecondOrderThisTurn(side, out isSecondOrder)` is a card-local
+            // helper on LURE, WAVE AFTER WAVE, and CAMERONIANS.  The local VM
+            // cannot seed its `SideToCheck` parameter, so the predicate would
+            // otherwise always count no orders.  Blueprint bodies agree on an
+            // exact count of two own-side orders; WAVE AFTER WAVE additionally
+            // excludes Forecast/weather cards from that count.
+            ["isSecondOrderThisTurn"] = (c, r, a) =>
+            {
+                Side want = SideArg(r, a, 0, SelfSide(c));
+                bool excludeForecast = string.Equals(c.Self?.Name,
+                    "card_event_wave_after_wave", StringComparison.Ordinal);
+                int orders = 0;
+                foreach (var card in c.State.CardsPlayedThisTurn)
+                {
+                    if (card.Owner != want
+                        || (excludeForecast && IsForecastCard(card))
+                        || !IsOrder(card))
+                    {
+                        continue;
+                    }
+
+                    if (++orders > 2)
+                    {
+                        return false;
+                    }
+                }
+
+                return orders == 2;
+            },
             ["getHasGameplayTag"] = (c, r, a) => HasGameplayTag(c, r, a),
 
             // `BP_CardFunctions::CanCardBeBuffed(Card)` 的实现（见 CardApi.CanCardBeBuffed）。

@@ -139,6 +139,8 @@ internal static class SelfTest
         // BoardCompare 那 6 局里这 4 张卡都没被打出过，所以回放对拍**测不到**它们，
         // 必须有这组最小断言兜底。
         new("85 先驱连：手牌指令 -1 费、第一张指令打出后还原、重复施加不叠加", PioneerCompanyAura),
+        new("第二张指令判定：按传入阵营精确计数，并让 Wave After Wave 排除天气牌",
+            SecondOrderThisTurn),
         new("SDF：CountFriendlyGuardUnits 只计本方在场 Guard，并据此更新友军攻击力", SdfCountsFriendlyGuards),
         new("通用费用下限：普通减费可将单位、指令和反制卡降到 0", KreditCostFloorIsZero),
         new("大红一师：手牌全部变 4 费、抽牌补 buff、离场还原", BigRedOneAura),
@@ -1584,6 +1586,94 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? SecondOrderThisTurn(CardDatabase db)
+    {
+        const string lureName = "card_event_lure";
+        const string waveName = "card_event_wave_after_wave";
+        const string cameroniansName = "card_unit_cameronians";
+        const string ordinaryOrderName = "card_event_aans";
+        const string weatherName = "card_event_rain2_deluge";
+        foreach (string name in new[]
+        {
+            lureName, waveName, cameroniansName, ordinaryOrderName, weatherName,
+        })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var lure = state.CreateWithId(lureName, Side.Left, 200,
+            CardLocation.HandLeft, 0);
+        state.CardsPlayedThisTurn.Add(state.CreateWithId(ordinaryOrderName, Side.Left, 201,
+            CardLocation.Discard, 0));
+        state.CardsPlayedThisTurn.Add(state.CreateWithId(ordinaryOrderName, Side.Left, 203,
+            CardLocation.Discard, 0));
+        state.CardsPlayedThisTurn.Add(state.CreateWithId(ordinaryOrderName, Side.Right, 202,
+            CardLocation.Discard, 0));
+        var ctx = new EffectContext { Engine = engine, State = state, Self = lure, Controller = Side.Left };
+
+        object? result = engine.Api.InvokeByName("isSecondOrderThisTurn", null,
+            new object?[] { (int)Side.Left, null }, ctx, out bool handled);
+        if (!handled || result is not true)
+        {
+            return $"恰好两张己方指令（含一张敌方指令）应判真：handled={handled}, result={result ?? "null"}";
+        }
+
+        state.CardsPlayedThisTurn.Add(state.CreateWithId(ordinaryOrderName, Side.Left, 204,
+            CardLocation.Discard, 0));
+        result = engine.Api.InvokeByName("isSecondOrderThisTurn", null,
+            new object?[] { (int)Side.Left, null }, ctx, out _);
+        if (result is not false)
+        {
+            return "第三张己方指令后应不再判为第二张指令";
+        }
+
+        var (waveEngine, waveState) = EmptyBoard(db);
+        var wave = waveState.CreateWithId(waveName, Side.Left, 210,
+            CardLocation.HandLeft, 0);
+        waveState.CardsPlayedThisTurn.Add(waveState.CreateWithId(weatherName, Side.Left, 211,
+            CardLocation.Discard, 0));
+        waveState.CardsPlayedThisTurn.Add(waveState.CreateWithId(ordinaryOrderName, Side.Left, 212,
+            CardLocation.Discard, 0));
+        var waveCtx = new EffectContext
+        {
+            Engine = waveEngine, State = waveState, Self = wave, Controller = Side.Left,
+        };
+        result = waveEngine.Api.InvokeByName("isSecondOrderThisTurn", null,
+            new object?[] { (int)Side.Left, null }, waveCtx, out bool waveHandled);
+        if (!waveHandled || result is not false)
+        {
+            return $"Wave After Wave 的天气牌不应计入第二张指令：handled={waveHandled}, result={result ?? "null"}";
+        }
+
+        waveState.CardsPlayedThisTurn.Add(waveState.CreateWithId(ordinaryOrderName, Side.Left, 213,
+            CardLocation.Discard, 0));
+        result = waveEngine.Api.InvokeByName("isSecondOrderThisTurn", null,
+            new object?[] { (int)Side.Left, null }, waveCtx, out _);
+        if (result is not true)
+        {
+            return "Wave After Wave 在两张非天气己方指令后应判真";
+        }
+
+        var (cameroniansEngine, cameroniansState) = EmptyBoard(db);
+        var cameronians = cameroniansState.CreateWithId(cameroniansName, Side.Left, 220,
+            CardLocation.BoardHqLeft, 1);
+        cameroniansState.CardsPlayedThisTurn.Add(
+            cameroniansState.CreateWithId(ordinaryOrderName, Side.Left, 221,
+                CardLocation.Discard, 0));
+        var cameroniansCtx = new EffectContext
+        {
+            Engine = cameroniansEngine, State = cameroniansState,
+            Self = cameronians, Controller = Side.Left,
+        };
+        result = cameroniansEngine.Api.InvokeByName("isSecondOrderThisTurn", null,
+            new object?[] { (int)Side.Left, null }, cameroniansCtx, out _);
+        return result is false ? null : "Cameronians 在只有一张己方指令时应判假";
     }
 
     /// <summary>
