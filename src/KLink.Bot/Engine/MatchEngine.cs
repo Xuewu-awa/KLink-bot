@@ -2108,6 +2108,15 @@ public sealed class MatchEngine
             return false;
         }
 
+        // 卡面攻击限制（`cantAttack:*` / `cantBeAttackedBy:*`）——来自
+        // `cardsCheckFunctions::CanAttack` 的 HasCantAttackType / HasCantBeAttackedBy
+        // 判据。效果卡通过 CustomAbilityAdd/CustomName1Add 写入这些状态；
+        // 该门必须在扣行动费、记攻击次数之前执行。
+        if (!CanAttackByCardRestrictions(attacker, defender, out reason))
+        {
+            return false;
+        }
+
         // 掩护（`isBeingGuarded`）—— 出处 `cardsCheckFunctions::CanAttack`：
         // <code>
         // si=2492 IsBomber(attackerCard)   si=2533 IsArtillery(attackerCard)
@@ -2511,7 +2520,65 @@ public sealed class MatchEngine
         // ⚠️ 与 `Attack` 里那道门**必须同源**：这里过滤掉的目标，`Attack` 也必须拒；
         //    反过来，`Attack` 拒的，这里也不能列出来 —— 否则「候选里有、结算说非法」
         //    会表现成 AI 反复尝试一个永远失败的动作。两处都走 `AttackTargetGate`。
-        return targets.Where(t => CanReachAcrossFrontline(attacker, t) && AttackTargetGate(attacker, t).Can);
+        return targets.Where(t => CanReachAcrossFrontline(attacker, t)
+                               && CanAttackByCardRestrictions(attacker, t, out _)
+                               && AttackTargetGate(attacker, t).Can);
+    }
+
+    /// <summary>
+    /// `CanAttack` 的卡面攻击限制门。
+    ///
+    /// `cantAttack` 是攻击者自己的无条件限制；`cantAttack:&lt;type&gt;` 是
+    /// 按目标类型限制（例如 `cantAttack:location` = 不能攻击 HQ），而
+    /// `cantBeAttackedBy:&lt;type&gt;` 是目标卡自己的防护标记。类型名来自
+    /// Blueprint 的 `HasCantAttackType` / `HasCantBeAttackedBy` 实参：
+    /// `location`、`air`、`ground`。
+    /// </summary>
+    private bool CanAttackByCardRestrictions(CardInstance attacker, CardInstance defender,
+                                             out string reason)
+    {
+        reason = "";
+
+        if (Api.HasCustomAbility(attacker, "cantAttack"))
+        {
+            reason = "unit_cant_attack";
+            return false;
+        }
+
+        string? defenderType = AttackRestrictionType(defender);
+        if (defenderType is not null
+            && Api.HasCustomAbility(attacker, $"cantAttack:{defenderType}")
+            && !Api.HasCustomAbility(attacker, $"ignoreCantAttack_{defenderType}"))
+        {
+            reason = "cant_be_attacked_by_unit";
+            return false;
+        }
+
+        string? attackerType = AttackRestrictionType(attacker);
+        if (attackerType is not null
+            && CardApi.CustomNameHasAttribute(defender, "customName1",
+                $"cantBeAttackedBy:{attackerType}"))
+        {
+            reason = "unit_cant_be_attack_by_unit";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string? AttackRestrictionType(CardInstance card)
+    {
+        if (card.IsHq)
+        {
+            return "location";
+        }
+
+        return card.Definition.Type switch
+        {
+            "fighter" or "bomber" => "air",
+            "infantry" or "tank" or "artillery" => "ground",
+            _ => null,
+        };
     }
 
     /// <summary>

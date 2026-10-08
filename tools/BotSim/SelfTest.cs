@@ -612,6 +612,8 @@ internal static class SelfTest
             TargetGateAttackPathAllows),
         new("★ 攻击门：攻击路径与出牌路径**共用同一道门**（拒绝原因同源 + 被拒无副作用 + 枚举一致）",
             TargetGateSharedByBothPaths),
+        new("攻击限制：cantAttack:* 与 cantBeAttackedBy:* 同时约束 HQ/空军/地面目标，且候选枚举一致",
+            AttackRestrictionAbilities),
 
         // ---- 全卡池烟雾测试台（`BotSim smoke-all-cards`，2026-10-02）----
         //
@@ -17050,6 +17052,116 @@ internal static class SelfTest
             {
                 return $"**出牌路径**被 commando 否决了（{playGate.Describe()}）—— 两条路径共用同一个方法，"
                      + "差别只应在 `byPlayFromHand` 这个实参上";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `CanAttack` 的卡面限制门：
+    /// `cantAttack:&lt;type&gt;` 在攻击方，`cantBeAttackedBy:&lt;type&gt;` 在目标方。
+    /// 这些标记分别由 `CustomAbilityAdd` 与 `CustomName1Add` 写入，
+    /// 所以测试同时走攻击结算和候选枚举，防止两条路径漂移。
+    /// </summary>
+    private static string? AttackRestrictionAbilities(CardDatabase db)
+    {
+        string? ground = FindType(db, "infantry");
+        string? air = FindType(db, "fighter");
+        if (ground is null || air is null)
+        {
+            return "卡库里没有 infantry/fighter";
+        }
+
+        // ① cantAttack:location：不能攻击 HQ；门必须在扣费和攻击计数之前。
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 20);
+            var attacker = state.CreateWithId(ground, Side.Left, 3,
+                CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -99;
+            attacker.CustomAbility = "cantAttack:location";
+            var hq = state.Hq(Side.Right);
+
+            if (engine.Attack(attacker, hq, out string reason))
+            {
+                return "cantAttack:location 的攻击者不应能攻击敌方 HQ";
+            }
+
+            if (reason != "cant_be_attacked_by_unit"
+                || state.Kredits(Side.Left) != 20
+                || attacker.HasAttackedThisTurn
+                || attacker.AttacksThisTurn != 0)
+            {
+                return $"HQ 限制门状态错误：reason={reason} kredit={state.Kredits(Side.Left)} "
+                     + $"hasAttacked={attacker.HasAttackedThisTurn} count={attacker.AttacksThisTurn}";
+            }
+
+            if (engine.LegalTargets(attacker).Contains(hq))
+            {
+                return "LegalTargets 不应列出被 cantAttack:location 排除的 HQ";
+            }
+        }
+
+        // ② cantAttack:air：攻击方不能攻击空军目标，但仍可选地面单位。
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 20);
+            var attacker = state.CreateWithId(ground, Side.Left, 3,
+                CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -99;
+            attacker.CustomAbility = "cantAttack:air";
+            var foeAir = PlaceUnit(state, air, Side.Right, 51, 1);
+            var foeGround = PlaceUnit(state, ground, Side.Right, 52, 2);
+
+            if (engine.Attack(attacker, foeAir, out string airReason)
+                || airReason != "cant_be_attacked_by_unit")
+            {
+                return $"cantAttack:air 未拒绝空军目标：reason={airReason}";
+            }
+
+            if (!engine.LegalTargets(attacker).Contains(foeGround)
+                || engine.LegalTargets(attacker).Contains(foeAir))
+            {
+                return "cantAttack:air 的 LegalTargets 未保持地面目标、或仍列出空军目标";
+            }
+        }
+
+        // ③ cantBeAttackedBy:ground：目标方拒绝地面攻击者；空军攻击者仍可攻击。
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 20);
+            var attacker = state.CreateWithId(ground, Side.Left, 3,
+                CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -99;
+            var target = PlaceUnit(state, ground, Side.Right, 51, 1);
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = target,
+                Controller = Side.Right,
+            };
+            engine.Api.InvokeByName("CustomName1Add", target,
+                new object?[] { "cantBeAttackedBy:ground" }, ctx, out bool handled);
+            if (!handled || !CardApi.CustomNameHasAttribute(target, "customName1",
+                    "cantBeAttackedBy:ground"))
+            {
+                return "CustomName1Add 未写入 cantBeAttackedBy:ground";
+            }
+
+            if (engine.Attack(attacker, target, out string reason)
+                || reason != "unit_cant_be_attack_by_unit")
+            {
+                return $"cantBeAttackedBy:ground 未拒绝地面攻击者：reason={reason}";
+            }
+
+            if (engine.LegalTargets(attacker).Contains(target))
+            {
+                return "LegalTargets 不应列出被 cantBeAttackedBy:ground 排除的目标";
             }
         }
 
