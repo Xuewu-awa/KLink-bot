@@ -354,6 +354,7 @@ internal static class SelfTest
         new("关键字：getHas* 一族进派发表（旧实现一个键都没有 ⇒ 静默取假）", GetHasDispatch),
         new("关键字：成员读 hasXxx 覆盖 15 个（旧成员表只有 7 个）", KeywordMemberReads),
         new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
+        new("isSalvaged 成员读与抑制：打捞复制品必须保留 1/1 静态基准", SalvagedMemberAndSuppressionBaseline),
 
         // ---- P1：部署 Deployment（2026-09-30）----
         // 蓝图 CardPlayedFromHand si=3640..6434 —— **一条统一机制**：
@@ -11537,6 +11538,36 @@ internal static class SelfTest
         return bag.GetValueOrDefault("__probe") is true
             ? null
             : "CardInstance.CardSeen=true，但 Blueprint IR 的 cardSeen 成员读没有返回 true";
+    }
+
+    private static string? SalvagedMemberAndSuppressionBaseline(CardDatabase db)
+    {
+        var made = MakeBoard(db, PlainUnit);
+        if (made is null) return $"造不出单位 {PlainUnit}";
+        var (engine, unit) = made.Value;
+        unit.IsSalvaged = true;
+        unit.Attack = 5;
+        unit.Defense = 6;
+        unit.MaxDefense = 6;
+
+        var ctx = new EffectContext { Engine = engine, State = engine.State, Self = unit, Controller = Side.Left };
+        var steps = new KismetStep[]
+        {
+            new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "isSalvaged" }, null, -1, "__probe", null),
+            new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                null, null, -1, null, null),
+        };
+        var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+        if (bag.GetValueOrDefault("__probe") is not true)
+        {
+            return "CardInstance.IsSalvaged=true，但 Blueprint IR 的 isSalvaged 成员读没有返回 true";
+        }
+
+        engine.Api.SuppressUnit(unit);
+        return unit.Attack == 1 && unit.Defense == 1 && unit.MaxDefense == 1
+            ? null
+            : $"抑制后打捞复制品数值为 {unit.Attack}/{unit.Defense}（上限 {unit.MaxDefense}），期望 1/1/1";
     }
 
     // ==================================================================

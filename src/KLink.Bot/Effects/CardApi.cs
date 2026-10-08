@@ -3244,16 +3244,20 @@ public sealed partial class CardApi
         }
 
         // ---- ④ 数值回落到卡面静态值（L_136A / L_1441 / L_1504）----
-        target.Attack = target.Definition.Attack;        // ChangeAttack(…, _staticAttack, Suppress)
+        // BP_CardFunctions::SuppressMultipleUnits uses a 1/1 static baseline for
+        // Salvage copies; ordinary cards return to their card definition values.
+        int staticAttack = target.IsSalvaged ? 1 : target.Definition.Attack;
+        int staticDefense = target.IsSalvaged ? 1 : target.Definition.Defense;
+        target.Attack = staticAttack;                    // ChangeAttack(…, _staticAttack, Suppress)
 
         // 防御：**只在当前更高时压下来**（蓝图 `getTotalDefense > _staticDefense` 才改写）
         // ⇒ 抑制**不会治疗**一个已经被打残的单位。MaxDefense 按蓝图直接取静态值。
-        if (target.Defense > target.Definition.Defense)
+        if (target.Defense > staticDefense)
         {
-            target.Defense = target.Definition.Defense;
+            target.Defense = staticDefense;
         }
 
-        target.MaxDefense = target.Definition.Defense;
+        target.MaxDefense = staticDefense;
 
         // 行动费/重甲/关键字由 `RecalculateStats()` 按"卡面 + 剩余 buff"绝对值重算 ——
         // 上一步已经把攻/防/重甲/行动费的 buff 清干净，所以这里算出来就是卡面值

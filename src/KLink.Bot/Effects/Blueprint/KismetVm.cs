@@ -1158,6 +1158,7 @@ public sealed class KismetVm
             "kredits" => card.KreditCost,
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
+            "isSalvaged" => card.IsSalvaged,
             // `cardSeen` is written by SetCardSeen/ApplySetCardsSeenByCipher and
             // read by card IR when filtering already-revealed hand cards.
             "cardSeen" => card.CardSeen,

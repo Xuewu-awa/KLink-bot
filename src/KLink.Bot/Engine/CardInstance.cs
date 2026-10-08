@@ -117,11 +117,7 @@ public sealed class CardInstance
     /// 读取方：`SetCardsSeenByCipher` 自己攒「未见面」候选时的 `:34137`
     /// （`if (cardSeen) 跳过`），以及 11 张卡的 IR 体。
     ///
-    /// ⚠️ **IR 侧读不到这个成员**：成员表在
-    /// `Effects/Blueprint/KismetVm.cs:961-1038`，本轮**不在改动范围内**
-    /// ⇒ 那 11 张卡读 `cardSeen` 仍然得到 `null`（判假）。
-    /// 这个字段是为**C# 侧语义正确**（`SetCardsSeenByCipher` 的"未见面"过滤）
-    /// 与自测可观测而加的，如实标注这处**未接线**。
+    /// Blueprint IR 通过 `KismetVm.GetMember` 读取该字段，供效果筛除已揭示手牌。
     /// </summary>
     public bool CardSeen { get; set; }
 
