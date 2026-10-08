@@ -1158,6 +1158,9 @@ public sealed class KismetVm
             "kredits" => card.KreditCost,
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
+            // `cardSeen` is written by SetCardSeen/ApplySetCardsSeenByCipher and
+            // read by card IR when filtering already-revealed hand cards.
+            "cardSeen" => card.CardSeen,
             // ⚠️ 2026-09-30（P1）：这张表**必须和 `CardApiDispatch` 的 `getHas*` 一族同步**。
             //    同一个判据在 IR 里有两种形状 —— 成员读（`card.hasDeployment`）和
             //    函数调用（`call fn=getHasDeployment`）。只补一边，另一半照样静默取假。

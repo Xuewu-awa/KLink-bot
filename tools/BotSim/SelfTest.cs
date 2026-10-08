@@ -353,6 +353,7 @@ internal static class SelfTest
         // 成员表只覆盖 7 个（漏掉 hasCovert/hasDestruction/hasAlpine/hasMobilize/hasDeployment）。
         new("关键字：getHas* 一族进派发表（旧实现一个键都没有 ⇒ 静默取假）", GetHasDispatch),
         new("关键字：成员读 hasXxx 覆盖 15 个（旧成员表只有 7 个）", KeywordMemberReads),
+        new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
 
         // ---- P1：部署 Deployment（2026-09-30）----
         // 蓝图 CardPlayedFromHand si=3640..6434 —— **一条统一机制**：
@@ -11516,6 +11517,26 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? CardSeenMemberRead(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var probe = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        probe.CardSeen = true;
+        var ctx = new EffectContext { Engine = engine, State = state, Self = probe, Controller = Side.Left };
+        var steps = new KismetStep[]
+        {
+            new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardSeen" }, null, -1, "__probe", null),
+            new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                null, null, -1, null, null),
+        };
+
+        var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+        return bag.GetValueOrDefault("__probe") is true
+            ? null
+            : "CardInstance.CardSeen=true，但 Blueprint IR 的 cardSeen 成员读没有返回 true";
     }
 
     // ==================================================================
