@@ -356,6 +356,7 @@ internal static class SelfTest
         new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
         new("Blueprint 运行时状态成员读：攻击/受击/抑制/反制序号", RuntimeStateMemberReads),
         new("isSalvaged 成员读与抑制：打捞复制品必须保留 1/1 静态基准", SalvagedMemberAndSuppressionBaseline),
+        new("Blueprint 卡字段成员读：type / rarity / salvageFaction", CardDefinitionAndSalvageMemberReads),
 
         // ---- P1：部署 Deployment（2026-09-30）----
         // 蓝图 CardPlayedFromHand si=3640..6434 —— **一条统一机制**：
@@ -11604,6 +11605,39 @@ internal static class SelfTest
         return unit.Attack == 1 && unit.Defense == 1 && unit.MaxDefense == 1
             ? null
             : $"抑制后打捞复制品数值为 {unit.Attack}/{unit.Defense}（上限 {unit.MaxDefense}），期望 1/1/1";
+    }
+
+    private static string? CardDefinitionAndSalvageMemberReads(CardDatabase db)
+    {
+        const string cardName = "card_unit_3rd_canadian_division";
+        if (db.Find(cardName) is null) return $"卡库里缺 {cardName}";
+        var (engine, state) = EmptyBoard(db);
+        var probe = PutOnBoard(state, cardName, Side.Left, 20, 1);
+        probe.SalvageFaction = "Britain";
+        var ctx = new EffectContext { Engine = engine, State = state, Self = probe, Controller = Side.Left };
+
+        foreach (var (member, expected) in new (string Name, object? Value)[]
+        {
+            ("type", probe.Definition.Type),
+            ("rarity", probe.Definition.Rarity),
+            ("salvageFaction", "Britain"),
+        })
+        {
+            var steps = new KismetStep[]
+            {
+                new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = member }, null, -1, "__probe", null),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    null, null, -1, null, null),
+            };
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+            if (!Equals(bag.GetValueOrDefault("__probe"), expected))
+            {
+                return $"Blueprint 成员 {member} 应读取 {expected ?? "null"}，实际 {bag.GetValueOrDefault("__probe") ?? "null"}";
+            }
+        }
+
+        return null;
     }
 
     // ==================================================================

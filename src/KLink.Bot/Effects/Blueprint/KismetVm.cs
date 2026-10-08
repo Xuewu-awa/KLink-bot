@@ -1141,6 +1141,8 @@ public sealed class KismetVm
                 ? card.OriginalOwner : card.Owner),
             "underEnemyControl" => card.UnderEnemyControl,
             "faction" => card.Definition.FactionId,
+            "type" => card.Definition.Type,
+            "rarity" => card.Definition.Rarity,
             "name" => card.Name,
             "cardID" => card.CardId,
             "location" => (int)card.Location,
@@ -1163,6 +1165,7 @@ public sealed class KismetVm
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
             "isSalvaged" => card.IsSalvaged,
+            "salvageFaction" => card.SalvageFaction,
             // `cardSeen` is written by SetCardSeen/ApplySetCardsSeenByCipher and
             // read by card IR when filtering already-revealed hand cards.
             "cardSeen" => card.CardSeen,
