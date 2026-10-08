@@ -1148,6 +1148,7 @@ public sealed class KismetVm
             "location" => (int)card.Location,
             "locationNumber" => card.LocationNumber,
             "attack" => card.Attack,
+            "attackBuff" => card.AttackBuff,
             "defense" => card.Defense,
             "maxDefense" => card.MaxDefense,
             "enterPlayOnTurn" => card.EnteredPlayOnTurn,

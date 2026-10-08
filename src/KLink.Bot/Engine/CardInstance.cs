@@ -529,6 +529,14 @@ public sealed class CardInstance
     public Dictionary<(int SourceCardId, bool Temporary), CardBuff> BuffsBySource { get; } = new();
 
     /// <summary>
+    /// Blueprint's runtime <c>attackBuff</c> member: the aggregate attack
+    /// modifier currently applied to this card. ChangeAttack mutations are
+    /// tracked per source here, so this is a derived view rather than separate
+    /// mutable state.
+    /// </summary>
+    public int AttackBuff => BuffsBySource.Values.Sum(buff => buff.Attack);
+
+    /// <summary>
     /// 是否为 HQ 卡（`card_location_*`，类型 <c>location</c>）。
     ///
     /// ⚠️ **判据必须是"卡的类型"，不能是"卡在哪个位置"。**
