@@ -213,14 +213,13 @@ internal static class DispatchGapBaseline
     /// `card_unit_sturmovik_pol` 带空格的 `Apply The Buff` 私有函数。
     /// 2026-10-08：456 → **455**（2094 → 2093 个调用点）。接通
     /// `card_unit_l4_grasshopper` 带空格的 `Remove the Buff` 私有函数。
-    /// 2026-10-08：455 → **384**（2093 → 1948 个调用点）。接通卡内无出参
-    /// 事件入口回退执行，并将 `toCard` 等具名事件载荷提供给卡内包装函数；
-    /// 覆盖 220th Rifles、Kyushu J7W3 与 SU-100 的伤害事件链。
+    /// 2026-10-08：382 → **381**（1946 → 1940 个调用点）。接通局部 Map 的
+    /// Map_Add / Map_Find，覆盖 card_event_the_big_three 的阵营统计增益。
     /// </remarks>
-    public const int BaselineCount = 382;
+    public const int BaselineCount = 381;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "119597458E716788";
+    public const string BaselineFingerprint = "B97DC899FEA7B120";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

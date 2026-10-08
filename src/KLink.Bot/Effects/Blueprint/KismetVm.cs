@@ -540,6 +540,7 @@ public sealed class KismetVm
         var raw = new object?[step.Args.Count];
         SeedArrayTarget(fn, step.Args, frame);
         SeedSetTarget(fn, step.Args, frame);
+        SeedMapTarget(fn, step.Args, frame);
         for (int i = 0; i < step.Args.Count; i++)
         {
             raw[i] = outSet.Contains(i) ? null : Eval(step.Args[i], frame, ctx);
@@ -761,6 +762,11 @@ public sealed class KismetVm
         "Set_Add", "Set_Clear", "Set_Remove", "Set_RemoveItems", "Set_ToArray",
     };
 
+    private static readonly HashSet<string> InPlaceMapOps = new(StringComparer.Ordinal)
+    {
+        "Map_Add", "Map_Clear", "Map_Remove",
+    };
+
     private static void SeedArrayTarget(string fn, IReadOnlyList<KismetExpr> argExprs, Frame frame)
     {
         if (!InPlaceArrayOps.Contains(fn) || argExprs.Count == 0)
@@ -786,6 +792,20 @@ public sealed class KismetVm
         if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
         {
             frame.Set(name, frame.EnsureBlueprintSet(name) ?? new HashSet<object?>());
+        }
+    }
+
+    private static void SeedMapTarget(string fn, IReadOnlyList<KismetExpr> argExprs, Frame frame)
+    {
+        if ((!InPlaceMapOps.Contains(fn) && fn != "Map_Find") || argExprs.Count == 0)
+        {
+            return;
+        }
+
+        KismetExpr first = argExprs[0];
+        if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
+        {
+            frame.Set(name, new Dictionary<object, object?>());
         }
     }
 
@@ -827,6 +847,26 @@ public sealed class KismetVm
             // 同上：**不摘** `args[0]` 的 `{self:true}` —— 它是第一个实参。
             SeedArrayTarget(c, expr.Args, frame);
             SeedSetTarget(c, expr.Args, frame);
+
+            if (c == "Map_Find")
+            {
+                SeedMapTarget(c, expr.Args, frame);
+                object? mapValue = Eval(expr.Args.ElementAtOrDefault(0), frame, ctx);
+                object? key = Eval(expr.Args.ElementAtOrDefault(1), frame, ctx);
+                object? value = null;
+                bool found = mapValue is Dictionary<object, object?> map
+                    && key is not null
+                    && map.TryGetValue(key, out value);
+                if (expr.Args.ElementAtOrDefault(2)?.Var is { } outName
+                    && expr.Args[2].Context is null)
+                {
+                    frame.Set(outName, found ? value : 0);
+                }
+
+                return found;
+            }
+
+            SeedMapTarget(c, expr.Args, frame);
             var callArgs = expr.Args.Select(a => Eval(a, frame, ctx)).ToArray();
             object? recv = expr.Context is not null ? Eval(expr.Context, frame, ctx) : null;
             var r = _api.InvokeByName(c, recv, callArgs, ctx, out bool handled);

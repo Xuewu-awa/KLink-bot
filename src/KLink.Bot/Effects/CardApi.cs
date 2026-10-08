@@ -3875,6 +3875,24 @@ public sealed partial class CardApi
         return new HashSet<object?>();
     }
 
+    internal static Dictionary<object, object?> EvalMap(object? receiver, object?[] args)
+    {
+        if (receiver is Dictionary<object, object?> receiverMap)
+        {
+            return receiverMap;
+        }
+
+        foreach (object? value in args)
+        {
+            if (value is Dictionary<object, object?> map)
+            {
+                return map;
+            }
+        }
+
+        return new Dictionary<object, object?>();
+    }
+
     internal static List<int> AsIntList(object? v) => v switch
     {
         List<int> list => list,

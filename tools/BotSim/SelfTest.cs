@@ -99,6 +99,8 @@ internal static class SelfTest
             GiveRandomCombatKeyword),
         new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
             BlueprintSetPrimitives),
+        new("Blueprint Map 原语：Big Three 按友军阵营数量加攻防",
+            BigThreeCountsFriendlyFactions),
         new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
             BlueprintArrayResize),
         new("Sturmovik Polish：带空格 Apply The Buff 叠加幸存单位攻防",
@@ -14635,6 +14637,56 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? BigThreeCountsFriendlyFactions(CardDatabase db)
+    {
+        const string orderName = "card_event_the_big_three";
+        var groups = db.All
+            .Where(card => card.IsUnit && card.FactionId is > 0 and < 11)
+            .GroupBy(card => card.FactionId)
+            .Where(group => group.Count() >= 2)
+            .OrderBy(group => group.Key)
+            .ToArray();
+        if (groups.Length < 2)
+        {
+            return "卡库里找不到两个单位同阵营、第三个单位异阵营的测试组合";
+        }
+
+        var sameFaction = groups[0].OrderBy(card => card.Name, StringComparer.Ordinal).Take(2).ToArray();
+        var otherFaction = groups[1].OrderBy(card => card.Name, StringComparer.Ordinal).First();
+        var (engine, state) = EmptyBoard(db);
+        state.SetKredits(Side.Left, 20);
+        state.SetMaxKredits(Side.Left, 20);
+        state.ActiveSide = Side.Left;
+
+        var first = state.CreateWithId(sameFaction[0].Name, Side.Left, 2,
+            CardLocation.BoardHqLeft, 1);
+        var second = state.CreateWithId(sameFaction[1].Name, Side.Left, 3,
+            CardLocation.BoardHqLeft, 2);
+        var third = state.CreateWithId(otherFaction.Name, Side.Left, 4,
+            CardLocation.BoardHqLeft, 3);
+        int[] attackBefore = { first.Attack, second.Attack, third.Attack };
+        int[] defenseBefore = { first.Defense, second.Defense, third.Defense };
+        var order = state.CreateWithId(orderName, Side.Left, 5, CardLocation.HandLeft, 0);
+
+        if (!engine.PlayCard(order))
+        {
+            return "Big Three 无法打出";
+        }
+
+        if (first.Attack != attackBefore[0] + 1 || first.Defense != defenseBefore[0] + 1
+            || second.Attack != attackBefore[1] + 1 || second.Defense != defenseBefore[1] + 1
+            || third.Attack != attackBefore[2] + 2 || third.Defense != defenseBefore[2] + 2)
+        {
+            return $"阵营数量增益错误：同阵营 {first.Attack - attackBefore[0]}/{second.Attack - attackBefore[1]}，"
+                 + $"异阵营 {third.Attack - attackBefore[2]}；期望 1/1/2 攻与防"
+                 + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        return state.UnimplementedCalls.Keys.Any(key => key.StartsWith("Map_", StringComparison.Ordinal))
+            ? "执行期间 Map 原语仍被记为未实现：" + Unimpl(state)
+            : null;
     }
 
     private static string? BlueprintArrayResize(CardDatabase db)

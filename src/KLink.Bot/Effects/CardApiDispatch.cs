@@ -1108,6 +1108,24 @@ public sealed partial class CardApi
             },
             ["Set_ToArray"] = (c, r, a) => EvalSet(r, a).ToList(),
 
+            // Blueprint TMap nodes mutate their target map in place. Local maps
+            // are seeded by KismetVm; Map_Find's out value is written by Eval.
+            ["Map_Add"] = (c, r, a) =>
+            {
+                var map = EvalMap(r, a);
+                if (a.Length > 2 && a[1] is not null)
+                {
+                    map[a[1]!] = a[2];
+                }
+
+                return null;
+            },
+            ["Map_Find"] = (c, r, a) =>
+            {
+                var map = EvalMap(r, a);
+                return a.Length > 1 && a[1] is not null && map.ContainsKey(a[1]!);
+            },
+
             // ---------------- 卡牌私有 JSON 的数组变体 ----------------
             ["JSON_GetIntArray"] = (c, r, a) => AsCard(r) is { } x ? JsonGetIntArray(x, StrArg(a, 1)) : new List<int>(),
             ["JSON_SetIntArray"] = (c, r, a) => { if (AsCard(r) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return null; },
