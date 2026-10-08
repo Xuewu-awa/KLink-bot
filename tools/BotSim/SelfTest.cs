@@ -315,6 +315,8 @@ internal static class SelfTest
         new("钉住：被钉住的单位不能攻击（**对照** —— 修复前就应该是绿的）", PinnedCannotAttack),
         new("钉住：带 `canOperateWhilePinned` 的被钉住单位**可以**移动和攻击（蓝图两侧都有这条例外）",
             PinnedWithOperateAbilityCanAct),
+        new("14th Panzergrenadier：`_qualifiesForUnpinning` 绑定 InputPin 并在解除钉住时撤销能力",
+            PanzergrenadierPinnedOverrideLocalPredicate),
         new("钉住到期：**于单位所有者下个回合结束时**解除（`pinnedTurns` 3/2 递减；不是永久）",
             PinnedExpiresAtOwnerNextTurnEnd),
         new("钉住：`cantBePinned`、非在场卡和 HQ/非单位必须被蓝图守卫拒绝",
@@ -7325,6 +7327,55 @@ internal static class SelfTest
         if (target.Keywords.Contains(Keyword.Pinned) || target.Location != CardLocation.BoardHqRight)
         {
             return $"解除钉住后的订阅效果未执行：pinned={target.Keywords.Contains(Keyword.Pinned)}，位置={target.Location}";
+        }
+
+        return null;
+    }
+
+    private static string? PanzergrenadierPinnedOverrideLocalPredicate(CardDatabase db)
+    {
+        const string sourceName = "card_unit_14_panzergrenadier";
+        const string targetName = "card_unit_arado_ar_196";
+        if (db.Find(sourceName) is null) return $"卡库里缺 {sourceName}";
+        if (db.Find(targetName) is null) return $"卡库里缺 {targetName}";
+        if (KismetLibrary.Default?.FindLocalProgram(sourceName, "_qualifiesForUnpinning") is null)
+        {
+            return "14th Panzergrenadier 的 _qualifiesForUnpinning IR 未加载";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(sourceName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var target = state.CreateWithId(targetName, Side.Left, 21,
+            CardLocation.BoardHqRight, 2);
+        source.Keywords.Add(Keyword.Veteran);
+        target.Keywords.Add(Keyword.Veteran);
+
+        engine.Api.PinUnit(target);
+        if (target.CustomAbility != "canOperateWhilePinned"
+            || !source.BlueprintSets.TryGetValue("pinned_units_with_override", out var overrides)
+            || !overrides.Contains(target))
+        {
+            return "OnOtherUnitPinned 未把目标加入 override 集合并授予 canOperateWhilePinned";
+        }
+
+        engine.ExecuteOnCardLocationMoved(target, CardLocation.BoardHqRight,
+            CardLocation.BoardFrontline);
+        if (target.CustomAbility != "canOperateWhilePinned")
+        {
+            return "合法棋盘位置移动后，14th Panzergrenadier 错误撤销了 pinned 操作能力";
+        }
+
+        engine.Api.RemoveKeyword(target, Keyword.Pinned);
+        if (target.CustomAbility == "canOperateWhilePinned"
+            || overrides.Contains(target))
+        {
+            return "OnOtherUnitUnpinned 未通过 InputPin 命中目标并撤销能力/集合项";
+        }
+
+        if (state.UnimplementedCalls.ContainsKey("_qualifiesForUnpinning"))
+        {
+            return "_qualifiesForUnpinning 仍被记为未实现";
         }
 
         return null;

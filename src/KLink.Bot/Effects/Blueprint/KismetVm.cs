@@ -619,7 +619,8 @@ public sealed class KismetVm
             // turns the helper into a no-op.  Copy the current frame as the seed;
             // the local program still gets its own frame, so writes do not leak
             // back except through the engine state mutations they intentionally do.
-            var localSeed = frame.Snapshot();
+            var localSeed = new Dictionary<string, object?>(frame.Snapshot(), StringComparer.Ordinal);
+            BindLocalInputs(local, args.Where((_, i) => !outSet.Contains(i)).ToArray(), localSeed);
             var bag = outNames.Count > 0
                 ? RunLocalProgramMulti(local, ctx, localSeed, outNames.ToArray())
                 : RunLocalProgramMulti(local, ctx, localSeed);
@@ -829,6 +830,15 @@ public sealed class KismetVm
             var callArgs = expr.Args.Select(a => Eval(a, frame, ctx)).ToArray();
             object? recv = expr.Context is not null ? Eval(expr.Context, frame, ctx) : null;
             var r = _api.InvokeByName(c, recv, callArgs, ctx, out bool handled);
+            if (!handled && LocalProgramFor(ctx, c) is { } local)
+            {
+                var localSeed = new Dictionary<string, object?>(frame.Snapshot(), StringComparer.Ordinal);
+                BindLocalInputs(local, callArgs, localSeed);
+                r = RunLocalProgram(local, ctx, localSeed, "ReturnValue");
+                handled = true;
+                _api.NotifyUnimplemented($"<local-ran:{c}>");
+            }
+
             if (!handled)
             {
                 UnimplementedCalls[c] = UnimplementedCalls.GetValueOrDefault(c) + 1;
@@ -865,6 +875,65 @@ public sealed class KismetVm
         }
 
         return null;
+    }
+
+    private static void BindLocalInputs(KismetProgram program, IReadOnlyList<object?> args,
+                                        IDictionary<string, object?> seed)
+    {
+        if (args.Count == 0)
+        {
+            return;
+        }
+
+        var defined = program.Steps
+            .Where(s => s.DestinationVar is not null)
+            .Select(s => s.DestinationVar!)
+            .ToHashSet(StringComparer.Ordinal);
+        var candidates = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        // Local-function parameter names are the first bare, undeclared identifiers
+        // in the function body. Instance members and compiler scratch slots use
+        // underscore/prefix naming and are not input parameters.
+        void Visit(KismetExpr? expr)
+        {
+            if (expr is null) return;
+            if (expr.Var is { } name && expr.Context is null
+                && !defined.Contains(name)
+                && !name.Contains('_', StringComparison.Ordinal)
+                && !name.StartsWith("CallFunc_", StringComparison.Ordinal)
+                && !name.StartsWith("K2Node_", StringComparison.Ordinal)
+                && !name.StartsWith("Temp_", StringComparison.Ordinal)
+                && name is not ("self" or "cardFunction" or "cardID" or "targetCardID"
+                    or "targetCard" or "side" or "mySide" or "tempCard"
+                    or "instigatorID" or "triggerCardID")
+                && seen.Add(name))
+            {
+                candidates.Add(name);
+            }
+
+            Visit(expr.Context);
+            foreach (var child in expr.Args) Visit(child);
+            foreach (var child in expr.Array) Visit(child);
+        }
+
+        foreach (var step in program.Steps)
+        {
+            Visit(step.Source);
+            Visit(step.Condition);
+            Visit(step.Receiver);
+            foreach (var arg in step.Args) Visit(arg);
+        }
+
+        if (candidates.Count < args.Count)
+        {
+            return;
+        }
+
+        for (int i = 0; i < args.Count; i++)
+        {
+            seed[candidates[i]] = args[i];
+        }
     }
 
     private object? EvalMath(string? fn, IReadOnlyList<KismetExpr> argExprs, Frame frame, EffectContext ctx)
