@@ -262,7 +262,11 @@ public sealed partial class CardApi
             // 所以放进本表**永远不会被调用到**（那是「看起来实现了、其实没有」的坑）。
             // 实现落点：`KismetVm.EvalMath` 的 `case "GetStaticCard"`。
 
-            ["GetLocationCardBySide"] = (c, r, a) => GetLocationCardBySide(SideArg(r, a, 2)),
+            ["GetLocationCardBySide"] = (c, r, a) =>
+            {
+                var card = GetLocationCardBySide(SideArg(r, a, 2));
+                return new object?[] { card, card?.CardId ?? 0 };
+            },
             // `GetMainNationForSide` forwards to BP_GameState_Battle's
             // `GetMainFactionBySide`; its HQ card definition supplies the faction.
             ["GetMainNationForSide"] = (c, r, a) =>

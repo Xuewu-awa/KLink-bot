@@ -162,6 +162,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("ChangeDefense：旁观卡可增加防御或中止 HQ 获得防御",
+            ChangeDefenseBeforeOtherCardGainDefense),
 
         // ---- 三个规则 bug 的回归断言（2026-09-27）----
         new("3 掷弹兵：只有**德国**单位操作才 +1+1（别的阵营不算）", PanzergrenadierFactionGate),
@@ -1789,14 +1791,20 @@ internal static class SelfTest
             return "没有注册到派发表里";
         }
 
-        if (result is not CardInstance card)
+        if (result is not object?[] outputs || outputs.Length < 2
+            || outputs[0] is not CardInstance card)
         {
-            return $"期望返回 CardInstance，实际 {result?.GetType().Name ?? "null"}";
+            return $"期望返回 [HQ 卡, HQ 卡 ID]，实际 {result?.GetType().Name ?? "null"}";
         }
 
         if (!card.IsHq || card.Owner != Side.Right)
         {
             return $"期望右方 HQ，实际 {card.Name} owner={card.Owner} isHq={card.IsHq}";
+        }
+
+        if (outputs[1] is not int cardId || cardId != card.CardId)
+        {
+            return $"期望第二个出参为 HQ 卡 ID {card.CardId}，实际 {outputs[1] ?? "null"}";
         }
 
         return null;
@@ -4158,6 +4166,57 @@ internal static class SelfTest
         {
             return $"蓝图 `ChangeDefense` 的 ct=4 是 L_0E96 的非法值分支（只 log + return），"
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
+        }
+
+        return null;
+    }
+
+    private static string? ChangeDefenseBeforeOtherCardGainDefense(CardDatabase db)
+    {
+        const string sourceName = "card_unit_t_34";
+        const string bonusName = "card_unit_111th_indian_brigade";
+        const string vetoName = "card_unit_kagoshima_regiment";
+        foreach (string name in new[] { sourceName, bonusName, vetoName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        // 111th Indian Brigade changes the running amount by +1 for its own HQ.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hq = state.Hq(Side.Left);
+            var source = state.CreateWithId(sourceName, Side.Left, 71, CardLocation.BoardFrontline, 0);
+            state.CreateWithId(bonusName, Side.Left, 72, CardLocation.BoardFrontline, 1);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            int before = hq.Defense;
+
+            engine.Api.ChangeDefense(hq, 2, source);
+
+            if (hq.Defense != before + 3)
+            {
+                return $"111th Indian Brigade 应把 HQ 的 +2 改为 +3，实际变化 {hq.Defense - before}"
+                     + $"\n       派发记录：{string.Join(" | ", trace)}";
+            }
+        }
+
+        // Kagoshima Regiment sets the amount to zero and stops the change for HQs.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hq = state.Hq(Side.Left);
+            var source = state.CreateWithId(sourceName, Side.Left, 74, CardLocation.BoardFrontline, 0);
+            state.CreateWithId(vetoName, Side.Right, 75, CardLocation.BoardFrontline, 0);
+            int before = hq.Defense;
+
+            engine.Api.ChangeDefense(hq, 2, source);
+
+            if (hq.Defense != before)
+            {
+                return $"Kagoshima Regiment 应中止 HQ 防御增益，实际变化 {hq.Defense - before}";
+            }
         }
 
         return null;

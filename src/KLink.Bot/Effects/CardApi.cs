@@ -2135,6 +2135,17 @@ public sealed partial class CardApi
             return;
         }
 
+        if (fireGainDefenseEvent && delta > 0 && target.Defense > 0
+            && !ApplyBeforeOtherCardGainDefense(target, ref delta))
+        {
+            return;
+        }
+
+        if (delta == 0)
+        {
+            return;
+        }
+
         target.Defense += delta;
         target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
 
@@ -2172,6 +2183,35 @@ public sealed partial class CardApi
         {
             _engine.Destroy(target, source);
         }
+    }
+
+    /// <summary>
+    /// `ChangeDefense` runs each observer's local function in sequence; its output becomes
+    /// the next observer's input, and `stopAction` cancels the gain.
+    /// </summary>
+    private bool ApplyBeforeOtherCardGainDefense(CardInstance target, ref int amount)
+    {
+        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardGainingDefense"] = target,
+            ["defenseToAdd"] = amount,
+        };
+
+        var hits = BroadcastLocalWithOutParams(
+            "OnBeforeOtherCardGainDefense", target,
+            new[] { "newDefenseToAdd", "stopAction" }, seed);
+
+        foreach (var hit in hits)
+        {
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")))
+            {
+                return false;
+            }
+
+            amount = AsInt(hit.Outs.GetValueOrDefault("newDefenseToAdd"));
+        }
+
+        return true;
     }
 
     /// <summary>
