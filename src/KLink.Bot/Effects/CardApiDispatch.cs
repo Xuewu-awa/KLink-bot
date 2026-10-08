@@ -263,6 +263,10 @@ public sealed partial class CardApi
             // 实现落点：`KismetVm.EvalMath` 的 `case "GetStaticCard"`。
 
             ["GetLocationCardBySide"] = (c, r, a) => GetLocationCardBySide(SideArg(r, a, 2)),
+            // `GetMainNationForSide` forwards to BP_GameState_Battle's
+            // `GetMainFactionBySide`; its HQ card definition supplies the faction.
+            ["GetMainNationForSide"] = (c, r, a) =>
+                c.State.GetMainFactionBySide((Side)IntArg(a, 0)),
 
             // ⚠️ **可选参数必须读**。权威签名（`CardFunctionsStub.h:437`）：
             //     `GetCardsOnBoardBySide(ESideEnum side, bool unitsOnly, bool includeCovertCards, TArray& Cards)`

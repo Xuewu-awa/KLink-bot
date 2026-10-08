@@ -59,6 +59,7 @@ internal static class SelfTest
 
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
+        new("GetMainNationForSide：从两侧 HQ 读取主阵营并过滤 Pilot Escape 空军候选", MainNationForSide),
         new("PAMS：选中一张后被生成成新卡并塞进牌库（走完 CS 答复的整条链）", PamsDevelopEndToEnd),
         new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
         new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
@@ -2691,6 +2692,74 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? MainNationForSide(CardDatabase db)
+    {
+        const string selectingName = "card_event_pilot_escape";
+        if (db.Find(selectingName) is null || db.Find("card_location_london") is null
+            || db.Find("card_location_berlin") is null)
+        {
+            return "卡库缺少 Pilot Escape 或测试用 HQ 定义";
+        }
+
+        var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
+        var state = engine.State;
+        state.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0);
+        state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
+        state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
+
+        var selecting = state.CreateWithId(selectingName, Side.Left, 2, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Controller = Side.Left,
+            Self = selecting,
+        };
+
+        object? left = engine.Api.InvokeByName("GetMainNationForSide", selecting,
+            new object?[] { (int)Side.Left, null }, ctx, out bool leftHandled);
+        object? right = engine.Api.InvokeByName("GetMainNationForSide", selecting,
+            new object?[] { (int)Side.Right, null }, ctx, out bool rightHandled);
+        object? invalid = engine.Api.InvokeByName("GetMainNationForSide", selecting,
+            new object?[] { (int)Side.NotAvailable, null }, ctx, out bool invalidHandled);
+        if (!leftHandled || !rightHandled || !invalidHandled
+            || left is not int leftFaction || right is not int rightFaction
+            || leftFaction != 2 || rightFaction != 1 || !Equals(invalid, 0))
+        {
+            return $"主阵营读取错误：left={left ?? "null"}, right={right ?? "null"}, "
+                 + $"invalid={invalid ?? "null"}, handled={leftHandled}/{rightHandled}/{invalidHandled}";
+        }
+
+        if (KismetLibrary.Default?.FindLocalProgram(selectingName, "GetChooseSpawnCards") is null)
+        {
+            return $"IR 里没有 {selectingName} 的 GetChooseSpawnCards 局部函数";
+        }
+
+        var candidates = engine.Api.GetChooseSpawnCards(ctx, selecting,
+            out bool markAsSeen, out bool keepOrder);
+        if (candidates.Count == 0)
+        {
+            return "Pilot Escape 候选为空，主阵营过滤链没有产生空军候选";
+        }
+
+        if (candidates.Any(c => c.Definition.FactionId != leftFaction
+            || c.Definition.Type is not ("fighter" or "bomber")))
+        {
+            return "Pilot Escape 候选包含非左方主阵营或非空军卡";
+        }
+
+        if (candidates.Any(c => c.Definition.FactionId == rightFaction
+            && (c.Definition.Type is "fighter" or "bomber")))
+        {
+            return "Pilot Escape 候选错误包含右方主阵营空军";
+        }
+
+        return markAsSeen || keepOrder
+            ? $"Pilot Escape 的 markAsSeen/keepOrder 应为 false，实际 {markAsSeen}/{keepOrder}"
+            : null;
     }
 
     /// <summary>

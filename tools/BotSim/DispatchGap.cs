@@ -216,10 +216,10 @@ internal static class DispatchGapBaseline
     /// 2026-10-08：382 → **381**（1946 → 1940 个调用点）。接通局部 Map 的
     /// Map_Add / Map_Find，覆盖 card_event_the_big_three 的阵营统计增益。
     /// </remarks>
-    public const int BaselineCount = 381;
+    public const int BaselineCount = 380;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "B97DC899FEA7B120";
+    public const string BaselineFingerprint = "DC2D6FFE027AFFA9";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

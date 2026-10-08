@@ -552,6 +552,21 @@ public sealed class GameState
 
     public int HqDefense(Side s) => Hq(s).Defense;
 
+    /// <summary>
+    /// Blueprint `GetMainFactionBySide`: the match HQ definition carries the
+    /// side's main faction. Invalid sides map to EFactionEnum::NotAvailable.
+    /// </summary>
+    public int GetMainFactionBySide(Side side)
+    {
+        if (side is not (Side.Left or Side.Right))
+        {
+            return 0;
+        }
+
+        CardInstance hq = Hq(side);
+        return hq.Definition.IsLocationCard ? hq.Definition.FactionId : 0;
+    }
+
     /// <summary>创建一张卡并加入牌库。用于开局发牌与效果生成的卡（SpawnCard 等）。</summary>
     /// <param name="sequentialId">
     /// true 时用**顺序号**（左 2../右 42..）而不是客户端的 `1000×回合+序号` 规则。
