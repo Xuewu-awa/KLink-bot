@@ -287,6 +287,8 @@ internal static class SelfTest
             MakeVeteranTargetArg),
         new("Sniped：触发后只禁用同阵营手牌中的其他 Sniped",
             DeactivateOtherSniped),
+        new("National Fire Service：触发后只禁用同阵营手牌中的其他 NFS",
+            DeactivateOtherNfs),
 
         // ---- P0 第 4 族：三条「实现了但语义错」（2026-09-27）----
         new("掩护：邻卡有 Guard ⇒ 该卡不可打；掩护卡自己可打；孤立单位可打；HQ 只在被邻卡掩护时不可打",
@@ -8391,6 +8393,43 @@ internal static class SelfTest
         if (engine.Api.HasCustomAbility(enemy, "DisableOtherSniped"))
         {
             return "不应标记对手手牌中的 Sniped";
+        }
+
+        return null;
+    }
+
+    private static string? DeactivateOtherNfs(CardDatabase db)
+    {
+        const string nfs = "card_event_national_fire_service";
+        if (db.Find(nfs) is null)
+        {
+            return $"卡库里缺 {nfs}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var resolving = state.CreateWithId(nfs, Side.Left, 140, CardLocation.HandLeft, 0);
+        var other = state.CreateWithId(nfs, Side.Left, 141, CardLocation.HandLeft, 1);
+        var enemy = state.CreateWithId(nfs, Side.Right, 142, CardLocation.HandRight, 0);
+        engine.Api.JsonSetBool(resolving, "isActive", true);
+        engine.Api.JsonSetBool(other, "isActive", true);
+        engine.Api.JsonSetBool(enemy, "isActive", true);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = resolving, Controller = Side.Left };
+
+        engine.Api.InvokeByName("DeactivateOtherNFS", null, Array.Empty<object?>(), ctx, out _);
+
+        if (!engine.Api.JsonGetBool(resolving, "isActive"))
+        {
+            return "正在结算的 NFS 不应被 DeactivateOtherNFS 关闭";
+        }
+
+        if (engine.Api.JsonGetBool(other, "isActive"))
+        {
+            return "同阵营手牌中的其他 NFS 未被关闭";
+        }
+
+        if (!engine.Api.JsonGetBool(enemy, "isActive"))
+        {
+            return "不应关闭对手手牌中的 NFS";
         }
 
         return null;

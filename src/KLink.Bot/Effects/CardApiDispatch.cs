@@ -735,6 +735,18 @@ public sealed partial class CardApi
 
                 return null;
             },
+            // `DeactivateOtherNFS()` has the same implicit-self shape as
+            // Sniped, but stores the Blueprint card's `isActive` flag.
+            ["DeactivateOtherNFS"] = (c, r, a) =>
+            {
+                var source = SelfArg(c, r, a);
+                if (source is not null)
+                {
+                    DeactivateOtherNfs(source);
+                }
+
+                return null;
+            },
             ["AddCustomGameplayTag"] = (c, r, a) => DoAddCustomGameplayTag(c, r, a),
             ["RemoveCustomGameplayTag"] = (c, r, a) => DoRemoveCustomGameplayTag(c, r, a),
             // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`

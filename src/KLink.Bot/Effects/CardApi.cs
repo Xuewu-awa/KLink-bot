@@ -3477,6 +3477,24 @@ public sealed partial class CardApi
         }
     }
 
+    /// <summary>
+    /// `card_event_national_fire_service::DeactivateOtherNFS` scans the
+    /// resolving side's hand, disables every other National Fire Service,
+    /// and leaves cards on the opposing side untouched.
+    /// </summary>
+    public void DeactivateOtherNfs(CardInstance source)
+    {
+        foreach (var card in State.Hand(source.Owner))
+        {
+            if (card.CardId != source.CardId
+                && string.Equals(card.Name, "card_event_national_fire_service",
+                    StringComparison.Ordinal))
+            {
+                JsonSetBool(card, "isActive", false);
+            }
+        }
+    }
+
     // Dynamic GameplayTags are card state, not custom abilities. Keep them in
     // private JSON so snapshots persist them without overloading CustomAbility.
     internal const string DynamicGameplayTagsKey = "__customGameplayTags";
