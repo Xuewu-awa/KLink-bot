@@ -236,6 +236,8 @@ internal static class SelfTest
             DealDamageAfterCalcAdjacentDefense),
         new("Forecast：天气卡判定与三类天气候选池按蓝图标签筛选",
             ForecastCardPrimitives),
+        new("Forecast：同步广播 OnOtherCardForecasted，并触发 H8K 抽牌与 2nd Pioneers 增益",
+            ForecastBroadcastGameplay),
         new("Veteran：按显式 `_vet` 卡库变体查询升级并返回静态老兵模板",
             VeteranUpgradeQueries),
         new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
@@ -6512,6 +6514,81 @@ internal static class SelfTest
             || list.All(card => !string.Equals(card.Name, weatherName, StringComparison.Ordinal)))
         {
             return $"天气候选池应包含天气模板且排除普通卡，数量={list.Count}";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Forecast is a client-facing selection primitive in the Blueprint, but
+    /// these two real subscribers only consume the completed event payload:
+    /// Kawanishi H8K draws one card and 2nd Pioneers buffs every other friendly
+    /// unit.  Headless resolution accepts the forecast synchronously, so this
+    /// checks the complete event path and that the triggering card is excluded.
+    /// </summary>
+    private static string? ForecastBroadcastGameplay(CardDatabase db)
+    {
+        const string h8kName = "card_unit_kawanishi_h8k";
+        const string pioneersName = "card_unit_2_2nd_pioneers";
+        foreach (string name in new[] { h8kName, pioneersName, PlainUnit })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var trigger = PutOnBoard(state, h8kName, Side.Left, 20, 1);
+        var h8k = PutOnBoard(state, h8kName, Side.Left, 21, 2);
+        var pioneers = PutOnBoard(state, pioneersName, Side.Left, 22, 3);
+        var otherUnit = PutOnBoard(state, PlainUnit, Side.Left, 23, 4);
+        state.CreateWithId(PlainUnit, Side.Left, 30, CardLocation.DeckLeft, 0);
+
+        int h8kAttack = h8k.Attack;
+        int h8kDefense = h8k.Defense;
+        int otherAttack = otherUnit.Attack;
+        int otherDefense = otherUnit.Defense;
+        int pioneersAttack = pioneers.Attack;
+        int pioneersDefense = pioneers.Defense;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = trigger,
+            Controller = Side.Left,
+        };
+
+        object? result = engine.Api.InvokeByName("Forecast", trigger,
+            new object?[] { null }, ctx, out bool handled);
+        if (!handled)
+        {
+            return "Forecast 未接入派发表";
+        }
+
+        if (result is not int resultCode || resultCode != 0)
+        {
+            return $"Forecast 应同步返回 0，实际 result={result ?? "null"}";
+        }
+
+        if (state.Hand(Side.Left).Count != 1 || state.Hand(Side.Left)[0].Name != PlainUnit)
+        {
+            return "旁观 H8K 应抽到 1 张牌，而 Forecast 触发 H8K 不应重复抽牌，"
+                 + $"实际手牌={state.Hand(Side.Left).Count}";
+        }
+
+        if (h8k.Attack != h8kAttack + 1 || h8k.Defense != h8kDefense + 1
+            || otherUnit.Attack != otherAttack + 1 || otherUnit.Defense != otherDefense + 1)
+        {
+            return "2nd Pioneers 应给其它友军各 +1/+1，实际 "
+                 + $"H8K={h8k.Attack}/{h8k.Defense}（原 {h8kAttack}/{h8kDefense}），"
+                 + $"普通单位={otherUnit.Attack}/{otherUnit.Defense}（原 {otherAttack}/{otherDefense}）";
+        }
+
+        if (pioneers.Attack != pioneersAttack || pioneers.Defense != pioneersDefense)
+        {
+            return "2nd Pioneers 自身不应被 OnOtherCardForecasted 增益："
+                 + $"Pioneers={pioneers.Attack}/{pioneers.Defense}（原 {pioneersAttack}/{pioneersDefense}）";
         }
 
         return null;

@@ -1215,10 +1215,12 @@ public sealed partial class CardApi
             ["AppendNumberToCardText"] = (c, r, a) => null,
             ["GetEmptyText"] = (c, r, a) => "",
 
-            // Forecast's client selection notification is intentionally kept out
-            // of the headless rules layer. The pure candidate query is fully
-            // specified by Blueprint and returns static weather-card templates.
-            ["Forecast"] = (c, r, a) => null,
+            // The Blueprint notifier is client-facing, but Forecast itself is
+            // a gameplay event: every matching card must receive
+            // OnOtherCardForecasted. Headless resolution treats the forecast
+            // as immediately accepted and uses the triggering card as the
+            // event payload; subscribers only consume its side/card ID.
+            ["Forecast"] = (c, r, a) => DoForecast(c, r, a),
             ["GetAllForecastCards"] = (c, r, a) => StaticCardPool(
                     c, includeNotAttainable: TruthyArg(a, 0),
                     includeReserved: TruthyArg(a, 1))
@@ -2587,6 +2589,29 @@ public sealed partial class CardApi
     /// `RandomIntegerInRangeFromStream(0, pool.Count-1)`（`CardApi.cs:2255`）——
     /// 池子大小一变，**同一个流位置算出的下标就变**，取到的卡就变。
     /// </summary>
+    private object? DoForecast(EffectContext c, object? receiver, object?[] args)
+    {
+        var triggering = SelfArg(c, receiver, args) ?? c.Self;
+        if (triggering is null)
+        {
+            return 0;
+        }
+
+        c.Engine.Api.FireTrigger(
+            "OnOtherCardForecasted",
+            triggering,
+            triggering.Owner,
+            eventArgs: new object?[] { triggering, triggering.CardId },
+            eventSubject: triggering,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardDeveloped"] = triggering,
+                ["instigatorID"] = triggering.CardId,
+            });
+
+        return 0;
+    }
+
     private List<CardInstance> StaticCardPool(
         EffectContext c, bool includeNotAttainable, bool includeReserved)
     {
