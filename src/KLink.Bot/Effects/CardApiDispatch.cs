@@ -282,17 +282,15 @@ public sealed partial class CardApi
             // 这个 `IsUnit` 分支只有在结果集**可能含非单位**时才有意义。
             // 棋盘上唯一的非单位卡就是 HQ（位置卡），所以 `unitsOnly=false` ⇒ 含该方 HQ。
             //
-            // `includeCovertCards` 读进来但**当前无效果**：本内核还没有建模 Covert
-            // （P1，见审计 §4「隐蔽 Covert」），没有"未揭示的隐蔽卡"这个状态可过滤。
-            // 记一笔未实现，别让它静默（数字小，不会淹没别的东西）。
+            // 蓝图逐张检查总防御大于 0、在场、阵营匹配和 Covert 可见性，
+            // 最后才应用 unitsOnly。HQ 仍按 BattleCardsInOrder 的插入顺序处理。
             ["GetCardsOnBoardBySide"] = (c, r, a) =>
             {
                 var side = SideArg(r, a, 0, c.Controller);
-                if (TruthyArg(a, 2))
-                {
-                    c.State.UnimplementedCalls["GetCardsOnBoardBySide<includeCovertCards>"] =
-                        c.State.UnimplementedCalls.GetValueOrDefault("GetCardsOnBoardBySide<includeCovertCards>") + 1;
-                }
+                bool includeCovert = TruthyArg(a, 2);
+                var cards = c.State.BattleCardsInOrder(side)
+                    .Where(card => card.Defense > 0
+                        && (includeCovert || !IsUnrevealedCovertCard(card)));
 
                 // ⚠️ `unitsOnly=false` 时 **HQ 要留在它自己的插入位置（= 最前）**，
                 //    **不能**追加到末尾：客户端 `AllCardsInBattle` 是「只增不删」的映射，
@@ -301,8 +299,8 @@ public sealed partial class CardApi
                 //    ⇒ 同一次消费、同一个下标会取到不同的卡。
                 //    见 `GameState.BattleCardsInOrder` 与 `BoardInBattleOrder` 里的蓝图依据。
                 return TruthyArg(a, 1)
-                    ? GetCardsOnBoardBySide(side).ToList()
-                    : c.State.BattleCardsInOrder(side).ToList();
+                    ? cards.Where(IsUnit).ToList()
+                    : cards.ToList();
             },
             // `GetHighestBomberAttack(out highestAttack)` is a card-local helper
             // used by Precision Bombing's cost update.  Its implicit side is the
@@ -320,8 +318,21 @@ public sealed partial class CardApi
             // "场上所有单位"，多出来的只能是 HQ（棋盘上唯一的非单位卡）。
             // 旧实现把 `a[0]` 当成 `includeHq` 解释（注释里还写了推理），
             // 于是 90 个传 `false` 的调用点拿到的是"只有单位"，少了 HQ。
-            ["GetAllUnitsOnBoard"] = (c, r, a) => GetAllUnitsOnBoard().ToList(),
-            ["GetAllCardsOnBoard"] = (c, r, a) => GetAllCardsOnBoard().ToList(),
+            ["GetAllUnitsOnBoard"] = (c, r, a) =>
+            {
+                bool includeCovert = TruthyArg(a, 0);
+                return GetAllUnitsOnBoard()
+                    .Where(card => card.Defense > 0
+                        && (includeCovert || !IsUnrevealedCovertCard(card)))
+                    .ToList();
+            },
+            ["GetAllCardsOnBoard"] = (c, r, a) =>
+            {
+                bool includeCovert = TruthyArg(a, 0);
+                return GetAllCardsOnBoard()
+                    .Where(card => includeCovert || !IsUnrevealedCovertCard(card))
+                    .ToList();
+            },
             ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline().ToList(),
             ["GetAllCards"] = (c, r, a) => GetAllCards().ToList(),
             // SDF's private ApplyAndCorrectBuff counts the controller's board Guards.

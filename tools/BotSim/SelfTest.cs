@@ -8544,13 +8544,19 @@ internal static class SelfTest
     private static string? BoardQueryOptionalArgs(CardDatabase db)
     {
         const string card = "card_unit_arado_ar_196";
+        const string covertCard = "card_unit_174th_independent";
         if (db.Find(card) is null)
         {
             return $"卡库里缺 {card}";
         }
+        if (db.Find(covertCard) is null)
+        {
+            return $"卡库里缺 {covertCard}";
+        }
 
         var (engine, state) = EmptyBoard(db);
         var unit = state.CreateWithId(card, Side.Right, 60, CardLocation.BoardHqRight, 1);
+        var covert = state.CreateWithId(covertCard, Side.Right, 61, CardLocation.BoardHqRight, 2);
         var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
         var hq = state.Hq(Side.Right);
 
@@ -8564,28 +8570,61 @@ internal static class SelfTest
             return $"GetCardsOnBoardBySide(unitsOnly=true) 应只返回那 1 张单位，实际 {unitsOnly.Count} 张"
                  + $"（{string.Join("/", unitsOnly.Select(x => x.Name))}）";
         }
+        var unitsWithCovert = Call("GetCardsOnBoardBySide", 2, true, true, null);
+        if (!unitsWithCovert.Contains(unit) || !unitsWithCovert.Contains(covert))
+        {
+            return "GetCardsOnBoardBySide(includeCovertCards=true) 必须包含未揭示 Covert 单位";
+        }
 
         var allCards = Call("GetCardsOnBoardBySide", 2, false, false, null);
-        if (!allCards.Contains(hq))
+        if (!allCards.Contains(hq) || allCards.Contains(covert))
         {
             return "GetCardsOnBoardBySide(unitsOnly=false) 必须包含该方 HQ —— 证据：card_unit_3rd_maizuru_snlf 的"
                  + " OnPlayedFromHand（IR steps 1-6）对随机取出的那张卡做 IsUnit 再决定钉不钉，"
                  + "说明结果集**可能含非单位**；棋盘上唯一的非单位就是 HQ。"
-                 + $"实际返回 {allCards.Count} 张：{string.Join("/", allCards.Select(x => x.Name))}";
+                 + $"实际返回 {allCards.Count} 张：{string.Join("/", allCards.Select(x => x.Name))}。"
+                 + "默认查询还必须隐藏未揭示 Covert。";
         }
 
         // GetAllCardsOnBoard(includeCovertCards, out cards)：两个函数名只差 "units"
         var all = Call("GetAllCardsOnBoard", false, null);
-        if (!all.Contains(hq) || !all.Contains(unit))
+        if (!all.Contains(hq) || !all.Contains(unit) || all.Contains(covert))
         {
             return "GetAllCardsOnBoard 应包含双方 HQ（它和 GetAllUnitsOnBoard 的唯一区别就是「卡」与「单位」），"
                  + $"实际 {all.Count} 张：{string.Join("/", all.Select(x => x.Name))}";
         }
 
         var units = Call("GetAllUnitsOnBoard", false, null);
-        if (units.Contains(hq) || !units.Contains(unit))
+        if (units.Contains(hq) || !units.Contains(unit) || units.Contains(covert))
         {
-            return "GetAllUnitsOnBoard 不该含 HQ，且必须含单位";
+            return "GetAllUnitsOnBoard 默认应隐藏未揭示 Covert、不含 HQ，且必须含普通单位";
+        }
+        var unitsIncludingCovert = Call("GetAllUnitsOnBoard", true, null);
+        if (!unitsIncludingCovert.Contains(unit) || !unitsIncludingCovert.Contains(covert))
+        {
+            return "GetAllUnitsOnBoard(includeCovertCards=true) 必须包含未揭示 Covert 单位";
+        }
+
+        var cardsIncludingCovert = Call("GetAllCardsOnBoard", true, null);
+        if (!cardsIncludingCovert.Contains(covert))
+        {
+            return "GetAllCardsOnBoard(includeCovertCards=true) 必须包含未揭示 Covert 卡";
+        }
+
+        engine.Api.RevealCard(covert, unit.CardId);
+        if (CardApi.IsUnrevealedCovertCard(covert)
+            || !Call("GetCardsOnBoardBySide", 2, true, false, null).Contains(covert)
+            || !Call("GetAllUnitsOnBoard", false, null).Contains(covert)
+            || !Call("GetAllCardsOnBoard", false, null).Contains(covert))
+        {
+            return "RevealCard 后默认查询应包含该卡，且它不再被判为未揭示 Covert";
+        }
+
+        unit.Defense = 0;
+        if (Call("GetCardsOnBoardBySide", 2, true, true, null).Contains(unit)
+            || Call("GetAllUnitsOnBoard", true, null).Contains(unit))
+        {
+            return "防御归零的单位不应出现在 GetCardsOnBoardBySide / GetAllUnitsOnBoard 结果中";
         }
 
         return null;
