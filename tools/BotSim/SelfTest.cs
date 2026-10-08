@@ -238,6 +238,8 @@ internal static class SelfTest
             ForecastCardPrimitives),
         new("Forecast：同步广播 OnOtherCardForecasted，并触发 H8K 抽牌与 2nd Pioneers 增益",
             ForecastBroadcastGameplay),
+        new("511th Regiment：老兵步兵 1 防御时获得 +2 攻击，条件失效后撤回",
+            FiveEleventhRegimentVeteranBuff),
         new("Veteran：按显式 `_vet` 卡库变体查询升级并返回静态老兵模板",
             VeteranUpgradeQueries),
         new("事件层：OnOtherCardCreatedAlterCard 传递 cardPlayed/method（真实 67th BARANOVICHI 订阅）",
@@ -6589,6 +6591,71 @@ internal static class SelfTest
         {
             return "2nd Pioneers 自身不应被 OnOtherCardForecasted 增益："
                  + $"Pioneers={pioneers.Attack}/{pioneers.Defense}（原 {pioneersAttack}/{pioneersDefense}）";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `card_unit_511th_regiment` keeps a source-specific +2 attack buff in
+    /// sync with its private Blueprint predicate.  Exercise both transitions
+    /// directly through the dispatch table so the no-op fallback cannot hide a
+    /// stale aura.
+    /// </summary>
+    private static string? FiveEleventhRegimentVeteranBuff(CardDatabase db)
+    {
+        const string sourceName = "card_unit_511th_regiment";
+        const string targetName = "card_unit_16th_infantry_brigade";
+        if (db.Find(sourceName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库里缺 {sourceName} 或 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = PutOnBoard(state, sourceName, Side.Left, 20, 1);
+        var target = PutOnBoard(state, targetName, Side.Left, 21, 2);
+        if (target.Keywords.Contains(Keyword.Veteran)
+            || !string.Equals(target.Definition.Type, "infantry", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"测试目标必须是普通步兵，实际 keywords=[{string.Join(',', target.Keywords)}] type={target.Definition.Type}";
+        }
+
+        // The live database stores the veteran as a separate `_vet` definition;
+        // the gameplay predicate itself consumes the runtime Veteran keyword.
+        engine.Api.MakeVeteran(target);
+        if (!target.Keywords.Contains(Keyword.Veteran))
+        {
+            return "MakeVeteran 未将普通步兵目标转换为老兵";
+        }
+
+        int baseAttack = target.Attack;
+        target.Defense = 1;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = source,
+            Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("checkAndUpdateBuffOnCard", null,
+            new object?[] { target }, ctx, out bool handled);
+        if (!handled || target.Attack != baseAttack + 2
+            || !target.BuffsBySource.TryGetValue((source.CardId, false), out var buff)
+            || buff.Attack != 2)
+        {
+            return $"1 防御老兵步兵应得到来源 {source.CardId} 的 +2 攻击，"
+                 + $"handled={handled} attack={target.Attack} base={baseAttack}";
+        }
+
+        target.Defense = 2;
+        engine.Api.InvokeByName("checkAndUpdateBuffOnCard", null,
+            new object?[] { target }, ctx, out bool removeHandled);
+        if (!removeHandled || target.Attack != baseAttack
+            || target.BuffsBySource.ContainsKey((source.CardId, false)))
+        {
+            return $"防御离开 1 后应撤回 511th 增益，handled={removeHandled} "
+                 + $"attack={target.Attack} base={baseAttack} buffCount={target.BuffsBySource.Count}";
         }
 
         return null;

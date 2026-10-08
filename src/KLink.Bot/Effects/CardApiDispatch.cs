@@ -1121,8 +1121,8 @@ public sealed partial class CardApi
             ["isBuffedByCard"] = (c, r, a) => IsBuffedByCard(c, r, a),
             ["GetUnitTypeCountOnBoard"] = (c, r, a) => c.State.Board(SideArg(r, a, 0, c.Controller)).Count(u => IsUnit(u)),
             ["updateCustomJsonIfNeeded"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },
-            ["checkAndUpdateBuffOnCard"] = (c, r, a) => null,
-            ["checkAndUpdateBuffOnAllCards"] = (c, r, a) => null,
+            ["checkAndUpdateBuffOnCard"] = (c, r, a) => DoCheckAndUpdateBuffOnCard(c, r, a),
+            ["checkAndUpdateBuffOnAllCards"] = (c, r, a) => DoCheckAndUpdateBuffOnAllCards(c),
 
             // ---------------- 玩家选择类（近似实现，语义待回放验证）----------------
             // 这两族是「让玩家从若干张里选一张」。无头自对弈里没有真人，
@@ -2610,6 +2610,63 @@ public sealed partial class CardApi
             });
 
         return 0;
+    }
+
+    /// <summary>
+    /// Re-evaluate the 511th Regiment's veteran-infantry aura.  The Blueprint
+    /// private helper is called from defense changes, repairs, damage, entry,
+    /// and veteran transitions; it grants +2 attack while the target is a
+    /// same-side veteran infantry unit with exactly one defense, and removes
+    /// that source's bonus as soon as the predicate stops matching.
+    /// </summary>
+    private object? DoCheckAndUpdateBuffOnCard(EffectContext c, object? receiver, object?[] args)
+    {
+        var target = AsCardOrId(c, args.ElementAtOrDefault(0)) ?? AsCard(receiver);
+        var source = c.Self;
+        if (target is null || source is null || !target.Location.IsBoard())
+        {
+            return null;
+        }
+
+        int sourceAttackBuff = 0;
+        if (target.BuffsBySource.TryGetValue((source.CardId, true), out var temporary))
+        {
+            sourceAttackBuff = temporary.Attack;
+        }
+        else if (target.BuffsBySource.TryGetValue((source.CardId, false), out var permanent))
+        {
+            sourceAttackBuff = permanent.Attack;
+        }
+
+        bool isBuffed = sourceAttackBuff > 0;
+        bool shouldBeBuffed = target.Owner == source.Owner
+            && target.Keywords.Contains(Keyword.Veteran)
+            && target.Defense == 1
+            && string.Equals(target.Definition.Type, "infantry", StringComparison.OrdinalIgnoreCase);
+
+        if (shouldBeBuffed && !isBuffed)
+        {
+            ChangeAttack(target, 2, source);
+        }
+        else if (!shouldBeBuffed && isBuffed)
+        {
+            // Blueprint changeType=4 removes the complete source buff; applying
+            // a negative delta would create a second, stale source entry.
+            RemoveAttackBuff(target, source.CardId);
+        }
+
+        return null;
+    }
+
+    private object? DoCheckAndUpdateBuffOnAllCards(EffectContext c)
+    {
+        foreach (var card in c.State.BattleCardsInOrder(Side.Left)
+            .Concat(c.State.BattleCardsInOrder(Side.Right)).ToList())
+        {
+            DoCheckAndUpdateBuffOnCard(c, null, new object?[] { card });
+        }
+
+        return null;
     }
 
     private List<CardInstance> StaticCardPool(
