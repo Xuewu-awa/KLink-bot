@@ -22,6 +22,7 @@ internal static class SelfTest
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
         new("GetOpponentSide 按当前对局方返回对手阵营", OpponentSideSemantics),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
+        new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
         new("Seagull：GetReducedDamage 按本方 HQ 本回合剩余减伤额度截断", GetReducedDamage),
@@ -1873,6 +1874,78 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// `IsGroundUnit` is a member predicate.  Blueprint calls made as
+    /// `self.IsGroundUnit()` omit a receiver from the IR, so the dispatcher
+    /// must resolve the card from the effect context.  Explicit receiver
+    /// calls are checked as a control to keep the two shapes aligned.
+    /// </summary>
+    private static string? IsGroundUnitImplicitSelf(CardDatabase db)
+    {
+        string? groundName = FindType(db, "infantry");
+        string? airName = db.All.FirstOrDefault(card =>
+            card.Type is "fighter" or "bomber")?.Name;
+        if (groundName is null || airName is null)
+        {
+            return "卡库里缺少 infantry 或 fighter/bomber 测试样本";
+        }
+
+        static string? Check(MatchEngine engine, CardInstance card, bool expected)
+        {
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = engine.State,
+                Self = card,
+                Controller = card.Owner,
+            };
+
+            object? result = engine.Api.InvokeByName(
+                "IsGroundUnit", null, new object?[] { null }, ctx, out bool handled);
+            if (!handled)
+            {
+                return "IsGroundUnit 没有注册到派发表里";
+            }
+
+            if (result is not bool actual || actual != expected)
+            {
+                return $"隐式 self 的 IsGroundUnit({card.Definition.Type}) = "
+                     + $"{result ?? "null"}，期望 {expected}";
+            }
+
+            object? explicitResult = engine.Api.InvokeByName(
+                "IsGroundUnit", card, new object?[] { null }, ctx, out bool explicitHandled);
+            if (!explicitHandled || explicitResult is not bool explicitValue
+                || explicitValue != expected)
+            {
+                return $"显式 receiver 的 IsGroundUnit({card.Definition.Type}) = "
+                     + $"{explicitResult ?? "null"}，期望 {expected}";
+            }
+
+            return null;
+        }
+
+        var ground = MakeBoard(db, groundName);
+        if (ground is null)
+        {
+            return $"造不出地面单位 {groundName}";
+        }
+
+        string? error = Check(ground.Value.Engine, ground.Value.Unit, expected: true);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        var air = MakeBoard(db, airName);
+        if (air is null)
+        {
+            return $"造不出空军单位 {airName}";
+        }
+
+        return Check(air.Value.Engine, air.Value.Unit, expected: false);
     }
 
     /// <summary>`DamageCard(hq, 2, ...)` 应当从 HQ 防御里扣 2。</summary>

@@ -1309,7 +1309,12 @@ public sealed partial class CardApi
             ["IsForecasted"] = (c, r, a) => false,
 
             // ---------------- 第二批补的原语（来自多卡组交叉验证）----------------
-            ["IsGroundUnit"] = (c, r, a) => AsCard(r) is { } g && g.Definition.Type is "infantry" or "tank" or "artillery",
+            // `IsGroundUnit` is a member predicate (`BaseCardObject::IsGroundUnit`),
+            // so implicit `self.IsGroundUnit()` calls have no receiver in the IR.
+            // Keep the same receiver/implicit-self resolution as the other card
+            // predicates instead of treating a missing receiver as false.
+            ["IsGroundUnit"] = (c, r, a) => SelfArg(c, r, a) is { } g
+                && g.Definition.Type is "infantry" or "tank" or "artillery",
 
             // ⚠️ 同形接收者 bug（审计 §5.1）。权威签名 `BaseCardObject.h:904`：
             //     `IsDamaged(bool& isIt)` —— 没有"是哪张卡"的入参。
