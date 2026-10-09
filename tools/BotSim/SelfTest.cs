@@ -490,6 +490,8 @@ internal static class SelfTest
             WasLeftMostCardWhenPlayedFromHand),
         new("GetDeckLocationBySide：按正版枚举映射返回 DeckLeft/DeckRight",
             GetDeckLocationBySide),
+        new("GetHandLocationBySide：按正版枚举映射返回 HandLeft/HandRight",
+            GetHandLocationBySide),
         new("653657：LoseKreditSlot 降槽而不扣当前费用，238 团恢复双倍伤害", LostSlotEnables238thDamage),
         new("DestroyMultipleCards：数组里卡对象 / 整数 cardID 两种元素形状都要被摧毁",
             DestroyMultipleCardsBothShapes),
@@ -14047,6 +14049,34 @@ internal static class SelfTest
         if (!rightHandled || rightRaw is not (int)CardLocation.DeckRight)
         {
             return $"Right 应映射到 DeckRight=2（handled={rightHandled}, result={rightRaw ?? "null"}）";
+        }
+
+        return null;
+    }
+
+    private static string? GetHandLocationBySide(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.ById(1)!;
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+
+        foreach (var (side, expected) in new[]
+                 {
+                     ((int)Side.Left, (int)CardLocation.HandLeft),
+                     ((int)Side.Right, (int)CardLocation.HandRight),
+                     ((int)Side.NotAvailable, (int)CardLocation.HandRight),
+                 })
+        {
+            object? raw = engine.Api.InvokeByName(
+                "GetHandLocationBySide", source, new object?[] { side, null }, ctx,
+                out bool handled);
+            if (!handled || raw is not int actual || actual != expected)
+            {
+                return $"side={side} 应映射到 handLocation={expected}（handled={handled}, result={raw ?? "null"}）";
+            }
         }
 
         return null;

@@ -1971,13 +1971,13 @@ public sealed partial class CardApi
             },
             // `GetActiveGotchasOrdered(out cardIDs)` —— 出参是**整数卡 ID 数组**。
             ["GetActiveGotchasOrdered"] = (c, r, a) => GetActiveGotchasOrdered(),
-            // ── ⚠️ **故意不注册** `GetHandLocationBySide`（有实现，但只给内核内部用）──
+            // ── `GetHandLocationBySide`（side → hand location）──────────────────
             //
             // `CardApi.GetHandLocationBySide` 已按蓝图实现
             //（`BP_CardFunctions.g.cs:20904-20930`：`side == 1 → 3`，否则 `4`），
             // `GotchaTriggered` 内部就调它（`:23743`）。
             //
-            // 但**注册成派发键**会让 IR 里 5 个既有调用点（`card_event_aerial_reconaissance`
+            // 早期 A/B 曾发现注册它会让 IR 里 5 个既有调用点（`card_event_aerial_reconaissance`
             // / `card_event_night_raid` / `card_unit_me_410_hornisse` /
             // `card_event_orp_blyskawica` / `card_event_supply_chain`）从「out 槽不写 ⇒
             // 读成 null」变成**真实手牌位置 3/4**，而那 5 处全是**比较/门**：
@@ -1989,15 +1989,11 @@ public sealed partial class CardApi
             // 旧行为下第一族恒假（null → `EqualEqual_ByteByte(null, 3/4)` 假）、
             // 第二族问的是 `NotAvailable(0)` 满不满。
             //
-            // **实测（A/B，命令见报告）**：注册它以后对局 `854099` 从 **106/118 掉到 100/118**
-            // （其余 8 局逐位不变）。也就是说这里是典型的「**两个错抵消**」
-            //（README §7.3）：门恒假掩盖了内核下游的另一个偏差，把门修对反而暴露出来。
-            // 任务书硬性要求「任何一局应用率下降都算失败 ⇒ 回退」，
-            // 所以**回退注册**、把 `GetHandLocationBySide` 留在缺口集合里（如实计数），
-            // 只在 `GotchaTriggered` 内部用它 —— 那一处是蓝图明确要求的
-            //（`:23743-23745`，且 0 个 IR 调用点，不影响上面那 5 张卡）。
-            //
-            // ["GetHandLocationBySide"] = (c, r, a) => (int)GetHandLocationBySide(SideArg(r, a, 0)),
+            // 当前内核已补齐相关下游规则；对现有 15 份回放逐条 A/B 对照，应用计数不再下降，
+            // 因此按 Blueprint 语义正式注册。side=0 也要落到 HandRight，和蓝图的
+            // `side == 1 ? 3 : 4` 完全一致。
+            ["GetHandLocationBySide"] = (c, r, a) =>
+                (int)GetHandLocationBySide(SideArgOrNull(a, 0) ?? Side.NotAvailable),
             // `RearrangeLocation(location)` —— 只有 1 个实参，没有出参。
             // IR 里 0 个调用点（只被库函数 `GotchaTriggered` / `SuppressMultipleUnits` 调），
             // 注册它是为了让「名字 → 实现」可查。

@@ -215,11 +215,14 @@ internal static class DispatchGapBaseline
     /// `card_unit_l4_grasshopper` 带空格的 `Remove the Buff` 私有函数。
     /// 2026-10-08：382 → **381**（1946 → 1940 个调用点）。接通局部 Map 的
     /// Map_Add / Map_Find，覆盖 card_event_the_big_three 的阵营统计增益。
+    /// 2026-10-10：380 → **379**（1939 → 1934 个调用点）。正式注册
+    /// `GetHandLocationBySide`；当前 15 份回放的 A/B 应用计数保持不变，
+    /// 并加入 Left/Right/NotAvailable 三种映射回归。
     /// </remarks>
-    public const int BaselineCount = 380;
+    public const int BaselineCount = 379;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "DC2D6FFE027AFFA9";
+    public const string BaselineFingerprint = "50514ECF100C95C4";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)
