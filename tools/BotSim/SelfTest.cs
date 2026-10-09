@@ -105,6 +105,8 @@ internal static class SelfTest
             BigThreeCountsFriendlyFactions),
         new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
             BlueprintArrayResize),
+        new("Blueprint Array_Identical：按顺序比较整数数组和卡 ID 数组",
+            BlueprintArrayIdentical),
         new("Blueprint 数学边界：短名 Max/Min/Clamp 按整数节点求值",
             BlueprintNumericBounds),
         new("Sturmovik Polish：带空格 Apply The Buff 叠加幸存单位攻防",
@@ -15645,6 +15647,57 @@ internal static class SelfTest
         return negativeHandled && result is null && values.Count == 0
             ? null
             : "Array_Resize 的负长度必须按 0 处理并清空数组";
+    }
+
+    private static string? BlueprintArrayIdentical(CardDatabase db)
+    {
+        const string firstName = "card_unit_10th_engineering_battalion";
+        const string secondName = "card_unit_2nd_parachute";
+        if (db.Find(firstName) is null || db.Find(secondName) is null)
+        {
+            return "Array_Identical 自测所需卡库条目缺失";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var first = state.CreateWithId(firstName, Side.Left, 501,
+            CardLocation.BoardHqLeft, 1);
+        var second = state.CreateWithId(secondName, Side.Left, 502,
+            CardLocation.BoardHqLeft, 2);
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = first, Controller = Side.Left,
+        };
+
+        object? Compare(object left, object right, out bool handled)
+            => engine.Api.InvokeByName("Array_Identical", null,
+                new object?[] { left, right }, ctx, out handled);
+
+        object? sameIds = Compare(new List<int> { first.CardId, second.CardId },
+            new List<int> { first.CardId, second.CardId }, out bool sameHandled);
+        if (!sameHandled || sameIds is not true)
+        {
+            return $"相同整数数组应返回 true（handled={sameHandled}, result={sameIds ?? "null"}）";
+        }
+
+        object? cardVsIds = Compare(new List<CardInstance> { first, second },
+            new List<int> { first.CardId, second.CardId }, out bool cardHandled);
+        if (!cardHandled || cardVsIds is not true)
+        {
+            return $"卡实例数组与 card ID 数组应按卡号相等（handled={cardHandled}, result={cardVsIds ?? "null"}）";
+        }
+
+        object? reordered = Compare(new List<int> { first.CardId, second.CardId },
+            new List<int> { second.CardId, first.CardId }, out bool orderHandled);
+        if (!orderHandled || reordered is not false)
+        {
+            return $"Array_Identical 必须保持顺序敏感（handled={orderHandled}, result={reordered ?? "null"}）";
+        }
+
+        object? differentLength = Compare(new List<int> { first.CardId },
+            new List<int> { first.CardId, second.CardId }, out bool lengthHandled);
+        return lengthHandled && differentLength is false
+            ? null
+            : $"长度不同的数组应返回 false（handled={lengthHandled}, result={differentLength ?? "null"}）";
     }
 
     private static string? BlueprintNumericBounds(CardDatabase db)

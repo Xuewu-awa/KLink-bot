@@ -936,6 +936,28 @@ public sealed partial class CardApi
 
                 return false;
             },
+            // UE `Array_Identical` compares two arrays element-by-element,
+            // preserving order. Card arrays and integer card-ID arrays use
+            // the same identity rule as `Array_Contains`.
+            ["Array_Identical"] = (c, r, a) =>
+            {
+                var left = a.ElementAtOrDefault(0) as System.Collections.IList;
+                var right = a.ElementAtOrDefault(1) as System.Collections.IList;
+                if (left is null || right is null || left.Count != right.Count)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < left.Count; i++)
+                {
+                    if (!SameArrayValue(left[i], right[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            },
             ["Array_LastIndex"] = (c, r, a) => EvalList(r, a).Count - 1,
             ["Array_AddUnique"] = (c, r, a) =>
             {
