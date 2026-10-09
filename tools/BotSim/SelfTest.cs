@@ -2491,6 +2491,27 @@ internal static class SelfTest
             return "没有侧信息的 discard 不应被当成可归属的服务端卡位置";
         }
 
+        var snapshot = new ServerMatchSnapshot(
+            MatchId: 7,
+            Turns: 1,
+            LeftPlayerId: 11,
+            RightPlayerId: 22,
+            Cards: new[]
+            {
+                new ServerCard(101, false, "discard_left", 0, "card_event_aans"),
+                new ServerCard(102, false, "discard_right", 0, "card_event_aans"),
+                new ServerCard(103, false, "discard", 0, "card_event_aans"),
+            },
+            Actions: Array.Empty<ServerAction>());
+        var replay = ServerReplayBridge.ToReplayData(snapshot);
+        if (replay.Cards.Count != 2
+            || replay.Cards.Any(card => card.Location != CardLocation.Discard)
+            || replay.Cards.Single(card => card.CardId == 101).Owner != Side.Left
+            || replay.Cards.Single(card => card.CardId == 102).Owner != Side.Right)
+        {
+            return "ServerMatchSnapshot -> ReplayData 未保留两侧弃牌归属，或错误接纳了裸 discard";
+        }
+
         return null;
     }
 
