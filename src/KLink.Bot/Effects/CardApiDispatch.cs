@@ -3822,22 +3822,9 @@ public sealed partial class CardApi
         //   si=103 JumpIfNot → si=472（qqq=False + return）★ **客户端在这里拒绝**
         //   si=117 instigatorID > 0  → si=151 JumpIfNot → si=393（return）
         //
-        // ⚠️⚠️ **这一条在本内核里【不落地】—— 理由已更新（2026-09-30）**：
-        //
-        // 旧理由（**已作废，别再引用**）：「蓝图自相矛盾」—— 红牛 `OnStartOfTurn` 先判
-        //   `IsLocatedOnBoard(self)` 再 `ChangeAttack(self,…)`，卡自己要求在场、门又拒绝在场，
-        //   于是把 4 条蓝图自测当成反证。**那个"矛盾"是我们自己实现的 bug 造出来的**：
-        //   `CardApi.CanCardBeBuffed` 当时把 `si=41` 的分支极性读反了，对在场单位返回 false。
-        //   真语义是「**不是**未揭示的隐蔽卡 ⇒ 直接放行（true）」（取证见
-        //   `klink bot/docs/CanCardBeBuffed矛盾调查.md` 与 `CardApi.CanCardBeBuffed` 的注释）。
-        //   ⇒ 红牛 / 爱国热忱 / 敢死队 / 3 掷弹兵那 4 条自测**从此不构成反证**。
-        //
-        // 新理由（本内核的事实）：**这道门在本内核里恒真 ⇒ 加了是空转。**
-        //   门的形状是 `if (!IsUnrevealedCovertCard(card)) return true;`，而内核没有建模
-        //   Covert 的「已揭示/未揭示」状态（P1 只到 `Keyword.Covert` + `getHasCovert` 判据面），
-        //   所以恒真。等 Covert 状态落地之后，这里再加门才有意义 —— 那时它会真的挡人。
-        //   ⚠️ 加门时**必须**用修好之后的 `CardApi.CanCardBeBuffed`：用旧实现会立刻打死
-        //   334 张 `ChangeAttack` + 311 张 `ChangeDefense` 的攻防改动。
+        // `ChangeAttack` 的共享实现会执行这道门；普通卡直接放行，未揭示
+        // Covert 只有在牌库/手牌中可以获得 buff。这样与蓝图的
+        // `CanCardBeBuffed` 分支一致，也覆盖直接调用 CardApi 的路径。
         int delta = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
@@ -3931,8 +3918,8 @@ public sealed partial class CardApi
             return null;
         }
 
-        // 同 `DoChangeAttack`：`ChangeDefense` si=48/80 是同一个守位，
-        // 同理**不落地** —— 门在本内核恒真，加了是空转（理由见 `DoChangeAttack` 那段）。
+        // 与 `DoChangeAttack` 相同，`ChangeDefense` 的共享实现会执行
+        // `CanCardBeBuffed` 守位。
         //
         // ★ `changeType == 2`（SetValue）同样是**设成绝对值**，出处同 `DoChangeAttack`：
         //   `ChangeDefense` 的 L_03D8 分支 `setAndEncryptDefense(card, Clamp(amount,0,99))`
@@ -3985,6 +3972,11 @@ public sealed partial class CardApi
     private object? DoChangeKreditCost(EffectContext c, object? r, object?[] a)
     {
         if (TargetCard(c, r, a) is not { } target)
+        {
+            return null;
+        }
+
+        if (!CanCardBeBuffed(target))
         {
             return null;
         }

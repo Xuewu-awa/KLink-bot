@@ -1956,8 +1956,8 @@ public sealed partial class CardApi
     ///
     /// 单独抽出来有两个理由：
     /// 1. 蓝图的形状就是「先过 `IsUnrevealedCovertCard` 门，再查这张表」；
-    /// 2. 本内核拿不到「未揭示的隐蔽卡」，这张表在 `CanCardBeBuffed` 上**不可达** ——
-    ///    抽出来才能让自测**逐条**核对它（否则就是一段没人验的死代码）。
+    /// 2. 位置表单独抽出，让自测可以在不经过效果入口的情况下逐条核对
+    ///    蓝图的分支；实际效果入口同样通过 `CanCardBeBuffed` 使用这张表。
     /// </summary>
     public static bool CanUnrevealedCovertBeBuffed(CardLocation location) => location switch
     {
@@ -2103,7 +2103,7 @@ public sealed partial class CardApi
     public void ChangeAttack(CardInstance target, int delta, CardInstance? source, int duration = -1,
                              bool temporary = false)
     {
-        if (!target.IsAlive || delta == 0)
+        if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
         }
@@ -2155,7 +2155,7 @@ public sealed partial class CardApi
     private void ApplyDefenseDelta(CardInstance target, int delta, CardInstance? source,
                                    bool temporary, bool fireGainDefenseEvent)
     {
-        if (!target.IsAlive || delta == 0)
+        if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
         }
@@ -2269,6 +2269,11 @@ public sealed partial class CardApi
     /// </summary>
     public void SetDefenseValue(CardInstance target, int value, CardInstance? source)
     {
+        if (!target.IsAlive || !CanCardBeBuffed(target))
+        {
+            return;
+        }
+
         ApplyDefenseDelta(target, value - target.Defense, source,
                           temporary: false, fireGainDefenseEvent: false);
 
@@ -2287,6 +2292,11 @@ public sealed partial class CardApi
 
     public void ChangeKreditCost(CardInstance target, int delta)
     {
+        if (!target.IsAlive || !CanCardBeBuffed(target))
+        {
+            return;
+        }
+
         int before = target.KreditCost;
         target.KreditCost = Math.Max(0, target.KreditCost + delta);
         _engine.FireSubAction("ZActionSetKreditCost", new[]
@@ -2815,6 +2825,11 @@ public sealed partial class CardApi
 
     public void GiveKeyword(CardInstance target, string keyword)
     {
+        if (!target.IsAlive || !CanCardBeBuffed(target))
+        {
+            return;
+        }
+
         target.Keywords.Add(keyword);
         _engine.FireSubAction($"ZActionGive{keyword}", new[]
         {

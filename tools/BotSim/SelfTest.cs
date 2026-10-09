@@ -358,6 +358,8 @@ internal static class SelfTest
         new("手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须**真的落实**（0 费 + 回牌库顶）", HandTargetSelectWorks),
         new("CanCardBeBuffed：门对所有位置放行（si=41 极性修正）+ 未揭示隐蔽卡的位置表逐条核对",
             CanCardBeBuffedTruthTable),
+        new("CanCardBeBuffed：未揭示隐蔽卡拒绝攻防/费用/战斗关键字，揭示后放行",
+            CanCardBeBuffedGuardsEffectEntrypoints),
         new("RevealCard：清除 Covert、持久化揭示状态并按蓝图派发揭示/入场触发",
             RevealCardSemantics),
 
@@ -11489,6 +11491,72 @@ internal static class SelfTest
 
         _ = engine;
         return null;
+    }
+
+    private static string? CanCardBeBuffedGuardsEffectEntrypoints(CardDatabase db)
+    {
+        const string covertName = "card_unit_115th_separate_btn";
+        if (db.Find(PlainUnit) is null || db.Find(covertName) is null)
+        {
+            return $"卡库里缺 {PlainUnit} / {covertName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(PlainUnit, Side.Left, 30,
+            CardLocation.Discard, 0);
+        var target = state.CreateWithId(covertName, Side.Left, 31,
+            CardLocation.BoardHqLeft, 1);
+        if (!CardApi.IsUnrevealedCovertCard(target)
+            || CardApi.CanCardBeBuffed(target))
+        {
+            return "测试目标必须是未揭示的 Covert 且命中 CanCardBeBuffed 拒绝门";
+        }
+
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = state, Self = source, Controller = Side.Left,
+        };
+        int attack = target.Attack;
+        int defense = target.Defense;
+        int cost = target.KreditCost;
+
+        engine.Api.ChangeAttack(target, 1, source);
+        engine.Api.ChangeDefense(target, 1, source);
+        engine.Api.ChangeKreditCost(target, 1);
+        engine.Api.GiveKeyword(target, Keyword.Guard);
+        engine.Api.InvokeByName("ChangeKreditCost", source,
+            new object?[] { target, source.CardId, 1, 1, false, null }, ctx,
+            out bool dispatchHandled);
+
+        if (target.Attack != attack || target.Defense != defense
+            || target.KreditCost != cost || target.Keywords.Contains(Keyword.Guard)
+            || !dispatchHandled)
+        {
+            return "未揭示 Covert 在棋盘上不应获得攻防、费用或 Guard";
+        }
+
+        // RevealCard's event chain is covered by RevealCardSemantics below;
+        // keep this gate test focused on the buffability transition itself.
+        target.IsRevealed = true;
+        target.Keywords.Remove(Keyword.Covert);
+        if (CardApi.IsUnrevealedCovertCard(target)
+            || !CardApi.CanCardBeBuffed(target))
+        {
+            return "RevealCard 后目标仍被 CanCardBeBuffed 拒绝";
+        }
+
+        engine.Api.ChangeAttack(target, 1, source);
+        engine.Api.ChangeDefense(target, 1, source);
+        engine.Api.ChangeKreditCost(target, 1);
+        engine.Api.GiveKeyword(target, Keyword.Guard);
+        return target.Attack == attack + 1 && target.Defense == defense + 1
+            && target.KreditCost == cost + 1
+            && target.Keywords.Contains(Keyword.Guard)
+            ? null
+            : $"揭示后的普通目标应允许攻防、费用和 Guard 变更："
+              + $"actual={target.Attack}/{target.Defense}/{target.KreditCost}, "
+              + $"expected={attack + 1}/{defense + 1}/{cost + 1}, "
+              + $"guard={target.Keywords.Contains(Keyword.Guard)}, alive={target.IsAlive}";
     }
 
     private static string? RevealCardSemantics(CardDatabase db)
