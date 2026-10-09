@@ -183,6 +183,16 @@ public sealed class BotTurnService
 
         var state = engine.State;
 
+        // A completed or malformed snapshot can omit one of the HQ cards.  The
+        // live server normally supplies both, but shadow/replay input must not
+        // turn this into an unhandled exception while we are diagnosing it.
+        if (!HasHq(state, Side.Left) || !HasHq(state, Side.Right))
+        {
+            log.Add("⚠ 快照缺少双方 HQ，停止决策并只结束回合");
+            return new TurnResult(OnlyEndTurn(snapshot, state, state.Turn), state, log,
+                                  unapplied, divergence, -1);
+        }
+
         // 决策**前**的对手 HQ（`state` 还是刚重建完的局面，bot 一条操作都没发）。
         // 它要用来填 `XActionStartOfTurn`（见 TurnResult.HqOpponentBefore 的注释）。
         int hqOpponentBefore = state.HqDefense(_botSide.Opposite());
@@ -438,10 +448,16 @@ public sealed class BotTurnService
                 {
                     ["side"] = _botSide.ToWire(),
                     ["reason"] = "endTurnButton",
-                    [_hqKey] = (state?.HqDefense(_botSide.Opposite()) ?? 20).ToString(),
+                    [_hqKey] = HqDefenseOrDefault(state, _botSide.Opposite()).ToString(),
                 },
                 turn),
         };
+
+    private static bool HasHq(GameState state, Side side)
+        => state.Cards(side).Any(c => c.IsHq);
+
+    private static int HqDefenseOrDefault(GameState? state, Side side)
+        => state is not null && HasHq(state, side) ? state.HqDefense(side) : 20;
 
     /// <summary>
     /// 从重放报告里算出**漂开信号**（只认人类动作）。
