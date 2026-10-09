@@ -2762,6 +2762,7 @@ public sealed partial class CardApi
     /// </summary>
     public void DiscardCard(CardInstance card, CardInstance? discarder = null)
     {
+        bool discardedFromHand = card.Location == card.Owner.HandOf();
         if (card.Location == card.Owner.HandOf()
             && State.HasGameplayRestriction(card.Owner,
                 GameplayRestrictionType.CannotDiscardAnyCardFromHand))
@@ -2776,24 +2777,33 @@ public sealed partial class CardApi
             ActionValue2.Int("discarderID", discarder?.CardId ?? card.CardId),
         });
 
-        // 「别的卡被弃了」—— 出处 `out/bp-cardfn.json` 函数 `DiscardCardFromHand`
-        // （签名 `CardFunctionsStub.h`；9 张订阅者）：
-        //   si=500  JumpIfNot(tmpCardToDiscard.isSuppressed) -> si=1236   ; 被压制 ⇒ 不广播
+        int discarderId = discarder?.CardId ?? 0;
+
+        // DiscardCardFromHand invokes the discarded card's hook before notifying observers.
+        if (discardedFromHand && !suppressed)
+        {
+            FireTrigger("OnSuccesfulDiscard", card, card.Owner,
+                eventArgs: new object?[] { discarderId },
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["discarderID"] = discarderId,
+                });
+        }
+
+        // `DiscardCardFromHand` broadcasts even when the discarded card is suppressed;
+        // suppression filters each observer, while the discarded card's own hook above is skipped.
         //   si=536  FetchAllCardsWithEventTrigger(41)
         //   si=809  item.OnOtherCardDiscarded(tmpCardToDiscard, discarderID)
         // 广播集**不排除被弃的那张卡自己**（蓝图里没有 cardID 比对），
         // 但内核 FireTrigger 的 `OnOther*` 约定会排除主体 —— 见 FireTrigger 的注释。
-        if (!suppressed)
-        {
-            FireTrigger("OnOtherCardDiscarded", card, card.Owner,
-                eventArgs: new object?[] { card, discarder?.CardId ?? 0 },
-                eventSubject: card,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardDiscarded"] = card,
-                    ["discarderID"] = discarder?.CardId ?? 0,
-                });
-        }
+        FireTrigger("OnOtherCardDiscarded", card, card.Owner,
+            eventArgs: new object?[] { card, discarderId },
+            eventSubject: card,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardDiscarded"] = card,
+                ["discarderID"] = discarderId,
+            });
     }
 
     public void GiveKeyword(CardInstance target, string keyword)

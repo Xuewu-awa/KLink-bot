@@ -260,6 +260,8 @@ internal static class SelfTest
             LocationMovedEventCarriesPayload),
         new("事件层：OnOtherCardDiscarded 传递弃牌主体并触发 NAKAJIMA B5N 伤害",
             DiscardedEventCarriesPayload),
+        new("弃牌事件：手牌的成功弃牌效果生效，压制只跳过弃牌卡自身效果",
+            SuccessfulHandDiscardEffects),
         new("事件层：OnOtherCardLoseSmokescreen 传递目标并触发 HIROSAKI REGIMENT 光环",
             LoseSmokescreenEventCarriesPayload),
         new("事件层：OnDeckShuffled 传递牌库阵营并触发 110e REGIMENT 光环",
@@ -7253,6 +7255,49 @@ internal static class SelfTest
         if (ally.Defense != allyDefense)
         {
             return $"NAKAJIMA B5N 错误伤害己方单位：期望防御={allyDefense}，实际={ally.Defense}";
+        }
+
+        return null;
+    }
+
+    private static string? SuccessfulHandDiscardEffects(CardDatabase db)
+    {
+        const string sallyName = "card_unit_sally";
+        const string observerName = "card_unit_211th_basargino";
+        const string drawName = "card_unit_t_34_85";
+        if (db.Find(sallyName) is null || db.Find(observerName) is null || db.Find(drawName) is null)
+        {
+            return $"卡库缺少测试卡 {sallyName}、{observerName} 或 {drawName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var sally = state.CreateWithId(sallyName, Side.Left, 830,
+            CardLocation.HandLeft, 0);
+        state.CreateWithId(drawName, Side.Left, 831, CardLocation.DeckLeft, 0);
+        state.CreateWithId(drawName, Side.Left, 832, CardLocation.DeckLeft, 1);
+        engine.Api.DiscardCard(sally);
+
+        if (sally.Location != CardLocation.Discard
+            || state.Hand(Side.Left).Count != 2
+            || state.Deck(Side.Left).Count != 0)
+        {
+            return $"未压制的 Sally 从手牌成功弃掉后应抽 2 张，实际位置={sally.Location}、手牌={state.Hand(Side.Left).Count}、牌库={state.Deck(Side.Left).Count}";
+        }
+
+        var (suppressedEngine, suppressedState) = EmptyBoard(db);
+        var watcher = suppressedState.CreateWithId(observerName, Side.Left, 833,
+            CardLocation.BoardHqLeft, 1);
+        var suppressedSally = suppressedState.CreateWithId(sallyName, Side.Left, 834,
+            CardLocation.HandLeft, 0);
+        suppressedSally.Keywords.Add(Keyword.Suppressed);
+        int watcherAttack = watcher.Attack;
+        suppressedEngine.Api.DiscardCard(suppressedSally);
+
+        if (suppressedSally.Location != CardLocation.Discard
+            || suppressedState.Hand(Side.Left).Count != 0
+            || watcher.Attack != watcherAttack + 2)
+        {
+            return $"压制应只跳过 Sally 自身抽牌、仍让 211th 响应弃牌；实际 Sally={suppressedSally.Location}、手牌={suppressedState.Hand(Side.Left).Count}、211th 攻击={watcher.Attack}（原 {watcherAttack}）";
         }
 
         return null;
