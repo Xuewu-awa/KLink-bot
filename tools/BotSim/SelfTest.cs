@@ -497,6 +497,8 @@ internal static class SelfTest
             MobilizeEvents),
         new("Mobilize：回合开始只给当前方在场单位永久 +1/+1",
             MobilizeStartTurnBonus),
+        new("Mobilize：受到实际伤害后移除，零伤害时保留",
+            MobilizeLostOnDamage),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
         new("SalvageMultipleUnits：复制到施动方手牌并保留金卡/来源状态，满手跳过",
             SalvageMultipleUnits),
@@ -14636,6 +14638,79 @@ internal static class SelfTest
         return active.Attack == activeAttack + 2 && active.Defense == activeDefense + 2
             ? null
             : $"同一单位第二次成为活动方时应再次获得 +1/+1，实际 {active.Attack}/{active.Defense}";
+    }
+
+    private static string? MobilizeLostOnDamage(CardDatabase db)
+    {
+        const string targetName = "card_unit_2nd_parachute";
+        const string sourceName = "card_unit_10_5_cm_lefh";
+        foreach (string name in new[] { targetName, sourceName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库缺少测试卡 {name}";
+            }
+        }
+
+        // Effect damage uses the same ApplyDamageToCard path as combat, but
+        // bypasses Heavy Armor. Any positive resolved hit must remove Mobilize.
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var target = PutOnBoard(state, targetName, Side.Right, 720, 1);
+            var source = PutOnBoard(state, sourceName, Side.Left, 721, 2);
+            var context = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Self = source,
+                Controller = Side.Left,
+            };
+
+            engine.Api.InvokeByName("DamageCard", source,
+                new object?[] { target, 1, source, false, false, false }, context, out bool handled);
+            if (!handled || target.Keywords.Contains(Keyword.Mobilize))
+            {
+                return "受到 1 点效果伤害后应失去 Mobilize";
+            }
+        }
+
+        // Combat damage reduced to zero by Heavy Armor is not a hit and must
+        // preserve Mobilize; a later positive combat hit must remove it.
+        {
+            const string armoredName = "card_unit_maus";
+            const string attackerName = "card_unit_panzer_ii_a";
+            if (db.Find(armoredName) is null || db.Find(attackerName) is null)
+            {
+                return $"卡库缺少测试卡 {armoredName} 或 {attackerName}";
+            }
+
+            var (engine, attacker, target) = FightBoard(db, attackerName, armoredName, 3, 9, 0, 8);
+            target.Keywords.Add(Keyword.Mobilize);
+            if (!engine.Attack(attacker, target, out string reason))
+            {
+                return $"重甲零伤害前提下攻击失败：{reason}";
+            }
+
+            if (!target.Keywords.Contains(Keyword.Mobilize))
+            {
+                return "重甲完全吸收战斗伤害时应保留 Mobilize";
+            }
+
+            var (positiveEngine, positiveAttacker, positiveTarget) =
+                FightBoard(db, attackerName, armoredName, 6, 9, 0, 8);
+            positiveTarget.Keywords.Add(Keyword.Mobilize);
+            if (!positiveEngine.Attack(positiveAttacker, positiveTarget, out reason))
+            {
+                return $"正值战斗伤害前提下攻击失败：{reason}";
+            }
+
+            if (positiveTarget.Keywords.Contains(Keyword.Mobilize))
+            {
+                return "重甲减伤后仍有正值战斗伤害时应失去 Mobilize";
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

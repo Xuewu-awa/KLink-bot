@@ -1727,6 +1727,13 @@ public sealed partial class CardApi
         //    `DamageCard` / `DamageMultipleCards` / `MakeCardsFight` 都传 false。
         int applied = _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage);
 
+        // ApplyDamageToCard removes Mobilize only when the resolved damage is
+        // positive. `applied` includes combat-only mitigation such as Heavy Armor.
+        if (applied > 0 && target.Keywords.Contains(Keyword.Mobilize))
+        {
+            RemoveMobilize(target);
+        }
+
         // ⚠️ 2026-09-30：`damage` 填的是**修正后**的值、`oldDefense` 填的是**结算前**的防御。
         //    证据（`out/bp-cardfn.json` → `ApplyDamageToCard`，123 条语句）：
         //      si=62   oldDefense = card.getTotalDefense()        ; 扣血**之前**取
