@@ -3085,6 +3085,19 @@ internal static class SelfTest
         first.CurrentTarget = targetA;
         second.CurrentTarget = targetB;
 
+        var dispatchContext = new EffectContext
+        {
+            Engine = engine, State = state, Self = first, Controller = Side.Left,
+        };
+        engine.Api.InvokeByName("AddToTriggerQueue", first,
+            new object?[] { second }, dispatchContext, out bool dispatchHandled);
+        if (!dispatchHandled || state.TriggerQueue.Count != 1
+            || !ReferenceEquals(state.TriggerQueue[0], second))
+        {
+            return "AddToTriggerQueue 应优先使用显式目标实参，不能把 receiver 自身入队";
+        }
+        state.TriggerQueue.Clear();
+
         engine.Api.AddToTriggerQueue(first);
         engine.Api.AddToTriggerQueue(second);
         if (state.TriggerQueue.Count != 2

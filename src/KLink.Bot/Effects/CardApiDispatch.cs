@@ -1186,7 +1186,10 @@ public sealed partial class CardApi
             ["selectTargetFromHand"] = (c, r, a) => DoSelectTargetFromHand(c, r, a),
             ["AddToTriggerQueue"] = (c, r, a) =>
             {
-                var card = AsCard(r) ?? c.Self;
+                // Blueprint callers pass the queued card as the first argument
+                // while the receiver remains cardFunction (the source card).
+                // Prefer that explicit target so Air Escort cannot enqueue itself.
+                var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r) ?? c.Self;
                 if (card is not null)
                 {
                     AddToTriggerQueue(card);
