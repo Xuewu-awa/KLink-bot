@@ -164,6 +164,8 @@ internal static class SelfTest
             ChangeDefenseChangeType4IsRejected),
         new("ChangeDefense：旁观卡可增加防御或中止 HQ 获得防御",
             ChangeDefenseBeforeOtherCardGainDefense),
+        new("Type 89：HQ 获得防御时改为承受等量效果伤害",
+            Type89ConvertsHqDefenseGainToDamage),
 
         // ---- 三个规则 bug 的回归断言（2026-09-27）----
         new("3 掷弹兵：只有**德国**单位操作才 +1+1（别的阵营不算）", PanzergrenadierFactionGate),
@@ -4217,6 +4219,42 @@ internal static class SelfTest
             {
                 return $"Kagoshima Regiment 应中止 HQ 防御增益，实际变化 {hq.Defense - before}";
             }
+        }
+
+        return null;
+    }
+
+    private static string? Type89ConvertsHqDefenseGainToDamage(CardDatabase db)
+    {
+        const string sourceName = "card_unit_t_34";
+        const string observerName = "card_unit_type_89";
+        foreach (string name in new[] { sourceName, observerName })
+        {
+            if (db.Find(name) is null)
+            {
+                return $"卡库里缺 {name}";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var hq = state.Hq(Side.Left);
+        var source = state.CreateWithId(sourceName, Side.Left, 76, CardLocation.BoardFrontline, 0);
+        var observer = state.CreateWithId(observerName, Side.Right, 77, CardLocation.BoardFrontline, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        int before = hq.Defense;
+
+        engine.Api.ChangeDefense(hq, 2, source);
+
+        if (hq.Defense != before - 2)
+        {
+            return $"Type 89 应对 HQ 造成 2 点伤害并中止增防，实际变化 {hq.Defense - before}"
+                 + $"\n       派发记录：{string.Join(" | ", trace)}";
+        }
+
+        if (observer.Location != CardLocation.BoardFrontline)
+        {
+            return "Type 89 应留在场上完成响应";
         }
 
         return null;

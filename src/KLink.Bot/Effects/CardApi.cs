@@ -2136,7 +2136,8 @@ public sealed partial class CardApi
         }
 
         if (fireGainDefenseEvent && delta > 0 && target.Defense > 0
-            && !ApplyBeforeOtherCardGainDefense(target, ref delta))
+            && (!ApplyBeforeOtherCardGainDefenseAfterAdd(target, delta)
+                || !ApplyBeforeOtherCardGainDefense(target, ref delta)))
         {
             return;
         }
@@ -2212,6 +2213,24 @@ public sealed partial class CardApi
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// `ChangeDefense` first lets after-add observers apply side effects and stop the gain.
+    /// </summary>
+    private bool ApplyBeforeOtherCardGainDefenseAfterAdd(CardInstance target, int amount)
+    {
+        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["cardGainingDefense"] = target,
+            ["defenseGaining"] = amount,
+        };
+
+        var hits = BroadcastLocalWithOutParams(
+            "OnBeforeOtherCardGainDefenseAfterAdd", target,
+            new[] { "stopAction" }, seed);
+
+        return !hits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")));
     }
 
     /// <summary>
