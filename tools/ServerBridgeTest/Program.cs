@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
+using KLink.Bot.Effects.Blueprint;
 using KLink.Bot.Server;
 
 namespace KLink.Bot.ServerBridgeTest;
@@ -92,6 +93,19 @@ internal static class Program
         string dataDir = FindDataDirectory(repoRoot);
         var db = CardDatabase.Load(dataDir);
         Console.WriteLine($"卡库 {db.Count} 张    数据目录 {dataDir}");
+
+        // ReplayRunner uses the card-local GetChooseSpawnCards programs to
+        // distinguish Develop choices from cards selected from a deck.  The
+        // shadow bridge must load the same IR as BotSim and the audit tools;
+        // otherwise every CS answer is incorrectly treated as a deck pick.
+        string irPath = Path.Combine(dataDir, "card-ir.json");
+        if (File.Exists(irPath))
+        {
+            KismetLibrary.Initialize(irPath);
+        }
+
+        Console.WriteLine($"蓝图 IR {KismetLibrary.Default?.CardCount ?? 0} 张" +
+                          (KismetLibrary.LoadError is null ? "" : $"（错误：{KismetLibrary.LoadError}）"));
 
         // ---- 1) 真实回放 → ServerMatchSnapshot（模拟服务端会喂给桥的东西）----
         var snapshot = BuildSnapshotFromReplay(snapshotPath, actionsPath, upTo);
