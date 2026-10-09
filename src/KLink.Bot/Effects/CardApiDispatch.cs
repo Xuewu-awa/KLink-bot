@@ -2929,7 +2929,8 @@ public sealed partial class CardApi
         "Array_Length", "Array_Remove", "Array_RemoveItem", "Array_Reverse",
         // 纯算术 / 比较（KismetVm.EvalMath 的分支）
         "Add_IntInt", "Subtract_IntInt", "Multiply_IntInt", "Divide_IntInt", "Percent_IntInt",
-        "Abs_Int", "Min_IntInt", "Max_IntInt", "Greater_IntInt", "GreaterEqual_IntInt",
+        "Abs_Int", "Min_IntInt", "Max_IntInt", "Min", "Max", "Clamp",
+        "Greater_IntInt", "GreaterEqual_IntInt",
         "Less_IntInt", "LessEqual_IntInt", "EqualEqual_IntInt", "NotEqual_IntInt",
         "EqualEqual_StrStr", "NotEqual_StrStr", "EqualEqual_NameName", "NotEqual_NameName",
         "EqualEqual_ObjectObject", "NotEqual_ObjectObject", "EqualEqual_BoolBool", "NotEqual_BoolBool",

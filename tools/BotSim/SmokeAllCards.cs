@@ -1084,7 +1084,7 @@ internal static class SmokeAllCards
         {
             string inner = name[5..];
             return inner.StartsWith("Conv_", StringComparison.Ordinal)
-                   || inner is "Format" or "Max" or "Min" or "Abs" or "Sqrt" or "Floor" or "Ceil" or "Round";
+                   || inner is "Format" or "Max" or "Min" or "Clamp" or "Abs" or "Sqrt" or "Floor" or "Ceil" or "Round";
         }
 
         foreach (string prefix in new[]

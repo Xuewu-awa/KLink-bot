@@ -991,6 +991,13 @@ public sealed class KismetVm
             case "Abs_Int": return Math.Abs(ToInt(a));
             case "Min_IntInt": return Math.Min(ToInt(a), ToInt(b));
             case "Max_IntInt": return Math.Max(ToInt(a), ToInt(b));
+            // KismetMathLibrary emits these integer nodes with short names in
+            // several card blueprints rather than the typed operator names.
+            case "Min": return Math.Min(ToInt(a), ToInt(b));
+            case "Max": return Math.Max(ToInt(a), ToInt(b));
+            case "Clamp":
+                var c = argExprs.Count > 2 ? Eval(argExprs[2], frame, ctx) : null;
+                return Math.Clamp(ToInt(a), ToInt(b), ToInt(c));
             case "Greater_IntInt": return ToInt(a) > ToInt(b);
             case "GreaterEqual_IntInt": return ToInt(a) >= ToInt(b);
             case "Less_IntInt": return ToInt(a) < ToInt(b);

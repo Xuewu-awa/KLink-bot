@@ -104,6 +104,8 @@ internal static class SelfTest
             BigThreeCountsFriendlyFactions),
         new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
             BlueprintArrayResize),
+        new("Blueprint 数学边界：短名 Max/Min/Clamp 按整数节点求值",
+            BlueprintNumericBounds),
         new("Sturmovik Polish：带空格 Apply The Buff 叠加幸存单位攻防",
             SturmovikPolishBuff),
         new("L4 Grasshopper：带空格 Remove the Buff 撤销 Sherman 光环",
@@ -15546,6 +15548,55 @@ internal static class SelfTest
         return negativeHandled && result is null && values.Count == 0
             ? null
             : "Array_Resize 的负长度必须按 0 处理并清空数组";
+    }
+
+    private static string? BlueprintNumericBounds(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 106,
+            CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+
+        object? Eval(string function, params int[] values)
+        {
+            var expression = new KismetExpr
+            {
+                Math = function,
+                Args = values.Select(value => new KismetExpr { Int = value }).ToArray(),
+            };
+            var steps = new KismetStep[]
+            {
+                new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    expression, null, -1, "__probe", null),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    null, null, -1, null, null),
+            };
+            var outputs = engine.Api.Vm.RunLocalProgramMulti(
+                new KismetProgram(steps, 0), ctx, null, "__probe");
+            return outputs.GetValueOrDefault("__probe");
+        }
+
+        var cases = new (string Function, int[] Args, int Expected)[]
+        {
+            ("Max", new[] { -3, 0 }, 0),
+            ("Max", new[] { 4, 0 }, 4),
+            ("Min", new[] { 6, 2 }, 2),
+            ("Min", new[] { 6, 9 }, 6),
+            ("Clamp", new[] { 2, 3, 24 }, 3),
+            ("Clamp", new[] { 12, 3, 24 }, 12),
+            ("Clamp", new[] { 30, 3, 24 }, 24),
+        };
+
+        foreach (var (function, args, expected) in cases)
+        {
+            object? actual = Eval(function, args);
+            if (actual is not int value || value != expected)
+            {
+                return $"{function}({string.Join(",", args)}) 应为 {expected}，实际 {actual ?? "null"}";
+            }
+        }
+
+        return null;
     }
 
     private static string? SturmovikPolishBuff(CardDatabase db)
