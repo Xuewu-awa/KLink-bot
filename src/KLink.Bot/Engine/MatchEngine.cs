@@ -684,8 +684,6 @@ public sealed class MatchEngine
         // 签名 `BaseCardObject.h:733 void OnBeforeStartOfTurn();`（无参，无"别人"变体）。
         Api.FireTrigger("OnBeforeStartOfTurn", null, side);
 
-        Api.FireTrigger("OnStartOfTurn", null, side, "OnOtherStartOfTurn");
-
         // 抽牌（全局回合 1 跳过，见 `draw` 参数说明）
         if (doDraw && !State.HasGameplayRestriction(side,
             GameplayRestrictionType.CannotDrawCardAtTurnStart))
@@ -699,6 +697,20 @@ public sealed class MatchEngine
             // —— 即"占卜抽"而不是"回合开始抽"，两者互斥。
             DrawCard(side, startOfTurnDraw: true);
         }
+
+        // BP_Logic::StartTurnBySide calls GiveMobilizeBonus after the draw and
+        // before ExecuteStartOfTurnEvents.  The bonus is permanent and sourced
+        // by the unit itself, so repeated active turns accumulate in BuffsBySource.
+        foreach (var unit in State.Board(side).ToList())
+        {
+            if (unit.Keywords.Contains(Keyword.Mobilize))
+            {
+                Api.ChangeAttack(unit, 1, unit);
+                Api.ChangeDefense(unit, 1, unit);
+            }
+        }
+
+        Api.FireTrigger("OnStartOfTurn", null, side, "OnOtherStartOfTurn");
     }
 
     public void EndTurn(Side side)

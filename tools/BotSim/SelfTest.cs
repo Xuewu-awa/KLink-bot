@@ -495,6 +495,8 @@ internal static class SelfTest
             RemoveAlpine),
         new("Mobilize：按来源去重并触发 Gain/Lose 联动（48e Guard、43e 全军修复）",
             MobilizeEvents),
+        new("Mobilize：回合开始只给当前方在场单位永久 +1/+1",
+            MobilizeStartTurnBonus),
         new("RemoveSalvage：按目标卡移除收缴关键字并返回 0", RemoveSalvage),
         new("SalvageMultipleUnits：复制到施动方手牌并保留金卡/来源状态，满手跳过",
             SalvageMultipleUnits),
@@ -2304,9 +2306,12 @@ internal static class SelfTest
             KreditSlotOnDuplicateStart = true,
         }.Run(KLink.Bot.Replay.ReplayData.Load(snapshot, actions), verbose: false);
 
-        if (report.Steps.Count(s => s.Applied) != 139)
+        // GiveMobilizeBonus changes this historical line before #107/#127, so
+        // those two stale client attacks are now correctly rejected; #119 still
+        // proves that the generated-card alias remains usable.
+        if (report.Steps.Count(s => s.Applied) != 138)
         {
-            return $"508065 应应用 139 条动作，实际 {report.Steps.Count(s => s.Applied)}";
+            return $"508065 应应用 138 条动作，实际 {report.Steps.Count(s => s.Applied)}";
         }
 
         if (report.Unimplemented.Any(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal)))
@@ -14577,6 +14582,60 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? MobilizeStartTurnBonus(CardDatabase db)
+    {
+        const string mobilizeName = "card_unit_2nd_parachute";
+        const string plainName = "card_unit_10_5_cm_lefh";
+        if (db.Find(mobilizeName) is null || db.Find(plainName) is null)
+        {
+            return $"卡库缺少测试卡 {mobilizeName} 或 {plainName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var active = state.CreateWithId(mobilizeName, Side.Left, 710, CardLocation.BoardHqLeft, 1);
+        var activePlain = state.CreateWithId(plainName, Side.Left, 711, CardLocation.BoardHqLeft, 2);
+        var activeHand = state.CreateWithId(mobilizeName, Side.Left, 712, CardLocation.HandLeft, 0);
+        var inactive = state.CreateWithId(mobilizeName, Side.Right, 713, CardLocation.BoardHqRight, 1);
+
+        int activeAttack = active.Attack;
+        int activeDefense = active.Defense;
+        int plainAttack = activePlain.Attack;
+        int plainDefense = activePlain.Defense;
+        int handAttack = activeHand.Attack;
+        int handDefense = activeHand.Defense;
+        int inactiveAttack = inactive.Attack;
+        int inactiveDefense = inactive.Defense;
+
+        engine.StartTurn(Side.Left, draw: false);
+
+        if (active.Attack != activeAttack + 1 || active.Defense != activeDefense + 1
+            || activePlain.Attack != plainAttack || activePlain.Defense != plainDefense
+            || activeHand.Attack != handAttack || activeHand.Defense != handDefense
+            || inactive.Attack != inactiveAttack || inactive.Defense != inactiveDefense)
+        {
+            return $"左方回合应只给左方在场 Mobilize +1/+1，实际 active={active.Attack}/{active.Defense}、"
+                 + $"plain={activePlain.Attack}/{activePlain.Defense}、hand={activeHand.Attack}/{activeHand.Defense}、"
+                 + $"inactive={inactive.Attack}/{inactive.Defense}";
+        }
+
+        if (!active.BuffsBySource.TryGetValue((active.CardId, false), out var buff)
+            || buff.Attack != 1 || buff.Defense != 1)
+        {
+            return "Mobilize 回合增益应记录为该单位自身来源的永久 +1/+1";
+        }
+
+        engine.StartTurn(Side.Right, draw: false);
+        if (inactive.Attack != inactiveAttack + 1 || inactive.Defense != inactiveDefense + 1)
+        {
+            return $"右方回合应给右方在场 Mobilize +1/+1，实际 {inactive.Attack}/{inactive.Defense}";
+        }
+
+        engine.StartTurn(Side.Left, draw: false);
+        return active.Attack == activeAttack + 2 && active.Defense == activeDefense + 2
+            ? null
+            : $"同一单位第二次成为活动方时应再次获得 +1/+1，实际 {active.Attack}/{active.Defense}";
     }
 
     /// <summary>
