@@ -325,6 +325,8 @@ internal static class SelfTest
         new("行动限制：**非坦克**移动后不能再攻击（规则表只有坦克能移动+攻击）", NonTankCannotMoveThenAttack),
         new("行动限制：**坦克**可以移动后攻击（规则表明确写的例外）", TankCanMoveThenAttack),
         new("行动限制：非坦克攻击后不能再移动（与上面对称）", NonTankCannotAttackThenMove),
+        new("Alpine 同回合行动能力：CustomName1 授予后非坦克可移动并攻击，撤销后恢复限制",
+            AlpineMoveAndAttackAbility),
         new("行动限制：**死亡单位不能移动也不能攻击**（实测 AI 移动了死单位）", DeadUnitCannotMoveOrAttack),
         // ---- 钉住（Pinned）：移动侧缺门（2026-10-02，玩家实测 + 日志 637706）----
         //    中文客户端把 `Pin` 译作「压制」，所以玩家说的"压制"是 `Pinned`、不是 `Suppressed`。
@@ -10103,6 +10105,49 @@ internal static class SelfTest
                 return $"坦克 {tankName} 攻击后**不能移动** —— 规则表说顺序任意";
             }
         }
+
+        return null;
+    }
+
+    private static string? AlpineMoveAndAttackAbility(CardDatabase db)
+    {
+        string? name = FindType(db, "infantry");
+        if (name is null) return "卡库里没有 infantry";
+
+        var made = MakeBoard(db, name);
+        if (made is null) return $"造不出单位 {name}";
+        var (engine, unit) = made.Value;
+        if (unit.IsTank) return $"`{name}` 被判成坦克，选错了非坦克样本";
+
+        var ctx = new EffectContext
+        {
+            Engine = engine, State = engine.State, Self = unit, Controller = Side.Left,
+        };
+
+        engine.Api.InvokeByName("CustomName1Add", unit,
+            new object?[] { "CanMoveAndAttackInTheSameTurn" }, ctx, out bool handled);
+        if (!handled) return "派发表没有处理 CustomName1Add";
+        if (!unit.CanMoveAndAttackInSameTurn)
+            return "CustomName1Add 没有写入 CanMoveAndAttackInTheSameTurn";
+
+        unit.HasMovedThisTurn = true;
+        if (!unit.CanOperateThisTurn(engine.State))
+            return "获得 Alpine 能力后，移动过的非坦克仍不能攻击";
+
+        unit.HasMovedThisTurn = false;
+        unit.HasAttackedThisTurn = true;
+        if (!unit.CanMoveThisTurn(engine.State))
+            return "获得 Alpine 能力后，攻击过的非坦克仍不能移动";
+
+        engine.Api.InvokeByName("CustomName1Remove", unit,
+            new object?[] { "CanMoveAndAttackInTheSameTurn" }, ctx, out _);
+        if (unit.CanMoveAndAttackInSameTurn)
+            return "CustomName1Remove 没有移除 Alpine 能力标记";
+
+        unit.HasAttackedThisTurn = false;
+        unit.HasMovedThisTurn = true;
+        if (unit.CanOperateThisTurn(engine.State))
+            return "撤销 Alpine 能力后，移动过的非坦克仍可攻击";
 
         return null;
     }

@@ -289,7 +289,7 @@ public sealed class CardInstance
            //   （蓝图门是 `HasAttackLeft(attackerCard)`，额度 `attackLeft` 回合开始
            //   被设成 `getHasFury() ? 2 : 1`）。实测对局 389594 `#85/#86 t19`。
            && HasAttackLeft
-           // ★ 移动过就不能再攻击 —— **除非是坦克**。
+           // ★ 移动过就不能再攻击 —— **除非是坦克或蓝图授予的同回合行动能力**。
            //   出处 `KARDS基础规则参考.md` 兵种表：
            //     「**坦克**：能在同一回合移动并攻击（一次移动 + 一次攻击，顺序任意）」
            //   表里**只有坦克**有这条例外；步兵/炮兵/战斗机/轰炸机都没写
@@ -297,15 +297,15 @@ public sealed class CardInstance
            //   （实测 2026-10-02：AI 的步兵部署后立刻移动并攻击，就是缺这条。）
            //   蓝图同结论：`MoveCardToFrontline`（`BP_CardFunctions.g.cs:26978-27043`）
            //   对**不是** `CanMoveAndAttackInTheSameTurn` 的单位把 `attackLeft` 直接置 0
-           //   （而那个自定义能力正是 `MakeCountAsTank` 给的，同文件 `:26070`）。
-           && (IsTank || !HasMovedThisTurn)
+           //   （`MakeCountAsTank` 与 `card_unit_obice_da_75_13` 都通过该能力名放行）。
+           && (IsTank || CanMoveAndAttackInSameTurn || !HasMovedThisTurn)
            && !HasDeploymentSickness(state);
 
     /// <summary>
     /// 该卡本回合是否还能移动战线（同样受召唤失调限制，见
     /// <see cref="HasDeploymentSickness"/> 里 `CanCardDoAnything` 的出处）。
     ///
-    /// ★ 与 <see cref="CanOperateThisTurn"/> 对称：**攻击过就不能再移动，除非是坦克**。
+    /// ★ 与 <see cref="CanOperateThisTurn"/> 对称：**攻击过就不能再移动，除非是坦克或蓝图授予的同回合行动能力**。
     /// </summary>
     public bool CanMoveThisTurn(GameState state)
         => AliveOnBoard
@@ -313,8 +313,18 @@ public sealed class CardInstance
            //    移动侧的蓝图门是 `BP_Logic::CanCardDoAnything`（i=198 是 `IsPinned`），
            //    里面**没有** `isSuppressed`（全文件 0 次）。
            && !HasMovedThisTurn
-           && (IsTank || !HasAttackedThisTurn)
+           && (IsTank || CanMoveAndAttackInSameTurn || !HasAttackedThisTurn)
            && !HasDeploymentSickness(state);
+
+    /// <summary>
+    /// 蓝图的 `CanMoveAndAttackInTheSameTurn` 自定义能力标记。
+    /// `card_unit_obice_da_75_13` 在 Alpine 单位进入或离场时通过
+    /// `CustomName1Add/Remove` 维护这个标记；它和坦克一样允许移动、攻击顺序互换。
+    /// </summary>
+    public bool CanMoveAndAttackInSameTurn
+        => CustomJson.TryGetValue("customName1", out string? value)
+           && value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+               .Contains("CanMoveAndAttackInTheSameTurn", StringComparer.Ordinal);
 
     /// <summary>
     /// 被**抑制**（客户端中文译名；英文关键字 = `Suppress`，字段 = 卡对象上的
