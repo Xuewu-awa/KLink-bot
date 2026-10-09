@@ -193,6 +193,17 @@ public sealed class BotTurnService
                                   unapplied, divergence, -1);
         }
 
+        // Once replay has diverged from the client's human actions, the
+        // reconstructed board is no longer safe for bot decisions. Ending the
+        // turn keeps the server responsive while preventing invalid PC/AC/ML
+        // actions from being injected into the real client.
+        if (divergence.Detected)
+        {
+            log.Add("⚠ 检测到回放漂移，停止决策并只结束回合");
+            return new TurnResult(OnlyEndTurn(snapshot, state, state.Turn), state, log,
+                                  unapplied, divergence, state.HqDefense(_botSide.Opposite()));
+        }
+
         // 决策**前**的对手 HQ（`state` 还是刚重建完的局面，bot 一条操作都没发）。
         // 它要用来填 `XActionStartOfTurn`（见 TurnResult.HqOpponentBefore 的注释）。
         int hqOpponentBefore = state.HqDefense(_botSide.Opposite());
