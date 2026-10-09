@@ -2,6 +2,7 @@ using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.Effects;
 using KLink.Bot.Effects.Blueprint;
+using KLink.Bot.Server;
 
 namespace KLink.Bot.Sim;
 
@@ -44,6 +45,8 @@ internal static class SelfTest
             ReplayClientTurnDedup),
         new("回放动态卡别名：未知动作 ID 复用唯一已生成卡且后续攻击仍命中",
             ReplayGeneratedCardAlias),
+        new("服务端弃牌位置：discard_left/right 保留阵营，裸 discard 拒绝",
+            ServerDiscardLocationAliases),
         // ★ 发号**口径**本身（2026-10-02）：蓝图 `GenerateNextCardID` 没有 side、
         //   计数器全局、每回合归零。历史实现按 side 分号段 ⇒ 客户端认不出我们发的号。
         new("发号口径：效果生成卡 = 回合号×1000 + 本回合第几张，计数器全局且双方共用（无 side）",
@@ -2456,6 +2459,36 @@ internal static class SelfTest
         if (commando is null || !commando.Applied)
         {
             return "#119 对动态生成的 No.43 Commando 攻击未成功应用";
+        }
+
+        return null;
+    }
+
+    private static string? ServerDiscardLocationAliases(CardDatabase db)
+    {
+        if (!ServerReplayBridge.TryLocation("discard_left", out var leftLocation, out var leftOwner))
+        {
+            return "discard_left 未被桥接层接受";
+        }
+
+        if (leftLocation != CardLocation.Discard || leftOwner != Side.Left)
+        {
+            return $"discard_left 应映射为 Left/Discard，实际 {leftOwner}/{leftLocation}";
+        }
+
+        if (!ServerReplayBridge.TryLocation("discard_right", out var rightLocation, out var rightOwner))
+        {
+            return "discard_right 未被桥接层接受";
+        }
+
+        if (rightLocation != CardLocation.Discard || rightOwner != Side.Right)
+        {
+            return $"discard_right 应映射为 Right/Discard，实际 {rightOwner}/{rightLocation}";
+        }
+
+        if (ServerReplayBridge.TryLocation("discard", out _, out _))
+        {
+            return "没有侧信息的 discard 不应被当成可归属的服务端卡位置";
         }
 
         return null;
