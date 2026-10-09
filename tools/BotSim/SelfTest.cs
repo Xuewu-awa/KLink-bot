@@ -270,6 +270,8 @@ internal static class SelfTest
             CardsBuffedByThisCardReturnsIds),
         new("原语：FullyHealCard 返回实际治疗量、满血幂等且拒绝死亡目标",
             FullyHealCardPrimitive),
+        new("Okayama Regiment：阻止单位完全修复，但不阻止 HQ 修复",
+            OkayamaBlocksUnitFullRepair),
         new("原语：GetAllCardsInFrontline 返回双方前线卡且排除半场/HQ",
             GetAllCardsInFrontlinePrimitive),
         new("事件层：钉住/解除钉住广播真实目标参数，并触发订阅卡效果", PinnedEventLayer),
@@ -7593,6 +7595,59 @@ internal static class SelfTest
             || target.Defense != max)
         {
             return $"弃牌堆目标应返回 0 且不变更防御，实际返回 {raw ?? "null"}、防御 {target.Defense}";
+        }
+
+        return null;
+    }
+
+    private static string? OkayamaBlocksUnitFullRepair(CardDatabase db)
+    {
+        const string observerName = "card_unit_okayama_regiment";
+        const string targetName = "card_unit_t_34_85";
+        if (db.Find(observerName) is null || db.Find(targetName) is null)
+        {
+            return $"卡库缺少测试卡 {observerName} 或 {targetName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId(observerName, Side.Left, 812, CardLocation.BoardHqLeft, 1);
+        var unit = state.CreateWithId(targetName, Side.Right, 813, CardLocation.BoardHqRight, 1);
+        int unitMax = unit.MaxDefense;
+        unit.Defense = unitMax - 1;
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = unit,
+            Controller = unit.Owner,
+        };
+
+        object? raw = engine.Api.InvokeByName("FullyHealCard", null,
+            new object?[] { unit }, ctx, out bool handled);
+        if (!handled || raw is not object?[] unitResult || unitResult.Length != 1
+            || unitResult[0] is not int unitHealed || unitHealed != 0
+            || unit.Defense != unitMax - 1)
+        {
+            return $"Okayama 在场时单位修复应返回 0 并保持 {unitMax - 1} 防御，实际返回 {raw ?? "null"}、防御 {unit.Defense}";
+        }
+
+        var hq = state.ById(41)!;
+        int hqMax = hq.MaxDefense;
+        hq.Defense = hqMax - 1;
+        ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = hq,
+            Controller = hq.Owner,
+        };
+        raw = engine.Api.InvokeByName("FullyHealCard", null,
+            new object?[] { hq }, ctx, out handled);
+        if (!handled || raw is not object?[] hqResult || hqResult.Length != 1
+            || hqResult[0] is not int hqHealed || hqHealed != 1
+            || hq.Defense != hqMax)
+        {
+            return $"Okayama 不应阻止 HQ 修复 1 点，实际返回 {raw ?? "null"}、防御 {hq.Defense}";
         }
 
         return null;

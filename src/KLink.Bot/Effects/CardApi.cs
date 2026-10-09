@@ -743,7 +743,8 @@ public sealed partial class CardApi
     public List<OutParamHit> BroadcastLocalWithOutParams(
         string functionName, CardInstance? subject, string[] outParamNames,
         IReadOnlyDictionary<string, object?>? seed = null,
-        IReadOnlyList<CardInstance>? only = null)
+        IReadOnlyList<CardInstance>? only = null,
+        bool includeSubject = false)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -770,7 +771,8 @@ public sealed partial class CardApi
 
         foreach (var card in snapshot)
         {
-            if (card.Location == CardLocation.NotAvailable || ReferenceEquals(card, subject))
+            if (card.Location == CardLocation.NotAvailable
+                || (!includeSubject && ReferenceEquals(card, subject)))
             {
                 continue;
             }
@@ -1872,7 +1874,23 @@ public sealed partial class CardApi
     {
         if (!target.IsAlive || target.Defense <= 0) return 0;
         int amount = Math.Max(target.MaxDefense - target.Defense, 0);
-        if (amount > 0) HealCard(target, amount);
+        if (amount > 0)
+        {
+            var hits = BroadcastLocalWithOutParams(
+                "OnBeforeFullyRepaired", target, new[] { "stopAction" },
+                new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardRepaired"] = target,
+                },
+                includeSubject: true);
+            if (hits.Any(hit => Blueprint.KismetVm.Truthy(
+                    hit.Outs.GetValueOrDefault("stopAction"))))
+            {
+                return 0;
+            }
+
+            HealCard(target, amount);
+        }
         return amount;
     }
 
