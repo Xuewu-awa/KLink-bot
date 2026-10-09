@@ -1833,6 +1833,13 @@ public sealed partial class CardApi
             //    判据与出处见 `CardInstance.HasAttackLeft` 的注释。
             ["HasAttackLeft"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.HasAttackLeft,
 
+            // `HasMovementLeft(out doesIt)` is the native movement quota query.
+            // Blueprint `BP_Logic::CanCardDoAnything` calls it on the unit, while
+            // `DoOnStartOfTurn`/`ResetUnitOperations` set `movementLeft = 1` and
+            // the frontline move path decrements it.  The headless model stores
+            // that same 0/1 quota as `HasMovedThisTurn`.
+            ["HasMovementLeft"] = (c, r, a) => SelfArg(c, r, a) is { } x && !x.HasMovedThisTurn,
+
             // `IsExile` —— 参考实现 `EngineHost.cs:1106` 就是**无条件 false**
             // （注释：「放逐：引擎暂未建模，恒 false」）。本内核同样没建模 ⇒ 同语义。
             // 这条是**行为中性**的（补不补都是假），补上只是为了让缺口计数反映真实情况。

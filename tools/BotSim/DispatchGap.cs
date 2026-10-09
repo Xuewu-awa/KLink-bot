@@ -220,11 +220,13 @@ internal static class DispatchGapBaseline
     /// 并加入 Left/Right/NotAvailable 三种映射回归。
     /// 2026-10-10：379 → **378**（1934 → 1933 个调用点）。正式注册
     /// `GetOpponentSide`，按当前效果控制方返回对手阵营。
+    /// 2026-10-10：378 → **377**（1933 → 1932 个调用点）。正式注册
+    /// `HasMovementLeft`，按本回合移动额度查询 `!HasMovedThisTurn`。
     /// </remarks>
-    public const int BaselineCount = 378;
+    public const int BaselineCount = 377;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "6B2220FB2BF07940";
+    public const string BaselineFingerprint = "4C9985AB68A70B2C";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

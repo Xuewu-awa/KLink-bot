@@ -375,6 +375,7 @@ internal static class SelfTest
         new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
         new("Blueprint 运行时状态成员读：攻击/受击/抑制/反制序号", RuntimeStateMemberReads),
         new("Blueprint attackBuff 成员读：返回来源账本中的攻击修正总和", AttackBuffMemberRead),
+        new("Blueprint HasMovementLeft：按本回合移动额度返回正反值", HasMovementLeftDispatch),
         new("isSalvaged 成员读与抑制：打捞复制品必须保留 1/1 静态基准", SalvagedMemberAndSuppressionBaseline),
         new("Blueprint 卡字段成员读：type / rarity / salvageFaction", CardDefinitionAndSalvageMemberReads),
 
@@ -12160,6 +12161,28 @@ internal static class SelfTest
         return Equals(bag.GetValueOrDefault("__probe"), 1)
             ? null
             : $"attackBuff 应为永久 +2 与临时 -1 的合计 1，实际 {bag.GetValueOrDefault("__probe") ?? "null"}";
+    }
+
+    private static string? HasMovementLeftDispatch(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var probe = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = probe, Controller = Side.Left };
+
+        object? Read(out bool handled)
+            => engine.Api.InvokeByName("HasMovementLeft", probe, Array.Empty<object?>(), ctx, out handled);
+
+        object? initial = Read(out bool initialHandled);
+        if (!initialHandled || initial is not true)
+        {
+            return $"未移动单位的 HasMovementLeft 应为 true，实际 {initial ?? "null"}（handled={initialHandled}）";
+        }
+
+        probe.HasMovedThisTurn = true;
+        object? afterMove = Read(out bool afterMoveHandled);
+        return afterMoveHandled && afterMove is false
+            ? null
+            : $"已移动单位的 HasMovementLeft 应为 false，实际 {afterMove ?? "null"}（handled={afterMoveHandled}）";
     }
 
     private static string? SalvagedMemberAndSuppressionBaseline(CardDatabase db)
