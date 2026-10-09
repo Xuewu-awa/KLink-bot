@@ -20,6 +20,7 @@ internal static class SelfTest
     {
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
+        new("GetOpponentSide 按当前对局方返回对手阵营", OpponentSideSemantics),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -1780,6 +1781,49 @@ internal static class SelfTest
         if (side != Side.Left)
         {
             return $"右方卡片的对手应为 left(1)，实际 {side}({raw})";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// <c>GetOpponentSide()</c> 是对局状态的零入参查询；验证它在两侧及
+    /// <c>NotAvailable</c> 下都遵循统一的 <c>Side.Opposite()</c> 映射。
+    /// </summary>
+    private static string? OpponentSideSemantics(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        foreach (var (controller, expected) in new[]
+        {
+            (Side.Left, Side.Right),
+            (Side.Right, Side.Left),
+            (Side.NotAvailable, Side.NotAvailable),
+        })
+        {
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Controller = controller,
+            };
+
+            object? result = engine.Api.InvokeByName(
+                "GetOpponentSide", null, Array.Empty<object?>(), ctx, out bool handled);
+            if (!handled)
+            {
+                return "GetOpponentSide 没有注册到派发表里";
+            }
+
+            if (result is not int raw)
+            {
+                return $"{controller} 返回类型不是 int，而是 {result?.GetType().Name ?? "null"}";
+            }
+
+            var actual = (Side)raw;
+            if (actual != expected)
+            {
+                return $"{controller} 的对手应为 {expected}({(int)expected})，实际 {actual}({raw})";
+            }
         }
 
         return null;

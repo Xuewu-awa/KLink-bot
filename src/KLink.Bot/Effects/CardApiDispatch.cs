@@ -245,6 +245,11 @@ public sealed partial class CardApi
             //    是第 3 常用的外部调用）。实测症状：card_unit_10_5_cm_lefh 的
             //    「Deployment: 对敌方 HQ 造成 2 点伤害」完全不生效。
             ["GetOppositeSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
+            // BP_GameState_Battle.GetOpponentSide is the zero-argument side
+            // query used by card-function helpers. Effects execute in the
+            // current playing side's context, so mirror the native result
+            // with the established Side.Opposite mapping.
+            ["GetOpponentSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
             // The Blueprint signature takes an integer card ID, but a few local
             // event paths receive the freshly spawned CardInstance directly from
             // a simplified spawn primitive.  Accept both representations here;
