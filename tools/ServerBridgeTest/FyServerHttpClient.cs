@@ -17,10 +17,10 @@ internal sealed class FyServerHttpClient : IDisposable
     private readonly HttpClient _http;
     private readonly Uri _baseUri;
 
-    public FyServerHttpClient(string baseUrl, string token)
+    public FyServerHttpClient(string baseUrl, string token, HttpMessageHandler? handler = null)
     {
         _baseUri = new Uri(baseUrl.EndsWith('/') ? baseUrl : baseUrl + '/', UriKind.Absolute);
-        _http = new HttpClient();
+        _http = handler is null ? new HttpClient() : new HttpClient(handler);
         _http.BaseAddress = _baseUri;
         string rawToken = token.Trim();
         if (rawToken.StartsWith("JWT ", StringComparison.OrdinalIgnoreCase)) rawToken = rawToken[4..].Trim();
@@ -202,7 +202,7 @@ internal sealed class FyServerHttpClient : IDisposable
 
     private static List<ServerCard> ReadCards(JsonObject startingData, JsonObject? reconnect)
     {
-        var cards = new List<ServerCard>();
+        var cards = new Dictionary<int, ServerCard>();
         Add(startingData["location_card_left"], "board_hqleft");
         Add(startingData["location_card_right"], "board_hqright");
         AddMany(startingData["starting_hand_left"], "hand_left");
@@ -215,7 +215,7 @@ internal sealed class FyServerHttpClient : IDisposable
             AddMany(reconnect["mulligan_right"]?["discarded_cards"], "discard_right", forceLocation: true);
         }
 
-        return cards;
+        return cards.Values.ToList();
 
         void AddMany(JsonNode? node, string fallbackLocation, bool forceLocation = false)
         {
@@ -229,12 +229,13 @@ internal sealed class FyServerHttpClient : IDisposable
         void Add(JsonNode? node, string fallbackLocation, bool forceLocation = false)
         {
             if (node is not JsonObject card) return;
-            cards.Add(new ServerCard(
-                Int(card, "card_id"),
+            int cardId = Int(card, "card_id");
+            cards[cardId] = new ServerCard(
+                cardId,
                 Bool(card, "is_gold"),
                 forceLocation ? fallbackLocation : String(card, "location", fallbackLocation),
                 Int(card, "location_number"),
-                String(card, "name")));
+                String(card, "name"));
         }
     }
 

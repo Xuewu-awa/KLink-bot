@@ -50,6 +50,11 @@ internal static class Program
             return await FyServerLiveRunner.RunAsync(FindRepoRoot(), opts);
         }
 
+        if (opts.ContainsKey("selftest-fyserver-http"))
+        {
+            return await FyServerHttpContractTest.RunAsync();
+        }
+
         // `--audit-replay <路径前缀>`：逐条动作审计（找"移动死亡单位"的根因）
         //
         // 可加两个**归因实验**开关（见 `ReplayRunner.IdentityCorrection`）：
