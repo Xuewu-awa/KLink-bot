@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.Effects;
@@ -47,6 +48,7 @@ internal static class SelfTest
             ReplayGeneratedCardAlias),
         new("服务端弃牌位置：discard_left/right 保留阵营，裸 discard 拒绝",
             ServerDiscardLocationAliases),
+        new("fyserver 动作包：动作号与 UTF-8 JSON 编解码往返", ActionPacketCodecRoundTrip),
         // ★ 发号**口径**本身（2026-10-02）：蓝图 `GenerateNextCardID` 没有 side、
         //   计数器全局、每回合归零。历史实现按 side 分号段 ⇒ 客户端认不出我们发的号。
         new("发号口径：效果生成卡 = 回合号×1000 + 本回合第几张，计数器全局且双方共用（无 side）",
@@ -2513,6 +2515,45 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? ActionPacketCodecRoundTrip(CardDatabase db)
+    {
+        var payload = new JsonObject
+        {
+            ["action_type"] = "XActionPlayCardFromHand",
+            ["player_id"] = 606895,
+            ["action_data"] = new JsonObject
+            {
+                ["0"] = "card_event_pams",
+                ["note"] = "中文 UTF-8",
+            },
+        };
+
+        foreach (int actionId in new[] { 1, 606895, 0xFFFFFF })
+        {
+            string packet = ActionPacketCodec.Encode(actionId, payload);
+            var decoded = ActionPacketCodec.Decode(packet);
+            if (decoded.ActionId != actionId)
+            {
+                return $"动作号 {actionId} 往返后变成 {decoded.ActionId}";
+            }
+
+            if (decoded.Payload.ToJsonString() != payload.ToJsonString())
+            {
+                return $"动作 {actionId} 的 JSON 往返不一致：{decoded.Payload}";
+            }
+        }
+
+        try
+        {
+            ActionPacketCodec.Decode("invalid");
+            return "错误格式动作包未被拒绝";
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 
     /// <summary>
