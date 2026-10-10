@@ -55,9 +55,28 @@ internal sealed class FyServerHttpClient : IDisposable
         int leftPlayerId = Int(startingData, "player_id_left", Int(match, "player_id_left"));
         int rightPlayerId = Int(startingData, "player_id_right", Int(match, "player_id_right"));
         var cards = ReadCards(startingData, includeMulliganState ? root : null);
-        var packets = includeMulliganState
-            ? Strings(root["actions"])
-            : await PollActionsAsync(matchId, botSide == Side.Left ? rightPlayerId : leftPlayerId, cancellationToken);
+        List<string> packets;
+        if (includeMulliganState)
+        {
+            packets = Strings(root["actions"]);
+        }
+        else
+        {
+            packets = await PollActionsAsync(matchId, botSide == Side.Left ? rightPlayerId : leftPlayerId,
+                                             cancellationToken);
+            // PUT /actions calls fyserver's TickBot before returning. Refresh the
+            // envelope so counters include any bot actions appended by that poll.
+            JsonObject refreshedRoot = await GetObjectAsync("matches/v2", cancellationToken);
+            (JsonObject refreshedMatch, JsonObject refreshedStartingData) = ExtractMatch(refreshedRoot);
+            if (Int(refreshedMatch, "match_id") != matchId)
+            {
+                throw new FormatException("fyserver active match changed while polling actions.");
+            }
+            match = refreshedMatch;
+            startingData = refreshedStartingData;
+            cards = ReadCards(startingData, null);
+            root = refreshedRoot;
+        }
 
         var actions = new List<ServerAction>(packets.Count);
         int sessionId = 0;
