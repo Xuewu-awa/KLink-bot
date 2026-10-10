@@ -18,6 +18,8 @@ namespace KLink.Bot.ServerBridgeTest;
 /// 用法：
 /// <code>
 ///   ServerBridgeTest --replay 989040 [--up-to 30] [--side right]
+///   ServerBridgeTest --wrap-fyserver raw-match.json --output out/replay-123
+///   ServerBridgeTest --wrap-fyserver replay-123.json --actions replay-123.actions.json --output out/replay-123
 /// </code>
 /// </summary>
 internal static class Program
@@ -33,6 +35,13 @@ internal static class Program
                 ? Path.Combine(FindRepoRoot(), "tem", "fyserver", "bin", "Release", "net10.0", "BotData")
                 : dataDirArg;
             return LoadVerifier.Run(dir);
+        }
+
+        // 将 fyserver 的 /matches/v2/{id} 原始响应包装成 ReplayData.Load 的两个文件。
+        if (opts.TryGetValue("wrap-fyserver", out string? rawReplay))
+        {
+            string outputPrefix = opts.GetValueOrDefault("output", "replay");
+            return FyServerReplayWrapper.Run(rawReplay, opts.GetValueOrDefault("actions"), outputPrefix);
         }
 
         // `--audit-replay <路径前缀>`：逐条动作审计（找"移动死亡单位"的根因）
