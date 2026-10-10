@@ -75,12 +75,14 @@ internal static class FyServerLiveRunner
         var service = new BotTurnService(db, botSide, botPlayerId);
         service.LoadDeckCodeTable(LoadDeckCodeTable(repoRoot));
         BotTurnService.TurnResult result = service.DecideTurn(snapshot);
+        ServerAction startOfTurn = BuildStartOfTurn(snapshot, botSide, botPlayerId, result);
+        IReadOnlyList<ServerAction> submittedActions = RenumberAfterStart(result.Actions, startOfTurn.ActionId);
 
         Console.WriteLine("===== 预览动作 =====");
-        foreach (ServerAction action in result.Actions)
+        PrintAction(startOfTurn);
+        foreach (ServerAction action in submittedActions)
         {
-            string data = string.Join(" ", action.ActionData.Select(pair => $"{pair.Key}={pair.Value}"));
-            Console.WriteLine($"#{action.ActionId} {action.ActionType} player={action.PlayerId} turn={action.TurnNumber} {data}");
+            PrintAction(action);
         }
         foreach (string line in result.Log) Console.WriteLine(line);
         Console.WriteLine($"未应用动作 {result.UnappliedActions} 条；会话 ID {snapshot.ActionSessionId}");
@@ -106,20 +108,71 @@ internal static class FyServerLiveRunner
             Console.Error.WriteLine("拒绝提交：回放存在漂移，或内核认为当前不是 bot 回合。");
             return 2;
         }
-        if (snapshot.ActionSessionId <= 0 || result.Actions.Count == 0)
+        if (snapshot.ActionSessionId <= 0 || submittedActions.Count == 0)
         {
             Console.Error.WriteLine("拒绝提交：动作会话 ID 不可用或动作列表为空。");
             return 2;
         }
 
         Console.WriteLine("确认开启提交：将按序发送上方全部动作。");
-        foreach (ServerAction action in result.Actions)
+        await client.SubmitActionAsync(snapshot.MatchId, snapshot.ActionSessionId, startOfTurn);
+        Console.WriteLine($"已提交 #{startOfTurn.ActionId} {startOfTurn.ActionType}");
+        foreach (ServerAction action in submittedActions)
         {
             await client.SubmitActionAsync(snapshot.MatchId, snapshot.ActionSessionId, action);
             Console.WriteLine($"已提交 #{action.ActionId} {action.ActionType}");
         }
 
         return 0;
+    }
+
+    private static void PrintAction(ServerAction action)
+    {
+        string data = string.Join(" ", action.ActionData.Select(pair => $"{pair.Key}={pair.Value}"));
+        Console.WriteLine($"#{action.ActionId} {action.ActionType} player={action.PlayerId} turn={action.TurnNumber} {data}");
+    }
+
+    private static IReadOnlyList<ServerAction> RenumberAfterStart(IReadOnlyList<ServerAction> actions,
+                                                                   int startActionId)
+    {
+        var result = new List<ServerAction>(actions.Count);
+        for (int i = 0; i < actions.Count; i++)
+        {
+            result.Add(actions[i] with { ActionId = startActionId + i + 1 });
+        }
+        return result;
+    }
+
+    private static ServerAction BuildStartOfTurn(ServerMatchSnapshot snapshot, Side botSide,
+                                                  int botPlayerId, BotTurnService.TurnResult result)
+    {
+        string hqKey = "40";
+        foreach (ServerAction action in snapshot.Actions)
+        {
+            if (action.ActionType != "XActionStartOfTurn") continue;
+            string? numeric = action.ActionData.Keys.FirstOrDefault(key => int.TryParse(key, out _));
+            if (numeric is not null)
+            {
+                hqKey = numeric;
+                break;
+            }
+        }
+
+        var data = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["side"] = botSide.ToWire(),
+        };
+        if (result.HqOpponentBefore > 0)
+        {
+            data[hqKey] = result.HqOpponentBefore.ToString();
+        }
+
+        return new ServerAction(
+            snapshot.NextActionId > 0 ? snapshot.NextActionId : 1,
+            "XActionStartOfTurn",
+            botPlayerId,
+            data,
+            result.State?.Turn ?? snapshot.Turns);
     }
 
     private static string FindDataDirectory(string root)
