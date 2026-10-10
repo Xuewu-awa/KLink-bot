@@ -20,11 +20,12 @@ namespace KLink.Bot.ServerBridgeTest;
 ///   ServerBridgeTest --replay 989040 [--up-to 30] [--side right]
 ///   ServerBridgeTest --wrap-fyserver raw-match.json --output out/replay-123
 ///   ServerBridgeTest --wrap-fyserver replay-123.json --actions replay-123.actions.json --output out/replay-123
+///   ServerBridgeTest --fyserver-turn --base-url http://127.0.0.1:5000 --token <JWT> [--side right]
 /// </code>
 /// </summary>
 internal static class Program
 {
-    private static int Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
         var opts = ParseArgs(args);
 
@@ -42,6 +43,11 @@ internal static class Program
         {
             string outputPrefix = opts.GetValueOrDefault("output", "replay");
             return FyServerReplayWrapper.Run(rawReplay, opts.GetValueOrDefault("actions"), outputPrefix);
+        }
+
+        if (opts.ContainsKey("fyserver-turn"))
+        {
+            return await FyServerLiveRunner.RunAsync(FindRepoRoot(), opts);
         }
 
         // `--audit-replay <路径前缀>`：逐条动作审计（找"移动死亡单位"的根因）
