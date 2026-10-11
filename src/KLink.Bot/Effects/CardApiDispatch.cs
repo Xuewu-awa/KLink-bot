@@ -1580,9 +1580,32 @@ public sealed partial class CardApi
                     return new List<CardInstance>();
                 }
 
+                // Slot numbers are reused by the support line and the shared
+                // frontline.  Adjacency is within the same line; otherwise a
+                // frontline unit at slot 0 incorrectly sees a support unit at
+                // slot 1 as adjacent (the Yokosuka replay exposed this).
                 return c.State.Board(card.Owner)
-                    .Where(x => Math.Abs(x.LocationNumber - card.LocationNumber) == 1)
+                    .Where(x => x.Location == card.Location
+                        && Math.Abs(x.LocationNumber - card.LocationNumber) == 1)
                     .ToList();
+            },
+            // The live bridge currently carries an empty move-reason string
+            // for ordinary board moves.  In the Blueprint enum that is the
+            // first value, which is one of the reasons accepted by 35th
+            // Infantry Regiment.  Keep this protocol normalization here so
+            // local-function output handling does not turn the empty payload
+            // into a spurious "unknown" reason.
+            ["getMoveReason"] = (c, r, a) =>
+            {
+                object? raw = a.FirstOrDefault();
+                if (raw is int i)
+                {
+                    return i;
+                }
+
+                return string.IsNullOrWhiteSpace(raw?.ToString())
+                    ? 0
+                    : Blueprint.KismetVm.ToInt(raw);
             },
             // `card_unit_48th_armored_infantry` counts adjacent units around itself.
             ["GetDefenseBuffFromAdjacentUnits"] = (c, r, a) =>

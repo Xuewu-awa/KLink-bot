@@ -601,15 +601,18 @@ public sealed class KismetVm
         if (!handled && LocalProgramFor(ctx, fn) is { } local)
         {
             var outNames = new List<string>();
+            string? primaryOutName = null;
             foreach (int p in step.OutParams)
             {
                 if (p < step.Args.Count && step.Args[p].Var is { } slot)
                 {
                     outNames.Add(slot);
                     string prefix = "CallFunc_" + fn + "_";
-                    outNames.Add(slot.StartsWith(prefix, StringComparison.Ordinal)
+                    string localName = slot.StartsWith(prefix, StringComparison.Ordinal)
                         ? slot[prefix.Length..]
-                        : slot);
+                        : slot;
+                    outNames.Add(localName);
+                    primaryOutName ??= localName;
                 }
             }
 
@@ -621,11 +624,14 @@ public sealed class KismetVm
             // the local program still gets its own frame, so writes do not leak
             // back except through the engine state mutations they intentionally do.
             var localSeed = new Dictionary<string, object?>(frame.Snapshot(), StringComparer.Ordinal);
+            ResetLocalSlots(local, localSeed);
             BindLocalInputs(local, args.Where((_, i) => !outSet.Contains(i)).ToArray(), localSeed);
             var bag = outNames.Count > 0
                 ? RunLocalProgramMulti(local, ctx, localSeed, outNames.ToArray())
                 : RunLocalProgramMulti(local, ctx, localSeed);
-            result = outNames.Count > 0 ? bag[outNames[0]] : null;
+            // The generated caller slot is only an alias in the caller frame;
+            // the local frame writes the stripped Blueprint output name.
+            result = primaryOutName is not null ? bag[primaryOutName] : null;
             handled = true;
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }
@@ -873,6 +879,7 @@ public sealed class KismetVm
             if (!handled && LocalProgramFor(ctx, c) is { } local)
             {
                 var localSeed = new Dictionary<string, object?>(frame.Snapshot(), StringComparer.Ordinal);
+                ResetLocalSlots(local, localSeed);
                 BindLocalInputs(local, callArgs, localSeed);
                 r = RunLocalProgram(local, ctx, localSeed, "ReturnValue");
                 handled = true;
@@ -973,6 +980,25 @@ public sealed class KismetVm
         for (int i = 0; i < args.Count; i++)
         {
             seed[candidates[i]] = args[i];
+        }
+    }
+
+    /// <summary>
+    /// Local Blueprint functions have their own zero-initialized local slots.
+    /// Do not let a caller's scratch value (for example <c>tmpCount</c> from a
+    /// previous loop iteration) leak into the local frame.  Undeclared names
+    /// remain in the seed so event payloads and explicit local parameters can
+    /// still be resolved by <see cref="BindLocalInputs"/>.
+    /// </summary>
+    private static void ResetLocalSlots(KismetProgram program,
+                                        IDictionary<string, object?> seed)
+    {
+        foreach (string name in program.Steps
+                     .Where(s => s.DestinationVar is not null)
+                     .Select(s => s.DestinationVar!)
+                     .Distinct(StringComparer.Ordinal))
+        {
+            seed.Remove(name);
         }
     }
 

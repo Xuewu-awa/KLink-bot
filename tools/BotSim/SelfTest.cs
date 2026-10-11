@@ -376,6 +376,8 @@ internal static class SelfTest
             LocalFunctionBodiesPresent),
         new("私有函数：派发表认不出来时会**执行卡自己的函数体**（不再记 Unimplemented）",
             LocalFunctionActuallyRuns),
+        new("3rd Yokosuka：局部函数 out 计数返回给调用点",
+            ThirdYokosukaAdjacentBuff),
 
         // ---- P1：关键字基础设施（2026-09-30）----
         // 审计 §6 的 P1#27f / #27g：同一个判据在 IR 里有两种形状 ——
@@ -12034,6 +12036,59 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? ThirdYokosukaAdjacentBuff(CardDatabase db)
+    {
+        const string yokosukaName = "card_unit_3rd_yokosuka";
+        const string adjacentName = "card_unit_238th_regiment";
+        if (db.Find(yokosukaName) is null || db.Find(adjacentName) is null)
+        {
+            return $"卡库缺 {yokosukaName} / {adjacentName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var yokosuka = state.CreateWithId(yokosukaName, Side.Left, 701,
+            CardLocation.BoardFrontline, 0);
+        state.CreateWithId(adjacentName, Side.Left, 702,
+            CardLocation.BoardHqLeft, 1);
+        state.CreateWithId(adjacentName, Side.Left, 703,
+            CardLocation.BoardFrontline, 1);
+        var ctx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Self = yokosuka,
+            Controller = Side.Left,
+        };
+        var probe = new KismetStep[]
+        {
+            new(0, "call", "get_adjacent_japan_units_count",
+                new[] { new KismetExpr { Var = "CallFunc_get_adjacent_japan_units_count_count" } },
+                new[] { 0 }, null, null, -1, null, null)
+            {
+                Receiver = new KismetExpr { Var = "cardFunction" },
+            },
+            new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                null, null, -1, null, null),
+        };
+        var outputs = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(probe, 0), ctx,
+            null, "CallFunc_get_adjacent_japan_units_count_count");
+        if (outputs.GetValueOrDefault("CallFunc_get_adjacent_japan_units_count_count") is not int count
+            || count != 1)
+        {
+            return $"相邻日本单位数应为 1，实际 {outputs.GetValueOrDefault("CallFunc_get_adjacent_japan_units_count_count") ?? "null"}";
+        }
+
+        engine.Api.FireTrigger("OnCardLocationMoved", yokosuka, Side.Left);
+        if (yokosuka.Attack != 2)
+        {
+            return $"相邻日本单位应使 Yokosuka 变为 2 攻，实际 {yokosuka.Attack}";
+        }
+
+        return yokosuka.CustomJson.GetValueOrDefault("preCount") == "1"
+            ? null
+            : $"Yokosuka 的 preCount 应写入 1，实际 {yokosuka.CustomJson.GetValueOrDefault("preCount") ?? "缺失"}";
     }
 
     private static string Unimpl(GameState state)        => state.UnimplementedCalls.Count == 0
