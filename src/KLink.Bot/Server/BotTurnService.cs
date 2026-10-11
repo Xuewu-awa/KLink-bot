@@ -231,7 +231,9 @@ public sealed class BotTurnService
         }
 
         // ---- 2) 决策：连续选动作，直到没得做 ----
+        int turnNumber = state.Turn;
         var chosen = new List<AtomicAction>();
+        var preparedActions = new List<ServerAction>();
         var pickedCards = new List<MatchEngine.PickRecord>();   // 选牌答复（CS）
         var handTargets = new List<MatchEngine.HandTargetRecord>();   // 手牌目标答复（HT）
         int guard = 0;
@@ -239,7 +241,14 @@ public sealed class BotTurnService
         while (!state.IsFinished && state.ActiveSide == _botSide && guard++ < MaxActionsPerTurn)
         {
             AtomicAction? next = ChooseOne(engine, chosen, log);
-            if (next is null)
+            if (next is null or EndTurnAction)
+            {
+                break;
+            }
+
+            // Protocol checksums and card identities describe this action's input state.
+            var prepared = ToServerAction(next, 0, turnNumber, state);
+            if (prepared is null)
             {
                 break;
             }
@@ -251,6 +260,7 @@ public sealed class BotTurnService
             }
 
             chosen.Add(next);
+            preparedActions.Add(prepared);
             state = engine.State;
 
             // ★ 选牌答复（`CS`）。
@@ -302,7 +312,6 @@ public sealed class BotTurnService
         //    snapshot.Turns=15 而重建出来是回合 2）。客户端按动作里的 turn_number
         //    推进回合，填错会让它**静默跑偏**。
         int actionId = snapshot.NextActionId > 0 ? snapshot.NextActionId : 1;
-        int turnNumber = state.Turn;
         var actions = new List<ServerAction>(chosen.Count + 1);
 
         // 出牌时收集到的「选牌答复」，按卡号排队（同一张卡可能连选两次，实测 206428 有）
@@ -329,11 +338,12 @@ public sealed class BotTurnService
             hq.Enqueue(ht);
         }
 
-        foreach (var a in chosen)
+        for (int i = 0; i < chosen.Count; i++)
         {
-            if (ToServerAction(a, actionId, turnNumber, engine.State) is { } sa)
+            var a = chosen[i];
+            if (preparedActions[i] is { } sa)
             {
-                actions.Add(sa);
+                actions.Add(sa with { ActionId = actionId });
                 actionId++;
 
                 // ★ `PC` 之后紧跟它的 `CS`（选牌答复）。人类回放就是这个顺序。
@@ -623,6 +633,7 @@ public sealed class BotTurnService
         var replay = ServerReplayBridge.ToReplayData(snapshot, clientSide: _botSide.Opposite());
         var runner = new ReplayRunner(_db)
         {
+            IdentityCorrection = true,
             InitialLocations = BuildInitialLocations(snapshot),
             InitialLocationNumbers = BuildInitialLocationNumbers(snapshot),
         };
@@ -681,7 +692,7 @@ public sealed class BotTurnService
             return best;
         };
 
-        // ★ 同理：「从手牌挑一张」（`gordon_highlanders` 那类卡）。
+        // ★ 同理：「从手牌挑一张」（候选已由调用卡的 IsValidHandTarget 过滤）。
         //
         // ⚠️ 不装它的后果与 `CS` 那处一样：bot 自己回合的动作流里没有 `HT`
         //    ⇒ `ReplayRunner` 装的 `PickHandTarget` 取不到答复 ⇒
@@ -694,8 +705,8 @@ public sealed class BotTurnService
                 return null;
             }
 
-            // 挑**费用最高**的指令 —— "设成 0 费并放到牌库顶" 对贵牌收益最大，
-            // 而且确定（不引入随机）。⚠️ 仍是启发式。
+            // 在该卡允许的候选中优先挑费用最高者；对 Gordon Highlanders，
+            // 候选限制为指令且回牌库顶，费用高者收益更大。其它选择效果仍是启发式。
             var best = candidates[0];
             foreach (var c in candidates)
             {
@@ -935,13 +946,14 @@ public sealed class BotTurnService
             case AttackAction a:
                 {
                     var attacker = state.ById(a.AttackerId);
+                    var defender = state.ById(a.DefenderId);
                     type = "AC";
                     data = new Dictionary<string, string>(StringComparer.Ordinal)
                     {
                         ["0"] = a.AttackerId.ToString(),
                         ["1"] = a.DefenderId.ToString(),
-                        ["2"] = "0",
-                        ["4"] = DeckCodeOf(attacker?.Name),
+                        ["2"] = DeckCodeOf(attacker?.Name),
+                        ["3"] = DeckCodeOf(defender?.Name),
                         [hqKey] = opponentHq.ToString(),
                     };
                     break;

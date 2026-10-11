@@ -1681,7 +1681,64 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 「伤害值**已经**算好了，直接落地」—— 只给 <c>MakeCardsFight</c>（互斗）用。
+    /// Resolve an ordinary unit attack as simultaneous combat: calculate both
+    /// damage directions, apply both defenses, then dispatch damage events.
+    /// Destruction is left to the attack owner after the combat-survival hooks.
+    /// </summary>
+    internal (int ToDefender, int ToAttacker) DealCombatDamagePair(
+        CardInstance attacker, CardInstance defender, int damageToDefender, int damageToAttacker,
+        Action<int, int> afterBothApplied)
+    {
+        int oldDefenderDefense = defender.Defense;
+        int oldAttackerDefense = attacker.Defense;
+        int finalToDefender = CalculateCombatDamage(
+            attacker, defender, damageToDefender, counterDamage: false);
+        int finalToAttacker = CalculateCombatDamage(
+            defender, attacker, damageToAttacker, counterDamage: true);
+
+        int appliedToDefender = _engine.ApplyDamage(defender, finalToDefender, attacker,
+            isCombatDamage: true, damageAlreadyCalculated: true);
+        int appliedToAttacker = _engine.ApplyDamage(attacker, finalToAttacker, defender,
+            isCombatDamage: true, damageAlreadyCalculated: true);
+
+        afterBothApplied(appliedToDefender, appliedToAttacker);
+
+        if (damageToDefender > 0)
+        {
+            ApplyCalculatedDamage(defender, finalToDefender, attacker,
+                isCombatDamage: true, counterDamage: false, isRedirected: false,
+                appliedDamage: appliedToDefender, deferDestruction: true,
+                oldDefense: oldDefenderDefense);
+        }
+
+        if (damageToAttacker > 0)
+        {
+            ApplyCalculatedDamage(attacker, finalToAttacker, defender,
+                isCombatDamage: true, counterDamage: true, isRedirected: false,
+                appliedDamage: appliedToAttacker, deferDestruction: true,
+                oldDefense: oldAttackerDefense);
+        }
+
+        return (appliedToDefender, appliedToAttacker);
+    }
+
+    private int CalculateCombatDamage(CardInstance dealer, CardInstance receiver,
+                                      int amount, bool counterDamage)
+    {
+        if (amount <= 0 || !receiver.IsAlive)
+        {
+            return 0;
+        }
+
+        amount = ExecuteOnDealDamageAddDamage(dealer, receiver, amount,
+            fromAttack: true, fromFight: false, isDefenderDamage: counterDamage);
+        amount = ExecuteOnDealDamageAddDamageAfterCalc(dealer, receiver, amount,
+            isCombatDamage: true, isAttackingDamage: !counterDamage, isRedirected: false);
+        return _engine.CalculateAppliedDamage(receiver, amount, dealer, isCombatDamage: true);
+    }
+
+    /// <summary>
+    /// 「伤害值**已经**算好了，直接落地」—— 给双向互斗与普通攻击的批量结算共用。
     ///
     /// ## 为什么必须把它从 <see cref="DealDamage"/> 里拆出来（2026-10-02）
     ///
@@ -1702,7 +1759,9 @@ public sealed partial class CardApi
     /// 方向 2 的修正者（例如 `OnOtherCardDealDamageAddDamage` 里数友方单位的那种）
     /// 看见方向 1 已经打死的尸体 ⇒ 数值可能与客户端不同。
     ///
-    /// 所以这里只做**相位拆分**：修正链仍走
+    /// 互斗使用本方法保持蓝图的先算双向、后落地顺序；普通攻击由
+    /// <see cref="DealCombatDamagePair"/> 采用同样的分阶段方式。
+    /// 修正链仍走
     /// <see cref="ExecuteOnDealDamageAddDamage"/>（同一个漏斗，重甲（仅战斗伤害）/ 免疫 /
     /// `OnCardDealDamage_ModifyDamageDealt` / `OnOtherCardDealDamageAddDamage` /
     /// `ZActionDamageCard` / `OnReceiveDamage` / `OnCardDealDamage` 一条不少），
@@ -1717,7 +1776,9 @@ public sealed partial class CardApi
     /// `ZActionDamageCard` 现在会发、加门后就不发了）。是否跳过零伤害由调用方决定。
     /// </summary>
     internal void ApplyCalculatedDamage(CardInstance target, int amount, CardInstance? source,
-                                        bool isCombatDamage, bool counterDamage, bool isRedirected)
+                                        bool isCombatDamage, bool counterDamage, bool isRedirected,
+                                        int? appliedDamage = null, bool deferDestruction = false,
+                                        int? oldDefense = null)
     {
         // ⚠️ `isCombatDamage` 必须传下去：重甲减伤**只对战斗伤害生效**，
         //    判据与证据链见 `MatchEngine.ApplyDamage` 里那段长注释
@@ -1725,7 +1786,8 @@ public sealed partial class CardApi
         //      而它只被攻击链调用；效果伤害走的是裸减的 `ApplyDamageToCard`）。
         //    `Attack` 传 true（`MatchEngine.cs:1569` 主伤害 / `:1572` 反击），
         //    `DamageCard` / `DamageMultipleCards` / `MakeCardsFight` 都传 false。
-        int applied = _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage);
+        int applied = appliedDamage
+            ?? _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage);
 
         // ApplyDamageToCard removes Mobilize only when the resolved damage is
         // positive. `applied` includes combat-only mitigation such as Heavy Armor.
@@ -1747,7 +1809,7 @@ public sealed partial class CardApi
         {
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("damage", amount),
-            ActionValue2.Int("oldDefense", target.Defense + applied),
+            ActionValue2.Int("oldDefense", oldDefense ?? target.Defense + applied),
             ActionValue2.Bool("destroyed", target.Defense <= 0),
             ActionValue2.Int("attackerCardID", source?.CardId ?? 0),
         });
@@ -1792,7 +1854,7 @@ public sealed partial class CardApi
                 eventSubject: source, namedArgs: named);
         }
 
-        if (target.Defense <= 0 && !target.IsHq)
+        if (!deferDestruction && target.Defense <= 0 && !target.IsHq)
         {
             _engine.Destroy(target, source);
         }
@@ -4024,6 +4086,7 @@ public sealed partial class CardApi
     public bool IsInfantry(CardInstance c) => c.Definition.Type == "infantry";
     public bool IsTank(CardInstance c) => c.Definition.Type == "tank";
     public bool IsArtillery(CardInstance c) => c.Definition.Type == "artillery";
+    public bool IsAntiAir(CardInstance c) => c.Definition.Type == "antiair";
     public bool IsAirUnit(CardInstance c) => c.Definition.Type is "fighter" or "bomber";
     public bool IsOrder(CardInstance c) => c.Definition.IsOrder;
     public bool IsLocationCard(CardInstance c) => c.Definition.IsLocationCard;

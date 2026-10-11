@@ -1,5 +1,7 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
+> **同步验证（2026-10-11）**：已从作者提供的最新工作区同步 bot 内核与配套测试工具；独立仓库数据目录为 `klink bot/docs`。Release 构建成功，`BotSim selftest` 为 `279/279`，派发表缺口基线为 `377`（指纹 `4C9985AB68A70B2C`）。本仓库仅发布规则内核、AI、数据和工具，不包含启动器或 fyserver。
+
 > **工作树验证状态（2026-10-06）**：T30/T31、PlayCard 早快照、全局 suppression gate、T7 抑制门和
 > `OnOtherCardDeveloped`（Develop 后置广播）、`OnOtherUnitPinned/Unpinned`（钉住状态广播）与
 > `OnOtherCardMoveToFrontline`（推进事件载荷）、`OnOtherCardReceiveDamage`（受伤事件载荷）、

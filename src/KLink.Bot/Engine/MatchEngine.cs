@@ -2354,13 +2354,14 @@ public sealed class MatchEngine
         FireOperationKreditsSpent(attacker, attackCost);
 
         bool shockAttack = attacker.Keywords.Contains(Keyword.Shock);
-        bool ambushAttack = !defender.IsHq
+        bool canCounter = !shockAttack && CanDefenderDamageAttacker(attacker, defender);
+        bool ambushAttack = canCounter
             && defender.Keywords.Contains(Keyword.Ambush)
             && !defender.HasBeenAttackedThisTurn
             && !attacker.Keywords.Contains(Keyword.Immune);
 
         int attackerDamage = attacker.Attack;
-        int defenderDamage = defender.IsHq || shockAttack ? 0 : defender.Attack;
+        int defenderDamage = canCounter ? defender.Attack : 0;
 
         // Ambush strikes before the attacker. If it kills the attacker, the
         // Blueprint CalculateDamageDealt branch suppresses the forward hit.
@@ -2402,10 +2403,79 @@ public sealed class MatchEngine
         //    —— 这两个 bool 就是 `OnCardDealDamage` 的 `isCombatDamage` / `CounterDamage`，
         //    也决定伤害修正链的 `fromAttack` / `isDefenderDamage`
         //    （`CalculateDamageDealt` si=473/734）。不传等于「攻击不算战斗伤害」。
-        Api.DealDamage(defender, attackerDamage, attacker, isCombatDamage: true);
-        if (!ambushAttack && !defender.IsHq && defender.IsAlive && defenderDamage > 0)
+        bool unitCombat = !defender.IsHq && Api.IsUnit(defender);
+        if (unitCombat && !ambushAttack)
         {
-            Api.DealDamage(attacker, defenderDamage, defender, isCombatDamage: true, counterDamage: true);
+            Api.DealCombatDamagePair(attacker, defender, attackerDamage, defenderDamage,
+                (damageToDefender, damageToAttacker) =>
+                {
+                    attackerDamage = damageToDefender;
+                    defenderDamage = damageToAttacker;
+
+                    FireSubAction("ZActionAttackCard", new[]
+                    {
+                        ActionValue2.Int("attackerCardID", attacker.CardId),
+                        ActionValue2.Int("defenderCardID", defender.CardId),
+                        ActionValue2.Int("damageDefender", damageToDefender),
+                        ActionValue2.Int("damageAttacker", damageToAttacker),
+                        ActionValue2.Int("attackerAttackLeft", attacker.Attack),
+                        ActionValue2.Int("defenderDefense", defender.Defense),
+                    });
+
+                    if (attacker.AliveOnBoard)
+                    {
+                        Api.FireSurvivedCombat(attacker, defender);
+                    }
+
+                    if (defender.AliveOnBoard)
+                    {
+                        Api.FireSurvivedCombat(defender, attacker);
+                    }
+                });
+
+            if (defender.Defense <= 0 && !defender.IsHq)
+            {
+                Destroy(defender, attacker);
+            }
+
+            if (attacker.Defense <= 0 && !attacker.IsHq)
+            {
+                Destroy(attacker, defender);
+            }
+        }
+        else
+        {
+            Api.DealDamage(defender, attackerDamage, attacker, isCombatDamage: true);
+            if (!ambushAttack && defenderDamage > 0)
+            {
+                Api.DealDamage(attacker, defenderDamage, defender,
+                    isCombatDamage: true, counterDamage: true);
+            }
+
+            if (unitCombat)
+            {
+                if (attacker.AliveOnBoard)
+                {
+                    Api.FireSurvivedCombat(attacker, defender);
+                }
+
+                if (defender.AliveOnBoard)
+                {
+                    Api.FireSurvivedCombat(defender, attacker);
+                }
+            }
+
+            FireSubAction("ZActionAttackCard", new[]
+            {
+                ActionValue2.Int("attackerCardID", attacker.CardId),
+                ActionValue2.Int("defenderCardID", defender.CardId),
+                ActionValue2.Int("damageDefender", attackerDamage),
+                ActionValue2.Int("damageAttacker", defenderDamage),
+                ActionValue2.Int("attackerAttackLeft", attacker.Attack),
+                ActionValue2.Int("defenderDefense", defender.Defense),
+            });
+
+            CheckDeaths();
         }
 
         // Shock is consumed by the attack itself, regardless of whether the
@@ -2414,41 +2484,6 @@ public sealed class MatchEngine
         {
             Api.RemoveKeyword(attacker, Keyword.Shock);
         }
-
-        // ---- 「战斗存活」----
-        //
-        // 出处 `out/bp-cardfn.json` 函数 `ExecuteAttackCard`（UAssetCLI StatementIndex）：
-        //   si=3130 IsUnit(defender) → si=3171 PopExecutionFlowIfNot  ; ★ 打 HQ 不进这一段
-        //   si=3186 JumpIfNot(attackerDestroyed) → si=3201
-        //   si=3201 ExecuteOnSurvivedCombatEvents(attacker, defender)
-        //   si=3234 JumpIfNot(defenderDestroyed) → si=3249
-        //   si=3249 ExecuteOnSurvivedCombatEvents(defender, attacker)
-        // `JumpIfNot(xDestroyed) -> <存活那一句>`：**为假（没被摧毁）才执行** ——
-        // 这点不是猜的：同一条语句上 Push/PopExecutionFlow 配的是"跳过整段"的落点
-        // （si=3181 PushExecutionFlow(3234) + si=3200 PopExecutionFlow）。
-        // 内核在伤害结算**之后**按 `IsAlive` 判（近似，见 CardApi.FireSurvivedCombat 的注释）。
-        if (Api.IsUnit(defender) && !defender.IsHq)
-        {
-            if (attacker.IsAlive)
-            {
-                Api.FireSurvivedCombat(attacker, defender);
-            }
-
-            if (defender.IsAlive)
-            {
-                Api.FireSurvivedCombat(defender, attacker);
-            }
-        }
-
-        FireSubAction("ZActionAttackCard", new[]
-        {
-            ActionValue2.Int("attackerCardID", attacker.CardId),
-            ActionValue2.Int("defenderCardID", defender.CardId),
-            ActionValue2.Int("damageDefender", attackerDamage),
-            ActionValue2.Int("damageAttacker", defenderDamage),
-            ActionValue2.Int("attackerAttackLeft", attacker.Attack),
-            ActionValue2.Int("defenderDefense", defender.Defense),
-        });
 
         // ⚠️ 「别人攻击之后」的正确程序名是 **`OnAfterOtherCardAttacks`**，
         //    不是 `OnOtherCardAttacks`（后者在全部 1636 张卡的 entrypoints 里
@@ -2459,6 +2494,23 @@ public sealed class MatchEngine
         Api.FireTrigger("OnAfterAttack", attacker, attacker.Owner, "OnAfterOtherCardAttacks");
         CheckDeaths();
         return true;
+    }
+
+    private bool CanDefenderDamageAttacker(CardInstance attacker, CardInstance defender)
+    {
+        // Artillery attacks and bomber attacks normally take no retaliation;
+        // bombers only take it from fighters and anti-air units. A defending
+        // bomber never retaliates. These same qualifications gate Ambush.
+        if (defender.IsHq || !defender.Definition.IsUnit
+            || attacker.Definition.Type == "artillery"
+            || defender.Definition.Type == "bomber")
+        {
+            return false;
+        }
+
+        // Bombers only take retaliation from fighters and anti-air units.
+        return attacker.Definition.Type != "bomber"
+            || defender.Definition.Type == "fighter" || Api.IsAntiAir(defender);
     }
 
     /// <summary>列出当前可以攻击的目标。</summary>
@@ -2768,76 +2820,52 @@ public sealed class MatchEngine
     /// 全库 4 个调用点**没有一个传 true**，保留它是为了不把蓝图的形状压扁。
     /// </param>
     internal int ApplyDamage(CardInstance target, int amount, CardInstance? source,
-                             bool isCombatDamage = false, bool ignoreHeavyArmor = false)
+                             bool isCombatDamage = false, bool ignoreHeavyArmor = false,
+                             bool damageAlreadyCalculated = false)
     {
         if (amount <= 0 || !target.IsAlive)
         {
             return 0;
         }
 
-        if (target.Keywords.Contains(Keyword.Immune))
+        if (!damageAlreadyCalculated)
+        {
+            amount = CalculateAppliedDamage(target, amount, source, isCombatDamage, ignoreHeavyArmor);
+        }
+        else if (target.Keywords.Contains(Keyword.Immune))
         {
             return 0;
         }
 
-        // ---- 重甲减伤：**只对战斗伤害生效**（2026-10-02 修正）----
-        //
-        // ## 蓝图里的形状（权威）
-        //
-        // 出处 `out/bp-cardfn.json` → `CalculateDamageDealt`（`ref/kards-sim/.../
-        // BP_CardFunctions.g.cs:4744`，函数体 4744-5399）：
-        // <code>
-        // g.cs:5207  Greater_IntInt(_dealerCalculatedDamage, 0) → 0 就不进这一整段
-        // g.cs:5211  GetPassiveDefenseBuff(_damageRecieverCard, out amount)
-        // g.cs:5213  getTotalHeavyArmor(_damageRecieverCard, out totalHeavyArmor)
-        // g.cs:5215  SelectInt(被动防buff, 0, applyBeforeAttackBuffs)
-        // g.cs:5217  SelectInt(0, 重甲,        ignoreHeavyArmor)
-        // g.cs:5219  Add_IntInt(上面两个)
-        // g.cs:5221  Subtract_IntInt(_dealerCalculatedDamage, 上面那个和)
-        // g.cs:5223  Max(.., 0)
-        // </code>
-        // `SelectInt(A, B, pick)` 的语义是 `pick ? A : B`（`KismetVm.EvalMath` 的
-        // `case "SelectInt"`），所以
-        //     damage = Max(damage − (ignoreHeavyArmor ? 0 : 重甲) − (applyBeforeAttackBuffs ? 被动防buff : 0), 0)
-        //
-        // ## 为什么判据是 `isCombatDamage` 而不是"每一笔伤害"
-        //
-        // ★ 关键：这道减伤**长在 `CalculateDamageDealt` 里**，而不是长在扣血那一步。
-        //   而 `CalculateDamageDealt` 全库只有 **4 个调用点**，全是攻击：
-        //     BP_CardFunctions.g.cs:4657  AttackCard → 主伤害（damageDealerIsAttacker=True）
-        //     BP_CardFunctions.g.cs:4667  AttackCard → 反击伤害（False）
-        //     _deps/BP_Logic.g.cs:2538/2558 `Do_Units_Die`（攻击预览/试算，不是另一条结算）
-        //   真正扣血的那一步是 `ApplyDamageToCard`（g.cs:849-1373），它是**裸减**：
-        //     g.cs:1053-1057  getTotalDefense(toCard) − finalDamage → setAndEncryptDefense
-        //   —— 里面**一个字都没提重甲**。
-        //
-        //   效果伤害那两条链也都不经过 `CalculateDamageDealt`：
-        //     `DamageCard`      g.cs:11662（ExecuteOnDealDamageAddDamage，fromAttack=False）
-        //                       → g.cs:11636 → g.cs:11638 ApplyDamageToCard
-        //     `MakeCardsFight`  g.cs:26021 / 26023 两个方向都直接 ApplyDamageToCard
-        //     `ApplyDamageToMultipleCards` g.cs:1443 之后同样落到裸减那一支
-        //   ⇒ **效果伤害在蓝图里根本不扣重甲**。
-        //
-        // 规则参考独立印证：`klink bot/docs/KARDS基础规则参考.md:106`「**重甲不减免指令伤害**」。
-        //
-        // ⇒ 内核的 `isCombatDamage` 就是蓝图 `ExecuteOnDealDamageAddDamage` 的
-        //   `fromAttack`，只有 `Attack`（`MatchEngine.Attack`）传 true：
-        //     攻击主伤害 / 反击  → true （MatchEngine.cs:1569 / :1572）
-        //     DamageCard / DamageMultipleCards / MakeCardsFight → false
-        //   所以这里用**同一个判据**：`isCombatDamage` 为假 ⇒ 减伤 0。
-        //
-        // ⚠️ 2026-10-02 之前这里是无条件 `target.HeavyArmor` ⇒ 每一笔伤害都扣重甲，
-        //    是**全局性的过度减免**（`DamageCard` 那条更常用的效果伤害链同样中招）。
-        //    修在**唯一漏斗**里一处，不给任何单条链开旁路。
-        //
-        // ⚠️ `GetPassiveDefenseBuff`（被动防 buff）**不并进这道门**，内核也不实现它：
-        //    它在蓝图里和重甲同属一个 `damage > 0` 代码块，但**判据是另一个标志**
-        //    `applyBeforeAttackBuffs`（g.cs:5215），而 `AttackCard` 的两个调用点
-        //    （g.cs:4657/4667）传的都是 **False** ⇒ 真实攻击结算里它恒为 0。
-        //    只有攻击预览 `Do_Units_Die`（BP_Logic.g.cs:2538/2558）传 True ——
-        //    那条路径不扣血，且预览时 `OnBeforeAttack` 还没把 buff 落到卡上，
-        //    所以它得在算式里模拟。内核的 `Attack` 是"先 `OnBeforeAttack`、后算伤害"，
-        //    卡面数值已经是 buff 之后的，本来就不该再加一次。
+        if (amount <= 0)
+        {
+            return 0;
+        }
+
+        target.Defense -= amount;
+        if (target.IsHq)
+        {
+            State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
+            Say($"HQ {target.Owner.ToWire()} 受到 {amount} 伤害，剩余 {target.Defense}");
+            if (target.Defense <= 0)
+            {
+                State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
+            }
+        }
+
+        return amount;
+    }
+
+    internal int CalculateAppliedDamage(CardInstance target, int amount, CardInstance? source,
+                                        bool isCombatDamage = false, bool ignoreHeavyArmor = false)
+    {
+        if (amount <= 0 || !target.IsAlive || target.Keywords.Contains(Keyword.Immune))
+        {
+            return 0;
+        }
+
+        // Combat-only mitigation belongs to CalculateDamageDealt, not to the
+        // raw defense subtraction in ApplyDamageToCard.
         int reduction = (isCombatDamage && !ignoreHeavyArmor) ? target.HeavyArmor : 0;
         if (reduction > 0)
         {
@@ -2855,17 +2883,6 @@ public sealed class MatchEngine
             && Api.HasCustomAbility(source, "lethal") && amount > 0)
         {
             amount = target.Defense;
-        }
-
-        target.Defense -= amount;
-        if (target.IsHq)
-        {
-            State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
-            Say($"HQ {target.Owner.ToWire()} 受到 {amount} 伤害，剩余 {target.Defense}");
-            if (target.Defense <= 0)
-            {
-                State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
-            }
         }
 
         return amount;

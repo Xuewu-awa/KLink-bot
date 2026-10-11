@@ -919,6 +919,11 @@ public sealed class ReplayRunner
                             }
 
                             engine.PlayCard(card, target);
+                            if (state.ActiveSide != side)
+                            {
+                                // ForceEndTurn already resolved the turn inside the card effect.
+                                endedTurnSide = side;
+                            }
                             applied = true;
                             break;
                         }

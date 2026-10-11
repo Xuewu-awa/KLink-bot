@@ -23,19 +23,6 @@ namespace KLink.Bot.ServerBridgeTest;
 /// </summary>
 internal static class ReplayAudit
 {
-    // 动作流可能在单位已经离场后仍保留旧的移动/攻击尝试。
-    // 这类动作被内核拒绝是正确行为，不应被计入状态漂移的可归因失败。
-    private static bool IsAttributableHumanFailure(ReplayRunner.StepResult step)
-    {
-        if (step.Applied || !string.Equals(step.PlayerSide, "left", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        return !((step.ActionType is "ML" or "AC")
-                 && step.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true);
-    }
-
     /// <param name="identityCorrection">
     /// 是否启用身份校正（见 <c>ReplayRunner.TryCorrectIdentity</c>）。
     /// 关掉它 = **修复前**的基线，用来做前后对比与单卡门控归因。
@@ -54,8 +41,7 @@ internal static class ReplayAudit
     /// </param>
     public static int Run(string repoRoot, string replayBase, int verboseLimit = 0,
                           bool identityCorrection = false, string? identityOnly = null,
-                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false,
-                          bool boardTrace = false)
+                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false)
     {
         string snapPath = replayBase + ".json";
         string actsPath = replayBase + ".actions.json";
@@ -86,7 +72,7 @@ internal static class ReplayAudit
 
         // 逐条动作后的状态取样
         var deaths = new List<string>();          // 观察到的"从场上离场"
-        var deadMoveAttempts = new List<(int ActionId, string Text)>();
+        var deadMoves = new List<string>();       // 死亡单位仍被移动/攻击
         var seenDead = new HashSet<int>();        // 已经判死的 cardID
         var lastLoc = new Dictionary<int, CardLocation>();
         var wasOnBoard = new HashSet<int>();
@@ -123,11 +109,6 @@ internal static class ReplayAudit
                 {
                     Console.WriteLine("      " + runner.EngineLog(seenLog++));
                 }
-                Console.WriteLine("      [HAND LEFT] " + string.Join(" | ",
-                    st.Hand(Side.Left).Select(c => $"{c.Name}#{c.CardId} cost={c.KreditCost}")));
-                Console.WriteLine("      [DECK LEFT] " + string.Join(",", st.Deck(Side.Left).Select(c => c.CardId)));
-                Console.WriteLine("      [HAND RIGHT] " + string.Join(" | ", st.Hand(Side.Right).Select(c => $"{c.Name}#{c.CardId}")));
-                Console.WriteLine("      [DECK RIGHT] " + string.Join(" | ", st.Deck(Side.Right).Select(c => $"{c.Name}#{c.CardId}")));
 
                 // 648999 的第 23 条动作是 Shinyo Motorboats：它丢 kredit 槽，
                 // 然后应广播 OnAfterExtraKreditSlotGain。把相关卡的资源状态和
@@ -161,26 +142,6 @@ internal static class ReplayAudit
                         tracedEngine.Api.TriggerTrace.Clear();
                     }
                 }
-            }
-
-            if (boardTrace)
-            {
-                static string Units(GameState state, CardLocation location) =>
-                    string.Join(" ", state.CardsUnordered()
-                        .Where(c => c.Location == location)
-                        .OrderBy(c => c.LocationNumber)
-                        .Select(c => $"{c.Name}#{c.CardId}@{c.LocationNumber}"));
-
-                int leftSupport = st.Cards(Side.Left, Side.Left.HqOf()).Count();
-                int rightSupport = st.Cards(Side.Right, Side.Right.HqOf()).Count();
-                int frontline = st.CardsUnordered()
-                    .Count(c => c.Location == CardLocation.BoardFrontline);
-                Console.WriteLine($"   [BOARD] 半场 {leftSupport}/{GameState.HalfBoardCapacity} vs " +
-                                  $"{rightSupport}/{GameState.HalfBoardCapacity}；" +
-                                  $"前线 {frontline}/{st.FrontlineCapacity}（归属={st.FrontlineOwner}）");
-                Console.WriteLine($"   [BOARD]   L半场: {Units(st, Side.Left.HqOf())}");
-                Console.WriteLine($"   [BOARD]   R半场: {Units(st, Side.Right.HqOf())}");
-                Console.WriteLine($"   [BOARD]   前线: {Units(st, CardLocation.BoardFrontline)}");
             }
 
             // ⚠️ **先**快照"这条动作之前谁已经死了" ——
@@ -223,9 +184,8 @@ internal static class ReplayAudit
                 int id = act.CardId;
                 if (deadBefore.Contains(id))
                 {
-                    deadMoveAttempts.Add((act.ActionId,
-                        $"    #{act.ActionId} t{act.TurnNumber} **{act.ActionType} 动了已判死的单位** " +
-                        $"{st.ById(id)?.Name}#{id}"));
+                    deadMoves.Add($"    #{act.ActionId} t{act.TurnNumber} **{act.ActionType} 动了已判死的单位** " +
+                                  $"{st.ById(id)?.Name}#{id}");
                 }
             }
 
@@ -246,24 +206,9 @@ internal static class ReplayAudit
         if (deaths.Count > 40) Console.WriteLine($"    …（共 {deaths.Count} 条）");
         Console.WriteLine();
 
-        var appliedDeadMoves = deadMoveAttempts
-            .Where(x => report.Steps.FirstOrDefault(s => s.ActionId == x.ActionId)?.Applied == true)
-            .Select(x => x.Text)
-            .ToList();
-        var rejectedDeadMoves = deadMoveAttempts
-            .Where(x => report.Steps.FirstOrDefault(s => s.ActionId == x.ActionId)?.Applied != true)
-            .Select(x => x.Text)
-            .ToList();
-
-        Console.WriteLine($"=== ② 死亡单位仍被移动/攻击：{appliedDeadMoves.Count} 次 ===");
-        foreach (string d in appliedDeadMoves.Take(40)) Console.WriteLine(d);
-        if (appliedDeadMoves.Count == 0) Console.WriteLine("    （没有 —— 所有此类动作都被规则门拒绝）");
-        if (rejectedDeadMoves.Count > 0)
-        {
-            Console.WriteLine($"=== ②a 死亡单位动作被拒：{rejectedDeadMoves.Count} 次 ===");
-            foreach (string d in rejectedDeadMoves.Take(40)) Console.WriteLine(d);
-            Console.WriteLine("    （这些是动作流中的旧/过期尝试，不代表内核放行了死亡单位）");
-        }
+        Console.WriteLine($"=== ② 死亡单位仍被移动/攻击：{deadMoves.Count} 次 ===");
+        foreach (string d in deadMoves.Take(40)) Console.WriteLine(d);
+        if (deadMoves.Count == 0) Console.WriteLine("    （没有）");
         Console.WriteLine();
 
         // ④ ★★ **HQ 对不上** —— 这是"我们的状态与客户端漂开"的**直接信号**。
@@ -282,59 +227,6 @@ internal static class ReplayAudit
                               $" 期望 {s.ExpectedHq} 实际 {s.ActualHq}");
         }
         if (hqBad.Count == 0) Console.WriteLine("    （没有 —— 我们算的 HQ 与动作流一直一致）");
-        Console.WriteLine();
-
-        // ④a：把「采样点暂时不同」与「差异持续到回合结束」分开。
-        // 每个 StepResult 的 HQ 都是在该动作结算前采样；如果同一侧、同一回合的
-        // 后续 EndOfTurn 已重新对上，则差异只存在于回合开始/动作前采样点。
-        var humanHqBad = hqBad
-            .Where(s => string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
-            .ToList();
-        var transientHumanHq = new List<ReplayRunner.StepResult>();
-        foreach (var badStep in humanHqBad)
-        {
-            int index = -1;
-            for (int i = 0; i < report.Steps.Count; i++)
-            {
-                if (report.Steps[i].ActionId == badStep.ActionId)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if (index < 0)
-            {
-                continue;
-            }
-
-            var sameTurnEnd = report.Steps
-                .Skip(index + 1)
-                .TakeWhile(s => s.Turn == badStep.Turn)
-                .FirstOrDefault(s => s.ActionType == "XActionEndOfTurn"
-                    && string.Equals(s.PlayerSide, badStep.PlayerSide, StringComparison.Ordinal));
-            if (sameTurnEnd is not null && sameTurnEnd.HqMatches)
-            {
-                transientHumanHq.Add(badStep);
-            }
-        }
-
-        Console.WriteLine($"=== ④a 人类 HQ 差异分类：{humanHqBad.Count} 条 ===");
-        Console.WriteLine($"    同回合 EndOfTurn 重新对上（采样假象）：{transientHumanHq.Count} 条");
-        Console.WriteLine($"    到同回合 EndOfTurn 仍未对上：{humanHqBad.Count - transientHumanHq.Count} 条");
-        Console.WriteLine("    按动作类型：" +
-            (humanHqBad.Count == 0
-                ? "（没有）"
-                : string.Join("；", humanHqBad
-                    .GroupBy(s => s.ActionType)
-                    .OrderByDescending(g => g.Count())
-                    .Select(g => $"{g.Key}={g.Count()}"))));
-        Console.WriteLine("    按差值（实际-期望）：" +
-            (humanHqBad.Count == 0
-                ? "（没有）"
-                : string.Join("；", humanHqBad
-                    .GroupBy(s => s.ActualHq - s.ExpectedHq)
-                    .OrderBy(g => g.Key)
-                    .Select(g => $"{g.Key:+#;-#;0}={g.Count()}"))));
         Console.WriteLine();
         Console.WriteLine("    ⚠️ 判读须知（2026-10-02，214436 查死）：`XActionStartOfTurn` 那一条");
         Console.WriteLine("       客户端是在**自己回合开始触发器跑之前**采样的，而本器是在");
@@ -357,48 +249,28 @@ internal static class ReplayAudit
         if (bad.Count == 0) Console.WriteLine("    （没有）");
         Console.WriteLine();
 
-        // ⑤b ★★ **首个「可归因人类动作」失败点** —— 这才是要查的地方
+        // ⑤b ★★ **首个「人类动作」失败点** —— 这才是要查的地方
         //
         // 为什么单独标出来：**第一次漂开的位置才是根因**，后面全是它的连锁后果。
         // 而且只有**人类动作**是 ground truth —— bot 自己的动作是**旧内核**生成的，
         // 用新内核重放自然会被拒，那不是保真度信号。
         //
         // ⚠️ 这条以前没有，所以每次都要人工从一长串失败里找"第一条人类的"。
-        var rawHumanFailures = report.Steps
+        var firstHumanFail = report.Steps
             .Where(s => !s.Applied && string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
-            .OrderBy(s => s.ActionId)
-            .ToList();
-        var attributableHumanFailures = rawHumanFailures
-            .Where(IsAttributableHumanFailure)
-            .ToList();
-        var staleDiscardFailures = rawHumanFailures
-            .Where(s => !IsAttributableHumanFailure(s))
-            .ToList();
-        var firstHumanFail = attributableHumanFailures
             .OrderBy(s => s.ActionId)
             .FirstOrDefault();
 
-        // 机器可读：汇总脚本必须使用这个数字，而不是从 ⑤ 的展示文本猜测。
-        Console.WriteLine($"⑤b 可归因人类失败：{attributableHumanFailures.Count} 条");
-        Console.WriteLine($"⑤b 过期弃牌动作：{staleDiscardFailures.Count} 条");
-        Console.WriteLine("=== ⑤b ★ 首个「可归因人类动作」失败点（根因通常在这里）===");
+        Console.WriteLine("=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===");
         if (firstHumanFail is null)
         {
-            Console.WriteLine("    ✅ **没有可归因的人类动作失败** ⇒ 这一局没有发现可归因的状态漂移点");
+            Console.WriteLine("    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐");
         }
         else
         {
-            int priorBotFailures = report.Steps.Count(s =>
-                s.ActionId < firstHumanFail.ActionId
-                && !s.Applied
-                && !string.Equals(s.PlayerSide, "left", StringComparison.Ordinal));
-            int priorStaleFailures = rawHumanFailures.Count(s =>
-                s.ActionId < firstHumanFail.ActionId
-                && !IsAttributableHumanFailure(s));
             Console.WriteLine($"    #{firstHumanFail.ActionId} t{firstHumanFail.Turn} " +
                               $"{firstHumanFail.ActionType}：{firstHumanFail.Failure}");
-            Console.WriteLine($"    （之前 {priorBotFailures} 条 bot 失败不算信号；" +
-                              $"另有 {priorStaleFailures} 条过期弃牌动作被排除）");
+            Console.WriteLine($"    （之前 {report.Steps.Count(s => s.ActionId < firstHumanFail.ActionId && !s.Applied)} 条失败都是 bot 自己的动作，不算信号）");
             Console.WriteLine("    ⇒ **从这里往回查**：这一步之前我们的状态就已经与客户端不同了。");
             Console.WriteLine("       建议：对比这一步之前最近几条人类动作里的 cardID 与位置，看我们从哪一步开始摆错。");
         }
@@ -603,17 +475,13 @@ internal static class ReplayAudit
             Console.WriteLine("     很可能根本没实现 ⇒ 我们这边的血量一直没扣 ⇒ 状态漂开。");
             Console.WriteLine("     这解释了「客户端认为已死、我们移动它」。");
         }
-        else if (appliedDeadMoves.Count > 0)
+        else if (deadMoves.Count > 0)
         {
             Console.WriteLine("  ⚠️ 有**死亡单位被移动** ⇒ 内核自己的门漏了（不是漂开）。");
         }
         else
         {
             Console.WriteLine("  ✅ 内核杀过单位、也没有移动死亡单位 ⇒ 漂开发生在别处。");
-            if (rejectedDeadMoves.Count > 0)
-            {
-                Console.WriteLine("     另有死亡单位动作被拒，属于动作流中的旧/过期尝试，不算内核放行。");
-            }
         }
 
         return 0;

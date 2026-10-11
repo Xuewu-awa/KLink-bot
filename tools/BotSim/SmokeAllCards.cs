@@ -950,7 +950,8 @@ internal static class SmokeAllCards
     {
         foreach (string candidate in new[]
                  {
-                     Path.Combine(dataDir, "event-contracts.json"),
+                      Path.Combine(dataDir, "event-contracts.json"),
+                      Path.Combine(AppContext.BaseDirectory, "Data", "event-contracts.json"),
                      Path.Combine("klink bot", "docs", "event-contracts.json"),
                  })
         {
@@ -964,6 +965,11 @@ internal static class SmokeAllCards
         for (int i = 0; i < 8 && dir is not null; i++, dir = dir.Parent)
         {
             string p = Path.Combine(dir.FullName, "klink bot", "docs", "event-contracts.json");
+            if (File.Exists(p))
+            {
+                return p;
+            }
+            p = Path.Combine(dir.FullName, "klink bot", "klink bot", "docs", "event-contracts.json");
             if (File.Exists(p))
             {
                 return p;

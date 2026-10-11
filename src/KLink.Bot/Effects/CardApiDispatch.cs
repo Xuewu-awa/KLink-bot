@@ -2348,6 +2348,12 @@ public sealed partial class CardApi
     /// （事件契约 `docs/event-contracts.json`：`[Int handTargetCardID, Int instigatorID]`）。
     /// `gordon_highlanders` 自己的 `OnHandTargetSelected` 程序就在这次广播里跑，
     /// 做 `ChangeKreditCost` + `MoveCardToTopOfOwnersDeck`。
+    ///
+    /// 候选限制来自调用卡各自的原生 `IsValidHandTarget`，不是统一的规则：原始卡蓝图中
+    /// 20 张调用卡有这个独立导出（例如 Gordon=order、4th Fallschirmjager=unit/费用门、
+    /// Emergency Measures=subtype.spitfire）；另 13 张没有，允许选择整手牌。当前 card-ir
+    /// 没收录这类独立校验导出，因此 `IsHandTargetValid` 镜像这些已核实的原生谓词；
+    /// 没有校验函数的牌默认放行整手牌。
     /// </summary>
     private object? DoSelectTargetFromHand(EffectContext c, object? r, object?[] a)
     {
@@ -2357,16 +2363,13 @@ public sealed partial class CardApi
             return null;
         }
 
-        // 候选 = 手牌里的**指令**。
-        // 卡面明确写 "Choose an **order** in hand"；把单位也放进候选会让
-        // 后续的 `ChangeKreditCost` / `MoveCardToTopOfOwnersDeck` 落到错的卡上。
         var hand = c.State.Hand(selecting.Owner)
-            .Where(x => string.Equals(x.Definition.Type, "order", StringComparison.OrdinalIgnoreCase))
+            .Where(x => IsHandTargetValid(selecting, x))
             .ToList();
 
         if (hand.Count == 0)
         {
-            return null;   // 手里没指令 —— 蓝图在这种情况下也是整段跳过
+            return null;   // 当前卡没有任何合法手牌目标
         }
 
         CardInstance? chosen;
@@ -2396,6 +2399,45 @@ public sealed partial class CardApi
                     eventSubject: chosen);
 
         return chosen;
+    }
+
+    private bool IsHandTargetValid(CardInstance selecting, CardInstance candidate)
+    {
+        bool IsUnitTarget() => IsUnit(candidate);
+        bool IsCostAtMost(int maximum) => candidate.KreditCost <= maximum;
+
+        return CardDatabase.ResolveBaseName(selecting.Definition.Name) switch
+        {
+            // Card-local IsValidHandTarget exports, confirmed in the original
+            // per-card Blueprint translations under ref/kards-sim.
+            "card_event_emergency_measures" => HasGameplayTag(candidate, "subtype.spitfire"),
+            "card_unit_kings_african_rifles" => IsUnitTarget(),
+            "card_unit_gordon_highlanders" => IsOrder(candidate),
+            "card_event_observer_corps" => candidate.KreditCost >= 5,
+            "card_event_scrap_metal" => IsUnitTarget(),
+            "card_unit_kurmark_aufklarungs" => IsGotcha(candidate)
+                && !JsonGetBool(candidate, "is_kurmark_target"),
+            "card_event_propaganda" => IsGotcha(candidate),
+            "card_event_code_of_bushido" => IsAirUnit(candidate),
+            // The executable IsValidHandTarget predicate compares against 2,
+            // despite its failure-reason string saying "3 or less".
+            "card_unit_4_fallschirmjager" => IsUnitTarget() && IsCostAtMost(2),
+            "card_event_eagle_day" => IsAirUnit(candidate)
+                && candidate.Definition.FactionId == selecting.Definition.FactionId,
+            "card_event_bombing_run" => MatchEngine.IsBomber(candidate)
+                && candidate.KreditCost < 4,
+            "card_event_hull_down" => IsTank(candidate),
+            "card_event_surveil" => true,
+            "card_unit_336th_guards_naval" or "card_unit_ilyushin_il_2"
+                => IsUnitTarget() && IsCostAtMost(3),
+            // Its native validator checks that lastDestroyedCardID exists on
+            // the selecting unit; it imposes no additional condition on target.
+            "card_unit_kv_85" => selecting.CustomJson.ContainsKey("lastDestroyedCardID"),
+            "card_event_overwhelming_force" or "card_event_special_assignment"
+                or "card_event_mayhem" => IsUnitTarget(),
+            "card_event_women_at_work" => IsUnitTarget() && candidate.Definition.FactionId == 5,
+            _ => true,
+        };
     }
 
     /// <summary>从牌库中找出指定卡并抽到手牌（对应 DrawSpecificCardFromDeckBySide）。</summary>

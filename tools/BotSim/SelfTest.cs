@@ -362,6 +362,8 @@ internal static class SelfTest
         new("★★ 卡号：生成卡一律走客户端的 `回合号×1000+序号`，**双方一致**、计数器全局（虚空部署的根因）",
             ClientCardIdAllocator),
         new("手牌目标：`gordon_highlanders` 的「选手牌里的指令」必须**真的落实**（0 费 + 回牌库顶）", HandTargetSelectWorks),
+        new("手牌目标：覆盖全部33个调用者，逐卡复刻 IsValidHandTarget；无校验者允许任意手牌",
+            HandTargetCandidateEligibility),
         new("CanCardBeBuffed：门对所有位置放行（si=41 极性修正）+ 未揭示隐蔽卡的位置表逐条核对",
             CanCardBeBuffedTruthTable),
         new("CanCardBeBuffed：未揭示隐蔽卡拒绝攻防/费用/战斗关键字，揭示后放行",
@@ -437,6 +439,7 @@ internal static class SelfTest
         // + CardLocationMoved si=643/735（移到前线消失）
         new("烟幕：不能被攻击 / 自己攻击后消失（被压制也会移除）/ 移到前线消失", SmokescreenRules),
         new("战斗伤害：Shock 取消反击并在攻击后消耗，Ambush 首次被攻击先反击", AmbushAndShockCombat),
+        new("战斗伤害：普通互杀、炮兵/轰炸机/战斗机/防空反击与 Ambush 例外", CounterAttackRules),
         new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
         // ---- P1：伤害修正链（2026-09-30）----
@@ -11227,6 +11230,7 @@ internal static class SelfTest
 
         // 再放一张便宜的指令，确保"挑费用最高"这条启发式真的在起作用
         var cheap = engine.State.Create("card_event_pams", Side.Left, CardLocation.HandLeft, 1);
+        var unit = engine.State.Create("card_unit_5th_regiment", Side.Left, CardLocation.HandLeft, 2);
 
         var gordon = engine.State.Create(Gordon, Side.Left, CardLocation.HandLeft, 2);
         if (!engine.CanPlay(gordon, out string why))
@@ -11256,6 +11260,11 @@ internal static class SelfTest
         if (ht.ChosenCardId != order.CardId)
         {
             return $"选中的手牌不对：#{ht.ChosenCardId}，应为贵的指令 #{order.CardId}（{OrderCard}）";
+        }
+
+        if (unit.Location != CardLocation.HandLeft)
+        {
+            return "Gordon Highlanders 的 IsValidHandTarget 只允许指令，单位候选不应被选中";
         }
 
         // ③ 必须被移到牌库顶（不再在手牌里）—— 这一步是 `OnHandTargetSelected` 干的
@@ -11288,6 +11297,131 @@ internal static class SelfTest
         if (cheap.EffectiveKreditCost == 0)
         {
             return "**没被选中的指令也被设成 0 费** —— 效果落到了错的卡上";
+        }
+
+        return null;
+    }
+
+    private static string? HandTargetCandidateEligibility(CardDatabase db)
+    {
+        CardDefinition Find(string label, Func<CardDefinition, bool> predicate)
+            => db.All.FirstOrDefault(predicate)
+               ?? throw new InvalidOperationException($"找不到手牌目标测试卡：{label}");
+
+        string unit = Find("unit", d => d.Type == "infantry" && d.Kredits <= 3).Name;
+        string unitCostTwoOrLess = Find("unit cost <=2", d => d.Type == "infantry" && d.Kredits <= 2).Name;
+        string unitAtThree = Find("unit cost 3", d => d.Type == "infantry" && d.Kredits == 3).Name;
+        string unitAboveThree = Find("unit cost >3", d => d.IsUnit && d.Type != "antiair" && d.Kredits > 3).Name;
+        string order = Find("order", d => d.Type == "order" && d.Kredits <= 3).Name;
+        string orderCostFour = Find("order cost 4", d => d.Type == "order" && d.Kredits == 4).Name;
+        string orderCostFive = Find("order cost >=5", d => d.Type == "order" && d.Kredits >= 5).Name;
+        string fighter = Find("fighter", d => d.Type == "fighter").Name;
+        string germanAir = Find("German air", d => d.FactionId == 1 && d.Type is "fighter" or "bomber").Name;
+        string nonGermanAir = Find("non-German air", d => d.FactionId != 1 && d.Type is "fighter" or "bomber").Name;
+        string germanGround = Find("German unit", d => d.FactionId == 1 && d.IsUnit && d.Type is not "antiair" and not "gotcha").Name;
+        string bomberCostThree = Find("bomber cost <4", d => d.Type == "bomber" && d.Kredits < 4).Name;
+        string bomberCostFour = Find("bomber cost >=4", d => d.Type == "bomber" && d.Kredits >= 4).Name;
+        string tank = Find("tank", d => d.Type == "tank").Name;
+        string usUnit = Find("US unit", d => d.FactionId == 5 && d.IsUnit).Name;
+        string nonUsUnit = Find("non-US unit", d => d.FactionId != 5 && d.IsUnit).Name;
+        string spitfire = db.Find("card_unit_spitfire_mk_ii") is not null
+            ? "card_unit_spitfire_mk_ii"
+            : Find("Spitfire", d => d.Name.Contains("spitfire", StringComparison.OrdinalIgnoreCase)).Name;
+        string gotcha = Find("countermeasure", d => d.Type == "gotcha").Name;
+
+        (bool Handled, int[] Offered) Capture(string selectingName, string[] candidateNames,
+                                               int markedCandidate = -1, bool hasLastDestroyed = false)
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            CardDefinition selectingDef = db.Require(selectingName);
+            CardLocation selectingLocation = selectingDef.IsUnit
+                ? CardLocation.BoardHqLeft : CardLocation.Discard;
+            var selecting = state.CreateWithId(selectingName, Side.Left, 50,
+                selectingLocation, selectingDef.IsUnit ? 1 : 0);
+            if (hasLastDestroyed) selecting.CustomJson["lastDestroyedCardID"] = "123";
+
+            var candidates = new List<CardInstance>();
+            for (int i = 0; i < candidateNames.Length; i++)
+            {
+                var candidate = state.CreateWithId(candidateNames[i], Side.Left, 100 + i,
+                    CardLocation.HandLeft, i);
+                if (i == markedCandidate) candidate.CustomJson["is_kurmark_target"] = "1";
+                candidates.Add(candidate);
+            }
+
+            int[]? offered = null;
+            engine.ChooseHandTarget = (_, eligible) =>
+            {
+                offered = eligible.Select(card => card.CardId).ToArray();
+                return null;
+            };
+            var context = new EffectContext
+            {
+                Engine = engine, State = state, Self = selecting, Controller = Side.Left,
+            };
+            engine.Api.InvokeByName("selectTargetFromHand", selecting,
+                new object?[] { selecting.CardId, null }, context, out bool handled);
+            return (handled, offered ?? Array.Empty<int>());
+        }
+
+        var cases = new (string Name, string Selecting, string[] Candidates, int[] Expected,
+            int MarkedCandidate, bool HasLastDestroyed)[]
+        {
+            ("10th Recon accepts any card", "card_unit_10th_recon", [unit, order], [100, 101], -1, false),
+            ("Gordon accepts orders only", "card_unit_gordon_highlanders", [unit, order], [101], -1, false),
+            ("Kings African Rifles accepts units only", "card_unit_kings_african_rifles", [unit, order], [100], -1, false),
+            ("Observer Corps accepts current cost >=5", "card_event_observer_corps", [order, orderCostFour, orderCostFive], [102], -1, false),
+            ("Emergency Measures accepts Spitfire subtype", "card_event_emergency_measures", [spitfire, fighter], [100], -1, false),
+            ("Scrap Metal accepts units only", "card_event_scrap_metal", [unit, order], [100], -1, false),
+            ("Kurmark accepts unused countermeasures", "card_unit_kurmark_aufklarungs", [gotcha, gotcha, order], [101], 0, false),
+            ("Propaganda accepts countermeasures", "card_event_propaganda", [gotcha, order], [100], -1, false),
+            ("Code of Bushido accepts air units", "card_event_code_of_bushido", [fighter, unit], [100], -1, false),
+            // The executable validator compares <=2; its reason string says <=3.
+            ("4th Fallschirmjager follows validator cost <=2", "card_unit_4_fallschirmjager", [unitCostTwoOrLess, unitAtThree, unitAboveThree, order], [100], -1, false),
+            ("Eagle Day accepts own-faction air", "card_event_eagle_day", [germanAir, nonGermanAir, germanGround], [100], -1, false),
+            ("Bombing Run accepts bombers costing <4", "card_event_bombing_run", [bomberCostThree, bomberCostFour, fighter], [100], -1, false),
+            ("Hull Down accepts tanks", "card_event_hull_down", [tank, unit], [100], -1, false),
+            ("Surveil accepts any card", "card_event_surveil", [unit, order], [100, 101], -1, false),
+            ("336th Guards Naval accepts units costing <=3", "card_unit_336th_guards_naval", [unit, unitAboveThree, order], [100], -1, false),
+            ("Ilyushin accepts units costing <=3", "card_unit_ilyushin_il_2", [unit, unitAboveThree, order], [100], -1, false),
+            ("KV-85 requires a last-destroyed marker", "card_unit_kv_85", [unit, order], [], -1, false),
+            ("KV-85 accepts any card after destruction", "card_unit_kv_85", [unit, order], [100, 101], -1, true),
+            ("Overwhelming Force accepts units", "card_event_overwhelming_force", [unit, order], [100], -1, false),
+            ("Women at Work accepts US units", "card_event_women_at_work", [usUnit, nonUsUnit, order], [100], -1, false),
+            ("Special Assignment accepts units", "card_event_special_assignment", [unit, order], [100], -1, false),
+            ("Mayhem accepts units", "card_event_mayhem", [unit, order], [100], -1, false),
+            ("Unrestricted HMAS Warramunga accepts any card", "card_event_hmas_warramunga", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Experimental Flight accepts any card", "card_event_experimental_flight", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Reorganize accepts any card", "card_event_reorganize", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Grand Plans accepts any card", "card_event_grand_plans", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Matsue Regiment accepts any card", "card_unit_matsue_regiment", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Torrential Rain accepts any card", "card_event_rain3_torrential_rain3", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Lesser of Two Evils accepts any card", "card_event_lesser_of_two_evils", [unit, order], [100, 101], -1, false),
+            ("Unrestricted PBY Catalina accepts any card", "card_unit_pby_catalina", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Thunderbolt accepts any card", "card_unit_thunderbolt", [unit, order], [100, 101], -1, false),
+            ("Unrestricted Night Patrol accepts any card", "card_event_night_patrol", [unit, order], [100, 101], -1, false),
+            ("Unrestricted 175th Infantry accepts any card", "card_unit_175th_infantry_regiment", [unit, order], [100, 101], -1, false),
+            ("Unrestricted American Guard accepts any card", "card_unit_the_american_guard", [unit, order], [100, 101], -1, false),
+        };
+
+        foreach (var test in cases)
+        {
+            var (handled, offered) = Capture(test.Selecting, test.Candidates,
+                test.MarkedCandidate, test.HasLastDestroyed);
+            if (!handled)
+            {
+                return $"{test.Name}: selectTargetFromHand 未进入派发表";
+            }
+
+            if (!offered.SequenceEqual(test.Expected))
+            {
+                return $"{test.Name}: 期望候选 [{string.Join(',', test.Expected)}]，"
+                     + $"实际 [{string.Join(',', offered)}]；selector={test.Selecting} "
+                     + $"({db.Require(test.Selecting).Faction}/{db.Require(test.Selecting).FactionId})；"
+                     + $"inputs=[{string.Join(" | ", test.Candidates.Select(n =>
+                         $"{n}:{db.Require(n).Type}/{db.Require(n).Faction}/{db.Require(n).FactionId}"))}]";
+            }
         }
 
         return null;
@@ -13173,6 +13307,129 @@ internal static class SelfTest
             if (ambusher.Defense != defenderBefore)
             {
                 return "攻击者被 Ambush 击杀后，主攻击伤害不应再落到伏击者";
+            }
+        }
+
+        return null;
+    }
+
+    private static string? CounterAttackRules(CardDatabase db)
+    {
+        const string infantry = "card_unit_10th_para_battalion";
+        const string artillery = "card_unit_10_5_cm_lefh";
+        const string bomber = "card_unit_heinkel_he_111_waw";
+        const string fighter = "card_unit_arado_ar_196";
+        const string antiAirSeed = "card_unit_arado_ar_196";
+        foreach (string name in new[] { infantry, artillery, bomber, fighter })
+        {
+            if (db.Find(name) is null) return $"卡库里缺少战斗测试卡 {name}";
+        }
+
+        string? Run(string name, string attackerName, string defenderName,
+                    int attackerAttack, int attackerDefense, int defenderAttack, int defenderDefense,
+                    int expectedAttackerDefense, int expectedDefenderDefense,
+                    string? attackerKeyword = null, string? defenderKeyword = null,
+                    bool defenderIsAntiAir = false)
+        {
+            var (engine, state, attacker) = GuardBoard(db, attackerName, (defenderName, 1));
+            var defender = state.Board(Side.Right).First(c => c.Name == defenderName);
+            attacker.Attack = attackerAttack;
+            attacker.Defense = attacker.MaxDefense = attackerDefense;
+            defender.Attack = defenderAttack;
+            defender.Defense = defender.MaxDefense = defenderDefense;
+
+            if (defenderIsAntiAir)
+            {
+                defender.Definition = new CardDefinition
+                {
+                    Name = "test_anti_air_unit",
+                    Type = "antiair",
+                    Attack = defenderAttack,
+                    Defense = defenderDefense,
+                    Range = 1,
+                };
+                if (!engine.Api.IsAntiAir(defender) || !defender.Definition.IsUnit)
+                {
+                    return $"{name}: antiair 必须被识别为空防单位且可参与战斗";
+                }
+            }
+
+            if (attackerKeyword is not null) engine.Api.GiveKeyword(attacker, attackerKeyword);
+            if (defenderKeyword is not null) engine.Api.GiveKeyword(defender, defenderKeyword);
+
+            if (!engine.Attack(attacker, defender, out string reason))
+            {
+                return $"{name}: 攻击被拒：{reason}";
+            }
+
+            if (attacker.Defense != expectedAttackerDefense || defender.Defense != expectedDefenderDefense)
+            {
+                return $"{name}: 期望攻击者/防守者防御 {expectedAttackerDefense}/{expectedDefenderDefense}，"
+                     + $"实际 {attacker.Defense}/{defender.Defense}";
+            }
+
+            bool attackerShouldBeOnBoard = expectedAttackerDefense > 0;
+            bool defenderShouldBeOnBoard = expectedDefenderDefense > 0;
+            if (attacker.AliveOnBoard != attackerShouldBeOnBoard
+                || defender.AliveOnBoard != defenderShouldBeOnBoard)
+            {
+                return $"{name}: 阵亡/存活状态不匹配，攻击者={attacker.Location}/{attacker.AliveOnBoard}，"
+                     + $"防守者={defender.Location}/{defender.AliveOnBoard}";
+            }
+
+            if (attackerKeyword == Keyword.Shock && attacker.Keywords.Contains(Keyword.Shock))
+            {
+                return $"{name}: Shock 应在攻击后消耗";
+            }
+
+            return null;
+        }
+
+        var cases = new (string Name, string Attacker, string Defender,
+            int Attack, int Hp, int Counter, int DefenderHp, int ExpectedHp, int ExpectedDefenderHp,
+            string? AttackerKeyword, string? DefenderKeyword, bool AntiAir)[]
+        {
+            ("普通致死攻击双方阵亡", infantry, infantry, 2, 1, 1, 1, 0, -1, null, null, false),
+            ("炮兵主动攻击不受反击", artillery, infantry, 2, 1, 1, 2, 1, 0, null, null, false),
+            ("炮兵作为防守方仍反击", infantry, artillery, 1, 3, 2, 3, 1, 2, null, null, false),
+            ("轰炸机攻击地面单位不受反击", bomber, infantry, 2, 3, 1, 3, 3, 1, null, null, false),
+            ("轰炸机攻击战斗机会受反击", bomber, fighter, 2, 3, 1, 3, 2, 1, null, null, false),
+            ("轰炸机攻击防空单位会受反击", bomber, antiAirSeed, 2, 3, 1, 3, 2, 1, null, null, true),
+            ("轰炸机作为防守方不反击战斗机以外单位", infantry, bomber, 1, 3, 2, 3, 3, 2, null, null, false),
+            ("战斗机攻击轰炸机不受轰炸机反击", fighter, bomber, 1, 3, 2, 3, 3, 2, null, null, false),
+            ("防空单位作为防守方可反击轰炸机", bomber, antiAirSeed, 2, 3, 1, 3, 2, 1, null, null, true),
+            ("炮兵不会触发伏击且不受反击", artillery, infantry, 1, 3, 2, 3, 3, 2, null, Keyword.Ambush, false),
+            ("轰炸机不会触发地面伏击且不受反击", bomber, infantry, 2, 3, 2, 3, 3, 1, null, Keyword.Ambush, false),
+            ("普通步兵触发伏击先受伤但仍命中", infantry, infantry, 1, 3, 1, 3, 2, 2, null, Keyword.Ambush, false),
+            ("Shock 取消防守方反击", infantry, infantry, 2, 3, 1, 3, 3, 1, Keyword.Shock, null, false),
+        };
+
+        foreach (var test in cases)
+        {
+            if (Run(test.Name, test.Attacker, test.Defender, test.Attack, test.Hp,
+                    test.Counter, test.DefenderHp, test.ExpectedHp, test.ExpectedDefenderHp,
+                    test.AttackerKeyword, test.DefenderKeyword, test.AntiAir) is { } failure)
+            {
+                return failure;
+            }
+        }
+
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 20);
+            var attacker = state.CreateWithId(infantry, Side.Left, 80, CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -1;
+            attacker.Attack = 1;
+            attacker.Defense = attacker.MaxDefense = 3;
+            if (!engine.Attack(attacker, state.Hq(Side.Right), out string reason))
+            {
+                return $"攻击 HQ 应成功：{reason}";
+            }
+
+            if (attacker.Defense != 3 || state.Hq(Side.Right).Defense != MatchEngine.InitialHqDefense - 1)
+            {
+                return "攻击 HQ 不应产生反击伤害";
             }
         }
 

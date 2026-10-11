@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
-using KLink.Bot.Effects.Blueprint;
 using KLink.Bot.Server;
 
 namespace KLink.Bot.ServerBridgeTest;
@@ -18,14 +17,11 @@ namespace KLink.Bot.ServerBridgeTest;
 /// 用法：
 /// <code>
 ///   ServerBridgeTest --replay 989040 [--up-to 30] [--side right]
-///   ServerBridgeTest --wrap-fyserver raw-match.json --output out/replay-123
-///   ServerBridgeTest --wrap-fyserver replay-123.json --actions replay-123.actions.json --output out/replay-123
-///   ServerBridgeTest --fyserver-turn --base-url http://127.0.0.1:5000 --token <JWT> [--side right]
 /// </code>
 /// </summary>
 internal static class Program
 {
-    private static async Task<int> Main(string[] args)
+    private static int Main(string[] args)
     {
         var opts = ParseArgs(args);
 
@@ -38,40 +34,19 @@ internal static class Program
             return LoadVerifier.Run(dir);
         }
 
-        // 将 fyserver 的 /matches/v2/{id} 原始响应包装成 ReplayData.Load 的两个文件。
-        if (opts.TryGetValue("wrap-fyserver", out string? rawReplay))
-        {
-            string outputPrefix = opts.GetValueOrDefault("output", "replay");
-            return FyServerReplayWrapper.Run(rawReplay, opts.GetValueOrDefault("actions"), outputPrefix);
-        }
-
-        if (opts.ContainsKey("fyserver-turn"))
-        {
-            return await FyServerLiveRunner.RunAsync(FindRepoRoot(), opts);
-        }
-
-        if (opts.ContainsKey("selftest-fyserver-http"))
-        {
-            return await FyServerHttpContractTest.RunAsync();
-        }
-
         // `--audit-replay <路径前缀>`：逐条动作审计（找"移动死亡单位"的根因）
         //
         // 可加两个**归因实验**开关（见 `ReplayRunner.IdentityCorrection`）：
         //   `--no-identity-fix`        关掉身份校正 ⇒ 得到「修复前」的基线
-        // 默认开启身份校正：动作流携带的卡组码是客户端对随机生成卡的权威身份声明。
-        // `--dup-start-kredit` 用于正式回放口径；`--no-dup-start-kredit` 可复现旧模型。
         //   `--identity-only <卡名>`   只对某一张卡校正 ⇒ 把一次改动的因果钉死
-        // `--board-trace` 打印每条动作后的半场/前线构成，定位容量与复制链问题。
         if (opts.TryGetValue("audit-replay", out string? auditBase))
         {
             return ReplayAudit.Run(FindRepoRoot(), auditBase, 0,
-                identityCorrection: !opts.ContainsKey("no-identity-fix"),
+                identityCorrection: opts.ContainsKey("identity-fix"),
                 identityOnly: opts.GetValueOrDefault("identity-only"),
                 rngTrace: opts.ContainsKey("rng-trace"),
                 dumpLog: opts.ContainsKey("dump-log"),
-                dupStartKredit: !opts.ContainsKey("no-dup-start-kredit"),
-                boardTrace: opts.ContainsKey("board-trace"));
+                dupStartKredit: opts.ContainsKey("dup-start-kredit"));
         }
 
         // `--kredit-table <目录>`：把目录下所有回放的**实际支付**导成 CSV，
@@ -113,19 +88,6 @@ internal static class Program
         string dataDir = FindDataDirectory(repoRoot);
         var db = CardDatabase.Load(dataDir);
         Console.WriteLine($"卡库 {db.Count} 张    数据目录 {dataDir}");
-
-        // ReplayRunner uses the card-local GetChooseSpawnCards programs to
-        // distinguish Develop choices from cards selected from a deck.  The
-        // shadow bridge must load the same IR as BotSim and the audit tools;
-        // otherwise every CS answer is incorrectly treated as a deck pick.
-        string irPath = Path.Combine(dataDir, "card-ir.json");
-        if (File.Exists(irPath))
-        {
-            KismetLibrary.Initialize(irPath);
-        }
-
-        Console.WriteLine($"蓝图 IR {KismetLibrary.Default?.CardCount ?? 0} 张" +
-                          (KismetLibrary.LoadError is null ? "" : $"（错误：{KismetLibrary.LoadError}）"));
 
         // ---- 1) 真实回放 → ServerMatchSnapshot（模拟服务端会喂给桥的东西）----
         var snapshot = BuildSnapshotFromReplay(snapshotPath, actionsPath, upTo);
