@@ -1,5 +1,6 @@
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
+using KLink.Bot.Effects;
 
 namespace KLink.Bot.Replay;
 
@@ -1054,6 +1055,22 @@ public sealed class ReplayRunner
                                 break;
                             }
 
+                            // Forecast 的答复也是 CS，但它不是牌库抽牌，也不是
+                            // Develop 卡自己的候选表。蓝图 Forecast 固定提供三张
+                            // 一级天气牌；即使触发它的 PC 因前序状态漂移而未能执行，
+                            // 回放仍应按真实 CS 把选中的天气生成到手牌。
+                            bool forecastReply = GameplayTagTable.Has(
+                                selecting.Name, "ability.forecast")
+                                && chosenName is "card_event_sunny1_blue_sky"
+                                    or "card_event_rain1_mist"
+                                    or "card_event_storm1_gale";
+                            if (forecastReply)
+                            {
+                                engine.Api.SpawnCardInHand(selecting.Owner, chosenName);
+                                applied = true;
+                                break;
+                            }
+
                             // 走哪一族看**这张卡自己有没有 GetChooseSpawnCards**
                             // （有 = Develop 族，候选是卡池模板；没有 = 牌库/占卜族）。
                             bool developFamily = Effects.Blueprint.KismetLibrary.Default?
@@ -1061,7 +1078,8 @@ public sealed class ReplayRunner
 
                             if (developFamily)
                             {
-                                if (engine.Api.DevelopChosenCard(selecting, chosenName) is null)
+                                bool isEffect = a.Get(WireAction.KeyIndex.CodeSlotB) == "1";
+                                if (engine.Api.DevelopChosenCard(selecting, chosenName, isEffect) is null)
                                 {
                                     failure = $"CS③Develop 新建失败：卡={selecting.Definition.Name} " +
                                               $"码={code} 名={chosenName}";

@@ -2268,7 +2268,7 @@ public sealed partial class CardApi
 
         // 答复指向的必须是**卡池模板**（`CardId == 0`、不在对局里）——
         // 落实方式是"按卡名新生成一张"（见 DevelopChosenCard 的出处注释）。
-        var created = DevelopChosenCard(selecting, picked.Name);
+        var created = DevelopChosenCard(selecting, picked.Name, isEffect);
         return created?.CardId ?? 0;
     }
 
@@ -2753,6 +2753,44 @@ public sealed partial class CardApi
         if (triggering is null)
         {
             return 0;
+        }
+
+        // BP_CardFunctions.Forecast sends this fixed name list through
+        // NotifySelectCardToDrawPending.  These are generated weather cards,
+        // not instances that must be removed from the player's deck.
+        string[] forecastNames =
+        [
+            "card_event_sunny1_blue_sky",
+            "card_event_rain1_mist",
+            "card_event_storm1_gale",
+        ];
+        var candidates = forecastNames
+            .Select(name => c.State.Database.Find(name))
+            .Where(definition => definition is not null)
+            .Select(definition => TemplateInstance(definition!, triggering.Owner))
+            .ToList();
+
+        CardInstance? picked = null;
+        if (c.Engine.ChooseSpawnCard is { } choose)
+        {
+            picked = choose(triggering, candidates);
+        }
+        else if (c.Engine.PickCardToDraw is { } pick)
+        {
+            picked = pick(triggering, false, false);
+        }
+
+        if (picked is not null
+            && candidates.Any(candidate => candidate.Name == picked.Name))
+        {
+            int index = candidates.FindIndex(candidate => candidate.Name == picked.Name);
+            string? code = c.State.Database.DeckCodeFor(picked.Name);
+            if (index >= 0 && !string.IsNullOrEmpty(code))
+            {
+                c.Engine.RecordPick(triggering.CardId, index, code, picked.Name);
+            }
+
+            c.Engine.Api.SpawnCardInHand(triggering.Owner, picked.Name);
         }
 
         c.Engine.Api.FireTrigger(
@@ -3326,7 +3364,7 @@ public sealed partial class CardApi
     /// `isEffect` 为真时是 8 = 弃牌堆，本函数只走非 isEffect 那条），
     /// 再由那张卡自己的 `OnHandTargetSelected` 决定最终去向。
     /// </summary>
-    public CardInstance? DevelopChosenCard(CardInstance? selecting, string cardName)
+    public CardInstance? DevelopChosenCard(CardInstance? selecting, string cardName, bool isEffect = false)
     {
         if (selecting is null || string.IsNullOrEmpty(cardName) || State.Database.Find(cardName) is null)
         {
@@ -3334,8 +3372,9 @@ public sealed partial class CardApi
         }
 
         Side side = selecting.Owner;
-        var created = State.Create(cardName, side, side.HandOf(),
-                                   State.NextLocationNumber(side, side.HandOf()), selecting.IsGold);
+        CardLocation location = isEffect ? CardLocation.Discard : side.HandOf();
+        int locationNumber = isEffect ? 0 : State.NextLocationNumber(side, side.HandOf());
+        var created = State.Create(cardName, side, location, locationNumber, selecting.IsGold);
 
         // 事件契约（docs/event-contracts.json）：[Int handTargetCardID, Int instigatorID]
         FireTrigger("OnHandTargetSelected", selecting, side,
