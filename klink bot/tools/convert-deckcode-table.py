@@ -49,7 +49,17 @@ def main():
             continue
 
         if code in result and result[code] != card:
-            conflicts.append((code, result[code], card))
+            previous = result[code]
+            # The table also contains balance-test rows that reuse a live
+            # deck code. Player deck codes must resolve to the playable card;
+            # the balanced variant has its own code in the live table.
+            previous_is_balanced = previous.endswith("_bal")
+            current_is_balanced = card.endswith("_bal")
+            if previous_is_balanced and not current_is_balanced:
+                result[code] = card
+                conflicts.append((code, previous, card))
+            else:
+                conflicts.append((code, previous, card))
             continue
 
         result[code] = card
@@ -63,7 +73,7 @@ def main():
         print(f"  跳过（缺字段）: {skipped}")
     if conflicts:
         # 注意：Windows 控制台默认 GBK，不要在这里输出非 ASCII 符号
-        print(f"  [!] 同码不同卡 {len(conflicts)} 处（保留第一条）:")
+        print(f"  [!] 同码不同卡 {len(conflicts)} 处（优先保留正式卡）:")
         for code, a, b in conflicts[:10]:
             print(f"      {code}: {a} vs {b}")
     return 0
