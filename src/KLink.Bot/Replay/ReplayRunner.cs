@@ -1013,7 +1013,50 @@ public sealed class ReplayRunner
                             var selecting = state.ById(a.CardId);
                             if (selecting is null)
                             {
-                                failure = $"找不到挑牌的卡 cardID={a.CardId}";
+                                string? orphanCode = a.Get(WireAction.KeyIndex.CodeSlotA);
+                                string? orphanChoice = orphanCode is not null
+                                    && _db.DeckCodeIds.TryGetValue(orphanCode, out var orphanName)
+                                    ? orphanName : null;
+                                var orphanDefinition = orphanChoice is null
+                                    ? null : _db.Find(orphanChoice);
+                                var adjacentGenerated = state.ById(a.CardId - 1);
+                                bool adjacentIsForecastCard = adjacentGenerated is not null
+                                    && (Effects.CardApi.IsWeatherCard(adjacentGenerated)
+                                        || adjacentGenerated.Name is "card_event_sunny1_blue_sky"
+                                            or "card_event_rain1_mist"
+                                            or "card_event_storm1_gale");
+                                bool forecastContinuation = adjacentGenerated is not null
+                                    && state.GeneratedCardIds.Contains(adjacentGenerated.CardId)
+                                    && adjacentIsForecastCard
+                                    && Effects.Blueprint.KismetLibrary.Default?.FindProgram(
+                                        adjacentGenerated!.Name, "OnHandTargetSelected") is not null
+                                    && orphanDefinition is not null
+                                    && orphanChoice is not null
+                                    && (GameplayTagTable.Has(orphanChoice, "subtype.rain")
+                                        || GameplayTagTable.Has(orphanChoice, "subtype.storm")
+                                        || GameplayTagTable.Has(orphanChoice, "subtype.sunny"));
+                                if (!forecastContinuation)
+                                {
+                                    failure = $"找不到挑牌的卡 cardID={a.CardId}";
+                                    break;
+                                }
+
+                                if (csQueue.TryGetValue(a.CardId, out var orphanQueue)
+                                    && orphanQueue.Count > 0)
+                                {
+                                    orphanQueue.Dequeue();
+                                }
+
+                                bool orphanIsEffect = a.Get(WireAction.KeyIndex.CodeSlotB) == "1";
+                                if (engine.Api.DevelopChosenCard(
+                                        adjacentGenerated!, orphanDefinition.Name, orphanIsEffect) is null)
+                                {
+                                    failure = $"Forecast 后续选择落实失败：源卡={adjacentGenerated!.CardId}/" +
+                                              $"{adjacentGenerated.Name} 码={orphanCode}";
+                                    break;
+                                }
+
+                                applied = true;
                                 break;
                             }
 
