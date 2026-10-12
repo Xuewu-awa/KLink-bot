@@ -15,7 +15,7 @@ namespace KLink.Bot.Sim;
 ///
 /// 回放对拍是**唯一**的正确性判据，但它的**覆盖率极低**：
 /// `klink bot/docs/fresh-replays/` 里那 7 局回放实测只打出过 **43 张卡**，
-/// 而卡池有 2021 张。于是绝大多数修复**根本无法用回放验证** ——
+/// 而卡池有 2019 张。于是绝大多数修复**根本无法用回放验证** ——
 /// 有子代理拿 before/after 的审计文本 sha256 逐份相同，证明了「零覆盖」。
 ///
 /// 这个工具补的是**另一半**：不判对错，只判「跑不跑得动」——
@@ -77,6 +77,21 @@ internal static class SmokeAllCards
     /// </summary>
     private static readonly HashSet<string> LiveEntrypoints = new(StringComparer.Ordinal)
     {
+        "CanPlayFromHand", "GetPlayFromHandDamage", "GetChooseSpawnCards",
+        "OnAfterDeckChanged", "OnAfterDestroyed", "OnAfterOperationCostChanged",
+        "OnAfterOtherCardOperactionCostBuffsReset", "OnAfterOtherCardOperactionCostChanged",
+        "OnAttackStopped", "OnBeforeFullyRepaired", "OnBeforeOtherCardGainDefense",
+        "OnBeforeOtherCardGainDefenseAfterAdd", "OnBeforeOtherCardLoseMobilize", "OnBeforeRetreat",
+        "OnCardRevealed", "OnCounterMeasureTriggered", "OnCovertCardPlayedFromHand",
+        "OnDealDamageAddDamageAfterCalc", "OnDeckShuffled", "OnGainMobilize", "OnIntelTriggered",
+        "OnLoseMobilize", "OnMoveFromFrontline", "OnOperationKreditsSpent",
+        "OnOtherCardAttackSwitchTarget", "OnOtherCardAttacks", "OnOtherCardBlitzChanged",
+        "OnOtherCardConverted", "OnOtherCardCreatedAlterCard", "OnOtherCardDealDamageAddDamageAfterCalc",
+        "OnOtherCardDeveloped", "OnOtherCardForecasted", "OnOtherCardKreditCostChanged",
+        "OnOtherCardLoseSmokescreen", "OnOtherCardMoveFromFrontline", "OnOtherCardMovedToLocationInHand",
+        "OnOtherCardOperationKreditsSpent", "OnOtherCardRetreat", "OnOtherCardRevealed",
+        "OnOtherCardSalvaged", "OnOtherCovertCardPlayedFromHand", "OnOtherUnitPinned", "OnOtherUnitUnpinned",
+        "OnPincerEffectApplied", "OnPincerEffectReceived", "OnPincerEffectRemoved", "OnSuccesfulDiscard",
         "OnAfterAttack",
         "OnAfterChangeAttack",
         "OnAfterDefenseIsSet",
@@ -213,7 +228,7 @@ internal static class SmokeAllCards
         //    跑出来的「异常」全是测试台自己的问题，不是内核的。所以按名字过滤掉。
         int skippedNonCards = 0;
         var cardNames = lib.AllCards
-            .Where(kv => kv.Value.Steps.Count > 0)
+            .Where(kv => kv.Value.Steps.Count > 0 || kv.Value.Locals.Count > 0)
             .Select(kv => kv.Key)
             .Where(n =>
             {
@@ -256,13 +271,14 @@ internal static class SmokeAllCards
         var plan = new List<(string Card, string Entry, string Placement)>();
         foreach (string cardName in cardNames)
         {
-            if (lib.Find(cardName) is not { } card || card.Steps.Count == 0)
+            if (lib.Find(cardName) is not { } card)
             {
                 continue;
             }
 
             bool isUnit = db.Find(cardName)?.IsUnit ?? false;
-            foreach (var (entry, _) in card.Entrypoints.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+            foreach (string entry in card.Entrypoints.Keys.Concat(card.Locals.Keys)
+                         .Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal))
             {
                 if (opt.OnlyEntry is { } oe && !string.Equals(entry, oe, StringComparison.Ordinal))
                 {
@@ -1240,7 +1256,8 @@ internal static class SmokeAllCards
         foreach (string cardName in cardNames)
         {
             if (lib.Find(cardName) is not { } card
-                || !card.Entrypoints.Keys.Any(k => k.StartsWith("OnPlayedFromHand", StringComparison.Ordinal)))
+                || !card.Entrypoints.Keys.Concat(card.Locals.Keys)
+                    .Any(k => k.StartsWith("OnPlayedFromHand", StringComparison.Ordinal)))
             {
                 continue;
             }
@@ -1463,7 +1480,7 @@ internal static class SmokeAllCards
 
         var contracts = LoadContracts(".");
         var names = lib.AllCards.Keys
-            .Where(n => lib.Find(n) is { Steps.Count: > 0 } && db.Find(n) is not null)
+            .Where(n => lib.Find(n) is { } c && (c.Steps.Count > 0 || c.Locals.Count > 0) && db.Find(n) is not null)
             .OrderBy(n => n, StringComparer.Ordinal)
             .Take(40)
             .ToList();
@@ -1477,7 +1494,7 @@ internal static class SmokeAllCards
         {
             var card = lib.Find(name)!;
             bool isUnit = db.Find(name)?.IsUnit ?? false;
-            foreach (var (entry, _) in card.Entrypoints)
+            foreach (string entry in card.Entrypoints.Keys.Concat(card.Locals.Keys).Distinct(StringComparer.Ordinal))
             {
                 if (!LiveEntrypoints.Contains(entry))
                 {

@@ -1,6 +1,6 @@
 # klink bot —— KARDS 离线规则内核 + AI
 
-> **同步验证（2026-10-11）**：已从作者提供的最新工作区同步 bot 内核与配套测试工具；独立仓库数据目录为 `klink bot/docs`。Release 构建成功，`BotSim selftest` 为 `279/279`，派发表缺口基线为 `377`（指纹 `4C9985AB68A70B2C`）。本仓库仅发布规则内核、AI、数据和工具，不包含启动器或 fyserver。
+> **本地规则核查（2026-10-13）**：独立仓库数据目录为 `klink bot/docs`。Release 构建成功，`BotSim selftest` 为 `292/292`；全量 IR 派发表缺口基线为 48 类（指纹 `558C8CD7E517F8DD`），它包含已排除的战役、教程、UI 与文本路径。本仓库仅发布规则内核、AI、数据和工具，不包含启动器或 fyserver。
 
 > **工作树验证状态（2026-10-06）**：T30/T31、PlayCard 早快照、全局 suppression gate、T7 抑制门和
 > `OnOtherCardDeveloped`（Develop 后置广播）、`OnOtherUnitPinned/Unpinned`（钉住状态广播）与
@@ -78,7 +78,7 @@ Representation），然后写了一个**字节码解释器**去执行它。于�
 蓝图字节码 JSON
    │  压成 IR
    ▼
-card-ir.json（9.4 MiB / 1735 条）
+card-ir.json（8.6 MiB / 1707 条）
    │  Kismet 字节码解释器（KismetVm）
    ▼
 原语派发表（CardApiDispatch）+ 原语实现（CardApi）
@@ -346,16 +346,16 @@ IR 的形状（生成器文档串，[`klink bot/tools/gen-kismet-ir.py`](klink%2
 | **回放执行** | `Replay/ReplayRunner.cs`（1539 行 / 79 KB）+ `Replay/ReplayData.cs`（270 行） | 拿动作流重放，逐步与客户端对拍；产出审计信号；`InferHqKey` 从动作流反推 HQ 采样键 | — |
 | **AI 决策** | `Server/NnPolicy.cs`（359 行）/ `Server/BotTurnService.cs`（1019 行）/ `Bots/GreedyBot.cs`（229 行） | 候选枚举 → 神经网络打分 → 产出动作；`GreedyBot` 是 baseline | `NnPolicy` 候选 = 能动的单位 × 内核给的目标 / 能动的单位 × 所有前线槽位 / 结束回合 |
 | **神经网络** | `NN/StateEncoder.cs`（373 行）/ `NN/NnModel.cs`（255 行） | 局面编码 → 打分；**训练与推理共用同一份编码器** | v2 布局 `Dim = 3 + 371 × 2 = 745`（`StateEncoder.cs:105-148`、`:168` 的 `Spec` 串）；v3 布局 `1065`（`:350`）；模型文件里存 `spec`，加载时逐项对账 |
-| **卡库** | `Cards/CardDatabase.cs`（367 行）/ `CardInnateTable.cs`（740 行）/ `CardPoolTable.cs`（698 行）/ `CardVarDefaults.cs`（91 行）/ `DeckCodeParser.cs`（127 行）/ `MetaDecks.cs`（35 行） | 卡面数值（取自 pak 的 CDO 权威表）+ 关键字 / 重甲 + 卡池模板 + 卡组码解析 + 内置元卡组 | `CardVarDefaults` 补上「蓝图成员变量的 CDO 默认值」（`gen-kismet-ir.py` 只编字节码、不编默认值） |
+| **卡库** | `Cards/CardDatabase.cs`（367 行）/ `CardInnateTable.cs`（740 行）/ `CardPoolTable.cs`（698 行）/ `DeckCodeParser.cs`（127 行）/ `MetaDecks.cs`（35 行） | 卡面数值（取自 pak 的 CDO 权威表）+ 关键字 / 重甲 + 卡池模板 + 卡组码解析 + 内置元卡组 | `CardDatabase` 直接加载从 pak CDO 提取的默认字段（含 `cipher`） |
 | **服务器侧集成** | `Server/AtomicAction.cs`（396 行）/ `Server/ServerReplayBridge.cs`（133 行）/ `Server/ServerMatchSnapshot.cs`（82 行） | 把内核动作转成服务端协议动作、把宿主快照映射成内核局面 | 宿主是开源项目 KLink / fyserver，见 §5.6 |
 
 ### 4.2 数据与 Python 工具（`klink bot/`）
 
 | 模块 | 位置 | 说明 |
 |---|---|---|
-| **IR** | `klink bot/docs/card-ir.json`（9.4 MiB，1735 条） | 解释器执行的东西 |
-| **卡库** | `klink bot/docs/cards.live.json`（2.0 MiB，2021 条）/ `cards.json` | 卡面数值 |
-| **效果调用表** | `klink bot/docs/card-effects.json`（2.7 MiB，2053 条） | 每张卡用了哪些外部调用 |
+| **IR** | `klink bot/docs/card-ir.json`（8.6 MiB，1707 条） | 解释器执行的东西 |
+| **卡库** | `klink bot/docs/cards.live.json`（2.0 MiB，2019 条）/ `cards.json` | 卡面数值 |
+| **效果调用表** | `klink bot/docs/card-effects.json`（2.4 MiB，2019 条） | 每张卡用了哪些外部调用 |
 | **卡向量** | `klink bot/docs/card-vectors.json`（1.0 MiB） | NN 用的卡向量 |
 | **卡组码表** | `klink bot/docs/deck_code_ids.json` / `.live.json`（各 88 KB，2499 条） | 2 字符卡组码 ↔ 卡名 |
 | **事件契约** | `klink bot/docs/event-contracts.json`（62 KB，172 条） | 事件槽位表 |
@@ -706,7 +706,7 @@ dotnet run --project tools\ServerBridgeTest -c Release --no-build -- --audit-rep
 ```
 out/_server-replays/ 里 6 局回放，每局各含 43 个不同的 card_* 名字，6 局的并集也是 43
 ⇒ 6 局用的是同一对卡组
-而 IR 里有 1735 条、卡池有 2021 张
+而 IR 里有 1707 条、卡池有 2019 张
 ```
 
 **⇒ 回放语料只覆盖卡池的约 2%。** 因此：
@@ -903,17 +903,17 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 | 项 | 数字 | 怎么来的 |
 |---|---|---|
-| IR 条目总数 | **1735** | 读 `klink bot/docs/card-ir.json` 的 `len()` |
-| ↳ 其中 | 1707 个 `card_*` + 24 个 `BP_*` + 2 个 `WBP_*` + 1 个 `BPI_*` + 1 个 `createCard_*` | 按键前缀统计 |
-| IR 里注册的**不同入口名** | **449** | 聚合所有卡的 `entrypoints` 键 |
-| 入口注册总数 | **3608** | 各卡 `entrypoints` 条数求和 |
-| 带 `locals`（卡内私有函数体）的条目 | **683** | `locals` 非空 |
+| IR 条目总数 | **1707** | 读 `klink bot/docs/card-ir.json` 的 `len()` |
+| ↳ 其中 | 1707 个 `card_*` | 按键前缀统计；UI/辅助蓝图已排除 |
+| IR 里注册的**不同入口名** | **99** | 聚合所有卡的 `entrypoints` 键 |
+| 入口注册总数 | **3002** | 各卡 `entrypoints` 条数求和 |
+| 带 `locals`（卡内私有函数体）的条目 | **673** | `locals` 非空 |
 | ↳ 其中带 `CanPlayFromHand` 私有函数 | **438** | 自测里有一条「IR 必须带卡自己的 `CanPlayFromHand`」的重生成守卫 |
-| 卡池（`cards.live.json`） | **2021** | 读 JSON |
-| ↳ 卡池里**没有蓝图 IR** 的条目 | **314** | 多为 `card_display_*` / `card_location_ai_*` 等 UI / 战役条目 |
+| 卡池（`cards.live.json`） | **2019** | 读 JSON |
+| ↳ 卡池里**没有蓝图 IR** 的条目 | **312** | 多为 `card_display_*` / `card_location_ai_*` 等非规则条目 |
 | ↳ IR 里有、卡池里没有的 | **0** | 集合差 |
 | 卡组码映射 | **2499** | 读 `deck_code_ids.json` |
-| 效果调用表条目 | **2053** | 读 `card-effects.json` |
+| 效果调用表条目 | **2019** | 读 `card-effects.json` |
 | 事件契约条目 | **172** | 读 `event-contracts.json` |
 
 ### 8.7 仓库规模
@@ -954,7 +954,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 `src/KLink.Bot/README.md`（240 行）**严重过期**，里面还写着：
 
 - 「kredit 上限（现按 12）」—— 实际是 `MaxKreditCap = 24`（`MatchEngine.cs:51`）；
-- 「card-ir.json 1636 张卡」—— 实际 1735 条；
+- 「card-ir.json 1636 张卡」—— 实际 1707 条；
 - 「还缺棋盘状态」—— 棋盘状态已完整实现（`Engine/GameState.cs`）；
 - 「修跳转语义」—— 已解决。
 
@@ -1022,7 +1022,7 @@ dotnet run --project tools\BotSim -c Release --no-build -- dispatch-gap
 
 `CardApiDispatch.cs:1697` 的 `StaticCardPool` 在 `:1727` 过 `CardPoolTable.IsSetInPool`（卡集层）、
 `:1732` 过 `CardPoolTable.IsReserved`（预备卡层）；第三层（服务端 `cards_blacklist`）离线恒空。
-离线复算：全卡库 **2021 → 过卡集 1542 → 排除 563 张预备卡 979**。
+离线复算：全卡库 **2019 → 过卡集 1542 → 排除 563 张预备卡 979**。
 于是候选表长度：`atlantic_convoy`（USA ∧ 单位 ∧ 费 ≤ 3）= **53 张**、
 `pams`（Britain ∧ order ∧ 费 < 5）= **41 张**。
 
@@ -1609,8 +1609,8 @@ python out/audit/desensitize-paths.py --check
 │
 └── klink bot/                      ← ⚠️ 嵌套目录，不是笔误（见 §4.4）
     ├── docs/                       ← IR / 卡库 / 卡向量 / 卡组码 / 事件契约 + 全部报告
-    │   ├── card-ir.json            ← 9.4 MiB，1735 条（解释器执行的东西）
-    │   ├── cards.live.json         ← 2021 张卡面数值
+    │   ├── card-ir.json            ← 8.6 MiB，1707 条（解释器执行的东西）
+    │   ├── cards.live.json         ← 2019 张卡面数值
     │   ├── fresh-replays/          ← 7 局真实对局
     │   ├── live-replays/           ← 5 局真实对局
     │   └── 内部现状与路线图.md      ← 作者的内部追踪文档（见 §14）

@@ -50,6 +50,14 @@ public sealed class CardInstance
     /// <c>currentTarget</c> 读取它，而不是重新推导目标。
     /// </summary>
     public CardInstance? CurrentTarget { get; set; }
+    /// <summary>Native Set/UpdateExtraPlayTriggers: selections consume one repeat at a time.</summary>
+    public int ExtraPlayTriggers
+    {
+        get => CustomJson.HasType("extra_play_triggers", CardJsonType.Number)
+            && CustomJson.TryGetValue("extra_play_triggers", out var value)
+            && int.TryParse(value, out int count) ? count : 0;
+        set => CustomJson.Set("extra_play_triggers", value.ToString(System.Globalization.CultureInfo.InvariantCulture), CardJsonType.Number);
+    }
 
     // ---- 数值（可被效果修改，所以与 Definition 分开）----
     public int Attack { get; set; }
@@ -137,12 +145,9 @@ public sealed class CardInstance
     /// `cipher` —— 卡的**情报值**（`AddIntelToCard` 写、`SetCardsSeenByCipher` /
     /// `GotchaTriggered` 读）。蓝图出处见 <see cref="Effects.CardApi.AddIntelToCard"/>。
     ///
-    /// ⚠️ **CDO 初值缺失**：客户端把它存在卡 CDO 上
-    /// （`decompiled/cards.all.json` 里 25 张卡非 0，例 `card_event_espionage_skirm`=9），
-    /// 但本内核的卡数据（`docs/cards.live.json` / `docs/card-effects.json`）
-    /// **不含该字段**，补表要动 `Cards/CardVarDefaults.cs`（本轮不在改动范围内）
-    /// ⇒ 这里初值一律 **0**（偏小）。52 张 gotcha 卡的 CDO 里**本来就没有** `cipher`
-    /// （已核实）⇒ 对这一族无影响。
+    /// 初值由从 pak CDO 提取的 <see cref="Cards.CardDefinition.Cipher"/> 提供。
+    /// 当前资料中有 25 张卡的值非 0（如 `card_event_espionage_skirm`=9）；
+    /// 52 张 gotcha 卡的 CDO 初值均为 0（已核实）。
     /// </summary>
     public int Cipher { get; set; }
 
@@ -480,9 +485,9 @@ public sealed class CardInstance
     /// 是不是坦克。
     ///
     /// ⚠️ 判据是卡数据的 `type` 字段（`card_unit_panzer_ii_a` → `"tank"`）。
-    /// 卡库里 type 的分布（2021 张）：
+    /// 卡库里 type 的分布（2019 张）：
     /// `order` 732 / `infantry` 568 / `location` 180 / **`tank` 154** /
-    /// `fighter` 144 / `bomber` 98 / `artillery` 60 / 其它 85。
+    /// `fighter` 144 / `bomber` 98 / `artillery` 60 / 其它 83。
     ///
     /// 为什么只认坦克：见 <see cref="CanOperateThisTurn"/> 的注释 ——
     /// 规则表里只有坦克写了"能在同一回合移动并攻击"。
@@ -494,7 +499,22 @@ public sealed class CardInstance
     public HashSet<string> Keywords { get; } = new(StringComparer.Ordinal);
 
     /// <summary>自定义能力（对应子动作 ActionCustomAbilityAdd/Remove 与 CustomAbilityAdd 调用）。</summary>
-    public string? CustomAbility { get; set; }
+    public string? CustomAbility
+    {
+        get => ReceivedAbilitiesFromCards.Keys.LastOrDefault();
+        set
+        {
+            ReceivedAbilitiesFromCards.Clear();
+            if (!string.IsNullOrEmpty(value)) ReceivedAbilitiesFromCards[value] = [0];
+        }
+    }
+
+    /// <summary>Current pak's ability → ordered, unique source card IDs.</summary>
+    public Dictionary<string, List<int>> ReceivedAbilitiesFromCards { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, List<int>>? SuppressStrippedAbilities { get; set; }
+
+    /// <summary>Native GameplayTags removed from this instance's CDO container.</summary>
+    public HashSet<string> RemovedGameplayTags { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 蓝图的 `KreditsTax_AsEnemyTarget` —— **被敌方指定为目标时要多付的费用**。
@@ -516,7 +536,7 @@ public sealed class CardInstance
     public int KreditsTaxAsEnemyTarget { get; set; }
 
     /// <summary>卡牌私有 JSON 暂存（对应游戏里的 JSON_Get*/JSON_Set*/JSON_Clear 一族调用）。</summary>
-    public Dictionary<string, string> CustomJson { get; } = new(StringComparer.Ordinal);
+    public CardCustomJson CustomJson { get; } = new();
 
     /// <summary>
     /// Blueprint TSet members that must survive separate event/function VM
@@ -524,6 +544,9 @@ public sealed class CardInstance
     /// native element type (the gameplay member currently stores card refs).
     /// </summary>
     public Dictionary<string, HashSet<object?>> BlueprintSets { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>InstanceVariable storage shared by separate Blueprint calls/events.</summary>
+    public Dictionary<string, object?> BlueprintVariables { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// buff 记录：(来源卡, 是否临时) → 该来源施加的修正。
@@ -605,7 +628,47 @@ public sealed class CardInstance
             Keywords.Add(keyword);
         }
 
+        Cipher = Definition.Cipher;
+        KreditsTaxAsEnemyTarget = Definition.TargetTax;
+        foreach (var (ability, givers) in Definition.InnateAbilities)
+            ReceivedAbilitiesFromCards[ability] = new List<int>(givers);
+        foreach (string trigger in Definition.SuppressionExceptionTriggers)
+            SuppressionExceptionTriggers.Add(trigger);
+
         RecalculateStats();
+    }
+
+    /// <summary>
+    /// Rule-visible fields written by the current client's native ResetCardAttributes.
+    /// Evidence: live-reset-native-implementation.txt, implementation RVA 0x4b09020.
+    /// Owner/index restoration is performed by CardApi before reset events.
+    /// Blueprint instance variables and unrelated CustomJson keys survive.
+    /// </summary>
+    public void ResetAttributes()
+    {
+        BuffsBySource.Clear();
+        ReceivedAbilitiesFromCards.Clear();
+        Keywords.Clear();
+        RemovedGameplayTags.Clear();
+        HeavyArmorZeroedBySuppress = false;
+        SuppressedOnTurn = -1;
+        SuppressStrippedKeywords = null;
+        SuppressStrippedBuffs = null;
+        SuppressStrippedCustomAbility = null;
+        SuppressStrippedAbilities = null;
+        InitializeFromDefinition();
+        Attack = IsSalvaged ? 1 : Definition.Attack;
+        Defense = MaxDefense = IsSalvaged ? 1 : Definition.Defense;
+        KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
+        PinnedTurns = 0;
+        GotchaActivated = 0;
+        CardSeen = false;
+        UnderEnemyControl = false;
+        HasMovedThisTurn = false;
+        AttacksThisTurn = 0;
+        IsRevealed = false;
+        foreach (string key in new[] { "effects", "handbuff", "veteran", "countdown_timer", "extra_play_triggers" })
+            CustomJson.Remove(key);
     }
 
     /// <summary>
@@ -704,7 +767,7 @@ public sealed class CardInstance
     {
         get
         {
-            int total = Definition.Kredits;
+            int total = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
             foreach (var buff in BuffsBySource.Values)
             {
                 total += buff.KreditCost;
@@ -756,18 +819,46 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
             IsRevealed = IsRevealed,
             IsSalvaged = IsSalvaged,
             SalvageFaction = SalvageFaction,
             SalvagedCardId = SalvagedCardId,
+            Cipher = Cipher,
+            CardSeen = CardSeen,
+            GotchaActivated = GotchaActivated,
+            OriginalOwner = OriginalOwner,
+            UnderEnemyControl = UnderEnemyControl,
+            ReceivedAbilitiesFromCards = ReceivedAbilitiesFromCards
+                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                .ToDictionary(kv => kv.Key, kv => kv.Value.ToArray(), StringComparer.Ordinal),
+            RemovedGameplayTags = RemovedGameplayTags.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
+            BlueprintVariables = BlueprintVariables.OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                .ToDictionary(kv => kv.Key, kv => SnapshotBlueprintValue(kv.Value), StringComparer.Ordinal),
             BlueprintSets = BlueprintSets
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal)
                 .ToDictionary(kv => kv.Key,
                     kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
                         .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
         };
+
+    // Blueprint references become IDs; collections are copied recursively so
+    // later execution cannot alter a saved determinism/audit snapshot.
+    private static object? SnapshotBlueprintValue(object? value) => value switch
+    {
+        CardInstance card => card.CardId,
+        System.Collections.IDictionary map => map.Keys.Cast<object>()
+            .OrderBy(k => Convert.ToString(k, System.Globalization.CultureInfo.InvariantCulture), StringComparer.Ordinal)
+            .ToDictionary(k => Convert.ToString(k, System.Globalization.CultureInfo.InvariantCulture)!,
+                k => SnapshotBlueprintValue(map[k]), StringComparer.Ordinal),
+        HashSet<object?> set => set.Select(SnapshotBlueprintValue)
+            .OrderBy(v => System.Text.Json.JsonSerializer.Serialize(v), StringComparer.Ordinal).ToArray(),
+        System.Collections.IEnumerable items when value is not string => items.Cast<object?>()
+            .Select(SnapshotBlueprintValue).ToArray(),
+        _ => value,
+    };
 }
 
 /// <summary>某个来源施加在卡上的持续修正。</summary>
@@ -873,13 +964,22 @@ public sealed record CardSnapshot(
     string? CustomAbility,
     Dictionary<string, string> CustomJson)
 {
+    public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
     public bool IsRevealed { get; init; }
     public bool IsSalvaged { get; init; }
     public string? SalvageFaction { get; init; }
     public int SalvagedCardId { get; init; }
+    public int Cipher { get; init; }
+    public bool CardSeen { get; init; }
+    public int GotchaActivated { get; init; }
+    public Side OriginalOwner { get; init; }
+    public bool UnderEnemyControl { get; init; }
     public Dictionary<string, int[]> BlueprintSets { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int[]> ReceivedAbilitiesFromCards { get; init; } = new(StringComparer.Ordinal);
+    public string[] RemovedGameplayTags { get; init; } = [];
+    public Dictionary<string, object?> BlueprintVariables { get; init; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>

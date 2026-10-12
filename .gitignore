@@ -98,6 +98,7 @@ pak-filelist-live.txt
 !/tools/NNTrain/
 !/tools/NNPlay/
 !/tools/AotProbe/
+!/tools/LiveEnumProbe/
 
 # ---------------------------------------------------------------------------
 # 构建产物
@@ -126,6 +127,17 @@ out/audit/**/*.tsv
 out/audit/argshape-callsites.json
 out/audit/target-shapes.json
 out/audit/missing-keys-classify2*.json
+out/audit/effects-generation/
+out/audit/live-all-smoke-console.txt
+out/audit/live-all-smoke.txt
+out/audit/live-card-move-enum.json
+out/audit/live-dispatch-gap.txt
+out/audit/live-mass-smoke.txt
+out/audit/live-native-math-disassembly.json
+out/audit/live-native-rules.json
+out/audit/live-replay-*.txt
+out/audit/live-reset-native-implementation.txt
+out/audit/live-rule-selftest.txt
 
 # ---------------------------------------------------------------------------
 # 文档备份（会掩盖真实 diff）

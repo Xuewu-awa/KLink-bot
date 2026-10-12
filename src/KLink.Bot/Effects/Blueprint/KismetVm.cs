@@ -31,7 +31,7 @@ public sealed class KismetVm
     ///
     /// 为什么必须分开：`GetChooseSpawnCards` 是"扫一遍整个卡池再过滤"的形状
     /// （`card_event_pams` 的判据是「英国 + 指令 + 总费&lt;5」，见 `out/gcs/pams.bpasm`
-    /// 第 256–457 行），每张卡一轮循环体 ~8 步 × 2021 张卡 ≈ **16000 步**，
+    /// 第 256–457 行），每张卡一轮循环体 ~8 步 × 2019 张卡 ≈ **16000 步**，
     /// 用 <see cref="MaxStepsPerProgram"/> 的 5000 会在第 5000 步被硬截断 ——
     /// 表现是"候选表恒为空、而且**不报任何错**"（`cards` 那一步根本没走到）。
     ///
@@ -81,7 +81,7 @@ public sealed class KismetVm
     /// <summary>
     /// 步数**绝对硬上限** —— 防真死循环（那是这套预算存在的唯一理由）。
     ///
-    /// 取值依据：当前卡池 2021 张 × <see cref="StepsPerPoolCard"/>(52) ≈ **105,000**；
+    /// 取值依据：当前卡池 2019 张 × <see cref="StepsPerPoolCard"/>(52) ≈ **105,000**；
     /// 就算卡池涨到 8,000 张也只要 ~416,000。取 1,000,000 ≈ 对 8,000 张卡池留 2.4× 余量，
     /// 而对"控制流切片错导致原地打转"这种真死循环，它在毫秒级就会停下并**报警**
     /// （见 <see cref="RunCore"/> 撞上限那段：会写进 `State.UnimplementedCalls`）。
@@ -124,7 +124,7 @@ public sealed class KismetVm
     /// `card_event_atlantic_convoy`（对局 `508065` 第 36 号动作）的 `OnPlayedFromHand`
     /// 里有**一条和 `GetChooseSpawnCards` 一模一样的"扫全卡池再过滤"循环**
     /// （IR i=15..384；判据「USA + IsUnit + 总费 ≤ 3」）。旧实现给事件程序写死 5000 步，
-    /// 而 2021 张卡 × 13 步 ≈ **28,000 步**才跑得完 ⇒ 程序在第 5000 步被静默截断，
+    /// 而 2019 张卡 × 13 步 ≈ **26,000 步**才跑得完 ⇒ 程序在第 5000 步被静默截断，
     /// 断点落在第 363 张卡（`card_event_industrial_might`）—— 那里全是
     /// `card_display_*` / `card_brawl_*` / `card_event_*`（指令，`IsUnit` 恒假）
     /// ⇒ `possibleCards` **恒空** ⇒ `Array_IsNotEmpty` 为假
@@ -278,7 +278,7 @@ public sealed class KismetVm
                         if (!string.IsNullOrEmpty(step.DestinationVar))
                         {
                             var value = Eval(step.Source, frame, ctx);
-                            frame.Set(step.DestinationVar, value);
+                            frame.Set(step.DestinationVar, value, step.DestinationScope);
 
                             // 同上：先判空再插值，别在热路径上白分配字符串
                             if (StepTrace is not null)
@@ -317,11 +317,11 @@ public sealed class KismetVm
                             //        （卡实例 ↔ 整数 ID 互通）消费。
                             if (evaluated.Count == 0 || evaluated.Any(v => v is CardInstance))
                             {
-                                frame.Set(step.DestinationVar, evaluated.OfType<CardInstance>().ToList());
+                                frame.Set(step.DestinationVar, evaluated.OfType<CardInstance>().ToList(), step.DestinationScope);
                             }
                             else
                             {
-                                frame.Set(step.DestinationVar, evaluated);
+                                frame.Set(step.DestinationVar, evaluated, step.DestinationScope);
                             }
                         }
 
@@ -429,7 +429,7 @@ public sealed class KismetVm
                 // `GameState.UnimplementedCalls` —— 于是"程序被截断"这件事
                 // **在审计里一个字都看不到**。`card_event_atlantic_convoy`
                 // （对局 508065 #36）就是这么"什么都不做"了好几轮的：
-                // 它扫 2021 张卡池要 ~28,000 步，在第 5000 步被截断，
+                // 它扫 2019 张卡池要 ~26,000 步，在第 5000 步被截断，
                 // `possibleCards` 恒空，两条生成分支一次都没进，
                 // 而所有诊断输出里**没有任何一条**指向这里。
                 //
@@ -573,7 +573,16 @@ public sealed class KismetVm
         // 接收者：card.IsUnit() 这类调用的主语
         object? receiver = step.Receiver is not null ? Eval(step.Receiver, frame, ctx) : null;
 
-        var result = _api.InvokeByName(fn, receiver, args, ctx, out bool handled);
+        // The same-card function export is authoritative. A generic dispatch
+        // substitute must not shadow it (Seaborne Invasion's three outputs,
+        // for example, cannot be replaced with Take(2)). Native/library calls
+        // and calls on another card continue through the receiver dispatch.
+        bool isSelfCall = step.Receiver is null || ReferenceEquals(receiver, ctx.Self);
+        var localProgram = isSelfCall
+            ? LocalProgramFor(ctx, fn) : null;
+        bool handled = false;
+        object? result = localProgram is null
+            ? _api.InvokeByName(fn, receiver, args, ctx, out handled) : null;
 
         // ---- ★ 卡自己的局部函数（P0 第 3 族，2026-09-27）----
         //
@@ -598,21 +607,23 @@ public sealed class KismetVm
         //    `expr_count` + `bytecode`）。局部函数现在会继承调用方帧中的局部槽（例如
         //    `_tmp_card`），覆盖绝大多数由调用方先写槽、再调用 helper 的形态；但需要
         //    独立形参绑定的私有函数仍可能拿到 null，用 `<local-ran:名字>` 留痕。
-        if (!handled && LocalProgramFor(ctx, fn) is { } local)
+        if (!handled && localProgram is { } local)
         {
             var outNames = new List<string>();
-            string? primaryOutName = null;
+            var localOutNames = new List<string>();
             foreach (int p in step.OutParams)
             {
                 if (p < step.Args.Count && step.Args[p].Var is { } slot)
                 {
                     outNames.Add(slot);
                     string prefix = "CallFunc_" + fn + "_";
-                    string localName = slot.StartsWith(prefix, StringComparison.Ordinal)
+                    string localName = local.OutputNames is { } formal && localOutNames.Count < formal.Count
+                        ? formal[localOutNames.Count]
+                        : slot.StartsWith(prefix, StringComparison.Ordinal)
                         ? slot[prefix.Length..]
                         : slot;
                     outNames.Add(localName);
-                    primaryOutName ??= localName;
+                    localOutNames.Add(localName);
                 }
             }
 
@@ -631,7 +642,9 @@ public sealed class KismetVm
                 : RunLocalProgramMulti(local, ctx, localSeed);
             // The generated caller slot is only an alias in the caller frame;
             // the local frame writes the stripped Blueprint output name.
-            result = primaryOutName is not null ? bag[primaryOutName] : null;
+            result = localOutNames.Count > 1
+                ? localOutNames.Select(name => bag.GetValueOrDefault(name)).ToArray()
+                : localOutNames.Count == 1 ? bag.GetValueOrDefault(localOutNames[0]) : null;
             handled = true;
             _api.NotifyUnimplemented($"<local-ran:{fn}>");
         }
@@ -642,6 +655,7 @@ public sealed class KismetVm
         // see them. Run only no-output entrypoints here; output-bearing calls
         // still require an explicit implementation to preserve out semantics.
         if (!handled
+            && isSelfCall
             && step.OutParams.Count == 0
             && ctx.Self is { } entryCard
             && KismetLibrary.Default?.FindProgram(entryCard.Definition.Name, fn) is { } entrypoint)
@@ -668,7 +682,7 @@ public sealed class KismetVm
             && step.Args.Count > 0
             && step.Args[^1].Var is { } implicitOut)
         {
-            frame.Set(implicitOut, spawned.CardId);
+            frame.Set(step.Args[^1], spawned.CardId);
         }
 
         // 诊断开关关闭时不要插值（这是每次原语调用的必经之路）
@@ -698,7 +712,7 @@ public sealed class KismetVm
                     continue;
                 }
 
-                frame.Set(slot, i < multi.Length ? multi[i] : null);
+                frame.Set(step.Args[step.OutParams[i]], i < multi.Length ? multi[i] : null);
             }
 
             StepTrace?.Add($"      写入多输出 {string.Join(", ", step.OutParams.Select((p, i) =>
@@ -712,7 +726,7 @@ public sealed class KismetVm
             var slotExpr = step.Args[step.OutParams[0]];
             if (slotExpr.Var is { } slot)
             {
-                frame.Set(slot, result);
+                frame.Set(slotExpr, result);
                 if (StepTrace is not null)
                 {
                     StepTrace.Add($"      写入 {slot} = {result}");
@@ -781,9 +795,14 @@ public sealed class KismetVm
         }
 
         KismetExpr first = argExprs[0];
-        if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
+        if (first.Var is { } name && first.Context is null && frame.Get(name, first.Scope) is null)
         {
-            frame.Set(name, new List<CardInstance>());
+            frame.Set(first, first.ElementType switch
+            {
+                "Int" or "Byte" => (object)new List<int>(),
+                "Struct" or "Name" or "String" or "Double" or "Float" => new List<object?>(),
+                _ => new List<CardInstance>(),
+            });
         }
     }
 
@@ -795,9 +814,10 @@ public sealed class KismetVm
         }
 
         KismetExpr first = argExprs[0];
-        if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
+        if (first.Var is { } name && first.Context is null && frame.Get(name, first.Scope) is null)
         {
-            frame.Set(name, frame.EnsureBlueprintSet(name) ?? new HashSet<object?>());
+            frame.Set(first, first.Scope == "instance"
+                ? frame.EnsureBlueprintSet(name) ?? new HashSet<object?>() : new HashSet<object?>());
         }
     }
 
@@ -809,9 +829,9 @@ public sealed class KismetVm
         }
 
         KismetExpr first = argExprs[0];
-        if (first.Var is { } name && first.Context is null && frame.Get(name) is null)
+        if (first.Var is { } name && first.Context is null && frame.Get(name, first.Scope) is null)
         {
-            frame.Set(name, new Dictionary<object, object?>());
+            frame.Set(first, new Dictionary<object, object?>());
         }
     }
 
@@ -823,7 +843,7 @@ public sealed class KismetVm
         }
 
         if (expr.Int is { } i) return i;
-        if (expr.Float is { } f) return (int)f;
+        if (expr.Float is { } f) return f;
         if (expr.Bool is { } b) return b;
         if (expr.Str is { } s) return s;
         if (expr.Name is { } n) return n;
@@ -845,11 +865,22 @@ public sealed class KismetVm
                 return GetMember(Eval(expr.Context, frame, ctx), v);
             }
 
-            return frame.Get(v);
+            return frame.Get(v, expr.Scope);
         }
 
         if (expr.Call is { } c)
         {
+            // The row is an output reference even when the bool return is used
+            // as an inline expression. Preserve the pak's row and combo order.
+            if (c == "GetDataTableRowFromName")
+            {
+                bool found = LiveRuleTables.TryGetRow(
+                    Eval(expr.Args.ElementAtOrDefault(0), frame, ctx)?.ToString() ?? "",
+                    Eval(expr.Args.ElementAtOrDefault(1), frame, ctx)?.ToString() ?? "", out var row);
+                if (found && expr.Args.ElementAtOrDefault(2)?.Var is { } rowSlot)
+                    frame.Set(expr.Args[2], row);
+                return found;
+            }
             // 同上：**不摘** `args[0]` 的 `{self:true}` —— 它是第一个实参。
             SeedArrayTarget(c, expr.Args, frame);
             SeedSetTarget(c, expr.Args, frame);
@@ -866,7 +897,7 @@ public sealed class KismetVm
                 if (expr.Args.ElementAtOrDefault(2)?.Var is { } outName
                     && expr.Args[2].Context is null)
                 {
-                    frame.Set(outName, found ? value : 0);
+                    frame.Set(expr.Args[2], found ? value : 0);
                 }
 
                 return found;
@@ -875,8 +906,12 @@ public sealed class KismetVm
             SeedMapTarget(c, expr.Args, frame);
             var callArgs = expr.Args.Select(a => Eval(a, frame, ctx)).ToArray();
             object? recv = expr.Context is not null ? Eval(expr.Context, frame, ctx) : null;
-            var r = _api.InvokeByName(c, recv, callArgs, ctx, out bool handled);
-            if (!handled && LocalProgramFor(ctx, c) is { } local)
+            var localProgram = expr.Context is null || ReferenceEquals(recv, ctx.Self)
+                ? LocalProgramFor(ctx, c) : null;
+            bool handled = false;
+            object? r = localProgram is null
+                ? _api.InvokeByName(c, recv, callArgs, ctx, out handled) : null;
+            if (!handled && localProgram is { } local)
             {
                 var localSeed = new Dictionary<string, object?>(frame.Snapshot(), StringComparer.Ordinal);
                 ResetLocalSlots(local, localSeed);
@@ -927,6 +962,13 @@ public sealed class KismetVm
     private static void BindLocalInputs(KismetProgram program, IReadOnlyList<object?> args,
                                         IDictionary<string, object?> seed)
     {
+        if (program.InputNames is { } formalInputs)
+        {
+            for (int i = 0; i < formalInputs.Count; i++)
+                seed[formalInputs[i]] = i < args.Count ? args[i] : null;
+            return;
+        }
+
         if (args.Count == 0)
         {
             return;
@@ -994,7 +1036,7 @@ public sealed class KismetVm
                                         IDictionary<string, object?> seed)
     {
         foreach (string name in program.Steps
-                     .Where(s => s.DestinationVar is not null)
+                     .Where(s => s.DestinationVar is not null && s.DestinationScope != "instance")
                      .Select(s => s.DestinationVar!)
                      .Distinct(StringComparer.Ordinal))
         {
@@ -1002,13 +1044,97 @@ public sealed class KismetVm
         }
     }
 
+    /// <summary>Mathematical/native expression nodes implemented below; audited against the switch.</summary>
+    public static IReadOnlySet<string> ImplementedMathNames { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "__SwitchValue",
+        "Array_Get",
+        "Add_IntInt",
+        "Subtract_IntInt",
+        "Multiply_IntInt",
+        "Divide_IntInt",
+        "Percent_IntInt",
+        "Abs_Int",
+        "Min_IntInt",
+        "Max_IntInt",
+        "Min",
+        "Max",
+        "Clamp",
+        "Greater_IntInt",
+        "GreaterEqual_IntInt",
+        "Less_IntInt",
+        "LessEqual_IntInt",
+        "EqualEqual_IntInt",
+        "NotEqual_IntInt",
+        "EqualEqual_StrStr",
+        "EqualEqual_StriStri",
+        "NotEqual_StrStr",
+        "NotEqual_StriStri",
+        "EqualEqual_NameName",
+        "EqualEqual_ObjectObject",
+        "NotEqual_ObjectObject",
+        "EqualEqual_BoolBool",
+        "NotEqual_BoolBool",
+        "BooleanAND",
+        "BooleanOR",
+        "Not_PreBool",
+        "SelectInt",
+        "IsValid",
+        "Array_Length",
+        "Conv_IntToString",
+        "Conv_IntToInt64",
+        "Conv_IntToDouble",
+        "Conv_StringToInt",
+        "Conv_StringToName",
+        "Split",
+        "EndsWith",
+        "SelectString",
+        "BreakVector",
+        "FTrunc",
+        "FMod",
+        "EqualEqual_DoubleDouble",
+        "NotEqual_NameName",
+        "GetFactionEnum",
+        "GetValidValue",
+        "GetStaticKredits",
+        "RemoveGameplayTag",
+        "Conv_IntToText",
+        "Conv_ByteToText",
+        "Conv_TextToString",
+        "Conv_StringToText",
+        "Conv_IntToBool",
+        "Conv_BoolToInt",
+        "Conv_IntToByte",
+        "Conv_ByteToInt",
+        "EqualEqual_ByteByte",
+        "NotEqual_ByteByte",
+        "EnumCompareFaction",
+        "EnumCompareSide",
+        "EnumCompareCardType",
+        "EnumCompareCardLocation",
+        "Concat_StrStr",
+        "Conv_NameToString",
+        "GetEnumeratorUserFriendlyName",
+        "GetEnumeratorValueFromIndex",
+        "MakeLiteralInt",
+        "GetStaticCard",
+    };
+
     private object? EvalMath(string? fn, IReadOnlyList<KismetExpr> argExprs, Frame frame, EffectContext ctx)
     {
         var a = argExprs.Count > 0 ? Eval(argExprs[0], frame, ctx) : null;
-        var b = argExprs.Count > 1 ? Eval(argExprs[1], frame, ctx) : null;
+        var b = argExprs.Count > 1 && fn != "__SwitchValue" ? Eval(argExprs[1], frame, ctx) : null;
 
         switch (fn)
         {
+            case "__SwitchValue":
+                for (int i = 2; i + 1 < argExprs.Count; i += 2)
+                    if (Equals(a, Eval(argExprs[i], frame, ctx)))
+                        return Eval(argExprs[i + 1], frame, ctx);
+                return argExprs.Count > 1 ? Eval(argExprs[1], frame, ctx) : null;
+            case "Array_Get":
+                return a is System.Collections.IList list && ToInt(b) >= 0 && ToInt(b) < list.Count
+                    ? list[ToInt(b)] : null;
             case "Add_IntInt": return ToInt(a) + ToInt(b);
             case "Subtract_IntInt": return ToInt(a) - ToInt(b);
             case "Multiply_IntInt": return ToInt(a) * ToInt(b);
@@ -1030,11 +1156,12 @@ public sealed class KismetVm
             case "LessEqual_IntInt": return ToInt(a) <= ToInt(b);
             case "EqualEqual_IntInt": return ToInt(a) == ToInt(b);
             case "NotEqual_IntInt": return ToInt(a) != ToInt(b);
-            case "EqualEqual_StrStr":
-            case "EqualEqual_StriStri": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal);
-            case "NotEqual_StrStr":
-            case "NotEqual_StriStri": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal);
-            case "EqualEqual_NameName": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal);
+            case "EqualEqual_StrStr": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal);
+            case "EqualEqual_StriStri": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
+            case "NotEqual_StrStr": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.Ordinal);
+            case "NotEqual_StriStri": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
+            case "EqualEqual_NameName": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
+            case "NotEqual_NameName": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
             case "EqualEqual_ObjectObject": return ReferenceEquals(a, b);
             case "NotEqual_ObjectObject": return !ReferenceEquals(a, b);
             case "EqualEqual_BoolBool": return Truthy(a) == Truthy(b);
@@ -1057,13 +1184,52 @@ public sealed class KismetVm
             case "IsValid": return a is CardInstance;
             case "Array_Length": return a is System.Collections.ICollection col ? col.Count : 0;
             case "Conv_IntToString": return ToInt(a).ToString();
+            case "Conv_IntToInt64": return (long)ToInt(a);
+            case "Conv_IntToDouble": return (double)ToInt(a);
+            case "Conv_StringToInt": return ParseUnrealInt(a?.ToString());
+            case "Conv_StringToName": return a?.ToString() ?? "";
+            case "FTrunc": return (int)Math.Truncate(ToDouble(a));
+            case "FMod":
+                {
+                    double dividend = ToDouble(a), divisor = ToDouble(b);
+                    if (argExprs.Count > 2) frame.Set(argExprs[2], divisor == 0 ? 0d : dividend % divisor);
+                    return divisor == 0 ? 0 : (int)Math.Truncate(dividend / divisor);
+                }
+            case "EqualEqual_DoubleDouble": return ToDouble(a) == ToDouble(b);
+            case "BreakVector":
+                return a is System.Collections.IList vector && vector.Count >= 3
+                    ? new object?[] { ToDouble(vector[0]), ToDouble(vector[1]), ToDouble(vector[2]) }
+                    : new object?[] { 0d, 0d, 0d };
+            case "SelectString":
+                return Truthy(argExprs.Count > 2 ? Eval(argExprs[2], frame, ctx) : null)
+                    ? a?.ToString() ?? "" : b?.ToString() ?? "";
+            case "EndsWith":
+                return (a?.ToString() ?? "").EndsWith(b?.ToString() ?? "",
+                    argExprs.Count > 2 && ToInt(Eval(argExprs[2], frame, ctx)) == 1
+                        ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            case "Split":
+                {
+                    string source = a?.ToString() ?? "", separator = b?.ToString() ?? "";
+                    var comparison = argExprs.Count > 4 && ToInt(Eval(argExprs[4], frame, ctx)) == 1
+                        ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+                    bool fromEnd = argExprs.Count > 5 && ToInt(Eval(argExprs[5], frame, ctx)) == 1;
+                    int position = separator.Length == 0 ? -1 : fromEnd
+                        ? source.LastIndexOf(separator, comparison) : source.IndexOf(separator, comparison);
+                    // FString::Split leaves output references unchanged on failure.
+                    if (position < 0) return false;
+                    if (argExprs.ElementAtOrDefault(2)?.Var is { } left)
+                        frame.Set(argExprs[2], source[..position]);
+                    if (argExprs.ElementAtOrDefault(3)?.Var is { } right)
+                        frame.Set(argExprs[3], source[(position + separator.Length)..]);
+                    return true;
+                }
             case "Conv_IntToText": return ToInt(a).ToString();
             case "Conv_ByteToText": return ToInt(a).ToString();
             case "Conv_TextToString": return a?.ToString() ?? "";
             case "Conv_StringToText": return a?.ToString() ?? "";
             case "Conv_IntToBool": return ToInt(a) != 0;
             case "Conv_BoolToInt": return Truthy(a) ? 1 : 0;
-            case "Conv_IntToByte": return ToInt(a);
+            case "Conv_IntToByte": return ToInt(a) & 255;
             case "Conv_ByteToInt": return ToInt(a);
             case "EqualEqual_ByteByte": return ToInt(a) == ToInt(b);
             case "NotEqual_ByteByte": return ToInt(a) != ToInt(b);
@@ -1088,7 +1254,36 @@ public sealed class KismetVm
                 return ToInt(a) == ToInt(b) ? 0 : 1;
             case "Concat_StrStr": return string.Concat(a?.ToString(), b?.ToString());
             case "Conv_NameToString": return a?.ToString() ?? "";
-            case "GetEnumeratorUserFriendlyName": return a?.ToString() ?? "";
+            case "MakeLiteralInt": return ToInt(a);
+            case "GetEnumeratorValueFromIndex":
+                return LiveRuleTables.TryGetEnumName(a?.ToString() ?? "", ToInt(b), out _)
+                    ? ToInt(b) : -1;
+            case "GetEnumeratorUserFriendlyName":
+                if (LiveRuleTables.TryGetEnumName(a?.ToString() ?? "", ToInt(b), out var enumName))
+                    return enumName;
+                _api.NotifyUnimplemented("GetEnumeratorUserFriendlyName<enum>");
+                return "";
+
+            case "GetValidValue":
+                return LiveRuleTables.TryGetEnumName(a?.ToString() ?? "", ToInt(b), out _) ? ToInt(b) : 0;
+
+            case "GetFactionEnum":
+                return Enumerable.Range(0, 13).FirstOrDefault(id =>
+                    string.Equals(FactionName(id), a?.ToString()?.Split("::").Last(), StringComparison.OrdinalIgnoreCase));
+            case "GetStaticKredits": return ctx.State.Database.Find(a?.ToString() ?? "")?.Kredits ?? 0;
+            case "RemoveGameplayTag":
+                {
+                    if (a is not GameplayTagContainerRef container) return false;
+                    string tag = b is System.Collections.IList tags && tags.Count > 0
+                        ? tags[0]?.ToString() ?? "" : b?.ToString() ?? "";
+                    bool existed = CardApi.HasInstanceGameplayTag(container.Card, tag);
+                    if (existed)
+                    {
+                        container.Card.RemovedGameplayTags.Add(tag);
+                        _api.RemoveCustomGameplayTag(container.Card, tag);
+                    }
+                    return existed;
+                }
 
             // ---- /Script/kards.FunctionLibrary ----
             //
@@ -1136,10 +1331,36 @@ public sealed class KismetVm
     {
         null => 0,
         int i => i,
+        long l => unchecked((int)l),
+        double d => (int)d,
         bool b => b ? 1 : 0,
         string s when int.TryParse(s, out int r) => r,
         _ => 0,
     };
+
+    private static double ToDouble(object? value) => value switch
+    {
+        double d => d, float f => f, long l => l, int i => i, _ => 0d,
+    };
+
+    private static int ParseUnrealInt(string? text)
+    {
+        ReadOnlySpan<char> input = (text ?? "").AsSpan().TrimStart();
+        bool negative = input.Length > 0 && input[0] == '-';
+        int i = input.Length > 0 && input[0] is '+' or '-' ? 1 : 0, value = 0;
+        for (; i < input.Length && input[i] is >= '0' and <= '9'; i++)
+            value = unchecked(value * 10 + input[i] - '0');
+        return negative ? unchecked(-value) : value;
+    }
+
+    private static string FactionName(int value) => value switch
+    {
+        1 => "Germany", 2 => "Britain", 3 => "Japan", 4 => "Soviet", 5 => "USA",
+        6 => "France", 7 => "Italy", 8 => "Poland", 9 => "Finland", 10 => "Anzac",
+        11 => "Allies", 12 => "Neutral", _ => "NotAvailable",
+    };
+
+    private sealed record GameplayTagContainerRef(CardInstance Card);
 
     /// <summary>
     /// 读一个**成员变量**（`某张卡.side` / `某张卡.faction` / `某张卡.cardID` …）。
@@ -1150,6 +1371,9 @@ public sealed class KismetVm
     /// </summary>
     internal static object? GetMember(object? target, string member)
     {
+        if (target is IReadOnlyDictionary<string, object?> fields)
+            return fields.GetValueOrDefault(member);
+
         if (target is not CardInstance card)
         {
             return null;
@@ -1158,6 +1382,7 @@ public sealed class KismetVm
         return member switch
         {
             "side" => (int)card.Owner,
+            "GameplayTags" => new GameplayTagContainerRef(card),
             // ★ `originalSide` —— 「这张卡**原本**属于哪一方」，与 `side`（当前归属）分开。
             //   IR 里 11 张卡 / 16 个调用点读它，全是 `<某张卡>.originalSide`，
             //   典型用法就是 `card_event_fog_of_war` i=95
@@ -1174,8 +1399,8 @@ public sealed class KismetVm
                 ? card.OriginalOwner : card.Owner),
             "underEnemyControl" => card.UnderEnemyControl,
             "faction" => card.Definition.FactionId,
-            "type" => card.Definition.Type,
-            "rarity" => card.Definition.Rarity,
+            "type" => card.Definition.TypeId,
+            "rarity" => card.Definition.RarityId,
             "name" => card.Name,
             "cardID" => card.CardId,
             "location" => (int)card.Location,
@@ -1186,6 +1411,12 @@ public sealed class KismetVm
             "maxDefense" => card.MaxDefense,
             "enterPlayOnTurn" => card.EnteredPlayOnTurn,
             "currentTarget" => card.CurrentTarget,
+            "receivedAbilitiesFromCards" => card.ReceivedAbilitiesFromCards.ToDictionary(
+                kv => (object)kv.Key,
+                kv => (object?)new Dictionary<string, object?>
+                {
+                    ["cardsGivingAbility"] = kv.Value.Cast<object?>().ToList(),
+                }),
             "hasAttackedThisTurn" => card.HasAttackedThisTurn,
             "hasBeenAttackedThisTurn" => card.HasBeenAttackedThisTurn,
             "isSuppressed" => card.IsSuppressed,
@@ -1199,7 +1430,9 @@ public sealed class KismetVm
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
             "isSalvaged" => card.IsSalvaged,
-            "salvageFaction" => card.SalvageFaction,
+            "salvageFaction" => int.TryParse(card.SalvageFaction, out int factionId) ? factionId
+                : Enumerable.Range(0, 13).FirstOrDefault(id =>
+                    string.Equals(FactionName(id), card.SalvageFaction, StringComparison.OrdinalIgnoreCase)),
             // `cardSeen` is written by SetCardSeen/ApplySetCardsSeenByCipher and
             // read by card IR when filtering already-revealed hand cards.
             "cardSeen" => card.CardSeen,
@@ -1241,11 +1474,10 @@ public sealed class KismetVm
             //   A6M2Effect       —— 零式特效标记
             // 不认它们的话键名读成空串，`JSON_GetBool` 恒返回 false ——
             // 表现成"光环的 buffActive 明明写进去了、还原分支却永远判假"。
-            "buffActive" => "buffActive",
-            "friendlyAttacked" => "friendlyAttacked",
-            "A6M2Effect" => "A6M2Effect",
-
-            _ => card.BlueprintSets.TryGetValue(member, out var set) ? set : null,
+            _ => card.BlueprintVariables.TryGetValue(member, out var variable) ? variable
+                : card.BlueprintSets.TryGetValue(member, out var set) ? set
+                : KismetLibrary.Default?.Find(card.Name)?.InstanceDefaults.TryGetValue(member, out var initialValue) is true ? initialValue
+                : null,
         };
     }
 
@@ -1303,8 +1535,19 @@ public sealed class KismetVm
             _locals["triggerCardID"] = ctx.Trigger?.CardId ?? 0;
         }
 
-        public object? Get(string name)
+        public object? Get(string name, string? scope = null)
         {
+            if (scope == "instance")
+            {
+                // Event-stub parameters live on the ubergraph frame in UE. The
+                // headless dispatcher supplies their values through the event payload.
+                if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
+                    return ResolveEventVar(name);
+                if (name is "self" or "cardFunction") return _ctx.Self;
+                if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
+                    return saved; // Stored null must remain null.
+                return GetMember(_ctx.Self, name);
+            }
             if (_locals.TryGetValue(name, out var v))
             {
                 return v;
@@ -1320,7 +1563,7 @@ public sealed class KismetVm
             // OnCardDealDamage reads `toCard`, not
             // `K2Node_Event_toCard`). Keep explicit frame locals above this
             // lookup, then expose named event payloads before card members.
-            if (_ctx.NamedArgs.Count > 0 && _ctx.NamedArgs.TryGetValue(name, out var named))
+            if (TryGetNamedArg(name, out var named))
             {
                 return named;
             }
@@ -1332,20 +1575,6 @@ public sealed class KismetVm
             if (GetMember(_ctx.Self, name) is { } member)
             {
                 return member;
-            }
-
-            // ⚠️ 最后一层兜底：**蓝图 CDO 上的成员变量默认值**。
-            //    为什么必须有它：`gen-kismet-ir.py` 只编字节码，**不编 CDO 默认值** ——
-            //    像 `card_event_firestorm_skirm` 的 `damageToDeal`（CDO 里是 "2"）
-            //    在 IR 里只以裸读 `{"var":"damageToDeal"}` 出现，本函数返回 null
-            //    ⇒ `IntArg` 读成 0 ⇒ `DamageMultipleCards(cards, 0, …)` 一张都打不动。
-            //    对照证据：同族的 `card_event_wave_after_wave` **自己** `set damageToDeal`
-            //    （i=557 设 4 / i=660 设 2），它是那一族里唯一跑得出状态变化的。
-            //    详见 `CardVarDefaults` 的注释（含 CDO 原文与全卡池扫描判据）。
-            if (_ctx.Self is { } selfCard
-                && Cards.CardVarDefaults.TryGet(selfCard.Definition.Name, name, out var def))
-            {
-                return def;
             }
 
             return null;
@@ -1366,6 +1595,18 @@ public sealed class KismetVm
         /// 这是唯一可行的办法 —— IR 里没有「哪个变量是第几个入参」的元数据，
         /// 但变量名本身就带着语义（`…CardID` 是 ID、`…Card` 是卡、`…Side` 是阵营）。
         /// </summary>
+        private bool TryGetNamedArg(string name, out object? value)
+        {
+            if (_ctx.NamedArgs.TryGetValue(name, out value)) return true;
+            // UE parameter names are FNames. Reflected signatures and event
+            // stubs can retain different capitalization (Damage / damage).
+            foreach (var pair in _ctx.NamedArgs)
+                if (string.Equals(pair.Key, name, StringComparison.OrdinalIgnoreCase))
+                { value = pair.Value; return true; }
+            value = null;
+            return false;
+        }
+
         private object? ResolveEventVar(string name)
         {
             const string prefix = "K2Node_Event_";
@@ -1408,8 +1649,7 @@ public sealed class KismetVm
                 // 事件桩的槽位后缀不是稳定的参数下标；广播方提供具名载荷时，
                 // 必须优先按 `instigatorID` 取值。没有具名载荷的旧事件再回退
                 // 到位置参数，最后才使用当前执行卡作为兼容兜底。
-                return (_ctx.NamedArgs.Count > 0
-                        && _ctx.NamedArgs.TryGetValue(bare, out var namedInstigator)
+                return (TryGetNamedArg(bare, out var namedInstigator)
                         ? namedInstigator
                         : null)
                        ?? _ctx.EventArg(argIndex)
@@ -1426,7 +1666,7 @@ public sealed class KismetVm
             // 的槽位也是 `K2Node_Event_drawnSide_1`（下标 1）。
             // 同一个名字在两个事件里指向不同下标 ⇒ 只靠 `_N` 推必然有一个读错。
             // 派发方（`CardApi.FireTrigger` 的 `namedArgs`）按名字给值就没有这个问题。
-            if (_ctx.NamedArgs.Count > 0 && _ctx.NamedArgs.TryGetValue(bare, out var named))
+            if (TryGetNamedArg(bare, out var named))
             {
                 return named;
             }
@@ -1497,12 +1737,29 @@ public sealed class KismetVm
             return eventSubject;
         }
 
-        public void Set(string name, object? value)
+        public void Set(string name, object? value, string? scope = null)
         {
             if (name.Length > 0)
             {
+                if (scope == "instance" && _ctx.Self is { } self)
+                {
+                    if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
+                    else if (name is "ChooseOne" or "chooseOne") self.ChooseOne = ToInt(value);
+                    else if (name == "hasDestruction")
+                    {
+                        if (Truthy(value)) self.Keywords.Add(Keyword.Destruction);
+                        else self.Keywords.Remove(Keyword.Destruction);
+                    }
+                    else self.BlueprintVariables[name] = value;
+                    return;
+                }
                 _locals[name] = value;
             }
+        }
+
+        public void Set(KismetExpr reference, object? value)
+        {
+            if (reference.Var is { } name) Set(name, value, reference.Scope);
         }
 
         public HashSet<object?>? EnsureBlueprintSet(string name)
@@ -1532,9 +1789,11 @@ public sealed class KismetVm
                 return;
             }
 
-            if (step.Args[step.OutParams[0]].Var is { } slot)
+            for (int i = 0; i < step.OutParams.Count; i++)
             {
-                Set(slot, value);
+                if (step.Args[step.OutParams[i]].Var is { } slot)
+                    Set(step.Args[step.OutParams[i]], step.OutParams.Count > 1 && value is object?[] outputs
+                        ? outputs.ElementAtOrDefault(i) : i == 0 ? value : null);
             }
         }
     }

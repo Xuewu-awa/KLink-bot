@@ -579,7 +579,7 @@ public sealed class ReplayRunner
 
         var htConsumed = new Dictionary<int, int>();
 
-        engine.PickHandTarget = (selecting, candidates) =>
+        engine.PickHandTargetId = (selecting, candidates) =>
         {
             if (selecting is null
                 || !htQueue.TryGetValue(selecting.CardId, out var hq)
@@ -592,7 +592,7 @@ public sealed class ReplayRunner
             htConsumed[selecting.CardId] = htConsumed.GetValueOrDefault(selecting.CardId) + 1;
 
             // 答复指向的必须是候选表里的卡；否则如实返回 null（不硬挑一张）
-            return candidates.FirstOrDefault(x => x.CardId == wantId);
+            return wantId; // Preserve explicit ID 0 separately from a missing reply.
         };
 
         engine.PickCardToDraw = (selecting, fromTopOfDeck, _) =>
@@ -1048,11 +1048,15 @@ public sealed class ReplayRunner
                                 }
 
                                 bool orphanIsEffect = a.Get(WireAction.KeyIndex.CodeSlotB) == "1";
+                                CardInstance forecastCard = adjacentGenerated
+                                    ?? throw new InvalidOperationException("Forecast source card disappeared");
+                                CardDefinition forecastDefinition = orphanDefinition
+                                    ?? throw new InvalidOperationException("Forecast choice definition disappeared");
                                 if (engine.Api.DevelopChosenCard(
-                                        adjacentGenerated!, orphanDefinition.Name, orphanIsEffect) is null)
+                                        forecastCard, forecastDefinition.Name, orphanIsEffect) is null)
                                 {
-                                    failure = $"Forecast 后续选择落实失败：源卡={adjacentGenerated!.CardId}/" +
-                                              $"{adjacentGenerated.Name} 码={orphanCode}";
+                                    failure = $"Forecast 后续选择落实失败：源卡={forecastCard.CardId}/" +
+                                              $"{forecastCard.Name} 码={orphanCode}";
                                     break;
                                 }
 

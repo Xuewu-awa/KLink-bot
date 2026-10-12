@@ -1,6 +1,6 @@
 # KLink.Bot —— KARDS 规则内核（模拟器）
 
-> **同步验证（2026-10-11）**：此内核已同步作者提供的最新 bot 工作区代码。独立仓库从 `klink bot/docs` 加载运行数据；Release 构建成功，`BotSim selftest` 为 `279/279`。
+> **本地规则核查（2026-10-13）**：独立仓库从 `klink bot/docs` 加载运行数据；Release 构建成功，`BotSim selftest` 为 `292/292`。全量 IR 派发表尚有 48 类非 PvP 调用（战役、教程、UI、文本），不将其计入无头 PvP 模拟器的规则缺口。
 
 > 从反编译产物重建的对局引擎。目标不是「训练优先」，而是先把内核跑对并**量化缺口**。
 >
@@ -134,7 +134,7 @@ tools/BotSim/Program.cs         验证运行器（decks / play / coverage）
 
 | 数据 | 生成工具 | 说明 |
 |---|---|---|
-| 卡牌数值 | `tools/gen-card-db.py` | 线上 pak 的卡牌蓝图 **CDO**（2021 张） |
+| 卡牌数值 | `tools/gen-card-db.py` | 线上 pak 的卡牌蓝图 **CDO**（2019 张） |
 | 效果调用 | `tools/gen-card-effects.py` | 每张卡用了哪些外部调用（覆盖统计用） |
 | **字节码 IR** | `tools/gen-kismet-ir.py` | ⭐ 解释器执行的东西 |
 | 参数形状 | `tools/analyze-call-shapes.py` | 从调用点统计真实签名 |

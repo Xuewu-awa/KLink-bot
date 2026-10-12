@@ -17,6 +17,7 @@
 import json
 import sys
 from pathlib import Path
+from live_card_source import load_assets
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "klink bot" / "decompiled" / "cards.all.json"
@@ -52,6 +53,7 @@ DST = ROOT / "src" / "KLink.Bot" / "Cards" / "CardPoolTable.cs"
 #       13 World at War    ← CDO 名 `WorldAtWar`
 #       17 Covert Ops      ← CDO 名 `CurrentExpansion`（Britain/CovertOp 下 15 张全是它）
 CARD_SET = {
+    "NotAvailable": 0,
     "Basic": 1,
     "Special": 2,
     "OnlySpawnable": 3,
@@ -77,15 +79,15 @@ CARD_SET = {
 
 
 def main():
-    data = json.loads(SRC.read_text(encoding="utf-8-sig"))
-    assets = data["assets"]
+    source = Path(sys.argv[1]) if len(sys.argv) > 1 else SRC
+    assets = load_assets(source)
 
     reserved = []
     seen_set = set()
     for info in assets.values():
         cdo = info.get("cdo") or {}
         name = cdo.get("Name")
-        if not name:
+        if not name or not name.startswith("card_"):
             continue
         cs = cdo.get("cardSet")
         if cs:

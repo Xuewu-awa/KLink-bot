@@ -128,13 +128,10 @@ public sealed class UeRandomStream
     /// </summary>
     public int RandRange(int min, int max)
     {
-        if (max < min)
-        {
-            (min, max) = (max, min);
-        }
-
-        int range = max - min + 1;
-        return min + (int)(GetFraction() * range);
+        // Current native wrapper RVA 0x3dddd90: signed 32-bit range <= 0
+        // returns Min without mutating the stream (i=0x3ddde8a..0x3ddded9).
+        int range = unchecked(max - min + 1);
+        return range <= 0 ? min : unchecked(min + (int)(GetFraction() * range));
     }
 
     /// <summary>从 `maxExclusive` 个里挑一个下标（= `RandRange(0, maxExclusive-1)`）。</summary>

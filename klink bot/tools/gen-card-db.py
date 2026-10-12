@@ -14,6 +14,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from live_card_source import load_assets, innate_abilities
 
 # CDO 字段名 → 输出键。
 # 注意大小写：CDO 里是 operationCost（大写 C），不是 operationcost。
@@ -29,11 +30,14 @@ FIELD_MAP = {
     "faction": "faction",
     "Type": "type",
     "EffectType": "effectType",
+    "cipher": "cipher",
+    "KreditsTax_AsEnemyTarget": "targetTax",
 }
 
 # 布尔字段单独处理
 BOOL_FIELDS = {
     "hasGuard": "hasGuard",
+    "waitWithOnOtherCardPlayedUntilHandTargetSelected": "waitForHandTarget",
 }
 
 
@@ -44,6 +48,18 @@ def strip_enum(value: str) -> str:
     if "::" in value:
         return value.split("::", 1)[1]
     return value
+
+
+def trigger_program(value):
+    # The game's registration enum has four spelling differences from the
+    # BaseCardObject UFunction names invoked by BP_CardFunctions.
+    name = strip_enum(value)
+    return {
+        "OnStartofTurn": "OnStartOfTurn",
+        "OnOtherCardAblitiesChanged": "OnOtherCardAbilitiesChanged",
+        "OnOtherCardOperationKreditSpent": "OnOtherCardOperationKreditsSpent",
+        "OnOtherUnitUnPinned": "OnOtherUnitUnpinned",
+    }.get(name, name)
 
 
 def localize(value: str) -> str:
@@ -67,6 +83,8 @@ def localize(value: str) -> str:
     正确做法：以本地化 key（`<...>_text`）当锚点，取它之后的**全部**内容。
     key 里不含 `", "`，所以锚点是可靠的。
     """
+    if isinstance(value, dict):
+        return value.get("source_text", value.get("CultureInvariantString", ""))
     if not isinstance(value, str):
         return value or ""
 
@@ -104,8 +122,7 @@ def main():
     supplement_path = Path(sys.argv[3]) if len(sys.argv) > 3 else None
 
     print(f"读取 {src} ...")
-    batch = json.loads(src.read_text(encoding="utf-8-sig"))
-    assets = batch.get("assets", {})
+    assets = load_assets(src)
     print(f"  资产 {len(assets)}")
 
     supplement = {}
@@ -118,14 +135,15 @@ def main():
     skipped_non_card = []
     field_seen = {}
 
-    # Cards/ 目录下混着 UI / 渲染辅助蓝图，不是可打的卡
-    NON_CARD_PREFIXES = ("BP_", "WBP_", "M_", "Render", "BPI_", "E_", "DT_")
+    # Cards/ 目录下混着 UI / 渲染辅助蓝图，不是可打的卡。当前游戏的
+    # 对战卡蓝图统一使用 card_ 前缀；仅靠 BP_/WBP_ 等前缀会漏掉
+    # VisualCardActionBase、createCard_NUI_Widget 这类辅助资产。
 
     for asset_path, info in assets.items():
         if not info.get("ok"):
             continue
         name = Path(asset_path).stem
-        if name.startswith(NON_CARD_PREFIXES):
+        if not name.startswith("card_"):
             skipped_non_card.append(name)
             continue
         cdo = info.get("cdo")
@@ -141,7 +159,7 @@ def main():
             if src_key not in cdo:
                 continue
             raw = cdo[src_key]
-            if out_key in ("kredits", "operationcost", "attack", "defense", "range", "heavyArmor"):
+            if out_key in ("kredits", "operationcost", "attack", "defense", "range", "heavyArmor", "cipher", "targetTax"):
                 entry[out_key] = to_int(raw)
             else:
                 entry[out_key] = strip_enum(raw)
@@ -149,6 +167,10 @@ def main():
         for src_key, out_key in BOOL_FIELDS.items():
             if src_key in cdo:
                 entry[out_key] = str(cdo[src_key]).strip().lower() in ("true", "1")
+
+        entry["innateAbilities"] = innate_abilities(cdo)
+        entry["suppressionExceptionTriggers"] = [trigger_program(v) for v in cdo.get("suppressionExceptionTriggers", [])]
+        entry["usedTriggers"] = [trigger_program(v) for v in cdo.get("usedTriggers", [])]
 
         # 名称与文本
         if "title" in cdo:
@@ -187,7 +209,7 @@ def main():
     print(f"  带攻防的（单位）: {with_stats}")
     print(f"  带文本的: {with_text}")
     print(f"  类型分布: {dict(sorted(types.items(), key=lambda kv: -kv[1]))}")
-    missing_keys = [k for k in ("kredits", "attack", "defense", "operationcost", "range")
+    missing_keys = [k for k in ("kredits", "attack", "defense", "operationCost", "range")
                     if field_seen.get(k, 0) == 0]
     if missing_keys:
         print(f"  [!] CDO 里从未出现的字段: {missing_keys}")

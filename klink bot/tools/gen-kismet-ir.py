@@ -57,7 +57,10 @@ LITERALS = {
     "IntConst": lambda e: {"int": e.get("Value", 0)},
     "ByteConst": lambda e: {"int": e.get("Value", 0)},
     "Int64Const": lambda e: {"int": e.get("Value", 0)},
-    "FloatConst": lambda e: {"float": e.get("Value", 0.0)},
+    "FloatConst": lambda e: {"float": float(e.get("Value", 0.0))},
+    "DoubleConst": lambda e: {"float": float(e.get("Value", 0.0))},
+    "VectorConst": lambda e: {"struct": "/Script/CoreUObject.Vector", "array": [
+        {"float": float(e.get(axis, 0.0))} for axis in ("X", "Y", "Z")]},
     "StringConst": lambda e: {"str": e.get("Value", "")},
     "ObjectConst": lambda e: {"obj": e.get("Object", "")},
     "NameConst": lambda e: {"name": e.get("Value", "")},
@@ -74,6 +77,10 @@ CALL_INSTS = {
     "LocalVirtualFunction", "LocalFinalFunction", "VirtualFunction",
     "FinalFunction", "LocalFinalFunctionPtr", "LocalVirtualFunctionPtr",
 }
+
+# Current card's own function exports, rebuilt for each asset. Unlike generated
+# CallFunc slot names, these also identify outputs passed through ordinary locals.
+FORMAL_OUT_INDICES = {}
 
 SET_INSTS = {
     "Let", "LetObj", "LetBool", "LetInt", "LetInt64", "LetFloat", "LetStr",
@@ -254,7 +261,9 @@ def local_program(bc):
         if s is None:
             continue
         s["i"] = e.get("StatementIndex", 0)
-        s["bo"] = e.get("bo", 0)
+        # Current UAssetAPI StatementIndex is the serialized bytecode offset.
+        # Legacy cards.full.json exports also carry a separate physical offset.
+        s["bo"] = e.get("bo", e.get("StatementIndex", 0))
         steps.append(s)
     steps.sort(key=lambda s: s["i"])
     return steps
@@ -272,8 +281,25 @@ def expr(e):
     if inst in LITERALS:
         return LITERALS[inst](e)
 
-    if inst in ("LocalVariable", "InstanceVariable"):
-        return {"var": e.get("Variable Name", "")}
+    if inst in ("LocalVariable", "LocalOutVariable", "InstanceVariable"):
+        result = {"var": e.get("Variable Name", ""),
+                  "scope": "instance" if inst == "InstanceVariable" else "local"}
+        outer = e.get("Variable Outer")
+        if isinstance(outer, dict) and outer.get("ContainerType") == 1:
+            result["element_type"] = outer.get("PinCategory", "Object")
+        return result
+
+    if inst == "StructMemberContext":
+        return {"var": e.get("Property Name", ""), "ctx": expr(e.get("StructExpression"))}
+
+    if inst == "ArrayGetByRef":
+        return {"math": "Array_Get", "args": [expr(e.get("ArrayExpression")), expr(e.get("IndexExpression"))]}
+
+    if inst == "SwitchValue":
+        args = [expr(e.get("Expression")), expr(e.get("DefaultResult"))]
+        for case in e.get("Cases", []):
+            args.extend([expr(case.get("CaseValue")), expr(case.get("CaseResult"))])
+        return {"math": "__SwitchValue", "args": args}
 
     if inst in CALL_INSTS:
         fn = e.get("FunctionName") or e.get("Function") or ""
@@ -336,6 +362,10 @@ def outs_of(call_expr, fn_name):
     判据：参数是 LocalVariable，且名字形如 CallFunc_<函数名>_<参数名>。
     （已用 card_event_aans 的 GetLocationCardBySide / ChangeDefense 验证过。）
     """
+    if fn_name in FORMAL_OUT_INDICES:
+        return [{"param": i, "slot": call_expr["args"][i]["var"]}
+                for i in FORMAL_OUT_INDICES[fn_name]
+                if i < len(call_expr.get("args", [])) and "var" in call_expr["args"][i]]
     prefix = f"CallFunc_{fn_name}_"
     outs = []
     for i, p in enumerate(call_expr.get("args", [])):
@@ -370,7 +400,7 @@ def step_of(e):
             return {"op": "jump", "to": e.get("Offset", -1)}
         return None
 
-    if inst == "Return":
+    if inst in ("Return", "EndOfScript"):
         return {"op": "return"}
 
     # SetArray：MakeArray 节点 —— 把若干值组装成一个数组变量
@@ -378,13 +408,15 @@ def step_of(e):
         left = e.get("LeftSideExpression") or {}
         dst = ((left.get("Variable") or {}).get("Variable Name")) or left.get("Variable Name", "")
         vals = e.get("Values") or []
-        return {"op": "setArray", "dst": dst, "values": [expr(v) for v in vals]}
+        return {"op": "setArray", "dst": dst, "dst_scope": expr(left).get("scope"),
+                "values": [expr(v) for v in vals]}
 
     if inst in SET_INSTS:
         var = e.get("Variable") or {}
         dst = var.get("Variable Name", "")
         # 输出槽的赋值（CallFunc_X_Y = ...）由 call 的 outs 处理，这里可能是二次赋值
-        return {"op": "set", "dst": dst, "src": expr(e.get("Expression"))}
+        return {"op": "set", "dst": dst, "dst_scope": expr(var).get("scope"),
+                "src": expr(e.get("Expression"))}
 
     # 顶层调用：可能是裸调用，也可能包在 Context 里
     if inst in CALL_INSTS or inst == "CallMath" or inst == "Context":
@@ -446,15 +478,70 @@ def build_program(ubergraph_bc, entry):
     return steps
 
 
+def load_assets(src):
+    """Read legacy full dumps or the current complete pak definition index."""
+    source = Path(src)
+    data = json.loads(source.read_text(encoding="utf-8-sig"))
+    if isinstance(data, dict):
+        return data["assets"]
+    assets = {}
+    for card in data:
+        if not card.get("functions_file"):
+            continue
+        functions = json.loads((source.parent / card["functions_file"]).read_text(encoding="utf-8-sig"))
+        metadata = json.loads((source.parent / card["metadata_file"]).read_text(encoding="utf-8-sig"))
+        for export in metadata["exports"]:
+            if export["type"] != "FunctionExport" or export["name"] not in functions:
+                continue
+            # CPF_ReferenceParm alone also occurs on compiler scratch arrays;
+            # only CPF_Parm denotes a formal parameter in the export schema.
+            parameters = [p for p in export.get("properties", [])
+                          if "CPF_Parm" in p.get("PropertyFlags", "").split(", ")]
+            # Blueprint reference pins are inputs, including arrays carrying
+            # CPF_OutParm. They must not be replaced with null at the call site.
+            def is_output(p):
+                flags = set(p.get("PropertyFlags", "").split(", "))
+                return "CPF_OutParm" in flags and not flags & {"CPF_ReferenceParm", "CPF_ConstParm", "CPF_ReturnParm"}
+            functions[export["name"]]["inputs"] = [
+                p["Name"] for p in parameters
+                if not is_output(p) and "CPF_ReturnParm" not in p.get("PropertyFlags", "").split(", ")
+            ]
+            functions[export["name"]]["outputs"] = [
+                p["Name"] for p in parameters
+                if is_output(p)
+            ]
+            functions[export["name"]]["out_indices"] = [
+                i for i, p in enumerate(parameters)
+                if is_output(p)
+            ]
+        assets[card["asset"]] = {"ok": True, "functions": functions,
+                                 "cdo": card.get("explicit_overrides", {})}
+    return assets
+
+
+def is_local_function(fname, finfo):
+    if fname.startswith("ExecuteUbergraph") or fname.endswith("__DelegateSignature"):
+        return False
+    if fname == "ShouldHighlightInHand":
+        return False  # Presentation-only hint; no effect on legal actions.
+    bc = (finfo or {}).get("bytecode") or []
+    return bool(bc) and "ExecuteUbergraph" not in json.dumps(bc, ensure_ascii=False)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("src")
     ap.add_argument("dst")
     ap.add_argument("--only-card", help="只处理这一张卡（调试用）")
+    ap.add_argument("--enum-values", type=Path, help="LiveEnumProbe 输出的 CardMoveReason 数值表")
     args = ap.parse_args()
 
     print(f"读取 {args.src} ...")
-    assets = json.loads(Path(args.src).read_text(encoding="utf-8-sig"))["assets"]
+    assets = load_assets(args.src)
+    enum_values = {}
+    if args.enum_values:
+        enum_values = {x["name"]: x["value"] for x in
+                       json.loads(args.enum_values.read_text(encoding="utf-8-sig"))["names"]}
     print(f"  资产 {len(assets)}")
 
     result = {}
@@ -464,10 +551,17 @@ def main():
         if not info.get("ok"):
             continue
         name = Path(path).stem
+        # 只把真正的对战卡编入规则 IR。Cards/ 下的 BP/UI/渲染辅助蓝图
+        # 可能也有 Kismet 函数，但不属于无头模拟器的规则程序。
+        if not name.startswith("card_"):
+            continue
         if args.only_card and name != args.only_card:
             continue
 
         fns = info.get("functions") or {}
+        FORMAL_OUT_INDICES.clear()
+        FORMAL_OUT_INDICES.update({fname: f["out_indices"] for fname, f in fns.items()
+                                   if "out_indices" in f})
         ug_name = next((k for k in fns if k.startswith("ExecuteUbergraph")), None)
 
         # 卡自己的局部函数 / 独立事件函数（见 LOCAL_FUNCTIONS 与 is_standalone_event 的注释）。
@@ -475,18 +569,23 @@ def main():
         #    `card_unit_petlyakov_pe_2ft` 这类卡**只有**一个独立事件函数、
         #    根本没有 ubergraph —— 旧实现在这里 `continue`，整张卡进不了 IR。
         locals_ = {}
+        inputs_ = {}
+        outputs_ = {}
         for fname, finfo in fns.items():
             if fname == ug_name:
                 continue
-            if not (fname in LOCAL_FUNCTIONS or is_standalone_event(fname, finfo)):
+            if not is_local_function(fname, finfo):
                 continue
             fsteps = local_program((finfo or {}).get("bytecode") or [])
             if fsteps:
                 locals_[fname] = fsteps
+                if "inputs" in finfo:
+                    inputs_[fname] = finfo["inputs"]
+                    outputs_[fname] = finfo["outputs"]
 
         if ug_name is None:
             if locals_:
-                result[name] = {"asset": path, "entrypoints": {}, "steps": [], "locals": locals_}
+                result[name] = {"asset": path, "entrypoints": {}, "steps": [], "locals": locals_, "local_inputs": inputs_, "local_outputs": outputs_}
                 stat["cards"] += 1
                 stat["locals"] += len(locals_)
                 stat["no_ug"] = stat.get("no_ug", 0) + 1
@@ -514,7 +613,7 @@ def main():
             # 在 `bo` 顺序里排在事件体**后面**（初始化块 bo 575..1990，
             # 事件体 bo 2006+），按 `i` 顺序把两条链拼起来就会拼错。
             # 解释器要靠它算"顺序下落的下一条"，否则会掉进初始化块、死循环。
-            s["bo"] = e.get("bo", 0)
+            s["bo"] = e.get("bo", e.get("StatementIndex", 0))
             steps.append(s)
 
         if not steps:
@@ -547,6 +646,8 @@ def main():
         node = {"asset": path, "entrypoints": entries, "steps": steps}
         if locals_:
             node["locals"] = locals_
+            node["local_inputs"] = inputs_
+            node["local_outputs"] = outputs_
             stat["locals"] = stat.get("locals", 0) + len(locals_)
 
         result[name] = node
@@ -554,6 +655,36 @@ def main():
         stat["entries"] += len(entries)
         stat["steps"] += len(steps)
         stat["unknown_ops"] += sum(1 for s in steps if s.get("op") == "unknown")
+
+    # Only keep defaults for instance members actually referenced by this
+    # card's rules. All current cards directly inherit BaseCardObject; reject
+    # unsupported custom enum defaults instead of silently coercing to zero.
+    def referenced_instances(value, found):
+        if isinstance(value, dict):
+            if value.get("scope") == "instance":
+                found.add(value.get("var"))
+            if value.get("dst_scope") == "instance":
+                found.add(value.get("dst"))
+            for child in value.values():
+                referenced_instances(child, found)
+        elif isinstance(value, list):
+            for child in value:
+                referenced_instances(child, found)
+
+    for name, node in result.items():
+        referenced = set()
+        referenced_instances(node, referenced)
+        defaults = {}
+        for key, value in assets[node["asset"]].get("cdo", {}).items():
+            if key not in referenced or not isinstance(value, (bool, int, float, str)):
+                continue
+            if isinstance(value, str) and value.startswith("CardMoveReason::"):
+                if value not in enum_values:
+                    raise ValueError(f"{name}.{key}: supply --enum-values for {value}")
+                value = enum_values[value]
+            defaults[key] = value
+        if defaults:
+            node["instance_defaults"] = defaults
 
     Path(args.dst).parent.mkdir(parents=True, exist_ok=True)
     Path(args.dst).write_text(json.dumps(result, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

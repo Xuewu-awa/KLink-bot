@@ -222,11 +222,15 @@ internal static class DispatchGapBaseline
     /// `GetOpponentSide`，按当前效果控制方返回对手阵营。
     /// 2026-10-10：378 → **377**（1933 → 1932 个调用点）。正式注册
     /// `HasMovementLeft`，按本回合移动额度查询 `!HasMovedThisTurn`。
+    /// 2026-10-13：377 → **48**（1932 → **1020** 个调用点）。完整 live
+    /// 卡牌 IR 与原生规则表重新生成后，PvP 原语已接入；保留的名字均来自
+    /// 战役、教程、UI 或文本路径。这个基线仍扫描完整 IR，故用作“派发表没有
+    /// 意外回退”的保守守卫，不把 48 误称为 PvP 规则缺失数。
     /// </remarks>
-    public const int BaselineCount = 377;
+    public const int BaselineCount = 48;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "4C9985AB68A70B2C";
+    public const string BaselineFingerprint = "558C8CD7E517F8DD";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

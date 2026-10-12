@@ -155,26 +155,14 @@ public sealed partial class CardApi
     private List<CardInstance> EndOfTurnRecipients(Blueprint.KismetLibrary library)
     {
         var result = new List<CardInstance>();
-        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var card in State.AllCards)
         {
-            foreach (var card in State.Board(side))
+            if (card.Location != CardLocation.NotAvailable
+                && card.Definition.UsedTriggers.Contains("OnEndOfTurn")
+                && !SuppressedSkipsTrigger(card, "OnEndOfTurn")
+                && library.FindProgram(card.Name, "OnEndOfTurn") is not null)
             {
-                if (card.Location != CardLocation.NotAvailable
-                    && !SuppressedSkipsTrigger(card, "OnEndOfTurn")
-                    && library.FindProgram(card.Name, "OnEndOfTurn") is not null)
-                {
-                    result.Add(card);
-                }
-            }
-
-            foreach (var card in State.Discard(side))
-            {
-                if (card.Location != CardLocation.NotAvailable
-                    && !SuppressedSkipsTrigger(card, "OnEndOfTurn")
-                    && library.FindProgram(card.Name, "OnEndOfTurn") is not null)
-                {
-                    result.Add(card);
-                }
+                result.Add(card);
             }
         }
 
@@ -253,14 +241,10 @@ public sealed partial class CardApi
     /// </summary>
     public IReadOnlyList<CardInstance> CaptureTriggerSnapshot()
     {
-        var snapshot = new List<CardInstance>();
-        foreach (Side side in new[] { Side.Left, Side.Right })
-        {
-            snapshot.AddRange(State.Board(side));
-            snapshot.AddRange(State.Discard(side));
-        }
-
-        return snapshot;
+        // FetchAllCardsWithEventTrigger resolves registered IDs from the global
+        // map without hand/deck/board filtering. CardId order is deterministic;
+        // equivalence to UE TSet subscription order remains to be verified.
+        return State.AllCards;
     }
     private readonly MatchEngine _engine;
 
@@ -405,7 +389,8 @@ public sealed partial class CardApi
                             CardLocation? newLocation = null,
                             bool broadcastName = false,
                             IReadOnlyDictionary<string, object?>? localsSeed = null,
-                            IReadOnlyList<CardInstance>? recipientSnapshot = null)
+                            IReadOnlyList<CardInstance>? recipientSnapshot = null,
+                            bool requireRegistration = true)
     {
         CardInstance? eventCard = eventSubject ?? subject;
         if (_playedCardBroadcastDepth > 0 && programName == "OnOtherCardPlayedFromHand"
@@ -449,20 +434,7 @@ public sealed partial class CardApi
         if (recipientSnapshot is null)
         {
             snapshot.Clear();
-            for (int i = 0; i < 2; i++)
-            {
-                Side s = i == 0 ? Side.Left : Side.Right;
-                snapshot.AddRange(State.Board(s));
-                snapshot.AddRange(State.Discard(s));
-                // Kredit 槽位事件的订阅者包含手牌单位（例如 5th Regiment：
-                // 失槽时在手牌减费），因此该事件必须覆盖手牌；其它事件仍按
-                // 原有棋盘+弃牌堆快照执行。
-                if (programName is "OnAfterExtraKreditSlotGain" or "OnFrontlineOwnershipChange"
-                    or "OnOtherCardMovedToLocationInHand")
-                {
-                    snapshot.AddRange(State.Hand(s));
-                }
-            }
+            snapshot.AddRange(CaptureTriggerSnapshot());
         }
 
         foreach (var card in snapshot)
@@ -513,6 +485,7 @@ public sealed partial class CardApi
             {
                 // 广播：除主体之外的所有卡
                 if (!isSubject
+                    && (!requireRegistration || card.Definition.IsRegisteredFor(programName))
                     && (!suppressed || HasSuppressionException(card, programName))
                     && library.FindProgram(name, programName) is not null)
                 {
@@ -525,7 +498,8 @@ public sealed partial class CardApi
             else if (subject is null || isSubject)
             {
                 // 自己那一路：主体在场就只发主体；主体为 null（全局事件）时发给所有卡
-                if ((!suppressed || isSubject || HasSuppressionException(card, selfProgram))
+                if ((isSubject || !requireRegistration || card.Definition.IsRegisteredFor(selfProgram))
+                    && (!suppressed || isSubject || HasSuppressionException(card, selfProgram))
                     && library.FindProgram(name, selfProgram) is not null)
                 {
                     TriggerTrace?.Add($"{selfProgram} → {name}#{card.CardId}" +
@@ -538,6 +512,7 @@ public sealed partial class CardApi
             // 显式的「别的卡」那一路：除主体之外的所有卡
             if (otherProgramName is not null
                 && !isSubject
+                && (!requireRegistration || card.Definition.IsRegisteredFor(otherProgramName))
                 && (!suppressed || HasSuppressionException(card, otherProgramName))
                 && library.FindProgram(name, otherProgramName) is not null)
             {
@@ -556,7 +531,8 @@ public sealed partial class CardApi
                                 && (broadcastName
                                     || programName.StartsWith("OnOther", StringComparison.Ordinal));
         if (!subjectBroadcast
-            && subject is not null && subject.IsAlive && !subject.IsHq && !subject.Location.IsBoard()
+            && subject is not null && subject.Location != CardLocation.NotAvailable
+            && !snapshot.Contains(subject)
             && library.FindProgram(subject.Name, subjectProgram) is not null)
         {
             // ⚠️ 这一支**也必须记 TriggerTrace**。原先漏了它，于是"主体不在棋盘上"
@@ -656,7 +632,7 @@ public sealed partial class CardApi
             return results;
         }
 
-        // 快照规则与 FireTrigger 一致：棋盘 + 弃牌堆，按嵌套深度分开缓冲。
+        // 与 FireTrigger 一致：全局对象表，包含手牌、牌库和弃牌。
         // ⚠️ 必须先快照：被派发的程序内部会创建/销毁卡（`receiver` 可能被打死）。
         List<CardInstance> snapshot;
         if (only is not null)
@@ -667,12 +643,7 @@ public sealed partial class CardApi
         {
             snapshot = SnapshotBuffer(_triggerDepth);
             snapshot.Clear();
-            for (int i = 0; i < 2; i++)
-            {
-                Side s = i == 0 ? Side.Left : Side.Right;
-                snapshot.AddRange(State.Board(s));
-                snapshot.AddRange(State.Discard(s));
-            }
+            snapshot.AddRange(CaptureTriggerSnapshot());
         }
 
         CardInstance? eventCard = eventSubject ?? subject;
@@ -687,6 +658,8 @@ public sealed partial class CardApi
             {
                 continue;
             }
+
+            if (!card.Definition.IsRegisteredFor(programName)) continue;
 
             var program = library.FindProgram(card.Name, programName);
             if (program is null)
@@ -762,11 +735,7 @@ public sealed partial class CardApi
         {
             snapshot = SnapshotBuffer(_triggerDepth);
             snapshot.Clear();
-            foreach (Side side in new[] { Side.Left, Side.Right })
-            {
-                snapshot.AddRange(State.Board(side));
-                snapshot.AddRange(State.Discard(side));
-            }
+            snapshot.AddRange(CaptureTriggerSnapshot());
         }
 
         foreach (var card in snapshot)
@@ -781,6 +750,8 @@ public sealed partial class CardApi
             {
                 continue;
             }
+
+            if (!card.Definition.IsRegisteredFor(functionName)) continue;
 
             var program = library.FindLocalProgram(card.Definition.Name, functionName);
             if (program is null)
@@ -985,10 +956,12 @@ public sealed partial class CardApi
     /// <param name="card">触发摧毁效果的那张卡（`cardTriggered`）。</param>
     /// <param name="instigator">摧毁者（`instigatorID` 的来源）。</param>
     /// <returns>订阅者累加出来的 TriggerMultiple —— 调用方要再整轮派发这么多次。</returns>
-    public int FireDestructionEffectTriggered(CardInstance card, CardInstance? instigator)
+    public int FireDestructionEffectTriggered(CardInstance card, CardInstance? instigator,
+        IReadOnlyList<int>? batch = null, IReadOnlyList<CardInstance>? recipients = null,
+        bool skipSuppressCheck = false)
     {
         // si=325/710：skipSuppressCheck=false 且 cardTriggered 被压制 ⇒ 整轮不派发。
-        if (card.Keywords.Contains(Keyword.Suppressed))
+        if (!skipSuppressCheck && card.IsSuppressed)
         {
             return 0;
         }
@@ -999,8 +972,8 @@ public sealed partial class CardApi
             ["instigatorID"] = instigator?.CardId ?? 0,
         };
 
-        var outs = BroadcastWithOutParam(
-            "OnDestructionEffectTriggered", card, card.Owner, "TriggerMultiple",
+        var outs = BroadcastWithOutParams(
+            "OnDestructionEffectTriggered", card, card.Owner, new[] { "TriggerMultiple" },
             eventArgs: new object?[] { card, instigator?.CardId ?? 0, false },
             eventSubject: card,
             namedArgs: named,
@@ -1010,13 +983,13 @@ public sealed partial class CardApi
                 ["instigatorID"] = instigator?.CardId ?? 0,
                 // si=398：CardsToDestroy 就是「被摧毁的那一张」，所以这个 bool 等价于
                 // 「订阅卡自己也在被摧毁的那批里」。
-                ["SelfAlsoDestroyed"] = observer.CardId == card.CardId,
-            });
+                ["SelfAlsoDestroyed"] = batch?.Contains(observer.CardId) ?? observer.CardId == card.CardId,
+            }, only: recipients);
 
         int total = 0;
-        foreach (var v in outs)
+        foreach (var hit in outs)
         {
-            total += AsInt(v);
+            total += AsInt(hit.Outs.GetValueOrDefault("TriggerMultiple"));
         }
 
         return total;
@@ -1038,8 +1011,8 @@ public sealed partial class CardApi
     /// 读的是同一份存储（<see cref="CustomNameHasAttribute"/>），所以两边不会漂。
     /// </summary>
     public bool ShouldTriggerDestructionEffect(CardInstance card)
-        => !CustomNameHasAttribute(card, "customName1", "StopDestructionEffect")
-           && (card.Keywords.Contains(Keyword.Destruction) || HasCustomAbility(card, "destruction"));
+        => (!CustomNameHasAttribute(card, "customName1", "StopDestructionEffect")
+            && card.Keywords.Contains(Keyword.Destruction)) || HasCustomAbility(card, "destruction");
 
     /// <summary>
     /// `TriggerDestruction(card, instigatorID, StealSide, RemoveDestruction, out qqq)`。
@@ -1051,62 +1024,88 @@ public sealed partial class CardApi
     public int TriggerDestruction(CardInstance card, CardInstance? instigator,
         bool stealSide, bool removeDestruction)
     {
-        if (!card.IsAlive || !ShouldTriggerDestructionEffect(card))
-        {
-            return 0;
-        }
-
+        // UObject validity is distinct from IsAlive: discarded cards are valid targets.
+        Side originalSide = card.Owner;
         if (stealSide)
         {
             JsonSetInt(card, "destructionTriggerStolenOnTurn", GetTurnNumber());
         }
 
-        // 蓝图的 StealSide 分支通过 ConstructAndCopyCard 生成一个不加入牌局的
-        // 临时对象，再把它的阵营反转。保留原 cardID 很重要：事件 24 用原卡 ID
-        // 构造 CardsToDestroy，订阅者据此判断 SelfAlsoDestroyed。
-        CardInstance triggerCard = stealSide ? CopyForStealSide(card) : card;
+        // i=276 captures T24 before the before-destroy hooks can change subscribers.
+        var recipients = CaptureTriggerSnapshot()
+            .Where(x => x.Definition.IsRegisteredFor("OnDestructionEffectTriggered")).ToArray();
+        if (ShouldTriggerDestructionEffect(card))
+            _engine.BeforeDestroyed(card, instigator, false, triggered: true);
+        var destroyedArgs = new object?[] { null, true };
+        var destroyedNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["killer"] = null,
+            ["TriggerNotDestroyed"] = true,
+        };
+        if (!CustomNameHasAttribute(card, "customName1", "StopDestructionEffect")
+            && card.Keywords.Contains(Keyword.Destruction))
+        {
+            CardInstance triggerCard = stealSide ? CopyForStealSide(card) : card;
+            void SelfEffect()
+            {
+                if (Blueprint.KismetLibrary.Default is { } library)
+                    RunTriggerProgram(library, triggerCard, triggerCard.Name, "OnDestroyed", triggerCard,
+                        destroyedArgs, namedArgs: destroyedNamed);
+            }
+            SelfEffect();
+            // i=1275/1504 SetArray has no values: no subscriber is being destroyed.
+            int extra = FireDestructionEffectTriggered(triggerCard, instigator, Array.Empty<int>(), recipients);
+            for (int i = 0; i < extra; i++)
+            {
+                SelfEffect();
+                FireDestructionEffectTriggered(triggerCard, instigator, Array.Empty<int>(), recipients);
+            }
+        }
 
+        if (card.ReceivedAbilitiesFromCards.TryGetValue("destruction", out var givers))
+        {
+            // i=1771..3203 temporarily changes the actual target side for source effects.
+            var sources = givers.ToArray();
+            State.ChangeOwner(card, stealSide ? originalSide.Opposite() : originalSide, normalize: false);
+            try
+            {
+                foreach (int sourceId in sources)
+                {
+                    if (sourceId == card.CardId || State.ById(sourceId) is not { } source) continue;
+                    void SourceEffect() => FireTrigger("OnOtherCardDestroyed", source, source.Owner,
+                        selfProgramName: "OnOtherCardDestroyed", eventSubject: card,
+                        eventArgs: new object?[] { card, null, true, 0, false, false },
+                        namedArgs: new Dictionary<string, object?>
+                        {
+                            ["cardDestroyed"] = card, ["killer"] = null, ["TriggerNotDestroyed"] = true,
+                            ["destroyedLocation"] = 0, ["selfIsAlsoGettingDestroyed"] = false,
+                            ["destroyedInCombat"] = false,
+                        });
+                    SourceEffect();
+                    int extra = FireDestructionEffectTriggered(card, instigator, new[] { 0 }, recipients);
+                    for (int i = 0; i < extra; i++)
+                    {
+                        SourceEffect();
+                        FireDestructionEffectTriggered(card, instigator, new[] { 0 }, recipients);
+                    }
+                }
+            }
+            finally { State.ChangeOwner(card, originalSide, normalize: false); }
+        }
         _engine.FireSubAction("ZActionTriggerDestruction", new[]
         {
             ActionValue2.Bool("RemoveDestruction", removeDestruction),
             ActionValue2.Bool("StealSide", stealSide),
             ActionValue2.Int("instigatorID", instigator?.CardId ?? 0),
         });
-
-        var destroyedArgs = new object?[] { null, true };
-        var destroyedNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        if (removeDestruction)
         {
-            ["killer"] = null,
-            ["TriggerNotDestroyed"] = true,
-            ["destroyedLocation"] = (int)card.Location,
-        };
-        if (stealSide && Blueprint.KismetLibrary.Default is { } library)
-        {
-            // ConstructAndCopyCard 的对象不在 GameState 快照中，不能经由 FireTrigger
-            // 的“主体不在棋盘”兜底派发；直接跑它自己的入口等价于 OnDestroyed。
-            RunTriggerProgram(library, triggerCard, triggerCard.Name, "OnDestroyed", triggerCard,
-                destroyedArgs, namedArgs: destroyedNamed);
+            CustomAbilityRemove(card, "destruction", 0, true);
+            if (IsLocatedOnBoard(card))
+                SuffixAdd(new EffectContext { Engine = _engine, State = State, Self = card, Controller = card.Owner },
+                    card, new object?[] { "StopDestructionEffect" }, "customName1");
         }
-        else
-        {
-            FireTrigger("OnDestroyed", triggerCard, triggerCard.Owner,
-                eventArgs: destroyedArgs,
-                eventSubject: triggerCard,
-                namedArgs: destroyedNamed);
-        }
-
-        int triggerMultiple = FireDestructionEffectTriggered(triggerCard, instigator);
-        for (int i = 0; i < triggerMultiple; i++)
-        {
-            FireDestructionEffectTriggered(triggerCard, instigator);
-        }
-
-        if (removeDestruction && HasCustomAbility(card, "destruction"))
-        {
-            card.CustomAbility = null;
-        }
-
-        return triggerMultiple;
+        return 0; // qqq is never assigned on the valid path in the Blueprint.
     }
 
     private static CardInstance CopyForStealSide(CardInstance source)
@@ -1167,10 +1166,14 @@ public sealed partial class CardApi
                     x.Key, x.Value.Clone()))
                 .ToList();
 
-        foreach (var (key, value) in source.CustomJson)
-        {
-            copy.CustomJson[key] = value;
-        }
+        copy.CustomJson.CopyFrom(source.CustomJson);
+
+        copy.ReceivedAbilitiesFromCards.Clear();
+        foreach (var (ability, givers) in source.ReceivedAbilitiesFromCards)
+            copy.ReceivedAbilitiesFromCards[ability] = new List<int>(givers);
+        copy.SuppressStrippedAbilities = source.SuppressStrippedAbilities?.ToDictionary(
+            kv => kv.Key, kv => new List<int>(kv.Value), StringComparer.Ordinal);
+        copy.RemovedGameplayTags.UnionWith(source.RemovedGameplayTags);
 
         foreach (var (key, value) in source.BuffsBySource)
         {
@@ -1217,7 +1220,7 @@ public sealed partial class CardApi
     /// 命中就合成 ubergraph 的分派前导 —— 对带出参的普通函数是错的
     /// （它们根本不在 ubergraph 里，见 P1 §1）。
     ///
-    /// 返回 null = **这张卡没有这个函数**（全卡池 1735 张里只有 33 张有
+    /// 返回 null = **这张卡没有这个函数**（全卡池 2019 张里只有 33 张有
     /// `OnCardDealDamage_ModifyDamageDealt`）。调用方必须把 null 当「默认体」处理，
     /// 不能拿一个猜的默认值顶替。
     /// </summary>
@@ -1260,6 +1263,14 @@ public sealed partial class CardApi
         {
             _triggerDepth--;
         }
+    }
+
+    public bool IsBlockedFromPlay(CardInstance card, out string reason)
+    {
+        var result = RunOwnLocal(card, "BlockCardFromBeingPlayedFromHand", null,
+            "blocked", "reason", "reasonParam1", "reasonParam2");
+        reason = result?.GetValueOrDefault("reason")?.ToString() ?? "";
+        return result is not null && KismetVmTruthy(result.GetValueOrDefault("blocked"));
     }
 
     private CardInstance? FindOnBoard(string cardName, CardInstance? prefer)
@@ -1459,64 +1470,32 @@ public sealed partial class CardApi
             {
                 calculated = AsInt(outs.GetValueOrDefault("newDamage"));
             }
-            // outs == null ⇒ 这张卡没有这个函数（全卡池 1735 张里只有 33 张有），
+            // outs == null ⇒ 这张卡没有这个函数（全卡池 2019 张里只有 33 张有），
             // 蓝图里 `BlueprintNativeEvent` 的默认体就是「不修改伤害」。
         }
 
-        // si=109：事件 37 的订阅者。**含主体自己**（这一段没有 `NotEqual(item, dealer)`）。
-        var first = BroadcastWithOutParams(
-            "OnOtherCardDealDamageAddDamage", dealer, receiver.Owner, new[] { "damageToAdd", "reRunAtEnd" },
-            eventArgs: new object?[] { dealer, receiver, calculated, fromAttack, isDefenderDamage },
-            eventSubject: dealer,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardDealingDamage"] = dealer,
-                ["toCard"] = receiver,
-                ["damage"] = calculated,
-                ["fromAttack"] = fromAttack,
-                ["isDefenderDamage"] = isDefenderDamage,
-            },
-            seedFactory: _ => new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardDealingDamage"] = dealer,
-                ["toCard"] = receiver,
-                ["damage"] = calculated,
-                ["fromAttack"] = fromAttack,
-                ["isDefenderDamage"] = isDefenderDamage,
-            });
-
+        // Each observer receives the damage left by its predecessor (i=109/481).
+        var recipients = CaptureTriggerSnapshot().ToArray();
         var reRun = new List<CardInstance>();
-        foreach (var (card, outs) in first)
+        void Visit(CardInstance observer, bool collectRerun)
         {
-            calculated += AsInt(outs.GetValueOrDefault("damageToAdd"));
-            if (Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("reRunAtEnd")))
+            var args = new Dictionary<string, object?>
             {
-                // si=623：记的是**卡**（`Array_Add(addDamageToReRun, item)`），不是值。
-                reRun.Add(card);
-            }
+                ["cardDealingDamage"] = dealer, ["toCard"] = receiver,
+                ["damage"] = calculated, ["fromAttack"] = fromAttack,
+                ["isDefenderDamage"] = isDefenderDamage,
+            };
+            var hits = BroadcastWithOutParams("OnOtherCardDealDamageAddDamage", dealer,
+                receiver.Owner, new[] { "damageToAdd", "reRunAtEnd" },
+                seed: args, namedArgs: args, only: new[] { observer });
+            if (hits.Count == 0) return;
+            var hit = hits[0];
+            calculated += AsInt(hit.Outs.GetValueOrDefault("damageToAdd"));
+            if (collectRerun && Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("reRunAtEnd")))
+                reRun.Add(observer);
         }
-
-        // si=805..1295：对 reRunAtEnd 的那批再整轮派发一次（第二次不再看 reRunAtEnd）。
-        if (reRun.Count > 0)
-        {
-            var second = BroadcastWithOutParams(
-                "OnOtherCardDealDamageAddDamage", dealer, receiver.Owner, new[] { "damageToAdd", "reRunAtEnd" },
-                eventArgs: new object?[] { dealer, receiver, calculated, fromAttack, isDefenderDamage },
-                eventSubject: dealer,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardDealingDamage"] = dealer,
-                    ["toCard"] = receiver,
-                    ["damage"] = calculated,
-                    ["fromAttack"] = fromAttack,
-                    ["isDefenderDamage"] = isDefenderDamage,
-                },
-                only: reRun);
-            foreach (var (_, outs) in second)
-            {
-                calculated += AsInt(outs.GetValueOrDefault("damageToAdd"));
-            }
-        }
+        foreach (var observer in recipients) Visit(observer, true);
+        foreach (var observer in reRun) Visit(observer, false);
 
         // si=1300：Clamp(.., 0, 99)
         calculated = Math.Clamp(calculated, 0, 99);
@@ -1557,10 +1536,12 @@ public sealed partial class CardApi
             ["toCard"] = receiver,
             ["damageAmount"] = damage,
             ["damage"] = damage,
+            ["Damage"] = damage,
             ["tmpDamage"] = damage,
             ["isCombatDamage"] = isCombatDamage,
             ["isAttackingDamage"] = isAttackingDamage,
             ["fromAttack"] = isCombatDamage,
+            ["isAttacker"] = isAttackingDamage,
             ["isRedirected"] = isRedirected,
         };
 
@@ -1576,12 +1557,7 @@ public sealed partial class CardApi
 
         // National Fire Service is deliberately deferred by the Blueprint so a
         // gotcha response observes the already-adjusted damage.
-        var snapshot = new List<CardInstance>();
-        foreach (Side side in new[] { Side.Left, Side.Right })
-        {
-            snapshot.AddRange(State.Board(side));
-            snapshot.AddRange(State.Discard(side));
-        }
+        var snapshot = CaptureTriggerSnapshot();
 
         var firstPass = snapshot
             .Where(card => !string.Equals(card.Name, "card_event_national_fire_service",
@@ -1598,16 +1574,19 @@ public sealed partial class CardApi
             {
                 ["damageAmount"] = amount,
                 ["damage"] = amount,
+                ["Damage"] = amount,
                 ["tmpDamage"] = amount,
             };
             return copy;
         }
 
-        foreach (var hit in BroadcastLocalWithOutParams(
-                     "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
-                     new[] { "damageToAdd", "stopAdding" },
-                     SeedFor(finalDamage), firstPass))
+        foreach (var observer in firstPass)
         {
+            var hits = BroadcastLocalWithOutParams(
+                "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
+                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer });
+            if (hits.Count == 0) continue;
+            var hit = hits[0];
             finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
             if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAdding")))
             {
@@ -1615,16 +1594,14 @@ public sealed partial class CardApi
             }
         }
 
-        foreach (var hit in BroadcastLocalWithOutParams(
-                     "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
-                     new[] { "damageToAdd", "stopAdding" },
-                     SeedFor(finalDamage), delayed))
+        foreach (var observer in delayed)
         {
+            var hits = BroadcastLocalWithOutParams(
+                "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
+                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer }, includeSubject: true);
+            if (hits.Count == 0) continue;
+            var hit = hits[0];
             finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
-            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAdding")))
-            {
-                break;
-            }
         }
 
         return finalDamage;
@@ -1680,61 +1657,80 @@ public sealed partial class CardApi
         ApplyCalculatedDamage(target, amount, source, isCombatDamage, counterDamage, isRedirected);
     }
 
-    /// <summary>
-    /// Resolve an ordinary unit attack as simultaneous combat: calculate both
-    /// damage directions, apply both defenses, then dispatch damage events.
-    /// Destruction is left to the attack owner after the combat-survival hooks.
-    /// </summary>
+    /// <summary>AttackCard calculates both directions, then ExecuteAttackCard resolves them in phases.</summary>
     internal (int ToDefender, int ToAttacker) DealCombatDamagePair(
-        CardInstance attacker, CardInstance defender, int damageToDefender, int damageToAttacker,
-        Action<int, int> afterBothApplied)
+        CardInstance attacker, CardInstance defender, Action<int, int> afterBothApplied)
     {
-        int oldDefenderDefense = defender.Defense;
-        int oldAttackerDefense = attacker.Defense;
-        int finalToDefender = CalculateCombatDamage(
-            attacker, defender, damageToDefender, counterDamage: false);
-        int finalToAttacker = CalculateCombatDamage(
-            defender, attacker, damageToAttacker, counterDamage: true);
-
-        int appliedToDefender = _engine.ApplyDamage(defender, finalToDefender, attacker,
-            isCombatDamage: true, damageAlreadyCalculated: true);
-        int appliedToAttacker = _engine.ApplyDamage(attacker, finalToAttacker, defender,
-            isCombatDamage: true, damageAlreadyCalculated: true);
-
-        afterBothApplied(appliedToDefender, appliedToAttacker);
-
-        if (damageToDefender > 0)
+        int toDefender = CalculateCombatDamage(attacker, defender, true);
+        int toAttacker = CalculateCombatDamage(defender, attacker, false);
+        toDefender = ExecuteOnDealDamageAddDamageAfterCalc(attacker, defender, toDefender, true, true, false);
+        toAttacker = ExecuteOnDealDamageAddDamageAfterCalc(defender, attacker, toAttacker, true, false, false);
+        _engine.SetAttackerHasAttacked(attacker); // ExecuteAttackCard i=279.
+        defender.HasBeenAttackedThisTurn = true;
+        // i=335..617: attacks against Locations preserve Shock.
+        if (!IsLocationCard(defender) && attacker.Keywords.Contains(Keyword.Shock) && !HasCustomAbility(attacker, "CantLoseShock"))
+            RemoveKeyword(attacker, Keyword.Shock);
+        if (toDefender > 0 && !defender.IsSuppressed) ExecuteBeforeReceiveDamage(defender, attacker, toDefender, true);
+        if (toAttacker > 0 && !attacker.IsSuppressed) ExecuteBeforeReceiveDamage(attacker, defender, toAttacker, true);
+        int excess = 0;
+        if (HasCustomAbility(attacker, "excess") && IsUnit(defender) && toDefender > defender.Defense)
         {
-            ApplyCalculatedDamage(defender, finalToDefender, attacker,
-                isCombatDamage: true, counterDamage: false, isRedirected: false,
-                appliedDamage: appliedToDefender, deferDestruction: true,
-                oldDefense: oldDefenderDefense);
+            excess = toDefender - defender.Defense;
+            toDefender = defender.Defense;
         }
-
-        if (damageToAttacker > 0)
+        _engine.ApplyDamage(defender, toDefender, attacker, isCombatDamage: true, damageAlreadyCalculated: true);
+        bool defenderDestroyed = defender.Defense <= 0
+            || toDefender > 0 && HasCustomAbility(attacker, "lethal") && !IsLocationCard(defender);
+        _engine.ApplyDamage(attacker, toAttacker, defender, isCombatDamage: true, damageAlreadyCalculated: true);
+        bool attackerDestroyed = attacker.Defense <= 0
+            || toAttacker > 0 && HasCustomAbility(defender, "lethal");
+        // i=2745 notify, i=3021 excess, i=3201/3249 survivors, then deal effects.
+        afterBothApplied(toDefender, toAttacker);
+        if (excess > 0) DealDamage(State.Hq(defender.Owner), excess, attacker);
+        if (IsUnit(defender))
         {
-            ApplyCalculatedDamage(attacker, finalToAttacker, defender,
-                isCombatDamage: true, counterDamage: true, isRedirected: false,
-                appliedDamage: appliedToAttacker, deferDestruction: true,
-                oldDefense: oldAttackerDefense);
+            if (!attackerDestroyed) FireSurvivedCombat(attacker, defender);
+            if (!defenderDestroyed) FireSurvivedCombat(defender, attacker);
         }
-
-        return (appliedToDefender, appliedToAttacker);
+        if (toDefender > 0) ExecuteOnCardDealDamageEffects(defender, attacker, toDefender, true, false, false);
+        if (toAttacker > 0) ExecuteOnCardDealDamageEffects(attacker, defender, toAttacker, true, true, false);
+        if (defenderDestroyed && defender.IsHq)
+        {
+            State.Finish(defender.Owner.Opposite(), "Victory_DestroyHQ");
+            return (toDefender, toAttacker);
+        }
+        if (!defenderDestroyed && toDefender > 0 && defender.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(defender);
+        if (attackerDestroyed && defenderDestroyed) _engine.DestroyCombatPair(defender, attacker);
+        else if (attackerDestroyed) _engine.Destroy(attacker, defender, destroyedInCombat: true);
+        else if (defenderDestroyed) _engine.Destroy(defender, attacker, destroyedInCombat: true);
+        if (!attackerDestroyed && toAttacker > 0 && attacker.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(attacker);
+        return (toDefender, toAttacker);
     }
 
-    private int CalculateCombatDamage(CardInstance dealer, CardInstance receiver,
-                                      int amount, bool counterDamage)
+    /// <summary>CalculateDamageDealt with the four flags passed by ordinary AttackCard.</summary>
+    private int CalculateCombatDamage(CardInstance dealer, CardInstance receiver, bool isAttacker)
     {
-        if (amount <= 0 || !receiver.IsAlive)
+        if (receiver.Keywords.Contains(Keyword.Immune)) return 0;
+        int damage = ExecuteOnDealDamageAddDamage(dealer, receiver, dealer.Attack, true, false, !isAttacker);
+        int reverseDamage = ExecuteOnDealDamageAddDamage(receiver, dealer, receiver.Attack, true, false, isAttacker);
+        // i=823..2019: Ambush predicts the first hit with both defenses intact.
+        // The native default returns zero; two card Blueprints override the function.
+        if (receiver.Keywords.Contains(Keyword.Ambush) && isAttacker
+            && !receiver.HasBeenAttackedThisTurn && !dealer.Keywords.Contains(Keyword.Immune)
+            && !IsArtillery(dealer)
+            && (!MatchEngine.IsBomber(dealer) || receiver.Definition.Type == "fighter" || IsAntiAir(receiver))
+            && !dealer.Keywords.Contains(Keyword.Shock) && !MatchEngine.IsBomber(receiver))
         {
-            return 0;
+            var passive = RunOwnLocal(dealer, "GetPassiveDefenseBuff",
+                new Dictionary<string, object?> { ["incomingDamage"] = reverseDamage }, "amount");
+            if (reverseDamage >= dealer.Defense + dealer.HeavyArmor + AsInt(passive?.GetValueOrDefault("amount")))
+                damage = 0;
         }
-
-        amount = ExecuteOnDealDamageAddDamage(dealer, receiver, amount,
-            fromAttack: true, fromFight: false, isDefenderDamage: counterDamage);
-        amount = ExecuteOnDealDamageAddDamageAfterCalc(dealer, receiver, amount,
-            isCombatDamage: true, isAttackingDamage: !counterDamage, isRedirected: false);
-        return _engine.CalculateAppliedDamage(receiver, amount, dealer, isCombatDamage: true);
+        // i=2043..2853: artillery, bomber, anti-air and Shock retaliation gates.
+        if (!isAttacker && (IsArtillery(receiver) || MatchEngine.IsBomber(dealer)
+            || MatchEngine.IsBomber(receiver) && dealer.Definition.Type != "fighter" && !IsAntiAir(dealer)
+            || IsUnit(dealer) && receiver.Keywords.Contains(Keyword.Shock))) damage = 0;
+        return damage > 0 ? Math.Max(damage - receiver.HeavyArmor, 0) : damage;
     }
 
     /// <summary>
@@ -1778,8 +1774,21 @@ public sealed partial class CardApi
     internal void ApplyCalculatedDamage(CardInstance target, int amount, CardInstance? source,
                                         bool isCombatDamage, bool counterDamage, bool isRedirected,
                                         int? appliedDamage = null, bool deferDestruction = false,
-                                        int? oldDefense = null)
+                                        int? oldDefense = null, bool beforeReceiveExecuted = false)
     {
+        int initialDefense = target.Defense;
+        if (amount > 0 && !beforeReceiveExecuted)
+            ExecuteBeforeReceiveDamage(target, source, amount, isCombatDamage);
+        int excess = 0;
+        // i=578 excludes a unit dealer from effect excess; i=985 refreshes oldDefense.
+        if (appliedDamage is null && amount > 0 && source is not null
+            && HasCustomAbility(source, "excess") && !IsUnit(source) && IsUnit(target)
+            && amount > target.Defense)
+        {
+            excess = amount - target.Defense;
+            amount = target.Defense;
+        }
+        oldDefense ??= amount > 0 ? target.Defense : initialDefense;
         // ⚠️ `isCombatDamage` 必须传下去：重甲减伤**只对战斗伤害生效**，
         //    判据与证据链见 `MatchEngine.ApplyDamage` 里那段长注释
         //    （全库 `getTotalHeavyArmor` 的减伤只长在 `CalculateDamageDealt` 里，
@@ -1787,14 +1796,8 @@ public sealed partial class CardApi
         //    `Attack` 传 true（`MatchEngine.cs:1569` 主伤害 / `:1572` 反击），
         //    `DamageCard` / `DamageMultipleCards` / `MakeCardsFight` 都传 false。
         int applied = appliedDamage
-            ?? _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage);
-
-        // ApplyDamageToCard removes Mobilize only when the resolved damage is
-        // positive. `applied` includes combat-only mitigation such as Heavy Armor.
-        if (applied > 0 && target.Keywords.Contains(Keyword.Mobilize))
-        {
-            RemoveMobilize(target);
-        }
+            ?? _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage,
+                damageAlreadyCalculated: true);
 
         // ⚠️ 2026-09-30：`damage` 填的是**修正后**的值、`oldDefense` 填的是**结算前**的防御。
         //    证据（`out/bp-cardfn.json` → `ApplyDamageToCard`，123 条语句）：
@@ -1805,27 +1808,15 @@ public sealed partial class CardApi
         //    的出参）与 `oldDefense`。旧实现两个都填**请求值**（P1 重甲那轮记的「没证据」现在有证据了）。
         //    `target.Defense + applied` 而不是 `+ amount`：重甲减伤之后 `applied < amount`，
         //    用 amount 会把 oldDefense 算高（那是重甲那轮留下的偏差，这里一并修正）。
+        bool destroyed = amount > 0 && target.Defense <= 0;
         _engine.FireSubAction("ZActionDamageCard", new[]
         {
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("damage", amount),
             ActionValue2.Int("oldDefense", oldDefense ?? target.Defense + applied),
-            ActionValue2.Bool("destroyed", target.Defense <= 0),
+            ActionValue2.Bool("destroyed", destroyed),
             ActionValue2.Int("attackerCardID", source?.CardId ?? 0),
         });
-
-        var receiveEventArgs = new object?[] { source, target, isCombatDamage, amount };
-        var receiveNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["fromCard"] = source,
-            ["toCard"] = target,
-            ["fromAttack"] = isCombatDamage,
-            ["damage"] = amount,
-        };
-        FireTrigger("OnReceiveDamage", target, target.Owner, "OnOtherCardReceiveDamage",
-            eventArgs: receiveEventArgs,
-            eventSubject: target,
-            namedArgs: receiveNamedArgs);
 
         // ---- 「造成伤害」事件 ----
         //
@@ -1836,27 +1827,125 @@ public sealed partial class CardApi
         //   i=1198 damageDealer.OnCardDealDamage(toCard, damage, isCombatDamage, CounterDamage, isRedirected, out qqq)
         // 触发号 36 的依据：`ERegisteredCardFunction.h` 逐项数下来
         //   0=NotAvailable … 36=OnOtherCardDealDamage（第 37 项）。
-        if (source is not null && source.IsAlive)
-        {
-            var named = new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardDealingDamage"] = source,
-                ["toCard"] = target,
-                ["Damage"] = amount,
-                ["damage"] = amount,
-                ["isCombatDamage"] = isCombatDamage,
-                ["CounterDamage"] = counterDamage,
-                ["isRedirected"] = isRedirected,
-            };
+        if (excess > 0 && source is not null) DealDamage(State.Hq(source.Owner.Opposite()), excess, source);
+        if (amount > 0) ExecuteOnCardDealDamageEffects(target, source, amount, isCombatDamage, counterDamage, isRedirected);
 
-            FireTrigger("OnCardDealDamage", source, source.Owner, "OnOtherCardDealDamage",
-                eventArgs: new object?[] { source, target, amount, isCombatDamage, counterDamage, isRedirected },
-                eventSubject: source, namedArgs: named);
-        }
-
-        if (!deferDestruction && target.Defense <= 0 && !target.IsHq)
+        if (!deferDestruction && destroyed && target.IsHq)
+            State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
+        else if (!deferDestruction && destroyed)
         {
             _engine.Destroy(target, source);
+        }
+        else if (!deferDestruction && applied > 0 && target.Keywords.Contains(Keyword.Mobilize))
+            RemoveMobilize(target);
+    }
+
+    /// <summary>ApplyDamageToMultipleCards uses whole-batch phases, never repeated DamageCard calls.</summary>
+    internal IReadOnlyList<int> DealDamageMultiple(IReadOnlyList<CardInstance> targets, int amount, CardInstance? source)
+    {
+        var damage = targets.Select(card => ExecuteOnDealDamageAddDamage(source, card, amount,
+            fromAttack: false, fromFight: false, isDefenderDamage: false)).ToArray();
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var target = targets[i];
+            if (target.Keywords.Contains(Keyword.Immune)) { damage[i] = 0; continue; }
+            var observers = CaptureTriggerSnapshot().Where(card =>
+                card.Definition.IsRegisteredFor("OnOtherCardDealDamageAddDamageAfterCalc")).ToArray();
+            foreach (var observer in observers)
+            {
+                var outs = RunOwnLocal(observer, "OnOtherCardDealDamageAddDamageAfterCalc",
+                    new Dictionary<string, object?>
+                    {
+                        ["cardDealingDamage"] = source, ["toCard"] = target, ["Damage"] = damage[i],
+                        ["fromAttack"] = false, ["isRedirected"] = false,
+                    }, "damageToAdd", "stopAdding");
+                if (outs is null) continue;
+                damage[i] = Math.Max(damage[i] + AsInt(outs.GetValueOrDefault("damageToAdd")), 0);
+                if (Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("stopAdding"))) break;
+            }
+        }
+        var receivers = targets.Select((card, i) => (Card: card, Damage: damage[i]))
+            .Where(hit => hit.Damage > 0).ToArray();
+        foreach (var hit in receivers) ExecuteBeforeReceiveDamage(hit.Card, source, hit.Damage, false);
+        var destroyed = new Dictionary<int, (CardInstance Card, CardLocation Location)>();
+        foreach (var hit in receivers)
+        {
+            // Do not recheck immunity or board location after the pre-damage events.
+            hit.Card.Defense -= hit.Damage;
+            if (hit.Card.IsHq) State.UpdateHQDamagedAmountThisTurn(hit.Card.Owner, hit.Damage);
+            if (hit.Card.Defense <= 0) destroyed[hit.Card.CardId] = (hit.Card, hit.Card.Location);
+        }
+        _engine.FireSubAction("ZActionDamageMultipleCards", new[]
+        {
+            ActionValue2.Int("attackerID", source?.CardId ?? 0), ActionValue2.Int("damage", amount),
+        });
+        foreach (var hit in receivers) ExecuteOnCardDealDamageEffects(hit.Card, source, hit.Damage, false, false, false);
+        foreach (var hit in destroyed.Values) _engine.BeforeDestroyed(hit.Card, source, false);
+        foreach (var hit in destroyed.Values)
+            if (hit.Card.Location != CardLocation.Discard) _engine.FireLeaveTrigger(hit.Card, CardLocation.Discard, 1);
+        foreach (var hit in destroyed.Values)
+        {
+            if (hit.Card.IsHq) { State.Finish(hit.Card.Owner.Opposite(), "Victory_DestroyHQ"); continue; }
+            State.Move(hit.Card, CardLocation.Discard, 0, notifyMoved: false);
+        }
+        var ids = destroyed.Keys.ToArray();
+        foreach (var hit in destroyed.Values)
+            if (!hit.Card.IsHq) _engine.ExecuteOnCardLocationMoved(hit.Card, hit.Location, CardLocation.Discard, false, CardMoveReason.Destroyed);
+        foreach (var hit in destroyed.Values)
+            if (!hit.Card.IsHq) _engine.FireAfterLeaveTrigger(hit.Card, CardLocation.Discard, hit.Location);
+        foreach (var hit in destroyed.Values)
+            if (!hit.Card.IsHq) _engine.ExecuteDestroyed(hit.Card, source, hit.Location, ids, false);
+        foreach (var hit in receivers)
+            if (IsLocatedOnBoard(hit.Card) && hit.Card.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(hit.Card);
+        _engine.RefreshFrontlineOwner(null);
+        return ids;
+    }
+
+    /// <summary>Blueprint ExecuteBeforeReceiveDamage: self first, before any defense subtraction.</summary>
+    internal void ExecuteBeforeReceiveDamage(CardInstance target, CardInstance? source, int amount, bool combat)
+    {
+        var named = new Dictionary<string, object?>
+        {
+            ["fromCard"] = source, ["toCard"] = target, ["fromAttack"] = combat, ["Damage"] = amount,
+        };
+        if (!target.IsSuppressed)
+            FireTrigger("OnReceiveDamage", target, target.Owner,
+                eventArgs: new object?[] { source, amount }, namedArgs: named);
+        FireTrigger("OnOtherCardReceiveDamage", target, target.Owner,
+            eventArgs: new object?[] { source, target, combat, amount }, eventSubject: target, namedArgs: named);
+    }
+
+    /// <summary>Blueprint damage effects: active countermeasures, unsuppressed dealer, then remaining T36.</summary>
+    internal void ExecuteOnCardDealDamageEffects(CardInstance target, CardInstance? source, int amount,
+        bool combat, bool counterDamage, bool redirected)
+    {
+        var named = new Dictionary<string, object?>
+        {
+            ["cardDealingDamage"] = source, ["toCard"] = target, ["Damage"] = amount,
+            ["isCombatDamage"] = combat, ["CounterDamage"] = counterDamage, ["isRedirected"] = redirected,
+        };
+        var args = new object?[] { source, target, amount, combat, counterDamage, redirected };
+        var done = new HashSet<int>();
+        void Observer(CardInstance observer) => FireTrigger("OnOtherCardDealDamage", observer, observer.Owner,
+            selfProgramName: "OnOtherCardDealDamage", eventSubject: source, eventArgs: args, namedArgs: named);
+        foreach (int id in GetActiveGotchasOrdered())
+        {
+            if (State.StopFurtherActions) return;
+            if (State.ById(id) is { } gotcha) { Observer(gotcha); done.Add(id); }
+        }
+        if (State.StopFurtherActions) return;
+        if (source is not null)
+        {
+            if (!source.IsSuppressed)
+                FireTrigger("OnCardDealDamage", source, source.Owner,
+                    eventArgs: new object?[] { target, amount, combat, counterDamage, redirected }, namedArgs: named);
+            done.Add(source.CardId);
+        }
+        var snapshot = CaptureTriggerSnapshot().Where(x => x.Definition.IsRegisteredFor("OnOtherCardDealDamage")).ToArray();
+        foreach (var observer in snapshot)
+        {
+            if (State.StopFurtherActions) return;
+            if (done.Add(observer.CardId)) Observer(observer);
         }
     }
 
@@ -2585,7 +2674,7 @@ public sealed partial class CardApi
     /// （i=680）与 `LoseKreditSlot`（i=574），签名 `BaseCardObject.h:817`：
     /// <code>void OnAfterExtraKreditSlotGain(UBaseCardObject* cardGivingKredit,
     ///                                      ESideEnum sideGaining, bool isNegativeGain);</code>
-    /// 没有「自己/别人」两个变体 —— 它是**广播给所有订阅者**的（`giver` 作为事件参数）。
+    /// GainKreditSlot/LoseKreditSlot 遍历 GetAllCardInBattle，未查询 usedTriggers。
     /// </summary>
     public void FireExtraKreditSlotGain(Side side, int count, CardInstance? giver)
         => FireTrigger("OnAfterExtraKreditSlotGain", null, side,
@@ -2596,7 +2685,7 @@ public sealed partial class CardApi
                 ["cardGivingKredit"] = giver,
                 ["sideGaining"] = (int)side,
                 ["isNegativeGain"] = count < 0,
-            });
+            }, requireRegistration: false);
 
     public void DrawCards(Side side, int count) => DrawCardsAndCollect(side, count);
 
@@ -2791,11 +2880,6 @@ public sealed partial class CardApi
         //   L_0400  UpdateFrontlineIfNeeded(spawnedID)   ← ★ 就是这一句
         // </code>
         // `SpawnMultipleCardsOnBattlefield`（同文件 L_0AD6）也有一句同样的调用。
-        if (where == CardLocation.BoardFrontline)
-        {
-            _engine.RefreshFrontlineOwner(card);
-        }
-
         if (newGiveBlitz)
         {
             card.Keywords.Add(Keyword.Blitz);
@@ -2812,6 +2896,12 @@ public sealed partial class CardApi
         // `tmpCardToSet.location = Location`）里就已经设好，且 si=1838 在 si=872 之前可达 ——
         // 所以这里放在 `State.Move` **之后**，与蓝图同序（详见 `GiveAlpineBonus` 的注释）。
         GiveAlpineBonus(card);
+
+        _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, where);
+        if (where == CardLocation.BoardFrontline)
+        {
+            _engine.RefreshFrontlineOwner(card);
+        }
 
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
@@ -3345,12 +3435,12 @@ public sealed partial class CardApi
         target.HeavyArmorZeroedBySuppress = true;
 
         // `TARGET` 的自定义能力（= 卡牌给单位添加的额外特效）也要失效。
-        // 蓝图走的是 L_0B93 那一遍 `receivedAbilitiesFromCards` 清洗
-        // （buffType=5 / changeType=7 customRemove），内核没有那张 giver 表，
-        // 只有 `CustomAbility` 这一个槽位 —— 摘掉并记下（解除时装回）。
+        // Preserve every ability and source while suppression is active.
         if (target.CustomAbility is { Length: > 0 } ability)
         {
             target.SuppressStrippedCustomAbility = ability;
+            target.SuppressStrippedAbilities = target.ReceivedAbilitiesFromCards.ToDictionary(
+                kv => kv.Key, kv => new List<int>(kv.Value), StringComparer.Ordinal);
             target.CustomAbility = null;
         }
 
@@ -3370,10 +3460,11 @@ public sealed partial class CardApi
         // `customName1/2` 也存在 customJson 里（见 `CardApiDispatch.SuffixAdd`），
         // 所以这一句同时完成了蓝图 L_0851/L_0886 的 `customName1/2 = None`。
         target.CustomJson.TryGetValue("suppressionException", out string? exception);
+        var exceptionType = exception is null ? CardJsonType.String : target.CustomJson.TypeOf("suppressionException");
         target.CustomJson.Clear();
         if (!string.IsNullOrEmpty(exception))
         {
-            target.CustomJson["suppressionException"] = exception;
+            target.CustomJson.Set("suppressionException", exception, exceptionType);
         }
 
         // ---- ①d KreditsTax_AsEnemyTarget = 0（L_08BB）----
@@ -3532,7 +3623,18 @@ public sealed partial class CardApi
 
         if (card.SuppressStrippedCustomAbility is { Length: > 0 } ability)
         {
-            card.CustomAbility = ability;
+            if (card.SuppressStrippedAbilities is { } stripped)
+            {
+                foreach (var (name, givers) in stripped)
+                {
+                    if (!card.ReceivedAbilitiesFromCards.TryGetValue(name, out var active))
+                        card.ReceivedAbilitiesFromCards[name] = active = [];
+                    foreach (int giver in givers)
+                        if (!active.Contains(giver)) active.Add(giver);
+                }
+                card.SuppressStrippedAbilities = null;
+            }
+            else card.CustomAbility = ability;
             card.SuppressStrippedCustomAbility = null;
         }
     }
@@ -3585,16 +3687,24 @@ public sealed partial class CardApi
         }
     }
 
-    public void CustomAbilityAdd(CardInstance target, string ability, CardInstance? giver)
+    public bool CustomAbilityAdd(CardInstance target, string ability, CardInstance? giver)
+        => CustomAbilityAdd(target, ability, giver?.CardId ?? 0);
+
+    public bool CustomAbilityAdd(CardInstance target, string ability, int giverId, bool skipSubActions = false)
     {
-        target.CustomAbility = ability;
-        _engine.FireSubAction("ZActionCustomAbilityAdd", new[]
+        if (!CanCardBeBuffed(target) || ability.Length == 0) return false;
+        if (!target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
+            target.ReceivedAbilitiesFromCards[ability] = givers = [];
+        if (givers.Contains(giverId)) return false;
+        givers.Add(giverId);
+        if (!skipSubActions) _engine.FireSubAction("ZActionCustomAbilityAdd", new[]
         {
-            ActionValue2.Int("giverID", giver?.CardId ?? 0),
+            ActionValue2.Int("giverID", giverId),
             ActionValue2.Str("ability", ability),
         });
 
         FireAbilitiesChanged(target);
+        return true;
     }
 
     /// <summary>
@@ -3602,7 +3712,7 @@ public sealed partial class CardApi
     ///
     /// 出处：`out/bp-cardfn.json` 函数 `ResetCardInBattle`：
     /// <code>
-    /// i=749  cardToChange.ResetCardAttributes()      ; 原生函数，实现体不在客户端
+    /// i=749  cardToChange.ResetCardAttributes()      ; 当前 EXE 已验证实现 RVA 0x4b09020
     /// i=782  IsActionProcess()
     /// i=815  cardToChange.OnCardReset()              ; ★ 自己（64 张订阅）
     /// i=851  FetchAllCardsWithEventTrigger(53)       ; 53 = OnOtherCardReset（39 张订阅）
@@ -3611,14 +3721,16 @@ public sealed partial class CardApi
     /// 触发号 53 的依据：`ERegisteredCardFunction.h` 逐项数下来第 54 项 = `OnOtherCardReset`。
     /// 签名 `BaseCardObject.h:718/565`。
     ///
-    /// ⚠️ **触发点只有两处**（全 dump 搜 `ResetCardInBattle` 只有这两个调用方）：
+    /// 蓝图包装器的两个调用方：
     /// `MoveCardFromBoardToOwnersHand` i=626 与 `MoveCardToTopOfDeck` i=828 ——
-    /// 也就是「**卡从场上回手 / 回牌库**」。
-    /// `ResetCardAttributes` 是原生函数、实现体不在客户端 dump 里，
-    /// 所以"它还重置了什么"**读不出来**；这里只落实两个可证的触发点，不猜别的时机。
+    /// MoveCardToTopOfDeck 查的是全对局卡对象映射，手牌回牌库同样重置。
+    /// 原生实现的字段写入与五个 JSON 键删除见 out/audit/live-reset-native-implementation.txt。
     /// </summary>
     public void ResetCardInBattle(CardInstance card)
     {
+        card.ResetAttributes();
+        if (card.OriginalOwner is Side.Left or Side.Right)
+            State.ChangeOwner(card, card.OriginalOwner);
         FireTrigger("OnCardReset", card, card.Owner);
 
         FireTrigger("OnOtherCardReset", card, card.Owner,
@@ -3632,7 +3744,20 @@ public sealed partial class CardApi
     }
 
     public bool HasCustomAbility(CardInstance card, string? ability = null)
-        => card.CustomAbility is not null && (ability is null || card.CustomAbility == ability);
+        => ability is null ? card.ReceivedAbilitiesFromCards.Count > 0
+            : card.ReceivedAbilitiesFromCards.ContainsKey(ability);
+
+    public bool HasCustomAbilityFromCard(CardInstance card, string ability, int giverId)
+        => card.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers) && givers.Contains(giverId);
+
+    public bool CustomAbilityRemove(CardInstance target, string ability, int giverId, bool removeAllGivers)
+    {
+        if (!target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers)) return false;
+        if (!removeAllGivers && !givers.Remove(giverId)) return false;
+        if (removeAllGivers || givers.Count == 0) target.ReceivedAbilitiesFromCards.Remove(ability);
+        FireAbilitiesChanged(target);
+        return true;
+    }
 
     /// <summary>
     /// `card_event_sniped::DeactivateOtherSniped` marks the other Sniped
@@ -3757,17 +3882,17 @@ public sealed partial class CardApi
     // ---- 卡牌私有 JSON（JSON_* 一族，被 19~21 套牌需要）----
 
     public int JsonGetInt(CardInstance card, string key)
-        => card.CustomJson.TryGetValue(key, out string? v) && int.TryParse(v, out int i) ? i : 0;
+        => card.CustomJson.HasType(key, CardJsonType.Number) && card.CustomJson.TryGetValue(key, out string? v) && int.TryParse(v, out int i) ? i : 0;
 
-    public void JsonSetInt(CardInstance card, string key, int value) => card.CustomJson[key] = value.ToString();
+    public void JsonSetInt(CardInstance card, string key, int value) => card.CustomJson.Set(key, value.ToString(System.Globalization.CultureInfo.InvariantCulture), CardJsonType.Number);
 
     public bool JsonGetBool(CardInstance card, string key)
-        => card.CustomJson.TryGetValue(key, out string? v) && v == "1";
+        => card.CustomJson.HasType(key, CardJsonType.Boolean) && card.CustomJson.TryGetValue(key, out string? v) && v == "1";
 
-    public void JsonSetBool(CardInstance card, string key, bool value) => card.CustomJson[key] = value ? "1" : "0";
+    public void JsonSetBool(CardInstance card, string key, bool value) => card.CustomJson.Set(key, value ? "1" : "0", CardJsonType.Boolean);
 
     public string JsonGetString(CardInstance card, string key)
-        => card.CustomJson.GetValueOrDefault(key, "");
+        => card.CustomJson.HasType(key, CardJsonType.String) ? card.CustomJson.GetValueOrDefault(key, "") : "";
 
     public void JsonSetString(CardInstance card, string key, string value) => card.CustomJson[key] = value;
 
@@ -3798,7 +3923,7 @@ public sealed partial class CardApi
 
     public List<int> JsonGetIntArray(CardInstance card, string key)
     {
-        if (!card.CustomJson.TryGetValue(key, out string? raw) || raw.Length == 0)
+        if (!card.CustomJson.HasType(key, CardJsonType.IntArray) || !card.CustomJson.TryGetValue(key, out string? raw) || raw.Length == 0)
         {
             return new List<int>();
         }
@@ -3816,7 +3941,7 @@ public sealed partial class CardApi
     }
 
     public void JsonSetIntArray(CardInstance card, string key, IReadOnlyList<int> values)
-        => card.CustomJson[key] = string.Join(JsonListSeparator, values);
+        => card.CustomJson.Set(key, string.Join(JsonListSeparator, values), CardJsonType.IntArray);
 
     public void JsonAddToIntArray(CardInstance card, string key, int value)
     {
@@ -3949,7 +4074,7 @@ public sealed partial class CardApi
     /// </summary>
     public bool JsonRemoveFromIntArray(CardInstance card, string key, int value)
     {
-        if (!card.CustomJson.ContainsKey(key))
+        if (!card.CustomJson.HasType(key, CardJsonType.IntArray))
         {
             return false;
         }
@@ -3967,7 +4092,7 @@ public sealed partial class CardApi
     }
 
     /// <summary>把 VM 传来的值当作卡牌数组。</summary>
-    internal static List<CardInstance> EvalArray(object? receiver, object?[] args)
+    internal List<CardInstance> EvalArray(object? receiver, object?[] args)
     {
         if (receiver is List<CardInstance> rl)
         {
@@ -3980,6 +4105,10 @@ public sealed partial class CardApi
             {
                 return list;
             }
+            if (v is System.Collections.IList values)
+                return values.Cast<object?>().Select(value => value as CardInstance
+                    ?? (value is int id ? State.ById(id) : null))
+                    .Where(card => card is not null).Select(card => card!).ToList();
         }
 
         if (receiver is CardInstance single)
@@ -4136,6 +4265,17 @@ public sealed partial class CardApi
     /// Blueprint `GetHighestBomberAttack`：在指定一方当前场面中筛选轰炸机，
     /// 并返回其实时总攻击力的最大值；没有轰炸机时返回 0。
     /// </summary>
+    public int GetUnitTypeCountOnBoard(Side side)
+    {
+        var types = new HashSet<int>();
+        foreach (var card in State.BattleCardsInOrder(side).Where(c => c.Defense > 0 && IsUnit(c) && !IsUnrevealedCovertCard(c)))
+        {
+            types.Add(card.Definition.TypeId);
+            if (IsTank(card)) types.Add(3);
+        }
+        return types.Count;
+    }
+
     public int GetHighestBomberAttack(Side side)
         => GetCardsOnBoardBySide(side)
             .Where(MatchEngine.IsBomber)
@@ -4520,15 +4660,11 @@ public sealed partial class CardApi
     /// 加它是因为 `GotchaTriggered` 的 `cipher &gt; 0` 门（`:23766`）读的就是这个成员 ——
     /// **没有这个写入方，那道门永远是假**。
     ///
-    /// ⚠️ CDO 默认值缺失（如实标注）：`cipher` 在客户端是卡 CDO 的成员，
-    /// `decompiled/cards.all.json` 里 **25 张卡**带非 0 的 `cipher`
-    /// （`card_event_espionage_skirm`=9 / `card_event_infiltrate`=2 / `card_unit_7th_scottish_borderers`=3 …），
-    /// 但**52 张 gotcha 卡一张都没有** ⇒ gotcha 卡的 `cipher` 初值就是 0。
-    /// 本内核的卡数据（`docs/cards.live.json` / `docs/card-effects.json`）
-    /// **不含 `cipher` 字段**，而补 CDO 表要改 `Cards/CardVarDefaults.cs`（本轮不在改动范围内）
-    /// ⇒ 那 25 张卡的 `cipher` 初值目前是 0（偏小）。影响面：`card_event_act_on_the_intel`
-    /// 的 `unSeenCards - self.cipher` 与 `card_unit_16th_tarnow_regiment` 的
-    /// `cardPlayed.cipher &gt; 0`。**已核实为已知缺口**。
+    /// 卡实例由 pak CDO 中提取的默认 `cipher` 初始化：25 张卡为非 0，
+    /// 包括 `card_event_espionage_skirm`=9、`card_event_infiltrate`=2 和
+    /// `card_unit_7th_scottish_borderers`=3。52 张 gotcha 卡的初值均为 0。
+    /// 这会影响 `card_event_act_on_the_intel` 的 `unSeenCards - self.cipher`
+    /// 与 `card_unit_16th_tarnow_regiment` 的 `cardPlayed.cipher &gt; 0` 分支。
     /// </summary>
     public void AddIntelToCard(int cardId, int amount)
     {

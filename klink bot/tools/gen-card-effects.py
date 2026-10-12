@@ -22,6 +22,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+from live_card_source import load_assets
 
 # BP_OnlineMatch 里我们自己定义的函数（子动作构造器 / 接收器 / 执行器）——
 # 这些是「游戏内部已知」的，不算未解析。
@@ -75,8 +76,7 @@ def main():
     out_dir = Path(sys.argv[3]) if len(sys.argv) > 3 else Path(".")
 
     print(f"读取 {batch_path} ...")
-    batch = load_json(batch_path)
-    assets = batch.get("assets", {})
+    assets = load_assets(batch_path, functions=True)
     print(f"  资产数: {len(assets)}")
 
     fmodel = {}
@@ -92,6 +92,10 @@ def main():
 
     for asset_path, info in assets.items():
         name = card_key_from_asset(asset_path)
+        # Cards/ 目录还包含渲染/UI/调试蓝图；它们没有对战卡规则，不能进入
+        # 卡牌效果库，否则审计和覆盖率会把辅助资产算成可用卡。
+        if not name.startswith("card_"):
+            continue
         if not info.get("ok"):
             failed.append((asset_path, info.get("error", "?")))
             continue
@@ -139,7 +143,7 @@ def main():
     A = md.append
     A("# 卡牌效果提取报告")
     A("")
-    A("> 来源：线上 pak（`kds/kards/Content/Paks/kards-Windows.pak`，2026-09-11）")
+    A(f"> 来源：`{batch_path.name}`（卡牌资产及解析函数；版本指纹见规则审计报告）")
     A("> 流程：`pak-extract` → `dump-batch`（Kismet 反编译）→ 本脚本汇总")
     A("")
     A("## 1. 覆盖率")

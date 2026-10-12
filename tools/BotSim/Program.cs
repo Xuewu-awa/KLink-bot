@@ -1,4 +1,4 @@
-using KLink.Bot.Bots;
+﻿using KLink.Bot.Bots;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.Effects;
@@ -111,8 +111,8 @@ internal static class Program
         Console.WriteLine($"  public const int BaselineCount = {gaps.Count};");
         Console.WriteLine($"  public const string BaselineFingerprint = \"{fp}\";");
         Console.WriteLine();
-        Console.WriteLine("  ---- 缺口最大的 40 个（真缺口调用点数）----");
-        foreach (var (k, v) in gaps.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).Take(40))
+        Console.WriteLine("  ---- 全部静态缺口（含 UI、战役，尚未按对战可达性筛选）----");
+        foreach (var (k, v) in gaps.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal))
         {
             Console.WriteLine($"    {v,5}  {k}");
         }
@@ -382,7 +382,11 @@ internal static class Program
 
         bool verbose = !opts.ContainsKey("quiet");
         ReplayRunner.TraceExceptions = opts.ContainsKey("stack");
-        var report = new ReplayRunner(db).Run(replay, verbose);
+        var report = new ReplayRunner(db)
+        {
+            IdentityCorrection = opts.ContainsKey("idfix"),
+            KreditSlotOnDuplicateStart = opts.ContainsKey("kredit-slot-duplicate-start"),
+        }.Run(replay, verbose);
 
         Console.WriteLine("=========== 重放结果 ===========");
         Console.WriteLine($"动作总数:       {report.TotalActions}");

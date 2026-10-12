@@ -168,8 +168,16 @@ public sealed class GameState
             ? ids
             : Array.Empty<int>();
 
-    public void RecordDestroyedCard(int cardId, bool isUnit)
+    public List<int> DestroyedCardIdsAll { get; } = new();
+    private readonly List<int>[] _destroyedBySide = { new(), new(), new() };
+    public IReadOnlyList<int> DestroyedCardsIdsBySide(Side side) => _destroyedBySide[(int)side];
+
+    public void RecordDestroyedCard(int cardId, Side side, bool isUnit)
     {
+        // UpdateDestroyedCardsIDs appends every death globally/per side, but
+        // uses AddUnique in the current turn's list. Discarding is not death.
+        DestroyedCardIdsAll.Add(cardId);
+        if (side is Side.Left or Side.Right) _destroyedBySide[(int)side].Add(cardId);
         if (!DestroyedCardIdsByTurn.TryGetValue(Turn, out var ids))
         {
             ids = new List<int>();
@@ -265,6 +273,9 @@ public sealed class GameState
     /// 不是"已经实现了 stopFurtherActions 的语义"。
     /// </summary>
     public bool StopFurtherActions { get; set; }
+
+    /// <summary>BP_GameState_Battle.SetActiveBondsAtStartOfTurn: revealed own unit factions, frozen for this turn.</summary>
+    public HashSet<string> ActiveBondFactions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 前线**限制者**卡 ID 的集合（对应 `BP_GameState_Battle.FrontlineLimiters`
@@ -827,7 +838,8 @@ public sealed class GameState
 
     /// <summary>把卡移动到新位置，并重排目标位置的 location_number（与客户端语义一致）。</summary>
     public void Move(CardInstance card, CardLocation location, int? locationNumber = null,
-                     bool changeOwner = false)
+                     bool changeOwner = false, CardMoveReason moveReason = CardMoveReason.Uncategorized,
+                     bool notifyMoved = true)
     {
         CardLocation oldLocation = card.Location;
         bool moved = oldLocation != location;
@@ -846,9 +858,9 @@ public sealed class GameState
         // ⚠️ 只有**真的换了区**才发：蓝图 `ExecuteOnCardLocationMoved` 是
         //    `CardLocationMoved(cardID, …, oldLocation, newLocation, …)` 调进来的，
         //    同区重排（改 locationNumber）不走它。
-        if (moved)
+        if (moved && notifyMoved)
         {
-            CardMoved?.Invoke(card, oldLocation, location, changeOwner);
+            CardMoved?.Invoke(card, oldLocation, location, changeOwner, moveReason);
         }
     }
 
@@ -857,13 +869,13 @@ public sealed class GameState
     /// <c>OnOtherCardLocationMoved</c> 上）。
     /// GameState 不认识 CardApi，所以只留一个钩子。
     /// </summary>
-    public Action<CardInstance, CardLocation, CardLocation, bool>? CardMoved { get; set; }
+    public Action<CardInstance, CardLocation, CardLocation, bool, CardMoveReason>? CardMoved { get; set; }
 
     /// <summary>
     /// 改变当前控制方，同时维护按阵营索引。位置本身由调用方随后通过
     /// <see cref="Move"/> 更新，这样换区触发器仍能看到旧位置。
     /// </summary>
-    public bool ChangeOwner(CardInstance card, Side newOwner)
+    public bool ChangeOwner(CardInstance card, Side newOwner, bool normalize = true)
     {
         if (newOwner is Side.NotAvailable || card.Owner == newOwner)
         {
@@ -874,7 +886,7 @@ public sealed class GameState
         _cardsBySide[(int)oldOwner].Remove(card);
         card.Owner = newOwner;
         _cardsBySide[(int)newOwner].Add(card);
-        NormalizeLocationNumbers(oldOwner, card.Location);
+        if (normalize) NormalizeLocationNumbers(oldOwner, card.Location);
         return true;
     }
 
@@ -928,12 +940,19 @@ public sealed class GameState
         IsFrontlineLimited,
         AllCards.Select(c => c.Snapshot()).ToArray())
         {
+            DestroyedCardIdsAll = DestroyedCardIdsAll.ToArray(),
+            DestroyedCardIdsLeft = DestroyedCardsIdsBySide(Side.Left).ToArray(),
+            DestroyedCardIdsRight = DestroyedCardsIdsBySide(Side.Right).ToArray(),
+            DestroyedCardIdsByTurn = DestroyedCardIdsByTurn.OrderBy(kv => kv.Key).ToDictionary(kv => kv.Key, kv => kv.Value.ToArray()),
+            UnitDestroyedThisTurn = UnitDestroyedThisTurn,
             LeftKreditSlotsLost = KreditSlotsLost(Side.Left),
             RightKreditSlotsLost = KreditSlotsLost(Side.Right),
             LeftHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Left),
             RightHQDamagedThisTurn = GetHQDamagedAmountThisTurn(Side.Right),
             OperationKreditsSpentThisTurn = OperationKreditsSpentThisTurn,
             HasPlayedWeatherCardThisTurn = HasPlayedWeatherCardThisTurn,
+            ActiveBondFactions = ActiveBondFactions.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
+            LeftFatigue = Fatigue(Side.Left), RightFatigue = Fatigue(Side.Right),
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
             Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(
@@ -983,12 +1002,20 @@ public sealed record MatchSnapshot(
     bool IsFrontlineLimited,
     CardSnapshot[] Cards)
 {
+    public int[] DestroyedCardIdsAll { get; init; } = [];
+    public int[] DestroyedCardIdsLeft { get; init; } = [];
+    public int[] DestroyedCardIdsRight { get; init; } = [];
+    public Dictionary<int, int[]> DestroyedCardIdsByTurn { get; init; } = new();
+    public bool UnitDestroyedThisTurn { get; init; }
     public int LeftKreditSlotsLost { get; init; }
     public int RightKreditSlotsLost { get; init; }
     public int LeftHQDamagedThisTurn { get; init; }
     public int RightHQDamagedThisTurn { get; init; }
     public int OperationKreditsSpentThisTurn { get; init; }
     public bool HasPlayedWeatherCardThisTurn { get; init; }
+    public string[] ActiveBondFactions { get; init; } = Array.Empty<string>();
+    public int LeftFatigue { get; init; }
+    public int RightFatigue { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
     public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();
     public GameplaySideEffectSnapshot[] SideEffects { get; init; } = Array.Empty<GameplaySideEffectSnapshot>();

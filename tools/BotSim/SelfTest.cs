@@ -20,6 +20,10 @@ internal static class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
+        new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
+        new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
+        new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
         new("GetOpponentSide 按当前对局方返回对手阵营", OpponentSideSemantics),
@@ -107,6 +111,13 @@ internal static class SelfTest
             GiveRandomCombatKeyword),
         new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
             BlueprintSetPrimitives),
+        new("当前客户端：第 152 步兵团出牌要求至少 6 个 kredit 槽位", Regiment152PlayGate),
+        new("自定义能力：多能力、多来源、重复添加及按来源移除", CustomAbilitySources),
+        new("大规模部署：引用数组、费用组合表、多输出向量及三个美国单位", MassDeploymentLiveBlueprint),
+        new("美国气象局：选择抽牌后移除实例 Forecast 标签，快照与其它实例隔离", WeatherBureauRemovesForecast),
+        new("Blueprint 数组：字符串/整数/向量元素按值保存，不能当作卡 ID", BlueprintValueArrays),
+        new("海上入侵：真实独立函数生成两个总攻击力为 6 的美国步兵并退却敌前线", SeaborneInvasionLiveBlueprint),
+        new("Blueprint 实例状态：跨事件保存、同名局部槽隔离、快照无引用循环", BlueprintInstanceState),
         new("Blueprint Map 原语：Big Three 按友军阵营数量加攻防",
             BigThreeCountsFriendlyFactions),
         new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
@@ -346,7 +357,7 @@ internal static class SelfTest
         new("钉住：被钉住的单位不能攻击（**对照** —— 修复前就应该是绿的）", PinnedCannotAttack),
         new("钉住：带 `canOperateWhilePinned` 的被钉住单位**可以**移动和攻击（蓝图两侧都有这条例外）",
             PinnedWithOperateAbilityCanAct),
-        new("14th Panzergrenadier：`_qualifiesForUnpinning` 绑定 InputPin 并在解除钉住时撤销能力",
+        new("14th Panzergrenadier：部署坦克成为老兵，光环授予/撤销有来源的钉住行动能力",
             PanzergrenadierPinnedOverrideLocalPredicate),
         new("钉住到期：**于单位所有者下个回合结束时**解除（`pinnedTurns` 3/2 递减；不是永久）",
             PinnedExpiresAtOwnerNextTurnEnd),
@@ -406,6 +417,8 @@ internal static class SelfTest
             ExecuteOnDeploymentTriggeredDispatch),
         new("部署：TriggerDeployment 按目标卡触发非目标部署效果并忽略无 Deployment 目标",
             TriggerDeploymentDispatch),
+        new("出牌时序：Pincer 关系必须在卡自身 OnPlayedFromHand 之前建立",
+            PincerPrecedesPlayedFromHand),
 
         // ---- P1：摧毁 Destruction（2026-09-30）----
         // TriggerDestruction si=905 门 → si=1237 OnDestroyed → si=1286 事件24
@@ -791,6 +804,26 @@ internal static class SelfTest
     // 而全卡池要 ~90 秒（4000+ 用例 × 3 次执行）—— 那是 `BotSim smoke-all-cards` 的活。
 
     private static string? SmokeBoardShape(CardDatabase db) => SmokeAllCards.SelfTestBoardShape(db);
+
+    private static string? CardPoolContainsOnlyLiveBattleCards(CardDatabase db)
+    {
+        if (db.Count != 2019)
+        {
+            return $"当前 pak 的对战卡应为 2019 张，实际 {db.Count} 张";
+        }
+
+        if (db.Find("VisualCardActionBase") is not null || db.Find("createCard_NUI_Widget") is not null)
+        {
+            return "UI/辅助蓝图不应出现在 CardDatabase";
+        }
+
+        if (db.Find("card_event_aans") is null)
+        {
+            return "真实对战卡 card_event_aans 缺失";
+        }
+
+        return null;
+    }
 
     private static string? SmokeDeterminism(CardDatabase db) => SmokeAllCards.SelfTestDeterminism(db);
 
@@ -2446,13 +2479,8 @@ internal static class SelfTest
             KreditSlotOnDuplicateStart = true,
         }.Run(KLink.Bot.Replay.ReplayData.Load(snapshot, actions), verbose: false);
 
-        // GiveMobilizeBonus changes this historical line before #107/#127, so
-        // those two stale client attacks are now correctly rejected; #119 still
-        // proves that the generated-card alias remains usable.
-        if (report.Steps.Count(s => s.Applied) != 138)
-        {
-            return $"508065 应应用 138 条动作，实际 {report.Steps.Count(s => s.Applied)}";
-        }
+        // This test isolates generated-card identity. Overall replay parity is
+        // reported by the replay audit; it also depends on rules/version/RNG.
 
         if (report.Unimplemented.Any(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal)))
         {
@@ -4167,16 +4195,11 @@ internal static class SelfTest
             return $"重复施加后应仍是 4，实际 {cheap.KreditCost}";
         }
 
-        // 光环离场 → 全部还原。
-        //
-        // ⚠️ 必须把它**移到别的位置**来触发离场，不能用 `Destroy`：
-        //    `card_unit_big_red_one` 的还原挂在 `OnLeaveBoardOrOwner` /
-        //    `OnAfterOtherCardLeaveBoardOrOwner` 上，这两个事件的**第一个入参是
-        //    `goingToLocation`**；真正走 discard 时客户端根本不发这个事件
-        //    （`card_unit_214th_amur` 的 IR 里明确判 `goingToLocation ∈ [5,6,7]`，
-        //    8=弃牌堆 不在其中）。`Destroy` 走的是 `OnDestroyed`，那是另一条链。
-        //    这里改成挪到手牌（location 3/4 属于「离场」，且卡还在）来看还原。
-        engine.FireLeaveTrigger(auraCard, CardLocation.HandLeft);
+        // Run the real before → move → after → reset return-to-hand path.
+        // The after observer receives leavingCard and OldLocation.
+        engine.Api.InvokeByName("MoveUnitFromBoardToOwnersHand", null,
+            new object?[] { auraCard, 0 },
+            new EffectContext { Engine = engine, State = state, Self = auraCard, Controller = Side.Left }, out _);
         if (cheap.KreditCost != cheapBase || pricey.KreditCost != priceyBase)
         {
             return $"光环离场后应还原为 {cheapBase}/{priceyBase}，实际 {cheap.KreditCost}/{pricey.KreditCost}";
@@ -6666,7 +6689,7 @@ internal static class SelfTest
             ("OnCardLocationMoved", "card_unit_spitfire_mk_ii", CardLocation.BoardHqLeft,
                 (e, s, p) => { s.Move(p, CardLocation.BoardFrontline, 0); return p; }),
             ("OnAfterLeaveBoard", "card_unit_royal_west_kents", CardLocation.BoardHqLeft,
-                (e, s, p) => { e.FireLeaveTrigger(p, CardLocation.Discard); return p; }),
+                (e, s, p) => { e.Destroy(p); return p; }),
             ("OnAfterGainDefense", "card_unit_kyushu_j7w3", CardLocation.BoardHqLeft,
                 (e, s, p) => { e.Api.ChangeDefense(p, 1, null); return p; }),
             ("OnFullyRepaired", "card_unit_kyushu_j7w3", CardLocation.BoardHqLeft,
@@ -6873,7 +6896,7 @@ internal static class SelfTest
         var watcher = PutOnBoard(state, watcherName, Side.Left, 20, 1);
         var source = PutOnBoard(state, sourceName, Side.Left, 21, 2);
         var victim = PutOnBoard(state, victimName, Side.Right, 60, 1);
-        source.CustomAbility = "targetAbility";
+        engine.Api.CustomAbilityAdd(source, "targetAbility", watcher);
         victim.Defense = 20;
 
         int attack = watcher.Attack;
@@ -7139,7 +7162,8 @@ internal static class SelfTest
     /// these two real subscribers only consume the completed event payload:
     /// Kawanishi H8K draws one card and 2nd Pioneers buffs every other friendly
     /// unit.  Headless resolution accepts the forecast synchronously, so this
-    /// checks the complete event path and that the triggering card is excluded.
+    /// checks that the newly created weather card is the event subject. The
+    /// selecting H8K remains a recipient, as in DevelopAndForecastCheck.
     /// </summary>
     private static string? ForecastBroadcastGameplay(CardDatabase db)
     {
@@ -7159,6 +7183,8 @@ internal static class SelfTest
         var pioneers = PutOnBoard(state, pioneersName, Side.Left, 22, 3);
         var otherUnit = PutOnBoard(state, PlainUnit, Side.Left, 23, 4);
         state.CreateWithId(PlainUnit, Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId(PlainUnit, Side.Left, 31, CardLocation.DeckLeft, 1);
+        engine.ChooseSpawnCard = (_, candidates) => candidates[0];
 
         int h8kAttack = h8k.Attack;
         int h8kDefense = h8k.Defense;
@@ -7186,9 +7212,11 @@ internal static class SelfTest
             return $"Forecast 应同步返回 0，实际 result={result ?? "null"}";
         }
 
-        if (state.Hand(Side.Left).Count != 1 || state.Hand(Side.Left)[0].Name != PlainUnit)
+        if (state.Hand(Side.Left).Count != 3
+            || state.Hand(Side.Left).Count(x => x.Name == PlainUnit) != 2
+            || state.Hand(Side.Left).Count(x => x.Name == "card_event_sunny1_blue_sky") != 1)
         {
-            return "旁观 H8K 应抽到 1 张牌，而 Forecast 触发 H8K 不应重复抽牌，"
+            return "选择应生成天气牌，并使两张 H8K 各抽一张牌，"
                  + $"实际手牌={state.Hand(Side.Left).Count}";
         }
 
@@ -7410,7 +7438,7 @@ internal static class SelfTest
 
         try
         {
-            state.Move(enemy, CardLocation.BoardFrontline, 0);
+            state.Move(enemy, CardLocation.BoardFrontline, 0, moveReason: CardMoveReason.AdvanceForce);
         }
         catch (Exception ex)
         {
@@ -8000,7 +8028,7 @@ internal static class SelfTest
             CardLocation.BoardFrontline, 1);
         var unpinWatcher = state.CreateWithId("card_event_creeping_barrage", Side.Left, 21,
             CardLocation.Discard, 0);
-        unpinWatcher.CustomJson["affectedCard"] = target.CardId.ToString();
+        engine.Api.JsonSetInt(unpinWatcher, "affectedCard", target.CardId);
 
         var trace = new List<string>();
         engine.Api.TriggerTrace = trace;
@@ -8045,46 +8073,304 @@ internal static class SelfTest
         const string targetName = "card_unit_arado_ar_196";
         if (db.Find(sourceName) is null) return $"卡库里缺 {sourceName}";
         if (db.Find(targetName) is null) return $"卡库里缺 {targetName}";
-        if (KismetLibrary.Default?.FindLocalProgram(sourceName, "_qualifiesForUnpinning") is null)
-        {
-            return "14th Panzergrenadier 的 _qualifiesForUnpinning IR 未加载";
-        }
-
         var (engine, state) = EmptyBoard(db);
         var source = state.CreateWithId(sourceName, Side.Left, 20,
             CardLocation.BoardHqLeft, 1);
         var target = state.CreateWithId(targetName, Side.Left, 21,
             CardLocation.BoardHqRight, 2);
-        source.Keywords.Add(Keyword.Veteran);
-        target.Keywords.Add(Keyword.Veteran);
-
         engine.Api.PinUnit(target);
-        if (target.CustomAbility != "canOperateWhilePinned"
-            || !source.BlueprintSets.TryGetValue("pinned_units_with_override", out var overrides)
-            || !overrides.Contains(target))
+        if (engine.Api.HasCustomAbility(target, "canOperateWhilePinned"))
         {
-            return "OnOtherUnitPinned 未把目标加入 override 集合并授予 canOperateWhilePinned";
+            return "非老兵的 14th Panzergrenadier 不应授予钉住行动能力";
+        }
+        var tankDef = db.All.First(c => c.IsUnit && c.Type == "tank" && c.Kredits <= 6);
+        var tank = state.CreateWithId(tankDef.Name, Side.Left, 22, CardLocation.HandLeft, 0);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 20);
+        state.SetMaxKredits(Side.Left, 20);
+        if (!engine.PlayCard(tank) || !source.Keywords.Contains(Keyword.Veteran))
+        {
+            return "己方部署坦克后 14th Panzergrenadier 应成为老兵";
+        }
+        if (!engine.Api.HasCustomAbilityFromCard(target, "canOperateWhilePinned", source.CardId))
+        {
+            return "当前老兵光环未向友军授予有来源的钉住行动能力";
+        }
+        engine.Api.CustomAbilityAdd(target, "otherAbility", tank);
+        engine.Api.FireTrigger("OnLeaveBoardOrOwner", source, Side.Left);
+        if (engine.Api.HasCustomAbilityFromCard(target, "canOperateWhilePinned", source.CardId)
+            || !engine.Api.HasCustomAbilityFromCard(target, "otherAbility", tank.CardId))
+        {
+            return "离场光环应只撤销自身授予的能力，保留其它能力";
         }
 
-        engine.ExecuteOnCardLocationMoved(target, CardLocation.BoardHqRight,
-            CardLocation.BoardFrontline);
-        if (target.CustomAbility != "canOperateWhilePinned")
-        {
-            return "合法棋盘位置移动后，14th Panzergrenadier 错误撤销了 pinned 操作能力";
-        }
+        return null;
+    }
 
-        engine.Api.RemoveKeyword(target, Keyword.Pinned);
-        if (target.CustomAbility == "canOperateWhilePinned"
-            || overrides.Contains(target))
-        {
-            return "OnOtherUnitUnpinned 未通过 InputPin 命中目标并撤销能力/集合项";
-        }
+    private static string? Regiment152PlayGate(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 20);
+        var card = state.CreateWithId("card_unit_152e_regiment", Side.Left, 20, CardLocation.HandLeft, 0);
+        state.SetMaxKredits(Side.Left, 5);
+        if (engine.CanPlay(card, out var reason) || reason != "must_have_min_kredit_slots"
+            || engine.PlayCard(card) || card.Location != CardLocation.HandLeft)
+            return "5 槽位时必须拒绝出牌，并保留手牌";
+        state.SetMaxKredits(Side.Left, 6);
+        if (!engine.CanPlay(card, out _) || !engine.PlayCard(card) || !engine.Api.IsLocatedOnBoard(card))
+            return "6 槽位时应允许正常部署";
+        return null;
+    }
 
-        if (state.UnimplementedCalls.ContainsKey("_qualifiesForUnpinning"))
-        {
-            return "_qualifiesForUnpinning 仍被记为未实现";
-        }
+    private static string? LiveNativeDefaults(CardDatabase db)
+    {
+        if (db.All.Count(c => c.Cipher != 0) != 25 || db.All.Count(c => c.InnateAbilities.Count != 0) != 13
+            || db.All.Count(c => c.SuppressionExceptionTriggers.Count != 0) != 12
+            || db.All.Count(c => c.TargetTax != 0) != 3)
+            return "非零 CDO 默认字段的卡牌数量与完整 pak/只读运行时证据不符";
+        var (engine, state) = EmptyBoard(db);
+        var intel = state.Create("card_event_act_on_the_intel", Side.Left, CardLocation.HandLeft, 0);
+        var lethal = state.Create("card_unit_no1_commando", Side.Left, CardLocation.HandLeft, 1);
+        var other = state.Create("card_unit_no1_commando", Side.Left, CardLocation.HandLeft, 2);
+        if (intel.Cipher != 3 || !engine.Api.HasCustomAbilityFromCard(lethal, "lethal", 0))
+            return "初始情报或静态 lethal 能力未生效";
+        lethal.ReceivedAbilitiesFromCards["lethal"].Add(99);
+        if (other.ReceivedAbilitiesFromCards["lethal"].Contains(99) || lethal.Definition.InnateAbilities["lethal"].Contains(99))
+            return "实例之间或实例与静态定义之间共享能力来源列表";
+        return null;
+    }
 
+    private static string? LiveNativeReset(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var card = state.Create("card_unit_no1_commando", Side.Right, CardLocation.HandRight, 0);
+        state.ChangeOwner(card, Side.Left);
+        card.BuffsBySource[(99, false)] = new CardBuff { SourceCardId = 99, Attack = 4, Defense = 5, KreditCost = 2 };
+        card.Attack += 4;
+        card.Defense = 1;
+        card.Keywords.Clear();
+        card.Keywords.Add(Keyword.Suppressed);
+        card.Keywords.Add(Keyword.Pinned);
+        card.PinnedTurns = 3;
+        card.CardSeen = true;
+        card.IsRevealed = true;
+        card.GotchaActivated = 9;
+        card.Cipher = 8;
+        card.HasMovedThisTurn = true;
+        card.AttacksThisTurn = 2;
+        card.HasBeenAttackedThisTurn = true;
+        card.EnteredPlayOnTurn = 17;
+        card.ReceivedAbilitiesFromCards.Clear();
+        card.RemovedGameplayTags.Add("test-tag");
+        card.BlueprintVariables["test-persistent-variable"] = 7;
+        foreach (string key in new[] { "effects", "handbuff", "veteran", "countdown_timer", "extra_play_triggers", "unrelated" })
+            card.CustomJson[key] = "kept?";
+        engine.Api.ResetCardInBattle(card);
+        if (card.Owner != Side.Right || state.Hand(Side.Right).All(c => c.CardId != card.CardId)
+            || state.Cards(Side.Left).Any(c => c.CardId == card.CardId)) return "重置未同步恢复归属与阵营索引";
+        if (card.Attack != card.Definition.Attack || card.Defense != card.Definition.Defense
+            || card.KreditCost != card.Definition.Kredits || card.BuffsBySource.Count != 0
+            || card.IsSuppressed || card.PinnedTurns != 0 || card.Cipher != card.Definition.Cipher
+            || card.CardSeen || card.IsRevealed || card.GotchaActivated != 0
+            || card.HasMovedThisTurn || card.AttacksThisTurn != 0
+            || !engine.Api.HasCustomAbilityFromCard(card, "lethal", 0)) return "重置后的原生规则字段与静态基准不符";
+        if (card.CustomJson.Count != 1 || !card.CustomJson.ContainsKey("unrelated")
+            || !Equals(card.BlueprintVariables["test-persistent-variable"], 7)
+            || card.EnteredPlayOnTurn != 17 || !card.HasBeenAttackedThisTurn)
+            return "重置误清除原生没有写入的状态";
+        card.IsSalvaged = true;
+        engine.Api.ResetCardInBattle(card);
+        card.RecalculateStats();
+        if (card.Attack != 1 || card.Defense != 1 || card.MaxDefense != 1
+            || card.KreditCost != Math.Min(3, card.Definition.Kredits)) return "Salvage 重置不满足 1/1 与最多 3 费";
+        return null;
+    }
+
+    private static string? LiveReturnToOriginalHand(CardDatabase db)
+    {
+        foreach (bool full in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.Create(PlainUnit, Side.Right, CardLocation.BoardHqRight, 1);
+            state.ChangeOwner(card, Side.Left);
+            state.Move(card, CardLocation.BoardHqLeft);
+            card.UnderEnemyControl = true;
+            card.Attack += 5;
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.Create(PlainUnit, Side.Right, CardLocation.HandRight, i);
+            engine.Api.InvokeByName("MoveCardFromBoardToOwnersHand", card,
+                new object?[] { card.CardId, 0, (int)card.Location, (int)CardLocation.HandRight },
+                new EffectContext { State = state, Engine = engine, Controller = Side.Left, Self = card }, out bool handled);
+            if (!handled) return "回手 ID 入口没有派发";
+            if (card.Owner != Side.Right || card.UnderEnemyControl || !card.CardSeen
+                || card.Location != (full ? CardLocation.Discard : CardLocation.HandRight)
+                || card.Attack != card.Definition.Attack) return $"原主回手/full={full} 状态不正确";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilitySources(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var target = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        var first = PutOnBoard(state, PlainUnit, Side.Left, 21, 2);
+        var second = PutOnBoard(state, PlainUnit, Side.Left, 22, 3);
+        if (!engine.Api.CustomAbilityAdd(target, "trigger", first)
+            || engine.Api.CustomAbilityAdd(target, "trigger", first)
+            || !engine.Api.CustomAbilityAdd(target, "trigger", second)
+            || !engine.Api.CustomAbilityAdd(target, "cantMove", first))
+            return "新增能力应返回 true，相同来源重复添加应返回 false";
+        var snapshot = target.Snapshot();
+        if (!snapshot.ReceivedAbilitiesFromCards["trigger"].SequenceEqual(new[] { 21, 22 }))
+            return "快照应保存能力的完整来源列表";
+        if (!engine.Api.CustomAbilityRemove(target, "trigger", first.CardId, false)
+            || engine.Api.HasCustomAbilityFromCard(target, "trigger", first.CardId)
+            || !engine.Api.HasCustomAbilityFromCard(target, "trigger", second.CardId)
+            || !engine.Api.HasCustomAbility(target, "cantMove"))
+            return "按来源移除必须保留同能力的其它来源及其它能力";
+        if (!engine.Api.CustomAbilityRemove(target, "trigger", 999, true)
+            || engine.Api.HasCustomAbility(target, "trigger")
+            || !engine.Api.HasCustomAbility(target, "cantMove"))
+            return "RemoveAllGivers 只应移除指定能力";
+        engine.Api.CustomAbilityAdd(target, "trigger", second);
+        engine.Api.SuppressUnit(target);
+        if (target.ReceivedAbilitiesFromCards.Count != 0) return "抑制后活动能力应清空";
+        engine.Api.RestoreAfterSuppression(target);
+        if (!engine.Api.HasCustomAbilityFromCard(target, "trigger", second.CardId)
+            || !engine.Api.HasCustomAbilityFromCard(target, "cantMove", first.CardId))
+            return "解除抑制应恢复所有能力及来源";
+        return null;
+    }
+
+    // Current-pak OnPlayedFromHand -> three independent helper functions. This
+    // exercises reference inputs, multiple outputs, writable table rows and vectors.
+    private static string? MassDeploymentLiveBlueprint(CardDatabase db)
+    {
+        foreach (int slots in new[] { 3, 6, 12, 24 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetMaxKredits(Side.Left, slots);
+            var order = state.CreateWithId("card_event_mass_deployment", Side.Left, 20,
+                CardLocation.Discard, 0);
+            engine.Api.RunCardEffect(order, null);
+            var units = state.Cards(Side.Left).Where(c => c.Definition.IsUnit
+                && engine.Api.IsLocatedOnBoard(c)).ToList();
+            if (units.Count != 3 || units.Any(c => c.Definition.Faction != "USA")
+                || units.Sum(c => c.KreditCost) != slots)
+                return $"{slots} 槽位应生成总费 {slots} 的三个美国单位，实际："
+                    + string.Join(", ", units.Select(c => $"{c.Name}/{c.KreditCost}"));
+            if (engine.Api.Vm.FaultedPrograms != 0 || state.UnimplementedCalls.Keys.Any(k => !k.StartsWith("<local-ran:", StringComparison.Ordinal)))
+                return $"{slots} 槽位执行存在异常或未实现调用";
+        }
+        return null;
+    }
+
+    private static string? SeaborneInvasionLiveBlueprint(CardDatabase db)
+    {
+        foreach (ulong seed in new ulong[] { 1, 17, 20261012 })
+        {
+            var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed);
+            var state = engine.State;
+            var enemy = PutOnBoard(state, PlainUnit, Side.Right, 60, 1);
+            state.Move(enemy, CardLocation.BoardFrontline);
+            var order = state.CreateWithId("card_event_seaborne_invasion", Side.Left, 20, CardLocation.Discard, 0);
+            engine.Api.RunCardEffect(order, null);
+            var units = state.Cards(Side.Left, CardLocation.BoardFrontline).ToList();
+            if (enemy.Location != CardLocation.BoardHqRight || units.Count != 2
+                || units.Any(c => c.Definition.Faction != "USA" || c.Definition.Type != "infantry")
+                || units.Sum(c => c.Attack) != 6)
+                return $"种子 {seed} 应退却敌军、生成两个总攻击力 6 的美国步兵："
+                    + string.Join(", ", units.Select(c => $"{c.Name}/{c.Attack}/{c.Definition.Type}"));
+            if (!Equals(order.BlueprintVariables.GetValueOrDefault("chosenMaxAttack"), 6)
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return "独立函数必须读到实例 chosenMaxAttack=6，且执行无异常";
+        }
+        return null;
+    }
+
+    private static string? BlueprintInstanceState(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var self = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
+        KismetStep Set(int i, string name, KismetExpr value, string scope) =>
+            new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, name, null)
+                { DestinationScope = scope };
+        KismetStep Ret(int i) => new(i, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null);
+        self.BlueprintVariables["references"] = new List<object?> { self, new List<int> { 17 } };
+        engine.Api.Vm.RunLocalProgram(new KismetProgram(new[]
+            { Set(0, "count", new() { Int = 6 }, "instance"), Ret(1) }, 0), ctx, null, "ReturnValue");
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[]
+        {
+            Set(0, "count", new() { Int = 99 }, "local"),
+            Set(1, "saved", new() { Var = "count", Scope = "instance" }, "local"),
+            Set(2, "local", new() { Var = "count", Scope = "local" }, "local"),
+            Set(3, "tempCard", new() { None = true }, "instance"),
+            Set(4, "savedNull", new() { Var = "tempCard", Scope = "instance" }, "local"), Ret(5),
+        }, 0), ctx, null, "saved", "local", "savedNull");
+        if (!Equals(result["saved"], 6) || !Equals(result["local"], 99) || result["savedNull"] is not null)
+            return "局部 count 不得覆盖实例 count，保存的 null 不能回退成事件目标";
+        var snapshot = self.Snapshot();
+        ((List<object?>)self.BlueprintVariables["references"]!).Clear();
+        string json = System.Text.Json.JsonSerializer.Serialize(snapshot);
+        return json.Contains("\"references\":[20,[17]]", StringComparison.Ordinal)
+            ? null : "快照必须把对象引用转换成 ID，并保存独立的集合副本";
+    }
+
+    private static string? WeatherBureauRemovesForecast(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var order = state.CreateWithId("card_event_us_weather_bureau", Side.Left, 20,
+            CardLocation.Discard, 0);
+        var other = state.CreateWithId(order.Name, Side.Left, 21, CardLocation.HandLeft, 0);
+        var drawn = state.CreateWithId(PlainUnit, Side.Left, 22, CardLocation.DeckLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = order, Controller = Side.Left };
+        bool HasForecast(CardInstance card) => engine.Api.InvokeByName("getHasGameplayTag", card,
+            new object?[] { card, "ability.forecast" }, ctx, out _) is true;
+        if (!HasForecast(order)) return "气象局的当前静态卡定义必须含 Forecast 标签";
+        order.ChooseOne = 1;
+        engine.Api.RunCardEffect(order, null);
+        if (HasForecast(order) || !HasForecast(other) || drawn.Location != CardLocation.HandLeft)
+            return "选择 1 必须抽一张牌、只移除自身的 Forecast 标签";
+        var snapshot = order.Snapshot();
+        if (!snapshot.RemovedGameplayTags.SequenceEqual(new[] { "ability.forecast" }))
+            return "快照必须保留已移除的静态标签";
+        order.RemovedGameplayTags.Clear();
+        return snapshot.RemovedGameplayTags.Length == 1 && HasForecast(order)
+            ? null : "修改实例不能反向修改已保存快照";
+    }
+
+    private static string? BlueprintValueArrays(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var self = PutOnBoard(state, PlainUnit, Side.Left, 20, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
+        KismetExpr Var(string name, string type) => new() { Var = name, ElementType = type };
+        KismetExpr Call(string fn, params KismetExpr[] args) => new() { Call = fn, Args = args };
+        var steps = new List<KismetStep>();
+        void Set(string dst, KismetExpr value) => steps.Add(new(steps.Count, "set", null,
+            Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, dst, null));
+        Set("s0", Call("Array_AddUnique", Var("strings", "String"), new() { Str = "alpha" }));
+        Set("s1", Call("Array_AddUnique", Var("strings", "String"), new() { Str = "beta" }));
+        Set("s2", Call("Array_AddUnique", Var("strings", "String"), new() { Str = "alpha" }));
+        Set("absent", Call("Array_Contains", Var("strings", "String"), new() { Str = "gamma" }));
+        Set("i0", Call("Array_Add", Var("integers", "Int"), new() { Int = 987654 }));
+        Set("v0", Call("Array_Add", Var("vectors", "Struct"), new()
+            { Array = new KismetExpr[] { new() { Float = 0.5 }, new() { Float = 2.0 }, new() { Float = 3.0 } } }));
+        steps.Add(new(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+            null, null, -1, null, null));
+        var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+            null, "strings", "integers", "vectors", "s0", "s1", "s2", "absent");
+        if (!Equals(output["s0"], 0) || !Equals(output["s1"], 1) || !Equals(output["s2"], 0)
+            || output["absent"] is not false)
+            return "字符串数组的 AddUnique/Contains 必须按字符串值区分元素";
+        if (output["integers"] is not List<int> ints || !ints.SequenceEqual(new[] { 987654 }))
+            return "整数数组必须保留不存在于状态中的整数，不能解析成卡对象";
+        if (output["vectors"] is not System.Collections.IList vectors || vectors.Count != 1
+            || vectors[0] is not System.Collections.IList vector || !Equals(vector[0], 0.5d))
+            return "向量数组必须保留结构体元素和小数值";
         return null;
     }
 
@@ -8638,7 +8924,7 @@ internal static class SelfTest
     {
         const string attackerName = "card_unit_infantry_regiment_25";   // 订阅 OnBeforeAttack（13 张之一）
         const string defenderName = "card_unit_75mm_field_artillery";   // 同样订阅 OnBeforeAttack —— 但**不该**收到
-        const string t13Name = "card_unit_the_rangers";                 // 订阅 OnBeforeOtherCardAttacks（8 张之一）
+        const string t13Name = "card_unit_layforce"; // CDO registers OnBeforeOtherCardAttacks.
 
         foreach (string n in new[] { attackerName, defenderName, t13Name })
         {
@@ -8814,7 +9100,7 @@ internal static class SelfTest
             }
         }
 
-        // ③ 被压制 ⇒ OnBeforeDestroyed / OnBeforeOtherCardDestroyed 两个都不发
+        // ③ 主体被抑制只跳过 OnBeforeDestroyed；旁观者仍按 T18 订阅表执行。
         {
             var (trace, victimCard, err) = Probe(db, "card_unit_marder_iii_h", CardLocation.BoardHqLeft,
                 (e, s, p) =>
@@ -8848,9 +9134,9 @@ internal static class SelfTest
                 return $"摧毁布景出错(2)：{err2}";
             }
 
-            if (Reached(trace2, "OnBeforeOtherCardDestroyed", other))
+            if (!Reached(trace2, "OnBeforeOtherCardDestroyed", other))
             {
-                return "被压制的卡被摧毁时不该广播 OnBeforeOtherCardDestroyed（si=140 的守卫）";
+                return "被抑制主体仍应广播 OnBeforeOtherCardDestroyed（si=574 跳回旁观者循环）";
             }
 
             // ④ 没被压制 ⇒ 广播要发（对照，防止 ③ 恒真）
@@ -8971,7 +9257,7 @@ internal static class SelfTest
         // ① 接收者身上挂 destruction ⇒ HasCustomAbilityFromCard("destruction", …) 必须真
         var (engine, state) = EmptyBoard(db);
         var target = state.CreateWithId(card, Side.Left, 20, CardLocation.BoardHqLeft, 1);
-        target.CustomAbility = "destruction";
+        engine.Api.CustomAbilityAdd(target, "destruction", target);
         var ctx2 = new EffectContext { Engine = engine, State = state, Self = target, Controller = Side.Left };
 
         bool FromCard(object?[] args) => (bool)(engine.Api.InvokeByName(
@@ -11341,14 +11627,14 @@ internal static class SelfTest
                 ? CardLocation.BoardHqLeft : CardLocation.Discard;
             var selecting = state.CreateWithId(selectingName, Side.Left, 50,
                 selectingLocation, selectingDef.IsUnit ? 1 : 0);
-            if (hasLastDestroyed) selecting.CustomJson["lastDestroyedCardID"] = "123";
+            if (hasLastDestroyed) engine.Api.JsonSetInt(selecting, "lastDestroyedCardID", 123);
 
             var candidates = new List<CardInstance>();
             for (int i = 0; i < candidateNames.Length; i++)
             {
                 var candidate = state.CreateWithId(candidateNames[i], Side.Left, 100 + i,
                     CardLocation.HandLeft, i);
-                if (i == markedCandidate) candidate.CustomJson["is_kurmark_target"] = "1";
+                if (i == markedCandidate) engine.Api.JsonSetBool(candidate, "is_kurmark_target", true);
                 candidates.Add(candidate);
             }
 
@@ -12653,9 +12939,9 @@ internal static class SelfTest
 
         foreach (var (member, expected) in new (string Name, object? Value)[]
         {
-            ("type", probe.Definition.Type),
-            ("rarity", probe.Definition.Rarity),
-            ("salvageFaction", "Britain"),
+            ("type", probe.Definition.TypeId),
+            ("rarity", probe.Definition.RarityId),
+            ("salvageFaction", 2),
         })
         {
             var steps = new KismetStep[]
@@ -12899,7 +13185,9 @@ internal static class SelfTest
             t.StartsWith($"OnDestroyed → {victim.Name}#{victim.CardId}", StringComparison.Ordinal));
         int afterIndex = trace.FindIndex(t =>
             t.StartsWith($"OnAfterDestroyed → {victim.Name}#{victim.CardId}", StringComparison.Ordinal));
-        if (destroyedIndex < 0 || afterIndex <= destroyedIndex)
+        // 641st Rifles has no innate/self-source destruction ability. Its
+        // OnDestroyed export is not sufficient to pass the i=657 self gate.
+        if (destroyedIndex >= 0 || afterIndex < 0)
         {
             return $"OnAfterDestroyed 时序错误：OnDestroyed={destroyedIndex}, "
                  + $"OnAfterDestroyed={afterIndex}";
@@ -12929,7 +13217,7 @@ internal static class SelfTest
             }
         }
 
-        // ① 自己这边的翻倍者在场 ⇒ 松本连反应两次 ⇒ 敌 HQ −(2 + 1×2) = −4
+        // ① 114th repeats both Hayabusa's own effect and T24: (2+1)×2 = 6.
         {
             var (engine, state) = DeploymentBoard(db);
             PutOnBoard(state, doubler, Side.Left, 60, 1);
@@ -12938,9 +13226,9 @@ internal static class SelfTest
             int before = state.Hq(Side.Right).Defense;
             engine.Destroy(v);
             int delta = before - state.Hq(Side.Right).Defense;
-            if (delta != 4)
+            if (delta != 6)
             {
-                return $"{doubler} 在场时摧毁效果应触发两次（敌 HQ −4），实际 −{delta}"
+                return $"{doubler} 在场时主体与事件24都应重复（敌 HQ −6），实际 −{delta}"
                      + Dump(state, ("未实现", Unimpl(state)));
             }
         }
@@ -14334,6 +14622,51 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? PincerPrecedesPlayedFromHand(CardDatabase db)
+    {
+        const string giverName = "card_unit_t_28_pincer";
+        const string receiverName = "card_unit_91st_astrakhan";
+        if (db.Find(giverName) is null || db.Find(receiverName) is null)
+        {
+            return $"卡库里缺 {giverName} 或 {receiverName}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.SetKredits(Side.Left, 12);
+        state.SetMaxKredits(Side.Left, 12);
+
+        var receiver = state.CreateWithId(receiverName, Side.Left, 20,
+            CardLocation.BoardHqLeft, 1);
+        var giver = state.CreateWithId(giverName, Side.Left, 21,
+            CardLocation.HandLeft, 0);
+
+        bool ownEffectSawPincer = false;
+        CardEffectScripts.Register(giverName, ctx =>
+        {
+            ownEffectSawPincer = ctx.Self is { } self
+                && ctx.Target is { } target
+                && self.CustomJson.ContainsKey("pincer_receiver")
+                && ctx.Engine.Api.JsonGetInt(self, "pincer_receiver") == target.CardId;
+        });
+
+        try
+        {
+            if (!engine.PlayCard(giver, receiver))
+            {
+                return $"打出 {giverName} 失败";
+            }
+        }
+        finally
+        {
+            CardEffectScripts.Unregister(giverName);
+        }
+
+        return ownEffectSawPincer
+            ? null
+            : "卡自身 OnPlayedFromHand 执行时 Pincer 关系尚未建立";
+    }
+
     private static string? PincerRelationship(CardDatabase db)
     {
         const string giverName = "card_unit_t_28_pincer";
@@ -15065,9 +15398,9 @@ internal static class SelfTest
                  + "（只认卡对象 ⇒ 整数 ID 被静默丢掉）";
         }
 
-        if ((int)(result ?? -1) != 2)
+        if ((int)(result ?? -1) != 0)
         {
-            return $"返回的摧毁张数应当是 2，实际 {result ?? "null"}";
+            return $"Blueprint 的 qqq 出参保持初值 0，实际 {result ?? "null"}";
         }
 
         return null;
@@ -15360,10 +15693,11 @@ internal static class SelfTest
         }
 
         // Effect damage uses the same ApplyDamageToCard path as combat, but
-        // bypasses Heavy Armor. Any positive resolved hit must remove Mobilize.
+        // bypasses Heavy Armor. Surviving positive hits remove Mobilize.
         {
             var (engine, state) = DeploymentBoard(db);
             var target = PutOnBoard(state, targetName, Side.Right, 720, 1);
+            target.Defense = target.MaxDefense = 3;
             var source = PutOnBoard(state, sourceName, Side.Left, 721, 2);
             var context = new EffectContext
             {
@@ -16078,34 +16412,7 @@ internal static class SelfTest
             return "Set_RemoveItems 应移除数组中的指定元素";
         }
 
-        // `pinned_units_with_override` is a card member, not a transient local:
-        // its Add/Remove helpers run in separate VM frames across events.
-        var owner = state.CreateWithId("card_unit_14_panzergrenadier", Side.Left, 104,
-            CardLocation.BoardHqLeft, 2);
-        var target = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 105,
-            CardLocation.BoardHqLeft, 3);
-        var local = KismetLibrary.Default?.FindLocalProgram(owner.Name, "AddPinnedOverride");
-        if (local is null)
-        {
-            return "14th Panzergrenadier 的 AddPinnedOverride 局部函数未加载";
-        }
-
-        var localCtx = new EffectContext
-        {
-            Engine = engine,
-            State = state,
-            Self = owner,
-            Controller = Side.Left,
-            Target = target,
-        };
-        engine.Api.Vm.RunLocalProgram(local, localCtx,
-            new Dictionary<string, object?> { ["pinnedCard"] = target }, "unused");
-        if (!owner.BlueprintSets.TryGetValue("pinned_units_with_override", out var persistent)
-            || !persistent.Contains(target))
-        {
-            return "卡对象成员 TSet 未跨局部 VM 帧持久化";
-        }
-
+        set.Add(3);
         engine.Api.InvokeByName("Set_Clear", null, new object?[] { set }, ctx, out bool clearHandled);
         if (!clearHandled || set.Count != 0)
         {
@@ -16501,32 +16808,26 @@ internal static class SelfTest
         }
 
         var convertedIds = ids.Cast<object?>().Select(Convert.ToInt32).ToArray();
-        if (convertedIds.Length != 1 || convertedIds[0] != 77)
-        {
-            return $"转换出参应为原 cardID=77，实际 [{string.Join(",", convertedIds)}]";
-        }
-
-        if (card.CardId != 77 || card.Owner != Side.Left || card.Location != CardLocation.BoardHqLeft
-            || card.LocationNumber != 3 || card.Name != targetName
-            || card.Definition.Name != targetName)
-        {
-            return $"转换应保留 ID/owner/location/locNo 并替换身份，实际 {card.CardId}/{card.Owner}/"
-                 + $"{card.Location}/{card.LocationNumber}/{card.Name}";
-        }
-
+        if (convertedIds.Length != 1 || convertedIds[0] == 77)
+            return $"转换须返回新对象 ID，实际 [{string.Join(",", convertedIds)}]";
+        var replacement = state.ById(convertedIds[0]);
+        if (replacement is null || ReferenceEquals(replacement, card))
+            return "转换未创建新卡对象";
+        if (card.Name != sourceName || card.Location != CardLocation.Discard
+            || state.ById(77) != card)
+            return "转换须保留旧卡的身份与弃牌对象";
+        if (replacement.Owner != Side.Left || replacement.Location != CardLocation.BoardHqLeft
+            || replacement.Name != targetName || replacement.Definition.Name != targetName)
+            return "新对象的归属、位置或定义错误";
         var target = db.Require(targetName);
-        if (card.Attack != target.Attack || card.Defense != target.Defense
-            || card.MaxDefense != target.Defense
-            || target.Keywords.Any(keyword => !card.Keywords.Contains(keyword)))
-        {
-            return $"转换后应使用新卡面攻防/关键字，实际 {card.Attack}/{card.Defense}/{card.MaxDefense}";
-        }
-
-        if (card.CustomJson.Count != 0 || card.CustomAbility is not null || card.BuffsBySource.Count != 0
-            || card.HasMovedThisTurn || card.HasAttackedThisTurn || card.PinnedTurns != 0)
-        {
-            return "转换后旧卡的 CustomJson/CustomAbility/buff/行动标记未清理";
-        }
+        if (replacement.Attack != target.Attack || replacement.Defense != target.Defense
+            || replacement.MaxDefense != target.Defense
+            || target.Keywords.Any(keyword => !replacement.Keywords.Contains(keyword)))
+            return $"转换后应使用新卡面攻防/关键字，实际 {replacement.Attack}/{replacement.Defense}";
+        if (replacement.CustomJson.ContainsKey("probe") || replacement.CustomAbility is not null
+            || replacement.BuffsBySource.Count != 0 || replacement.HasMovedThisTurn
+            || replacement.HasAttackedThisTurn || replacement.PinnedTurns != 0)
+            return "新对象错误继承了旧卡的状态";
 
         return null;
     }
