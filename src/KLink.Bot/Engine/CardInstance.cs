@@ -363,8 +363,8 @@ public sealed class CardInstance
     ///
     /// 蓝图的全局派发门是
     /// <c>isSuppressed &amp;&amp; !suppressionExceptionTriggers.Contains(trigger)</c>；
-    /// 当前卡数据没有可加载的白名单来源，因此默认为空，保留一个可扩展的
-    /// 运行时集合，待取得逐卡证据后再填充。
+    /// 建卡时由当前卡定义的 CDO 数组填充；完整卡池的两个触发数组
+    /// 已通过只读客户端内存核查。
     /// </summary>
     public HashSet<string> SuppressionExceptionTriggers { get; } = new(StringComparer.Ordinal);
 

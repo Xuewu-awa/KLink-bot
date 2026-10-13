@@ -9256,6 +9256,23 @@ internal static class SelfTest
             }
         }
 
+        // The instance exception array is authoritative, including for cards
+        // that appeared in the former hard-coded fallback table.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var marines = state.CreateWithId("card_unit_1st_marines", Side.Left, 66,
+                CardLocation.BoardHqLeft, 1);
+            marines.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Api.FireTrigger("OnStartOfTurn", null, Side.Left, eventArgs: new object?[] { state.Turn });
+            if (!Reached(trace, "OnStartOfTurn", marines)) return "CDO 自带的抑制例外未被加载";
+            trace.Clear();
+            marines.SuppressionExceptionTriggers.Clear();
+            engine.Api.FireTrigger("OnStartOfTurn", null, Side.Left, eventArgs: new object?[] { state.Turn });
+            if (Reached(trace, "OnStartOfTurn", marines)) return "抑制例外数组为空时仍由硬编码卡名放行";
+        }
+
         // ⑥ T7 的蓝图专属门：被抑制的目标不收到自己的 OnAfterGainDefense。
         {
             const string targetName = "card_unit_kyushu_j7w3";
@@ -18586,6 +18603,24 @@ internal static class SelfTest
                 return $"commando 已经进弃牌堆，目标却**被拒**（{r.Describe()}）—— "
                      + "这条判据要求订阅者**在场上**（蓝图 `IsLocatedOnBoard(self)`）";
             }
+        }
+
+        // Current pak FetchAllCardsWithEventTrigger excludes suppressed
+        // subscribers unless their suppressionExceptionTriggers contains T2.
+        {
+            var (engine, _, state) = TargetBoard(db, Commando, kredits: 20);
+            var strong = PlaceUnit(state, Strong, Side.Left, 3, 1);
+            var commando = PlaceUnit(state, Commando, Side.Right, 51, 1);
+            var foe = PlaceUnit(state, infantry, Side.Right, 52, 3);
+            commando.Keywords.Add(Keyword.Suppressed);
+            var check = engine.Api.CanSelectAsTarget(strong, foe, byPlayFromHand: false);
+            if (!check.Can) return $"被抑制的 No. 3 Commando 仍禁止攻击：{check.Describe()}";
+            commando.SuppressionExceptionTriggers.Add("CanOtherCardBeTargetted");
+            if (engine.Api.CanSelectAsTarget(strong, foe, byPlayFromHand: false).Can)
+                return "T2 抑制例外未允许订阅者恢复否决";
+            commando.SuppressionExceptionTriggers.Remove("CanOtherCardBeTargetted");
+            if (!engine.LegalTargets(strong).Contains(foe)) return "合法目标枚举仍保留被抑制 Commando 的否决";
+            if (!engine.Attack(strong, foe, out string reason)) return $"被抑制 Commando 仍阻止真实攻击：{reason}";
         }
 
         // ⑤ 端到端：commando 不在场时，4 攻单位的攻击必须**真的打得出去**

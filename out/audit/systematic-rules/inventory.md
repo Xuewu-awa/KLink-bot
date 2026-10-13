@@ -1,6 +1,6 @@
 # 系统规则审计：结构基线
 
-代码基线：`648070600b4be96366a51b5caae6c4dd69be5fb4`
+代码基线：`13c5ec10e3a64f31079e6853a97ba292f322833c`
 
 本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。
 
@@ -18,12 +18,16 @@
 | cards_with_structural_issues | 20 |
 | missing_static_function_files | 0 |
 | kernel_cs_files | 33 |
-| kernel_cs_lines | 28130 |
+| kernel_cs_lines | 28103 |
 | comment_leads | 50 |
 | semantically_verified_cards | 0 |
 | runtime_scalar_cards | 2019 |
 | runtime_scalar_comparisons | 20190 |
 | runtime_scalar_differences | 0 |
+| runtime_trigger_array_cards | 2019 |
+| runtime_trigger_arrays | 4038 |
+| runtime_trigger_array_read_errors | 0 |
+| runtime_trigger_array_differences | 0 |
 
 ## 直接 IR 缺失候选
 

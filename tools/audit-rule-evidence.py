@@ -153,6 +153,20 @@ def main():
         'comment_leads': len(leads), 'semantically_verified_cards': 0}
     counts.update({'runtime_scalar_cards': len(scalars), 'runtime_scalar_comparisons': scalar_checks,
                    'runtime_scalar_differences': len(scalar_differences)})
+    trigger_array_path = args.evidence / 'runtime-trigger-cdos-20261014.json'
+    trigger_array_differences = []
+    if trigger_array_path.is_file():
+        arrays = read(trigger_array_path)
+        for row in arrays['cards']:
+            for field, array in row['arrays'].items():
+                expected = cards.get(row['name'],{}).get(field)
+                if array['names'] != expected:
+                    trigger_array_differences.append({'card':row['name'],'field':field,
+                                                     'runtime':array['names'],'simulator':expected})
+        counts.update({'runtime_trigger_array_cards':len(arrays['cards']),
+                       'runtime_trigger_arrays':sum(len(row['arrays']) for row in arrays['cards']),
+                       'runtime_trigger_array_read_errors':len(arrays['errors']),
+                       'runtime_trigger_array_differences':len(trigger_array_differences)})
     git_head = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
     result = {'schema_version': 1, 'git_head': git_head, 'counts': counts,
               'limitations': ['Structural inventory only, not an exhaustive defect list.',
@@ -161,7 +175,8 @@ def main():
                              'Runtime snapshot matching does not validate decoded bytecode semantics.'],
               'cards': rows, 'functions': function_rows, 'findings': findings,
               'source_inventory': source_inventory, 'comment_leads': leads, 'manifest': manifest,
-              'runtime_scalar_differences': scalar_differences}
+              'runtime_scalar_differences': scalar_differences,
+              'runtime_trigger_array_differences':trigger_array_differences}
     (output / 'inventory.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
     report = ['# 系统规则审计：结构基线', '', f'代码基线：`{git_head}`', '',
               '本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。', '',

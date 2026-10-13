@@ -6890,25 +6890,22 @@ public sealed partial class CardApi
             return TargetCheck.Ok;
         }
 
-        // 遍历范围沿用本内核触发派发的口径（`CardApi.FireTrigger` 的快照：双方棋盘 + 弃牌堆）。
-        // 「在不在棋盘上」由**卡自己的判据**（`IsLocatedOnBoard(self)`）负责 ——
-        // 蓝图也是这么分工的（`FetchAllCardsWithEventTrigger` 只看注册表，不看位置）。
-        for (int i = 0; i < 2; i++)
+        // Current pak cardsCheckFunctions.CanOtherCardBeTargetted i=59
+        // calls BP_GameState_Battle.FetchAllCardsWithEventTrigger(T2).
+        // That query filters registration and suppression exceptions, but
+        // leaves location eligibility to each subscriber's own function.
+        foreach (CardInstance sub in CaptureTriggerSnapshot())
         {
-            Side side = i == 0 ? Side.Left : Side.Right;
-            foreach (CardInstance sub in State.Board(side).Concat(State.Discard(side)))
+            if (!sub.Definition.IsRegisteredFor(Trigger2Function)
+                || SuppressedSkipsTrigger(sub, Trigger2Function))
             {
-                if (sub.Location == CardLocation.NotAvailable
-                    || !sub.Definition.FunctionCalls.ContainsKey(Trigger2Function))
-                {
-                    continue;   // 没注册触发点 2 ⇒ 不归它管
-                }
+                continue;
+            }
 
-                var r = AskCardCanOtherCardBeTargetted(sub, targeting, targeted, byPlayFromHand);
-                if (!r.Can)
-                {
-                    return r;   // 任何一张回 false ⇒ 整体否决（库版 `g.cs:1005` 的分支）
-                }
+            var r = AskCardCanOtherCardBeTargetted(sub, targeting, targeted, byPlayFromHand);
+            if (!r.Can)
+            {
+                return r;
             }
         }
 

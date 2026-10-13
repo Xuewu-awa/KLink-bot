@@ -184,34 +184,10 @@ public sealed partial class CardApi
                           eventArgs: new object?[] { State.Turn });
     }
 
-    // 蓝图 FetchAllCardsWithEventTrigger 的逐卡抑制例外表。
-    // 卡面 CDO 未随当前数据集导出，因此在派发层固定记录已从蓝图核实的 11 张卡。
-    private static readonly Dictionary<string, string[]> SuppressionExceptionTable =
-        new(StringComparer.Ordinal)
-        {
-            ["card_unit_1st_marines"] = new[] { "OnStartofTurn" },
-            ["card_unit_3rd_kure_snlf"] = new[] { "OnEndofTurn" },
-            ["card_unit_92nd_naval_brigade"] = new[] { "OnStartofTurn" },
-            ["card_unit_99th_kholm"] = new[] { "OnStartofTurn" },
-            ["card_unit_a20_havoc"] = new[] { "OnEndofTurn" },
-            ["card_unit_danuta"] = new[] { "OnEndofTurn" },
-            ["card_unit_gordon_highlanders"] = new[] { "OnOtherCardDrawnFromDeck" },
-            ["card_unit_infantry_regiment_36"] = new[] { "OnEndofTurn" },
-            ["card_unit_kurmark_aufklarungs"] = new[] { "OnEndofTurn" },
-            ["card_unit_kv_85"] = new[] { "OnStartofTurn" },
-            ["card_unit_panther_a"] = new[] { "OnStartofTurn" },
-        };
-
     private static bool HasSuppressionException(CardInstance card, string trigger)
-    {
-        if (card.SuppressionExceptionTriggers.Contains(trigger))
-        {
-            return true;
-        }
-
-        return SuppressionExceptionTable.TryGetValue(card.Name, out string[]? allowed)
-               && allowed.Any(x => string.Equals(x, trigger, StringComparison.OrdinalIgnoreCase));
-    }
+        // Current pak FetchAllCardsWithEventTrigger i=682 checks the instance
+        // array only. All 2019 CDO arrays have been verified against live memory.
+        => card.SuppressionExceptionTriggers.Contains(trigger);
 
     private static bool SuppressedSkipsTrigger(CardInstance card, string trigger)
         => card.IsSuppressed && !HasSuppressionException(card, trigger);
