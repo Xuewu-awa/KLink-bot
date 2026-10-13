@@ -28,6 +28,7 @@ internal static class SelfTest
         new("创建 T35 包含新卡自身，144 步兵团继承创建前已损失槽位", CreatedCardReceivesOwnT35),
         new("行动费事件先自身后旁观，被抑制操作者仍通知未抑制旁观者", OperationEventControlFlow),
         new("部署倍数 T23 固定查询时接收者，回调间抑制变化不重筛", DeploymentQuerySnapshot),
+        new("部署取消 T14 在首个 true 后停止，保留之前 false 回调的副作用", DeploymentCancelShortCircuit),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8354,6 +8355,40 @@ internal static class SelfTest
         int multiple = engine.Api.SumDeploymentTriggerMultiple(first);
         if (multiple != 2 || !trace.Any(x => x.Contains(name + "#23（", StringComparison.Ordinal)))
             return "正式部署倍数入口未使用完整注册查询快照";
+        return null;
+    }
+
+    private static string? DeploymentCancelShortCircuit(CardDatabase db)
+    {
+        foreach (bool blockerFirst in new[] { true, false })
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", Side.Left, 100, CardLocation.HandLeft, 0);
+            var blocker = state.CreateWithId("card_unit_petlyakov_pe_2ft", Side.Left,
+                blockerFirst ? 20 : 21, CardLocation.BoardHqLeft, 1);
+            var buffs = state.CreateWithId("card_unit_buffs", Side.Left,
+                blockerFirst ? 21 : 20, CardLocation.BoardHqLeft, 2);
+            state.CreateWithId("card_unit_petlyakov_pe_2ft", Side.Right, 22, CardLocation.BoardHqRight, 1);
+            source.CurrentTarget = buffs;
+            int attack = buffs.Attack, defense = buffs.Defense;
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            if (!engine.Api.FireDeploymentCancelHook(source)) return "在场 Pe-2FT 应取消部署效果";
+            int bonus = blockerFirst ? 0 : 1;
+            if (buffs.Attack != attack + bonus || buffs.Defense != defense + bonus)
+                return "首个取消回调之后不能再给 BUFFS 加攻防；之前的 false 回调仍应保留增益";
+            var hits = trace.Where(x => x.StartsWith("OnBeforeOtherCardDeploymentTrigger(out", StringComparison.Ordinal)).ToArray();
+            if (hits.Length != (blockerFirst ? 1 : 2) || hits.Any(x => x.Contains("#22（", StringComparison.Ordinal)))
+                return "返回 true 后仍执行了后续取消订阅者：" + string.Join(" | ", hits);
+            // Also exercise a legal untargeted deployment through PlayCard.
+            trace.Clear();
+            int hp = state.HqDefense(Side.Right);
+            if (!engine.PlayCard(source) || state.HqDefense(Side.Right) != hp)
+                return "正常打出 lefh 时应落场但取消部署伤害";
+            if (trace.Any(x => x.StartsWith("OnBeforeOtherCardDeploymentTrigger(out", StringComparison.Ordinal)
+                && x.Contains("#22（", StringComparison.Ordinal)))
+                return "正式打出入口在首个取消之后仍执行后续订阅者";
+        }
         return null;
     }
 

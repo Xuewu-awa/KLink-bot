@@ -608,7 +608,8 @@ public sealed partial class CardApi
         IReadOnlyDictionary<string, object?>? namedArgs = null,
         Func<CardInstance, IReadOnlyDictionary<string, object?>?>? seedFactory = null,
         IReadOnlyList<CardInstance>? only = null,
-        bool recipientsAlreadyFiltered = false)
+        bool recipientsAlreadyFiltered = false,
+        Func<OutParamHit, bool>? stopAfter = null)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -675,8 +676,10 @@ public sealed partial class CardApi
             try
             {
                 var perCardSeed = seedFactory?.Invoke(card) ?? seed;
-                results.Add(new OutParamHit(card,
-                    Vm.RunLocalProgramMulti(program, ctx, perCardSeed, outParamNames)));
+                var hit = new OutParamHit(card,
+                    Vm.RunLocalProgramMulti(program, ctx, perCardSeed, outParamNames));
+                results.Add(hit);
+                if (stopAfter?.Invoke(hit) == true) break;
             }
             finally
             {
@@ -785,7 +788,7 @@ public sealed partial class CardApi
     /// si=3676  FetchAllCardsWithEventTrigger(14)          ; 14 = OnBeforeOtherCardDeploymentTrigger
     /// si=4081  PopExecutionFlowIfNot(cancelDeploymentEffect)   ; 假 ⇒ 继续循环
     /// si=4197  Temp_bool_True_if_break_was_hit_Variable = true ; 真 ⇒ 跳出
-    /// si=4283  JumpIfNot 5702 if !cancelDeploymentEffect
+    /// si=4283  JumpIfNot 5782 if !cancelDeploymentEffect (current pak)
     /// si=4297  （取消分支）OnPlayedFromHandExecuted = false
     /// si=4308  NotifySideEffectTrigger(side, 'sideeffect.blockdeployment')
     /// si=4881  Jump 6853                                    ; ★ 取消分支到此返回，
@@ -821,13 +824,16 @@ public sealed partial class CardApi
             ["instigatorID"] = sourceId,
         };
 
-        var outs = BroadcastWithOutParam(
-            "OnBeforeOtherCardDeploymentTrigger", card, card.Owner, "cancelDeploymentEffect",
-            seed: seed, eventArgs: new object?[] { card, sourceId }, eventSubject: card, namedArgs: named);
+        var outs = BroadcastWithOutParams(
+            "OnBeforeOtherCardDeploymentTrigger", card, card.Owner, new[] { "cancelDeploymentEffect" },
+            seed: seed, eventArgs: new object?[] { card, sourceId }, eventSubject: card, namedArgs: named,
+            only: CaptureRegisteredTriggerSnapshot("OnBeforeOtherCardDeploymentTrigger"),
+            recipientsAlreadyFiltered: true,
+            stopAfter: hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("cancelDeploymentEffect")));
 
-        foreach (var v in outs)
+        foreach (var hit in outs)
         {
-            if (Blueprint.KismetVm.Truthy(v))
+            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("cancelDeploymentEffect")))
             {
                 return true;
             }

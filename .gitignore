@@ -147,6 +147,7 @@ out/audit/systematic-rules/selftest-slots-*.txt
 out/audit/systematic-rules/selftest-created-*.txt
 out/audit/systematic-rules/selftest-operation-*.txt
 out/audit/systematic-rules/selftest-snapshot-*.txt
+out/audit/systematic-rules/selftest-cancel-*.txt
 out/audit/systematic-rules/dispatch/dispatch-classification.json
 
 # ---------------------------------------------------------------------------
