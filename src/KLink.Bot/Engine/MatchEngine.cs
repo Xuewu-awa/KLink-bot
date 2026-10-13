@@ -2866,8 +2866,7 @@ public sealed class MatchEngine
         // destruction callbacks; explicit off-board destruction also counts.
         State.RecordDestroyedCard(card.CardId, card.Owner, Api.IsUnit(card));
         // Capture T24 before OnDestroyed can create/remove subscribers (i=225).
-        var destructionRecipients = Api.CaptureTriggerSnapshot()
-            .Where(x => x.Definition.IsRegisteredFor("OnDestructionEffectTriggered")).ToArray();
+        var destructionRecipients = Api.CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered");
         void SelfDestroyed(bool repeated) => Api.FireTrigger("OnDestroyed", card, card.Owner,
             eventArgs: new object?[] { killer, repeated }, eventSubject: card,
             namedArgs: new Dictionary<string, object?>

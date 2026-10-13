@@ -33,6 +33,7 @@ internal static class SelfTest
         new("T38 延后列表只收集停止前遇到的 National Fire Service", DamageAfterCalcDelayedCollection),
         new("批量 T38 传递实际 damage、筛选抑制并保留直接停止顺序", BatchDamageModifierArguments),
         new("批量死亡先刷新原区域编号，再执行换区和摧毁事件", BatchDeathLocationRefresh),
+        new("T24 保留传入接收者数组及同时死亡标记，只另检查主体抑制", DestructionRecipientSnapshot),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8503,6 +8504,29 @@ internal static class SelfTest
             if (first.Location != location || last.Location != location)
                 return "刷新编号不应移动存活单位";
         }
+        return null;
+    }
+
+    private static string? DestructionRecipientSnapshot(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var victim = state.CreateWithId("card_unit_hayabusa", Side.Left, 20, CardLocation.Discard, 0);
+        var watcher = state.CreateWithId("card_unit_matsumoto_regiment", Side.Left, 21, CardLocation.NotAvailable, 0);
+        var batch = new[] { victim.CardId, watcher.CardId };
+        var selected = engine.Api.CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered");
+        watcher.Keywords.Add(Keyword.Suppressed); // Change after selection, before callback execution.
+        int hp = state.HqDefense(Side.Right);
+        engine.Api.FireDestructionEffectTriggered(victim, null, batch, selected);
+        if (state.HqDefense(Side.Right) != hp - 1)
+            return "已选中的松本联队应凭 SelfAlsoDestroyed 执行，不得再因位置/抑制过滤";
+        hp = state.HqDefense(Side.Right);
+        engine.Api.FireDestructionEffectTriggered(victim, null, batch);
+        if (state.HqDefense(Side.Right) != hp) return "重新查询时已抑制的接收者应排除";
+        victim.Keywords.Add(Keyword.Suppressed);
+        engine.Api.FireDestructionEffectTriggered(victim, null, batch, selected);
+        if (state.HqDefense(Side.Right) != hp) return "触发主体抑制门未生效";
+        engine.Api.FireDestructionEffectTriggered(victim, null, batch, selected, skipSuppressCheck: true);
+        if (state.HqDefense(Side.Right) != hp - 1) return "skipSuppressCheck 应仅绕过主体抑制门";
         return null;
     }
 

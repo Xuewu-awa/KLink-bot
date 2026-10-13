@@ -967,7 +967,8 @@ public sealed partial class CardApi
                 // si=398：CardsToDestroy 就是「被摧毁的那一张」，所以这个 bool 等价于
                 // 「订阅卡自己也在被摧毁的那批里」。
                 ["SelfAlsoDestroyed"] = batch?.Contains(observer.CardId) ?? observer.CardId == card.CardId,
-            }, only: recipients);
+            }, only: recipients ?? CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered"),
+            recipientsAlreadyFiltered: true);
 
         int total = 0;
         foreach (var hit in outs)
