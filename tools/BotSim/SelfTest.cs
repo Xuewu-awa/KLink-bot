@@ -31,6 +31,7 @@ internal static class SelfTest
         new("部署取消 T14 在首个 true 后停止，保留之前 false 回调的副作用", DeploymentCancelShortCircuit),
         new("T37 不添加位置门，Imperial Decree 按生效回合和目标修正伤害", DamageModifierQueryLocation),
         new("T38 延后列表只收集停止前遇到的 National Fire Service", DamageAfterCalcDelayedCollection),
+        new("批量 T38 传递实际 damage、筛选抑制并保留直接停止顺序", BatchDamageModifierArguments),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8444,6 +8445,34 @@ internal static class SelfTest
                 && x.Contains($"card_event_national_fire_service#{nfs.CardId}（", StringComparison.Ordinal));
             if (visited != nfsFirst || nfs.GotchaActivated != (nfsFirst ? 0 : 1))
                 return "未遇到的 NFS 不得延后执行/消耗，已入列的 NFS 应读取 Pershing 修正后的伤害";
+        }
+        return null;
+    }
+
+    private static string? BatchDamageModifierArguments(CardDatabase db)
+    {
+        for (int mode = 0; mode < 4; mode++)
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Right;
+            CardInstance? nfs = null;
+            if (mode == 3) nfs = state.CreateWithId("card_event_national_fire_service", Side.Left, 20, CardLocation.HandLeft, 0);
+            var pershing = state.CreateWithId("card_unit_m26_pershing", Side.Left, mode == 3 ? 21 : 20, CardLocation.BoardFrontline, 0);
+            if (mode == 1) pershing.Keywords.Add(Keyword.Suppressed);
+            if (mode == 2) nfs = state.CreateWithId("card_event_national_fire_service", Side.Left, 21, CardLocation.HandLeft, 0);
+            if (nfs is not null) nfs.GotchaActivated = 1;
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.BoardHqLeft, 1);
+            unit.Defense = 30;
+            var source = state.CreateWithId("card_event_bombing_raid", Side.Right, 60, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Right };
+            engine.Api.InvokeByName("DamageMultipleCards", null,
+                new object?[] { new List<CardInstance> { state.Hq(Side.Left), unit }, 25, source.CardId, null }, ctx, out bool handled);
+            int expectedDamage = mode == 1 ? 25 : mode == 3 ? 1 : 19;
+            if (!handled || state.HqDefense(Side.Left) != 20 - expectedDamage || unit.Defense != 5)
+                return $"批量模式 {mode}：HQ 应受 {expectedDamage}，独立单位应受 25；实际 HQ={state.HqDefense(Side.Left)}，单位={unit.Defense}";
+            if (state.IsFinished != (mode == 1)) return "抑制 Pershing 后致命批量伤害应结束对局";
+            if (nfs is not null && nfs.GotchaActivated != (mode == 3 ? 0 : 1))
+                return "批量路径应直接遍历 NFS；Pershing 停止后的 NFS 不应触发";
         }
         return null;
     }

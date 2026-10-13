@@ -1830,15 +1830,17 @@ public sealed partial class CardApi
         {
             var target = targets[i];
             if (target.Keywords.Contains(Keyword.Immune)) { damage[i] = 0; continue; }
-            var observers = CaptureTriggerSnapshot().Where(card =>
-                card.Definition.IsRegisteredFor("OnOtherCardDealDamageAddDamageAfterCalc")).ToArray();
+            // ApplyDamageToMultipleCards i=1061 queries T38 per receiver.
+            // Its direct loop has no NFS deferral or damage-source exclusion.
+            var observers = CaptureRegisteredTriggerSnapshot("OnOtherCardDealDamageAddDamageAfterCalc");
             foreach (var observer in observers)
             {
                 var outs = RunOwnLocal(observer, "OnOtherCardDealDamageAddDamageAfterCalc",
                     new Dictionary<string, object?>
                     {
-                        ["cardDealingDamage"] = source, ["toCard"] = target, ["Damage"] = damage[i],
-                        ["fromAttack"] = false, ["isRedirected"] = false,
+                        ["cardDealingDamage"] = source, ["toCard"] = target,
+                        ["damage"] = damage[i], ["Damage"] = damage[i],
+                        ["isCombatDamage"] = false, ["fromAttack"] = false, ["isRedirected"] = false,
                     }, "damageToAdd", "stopAdding");
                 if (outs is null) continue;
                 damage[i] = Math.Max(damage[i] + AsInt(outs.GetValueOrDefault("damageToAdd")), 0);
