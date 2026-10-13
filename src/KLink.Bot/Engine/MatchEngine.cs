@@ -132,13 +132,14 @@ public sealed class MatchEngine
     private void FireCardCreated(CardInstance card)
     {
         Api.FireTrigger("OnCreateCard", card, card.Owner);
-        Api.FireTrigger("OnOtherCardCreatedAlterCard", card, card.Owner,
+        // CreateCard T35 (i=1036..1309) does not exclude the newly created card.
+        Api.FireTrigger("OnOtherCardCreatedAlterCard", null, card.Owner,
             eventArgs: new object?[] { card, 0 }, eventSubject: card,
             namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 ["cardPlayed"] = card,
                 ["method"] = 0,
-            });
+            }, includeUnavailableRecipients: true);
     }
 
     /// <summary>
@@ -2006,36 +2007,30 @@ public sealed class MatchEngine
         });
 
     /// <summary>
-    /// Dispatch the operation-cost event pair used by cards such as Landwehr.
-    /// The Blueprint helper broadcasts to other subscribers first, then calls
-    /// the operated card itself; a suppressed operated card skips both paths.
+    /// Current ExecuteOnOperationKreditsSpent: i=38 skips only the suppressed
+    /// subject's callback; i=594 calls it before jumping back to the T68 query.
+    /// The observer loop separately rejects suppressed recipients at i=381.
     /// </summary>
     private void FireOperationKreditsSpent(CardInstance operated, int cost)
     {
-        if (operated.IsSuppressed)
+        if (!operated.IsSuppressed)
         {
-            return;
+            Api.FireTrigger("OnOperationKreditsSpent", operated, operated.Owner,
+                eventArgs: new object?[] { cost }, eventSubject: operated,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["kreditsSpent"] = cost,
+                });
         }
 
-        var otherNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardOperated"] = operated,
-            ["kreditsSpent"] = cost,
-        };
         Api.FireTrigger("OnOtherCardOperationKreditsSpent", operated, operated.Owner,
-            eventArgs: new object?[] { operated, cost },
-            eventSubject: operated,
-            namedArgs: otherNamedArgs,
-            broadcastName: true);
-
-        var selfNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["kreditsSpent"] = cost,
-        };
-        Api.FireTrigger("OnOperationKreditsSpent", operated, operated.Owner,
-            eventArgs: new object?[] { cost },
-            eventSubject: operated,
-            namedArgs: selfNamedArgs);
+            eventArgs: new object?[] { operated, cost }, eventSubject: operated,
+            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardOperated"] = operated,
+                ["kreditsSpent"] = cost,
+            }, broadcastName: true, allowSuppressionExceptions: false,
+            includeUnavailableRecipients: true);
     }
 
     // ==================== 攻击 ====================

@@ -25,6 +25,8 @@ internal static class SelfTest
         new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
         new("GetAllCards 与同位置编号重排保持 AllCardsInBattle 入表顺序", BattleMapAndLocationOrder),
         new("额外指挥点槽事件按全局入表顺序派发，直接抑制门不接受例外", ExtraKreditSlotDispatch),
+        new("创建 T35 包含新卡自身，144 步兵团继承创建前已损失槽位", CreatedCardReceivesOwnT35),
+        new("行动费事件先自身后旁观，被抑制操作者仍通知未抑制旁观者", OperationEventControlFlow),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8250,6 +8252,70 @@ internal static class SelfTest
         engine.Api.InvokeByName("LoseKreditSlot", first, new object?[] { (int)Side.Left }, ctx, out bool handled);
         if (!handled || first.Attack != a || trace.Count(x => x.StartsWith(trigger + " → " + name, StringComparison.Ordinal)) != 2)
             return "失去槽位也应直接广播到未抑制对象，但不得触发正增长加攻";
+        return null;
+    }
+
+    private static string? CreatedCardReceivesOwnT35(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.SetMaxKredits(Side.Left, 4);
+        var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 90, CardLocation.BoardHqLeft, 1);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+        for (int i = 0; i < 2; i++)
+            engine.Api.InvokeByName("LoseKreditSlot", source, new object?[] { (int)Side.Left }, ctx, out _);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        int id = 91;
+        foreach (var location in new[] { CardLocation.DeckLeft, CardLocation.HandLeft, CardLocation.BoardHqLeft, CardLocation.NotAvailable })
+        {
+            var card = state.CreateWithId("card_unit_144th_infantry_regiment", Side.Left, id++, location, 2);
+            if (card.CustomJson.GetValueOrDefault("slots_lost") != "2")
+                return $"新建 144 步兵团在 {location} 未继承历史槽位损失 2：" + card.CustomJson.GetValueOrDefault("slots_lost");
+            if (!trace.Any(x => x.StartsWith($"OnOtherCardCreatedAlterCard → {card.Name}#{card.CardId}（", StringComparison.Ordinal)
+                && x.Contains($"eventCard={card.Name}#{card.CardId}）", StringComparison.Ordinal)))
+                return "T35 没有派发给新卡自身";
+        }
+        var enemy = state.CreateWithId("card_unit_144th_infantry_regiment", Side.Right, 96, CardLocation.HandRight, 0);
+        if (enemy.CustomJson.GetValueOrDefault("slots_lost") != "0") return "历史槽位损失串到另一方";
+        var board = state.ById(93)!;
+        int hp = state.HqDefense(Side.Right);
+        engine.Destroy(board);
+        if (state.HqDefense(Side.Right) != hp - 2) return "创建前的两次槽位损失未计入 144 步兵团摧毁伤害";
+        return null;
+    }
+
+    private static string? OperationEventControlFlow(CardDatabase db)
+    {
+        foreach (bool suppressOperated in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 9);
+            const string name = "card_unit_182_landwehr";
+            var operated = state.CreateWithId(name, Side.Left, 101, CardLocation.BoardHqLeft, 1);
+            var watcher = state.CreateWithId(name, Side.Left, 102, CardLocation.BoardHqLeft, 2);
+            var suppressedWatcher = state.CreateWithId(name, Side.Left, 103, CardLocation.BoardHqLeft, 3);
+            operated.EnteredPlayOnTurn = state.Turn - 1;
+            engine.Api.MakeVeteran(watcher);
+            engine.Api.MakeVeteran(suppressedWatcher);
+            suppressedWatcher.Keywords.Add(Keyword.Suppressed);
+            suppressedWatcher.SuppressionExceptionTriggers.Add("OnOtherCardOperationKreditsSpent");
+            if (suppressOperated) operated.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            if (!engine.MoveUnit(operated, 0, out string reason)) return reason;
+            var events = trace.Where(x => x.StartsWith("OnOperationKreditsSpent →", StringComparison.Ordinal)
+                || x.StartsWith("OnOtherCardOperationKreditsSpent →", StringComparison.Ordinal)).ToArray();
+            if (state.Kredits(Side.Left) != 9) return "旁观老兵应返还行动费，包括操作者被抑制时";
+            if (suppressOperated)
+            {
+                if (events.Length != 1 || !events[0].Contains("#102（"))
+                    return "抑制操作者只跳过自身回调；未抑制旁观者仍应收到事件";
+            }
+            else if (events.Length != 2 || !events[0].StartsWith("OnOperationKreditsSpent →", StringComparison.Ordinal)
+                || !events[0].Contains("#101（") || !events[1].Contains("#102（"))
+                return "行动费事件应先自身、再旁观，直接抑制门不得接受旁观者例外：" + string.Join(" | ", events);
+        }
         return null;
     }
 

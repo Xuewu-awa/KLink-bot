@@ -144,6 +144,8 @@ out/audit/systematic-rules/selftest-after.txt
 out/audit/systematic-rules/selftest-trigger-*.txt
 out/audit/systematic-rules/selftest-creation-*.txt
 out/audit/systematic-rules/selftest-slots-*.txt
+out/audit/systematic-rules/selftest-created-*.txt
+out/audit/systematic-rules/selftest-operation-*.txt
 out/audit/systematic-rules/dispatch/dispatch-classification.json
 
 # ---------------------------------------------------------------------------
