@@ -30,6 +30,7 @@ internal static class SelfTest
         new("部署倍数 T23 固定查询时接收者，回调间抑制变化不重筛", DeploymentQuerySnapshot),
         new("部署取消 T14 在首个 true 后停止，保留之前 false 回调的副作用", DeploymentCancelShortCircuit),
         new("T37 不添加位置门，Imperial Decree 按生效回合和目标修正伤害", DamageModifierQueryLocation),
+        new("T38 延后列表只收集停止前遇到的 National Fire Service", DamageAfterCalcDelayedCollection),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8412,6 +8413,38 @@ internal static class SelfTest
         decree.Keywords.Remove(Keyword.Suppressed);
         state.Turn++;
         if (Damage() != 2) return "生效回合已过时不应加伤";
+        return null;
+    }
+
+    private static string? DamageAfterCalcDelayedCollection(CardDatabase db)
+    {
+        foreach (bool nfsFirst in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Right;
+            CardInstance nfs;
+            if (nfsFirst)
+            {
+                nfs = state.CreateWithId("card_event_national_fire_service", Side.Left, 20, CardLocation.HandLeft, 0);
+                state.CreateWithId("card_unit_m26_pershing", Side.Left, 21, CardLocation.BoardFrontline, 0);
+            }
+            else
+            {
+                state.CreateWithId("card_unit_m26_pershing", Side.Left, 20, CardLocation.BoardFrontline, 0);
+                nfs = state.CreateWithId("card_event_national_fire_service", Side.Left, 21, CardLocation.HandLeft, 0);
+            }
+            nfs.GotchaActivated = 1;
+            var source = state.CreateWithId("card_event_bombing_raid", Side.Right, 60, CardLocation.Discard, 0);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            int damage = engine.Api.ExecuteOnDealDamageAddDamageAfterCalc(source, state.Hq(Side.Left), 25, false, false, false);
+            if (damage != (nfsFirst ? 1 : 19))
+                return $"NFS 位于停止接收者{(nfsFirst ? "之前" : "之后")}时，伤害应为 {(nfsFirst ? 1 : 19)}，实际 {damage}";
+            bool visited = trace.Any(x => x.StartsWith("OnOtherCardDealDamageAddDamageAfterCalc(out", StringComparison.Ordinal)
+                && x.Contains($"card_event_national_fire_service#{nfs.CardId}（", StringComparison.Ordinal));
+            if (visited != nfsFirst || nfs.GotchaActivated != (nfsFirst ? 0 : 1))
+                return "未遇到的 NFS 不得延后执行/消耗，已入列的 NFS 应读取 Pershing 修正后的伤害";
+        }
         return null;
     }
 

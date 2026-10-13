@@ -702,7 +702,8 @@ public sealed partial class CardApi
         string functionName, CardInstance? subject, string[] outParamNames,
         IReadOnlyDictionary<string, object?>? seed = null,
         IReadOnlyList<CardInstance>? only = null,
-        bool includeSubject = false)
+        bool includeSubject = false,
+        bool recipientsAlreadyFiltered = false)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -725,18 +726,11 @@ public sealed partial class CardApi
 
         foreach (var card in snapshot)
         {
-            if (card.Location == CardLocation.NotAvailable
-                || (!includeSubject && ReferenceEquals(card, subject)))
-            {
-                continue;
-            }
-
-            if (SuppressedSkipsTrigger(card, functionName))
-            {
-                continue;
-            }
-
-            if (!card.Definition.IsRegisteredFor(functionName)) continue;
+            if (!includeSubject && ReferenceEquals(card, subject)) continue;
+            if (!recipientsAlreadyFiltered
+                && (card.Location == CardLocation.NotAvailable
+                    || SuppressedSkipsTrigger(card, functionName)
+                    || !card.Definition.IsRegisteredFor(functionName))) continue;
 
             var program = library.FindLocalProgram(card.Definition.Name, functionName);
             if (program is null)
@@ -1546,16 +1540,8 @@ public sealed partial class CardApi
 
         // National Fire Service is deliberately deferred by the Blueprint so a
         // gotcha response observes the already-adjusted damage.
-        var snapshot = CaptureTriggerSnapshot();
-
-        var firstPass = snapshot
-            .Where(card => !string.Equals(card.Name, "card_event_national_fire_service",
-                StringComparison.Ordinal))
-            .ToList();
-        var delayed = snapshot
-            .Where(card => string.Equals(card.Name, "card_event_national_fire_service",
-                StringComparison.Ordinal))
-            .ToList();
+        var snapshot = CaptureRegisteredTriggerSnapshot("OnOtherCardDealDamageAddDamageAfterCalc");
+        var delayed = new List<CardInstance>();
 
         IReadOnlyDictionary<string, object?> SeedFor(int amount)
         {
@@ -1569,11 +1555,17 @@ public sealed partial class CardApi
             return copy;
         }
 
-        foreach (var observer in firstPass)
+        foreach (var observer in snapshot)
         {
+            // i=595/673: collect only cards reached before stopAdding ends this loop.
+            if (string.Equals(observer.Name, "card_event_national_fire_service", StringComparison.Ordinal))
+            {
+                delayed.Add(observer);
+                continue;
+            }
             var hits = BroadcastLocalWithOutParams(
                 "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
-                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer });
+                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer }, recipientsAlreadyFiltered: true);
             if (hits.Count == 0) continue;
             var hit = hits[0];
             finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
@@ -1587,7 +1579,7 @@ public sealed partial class CardApi
         {
             var hits = BroadcastLocalWithOutParams(
                 "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
-                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer }, includeSubject: true);
+                new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer }, includeSubject: true, recipientsAlreadyFiltered: true);
             if (hits.Count == 0) continue;
             var hit = hits[0];
             finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
