@@ -27,6 +27,7 @@ internal static class SelfTest
         new("额外指挥点槽事件按全局入表顺序派发，直接抑制门不接受例外", ExtraKreditSlotDispatch),
         new("创建 T35 包含新卡自身，144 步兵团继承创建前已损失槽位", CreatedCardReceivesOwnT35),
         new("行动费事件先自身后旁观，被抑制操作者仍通知未抑制旁观者", OperationEventControlFlow),
+        new("部署倍数 T23 固定查询时接收者，回调间抑制变化不重筛", DeploymentQuerySnapshot),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8316,6 +8317,43 @@ internal static class SelfTest
                 || !events[0].Contains("#101（") || !events[1].Contains("#102（"))
                 return "行动费事件应先自身、再旁观，直接抑制门不得接受旁观者例外：" + string.Join(" | ", events);
         }
+        return null;
+    }
+
+    private static string? DeploymentQuerySnapshot(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        const string name = "card_unit_b_26_marauder";
+        const string trigger = "OnDeploymentEffectTriggered";
+        var first = state.CreateWithId(name, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var initiallySuppressed = state.CreateWithId(name, Side.Left, 21, CardLocation.BoardHqLeft, 2);
+        var laterSuppressed = state.CreateWithId(name, Side.Left, 22, CardLocation.BoardHqLeft, 3);
+        var unavailable = state.CreateWithId(name, Side.Left, 23, CardLocation.NotAvailable, 0);
+        initiallySuppressed.Keywords.Add(Keyword.Suppressed);
+        var selected = engine.Api.CaptureRegisteredTriggerSnapshot(trigger);
+        var seed = new Dictionary<string, object?> { ["cardTriggered"] = first, ["instigatorID"] = first.CardId };
+        var hits = engine.Api.BroadcastWithOutParams(trigger, first, Side.Left, new[] { "TriggerMultiple" },
+            seed: seed, namedArgs: seed, only: selected, recipientsAlreadyFiltered: true,
+            seedFactory: receiver =>
+            {
+                if (ReferenceEquals(receiver, first))
+                {
+                    initiallySuppressed.Keywords.Remove(Keyword.Suppressed);
+                    laterSuppressed.Keywords.Add(Keyword.Suppressed);
+                }
+                return seed;
+            });
+        if (!hits.Select(x => x.Card.CardId).SequenceEqual(new[] { 20, 22, 23 }))
+            return "T23 应保持查询时对象数组，不补入后来解除抑制者或漏掉后来被抑制者/NotAvailable："
+                + string.Join(",", hits.Select(x => x.Card.CardId));
+        if (hits.Take(2).Any(x => x.Outs.GetValueOrDefault("TriggerMultiple") is not int value || value != 1)
+            || hits[2].Outs.GetValueOrDefault("TriggerMultiple") is not int zero || zero != 0)
+            return "实际 B-26 的在场门或倍数出参结果错误";
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        int multiple = engine.Api.SumDeploymentTriggerMultiple(first);
+        if (multiple != 2 || !trace.Any(x => x.Contains(name + "#23（", StringComparison.Ordinal)))
+            return "正式部署倍数入口未使用完整注册查询快照";
         return null;
     }
 

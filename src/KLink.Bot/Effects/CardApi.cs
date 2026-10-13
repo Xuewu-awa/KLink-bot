@@ -222,6 +222,11 @@ public sealed partial class CardApi
         // equivalence to UE TSet subscription order remains to be verified.
         return State.AllCards;
     }
+    /// <summary>Definition-based registration and query-time suppression filter; no location gate.</summary>
+    public IReadOnlyList<CardInstance> CaptureRegisteredTriggerSnapshot(string programName)
+        => CaptureTriggerSnapshot().Where(card => card.Definition.IsRegisteredFor(programName)
+            && !SuppressedSkipsTrigger(card, programName)).ToArray();
+
     private readonly MatchEngine _engine;
 
     public CardApi(MatchEngine engine)
@@ -602,7 +607,8 @@ public sealed partial class CardApi
         CardInstance? eventSubject = null,
         IReadOnlyDictionary<string, object?>? namedArgs = null,
         Func<CardInstance, IReadOnlyDictionary<string, object?>?>? seedFactory = null,
-        IReadOnlyList<CardInstance>? only = null)
+        IReadOnlyList<CardInstance>? only = null,
+        bool recipientsAlreadyFiltered = false)
     {
         var results = new List<OutParamHit>();
         var library = Blueprint.KismetLibrary.Default;
@@ -628,17 +634,14 @@ public sealed partial class CardApi
         CardInstance? eventCard = eventSubject ?? subject;
         foreach (var card in snapshot)
         {
-            if (card.Location == CardLocation.NotAvailable)
+            // A Blueprint query returns a fixed object array. Preserve its
+            // eligibility even if earlier callbacks change suppression/location.
+            if (!recipientsAlreadyFiltered)
             {
-                continue;
+                if (card.Location == CardLocation.NotAvailable
+                    || SuppressedSkipsTrigger(card, programName)
+                    || !card.Definition.IsRegisteredFor(programName)) continue;
             }
-
-            if (SuppressedSkipsTrigger(card, programName))
-            {
-                continue;
-            }
-
-            if (!card.Definition.IsRegisteredFor(programName)) continue;
 
             var program = library.FindProgram(card.Name, programName);
             if (program is null)
@@ -866,15 +869,16 @@ public sealed partial class CardApi
             ["instigatorID"] = sourceId,
         };
 
-        var outs = BroadcastWithOutParam(
-            "OnDeploymentEffectTriggered", card, card.Owner, "TriggerMultiple",
+        var outs = BroadcastWithOutParams(
+            "OnDeploymentEffectTriggered", card, card.Owner, new[] { "TriggerMultiple" },
             seed: seed, eventArgs: new object?[] { card, sourceId }, eventSubject: card,
-            namedArgs: named);
+            namedArgs: named, only: CaptureRegisteredTriggerSnapshot("OnDeploymentEffectTriggered"),
+            recipientsAlreadyFiltered: true);
 
         int total = 0;
-        foreach (var v in outs)
+        foreach (var hit in outs)
         {
-            total += AsInt(v);
+            total += AsInt(hit.Outs.GetValueOrDefault("TriggerMultiple"));
         }
 
         return total;
