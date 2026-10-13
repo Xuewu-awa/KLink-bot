@@ -213,7 +213,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "entrypoint_fallback_calls": stat["entrypoint_fallback_calls"],
             "uncovered_calls": stat["calls"] - stat["local_fallback_calls"] - stat["entrypoint_fallback_calls"] if name not in dispatch else 0,
             "gameplay_fallback_calls": stat["scope_fallback_calls"]["gameplay"],
-            "gameplay_gap_calls": stat["scope_calls"]["gameplay"] - stat["scope_fallback_calls"]["gameplay"] if name not in dispatch else 0,
+            "gameplay_gap_calls": (stat["scope_calls"]["gameplay"] - stat["scope_fallback_calls"]["gameplay"]
+                                   if name not in dispatch and category not in {"campaign_ui", "test_card"} else 0),
             "receiver_calls": stat["recv_calls"],
             "gameplay_calls": stat["scope_calls"]["gameplay"],
             "campaign_calls": stat["scope_calls"]["campaign"],
@@ -230,7 +231,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "headless_scope": {
             "included": "card rules, gameplay state, triggers, targeting and resolution",
             "excluded_categories": ["campaign_ui", "test_card"],
-            "note": "UI, campaign, tutorial, test-card and client-only calls are inventory only; they are not P0 kernel gaps.",
+            "note": "Scope uses name-based heuristics. UI, campaign, tutorial, test-card and client-only calls are inventory only. This report does not prove PvP reachability or semantic correctness.",
         },
         "inputs": {"ir": str(ir_path), "bp_json": str(bp_path), "dispatch": str(dispatch_path), "vm": str(vm_path)},
         "summary": {
@@ -259,7 +260,7 @@ def markdown(report: dict[str, Any]) -> str:
         f"- 卡/程序条目：{summary['card_count']}",
         f"- IR call 调用点：{summary['callsite_count']}",
         f"- 唯一调用名：{summary['unique_function_count']}",
-        f"- 无头规则真缺口：{summary['headless_gap_functions']} 种 / {summary['headless_gap_calls']} 个调用点",
+        f"- 无头规则静态缺口候选：{summary['headless_gap_functions']} 种 / {summary['headless_gap_calls']} 个调用点",
         f"- 其中未知语义 unknown_gameplay：{summary['unknown_gameplay_functions']} 种 / {summary['unknown_gameplay_calls']} 个调用点", "",
         "## 分类统计", "", "| 分类 | 函数数 |", "|---|---:|",
     ]

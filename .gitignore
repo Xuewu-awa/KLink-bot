@@ -99,6 +99,7 @@ pak-filelist-live.txt
 !/tools/NNPlay/
 !/tools/AotProbe/
 !/tools/LiveEnumProbe/
+!/tools/audit-rule-evidence.py
 
 # ---------------------------------------------------------------------------
 # 构建产物
@@ -138,6 +139,9 @@ out/audit/live-native-rules.json
 out/audit/live-replay-*.txt
 out/audit/live-reset-native-implementation.txt
 out/audit/live-rule-selftest.txt
+out/audit/systematic-rules/inventory.json
+out/audit/systematic-rules/selftest-after.txt
+out/audit/systematic-rules/dispatch/dispatch-classification.json
 
 # ---------------------------------------------------------------------------
 # 文档备份（会掩盖真实 diff）

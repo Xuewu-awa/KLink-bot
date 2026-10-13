@@ -2012,7 +2012,7 @@ public sealed partial class CardApi
             //    （53 个调用点的 IR 形状全部是 `args=[触发卡, out]` 且 `recv` 为空）。
             //    用 `SelfArg` 会**扫到 `a[0]`**（= 触发卡）⇒ 判据绑错卡。
             ["ShouldGotchaTrigger"] = (c, r, a)
-                => ShouldGotchaTrigger(r as CardInstance ?? c.Self),
+                => ShouldGotchaTrigger(r as CardInstance ?? c.Self, AsCardOrId(c, a.ElementAtOrDefault(0))),
             // `IsGotcha(card, out isIt)` —— 16 个调用点，`a[0]` 恒为 out 槽，接收者才是被查的卡。
             ["IsGotcha"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsGotcha(x),
             // `GotchaTriggered(card, instigatorID, stopFurtherCardActions, skipDiscardingOrder, out qqq)`。

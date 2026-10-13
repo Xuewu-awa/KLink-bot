@@ -1179,6 +1179,8 @@ internal static class SelfTest
             CardLocation.BoardHqLeft, 1);
         var gotcha = MakeGotcha(state, "card_event_interception", Side.Left, 1502,
             CardLocation.HandLeft, 0);
+        gotcha.GotchaActivated = 1;
+        state.ActiveSide = Side.Right;
         var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
 
         object? applied = engine.Api.InvokeByName("ApplyGameplaySideEffect", source,
@@ -4819,7 +4821,8 @@ internal static class SelfTest
 
         var attacker = state.CreateWithId(attackerName, Side.Right, 200, CardLocation.BoardFrontline, 0);
         var defender = state.CreateWithId(defenderName, Side.Left, 201, CardLocation.BoardFrontline, 0);
-        var merchant = state.CreateWithId(merchantName, Side.Left, 202, CardLocation.BoardHqLeft, 1);
+        var merchant = state.CreateWithId(merchantName, Side.Left, 202, CardLocation.HandLeft, 1);
+        merchant.GotchaActivated = 1;
         attacker.EnteredPlayOnTurn = -1;
         defender.EnteredPlayOnTurn = -1;
         merchant.EnteredPlayOnTurn = -1;
@@ -4886,7 +4889,8 @@ internal static class SelfTest
         var defender = state.CreateWithId(defenderName, Side.Left, 201,
             CardLocation.BoardFrontline, 0);
         var merchant = state.CreateWithId(merchantName, Side.Left, 202,
-            CardLocation.BoardHqLeft, 1);
+            CardLocation.HandLeft, 1);
+        merchant.GotchaActivated = 1;
         attacker.EnteredPlayOnTurn = state.Turn - 1;
         defender.EnteredPlayOnTurn = state.Turn - 1;
         merchant.EnteredPlayOnTurn = state.Turn - 1;
@@ -4948,7 +4952,8 @@ internal static class SelfTest
         var defender = state.CreateWithId(defenderName, Side.Left, 211,
             CardLocation.BoardFrontline, 0);
         var trap = state.CreateWithId(trapName, Side.Left, 212,
-            CardLocation.BoardHqLeft, 1);
+            CardLocation.HandLeft, 1);
+        trap.GotchaActivated = 1;
         attacker.EnteredPlayOnTurn = -1;
         defender.EnteredPlayOnTurn = -1;
         trap.EnteredPlayOnTurn = -1;
@@ -19453,7 +19458,6 @@ internal static class SelfTest
             CardLocation.HandLeft, 0);
         var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
             CardLocation.BoardHqLeft, 0);
-
         var ctx = new EffectContext { Engine = engine, State = state, Self = normal, Controller = Side.Left };
 
         if (!engine.Api.IsGotcha(gotcha))
@@ -19510,6 +19514,8 @@ internal static class SelfTest
         var normal = state.CreateWithId(FindType(db, "infantry")!, Side.Left, 1501,
             CardLocation.BoardHqLeft, 0);
 
+        gotcha.GotchaActivated = 1;
+        state.ActiveSide = Side.Right;
         // ① self = 反制卡；实参 a[0] = 普通卡（蓝图里那是"触发这件事的卡"）
         var ctx1 = new EffectContext { Engine = engine, State = state, Self = gotcha, Controller = Side.Left };
         object? r1 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
@@ -19535,7 +19541,36 @@ internal static class SelfTest
                  + "实际为真 —— 这是「判 a[0]」的错法（审计 §9 第 9 条）";
         }
 
-        // ③ 反制卡被丢弃（"已销毁"）之后不再响应
+        // Current native implementation rejects inactive cards and own-turn triggers.
+        gotcha.GotchaActivated = 0;
+        if (engine.Api.ShouldGotchaTrigger(gotcha, normal)) return "未装填反制卡可以触发";
+        gotcha.GotchaActivated = 1;
+        state.ActiveSide = Side.Left;
+        if (engine.Api.ShouldGotchaTrigger(gotcha, normal)) return "己方回合反制卡可以触发";
+        state.ActiveSide = Side.Right;
+        gotcha.Location = CardLocation.DeckLeft;
+        if (engine.Api.ShouldGotchaTrigger(gotcha, normal)) return "牌库里的反制卡可以触发";
+        gotcha.Location = CardLocation.HandLeft;
+
+        normal.Keywords.Add(Keyword.Covert);
+        normal.IsRevealed = false;
+        object? covertResult = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
+            new object?[] { normal, null }, ctx1, out _);
+        if (Truthy(covertResult)) return "派发表丢失触发卡参数，未揭示隐蔽卡触发了反制";
+        gotcha.CustomJson["customName1"] = "canTargetCovert";
+        if (!engine.Api.ShouldGotchaTrigger(gotcha, normal)) return "canTargetCovert 未允许反制隐蔽卡";
+        gotcha.CustomJson.Remove("customName1");
+        normal.IsRevealed = true;
+        if (!engine.Api.ShouldGotchaTrigger(gotcha, normal)) return "已揭示隐蔽卡仍被排除";
+
+        // The native helper tests existence, even when the JSON value is false.
+        engine.Api.JsonSetBool(normal, "stop_gotcha", false);
+        normal.Location = CardLocation.Discard;
+        if (engine.Api.ShouldGotchaTrigger(gotcha, null)) return "stop_gotcha 的存在性/全位置检查遗漏";
+        normal.CustomJson.Remove("stop_gotcha");
+        if (!engine.Api.ShouldGotchaTrigger(gotcha, null)) return "移除 stop_gotcha 后仍禁止反制";
+
+        // ③ 反制卡被丢弃之后不再响应
         gotcha.Location = CardLocation.Discard;
         object? r3 = engine.Api.InvokeByName("ShouldGotchaTrigger", null,
             new object?[] { normal, null }, ctx1, out _);

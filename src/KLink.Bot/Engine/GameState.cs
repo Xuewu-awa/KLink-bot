@@ -295,13 +295,9 @@ public sealed class GameState
     /// 读：`GetStopFurtherActions()`，只在卡牌打出链里当**提前退出**的门用
     /// （`BP_CardFunctions.g.cs:684/5887/6316/14937/15673/16567`）。
     ///
-    /// ## ⚠️ 内核只建模**状态**，没有建模**消费者**
-    ///
-    /// 所有读取点都在 `AfterWaitCardPlayFromHand` / `CardPlayedFromHand` /
-    /// `PlayCardFromHand` 这一族**库函数**里，而它们**不在 `card-ir.json` 的调用点集合里**
-    /// （IR 只含每张卡自己的事件体）。⇒ 本内核设置这个标志后**没有代码读它**，
-    /// 效果是惰性的。如实记录：**这是"状态已就位、消费方未接线"**，
-    /// 不是"已经实现了 stopFurtherActions 的语义"。
+    /// MatchEngine 的手牌打出流程和 CardApi 的部署/额外触发流程
+    /// 在阶段之间检查此标志。这里记录消费位置；其完整客户端语义
+    /// 仍需要在系统审计中逐个比对读取点。
     /// </summary>
     public bool StopFurtherActions { get; set; }
 

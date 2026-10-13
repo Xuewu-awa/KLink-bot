@@ -4427,35 +4427,28 @@ public sealed partial class CardApi
     /// <summary>
     /// `ShouldGotchaTrigger(out shouldIt)` —— **这张卡自己**现在该不该响应反制触发。
     ///
-    /// ## ★ 判据落在 **self**，不是实参
-    ///
-    /// 蓝图调用点（`Generated/Britain/Base/events/card_event_interception.g.cs:53`）：
-    /// <code>
-    /// H.Call("ShouldGotchaTrigger", new Val[] { self, K2Node_Event_cardPlayed, Val.Out(…) })
-    /// </code>
-    /// 而 `IR` 里的形状（`docs/card-ir.json`，53 个调用点**全部**如此）是
-    /// <c>args = [触发卡, out]</c>、**没有 `recv`** —— 也就是**隐式 self**
-    /// （<c>KismetVm.Eval</c> 的 `{self:true}` → `ctx.Self`）。
-    /// ⇒ 判据必须落在 <c>ctx.Self</c>（= 正在跑这段程序的那张卡），
-    /// **实参 `a[0]` 是"触发这件事的那张卡"，与判据无关**。
-    ///
-    /// 把 `a[0]` 当 self 的后果：整族反制卡的 `ShouldGotchaTrigger` 会去问
-    /// 「刚被打出的那张牌是不是反制卡」—— 那是**普通卡**，恒假 ⇒ 53 个调用点
-    /// 全部静默失效。
-    ///
-    /// ## 参考实现（唯一可读的第二个口径）
-    ///
-    /// `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1348-1355`：
-    /// <code>
-    /// var self = h.Card_(a[0]);            // a[0] 在它那边就是 self（g.cs 的实参表）
-    /// should = self.Covert &amp;&amp; !self.Destroyed &amp;&amp; gotcha
-    /// </code>
-    /// 去掉那两个恒假项之后，剩下的可核实语义是 **「未被销毁」** ——
-    /// 内核里对应 <see cref="CardInstance.IsAlive"/>（`!= Discard &amp;&amp; != NotAvailable`）。
+    /// 当前客户端 exec RVA 0x4a85b20 调用实现 RVA 0x4b0ddd0。
+    /// 接收者必须已装填、位于手牌、当前为另一方行动；触发卡若未揭示
+    /// 且有 Covert，接收者需要 customName1 的 canTargetCovert 标记。
+    /// sideeffect.blockgotcha 和任意战斗卡 JSON 中存在的 stop_gotcha
+    /// 字段都会阻止触发。stop_gotcha 判字段存在性，不读取布尔值。
+    /// 字段偏移由当前 UE4SS SDK 对应；辅助事件名称由只读 FName 采集确认。
     /// </summary>
-    public bool ShouldGotchaTrigger(CardInstance? self)
-        => self is not null && IsGotcha(self) && self.IsAlive
-           && !State.HasGameplaySideEffect(self.Owner, "sideeffect.blockgotcha");
+    public bool ShouldGotchaTrigger(CardInstance? self, CardInstance? triggerCard = null)
+    {
+        // Current client: exec RVA 0x4a85b20 -> implementation 0x4b0ddd0.
+        // The argument is the triggering card; the receiver is the countermeasure.
+        if (self is null) return false;
+        if (triggerCard is not null && IsUnrevealedCovertCard(triggerCard)
+            && !CustomNameHasAttribute(self, "customName1", "canTargetCovert")) return false;
+        if (self.GotchaActivated <= 0 || State.ActiveSide == self.Owner
+            || self.Location is not (CardLocation.HandLeft or CardLocation.HandRight)) return false;
+        if (State.HasGameplaySideEffect(self.Owner, "sideeffect.blockgotcha")) return false;
+
+        // Native JSON helper 0x4518400 -> 0x4518310 checks field presence,
+        // not its boolean value. GetAllCards includes every location.
+        return !State.AllCards.Any(card => card.CustomJson.ContainsKey("stop_gotcha"));
+    }
 
     /// <summary>
     /// `GetHandLocationBySide(side, out handLocation)`
@@ -4516,9 +4509,8 @@ public sealed partial class CardApi
     /// `SetStopFurtherActions(GameStateRef, inStopFurtherActions)` / `GetStopFurtherActions()`
     /// （`_deps/BP_GameState_Battle.g.cs:3603-3618` / `:2569-2586`，各只有一行读写）。
     ///
-    /// ⚠️ 内核只建模**状态**；所有**读取点**都在 `AfterWaitCardPlayFromHand` 等
-    /// **库函数**里，而它们不在 `card-ir.json` 的调用点集合里 ⇒ 目前**没有消费者**。
-    /// 见 <see cref="GameState.StopFurtherActions"/> 的注释。
+    /// 状态由手牌打出、部署和额外触发流程消费；MatchEngine 与 CardApi
+    /// 在各阶段之间检查此标志并提前结束当前动作。
     /// </summary>
     public void SetStopFurtherActions(bool value) => State.StopFurtherActions = value;
 
