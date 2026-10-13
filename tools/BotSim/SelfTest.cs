@@ -18909,6 +18909,37 @@ internal static class SelfTest
             return $"牌库里还剩 {state.Deck(Side.Left).Count()} 张，出参却是 2 个";
         }
 
+        // The pak blueprint returns the removed ID even when a full hand burns the card.
+        var (fullEngine, fullState) = EmptyBoard(db);
+        for (int i = 0; i < GameState.HandCapacity; i++)
+        {
+            fullState.CreateWithId(InfRange1, Side.Left, 6200 + i, CardLocation.HandLeft, i);
+        }
+
+        const int burnedId = 6299;
+        fullState.CreateWithId(InfRange1, Side.Left, burnedId, CardLocation.DeckLeft, 0);
+        var fullCtx = new EffectContext { Engine = fullEngine, State = fullState, Controller = Side.Left };
+        object? burnedRaw = fullEngine.Api.InvokeByName("DrawCardsFromDeckBySide", null,
+            new object?[] { 20, (int)Side.Left, 1, false, false, null, 0.4f }, fullCtx, out _);
+
+        if (burnedRaw is not System.Collections.IList burnedList
+            || burnedList.Count != 1
+            || burnedList[0] is not int returnedBurnedId
+            || returnedBurnedId != burnedId
+            || fullState.ById(burnedId)?.Location != CardLocation.Discard
+            || fullState.Deck(Side.Left).Any())
+        {
+            return $"满手烧掉 #{burnedId} 后，蓝图出参应仍包含该 ID；实际出参={burnedRaw}, "
+                 + $"位置={fullState.ById(burnedId)?.Location}";
+        }
+
+        object? emptyRaw = fullEngine.Api.InvokeByName("DrawCardsFromDeckBySide", null,
+            new object?[] { 20, (int)Side.Left, 1, false, false, null, 0.4f }, fullCtx, out _);
+        if (emptyRaw is not System.Collections.IList emptyList || emptyList.Count != 0)
+        {
+            return $"空牌库触发疲劳时出参应为空数组，实际为 {emptyRaw}";
+        }
+
         return null;
     }
 

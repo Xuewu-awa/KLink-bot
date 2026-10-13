@@ -73,7 +73,7 @@ def iter_calls(card_name: str, card: dict[str, Any]):
                         continue
                     fn = step.get("fn")
                     if isinstance(fn, str) and fn:
-                        yield fn, source, program_name
+                        yield fn, source, program_name, step
 
 
 def scope_for_card(card_name: str) -> str:
@@ -84,6 +84,8 @@ def scope_for_card(card_name: str) -> str:
     if ("campaign" in lowered or "tutorial" in lowered
             or re.search(r"_(?:cam|scen)\d*(?:_|$)", lowered)):
         return "campaign"
+    if re.fullmatch(r"card_brawl_test\d*", lowered):
+        return "test"
     return "gameplay"
 
 
@@ -134,7 +136,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
     bp_names = set(bp)
     stats: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "calls": 0, "cards": set(), "entrypoint_calls": 0, "local_calls": 0,
-        "local_fallback_calls": 0, "recv_calls": 0, "sample_cards": set(),
+        "local_fallback_calls": 0, "entrypoint_fallback_calls": 0,
+        "recv_calls": 0, "sample_cards": set(),
         "scope_calls": Counter(), "scope_cards": defaultdict(set),
         "scope_fallback_calls": Counter(),
     })
@@ -145,7 +148,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             continue
         total_cards += 1
         local_names = set((card.get("locals") or {}).keys())
-        for fn, source, _program in iter_calls(card_name, card):
+        entrypoint_names = set((card.get("entrypoints") or {}).keys())
+        for fn, source, _program, step in iter_calls(card_name, card):
             stat = stats[fn]
             stat["calls"] += 1
             stat["cards"].add(card_name)
@@ -160,6 +164,15 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
                 stat["local_calls"] += 1
             if fn in local_names:
                 stat["local_fallback_calls"] += 1
+                stat["scope_fallback_calls"][scope] += 1
+            elif (fn in entrypoint_names and not step.get("outs")
+                  and (step.get("recv") is None
+                       or isinstance(step.get("recv"), dict)
+                       and step["recv"].get("self") is True)):
+                # KismetVm runs a same-card entrypoint when there are no
+                # out-parameters. Other receivers and output-bearing calls
+                # require explicit dispatch because their semantics differ.
+                stat["entrypoint_fallback_calls"] += 1
                 stat["scope_fallback_calls"][scope] += 1
             # A receiver means this is a member/library-shaped callsite.
             # The distinction is useful even when the name is unresolved.
@@ -185,7 +198,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
     category_counts = Counter()
     for name, stat in stats.items():
         if stat["scope_calls"]["gameplay"] == 0 and name not in dispatch:
-            category = "campaign_ui"
+            category = "test_card" if stat["scope_calls"]["test"] else "campaign_ui"
         else:
             category = classify(name, stat, bp_names, dispatch, vm_names)
         category_counts[category] += 1
@@ -197,7 +210,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "entrypoint_calls": stat["entrypoint_calls"],
             "local_calls": stat["local_calls"],
             "local_fallback_calls": stat["local_fallback_calls"],
-            "uncovered_calls": stat["calls"] - stat["local_fallback_calls"] if name not in dispatch else 0,
+            "entrypoint_fallback_calls": stat["entrypoint_fallback_calls"],
+            "uncovered_calls": stat["calls"] - stat["local_fallback_calls"] - stat["entrypoint_fallback_calls"] if name not in dispatch else 0,
             "gameplay_fallback_calls": stat["scope_fallback_calls"]["gameplay"],
             "gameplay_gap_calls": stat["scope_calls"]["gameplay"] - stat["scope_fallback_calls"]["gameplay"] if name not in dispatch else 0,
             "receiver_calls": stat["recv_calls"],
@@ -205,7 +219,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "campaign_calls": stat["scope_calls"]["campaign"],
             "ui_calls": stat["scope_calls"]["ui"],
             "gameplay_cards": len(stat["scope_cards"]["gameplay"]),
-            "excluded_cards": sorted(stat["scope_cards"]["campaign"] | stat["scope_cards"]["ui"])[:8],
+            "excluded_cards": sorted(stat["scope_cards"]["campaign"] | stat["scope_cards"]["ui"] | stat["scope_cards"]["test"])[:8],
             "sample_cards": sorted(stat["sample_cards"]),
         })
     rows.sort(key=lambda row: (-row["calls"], row["name"]))
@@ -215,8 +229,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "generated_by": str(Path(__file__).relative_to(PROJECT_ROOT)),
         "headless_scope": {
             "included": "card rules, gameplay state, triggers, targeting and resolution",
-            "excluded_categories": ["campaign_ui"],
-            "note": "UI, campaign, tutorial and client-only calls are inventory only; they are not P0 kernel gaps.",
+            "excluded_categories": ["campaign_ui", "test_card"],
+            "note": "UI, campaign, tutorial, test-card and client-only calls are inventory only; they are not P0 kernel gaps.",
         },
         "inputs": {"ir": str(ir_path), "bp_json": str(bp_path), "dispatch": str(dispatch_path), "vm": str(vm_path)},
         "summary": {

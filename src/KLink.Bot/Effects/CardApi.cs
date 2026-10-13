@@ -2721,13 +2721,9 @@ public sealed partial class CardApi
     /// <item>元素是**整数 cardID**，不是卡实例 —— 蓝图的 `drawnCards` 是 `TArray&lt;int&gt;`，
     ///       元素直接喂 `GetCardFromID`（`card_event_pact_of_steel` i=151）。
     ///       口径与 <see cref="GetDeckBySide"/> 一致；返回卡实例会让 `AsInt(实例)=0`。</item>
-    /// <item><c>DrawCard</c> 返回 null 的两条路径（牌库空 → 疲劳伤害 / 手牌满 → 烧牌）
-    ///       **都不入列**，对应蓝图 `if (drawnCard &gt; 0)` 那道门。
-    ///       ⚠️ 已知偏差：蓝图的 `DrawTopCardFromDeck` 在**手牌满**时仍返回 `drawnCardID`
-    ///       （`g.cs:12558` 的 `L["drawnCard"] = drawnCardID` 在 `isHandFull` 分支汇合之后），
-    ///       也就是"烧掉的那张"也进 `drawnCards`；而 `MatchEngine.DrawCard` 在烧牌时返回 null
-    ///       （`MatchEngine.cs:713-726`），这里就收不到。要完全对齐需要引擎给出"被烧的是哪张"，
-    ///       本轮**不改** `MatchEngine.cs`（它同时被另一处改动占用）。</item>
+    /// <item>蓝图返回的是从牌库移出的卡 ID，手牌满时也包括被烧掉的卡；只有牌库空、没有卡 ID
+    ///       的疲劳路径不入列。引擎的 <c>DrawCard</c> 对烧牌返回 null，因此在调用引擎前记录牌库顶卡，
+    ///       用它构造蓝图出参，同时保留 <c>DrawCard</c> 表示“是否进入手牌”的返回语义。</item>
     /// </list>
     /// </summary>
     public List<int> DrawCardsAndCollect(Side side, int count)
@@ -2735,9 +2731,12 @@ public sealed partial class CardApi
         var drawn = new List<int>();
         for (int i = 0; i < count; i++)
         {
-            if (_engine.DrawCard(side) is { } card)
+            // DrawTopCardFromDeck returns the removed card ID even when a full hand burns it.
+            var topCard = State.Deck(side).FirstOrDefault();
+            _engine.DrawCard(side);
+            if (topCard is not null)
             {
-                drawn.Add(card.CardId);
+                drawn.Add(topCard.CardId);
             }
         }
 
