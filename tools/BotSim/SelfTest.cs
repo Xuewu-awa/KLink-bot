@@ -29,6 +29,7 @@ internal static class SelfTest
         new("行动费事件先自身后旁观，被抑制操作者仍通知未抑制旁观者", OperationEventControlFlow),
         new("部署倍数 T23 固定查询时接收者，回调间抑制变化不重筛", DeploymentQuerySnapshot),
         new("部署取消 T14 在首个 true 后停止，保留之前 false 回调的副作用", DeploymentCancelShortCircuit),
+        new("T37 不添加位置门，Imperial Decree 按生效回合和目标修正伤害", DamageModifierQueryLocation),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8389,6 +8390,28 @@ internal static class SelfTest
                 && x.Contains("#22（", StringComparison.Ordinal)))
                 return "正式打出入口在首个取消之后仍执行后续订阅者";
         }
+        return null;
+    }
+
+    private static string? DamageModifierQueryLocation(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.Turn = 3;
+        var source = state.CreateWithId("card_event_bombing_raid", Side.Left, 20, CardLocation.Discard, 0);
+        var decree = state.CreateWithId("card_event_imperial_decree", Side.Left, 21, CardLocation.NotAvailable, 0);
+        decree.EnteredPlayOnTurn = state.Turn;
+        int Damage() => engine.Api.ExecuteOnDealDamageAddDamage(source, state.Hq(Side.Right), 2, false, false, false);
+        if (Damage() != 3) return "全局表中的当回合 Imperial Decree 应为己方指令伤害 +1，T37 没有位置门";
+        decree.CustomJson.Set("affectedCardID", source.CardId.ToString(), CardJsonType.Number);
+        if (Damage() != 3) return "匹配 affectedCardID 时应加伤";
+        decree.CustomJson.Set("affectedCardID", "999", CardJsonType.Number);
+        if (Damage() != 2) return "affectedCardID 不匹配时不应加伤";
+        decree.CustomJson.Remove("affectedCardID");
+        decree.Keywords.Add(Keyword.Suppressed);
+        if (Damage() != 2) return "查询时被抑制的 Imperial Decree 应排除";
+        decree.Keywords.Remove(Keyword.Suppressed);
+        state.Turn++;
+        if (Damage() != 2) return "生效回合已过时不应加伤";
         return null;
     }
 

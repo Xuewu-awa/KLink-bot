@@ -1464,7 +1464,7 @@ public sealed partial class CardApi
         }
 
         // Each observer receives the damage left by its predecessor (i=109/481).
-        var recipients = CaptureTriggerSnapshot().ToArray();
+        var recipients = CaptureRegisteredTriggerSnapshot("OnOtherCardDealDamageAddDamage");
         var reRun = new List<CardInstance>();
         void Visit(CardInstance observer, bool collectRerun)
         {
@@ -1476,7 +1476,7 @@ public sealed partial class CardApi
             };
             var hits = BroadcastWithOutParams("OnOtherCardDealDamageAddDamage", dealer,
                 receiver.Owner, new[] { "damageToAdd", "reRunAtEnd" },
-                seed: args, namedArgs: args, only: new[] { observer });
+                seed: args, namedArgs: args, only: new[] { observer }, recipientsAlreadyFiltered: true);
             if (hits.Count == 0) return;
             var hit = hits[0];
             calculated += AsInt(hit.Outs.GetValueOrDefault("damageToAdd"));
