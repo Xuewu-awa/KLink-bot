@@ -32,6 +32,7 @@ internal static class SelfTest
         new("T37 不添加位置门，Imperial Decree 按生效回合和目标修正伤害", DamageModifierQueryLocation),
         new("T38 延后列表只收集停止前遇到的 National Fire Service", DamageAfterCalcDelayedCollection),
         new("批量 T38 传递实际 damage、筛选抑制并保留直接停止顺序", BatchDamageModifierArguments),
+        new("批量死亡先刷新原区域编号，再执行换区和摧毁事件", BatchDeathLocationRefresh),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8473,6 +8474,34 @@ internal static class SelfTest
             if (state.IsFinished != (mode == 1)) return "抑制 Pershing 后致命批量伤害应结束对局";
             if (nfs is not null && nfs.GotchaActivated != (mode == 3 ? 0 : 1))
                 return "批量路径应直接遍历 NFS；Pershing 停止后的 NFS 不应触发";
+        }
+        return null;
+    }
+
+    private static string? BatchDeathLocationRefresh(CardDatabase db)
+    {
+        foreach (bool frontline in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            const string name = "card_unit_432_infantry_regiment";
+            var location = frontline ? CardLocation.BoardFrontline : CardLocation.BoardHqLeft;
+            var first = state.CreateWithId(name, Side.Left, 20, location, frontline ? 0 : 1);
+            var dead1 = state.CreateWithId(name, Side.Left, 21, location, frontline ? 1 : 2);
+            var dead2 = state.CreateWithId(name, frontline ? Side.Right : Side.Left, 22, location, frontline ? 2 : 3);
+            var last = state.CreateWithId(name, frontline ? Side.Right : Side.Left, 23, location, frontline ? 3 : 4);
+            dead1.Defense = dead2.Defense = 1;
+            var source = state.CreateWithId("card_event_bombing_raid", Side.Right, 100, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Right };
+            var destroyed = engine.Api.InvokeByName("DamageMultipleCards", null,
+                new object?[] { new List<CardInstance> { dead1, dead2 }, 1, source.CardId, null }, ctx, out bool handled);
+            if (!handled || destroyed is not int[] ids || !ids.SequenceEqual(new[] { 21, 22 }))
+                return "批量死亡返回的对象 ID 不符";
+            if (dead1.Location != CardLocation.Discard || dead2.Location != CardLocation.Discard)
+                return "两张死亡卡应全部进入弃牌";
+            if (first.LocationNumber != (frontline ? 0 : 1) || last.LocationNumber != (frontline ? 1 : 2))
+                return $"{location} 的存活者编号未连续刷新：{first.LocationNumber},{last.LocationNumber}";
+            if (first.Location != location || last.Location != location)
+                return "刷新编号不应移动存活单位";
         }
         return null;
     }

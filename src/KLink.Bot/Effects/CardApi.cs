@@ -1871,6 +1871,10 @@ public sealed partial class CardApi
             if (hit.Card.IsHq) { State.Finish(hit.Card.Owner.Opposite(), "Victory_DestroyHQ"); continue; }
             State.Move(hit.Card, CardLocation.Discard, 0, notifyMoved: false);
         }
+        // ApplyDamageToMultipleCards i=4422 records old locations;
+        // i=7136 refreshes them after all moves, before i=7538 callbacks.
+        foreach (var location in destroyed.Values.Select(hit => hit.Location).Distinct())
+            RearrangeLocation(location);
         var ids = destroyed.Keys.ToArray();
         foreach (var hit in destroyed.Values)
             if (!hit.Card.IsHq) _engine.ExecuteOnCardLocationMoved(hit.Card, hit.Location, CardLocation.Discard, false, CardMoveReason.Destroyed);

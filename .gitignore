@@ -151,6 +151,7 @@ out/audit/systematic-rules/selftest-cancel-*.txt
 out/audit/systematic-rules/selftest-damage-*.txt
 out/audit/systematic-rules/selftest-aftercalc-*.txt
 out/audit/systematic-rules/selftest-batch-*.txt
+out/audit/systematic-rules/selftest-death-*.txt
 out/audit/systematic-rules/dispatch/dispatch-classification.json
 
 # ---------------------------------------------------------------------------
