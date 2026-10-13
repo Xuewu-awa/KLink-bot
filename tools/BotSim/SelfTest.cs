@@ -22,6 +22,8 @@ internal static class SelfTest
     {
         new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
+        new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
+        new("GetAllCards 与同位置编号重排保持 AllCardsInBattle 入表顺序", BattleMapAndLocationOrder),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8175,6 +8177,45 @@ internal static class SelfTest
         state.SetMaxKredits(Side.Left, 6);
         if (!engine.CanPlay(card, out _) || !engine.PlayCard(card) || !engine.Api.IsLocatedOnBoard(card))
             return "6 槽位时应允许正常部署";
+        return null;
+    }
+
+    private static string? CardConstructionPublicationOrder(CardDatabase db)
+    {
+        const string cardName = "card_unit_panzer_iii_e";
+        var state = new GameState(db, 1);
+        bool visibleDuringOwn = false, duplicateRejected = false;
+        int childId = -1;
+        state.CardCreated = card =>
+        {
+            if (card.CardId != 2) return;
+            visibleDuringOwn = ReferenceEquals(state.ById(2), card)
+                && state.AllCardsInBattleOrder.Contains(card);
+            try { state.CreateWithId(cardName, Side.Left, 2, CardLocation.DeckLeft, 0); }
+            catch (InvalidOperationException) { duplicateRejected = true; }
+            childId = state.Create(cardName, Side.Left, CardLocation.DeckLeft, 1, sequentialId: true).CardId;
+        };
+        state.CreateWithId(cardName, Side.Left, 2, CardLocation.DeckLeft, 0);
+        if (!visibleDuringOwn) return "OnCreateCard 应在加入 AllCardsInBattle 后执行";
+        if (!duplicateRejected || childId != 3) return "重入创建没有跳过已占用 cardID";
+        if (!state.AllCardsInBattleOrder.Select(c => c.CardId).SequenceEqual(new[] { 2, 3 }))
+            return "重入创建的入表顺序应先父卡、再子卡";
+        if (!state.Snapshot().BattleCardOrder.SequenceEqual(new[] { 2, 3 }))
+            return "状态快照丢失入表顺序";
+        return null;
+    }
+
+    private static string? BattleMapAndLocationOrder(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        const string cardName = "card_unit_432_infantry_regiment";
+        var first = state.CreateWithId(cardName, Side.Left, 99, CardLocation.BoardFrontline, 7);
+        var second = state.CreateWithId(cardName, Side.Right, 10, CardLocation.BoardFrontline, 7);
+        var ids = engine.Api.GetAllCards().Where(c => c == first || c == second).Select(c => c.CardId);
+        if (!ids.SequenceEqual(new[] { 99, 10 })) return "GetAllCards 用 cardID 排序替代了入表顺序";
+        engine.Api.RearrangeLocation(CardLocation.BoardFrontline);
+        if (first.LocationNumber != 0 || second.LocationNumber != 1)
+            return "相同 locationNumber 未按 AllCardsInBattle 的稳定顺序重排";
         return null;
     }
 

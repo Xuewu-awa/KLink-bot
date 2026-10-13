@@ -119,8 +119,7 @@ public sealed class MatchEngine
         // 而内核的 `GameState.Move` / `GameState.Create` 正好是它们对应的唯一入口。
         // 挂在这里等于"每一处换区都发"，不会漏。
         //
-        // ⚠️ 开局摆牌阶段发这些事件是**无害**的：`CardApi.FireTrigger` 的快照只含
-        //    「双方棋盘 + 弃牌堆」，那时两者都是空的（HQ 不算棋盘卡），所以没有人收到。
+        // 初始化牌组时尚未挂接这些钩子，该初始化生命周期仍待单独审计。
         State.CardMoved = FireLocationMoved;
         State.CardCreated = FireCardCreated;
     }

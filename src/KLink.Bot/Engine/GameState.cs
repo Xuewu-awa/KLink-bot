@@ -33,6 +33,7 @@ public sealed class GameState
     private readonly List<CardInstance>[] _cardsBySide = { new(), new(), new() };
 
     private readonly Dictionary<int, CardInstance> _byCardId = new();
+    private readonly List<CardInstance> _battleCardOrder = new();
 
     public GameState(CardDatabase database, ulong seed)
     {
@@ -489,6 +490,7 @@ public sealed class GameState
     // ==================== 卡牌增删查 ====================
 
     public IReadOnlyList<CardInstance> AllCards => _byCardId.Values.OrderBy(c => c.CardId).ToList();
+    public IReadOnlyList<CardInstance> AllCardsInBattleOrder => _battleCardOrder.ToArray();
 
     /// <summary>
     /// 无序的卡牌枚举 —— 热路径专用（<see cref="AllCards"/> 每次都会排序+分配）。
@@ -667,6 +669,7 @@ public sealed class GameState
         };
 
         _byCardId[card.CardId] = card;
+        _battleCardOrder.Add(card);
         _cardsBySide[(int)owner].Add(card);
 
         // 先灌卡面自带的关键字（Blitz/Guard/…），再算派生数值。
@@ -730,6 +733,7 @@ public sealed class GameState
         };
 
         _byCardId[cardId] = card;
+        _battleCardOrder.Add(card);
         _cardsBySide[(int)owner].Add(card);
 
         // 同上：灌卡面关键字 + 派生数值统一重算
@@ -940,6 +944,7 @@ public sealed class GameState
     public void Remove(CardInstance card)
     {
         _byCardId.Remove(card.CardId);
+        _battleCardOrder.Remove(card);
         _cardsBySide[(int)card.Owner].Remove(card);
         card.Location = CardLocation.NotAvailable;
     }
@@ -979,6 +984,7 @@ public sealed class GameState
             OperationKreditsSpentThisTurn = OperationKreditsSpentThisTurn,
             HasPlayedWeatherCardThisTurn = HasPlayedWeatherCardThisTurn,
             ActiveBondFactions = ActiveBondFactions.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
+            BattleCardOrder = _battleCardOrder.Select(c => c.CardId).ToArray(),
             LeftFatigue = Fatigue(Side.Left), RightFatigue = Fatigue(Side.Right),
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
@@ -1041,6 +1047,7 @@ public sealed record MatchSnapshot(
     public int OperationKreditsSpentThisTurn { get; init; }
     public bool HasPlayedWeatherCardThisTurn { get; init; }
     public string[] ActiveBondFactions { get; init; } = Array.Empty<string>();
+    public int[] BattleCardOrder { get; init; } = [];
     public int LeftFatigue { get; init; }
     public int RightFatigue { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();

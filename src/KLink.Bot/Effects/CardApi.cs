@@ -4269,7 +4269,7 @@ public sealed partial class CardApi
         => State.BattleCardsInOrder(Side.Left)
             .Concat(State.BattleCardsInOrder(Side.Right))
             .Where(card => card.Location == CardLocation.BoardFrontline);
-    public IEnumerable<CardInstance> GetAllCards() => State.AllCards;
+    public IEnumerable<CardInstance> GetAllCards() => State.AllCardsInBattleOrder;
     public IEnumerable<CardInstance> GetCardsInHandBySide(Side s) => State.Hand(s);
     /// <summary>
     /// 「某一方牌库里的**卡 ID**」。蓝图链条：
@@ -4458,13 +4458,12 @@ public sealed partial class CardApi
     /// 这里按蓝图实现，调用方（`GotchaTriggered`）传的正是手牌位置。
     ///
     /// 排序稳定性：蓝图是插入排序（`>` 比较）⇒ 同值时保持**输入数组顺序**
-    /// （= `AllCardsInBattle` 的插入序）。内核用 `State.AllCards`（按 `CardId` 升序）
-    /// 作为输入，LINQ `OrderBy` 也是稳定排序 ⇒ 同值时按 `CardId`。
-    /// 这是**近似**（内核没有 `AllCardsInBattle` 那张只增不删的映射），已标注。
+    /// （= 没有删除或插槽复用时 `AllCardsInBattle` 的入表顺序）。
+    /// LINQ OrderBy 的稳定排序保留相同位置编号的原始先后。
     /// </summary>
     public void RearrangeLocation(CardLocation location)
     {
-        var cards = State.AllCards
+        var cards = State.AllCardsInBattleOrder
             .Where(c => c.Location == location)
             .OrderBy(c => c.LocationNumber)
             .ToList();
