@@ -331,6 +331,10 @@ public sealed class ReplayRunner
                                      seed: (ulong)replay.MatchId);
         Engine = engine;
         var state = engine.State;
+        // BP_Logic calls SetupSidesInBattle(LocalPlayerSide, OtherSide) once
+        // for the match.  ReplayData carries that side so GetClientSide and
+        // any client-only card branches see the same stored game-state value.
+        state.SetupSidesInBattle(replay.ClientSide);
 
         // ★ 效果生成的卡按**客户端规则**发号（`回合号 × 1000 + 本回合第几张`）。
         //

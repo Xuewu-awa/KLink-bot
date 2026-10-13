@@ -492,6 +492,7 @@ public sealed class MatchEngine
 
         State.StartingSide = Side.Left;
         State.ActiveSide = Side.Left;
+        State.SetupSidesInBattle(State.StartingSide, State.StartingSide.Opposite());
         State.Turn = 1;
 
         Api.FireTrigger("OnStartOfGame", null, Side.Left);

@@ -563,6 +563,9 @@ public sealed partial class CardApi
             ["RandomIntFromRangeWithStream"] = (c, r, a) => DoRandomIntFromRange(c, a),
             ["GetPlayingSide"] = (c, r, a) => (int)c.Controller,
             ["GetStartingSide"] = (c, r, a) => (int)c.State.StartingSide,
+            // `GetClientSide` is AkardsGameState's stored client-side field.
+            // It is not the active turn, the effect controller, or the card's owner.
+            ["GetClientSide"] = (c, r, a) => (int)c.State.ClientSide,
             ["GetAllyNationForSide"] = (c, r, a) => "",
             ["GetEmptyText"] = (c, r, a) => "",
 

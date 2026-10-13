@@ -157,6 +157,37 @@ public sealed class GameState
     public Side ActiveSide { get; set; } = Side.Left;
     public Side StartingSide { get; set; } = Side.Left;
 
+    /// <summary>
+    /// The side owned by this game client.  This is the value stored by
+    /// <c>AkardsGameState::SetupSidesInBattle</c>; it is independent from
+    /// <see cref="ActiveSide"/> and therefore must not be derived from the
+    /// current turn.
+    /// </summary>
+    public Side ClientSide { get; private set; } = Side.Left;
+
+    /// <summary>The side opposite the client side, as in the native game state.</summary>
+    public Side OpponentSide => ClientSide.Opposite();
+
+    /// <summary>
+    /// Mirrors the native <c>SetupSidesInBattle</c> state write.  Unknown enum
+    /// values are preserved as <see cref="Side.NotAvailable"/> rather than
+    /// silently becoming one of the playable sides.
+    /// </summary>
+    public void SetupSidesInBattle(Side clientSide)
+        => ClientSide = clientSide is Side.Left or Side.Right
+            ? clientSide
+            : Side.NotAvailable;
+
+    /// <summary>
+    /// Full native-shaped overload.  The opponent value is validated against
+    /// the two-sided game; inconsistent input leaves the client side unknown.
+    /// </summary>
+    public void SetupSidesInBattle(Side clientSide, Side opponentSide)
+        => ClientSide = clientSide is Side.Left or Side.Right
+            && opponentSide == clientSide.Opposite()
+            ? clientSide
+            : Side.NotAvailable;
+
     /// <summary>Blueprint `DestroyedCardIDsByTurnNumber`, indexed by battle turn.</summary>
     public Dictionary<int, List<int>> DestroyedCardIdsByTurn { get; } = new();
 

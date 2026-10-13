@@ -27,6 +27,7 @@ internal static class SelfTest
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
         new("GetOpponentSide 按当前对局方返回对手阵营", OpponentSideSemantics),
+        new("GetClientSide 返回 GameState 保存的客户端阵营，而不是行动方", ClientSideSemantics),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
@@ -1873,6 +1874,55 @@ internal static class SelfTest
             {
                 return $"{controller} 的对手应为 {expected}({(int)expected})，实际 {actual}({raw})";
             }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// `AkardsGameState::GetClientSide` reads the side saved by
+    /// `SetupSidesInBattle`, even while the other side is taking its turn.
+    /// </summary>
+    private static string? ClientSideSemantics(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        foreach (var clientSide in new[] { Side.Left, Side.Right })
+        {
+            state.SetupSidesInBattle(clientSide, clientSide.Opposite());
+            state.ActiveSide = clientSide.Opposite();
+
+            var ctx = new EffectContext
+            {
+                Engine = engine,
+                State = state,
+                Controller = state.ActiveSide,
+            };
+            object? result = engine.Api.InvokeByName(
+                "GetClientSide", null, Array.Empty<object?>(), ctx, out bool handled);
+            if (!handled)
+            {
+                return "GetClientSide 没有注册到派发表里";
+            }
+
+            if (result is not int raw || (Side)raw != clientSide)
+            {
+                return $"客户端阵营应为 {clientSide}({(int)clientSide})，"
+                     + $"实际 {result?.ToString() ?? "null"}；ActiveSide={state.ActiveSide}";
+            }
+        }
+
+        state.SetupSidesInBattle(Side.NotAvailable);
+        var invalidCtx = new EffectContext
+        {
+            Engine = engine,
+            State = state,
+            Controller = Side.Left,
+        };
+        object? invalid = engine.Api.InvokeByName(
+            "GetClientSide", null, Array.Empty<object?>(), invalidCtx, out bool invalidHandled);
+        if (!invalidHandled || invalid is not int invalidRaw || (Side)invalidRaw != Side.NotAvailable)
+        {
+            return "无效客户端阵营必须保留为 NotAvailable(0)";
         }
 
         return null;
