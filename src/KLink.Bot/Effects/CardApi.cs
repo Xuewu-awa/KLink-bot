@@ -366,7 +366,9 @@ public sealed partial class CardApi
                             bool broadcastName = false,
                             IReadOnlyDictionary<string, object?>? localsSeed = null,
                             IReadOnlyList<CardInstance>? recipientSnapshot = null,
-                            bool requireRegistration = true)
+                            bool requireRegistration = true,
+                            bool allowSuppressionExceptions = true,
+                            bool includeUnavailableRecipients = false)
     {
         CardInstance? eventCard = eventSubject ?? subject;
         if (_playedCardBroadcastDepth > 0 && programName == "OnOtherCardPlayedFromHand"
@@ -421,9 +423,10 @@ public sealed partial class CardApi
             // 而触发派发要的是"这张卡**还在局内**"：指令打出后就躺在弃牌堆里，
             // 但它的"本回合内持续生效"效果还得继续响应事件
             // （`card_event_committed_crew` 就是这类，见上面快照那段注释）。
-            // 只有 `NotAvailable`（被移出对局）才真正不该再收到任何触发。
+            // 通用路径跳过 NotAvailable；直接全局广播可显式保留它，
+            // 例如 GainKreditSlot/LoseKreditSlot 的客户端循环没有位置门。
             // 不在场的卡会不会误触发，由它自己程序里的 `IsLocatedOnBoard` 守卫负责。
-            if (card.Location == CardLocation.NotAvailable)
+            if (!includeUnavailableRecipients && card.Location == CardLocation.NotAvailable)
             {
                 continue;
             }
@@ -431,7 +434,7 @@ public sealed partial class CardApi
             string name = card.Name;
             bool isSubject = ReferenceEquals(card, subject);
 
-            // 蓝图在所有触发点外层都有同一扇 suppression gate：被抑制的
+            // 注册查询通常带抑制例外门；直接循环可关闭例外。被抑制的
             // 接收者默认跳过，只有逐卡白名单里的程序名例外。主体自己的
             // 事件仍由下面的 subject 分支保留，因为已有行为证据明确要求
             // OnSuppressed / OnBecomingVeteran 这类事件继续送达主体。
@@ -462,7 +465,7 @@ public sealed partial class CardApi
                 // 广播：除主体之外的所有卡
                 if (!isSubject
                     && (!requireRegistration || card.Definition.IsRegisteredFor(programName))
-                    && (!suppressed || HasSuppressionException(card, programName))
+                    && (!suppressed || (allowSuppressionExceptions && HasSuppressionException(card, programName)))
                     && library.FindProgram(name, programName) is not null)
                 {
                     TriggerTrace?.Add($"{programName} → {name}#{card.CardId}" +
@@ -475,7 +478,7 @@ public sealed partial class CardApi
             {
                 // 自己那一路：主体在场就只发主体；主体为 null（全局事件）时发给所有卡
                 if ((isSubject || !requireRegistration || card.Definition.IsRegisteredFor(selfProgram))
-                    && (!suppressed || isSubject || HasSuppressionException(card, selfProgram))
+                    && (!suppressed || isSubject || (allowSuppressionExceptions && HasSuppressionException(card, selfProgram)))
                     && library.FindProgram(name, selfProgram) is not null)
                 {
                     TriggerTrace?.Add($"{selfProgram} → {name}#{card.CardId}" +
@@ -489,7 +492,7 @@ public sealed partial class CardApi
             if (otherProgramName is not null
                 && !isSubject
                 && (!requireRegistration || card.Definition.IsRegisteredFor(otherProgramName))
-                && (!suppressed || HasSuppressionException(card, otherProgramName))
+                && (!suppressed || (allowSuppressionExceptions && HasSuppressionException(card, otherProgramName)))
                 && library.FindProgram(name, otherProgramName) is not null)
             {
                 TriggerTrace?.Add($"{otherProgramName} → {name}#{card.CardId}" +
@@ -2650,7 +2653,8 @@ public sealed partial class CardApi
     /// （i=680）与 `LoseKreditSlot`（i=574），签名 `BaseCardObject.h:817`：
     /// <code>void OnAfterExtraKreditSlotGain(UBaseCardObject* cardGivingKredit,
     ///                                      ESideEnum sideGaining, bool isNegativeGain);</code>
-    /// GainKreditSlot/LoseKreditSlot 遍历 GetAllCardInBattle，未查询 usedTriggers。
+    /// 当前 pak: Gain i=180 / Lose i=88 遍历 GetAllCardInBattle，未查询 usedTriggers。
+    /// Gain i=500 / Lose i=404 直接跳过 isSuppressed，不应用抑制例外或位置门。
     /// </summary>
     public void FireExtraKreditSlotGain(Side side, int count, CardInstance? giver)
         => FireTrigger("OnAfterExtraKreditSlotGain", null, side,
@@ -2661,7 +2665,8 @@ public sealed partial class CardApi
                 ["cardGivingKredit"] = giver,
                 ["sideGaining"] = (int)side,
                 ["isNegativeGain"] = count < 0,
-            }, requireRegistration: false);
+            }, recipientSnapshot: State.AllCardsInBattleOrder, requireRegistration: false,
+            allowSuppressionExceptions: false, includeUnavailableRecipients: true);
 
     public void DrawCards(Side side, int count) => DrawCardsAndCollect(side, count);
 

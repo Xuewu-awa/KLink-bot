@@ -24,6 +24,7 @@ internal static class SelfTest
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
         new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
         new("GetAllCards 与同位置编号重排保持 AllCardsInBattle 入表顺序", BattleMapAndLocationOrder),
+        new("额外指挥点槽事件按全局入表顺序派发，直接抑制门不接受例外", ExtraKreditSlotDispatch),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8216,6 +8217,39 @@ internal static class SelfTest
         engine.Api.RearrangeLocation(CardLocation.BoardFrontline);
         if (first.LocationNumber != 0 || second.LocationNumber != 1)
             return "相同 locationNumber 未按 AllCardsInBattle 的稳定顺序重排";
+        return null;
+    }
+
+    private static string? ExtraKreditSlotDispatch(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        const string name = "card_unit_47th_infantry_regiment_vet";
+        const string trigger = "OnAfterExtraKreditSlotGain";
+        var first = state.CreateWithId(name, Side.Left, 99, CardLocation.BoardHqLeft, 1);
+        var second = state.CreateWithId(name, Side.Left, 10, CardLocation.BoardHqLeft, 2);
+        var unavailable = state.CreateWithId(name, Side.Left, 55, CardLocation.NotAvailable, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        int a = first.Attack, b = second.Attack;
+        engine.Api.GainKreditSlot(Side.Left, 1);
+        if (first.Attack != a + 4 || second.Attack != b + 4)
+            return "获得额外槽位应使两个在场的老兵各增加 4 攻击";
+        var hits = trace.Where(x => x.StartsWith(trigger + " → " + name, StringComparison.Ordinal)).ToArray();
+        if (hits.Length != 3 || !hits[0].Contains("#99（") || !hits[1].Contains("#10（") || !hits[2].Contains("#55（"))
+            return "直接全局广播未保留入表顺序或遗漏 NotAvailable 对象：" + string.Join(" | ", hits);
+        second.Keywords.Add(Keyword.Suppressed);
+        second.SuppressionExceptionTriggers.Add(trigger);
+        trace.Clear();
+        b = second.Attack;
+        engine.Api.GainKreditSlot(Side.Left, 1);
+        if (second.Attack != b || trace.Any(x => x.StartsWith(trigger + " → " + name + "#10（", StringComparison.Ordinal)))
+            return "直接抑制门不得因 suppressionExceptionTriggers 放行";
+        trace.Clear();
+        var ctx = new EffectContext { Engine = engine, State = state, Self = first, Controller = Side.Left };
+        a = first.Attack;
+        engine.Api.InvokeByName("LoseKreditSlot", first, new object?[] { (int)Side.Left }, ctx, out bool handled);
+        if (!handled || first.Attack != a || trace.Count(x => x.StartsWith(trigger + " → " + name, StringComparison.Ordinal)) != 2)
+            return "失去槽位也应直接广播到未抑制对象，但不得触发正增长加攻";
         return null;
     }
 
