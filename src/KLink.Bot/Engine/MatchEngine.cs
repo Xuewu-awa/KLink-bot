@@ -3027,9 +3027,14 @@ public sealed class MatchEngine
         card.UnderEnemyControl = !releaseControl;
         State.Move(card, destination, locationNumber: null, changeOwner: true,
             moveReason: releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake);
-        card.HasMovedThisTurn = false;
-        card.AttacksThisTurn = 0;
-        card.HasAttackedThisTurn = false;
+        // ChangeUnitOwnership resets movement/attack allowance only when taking
+        // control (i=1090/1190/2859), not in the release branch i=1527..1948.
+        if (!releaseControl)
+        {
+            card.HasMovedThisTurn = false;
+            card.AttacksThisTurn = 0;
+            card.HasAttackedThisTurn = false;
+        }
 
         FireAfterLeaveTrigger(card, destination, oldLocation);
 
@@ -3045,8 +3050,7 @@ public sealed class MatchEngine
 
         if (destination.IsBoard())
         {
-            Api.FireTrigger("OnEnterPlay", card, card.Owner,
-                eventArgs: new object?[] { card, 0 });
+            ExecuteOnEnterPlayEvents(card, 0);
         }
 
         return true;

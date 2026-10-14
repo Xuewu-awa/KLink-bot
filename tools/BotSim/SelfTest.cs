@@ -39,6 +39,7 @@ internal static class SelfTest
         new("T15 不添加位置门，Marder 保留自身击杀分支与查询抑制条件", BeforeDestroyedRecipientQuery),
         new("离场 method 显式传递，Dornier Do 17 不因死亡/回手/转换误触发", LeaveMethodPayload),
         new("T46/T8 观察者不设位置门，保留查询抑制与实例例外", LeaveObserverQueryBoundary),
+        new("控制权转移执行完整进场通知，释放时不重置行动记录", OwnershipEnterEventsAndReleaseQuota),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8680,6 +8681,33 @@ internal static class SelfTest
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
+        return null;
+    }
+
+    private static string? OwnershipEnterEventsAndReleaseQuota(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_67th_baranovichi", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        state.CreateWithId("card_unit_67th_baranovichi", Side.Right, 61, CardLocation.BoardHqRight, 1);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardHqRight, 2);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        if (!engine.ChangeUnitOwnership(unit, 100, Side.Right, Side.Left, CardLocation.BoardHqRight, false))
+            return "夺取控制权失败";
+        bool BothNotified() => new[] { 20, 61 }.All(id => trace.Any(x =>
+            x.StartsWith("OnOtherCardEnterPlay → card_unit_67th_baranovichi#" + id + "（", StringComparison.Ordinal)
+            && x.Contains("eventCard=" + unit.Name + "#62", StringComparison.Ordinal)));
+        if (!BothNotified()) return "夺取控制权后未执行完整的 T43 旁观进场通知";
+        unit.AttacksThisTurn = 1;
+        unit.HasAttackedThisTurn = true;
+        unit.HasMovedThisTurn = true;
+        trace.Clear();
+        if (!engine.ChangeUnitOwnership(unit, 100, Side.Left, Side.Right, CardLocation.BoardHqRight, true))
+            return "释放控制权失败";
+        if (!BothNotified()) return "释放控制权后未执行完整的 T43 旁观进场通知";
+        if (unit.AttacksThisTurn != 1 || !unit.HasAttackedThisTurn || !unit.HasMovedThisTurn)
+            return "释放控制权不应清空已有行动记录/重新给予行动额度";
+        if (unit.Owner != Side.Right || unit.UnderEnemyControl) return "释放后的阵营或控制标记错误";
         return null;
     }
 
