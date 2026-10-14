@@ -2756,14 +2756,14 @@ public sealed partial class CardApi
     ///       用它构造蓝图出参，同时保留 <c>DrawCard</c> 表示“是否进入手牌”的返回语义。</item>
     /// </list>
     /// </summary>
-    public List<int> DrawCardsAndCollect(Side side, int count, int instigatorId = 0)
+    public List<int> DrawCardsAndCollect(Side side, int count, int instigatorId = 0, bool cardSeen = false)
     {
         var drawn = new List<int>();
         for (int i = 0; i < count; i++)
         {
             // DrawTopCardFromDeck returns the removed card ID even when a full hand burns it.
             var topCard = State.Deck(side).FirstOrDefault();
-            _engine.DrawCard(side, instigatorId: instigatorId);
+            _engine.DrawCard(side, instigatorId: instigatorId, cardSeen: cardSeen);
             if (topCard is not null)
             {
                 drawn.Add(topCard.CardId);
@@ -4582,7 +4582,7 @@ public sealed partial class CardApi
     /// `SetCardSeen(cardID_Seen, instigatorID, out qqq)`。
     ///
     /// 蓝图先按第一个参数解析目标卡，再写入该卡的 `cardSeen = true`；
-    /// 第二个参数只用于客户端通知，内核没有通知层，因此不参与状态判定。
+    /// 第二个参数在当前权威函数体中未被读取，不参与状态判定。
     /// `qqq` 在正版函数中固定写为 0。
     /// </summary>
     public int SetCardSeen(int cardIdSeen, int instigatorId)

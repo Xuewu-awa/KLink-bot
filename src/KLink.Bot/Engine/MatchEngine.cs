@@ -936,7 +936,7 @@ public sealed class MatchEngine
         return destroyed;
     }
 
-    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0)
+    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0, bool cardSeen = false)
     {
         var deck = State.Deck(side).ToList();
         if (deck.Count == 0)
@@ -977,6 +977,8 @@ public sealed class MatchEngine
                 ActionValue2.Int("PreQtyInHand", preQtyInHand),
                 ActionValue2.Bool("handIsFull", true),
             });
+            // DrawTopCardFromDeck i=1194/1204 runs even on the full-hand path.
+            if (cardSeen) Api.SetCardSeen(card.CardId, 0);
             return null;
         }
 
@@ -1008,6 +1010,10 @@ public sealed class MatchEngine
         // 兜底那一段又被 `subjectBroadcast` 挡住 ⇒ 22 张订阅 `OnCardDrawnFromDeck`
         // 的卡永远收不到（`card_event_guarilla_warfare_school` 这类"抽到牌时"效果全死）。
         FireEnteredHandFromDeckEvents(card, side, startOfTurnDraw);
+        // i=819 pushes the reveal continuation at i=1194, but i=1013 first
+        // jumps to the own/T42 events at i=1274. Reveal runs after those events.
+        // False is a no-op, not a request to clear existing revealed state.
+        if (cardSeen) Api.SetCardSeen(card.CardId, 0);
         return card;
     }
 

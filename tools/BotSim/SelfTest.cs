@@ -85,6 +85,7 @@ internal static class SelfTest
         new("自身抽牌：不添加位置/抑制门，参数正确且回调先于T42查询", OwnDrawEventBoundary),
         new("批量抽牌通知：保留显式来源ID（含0），不以调用对象代替", DrawNotificationInstigator),
         new("非空牌库抽牌通知：成功及烧牌均不附加下一次疲劳伤害", DrawNotificationNoFatigue),
+        new("批量抽牌公开：保留原状态，满手也公开，自身事件先于本次公开", DrawSeenContract),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8728,6 +8729,43 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? DrawSeenContract(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer";
+        const string trigger = "OnCardDrawnFromDeck";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全添加抽牌公开探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardSeen", Scope = "instance" }, null, -1, "_auditSeenAtOwn", null) { DestinationScope = "instance" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool full in new[] { false, true })
+            foreach (bool initiallySeen in new[] { false, true })
+            foreach (bool markSeen in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                if (full)
+                    for (int i = 0; i < GameState.HandCapacity; i++)
+                        state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HandOf(), i);
+                var card = state.CreateWithId(name, side, 60, side.DeckOf(), 0);
+                card.CardSeen = initiallySeen;
+                var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                engine.Api.InvokeByName("DrawCardsFromDeckBySide", card,
+                    new object?[] { 0, (int)side, 1, markSeen, false, null, 0.4 }, context, out _);
+                bool expected = initiallySeen || markSeen;
+                bool ownCalled = card.BlueprintVariables.ContainsKey("_auditSeenAtOwn");
+                if (card.CardSeen != expected || ownCalled == full
+                    || (!full && Convert.ToBoolean(card.BlueprintVariables["_auditSeenAtOwn"]) != initiallySeen))
+                    return $"抽牌公开时机错误：方={side} 满手={full} 原公开={initiallySeen} 请求公开={markSeen}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? DrawNotificationInstigator(CardDatabase db)
