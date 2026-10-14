@@ -44,6 +44,9 @@ internal static class SelfTest
         new("夺取控制权：前线唯一单位留在前线，多单位时移回支援阵线", OwnershipTakeFrontlineDestination),
         new("释放控制权：支援满员时先恢复位置并通知进场，再退回手牌", OwnershipReleaseFullSupportEvents),
         new("释放控制权：按释放前的前线归属及数量决定是否退却", OwnershipReleaseFrontlineRetreat),
+        new("T54 退却观察者保持查询快照，不因前序回调抑制而漏发", RetreatObserverSnapshot),
+        new("T54 查询不设位置门：未定位的 Decoy Tactics 仍接收退却通知", RetreatObserverUnavailable),
+        new("退却取消契约：合成自身 stopAction=true 保留位置和移动额度", RetreatOwnCancellationContract),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8688,6 +8691,82 @@ internal static class SelfTest
         return null;
     }
 
+    // Synthetic return-value probe, not evidence of a live card override.
+    private static string? RetreatOwnCancellationContract(CardDatabase db)
+    {
+        const string name = "card_unit_flaming_matilda_anzac";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey("OnBeforeRetreat")) return "取消契约探针无法安全添加临时函数";
+        locals.Add("OnBeforeRetreat", new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Bool = true }, null, -1, "stopAction", null) { DestinationScope = "local" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                null, null, -1, null, null) });
+        try
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId(name, Side.Right, 62, CardLocation.BoardFrontline, 0);
+            state.FrontlineOwner = Side.Right;
+            state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+            var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+            engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
+            if (unit.Location != CardLocation.BoardFrontline || unit.HasMovedThisTurn
+                || state.Cards(Side.Left, CardLocation.HandLeft).Count != 0)
+                return "自身取消后不应派发 T54、移动或消耗额度";
+            return null;
+        }
+        finally { locals.Remove("OnBeforeRetreat"); }
+    }
+
+    private static string? RetreatObserverSnapshot(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var later = state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 21, CardLocation.BoardHqLeft, 2);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
+        state.FrontlineOwner = Side.Right;
+        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 31, CardLocation.DeckLeft, 1);
+        var moved = state.CardMoved;
+        bool changed = false;
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            // Simulate a reentrant change during the first Typhoon's real draw.
+            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            {
+                changed = true;
+                engine.Api.SuppressUnit(later);
+            }
+        };
+        var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+        engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
+        if (!changed || !later.IsSuppressed) return "未制造首个退却观察者回调中的抑制变化";
+        if (state.Cards(Side.Left, CardLocation.HandLeft).Count != 2)
+            return "查询时入选的第二架 Typhoon 被前序回调抑制后仍应抽牌";
+        if (unit.Location != CardLocation.BoardHqRight) return "观察者通知后仍应执行退却";
+        return null;
+    }
+
+    private static string? RetreatObserverUnavailable(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var observer = state.CreateWithId("card_event_decoy_tactics", Side.Left, 20, CardLocation.NotAvailable, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
+        unit.ReceivedAbilitiesFromCards["trigger"] = [observer.CardId];
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+        engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
+        if (!trace.Any(x => x.StartsWith("OnOtherCardRetreat", StringComparison.Ordinal)
+            && x.Contains("card_event_decoy_tactics#20", StringComparison.Ordinal)))
+            return "查询到的未定位 Decoy Tactics 被额外位置门过滤";
+        if (!Equals(observer.BlueprintVariables.GetValueOrDefault("TargetedUnitRetreated"), true))
+            return "Decoy Tactics 未收到 cardRetreated 入参，未记录目标已退却";
+        return null;
+    }
+
     private static string? OwnershipReleaseFullSupportEvents(CardDatabase db)
         => OwnershipReleaseFullSupportEvents(db, false) ?? OwnershipReleaseFullSupportEvents(db, true);
 
@@ -9115,7 +9194,7 @@ internal static class SelfTest
             return "MakeCardRetreat 没有进入派发表";
         }
 
-        string prefix = $"OnOtherCardRetreat → {watcher.Name}#{watcher.CardId}";
+        string prefix = $"OnOtherCardRetreat(out stopAction) → {watcher.Name}#{watcher.CardId}";
         if (!trace.Any(t => t.StartsWith(prefix, StringComparison.Ordinal)
                          && t.Contains($"eventCard={target.Name}#{target.CardId}", StringComparison.Ordinal)))
         {

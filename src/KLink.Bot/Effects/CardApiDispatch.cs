@@ -3700,17 +3700,24 @@ public sealed partial class CardApi
                 continue;
             }
 
-            // ApplyMakeCardRetreat dispatches these before choosing the destination.
+            // i=1466 -> 2854: only the subject's true stopAction cancels this
+            // card. Suppression skips its own hook, then still queries T54.
             if (!card.IsSuppressed)
             {
-                FireTrigger("OnBeforeRetreat", card, card.Owner);
+                var own = RunOwnLocal(card, "OnBeforeRetreat", null, "stopAction");
+                if (own is not null && KismetVmTruthy(own.GetValueOrDefault("stopAction"))) continue;
             }
-            FireTrigger("OnOtherCardRetreat", card, card.Owner,
+            var named = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardRetreated"] = card,
+            };
+            // i=1502 queries once. i=1829..1926 only logs observer stopAction;
+            // it neither cancels the retreat nor breaks the observer loop.
+            BroadcastWithOutParams("OnOtherCardRetreat", card, card.Owner, new[] { "stopAction" },
+                seed: named,
                 eventArgs: new object?[] { card }, eventSubject: card,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardRetreated"] = card,
-                });
+                namedArgs: named, only: CaptureRegisteredTriggerSnapshot("OnOtherCardRetreat"),
+                recipientsAlreadyFiltered: true);
 
             if (card.Location == CardLocation.BoardFrontline
                 && c.State.Cards(card.Owner, card.Owner.HqOf()).Count < GameState.HalfBoardCapacity)
