@@ -54,6 +54,7 @@ internal static class SelfTest
         new("退却重入：死亡或再次移动后仍按保存的旧位置执行回手", RetreatSavedOldLocation),
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
+        new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8696,6 +8697,47 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    // Probe the event parameter with a temporary function; it does not claim
+    // that this card has an OnLeaveBoardOrOwner override in the live pool.
+    private static string? ReturnInitialLeavePayload(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey("OnLeaveBoardOrOwner")) return "离场载荷探针无法安全添加临时函数";
+        locals.Add("OnLeaveBoardOrOwner", new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "goingToLocation", Scope = "local" }, null, -1, "_auditLeaveDestination", null)
+                { DestinationScope = "instance" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                null, null, -1, null, null) });
+        try
+        {
+            foreach (bool full in new[] { false, true })
+            foreach (int route in new[] { 0, 1, 2 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var unit = state.CreateWithId(name, Side.Right, 62, CardLocation.BoardHqRight, 1);
+                if (full)
+                    for (int i = 0; i < GameState.HandCapacity; i++)
+                        state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 100 + i, CardLocation.HandRight, i);
+                var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+                string method = route == 0 ? "MoveUnitFromBoardToOwnersHand"
+                    : route == 1 ? "MoveCardFromBoardToOwnersHand" : "MakeCardRetreat";
+                object?[] args = route == 0 ? new object?[] { unit, 0 }
+                    : route == 1 ? new object?[] { unit.CardId, 0, (int)CardLocation.BoardHqRight, (int)CardLocation.HandRight }
+                    : new object?[] { new[] { unit }, 0 };
+                engine.Api.InvokeByName(method, unit, args, context, out _);
+                var value = unit.BlueprintVariables.GetValueOrDefault("_auditLeaveDestination");
+                if (value is null || Convert.ToInt32(value) != 0)
+                    return $"{method} 满手={full} 离场应收到初始局部值0，实际={value}";
+                if (unit.Location != (full ? CardLocation.Discard : CardLocation.HandRight))
+                    return "初始离场载荷不能代替之后计算的实际目的地";
+            }
+            return null;
+        }
+        finally { locals.Remove("OnLeaveBoardOrOwner"); }
     }
 
     private static string? ReturnOverflowDiscardPayload(CardDatabase db)

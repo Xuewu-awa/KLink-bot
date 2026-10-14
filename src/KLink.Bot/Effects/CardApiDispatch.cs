@@ -3634,7 +3634,9 @@ public sealed partial class CardApi
         if (!oldLocation.IsBoard()) return null;
 
         // 离场触发点必须在 Move **之前**（效果里要读旧位置），与 Destroy 那条一致。
-        c.Engine.FireLeaveTrigger(card, handLocation, method: 3,
+        // i=10 reads local tmpNewLocation before i=187/925 assign it. The
+        // non-ubergraph frame is zero-initialized by installed native script calls.
+        c.Engine.FireLeaveTrigger(card, CardLocation.NotAvailable, method: 3,
             oldLocation: explicitLocations ? oldLocation : null);
         // MoveCardFromBoardToOwnersHand i=10 fires leave callbacks before i=59
         // queries capacity: those callbacks can draw into or empty the hand.
