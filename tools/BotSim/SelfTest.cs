@@ -53,6 +53,7 @@ internal static class SelfTest
         new("退却重入：换主后仍使用回调前保存的支援目的地", RetreatSavedSupportDestination),
         new("退却重入：死亡或再次移动后仍按保存的旧位置执行回手", RetreatSavedOldLocation),
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
+        new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8693,6 +8694,42 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ReturnOverflowDiscardPayload(CardDatabase db)
+    {
+        foreach (int sourceId in new[] { 0, 20 })
+        foreach (int route in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardHqRight, 1);
+            for (int i = 0; i < GameState.HandCapacity; i++)
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 100 + i, CardLocation.HandRight, i);
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            string method = route == 0 ? "MoveUnitFromBoardToOwnersHand"
+                : route == 1 ? "MoveCardFromBoardToOwnersHand" : route == 2 ? "MakeCardRetreat" : "ChangeUnitOwnership(release)";
+            object?[] args = route == 0 ? new object?[] { unit, sourceId }
+                : route == 1 ? new object?[] { unit.CardId, sourceId, (int)CardLocation.BoardHqRight, (int)CardLocation.HandRight }
+                : new object?[] { new[] { unit }, sourceId };
+            if (route == 3)
+            {
+                state.ChangeOwner(unit, Side.Left);
+                state.Move(unit, CardLocation.BoardHqLeft, notifyMoved: false);
+                unit.UnderEnemyControl = true;
+                for (int i = 1; i < GameState.HalfBoardCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 200 + i, CardLocation.BoardHqRight, i);
+                engine.ChangeUnitOwnership(unit, sourceId, Side.Left, Side.Right, CardLocation.BoardHqRight, true);
+            }
+            else engine.Api.InvokeByName(method, source, args, context, out _);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDiscardCard");
+            if (unit.Location != CardLocation.Discard || action is null) return method + " 未执行满手弃牌";
+            if (!action.Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "discarderID", "oldLocation" })
+                || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
+                || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
+                return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
         }
         return null;
     }

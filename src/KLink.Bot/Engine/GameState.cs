@@ -1077,6 +1077,7 @@ public sealed record SubAction(string Name, IReadOnlyList<ActionValue2> Values);
 public sealed record ActionValue2(string Name, int Value, string Text = "")
 {
     public static ActionValue2 Int(string name, int value) => new(name, value);
-    public static ActionValue2 Str(string name, string value) => new(name, 0, value);
+    // BP_OnlineMatch.ActionValueString i=36 stores -1 in the numeric field.
+    public static ActionValue2 Str(string name, string value) => new(name, -1, value);
     public static ActionValue2 Bool(string name, bool value) => new(name, value ? 1 : 0);
 }

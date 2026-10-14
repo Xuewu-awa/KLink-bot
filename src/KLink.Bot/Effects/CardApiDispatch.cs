@@ -3608,7 +3608,7 @@ public sealed partial class CardApi
     /// </code>
     /// 与 `MoveCardFromBoardToOwnersHand`（i=10..944）：
     /// <code>
-    /// i=10   ExecuteOnBeforeLeaveBoardOrOwnerEvents(cardID, NewLocation, OldLocation, Method=3 /*OnMovedToHand*/)
+    /// i=10   ExecuteOnBeforeLeaveBoardOrOwnerEvents(cardID, tmpNewLocation, OldLocation, Method=3 /*OnMovedToHand*/)
     /// i=59   FetchCardsByLocation(NewLocation) → isLocationFull
     /// i=173  JumpIfNot 925 (isLocationFull)     ; 没满 ⇒ 用手牌
     /// i=187  tmpNewLocation = 8 /*Discard*/     ; 满了 ⇒ 改去弃牌堆
@@ -3630,6 +3630,7 @@ public sealed partial class CardApi
         Side side = card.OriginalOwner is Side.Left or Side.Right ? card.OriginalOwner : card.Owner;
         CardLocation oldLocation = explicitLocations ? (CardLocation)IntArg(a, 2, (int)card.Location) : card.Location;
         CardLocation handLocation = explicitLocations ? (CardLocation)IntArg(a, 3, (int)side.HandOf()) : side.HandOf();
+        int instigatorId = IntArg(a, 1);
         if (!oldLocation.IsBoard()) return null;
 
         // 离场触发点必须在 Move **之前**（效果里要读旧位置），与 Destroy 那条一致。
@@ -3654,9 +3655,14 @@ public sealed partial class CardApi
 
         if (handFull)
         {
+            Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldLocationName);
+            // NotifyDiscardCard i=380 preserves the supplied instigator. The
+            // notifier/online-match chain writes cardID, discarderID, oldLocation.
             c.Engine.FireSubAction("ZActionDiscardCard", new[]
             {
-                ActionValue2.Int("discarderID", card.CardId),
+                ActionValue2.Int("cardID", card.CardId),
+                ActionValue2.Int("discarderID", instigatorId),
+                ActionValue2.Str("oldLocation", oldLocationName),
             });
         }
 
@@ -3677,7 +3683,7 @@ public sealed partial class CardApi
     {
         var context = new EffectContext { Engine = _engine, State = _engine.State,
             Self = card, Controller = card.Owner };
-        DoApplyMakeCardRetreat(context, new[] { card });
+        DoApplyMakeCardRetreat(context, new[] { card }, instigatorId);
     }
 
     private object? DoMakeCardRetreat(EffectContext c, object?[] a)
@@ -3703,12 +3709,13 @@ public sealed partial class CardApi
         var eligible = targets.Where(x => !HasCustomAbility(x, "cantRetreat")).ToArray();
         var support = eligible.Where(x => x.Location != CardLocation.BoardFrontline).ToArray();
         var frontline = eligible.Where(x => x.Location == CardLocation.BoardFrontline).ToArray();
-        DoApplyMakeCardRetreat(c, support);
-        DoApplyMakeCardRetreat(c, frontline);
+        int instigatorId = IntArg(a, 1);
+        DoApplyMakeCardRetreat(c, support, instigatorId);
+        DoApplyMakeCardRetreat(c, frontline, instigatorId);
         return null;
     }
 
-    private void DoApplyMakeCardRetreat(EffectContext c, IReadOnlyList<CardInstance> targets)
+    private void DoApplyMakeCardRetreat(EffectContext c, IReadOnlyList<CardInstance> targets, int instigatorId)
     {
         if (targets.Count == 0) return;
         // Each Apply call sorts at entry (i=112); the frontline batch starts
@@ -3775,7 +3782,7 @@ public sealed partial class CardApi
             else
             {
                 DoMoveUnitFromBoardToOwnersHand(c, card,
-                    new object?[] { card.CardId, 0, (int)savedOldLocation, (int)handDestination }, explicitLocations: true);
+                    new object?[] { card.CardId, instigatorId, (int)savedOldLocation, (int)handDestination }, explicitLocations: true);
             }
         }
 
