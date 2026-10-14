@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换创建字段：金卡取旧卡，打捞仅按模板复制且清空打捞来源ID", ConversionCreationFields),
         new("转换离场：换区和创建回调前压紧原区域位置编号", ConversionRemovalLocationRefresh),
         new("转换插入：替代卡回到原槽位，双方共享前线保持全局顺序", ConversionBoardInsertion),
+        new("转换模板时序：每项离场回调后重新查询模板并读取名称和打捞状态", ConversionTemplateAfterLeave),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8702,6 +8703,57 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    // Controlled state/table changes probe lookup timing, not a claimed live
+    // card combination. All names and template IDs remain valid at lookup.
+    private static string? ConversionTemplateAfterLeave(CardDatabase db)
+    {
+        foreach (bool replaceObject in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardFrontline, 0);
+            var second = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 63, CardLocation.BoardFrontline, 1);
+            var template = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 70, CardLocation.HandRight, 0);
+            var moved = state.CardMoved;
+            int changes = 0;
+            string[] names = { "card_unit_routed_troops", "card_unit_432_infantry_regiment" };
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (newLocation != CardLocation.Discard || reason != CardMoveReason.Convert
+                    || (card != first && card != second)) return;
+                string name = names[changes];
+                if (replaceObject)
+                {
+                    state.Remove(template);
+                    template = state.CreateWithId(name, Side.Right, 70, CardLocation.HandRight, 0);
+                }
+                else
+                {
+                    template.Name = name;
+                    template.Definition = db.Require(name);
+                }
+                template.IsSalvaged = changes == 0;
+                template.SalvageFaction = "Britain";
+                template.SalvagedCardId = 999;
+                card.IsGold = true;
+                changes++;
+            };
+            var context = new EffectContext { Engine = engine, State = state, Self = first, Controller = Side.Left };
+            var result = engine.Api.InvokeByName("ConvertCard", first,
+                new object?[] { new[] { first.CardId, second.CardId }, 0, "None", 70, true, null }, context, out _);
+            var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            if (changes != 2 || ids is not { Length: 2 }) return "模板时序探针未完成两次转换";
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var replacement = state.ById(ids[i])!;
+                if (replacement.Name != names[i] || !replacement.IsGold || replacement.IsSalvaged != (i == 0)
+                    || replacement.SalvageFaction != (i == 0 ? "Britain" : null) || replacement.SalvagedCardId != 0)
+                    return $"转换第{i + 1}项未读取离场回调后的模板/旧卡字段（替换模板对象={replaceObject}）";
+            }
         }
         return null;
     }

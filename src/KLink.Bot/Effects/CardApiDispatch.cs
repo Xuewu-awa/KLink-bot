@@ -3833,14 +3833,11 @@ public sealed partial class CardApi
             _ => null,
         };
         int targetId = IntArg(a, 3, 0);
-        CardInstance? targetTemplate = targetId > 0 ? c.State.ById(targetId) : null;
-        if (targetId > 0)
-        {
-            targetName = targetTemplate?.Name;
-        }
-
         var converted = new List<int>();
-        if (targetName is null || c.State.Database.Find(targetName) is not { } def)
+        // Retain the existing invalid-input guard; invalid/missing template
+        // behavior is still outside the verified valid-input conversion path.
+        string? initialName = targetId > 0 ? c.State.ById(targetId)?.Name : targetName;
+        if (initialName is null || c.State.Database.Find(initialName) is null)
         {
             return converted;
         }
@@ -3866,6 +3863,11 @@ public sealed partial class CardApi
             }
             else c.State.Move(card, CardLocation.Discard, 0, notifyMoved: false);
 
+            // ConvertCard i=1716 resolves the template inside each iteration,
+            // after removal callbacks. i=2040..2384 then reads its live fields.
+            var targetTemplate = targetId > 0 ? c.State.ById(targetId) : null;
+            string? creationName = targetId > 0 ? targetTemplate?.Name : targetName;
+            if (creationName is null || c.State.Database.Find(creationName) is not { } def) continue;
             CardLocation destination = oldLocation == CardLocation.Discard ? card.Owner.HandOf() : oldLocation;
             var created = c.State.Create(def.Name, card.Owner, destination, oldNumber,
                 isGold: card.IsGold, isSalvaged: targetTemplate?.IsSalvaged ?? false,
