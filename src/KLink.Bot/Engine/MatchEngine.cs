@@ -1027,9 +1027,7 @@ public sealed class MatchEngine
             eventArgs: new object?[] { startOfTurnDraw, (int)side },
             eventSubject: card, namedArgs: drawnNamed);
 
-        Api.FireTrigger("OnOtherCardDrawnFromDeck", card, side,
-            eventArgs: new object?[] { card.CardId, startOfTurnDraw, (int)side },
-            eventSubject: card, namedArgs: drawnNamed);
+        Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
     // ==================== 部署 ====================

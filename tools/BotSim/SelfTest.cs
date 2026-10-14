@@ -80,6 +80,8 @@ internal static class SelfTest
         new("牌库移除视图：位置与成员分离，嵌套及异常退出不泄漏", DeckRemovalViewContract),
         new("抽牌：T3先更新顶牌标签，成功入手与满手烧牌均通知", DrawDeckChangeTiming),
         new("满手烧牌：只改位置，保留弃牌编号且不派发换区回调", DrawOverflowLocationBoundary),
+        new("抽牌T42：查询入选后被抑制仍执行，查询前已抑制则排除", DrawObserverSnapshot),
+        new("抽牌T42：保留未定位接收者并排除新抽卡自身", DrawObserverLocationAndSelf),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8723,6 +8725,51 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? DrawObserverSnapshot(CardDatabase db)
+    {
+        const string probe = "card_unit_41st_infantry_regiment";
+        const string trigger = "OnOtherCardDrawnFromDeck";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(probe, trigger) is not null) return "无法安全添加T42临时接收函数";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SuppressUnit", new[] { new KismetExpr { Int = 21 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (bool initiallySuppressed in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                state.CreateWithId(probe, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+                var later = state.CreateWithId("card_unit_67th_baranovichi", Side.Left, 21, CardLocation.BoardHqLeft, 2);
+                if (initiallySuppressed) later.Keywords.Add(Keyword.Suppressed);
+                var drawn = state.CreateWithId("card_unit_light_infantry", Side.Left, 60, CardLocation.DeckLeft, 0);
+                var trace = new List<string>();
+                engine.Api.TriggerTrace = trace;
+                engine.DrawCard(Side.Left);
+                bool received = trace.Any(x => x.StartsWith(trigger + " → card_unit_67th_baranovichi#21", StringComparison.Ordinal));
+                // Earlier location/creation phases can already grant Alpine;
+                // this probe asserts dispatch eligibility, not its provenance.
+                if (!later.IsSuppressed || received != !initiallySuppressed)
+                    return $"T42快照错误：查询前抑制={initiallySuppressed}，接收={received}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
+    }
+
+    private static string? DrawObserverLocationAndSelf(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_67th_baranovichi", Side.Left, 20, CardLocation.NotAvailable, 0);
+        var drawn = state.CreateWithId("card_event_cross_of_lorraine", Side.Left, 60, CardLocation.DeckLeft, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        engine.DrawCard(Side.Left, startOfTurnDraw: true);
+        return trace.Any(x => x.StartsWith("OnOtherCardDrawnFromDeck → card_unit_67th_baranovichi#20", StringComparison.Ordinal))
+            && !trace.Any(x => x.StartsWith("OnOtherCardDrawnFromDeck → " + drawn.Name + "#60", StringComparison.Ordinal))
+            ? null : "T42应保留未定位订阅者，同时按抽牌ID排除新抽卡自身";
     }
 
     private static string? DrawDeckChangeTiming(CardDatabase db)

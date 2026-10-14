@@ -227,6 +227,27 @@ public sealed partial class CardApi
         => CaptureTriggerSnapshot().Where(card => card.Definition.IsRegisteredFor(programName)
             && !SuppressedSkipsTrigger(card, programName)).ToArray();
 
+    internal void ExecuteOtherCardDrawnEvents(CardInstance drawn, Side side, bool startOfTurnDraw)
+    {
+        const string trigger = "OnOtherCardDrawnFromDeck";
+        // ExecuteOnDrawnFromDeck i=191 queries after the own event. i=460
+        // excludes the drawn ID, and i=708 invokes all other saved recipients.
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { drawn.CardId, startOfTurnDraw, (int)side };
+        var named = new Dictionary<string, object?>
+        {
+            ["drawnCardID"] = drawn.CardId, ["StartOfTurnDraw"] = startOfTurnDraw, ["drawnSide"] = (int)side,
+        };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == drawn.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={drawn.Name}#{drawn.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, drawn, eventArgs: args, namedArgs: named);
+        }
+    }
+
     public void ExecuteCardCreationModifiers(CardInstance created)
     {
         // CreateCard i=1036 queries T35 once. i=1309 invokes the saved objects
