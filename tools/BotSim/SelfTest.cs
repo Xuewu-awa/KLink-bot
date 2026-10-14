@@ -40,6 +40,8 @@ internal static class SelfTest
         new("离场 method 显式传递，Dornier Do 17 不因死亡/回手/转换误触发", LeaveMethodPayload),
         new("T46/T8 观察者不设位置门，保留查询抑制与实例例外", LeaveObserverQueryBoundary),
         new("控制权转移执行完整进场通知，释放时不重置行动记录", OwnershipEnterEventsAndReleaseQuota),
+        new("夺取控制权：目标支援阵线满员时中止且不发事件", OwnershipTakeFullSupport),
+        new("夺取控制权：前线唯一单位留在前线，多单位时移回支援阵线", OwnershipTakeFrontlineDestination),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8680,6 +8682,63 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? OwnershipTakeFullSupport(CardDatabase db)
+    {
+        foreach (bool fromFrontline in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 1; i < GameState.HalfBoardCapacity; i++)
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 100 + i, CardLocation.BoardHqLeft, i);
+            var location = fromFrontline ? CardLocation.BoardFrontline : CardLocation.BoardHqRight;
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, location, 0);
+            if (fromFrontline)
+            {
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 63, location, 1);
+                state.FrontlineOwner = Side.Right;
+            }
+            unit.AttacksThisTurn = 1;
+            unit.HasMovedThisTurn = true;
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            int actions = state.ActionLog.Count;
+            if (engine.ChangeUnitOwnership(unit, 0, Side.Right, Side.Left, location, false))
+                return "目标支援阵线满员时应中止夺取：" + location;
+            if (unit.Owner != Side.Right || unit.Location != location || unit.UnderEnemyControl
+                || unit.AttacksThisTurn != 1 || !unit.HasMovedThisTurn
+                || trace.Count != 0 || state.ActionLog.Count != actions)
+                return "中止夺取时改变了单位状态或发出了事件：" + location;
+        }
+        return null;
+    }
+
+    private static string? OwnershipTakeFrontlineDestination(CardDatabase db)
+    {
+        foreach (bool otherFrontlineUnit in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            if (!otherFrontlineUnit)
+                for (int i = 1; i < GameState.HalfBoardCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 100 + i, CardLocation.BoardHqLeft, i);
+            var unit = state.CreateWithId("card_unit_flaming_matilda_anzac", Side.Right, 62, CardLocation.BoardFrontline, 0);
+            if (otherFrontlineUnit)
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 63, CardLocation.BoardFrontline, 1);
+            state.FrontlineOwner = Side.Right;
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            if (!engine.ChangeUnitOwnership(unit, 0, Side.Right, Side.Left, CardLocation.BoardFrontline, false))
+                return "夺取失败，前线有其它单位=" + otherFrontlineUnit;
+            var expectedLocation = otherFrontlineUnit ? CardLocation.BoardHqLeft : CardLocation.BoardFrontline;
+            var expectedFrontlineOwner = otherFrontlineUnit ? Side.Right : Side.Left;
+            if (unit.Owner != Side.Left || !unit.UnderEnemyControl || unit.Location != expectedLocation
+                || state.FrontlineOwner != expectedFrontlineOwner)
+                return $"前线夺取落点/归属错误：location={unit.Location}, frontline={state.FrontlineOwner}";
+            int leaveFrontlineEvents = trace.Count(x => x.StartsWith("OnMoveFromFrontline → card_unit_flaming_matilda_anzac#62（", StringComparison.Ordinal));
+            if (leaveFrontlineEvents != (otherFrontlineUnit ? 1 : 0))
+                return "仅从前线移到支援阵线才应触发 OnMoveFromFrontline";
         }
         return null;
     }

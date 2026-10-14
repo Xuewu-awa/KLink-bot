@@ -191,10 +191,10 @@ public sealed class MatchEngine
             Api.RemoveKeyword(card, Keyword.Smokescreen);
         }
 
-        // T49：前线单位离开前线时的专用事件。它与通用换区事件并列，
-        // 只在 oldLocation == BoardFrontline 时触发，避免退回半场/手牌的
-        // 单位被重复解释为“从前线离开”。
-        if (manageLocation && oldLocation == CardLocation.BoardFrontline)
+        // CardLocationMoved i=775..987: T49 only runs from frontline to a
+        // support line, excluding same-location owner changes and other zones.
+        if (manageLocation && oldLocation == CardLocation.BoardFrontline
+            && newLocation is CardLocation.BoardHqLeft or CardLocation.BoardHqRight)
         {
             Api.FireTrigger("OnMoveFromFrontline", card, card.Owner,
                 "OnOtherCardMoveFromFrontline",
@@ -2995,15 +2995,19 @@ public sealed class MatchEngine
         CardLocation oldLocation = card.Location;
         Side oldOwner = card.Owner;
         CardLocation destination = releaseControl ? originalLocation : toSide.HqOf();
+        // ChangeUnitOwnership i=2683..2854: a lone frontline unit stays there;
+        // with other units present it follows the support-line branch i=753.
+        if (!releaseControl && oldLocation == CardLocation.BoardFrontline
+            && State.Cards(Side.Left, oldLocation).Count + State.Cards(Side.Right, oldLocation).Count == 1)
+            destination = CardLocation.BoardFrontline;
         if (destination is not (CardLocation.BoardHqLeft or CardLocation.BoardHqRight
             or CardLocation.BoardFrontline))
         {
             destination = toSide.HqOf();
         }
 
-        // Blueprint rejects a full destination during normal targeting. The release
-        // path can encounter it later, in which case the card retreats to the
-        // restored owner's hand instead of silently overfilling the support line.
+        // i=913..927 exits the take branch before leave events/owner mutation
+        // when the target support line is full. Release retreat remains separate.
         bool destinationFull = destination switch
         {
             CardLocation.BoardFrontline => State.Cards(Side.Left, CardLocation.BoardFrontline).Count
@@ -3015,6 +3019,7 @@ public sealed class MatchEngine
         };
         if (destinationFull)
         {
+            if (!releaseControl) return false;
             destination = toSide.HandOf();
         }
 
@@ -3035,6 +3040,12 @@ public sealed class MatchEngine
             card.AttacksThisTurn = 0;
             card.HasAttackedThisTurn = false;
         }
+
+        // CardLocationMoved is also explicitly called for same-location owner
+        // changes (i=1363/1780); GameState.Move only notifies on location changes.
+        if (oldLocation == destination)
+            ExecuteLocationMovedEvents(card, oldLocation, destination, true,
+                releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake, true);
 
         FireAfterLeaveTrigger(card, destination, oldLocation);
 
