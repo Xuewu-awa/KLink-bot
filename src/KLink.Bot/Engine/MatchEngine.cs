@@ -937,8 +937,19 @@ public sealed class MatchEngine
     }
 
     public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0, bool cardSeen = false, bool opponentDraw = false)
+        => DrawCardCore(side, startOfTurnDraw, instigatorId, cardSeen, opponentDraw, null);
+
+    internal CardInstance? DrawSpecificCardFromDeck(Side side, int cardId, int instigatorId, bool cardSeen)
+        => DrawCardCore(side, false, instigatorId, cardSeen, false, cardId);
+
+    private CardInstance? DrawCardCore(Side side, bool startOfTurnDraw, int instigatorId, bool cardSeen, bool opponentDraw, int? selectedCardId)
     {
         var deck = State.Deck(side).ToList();
+        // Specific draw's remove/add-to-top/draw sequence has no callbacks in
+        // between. Select its ID directly while preserving object numbers and
+        // the order of every other deck member. Invalid selection does nothing.
+        var selected = selectedCardId.HasValue ? deck.Find(x => x.CardId == selectedCardId.Value) : null;
+        if (selectedCardId.HasValue && selected is null) return null;
         if (deck.Count == 0)
         {
             if (ApplyFatigueDamage(side, fromBond: false))
@@ -946,7 +957,7 @@ public sealed class MatchEngine
             return null;
         }
 
-        var card = deck[0];
+        var card = selected ?? deck[0];
         // DrawTopCardFromDeck i=62 selects handSide independently of deckSide.
         Side handSide = opponentDraw ? side.Opposite() : side;
 

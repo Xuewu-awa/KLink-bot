@@ -88,6 +88,8 @@ internal static class SelfTest
         new("批量抽牌公开：保留原状态，满手也公开，自身事件先于本次公开", DrawSeenContract),
         new("对方牌库抽牌：按收牌方容量处理，保留原主、T3牌库方及通知参数", OpponentDrawRouting),
         new("对方牌库抽牌：空牌库疲劳作用于牌库方", OpponentDrawFatigue),
+        new("指定抽牌：目标不在牌库时不得改抽同名卡", SpecificDrawExactMembership),
+        new("指定抽牌：保留来源/公开参数及其余牌库编号，满手保留目标编号", SpecificDrawFieldsAndOrder),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8729,6 +8731,56 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? SpecificDrawExactMembership(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var requested = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HandOf(), 0);
+            var sameName = state.CreateWithId(requested.Name, side, 61, side.DeckOf(), 0);
+            int actions = state.ActionLog.Count;
+            var context = new EffectContext { Engine = engine, State = state, Self = requested, Controller = side };
+            engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", requested,
+                new object?[] { 0, requested.CardId, (int)side, false }, context, out _);
+            if (sameName.Location != side.DeckOf() || requested.Location != side.HandOf()
+                || state.ActionLog.Count != actions || state.Fatigue(side) != 0)
+                return "指定ID不在牌库时不应按名称改抽其它实例或产生动作";
+        }
+        return null;
+    }
+
+    private static string? SpecificDrawFieldsAndOrder(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool full in new[] { false, true })
+        foreach (bool seen in new[] { false, true })
+        foreach (int source in new[] { 0, 30 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 1;
+            var watcher = state.CreateWithId("card_event_betasom", side, 20, CardLocation.Discard, 0);
+            watcher.EnteredPlayOnTurn = 1;
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HandOf(), i);
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", side, 62, side.DeckOf(), 1);
+            var target = state.CreateWithId(first.Name, side, 60, side.DeckOf(), 7);
+            var last = state.CreateWithId(first.Name, side, 63, side.DeckOf(), 15);
+            var context = new EffectContext { Engine = engine, State = state, Self = target, Controller = side.Opposite() };
+            engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", target,
+                new object?[] { source, target.CardId, (int)side, seen }, context, out _);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+            if (target.Location != (full ? CardLocation.Discard : side.HandOf()) || target.CardSeen != seen
+                || first.LocationNumber != 1 || last.LocationNumber != 15 || (full && target.LocationNumber != 7)
+                || !state.Deck(side).Select(x => x.CardId).SequenceEqual(new[] { 62, 63 })
+                || !engine.Api.HasCustomGameplayTag(first, "subtype.navy")
+                || action?.Values.FirstOrDefault(x => x.Name == "cardID")?.Value != 60
+                || action.Values.FirstOrDefault(x => x.Name == "instigatorID")?.Value != source)
+                return $"指定抽牌参数或编号错误：方={side} 满手={full} 公开={seen} 来源={source}";
         }
         return null;
     }

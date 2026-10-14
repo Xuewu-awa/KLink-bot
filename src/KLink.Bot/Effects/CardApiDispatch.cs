@@ -2389,54 +2389,12 @@ public sealed partial class CardApi
     /// <summary>从牌库中找出指定卡并抽到手牌（对应 DrawSpecificCardFromDeckBySide）。</summary>
     private object? DoDrawSpecific(EffectContext c, object? r, object?[] a)
     {
-        // 实参形状（实测 46 个调用点，完全一致）：
-        //     DrawSpecificCardFromDeckBySide(instigatorID, 目标卡.cardID, side, bool)
-        //   → **side 在 index 2**，不是 0。index 0 是 instigatorID（整数），
-        //     `SideArg` 只认 1/2，instigatorID 恰好是 1 或 2 时会**匹配到错误的阵营**，
-        //     也就是"抽对手的牌库"。这种错误不报错、只会静默抽错人。
-        //
-        // ★ 2026-10-02 修：`a[1]` **永远是卡 ID（整数）或卡实例**，从来不是
-        //   `"card_xxx"` 字符串字面量 —— IR 实测 46 个调用点的 `a[1]` 形状分布：
-        //     `MEMBER(cardID)`（即 `某张卡.cardID`）×38、`VAR(cardID)`×5、
-        //     `VAR(tmpCard)` / `VAR(cardFound)` / `VAR(cardToDraw)` 各 1 —— **0 个是名字字面量**。
-        //   而旧实现只调 `FindCardNameArg`（判据是「以 `card_` 开头的**字符串**」）
-        //   ⇒ **46 个调用点全部返回 null ⇒ 一个都不抽**。
-        //   这就是"不报错、只是什么都不做"的语义错：它在派发表里 ⇒
-        //   **不计入「未实现原语」**，烟雾测试只看到「零变化」，一直没被发现。
-        //   实测症状（`out/audit/smoke-all-cards.tsv`）：调用它的 41 张卡里
-        //   **27 张状态零变化**，含卡面极明确的
-        //   `card_event_arctic_convoy`「Draw two random units from your deck.」
-        //   （它确实调了 `GetRandomCard`、消耗了 2 次随机数，却什么都没抽上来）。
         var side = SideArg(r, a, 2, c.Controller);
-
-        // 先按 a[1] 解析（ID / 实例 / 名字字面量都能认），认不出来再退回原来的全参数扫名。
-        CardInstance? byId = a.ElementAtOrDefault(1) switch
-        {
-            CardInstance inst => inst,
-            int id when id > 0 => c.State.ById(id),
-            _ => null,
-        };
-
-        string? cardName = byId?.Definition.Name ?? FindCardNameArg(c, a);
-        if (cardName is null)
-        {
-            return null;
-        }
-
-        // 能按 ID 定位就按 ID 定位（牌库里可能有同名多张，按名字取第一张会拿错实例）。
-        CardInstance? match = byId is not null && c.State.Deck(side).Contains(byId)
-            ? byId
-            : c.State.Deck(side).FirstOrDefault(x => x.Name == cardName || x.Definition.Name == cardName);
-        if (match is null)
-        {
-            return null;
-        }
-
-        // 线上函数不是“直接塞进手牌”：它先把目标卡放回牌库顶，
-        // 再调用 DrawTopCardFromDeck。这样才能保留手牌满时烧牌、抽牌动作日志、
-        // OnCardDrawnFromDeck / OnOtherCardDrawnFromDeck 以及位置号规范化。
-        c.State.Move(match, side.DeckOf(), -1);
-        return c.Engine.DrawCard(side);
+        int cardId = a.ElementAtOrDefault(1) is CardInstance card ? card.CardId : IntArg(a, 1);
+        // Current Blueprint i=32/92 gates by exact ID membership. No name fallback.
+        // i=106/169 temporarily puts that ID first, then i=229 draws it without
+        // callbacks between those operations or writes to object location numbers.
+        return c.Engine.DrawSpecificCardFromDeck(side, cardId, IntArg(a, 0), TruthyArg(a, 3));
     }
 
     /// <summary>
