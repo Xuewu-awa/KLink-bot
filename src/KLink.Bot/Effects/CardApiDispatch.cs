@@ -3857,7 +3857,11 @@ public sealed partial class CardApi
             if (oldLocation.IsBoard())
             {
                 c.Engine.FireLeaveTrigger(card, CardLocation.Discard, method: 6);
-                c.State.Move(card, CardLocation.Discard, 0, moveReason: CardMoveReason.Convert);
+                // ApplyRemoveCardFromBoard -> CardLocationMoved i=348 refreshes
+                // the saved physical zone before i=578 dispatches callbacks.
+                c.State.Move(card, CardLocation.Discard, 0, moveReason: CardMoveReason.Convert, notifyMoved: false);
+                RearrangeLocation(oldLocation);
+                c.State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Convert);
                 c.Engine.FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation);
             }
             else c.State.Move(card, CardLocation.Discard, 0, notifyMoved: false);
@@ -3881,7 +3885,21 @@ public sealed partial class CardApi
             }
             else if (destination.IsBoard())
             {
-                c.State.NormalizeLocationNumbers(created.Owner, destination);
+                // ConvertCard i=4262 injects the already-created card. Gap helper
+                // i=10..627 first compacts the other cards if this ID is present,
+                // then i=1030..1164 shifts those at/after the requested slot.
+                // Frontline is one physical zone shared by both owners.
+                var others = c.State.AllCardsInBattleOrder
+                    .Where(x => x.Location == destination && x != created)
+                    .OrderBy(x => x.LocationNumber).ToArray();
+                if (created.Location == destination)
+                    for (int i = 0; i < others.Length; i++) others[i].LocationNumber = i;
+                foreach (var other in others)
+                    if (other.LocationNumber >= oldNumber) other.LocationNumber++;
+                created.Location = destination;
+                created.LocationNumber = oldNumber;
+                created.RecalculateStats();
+                RearrangeLocation(destination);
                 c.Engine.ExecuteOnCardLocationMoved(created, CardLocation.NotAvailable, destination,
                     moveReason: CardMoveReason.Convert);
                 if (IsLocatedOnBoard(created)) created.EnteredPlayOnTurn = c.State.Turn;

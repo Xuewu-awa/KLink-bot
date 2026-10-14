@@ -60,6 +60,8 @@ internal static class SelfTest
         new("退却重入转换：旧对象回手，新对象保持转换后的场上位置", RetreatConversionIdentity),
         new("转换重复ID：逐项读取旧对象当前位置，生成场上及手牌两个新对象", ConversionRepeatedInput),
         new("转换创建字段：金卡取旧卡，打捞仅按模板复制且清空打捞来源ID", ConversionCreationFields),
+        new("转换离场：换区和创建回调前压紧原区域位置编号", ConversionRemovalLocationRefresh),
+        new("转换插入：替代卡回到原槽位，双方共享前线保持全局顺序", ConversionBoardInsertion),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8700,6 +8702,59 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ConversionRemovalLocationRefresh(CardDatabase db)
+    {
+        foreach (var location in new[] { CardLocation.BoardHqLeft, CardLocation.BoardHqRight, CardLocation.BoardFrontline })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side side = location == CardLocation.BoardHqRight ? Side.Right : Side.Left;
+            int slot = location == CardLocation.BoardFrontline ? 0 : 1;
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", side, 62, location, slot);
+            var next = state.CreateWithId("card_unit_432_infantry_regiment",
+                location == CardLocation.BoardFrontline ? Side.Right : side, 63, location, slot + 1);
+            var moved = state.CardMoved;
+            var made = state.CardCreated;
+            int atMove = -1, atCreate = -1;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (card == unit && reason == CardMoveReason.Convert) atMove = next.LocationNumber;
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            };
+            state.CardCreated = card => { atCreate = next.LocationNumber; made?.Invoke(card); };
+            var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = side };
+            engine.Api.InvokeByName("ConvertCard", unit,
+                new object?[] { new[] { unit.CardId }, 0, "card_unit_routed_troops", 0, true, null }, context, out _);
+            if (atMove != slot || atCreate != slot)
+                return $"{location} 原区域应在换区事件和创建事件前压紧：预期={slot}，实际={atMove}/{atCreate}";
+        }
+        return null;
+    }
+
+    private static string? ConversionBoardInsertion(CardDatabase db)
+    {
+        foreach (var location in new[] { CardLocation.BoardHqLeft, CardLocation.BoardHqRight, CardLocation.BoardFrontline })
+        foreach (bool reverseIds in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side side = location == CardLocation.BoardHqRight ? Side.Right : Side.Left;
+            int slot = location == CardLocation.BoardFrontline ? 0 : 1;
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", side, reverseIds ? 70 : 62, location, slot);
+            var next = state.CreateWithId("card_unit_432_infantry_regiment",
+                location == CardLocation.BoardFrontline ? Side.Right : side, 63, location, slot + 1);
+            var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = side };
+            var result = engine.Api.InvokeByName("ConvertCard", unit,
+                new object?[] { new[] { unit.CardId }, 0, "card_unit_routed_troops", 0, true, null }, context, out _);
+            var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            if (ids is not { Length: 1 } || state.ById(ids[0]) is not { } replacement)
+                return "转换未生成替代卡";
+            var ordered = state.AllCardsInBattleOrder.Where(x => x.Location == location).OrderBy(x => x.LocationNumber).ToArray();
+            if (ordered[slot] != replacement || replacement.LocationNumber != slot || next.LocationNumber != slot + 1
+                || ordered.Select(x => x.LocationNumber).Where((n, i) => n != i).Any())
+                return $"{location} 替代卡未插回原槽位，或邻卡编号未连续（反向ID={reverseIds}）";
         }
         return null;
     }
