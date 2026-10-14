@@ -1995,8 +1995,8 @@ public sealed partial class CardApi
             //   ① `cardID > 0` 且卡有效 ② 卡在牌库里（location 1/2）
             //   ③ `OnAttemptedDiscard` 没取消 ④ `RemoveCardFromDeckBySide` +
             //   `SetCardLocationAndLocNumber(cardID, 8=Discard, 0)` + `NotifyDiscardCard`。
-            // Attempt/cancellation is handled explicitly. The later generic
-            // discard path still needs independent notification/order auditing.
+            // Attempt/cancellation and the deck-specific notifier are explicit;
+            // independent deck-array removal/T3 ordering still needs auditing.
             ["DiscardCardFromDeck"] = (c, r, a) => DoDiscardCardFromDeck(c, r, a),
 
             // ── Gotcha（反制卡）子系统 ──
@@ -5144,8 +5144,8 @@ public sealed partial class CardApi
     /// L_02EE  NotifyDiscardCard(cardID, discarderID, oldLocation, …) ; success = true
     /// </code>
     ///
-    /// 尝试弃牌按当前 Blueprint 的 skipTriggers/cancelDiscard 处理；后续仍复用
-    /// 通用 DiscardCard，牌库移除、T3 与通知器的精确顺序尚待核查。
+    /// 尝试弃牌与通知器按牌库路径处理，不调用手牌弃牌广播。
+    /// 独立牌库数组移除与 T3 时机仍待核查。
     /// </summary>
     private object? DoDiscardCardFromDeck(EffectContext c, object? r, object?[] a)
     {
@@ -5155,6 +5155,7 @@ public sealed partial class CardApi
             return false;
         }
 
+        CardLocation oldLocation = card.Location; // i=297, before attempted-discard callbacks
         // Current DiscardCardFromDeck i=379..456 skips this hook only for
         // skipTriggers, not suppression. A false result may still have effects.
         if (!TruthyArg(a, 2))
@@ -5163,7 +5164,22 @@ public sealed partial class CardApi
                 new Dictionary<string, object?> { ["discarderID"] = IntArg(a, 1) }, "cancelDiscard");
             if (result is not null && KismetVmTruthy(result.GetValueOrDefault("cancelDiscard"))) return false;
         }
-        DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
+        // i=683 calls SetCardLocationAndLocNumber. Its discard branch i=196/210
+        // changes location only: no renumbering and no movement/hand-discard event.
+        // Native removal from the separate deck array and T3 precede this step;
+        // that transient membership model remains a separate audit item.
+        card.Location = CardLocation.Discard;
+        card.RecalculateStats();
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldLocationName);
+        var values = new List<ActionValue2>
+        {
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("discarderID", IntArg(a, 1)),
+            ActionValue2.Str("oldLocation", oldLocationName),
+        };
+        if (TruthyArg(a, 2)) values.Add(ActionValue2.Bool("skipTriggers", true));
+        if (TruthyArg(a, 3)) values.Add(ActionValue2.Bool("skipVisuals", true));
+        c.Engine.FireSubAction("ZActionDiscardCard", values);
         return true;
     }
 

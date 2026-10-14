@@ -74,6 +74,8 @@ internal static class SelfTest
         new("创建T35：查询后被抑制的接收者仍执行，查询前已抑制则排除", CreationModifierSnapshot),
         new("牌库弃牌：35th Mountain Rifles先执行尝试弃牌效果，skipTriggers跳过", DeckDiscardAttemptEffect),
         new("牌库弃牌：自身取消结果保留位置并接收显式来源（含0）", DeckDiscardCancellation),
+        new("牌库弃牌：不触发手牌弃牌观察者或换区回调，保留弃牌编号", DeckDiscardNotificationBoundary),
+        new("牌库弃牌通知：保留卡ID、显式来源、旧位置及两个可选标记", DeckDiscardNotificationPayload),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8715,6 +8717,54 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? DeckDiscardNotificationBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_nakajima_b5n", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var enemy = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+        var card = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.DeckLeft, 2);
+        var discarded = state.CreateWithId(card.Name, Side.Left, 70, CardLocation.Discard, 17);
+        int defense = enemy.Defense, movedCount = 0;
+        var moved = state.CardMoved;
+        state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            if (c == card) movedCount++;
+            moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+        };
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+        engine.Api.InvokeByName("DiscardCardFromDeck", card, new object?[] { 62, 0, false, false, null }, context, out _);
+        return card.Location == CardLocation.Discard && card.LocationNumber == 2 && discarded.LocationNumber == 17
+            && movedCount == 0 && enemy.Defense == defense
+            && !trace.Any(x => x.StartsWith("OnOtherCardDiscarded", StringComparison.Ordinal))
+            ? null : $"牌库弃牌误发手牌/换区事件或改写弃牌编号：移动={movedCount}，编号={card.LocationNumber}/{discarded.LocationNumber}，敌防御={enemy.Defense}/{defense}";
+    }
+
+    private static string? DeckDiscardNotificationPayload(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int source in new[] { 0, 30 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool visuals in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", side, 62, side.DeckOf(), 0);
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("DiscardCardFromDeck", card, new object?[] { 62, source, skip, visuals, null }, context, out _);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDiscardCard");
+            var names = new List<string> { "cardID", "discarderID", "oldLocation" };
+            if (skip) names.Add("skipTriggers");
+            if (visuals) names.Add("skipVisuals");
+            if (action is null || !action.Values.Select(x => x.Name).SequenceEqual(names)
+                || action.Values[0].Value != 62 || action.Values[1].Value != source
+                || action.Values[2].Value != -1 || action.Values[2].Text != (side == Side.Left ? "Deck_Left" : "Deck_Right")
+                || action.Values.Skip(3).Any(x => x.Value != 1))
+                return $"牌库弃牌通知字段错误：方={side} 来源={source} skip={skip} visuals={visuals}";
         }
         return null;
     }
