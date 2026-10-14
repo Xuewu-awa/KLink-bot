@@ -122,6 +122,7 @@ public sealed class MatchEngine
         // 初始化牌组时尚未挂接这些钩子，该初始化生命周期仍待单独审计。
         State.CardMoved = FireLocationMoved;
         State.CardCreated = FireCardCreated;
+        State.CardCreationModifiers = FireCardCreationModifiers;
     }
 
     /// <summary>
@@ -132,6 +133,10 @@ public sealed class MatchEngine
     private void FireCardCreated(CardInstance card)
     {
         Api.FireTrigger("OnCreateCard", card, card.Owner);
+    }
+
+    private void FireCardCreationModifiers(CardInstance card)
+    {
         // CreateCard T35 (i=1036..1309) does not exclude the newly created card.
         Api.FireTrigger("OnOtherCardCreatedAlterCard", null, card.Owner,
             eventArgs: new object?[] { card, 0 }, eventSubject: card,

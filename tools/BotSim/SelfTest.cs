@@ -70,6 +70,7 @@ internal static class SelfTest
         new("牌库生成：逐张T3更新先于下一张创建和最终洗牌，逐次读取来源金卡", SpawnDeckNotificationTiming),
         new("牌库生成：非正来源ID不执行，非正数量不强制造牌", SpawnDeckInputBoundary),
         new("牌库生成：金卡与打捞字段在创建回调前初始化", SpawnDeckCreationFields),
+        new("转换创建：skipAction保留对象创建阶段但不派发T35；普通生成仍派发", ConversionSkipsCreationModifiers),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8711,6 +8712,39 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ConversionSkipsCreationModifiers(CardDatabase db)
+    {
+        foreach (var location in new[] { CardLocation.HandLeft, CardLocation.DeckLeft, CardLocation.BoardHqLeft })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetMaxKredits(Side.Left, 4);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, location, 1);
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            for (int i = 0; i < 2; i++)
+                engine.Api.InvokeByName("LoseKreditSlot", source, new object?[] { (int)Side.Left }, context, out _);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var made = state.CardCreated;
+            int objectCreations = 0;
+            state.CardCreated = card => { objectCreations++; made?.Invoke(card); };
+            var result = engine.Api.InvokeByName("ConvertCard", source,
+                new object?[] { new[] { source.CardId }, 0, "card_unit_144th_infantry_regiment", 0, true, null }, context, out _);
+            var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            if (ids is not { Length: 1 } || state.ById(ids[0]) is not { } replacement || objectCreations != 1)
+                return "转换未保留独立对象创建阶段";
+            if (trace.Any(x => x.StartsWith("OnOtherCardCreatedAlterCard →", StringComparison.Ordinal))
+                || replacement.CustomJson.ContainsKey("slots_lost"))
+                return $"{location} 转换skipAction不应发T35或让144步兵团继承槽位损失";
+            trace.Clear();
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+                new object?[] { (int)Side.Left, replacement.Name, 30, 1, 0, false, false, false, false, false, null }, context, out _);
+            if (!trace.Any(x => x.StartsWith("OnOtherCardCreatedAlterCard →", StringComparison.Ordinal))
+                || state.Deck(Side.Left)[0].CustomJson.GetValueOrDefault("slots_lost") != "2")
+                return "普通生成仍应执行T35并让新144步兵团继承历史槽位损失";
         }
         return null;
     }

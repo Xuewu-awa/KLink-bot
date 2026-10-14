@@ -3901,7 +3901,10 @@ public sealed partial class CardApi
             CardLocation destination = oldLocation == CardLocation.Discard ? card.Owner.HandOf() : oldLocation;
             var created = c.State.Create(def.Name, card.Owner, destination, oldNumber,
                 isGold: card.IsGold, isSalvaged: targetTemplate?.IsSalvaged ?? false,
-                salvageFaction: targetTemplate?.IsSalvaged == true ? targetTemplate.SalvageFaction : null);
+                salvageFaction: targetTemplate?.IsSalvaged == true ? targetTemplate.SalvageFaction : null,
+                // Convert i=2384 passes skipAction=true: CreateCard i=478..519
+                // returns after object creation, before T35 at i=1036.
+                skipCreationModifiers: true);
             converted.Add(created.CardId);
             if (destination == created.Owner.DeckOf())
             {

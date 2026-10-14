@@ -625,7 +625,7 @@ public sealed class GameState
     public CardInstance Create(string cardName, Side owner, CardLocation location, int locationNumber,
                                bool isGold = false, bool sequentialId = false,
                                bool isSalvaged = false, string? salvageFaction = null,
-                               int salvagedCardId = 0)
+                               int salvagedCardId = 0, bool skipCreationModifiers = false)
     {
         CardDefinition def = Database.Require(cardName);
         var card = new CardInstance
@@ -680,6 +680,7 @@ public sealed class GameState
         // i=2610 `CallFunc_SpawnObject_ReturnValue.OnCreateCard()`。
         // 签名 `BaseCardObject.h:703 void OnCreateCard();`（无参、只有"自己"这一路）。
         CardCreated?.Invoke(card);
+        if (!skipCreationModifiers) CardCreationModifiers?.Invoke(card);
 
         // 游标探针：把"效果生成的卡"也记进流水账 —— 才能把
         // 「客户端说 cardID X 是卡 A」与「内核在什么时候、按什么顺序生成了 X」对上。
@@ -747,6 +748,7 @@ public sealed class GameState
 
         // 同上：`CreateCardObject` 的 `OnCreateCard`（回放路径也走这个入口）。
         CardCreated?.Invoke(card);
+        CardCreationModifiers?.Invoke(card);
         return card;
     }
 
@@ -923,6 +925,9 @@ public sealed class GameState
 
     /// <summary>卡对象被创建时的回调（对应蓝图 <c>CreateCardObject</c> 里的 <c>OnCreateCard</c>）。</summary>
     public Action<CardInstance>? CardCreated { get; set; }
+
+    /// <summary>CreateCard 包装器的 T35 阶段，独立于对象自身 OnCreateCard。</summary>
+    public Action<CardInstance>? CardCreationModifiers { get; set; }
 
     public int NextLocationNumber(Side side, CardLocation location)
     {
