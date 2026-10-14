@@ -78,6 +78,8 @@ internal static class SelfTest
         new("牌库弃牌通知：保留卡ID、显式来源、旧位置及两个可选标记", DeckDiscardNotificationPayload),
         new("牌库弃牌：移除后T3更新下一张顶牌，单张牌库通知空牌库", DeckDiscardUpdatesTopCard),
         new("牌库移除视图：位置与成员分离，嵌套及异常退出不泄漏", DeckRemovalViewContract),
+        new("抽牌：T3先更新顶牌标签，成功入手与满手烧牌均通知", DrawDeckChangeTiming),
+        new("满手烧牌：只改位置，保留弃牌编号且不派发换区回调", DrawOverflowLocationBoundary),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8719,6 +8721,57 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? DrawDeckChangeTiming(CardDatabase db)
+    {
+        foreach (bool full in new[] { false, true })
+        foreach (bool hasNext in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 1;
+            var watcher = state.CreateWithId("card_event_betasom", Side.Left, 20, CardLocation.Discard, 0);
+            watcher.EnteredPlayOnTurn = 1;
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 100 + i, CardLocation.HandLeft, i);
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 60, CardLocation.DeckLeft, 0);
+            var next = hasNext ? state.CreateWithId(card.Name, Side.Left, 61, CardLocation.DeckLeft, 1) : null;
+            engine.Api.FireTrigger("OnAfterDeckChanged", null, Side.Left, broadcastName: true,
+                eventArgs: new object?[] { (int)Side.Left }, namedArgs: new Dictionary<string, object?> { ["deckSide"] = (int)Side.Left });
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.DrawCard(Side.Left);
+            if (card.Location != (full ? CardLocation.Discard : CardLocation.HandLeft)
+                || engine.Api.HasCustomGameplayTag(card, "subtype.navy")
+                || (next is not null && !engine.Api.HasCustomGameplayTag(next, "subtype.navy"))
+                || trace.Count(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#20", StringComparison.Ordinal)) != 1)
+                return $"抽牌T3标签时机错误：满手={full}，有下一张={hasNext}";
+        }
+        return null;
+    }
+
+    private static string? DrawOverflowLocationBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 0; i < GameState.HandCapacity; i++)
+                state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HandOf(), i);
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.DeckOf(), 0);
+            var discarded = state.CreateWithId(card.Name, side, 70, CardLocation.Discard, 17);
+            var moved = state.CardMoved;
+            int notifications = 0;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (c == card) notifications++;
+                moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            engine.DrawCard(side);
+            if (card.Location != CardLocation.Discard || card.LocationNumber != 0 || discarded.LocationNumber != 17 || notifications != 0)
+                return $"{side}烧牌误改编号或发移动事件：编号={card.LocationNumber}/{discarded.LocationNumber}，事件={notifications}";
         }
         return null;
     }

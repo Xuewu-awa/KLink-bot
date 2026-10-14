@@ -3608,7 +3608,7 @@ public sealed partial class CardApi
         return null;
     }
 
-    private void ExecuteOnAfterDeckChanged(Side side)
+    internal void ExecuteOnAfterDeckChanged(Side side)
     {
         // Current helper i=38 queries T3 once, then i=307 calls the saved
         // recipients without location, suppression or registration rechecks.

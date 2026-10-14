@@ -948,6 +948,10 @@ public sealed class MatchEngine
 
         var card = deck[0];
 
+        // DrawTopCardFromDeck i=558 removes membership before i=621 T3;
+        // the object still has its deck location throughout that notification.
+        State.WithDeckCardRemoved(side, card.CardId, () => Api.ExecuteOnAfterDeckChanged(side));
+
         // 「抽**之前**」的手牌数 —— 蓝图 `DrawTopCardFromDeck` i=712 就是在这个时刻
         // （牌已从牌库移除、还没进手牌）取 `FetchCardsByLocation(手牌).QtyInLocation`，
         // 而且同一个值在「没满」分支里被当成 `locationNumber` 用（= 追加下标 = 当前张数），
@@ -960,7 +964,10 @@ public sealed class MatchEngine
         if (preQtyInHand >= GameState.HandCapacity)
         {
             Say($"{side.ToWire()} 手牌已满（{preQtyInHand}/{GameState.HandCapacity}），{card} 被弃掉");
-            State.Move(card, CardLocation.Discard);
+            // i=772 directly assigns location: no locationNumber write,
+            // discard rearrangement or CardLocationMoved notification.
+            card.Location = CardLocation.Discard;
+            card.RecalculateStats();
             FireSubAction("ZActionDrawCardFromDeck", new[]
             {
                 ActionValue2.Int("cardID", card.CardId),
