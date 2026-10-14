@@ -47,6 +47,9 @@ internal static class SelfTest
         new("T54 退却观察者保持查询快照，不因前序回调抑制而漏发", RetreatObserverSnapshot),
         new("T54 查询不设位置门：未定位的 Decoy Tactics 仍接收退却通知", RetreatObserverUnavailable),
         new("退却取消契约：合成自身 stopAction=true 保留位置和移动额度", RetreatOwnCancellationContract),
+        new("多卡退却：免疫在分组前查询，前序回调不重新筛选名单", RetreatImmunitySnapshot),
+        new("多卡退却：支援批次结束后再按当前位置序号排序前线批次", RetreatFrontlineSortTiming),
+        new("退却插入位置：守卫插在总部与单位之间；两单位退却分列总部两侧", RetreatInsertionAndGuard),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8689,6 +8692,87 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? RetreatInsertionAndGuard(CardDatabase db)
+    {
+        {
+            var (engine, state) = EmptyBoard(db);
+            var existing = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+            var guardName = db.All.First(c => c.IsUnit && c.Keywords.Contains("Guard", StringComparer.OrdinalIgnoreCase)).Name;
+            var guard = state.CreateWithId(guardName, Side.Right, 61, CardLocation.BoardFrontline, 0);
+            var context = new EffectContext { Engine = engine, State = state, Self = guard, Controller = Side.Right };
+            engine.Api.InvokeByName("MakeCardRetreat", guard, new object?[] { new[] { guard }, 0 }, context, out _);
+            if (guard.LocationNumber != 1 || existing.LocationNumber != 2
+                || !engine.IsBeingGuarded(state.Hq(Side.Right)) || !engine.IsBeingGuarded(existing))
+                return "两张支援卡+一张退却卡应插入序号1，守卫应同时掩护总部和原有单位";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 61, CardLocation.BoardFrontline, 0);
+            var second = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 1);
+            var context = new EffectContext { Engine = engine, State = state, Self = first, Controller = Side.Right };
+            engine.Api.InvokeByName("MakeCardRetreat", first, new object?[] { new[] { first, second }, 0 }, context, out _);
+            if (first.LocationNumber != 0 || state.Hq(Side.Right).LocationNumber != 1 || second.LocationNumber != 2)
+                return "仅总部+两张退却卡应分列总部两侧，不能全部追加到末尾";
+        }
+        return null;
+    }
+
+    private static string? RetreatImmunitySnapshot(CardDatabase db)
+    {
+        foreach (bool initiallyImmune in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var support = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+            var front = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 61, CardLocation.BoardFrontline, 0);
+            if (initiallyImmune) front.ReceivedAbilitiesFromCards["cantRetreat"] = [support.CardId];
+            var moved = state.CardMoved;
+            bool changed = false;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card == support && newLocation == CardLocation.HandRight)
+                {
+                    changed = true;
+                    if (initiallyImmune) front.ReceivedAbilitiesFromCards.Remove("cantRetreat");
+                    else front.ReceivedAbilitiesFromCards["cantRetreat"] = [support.CardId];
+                }
+            };
+            var context = new EffectContext { Engine = engine, State = state, Self = support, Controller = Side.Right };
+            engine.Api.InvokeByName("MakeCardRetreat", support,
+                new object?[] { new[] { front, support }, 0 }, context, out _);
+            var expected = initiallyImmune ? CardLocation.BoardFrontline : CardLocation.BoardHqRight;
+            if (!changed || front.Location != expected)
+                return $"退却免疫应在分组前确定：初始免疫={initiallyImmune}, 实际={front.Location}";
+        }
+        return null;
+    }
+
+    private static string? RetreatFrontlineSortTiming(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var support = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+        var first = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 61, CardLocation.BoardFrontline, 0);
+        var second = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 1);
+        var order = new List<int>();
+        var moved = state.CardMoved;
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            if (card == support && newLocation == CardLocation.HandRight)
+            {
+                first.LocationNumber = 1;
+                second.LocationNumber = 0;
+            }
+            if (oldLocation == CardLocation.BoardFrontline && newLocation == CardLocation.BoardHqRight)
+                order.Add(card.CardId);
+        };
+        var context = new EffectContext { Engine = engine, State = state, Self = support, Controller = Side.Right };
+        engine.Api.InvokeByName("MakeCardRetreat", support,
+            new object?[] { new[] { first, support, second }, 0 }, context, out _);
+        return order.SequenceEqual(new[] { second.CardId, first.CardId }) ? null
+            : "前线排序应读取支援批次回调后的序号，实际=" + string.Join(",", order);
     }
 
     // Synthetic return-value probe, not evidence of a live card override.

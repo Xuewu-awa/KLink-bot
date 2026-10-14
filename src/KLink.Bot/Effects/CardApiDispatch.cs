@@ -3667,10 +3667,10 @@ public sealed partial class CardApi
     {
         var context = new EffectContext { Engine = _engine, State = _engine.State,
             Self = card, Controller = card.Owner };
-        DoMakeCardRetreat(context, new object?[] { new[] { card }, instigatorId }, applyDirectly: true);
+        DoApplyMakeCardRetreat(context, new[] { card });
     }
 
-    private object? DoMakeCardRetreat(EffectContext c, object?[] a, bool applyDirectly = false)
+    private object? DoMakeCardRetreat(EffectContext c, object?[] a)
     {
         var targets = new List<CardInstance>();
         if (a.ElementAtOrDefault(0) is System.Collections.IList list)
@@ -3688,14 +3688,31 @@ public sealed partial class CardApi
             targets.Add(one);
         }
 
-        var support = targets.Where(x => x.Location != CardLocation.BoardFrontline)
-            .OrderBy(x => x.LocationNumber).ToList();
-        var frontline = targets.Where(x => x.Location == CardLocation.BoardFrontline)
-            .OrderBy(x => x.LocationNumber).ToList();
+        // MakeCardRetreat i=253..991 filters immunity and partitions the full
+        // input before either Apply batch runs. Later callbacks do not requery it.
+        var eligible = targets.Where(x => !HasCustomAbility(x, "cantRetreat")).ToArray();
+        var support = eligible.Where(x => x.Location != CardLocation.BoardFrontline).ToArray();
+        var frontline = eligible.Where(x => x.Location == CardLocation.BoardFrontline).ToArray();
+        DoApplyMakeCardRetreat(c, support);
+        DoApplyMakeCardRetreat(c, frontline);
+        return null;
+    }
 
-        foreach (var card in support.Concat(frontline))
+    private void DoApplyMakeCardRetreat(EffectContext c, IReadOnlyList<CardInstance> targets)
+    {
+        if (targets.Count == 0) return;
+        // Each Apply call sorts at entry (i=112); the frontline batch starts
+        // only after all support-line callbacks have completed (wrapper i=571).
+        var sorted = targets.OrderBy(x => x.LocationNumber).ToArray();
+        // i=171..422 plans positions once from the first input card's support
+        // line and the whole batch, before any card's retreat callbacks.
+        int supportCount = c.State.Cards(targets[0].Owner, targets[0].Owner.HqOf()).Count;
+        var positions = RetreatInsertionNumbers(supportCount, sorted.Length);
+        var planned = new Dictionary<int, int>();
+        for (int i = 0; i < positions.Length; i++) planned[sorted[i].CardId] = positions[i];
+        foreach (var card in sorted)
         {
-            if ((!applyDirectly && HasCustomAbility(card, "cantRetreat")) || !c.Engine.Api.IsLocatedOnBoard(card))
+            if (!c.Engine.Api.IsLocatedOnBoard(card))
             {
                 continue;
             }
@@ -3725,7 +3742,17 @@ public sealed partial class CardApi
                 // ApplyMakeCardRetreat i=2474..2580: movementLeft=max(left-1,0).
                 // The simulator represents the current 0/1 quota as this flag.
                 card.HasMovedThisTurn = true;
-                c.State.Move(card, card.Owner.HqOf(), moveReason: CardMoveReason.Retreat);
+                int slot = planned.GetValueOrDefault(card.CardId);
+                var oldLocation = card.Location;
+                var destination = card.Owner.HqOf();
+                // InjectCardIntoLocation i=54 creates a gap before inserting;
+                // RefreshLocationStatus compacts affected zones before events.
+                foreach (var other in c.State.Cards(card.Owner, destination))
+                    if (other.LocationNumber >= slot) other.LocationNumber++;
+                c.State.Move(card, destination, locationNumber: slot,
+                    moveReason: CardMoveReason.Retreat, notifyMoved: false);
+                RearrangeLocation(oldLocation);
+                c.State.CardMoved?.Invoke(card, oldLocation, destination, false, CardMoveReason.Retreat);
             }
             else
             {
@@ -3733,8 +3760,19 @@ public sealed partial class CardApi
             }
         }
 
-        return null;
     }
+
+    // GetNewLocationNumbers Blueprint's fixed layout branches (i=305..3998).
+    // Missing map keys default to zero at ApplyMakeCardRetreat i=2629..2698.
+    private static int[] RetreatInsertionNumbers(int support, int retreat) => (support, retreat) switch
+    {
+        (1, 1) => [1], (1, 2) => [0, 2], (1, 3) => [0, 2, 3],
+        (1, 4 or 5) => [0, 1, 3, 4],
+        (2, 1) => [1], (2, 2) => [1, 3], (2, 3 or 4) => [0, 2, 4], (2, 5) => [0, 1, 3],
+        (3, 1) => [2], (3, 2 or 3) => [1, 3], (3, 4 or 5) => [0, 2],
+        (4, 1 or 2) => [2], (4, 3 or 4) => [1], (4, 5) => [0],
+        _ => [],
+    };
 
     /// <summary>
     /// `ConvertCard(cards, instigatorID, newCardName, newCardID, ... , out newCardIDs)`.
