@@ -3006,22 +3006,25 @@ public sealed class MatchEngine
             destination = toSide.HqOf();
         }
 
-        // i=913..927 exits the take branch before leave events/owner mutation
-        // when the target support line is full. Release retreat remains separate.
+        int frontlineCount = State.Cards(Side.Left, CardLocation.BoardFrontline).Count
+            + State.Cards(Side.Right, CardLocation.BoardFrontline).Count;
+        // Release queries occupancy before changing ownership or location (i=130).
+        // Its count includes this card when it already occupies the destination.
         bool destinationFull = destination switch
         {
-            CardLocation.BoardFrontline => State.Cards(Side.Left, CardLocation.BoardFrontline).Count
-                + State.Cards(Side.Right, CardLocation.BoardFrontline).Count
-                - (oldLocation == CardLocation.BoardFrontline ? 1 : 0) >= State.FrontlineCapacity,
+            CardLocation.BoardFrontline => frontlineCount
+                - (!releaseControl && oldLocation == CardLocation.BoardFrontline ? 1 : 0) >= State.FrontlineCapacity,
             CardLocation.BoardHqLeft or CardLocation.BoardHqRight
                 => State.Cards(toSide, destination).Count >= GameState.HalfBoardCapacity,
             _ => false,
         };
-        if (destinationFull)
-        {
-            if (!releaseControl) return false;
-            destination = toSide.HandOf();
-        }
+        // The take branch exits at i=927. Release instead restores the original
+        // board location, runs enter events, then applies retreat at i=1948.
+        if (destinationFull && !releaseControl) return false;
+        bool frontlineBlocked = releaseControl && destination == CardLocation.BoardFrontline
+            && State.FrontlineOwner == fromSide
+            && (frontlineCount > 1 || oldLocation != CardLocation.BoardFrontline);
+        bool shouldRetreat = releaseControl && (destinationFull || frontlineBlocked);
 
         FireLeaveTrigger(card, destination, method: 5);
         if (!State.ChangeOwner(card, toSide))
@@ -3063,6 +3066,8 @@ public sealed class MatchEngine
         {
             ExecuteOnEnterPlayEvents(card, 0);
         }
+
+        if (shouldRetreat) Api.ApplyMakeCardRetreat(card, 0);
 
         return true;
     }

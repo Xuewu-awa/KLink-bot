@@ -42,6 +42,8 @@ internal static class SelfTest
         new("控制权转移执行完整进场通知，释放时不重置行动记录", OwnershipEnterEventsAndReleaseQuota),
         new("夺取控制权：目标支援阵线满员时中止且不发事件", OwnershipTakeFullSupport),
         new("夺取控制权：前线唯一单位留在前线，多单位时移回支援阵线", OwnershipTakeFrontlineDestination),
+        new("释放控制权：支援满员时先恢复位置并通知进场，再退回手牌", OwnershipReleaseFullSupportEvents),
+        new("释放控制权：按释放前的前线归属及数量决定是否退却", OwnershipReleaseFrontlineRetreat),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8682,6 +8684,73 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? OwnershipReleaseFullSupportEvents(CardDatabase db)
+        => OwnershipReleaseFullSupportEvents(db, false) ?? OwnershipReleaseFullSupportEvents(db, true);
+
+    private static string? OwnershipReleaseFullSupportEvents(CardDatabase db, bool handFull)
+    {
+        var (engine, state) = EmptyBoard(db);
+        for (int i = 1; i < GameState.HalfBoardCapacity; i++)
+            state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 100 + i, CardLocation.BoardHqRight, i);
+        if (handFull)
+            for (int i = 0; i < GameState.HandCapacity; i++)
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 200 + i, CardLocation.HandRight, i);
+        var unit = state.CreateWithId("card_unit_flaming_matilda_anzac", Side.Right, 62, CardLocation.BoardHqRight, 0);
+        state.ChangeOwner(unit, Side.Left);
+        state.Move(unit, CardLocation.BoardHqLeft, notifyMoved: false);
+        unit.UnderEnemyControl = true;
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var moves = new List<CardLocation>();
+        var originalCallback = state.CardMoved;
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            if (card == unit) moves.Add(newLocation);
+            originalCallback?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+        };
+        if (!engine.ChangeUnitOwnership(unit, 0, Side.Left, Side.Right, CardLocation.BoardHqRight, true))
+            return "满员支援阵线释放失败";
+        var finalLocation = handFull ? CardLocation.Discard : CardLocation.HandRight;
+        if (!moves.SequenceEqual(new[] { CardLocation.BoardHqRight, finalLocation }))
+            return "应先恢复支援位置再退回手牌，实际=" + string.Join(",", moves);
+        int enter = trace.FindIndex(x => x.StartsWith("OnEnterPlay → card_unit_flaming_matilda_anzac#62（", StringComparison.Ordinal));
+        int retreatLeave = trace.FindLastIndex(x => x.StartsWith("OnLeaveBoardOrOwner → card_unit_flaming_matilda_anzac#62（", StringComparison.Ordinal));
+        if (enter < 0 || retreatLeave <= enter) return "进场通知应发生在退回手牌的离场事件之前";
+        if (unit.Owner != Side.Right || unit.UnderEnemyControl || unit.Location != finalLocation)
+            return "满员释放的最终归属/位置错误";
+        return null;
+    }
+
+    private static string? OwnershipReleaseFrontlineRetreat(CardDatabase db)
+    {
+        foreach (var scenario in new[] {
+            (InFront: true, Occupant: Side.NotAvailable, Expected: CardLocation.BoardFrontline),
+            (InFront: true, Occupant: Side.Left, Expected: CardLocation.BoardHqRight),
+            (InFront: false, Occupant: Side.Left, Expected: CardLocation.BoardHqRight),
+            (InFront: false, Occupant: Side.Right, Expected: CardLocation.BoardFrontline),
+            (InFront: false, Occupant: Side.NotAvailable, Expected: CardLocation.BoardFrontline) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardHqRight, 1);
+            state.ChangeOwner(unit, Side.Left);
+            state.Move(unit, scenario.InFront ? CardLocation.BoardFrontline : CardLocation.BoardHqLeft, notifyMoved: false);
+            unit.UnderEnemyControl = true;
+            // Direct ApplyMakeCardRetreat must bypass the wrapper's immunity filter.
+            unit.ReceivedAbilitiesFromCards["cantRetreat"] = [0];
+            if (scenario.Occupant != Side.NotAvailable)
+                state.CreateWithId("card_unit_432_infantry_regiment", scenario.Occupant, 63, CardLocation.BoardFrontline, 1);
+            state.FrontlineOwner = scenario.Occupant != Side.NotAvailable ? scenario.Occupant
+                : scenario.InFront ? Side.Left : Side.NotAvailable;
+            if (!engine.ChangeUnitOwnership(unit, 0, Side.Left, Side.Right, CardLocation.BoardFrontline, true))
+                return "前线释放失败：" + scenario;
+            if (unit.Location != scenario.Expected || unit.Owner != Side.Right || unit.UnderEnemyControl)
+                return $"前线释放落点错误：{scenario}, 实际={unit.Location}";
+            if (scenario.Expected == CardLocation.BoardHqRight && !unit.HasMovedThisTurn)
+                return "前线退却到支援阵线应消耗剩余移动额度";
         }
         return null;
     }

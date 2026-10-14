@@ -3661,7 +3661,16 @@ public sealed partial class CardApi
     /// their own support line when it has room; support-line units, or units
     /// whose support line is full, return to their owner's hand.
     /// </summary>
-    private object? DoMakeCardRetreat(EffectContext c, object?[] a)
+    // ChangeUnitOwnership calls ApplyMakeCardRetreat directly (i=1948), bypassing
+    // the MakeCardRetreat wrapper's cantRetreat filter.
+    internal void ApplyMakeCardRetreat(CardInstance card, int instigatorId)
+    {
+        var context = new EffectContext { Engine = _engine, State = _engine.State,
+            Self = card, Controller = card.Owner };
+        DoMakeCardRetreat(context, new object?[] { new[] { card }, instigatorId }, applyDirectly: true);
+    }
+
+    private object? DoMakeCardRetreat(EffectContext c, object?[] a, bool applyDirectly = false)
     {
         var targets = new List<CardInstance>();
         if (a.ElementAtOrDefault(0) is System.Collections.IList list)
@@ -3686,7 +3695,7 @@ public sealed partial class CardApi
 
         foreach (var card in support.Concat(frontline))
         {
-            if (HasCustomAbility(card, "cantRetreat") || !c.Engine.Api.IsLocatedOnBoard(card))
+            if ((!applyDirectly && HasCustomAbility(card, "cantRetreat")) || !c.Engine.Api.IsLocatedOnBoard(card))
             {
                 continue;
             }
@@ -3706,6 +3715,9 @@ public sealed partial class CardApi
             if (card.Location == CardLocation.BoardFrontline
                 && c.State.Cards(card.Owner, card.Owner.HqOf()).Count < GameState.HalfBoardCapacity)
             {
+                // ApplyMakeCardRetreat i=2474..2580: movementLeft=max(left-1,0).
+                // The simulator represents the current 0/1 quota as this flag.
+                card.HasMovedThisTurn = true;
                 c.State.Move(card, card.Owner.HqOf(), moveReason: CardMoveReason.Retreat);
             }
             else
