@@ -1308,10 +1308,8 @@ public sealed class MatchEngine
     /// <summary>
     /// 蓝图 <c>PlayCardDirectlyFromHand</c> 的免费/特殊出牌路径。
     ///
-    /// 这条原语不经过普通出牌的行动方、费用和半场容量门；调用方可能正在
-    /// 结算另一张牌，甚至直接打出另一方手牌中的牌。它仍然复用完整的
-    /// CardPlayedFromHand 触发链，保证战吼、旁观触发、部署倍增、Alpine 和
-    /// 死亡检查的顺序与普通出牌一致。
+    /// Gotcha 在手牌中只切换激活号，然后提前返回，不经过普通打牌链。
+    /// 非 Gotcha 当前仍复用共用出牌实现；其容量、事件与接收阶段边界待继续审计。
     /// </summary>
     public bool PlayCardDirectlyFromHand(CardInstance card, bool toFrontline,
                                          int instigatorID, int locationNumber)
@@ -1319,6 +1317,16 @@ public sealed class MatchEngine
         if (card.Location != card.Owner.HandOf() || !card.IsAlive)
         {
             return false;
+        }
+
+        if (Api.IsGotcha(card))
+        {
+            // PlayCardDirectlyFromHand i=271..441/1652..2632 toggles the
+            // activation, preserves the hand location/number, then i=853/908
+            // returns before CardLocationMoved and enter-play effects.
+            Api.AssignGotchaActivatedOnPlayFromHand(card);
+            // Native NotifyPlayFromHand(playedDirectly=true) remains pending.
+            return true;
         }
 
         return PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,

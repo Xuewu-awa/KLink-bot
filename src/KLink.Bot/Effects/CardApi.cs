@@ -4920,7 +4920,7 @@ public sealed partial class CardApi
     /// :28080  card.location == 4 (HandRight) || :28082 card.location == 3 (HandLeft)
     /// :28088  IsGotcha(card)                                    ; 不是反制卡 ⇒ 整段跳过
     /// :28092  card.gotchaActivated &gt; 0                          ; 已经激活过
-    /// :28096      card.gotchaActivated = 0                      ;   ⇒ 正常打出，取消激活
+    /// :28096      card.gotchaActivated = 0                      ;   ⇒ 再次直接出牌，取消激活
     /// :28239  否则 _nextGotchaActivated = 0（局部零初始化）
     /// :28243  for each item in GetAllCardInBattle()：
     /// :28259      IsGotcha(item)
@@ -4933,13 +4933,9 @@ public sealed partial class CardApi
     ///
     /// ## 为什么必须有这个写入方
     ///
-    /// `gotchaActivated` 的**唯一**写入方就是这段（蓝图全量 grep：
-    /// 只有 `:28096` / `:28316` / `GotchaTriggered:23735` 三处，后一处是**置 0**）。
-    /// 没有它，`gotchaActivated` 恒为 0 ⇒ `GetActiveGotchasOrdered` 的 `&gt; 0` 过滤
-    /// 恒空 ⇒ 整个反制子系统空转。
-    ///
-    /// `PlayCardDirectlyFromHand` 的派发入口已接到 `MatchEngine.PlayCardDirectlyFromHand`；
-    /// 普通出牌与直接出牌都会在离手前经过这里，因此 Gotcha 序号与蓝图保持一致。
+    /// 这是直接出牌分支的激活辅助逻辑，并非激活号的唯一写入点。
+    /// BP_OnlineMatch.ReceiveActionPlayCardFromHand 也会在接收阶段
+    /// 写入 kreditsPayed、装填或取消；普通出牌的完整两阶段映射仍待审计。
     /// </summary>
     public void AssignGotchaActivatedOnPlayFromHand(CardInstance card)
     {
@@ -4955,7 +4951,7 @@ public sealed partial class CardApi
             return;
         }
 
-        // :28092/:28096 —— 已经激活过的（再次正常打出）⇒ 取消激活
+        // :28092/:28096 —— 已经激活过的（再次直接出牌）⇒ 取消激活
         if (card.GotchaActivated > 0)
         {
             card.GotchaActivated = 0;

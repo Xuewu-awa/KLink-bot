@@ -105,6 +105,7 @@ internal static class SelfTest
         new("自动消费Gotcha：激活时退款，保持位置/激活号，不执行普通打牌事件", AutoPlayGotchaCostBranch),
         new("自动消费费用：退款按激活字段分支，不额外要求Gotcha类型", AutoPlayActivatedFieldRefund),
         new("自动消费费用：费用不足不部分扣款，仍按原生继续后续流程", AutoPlayInsufficientCost),
+        new("直接出牌Gotcha：只切换激活号，保留手牌/费用/状态，不走普通出牌链", DirectGotchaBoundary),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8782,6 +8783,55 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? DirectGotchaBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (bool full in new[] { false, true })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int requestedNumber in new[] { -1, 0, 17 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 9;
+            state.ActiveSide = side.Opposite();
+            state.SetMaxKredits(side, 4);
+            state.SetKredits(side, 4);
+            if (full)
+                for (int i = 0; i < 4; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HqOf(), i + 1);
+            state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 110, CardLocation.BoardFrontline, 0);
+            state.FrontlineOwner = side.Opposite();
+            var other = state.CreateWithId("card_event_interception", side, 20, CardLocation.Discard, 0);
+            other.GotchaActivated = 7;
+            var enemy = state.CreateWithId(other.Name, side.Opposite(), 21, side.Opposite().HandOf(), 0);
+            enemy.GotchaActivated = 99;
+            var card = state.CreateWithId(other.Name, side, 60, side.HandOf(), 7);
+            card.GotchaActivated = active ? 5 : 0;
+            card.EnteredPlayOnTurn = 6;
+            card.CardSeen = true;
+            engine.Api.JsonSetInt(card, "kreditsPayed", 3);
+            engine.Api.JsonSetInt(card, "countdown_timer", 2);
+            var moved = state.CardMoved;
+            int moves = 0;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (c == card) moves++;
+                moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            bool success = engine.PlayCardDirectlyFromHand(card, frontline, 9004, requestedNumber);
+            if (!success || card.GotchaActivated != (active ? 0 : 8) || card.Location != side.HandOf()
+                || card.LocationNumber != 7 || card.EnteredPlayOnTurn != 6 || !card.CardSeen
+                || state.Kredits(side) != 4 || state.MaxKredits(side) != 4 || moves != 0
+                || state.CardsPlayedThisTurn.Count != 0 || trace.Count != 0
+                || engine.Api.JsonGetInt(card, "kreditsPayed") != 3 || engine.Api.JsonGetInt(card, "countdown_timer") != 2
+                || other.GotchaActivated != 7 || enemy.GotchaActivated != 99)
+                return $"Gotcha直接出牌分支错误：方={side} 激活={active} 满员={full} 前线={frontline} 请求编号={requestedNumber} 实际={card.Location}/{card.GotchaActivated}";
+        }
+        return null;
     }
 
     private static string? AutoPlayGotchaCostBranch(CardDatabase db)
@@ -22240,7 +22290,7 @@ internal static class SelfTest
     /// <list type="number">
     /// <item><b>装填递增</b>：`PlayCardDirectlyFromHand:28310-28316`
     ///   `_nextGotchaActivated = max(同阵营已激活) + 1` —— 第一张 = 1，第二张 = 2；</item>
-    /// <item><b>再次正常打出 ⇒ 置 0</b>（`:28092-28096`）；</item>
+    /// <item><b>再次直接出牌 ⇒ 置 0</b>（`:28092-28096`）；</item>
     /// <item><b>取用</b>：`GetActiveGotchasOrdered` 只收 `gotchaActivated &gt; 0`，
     ///   且输出**按键升序** —— 而 interception / ultra 用的是负数键
     ///   （`:18764` `cardID * -1`、`:18790` `(cardID + 1000000) * -1`），
@@ -22281,7 +22331,7 @@ internal static class SelfTest
             return $"右方第一张反制卡应当是 **1**（按阵营独立计数），实际 {gr.GotchaActivated}";
         }
 
-        // ---- ② 再次正常打出 ⇒ 置 0（:28092-28096）----
+        // ---- ② 再次直接出牌 ⇒ 置 0（:28092-28096）----
         engine.Api.AssignGotchaActivatedOnPlayFromHand(g1);
         if (g1.GotchaActivated != 0)
         {
