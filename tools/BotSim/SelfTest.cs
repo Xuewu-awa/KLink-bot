@@ -76,6 +76,8 @@ internal static class SelfTest
         new("牌库弃牌：自身取消结果保留位置并接收显式来源（含0）", DeckDiscardCancellation),
         new("牌库弃牌：不触发手牌弃牌观察者或换区回调，保留弃牌编号", DeckDiscardNotificationBoundary),
         new("牌库弃牌通知：保留卡ID、显式来源、旧位置及两个可选标记", DeckDiscardNotificationPayload),
+        new("牌库弃牌：移除后T3更新下一张顶牌，单张牌库通知空牌库", DeckDiscardUpdatesTopCard),
+        new("牌库移除视图：位置与成员分离，嵌套及异常退出不泄漏", DeckRemovalViewContract),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8717,6 +8719,54 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? DeckRemovalViewContract(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var first = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 60, CardLocation.DeckLeft, 0);
+        var next = state.CreateWithId(first.Name, Side.Left, 61, CardLocation.DeckLeft, 1);
+        bool observed = false, nested = false, restoredOuter = false;
+        state.WithDeckCardRemoved(Side.Left, 60, () =>
+        {
+            observed = first.Location == CardLocation.DeckLeft && state.Cards(Side.Left, CardLocation.DeckLeft).Contains(first)
+                && engine.Api.GetDeckBySide(Side.Left).SequenceEqual(new[] { 61 });
+            state.WithDeckCardRemoved(Side.Left, 60, () =>
+                state.WithDeckCardRemoved(Side.Left, 61, () => nested = state.Deck(Side.Left).Count == 0));
+            restoredOuter = engine.Api.GetDeckBySide(Side.Left).SequenceEqual(new[] { 61 });
+        });
+        try { state.WithDeckCardRemoved(Side.Left, 60, () => throw new InvalidOperationException("audit probe")); }
+        catch (InvalidOperationException) { }
+        return observed && nested && restoredOuter && engine.Api.GetDeckBySide(Side.Left).SequenceEqual(new[] { 60, 61 })
+            && next.LocationNumber == 1 ? null : "牌库移除视图错误地改变物理位置、提前恢复外层成员或泄漏临时状态";
+    }
+
+    private static string? DeckDiscardUpdatesTopCard(CardDatabase db)
+    {
+        foreach (bool hasNext in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 1;
+            var watcher = state.CreateWithId("card_event_betasom", Side.Left, 20, CardLocation.Discard, 0);
+            watcher.EnteredPlayOnTurn = 1;
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 60, CardLocation.DeckLeft, 0);
+            var next = hasNext ? state.CreateWithId(card.Name, Side.Left, 61, CardLocation.DeckLeft, 1) : null;
+            engine.Api.FireTrigger("OnAfterDeckChanged", null, Side.Left, broadcastName: true,
+                eventArgs: new object?[] { (int)Side.Left }, namedArgs: new Dictionary<string, object?> { ["deckSide"] = (int)Side.Left });
+            if (!engine.Api.HasCustomGameplayTag(card, "subtype.navy")) return "Betasom顶牌初始布景失败";
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+            engine.Api.InvokeByName("DiscardCardFromDeck", card, new object?[] { 60, 0, skip, false, null }, context, out _);
+            var expected = next is null ? Array.Empty<int>() : new[] { next.CardId };
+            if (card.Location != CardLocation.Discard || !state.Deck(Side.Left).Select(x => x.CardId).SequenceEqual(expected)
+                || engine.Api.HasCustomGameplayTag(card, "subtype.navy")
+                || (next is not null && !engine.Api.HasCustomGameplayTag(next, "subtype.navy"))
+                || trace.Count(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#20", StringComparison.Ordinal)) != 1)
+                return $"牌库移除T3未更新实际顶牌：有后续={hasNext}，skipTriggers={skip}";
         }
         return null;
     }

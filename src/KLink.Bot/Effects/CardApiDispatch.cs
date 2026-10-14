@@ -1996,7 +1996,7 @@ public sealed partial class CardApi
             //   ③ `OnAttemptedDiscard` 没取消 ④ `RemoveCardFromDeckBySide` +
             //   `SetCardLocationAndLocNumber(cardID, 8=Discard, 0)` + `NotifyDiscardCard`。
             // Attempt/cancellation and the deck-specific notifier are explicit;
-            // independent deck-array removal/T3 ordering still needs auditing.
+            // general native deck-array semantics still need separate auditing.
             ["DiscardCardFromDeck"] = (c, r, a) => DoDiscardCardFromDeck(c, r, a),
 
             // ── Gotcha（反制卡）子系统 ──
@@ -5145,7 +5145,7 @@ public sealed partial class CardApi
     /// </code>
     ///
     /// 尝试弃牌与通知器按牌库路径处理，不调用手牌弃牌广播。
-    /// 独立牌库数组移除与 T3 时机仍待核查。
+    /// 此处以临时成员移除视图支持 T3；完整独立牌库数组仍待核查。
     /// </summary>
     private object? DoDiscardCardFromDeck(EffectContext c, object? r, object?[] a)
     {
@@ -5166,10 +5166,16 @@ public sealed partial class CardApi
         }
         // i=683 calls SetCardLocationAndLocNumber. Its discard branch i=196/210
         // changes location only: no renumbering and no movement/hand-discard event.
-        // Native removal from the separate deck array and T3 precede this step;
-        // that transient membership model remains a separate audit item.
-        card.Location = CardLocation.Discard;
-        card.RecalculateStats();
+        // i=552 removes the ID, i=637 sends T3 while the object still has its
+        // old location, then i=683 changes location. Current T3 handlers read
+        // deck order/update tags; reinsertion during this phase is not modeled.
+        Side removedFrom = card.Owner;
+        c.State.WithDeckCardRemoved(removedFrom, card.CardId, () =>
+        {
+            ExecuteOnAfterDeckChanged(card.Owner);
+            card.Location = CardLocation.Discard;
+            card.RecalculateStats();
+        });
         Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldLocationName);
         var values = new List<ActionValue2>
         {

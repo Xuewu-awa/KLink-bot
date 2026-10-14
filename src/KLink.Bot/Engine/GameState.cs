@@ -31,6 +31,7 @@ public sealed class GameState
 
     /// <summary>左/右两侧，索引 1/2（与 <see cref="Side"/> 对齐，0 位弃用）。</summary>
     private readonly List<CardInstance>[] _cardsBySide = { new(), new(), new() };
+    private readonly Dictionary<(Side Side, int CardId), int> _pendingDeckRemovals = new();
 
     private readonly Dictionary<int, CardInstance> _byCardId = new();
     private readonly List<CardInstance> _battleCardOrder = new();
@@ -559,7 +560,31 @@ public sealed class GameState
         return result;
     }
 
-    public List<CardInstance> Deck(Side s) => Cards(s, s.DeckOf());
+    public List<CardInstance> Deck(Side s)
+    {
+        var cards = Cards(s, s.DeckOf());
+        if (_pendingDeckRemovals.Count != 0)
+            cards.RemoveAll(c => _pendingDeckRemovals.ContainsKey((s, c.CardId)));
+        return cards;
+    }
+
+    /// <summary>
+    /// A deck-removal phase can precede the object's location update. Deck
+    /// queries exclude the removed ID while physical-location queries retain it.
+    /// This scoped view is not a general replacement for native deck arrays.
+    /// </summary>
+    public void WithDeckCardRemoved(Side side, int cardId, Action phase)
+    {
+        var key = (side, cardId);
+        int previous = _pendingDeckRemovals.GetValueOrDefault(key);
+        _pendingDeckRemovals[key] = previous + 1;
+        try { phase(); }
+        finally
+        {
+            if (previous == 0) _pendingDeckRemovals.Remove(key);
+            else _pendingDeckRemovals[key] = previous;
+        }
+    }
     public List<CardInstance> Hand(Side s) => Cards(s, s.HandOf());
     public List<CardInstance> Board(Side s) => Cards(s).FindAll(c => c.Location.IsBoard() && !c.IsHq);
 
