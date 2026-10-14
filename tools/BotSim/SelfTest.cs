@@ -114,6 +114,9 @@ internal static class SelfTest
         new("直接出牌失败：目标满员或敌控前线时强制弃牌，保留编号与正确通知", DirectPlayBlockedDestination),
         new("直接出牌失败：强制弃牌仍执行成功事件，抑制时只跳过自身", DirectPlayForcedDiscardEvents),
         new("手牌生成输出：缺失IR输出标记时仍写回整数卡ID，后续运算不得命中原卡", SpawnHandImplicitOutId),
+        new("手牌弃牌：取消、强制、限制、抑制和原始来源ID", HandDiscardCancellationFlags),
+        new("手牌弃牌：通知开关、编号、移动事件及无位置门T41", HandDiscardNotificationBoundary),
+        new("手牌弃牌：成功回调后查询T41，返回值不按最终位置重算", HandDiscardSuccessReentry),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -6934,7 +6937,7 @@ internal static class SelfTest
             ("OnBeforeOtherCardDestroyed", "card_unit_marder_iii_h",
                 (e, s, p) => { e.Destroy(Plain(s, victim, 70)); return p; }),
             ("OnOtherCardDiscarded", "card_unit_7th_brigade_anzac",
-                (e, s, p) => { e.Api.DiscardCard(Plain(s, victim, 71)); return p; }),
+                (e, s, p) => { e.Api.DiscardCard(s.CreateWithId(victim, Side.Right, 71, CardLocation.HandRight, 0)); return p; }),
             ("OnAfterExtraKreditSlotGain", "card_unit_144th_infantry_regiment",
                 (e, s, p) => { e.Api.GainKreditSlot(Side.Left, 1); return p; }),
             ("OnBeforeOtherCardPlayedFromHand", "card_unit_flaming_matilda_anzac",
@@ -8791,6 +8794,144 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? HandDiscardSuccessReentry(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnSuccesfulDiscard";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(trigger)) return "无法安全添加成功弃牌探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "call", "SuppressUnit", new[] { new KismetExpr { Int = 20 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool random in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
+                state.CreateWithId("card_unit_211th_basargino", side, 20, side.HqOf(), 1);
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name == "card_unit_routed_troops") card.Location = CardLocation.NotAvailable;
+                };
+                var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+                var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                var result = engine.Api.InvokeByName(random ? "DiscardRandomCardFromHand" : "DiscardCardFromHand", card,
+                    random ? new object?[] { (int)side, 9004, null } : new object?[] { 60, 9004, false, false, null }, context, out _);
+                if (!(random ? result is 60 : result is true) || card.Location != CardLocation.NotAvailable
+                    || trace.Any(x => x.StartsWith("OnOtherCardDiscarded → card_unit_211th_basargino#20", StringComparison.Ordinal)))
+                    return "成功回调改位置不应改变返回值；回调抑制的观察者应在后续T41查询被过滤";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
+    }
+
+    private static string? HandDiscardCancellationFlags(CardDatabase db)
+    {
+        // Same program as DeckDiscardCancellation: the local-program cache may
+        // retain it, so use exactly the same probe body for this shared name.
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnAttemptedDiscard";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(trigger)) return "无法安全添加手牌取消探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "discarderID", Scope = "local" }, null, -1, "_auditDiscarder", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Bool = true }, null, -1, "cancelDiscard", null) { DestinationScope = "local" },
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int source in new[] { 0, 9004 })
+            foreach (bool force in new[] { false, true })
+            foreach (bool restricted in new[] { false, true })
+            foreach (bool suppressed in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
+                if (restricted) state.AddGameplayRestriction(side, GameplayRestrictionType.CannotDiscardAnyCardFromHand, 30, 2);
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                object? result = engine.Api.InvokeByName("DiscardCardFromHand", card,
+                    new object?[] { 60, source, false, force, null }, context, out _);
+                bool expected = force || suppressed && !restricted;
+                bool attempted = !force && !restricted && !suppressed;
+                if (!Equals(result, expected) || (card.Location == CardLocation.Discard) != expected
+                    || card.BlueprintVariables.ContainsKey("_auditDiscarder") != attempted
+                    || attempted && Convert.ToInt32(card.BlueprintVariables["_auditDiscarder"]) != source)
+                    return $"手牌取消门错误：{side} 来源{source} 强制{force} 限制{restricted} 抑制{suppressed}";
+                var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDiscardCard").ToArray();
+                if (actions.Length != (expected ? 1 : 0)
+                    || expected && actions[0].Values.First(x => x.Name == "discarderID").Value != source)
+                    return "手牌弃牌必须保留原始来源，包括不存在的正ID";
+                if (!expected)
+                {
+                    object? selected = engine.Api.InvokeByName("DiscardRandomCardFromHand", card,
+                        new object?[] { (int)side, source, null }, context, out _);
+                    if (selected is not 60 || card.Location != side.HandOf())
+                        return "随机弃牌取消后仍应返回选中的卡ID";
+                }
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
+    }
+
+    private static string? HandDiscardNotificationBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_sally", side, 60, side.HandOf(), 7);
+            var remaining = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.HandOf(), 15);
+            var oldDiscard = state.CreateWithId(remaining.Name, side, 62, CardLocation.Discard, 17);
+            state.CreateWithId(remaining.Name, side, 63, side.DeckOf(), 0);
+            state.CreateWithId(remaining.Name, side, 64, side.DeckOf(), 1);
+            var observer = state.CreateWithId("card_unit_211th_basargino", side, 20, CardLocation.NotAvailable, 0);
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            int moves = 0;
+            var previous = state.CardMoved;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) => {
+                if (c == card) moves++;
+                previous?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var result = engine.Api.InvokeByName("DiscardCardFromHand", card,
+                new object?[] { 60, 9004, skip, false, null }, context, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDiscardCard").ToArray();
+            if (result is not true || card.LocationNumber != 7 || oldDiscard.LocationNumber != 17
+                || remaining.LocationNumber != 0 || moves != 0 || actions.Length != (skip ? 0 : 1)
+                || state.Hand(side).Count != (suppressed ? 1 : 3)
+                || !trace.Any(x => x.StartsWith("OnOtherCardDiscarded → card_unit_211th_basargino#20", StringComparison.Ordinal)))
+                return $"手牌弃牌通知边界错误：{side} skip={skip} 抑制={suppressed}";
+            if (!skip && (actions[0].Values.First(x => x.Name == "cardID").Value != 60
+                || actions[0].Values.First(x => x.Name == "discarderID").Value != 9004
+                || actions[0].Values.First(x => x.Name == "oldLocation").Text != (side == Side.Left ? "Hand_Left" : "Hand_Right")))
+                return "手牌弃牌通知缺失原始卡/来源/旧位置";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var wrongOwner = state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 59, side.HandOf(), 0);
+            var card = state.CreateWithId(wrongOwner.Name, side, 60, side.HandOf(), 1);
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var result = engine.Api.InvokeByName("DiscardRandomCardFromHand", card,
+                new object?[] { (int)side, 9004, null }, context, out _);
+            if (result is not 60 || wrongOwner.Location != side.HandOf() || card.Location != CardLocation.Discard)
+                return "随机弃牌候选必须同时满足位置和所属方";
+        }
+        return null;
     }
 
     private static string? SpawnHandImplicitOutId(CardDatabase db)

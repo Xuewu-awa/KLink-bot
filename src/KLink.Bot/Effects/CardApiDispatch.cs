@@ -5024,56 +5024,24 @@ public sealed partial class CardApi
 
     // ==================== 2026-10-02：补缺口的辅助实现 ====================
 
-    /// <summary>
-    /// `DiscardCardFromHand(card_or_cardID, discarderID, skipSubAction, ForceDiscard, out success)`
-    /// —— 派发表里的 (B) 一行注册，落到已有的 <see cref="CardApi.DiscardCard"/>。
-    ///
-    /// 出处：<c>CardApi.cs:1653</c> 的文档注释
-    /// 「对应 `BP_CardFunctions::DiscardCardFromHand` / `DiscardCard`」。
-    ///
-    /// ⚠️ 参数形状**不唯一**（IR 实测 39 个调用点 / 14 种形状，
-    /// <c>out/audit/ir-callsites.py DiscardCardFromHand</c>）：
-    ///   <list type="bullet">
-    ///   <item><c>a[0]</c> 有时是**卡对象**（`{var:cardToDiscard}` / `{var:CallFunc_Array_Get_Item}`），
-    ///         有时是**整数 cardID**（`{var:cardID, ctx:{var:...}}`，9+3 个调用点）——
-    ///         所以必须走 <see cref="AsCardOrId"/>，只认一种形状会静默丢掉一半调用点
-    ///         （同 <see cref="AsCardOrId"/> 注释里那 94 张卡的前科）。</item>
-    ///   <item><c>a[1]</c> = `discarderID`（"谁弃的"）。</item>
-    ///   <item><c>a[2]</c>/<c>a[3]</c> = `skipTriggers`/`skipVisuals`（全卡池都是 false）。
-    ///         `skipTriggers` 本内核**不支持**（见「没修的」清单）—— 传 true 的调用点会多广播一次
-    ///         `OnOtherCardDiscarded`，不会少做事。</item>
-    ///   </list>
-    /// 返回值写进 <c>a[4]</c> 的 out 槽：弃成功 true / 卡无效 false
-    /// （蓝图里 `success` 只在卡无效或 `OnAttemptedDiscard` 取消时为 false）。
-    /// </summary>
+    /// <summary>DiscardCardFromHand(cardID, discarderID, skipSubAction, ForceDiscard, out success).</summary>
     private object? DoDiscardCardFromHand(EffectContext c, object? r, object?[] a)
     {
-        var card = AsCard(a.ElementAtOrDefault(0)) ?? AsCardOrId(c, a.ElementAtOrDefault(0));
-        if (card is null || card.Location != card.Owner.HandOf())
-        {
-            return false;
-        }
-
-        // Generic skipSubAction/ForceDiscard and attempted-discard handling are
-        // still pending. Blocked direct play uses its separately audited forced path.
-        DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
-        // `DiscardCard` can be blocked by a gameplay restriction.  The
-        // Blueprint `success` out parameter reflects the actual transition,
-        // so report false when the card stayed in hand.
-        return card.Location == CardLocation.Discard;
+        var card = AsCardOrId(c, a.ElementAtOrDefault(0));
+        return card is not null && DiscardHandCard(card, IntArg(a, 1), TruthyArg(a, 2), TruthyArg(a, 3));
     }
 
     /// <summary>
     /// `DiscardRandomCardFromHand(side, instigatorID, out discardedCardID)`。
     ///
     /// 蓝图按 `GetAllCards` 的顺序筛选目标阵营手牌；只有候选非空时才消费一次
-    /// `GetRandomCard` 的 UE 随机流。复用 <see cref="DiscardCard"/> 保持弃牌动作和
-    /// `OnOtherCardDiscarded` 广播一致；弃牌被规则限制时回报 0。
+    /// `GetRandomCard` 的 UE 随机流。i=778 返回被选中的 ID，不检查弃牌是否成功。
     /// </summary>
     private object? DoDiscardRandomCardFromHand(EffectContext c, object? r, object?[] a)
     {
         var hand = GetAllCards()
-            .Where(card => card.Location == GetHandLocationBySide(SideArg(r, a, 0, c.Controller)))
+            .Where(card => card.Owner == SideArg(r, a, 0, c.Controller)
+                && card.Location == GetHandLocationBySide(SideArg(r, a, 0, c.Controller)))
             .ToList();
         if (hand.Count == 0)
         {
@@ -5086,8 +5054,8 @@ public sealed partial class CardApi
             return 0;
         }
 
-        DiscardCard(selected, AsCardOrId(c, a.ElementAtOrDefault(1)));
-        return selected.Location == CardLocation.Discard ? selected.CardId : 0;
+        DiscardHandCard(selected, IntArg(a, 1), skipSubAction: false, forceDiscard: false);
+        return selected.CardId;
     }
 
     /// <summary>

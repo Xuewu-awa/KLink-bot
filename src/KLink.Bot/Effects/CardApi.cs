@@ -2953,91 +2953,59 @@ public sealed partial class CardApi
 
     /// <summary>DiscardCardFromHand(cardID, 0, false, true), used by blocked direct play.</summary>
     internal void ForceDiscardHandCardForBlockedDirectPlay(CardInstance card)
+        => DiscardHandCard(card, 0, skipSubAction: false, forceDiscard: true);
+
+    // BP_CardFunctions.DiscardCardFromHand, rule-processing branch.
+    private bool DiscardHandCard(CardInstance card, int discarderId, bool skipSubAction, bool forceDiscard)
     {
         CardLocation old = card.Location;
-        if (old is not (CardLocation.HandLeft or CardLocation.HandRight)) return;
+        if (card.CardId <= 0 || old is not (CardLocation.HandLeft or CardLocation.HandRight)) return false;
+        // i=196 saves the old hand before callbacks, which may move the card.
+        if (!forceDiscard)
+        {
+            if (State.HasGameplayRestriction(card.Owner, GameplayRestrictionType.CannotDiscardAnyCardFromHand))
+                return false;
+            if (!card.IsSuppressed)
+            {
+                var result = RunOwnLocal(card, "OnAttemptedDiscard",
+                    new Dictionary<string, object?> { ["discarderID"] = discarderId }, "cancelDiscard");
+                if (result is not null && KismetVmTruthy(result.GetValueOrDefault("cancelDiscard"))) return false;
+            }
+        }
         // SetCardLocationAndLocNumber's discard branch preserves locationNumber.
         card.Location = CardLocation.Discard;
         card.RecalculateStats();
         RearrangeLocation(old);
         Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)old, out string oldName);
-        _engine.FireSubAction("ZActionDiscardCard", new[]
+        if (!skipSubAction) _engine.FireSubAction("ZActionDiscardCard", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Int("discarderID", 0),
+            ActionValue2.Int("discarderID", discarderId),
             ActionValue2.Str("oldLocation", oldName),
         });
         // ForceDiscard bypasses restriction and attempted-cancel checks only.
         if (!card.IsSuppressed)
             FireTrigger("OnSuccesfulDiscard", card, card.Owner,
-                eventArgs: new object?[] { 0 },
-                namedArgs: new Dictionary<string, object?> { ["discarderID"] = 0 });
+                eventArgs: new object?[] { discarderId },
+                namedArgs: new Dictionary<string, object?> { ["discarderID"] = discarderId });
         const string trigger = "OnOtherCardDiscarded";
         var recipients = CaptureRegisteredTriggerSnapshot(trigger);
         var library = Blueprint.KismetLibrary.Default;
-        if (library is null) return;
-        var args = new object?[] { card, 0 };
-        var named = new Dictionary<string, object?> { ["cardDiscarded"] = card, ["discarderID"] = 0 };
+        if (library is null) return true;
+        var args = new object?[] { card, discarderId };
+        var named = new Dictionary<string, object?> { ["cardDiscarded"] = card, ["discarderID"] = discarderId };
         foreach (var observer in recipients)
         {
             if (library.FindProgram(observer.Name, trigger) is null) continue;
             TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
             RunTriggerProgram(library, observer, observer.Name, trigger, card, eventArgs: args, namedArgs: named);
         }
+        return true; // Native success is independent of the location after callbacks.
     }
 
-    /// <summary>
-    /// 弃一张牌（对应 `BP_CardFunctions::DiscardCardFromHand` / `DiscardCard`）。
-    ///
-    /// <paramref name="discarder"/> 是"谁弃的"（事件第 2 个入参 `discarderID`）。
-    /// 内核大量调用点是"效果让某张牌被弃"，没有明确的施加者，
-    /// 这时传 null ⇒ `discarderID = 0`。**这是近似**，不猜一个假的施动者。
-    /// </summary>
+    /// <summary>Discard a hand card with normal restriction and attempted-cancel checks.</summary>
     public void DiscardCard(CardInstance card, CardInstance? discarder = null)
-    {
-        bool discardedFromHand = card.Location == card.Owner.HandOf();
-        if (card.Location == card.Owner.HandOf()
-            && State.HasGameplayRestriction(card.Owner,
-                GameplayRestrictionType.CannotDiscardAnyCardFromHand))
-        {
-            return;
-        }
-
-        bool suppressed = card.Keywords.Contains(Keyword.Suppressed);
-        State.Move(card, CardLocation.Discard);
-        _engine.FireSubAction("ZActionDiscardCard", new[]
-        {
-            ActionValue2.Int("discarderID", discarder?.CardId ?? card.CardId),
-        });
-
-        int discarderId = discarder?.CardId ?? 0;
-
-        // DiscardCardFromHand invokes the discarded card's hook before notifying observers.
-        if (discardedFromHand && !suppressed)
-        {
-            FireTrigger("OnSuccesfulDiscard", card, card.Owner,
-                eventArgs: new object?[] { discarderId },
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["discarderID"] = discarderId,
-                });
-        }
-
-        // `DiscardCardFromHand` broadcasts even when the discarded card is suppressed;
-        // suppression filters each observer, while the discarded card's own hook above is skipped.
-        //   si=536  FetchAllCardsWithEventTrigger(41)
-        //   si=809  item.OnOtherCardDiscarded(tmpCardToDiscard, discarderID)
-        // 广播集**不排除被弃的那张卡自己**（蓝图里没有 cardID 比对），
-        // 但内核 FireTrigger 的 `OnOther*` 约定会排除主体 —— 见 FireTrigger 的注释。
-        FireTrigger("OnOtherCardDiscarded", card, card.Owner,
-            eventArgs: new object?[] { card, discarderId },
-            eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardDiscarded"] = card,
-                ["discarderID"] = discarderId,
-            });
-    }
+        => DiscardHandCard(card, discarder?.CardId ?? 0, skipSubAction: false, forceDiscard: false);
 
     public void GiveKeyword(CardInstance target, string keyword)
     {
