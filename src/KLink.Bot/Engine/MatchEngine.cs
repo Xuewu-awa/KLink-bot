@@ -2893,8 +2893,8 @@ public sealed class MatchEngine
         }
 
         // T39 is fetched after the self effect (i=1016), excluding the destroyed object.
-        var observers = Api.CaptureTriggerSnapshot()
-            .Where(x => x.CardId != card.CardId && x.Definition.IsRegisteredFor("OnOtherCardDestroyed"))
+        var observers = Api.CaptureRegisteredTriggerSnapshot("OnOtherCardDestroyed")
+            .Where(x => x.CardId != card.CardId)
             .ToArray();
         foreach (var observer in observers)
         {
@@ -2909,7 +2909,7 @@ public sealed class MatchEngine
                     ["TriggerNotDestroyed"] = repeated, ["destroyedLocation"] = (int)location,
                     ["selfIsAlsoGettingDestroyed"] = batch.Contains(observer.CardId),
                     ["destroyedInCombat"] = combat,
-                });
+                }, recipientSnapshot: new[] { observer }, includeUnavailableRecipients: true);
             OtherDestroyed(false);
             // i=1543..1938: external destruction ability belongs to its source observer.
             if (Api.HasCustomAbilityFromCard(card, "destruction", observer.CardId))

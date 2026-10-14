@@ -34,6 +34,7 @@ internal static class SelfTest
         new("批量 T38 传递实际 damage、筛选抑制并保留直接停止顺序", BatchDamageModifierArguments),
         new("批量死亡先刷新原区域编号，再执行换区和摧毁事件", BatchDeathLocationRefresh),
         new("T24 保留传入接收者数组及同时死亡标记，只另检查主体抑制", DestructionRecipientSnapshot),
+        new("T39 查询先筛选抑制与例外，Hudson 击杀获得 Fury 遵守该门", OtherDestroyedSuppressionQuery),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8527,6 +8528,29 @@ internal static class SelfTest
         if (state.HqDefense(Side.Right) != hp) return "触发主体抑制门未生效";
         engine.Api.FireDestructionEffectTriggered(victim, null, batch, selected, skipSuppressCheck: true);
         if (state.HqDefense(Side.Right) != hp - 1) return "skipSuppressCheck 应仅绕过主体抑制门";
+        return null;
+    }
+
+    private static string? OtherDestroyedSuppressionQuery(CardDatabase db)
+    {
+        for (int mode = 0; mode < 4; mode++)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hudson = state.CreateWithId("card_unit_hudson", Side.Left, 20,
+                mode == 3 ? CardLocation.NotAvailable : CardLocation.BoardHqLeft, 1);
+            var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+            if (hudson.Keywords.Contains(Keyword.Fury)) return "Hudson 初始不应已有 Fury";
+            if (mode is 1 or 2) hudson.Keywords.Add(Keyword.Suppressed);
+            if (mode == 2) hudson.SuppressionExceptionTriggers.Add("OnOtherCardDestroyed");
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Destroy(victim, hudson);
+            bool expected = mode != 1;
+            if (mode != 3 && hudson.Keywords.Contains(Keyword.Fury) != expected)
+                return $"Hudson 模式 {mode} 的 Fury 应为 {expected}，T39 查询抑制/位置门不符";
+            bool received = trace.Any(x => x.StartsWith("OnOtherCardDestroyed → card_unit_hudson#20（", StringComparison.Ordinal));
+            if (received != expected) return "T39 接收轨迹与查询结果不符";
+        }
         return null;
     }
 
