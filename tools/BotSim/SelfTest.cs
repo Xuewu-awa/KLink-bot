@@ -92,6 +92,8 @@ internal static class SelfTest
         new("指定抽牌：保留来源/公开参数及其余牌库编号，满手保留目标编号", SpecificDrawFieldsAndOrder),
         new("抽牌：按手牌数量赋号，保留已有手牌的空位和重复编号", DrawHandNumberAssignment),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
+        new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
+        new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8755,6 +8757,70 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? DrawAutoPlayQueue(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (bool full in new[] { false, true })
+        foreach (int tagMode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side recipient = route == 1 ? side.Opposite() : side;
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", recipient, 100 + i, recipient.HandOf(), i);
+            var card = state.CreateWithId(tagMode <= 1 ? "card_event_resistance_new" : "card_unit_432_infantry_regiment",
+                side, 60, side.DeckOf(), 0);
+            if (tagMode == 1) card.RemovedGameplayTags.Add("autoplay");
+            if (tagMode == 3) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            if (route == 2) engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", card,
+                new object?[] { 0, card.CardId, (int)side, false },
+                new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            else engine.DrawCard(side, opponentDraw: route == 1);
+            int[] expected = !full && tagMode is 0 or 3 ? new[] { 60 } : Array.Empty<int>();
+            if (!state.GetAutoPlayCards().SequenceEqual(expected))
+                return $"自动打出入队错误：方={side} 路径={route} 满手={full} 标签={tagMode}";
+        }
+        return null;
+    }
+
+    private static string? DrawAutoPlayAfterEvents(CardDatabase db)
+    {
+        foreach (bool initiallyTagged in new[] { false, true })
+        foreach (bool leaveHand in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            string name = initiallyTagged ? "card_event_resistance_new" : "card_unit_51e_regiment";
+            var card = state.CreateWithId(name, Side.Left, 30, CardLocation.DeckLeft, 0);
+            bool callback = false;
+            using var probe = InstallDrawReentryProbe(state, () =>
+            {
+                callback = true;
+                if (initiallyTagged) card.RemovedGameplayTags.Add("autoplay");
+                else engine.Api.AddCustomGameplayTag(card, "autoplay");
+                if (leaveHand) state.Move(card, CardLocation.Discard, notifyMoved: false);
+            }, name);
+            engine.DrawCard(Side.Left);
+            if (!callback || !state.GetAutoPlayCards().SequenceEqual(initiallyTagged ? Array.Empty<int>() : new[] { 30 }))
+                return $"自动打出应读取事件后的标签且不加位置门：原标签={initiallyTagged} 离手={leaveHand}";
+        }
+        {
+            var (_, state) = EmptyBoard(db);
+            foreach (int id in new[] { 9, 2, 9, 0, -7, 2 }) state.AddAutoPlayCards(id);
+            var copied = state.GetAutoPlayCards();
+            var snapshot = state.Snapshot();
+            copied[0] = 888;
+            if (!state.GetAutoPlayCards().SequenceEqual(new[] { 9, 2, 0, -7 })
+                || !snapshot.AutoPlayerCardIds.SequenceEqual(new[] { 9, 2, 0, -7 }))
+                return "自动打出队列应保首次插入顺序、去重且返回副本，不自行过滤ID";
+            state.ClearAutoPlayCards();
+            state.AddAutoPlayCards(2);
+            if (!state.GetAutoPlayCards().SequenceEqual(new[] { 2 }) || snapshot.AutoPlayerCardIds.Length != 4)
+                return "清空队列不应改写历史快照，清空后ID应可重新入队";
+        }
+        return null;
+    }
+
     private static string? DrawWithoutLocationMoved(CardDatabase db)
     {
         foreach (Side deckSide in new[] { Side.Left, Side.Right })
@@ -9686,10 +9752,10 @@ internal static class SelfTest
 
     // Controlled reentry probe: a synthetic own-draw program creates a marker
     // in the other deck. The existing creation callback runs the test mutation.
-    // This is not a claimed live effect of 51e Regiment; removal is deterministic.
-    private static IDisposable InstallDrawReentryProbe(GameState state, Action onDraw)
+    // These temporary programs do not claim live card effects; cleanup is deterministic.
+    private static IDisposable InstallDrawReentryProbe(GameState state, Action onDraw,
+        string probe = "card_unit_51e_regiment")
     {
-        const string probe = "card_unit_51e_regiment";
         const string marker = "card_unit_routed_troops";
         const string trigger = "OnCardDrawnFromDeck";
         if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals

@@ -1028,6 +1028,10 @@ public sealed class MatchEngine
         // 兜底那一段又被 `subjectBroadcast` 挡住 ⇒ 22 张订阅 `OnCardDrawnFromDeck`
         // 的卡永远收不到（`card_event_guarilla_warfare_school` 这类"抽到牌时"效果全死）。
         FireEnteredHandFromDeckEvents(card, handSide, startOfTurnDraw);
+        // DrawTopCardFromDeck i=1329..1474 checks the live tag after own/T42
+        // events, then AddAutoPlayCards preserves first-insertion order by ID.
+        // Consumption belongs to the outer action boundary, not this draw.
+        if (CardApi.HasInstanceGameplayTag(card, "autoplay")) State.AddAutoPlayCards(card.CardId);
         // i=819 pushes the reveal continuation at i=1194, but i=1013 first
         // jumps to the own/T42 events at i=1274. Reveal runs after those events.
         // False is a no-op, not a request to clear existing revealed state.

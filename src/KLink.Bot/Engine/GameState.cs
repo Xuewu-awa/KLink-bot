@@ -35,6 +35,16 @@ public sealed class GameState
 
     private readonly Dictionary<int, CardInstance> _byCardId = new();
     private readonly List<CardInstance> _battleCardOrder = new();
+    private readonly List<int> _autoPlayerCardIds = new();
+
+    // BP_GameState_Battle uses an ordered integer array, not a card/location query.
+    public void AddAutoPlayCards(int cardId)
+    {
+        if (!_autoPlayerCardIds.Contains(cardId)) _autoPlayerCardIds.Add(cardId);
+    }
+
+    public int[] GetAutoPlayCards() => _autoPlayerCardIds.ToArray();
+    public void ClearAutoPlayCards() => _autoPlayerCardIds.Clear();
 
     public GameState(CardDatabase database, ulong seed)
     {
@@ -1015,6 +1025,7 @@ public sealed class GameState
             HasPlayedWeatherCardThisTurn = HasPlayedWeatherCardThisTurn,
             ActiveBondFactions = ActiveBondFactions.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
             BattleCardOrder = _battleCardOrder.Select(c => c.CardId).ToArray(),
+            AutoPlayerCardIds = GetAutoPlayCards(),
             LeftFatigue = Fatigue(Side.Left), RightFatigue = Fatigue(Side.Right),
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
@@ -1078,6 +1089,7 @@ public sealed record MatchSnapshot(
     public bool HasPlayedWeatherCardThisTurn { get; init; }
     public string[] ActiveBondFactions { get; init; } = Array.Empty<string>();
     public int[] BattleCardOrder { get; init; } = [];
+    public int[] AutoPlayerCardIds { get; init; } = [];
     public int LeftFatigue { get; init; }
     public int RightFatigue { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
