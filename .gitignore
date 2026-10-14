@@ -159,6 +159,7 @@ out/audit/systematic-rules/selftest-t15-*.txt
 out/audit/systematic-rules/selftest-leave-*.txt
 out/audit/systematic-rules/selftest-ownership-*.txt
 out/audit/systematic-rules/selftest-retreat-*.txt
+out/audit/systematic-rules/selftest-conversion-*.txt
 out/audit/systematic-rules/dispatch/dispatch-classification.json
 
 # ---------------------------------------------------------------------------

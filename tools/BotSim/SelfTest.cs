@@ -55,6 +55,9 @@ internal static class SelfTest
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
+        new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
+        new("转换观察者T34：未定位订阅者仍接收事件", ConversionObserverUnavailable),
+        new("退却重入转换：旧对象回手，新对象保持转换后的场上位置", RetreatConversionIdentity),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -170,7 +173,7 @@ internal static class SelfTest
             GetHighestBomberAttack),
         new("LoseKreditSlot：只降当前槽位，下一回合按当前槽位自然增长",
             LoseKreditSlotRefillsFromCurrentSlot),
-        new("ConvertCard：保留卡位与 ID、替换身份并清理临时状态/派发转换事件",
+        new("ConvertCard：创建新ID对象并保留旧卡弃牌身份，使用新卡面与状态",
             ConvertCard),
 
         // ---- 候选池口径（2026-10-02）----
@@ -8697,6 +8700,84 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? ConversionObserverSnapshot(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_bergmann_battalion", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var later = state.CreateWithId("card_unit_51st_rifle_brigade", Side.Left, 21, CardLocation.BoardHqLeft, 2);
+        var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 31, CardLocation.DeckLeft, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardFrontline, 0);
+        var moved = state.CardMoved;
+        bool changed = false;
+        int attack = 0, defense = 0;
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            {
+                changed = true;
+                engine.Api.SuppressUnit(later);
+                attack = later.Attack;
+                defense = later.Defense;
+            }
+        };
+        var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+        var result = engine.Api.InvokeByName("ConvertCard", source,
+            new object?[] { new[] { unit }, source.CardId, later.Name, 0, false, null }, context, out _);
+        if (!changed || !later.IsSuppressed || later.Attack != attack + 1 || later.Defense != defense + 2)
+            return "T34 查询入选的 51st Rifle 在前序 Bergmann 抽牌回调中被抑制后仍应获得+1+2";
+        var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+        if (ids is not { Length: 1 } || state.ById(ids[0]) is not { } replacement
+            || replacement.Attack != replacement.Definition.Attack || replacement.Defense != replacement.Definition.Defense)
+            return "转换新生成的 51st Rifle 不应响应这次自身转换而获得+1+2";
+        return null;
+    }
+
+    private static string? ConversionObserverUnavailable(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_51st_rifle_brigade", Side.Left, 20, CardLocation.NotAvailable, 0);
+        var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardFrontline, 0);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+        engine.Api.InvokeByName("ConvertCard", source,
+            new object?[] { new[] { unit }, source.CardId, "card_unit_routed_troops", 0, false, null }, context, out _);
+        return trace.Any(x => x.StartsWith("OnOtherCardConverted → card_unit_51st_rifle_brigade#20", StringComparison.Ordinal))
+            ? null : "T34 未定位订阅者被额外位置门过滤";
+    }
+
+    private static string? RetreatConversionIdentity(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
+        var moved = state.CardMoved;
+        bool changed = false;
+        CardInstance? replacement = null;
+        var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            {
+                changed = true;
+                var result = engine.Api.InvokeByName("ConvertCard", source,
+                    new object?[] { new[] { unit }, source.CardId, "card_unit_routed_troops", 0, false, null }, context, out _);
+                var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+                if (ids is { Length: 1 }) replacement = state.ById(ids[0]);
+            }
+        };
+        engine.Api.InvokeByName("MakeCardRetreat", source, new object?[] { new[] { unit }, source.CardId }, context, out _);
+        return changed && replacement is not null && replacement.CardId != unit.CardId
+            && replacement.Location == CardLocation.BoardFrontline && unit.Location == CardLocation.HandRight
+            && state.ById(unit.CardId) == unit && unit.Name == "card_unit_432_infantry_regiment"
+            ? null : "退却不应将旧ID重定向到转换新卡；旧卡回手、新卡留在前线";
     }
 
     // Probe the event parameter with a temporary function; it does not claim

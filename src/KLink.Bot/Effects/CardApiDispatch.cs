@@ -3894,17 +3894,28 @@ public sealed partial class CardApi
         }
         if (!TruthyArg(a, 4))
         {
-            var recipients = CaptureTriggerSnapshot()
-                .Where(x => !converted.Contains(x.CardId) && x.Definition.IsRegisteredFor("OnOtherCardConverted"))
+            // ConvertCard i=3487 queries T34 once; i=3756 excludes the newly
+            // created IDs. The loop never rechecks suppression or location.
+            var recipients = CaptureRegisteredTriggerSnapshot("OnOtherCardConverted")
+                .Where(x => !converted.Contains(x.CardId))
                 .ToArray();
             var oldIds = targets.Select(x => x.CardId).ToArray();
-            FireTrigger("OnOtherCardConverted", null, c.Controller,
-                eventArgs: new object?[] { oldIds, converted, a.ElementAtOrDefault(2), instigatorID },
-                namedArgs: new Dictionary<string, object?>
+            var args = new object?[] { oldIds, converted, a.ElementAtOrDefault(2), instigatorID };
+            var named = new Dictionary<string, object?>
+            {
+                ["oldCardIDs"] = oldIds, ["newCardIDs"] = converted,
+                ["newCardName"] = a.ElementAtOrDefault(2), ["instigatorID"] = instigatorID,
+            };
+            var library = Blueprint.KismetLibrary.Default;
+            if (library is not null)
+                foreach (var observer in recipients)
                 {
-                    ["oldCardIDs"] = oldIds, ["newCardIDs"] = converted,
-                    ["newCardName"] = a.ElementAtOrDefault(2), ["instigatorID"] = instigatorID,
-                }, recipientSnapshot: recipients, broadcastName: true);
+                    if (library.FindProgram(observer.Name, "OnOtherCardConverted") is null) continue;
+                    TriggerTrace?.Add($"OnOtherCardConverted → {observer.Name}#{observer.CardId}（eventCard=null#）");
+                    // This multi-card event has no singular event subject.
+                    RunTriggerProgram(library, observer, observer.Name, "OnOtherCardConverted", null,
+                        eventArgs: args, namedArgs: named);
+                }
         }
         return converted;
     }
