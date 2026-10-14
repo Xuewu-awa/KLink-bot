@@ -1010,9 +1010,8 @@ public sealed class MatchEngine
     }
 
     /// <summary>
-    /// 派发一张牌从牌库进入手牌时的两个客户端触发点。
-    /// 回放驱动在牌序不一致时也会把动作引用的牌从牌库硬塞进手牌，
-    /// 那条路径必须复用同一组事件，否则手牌光环和抽牌触发会缺失。
+    /// ExecuteOnDrawnFromDeck：有效对象先执行自身事件，再查询 T42。
+    /// 此阶段不额外限制对象位置；是否进入该阶段由各抽牌入口决定。
     /// </summary>
     public void FireEnteredHandFromDeckEvents(CardInstance card, Side side, bool startOfTurnDraw)
     {
@@ -1025,7 +1024,9 @@ public sealed class MatchEngine
 
         Api.FireTrigger("OnCardDrawnFromDeck", card, side,
             eventArgs: new object?[] { startOfTurnDraw, (int)side },
-            eventSubject: card, namedArgs: drawnNamed);
+            // ExecuteOnDrawnFromDeck i=89/118 validates the object only;
+            // i=132 directly invokes it regardless of location/suppression.
+            eventSubject: card, namedArgs: drawnNamed, includeUnavailableRecipients: true);
 
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }

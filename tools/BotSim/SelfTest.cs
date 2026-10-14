@@ -82,6 +82,7 @@ internal static class SelfTest
         new("满手烧牌：只改位置，保留弃牌编号且不派发换区回调", DrawOverflowLocationBoundary),
         new("抽牌T42：查询入选后被抑制仍执行，查询前已抑制则排除", DrawObserverSnapshot),
         new("抽牌T42：保留未定位接收者并排除新抽卡自身", DrawObserverLocationAndSelf),
+        new("自身抽牌：不添加位置/抑制门，参数正确且回调先于T42查询", OwnDrawEventBoundary),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8725,6 +8726,48 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? OwnDrawEventBoundary(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        const string trigger = "OnCardDrawnFromDeck";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全添加自身抽牌探针";
+        // Synthetic own callback records both parameters and suppresses a
+        // registered observer before the following T42 query takes place.
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_StartOfTurnDraw", Scope = "local" }, null, -1, "_auditOwnStart", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_drawnSide", Scope = "local" }, null, -1, "_auditOwnSide", null) { DestinationScope = "instance" },
+            new KismetStep(2, "call", "SuppressUnit", new[] { new KismetExpr { Int = 21 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int zone in new[] { 0, 1, 2 })
+            foreach (bool suppressed in new[] { false, true })
+            foreach (bool start in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var observer = state.CreateWithId("card_unit_67th_baranovichi", side, 21, side.HqOf(), 1);
+                var card = state.CreateWithId(name, side, 60,
+                    zone == 0 ? side.HandOf() : zone == 1 ? CardLocation.Discard : CardLocation.NotAvailable, 0);
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                var trace = new List<string>();
+                engine.Api.TriggerTrace = trace;
+                engine.FireEnteredHandFromDeckEvents(card, side, start);
+                if (!card.BlueprintVariables.ContainsKey("_auditOwnStart")
+                    || Convert.ToBoolean(card.BlueprintVariables.GetValueOrDefault("_auditOwnStart")) != start
+                    || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditOwnSide")) != (int)side
+                    || !observer.IsSuppressed
+                    || trace.Any(x => x.StartsWith("OnOtherCardDrawnFromDeck → card_unit_67th_baranovichi#21", StringComparison.Ordinal)))
+                    return $"自身抽牌派发或查询顺序错误：方={side} 区={zone} 抑制={suppressed} 回合开始={start}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? DrawObserverSnapshot(CardDatabase db)
