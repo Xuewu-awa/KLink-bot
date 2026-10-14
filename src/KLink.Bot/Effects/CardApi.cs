@@ -227,6 +227,25 @@ public sealed partial class CardApi
         => CaptureTriggerSnapshot().Where(card => card.Definition.IsRegisteredFor(programName)
             && !SuppressedSkipsTrigger(card, programName)).ToArray();
 
+    public void ExecuteCardCreationModifiers(CardInstance created)
+    {
+        // CreateCard i=1036 queries T35 once. i=1309 invokes the saved objects
+        // with no repeated eligibility checks and does not exclude the new ID.
+        const string trigger = "OnOtherCardCreatedAlterCard";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { created, 0 };
+        var named = new Dictionary<string, object?> { ["cardPlayed"] = created, ["method"] = 0 };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={created.Name}#{created.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, created,
+                eventArgs: args, namedArgs: named);
+        }
+    }
+
     private readonly MatchEngine _engine;
 
     public CardApi(MatchEngine engine)

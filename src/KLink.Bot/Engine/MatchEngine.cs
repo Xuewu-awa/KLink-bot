@@ -136,16 +136,7 @@ public sealed class MatchEngine
     }
 
     private void FireCardCreationModifiers(CardInstance card)
-    {
-        // CreateCard T35 (i=1036..1309) does not exclude the newly created card.
-        Api.FireTrigger("OnOtherCardCreatedAlterCard", null, card.Owner,
-            eventArgs: new object?[] { card, 0 }, eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardPlayed"] = card,
-                ["method"] = 0,
-            }, includeUnavailableRecipients: true);
-    }
+        => Api.ExecuteCardCreationModifiers(card);
 
     /// <summary>
     /// 「某张卡换区了」—— 出处 `out/bp-cardfn.json` 函数

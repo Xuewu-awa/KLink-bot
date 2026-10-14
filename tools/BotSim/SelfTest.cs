@@ -71,6 +71,7 @@ internal static class SelfTest
         new("牌库生成：非正来源ID不执行，非正数量不强制造牌", SpawnDeckInputBoundary),
         new("牌库生成：金卡与打捞字段在创建回调前初始化", SpawnDeckCreationFields),
         new("转换创建：skipAction保留对象创建阶段但不派发T35；普通生成仍派发", ConversionSkipsCreationModifiers),
+        new("创建T35：查询后被抑制的接收者仍执行，查询前已抑制则排除", CreationModifierSnapshot),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8714,6 +8715,42 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? CreationModifierSnapshot(CardDatabase db)
+    {
+        const string probe = "card_event_honorifics";
+        const string trigger = "OnOtherCardCreatedAlterCard";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(probe, trigger) is not null)
+            return "无法安全添加T35临时前序接收函数";
+        // Synthetic predecessor probes query timing; the later receiver runs
+        // the actual 67th Baranovichi Blueprint, not a replacement function.
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SuppressUnit", new[] { new KismetExpr { Int = 21 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (bool initiallySuppressed in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                // Create the real receiver before adding the predecessor so
+                // setup callbacks cannot invoke this probe on a missing ID.
+                var later = state.CreateWithId("card_unit_67th_baranovichi", Side.Left, 21, CardLocation.BoardHqLeft, 1);
+                state.CreateWithId(probe, Side.Left, 20, CardLocation.Discard, 0);
+                if (initiallySuppressed) later.Keywords.Add(Keyword.Suppressed);
+                else later.Keywords.Remove(Keyword.Suppressed); // setup probe may have suppressed it
+                var trace = new List<string>();
+                engine.Api.TriggerTrace = trace;
+                var created = state.Create("card_unit_light_infantry", Side.Left, CardLocation.HandLeft, 0);
+                bool received = trace.Any(x => x.StartsWith(trigger + " → card_unit_67th_baranovichi#21", StringComparison.Ordinal));
+                if (!later.IsSuppressed || received != !initiallySuppressed
+                    || created.Keywords.Contains(Keyword.Alpine) != !initiallySuppressed)
+                    return $"T35查询快照错误：查询前抑制={initiallySuppressed}，接收={received}，Alpine={created.Keywords.Contains(Keyword.Alpine)}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? ConversionSkipsCreationModifiers(CardDatabase db)
