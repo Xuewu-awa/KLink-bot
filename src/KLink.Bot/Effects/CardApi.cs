@@ -2951,6 +2951,41 @@ public sealed partial class CardApi
         _engine.Destroy(target, source);
     }
 
+    /// <summary>DiscardCardFromHand(cardID, 0, false, true), used by blocked direct play.</summary>
+    internal void ForceDiscardHandCardForBlockedDirectPlay(CardInstance card)
+    {
+        CardLocation old = card.Location;
+        if (old is not (CardLocation.HandLeft or CardLocation.HandRight)) return;
+        // SetCardLocationAndLocNumber's discard branch preserves locationNumber.
+        card.Location = CardLocation.Discard;
+        card.RecalculateStats();
+        RearrangeLocation(old);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)old, out string oldName);
+        _engine.FireSubAction("ZActionDiscardCard", new[]
+        {
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("discarderID", 0),
+            ActionValue2.Str("oldLocation", oldName),
+        });
+        // ForceDiscard bypasses restriction and attempted-cancel checks only.
+        if (!card.IsSuppressed)
+            FireTrigger("OnSuccesfulDiscard", card, card.Owner,
+                eventArgs: new object?[] { 0 },
+                namedArgs: new Dictionary<string, object?> { ["discarderID"] = 0 });
+        const string trigger = "OnOtherCardDiscarded";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { card, 0 };
+        var named = new Dictionary<string, object?> { ["cardDiscarded"] = card, ["discarderID"] = 0 };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, card, eventArgs: args, namedArgs: named);
+        }
+    }
+
     /// <summary>
     /// 弃一张牌（对应 `BP_CardFunctions::DiscardCardFromHand` / `DiscardCard`）。
     ///

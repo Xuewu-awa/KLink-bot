@@ -111,6 +111,9 @@ internal static class SelfTest
         new("Gotcha接收阶段：使用接收时费用，不加手牌门，本地直接出牌不重复切换", GotchaReceiptUsesCurrentState),
         new("Gotcha接收阶段：五个普通行动均应用自动消费通知", GotchaReceiptActionIntegration),
         new("Gotcha接收阶段：手牌与牌库回复在额外触发之后应用本批通知", GotchaReceiptReplyIntegration),
+        new("直接出牌失败：目标满员或敌控前线时强制弃牌，保留编号与正确通知", DirectPlayBlockedDestination),
+        new("直接出牌失败：强制弃牌仍执行成功事件，抑制时只跳过自身", DirectPlayForcedDiscardEvents),
+        new("手牌生成输出：缺失IR输出标记时仍写回整数卡ID，后续运算不得命中原卡", SpawnHandImplicitOutId),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8788,6 +8791,105 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? SpawnHandImplicitOutId(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, CardLocation.Discard, 0);
+            var steps = new[] {
+                new KismetStep(0, "call", "SpawnCardInHandBySide", new[] {
+                    new KismetExpr { Int = (int)side }, new KismetExpr { Name = "card_event_supply_chain" },
+                    new KismetExpr { Int = source.CardId }, new KismetExpr { Bool = true },
+                    new KismetExpr { Bool = false }, new KismetExpr { Bool = false },
+                    new KismetExpr { Str = "" }, new KismetExpr { Var = "campaign", Scope = "local" },
+                    new KismetExpr { Int = 0 }, new KismetExpr { Var = "spawnedID", Scope = "local" }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                        new KismetExpr { Var = "spawnedID", Scope = "local" }, new KismetExpr { Int = 1 }
+                    } }, null, -1, "nextID", null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0),
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, null, "spawnedID", "nextID");
+            var spawned = state.Hand(side).Single(x => x.Name == "card_event_supply_chain");
+            if (output.GetValueOrDefault("spawnedID") is not int id || id != spawned.CardId
+                || Convert.ToInt32(output.GetValueOrDefault("nextID")) != id + 1 || source.KreditCost != source.Definition.Kredits)
+                return "手牌生成调用必须写入整数新ID，不能留下空槽或写入卡对象";
+        }
+        return null;
+    }
+
+    private static string? DirectPlayBlockedDestination(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3 })
+        foreach (bool restricted in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side.Opposite();
+            state.SetKredits(side, 4);
+            if (mode == 0)
+                for (int i = 0; i < 4; i++) state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HqOf(), i + 1);
+            if (mode is 1 or 3)
+                for (int i = 0; i < state.FrontlineCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", side, 110 + i, CardLocation.BoardFrontline, i);
+            if (mode is 2 or 3) state.FrontlineOwner = side.Opposite();
+            if (restricted) state.AddGameplayRestriction(side, GameplayRestrictionType.CannotDiscardAnyCardFromHand, 30, 2);
+            var card = state.CreateWithId("card_unit_35th_mountain_rifles", side, 60, side.HandOf(), 7);
+            var remaining = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.HandOf(), 15);
+            var discarded = state.CreateWithId(remaining.Name, side, 62, CardLocation.Discard, 17);
+            int entered = card.EnteredPlayOnTurn, total = state.AllCards.Count();
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var moved = state.CardMoved;
+            int notifications = 0;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (c == card) notifications++;
+                moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            bool success = engine.PlayCardDirectlyFromHand(card, mode != 0, 9004, 1);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionDiscardCard");
+            if (success || card.Location != CardLocation.Discard || card.LocationNumber != 7 || discarded.LocationNumber != 17
+                || remaining.LocationNumber != 0 || state.Kredits(side) != 4 || notifications != 0
+                || card.EnteredPlayOnTurn != entered || state.AllCards.Count() != total || state.CardsPlayedThisTurn.Count != 0
+                || action is null || action.Values.First(x => x.Name == "cardID").Value != card.CardId
+                || action.Values.First(x => x.Name == "discarderID").Value != 0
+                || action.Values.First(x => x.Name == "oldLocation").Text != (side == Side.Left ? "Hand_Left" : "Hand_Right")
+                || trace.Any(x => x.StartsWith("OnAttemptedDiscard", StringComparison.Ordinal)))
+                return $"直接出牌失败分支错误：方={side} 阻挡={mode} 限制={restricted} 结果={success} 位置={card.Location}";
+        }
+        return null;
+    }
+
+    private static string? DirectPlayForcedDiscardEvents(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;
+            state.CreateWithId("card_unit_nakajima_b5n", side, 20, side.HqOf(), 1);
+            for (int i = 0; i < 3; i++) state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HqOf(), i + 2);
+            state.AddGameplayRestriction(side, GameplayRestrictionType.CannotDiscardAnyCardFromHand, 30, 2);
+            var card = state.CreateWithId("card_event_supply_chain", side, 60, side.HandOf(), 7);
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            bool success = engine.PlayCardDirectlyFromHand(card, false, 9004, -1);
+            var copies = state.Hand(side).Where(x => x.Name == card.Name).ToArray();
+            bool own = trace.Any(x => x.StartsWith("OnSuccesfulDiscard →", StringComparison.Ordinal));
+            if (success || card.Location != CardLocation.Discard || own == suppressed
+                || copies.Length != (suppressed ? 0 : 2) || copies.Any(x => x.KreditCost != 1)
+                || !trace.Any(x => x.StartsWith("OnOtherCardDiscarded → card_unit_nakajima_b5n#20", StringComparison.Ordinal)
+                    && x.Contains("card_event_supply_chain#60", StringComparison.Ordinal)))
+                return $"强制弃牌应保留成功与观察者事件：方={side} 抑制={suppressed} 副本={copies.Length} 费用={string.Join(",", copies.Select(x => x.KreditCost))} 自身={own}";
+        }
+        return null;
     }
 
     private static string? GotchaReceiptReplyIntegration(CardDatabase db)

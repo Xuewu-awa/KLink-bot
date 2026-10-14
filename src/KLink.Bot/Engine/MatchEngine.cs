@@ -1407,6 +1407,16 @@ public sealed class MatchEngine
             return true;
         }
 
+        CardLocation destination = toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf();
+        int count = State.CardsUnordered().Count(x => x.Location == destination);
+        int capacity = toFrontline ? State.FrontlineCapacity : GameState.HalfBoardCapacity;
+        if (count >= capacity || toFrontline && Api.DoesSideControlTheFrontline(card.Owner.Opposite()))
+        {
+            // i=1260/1391 -> i=1302: source=0, skipSubAction=false, ForceDiscard=true.
+            Api.ForceDiscardHandCardForBlockedDirectPlay(card);
+            return false;
+        }
+
         return PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
             chargeKredits: false, recordAction: false, toFrontline,
             locationNumber, instigatorID);

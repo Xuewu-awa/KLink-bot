@@ -5025,7 +5025,7 @@ public sealed partial class CardApi
     // ==================== 2026-10-02：补缺口的辅助实现 ====================
 
     /// <summary>
-    /// `DiscardCardFromHand(card_or_cardID, discarderID, skipTriggers, skipVisuals, out success)`
+    /// `DiscardCardFromHand(card_or_cardID, discarderID, skipSubAction, ForceDiscard, out success)`
     /// —— 派发表里的 (B) 一行注册，落到已有的 <see cref="CardApi.DiscardCard"/>。
     ///
     /// 出处：<c>CardApi.cs:1653</c> 的文档注释
@@ -5054,6 +5054,8 @@ public sealed partial class CardApi
             return false;
         }
 
+        // Generic skipSubAction/ForceDiscard and attempted-discard handling are
+        // still pending. Blocked direct play uses its separately audited forced path.
         DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
         // `DiscardCard` can be blocked by a gameplay restriction.  The
         // Blueprint `success` out parameter reflects the actual transition,

@@ -673,11 +673,12 @@ public sealed class KismetVm
             return;
         }
 
-        // Standalone card functions lose the generated out-parameter metadata
-        // for SpawnCardOnBattlefield/SpawnCardInFrontline.  Their final argument
-        // is still the spawned-card-ID slot, so restore that write here.
+        // Older generated calls can lack out metadata (including the differently
+        // capitalized SpawnCardinHandbySide slot). Known SDK signatures place the
+        // spawned int32 ID last. Preserve that integer ABI, not the API's object result.
         if (step.OutParams.Count == 0
-            && fn is "SpawnCardOnBattlefield" or "SpawnCardInFrontline"
+            && (fn is "SpawnCardOnBattlefield" or "SpawnCardInFrontline"
+                || fn == "SpawnCardInHandBySide" && step.Args.Count == 10)
             && result is CardInstance spawned
             && step.Args.Count > 0
             && step.Args[^1].Var is { } implicitOut)
