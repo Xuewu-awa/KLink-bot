@@ -3813,7 +3813,9 @@ public sealed partial class CardApi
         {
             foreach (var value in list)
             {
-                if (AsCardOrId(c, value) is { } card && !targets.Contains(card))
+                // ConvertCard i=117..346 visits every input array element.
+                // A repeated ID sees the old object's location after the prior conversion.
+                if (AsCardOrId(c, value) is { } card)
                 {
                     targets.Add(card);
                 }

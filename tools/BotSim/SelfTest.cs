@@ -58,6 +58,8 @@ internal static class SelfTest
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
         new("转换观察者T34：未定位订阅者仍接收事件", ConversionObserverUnavailable),
         new("退却重入转换：旧对象回手，新对象保持转换后的场上位置", RetreatConversionIdentity),
+        new("转换重复ID：逐项读取旧对象当前位置，生成场上及手牌两个新对象", ConversionRepeatedInput),
+        new("转换创建字段：金卡取旧卡，打捞仅按模板复制且清空打捞来源ID", ConversionCreationFields),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8698,6 +8700,57 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ConversionRepeatedInput(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardFrontline, 0);
+        var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Left };
+        var result = engine.Api.InvokeByName("ConvertCard", unit,
+            new object?[] { new[] { unit.CardId, unit.CardId }, 0, "card_unit_routed_troops", 0, false, null }, context, out _);
+        var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+        if (ids is not { Length: 2 } || ids[0] == ids[1] || ids.Contains(unit.CardId))
+            return "重复输入ID应生成两个独立的新ID，不能预先去重";
+        if (state.ById(ids[0])?.Location != CardLocation.BoardFrontline
+            || state.ById(ids[1])?.Location != CardLocation.HandLeft || unit.Location != CardLocation.Discard)
+            return "第二次转换应读取旧对象已在弃牌堆的状态，替代卡生成于原主手牌";
+        return null;
+    }
+
+    private static string? ConversionCreationFields(CardDatabase db)
+    {
+        foreach (bool useTemplate in new[] { false, true })
+        foreach (bool gold in new[] { false, true })
+        foreach (bool salvaged in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.HandLeft, 0);
+            unit.IsGold = gold;
+            unit.IsSalvaged = true;
+            unit.SalvageFaction = "Germany";
+            unit.SalvagedCardId = 999;
+            unit.Attack = 99;
+            var template = state.CreateWithId("card_unit_routed_troops", Side.Right, 63, CardLocation.HandRight, 0);
+            template.IsGold = !gold;
+            template.IsSalvaged = salvaged;
+            template.SalvageFaction = "Britain";
+            template.SalvagedCardId = 998;
+            template.Attack = 88;
+            var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Left };
+            var result = engine.Api.InvokeByName("ConvertCard", unit,
+                new object?[] { new[] { unit.CardId }, 0, template.Name, useTemplate ? template.CardId : 0, true, null }, context, out _);
+            var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            if (ids is not { Length: 1 } || state.ById(ids[0]) is not { } replacement)
+                return "转换未生成替代卡";
+            bool expectedSalvaged = useTemplate && salvaged;
+            if (replacement.IsGold != gold || replacement.IsSalvaged != expectedSalvaged
+                || replacement.SalvageFaction != (expectedSalvaged ? "Britain" : null)
+                || replacement.SalvagedCardId != 0 || replacement.Owner != Side.Left
+                || replacement.Attack != (expectedSalvaged ? 1 : replacement.Definition.Attack))
+                return $"转换创建字段错误：模板={useTemplate} 金卡={gold} 打捞模板={salvaged}";
         }
         return null;
     }
