@@ -1332,8 +1332,7 @@ public sealed partial class CardApi
             ["ShuffleDeckBySide"] = (c, r, a) =>
             {
                 var side = SideArg(r, a, 0, c.Controller);
-                var instigator = AsCard(r) ?? c.Self;
-                ShuffleDeckBySide(c, side, instigator);
+                ShuffleDeckBySide(c, side, IntArg(a, 2));
                 return null;
             },
             // ⚠️ **数额在 `a[1]`，不在 `a[0]`**（审计 §5.2b）。
@@ -2556,7 +2555,7 @@ public sealed partial class CardApi
         if (shuffle)
         {
             var instigator = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
-            ShuffleDeckBySide(c, side, instigator);
+            ShuffleDeckBySide(c, side, instigator?.CardId ?? 0);
         }
 
         // ★★ 出参必须是**数组**（`TArray<int32>` 的卡 ID），不是单张卡。
@@ -3448,13 +3447,15 @@ public sealed partial class CardApi
         });
 
         // The Blueprint always shuffles after inserting the copy.
-        ShuffleDeckBySide(c, deckSide, instigator);
+        ShuffleDeckBySide(c, deckSide, instigator?.CardId ?? 0);
         return 0;
     }
 
-    private static void ShuffleDeckBySide(EffectContext c, Side side, CardInstance? instigator)
+    private void ShuffleDeckBySide(EffectContext c, Side side, int instigatorId)
     {
         var order = c.State.Deck(side).ToList();
+        // i=86..151 exits before shuffle and both observer queries for an empty deck.
+        if (order.Count == 0) return;
         c.State.Random.Shuffle(order);
         c.State.TraceRandom($"ShuffleDeckBySide {side} n={order.Count}");
         for (int i = 0; i < order.Count; i++)
@@ -3462,15 +3463,26 @@ public sealed partial class CardApi
             order[i].LocationNumber = i;
         }
 
-        // Open-game deck construction has no effect context and does not pass here.
-        c.Engine.Api.FireTrigger("OnDeckShuffled", subject: null, side,
-            eventSubject: instigator,
-            eventArgs: new object?[] { (int)side, instigator },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
+        // i=256 completes T3 before i=299 queries T22. skipSubAction only
+        // controls the later notifier, never either rules event.
+        ExecuteOnAfterDeckChanged(side);
+        var recipients = CaptureRegisteredTriggerSnapshot("OnDeckShuffled");
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, "OnDeckShuffled") is null) continue;
+            // i=568 resolves the explicit ID for each recipient, including 0.
+            var instigator = c.State.ById(instigatorId);
+            var named = new Dictionary<string, object?>
             {
                 ["deckSide"] = (int)side,
                 ["instigatorCard"] = instigator,
-            });
+            };
+            TriggerTrace?.Add($"OnDeckShuffled → {observer.Name}#{observer.CardId}（eventCard={instigator?.Name ?? "null"}#{instigator?.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, "OnDeckShuffled", instigator,
+                eventArgs: new object?[] { (int)side, instigator }, namedArgs: named);
+        }
     }
 
     /// <summary>

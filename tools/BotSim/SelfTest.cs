@@ -64,6 +64,9 @@ internal static class SelfTest
         new("转换插入：替代卡回到原槽位，双方共享前线保持全局顺序", ConversionBoardInsertion),
         new("转换模板时序：每项离场回调后重新查询模板并读取名称和打捞状态", ConversionTemplateAfterLeave),
         new("牌库T3通知：未定位订阅者保留，查询筛选抑制并传递正确牌库方", DeckChangedQueryBoundary),
+        new("洗牌：先通知T3更新顶牌，再调用T22观察者", ShuffleDeckChangeOrder),
+        new("洗牌：空牌库不消耗随机数且不派发T3或T22", ShuffleEmptyDeck),
+        new("洗牌T22：保留未定位接收者并使用显式来源ID（含0）", ShuffleInstigatorContract),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -6871,8 +6874,9 @@ internal static class SelfTest
             ("OnDeckShuffled", "card_unit_110e_regiment_motorize",
                 (e, s, p) =>
                 {
-                    var deckCard = Plain(s, victim, 72);
-                    s.Move(deckCard, CardLocation.DeckLeft, 0);
+                    // Plain creates a right-owned unit; merely moving it to
+                    // DeckLeft does not put it in the left owner's deck model.
+                    s.CreateWithId(victim, Side.Left, 72, CardLocation.DeckLeft, 0);
                     e.Api.InvokeByName("ShuffleDeckBySide", p,
                         new object?[] { (int)Side.Left, false, 0, null },
                         new EffectContext { Engine = e, State = s, Self = p, Controller = Side.Left }, out _);
@@ -8704,6 +8708,62 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ShuffleDeckChangeOrder(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.Turn = 1;
+        var betasom = state.CreateWithId("card_event_betasom", Side.Left, 20, CardLocation.Discard, 0);
+        betasom.EnteredPlayOnTurn = 1;
+        var watcher = state.CreateWithId("card_unit_110e_regiment_motorize", Side.Left, 21, CardLocation.BoardHqLeft, 1);
+        for (int i = 0; i < 3; i++)
+            state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 60 + i, CardLocation.DeckLeft, i);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        var context = new EffectContext { Engine = engine, State = state, Self = watcher, Controller = Side.Left };
+        engine.Api.InvokeByName("ShuffleDeckBySide", watcher, new object?[] { (int)Side.Left, true, watcher.CardId, null }, context, out _);
+        int changed = trace.FindIndex(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#20", StringComparison.Ordinal));
+        int shuffled = trace.FindIndex(x => x.StartsWith("OnDeckShuffled → card_unit_110e_regiment_motorize#21", StringComparison.Ordinal));
+        return changed >= 0 && shuffled > changed && engine.Api.HasCustomGameplayTag(state.Deck(Side.Left)[0], "subtype.navy")
+            ? null : "洗牌必须先执行T3更新实际顶牌标签，再执行T22；skipSubAction不跳过规则通知";
+    }
+
+    private static string? ShuffleEmptyDeck(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId("card_unit_110e_regiment_motorize", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        long cursor = state.Random.ConsumedCount;
+        int attack = watcher.Attack;
+        var context = new EffectContext { Engine = engine, State = state, Self = watcher, Controller = Side.Left };
+        engine.Api.InvokeByName("ShuffleDeckBySide", watcher, new object?[] { (int)Side.Left, false, 20, null }, context, out _);
+        return state.Random.ConsumedCount == cursor && watcher.Attack == attack
+            && !trace.Any(x => x.StartsWith("OnDeckShuffled", StringComparison.Ordinal) || x.StartsWith("OnAfterDeckChanged", StringComparison.Ordinal))
+            ? null : "空牌库洗牌应在任何随机消耗或T3/T22派发前返回";
+    }
+
+    private static string? ShuffleInstigatorContract(CardDatabase db)
+    {
+        foreach (int sourceId in new[] { 0, 30 })
+        foreach (bool unavailable in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var watcher = state.CreateWithId("card_unit_110e_regiment_motorize", Side.Left, 20,
+                unavailable ? CardLocation.NotAvailable : CardLocation.BoardHqLeft, 1);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+            state.CreateWithId(source.Name, Side.Left, 60, CardLocation.DeckLeft, 0);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var context = new EffectContext { Engine = engine, State = state, Self = watcher, Controller = Side.Left };
+            engine.Api.InvokeByName("ShuffleDeckBySide", watcher, new object?[] { (int)Side.Left, false, sourceId, null }, context, out _);
+            string expected = sourceId == 0 ? "eventCard=null#" : $"eventCard={source.Name}#30";
+            if (!trace.Any(x => x.StartsWith("OnDeckShuffled → card_unit_110e_regiment_motorize#20", StringComparison.Ordinal)
+                && x.Contains(expected, StringComparison.Ordinal)))
+                return $"T22未保留显式来源或未定位接收者：来源={sourceId}，未定位={unavailable}";
         }
         return null;
     }
