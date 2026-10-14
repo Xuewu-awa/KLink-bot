@@ -2850,13 +2850,19 @@ public sealed class MatchEngine
                 {
                     ["killer"] = killer, ["attacker"] = killer, ["TriggerNotDestroyed"] = triggered,
                 });
-        Api.FireTrigger("OnBeforeOtherCardDestroyed", card, card.Owner,
-            eventArgs: new object?[] { card, killer, triggered, combat }, eventSubject: card,
-            namedArgs: new Dictionary<string, object?>
-            {
-                ["cardDestroyed"] = card, ["killer"] = killer, ["attacker"] = killer,
-                ["TriggerNotDestroyed"] = triggered, ["DestroyedInCombat"] = combat,
-            }, broadcastName: true);
+        // i=176 queries after the self callback. The returned T15 array has
+        // no location filter and is not re-filtered during observer callbacks.
+        var observers = Api.CaptureRegisteredTriggerSnapshot("OnBeforeOtherCardDestroyed")
+            .Where(observer => observer.CardId != card.CardId).ToArray();
+        foreach (var observer in observers)
+            Api.FireTrigger("OnBeforeOtherCardDestroyed", observer, observer.Owner,
+                selfProgramName: "OnBeforeOtherCardDestroyed",
+                eventArgs: new object?[] { card, killer, triggered, combat }, eventSubject: card,
+                namedArgs: new Dictionary<string, object?>
+                {
+                    ["cardDestroyed"] = card, ["killer"] = killer, ["attacker"] = killer,
+                    ["TriggerNotDestroyed"] = triggered, ["DestroyedInCombat"] = combat,
+                }, recipientSnapshot: new[] { observer }, includeUnavailableRecipients: true);
     }
 
     internal void ExecuteDestroyed(CardInstance card, CardInstance? killer, CardLocation location,

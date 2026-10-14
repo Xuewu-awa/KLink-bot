@@ -36,6 +36,7 @@ internal static class SelfTest
         new("T24 保留传入接收者数组及同时死亡标记，只另检查主体抑制", DestructionRecipientSnapshot),
         new("T39 查询先筛选抑制与例外，Hudson 击杀获得 Fury 遵守该门", OtherDestroyedSuppressionQuery),
         new("外部摧毁效果经 Special Attack 实际赋予，并按 T24 倍数重复提供者效果", ExternalDestructionProviderRepeat),
+        new("T15 不添加位置门，Marder 保留自身击杀分支与查询抑制条件", BeforeDestroyedRecipientQuery),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8600,6 +8601,30 @@ internal static class SelfTest
             }
             if (victim.Location != CardLocation.Discard || provider.Location != CardLocation.Discard)
                 return "死亡单位和已打出提供者都应留在弃牌堆";
+        }
+        return null;
+    }
+
+    private static string? BeforeDestroyedRecipientQuery(CardDatabase db)
+    {
+        for (int mode = 0; mode < 5; mode++)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var marder = state.CreateWithId("card_unit_marder_iii_h", Side.Left, 20,
+                mode == 0 ? CardLocation.BoardHqLeft : CardLocation.NotAvailable, 1);
+            var other = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 21, CardLocation.BoardHqLeft, 2);
+            var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+            var draw = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 70, CardLocation.DeckLeft, 0);
+            if (mode >= 3) marder.Keywords.Add(Keyword.Suppressed);
+            if (mode == 4) marder.SuppressionExceptionTriggers.Add("OnBeforeOtherCardDestroyed");
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Destroy(victim, mode is 0 or 2 ? other : marder);
+            bool expectedDraw = mode is 0 or 1 or 4;
+            if ((draw.Location == CardLocation.HandLeft) != expectedDraw)
+                return $"Marder 模式 {mode} 应抽牌={expectedDraw}，实际 {draw.Location}";
+            bool received = trace.Any(x => x.StartsWith("OnBeforeOtherCardDestroyed → card_unit_marder_iii_h#20（", StringComparison.Ordinal));
+            if (received != (mode != 3)) return "T15 接收轨迹不符合注册/抑制查询结果";
         }
         return null;
     }
