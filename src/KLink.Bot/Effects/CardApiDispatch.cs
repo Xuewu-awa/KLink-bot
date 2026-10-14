@@ -2176,7 +2176,7 @@ public sealed partial class CardApi
             var deckCandidates = ScryCandidates(selecting, side);
             if (deckCandidates.Count == 0)
             {
-                _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false);
+                _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
                 return 0;
             }
             if (deckCandidates.Count == 1)
@@ -2191,7 +2191,7 @@ public sealed partial class CardApi
                     FireTrigger("OnHandTargetSelected", selecting, side,
                         eventArgs: new object?[] { only.CardId, 0 }, eventSubject: only);
                     return true;
-                }, updateExtraTriggers: false, defer: false);
+                }, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
                 return only.CardId;
             }
 
@@ -2222,7 +2222,7 @@ public sealed partial class CardApi
         {
             // selectCardToDraw reaches GetExecuteWaitPlayFromHand / AfterWait
             // even when its generated pool is empty.
-            _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false);
+            _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
             return 0;
         }
         _engine.ResolveHandSelection(selecting, () =>

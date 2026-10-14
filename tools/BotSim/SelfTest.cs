@@ -98,6 +98,10 @@ internal static class SelfTest
         new("自动打出消费：只检查有效手牌，按当前标签付费并清空失效条目", AutoPlayConsumerGate),
         new("自动打出行动边界：开始/结束回合、打牌、移动、攻击后自动消费", AutoPlayActionBoundaries),
         new("自动打出行动边界：被拒绝的出牌/移动/攻击不消费队列", AutoPlayRejectedActions),
+        new("自动打出选牌回复：消费先于额外触发，支持左右方", AutoPlaySelectionBeforeExtra),
+        new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
+        new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
+        new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8757,6 +8761,127 @@ internal static class SelfTest
             if (sameName.Location != side.DeckOf() || requested.Location != side.HandOf()
                 || state.ActionLog.Count != actions || state.Fatigue(side) != 0)
                 return "指定ID不在牌库时不应按名称改抽其它实例或产生动作";
+        }
+        return null;
+    }
+
+    // Synthetic event: draw one card to probe the response phase. It does not
+    // assert that the named live card implements this event.
+    private static IDisposable InstallSelectionDrawProbe(string name, string trigger)
+    {
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            throw new InvalidOperationException("无法安全安装选择回复探针");
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "DrawCardsFromDeckBySide", new[] {
+                new KismetExpr { Int = 20 }, new KismetExpr { Var = "side", Scope = "instance" },
+                new KismetExpr { Int = 1 }, new KismetExpr { Bool = false }, new KismetExpr { Bool = false }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? AutoPlaySelectionBeforeExtra(CardDatabase db)
+    {
+        using var probe = InstallSelectionDrawProbe("card_unit_m36_destroyer", "OnPlayedFromHand");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            var source = state.CreateWithId("card_unit_m36_destroyer", side, 20, CardLocation.Discard, 0);
+            source.ExtraPlayTriggers = 1;
+            state.SetKredits(side, 5);
+            var first = state.CreateWithId("card_event_resistance_new", side, 60, side.DeckOf(), 0);
+            var normal = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.DeckOf(), 1);
+            var extra = state.CreateWithId(first.Name, side, 62, side.DeckOf(), 2);
+            engine.Api.DrawChosenCardToHand(source, first);
+            if (first.Location != CardLocation.Discard || normal.Location != side.HandOf()
+                || extra.Location != side.HandOf() || !state.GetAutoPlayCards().SequenceEqual(new[] { 62 })
+                || source.ExtraPlayTriggers != 0 || state.HqDefense(side) != 19 || state.Kredits(side) != 4)
+                return $"选牌回复应先消费首张RESISTANCE，再由额外触发抽第二张且保留其队列：方={side}";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayHandReplyBoundary(CardDatabase db)
+    {
+        using var probe = InstallSelectionDrawProbe("card_unit_52_k", "OnHandTargetSelected");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int reply in new[] { 30, 0, -1 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            var source = state.CreateWithId("card_unit_52_k", side, 20, CardLocation.Discard, 0);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 30, side.HandOf(), 0);
+            var card = state.CreateWithId("card_event_resistance_new", side, 60,
+                reply == -1 ? side.HandOf() : side.DeckOf(), 0);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.DeckOf(), 1);
+            if (reply == -1) state.AddAutoPlayCards(card.CardId);
+            engine.PickHandTargetId = (_, _) => reply == -1 ? null : reply;
+            engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { source.CardId },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (card.Location != (reply == -1 ? side.HandOf() : CardLocation.Discard)
+                || !state.GetAutoPlayCards().SequenceEqual(reply == -1 ? new[] { 60 } : Array.Empty<int>())
+                || state.HqDefense(side) != (reply == -1 ? 20 : 19))
+                return $"手牌回复消费边界错误：方={side} 回复={reply}";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayDeferredHandReply(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            state.ActiveSide = side;
+            state.SetMaxKredits(side, 10);
+            state.SetKredits(side, 10);
+            var source = state.CreateWithId("card_unit_gordon_highlanders", side, 20, side.HandOf(), 0);
+            state.CreateWithId("card_unit_dornier_do_18g", side, 30, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_convoy_175", side, 31, side.HandOf(), 1);
+            var resistance = state.CreateWithId("card_event_resistance_new", side, 60, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.DeckOf(), 1);
+            bool answered = false, afterWaitBeforeAuto = false;
+            engine.PickHandTargetId = (_, _) =>
+            {
+                // Controlled response-time draw supplies a queued effect after
+                // the initial PlayCard boundary but before this reply's own callback.
+                answered = true;
+                engine.DrawCard(side, instigatorId: source.CardId);
+                return target.CardId;
+            };
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (card == source && newLocation == CardLocation.BoardFrontline)
+                    afterWaitBeforeAuto = answered && resistance.Location == side.HandOf();
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            };
+            bool played = engine.PlayCard(source);
+            if (!played || !answered || !afterWaitBeforeAuto || source.Location != CardLocation.BoardFrontline
+                || resistance.Location != CardLocation.Discard || target.Location != side.HandOf()
+                || state.GetAutoPlayCards().Length != 0 || state.HqDefense(side) != 19)
+                return $"延迟手牌回复未按AfterWait→自动打出执行：方={side} 回复={answered} 先等待={afterWaitBeforeAuto} 源={source.Location} 自动牌={resistance.Location}";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayInlineSelectionBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool singleton in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var card = state.CreateWithId("card_event_resistance_new", side, 60,
+                singleton ? side.DeckOf() : side.HandOf(), 0);
+            if (!singleton) state.AddAutoPlayCards(card.CardId);
+            engine.Api.InvokeByName("selectCardToDraw", source, new object?[] { source.CardId, true, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (card.Location != side.HandOf() || !state.GetAutoPlayCards().SequenceEqual(new[] { 60 })
+                || state.HqDefense(side) != 20)
+                return "无候选/单候选内联选择不应冒充玩家回复并提前消费自动队列";
         }
         return null;
     }
