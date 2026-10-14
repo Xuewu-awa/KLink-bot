@@ -697,7 +697,7 @@ public sealed partial class CardApi
             //      `card_event_pact_of_steel` 的 `Array_Get(cardsIDs, 0)` …）。
             //    改成返回 `List<int>`（抽到的 cardID）⇒ VM 写进第一个 out 槽；
             //    先例见 `GetDeckByside`（同族 `TArray<int>` 出参，已有自测守着）。
-            ["DrawCardsFromDeckBySide"] = (c, r, a) => DrawCardsAndCollect(SideArg(r, a, 1, c.Controller), IntArg(a, 2, 1)),
+            ["DrawCardsFromDeckBySide"] = (c, r, a) => DrawCardsAndCollect(SideArg(r, a, 1, c.Controller), IntArg(a, 2, 1), IntArg(a, 0)),
             ["DrawCardFromDeck"] = (c, r, a) => { DrawCards(SideArg(r, a, 0, c.Controller), IntArg(a, 1, 1)); return null; },
             ["SpawnCardInHandBySide"] = (c, r, a) => DoSpawnInHand(c, r, a),
             ["SpawnCardOnBattlefield"] = (c, r, a) => DoSpawnOnBattlefield(c, r, a),

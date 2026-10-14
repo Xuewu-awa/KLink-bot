@@ -2756,14 +2756,14 @@ public sealed partial class CardApi
     ///       用它构造蓝图出参，同时保留 <c>DrawCard</c> 表示“是否进入手牌”的返回语义。</item>
     /// </list>
     /// </summary>
-    public List<int> DrawCardsAndCollect(Side side, int count)
+    public List<int> DrawCardsAndCollect(Side side, int count, int instigatorId = 0)
     {
         var drawn = new List<int>();
         for (int i = 0; i < count; i++)
         {
             // DrawTopCardFromDeck returns the removed card ID even when a full hand burns it.
             var topCard = State.Deck(side).FirstOrDefault();
-            _engine.DrawCard(side);
+            _engine.DrawCard(side, instigatorId: instigatorId);
             if (topCard is not null)
             {
                 drawn.Add(topCard.CardId);

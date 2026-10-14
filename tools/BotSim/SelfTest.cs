@@ -83,6 +83,8 @@ internal static class SelfTest
         new("抽牌T42：查询入选后被抑制仍执行，查询前已抑制则排除", DrawObserverSnapshot),
         new("抽牌T42：保留未定位接收者并排除新抽卡自身", DrawObserverLocationAndSelf),
         new("自身抽牌：不添加位置/抑制门，参数正确且回调先于T42查询", OwnDrawEventBoundary),
+        new("批量抽牌通知：保留显式来源ID（含0），不以调用对象代替", DrawNotificationInstigator),
+        new("非空牌库抽牌通知：成功及烧牌均不附加下一次疲劳伤害", DrawNotificationNoFatigue),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8724,6 +8726,49 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? DrawNotificationInstigator(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool full in new[] { false, true })
+        foreach (int sourceId in new[] { 0, 30 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId(caller.Name, side, 100 + i, side.HandOf(), i);
+            state.CreateWithId(caller.Name, side, 60, side.DeckOf(), 0);
+            var context = new EffectContext { Engine = engine, State = state, Self = caller, Controller = Side.Left };
+            engine.Api.InvokeByName("DrawCardsFromDeckBySide", caller,
+                new object?[] { sourceId, (int)side, 1, false, false, null, 0.4 }, context, out _);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+            if (action?.Values.FirstOrDefault(x => x.Name == "instigatorID") is not { } source || source.Value != sourceId
+                || action.Values.FirstOrDefault(x => x.Name == "cardType") is not { } type || type.Value != -1 || type.Text != caller.Name)
+                return $"抽牌通知未保留显式来源{sourceId}或卡名：方={side}，满手={full}";
+        }
+        return null;
+    }
+
+    private static string? DrawNotificationNoFatigue(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool full in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            engine.DrawCard(side); // establish nonzero fatigue before the real draw
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HandOf(), i);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.DeckOf(), 0);
+            int actions = state.ActionLog.Count;
+            engine.DrawCard(side);
+            var draw = state.ActionLog.Skip(actions).SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+            if (state.Fatigue(side) <= 0 || draw is null || draw.Values.Any(x => x.Name == "nextFatigueDamage"))
+                return $"非空抽牌不应编码疲劳预告：方={side}，满手={full}";
         }
         return null;
     }

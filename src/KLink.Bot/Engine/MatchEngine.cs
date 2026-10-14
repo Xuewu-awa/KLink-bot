@@ -936,7 +936,7 @@ public sealed class MatchEngine
         return destroyed;
     }
 
-    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false)
+    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0)
     {
         var deck = State.Deck(side).ToList();
         if (deck.Count == 0)
@@ -970,11 +970,12 @@ public sealed class MatchEngine
             card.RecalculateStats();
             FireSubAction("ZActionDrawCardFromDeck", new[]
             {
-                ActionValue2.Int("cardID", card.CardId),
+                ActionValue2.Int("instigatorID", instigatorId),
                 ActionValue2.Str("side", side.ToWire()),
+                ActionValue2.Int("cardID", card.CardId),
+                ActionValue2.Str("cardType", card.Name),
                 ActionValue2.Int("PreQtyInHand", preQtyInHand),
                 ActionValue2.Bool("handIsFull", true),
-                ActionValue2.Int("nextFatigueDamage", State.Fatigue(side) + 1),
             });
             return null;
         }
@@ -982,11 +983,12 @@ public sealed class MatchEngine
         State.Move(card, side.HandOf());
         FireSubAction("ZActionDrawCardFromDeck", new[]
         {
-            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("instigatorID", instigatorId),
             ActionValue2.Str("side", side.ToWire()),
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Str("cardType", card.Name),
             ActionValue2.Int("PreQtyInHand", preQtyInHand),
             ActionValue2.Bool("handIsFull", false),
-            ActionValue2.Int("nextFatigueDamage", State.Fatigue(side) + 1),
         });
 
         // 「别的卡被抽到手」触发点。**必须接**：`card_unit_85_pioneer_company` /
