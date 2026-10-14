@@ -96,6 +96,8 @@ internal static class SelfTest
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
         new("自动打出消费：RESISTANCE连锁抽入队并按序打出", AutoPlayResistanceChain),
         new("自动打出消费：只检查有效手牌，按当前标签付费并清空失效条目", AutoPlayConsumerGate),
+        new("自动打出行动边界：开始/结束回合、打牌、移动、攻击后自动消费", AutoPlayActionBoundaries),
+        new("自动打出行动边界：被拒绝的出牌/移动/攻击不消费队列", AutoPlayRejectedActions),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8755,6 +8757,81 @@ internal static class SelfTest
             if (sameName.Location != side.DeckOf() || requested.Location != side.HandOf()
                 || state.ActionLog.Count != actions || state.Fatigue(side) != 0)
                 return "指定ID不在牌库时不应按名称改抽其它实例或产生动作";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayActionBoundaries(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2, 3, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            state.ActiveSide = side;
+            state.SetMaxKredits(side, 10);
+            state.SetKredits(side, 10);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", side, 20,
+                route == 4 ? CardLocation.BoardFrontline : side.HqOf(), route == 4 ? 0 : 1);
+            unit.EnteredPlayOnTurn = 0;
+            var resistance = state.CreateWithId("card_event_resistance_new", side, 60,
+                route <= 1 ? side.DeckOf() : side.HandOf(), 0);
+            var normal = state.CreateWithId(unit.Name, side, 61, side.DeckOf(), 1);
+            if (route == 1) state.CreateWithId(unit.Name, side, 62, side.DeckOf(), 2);
+            if (route == 2) state.CreateWithId(unit.Name, side.Opposite(), 63, side.Opposite().DeckOf(), 0);
+            if (route >= 2) state.AddAutoPlayCards(resistance.CardId);
+            int hp = state.HqDefense(side), enemyHp = state.HqDefense(side.Opposite());
+            bool completed = true;
+            if (route == 0) engine.StartTurn(side, draw: true);
+            else if (route == 1)
+            {
+                var order = state.CreateWithId("card_event_convoy_175", side, 70, side.HandOf(), 0);
+                completed = engine.PlayCard(order);
+            }
+            else if (route == 2) engine.EndTurn(side);
+            else if (route == 3) completed = engine.MoveUnit(unit, 0);
+            else completed = engine.Attack(unit, state.Hq(side.Opposite()));
+            if (!completed || resistance.Location != CardLocation.Discard || state.GetAutoPlayCards().Length != 0
+                || normal.Location != side.HandOf() || state.HqDefense(side) != hp - 1
+                || resistance.EnteredPlayOnTurn != 2)
+                return $"行动后自动打出失败：方={side} 路径={route} 完成={completed} 卡位置={resistance.Location} 回合={resistance.EnteredPlayOnTurn}";
+            if (route == 1)
+            {
+                var sources = state.ActionLog.SelectMany(x => x.SubActions)
+                    .Where(x => x.Name == "ZActionDrawCardFromDeck")
+                    .Select(x => x.Values.First(v => v.Name == "instigatorID").Value).ToArray();
+                if (!sources.SequenceEqual(new[] { 70, 70, 60 }))
+                    return "应先完成CONVOY HX 175的两次抽牌，再执行RESISTANCE的抽牌：" + string.Join(",", sources);
+            }
+            if (route == 2 && (state.Turn != 3 || state.ActiveSide != side.Opposite() || unit.PinnedTurns != 3))
+                return "结束回合应先递减压制，再消费队列，最后推进下一方";
+            if (route == 3 && (unit.Location != CardLocation.BoardFrontline || unit.PinnedTurns <= 0))
+                return "应先完成移动，再由RESISTANCE压制已移动单位";
+            if (route == 4 && (state.HqDefense(side.Opposite()) >= enemyHp || unit.PinnedTurns <= 0))
+                return "应先完成攻击，再由RESISTANCE压制攻击者";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayRejectedActions(CardDatabase db)
+    {
+        foreach (int route in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left;
+            state.SetKredits(Side.Left, 0);
+            var resistance = state.CreateWithId("card_event_resistance_new", Side.Left, 60, CardLocation.HandLeft, 0);
+            state.AddAutoPlayCards(60);
+            bool completed;
+            if (route == 0)
+            {
+                var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 61, CardLocation.HandLeft, 1);
+                completed = engine.PlayCard(unit);
+            }
+            else if (route == 1) completed = engine.MoveUnit(state.Hq(Side.Left), 0);
+            else completed = engine.Attack(state.Hq(Side.Left), state.Hq(Side.Right));
+            if (completed || resistance.Location != CardLocation.HandLeft || !state.GetAutoPlayCards().SequenceEqual(new[] { 60 }))
+                return "被本地合法性检查拒绝的行动不应消费待执行队列";
         }
         return null;
     }

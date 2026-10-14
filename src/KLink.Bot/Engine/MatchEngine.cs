@@ -553,6 +553,8 @@ public sealed class MatchEngine
         try
         {
             StartTurnCore(side, draw);
+            // OpponentActionsStartTurn: StartTurnBySide then ExecuteAutoPlayCards.
+            ExecuteAutoPlayCards();
         }
         finally
         {
@@ -794,6 +796,9 @@ public sealed class MatchEngine
         //    实证：回放 389594 的 6 条 bot `ML` 被新门误拒，连锁把人类 t13 的
         //    攻击打成「够不着」—— 见 `DecrementPinnedTurnsEndTurn` 的注释。
         DecrementPinnedTurnsEndTurn();
+
+        // OpponentActionsEndTurn i=673 precedes SwitchPlayingSide/IncrementTurnNumber.
+        ExecuteAutoPlayCards();
 
         RecordAction("XActionEndOfTurn", side, new Dictionary<string, object?>
         {
@@ -1236,6 +1241,18 @@ public sealed class MatchEngine
     /// `OnEnterPlay` 会各触发一次，光环类卡会被撤销再重挂。
     /// </param>
     public bool PlayCard(CardInstance card, CardInstance? target = null, bool skipLeaveTrigger = false)
+    {
+        BeginEffectResolution();
+        try
+        {
+            bool completed = PlayCardActionCore(card, target, skipLeaveTrigger);
+            if (completed) ExecuteAutoPlayCards();
+            return completed;
+        }
+        finally { EndEffectResolution(); }
+    }
+
+    private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger)
     {
         if (!CanPlay(card, out string reason, target))
         {
@@ -1740,6 +1757,18 @@ public sealed class MatchEngine
     /// </summary>
     public bool MoveUnit(CardInstance unit, int targetSlot, out string reason)
     {
+        BeginEffectResolution();
+        try
+        {
+            bool completed = MoveUnitActionCore(unit, targetSlot, out reason);
+            if (completed) ExecuteAutoPlayCards();
+            return completed;
+        }
+        finally { EndEffectResolution(); }
+    }
+
+    private bool MoveUnitActionCore(CardInstance unit, int targetSlot, out string reason)
+    {
         reason = "";
 
         if (unit.Owner != State.ActiveSide || !unit.Location.IsBoard() || unit.IsHq)
@@ -2125,6 +2154,18 @@ public sealed class MatchEngine
     /// 这里把每条 `return false` 都补上原因，**判据只有这一份**（避免两份漂移）。
     /// </summary>
     public bool Attack(CardInstance attacker, CardInstance defender, out string reason)
+    {
+        BeginEffectResolution();
+        try
+        {
+            bool completed = AttackActionCore(attacker, defender, out reason);
+            if (completed) ExecuteAutoPlayCards();
+            return completed;
+        }
+        finally { EndEffectResolution(); }
+    }
+
+    private bool AttackActionCore(CardInstance attacker, CardInstance defender, out string reason)
     {
         reason = "";
 
