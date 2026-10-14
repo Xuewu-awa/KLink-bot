@@ -2487,12 +2487,12 @@ public sealed partial class CardApi
             return null;
         }
 
-        // `numberOfCards` 在 a[3]（蓝图签名第 4 个参数）。取不到时按 1 —— 与旧行为一致。
+        // Current SpawnCardInDeckBySide i=5..39 guards the entire function.
+        int spawnerId = IntArg(a, 2);
+        if (spawnerId <= 0) return new List<int>();
+        // i=49..110 starts at 1 and compares <= numberOfCards. Zero/negative
+        // counts skip creation but still reach the optional shuffle below.
         int count = IntArg(a, 3, 1);
-        if (count < 1)
-        {
-            count = 1;
-        }
 
         bool toBottom = TruthyArg(a, 6);
         bool shuffle = TruthyArg(a, 7);
@@ -2504,7 +2504,16 @@ public sealed partial class CardApi
         {
             // 蓝图先以 locationNumber=0 创建卡，所以随机范围包含刚创建的这张卡；
             // AddCardToDeckBySide 随后会先移除它，再以 deckPosition 插回当前牌库。
-            last = c.State.Create(cardName, side, side.DeckOf(), 0);
+            // i=248 resolves the source on each iteration; i=371 forwards its
+            // live gold flag and either default or explicit salvage information.
+            int salvageValue = IntArg(a, 4);
+            string? salvageFaction = null;
+            if (salvageValue != 0 && Blueprint.LiveRuleTables.TryGetEnumName(
+                "/Script/KardsCore.EFactionEnum", salvageValue, out string factionName))
+                salvageFaction = factionName;
+            last = c.State.Create(cardName, side, side.DeckOf(), 0,
+                isGold: c.State.ById(spawnerId)?.IsGold ?? false,
+                isSalvaged: salvageValue != 0, salvageFaction: salvageFaction);
 
             // ★★ **必须消耗这一个随机数** —— 它是「随机效果与客户端不一致」这一类
             //    在**消费点**上的第二个独立成因（第一个是 RNG 算法本身）。
@@ -2550,12 +2559,13 @@ public sealed partial class CardApi
             }
 
             spawned.Add(last.CardId);
+            // i=897 runs after each insertion, before the next creation.
+            ExecuteOnAfterDeckChanged(side);
         }
 
         if (shuffle)
         {
-            var instigator = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
-            ShuffleDeckBySide(c, side, instigator?.CardId ?? 0);
+            ShuffleDeckBySide(c, side, spawnerId);
         }
 
         // ★★ 出参必须是**数组**（`TArray<int32>` 的卡 ID），不是单张卡。

@@ -67,6 +67,9 @@ internal static class SelfTest
         new("洗牌：先通知T3更新顶牌，再调用T22观察者", ShuffleDeckChangeOrder),
         new("洗牌：空牌库不消耗随机数且不派发T3或T22", ShuffleEmptyDeck),
         new("洗牌T22：保留未定位接收者并使用显式来源ID（含0）", ShuffleInstigatorContract),
+        new("牌库生成：逐张T3更新先于下一张创建和最终洗牌，逐次读取来源金卡", SpawnDeckNotificationTiming),
+        new("牌库生成：非正来源ID不执行，非正数量不强制造牌", SpawnDeckInputBoundary),
+        new("牌库生成：金卡与打捞字段在创建回调前初始化", SpawnDeckCreationFields),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8708,6 +8711,101 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? SpawnDeckNotificationTiming(CardDatabase db)
+    {
+        foreach (bool shuffle in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 1;
+            var betasom = state.CreateWithId("card_event_betasom", Side.Left, 20, CardLocation.Discard, 0);
+            betasom.EnteredPlayOnTurn = 1;
+            state.CreateWithId("card_unit_110e_regiment_motorize", Side.Left, 21, CardLocation.BoardHqLeft, 1);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+            source.IsGold = true;
+            var made = state.CardCreated;
+            CardInstance? previous = null;
+            int creations = 0;
+            bool notifiedBetween = true, goldCorrect = true;
+            state.CardCreated = card =>
+            {
+                if (previous is not null) notifiedBetween &= engine.Api.HasCustomGameplayTag(previous, "subtype.navy");
+                goldCorrect &= card.IsGold == (creations == 0);
+                creations++;
+                previous = card;
+                source.IsGold = false;
+                made?.Invoke(card);
+            };
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+                new object?[] { (int)Side.Left, "card_unit_routed_troops", 30, 3, 0, false, false, shuffle, false, false, null }, context, out _);
+            int t3 = trace.Count(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#20", StringComparison.Ordinal));
+            int t22 = trace.FindIndex(x => x.StartsWith("OnDeckShuffled →", StringComparison.Ordinal));
+            if (creations != 3 || !notifiedBetween || !goldCorrect || t3 != (shuffle ? 4 : 3)
+                || (shuffle ? t22 <= trace.FindLastIndex(x => x.StartsWith("OnAfterDeckChanged →", StringComparison.Ordinal)) : t22 >= 0)
+                || !engine.Api.HasCustomGameplayTag(state.Deck(Side.Left)[0], "subtype.navy"))
+                return $"生成牌库的逐卡通知/金卡读取顺序错误：洗牌={shuffle}，创建={creations}，T3={t3}，逐卡通知={notifiedBetween}，金卡={goldCorrect}";
+        }
+        return null;
+    }
+
+    private static string? SpawnDeckInputBoundary(CardDatabase db)
+    {
+        foreach (var input in new[] { (Source: 0, Count: 2), (Source: -1, Count: 2), (Source: 30, Count: 0), (Source: 30, Count: -2) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+            int count = state.AllCards.Count;
+            long cursor = state.Random.ConsumedCount;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+                new object?[] { (int)Side.Left, "card_unit_routed_troops", input.Source, input.Count, 0, false, false, false, false, false, null }, context, out _);
+            if (state.AllCards.Count != count || state.Random.ConsumedCount != cursor)
+                return $"非正来源/数量不应生成卡或消费随机数：来源={input.Source}，数量={input.Count}";
+        }
+        // A valid source with zero creations still reaches the optional shuffle.
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+            state.CreateWithId("card_unit_110e_regiment_motorize", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            state.CreateWithId(source.Name, Side.Left, 60, CardLocation.DeckLeft, 0);
+            int count = state.AllCards.Count;
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+                new object?[] { (int)Side.Left, "card_unit_routed_troops", 30, 0, 0, false, false, true, false, false, null }, context, out _);
+            if (state.AllCards.Count != count || !trace.Any(x => x.StartsWith("OnDeckShuffled →", StringComparison.Ordinal)))
+                return "有效来源且数量为0时仍应执行请求的非空牌库洗牌，但不创建卡";
+        }
+        return null;
+    }
+
+    private static string? SpawnDeckCreationFields(CardDatabase db)
+    {
+        foreach (int faction in new[] { 0, 2, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
+            source.IsGold = true;
+            var made = state.CardCreated;
+            bool correct = false;
+            state.CardCreated = card =>
+            {
+                correct = card.IsGold && card.IsSalvaged == (faction != 0) && card.SalvagedCardId == 0
+                    && card.SalvageFaction == (faction == 2 ? "Britain" : faction == 4 ? "Soviet" : null)
+                    && card.Attack == (faction != 0 ? 1 : card.Definition.Attack);
+                made?.Invoke(card);
+            };
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
+                new object?[] { (int)Side.Left, "card_unit_432_infantry_regiment", 30, 1, faction, false, false, false, false, false, null }, context, out _);
+            if (!correct) return $"生成卡创建回调前的金卡/打捞字段错误：阵营={faction}";
         }
         return null;
     }
