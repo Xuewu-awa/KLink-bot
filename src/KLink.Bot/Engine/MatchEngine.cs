@@ -1085,16 +1085,54 @@ public sealed class MatchEngine
                 if (index >= ids.Length) break;
                 var card = State.ById(ids[index]);
                 if (card is null || card.Location is not (CardLocation.HandLeft or CardLocation.HandRight)) continue;
-                // PlayCardFromHand i=1598 skips PayCardCost only for the current tag.
-                // The receiveFromLocal flag is not the free-play switch.
+                ApplyQueuedHandPlayCost(card);
+                // PlayCardFromHand i=921/962/976 returns for Gotcha after cost
+                // and play notification. It does not toggle activation or move it.
+                // The full play notification payload remains a separate audit item.
+                if (Api.IsGotcha(card)) continue;
                 PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
-                    chargeKredits: !CardApi.HasInstanceGameplayTag(card, "autoplay"),
+                    chargeKredits: false,
                     recordAction: false, toFrontline: false, locationNumber: 0,
                     instigatorID: card.CardId);
             }
             State.ClearAutoPlayCards();
         }
         finally { _processingAutoPlayCards = false; }
+    }
+
+    private void ApplyQueuedHandPlayCost(CardInstance card)
+    {
+        // PlayCardFromHand i=61..304: the activation field alone selects refund,
+        // and neither normal cost nor the autoplay tag is checked on that path.
+        if (card.GotchaActivated > 0)
+        {
+            ChangeQueuedHandPlayKredits(card, Api.JsonGetInt(card, "kreditsPayed"));
+            return;
+        }
+        if (CardApi.HasInstanceGameplayTag(card, "autoplay")) return;
+        int cost = GetPlayCardCost(card, null);
+        // PayCardCost does not partially deduct on failure. Its caller ignores
+        // success, so the subsequent play flow still runs.
+        if (cost <= State.Kredits(card.Owner)) ChangeQueuedHandPlayKredits(card, -cost);
+    }
+
+    private void ChangeQueuedHandPlayKredits(CardInstance card, int delta)
+    {
+        int old = State.Kredits(card.Owner);
+        int slots = State.MaxKredits(card.Owner);
+        // ChangeKreditsBySide clamps current kredits to the maximum possible,
+        // not to the side's current slots (native getter reads game-state +0x338).
+        int current = Math.Clamp(old + delta, 0, MaxKreditCap);
+        State.SetKredits(card.Owner, current);
+        FireSubAction("ZActionChangeKredits", new[]
+        {
+            ActionValue2.Int("triggerCardID", card.CardId),
+            ActionValue2.Str("side", card.Owner.ToWire()),
+            ActionValue2.Int("newMaxKredits", slots),
+            ActionValue2.Int("oldMaxKredits", slots),
+            ActionValue2.Int("newKredits", current),
+            ActionValue2.Int("oldKredits", old),
+        });
     }
 
     // ==================== 部署 ====================
@@ -1321,8 +1359,9 @@ public sealed class MatchEngine
         }
 
         // PlayCardDirectlyFromHand in BP_CardFunctions assigns activation
-        // numbers to Gotcha cards before the play broadcast. Normal play and
-        // direct play share the same activation state in the client.
+        // numbers to Gotcha cards before the play broadcast. The ordinary-play
+        // adapter still uses this path; queued native PlayCardFromHand returns
+        // for Gotcha before reaching this shared implementation.
         Api.AssignGotchaActivatedOnPlayFromHand(card);
 
         if (recordAction)

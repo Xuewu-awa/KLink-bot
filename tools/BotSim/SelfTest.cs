@@ -102,6 +102,9 @@ internal static class SelfTest
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
+        new("自动消费Gotcha：激活时退款，保持位置/激活号，不执行普通打牌事件", AutoPlayGotchaCostBranch),
+        new("自动消费费用：退款按激活字段分支，不额外要求Gotcha类型", AutoPlayActivatedFieldRefund),
+        new("自动消费费用：费用不足不部分扣款，仍按原生继续后续流程", AutoPlayInsufficientCost),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8779,6 +8782,87 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? AutoPlayGotchaCostBranch(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (bool tagged in new[] { false, true })
+        foreach (int? paid in new int?[] { null, 0, 3, -2, 30 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 9;
+            state.SetMaxKredits(side, 4);
+            state.SetKredits(side, 10);
+            var card = state.CreateWithId("card_event_interception", side, 60, side.HandOf(), 7);
+            card.GotchaActivated = active ? 5 : 0;
+            card.EnteredPlayOnTurn = 6;
+            if (paid is int amount) engine.Api.JsonSetInt(card, "kreditsPayed", amount);
+            if (tagged) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            var moved = state.CardMoved;
+            int moves = 0;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (c == card) moves++;
+                moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            state.AddAutoPlayCards(card.CardId);
+            engine.ExecuteAutoPlayCards();
+            int expected = active ? Math.Clamp(10 + (paid ?? 0), 0, 24) : 10 - (tagged ? 0 : card.KreditCost);
+            if (card.Location != side.HandOf() || card.LocationNumber != 7 || card.GotchaActivated != (active ? 5 : 0)
+                || card.EnteredPlayOnTurn != 6 || moves != 0 || state.CardsPlayedThisTurn.Count != 0
+                || state.Kredits(side) != expected || state.MaxKredits(side) != 4 || state.GetAutoPlayCards().Length != 0
+                || engine.Api.JsonGetInt(card, "kreditsPayed") != (paid ?? 0))
+                return $"Gotcha自动消费错误：方={side} 激活={active} 标签={tagged} 退款={paid} 位置={card.Location} 指挥点={state.Kredits(side)}";
+            var change = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionChangeKredits");
+            if ((change is not null) != (active || !tagged)
+                || change is not null && (change.Values.First(x => x.Name == "triggerCardID").Value != 60
+                    || change.Values.First(x => x.Name == "oldKredits").Value != 10
+                    || change.Values.First(x => x.Name == "newKredits").Value != expected
+                    || change.Values.First(x => x.Name == "oldMaxKredits").Value != 4
+                    || change.Values.First(x => x.Name == "newMaxKredits").Value != 4))
+                return "Gotcha消费费用通知未保留来源与前后资源";
+            int logCount = state.ActionLog.Count;
+            engine.ExecuteAutoPlayCards();
+            if (state.Kredits(side) != expected || state.ActionLog.Count != logCount) return "空队列重复调用不应再次退款";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayActivatedFieldRefund(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool tagged in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetKredits(side, 10);
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HandOf(), 0);
+            card.GotchaActivated = 5; // Controlled field probe; not a normal card state.
+            engine.Api.JsonSetInt(card, "kreditsPayed", 3);
+            if (tagged) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            state.AddAutoPlayCards(card.CardId);
+            engine.ExecuteAutoPlayCards();
+            if (!card.Location.IsBoard() || card.GotchaActivated != 5 || state.Kredits(side) != 13)
+                return "PlayCardFromHand退款分支只看激活字段，不应另加类型/标签限制或再扣费";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayInsufficientCost(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetKredits(side, 1);
+            var card = state.CreateWithId("card_unit_5th_brigade", side, 60, side.HandOf(), 0);
+            if (card.KreditCost != 2) return "费用不足探针卡费用发生变化";
+            state.AddAutoPlayCards(card.CardId);
+            engine.ExecuteAutoPlayCards();
+            if (!card.Location.IsBoard() || state.Kredits(side) != 1 || state.GetAutoPlayCards().Length != 0)
+                return "PayCardCost失败时不能部分扣款；PlayCardFromHand不读取该success输出";
+        }
+        return null;
     }
 
     private static string? AutoPlaySelectionBeforeExtra(CardDatabase db)
