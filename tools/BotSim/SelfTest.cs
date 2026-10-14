@@ -91,6 +91,7 @@ internal static class SelfTest
         new("指定抽牌：目标不在牌库时不得改抽同名卡", SpecificDrawExactMembership),
         new("指定抽牌：保留来源/公开参数及其余牌库编号，满手保留目标编号", SpecificDrawFieldsAndOrder),
         new("抽牌：按手牌数量赋号，保留已有手牌的空位和重复编号", DrawHandNumberAssignment),
+        new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8754,6 +8755,46 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? DrawWithoutLocationMoved(CardDatabase db)
+    {
+        foreach (Side deckSide in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (bool full in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side recipient = route == 1 ? deckSide.Opposite() : deckSide;
+            state.CreateWithId("card_unit_spitfire_mk_ii", deckSide, 20, deckSide.HqOf(), 1);
+            if (full)
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", recipient, 100 + i, recipient.HandOf(), i);
+            var card = state.CreateWithId("card_unit_13e_dragons", deckSide, 60, deckSide.DeckOf(), 0);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var moved = state.CardMoved;
+            int notifications = 0;
+            state.CardMoved = (c, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                if (c == card) notifications++;
+                moved?.Invoke(c, oldLocation, newLocation, ownerChange, reason);
+            };
+            if (route == 2) engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", card,
+                new object?[] { 0, card.CardId, (int)deckSide, false },
+                new EffectContext { Engine = engine, State = state, Controller = deckSide }, out _);
+            else engine.DrawCard(deckSide, opponentDraw: route == 1);
+            bool ownDraw = trace.Any(x => x.StartsWith("OnCardDrawnFromDeck →", StringComparison.Ordinal));
+            if (notifications != 0 || ownDraw == full
+                || trace.Any(x => x.StartsWith("OnCardLocationMoved →", StringComparison.Ordinal)
+                    || x.StartsWith("OnOtherCardLocationMoved →", StringComparison.Ordinal)))
+                return $"抽牌误发位置事件或漏自身抽牌：方={deckSide} 路径={route} 满手={full} 通知={notifications}";
+            // Positive control: a genuine subsequent zone move still dispatches T47.
+            trace.Clear();
+            state.Move(card, CardLocation.NotAvailable);
+            if (notifications != 1 || !trace.Any(x => x.StartsWith("OnOtherCardLocationMoved → card_unit_spitfire_mk_ii#20", StringComparison.Ordinal)))
+                return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
+        }
+        return null;
+    }
+
     private static string? DrawHandNumberAssignment(CardDatabase db)
     {
         foreach (Side deckSide in new[] { Side.Left, Side.Right })
@@ -9643,28 +9684,58 @@ internal static class SelfTest
         return null;
     }
 
+    // Controlled reentry probe: a synthetic own-draw program creates a marker
+    // in the other deck. The existing creation callback runs the test mutation.
+    // This is not a claimed live effect of 51e Regiment; removal is deterministic.
+    private static IDisposable InstallDrawReentryProbe(GameState state, Action onDraw)
+    {
+        const string probe = "card_unit_51e_regiment";
+        const string marker = "card_unit_routed_troops";
+        const string trigger = "OnCardDrawnFromDeck";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(probe, trigger) is not null)
+            throw new InvalidOperationException("无法安全安装抽牌重入探针");
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = marker },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        var created = state.CardCreated;
+        state.CardCreated = card =>
+        {
+            created?.Invoke(card);
+            if (card.Name == marker && card.Location == CardLocation.DeckRight) onDraw();
+        };
+        return new AuditProbeCleanup(() => { state.CardCreated = created; locals.Remove(trigger); });
+    }
+
+    private sealed class AuditProbeCleanup(Action cleanup) : IDisposable
+    {
+        public void Dispose() => cleanup();
+    }
+
     private static string? ConversionObserverSnapshot(CardDatabase db)
     {
         var (engine, state) = EmptyBoard(db);
         state.CreateWithId("card_unit_bergmann_battalion", Side.Left, 20, CardLocation.BoardHqLeft, 1);
         var later = state.CreateWithId("card_unit_51st_rifle_brigade", Side.Left, 21, CardLocation.BoardHqLeft, 2);
         var source = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.Discard, 0);
-        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 31, CardLocation.DeckLeft, 0);
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 31, CardLocation.DeckLeft, 0);
         var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardFrontline, 0);
-        var moved = state.CardMoved;
         bool changed = false;
         int attack = 0, defense = 0;
-        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        using var drawProbe = InstallDrawReentryProbe(state, () =>
         {
-            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
-            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            if (!changed)
             {
                 changed = true;
                 engine.Api.SuppressUnit(later);
                 attack = later.Attack;
                 defense = later.Defense;
             }
-        };
+        });
+
         var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
         var result = engine.Api.InvokeByName("ConvertCard", source,
             new object?[] { new[] { unit }, source.CardId, later.Name, 0, false, null }, context, out _);
@@ -9696,16 +9767,14 @@ internal static class SelfTest
     {
         var (engine, state) = EmptyBoard(db);
         var source = state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
-        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
         var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
-        var moved = state.CardMoved;
         bool changed = false;
         CardInstance? replacement = null;
         var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
-        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        using var drawProbe = InstallDrawReentryProbe(state, () =>
         {
-            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
-            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            if (!changed)
             {
                 changed = true;
                 var result = engine.Api.InvokeByName("ConvertCard", source,
@@ -9713,7 +9782,8 @@ internal static class SelfTest
                 var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
                 if (ids is { Length: 1 }) replacement = state.ById(ids[0]);
             }
-        };
+        });
+
         engine.Api.InvokeByName("MakeCardRetreat", source, new object?[] { new[] { unit }, source.CardId }, context, out _);
         return changed && replacement is not null && replacement.CardId != unit.CardId
             && replacement.Location == CardLocation.BoardFrontline && unit.Location == CardLocation.HandRight
@@ -9825,19 +9895,18 @@ internal static class SelfTest
     {
         var (engine, state) = EmptyBoard(db);
         state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
-        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
         var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
-        var moved = state.CardMoved;
         bool changed = false;
-        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        using var drawProbe = InstallDrawReentryProbe(state, () =>
         {
-            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
-            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            if (!changed)
             {
                 changed = true;
                 state.ChangeOwner(unit, Side.Left);
             }
-        };
+        });
+
         var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
         engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
         if (!changed || unit.Owner != Side.Left || unit.Location != CardLocation.BoardHqRight)
@@ -9851,7 +9920,7 @@ internal static class SelfTest
         {
             var (engine, state) = EmptyBoard(db);
             state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
-            state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+            state.CreateWithId("card_unit_51e_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
             var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
             var moved = state.CardMoved;
             bool changed = false;
@@ -9860,13 +9929,17 @@ internal static class SelfTest
             {
                 moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
                 if (card == unit && newLocation == CardLocation.HandRight) returnOldLocation = oldLocation;
-                if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            };
+            using var drawProbe = InstallDrawReentryProbe(state, () =>
+            {
+                if (!changed)
                 {
                     changed = true;
                     if (destroyed) engine.Destroy(unit);
                     else state.Move(unit, CardLocation.BoardHqRight);
                 }
-            };
+            });
+
             var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
             engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
             if (!changed || unit.Location != CardLocation.HandRight || !unit.CardSeen
@@ -9992,20 +10065,18 @@ internal static class SelfTest
         var later = state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 21, CardLocation.BoardHqLeft, 2);
         var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
         state.FrontlineOwner = Side.Right;
-        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
         state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 31, CardLocation.DeckLeft, 1);
-        var moved = state.CardMoved;
         bool changed = false;
-        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        using var drawProbe = InstallDrawReentryProbe(state, () =>
         {
-            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
-            // Simulate a reentrant change during the first Typhoon's real draw.
-            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            if (!changed)
             {
                 changed = true;
                 engine.Api.SuppressUnit(later);
             }
-        };
+        });
+
         var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
         engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
         if (!changed || !later.IsSuppressed) return "未制造首个退却观察者回调中的抑制变化";
