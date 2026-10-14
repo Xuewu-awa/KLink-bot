@@ -1061,6 +1061,34 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
+    private bool _processingAutoPlayCards;
+
+    /// <summary>BP_OnlineMatch.ExecuteAutoPlayCards: live ordered IDs, hand gate, then clear.</summary>
+    public void ExecuteAutoPlayCards()
+    {
+        if (_processingAutoPlayCards) return;
+        _processingAutoPlayCards = true;
+        try
+        {
+            for (int index = 0; ; index++)
+            {
+                // Native i=157/345/542/797 re-reads the queue throughout the loop.
+                var ids = State.GetAutoPlayCards();
+                if (index >= ids.Length) break;
+                var card = State.ById(ids[index]);
+                if (card is null || card.Location is not (CardLocation.HandLeft or CardLocation.HandRight)) continue;
+                // PlayCardFromHand i=1598 skips PayCardCost only for the current tag.
+                // The receiveFromLocal flag is not the free-play switch.
+                PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
+                    chargeKredits: !CardApi.HasInstanceGameplayTag(card, "autoplay"),
+                    recordAction: false, toFrontline: false, locationNumber: 0,
+                    instigatorID: card.CardId);
+            }
+            State.ClearAutoPlayCards();
+        }
+        finally { _processingAutoPlayCards = false; }
+    }
+
     // ==================== 部署 ====================
 
     /// <summary>

@@ -94,6 +94,8 @@ internal static class SelfTest
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
+        new("自动打出消费：RESISTANCE连锁抽入队并按序打出", AutoPlayResistanceChain),
+        new("自动打出消费：只检查有效手牌，按当前标签付费并清空失效条目", AutoPlayConsumerGate),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8753,6 +8755,56 @@ internal static class SelfTest
             if (sameName.Location != side.DeckOf() || requested.Location != side.HandOf()
                 || state.ActionLog.Count != actions || state.Fatigue(side) != 0)
                 return "指定ID不在牌库时不应按名称改抽其它实例或产生动作";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayResistanceChain(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            state.SetMaxKredits(side, 10);
+            state.SetKredits(side, 5);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", side, 20, side.HqOf(), 1);
+            var first = state.CreateWithId("card_event_resistance_new", side, 70, side.HandOf(), 0);
+            var second = state.CreateWithId(first.Name, side, 60, side.DeckOf(), 0);
+            var last = state.CreateWithId(unit.Name, side, 61, side.DeckOf(), 1);
+            state.AddAutoPlayCards(first.CardId);
+            int hp = state.HqDefense(side);
+            engine.ExecuteAutoPlayCards();
+            var plays = state.CardsPlayedThisTurn.Where(x => x.Name == first.Name).Select(x => x.CardId).ToArray();
+            if (first.Location != CardLocation.Discard || second.Location != CardLocation.Discard
+                || last.Location != side.HandOf() || state.GetAutoPlayCards().Length != 0
+                || state.HqDefense(side) != hp - 2 || state.Kredits(side) != 3 || unit.PinnedTurns <= 0
+                || !plays.SequenceEqual(new[] { 70, 60 }))
+                return $"RESISTANCE连锁消费错误：方={side} HQ={state.HqDefense(side)} 指挥点={state.Kredits(side)} 次数={plays.Length}";
+        }
+        return null;
+    }
+
+    private static string? AutoPlayConsumerGate(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool tagged in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            state.SetMaxKredits(side, 10);
+            state.SetKredits(side, 10);
+            var hand = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HandOf(), 0);
+            var deck = state.CreateWithId(hand.Name, side, 61, side.DeckOf(), 0);
+            var discarded = state.CreateWithId(hand.Name, side, 62, CardLocation.Discard, 0);
+            if (tagged) engine.Api.AddCustomGameplayTag(hand, "autoplay");
+            int cost = hand.KreditCost;
+            foreach (int id in new[] { 9999, deck.CardId, hand.CardId, discarded.CardId }) state.AddAutoPlayCards(id);
+            engine.ExecuteAutoPlayCards();
+            if (!hand.Location.IsBoard() || deck.Location != side.DeckOf() || discarded.Location != CardLocation.Discard
+                || state.GetAutoPlayCards().Length != 0 || state.Kredits(side) != 10 - (tagged ? 0 : cost))
+                return $"自动打出消费位置/费用门错误：方={side} 标签={tagged}";
+            engine.ExecuteAutoPlayCards(); // Empty queue is a no-op.
+            if (state.Kredits(side) != 10 - (tagged ? 0 : cost)) return "空自动打出队列重复执行扣费";
         }
         return null;
     }
