@@ -936,7 +936,7 @@ public sealed class MatchEngine
         return destroyed;
     }
 
-    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0, bool cardSeen = false)
+    public CardInstance? DrawCard(Side side, bool startOfTurnDraw = false, int instigatorId = 0, bool cardSeen = false, bool opponentDraw = false)
     {
         var deck = State.Deck(side).ToList();
         if (deck.Count == 0)
@@ -947,6 +947,8 @@ public sealed class MatchEngine
         }
 
         var card = deck[0];
+        // DrawTopCardFromDeck i=62 selects handSide independently of deckSide.
+        Side handSide = opponentDraw ? side.Opposite() : side;
 
         // DrawTopCardFromDeck i=558 removes membership before i=621 T3;
         // the object still has its deck location throughout that notification.
@@ -958,40 +960,42 @@ public sealed class MatchEngine
         // 反证它确实是「抽之前」。
         // ⚠️ 以前这里写的是 `State.Move(...)` **之后**再读 `Hand(side).Count()`，是「抽之后」，
         //    比蓝图多 1（`ZActionDrawCardFromDeck` 的 PreQtyInHand 一直偏大 1）。
-        int preQtyInHand = State.Hand(side).Count();
+        int preQtyInHand = State.Hand(handSide).Count();
+
+        List<ActionValue2> DrawValues(bool full)
+        {
+            var values = new List<ActionValue2>
+            {
+                ActionValue2.Int("instigatorID", instigatorId),
+                ActionValue2.Str("side", handSide.ToWire()),
+                ActionValue2.Int("cardID", card.CardId),
+                ActionValue2.Str("cardType", card.Name),
+                ActionValue2.Int("PreQtyInHand", preQtyInHand),
+                ActionValue2.Bool("handIsFull", full),
+            };
+            if (opponentDraw) values.Add(ActionValue2.Bool("oppSide", true));
+            return values;
+        }
 
         // ★ 手牌上限：满了就烧牌，不进手牌。
         if (preQtyInHand >= GameState.HandCapacity)
         {
-            Say($"{side.ToWire()} 手牌已满（{preQtyInHand}/{GameState.HandCapacity}），{card} 被弃掉");
+            Say($"{handSide.ToWire()} 手牌已满（{preQtyInHand}/{GameState.HandCapacity}），{card} 被弃掉");
             // i=772 directly assigns location: no locationNumber write,
             // discard rearrangement or CardLocationMoved notification.
             card.Location = CardLocation.Discard;
             card.RecalculateStats();
-            FireSubAction("ZActionDrawCardFromDeck", new[]
-            {
-                ActionValue2.Int("instigatorID", instigatorId),
-                ActionValue2.Str("side", side.ToWire()),
-                ActionValue2.Int("cardID", card.CardId),
-                ActionValue2.Str("cardType", card.Name),
-                ActionValue2.Int("PreQtyInHand", preQtyInHand),
-                ActionValue2.Bool("handIsFull", true),
-            });
+            FireSubAction("ZActionDrawCardFromDeck", DrawValues(true));
             // DrawTopCardFromDeck i=1194/1204 runs even on the full-hand path.
             if (cardSeen) Api.SetCardSeen(card.CardId, 0);
             return null;
         }
 
-        State.Move(card, side.HandOf());
-        FireSubAction("ZActionDrawCardFromDeck", new[]
-        {
-            ActionValue2.Int("instigatorID", instigatorId),
-            ActionValue2.Str("side", side.ToWire()),
-            ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Str("cardType", card.Name),
-            ActionValue2.Int("PreQtyInHand", preQtyInHand),
-            ActionValue2.Bool("handIsFull", false),
-        });
+        // i=1042..1140 changes current side on successful receipt only;
+        // OriginalOwner is preserved, and the full-hand branch never changes it.
+        State.ChangeOwner(card, handSide, normalize: false);
+        State.Move(card, handSide.HandOf());
+        FireSubAction("ZActionDrawCardFromDeck", DrawValues(false));
 
         // 「别的卡被抽到手」触发点。**必须接**：`card_unit_85_pioneer_company` /
         // `card_unit_big_red_one` / `card_event_committed_crew` 三张光环都订阅它，
@@ -1009,7 +1013,7 @@ public sealed class MatchEngine
         // `broadcast` 判定（`programName.StartsWith("OnOther")`）会**把主体自己排除**，
         // 兜底那一段又被 `subjectBroadcast` 挡住 ⇒ 22 张订阅 `OnCardDrawnFromDeck`
         // 的卡永远收不到（`card_event_guarilla_warfare_school` 这类"抽到牌时"效果全死）。
-        FireEnteredHandFromDeckEvents(card, side, startOfTurnDraw);
+        FireEnteredHandFromDeckEvents(card, handSide, startOfTurnDraw);
         // i=819 pushes the reveal continuation at i=1194, but i=1013 first
         // jumps to the own/T42 events at i=1274. Reveal runs after those events.
         // False is a no-op, not a request to clear existing revealed state.

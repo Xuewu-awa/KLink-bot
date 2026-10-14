@@ -86,6 +86,8 @@ internal static class SelfTest
         new("批量抽牌通知：保留显式来源ID（含0），不以调用对象代替", DrawNotificationInstigator),
         new("非空牌库抽牌通知：成功及烧牌均不附加下一次疲劳伤害", DrawNotificationNoFatigue),
         new("批量抽牌公开：保留原状态，满手也公开，自身事件先于本次公开", DrawSeenContract),
+        new("对方牌库抽牌：按收牌方容量处理，保留原主、T3牌库方及通知参数", OpponentDrawRouting),
+        new("对方牌库抽牌：空牌库疲劳作用于牌库方", OpponentDrawFatigue),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8727,6 +8729,67 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? OpponentDrawRouting(CardDatabase db)
+    {
+        const string name = "card_unit_coastwatchers";
+        const string trigger = "OnCardDrawnFromDeck";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全添加对方抽牌参数探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_drawnSide", Scope = "local" }, null, -1, "_auditRecipientSide", null) { DestinationScope = "instance" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side deckSide in new[] { Side.Left, Side.Right })
+            foreach (bool recipientFull in new[] { false, true })
+            foreach (bool seen in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                state.Turn = 1;
+                Side recipient = deckSide.Opposite();
+                var watcher = state.CreateWithId("card_event_betasom", deckSide, 20, CardLocation.Discard, 0);
+                watcher.EnteredPlayOnTurn = 1;
+                Side filled = recipientFull ? recipient : deckSide;
+                for (int i = 0; i < GameState.HandCapacity; i++)
+                    state.CreateWithId("card_unit_432_infantry_regiment", filled, 100 + i, filled.HandOf(), i);
+                var card = state.CreateWithId(name, deckSide, 60, deckSide.DeckOf(), 0);
+                var next = state.CreateWithId("card_unit_432_infantry_regiment", deckSide, 61, deckSide.DeckOf(), 1);
+                var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = deckSide };
+                engine.Api.InvokeByName("DrawCardsFromDeckBySide", card,
+                    new object?[] { 30, (int)deckSide, 1, seen, true, null, 0.4 }, context, out _);
+                var action = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+                bool ownCalled = card.BlueprintVariables.ContainsKey("_auditRecipientSide");
+                if (card.Location != (recipientFull ? CardLocation.Discard : recipient.HandOf())
+                    || card.Owner != (recipientFull ? deckSide : recipient) || card.OriginalOwner != deckSide || card.CardSeen != seen
+                    || state.Deck(deckSide).Count != 1 || state.Deck(deckSide)[0] != next
+                    || !engine.Api.HasCustomGameplayTag(next, "subtype.navy")
+                    || ownCalled == recipientFull || (!recipientFull && Convert.ToInt32(card.BlueprintVariables["_auditRecipientSide"]) != (int)recipient)
+                    || action?.Values.FirstOrDefault(x => x.Name == "side")?.Text != recipient.ToWire()
+                    || action.Values.FirstOrDefault(x => x.Name == "oppSide")?.Value != 1)
+                    return $"对方抽牌路由错误：牌库方={deckSide} 收牌方满手={recipientFull} 公开={seen}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
+    }
+
+    private static string? OpponentDrawFatigue(CardDatabase db)
+    {
+        foreach (Side deckSide in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            int ownHp = state.HqDefense(deckSide), otherHp = state.HqDefense(deckSide.Opposite());
+            var context = new EffectContext { Engine = engine, State = state, Controller = deckSide.Opposite() };
+            engine.Api.InvokeByName("DrawCardsFromDeckBySide", null,
+                new object?[] { 0, (int)deckSide, 1, false, true, null, 0.4 }, context, out _);
+            if (state.Fatigue(deckSide) != 1 || state.Fatigue(deckSide.Opposite()) != 0
+                || state.HqDefense(deckSide) != ownHp - 1 || state.HqDefense(deckSide.Opposite()) != otherHp)
+                return "对方抽牌空牌库疲劳不应转移给收牌方";
         }
         return null;
     }
