@@ -50,6 +50,9 @@ internal static class SelfTest
         new("多卡退却：免疫在分组前查询，前序回调不重新筛选名单", RetreatImmunitySnapshot),
         new("多卡退却：支援批次结束后再按当前位置序号排序前线批次", RetreatFrontlineSortTiming),
         new("退却插入位置：守卫插在总部与单位之间；两单位退却分列总部两侧", RetreatInsertionAndGuard),
+        new("退却重入：换主后仍使用回调前保存的支援目的地", RetreatSavedSupportDestination),
+        new("退却重入：死亡或再次移动后仍按保存的旧位置执行回手", RetreatSavedOldLocation),
+        new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8690,6 +8693,84 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? ReturnCapacityAfterLeaveCallbacks(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.SetMaxKredits(Side.Left, 12);
+        state.SetKredits(Side.Left, 5);
+        state.CreateWithId("card_unit_dornier_do_17", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        for (int i = 0; i < GameState.HandCapacity - 1; i++)
+            state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 100 + i, CardLocation.HandLeft, i);
+        var drawn = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 62, CardLocation.BoardHqLeft, 2);
+        state.ChangeOwner(unit, Side.Right);
+        state.Move(unit, CardLocation.BoardHqRight, notifyMoved: false);
+        unit.UnderEnemyControl = true;
+        var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+        engine.Api.InvokeByName("MoveCardFromBoardToOwnersHand", unit,
+            new object?[] { unit.CardId, 0, (int)CardLocation.BoardHqRight, (int)CardLocation.HandLeft }, context, out _);
+        if (drawn.Location != CardLocation.HandLeft || state.Kredits(Side.Left) != 7)
+            return "Dornier 的真实离场奖励未先抽牌";
+        if (unit.Location != CardLocation.Discard || state.Hand(Side.Left).Count != GameState.HandCapacity)
+            return $"应在离场抽牌后重新检查手牌容量：unit={unit.Location}, hand={state.Hand(Side.Left).Count}";
+        return null;
+    }
+
+    private static string? RetreatSavedSupportDestination(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+        var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
+        var moved = state.CardMoved;
+        bool changed = false;
+        state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+        {
+            moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+            {
+                changed = true;
+                state.ChangeOwner(unit, Side.Left);
+            }
+        };
+        var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+        engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
+        if (!changed || unit.Owner != Side.Left || unit.Location != CardLocation.BoardHqRight)
+            return $"退却支援目的地应在 T54 前保存：owner={unit.Owner}, location={unit.Location}";
+        return null;
+    }
+
+    private static string? RetreatSavedOldLocation(CardDatabase db)
+    {
+        foreach (bool destroyed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId("card_unit_typhoon_mk_ib", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 30, CardLocation.DeckLeft, 0);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 62, CardLocation.BoardFrontline, 0);
+            var moved = state.CardMoved;
+            bool changed = false;
+            CardLocation? returnOldLocation = null;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) =>
+            {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card == unit && newLocation == CardLocation.HandRight) returnOldLocation = oldLocation;
+                if (!changed && oldLocation == CardLocation.DeckLeft && newLocation == CardLocation.HandLeft)
+                {
+                    changed = true;
+                    if (destroyed) engine.Destroy(unit);
+                    else state.Move(unit, CardLocation.BoardHqRight);
+                }
+            };
+            var context = new EffectContext { Engine = engine, State = state, Self = unit, Controller = Side.Right };
+            engine.Api.InvokeByName("MakeCardRetreat", unit, new object?[] { new[] { unit }, 0 }, context, out _);
+            if (!changed || unit.Location != CardLocation.HandRight || !unit.CardSeen
+                || returnOldLocation != CardLocation.BoardFrontline)
+                return $"退却应按保存的旧前线位置调用回手：destroyed={destroyed}, location={unit.Location}, old={returnOldLocation}";
         }
         return null;
     }

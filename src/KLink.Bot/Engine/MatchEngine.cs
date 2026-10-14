@@ -1956,9 +1956,10 @@ public sealed class MatchEngine
     /// 未抑制主体先执行自身事件，再查询并广播给其他订阅者。
     /// </summary>
     /// <param name="goingToLocation">卡要去哪（卡牌蓝图的第 1 个入参就是它）。</param>
-    public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation, int method = 0)
+    public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation, int method = 0,
+                                 CardLocation? oldLocation = null)
     {
-        if (card.IsHq || !card.Location.IsBoard())
+        if (card.IsHq || !(oldLocation ?? card.Location).IsBoard())
         {
             return;   // HQ 不会「离场」
         }
@@ -1973,7 +1974,8 @@ public sealed class MatchEngine
         if (!card.IsSuppressed)
             Api.FireTrigger("OnLeaveBoardOrOwner", card, card.Owner,
                 eventArgs: new object?[] { (int)goingToLocation, method },
-                goingToLocation: goingToLocation, namedArgs: named);
+                goingToLocation: goingToLocation, namedArgs: named,
+                includeUnavailableRecipients: oldLocation.HasValue);
 
         // i=845/899: self precedes the T46 query; eligibility is fixed by that query.
         var observers = Api.CaptureRegisteredTriggerSnapshot("OnOtherCardLeaveBoardOrOwner")

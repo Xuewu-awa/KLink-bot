@@ -3632,14 +3632,24 @@ public sealed partial class CardApi
         CardLocation handLocation = explicitLocations ? (CardLocation)IntArg(a, 3, (int)side.HandOf()) : side.HandOf();
         if (!oldLocation.IsBoard()) return null;
 
-        // 手牌满 ⇒ 退回的那张直接进弃牌堆（蓝图 i=173/187）。
+        // 离场触发点必须在 Move **之前**（效果里要读旧位置），与 Destroy 那条一致。
+        c.Engine.FireLeaveTrigger(card, handLocation, method: 3,
+            oldLocation: explicitLocations ? oldLocation : null);
+        // MoveCardFromBoardToOwnersHand i=10 fires leave callbacks before i=59
+        // queries capacity: those callbacks can draw into or empty the hand.
         bool handFull = c.State.AllCards.Count(x => x.Location == handLocation) >= GameState.HandCapacity;
         CardLocation target = handFull ? CardLocation.Discard : handLocation;
-
-        // 离场触发点必须在 Move **之前**（效果里要读旧位置），与 Destroy 那条一致。
-        c.Engine.FireLeaveTrigger(card, handLocation, method: 3);
         int slot = c.State.AllCards.Where(x => x.Location == target).Select(x => x.LocationNumber).DefaultIfEmpty(-1).Max() + 1;
-        c.State.Move(card, target, locationNumber: slot, moveReason: CardMoveReason.BoardToHand);
+        c.State.Move(card, target, locationNumber: slot, moveReason: CardMoveReason.BoardToHand,
+            notifyMoved: !explicitLocations);
+        if (explicitLocations)
+        {
+            // The direct helper takes OldLocation explicitly, even if a prior
+            // callback already moved/destroyed the still-registered object.
+            RearrangeLocation(oldLocation);
+            RearrangeLocation(target);
+            c.State.CardMoved?.Invoke(card, oldLocation, target, false, CardMoveReason.BoardToHand);
+        }
         c.Engine.FireAfterLeaveTrigger(card, target, oldLocation);
 
         if (handFull)
@@ -3717,6 +3727,13 @@ public sealed partial class CardApi
                 continue;
             }
 
+            // i=1108..1402 save these before either retreat callback. Only the
+            // frontline predicate at i=2269 reads location again afterwards.
+            var savedOldLocation = card.Location;
+            var supportDestination = card.Owner.HqOf();
+            var handDestination = (card.OriginalOwner is Side.Left or Side.Right
+                ? card.OriginalOwner : card.Owner).HandOf();
+
             // i=1466 -> 2854: only the subject's true stopAction cancels this
             // card. Suppression skips its own hook, then still queries T54.
             if (!card.IsSuppressed)
@@ -3737,26 +3754,28 @@ public sealed partial class CardApi
                 recipientsAlreadyFiltered: true);
 
             if (card.Location == CardLocation.BoardFrontline
-                && c.State.Cards(card.Owner, card.Owner.HqOf()).Count < GameState.HalfBoardCapacity)
+                && c.State.AllCards.Count(x => x.Location == supportDestination) < GameState.HalfBoardCapacity)
             {
                 // ApplyMakeCardRetreat i=2474..2580: movementLeft=max(left-1,0).
                 // The simulator represents the current 0/1 quota as this flag.
                 card.HasMovedThisTurn = true;
                 int slot = planned.GetValueOrDefault(card.CardId);
-                var oldLocation = card.Location;
-                var destination = card.Owner.HqOf();
+                var oldLocation = savedOldLocation;
+                var destination = supportDestination;
                 // InjectCardIntoLocation i=54 creates a gap before inserting;
                 // RefreshLocationStatus compacts affected zones before events.
-                foreach (var other in c.State.Cards(card.Owner, destination))
+                foreach (var other in c.State.AllCards.Where(x => x.Location == destination))
                     if (other.LocationNumber >= slot) other.LocationNumber++;
                 c.State.Move(card, destination, locationNumber: slot,
                     moveReason: CardMoveReason.Retreat, notifyMoved: false);
                 RearrangeLocation(oldLocation);
+                RearrangeLocation(destination);
                 c.State.CardMoved?.Invoke(card, oldLocation, destination, false, CardMoveReason.Retreat);
             }
             else
             {
-                DoMoveUnitFromBoardToOwnersHand(c, card, new object?[] { card });
+                DoMoveUnitFromBoardToOwnersHand(c, card,
+                    new object?[] { card.CardId, 0, (int)savedOldLocation, (int)handDestination }, explicitLocations: true);
             }
         }
 
