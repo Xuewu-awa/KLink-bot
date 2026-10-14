@@ -63,6 +63,7 @@ internal static class SelfTest
         new("转换离场：换区和创建回调前压紧原区域位置编号", ConversionRemovalLocationRefresh),
         new("转换插入：替代卡回到原槽位，双方共享前线保持全局顺序", ConversionBoardInsertion),
         new("转换模板时序：每项离场回调后重新查询模板并读取名称和打捞状态", ConversionTemplateAfterLeave),
+        new("牌库T3通知：未定位订阅者保留，查询筛选抑制并传递正确牌库方", DeckChangedQueryBoundary),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8703,6 +8704,37 @@ internal static class SelfTest
             if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
                 || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
+        }
+        return null;
+    }
+
+    private static string? DeckChangedQueryBoundary(CardDatabase db)
+    {
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (Side changedSide in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 1;
+            var watcher = state.CreateWithId("card_event_betasom", Side.Left, 20,
+                mode is 0 or 3 ? CardLocation.NotAvailable : CardLocation.Discard, 0);
+            watcher.EnteredPlayOnTurn = 1;
+            if (mode >= 2) watcher.Keywords.Add(Keyword.Suppressed);
+            var card = state.CreateWithId("card_unit_432_infantry_regiment", changedSide, 60,
+                route == 2 ? changedSide.HandOf() : changedSide.DeckOf(), 0);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = changedSide };
+            string method = route == 0 ? "AdjustCardPositionInDeck" : route == 1 ? "ConvertCard" : "MoveCardToTopOfOwnersDeck";
+            object?[] args = route == 0 ? new object?[] { (int)changedSide, card.CardId, 0, null }
+                : route == 1 ? new object?[] { new[] { card.CardId }, 0, "card_unit_routed_troops", 0, true, null }
+                : new object?[] { card.CardId, 0, 0 };
+            engine.Api.InvokeByName(method, card, args, context, out bool handled);
+            bool received = trace.Any(x => x.StartsWith("OnAfterDeckChanged → card_event_betasom#20", StringComparison.Ordinal));
+            var top = state.Deck(changedSide).FirstOrDefault();
+            bool tagged = top is not null && engine.Api.HasCustomGameplayTag(top, "subtype.navy");
+            if (!handled || received != (mode < 2) || tagged != (mode < 2 && changedSide == Side.Left))
+                return $"{method} 牌库方={changedSide} 模式={mode} 的T3查询/载荷错误：接收={received}，顶牌海军={tagged}";
         }
         return null;
     }

@@ -3393,9 +3393,7 @@ public sealed partial class CardApi
         if (wasOnBoard)
             c.Engine.FireAfterLeaveTrigger(card, side.DeckOf(), oldLocation);
         ResetCardInBattle(card);
-        FireTrigger("OnAfterDeckChanged", subject: null, side,
-            eventArgs: new object?[] { (int)side }, broadcastName: true,
-            namedArgs: new Dictionary<string, object?> { ["deckSide"] = (int)side });
+        ExecuteOnAfterDeckChanged(side);
         if (oldLocation is CardLocation.HandLeft or CardLocation.HandRight)
         {
             FireTrigger("OnAfterCardMovedToDeckFromHand", card, side);
@@ -3584,17 +3582,27 @@ public sealed partial class CardApi
 
         card.LocationNumber = targetIndex;
 
-        // ExecuteOnAfterDeckChanged broadcasts to every registered subscriber;
-        // namedArgs is required because the event stub's suffix is not a stable
-        // positional index across generated Blueprint signatures.
-        FireTrigger("OnAfterDeckChanged", subject: null, side,
-            eventArgs: new object?[] { (int)side },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["deckSide"] = (int)side,
-            });
+        ExecuteOnAfterDeckChanged(side);
 
         return null;
+    }
+
+    private void ExecuteOnAfterDeckChanged(Side side)
+    {
+        // Current helper i=38 queries T3 once, then i=307 calls the saved
+        // recipients without location, suppression or registration rechecks.
+        var recipients = CaptureRegisteredTriggerSnapshot("OnAfterDeckChanged");
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { (int)side };
+        var named = new Dictionary<string, object?> { ["deckSide"] = (int)side };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, "OnAfterDeckChanged") is null) continue;
+            TriggerTrace?.Add($"OnAfterDeckChanged → {observer.Name}#{observer.CardId}（eventCard=null#）");
+            RunTriggerProgram(library, observer, observer.Name, "OnAfterDeckChanged", null,
+                eventArgs: args, namedArgs: named);
+        }
     }
 
     /// <summary>
@@ -3876,9 +3884,7 @@ public sealed partial class CardApi
             if (destination == created.Owner.DeckOf())
             {
                 c.State.NormalizeLocationNumbers(created.Owner, destination);
-                FireTrigger("OnAfterDeckChanged", null, created.Owner,
-                    eventArgs: new object?[] { (int)created.Owner },
-                    namedArgs: new Dictionary<string, object?> { ["deckSide"] = (int)created.Owner }, broadcastName: true);
+                ExecuteOnAfterDeckChanged(created.Owner);
             }
             else if (destination == created.Owner.HandOf())
             {
