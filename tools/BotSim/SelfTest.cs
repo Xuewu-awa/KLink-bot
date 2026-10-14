@@ -72,6 +72,8 @@ internal static class SelfTest
         new("牌库生成：金卡与打捞字段在创建回调前初始化", SpawnDeckCreationFields),
         new("转换创建：skipAction保留对象创建阶段但不派发T35；普通生成仍派发", ConversionSkipsCreationModifiers),
         new("创建T35：查询后被抑制的接收者仍执行，查询前已抑制则排除", CreationModifierSnapshot),
+        new("牌库弃牌：35th Mountain Rifles先执行尝试弃牌效果，skipTriggers跳过", DeckDiscardAttemptEffect),
+        new("牌库弃牌：自身取消结果保留位置并接收显式来源（含0）", DeckDiscardCancellation),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8715,6 +8717,58 @@ internal static class SelfTest
                 return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
+    }
+
+    private static string? DeckDiscardAttemptEffect(CardDatabase db)
+    {
+        foreach (bool skip in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_35th_mountain_rifles", Side.Left, 60, CardLocation.DeckLeft, 0);
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            object? result = engine.Api.InvokeByName("DiscardCardFromDeck", card,
+                new object?[] { 60, 0, skip, false, null }, context, out _);
+            var copies = state.Board(Side.Left).Where(x => x.Name == card.Name).ToArray();
+            bool attempted = trace.Any(x => x.StartsWith("OnAttemptedDiscard(out", StringComparison.Ordinal));
+            if (result is not true || card.Location != CardLocation.Discard || copies.Length != (skip ? 0 : 1) || attempted != !skip)
+                return $"35th尝试弃牌效果错误：skip={skip}，抑制={suppressed}，副本数={copies.Length}，尝试回调={attempted}";
+        }
+        return null;
+    }
+
+    private static string? DeckDiscardCancellation(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        const string trigger = "OnAttemptedDiscard";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(trigger)) return "无法安全添加取消弃牌探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "discarderID", Scope = "local" }, null, -1, "_auditDiscarder", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Bool = true }, null, -1, "cancelDiscard", null) { DestinationScope = "local" },
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (int source in new[] { 0, 30 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId(name, Side.Left, 60, CardLocation.DeckLeft, 0);
+                var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+                int actions = state.ActionLog.Count;
+                object? result = engine.Api.InvokeByName("DiscardCardFromDeck", card,
+                    new object?[] { 60, source, false, false, null }, context, out _);
+                if (result is not false || card.Location != CardLocation.DeckLeft || state.ActionLog.Count != actions
+                    || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditDiscarder")) != source)
+                    return $"尝试取消应保留牌库卡且不发弃牌动作，并传入显式来源{source}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? CreationModifierSnapshot(CardDatabase db)

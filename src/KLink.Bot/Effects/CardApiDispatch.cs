@@ -1995,9 +1995,8 @@ public sealed partial class CardApi
             //   ① `cardID > 0` 且卡有效 ② 卡在牌库里（location 1/2）
             //   ③ `OnAttemptedDiscard` 没取消 ④ `RemoveCardFromDeckBySide` +
             //   `SetCardLocationAndLocNumber(cardID, 8=Discard, 0)` + `NotifyDiscardCard`。
-            // 本内核的 `DiscardCard` 做的就是「移到 Discard + 广播 `OnOtherCardDiscarded`」，
-            // 所以直接复用它（**不实现** `OnAttemptedDiscard` 的取消门 —— 本内核没有这个事件，
-            // 见「没修的」清单；这会少一次取消机会，不会多弃牌）。
+            // Attempt/cancellation is handled explicitly. The later generic
+            // discard path still needs independent notification/order auditing.
             ["DiscardCardFromDeck"] = (c, r, a) => DoDiscardCardFromDeck(c, r, a),
 
             // ── Gotcha（反制卡）子系统 ──
@@ -5145,10 +5144,8 @@ public sealed partial class CardApi
     /// L_02EE  NotifyDiscardCard(cardID, discarderID, oldLocation, …) ; success = true
     /// </code>
     ///
-    /// 本内核的 <see cref="CardApi.DiscardCard"/> 做的正是「移到 Discard + 广播
-    /// `OnOtherCardDiscarded`」，所以直接复用。
-    /// **不实现** <c>OnAttemptedDiscard</c> 的取消门（本内核没有这个事件）——
-    /// 少一次取消机会，**不会多弃牌**。
+    /// 尝试弃牌按当前 Blueprint 的 skipTriggers/cancelDiscard 处理；后续仍复用
+    /// 通用 DiscardCard，牌库移除、T3 与通知器的精确顺序尚待核查。
     /// </summary>
     private object? DoDiscardCardFromDeck(EffectContext c, object? r, object?[] a)
     {
@@ -5158,6 +5155,14 @@ public sealed partial class CardApi
             return false;
         }
 
+        // Current DiscardCardFromDeck i=379..456 skips this hook only for
+        // skipTriggers, not suppression. A false result may still have effects.
+        if (!TruthyArg(a, 2))
+        {
+            var result = RunOwnLocal(card, "OnAttemptedDiscard",
+                new Dictionary<string, object?> { ["discarderID"] = IntArg(a, 1) }, "cancelDiscard");
+            if (result is not null && KismetVmTruthy(result.GetValueOrDefault("cancelDiscard"))) return false;
+        }
         DiscardCard(card, AsCardOrId(c, a.ElementAtOrDefault(1)));
         return true;
     }
