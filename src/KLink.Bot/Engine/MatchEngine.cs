@@ -1965,18 +1965,25 @@ public sealed class MatchEngine
 
         FireSubActionWithCard("ZActionLeaveBoardOrOwner", card, (int)goingToLocation);
         Api.RemovePincerEffects(card);
-        if (!card.IsSuppressed)
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            // JumpIfNot at i=347 goes to self i=845; i=899 then enters
-            // the observer loop at i=383. PopFlow exits at i=978.
+            ["cardLeaving"] = card, ["goingToLocation"] = (int)goingToLocation,
+            ["NewLocation"] = (int)goingToLocation, ["method"] = method,
+        };
+        if (!card.IsSuppressed)
             Api.FireTrigger("OnLeaveBoardOrOwner", card, card.Owner,
                 eventArgs: new object?[] { (int)goingToLocation, method },
-                goingToLocation: goingToLocation);
-        }
-        Api.FireTrigger("OnOtherCardLeaveBoardOrOwner", card, card.Owner,
-            eventArgs: new object?[] { card, (int)goingToLocation, method },
-            goingToLocation: goingToLocation);
+                goingToLocation: goingToLocation, namedArgs: named);
 
+        // i=845/899: self precedes the T46 query; eligibility is fixed by that query.
+        var observers = Api.CaptureRegisteredTriggerSnapshot("OnOtherCardLeaveBoardOrOwner")
+            .Where(observer => observer.CardId != card.CardId).ToArray();
+        foreach (var observer in observers)
+            Api.FireTrigger("OnOtherCardLeaveBoardOrOwner", observer, observer.Owner,
+                selfProgramName: "OnOtherCardLeaveBoardOrOwner", eventSubject: card,
+                eventArgs: new object?[] { card, (int)goingToLocation, method },
+                goingToLocation: goingToLocation, namedArgs: named,
+                recipientSnapshot: new[] { observer }, includeUnavailableRecipients: true);
     }
 
     /// <summary>BP_CardFunctions after helper: observers see OldLocation, self sees destination.</summary>
@@ -1993,10 +2000,16 @@ public sealed class MatchEngine
         if (!card.IsSuppressed)
             Api.FireTrigger("OnAfterLeaveBoard", card, card.Owner,
                 eventArgs: new object?[] { (int)goingToLocation },
-                goingToLocation: goingToLocation, namedArgs: afterNamed);
-        Api.FireTrigger("OnAfterOtherCardLeaveBoardOrOwner", card, card.Owner,
-            eventArgs: new object?[] { card, (int)oldLocation }, namedArgs: afterNamed,
-            broadcastName: true);
+                goingToLocation: goingToLocation, namedArgs: afterNamed,
+                recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
+        // i=836/881: the T8 query follows the self callback and preserves its array.
+        var observers = Api.CaptureRegisteredTriggerSnapshot("OnAfterOtherCardLeaveBoardOrOwner")
+            .Where(observer => observer.CardId != card.CardId).ToArray();
+        foreach (var observer in observers)
+            Api.FireTrigger("OnAfterOtherCardLeaveBoardOrOwner", observer, observer.Owner,
+                selfProgramName: "OnAfterOtherCardLeaveBoardOrOwner", eventSubject: card,
+                eventArgs: new object?[] { card, (int)oldLocation }, namedArgs: afterNamed,
+                recipientSnapshot: new[] { observer }, includeUnavailableRecipients: true);
     }
     /// <summary>给「离场」这类带参数的事件记一条子动作（便于回放比对）。</summary>
     private void FireSubActionWithCard(string name, CardInstance card, int goingToLocation)

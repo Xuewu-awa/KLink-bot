@@ -37,6 +37,8 @@ internal static class SelfTest
         new("T39 查询先筛选抑制与例外，Hudson 击杀获得 Fury 遵守该门", OtherDestroyedSuppressionQuery),
         new("外部摧毁效果经 Special Attack 实际赋予，并按 T24 倍数重复提供者效果", ExternalDestructionProviderRepeat),
         new("T15 不添加位置门，Marder 保留自身击杀分支与查询抑制条件", BeforeDestroyedRecipientQuery),
+        new("离场 method 显式传递，Dornier Do 17 不因死亡/回手/转换误触发", LeaveMethodPayload),
+        new("T46/T8 观察者不设位置门，保留查询抑制与实例例外", LeaveObserverQueryBoundary),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8625,6 +8627,58 @@ internal static class SelfTest
                 return $"Marder 模式 {mode} 应抽牌={expectedDraw}，实际 {draw.Location}";
             bool received = trace.Any(x => x.StartsWith("OnBeforeOtherCardDestroyed → card_unit_marder_iii_h#20（", StringComparison.Ordinal));
             if (received != (mode != 3)) return "T15 接收轨迹不符合注册/抑制查询结果";
+        }
+        return null;
+    }
+
+    private static string? LeaveMethodPayload(CardDatabase db)
+    {
+        foreach (int method in new[] { 1, 5, 6, 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetMaxKredits(Side.Left, 12);
+            state.SetKredits(Side.Left, 5);
+            var watcher = state.CreateWithId("card_unit_dornier_do_17", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
+            var draw = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 70, CardLocation.DeckLeft, 0);
+            if (method == 1) engine.Destroy(victim);
+            else engine.FireLeaveTrigger(victim, method == 5 ? CardLocation.HandRight : CardLocation.Discard, method);
+            bool expected = method is not (1 or 5 or 6);
+            if (state.Kredits(Side.Left) != (expected ? 7 : 5)
+                || (draw.Location == CardLocation.HandLeft) != expected)
+                return $"离场方法 {method} 的 Dornier 奖励应触发={expected}，实际费用={state.Kredits(Side.Left)}，牌位置={draw.Location}";
+            // The card's JSON field-presence guard also makes the reward once-only.
+            engine.FireLeaveTrigger(victim, CardLocation.Discard, method);
+            if (state.Kredits(Side.Left) != (expected ? 7 : 5)) return "Dornier 不应重复发放奖励";
+        }
+        return null;
+    }
+
+    private static string? LeaveObserverQueryBoundary(CardDatabase db)
+    {
+        for (int mode = 0; mode < 3; mode++)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var before = state.CreateWithId("card_unit_dornier_do_17", Side.Left, 20, CardLocation.NotAvailable, 0);
+            var after = state.CreateWithId("card_unit_panzer_iii_e", Side.Left, 21, CardLocation.NotAvailable, 0);
+            if (mode != 0)
+            {
+                before.Keywords.Add(Keyword.Suppressed);
+                after.Keywords.Add(Keyword.Suppressed);
+            }
+            if (mode == 2)
+            {
+                before.SuppressionExceptionTriggers.Add("OnOtherCardLeaveBoardOrOwner");
+                after.SuppressionExceptionTriggers.Add("OnAfterOtherCardLeaveBoardOrOwner");
+            }
+            var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 60, CardLocation.BoardHqLeft, 1);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Destroy(victim);
+            bool expected = mode != 1;
+            if (trace.Any(x => x.StartsWith("OnOtherCardLeaveBoardOrOwner → card_unit_dornier_do_17#20（", StringComparison.Ordinal)) != expected
+                || trace.Any(x => x.StartsWith("OnAfterOtherCardLeaveBoardOrOwner → card_unit_panzer_iii_e#21（", StringComparison.Ordinal)) != expected)
+                return $"T46/T8 模式 {mode} 的回调名单不符合无位置门的查询契约";
         }
         return null;
     }
