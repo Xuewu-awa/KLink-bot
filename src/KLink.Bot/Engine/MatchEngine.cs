@@ -41,6 +41,7 @@ public sealed class MatchEngine
             }
             else if (updateExtraTriggers)
                 Api.ResolveTriggerQueue();
+            if (consumeAutoPlay) ApplyPendingGotchaPlayReceipts();
         }
         if (defer && _pendingSelections is { } pending) pending.Enqueue(Complete);
         else Complete();
@@ -558,6 +559,7 @@ public sealed class MatchEngine
             StartTurnCore(side, draw);
             // OpponentActionsStartTurn: StartTurnBySide then ExecuteAutoPlayCards.
             ExecuteAutoPlayCards();
+            ApplyPendingGotchaPlayReceipts();
         }
         finally
         {
@@ -802,6 +804,7 @@ public sealed class MatchEngine
 
         // OpponentActionsEndTurn i=673 precedes SwitchPlayingSide/IncrementTurnNumber.
         ExecuteAutoPlayCards();
+        ApplyPendingGotchaPlayReceipts();
 
         RecordAction("XActionEndOfTurn", side, new Dictionary<string, object?>
         {
@@ -1069,9 +1072,60 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
+    private readonly Queue<(int CardId, bool PlayedDirectly)> _pendingGotchaPlayReceipts = new();
+
+    /// <summary>Apply the rule-bearing Gotcha part of local ReceiveActionPlayCardFromHand.</summary>
+    public void ApplyPendingGotchaPlayReceipts()
+    {
+        while (_pendingGotchaPlayReceipts.TryDequeue(out var receipt))
+        {
+            var card = State.ById(receipt.CardId);
+            if (card is null || !Api.IsGotcha(card)) continue;
+            // i=1294/1308: local direct-play notifications must not toggle twice.
+            if (receipt.PlayedDirectly) continue;
+            if (card.GotchaActivated > 0) card.GotchaActivated = 0;
+            else
+            {
+                // i=3602..3762 reads current cost, not the cost at notification time.
+                Api.JsonSetInt(card, "kreditsPayed", card.KreditCost);
+                int next = 0;
+                foreach (var other in State.AllCards)
+                    if (Api.IsGotcha(other) && other.Owner == card.Owner && other.GotchaActivated > next)
+                        next = other.GotchaActivated;
+                // The receive function has no hand-location filter.
+                card.GotchaActivated = next + 1;
+            }
+        }
+    }
+
+    private void NotifyGotchaPlayFromHand(CardInstance card, int instigatorId,
+        int locationNumber, int targetId, bool playedDirectly)
+    {
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
+            (int)card.Location, out string locationName);
+        var values = new List<ActionValue2>
+        {
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("location", locationName),
+            ActionValue2.Int("locationNumber", locationNumber),
+            ActionValue2.Int("enterPlayOnTurn", State.Turn),
+            ActionValue2.Int("targetCardID", targetId),
+            ActionValue2.Int("nonVisualLocationNumber", locationNumber),
+        };
+        // Direct function passes chooseOneIndex=0; normal Gotcha has no choices.
+        if (playedDirectly)
+        {
+            values.Add(ActionValue2.Int("chooseOneIndex", 0));
+            values.Add(ActionValue2.Bool("playedDirectly", true));
+        }
+        FireSubAction("ZActionPlayCardFromHand", values);
+        _pendingGotchaPlayReceipts.Enqueue((card.CardId, playedDirectly));
+    }
+
     private bool _processingAutoPlayCards;
 
-    /// <summary>BP_OnlineMatch.ExecuteAutoPlayCards: live ordered IDs, hand gate, then clear.</summary>
+    /// <summary>Process autoplay rules; action boundaries apply local Gotcha receipts afterwards.</summary>
     public void ExecuteAutoPlayCards()
     {
         if (_processingAutoPlayCards) return;
@@ -1085,11 +1139,15 @@ public sealed class MatchEngine
                 if (index >= ids.Length) break;
                 var card = State.ById(ids[index]);
                 if (card is null || card.Location is not (CardLocation.HandLeft or CardLocation.HandRight)) continue;
-                ApplyQueuedHandPlayCost(card);
+                ApplyNativeHandPlayCost(card);
                 // PlayCardFromHand i=921/962/976 returns for Gotcha after cost
                 // and play notification. It does not toggle activation or move it.
-                // The full play notification payload remains a separate audit item.
-                if (Api.IsGotcha(card)) continue;
+                // Gotcha records a notification; receipt application is a later batch stage.
+                if (Api.IsGotcha(card))
+                {
+                    NotifyGotchaPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false);
+                    continue;
+                }
                 PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
                     chargeKredits: false,
                     recordAction: false, toFrontline: false, locationNumber: 0,
@@ -1100,23 +1158,23 @@ public sealed class MatchEngine
         finally { _processingAutoPlayCards = false; }
     }
 
-    private void ApplyQueuedHandPlayCost(CardInstance card)
+    private void ApplyNativeHandPlayCost(CardInstance card, CardInstance? target = null)
     {
         // PlayCardFromHand i=61..304: the activation field alone selects refund,
         // and neither normal cost nor the autoplay tag is checked on that path.
         if (card.GotchaActivated > 0)
         {
-            ChangeQueuedHandPlayKredits(card, Api.JsonGetInt(card, "kreditsPayed"));
+            ChangeHandPlayKredits(card, Api.JsonGetInt(card, "kreditsPayed"));
             return;
         }
         if (CardApi.HasInstanceGameplayTag(card, "autoplay")) return;
-        int cost = GetPlayCardCost(card, null);
+        int cost = GetPlayCardCost(card, target);
         // PayCardCost does not partially deduct on failure. Its caller ignores
         // success, so the subsequent play flow still runs.
-        if (cost <= State.Kredits(card.Owner)) ChangeQueuedHandPlayKredits(card, -cost);
+        if (cost <= State.Kredits(card.Owner)) ChangeHandPlayKredits(card, -cost);
     }
 
-    private void ChangeQueuedHandPlayKredits(CardInstance card, int delta)
+    private void ChangeHandPlayKredits(CardInstance card, int delta)
     {
         int old = State.Kredits(card.Owner);
         int slots = State.MaxKredits(card.Owner);
@@ -1287,7 +1345,11 @@ public sealed class MatchEngine
         try
         {
             bool completed = PlayCardActionCore(card, target, skipLeaveTrigger);
-            if (completed) ExecuteAutoPlayCards();
+            if (completed)
+            {
+                ExecuteAutoPlayCards();
+                ApplyPendingGotchaPlayReceipts();
+            }
             return completed;
         }
         finally { EndEffectResolution(); }
@@ -1298,6 +1360,20 @@ public sealed class MatchEngine
         if (!CanPlay(card, out string reason, target))
         {
             return false;
+        }
+
+        if (Api.IsGotcha(card))
+        {
+            RecordAction("XActionPlayCardFromHand", card.Owner, new Dictionary<string, object?>
+            {
+                ["cardID"] = card.CardId,
+                ["location"] = "Hand",
+                ["side"] = card.Owner.ToWire(),
+            });
+            ApplyNativeHandPlayCost(card, target);
+            NotifyGotchaPlayFromHand(card, card.CardId, card.LocationNumber, target?.CardId ?? 0,
+                playedDirectly: false);
+            return true;
         }
 
         return PlayCardFromHandCore(card, target, skipLeaveTrigger,
@@ -1325,7 +1401,9 @@ public sealed class MatchEngine
             // activation, preserves the hand location/number, then i=853/908
             // returns before CardLocationMoved and enter-play effects.
             Api.AssignGotchaActivatedOnPlayFromHand(card);
-            // Native NotifyPlayFromHand(playedDirectly=true) remains pending.
+            NotifyGotchaPlayFromHand(card, instigatorID, card.LocationNumber,
+                card.BlueprintVariables.GetValueOrDefault("targetOverride") is CardInstance overrideTarget ? overrideTarget.CardId : 0,
+                playedDirectly: true);
             return true;
         }
 
@@ -1366,11 +1444,7 @@ public sealed class MatchEngine
             State.AddKredits(card.Owner, -GetPlayCardCost(card, target));
         }
 
-        // PlayCardDirectlyFromHand in BP_CardFunctions assigns activation
-        // numbers to Gotcha cards before the play broadcast. The ordinary-play
-        // adapter still uses this path; queued native PlayCardFromHand returns
-        // for Gotcha before reaching this shared implementation.
-        Api.AssignGotchaActivatedOnPlayFromHand(card);
+        // Gotcha uses separate processing/receipt branches before this common path.
 
         if (recordAction)
         {
@@ -1811,7 +1885,11 @@ public sealed class MatchEngine
         try
         {
             bool completed = MoveUnitActionCore(unit, targetSlot, out reason);
-            if (completed) ExecuteAutoPlayCards();
+            if (completed)
+            {
+                ExecuteAutoPlayCards();
+                ApplyPendingGotchaPlayReceipts();
+            }
             return completed;
         }
         finally { EndEffectResolution(); }
@@ -2209,7 +2287,11 @@ public sealed class MatchEngine
         try
         {
             bool completed = AttackActionCore(attacker, defender, out reason);
-            if (completed) ExecuteAutoPlayCards();
+            if (completed)
+            {
+                ExecuteAutoPlayCards();
+                ApplyPendingGotchaPlayReceipts();
+            }
             return completed;
         }
         finally { EndEffectResolution(); }

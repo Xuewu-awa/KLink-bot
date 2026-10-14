@@ -106,6 +106,11 @@ internal static class SelfTest
         new("自动消费费用：退款按激活字段分支，不额外要求Gotcha类型", AutoPlayActivatedFieldRefund),
         new("自动消费费用：费用不足不部分扣款，仍按原生继续后续流程", AutoPlayInsufficientCost),
         new("直接出牌Gotcha：只切换激活号，保留手牌/费用/状态，不走普通出牌链", DirectGotchaBoundary),
+        new("Gotcha接收阶段：普通出牌付费/退款后再装填/取消，不离手", GotchaReceiptBoundary),
+        new("Gotcha接收阶段：整批规则后按通知顺序执行，不提前切换", GotchaReceiptBatchOrder),
+        new("Gotcha接收阶段：使用接收时费用，不加手牌门，本地直接出牌不重复切换", GotchaReceiptUsesCurrentState),
+        new("Gotcha接收阶段：五个普通行动均应用自动消费通知", GotchaReceiptActionIntegration),
+        new("Gotcha接收阶段：手牌与牌库回复在额外触发之后应用本批通知", GotchaReceiptReplyIntegration),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8783,6 +8788,174 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? GotchaReceiptReplyIntegration(CardDatabase db)
+    {
+        foreach (bool handReply in new[] { false, true })
+        {
+            string name = handReply ? "card_unit_52_k" : "card_unit_m36_destroyer";
+            using var probe = InstallSelectionDrawProbe(name, handReply ? "OnHandTargetSelected" : "OnPlayedFromHand");
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 0);
+                var target = state.CreateWithId("card_unit_432_infantry_regiment", side, 30, side.HandOf(), 0);
+                var first = state.CreateWithId("card_event_interception", side, 60, side.DeckOf(), 0);
+                var second = state.CreateWithId(first.Name, side, 61, side.DeckOf(), 1);
+                engine.Api.AddCustomGameplayTag(first, "autoplay");
+                engine.Api.AddCustomGameplayTag(second, "autoplay");
+                if (handReply)
+                {
+                    engine.PickHandTargetId = (_, _) => target.CardId;
+                    engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { source.CardId },
+                        new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+                }
+                else
+                {
+                    source.ExtraPlayTriggers = 1;
+                    engine.Api.DrawChosenCardToHand(source, first);
+                }
+                if (first.GotchaActivated != 1 || first.Location != side.HandOf()
+                    || engine.Api.JsonGetInt(first, "kreditsPayed") != 1 || second.GotchaActivated != 0
+                    || second.Location != (handReply ? side.DeckOf() : side.HandOf())
+                    || !state.GetAutoPlayCards().SequenceEqual(handReply ? Array.Empty<int>() : new[] { 61 }))
+                    return $"选择回复未正确应用本批Gotcha通知：方={side} 手牌回复={handReply}";
+            }
+        }
+        return null;
+    }
+
+    private static string? GotchaReceiptActionIntegration(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2, 3, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2;
+            state.ActiveSide = side;
+            state.SetMaxKredits(side, 10);
+            state.SetKredits(side, 10);
+            var unit = state.CreateWithId("card_unit_432_infantry_regiment", side, 20,
+                route == 4 ? CardLocation.BoardFrontline : side.HqOf(), route == 4 ? 0 : 1);
+            unit.EnteredPlayOnTurn = 0;
+            var card = state.CreateWithId("card_event_interception", side, 60,
+                route <= 1 ? side.DeckOf() : side.HandOf(), 0);
+            int entered = card.EnteredPlayOnTurn;
+            engine.Api.AddCustomGameplayTag(card, "autoplay"); // Controlled queue-entry tag.
+            state.CreateWithId(unit.Name, side, 61, side.DeckOf(), 1);
+            if (route == 2) state.CreateWithId(unit.Name, side.Opposite(), 63, side.Opposite().DeckOf(), 0);
+            if (route >= 2) state.AddAutoPlayCards(card.CardId);
+            bool success = true;
+            if (route == 0) engine.StartTurn(side, draw: true);
+            else if (route == 1)
+            {
+                var order = state.CreateWithId("card_event_convoy_175", side, 70, side.HandOf(), 0);
+                success = engine.PlayCard(order);
+            }
+            else if (route == 2) engine.EndTurn(side);
+            else if (route == 3) success = engine.MoveUnit(unit, 0);
+            else success = engine.Attack(unit, state.Hq(side.Opposite()));
+            if (!success || card.Location != side.HandOf() || card.GotchaActivated != 1
+                || engine.Api.JsonGetInt(card, "kreditsPayed") != 1 || card.EnteredPlayOnTurn != entered
+                || state.GetAutoPlayCards().Length != 0 || state.CardsPlayedThisTurn.Any(x => x.CardId == card.CardId))
+                return $"普通行动未完成Gotcha接收阶段：方={side} 路径={route} 激活={card.GotchaActivated} 位置={card.Location} 已付={engine.Api.JsonGetInt(card, "kreditsPayed")} 进入={card.EnteredPlayOnTurn} 队列={state.GetAutoPlayCards().Length}";
+        }
+        return null;
+    }
+
+    private static string? GotchaReceiptBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (bool tagged in new[] { false, true })
+        foreach (int? paid in new int?[] { null, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 9;
+            state.ActiveSide = side;
+            state.SetKredits(side, 10);
+            var other = state.CreateWithId("card_event_interception", side, 20, CardLocation.Discard, 0);
+            other.GotchaActivated = 7;
+            var card = state.CreateWithId(other.Name, side, 60, side.HandOf(), 7);
+            card.GotchaActivated = active ? 5 : 0;
+            card.EnteredPlayOnTurn = 6;
+            if (paid is int amount) engine.Api.JsonSetInt(card, "kreditsPayed", amount);
+            if (tagged) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            bool played = engine.PlayCard(card);
+            int expected = active ? 10 + (paid ?? 0) : 10 - (tagged ? 0 : 1);
+            if (!played || card.Location != side.HandOf() || card.LocationNumber != 7 || card.EnteredPlayOnTurn != 6
+                || card.GotchaActivated != (active ? 0 : 8) || state.Kredits(side) != expected
+                || engine.Api.JsonGetInt(card, "kreditsPayed") != (active ? paid ?? 0 : 1)
+                || state.CardsPlayedThisTurn.Count != 0 || other.GotchaActivated != 7)
+                return $"Gotcha普通出牌处理/接收错误：方={side} 激活={active} 标签={tagged} 已付={paid} 最终={card.Location}/{card.GotchaActivated}/{state.Kredits(side)}";
+            var play = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionPlayCardFromHand");
+            if (play is null || play.Values.First(x => x.Name == "cardID").Value != 60
+                || play.Values.First(x => x.Name == "instigatorID").Value != 60
+                || play.Values.First(x => x.Name == "locationNumber").Value != 7
+                || play.Values.First(x => x.Name == "enterPlayOnTurn").Value != 9
+                || play.Values.Any(x => x.Name == "playedDirectly"))
+                return "Gotcha普通出牌通知应保留手牌编号、当前回合和隐式非直接标记";
+        }
+        return null;
+    }
+
+    private static string? GotchaReceiptBatchOrder(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool duplicate in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;
+            state.SetKredits(side, 10);
+            var first = state.CreateWithId("card_event_interception", side, 60, side.HandOf(), 0);
+            if (duplicate) state.AddAutoPlayCards(first.CardId);
+            else
+            {
+                var second = state.CreateWithId(first.Name, side, 61, side.HandOf(), 1);
+                var third = state.CreateWithId(first.Name, side, 62, side.HandOf(), 2);
+                third.GotchaActivated = 9;
+                engine.Api.JsonSetInt(third, "kreditsPayed", 3);
+                state.AddAutoPlayCards(second.CardId);
+                state.AddAutoPlayCards(third.CardId);
+            }
+            bool played = engine.PlayCard(first);
+            var ids = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPlayCardFromHand")
+                .Select(x => x.Values.First(v => v.Name == "cardID").Value).ToArray();
+            if (!played || first.Location != side.HandOf() || state.CardsPlayedThisTurn.Count != 0
+                || first.GotchaActivated != (duplicate ? 0 : 10) || state.Kredits(side) != (duplicate ? 8 : 11)
+                || !ids.SequenceEqual(duplicate ? new[] { 60, 60 } : new[] { 60, 61, 62 })
+                || !duplicate && (state.ById(61)!.GotchaActivated != 11 || state.ById(62)!.GotchaActivated != 0))
+                return $"Gotcha应先完成整批费用再依序接收：方={side} 重复通知={duplicate} 资源={state.Kredits(side)} 激活={first.GotchaActivated}";
+        }
+        return null;
+    }
+
+    private static string? GotchaReceiptUsesCurrentState(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool leaveHand in new[] { false, true })
+        foreach (bool directly in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetKredits(side, 10);
+            var other = state.CreateWithId("card_event_interception", side, 20, CardLocation.Discard, 0);
+            other.GotchaActivated = 7;
+            var card = state.CreateWithId(other.Name, side, 60, side.HandOf(), 0);
+            engine.Api.JsonSetInt(card, "kreditsPayed", 9);
+            if (directly) engine.PlayCardDirectlyFromHand(card, false, 9004, -1);
+            else { state.AddAutoPlayCards(card.CardId); engine.ExecuteAutoPlayCards(); }
+            if (card.GotchaActivated != (directly ? 8 : 0)) return "接收之前不能提前切换普通通知的激活号";
+            if (leaveHand) state.Move(card, CardLocation.Discard, notifyMoved: false);
+            card.KreditCost = 3; // Controlled mutation between rule and receipt stages.
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (card.GotchaActivated != 8 || engine.Api.JsonGetInt(card, "kreditsPayed") != (directly ? 9 : 3)
+                || card.Location != (leaveHand ? CardLocation.Discard : side.HandOf()))
+                return "接收应读取当前费用且无手牌门，本地直接出牌应跳过重复切换";
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (card.GotchaActivated != 8) return "接收队列排空后不能重复切换";
+        }
+        return null;
     }
 
     private static string? DirectGotchaBoundary(CardDatabase db)

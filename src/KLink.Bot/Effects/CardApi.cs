@@ -4935,7 +4935,7 @@ public sealed partial class CardApi
     ///
     /// 这是直接出牌分支的激活辅助逻辑，并非激活号的唯一写入点。
     /// BP_OnlineMatch.ReceiveActionPlayCardFromHand 也会在接收阶段
-    /// 写入 kreditsPayed、装填或取消；普通出牌的完整两阶段映射仍待审计。
+    /// 写入 kreditsPayed、装填或取消；本地 Gotcha 的接收状态由 MatchEngine 单独应用。
     /// </summary>
     public void AssignGotchaActivatedOnPlayFromHand(CardInstance card)
     {
