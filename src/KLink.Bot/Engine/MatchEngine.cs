@@ -1005,7 +1005,9 @@ public sealed class MatchEngine
         // i=1042..1140 changes current side on successful receipt only;
         // OriginalOwner is preserved, and the full-hand branch never changes it.
         State.ChangeOwner(card, handSide, normalize: false);
-        State.Move(card, handSide.HandOf());
+        // DrawTopCardFromDeck i=712/1042 assigns the count, without rearranging existing hand cards.
+        // The generic movement notification remains a separate audit item.
+        State.Move(card, handSide.HandOf(), locationNumber: preQtyInHand, normalizeLocation: false);
         FireSubAction("ZActionDrawCardFromDeck", DrawValues(false));
 
         // 「别的卡被抽到手」触发点。**必须接**：`card_unit_85_pioneer_company` /

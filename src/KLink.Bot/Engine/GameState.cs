@@ -894,17 +894,17 @@ public sealed class GameState
         hq.MaxDefense = Math.Max(hq.MaxDefense, defense);
     }
 
-    /// <summary>把卡移动到新位置，并重排目标位置的 location_number（与客户端语义一致）。</summary>
+    /// <summary>把卡移动到新位置；默认重排目标编号，直接字段赋值路径可保留原编号。</summary>
     public void Move(CardInstance card, CardLocation location, int? locationNumber = null,
                      bool changeOwner = false, CardMoveReason moveReason = CardMoveReason.Uncategorized,
-                     bool notifyMoved = true)
+                     bool notifyMoved = true, bool normalizeLocation = true)
     {
         CardLocation oldLocation = card.Location;
         bool moved = oldLocation != location;
 
         card.Location = location;
         card.LocationNumber = locationNumber ?? NextLocationNumber(card.Owner, location);
-        NormalizeLocationNumbers(card.Owner, location);
+        if (normalizeLocation) NormalizeLocationNumbers(card.Owner, location);
 
         // 换区之后派生数值可能变（最典型的是「手牌里才 -1 费」的光环：
         // card_unit_85_pioneer_company 只给**手牌里**的指令减费，

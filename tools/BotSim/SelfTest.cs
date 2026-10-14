@@ -90,6 +90,7 @@ internal static class SelfTest
         new("对方牌库抽牌：空牌库疲劳作用于牌库方", OpponentDrawFatigue),
         new("指定抽牌：目标不在牌库时不得改抽同名卡", SpecificDrawExactMembership),
         new("指定抽牌：保留来源/公开参数及其余牌库编号，满手保留目标编号", SpecificDrawFieldsAndOrder),
+        new("抽牌：按手牌数量赋号，保留已有手牌的空位和重复编号", DrawHandNumberAssignment),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8749,6 +8750,30 @@ internal static class SelfTest
             if (sameName.Location != side.DeckOf() || requested.Location != side.HandOf()
                 || state.ActionLog.Count != actions || state.Fatigue(side) != 0)
                 return "指定ID不在牌库时不应按名称改抽其它实例或产生动作";
+        }
+        return null;
+    }
+
+    private static string? DrawHandNumberAssignment(CardDatabase db)
+    {
+        foreach (Side deckSide in new[] { Side.Left, Side.Right })
+        foreach (bool opponentDraw in new[] { false, true })
+        foreach (bool specific in new[] { false, true })
+        foreach (bool colliding in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side recipient = opponentDraw ? deckSide.Opposite() : deckSide;
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", recipient, 100, recipient.HandOf(), 0);
+            var second = state.CreateWithId(first.Name, recipient, 101, recipient.HandOf(), colliding ? 2 : 7);
+            var drawn = state.CreateWithId(first.Name, deckSide, 60, deckSide.DeckOf(), 15);
+            if (specific && opponentDraw) continue; // Native specific wrapper always draws to deckSide.
+            if (specific) engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", drawn,
+                new object?[] { 0, drawn.CardId, (int)deckSide, false },
+                new EffectContext { Engine = engine, State = state, Controller = deckSide }, out _);
+            else engine.DrawCard(deckSide, opponentDraw: opponentDraw);
+            if (drawn.Location != recipient.HandOf() || drawn.LocationNumber != 2
+                || first.LocationNumber != 0 || second.LocationNumber != (colliding ? 2 : 7))
+                return $"抽牌入手编号错误：牌库方={deckSide} 对方抽牌={opponentDraw} 指定={specific} 编号碰撞={colliding}";
         }
         return null;
     }
