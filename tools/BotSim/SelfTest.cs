@@ -35,6 +35,7 @@ internal static class SelfTest
         new("批量死亡先刷新原区域编号，再执行换区和摧毁事件", BatchDeathLocationRefresh),
         new("T24 保留传入接收者数组及同时死亡标记，只另检查主体抑制", DestructionRecipientSnapshot),
         new("T39 查询先筛选抑制与例外，Hudson 击杀获得 Fury 遵守该门", OtherDestroyedSuppressionQuery),
+        new("外部摧毁效果经 Special Attack 实际赋予，并按 T24 倍数重复提供者效果", ExternalDestructionProviderRepeat),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8550,6 +8551,55 @@ internal static class SelfTest
                 return $"Hudson 模式 {mode} 的 Fury 应为 {expected}，T39 查询抑制/位置门不符";
             bool received = trace.Any(x => x.StartsWith("OnOtherCardDestroyed → card_unit_hudson#20（", StringComparison.Ordinal));
             if (received != expected) return "T39 接收轨迹与查询结果不符";
+        }
+        return null;
+    }
+
+    private static string? ExternalDestructionProviderRepeat(CardDatabase db)
+    {
+        foreach (var (doubled, drawProvider) in new[] { (false, false), (true, false), (true, true) })
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            if (doubled)
+            {
+                state.CreateWithId("card_unit_114th_infantry_regiment", Side.Left, 21, CardLocation.BoardHqLeft, 2);
+                state.CreateWithId("card_unit_matsumoto_regiment", Side.Left, 22, CardLocation.BoardHqLeft, 3);
+            }
+            var provider = state.CreateWithId("card_event_special_attack", Side.Left, 30, CardLocation.HandLeft, 0);
+            if (!engine.PlayCard(provider)) return "Special Attack 应可打出";
+            if (!engine.Api.HasCustomAbilityFromCard(victim, "destruction", provider.CardId))
+                return "实际打出 Special Attack 未为目标记录提供者 destruction 能力";
+            CardInstance? greater = null;
+            if (drawProvider)
+            {
+                greater = state.CreateWithId("card_event_greater_purpose", Side.Left, 31, CardLocation.HandLeft, 0);
+                if (!engine.PlayCard(greater) || !engine.Api.HasCustomAbilityFromCard(victim, "destruction", greater.CardId))
+                    return "第二个真实提供者 Greater Purpose 未正确叠加来源能力";
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 70, CardLocation.DeckLeft, 0);
+                state.CreateWithId("card_unit_432_infantry_regiment", Side.Left, 71, CardLocation.DeckLeft, 1);
+            }
+            int hand = state.Hand(Side.Left).Count();
+            int slots = state.MaxKredits(Side.Left), hp = state.HqDefense(Side.Right);
+            var trace = new List<string>();
+            engine.Api.TriggerTrace = trace;
+            engine.Destroy(victim);
+            int repeat = doubled ? 2 : 1;
+            if (state.MaxKredits(Side.Left) != slots + repeat)
+                return "外部摧毁提供者的 GainKreditSlot 未按 T24 倍数执行";
+            int expectedDamage = doubled ? (drawProvider ? 6 : 4) : 1;
+            if (state.HqDefense(Side.Right) != hp - expectedDamage)
+                return $"外部摧毁和松本通知应合计造成 {expectedDamage}，实际 {hp - state.HqDefense(Side.Right)}";
+            int calls = trace.Count(x => x.StartsWith($"OnOtherCardDestroyed → {provider.Name}#{provider.CardId}（", StringComparison.Ordinal));
+            if (calls != repeat) return $"提供者应只执行 {repeat} 次，实际 {calls}";
+            if (greater is not null)
+            {
+                int draws = trace.Count(x => x.StartsWith($"OnOtherCardDestroyed → {greater.Name}#{greater.CardId}（", StringComparison.Ordinal));
+                if (draws != repeat || state.Hand(Side.Left).Count() != hand + repeat)
+                    return "两个提供者共存时 Greater Purpose 应独立执行两次并抽两张牌";
+            }
+            if (victim.Location != CardLocation.Discard || provider.Location != CardLocation.Discard)
+                return "死亡单位和已打出提供者都应留在弃牌堆";
         }
         return null;
     }
