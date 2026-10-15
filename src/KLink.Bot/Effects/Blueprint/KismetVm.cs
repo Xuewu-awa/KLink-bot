@@ -1412,6 +1412,8 @@ public sealed class KismetVm
             "maxDefense" => card.MaxDefense,
             "enterPlayOnTurn" => card.EnteredPlayOnTurn,
             "currentTarget" => card.CurrentTarget,
+            "customName1" => CardCustomNames.Text(card, "customName1"),
+            "customName2" => CardCustomNames.Text(card, "customName2"),
             "receivedAbilitiesFromCards" => card.ReceivedAbilitiesFromCards.ToDictionary(
                 kv => (object)kv.Key,
                 kv => (object?)new Dictionary<string, object?>
@@ -1545,6 +1547,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
+                if (name is "customName1" or "customName2") return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
                 return GetMember(_ctx.Self, name);
@@ -1744,7 +1747,12 @@ public sealed class KismetVm
             {
                 if (scope == "instance" && _ctx.Self is { } self)
                 {
-                    if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
+                    if (name is "customName1" or "customName2")
+                    {
+                        CardCustomNames.Assign(self, name, value?.ToString() ?? "None");
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
                     else if (name is "ChooseOne" or "chooseOne") self.ChooseOne = ToInt(value);
                     else if (name == "hasDestruction")
                     {

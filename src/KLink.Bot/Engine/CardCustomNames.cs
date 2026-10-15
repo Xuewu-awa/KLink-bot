@@ -36,17 +36,20 @@ internal static class CardCustomNames
     internal static void Add(CardInstance card, string key, string attribute)
     {
         string value = Text(card, key);
-        Store(card, key, Equal(value, "None") ? attribute : value + ";" + attribute);
+        Assign(card, key, Equal(value, "None") ? attribute : value + ";" + attribute);
     }
 
     internal static void Remove(CardInstance card, string key, string attribute)
     {
         string value = Text(card, key);
-        Store(card, key, Equal(value, attribute) ? ""
+        Assign(card, key, Equal(value, attribute) ? ""
             : string.Join(";", value.Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .Where(part => !Equal(part, attribute))));
     }
 
-    private static void Store(CardInstance card, string key, string value)
-        => card.CustomJson[key] = Equal(value, "None") ? "" : value;
+    internal static void Assign(CardInstance card, string key, string value)
+    {
+        if (value.Length == 0 || Equal(value, "None")) card.CustomJson.Remove(key);
+        else card.CustomJson[key] = value;
+    }
 }

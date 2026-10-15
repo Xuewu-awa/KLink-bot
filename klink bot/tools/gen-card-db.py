@@ -168,6 +168,11 @@ def main():
             if src_key in cdo:
                 entry[out_key] = str(cdo[src_key]).strip().lower() in ("true", "1")
 
+        for field in ("customName1", "customName2"):
+            value = cdo.get(field, "None")
+            if value and value != "None":
+                entry[field] = value
+
         if cdo.get("chooseOneCards"):
             entry["chooseOneOptionCount"] = len(cdo["chooseOneCards"])
         entry["innateAbilities"] = innate_abilities(cdo)

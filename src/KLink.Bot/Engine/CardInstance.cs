@@ -627,6 +627,13 @@ public sealed class CardInstance
     /// </summary>
     public void InitializeFromDefinition()
     {
+        InitializeRuleAttributesFromDefinition();
+        CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
+        CardCustomNames.Assign(this, "customName2", Definition.CustomName2);
+    }
+
+    private void InitializeRuleAttributesFromDefinition()
+    {
         foreach (string keyword in Definition.Keywords)
         {
             Keywords.Add(keyword);
@@ -660,7 +667,10 @@ public sealed class CardInstance
         SuppressStrippedBuffs = null;
         SuppressStrippedCustomAbility = null;
         SuppressStrippedAbilities = null;
-        InitializeFromDefinition();
+        InitializeRuleAttributesFromDefinition();
+        // Native ResetCardAttributes restores +0x504 from the card template;
+        // +0x50c is not overwritten by that function.
+        CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
         Attack = IsSalvaged ? 1 : Definition.Attack;
         Defense = MaxDefense = IsSalvaged ? 1 : Definition.Defense;
         KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;

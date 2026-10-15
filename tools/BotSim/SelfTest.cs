@@ -166,6 +166,10 @@ internal static class SelfTest
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
         new("原生名称：分号、重复、大小写、空值及整串移除", NativeCustomNameOperations),
         new("原生名称：接收者绑定、行动例外和亡语标记共享读法", NativeCustomNameRuleConsumers),
+        new("静态名称：全卡池CDO摘要、双方建卡与模板", StaticCustomNameCatalogue),
+        new("静态名称：重置仅恢复Name1并保留当前Name2", StaticCustomNameReset),
+        new("名称成员：VM读写与API/持久化共享状态", NativeCustomNameMemberVm),
+        new("名称成员：五张真实单位离场清空Name2", NativeCustomNameRealLeave),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10122,6 +10126,109 @@ internal static class SelfTest
                 return "主动亡语通知应按权威字段顺序包含目标ID";
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static string? StaticCustomNameCatalogue(CardDatabase db)
+    {
+        var cards = db.All.OrderBy(x => x.Name, StringComparer.Ordinal).ToArray();
+        // Independent digest of all 2,019 pak names, reconciled with saved runtime CDOs.
+        string canonical = string.Join("\n", cards.Select(x => x.Name + "\t" + x.CustomName1 + "\t" + x.CustomName2));
+        string digest = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        if (cards.Length != 2019 || digest != "4ba8b0ce3153d67183e14813c9ae8fb2f4086671f3f660f43fcf3dee1cd7cdfd")
+            return "全卡池静态名称与pak/运行时CDO权威摘要不符：" + digest;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (_, state) = EmptyBoard(db);
+            for (int i = 0; i < cards.Length; i++)
+            {
+                var definition = cards[i];
+                var instance = state.CreateWithId(definition.Name, side, 1000 + i, side.DeckOf(), i);
+                var template = CardApi.TemplateInstance(definition, side);
+                foreach (var card in new[] { instance, template })
+                {
+                    if (engineName(card, "customName1") != definition.CustomName1
+                        || engineName(card, "customName2") != definition.CustomName2)
+                        return $"建卡/模板未载入静态名称：{side}/{definition.Name}";
+                }
+            }
+        }
+        return null;
+        static string engineName(CardInstance card, string key)
+            => card.CustomJson.GetValueOrDefault(key, "None");
+    }
+
+    private static string? StaticCustomNameReset(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "card_unit_panzergrenadier", "card_event_aerial_reconaissance", "card_event_interception", PlainUnit })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(name, side, 60, side.HandOf(), 0);
+            engine.Api.JsonSetString(card, "customName1", "temporary;StopDestructionEffect");
+            engine.Api.JsonSetString(card, "customName2", "kept;61;61");
+            engine.Api.JsonSetInt(card, "unrelated", 17);
+            card.ResetAttributes();
+            engine.Api.PersistCustomFields(card);
+            var payload = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            if (payload.Values.Single(x => x.Name == "customName1").Text != card.Definition.CustomName1
+                || payload.Values.Single(x => x.Name == "customName2").Text != "kept;61;61"
+                || engine.Api.JsonGetInt(card, "unrelated") != 17
+                || CardApi.CustomNameHasAttribute(card, "customName1", "StopDestructionEffect"))
+                return "重置必须恢复CDO Name1、保留当前Name2与无关JSON：" + name;
+            if (name == "card_unit_panzergrenadier" && !card.CanMoveAndAttackInSameTurn)
+                return "重置后原始装甲步兵行动例外丢失";
+        }
+        return null;
+    }
+
+    private static string? NativeCustomNameMemberVm(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string member in new[] { "customName1", "customName2" })
+        foreach (string value in new[] { "alpha;alpha;beta", "None" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            engine.Api.JsonSetString(card, member, "old");
+            card.BlueprintVariables[member] = "stale-shadow";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var steps = new KismetStep[] {
+                new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = member, Scope = "instance" }, null, -1, "before", null),
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Name = value }, null, -1, member, null) { DestinationScope = "instance" },
+                new(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = member, Scope = "instance", Context = new KismetExpr { Self = true } }, null, -1, "after", null),
+                new(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "before", "after");
+            engine.Api.PersistCustomFields(card);
+            var payload = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            if (!Equals(output.GetValueOrDefault("before"), "old") || !Equals(output.GetValueOrDefault("after"), value)
+                || card.BlueprintVariables.ContainsKey(member)
+                || payload.Values.Single(x => x.Name == member).Text != value
+                || CardApi.CustomNameHasAttribute(card, member, "alpha") != (value != "None"))
+                return $"VM名称成员不能与属性API/持久化分叉：{side}/{member}/{value}";
+        }
+        return null;
+    }
+
+    private static string? NativeCustomNameRealLeave(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "card_unit_aichi_d3a", "card_unit_type_92_105mm_field_gun", "card_unit_type_93_cam1", "card_unit_type_97_cam1", "card_unit_soviet_promo1" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.JsonSetString(card, "customName2", "9999");
+            var program = KismetLibrary.Default?.FindProgram(name, "OnLeaveBoardOrOwner");
+            if (program is null) return "缺少真实离场函数：" + name;
+            engine.Api.Vm.Run(program, ctx);
+            if (CardApi.CustomNameHasAttribute(card, "customName2", "9999") || card.BlueprintVariables.ContainsKey("customName2")
+                || engine.Api.Vm.FaultedPrograms != 0) return "真实离场未清空共享Name2：" + name;
+            var persisted = state.ActionLog.SelectMany(x => x.SubActions).LastOrDefault(x => x.Name == "ZActionPersistCustomFields");
+            if (persisted is null || persisted.Values.Single(x => x.Name == "customName2").Text != "None")
+                return "真实离场持久化仍带旧Name2：" + name;
         }
         return null;
     }
