@@ -148,6 +148,9 @@ internal static class SelfTest
         new("闪击T33：独立注册、查询快照及T33/通知/T29阶段顺序", BlitzChangedSnapshots),
         new("闪击给予重入：两次T29分别查询，首次回调可改变后续成员", BlitzGrantReentry),
         new("闪击边界：SDK出参槽、原始成员、隐蔽、快照、抑制与随机来源", BlitzSourceBoundaries),
+        new("来源表读取：四张真实卡的同名来源谓词覆盖缺失/失效/位置/抑制边界", AbilitySourceNamePredicates),
+        new("来源表读取：同一VM调用帧中清除/改源/换键不得复用旧结果", AbilitySourceNameLifecycle),
+        new("来源表读取：Vanguard识别同名副本给予的Fury/Blitz并随撤销更新", VanguardCombatSourceLookup),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -9607,6 +9610,136 @@ internal static class SelfTest
                 engine.Api.InvokeByName("GiveRandomCombatKeyword", target, new object?[] { 60, 72, null, null }, ctx, out _);
                 if (!target.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71 })) return "随机候选应排除已有来源闪击";
             }
+        }
+        return null;
+    }
+
+    private static readonly (string Card, string Function, string Ability)[] SourceNamePredicates = {
+        ("card_event_vanguard_ita", "alreadyHasTheAbility", "fury"),
+        ("card_event_greater_purpose", "isAlreadyAffectedByOtherGreater", "destruction"),
+        ("card_event_yamato", "isAlreadyAffectedByOtherYamato", "destruction"),
+        ("card_event_reckless_assault", "isAlreadyAffectedByOtherReckless", "trigger"),
+    };
+
+    private static KismetStep SourceNamePredicateCall(string function, string ability, int index, string output)
+    {
+        var args = new List<KismetExpr> { new() { Var = "_auditChecked", Scope = "local" } };
+        if (function == "alreadyHasTheAbility") args.Add(new KismetExpr { Str = ability });
+        args.Add(new KismetExpr { Var = output, Scope = "local" });
+        return new KismetStep(index, "call", function, args, new[] { args.Count - 1 }, null, null, -1, null, null)
+            { Receiver = new KismetExpr { Self = true } };
+    }
+
+    private static string? AbilitySourceNamePredicates(CardDatabase db)
+    {
+        foreach (var (name, function, ability) in SourceNamePredicates)
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 16))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 1);
+            var same = state.CreateWithId(name, mode == 14 ? side.Opposite() : side, 21,
+                mode == 8 ? CardLocation.NotAvailable : side.DeckOf(), 1);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 22, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HandOf(), 1);
+            target.ReceivedAbilitiesFromCards.Clear();
+            int[] ids = mode switch {
+                0 or 1 => Array.Empty<int>(), 2 or 9 => new[] { 20 }, 4 => new[] { 22 },
+                5 => new[] { 9999 }, 6 => new[] { 22, 21 }, 7 => new[] { 21, 22 },
+                12 => new[] { 0, -7, 9999, 22, 21 }, 15 => new[] { 60 }, _ => new[] { 21 },
+            };
+            if (mode != 0)
+                target.ReceivedAbilitiesFromCards[mode == 10 ? ability.ToUpperInvariant() : mode == 11 ? "different-key" : ability] = ids.ToList();
+            if (mode == 9) source.Keywords.Add(Keyword.Suppressed);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? checkedValue = mode == 13 ? function == "alreadyHasTheAbility" ? null : 9999
+                : function == "alreadyHasTheAbility" ? target : target.CardId;
+            var seed = new Dictionary<string, object?> { ["_auditChecked"] = checkedValue,
+                ["CallFunc_Map_Find_Value"] = new Dictionary<string, object?> { ["cardsGivingAbility"] = new List<object?> { 21 } },
+                ["has"] = true, ["isIt"] = true, ["__result"] = true };
+            var steps = new KismetStep[] {
+                SourceNamePredicateCall(function, ability, 0, "__result"),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            string before = System.Text.Json.JsonSerializer.Serialize(target.Snapshot());
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, seed, "__result");
+            bool expected = mode is 2 or 3 or 6 or 7 or 8 or 9 or 12 or 14;
+            if (!Equals(bag.GetValueOrDefault("__result"), expected))
+                return $"同名来源谓词不符：{name} {side} mode={mode} 期望{expected} 实际{bag.GetValueOrDefault("__result")}";
+            if (before != System.Text.Json.JsonSerializer.Serialize(target.Snapshot()) || state.ActionLog.Count != 0
+                || engine.Api.Vm.UnsupportedOps.Count != 0) return "来源查询不应改状态、产生动作或经过未支持节点";
+        }
+        return null;
+    }
+
+    private static string? AbilitySourceNameLifecycle(CardDatabase db)
+    {
+        foreach (var (name, function, ability) in SourceNamePredicates)
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 1);
+            state.CreateWithId(name, side, 21, CardLocation.NotAvailable, 1);
+            var target = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HqOf(), 1);
+            target.ReceivedAbilitiesFromCards.Clear();
+            target.ReceivedAbilitiesFromCards[ability] = new List<int> { 21 };
+            int phase = 0; var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                phase++;
+                if (phase == 1) target.ReceivedAbilitiesFromCards[ability].Clear();
+                if (phase == 2) target.ReceivedAbilitiesFromCards[ability].Add(9999);
+                if (phase == 3) target.ReceivedAbilitiesFromCards[ability].Add(20);
+                if (phase == 4) target.ReceivedAbilitiesFromCards.Remove(ability);
+                if (phase == 5) target.ReceivedAbilitiesFromCards[ability] = new List<int> { 21 };
+            };
+            var steps = new List<KismetStep>();
+            for (int mode = 0; mode < 6; mode++)
+            {
+                steps.Add(SourceNamePredicateCall(function, ability, mode * 3, "__result"));
+                steps.Add(new KismetStep(mode * 3 + 1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "__result", Scope = "local" }, null, -1, "r" + mode, null));
+                if (mode < 5) steps.Add(new KismetStep(mode * 3 + 2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null));
+            }
+            steps.Add(new KismetStep(18, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var seed = new Dictionary<string, object?> { ["_auditChecked"] = function == "alreadyHasTheAbility" ? target : target.CardId,
+                ["has"] = true, ["isIt"] = true, ["__result"] = true };
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, seed,
+                Enumerable.Range(0, 6).Select(i => "r" + i).ToArray());
+            if (phase != 5 || Enumerable.Range(0, 6).Any(i => !Equals(bag.GetValueOrDefault("r" + i), i is 0 or 3 or 5)))
+                return $"同一调用帧不得复用旧来源表或旧输出：{name} {side}";
+        }
+        return null;
+    }
+
+    private static string? VanguardCombatSourceLookup(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool blitz in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_event_vanguard_ita", side, 20, CardLocation.Discard, 1);
+            state.CreateWithId(source.Name, side.Opposite(), 21, CardLocation.NotAvailable, 1);
+            state.CreateWithId("card_event_greater_purpose", side, 22, CardLocation.Discard, 2);
+            var target = MakeActionQuotaProbe(state, side, "infantry");
+            string ability = blitz ? "blitz" : "fury";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var steps = new KismetStep[] { SourceNamePredicateCall("alreadyHasTheAbility", ability, 0, "__result"),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            bool Query() => Equals(engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["_auditChecked"] = target }, "__result").GetValueOrDefault("__result"), true);
+            if (blitz) engine.Api.GiveBlitz(target, 22); else engine.Api.GiveFury(target, 22);
+            if (Query()) return "有效战斗能力来自其他卡名时，Vanguard同名来源谓词应为false";
+            if (blitz) engine.Api.GiveBlitz(target, 21); else engine.Api.GiveFury(target, 21);
+            if (!Query()) return "Vanguard应识别NA位置的对方同名副本来源";
+            if (blitz) engine.Api.RemoveBlitz(target, 21); else engine.Api.RemoveFury(target, 21);
+            if (Query() || !target.HasKeyword(blitz ? Keyword.Blitz : Keyword.Fury))
+                return "同名来源撤销后谓词应清除，但其他来源仍保留有效能力";
         }
         return null;
     }
