@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("手牌生成公开：自身创建之后、T35之前写入，后续修改保留", NativeSpawnHandSeenTiming),
+        new("创建阶段：公开赋值可选，跳过T35及省略参数保持独立", NativeCreationSeenPhase),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
         new("牌库生成通知：落点/隐藏/洗牌字段与零负数量矩阵", NativeSpawnDeckReceipt),
@@ -10224,6 +10226,78 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeSpawnHandSeenTiming(CardDatabase db)
+    {
+        const string watcherName = "card_unit_51e_regiment", spawnedName = "card_unit_typhoon_mk_ib";
+        const string createdTrigger = "OnOtherCardCreatedAlterCard", spawnedTrigger = "OnCardSpawnedInHand";
+        if (KismetLibrary.Default?.Find(watcherName)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> watcherLocals
+            || KismetLibrary.Default.Find(spawnedName)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> spawnedLocals
+            || watcherLocals.ContainsKey(createdTrigger) || spawnedLocals.ContainsKey(spawnedTrigger)) return "无法安装公开时机探针";
+        watcherLocals[createdTrigger] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardSeen", Context = new KismetExpr { Var = "cardPlayed" } }, null, -1, "_auditSeenAtT35", null) { DestinationScope = "instance" },
+            new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        spawnedLocals[spawnedTrigger] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "cardSeen", Scope = "instance" },
+                null, -1, "_auditSeenAtSpawn", null) { DestinationScope = "instance" },
+            new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool requested in new[] { false, true })
+            foreach (bool ownWrite in new[] { false, true })
+            foreach (bool modifierWrite in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+                var watcher = state.CreateWithId(watcherName, side, 20, CardLocation.Discard, 0);
+                watcher.Definition = new CardDefinition { Name = watcherName, Type = "infantry", UsedTriggers = new[] { createdTrigger } };
+                int ownCalls = 0, modifierCalls = 0; bool correct = true;
+                state.CardCreated += card => { if (card.Name == spawnedName) { ownCalls++; card.CardSeen = ownWrite; } };
+                state.CardCreationModifiers += card => {
+                    if (card.Name != spawnedName) return;
+                    modifierCalls++;
+                    correct &= card.CardSeen == requested && Equals(watcher.BlueprintVariables.GetValueOrDefault("_auditSeenAtT35"), requested);
+                    card.CardSeen = modifierWrite;
+                };
+                var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+                var result = engine.Api.InvokeByName("SpawnCardInHandBySide", source, new object?[] { (int)side,
+                    spawnedName, 30, requested, false, false, "", "", 0, null }, ctx, out bool handled);
+                if (!handled || result is not CardInstance card || !correct || ownCalls != 1 || modifierCalls != 1
+                    || card.CardSeen != modifierWrite || !Equals(card.BlueprintVariables.GetValueOrDefault("_auditSeenAtSpawn"), modifierWrite)
+                    || state.Random.ConsumedCount != 0)
+                    return $"公开字段阶段不符：{side}/{requested}/own={ownWrite}/T35={modifierWrite}";
+            }
+        }
+        finally { watcherLocals.Remove(createdTrigger); spawnedLocals.Remove(spawnedTrigger); }
+        return null;
+    }
+
+    private static string? NativeCreationSeenPhase(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool? requested in new bool?[] { null, false, true })
+        foreach (bool ownWrite in new[] { false, true })
+        foreach (bool skipModifiers in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            int ownCalls = 0, modifierCalls = 0; bool correct = true;
+            state.CardCreated += card => { if (card.Name == PlainUnit) { ownCalls++; card.CardSeen = ownWrite; } };
+            state.CardCreationModifiers += card => {
+                if (card.Name != PlainUnit) return;
+                modifierCalls++; correct &= card.CardSeen == (requested ?? ownWrite);
+                card.CardSeen = !(requested ?? ownWrite);
+            };
+            var card = state.Create(PlainUnit, side, side.HandOf(), 0, skipCreationModifiers: skipModifiers, cardSeenBeforeModifiers: requested);
+            bool expected = skipModifiers ? requested ?? ownWrite : !(requested ?? ownWrite);
+            if (!correct || ownCalls != 1 || modifierCalls != (skipModifiers ? 0 : 1) || card.CardSeen != expected)
+                return "中间赋值必须独立于T35跳过开关，null必须保持下层创建语义";
+        }
+        return null;
     }
 
     private static string? NativeSpawnHandInitialFields(CardDatabase db)

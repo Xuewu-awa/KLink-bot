@@ -661,7 +661,7 @@ public sealed class GameState
     public CardInstance Create(string cardName, Side owner, CardLocation location, int locationNumber,
                                bool isGold = false, bool sequentialId = false,
                                bool isSalvaged = false, string? salvageFaction = null,
-                               int salvagedCardId = 0, bool skipCreationModifiers = false)
+                               int salvagedCardId = 0, bool skipCreationModifiers = false, bool? cardSeenBeforeModifiers = null)
     {
         CardDefinition def = Database.Require(cardName);
         var card = new CardInstance
@@ -716,6 +716,9 @@ public sealed class GameState
         // i=2610 `CallFunc_SpawnObject_ReturnValue.OnCreateCard()`。
         // 签名 `BaseCardObject.h:703 void OnCreateCard();`（无参、只有"自己"这一路）。
         CardCreated?.Invoke(card);
+        // CreateCard i=400 follows CreateCardObject's own OnCreateCard, but
+        // precedes T35. Null preserves the lower-level creation callers.
+        if (cardSeenBeforeModifiers.HasValue) card.CardSeen = cardSeenBeforeModifiers.Value;
         if (!skipCreationModifiers) CardCreationModifiers?.Invoke(card);
 
         // 游标探针：把"效果生成的卡"也记进流水账 —— 才能把

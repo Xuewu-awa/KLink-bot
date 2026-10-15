@@ -4811,9 +4811,10 @@ public sealed partial class CardApi
         if (salvage != 0 && Blueprint.LiveRuleTables.TryGetEnumName(
             "/Script/KardsCore.EFactionEnum", salvage, out string factionName)) faction = factionName;
         // i=250/333 forwards source gold and explicit salvage, before OnCreate/T35.
-        // Full-hand, cardSeen timing and draw notifications remain open (RULE-111).
+        // CardSeen is assigned after own OnCreate and before T35 (RULE-112).
+        // Full-hand and complete creation/draw notifications remain open.
         return SpawnCardInHand(side, cardName, isGold: c.State.ById(spawnerId)?.IsGold ?? false,
-            isSalvaged: salvage != 0, salvageFaction: faction);
+            isSalvaged: salvage != 0, salvageFaction: faction, cardSeen: TruthyArg(a, 3));
     }
 
     /// <summary>
