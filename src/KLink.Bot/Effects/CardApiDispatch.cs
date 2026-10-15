@@ -3675,6 +3675,22 @@ public sealed partial class CardApi
         int slot = target == CardLocation.Discard ? card.LocationNumber : quantity;
         c.State.Move(card, target, locationNumber: slot, moveReason: CardMoveReason.BoardToHand,
             notifyMoved: false, normalizeLocation: false);
+        // CardLocationMoved i=257/295/1256 emits before refreshing locations
+        // and movement callbacks. Both wire numbers are the saved query quantity,
+        // even when Discard preserves the object's previous locationNumber.
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)target, out string newName);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
+            (int)CardMoveReason.BoardToHand, out string reasonName);
+        c.Engine.FireSubAction("ZActionMoveCardToNewLocation", new[]
+        {
+            ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+            ActionValue2.Int("newLocationNumber", quantity),
+            ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
+            ActionValue2.Int("attackLeft", card.RemainingAttacks),
+            ActionValue2.Int("nonVisualLocationNumber", quantity), ActionValue2.Str("moveReason", reasonName),
+        });
         if ((int)oldLocation is >= 3 and <= 7) RearrangeLocation(oldLocation);
         if (target != oldLocation && (int)target is >= 3 and <= 7) RearrangeLocation(target);
         c.State.CardMoved?.Invoke(card, oldLocation, target, false, CardMoveReason.BoardToHand);
@@ -3695,7 +3711,10 @@ public sealed partial class CardApi
 
         // i=626：回手之后重置这张卡的累积状态（→ OnCardReset / OnOtherCardReset）。
         ResetCardInBattle(card);
-        card.CardSeen = true;
+        // i=660 re-resolves after reset callbacks; i=692 writes without a
+        // hand-location gate. i=790 notifies the supplied ID even on overflow.
+        if (c.State.ById(card.CardId) is { } current) current.CardSeen = true;
+        NotifyCardsSeen(new[] { card.CardId }, enemyTurn: false, showAnimation: false);
         return null;
     }
 

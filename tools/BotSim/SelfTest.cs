@@ -55,6 +55,7 @@ internal static class SelfTest
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
         new("回手容量：排除实时autoplay并在离场回调后重新判断", ReturnHandCapacityAutoplay),
         new("回手编号：查询数量落位、全体物理重排、弃牌及重置保留编号", ReturnLocationNumberContract),
+        new("回手通知：移动前快照、满手仍公开、重置后按ID重新解析", ReturnNotificationContract),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15166,6 +15167,116 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ReturnNotificationContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool direct in new[] { false, true })
+        foreach (bool stolen in new[] { false, true })
+        foreach (int quantity in new[] { 3, 9, 10 })
+        foreach (int excluded in new[] { 0, 2 })
+        foreach (bool seen in new[] { false, true })
+        foreach (int source in new[] { 0, 30, 62 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side.Opposite(), 30, CardLocation.Discard, 0);
+            for (int i = 0; i < quantity; i++)
+            {
+                var hand = state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i * 5);
+                if (i < excluded) engine.Api.AddCustomGameplayTag(hand, "autoplay");
+            }
+            var unit = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 17);
+            if (stolen) { state.ChangeOwner(unit, side.Opposite(), normalize: false); unit.Location = side.Opposite().HqOf(); }
+            var oldLocation = unit.Location;
+            bool full = quantity - excluded >= GameState.HandCapacity;
+            var target = full ? CardLocation.Discard : side.HandOf();
+            unit.CardSeen = seen; unit.HasMovedThisTurn = seen;
+            int attacks = source == 0 ? -1 : source == 30 ? 0 : 3;
+            unit.SetRemainingAttacks(attacks);
+            string oldName = oldLocation == CardLocation.BoardHqLeft ? "Board_HQLeft" : "Board_HQRight";
+            string newName = full ? "Discard" : side == Side.Left ? "Hand_Left" : "Hand_Right";
+            var expectedMove = new[] {
+                ActionValue2.Int("cardID", 62), ActionValue2.Int("instigatorID", source),
+                ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+                ActionValue2.Int("newLocationNumber", quantity - excluded), ActionValue2.Int("movementLeft", seen ? 0 : 1),
+                ActionValue2.Int("attackLeft", attacks), ActionValue2.Int("nonVisualLocationNumber", quantity - excluded),
+                ActionValue2.Str("moveReason", "BoardToHand") };
+            string? atMove = null; int moveEvents = 0;
+            var prior = state.CardMoved;
+            state.CardMoved = (card, old, next, ownerChange, reason) => {
+                if (card == unit)
+                {
+                    moveEvents++;
+                    var notices = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                    var move = notices.SingleOrDefault(x => x.Name == "ZActionMoveCardToNewLocation");
+                    if (move == null || !move.Values.SequenceEqual(expectedMove)
+                        || notices.Any(x => x.Name == "ZActionCardsSeen")) atMove = "移动事件前通知缺失、载荷或顺序错误";
+                    // Later callbacks must not retroactively change the movement receipt.
+                    card.SetRemainingAttacks(7); card.HasMovedThisTurn = !seen;
+                }
+                prior?.Invoke(card, old, next, ownerChange, reason);
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = unit.Owner };
+            engine.Api.InvokeByName(direct ? "MoveCardFromBoardToOwnersHand" : "MoveUnitFromBoardToOwnersHand", unit,
+                direct ? new object?[] { 62, source, (int)oldLocation, (int)side.HandOf() } : new object?[] { unit, source }, ctx, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var seenNotice = actions.SingleOrDefault(x => x.Name == "ZActionCardsSeen");
+            var expectedSeen = new[] { ActionValue2.Str("cardIDs", "62"), ActionValue2.Str("seenValues", "1"),
+                ActionValue2.Bool("showAnimation", false), ActionValue2.Bool("enemyTurn", false) };
+            var expectedNames = full ? new[] { "ZActionMoveCardToNewLocation", "ZActionDiscardCard", "ZActionCardsSeen" }
+                : new[] { "ZActionMoveCardToNewLocation", "ZActionCardsSeen" };
+            if (moveEvents != 1 || atMove != null || seenNotice == null || !seenNotice.Values.SequenceEqual(expectedSeen)
+                || !actions.Where(x => x.Name is "ZActionMoveCardToNewLocation" or "ZActionDiscardCard" or "ZActionCardsSeen")
+                    .Select(x => x.Name).SequenceEqual(expectedNames) || !unit.CardSeen || unit.Owner != side || unit.Location != target)
+                return $"回手通知错误：{side}/{direct}/{stolen}/{quantity}/{excluded}/{seen}/{source}: {atMove}, events={moveEvents}, names={string.Join(",", actions.Select(x => x.Name))}, seen={seenNotice}, state={unit.CardSeen}/{unit.Owner}/{unit.Location}";
+        }
+        const string trigger = "OnCardReset";
+        if (KismetLibrary.Default?.Find(PlainUnit)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(PlainUnit, trigger) is not null)
+            return "无法安全安装回手重置重入探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool full in new[] { false, true })
+        foreach (int mutation in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            if (full) for (int i = 0; i < 9; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i);
+            var unit = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 17);
+            unit.CardSeen = true;
+            bool prematureSeen = false; int resets = 0; CardInstance? replacement = null;
+            state.CardCreated = created => {
+                if (created.Name != "card_unit_routed_troops") return;
+                resets++;
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                prematureSeen = unit.CardSeen || notices.Any(x => x.Name == "ZActionCardsSeen")
+                    || notices.Count(x => x.Name == "ZActionMoveCardToNewLocation") != 1
+                    || notices.Count(x => x.Name == "ZActionDiscardCard") != (full ? 1 : 0);
+                if (mutation == 0) unit.Location = side.DeckOf();
+                else
+                {
+                    state.Remove(unit);
+                    if (mutation == 1) replacement = state.CreateWithId(PlainUnit, side, 62, side.DeckOf(), 5);
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = side };
+            engine.Api.InvokeByName("MoveUnitFromBoardToOwnersHand", unit, new object?[] { unit, 30 }, ctx, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var notice = actions.SingleOrDefault(x => x.Name == "ZActionCardsSeen");
+            if (resets != 1 || prematureSeen || notice == null || actions.Last() != notice
+                || notice.Values[0] != ActionValue2.Str("cardIDs", "62")
+                || (mutation == 0 ? !unit.CardSeen : unit.CardSeen)
+                || mutation == 1 && replacement?.CardSeen != true || mutation == 2 && state.ById(62) != null)
+                return $"重置后重新解析公开对象错误：{side}/{full}/{mutation}";
         }
         return null;
     }

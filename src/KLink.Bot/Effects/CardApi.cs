@@ -5050,6 +5050,11 @@ public sealed partial class CardApi
             card.CardSeen = true;
         }
 
+        NotifyCardsSeen(ids, enemyTurn, showAnimation);
+    }
+
+    private void NotifyCardsSeen(IReadOnlyList<int> ids, bool enemyTurn, bool showAnimation)
+    {
         // Headless engine uses the action-processing branch, as for the other
         // notifier adapters. Non-action/remote receipt routing remains separate.
         // NotifyCardsSeen -> HandleCardsSeen -> AddSubActionCardsSeen i=175.
