@@ -159,6 +159,11 @@ internal static class SelfTest
         new("自定义能力账本：选择卡自身名称后缀及不同能力共用记录", CustomAbilityLedgerChooseOne),
         new("自定义能力账本：未知来源早退前仍可撤销同源名称条目", CustomAbilityLedgerUnknownRemove),
         new("自定义能力账本：快照/深拷贝、抑制精确名称清理及重置", CustomAbilityLedgerLifecycle),
+        new("destruction前置账本：原始标志、能力名、来源及早退矩阵", DestructionLedgerPreface),
+        new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
+        new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
+        new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -9999,6 +10004,132 @@ internal static class SelfTest
             if (target.BuffsBySource.Count != 0) return "原生属性重置应清除所有自定义账本";
             if (mode != 3 && snapshot.CustomAbilityBuffDetails[$"{giver}/False"].Length != 1)
                 return "快照必须独立保留原自定义名称记录";
+        }
+        return null;
+    }
+
+    private static string? DestructionLedgerPreface(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool raw in new[] { false, true })
+        foreach (string ability in new[] { "destruction", "Destruction", "trigger" })
+        foreach (int list in new[] { 0, 1, 2 })
+        foreach (bool all in new[] { false, true })
+        foreach (int giver in new[] { 0, -7, 71, 9999 })
+        foreach (int old in new[] { -1, 0, 1 })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 71, CardLocation.Discard, 1);
+            if (raw) target.Keywords.Add(Keyword.Destruction);
+            if (list != 0) target.ReceivedAbilitiesFromCards[ability] = list == 1 ? new List<int> { 72 } : new List<int> { 71, 72 };
+            target.BuffsBySource[(giver, false)] = new CardBuff { SourceCardId = giver, Attack = 2, Destruction = old };
+            target.AttacksThisTurn = 2; target.SetRemainingAttacks(-3);
+            engine.Api.TriggerTrace = new List<string>();
+            engine.Api.CustomAbilityRemove(target, ability, giver, all);
+            int expected = old - (raw && ability == "destruction" ? 1 : 0);
+            bool known = list == 2 && giver == 71;
+            int actions = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionCustomAbilityRemove");
+            if (target.BuffsBySource[(giver, false)].Destruction != expected
+                || target.BuffsBySource[(giver, false)].Attack != 2 || target.Keywords.Contains(Keyword.Destruction) != raw
+                || target.RemainingAttacks != -3 || target.AttacksThisTurn != 2
+                || actions != (list == 0 || all || known ? 1 : 0)
+                || engine.Api.TriggerTrace.Any(x => x.StartsWith("OnOtherCardAbilitiesChanged", StringComparison.Ordinal)))
+                return $"destruction前置账本错误：{side} raw={raw} '{ability}' list={list} giver={giver} all={all} old={old}";
+        }
+        return null;
+    }
+
+    private static string? HasCustomAbilityNonemptySources(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string ability in new[] { "", "trigger", "destruction", "fury" })
+        foreach (int mode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            target.Keywords.Add(Keyword.Destruction);
+            if (mode != 0) target.ReceivedAbilitiesFromCards[ability] = mode == 1 ? new List<int>()
+                : mode == 2 ? new List<int> { 0 } : new List<int> { -7, 9999 };
+            var raw = engine.Api.InvokeByName("HasCustomAbility", target, new object?[] { ability, null },
+                new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out bool handled);
+            if (!handled || !Equals(raw, mode >= 2) || engine.Api.HasCustomAbility(target, ability) != (mode >= 2))
+                return $"HasCustomAbility应检查来源数组Num：{side} '{ability}' mode={mode}";
+        }
+        return null;
+    }
+
+    private static string? DestructionLedgerLifecycle(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int initial in new[] { -1, 0, 1 })
+        foreach (bool other in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            target.Keywords.Add(Keyword.Destruction);
+            if (initial != 0 || other) target.BuffsBySource[(0, false)] = new CardBuff { SourceCardId = 0, Destruction = initial, KreditCost = other ? 1 : 0 };
+            engine.Api.CustomAbilityRemove(target, "destruction", 0, true);
+            int once = initial - 1;
+            if (AuditIsBuffedBy(engine, state, target, 0) != (once != 0 || other)
+                || target.BuffsBySource.GetValueOrDefault((0, false))?.Destruction != (once != 0 || other ? once : null))
+                return "destruction账本过零应只删该字段，外层来源槽按其他字段是否为空决定";
+            var snapshot = target.Snapshot();
+            engine.Api.CustomAbilityRemove(target, "destruction", 0, true);
+            if (target.BuffsBySource[(0, false)].Destruction != initial - 2
+                || !target.Keywords.Contains(Keyword.Destruction)) return "缺键重复移除也会继续累积负账本，不能清原始标志";
+            var clone = target.BuffsBySource[(0, false)].Clone(); clone.Destruction = 99;
+            if (target.BuffsBySource[(0, false)].Destruction == 99
+                || once != 0 && snapshot.DestructionBuffsBySource["0/False"] != once) return "destruction克隆/快照应独立";
+            target.ResetAttributes();
+            if (target.BuffsBySource.Count != 0) return "原生重置应清destruction账本";
+        }
+        return null;
+    }
+
+    private static string? TriggerDestructionRemovalGate(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool remove in new[] { false, true })
+        foreach (bool board in new[] { false, true })
+        foreach (int sourceMode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_hayabusa", side, 71, board ? side.HqOf() : CardLocation.Discard, 1);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 72, side.HqOf(), 2);
+            if (sourceMode != 0) target.ReceivedAbilitiesFromCards["destruction"] = sourceMode == 1 ? new List<int>()
+                : sourceMode == 2 ? new List<int> { 9999 } : new List<int> { 72 };
+            int defense = state.Hq(side.Opposite()).Defense;
+            engine.Api.TriggerDestruction(target, null, false, remove);
+            bool clears = remove && sourceMode >= 2;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var trigger = actions.SingleOrDefault(x => x.Name == "ZActionTriggerDestruction");
+            int removes = actions.Count(x => x.Name == "ZActionCustomAbilityRemove");
+            if (defense - state.Hq(side.Opposite()).Defense != 2 || trigger is null
+                || removes != (clears ? 1 : 0) || target.BuffsBySource.GetValueOrDefault((0, false))?.Destruction != (clears ? -1 : null)
+                || !target.Keywords.Contains(Keyword.Destruction)
+                || CardApi.CustomNameHasAttribute(target, "customName1", "StopDestructionEffect") != (board && remove)
+                || target.ReceivedAbilitiesFromCards.ContainsKey("destruction") != (sourceMode != 0 && !clears))
+                return $"TriggerDestruction移除门错误：{side} remove={remove} board={board} source={sourceMode}";
+            if (!trigger.Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "instigatorID", "StealSide", "RemoveDestruction" })
+                || trigger.Values[0].Value != 71 || trigger.Values[1].Value != 0 || trigger.Values[2].Value != 0 || trigger.Values[3].Value != (remove ? 1 : 0))
+                return "主动亡语通知应按权威字段顺序包含目标ID";
+            if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
+                >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static string? DestructionLedgerKeepsInnateEffect(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_hayabusa", side, 71, side.HqOf(), 1);
+            engine.Api.CustomAbilityRemove(target, "destruction", 0, true);
+            if (!engine.Api.ShouldTriggerDestructionEffect(target) || target.BuffsBySource[(0, false)].Destruction != -1)
+                return "负战斗账本不能取代原始亡语标志";
+            int defense = state.Hq(side.Opposite()).Defense;
+            engine.Destroy(target);
+            if (target.Location != CardLocation.Discard || defense - state.Hq(side.Opposite()).Defense != 2)
+                return "Hayabusa在自定义能力移除后仍应执行固有2点伤害亡语";
         }
         return null;
     }

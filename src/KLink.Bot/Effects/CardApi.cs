@@ -1257,13 +1257,14 @@ public sealed partial class CardApi
         }
         _engine.FireSubAction("ZActionTriggerDestruction", new[]
         {
-            ActionValue2.Bool("RemoveDestruction", removeDestruction),
-            ActionValue2.Bool("StealSide", stealSide),
+            ActionValue2.Int("cardID", card.CardId),
             ActionValue2.Int("instigatorID", instigator?.CardId ?? 0),
+            ActionValue2.Bool("StealSide", stealSide),
+            ActionValue2.Bool("RemoveDestruction", removeDestruction),
         });
         if (removeDestruction)
         {
-            CustomAbilityRemove(card, "destruction", 0, true);
+            if (HasCustomAbility(card, "destruction")) CustomAbilityRemove(card, "destruction", 0, true);
             if (IsLocatedOnBoard(card))
                 SuffixAdd(new EffectContext { Engine = _engine, State = State, Self = card, Controller = card.Owner },
                     card, new object?[] { "StopDestructionEffect" }, "customName1");
@@ -4039,8 +4040,8 @@ public sealed partial class CardApi
     public bool CustomAbilityAdd(CardInstance target, string ability, CardInstance? giver)
         => CustomAbilityAdd(target, ability, giver?.CardId ?? 0);
 
-    // Source-map, type-5 custom-buff entries and notifications. The destruction
-    // combat-buff prepass remains a separate audit item.
+    // Source-map, type-5 custom-buff entries and notifications. Removal also
+    // preserves the raw destruction flag while updating its type-6 ledger.
     public bool CustomAbilityAdd(CardInstance target, string ability, int giverId, bool skipSubActions = false,
         bool skipBuffTexts = false, bool skipAddToBattlelog = false)
     {
@@ -4103,13 +4104,22 @@ public sealed partial class CardApi
 
     public bool HasCustomAbility(CardInstance card, string? ability = null)
         => ability is null ? card.ReceivedAbilitiesFromCards.Count > 0
-            : card.ReceivedAbilitiesFromCards.ContainsKey(ability);
+            : card.ReceivedAbilitiesFromCards.TryGetValue(ability, out var sources) && sources.Count > 0;
 
     public bool HasCustomAbilityFromCard(CardInstance card, string ability, int giverId)
         => card.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers) && givers.Contains(giverId);
 
     public bool CustomAbilityRemove(CardInstance target, string ability, int giverId, bool removeAllGivers)
     {
+        // i99..215 runs before the map lookup and every map-based early exit.
+        // This changes only the combat ledger, never the raw hasDestruction flag.
+        if (ability == "destruction" && target.Keywords.Contains(Keyword.Destruction))
+        {
+            var key = (giverId, false);
+            var buff = GetOrCreateBuff(target, giverId, false);
+            buff.Destruction--;
+            if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+        }
         bool changed = false;
         if (target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
         {
