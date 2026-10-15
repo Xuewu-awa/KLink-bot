@@ -163,6 +163,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10101,6 +10102,12 @@ internal static class SelfTest
             bool clears = remove && sourceMode >= 2;
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var trigger = actions.SingleOrDefault(x => x.Name == "ZActionTriggerDestruction");
+            var persisted = actions.Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            if (persisted.Length != (board && remove ? 1 : 0)
+                || (persisted.Length == 1 && (persisted[0].Values.Single(x => x.Name == "customName1").Text != "StopDestructionEffect"
+                    || Array.IndexOf(actions, persisted[0]) <= Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
+                    || (clears && Array.IndexOf(actions, persisted[0]) <= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")))))
+                return "主动亡语应在移除通知后持久化场上目标的StopDestructionEffect";
             int removes = actions.Count(x => x.Name == "ZActionCustomAbilityRemove");
             if (defense - state.Hq(side.Opposite()).Defense != 2 || trigger is null
                 || removes != (clears ? 1 : 0) || target.BuffsBySource.GetValueOrDefault((0, false))?.Destruction != (clears ? -1 : null)
@@ -10113,6 +10120,51 @@ internal static class SelfTest
                 return "主动亡语通知应按权威字段顺序包含目标ID";
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static string? PersistCustomFieldsPayload(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool refresh in new[] { false, true })
+        foreach (bool populated in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            card.CustomJson.Clear();
+            if (populated)
+            {
+                engine.Api.JsonSetString(card, "customName1", "StopDestructionEffect");
+                engine.Api.JsonSetString(card, "customName2", "marker");
+                engine.Api.JsonSetString(card, "text", "引号\"/\\/\n");
+                engine.Api.JsonSetString(card, "numericText", "007");
+                engine.Api.JsonSetInt(card, "number", -17);
+                engine.Api.JsonSetBool(card, "flag", true);
+                engine.Api.JsonSetIntArray(card, "ids", new[] { 0, -5, 19 });
+                engine.Api.JsonSetString(card, "__customGameplayTags", "internal");
+            }
+            engine.Api.InvokeByName("PersistCustomFields", card, new object?[] { card.CardId, refresh }, ctx, out _);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            if (!action.Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "customName1", "customName2", "customJson" })
+                || action.Values[0].Value != card.CardId || action.Values.Skip(1).Any(x => x.Value != -1)
+                || action.Values[1].Text != (populated ? "StopDestructionEffect" : "None")
+                || action.Values[2].Text != (populated ? "marker" : "None")) return "持久化四字段或名称默认值错误";
+            string json = action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal);
+            // Undo exactly the notifier's extra replacement, then parse native JSON types.
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (!populated)
+            {
+                if (root.EnumerateObject().Any()) return "空JSON应保持空对象";
+            }
+            else if (root.EnumerateObject().Count() != 5
+                || root.GetProperty("text").GetString() != "引号\"/\\/\n"
+                || root.GetProperty("numericText").GetString() != "007"
+                || root.GetProperty("number").GetInt32() != -17 || !root.GetProperty("flag").GetBoolean()
+                || !root.GetProperty("ids").EnumerateArray().Select(x => x.GetInt32()).SequenceEqual(new[] { 0, -5, 19 }))
+                return "持久化JSON类型或转义损坏，或混入内部字段";
         }
         return null;
     }

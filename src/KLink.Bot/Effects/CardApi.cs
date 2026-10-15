@@ -1266,8 +1266,11 @@ public sealed partial class CardApi
         {
             if (HasCustomAbility(card, "destruction")) CustomAbilityRemove(card, "destruction", 0, true);
             if (IsLocatedOnBoard(card))
+            {
                 SuffixAdd(new EffectContext { Engine = _engine, State = State, Self = card, Controller = card.Owner },
                     card, new object?[] { "StopDestructionEffect" }, "customName1");
+                PersistCustomFields(card);
+            }
         }
         return 0; // qqq is never assigned on the valid path in the Blueprint.
     }
@@ -4279,10 +4282,36 @@ public sealed partial class CardApi
     /// <summary>对应 PersistCustomFields —— 游戏用它把卡上的临时状态写进子动作。</summary>
     public void PersistCustomFields(CardInstance card)
     {
+        // Native customName members and gameplay tags share our local backing store,
+        // but are not members of the client's BlueprintJson object.
+        var fields = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var pair in card.CustomJson)
+        {
+            if (pair.Key is "customName1" or "customName2" || pair.Key == DynamicGameplayTagsKey) continue;
+            fields[pair.Key] = card.CustomJson.TypeOf(pair.Key) switch
+            {
+                CardJsonType.Number => double.Parse(pair.Value, System.Globalization.CultureInfo.InvariantCulture),
+                CardJsonType.Boolean => pair.Value == "1",
+                CardJsonType.IntArray => JsonGetIntArray(card, pair.Key),
+                _ => pair.Value,
+            };
+        }
+        string json = System.Text.Json.JsonSerializer.Serialize(fields, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
+        string NativeCustomName(string key)
+        {
+            string value = JsonGetString(card, key);
+            return value.Length == 0 ? "None" : value;
+        }
+        // AddSubActionPersistCustomFields replaces every quote after JSON encoding.
         _engine.FireSubAction("ZActionPersistCustomFields", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Str("customJson", string.Join(";", card.CustomJson.Select(kv => $"{kv.Key}={kv.Value}"))),
+            ActionValue2.Str("customName1", NativeCustomName("customName1")),
+            ActionValue2.Str("customName2", NativeCustomName("customName2")),
+            ActionValue2.Str("customJson", json.Replace("\"", "\\\"", StringComparison.Ordinal)),
         });
     }
 
