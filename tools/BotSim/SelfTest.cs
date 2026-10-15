@@ -184,6 +184,9 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("情报候选：全局顺序、换主、跨手牌位置及天气排除", NativeIntelHandQuery),
+        new("情报翻牌：筛选后原始洗牌、零数量及空候选", NativeIntelShuffle),
+        new("情报T28：查询后快照、逐次来源解析及回调后采集手牌", NativeIntelSnapshot),
         new("随机播种：构造使用int32低位且不提前消费", NativeMatchSeedWidth),
         new("随机播种：回合开始/结束及行动编号不重置规则流", NativeMatchSeedContinuity),
         new("随机辅助：84个独立向量、全范围空耗次数与区间溢出", NativePaddedRandomVectors),
@@ -10211,6 +10214,112 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeIntelHandQuery(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool changedOwner in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var a = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 8);
+            var b = state.CreateWithId(PlainUnit, side, 10, side.Opposite().HandOf(), 1);
+            state.CreateWithId("card_event_rain2_deluge", side, 20, side.HandOf(), 0);
+            var c = state.CreateWithId(PlainUnit, changedOwner ? side.Opposite() : side, 70, side.HandOf(), 0);
+            if (changedOwner) state.ChangeOwner(c, side);
+            state.CreateWithId(PlainUnit, side.Opposite(), 30, side.HandOf(), 2);
+            state.CreateWithId(PlainUnit, side, 80, side.HqOf(), 1);
+            var dynamicWeather = state.CreateWithId(PlainUnit, side, 40, side.HandOf(), 3);
+            dynamicWeather.CustomJson["__customGameplayTags"] = "subtype.rain";
+            var expected = new[] { a, b, c };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = a, Controller = side };
+            var actual = engine.Api.InvokeByName("GetCardsInHandBySide", a, new object?[] { (int)side, null }, ctx, out bool handled) as List<CardInstance>;
+            if (!handled || actual is null || !actual.SequenceEqual(expected)
+                || !engine.Api.GetCardsInHandBySide(side).SequenceEqual(expected) || state.Random.ConsumedCount != 0)
+                return "手牌原语必须保留全局次序、按当前Owner筛两种手牌位置并排除静态/动态天气";
+        }
+        return null;
+    }
+
+    private static string? NativeIntelShuffle(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (uint seed in new uint[] { 1, 42, 773639 })
+        foreach (int amount in new[] { 0, 1, 2, 99, int.MaxValue })
+        foreach (bool empty in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Random.Initialize(unchecked((int)seed));
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            var enemy = side.Opposite();
+            var a = state.CreateWithId(PlainUnit, enemy, 90, enemy.HandOf(), 7);
+            var b = state.CreateWithId(PlainUnit, enemy, 10, side.HandOf(), 1);
+            var weather = state.CreateWithId("card_event_rain2_deluge", enemy, 20, enemy.HandOf(), 0);
+            var c = state.CreateWithId(PlainUnit, side, 70, enemy.HandOf(), 0); state.ChangeOwner(c, enemy);
+            var alreadySeen = state.CreateWithId(PlainUnit, enemy, 30, enemy.HandOf(), 2); alreadySeen.CardSeen = true;
+            if (empty) { a.CardSeen = true; b.CardSeen = true; c.CardSeen = true; }
+            var expected = empty ? new List<CardInstance>() : new() { a, b, c };
+            var oracle = new UeRandomStream(seed); oracle.Shuffle(expected);
+            var chosen = expected.Take(Math.Min(amount, expected.Count)).ToArray();
+            engine.Api.SetCardsSeenByCipher(amount, source.CardId, side);
+            foreach (var card in new[] { a, b, c })
+                if (card.CardSeen != (empty || chosen.Contains(card))) return "情报洗牌必须绑定过滤后的全局顺序";
+            if (source.CardSeen || weather.CardSeen || !alreadySeen.CardSeen || state.Random.Seed != oracle.Seed
+                || state.Random.ConsumedCount != (empty ? 0 : 3))
+                return "情报应先筛未见非天气候选，非空时零数量仍洗完整池，不套用随机辅助空耗";
+        }
+        return null;
+    }
+
+    private static string? NativeIntelSnapshot(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnIntelTriggered";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(trigger)) return "无法安装情报探针";
+        locals[trigger] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "intelCard", Scope = "local" }, null, -1, "_auditIntelSource", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "intelValue", Scope = "local" }, null, -1, "_auditIntelValue", null) { DestinationScope = "instance" },
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                new KismetExpr { Var = "_auditIntelCount", Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, "_auditIntelCount", null) { DestinationScope = "instance" },
+            new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (CardLocation location in new[] { side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            foreach (int amount in new[] { -3, 0, 2 })
+            foreach (bool replaceSource in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var def = new CardDefinition { Name = name, Type = "infantry", Defense = 20, UsedTriggers = new[] { trigger } };
+                var source = state.CreateWithId(name, side, 60, side.HqOf(), 1); source.Definition = def;
+                var later = state.CreateWithId(name, side, 61, location, 2); later.Definition = def;
+                var suppressed = state.CreateWithId(name, side, 62, side.HqOf(), 3); suppressed.Definition = def; suppressed.Keywords.Add(Keyword.Suppressed);
+                CardInstance currentSource = source; CardInstance? added = null, fresh = null;
+                bool first = true; state.StopFurtherActions = true;
+                state.CardCreated += created => {
+                    if (!first || created.Name != "card_unit_routed_troops") return;
+                    first = false;
+                    later.Keywords.Add(Keyword.Suppressed); later.Definition = new CardDefinition { Name = name, Type = "infantry" }; later.Location = CardLocation.NotAvailable;
+                    added = state.CreateWithId(name, side, 1000, side.HqOf(), 4); added.Definition = def;
+                    if (replaceSource) { state.Remove(source); currentSource = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1); }
+                    // Negative values exercise payload only, with no hand candidates.
+                    if (amount >= 0) fresh = state.CreateWithId(PlainUnit, side.Opposite(), 1100, side.Opposite().HandOf(), 0);
+                };
+                engine.Api.SetCardsSeenByCipher(amount, 60, side);
+                if (first || !Equals(source.BlueprintVariables.GetValueOrDefault("_auditIntelCount"), 1)
+                    || !Equals(later.BlueprintVariables.GetValueOrDefault("_auditIntelCount"), 1)
+                    || source.BlueprintVariables.GetValueOrDefault("_auditIntelSource") != source
+                    || later.BlueprintVariables.GetValueOrDefault("_auditIntelSource") != currentSource
+                    || !Equals(later.BlueprintVariables.GetValueOrDefault("_auditIntelValue"), amount)
+                    || added is null || added.BlueprintVariables.ContainsKey("_auditIntelCount") || suppressed.BlueprintVariables.ContainsKey("_auditIntelCount")
+                    || (fresh is not null && fresh.CardSeen != (amount > 0)))
+                    return $"T28快照/原始数量/逐次解析/回调后候选不符：{side}/{location}/{amount}/{replaceSource}";
+            }
+        }
+        finally { locals.Remove(trigger); }
+        return null;
     }
 
     private static string? NativeMatchSeedWidth(CardDatabase db)

@@ -4758,7 +4758,10 @@ public sealed partial class CardApi
         => State.AllCardsInBattleOrder.Where(card => card.Location == CardLocation.BoardFrontline
             && (includeCovert || !IsUnrevealedCovertCard(card)));
     public IEnumerable<CardInstance> GetAllCards() => State.AllCardsInBattleOrder;
-    public IEnumerable<CardInstance> GetCardsInHandBySide(Side s) => State.Hand(s);
+    // Current pak GetCardsInHandBySide scans global registration order,
+    // checks Owner and either hand location, and excludes forecast/weather cards.
+    public IEnumerable<CardInstance> GetCardsInHandBySide(Side s)
+        => State.AllCardsInBattleOrder.Where(card => card.Owner == s && IsLocatedInHand(card) && !IsForecastCard(card)).ToArray();
     /// <summary>
     /// 「某一方牌库里的**卡 ID**」。蓝图链条：
     /// `BP_CardFunctions.GetDeckByside`（薄包装，反编译原文
@@ -5007,10 +5010,10 @@ public sealed partial class CardApi
     /// :4048      card.cardSeen = True         ; ★ 真正"标为已见"的那一步
     /// :4058  IsActionProcess ⇒ :4071 NotifyCardsSeen(Notifier, IDs, seen, showAnimation, enemyTurn)
     /// </code>
-    /// `NotifyCardsSeen` 是纯客户端通知（内核无 `CardFunctionsNotifier`），不实现。
+    /// NotifyCardsSeen 的通知载荷尚未接入，保留为独立审计项（RULE-106）。
     ///
     /// ⚠️ 第一个参数在蓝图里是**按引用进出的数组**（`Val.Out(...)` 回写）——
-    /// 本内核直接原地改传入的 `List&lt;CardInstance&gt;` 并返回，等价。
+    /// 本内核更新列表所引用对象的 CardSeen；数组引用的输出 ABI 仍待核查。
     /// </summary>
     public void ApplySetCardsSeenByCipher(List<CardInstance> cards, bool enemyTurn, bool showAnimation)
     {
@@ -5075,34 +5078,23 @@ public sealed partial class CardApi
     /// </summary>
     public void SetCardsSeenByCipher(int numberOfCardsSeen, int instigatorID, Side side)
     {
-        // ---- ① 先广播触发点 28（:34052-34084）----
-        var instigator = GetCardFromID(instigatorID);
-        FireTrigger(IntelTrigger, subject: null, side,
-                    eventSubject: instigator,
-                    eventArgs: new object?[] { instigator, numberOfCardsSeen },
-                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        ["intelCard"] = instigator,
-                        ["intelValue"] = numberOfCardsSeen,
-                    },
-                    localsSeed: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        // 形参名逐字取蓝图卡版（`BP_CardFunctions.g.cs:34084`
-                        // `OnIntelTriggered(item, card, numberOfCardsSeen)`；
-                        // 权威形参名见 `_index.g.cs:4083` `{ "intelCard", "intelValue" }`）。
-                        ["intelCard"] = instigator,
-                        ["intelValue"] = numberOfCardsSeen,
-                    });
-
-        // ---- ② 攒「对手手牌里还没见过的卡」（:34107-34201）----
-        var unseen = new List<CardInstance>();
-        foreach (var card in State.Hand(side.Opposite()))
-        {
-            if (!card.CardSeen)
+        // i=10 materializes T28 once. No per-recipient zone, self, stop,
+        // registration, or suppression recheck; resolve instigator ID each time.
+        var recipients = CaptureRegisteredTriggerSnapshot(IntelTrigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is not null)
+            foreach (var observer in recipients)
             {
-                unseen.Add(card);
+                if (library.FindProgram(observer.Name, IntelTrigger) is null) continue;
+                var instigator = GetCardFromID(instigatorID);
+                TriggerTrace?.Add($"{IntelTrigger} → {observer.Name}#{observer.CardId}（eventCard={instigator?.Name ?? "null"}#{instigator?.CardId}）");
+                RunTriggerProgram(library, observer, observer.Name, IntelTrigger, instigator,
+                    eventArgs: new object?[] { instigator, numberOfCardsSeen },
+                    namedArgs: new Dictionary<string, object?> { ["intelCard"] = instigator, ["intelValue"] = numberOfCardsSeen });
             }
-        }
+
+        // i=458 runs AFTER all T28 callbacks; only then capture unseen cards.
+        var unseen = GetCardsInHandBySide(side.Opposite()).Where(card => !card.CardSeen).ToList();
 
         if (unseen.Count == 0)
         {
