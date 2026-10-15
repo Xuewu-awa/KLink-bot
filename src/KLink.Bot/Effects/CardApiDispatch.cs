@@ -1277,8 +1277,12 @@ public sealed partial class CardApi
             {
                 var unit = AsCardOrId(c, a.ElementAtOrDefault(0));
                 int instigatorID = IntArg(a, 1, c.Self?.CardId ?? 0);
-                return unit is not null
-                    && c.Engine.MoveUnitFromSupportToFrontLine(unit, instigatorID, out _);
+                // The non-board branch never assigns qqq. Preserve the VM's
+                // existing no-output handling here pending full UE frame audit.
+                if (unit is null || !IsLocatedOnBoard(unit)) return null;
+                c.Engine.MoveUnitFromSupportToFrontLine(unit, instigatorID, out _);
+                // i=679 jumps to i=333: even completed movement writes false.
+                return false;
             },
             ["MakeCardRetreat"] = (c, r, a) => DoMakeCardRetreat(c, a),
             ["ConvertCard"] = (c, r, a) => DoConvertCard(c, a),

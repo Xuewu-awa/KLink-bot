@@ -2077,8 +2077,8 @@ public sealed class MatchEngine
     ///
     /// 这是卡牌效果调用的免费移动，不经过普通行动方、召唤失调、压制或油费门；
     /// 蓝图检查卡在场、<c>cantMove</c>、前线归属和前线容量。
-    /// 当前额度消费、零费行动事件及qqq输出仍有已确认差异，见审计RULE-084；
-    /// 本方法的进入前线事件已接入独立的反制/自身/T50流程。
+    /// 移动后消费额度，再执行反制/自身/T50及零费行动事件。
+    /// 此方法返回内部执行结果；Blueprint的qqq输出由派发器独立处理。
     /// </summary>
     public bool MoveUnitFromSupportToFrontLine(CardInstance unit, int instigatorID,
                                                out string reason)
@@ -2103,18 +2103,48 @@ public sealed class MatchEngine
             return false;
         }
 
-        if (owner == unit.Owner
-            && State.Cards(unit.Owner, CardLocation.BoardFrontline).Count >= State.FrontlineCapacity)
+        int quantity = State.AllCardsInBattleOrder.Count(x => x.Location == CardLocation.BoardFrontline);
+        if (owner == unit.Owner && quantity >= State.FrontlineCapacity)
         {
-            reason = $"我方前线已满（{State.Cards(unit.Owner, CardLocation.BoardFrontline).Count}" +
-                     $"/{State.FrontlineCapacity}）";
+            reason = $"我方前线已满（{quantity}/{State.FrontlineCapacity}）";
             return false;
         }
 
-        int locationNumber = State.NextLocationNumber(unit.Owner, CardLocation.BoardFrontline);
-        State.Move(unit, CardLocation.BoardFrontline, locationNumber, moveReason: CardMoveReason.AdvanceForce);
-
+        var oldLocation = unit.Location;
+        // GetNextCardLocationNumber uses physical quantity, then injection
+        // compacts the other cards if the mover already occupies this zone.
+        var others = State.AllCardsInBattleOrder.Where(x => x != unit && x.Location == CardLocation.BoardFrontline)
+            .OrderBy(x => x.LocationNumber).ToArray();
+        if (oldLocation == CardLocation.BoardFrontline)
+            for (int i = 0; i < others.Length; i++) others[i].LocationNumber = i;
+        foreach (var other in others)
+            if (other.LocationNumber >= quantity) other.LocationNumber++;
+        State.Move(unit, CardLocation.BoardFrontline, quantity, notifyMoved: false, normalizeLocation: false);
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)CardLocation.BoardFrontline, out string newName);
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
+            (int)CardMoveReason.AdvanceForce, out string reasonName);
+        FireSubAction("ZActionMoveCardToNewLocation", new[] {
+            ActionValue2.Int("cardID", unit.CardId), ActionValue2.Int("instigatorID", instigatorID),
+            ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+            ActionValue2.Int("newLocationNumber", quantity), ActionValue2.Int("nonVisualLocationNumber", quantity),
+            ActionValue2.Str("moveReason", reasonName),
+            ActionValue2.Int("attackLeft", unit.MaxAttacksThisTurn - unit.AttacksThisTurn),
+            ActionValue2.Int("movementLeft", unit.HasMovedThisTurn ? 0 : 1),
+        });
+        Api.RearrangeLocation(oldLocation);
+        Api.RearrangeLocation(CardLocation.BoardFrontline);
+        State.CardMoved?.Invoke(unit, oldLocation, CardLocation.BoardFrontline, false, CardMoveReason.AdvanceForce);
+        // Native CanMoveAndAttackInTheSameTurn: IsArmorUnit (tank or
+        // tankdestroyer or its customName1 marker), otherwise the explicit marker.
+        bool canMoveAndAttack = unit.IsTank
+            || string.Equals(unit.Definition.Type, "tankdestroyer", StringComparison.OrdinalIgnoreCase)
+            || CardApi.CustomNameHasAttribute(unit, "customName1", "isArmorUnit")
+            || unit.CanMoveAndAttackInSameTurn;
+        if (!canMoveAndAttack) unit.AttacksThisTurn = unit.MaxAttacksThisTurn;
+        unit.HasMovedThisTurn = true;
         Api.ExecuteOnMoveToFrontlineCardEffects(unit, true, 0);
+        FireOperationKreditsSpent(unit, 0);
         return true;
     }
 

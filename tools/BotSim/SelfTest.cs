@@ -126,6 +126,8 @@ internal static class SelfTest
         new("前线归属：按物理战斗数组首个对象判定，不按阵营/槽位/HQ过滤", FrontlinePhysicalFirst),
         new("前线归属：T27快照保留资格，每次回调读取当前归属", FrontlineObserverSnapshot),
         new("推进前线事件：反制优先/去重、隐蔽及T50查询与停止边界", FrontlineEntryStages),
+        new("强制推进：消费额度后执行T50和零费行动事件，VM输出false", ForceAdvanceQuotaAndZeroCost),
+        new("强制推进：物理容量、数量槽位、同区注入与移动通知", ForceAdvancePlacement),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8806,6 +8808,113 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? ForceAdvanceQuotaAndZeroCost(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (string trigger in new[] { "OnMoveToFrontline", "OnOperationKreditsSpent" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Locals.Remove(item.Trigger);
+                return "无法安全安装强制推进额度探针";
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Int = trigger == "OnMoveToFrontline" ? 1 : 2 }, null, -1, "_auditForceStage", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = trigger == "OnMoveToFrontline" ? "moveCost" : "kreditsSpent", Scope = "local" }, null, -1, "_auditForceCost", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add((locals, trigger));
+        }
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 6))
+            foreach (bool movedBefore in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db); state.ActiveSide = side.Opposite(); state.SetKredits(side, 9);
+                var unit = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                string type = mode == 1 ? "tank" : mode == 2 ? "tankdestroyer" : mode == 5 ? "fighter" : "infantry";
+                unit.Definition = new CardDefinition { Name = name, Type = type };
+                if (mode == 3) engine.Api.JsonSetString(unit, "customName1", "isArmorUnit");
+                if (mode == 4) engine.Api.JsonSetString(unit, "customName1", "CanMoveAndAttackInTheSameTurn");
+                unit.Keywords.Add(Keyword.Fury); unit.AttacksThisTurn = 1; unit.HasMovedThisTurn = movedBefore;
+                var stages = new List<int>(); bool quotaCorrect = true;
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    stages.Add(Convert.ToInt32(unit.BlueprintVariables.GetValueOrDefault("_auditForceStage")));
+                    quotaCorrect &= unit.HasMovedThisTurn && unit.AttacksThisTurn == (mode is 0 or 5 ? 2 : 1)
+                        && unit.BlueprintVariables.GetValueOrDefault("_auditForceCost") is int value && value == 0;
+                };
+                bool movementSawOldQuota = false; var previous = state.CardMoved;
+                state.CardMoved = (card, oldLocation, newLocation, changeOwner, reason) => {
+                    if (card == unit) movementSawOldQuota = unit.HasMovedThisTurn == movedBefore && unit.AttacksThisTurn == 1;
+                    previous?.Invoke(card, oldLocation, newLocation, changeOwner, reason);
+                };
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1, "qqq", null),
+                    new KismetStep(1, "call", "MoveUnitFromSupportToFrontLine", new[] {
+                        new KismetExpr { Self = true }, new KismetExpr { Int = 9004 }, new KismetExpr { Var = "qqq", Scope = "local" }
+                    }, new[] { 2 }, null, null, -1, null, null),
+                    new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program,
+                    new EffectContext { Engine = engine, State = state, Self = unit, Controller = side }, null, "qqq");
+                if (output.GetValueOrDefault("qqq") is not false || unit.Location != CardLocation.BoardFrontline
+                    || !movementSawOldQuota || !quotaCorrect || !stages.SequenceEqual(new[] { 1, 2 }) || state.Kredits(side) != 9)
+                    return $"强制推进额度/零费/输出错误：{side} mode={mode} 旧移动={movedBefore} 阶段{string.Join(",", stages)}";
+            }
+            return null;
+        }
+        finally { foreach (var item in installed) item.Locals.Remove(item.Trigger); }
+    }
+
+    private static string? ForceAdvancePlacement(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 100, CardLocation.BoardFrontline, 7);
+            var second = state.CreateWithId(first.Name, side, 101, CardLocation.BoardFrontline, 15);
+            var unit = state.CreateWithId(first.Name, side, 60, mode == 1 ? CardLocation.BoardFrontline : side.HqOf(), mode == 1 ? 0 : 7);
+            var remaining = state.CreateWithId(first.Name, side, 61, side.HqOf(), 15);
+            if (mode == 2) for (int i = 0; i < 3; i++) state.CreateWithId(first.Name, side.Opposite(), 110 + i, CardLocation.BoardFrontline, 20 + i);
+            state.FrontlineOwner = side; // Probe physical count even with mixed owners.
+            int moved = 0; var previous = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, changed, reason) => {
+                if (card == unit) moved++;
+                previous?.Invoke(card, oldLocation, newLocation, changed, reason);
+            };
+            int before = state.ActionLog.SelectMany(x => x.SubActions).Count();
+            bool success = engine.MoveUnitFromSupportToFrontLine(unit, 9004, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (mode == 2)
+            {
+                if (success || unit.Location != side.HqOf() || moved != 0 || actions.Length != before)
+                    return "强制推进容量应按全部物理前线对象判满";
+                continue;
+            }
+            var notification = actions.SingleOrDefault(x => x.Name == "ZActionMoveCardToNewLocation");
+            if (!success || moved != 1 || unit.LocationNumber != (mode == 1 ? 2 : 0)
+                || first.LocationNumber != (mode == 1 ? 0 : 1) || second.LocationNumber != (mode == 1 ? 1 : 2)
+                || remaining.LocationNumber != (mode == 1 ? 15 : 1) || notification is null
+                || notification.Values.First(x => x.Name == "instigatorID").Value != 9004
+                || notification.Values.First(x => x.Name == "newLocationNumber").Value != (mode == 1 ? 3 : 2)
+                || notification.Values.First(x => x.Name == "movementLeft").Value != 1)
+                return $"强制推进物理槽位/同区回调/通知错误：{side} mode={mode}";
+        }
+        return null;
     }
 
     private static string? FrontlineEntryStages(CardDatabase db)
@@ -19422,7 +19531,7 @@ internal static class SelfTest
 
     /// <summary>
     /// `MoveUnitFromSupportToFrontLine(card, instigatorID, out qqq)` 的效果位移回归：
-    /// 不要求当前行动方、不扣油费、不消耗本回合移动额度，也不受召唤失调/压制影响；
+    /// 不要求当前行动方、不扣油费，消费移动额度，也不受召唤失调/压制影响；
     /// `cantMove`、敌方占据前线和我方前线已满时必须拒绝并回写 false。
     /// </summary>
     private static string? MoveUnitFromSupportToFrontLine(CardDatabase db)
@@ -19442,7 +19551,7 @@ internal static class SelfTest
         };
 
         // ① 免费效果位移：即使不是当前行动方、已移动/已攻击、本回合刚进场且被压制，
-        //    也应当被送入前线；kredit 和 HasMovedThisTurn 均保持不变。
+        //    也应当被送入前线；kredit保持，额度消费由专项矩阵验证。
         {
             var (engine, state) = EmptyBoard(db);
             state.ActiveSide = Side.Left;
@@ -19457,9 +19566,9 @@ internal static class SelfTest
                 "MoveUnitFromSupportToFrontLine", unit,
                 new object?[] { unit, 9001 }, Context(engine, state, unit), out bool handled);
 
-            if (!handled || result is not true)
+            if (!handled || result is not false)
             {
-                return $"合法效果位移应成功且 handled=true，实际 handled={handled}, result={result ?? "null"}";
+                return $"合法效果位移完成后qqq仍应为false且 handled=true，实际 handled={handled}, result={result ?? "null"}";
             }
 
             if (unit.Location != CardLocation.BoardFrontline
