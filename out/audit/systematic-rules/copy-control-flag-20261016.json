@@ -1,0 +1,23 @@
+{
+  "rule": "RULE-129",
+  "contract": [
+    "Copy source underEnemyControl byte unchanged into detached object; changing side does not recompute it",
+    "Original object changes during copied OnDestroyed must not change the already copied byte",
+    "Without steal, the actual source object sees the reentrant field change"
+  ],
+  "tests": {
+    "expanded_copy_matrix": 144,
+    "additional_control_flag_scenarios": 72,
+    "release": "494/494",
+    "test_case_count": "existing case expanded; no increase in formal case count",
+    "before": "1/494 failed on copied true control flag; previous copy cases still pass"
+  },
+  "limits": [
+    "Field-pair scan covers simple mov/movzx load/store patterns only and is not a complete native field-write inventory",
+    "Identified instruction pairs are not all verified model fields; external helpers/containers remain open",
+    "CopyData full scalar/container semantics, subclass/CDO initialization, snapshot import, VM writes and all PvP card semantics remain unverified"
+  ],
+  "direct_native_field_pairs_identified": 79,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\copy-control-flag-evidence-20261016.json",
+  "evidence_sha256": "dd1ae09efecc008681a81c12328951ba6b81b7b3790e07f3376dbd44975bac16"
+}

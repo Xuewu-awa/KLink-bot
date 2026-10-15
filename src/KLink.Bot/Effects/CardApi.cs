@@ -1283,6 +1283,7 @@ public sealed partial class CardApi
             Name = source.Name,
             Owner = source.Owner.Opposite(),
             OriginalOwner = source.OriginalOwner,
+            UnderEnemyControl = source.UnderEnemyControl,
             Definition = source.Definition,
             IsGold = source.IsGold,
             Location = source.Location,
