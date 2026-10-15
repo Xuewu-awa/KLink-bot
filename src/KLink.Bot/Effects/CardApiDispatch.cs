@@ -6017,7 +6017,7 @@ public sealed partial class CardApi
         string ability = StrArg(a, 0);
         var target = AsCardOrId(c, a.ElementAtOrDefault(1));
         if (target is not null)
-            CustomAbilityAdd(target, ability, IntArg(a, 2), TruthyArg(a, 4));
+            CustomAbilityAdd(target, ability, IntArg(a, 2), TruthyArg(a, 4), TruthyArg(a, 3), TruthyArg(a, 5));
         // Current BP assigns qqq=false on failure and never assigns true.
         return false;
     }

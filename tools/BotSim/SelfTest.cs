@@ -151,6 +151,9 @@ internal static class SelfTest
         new("来源表读取：四张真实卡的同名来源谓词覆盖缺失/失效/位置/抑制边界", AbilitySourceNamePredicates),
         new("来源表读取：同一VM调用帧中清除/改源/换键不得复用旧结果", AbilitySourceNameLifecycle),
         new("来源表读取：Vanguard识别同名副本给予的Fury/Blitz并随撤销更新", VanguardCombatSourceLookup),
+        new("自定义能力新增：三标志、空键、来源去重、通知载荷及无T29", CustomAbilityAddContract),
+        new("自定义能力移除：缺键通知、未知来源短路、全量与额度保持", CustomAbilityRemoveContract),
+        new("自定义能力边界：有效位置、隐蔽、无效ID与移除不走增益门", CustomAbilityWriteBoundaries),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -9740,6 +9743,119 @@ internal static class SelfTest
             if (blitz) engine.Api.RemoveBlitz(target, 21); else engine.Api.RemoveFury(target, 21);
             if (Query() || !target.HasKeyword(blitz ? Keyword.Blitz : Keyword.Fury))
                 return "同名来源撤销后谓词应清除，但其他来源仍保留有效能力";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityAddContract(CardDatabase db)
+    {
+        using var probe = InstallAbilitiesChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string ability in new[] { "", "trigger", "fury" })
+        foreach (int giver in new[] { 0, 71, -7 })
+        foreach (bool duplicate in new[] { false, true })
+        foreach (bool skipText in new[] { false, true })
+        foreach (bool skipSub in new[] { false, true })
+        foreach (bool skipLog in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            var observer = state.CreateWithId("card_unit_51e_regiment", side, 21, CardLocation.NotAvailable, 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardAbilitiesChanged" } };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            if (giver < 0) target.Keywords.Add(Keyword.Suppressed);
+            if (duplicate) target.ReceivedAbilitiesFromCards[ability] = new List<int> { giver };
+            target.AttacksThisTurn = 1; target.SetRemainingAttacks(-2);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+            var qqq = engine.Api.InvokeByName("CustomAbilityAdd", target,
+                new object?[] { ability, 60, giver, skipText, skipSub, skipLog, null }, ctx, out bool handled);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionCustomAbilityAdd").ToArray();
+            if (!handled || !Equals(qqq, false) || !target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var sources)
+                || !sources.SequenceEqual(new[] { giver }) || target.RemainingAttacks != -2 || target.AttacksThisTurn != 1
+                || Convert.ToInt32(observer.BlueprintVariables["_auditT29Count"]) != 0
+                || actions.Length != (!duplicate && !skipSub ? 1 : 0))
+                return $"CustomAbilityAdd契约错误：{side} key='{ability}' giver={giver} dup={duplicate} flags={skipText}/{skipSub}/{skipLog}";
+            if (actions.Length == 1)
+            {
+                var v = actions[0].Values;
+                if (!v.Select(x => x.Name).SequenceEqual(new[] { "cardID", "giverID", "ability", "skipText", "skipAddToBattlelog" })
+                    || v[0].Value != 60 || v[1].Value != giver || v[2].Text != ability
+                    || v[3].Value != (skipText ? 1 : 0) || v[4].Value != (skipLog ? 1 : 0)) return "CustomAbilityAdd通知字段/顺序不符";
+            }
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityRemoveContract(CardDatabase db)
+    {
+        using var probe = InstallAbilitiesChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string ability in new[] { "", "trigger", "fury" })
+        foreach (int listMode in new[] { 0, 1, 2, 3 })
+        foreach (int giver in new[] { 0, 71, 99 })
+        foreach (bool all in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            var observer = state.CreateWithId("card_unit_51e_regiment", side, 21, CardLocation.NotAvailable, 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardAbilitiesChanged" } };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            int[] prior = listMode < 2 ? Array.Empty<int>() : listMode == 2 ? new[] { 71 } : new[] { 71, 72, 71 };
+            if (listMode != 0) target.ReceivedAbilitiesFromCards[ability] = prior.ToList();
+            target.AttacksThisTurn = 1; target.SetRemainingAttacks(3);
+            bool known = prior.Contains(giver);
+            bool notify = listMode == 0 || all || known;
+            bool keyRemains = listMode != 0 && !all && (known ? prior.Any(x => x != giver) : true);
+            var remaining = known && !all ? prior.Where(x => x != giver) : prior;
+            var result = engine.Api.InvokeByName("CustomAbilityRemove", target, new object?[] { ability, 60, giver, all, null },
+                new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out bool handled);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionCustomAbilityRemove").ToArray();
+            if (!handled || !Equals(result, false) || target.ReceivedAbilitiesFromCards.ContainsKey(ability) != keyRemains
+                || keyRemains && !target.ReceivedAbilitiesFromCards[ability].SequenceEqual(remaining)
+                || target.RemainingAttacks != 3 || target.AttacksThisTurn != 1
+                || Convert.ToInt32(observer.BlueprintVariables["_auditT29Count"]) != 0 || actions.Length != (notify ? 1 : 0))
+                return $"CustomAbilityRemove契约错误：{side} key='{ability}' list={listMode} giver={giver} all={all}";
+            if (actions.Length == 1)
+            {
+                var v = actions[0].Values;
+                if (!v.Select(x => x.Name).SequenceEqual(new[] { "cardID", "giverID", "ability", "RemoveAllGivers" })
+                    || v[0].Value != 60 || v[1].Value != giver || v[2].Text != ability || v[3].Value != (all ? 1 : 0))
+                    return "CustomAbilityRemove通知字段/顺序不符";
+            }
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityWriteBoundaries(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            foreach (var location in new[] { side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var target = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, location, 1);
+                engine.Api.CustomAbilityAdd(target, "trigger", 0);
+                engine.Api.CustomAbilityRemove(target, "trigger", 0, false);
+                if (target.ReceivedAbilitiesFromCards.ContainsKey("trigger")
+                    || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name is "ZActionCustomAbilityAdd" or "ZActionCustomAbilityRemove") != 2)
+                    return "自定义能力在所有有效普通位置均给予/移除通知，牌库也不省略";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+                target.Keywords.Add(Keyword.Covert);
+                if (engine.Api.CustomAbilityAdd(target, "trigger", 71) || target.ReceivedAbilitiesFromCards.ContainsKey("trigger"))
+                    return "未揭示场上Covert不能接受自定义能力";
+                target.ReceivedAbilitiesFromCards["trigger"] = new List<int> { 71 };
+                engine.Api.CustomAbilityRemove(target, "trigger", 71, false);
+                if (target.ReceivedAbilitiesFromCards.ContainsKey("trigger")) return "移除能力不受可增益门限制";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+                target.ReceivedAbilitiesFromCards["trigger"] = new List<int> { 71 };
+                var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+                engine.Api.InvokeByName("CustomAbilityAdd", target, new object?[] { "trigger", 9999, 72, false, false, false, null }, ctx, out _);
+                engine.Api.InvokeByName("CustomAbilityRemove", target, new object?[] { "trigger", 9999, 71, true, null }, ctx, out _);
+                if (!target.ReceivedAbilitiesFromCards["trigger"].SequenceEqual(new[] { 71 }) || state.ActionLog.Count != 0)
+                    return "无效自定义能力目标不能回落到Self或生成动作";
+            }
         }
         return null;
     }

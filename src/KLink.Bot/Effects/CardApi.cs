@@ -4023,20 +4023,28 @@ public sealed partial class CardApi
     public bool CustomAbilityAdd(CardInstance target, string ability, CardInstance? giver)
         => CustomAbilityAdd(target, ability, giver?.CardId ?? 0);
 
-    public bool CustomAbilityAdd(CardInstance target, string ability, int giverId, bool skipSubActions = false)
+    // Source-map and notification contract. NameDetail custom-buff records
+    // and the destruction combat-buff prepass remain separate audit items.
+    public bool CustomAbilityAdd(CardInstance target, string ability, int giverId, bool skipSubActions = false,
+        bool skipBuffTexts = false, bool skipAddToBattlelog = false)
     {
-        if (!CanCardBeBuffed(target) || ability.Length == 0) return false;
+        if (!CanCardBeBuffed(target)) return false;
         if (!target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
             target.ReceivedAbilitiesFromCards[ability] = givers = [];
         if (givers.Contains(giverId)) return false;
+        int left = target.RemainingAttacks;
         givers.Add(giverId);
+        // Raw source-map mutations do not write native attackLeft.
+        target.SetRemainingAttacks(left);
         if (!skipSubActions) _engine.FireSubAction("ZActionCustomAbilityAdd", new[]
         {
+            ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("giverID", giverId),
             ActionValue2.Str("ability", ability),
+            ActionValue2.Bool("skipText", skipBuffTexts),
+            ActionValue2.Bool("skipAddToBattlelog", skipAddToBattlelog),
         });
 
-        FireAbilitiesChanged(target);
         return true;
     }
 
@@ -4085,11 +4093,21 @@ public sealed partial class CardApi
 
     public bool CustomAbilityRemove(CardInstance target, string ability, int giverId, bool removeAllGivers)
     {
-        if (!target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers)) return false;
-        if (!removeAllGivers && !givers.Remove(giverId)) return false;
-        if (removeAllGivers || givers.Count == 0) target.ReceivedAbilitiesFromCards.Remove(ability);
-        FireAbilitiesChanged(target);
-        return true;
+        bool changed = false;
+        if (target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
+        {
+            int left = target.RemainingAttacks;
+            if (!removeAllGivers && givers.RemoveAll(source => source == giverId) == 0) return false;
+            if (removeAllGivers || givers.Count == 0) target.ReceivedAbilitiesFromCards.Remove(ability);
+            target.SetRemainingAttacks(left);
+            changed = true;
+        }
+        // BP i1839 also notifies when the ability key was absent. An unknown
+        // source in an existing list instead returns at i2174 without notifying.
+        _engine.FireSubAction("ZActionCustomAbilityRemove", new[] {
+            ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId),
+            ActionValue2.Str("ability", ability), ActionValue2.Bool("RemoveAllGivers", removeAllGivers) });
+        return changed; // Internal mutation result, not Blueprint's qqq output.
     }
 
     /// <summary>
