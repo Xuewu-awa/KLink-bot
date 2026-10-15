@@ -1831,7 +1831,7 @@ public sealed class MatchEngine
     ///                                                       ; 递减，但**不**解除
     /// L_02CD i=717  RemovePin(card)                         ; 减到 1 ⇒ 解除
     /// </code>
-    /// ⚠️ 这个函数**没有 side 参数**、且遍历的是全部在场卡 ⇒ 它是在
+    /// 这个函数没有side参数，遍历全部对局卡；>1分支另经在场单位门。它在
     ///    **每一个回合结束时**各跑一次（不是只在自己回合）。配上
     ///    `CardApi.PinUnit` 的初值（`IsSideActive(卡) ? 3 : 2`）正好等于
     ///    权威规则表的「钉住/压制于单位所有者**下个回合结束时**移除」。
@@ -1843,29 +1843,13 @@ public sealed class MatchEngine
     /// </summary>
     private void DecrementPinnedTurnsEndTurn()
     {
-        foreach (var card in State.CardsUnordered())
+        // BP_Logic refreshes GetAllCardInBattle at the loop condition and
+        // again before indexing. Callbacks can append/remove/move cards.
+        for (int index = 0; index < State.AllCardsInBattleOrder.Count; index++)
         {
-            if (card.PinnedTurns < 1)
-            {
-                continue;
-            }
-
-            if (card.PinnedTurns > 1)
-            {
-                card.PinnedTurns--;      // 递减，但**不**解除（蓝图 L_0202 那条分支）
-                continue;
-            }
-
-            // PinnedTurns == 1 ⇒ 到期解除（蓝图 RemovePin）
-            if (card.IsPinned)
-            {
-                Api.RemoveKeyword(card, Keyword.Pinned);
-                Say($"{card} 的钉住到期解除");
-            }
-            else
-            {
-                card.PinnedTurns = 0;
-            }
+            var card = State.AllCardsInBattleOrder[index];
+            if (card.PinnedTurns > 1) Api.ChangePinnedTurns(card, -1, 0);
+            else if (card.PinnedTurns == 1) Api.RemovePin(card);
         }
     }
 

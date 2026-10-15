@@ -178,6 +178,9 @@ internal static class SelfTest
         new("原生IsPinned：只读取正回合数，操作门保持一致", NativePinnedPredicate),
         new("原生T61/T62：包含主体、无位置门及查询后快照", NativePinBroadcastSnapshots),
         new("压制与抑制：外来源保留后解除正确递减账本", NativePinSuppressionSources),
+        new("压制时长：参数、32位加法、夹值与三字段通知", NativeChangePinnedTurnsContract),
+        new("回合末压制：位置/单位门、通知与到期解除", NativePinExpiryMatrix),
+        new("回合末压制：对局表实时索引、增删和移出场上", NativePinExpiryLiveIndex),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10135,6 +10138,123 @@ internal static class SelfTest
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
         }
+        return null;
+    }
+
+    private static string? NativeChangePinnedTurnsContract(CardDatabase db)
+    {
+        var sums = new (int Before, int Delta, int After)[] { (4, 2, 5), (3, -1, 2), (1, -1, 0), (0, 0, 0),
+            (-2, 1, 0), (5, 50, 5), (int.MaxValue, 1, 0), (int.MinValue, -1, 5), (int.MaxValue, int.MaxValue, 0), (0, int.MinValue, 0) };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { side.HqOf(), CardLocation.BoardFrontline, side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool unit in new[] { false, true })
+        foreach (var sum in sums)
+        foreach (int giver in new[] { 0, -7, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, location, 1);
+            target.Definition = new CardDefinition { Name = PlainUnit, Type = unit ? "infantry" : "order", Defense = 20 };
+            target.PinnedTurns = sum.Before;
+            target.ReceivedAbilitiesFromCards["pinned"] = new List<int> { 71 };
+            target.BuffsBySource[(71, false)] = new CardBuff { SourceCardId = 71, Pinned = 1 };
+            state.CreateWithId("card_unit_cromwell_mk_iv", side, 70, side.HqOf(), 2);
+            state.CreateWithId("card_event_creeping_barrage", side, 72, CardLocation.Discard, 0);
+            state.CreateWithId("card_event_honorifics", side, 73, side.DeckOf(), 0);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(side), Target = target, Controller = side };
+            engine.Api.InvokeByName("ChangedPinnedTurns", ctx.Self, new object?[] { 60, giver, sum.Delta, null }, ctx, out bool handled);
+            bool valid = location.IsBoard() && unit;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (!handled || target.PinnedTurns != (valid ? sum.After : sum.Before) || target.IsPinned != (target.PinnedTurns > 0)
+                || !target.ReceivedAbilitiesFromCards["pinned"].SequenceEqual(new[] { 71 }) || target.BuffsBySource[(71, false)].Pinned != 1
+                || actions.Length != (valid ? 1 : 0) || trace.Count != 0)
+                return $"ChangedPinnedTurns契约不符：{side}/{location}/unit={unit}/{sum}/giver={giver}";
+            if (valid && (actions[0].Name != "ZActionChangePinnedTurns"
+                || !actions[0].Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "instigatorID", "turnsToChange" })
+                || actions[0].Values[0].Value != 60 || actions[0].Values[1].Value != giver || actions[0].Values[2].Value != sum.Delta))
+                return "时长通知必须保持目标ID、来源和原始增量，不能写入夹值结果";
+            engine.Api.InvokeByName("ChangedPinnedTurns", ctx.Self, new object?[] { 99999, giver, sum.Delta, null }, ctx, out _);
+            if (target.PinnedTurns != (valid ? sum.After : sum.Before) || state.ActionLog.SelectMany(x => x.SubActions).Count() != actions.Length)
+                return "无效时长修改目标不能回退到上下文";
+        }
+        return null;
+    }
+
+    private static string? NativePinExpiryMatrix(CardDatabase db)
+    {
+        foreach (Side owner in new[] { Side.Left, Side.Right })
+        foreach (Side ending in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { owner.HqOf(), CardLocation.BoardFrontline, owner.HandOf(), owner.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool unit in new[] { false, true })
+        foreach (int turns in new[] { -2, 0, 1, 2, 5, int.MaxValue })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = ending;
+            var target = state.CreateWithId(PlainUnit, owner, 60, location, 1);
+            target.Definition = new CardDefinition { Name = PlainUnit, Type = unit ? "infantry" : "order", Defense = 20 };
+            target.PinnedTurns = turns;
+            target.Keywords.Add(Keyword.Suppressed); // No suppression gate on decrement/unpin.
+            target.ReceivedAbilitiesFromCards["pinned"] = new List<int> { 71 };
+            target.BuffsBySource[(71, false)] = new CardBuff { SourceCardId = 71, Pinned = 1 };
+            engine.EndTurn(ending);
+            bool decrement = turns > 1 && unit && location.IsBoard(), unpin = turns == 1;
+            int expected = unpin ? 0 : decrement ? Math.Min(turns - 1, 5) : turns;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions)
+                .Where(x => x.Name is "ZActionChangePinnedTurns" or "ZActionUnpinUnit").ToArray();
+            if (target.PinnedTurns != expected || actions.Length != (unpin || decrement ? 1 : 0)
+                || !target.ReceivedAbilitiesFromCards["pinned"].SequenceEqual(new[] { 71 })
+                || (target.BuffsBySource.GetValueOrDefault((71, false))?.Pinned ?? 0) != (unpin ? 0 : 1))
+                return $"回合末压制位置/时长不符：owner={owner} ending={ending}/{location}/unit={unit}/{turns} 实际{target.PinnedTurns}";
+            if (decrement && (actions[0].Name != "ZActionChangePinnedTurns" || actions[0].Values[0].Value != 60
+                || actions[0].Values[1].Value != 0 || actions[0].Values[2].Value != -1)) return "回合末递减必须走时长通知且来源为0";
+            if (unpin && (actions[0].Name != "ZActionUnpinUnit" || actions[0].Values[0].Value != 60)) return "时长1直接解除，不能先修改到0";
+        }
+        return null;
+    }
+
+    private static string? NativePinExpiryLiveIndex(CardDatabase db)
+    {
+        const string name = "card_unit_51e_regiment", trigger = "OnOtherUnitUnpinned";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals || locals.ContainsKey(trigger))
+            return "无法安装回合末T62探针";
+        locals[trigger] = new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side ending in new[] { Side.Left, Side.Right })
+            foreach (int mutation in Enumerable.Range(0, 5))
+            {
+                var (engine, state) = EmptyBoard(db); state.ActiveSide = ending;
+                var earlier = state.CreateWithId(PlainUnit, Side.Left, 80, CardLocation.Discard, 0);
+                var first = state.CreateWithId(PlainUnit, Side.Right, 90, Side.Right.HqOf(), 1); first.PinnedTurns = 1;
+                var later = state.CreateWithId(PlainUnit, Side.Left, 10, Side.Left.HqOf(), 1); later.PinnedTurns = 2;
+                var observer = state.CreateWithId(name, Side.Left, 20, Side.Left.HqOf(), 2);
+                observer.Definition = new CardDefinition { Name = name, Type = "infantry", Defense = 20, UsedTriggers = new[] { trigger } };
+                bool seen = false; CardInstance? added = null;
+                state.CardCreated += created => {
+                    if (seen || created.Name != "card_unit_routed_troops") return;
+                    seen = true; added = created;
+                    if (mutation == 0) { state.Move(created, Side.Right.HqOf()); created.PinnedTurns = 2; }
+                    if (mutation == 1) state.Remove(first);
+                    if (mutation == 2) state.Remove(earlier);
+                    if (mutation == 3) state.ChangeOwner(later, Side.Right);
+                    if (mutation == 4) state.Move(later, Side.Left.DeckOf());
+                };
+                engine.EndTurn(ending);
+                bool processedLater = mutation is 0 or 3;
+                var actions = state.ActionLog.SelectMany(x => x.SubActions)
+                    .Where(x => x.Name is "ZActionChangePinnedTurns" or "ZActionUnpinUnit").ToArray();
+                int[] expectedIds = mutation == 0 && added is not null ? new[] { 90, 10, added.CardId }
+                    : processedLater ? new[] { 90, 10 } : new[] { 90 };
+                if (!seen || first.PinnedTurns != 0 || later.PinnedTurns != (processedLater ? 1 : 2)
+                    || added is null || added.PinnedTurns != (mutation == 0 ? 1 : 0)
+                    || !actions.Select(x => x.Values[0].Value).SequenceEqual(expectedIds))
+                    return $"回合末必须按实时对局表索引：ending={ending} mutation={mutation} first={first.PinnedTurns} later={later.PinnedTurns} added={added?.PinnedTurns}";
+            }
+        }
+        finally { locals.Remove(trigger); }
         return null;
     }
 

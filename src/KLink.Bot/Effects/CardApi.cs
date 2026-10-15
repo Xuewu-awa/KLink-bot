@@ -3523,16 +3523,14 @@ public sealed partial class CardApi
     /// </summary>
     public void ChangePinnedTurns(CardInstance target, int turnsToChange, int instigatorId)
     {
-        if (!target.Location.IsBoard() || target.IsHq || !IsUnit(target))
-        {
-            return;
-        }
+        if (!target.Location.IsBoard() || !IsUnit(target)) return;
 
-        target.PinnedTurns = Math.Clamp(target.PinnedTurns + turnsToChange, 0, 5);
+        target.PinnedTurns = Math.Clamp(unchecked(target.PinnedTurns + turnsToChange), 0, 5);
         _engine.FireSubAction("ZActionChangePinnedTurns", new[]
         {
-            ActionValue2.Int("turnsToChange", turnsToChange),
+            ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Int("turnsToChange", turnsToChange),
         });
     }
 
