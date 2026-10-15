@@ -184,6 +184,7 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("原生数组缩容：负数保留 typed/object 列表且VM继续执行", NativeNegativeArrayResize),
         new("情报候选：全局顺序、换主、跨手牌位置及天气排除", NativeIntelHandQuery),
         new("情报翻牌：筛选后原始洗牌、零数量及空候选", NativeIntelShuffle),
         new("情报T28：查询后快照、逐次来源解析及回调后采集手牌", NativeIntelSnapshot),
@@ -292,7 +293,7 @@ internal static class SelfTest
         new("Blueprint 实例状态：跨事件保存、同名局部槽隔离、快照无引用循环", BlueprintInstanceState),
         new("Blueprint Map 原语：Big Three 按友军阵营数量加攻防",
             BigThreeCountsFriendlyFactions),
-        new("Blueprint Array_Resize：原地裁剪/扩容并钳制负长度",
+        new("Blueprint Array_Resize：原地裁剪/扩容且负长度保留原数组",
             BlueprintArrayResize),
         new("Blueprint Array_Identical：按顺序比较整数数组和卡 ID 数组",
             BlueprintArrayIdentical),
@@ -10216,6 +10217,45 @@ internal static class SelfTest
         return raw.RandRange(lo, hi);
     }
 
+    private static string? NativeNegativeArrayResize(CardDatabase db)
+    {
+        foreach (int amount in new[] { int.MinValue, -17, -1 })
+        foreach (int size in new[] { 0, 1, 4 })
+        foreach (int type in Enumerable.Range(0, 4))
+        foreach (bool vm in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, Side.Left, 60, Side.Left.HandOf(), 0);
+            System.Collections.IList array = type switch {
+                0 => Enumerable.Range(0, size).Select(i => i + 11).ToList(),
+                1 => Enumerable.Range(0, size).Select(i => i % 2 == 0 ? card : null!).ToList(),
+                2 => Enumerable.Range(0, size).Select(i => i % 2 == 0 ? (object?)card : "entry").ToList(),
+                _ => Enumerable.Range(0, size).Select(i => i % 2 == 0).ToList(),
+            };
+            var before = array.Cast<object?>().ToArray();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = Side.Left };
+            if (vm)
+            {
+                var steps = new KismetStep[] {
+                    new(0, "call", "Array_Resize", new[] { new KismetExpr { Var = "pool" }, new KismetExpr { Int = amount } }, Array.Empty<int>(), null, null, -1, null, null),
+                    new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = 123 }, null, -1, "_auditResizeContinued", null) { DestinationScope = "instance" },
+                    new(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+                };
+                engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                    new Dictionary<string, object?> { ["pool"] = array }, "pool");
+                if (!Equals(card.BlueprintVariables.GetValueOrDefault("_auditResizeContinued"), 123)) return "负缩容不能中止后续VM指令";
+            }
+            else
+            {
+                object? result = engine.Api.InvokeByName("Array_Resize", card, new object?[] { array, amount }, ctx, out bool handled);
+                if (!handled || result is not null) return "Array_Resize负长度仍应按void操作处理";
+            }
+            if (!array.Cast<object?>().SequenceEqual(before) || state.Random.ConsumedCount != 0 || state.ActionLog.Count != 0 || state.UnimplementedCalls.Count != 0)
+                return $"负缩容不能清空/重排数组或消费随机流：{amount}/{size}/{type}/{vm}";
+        }
+        return null;
+    }
+
     private static string? NativeIntelHandQuery(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })
@@ -10245,7 +10285,7 @@ internal static class SelfTest
     {
         foreach (Side side in new[] { Side.Left, Side.Right })
         foreach (uint seed in new uint[] { 1, 42, 773639 })
-        foreach (int amount in new[] { 0, 1, 2, 99, int.MaxValue })
+        foreach (int amount in new[] { int.MinValue, -9, -1, 0, 1, 2, 99, int.MaxValue })
         foreach (bool empty in new[] { false, true })
         {
             var (engine, state) = EmptyBoard(db); state.Random.Initialize(unchecked((int)seed));
@@ -10259,7 +10299,7 @@ internal static class SelfTest
             if (empty) { a.CardSeen = true; b.CardSeen = true; c.CardSeen = true; }
             var expected = empty ? new List<CardInstance>() : new() { a, b, c };
             var oracle = new UeRandomStream(seed); oracle.Shuffle(expected);
-            var chosen = expected.Take(Math.Min(amount, expected.Count)).ToArray();
+            var chosen = amount < 0 ? expected.ToArray() : expected.Take(Math.Min(amount, expected.Count)).ToArray();
             engine.Api.SetCardsSeenByCipher(amount, source.CardId, side);
             foreach (var card in new[] { a, b, c })
                 if (card.CardSeen != (empty || chosen.Contains(card))) return "情报洗牌必须绑定过滤后的全局顺序";
@@ -10304,8 +10344,7 @@ internal static class SelfTest
                     later.Keywords.Add(Keyword.Suppressed); later.Definition = new CardDefinition { Name = name, Type = "infantry" }; later.Location = CardLocation.NotAvailable;
                     added = state.CreateWithId(name, side, 1000, side.HqOf(), 4); added.Definition = def;
                     if (replaceSource) { state.Remove(source); currentSource = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1); }
-                    // Negative values exercise payload only, with no hand candidates.
-                    if (amount >= 0) fresh = state.CreateWithId(PlainUnit, side.Opposite(), 1100, side.Opposite().HandOf(), 0);
+                    fresh = state.CreateWithId(PlainUnit, side.Opposite(), 1100, side.Opposite().HandOf(), 0);
                 };
                 engine.Api.SetCardsSeenByCipher(amount, 60, side);
                 if (first || !Equals(source.BlueprintVariables.GetValueOrDefault("_auditIntelCount"), 1)
@@ -10314,7 +10353,7 @@ internal static class SelfTest
                     || later.BlueprintVariables.GetValueOrDefault("_auditIntelSource") != currentSource
                     || !Equals(later.BlueprintVariables.GetValueOrDefault("_auditIntelValue"), amount)
                     || added is null || added.BlueprintVariables.ContainsKey("_auditIntelCount") || suppressed.BlueprintVariables.ContainsKey("_auditIntelCount")
-                    || (fresh is not null && fresh.CardSeen != (amount > 0)))
+                    || (fresh is not null && fresh.CardSeen != (amount != 0)))
                     return $"T28快照/原始数量/逐次解析/回调后候选不符：{side}/{location}/{amount}/{replaceSource}";
             }
         }
@@ -22748,9 +22787,10 @@ internal static class SelfTest
 
         result = engine.Api.InvokeByName("Array_Resize", null,
             new object?[] { values, -4 }, ctx, out bool negativeHandled);
-        return negativeHandled && result is null && values.Count == 0
-            ? null
-            : "Array_Resize 的负长度必须按 0 处理并清空数组";
+        if (!negativeHandled || result is not null || !values.SequenceEqual(new[] { 11, 22, 33, 0, 0 }))
+            return "Array_Resize 的负长度必须保留原数组";
+        engine.Api.InvokeByName("Array_Resize", null, new object?[] { values, 0 }, ctx, out bool zeroHandled);
+        return zeroHandled && values.Count == 0 ? null : "长度零必须清空，与负长度分开处理";
     }
 
     private static string? BlueprintArrayIdentical(CardDatabase db)

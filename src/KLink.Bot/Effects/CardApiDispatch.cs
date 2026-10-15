@@ -1016,7 +1016,10 @@ public sealed partial class CardApi
             ["Array_Resize"] = (c, r, a) =>
             {
                 var arr = EvalList(r, a);
-                int desired = Math.Max(0, IntArg(a, 1));
+                int desired = IntArg(a, 1);
+                // Installed GenericArray_Resize RVA 0x3d7aee0: negative sizes
+                // warn and return without touching the array (RULE-107).
+                if (desired < 0) return null;
                 while (arr.Count > desired)
                 {
                     arr.RemoveAt(arr.Count - 1);

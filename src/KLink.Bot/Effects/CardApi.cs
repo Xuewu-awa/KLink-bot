@@ -5103,11 +5103,13 @@ public sealed partial class CardApi
 
         // ---- ③ 洗牌 + 截断 + 标记（:34150-34174）----
         State.Random.Shuffle(unseen);
-        State.TraceRandom($"SetCardsSeenByCipher n={numberOfCardsSeen} unseen={unseen.Count} " +
-                          $"take={Math.Min(numberOfCardsSeen, unseen.Count)}");
-
         int take = Math.Min(numberOfCardsSeen, unseen.Count);
-        unseen.RemoveRange(take, unseen.Count - take);
+        State.TraceRandom($"SetCardsSeenByCipher n={numberOfCardsSeen} unseen={unseen.Count} " +
+                          $"resize={take} take={(take < 0 ? unseen.Count : take)}");
+
+        // The installed native Array_Resize warns and leaves the array intact
+        // for negative sizes. The Blueprint still calls Apply afterwards.
+        if (take >= 0) unseen.RemoveRange(take, unseen.Count - take);
         ApplySetCardsSeenByCipher(unseen, enemyTurn: false, showAnimation: true);
     }
 
