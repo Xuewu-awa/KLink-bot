@@ -186,6 +186,7 @@ internal static class SelfTest
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
         new("手牌生成公开：自身创建之后、T35之前写入，后续修改保留", NativeSpawnHandSeenTiming),
         new("创建阶段：公开赋值可选，跳过T35及省略参数保持独立", NativeCreationSeenPhase),
+        new("手牌生成事件：自身无抑制位置门，T57后查快照并重查抑制", NativeSpawnHandEventSnapshot),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
         new("牌库生成通知：落点/隐藏/洗牌字段与零负数量矩阵", NativeSpawnDeckReceipt),
@@ -10226,6 +10227,77 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeSpawnHandEventSnapshot(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer", own = "OnCardSpawnedInHand", other = "OnOtherCardSpawnedInHand";
+        const string marker = "card_unit_routed_troops";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(own) || locals.ContainsKey(other)) return "无法安装手牌生成事件探针";
+        KismetStep Store(int index, string variable, string field) => new(index, "set", null,
+            Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = variable }, null, -1, field, null) { DestinationScope = "instance" };
+        KismetStep Marker(int index) => new(index, "call", "SpawnCardInDeckBySide", new[] {
+            new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = marker },
+            new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+        }, Array.Empty<int>(), null, null, -1, null, null);
+        KismetStep Return(int index) => new(index, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null);
+        locals[own] = new[] { Store(0, "K2Node_Event_spawnedSide", "_auditOwnSpawnSide"), Marker(1), Return(2) };
+        locals[other] = new[] { Store(0, "K2Node_Event_spawnedCardID", "_auditSpawnId"),
+            Store(1, "K2Node_Event_spawnedSide", "_auditSpawnSide"), Marker(2), Return(3) };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (var location in new[] { side.HandOf(), side.DeckOf(), side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            foreach (bool ownSuppressed in new[] { false, true })
+            foreach (bool stop in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                CardDefinition Registered(bool enabled) => new() { Name = name, Type = "infantry", UsedTriggers = enabled ? new[] { other } : Array.Empty<string>() };
+                var watchers = Enumerable.Range(1, 8).Select(i => state.CreateWithId(name, side.Opposite(), i * 10, CardLocation.Discard, i)).ToArray();
+                foreach (var w in watchers) w.Definition = Registered(true);
+                watchers[1].Definition = Registered(false); // own event registers this before the query
+                watchers[2].Keywords.Add(Keyword.Suppressed); // own event clears this before the query
+                foreach (int i in new[] { 4, 5, 7 }) watchers[i].Keywords.Add(Keyword.Suppressed);
+                watchers[6].Definition = Registered(false);
+                foreach (int i in new[] { 3, 4, 7 }) watchers[i].SuppressionExceptionTriggers.Add(other);
+                CardInstance? spawned = null, late = null;
+                int markers = 0;
+                state.CardCreationModifiers += card => {
+                    if (card.Name != name || card.CardId == 9000) return;
+                    spawned = card; card.Location = location; if (ownSuppressed) card.Keywords.Add(Keyword.Suppressed); card.Definition = Registered(true);
+                };
+                state.CardCreated += card => {
+                    if (card.Name != marker) return;
+                    markers++;
+                    if (markers == 1) { watchers[1].Definition = Registered(true); watchers[2].Keywords.Remove(Keyword.Suppressed); }
+                    if (markers == 2) {
+                        watchers[1].Definition = Registered(false);
+                        watchers[2].Location = CardLocation.NotAvailable;
+                        watchers[3].Keywords.Add(Keyword.Suppressed); // exception cannot bypass the per-item gate
+                        watchers[4].Keywords.Remove(Keyword.Suppressed); // query exception kept this in the snapshot
+                        watchers[5].Keywords.Remove(Keyword.Suppressed); // excluded at query; cannot rejoin
+                        watchers[6].Definition = Registered(true); // also excluded at query
+                        late = state.CreateWithId(name, side, 9000, CardLocation.Discard, 0); late.Definition = Registered(true);
+                        state.StopFurtherActions = stop;
+                    }
+                };
+                var result = engine.Api.SpawnCardInHand(side, name);
+                if (spawned != result || !Equals(result.BlueprintVariables.GetValueOrDefault("_auditOwnSpawnSide"), (int)side)
+                    || result.BlueprintVariables.ContainsKey("_auditSpawnId") || markers != 5 || late is null || late.BlueprintVariables.ContainsKey("_auditSpawnId"))
+                    return $"自身事件/自排除/快照新增门错误：{side}/{location}/suppressed={ownSuppressed}/stop={stop}/markers={markers}";
+                for (int i = 0; i < watchers.Length; i++)
+                {
+                    bool expected = i is 0 or 1 or 2 or 4;
+                    bool received = watchers[i].BlueprintVariables.ContainsKey("_auditSpawnId");
+                    if (received != expected || received && (!Equals(watchers[i].BlueprintVariables["_auditSpawnId"], result.CardId)
+                        || !Equals(watchers[i].BlueprintVariables.GetValueOrDefault("_auditSpawnSide"), (int)side)))
+                        return $"T57查询/实时抑制/载荷错误：{side}/{location}/index={i}/received={received}";
+                }
+            }
+            return null;
+        }
+        finally { locals.Remove(own); locals.Remove(other); }
     }
 
     private static string? NativeSpawnHandSeenTiming(CardDatabase db)

@@ -2989,22 +2989,32 @@ public sealed partial class CardApi
 
     private void ExecuteOnSpawnedInHandEvents(CardInstance card, Side side)
     {
-        // `ExecuteOnSpawnedInHandEvents`: own event first, then the broadcast event.
-        FireTrigger("OnCardSpawnedInHand", card, side,
-            eventArgs: new object?[] { (int)side },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["spawnedSide"] = (int)side,
-            });
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        int spawnedCardId = card.CardId;
+        // Pak i=38 resolves the ID; i=132 calls the valid object's own event
+        // without suppression, registration or location gates.
+        var spawned = State.ById(spawnedCardId);
+        if (spawned is not null && library.FindProgram(spawned.Name, "OnCardSpawnedInHand") is not null)
+        {
+            TriggerTrace?.Add($"OnCardSpawnedInHand → {spawned.Name}#{spawned.CardId}（eventCard={spawned.Name}#{spawned.CardId}）");
+            RunTriggerProgram(library, spawned, spawned.Name, "OnCardSpawnedInHand", spawned,
+                eventArgs: new object?[] { (int)side },
+                namedArgs: new Dictionary<string, object?> { ["spawnedSide"] = (int)side });
+        }
 
-        FireTrigger("OnOtherCardSpawnedInHand", card, side,
-            eventArgs: new object?[] { card.CardId, (int)side },
-            eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["spawnedCardID"] = card.CardId,
-                ["spawnedSide"] = (int)side,
-            });
+        const string trigger = "OnOtherCardSpawnedInHand";
+        // i=177 queries T57 after the own event. Unlike query-time exceptions,
+        // i=654 unconditionally skips currently suppressed saved recipients.
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var args = new object?[] { spawnedCardId, (int)side };
+        var named = new Dictionary<string, object?> { ["spawnedCardID"] = spawnedCardId, ["spawnedSide"] = (int)side };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == spawnedCardId || observer.IsSuppressed || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCardID={spawnedCardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, spawned, eventArgs: args, namedArgs: named);
+        }
     }
 
     /// <summary>把一张卡生成到战场（对应 `SpawnCardOnBattlefield`）。</summary>
