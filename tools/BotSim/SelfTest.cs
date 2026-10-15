@@ -94,6 +94,7 @@ internal static class SelfTest
         new("抽牌容量：三条路径排除autoplay并按物理手牌位置计数", DrawHandCapacityAutoplay),
         new("抽牌容量：T3回调后再读取标签与手牌成员", DrawHandCapacityAfterDeckEvents),
         new("选择容量守卫：开发非效果才阻挡，物理手牌排除autoplay", SelectionHandCapacityGuard),
+        new("单候选抽牌：指定ID/来源/编号保持，抽后按ID解析回调", SingletonScryDrawContract),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
@@ -13556,6 +13557,97 @@ internal static class SelfTest
                 return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
         }
         return null;
+    }
+
+    private static string? SingletonScryDrawContract(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer", filter = "FilterCardsToScry", selected = "OnHandTargetSelected", changed = "OnAfterDeckChanged";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || new[] { filter, selected, changed }.Any(locals.ContainsKey)) return "无法安装单候选抽牌探针";
+        locals[filter] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "EqualEqual_IntInt", Args = new[] {
+                    new KismetExpr { Var = "cardID", Context = new KismetExpr { Var = "card" } }, new KismetExpr { Int = 60 }
+                } }, null, -1, "isValid", null) { DestinationScope = "local" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        locals[selected] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_handTargetCardID" },
+                null, -1, "_auditSingletonTarget", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_instigatorID" },
+                null, -1, "_auditSingletonInstigator", null) { DestinationScope = "instance" },
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "location", Context = new KismetExpr { Call = "GetCardFromID", Args = new[] { new KismetExpr { Int = 60 } } } },
+                null, -1, "_auditSingletonLocation", null) { DestinationScope = "instance" },
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        // Same body as the T3 probe in DrawHandCapacityAfterDeckEvents:
+        // compiled local programs persist in the test process's library cache.
+        locals[changed] = new[] {
+            new KismetStep(0, "call", "SpawnCardInHandBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool full in new[] { false, true })
+            foreach (bool suppressed in new[] { false, true })
+            foreach (bool unavailable in new[] { false, true })
+            foreach (bool autoplay in new[] { false, true })
+            foreach (bool effect in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var selecting = state.CreateWithId(name, side, 30, unavailable ? CardLocation.NotAvailable : CardLocation.Discard, 0);
+                selecting.ExtraPlayTriggers = 2;
+                if (suppressed) selecting.Keywords.Add(Keyword.Suppressed);
+                for (int i = 0; i < (full ? 9 : 8); i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i * 3);
+                var first = state.CreateWithId(PlainUnit, side, 61, side.DeckOf(), 2);
+                var drawn = state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 17);
+                var last = state.CreateWithId(PlainUnit, side, 62, side.DeckOf(), 29);
+                if (autoplay) engine.Api.AddCustomGameplayTag(drawn, "autoplay");
+                state.AddAutoPlayCards(0);
+                var result = engine.Api.InvokeByName("selectCardToDraw", selecting, new object?[] { 30, true, effect, null },
+                    new EffectContext { Engine = engine, State = state, Self = selecting, Controller = side.Opposite() }, out bool handled);
+                var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+                if (!handled || !Equals(result, 60) || drawn.Location != (full ? CardLocation.Discard : side.HandOf())
+                    || drawn.LocationNumber != (full ? 17 : 8) || first.LocationNumber != 2 || last.LocationNumber != 29
+                    || !Equals(action?.Values.FirstOrDefault(x => x.Name == "instigatorID")?.Value, 30)
+                    || !Equals(action?.Values.FirstOrDefault(x => x.Name == "cardID")?.Value, 60)
+                    || !Equals(selecting.BlueprintVariables.GetValueOrDefault("_auditSingletonTarget"), 60)
+                    || !Equals(selecting.BlueprintVariables.GetValueOrDefault("_auditSingletonInstigator"), 0)
+                    || Convert.ToInt32(selecting.BlueprintVariables.GetValueOrDefault("_auditSingletonLocation") ?? -1) != (int)drawn.Location
+                    || selecting.ExtraPlayTriggers != 2 || state.Random.ConsumedCount != 0
+                    || !state.GetAutoPlayCards().SequenceEqual(!full && autoplay ? new[] { 0, 60 } : new[] { 0 }))
+                    return $"单候选来源/编号/回调/队列错误：{side}/{full}/{suppressed}/{unavailable}/{autoplay}/{effect}";
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 4))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var original = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+                var watcher = state.CreateWithId(name, side, 20, CardLocation.Discard, 0);
+                watcher.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { changed } };
+                var drawn = state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 17);
+                CardInstance? replacement = null; int callbacks = 0;
+                state.CardCreated += card => {
+                    if (card.Name != "card_unit_routed_troops") return;
+                    callbacks++; card.Location = CardLocation.Discard;
+                    if (mode is 1 or 2) state.Remove(original);
+                    if (mode == 2) replacement = state.CreateWithId(name, side.Opposite(), 30, CardLocation.NotAvailable, 0);
+                    if (mode == 3) { original.Location = CardLocation.NotAvailable; original.Keywords.Add(Keyword.Suppressed); }
+                };
+                engine.Api.InvokeByName("selectCardToDraw", original, new object?[] { 30, true, false, null },
+                    new EffectContext { Engine = engine, State = state, Self = original, Controller = side }, out _);
+                if (callbacks != 1 || drawn.Location != side.HandOf()
+                    || original.BlueprintVariables.ContainsKey("_auditSingletonTarget") != (mode is 0 or 3)
+                    || replacement is not null && !Equals(replacement.BlueprintVariables.GetValueOrDefault("_auditSingletonTarget"), 60))
+                    return $"抽后重新解析选择卡错误：{side}/mode={mode}/callbacks={callbacks}";
+            }
+            return null;
+        }
+        finally { locals.Remove(filter); locals.Remove(selected); locals.Remove(changed); }
     }
 
     private static string? SelectionHandCapacityGuard(CardDatabase db)

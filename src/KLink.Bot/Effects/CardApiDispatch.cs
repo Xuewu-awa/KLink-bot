@@ -2146,14 +2146,21 @@ public sealed partial class CardApi
             if (deckCandidates.Count == 1)
             {
                 var only = deckCandidates[0];
-                // selectCardToDraw i=2990/3163: singleton auto-draw has
-                // instigator 0 and does not run HandleExtraPlayTriggers.
+                // i=2990 passes the selecting ID into the specific-draw helper;
+                // i=3131 resolves the callback receiver again, whose second arg is 0.
                 _engine.ResolveHandSelection(selecting, () =>
                 {
-                    State.Move(only, side.DeckOf(), -1);
-                    _engine.DrawCard(side);
-                    FireTrigger("OnHandTargetSelected", selecting, side,
-                        eventArgs: new object?[] { only.CardId, 0 }, eventSubject: only);
+                    if (State.ById(selectingId) is { } atDraw)
+                        _engine.DrawSpecificCardFromDeck(atDraw.Owner, only.CardId, selectingId, cardSeen: false);
+                    if (State.ById(selectingId) is { } receiver
+                        && Blueprint.KismetLibrary.Default is { } library
+                        && library.FindProgram(receiver.Name, "OnHandTargetSelected") is not null)
+                    {
+                        TriggerTrace?.Add($"OnHandTargetSelected → {receiver.Name}#{receiver.CardId}（eventCard={only.Name}#{only.CardId}）");
+                        RunTriggerProgram(library, receiver, receiver.Name, "OnHandTargetSelected", only,
+                            eventArgs: new object?[] { only.CardId, 0 },
+                            namedArgs: new Dictionary<string, object?> { ["handTargetCardID"] = only.CardId, ["instigatorID"] = 0 });
+                    }
                     return true;
                 }, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
                 return only.CardId;
