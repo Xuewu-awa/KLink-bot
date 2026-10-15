@@ -35,7 +35,7 @@ namespace KLink.Bot.Engine;
 ///
 /// 报告 `Weather.md` §4.2.1 给了一组**可复算的测试向量**
 /// （`match_id=1000000000`、重播种用 `CurrentActionId=10` ⇒ `seed=1000193900`，
-/// 连抽三次 `RandomIntFromRangeWithStream(0,2)`）：
+/// 连抽三次原始 `RandomIntegerInRangeFromStream(0,2)`）：
 /// <code>
 ///   第1次：Seed 1000193900 → 1626977479，返回 1
 ///   第2次：Seed 1626977479 → 4280773790，返回 2

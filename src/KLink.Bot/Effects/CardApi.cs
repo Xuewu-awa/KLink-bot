@@ -4813,6 +4813,14 @@ public sealed partial class CardApi
     public int GetTotalAttack(Side s) => State.Board(s).Sum(u => u.Attack);
     public int GetTotalDefense(Side s) => State.Board(s).Sum(u => u.Defense);
 
+    /// <summary>BP_CardFunctions helper: count draw, dummy draws, requested draw.</summary>
+    public int RandomIntFromRangeWithStream(int minimum, int maximum)
+    {
+        int emptyConsume = State.Random.RandRange(1, 10);
+        for (int i = 0; i < emptyConsume; i++) State.Random.RandRange(0, 1);
+        return State.Random.RandRange(minimum, maximum);
+    }
+
     public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool, bool skipCustomAlways = false)
     {
         if (pool.Count == 0)
@@ -4830,13 +4838,13 @@ public sealed partial class CardApi
             if (priority.Count > 0) selectionPool = priority;
         }
 
-        // Candidate selection only. The underlying random-stream helper's extra
-        // consumption remains a separate open audit item (RULE-103).
+        // BP helper i=227/1096 calls the padded Blueprint stream helper,
+        // not a single raw FRandomStream draw (RULE-104).
         uint seedBefore = State.Random.Seed;
         long cursorBefore = State.Random.ConsumedCount;
-        int index = State.Random.Next(selectionPool.Count);
+        int index = RandomIntFromRangeWithStream(0, selectionPool.Count - 1);
         CardInstance picked = selectionPool[index];
-        // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
+        // 候选集的**内容与顺序**也要记 —— 相同的最终随机下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。
         //
         // 仅诊断开启时构造完整候选表，避免正常自对弈路径上的字符串分配。

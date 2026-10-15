@@ -184,6 +184,7 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("随机辅助：84个独立向量、全范围空耗次数与区间溢出", NativePaddedRandomVectors),
         new("随机候选：优先子集顺序、重复权重与skip参数派发", NativeRandomPriorityPools),
         new("随机候选：名称属性边界及真实Royal Scots动态移除", NativeRandomPriorityAttributes),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
@@ -319,7 +320,7 @@ internal static class SelfTest
             CheckHasUnitToSpawn),
         new("候选池口径：atlantic_convoy 的『美国费≤3单位』候选池 = 53 张，成员与顺序正确",
             AtlanticConvoyCandidatePool),
-        new("★ 同一流下标抽到同一张卡：match_id=508065 复刻到 t9，两次抽签 = 507th_pir / fifth_ohio",
+        new("静态候选：完整随机辅助函数下标选择对应卡牌",
             PoolDrawSameStreamIndex),
 
         // ---- ① 三个原语 + 4 张光环（2026-09-27）----
@@ -1405,7 +1406,7 @@ internal static class SelfTest
             || state.Random.ConsumedCount != tracedState.Random.ConsumedCount)
             return "日志开关改变了随机行为";
         string line = tracedState.RandomTrace.Single();
-        if (!line.Contains("cursor=0->1") || !line.Contains("seed=")) return "随机状态信息缺失";
+        if (!line.Contains($"cursor=0->{state.Random.ConsumedCount}") || !line.Contains("seed=")) return "随机状态信息缺失";
         if (line.Split("card_unit_arado_ar_196").Length - 1 != 66)
             return "完整池应有 65 项，加选中项共出现 66 次";
         return state.RandomTrace.Count == 0 ? null : "关闭追踪时不应生成日志";
@@ -4045,81 +4046,21 @@ internal static class SelfTest
         return null;
     }
 
-    /// <summary>
-    /// ★ 本任务专属判据：**同一个流下标必须抽到同一张卡**。
-    ///
-    /// 复刻 `out/_server-replays/replay-508065` 里 t9 那一步：
-    /// 客户端的 `card_event_atlantic_convoy` 连抽两次（IR i=455 / i=664 两次
-    /// `GetRandomCard(possibleCards)`），客户端拿到 `card_unit_fifth_ohio` /
-    /// `card_unit_p40_warhawk`（见动作流卡组码 DB / dd）。
-    ///
-    /// 游标前缀按 `--rng-trace` 的流水账逐条复刻（共 41 次消费）：
-    /// <code>
-    ///   #1..#7   GetRandomCard×3 + SpawnCardInDeckBySide×3（card_event_colossus，t7）
-    ///   #8..#40  ShuffleDeckBySide(Left, n=33) —— **前向 Fisher-Yates 跑满 n 次**
-    ///   #41      RandomIntFromRangeWithStream(0,28)（pams 回插牌库）
-    /// </code>
-    /// 修复前池子 102 张 ⇒ 下标 37/52 ⇒ 506th_airborne / f4f_wildcat（错）；
-    /// 修复后池子 53 张 ⇒ 下标 19/27 ⇒ 507th_pir / fifth_ohio。
-    ///
-    /// ⚠️ **修复后仍然与客户端不一致**（客户端是 fifth_ohio / p40_warhawk）——
-    /// 这条断言锁的是"池子口径 + 流下标"这个**中间状态**，
-    /// 不是"已经和客户端对上了"。差异的成因见任务报告。
-    /// </summary>
+    /// <summary>Static pool index binding against the current pak helper schedule.</summary>
     private static string? PoolDrawSameStreamIndex(CardDatabase db)
     {
-        const int matchId = 508065;
-
-        // 自己造一台种子 = match_id 的引擎（`EmptyBoard` 用的是 seed:1，不能复用）。
-        var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: matchId);
-        var state = engine.State;
-
-        string? err = TryStaticPool(engine, state, includeNotAttainable: false, includeReserved: false, out var pool);
-        if (err is not null)
+        var (engine, state) = EmptyBoard(db);
+        string? err = TryStaticPool(engine, state, false, false, out var pool);
+        if (err is not null) return err;
+        var candidates = pool.Where(c => c.Definition.FactionId == 5 && c.Definition.IsUnit && c.Definition.Kredits <= 3).ToList();
+        if (candidates.Count == 0) return "静态候选为空";
+        var oracle = new UeRandomStream(state.Random.Seed);
+        for (int i = 0; i < 20; i++)
         {
-            return err;
+            var want = candidates[NativeRandomDrawOracle(oracle, 0, candidates.Count - 1)];
+            if (engine.Api.GetRandomCard(candidates) != want || state.Random.Seed != oracle.Seed
+                || state.Random.ConsumedCount != oracle.ConsumedCount) return "静态候选选择或额外消耗不符";
         }
-
-        var cand = pool
-            .Where(c => c.Definition.FactionId == 5 && c.Definition.IsUnit && c.Definition.Kredits <= 3)
-            .ToList();
-
-        // ---- 游标前缀（41 次）----
-        var rng = state.Random;
-        rng.RandRange(0, 5);   // #1 GetRandomCard n=6（t5 PC left，colossus 的池外一次）
-        rng.RandRange(0, 10);  // #2 GetRandomCard n=11
-        rng.RandRange(0, 30);  // #3 SpawnCardInDeckBySide deckLen=31
-        rng.RandRange(0, 10);  // #4
-        rng.RandRange(0, 31);  // #5 deckLen=32
-        rng.RandRange(0, 10);  // #6
-        rng.RandRange(0, 32);  // #7 deckLen=33
-        for (int i = 0; i <= 32; i++)
-        {
-            rng.RandRange(i, 32);   // #8..#40 ShuffleDeckBySide(Left, 33)
-        }
-
-        rng.RandRange(0, 28);  // #41 pams 回插
-
-        if (rng.ConsumedCount != 41)
-        {
-            return $"游标前缀消费了 {rng.ConsumedCount} 次，应当是 41 次";
-        }
-
-        CardInstance? first = engine.Api.GetRandomCard(cand);
-        CardInstance? second = engine.Api.GetRandomCard(cand);
-
-        if (first is null || second is null)
-        {
-            return "两次抽签返回了 null（候选池是空的？）";
-        }
-
-        if (first.Name != "card_unit_507th_pir" || second.Name != "card_unit_fifth_ohio")
-        {
-            return $"同一个流下标抽到了 {first.Name} / {second.Name}，"
-                 + "应当是 card_unit_507th_pir / card_unit_fifth_ohio"
-                 + "（池子张数或顺序变了；对照 508065 的 --rng-trace `#42/#43`）";
-        }
-
         return null;
     }
 
@@ -5987,8 +5928,8 @@ internal static class SelfTest
         };
 
         var expectedRandom = new UeRandomStream(1);
-        int firstIndex = expectedRandom.RandRange(0, 3);
-        int secondIndex = expectedRandom.RandRange(0, 4);
+        int firstIndex = NativeRandomDrawOracle(expectedRandom, 0, 3);
+        int secondIndex = NativeRandomDrawOracle(expectedRandom, 0, 4);
         object? result = engine.Api.InvokeByName("SpawnCardInDeckBySide", source,
             new object?[] { (int)Side.Right, spawnedName, source.CardId, 2, "", false,
                 true, false, false, true, null }, ctx, out bool handled);
@@ -5999,9 +5940,9 @@ internal static class SelfTest
 
         var spawnedIds = (result as System.Collections.IEnumerable)!
             .Cast<int>().ToList();
-        if (spawnedIds.Count != 2 || state.Random.ConsumedCount != 2)
+        if (spawnedIds.Count != 2 || state.Random.ConsumedCount != expectedRandom.ConsumedCount || state.Random.Seed != expectedRandom.Seed)
         {
-            return $"随机模式应生成 2 张且消费 2 次随机流，实际生成 {spawnedIds.Count} 张、消费 {state.Random.ConsumedCount} 次";
+            return $"随机模式应生成 2 张且逐张执行完整辅助函数，实际生成 {spawnedIds.Count} 张、消费 {state.Random.ConsumedCount} 次";
         }
 
         var expected = new List<int> { first.CardId, second.CardId };
@@ -6058,7 +5999,7 @@ internal static class SelfTest
         }
 
         var expectedRandom = new UeRandomStream(1);
-        expectedRandom.RandRange(0, 3); // one generated card, even when RandomWithoutShuffle=false
+        NativeRandomDrawOracle(expectedRandom, 0, 3); // helper executes even when RandomWithoutShuffle=false
         var expected = new List<int> { first.CardId, second.CardId, spawnedIds[0] };
         expectedRandom.Shuffle(expected);
 
@@ -6069,9 +6010,9 @@ internal static class SelfTest
                    "，期望：" + string.Join(",", expected);
         }
 
-        if (state.Random.ConsumedCount != 4)
+        if (state.Random.ConsumedCount != expectedRandom.ConsumedCount || state.Random.Seed != expectedRandom.Seed)
         {
-            return $"生成 1 张后洗 3 张应消费 4 次随机流，实际 {state.Random.ConsumedCount} 次";
+            return $"生成应先执行完整辅助函数，再用原始流洗牌，实际 {state.Random.ConsumedCount} 次";
         }
 
         return null;
@@ -10251,18 +10192,134 @@ internal static class SelfTest
                 for (int draw = 0; draw < 6; draw++)
                 {
                     long before = state.Random.ConsumedCount;
-                    int index = oracle.Next(expected.Length);
+                    int index = NativeRandomDrawOracle(oracle, 0, expected.Length - 1);
                     var selected = engine.Api.GetRandomCard(pool.Actual);
-                    if (selected != expected[index] || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != before + 1)
-                        return "相同随机下标必须命中全局顺序中的同一候选，且仅消费一次";
+                    if (selected != expected[index] || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != oracle.ConsumedCount)
+                        return "完整辅助函数抽取必须命中全局顺序中的同一候选并匹配游标";
                 }
             }
         }
         return null;
     }
 
-    // These tests isolate candidate selection using the existing stream as an
-    // index oracle; they do not certify the native helper's consumption schedule.
+    // Candidate pools now use the pak helper schedule, also checked by fixed vectors.
+    // Oracle follows the authoritative Blueprint sequence using raw stream operations.
+    private static int NativeRandomDrawOracle(UeRandomStream raw, int lo, int hi)
+    {
+        int count = raw.RandRange(1, 10);
+        for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
+        return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativePaddedRandomVectors(CardDatabase db)
+    {
+        // Independent Python vectors: float32 multiplication and int32 overflow.
+        var vectors = new (uint Seed, int Lo, int Hi, int Result, uint After, int Consumed)[] {
+            (0u, 0, 2, 0, 1151390735u, 5),
+            (0u, 7, 7, 7, 1151390735u, 5),
+            (0u, -9, 5, -5, 1151390735u, 5),
+            (0u, 9, 2, 9, 4143921812u, 4),
+            (0u, -2147483648, 2147483647, -2147483648, 4143921812u, 4),
+            (0u, 2147483647, -2147483648, 2147483647, 1151390735u, 5),
+            (1u, 0, 2, 0, 1098076212u, 5),
+            (1u, 7, 7, 7, 1098076212u, 5),
+            (1u, -9, 5, -6, 1098076212u, 5),
+            (1u, 9, 2, 9, 1856401605u, 4),
+            (1u, -2147483648, 2147483647, -2147483648, 1856401605u, 4),
+            (1u, 2147483647, -2147483648, 2147483647, 1098076212u, 5),
+            (42u, 0, 2, 1, 2557353630u, 4),
+            (42u, 7, 7, 7, 2557353630u, 4),
+            (42u, -9, 5, -1, 2557353630u, 4),
+            (42u, 9, 2, 9, 2532826823u, 3),
+            (42u, -2147483648, 2147483647, -2147483648, 2532826823u, 3),
+            (42u, 2147483647, -2147483648, -2147483648, 2557353630u, 4),
+            (4294967295u, 0, 2, 1, 2136474723u, 4),
+            (4294967295u, 7, 7, 7, 2136474723u, 4),
+            (4294967295u, -9, 5, -2, 2136474723u, 4),
+            (4294967295u, 9, 2, 9, 3637562392u, 3),
+            (4294967295u, -2147483648, 2147483647, -2147483648, 3637562392u, 3),
+            (4294967295u, 2147483647, -2147483648, 2147483647, 2136474723u, 4),
+            (1000000000u, 0, 2, 2, 4251487603u, 9),
+            (1000000000u, 7, 7, 7, 4251487603u, 9),
+            (1000000000u, -9, 5, 5, 4251487603u, 9),
+            (1000000000u, 9, 2, 9, 2570662632u, 8),
+            (1000000000u, -2147483648, 2147483647, -2147483648, 2570662632u, 8),
+            (1000000000u, 2147483647, -2147483648, -2147483648, 4251487603u, 9),
+            (2u, 0, 2, 2, 3441792472u, 6),
+            (2u, 7, 7, 7, 3441792472u, 6),
+            (2u, -9, 5, 3, 3441792472u, 6),
+            (2u, 9, 2, 9, 1044761689u, 5),
+            (2u, -2147483648, 2147483647, -2147483648, 1044761689u, 5),
+            (2u, 2147483647, -2147483648, -2147483648, 3441792472u, 6),
+            (5u, 0, 2, 1, 1856911130u, 7),
+            (5u, 7, 7, 7, 1856911130u, 7),
+            (5u, -9, 5, -3, 1856911130u, 7),
+            (5u, 9, 2, 9, 2592533715u, 6),
+            (5u, -2147483648, 2147483647, -2147483648, 2592533715u, 6),
+            (5u, 2147483647, -2147483648, 2147483647, 1856911130u, 7),
+            (7u, 0, 2, 0, 881827471u, 8),
+            (7u, 7, 7, 7, 881827471u, 8),
+            (7u, -9, 5, -6, 881827471u, 8),
+            (7u, 9, 2, 9, 4189006612u, 7),
+            (7u, -2147483648, 2147483647, -2147483648, 4189006612u, 7),
+            (7u, 2147483647, -2147483648, 2147483647, 881827471u, 8),
+            (9u, 0, 2, 0, 466425136u, 9),
+            (9u, 7, 7, 7, 466425136u, 9),
+            (9u, -9, 5, -8, 466425136u, 9),
+            (9u, 9, 2, 9, 3478980945u, 8),
+            (9u, -2147483648, 2147483647, -2147483648, 3478980945u, 8),
+            (9u, 2147483647, -2147483648, 2147483647, 466425136u, 9),
+            (11u, 0, 2, 0, 417022221u, 10),
+            (11u, 7, 7, 7, 417022221u, 10),
+            (11u, -9, 5, -8, 417022221u, 10),
+            (11u, 9, 2, 9, 252065626u, 9),
+            (11u, -2147483648, 2147483647, -2147483648, 252065626u, 9),
+            (11u, 2147483647, -2147483648, 2147483647, 417022221u, 10),
+            (13u, 0, 2, 1, 2698706422u, 11),
+            (13u, 7, 7, 7, 2698706422u, 11),
+            (13u, -9, 5, 0, 2698706422u, 11),
+            (13u, 9, 2, 9, 2594896831u, 10),
+            (13u, -2147483648, 2147483647, -2147483648, 2594896831u, 10),
+            (13u, 2147483647, -2147483648, -2147483648, 2698706422u, 11),
+            (16u, 0, 2, 0, 1073436684u, 12),
+            (16u, 7, 7, 7, 1073436684u, 12),
+            (16u, -9, 5, -6, 1073436684u, 12),
+            (16u, 9, 2, 9, 3824428093u, 11),
+            (16u, -2147483648, 2147483647, -2147483648, 3824428093u, 11),
+            (16u, 2147483647, -2147483648, 2147483647, 1073436684u, 12),
+            (18u, 0, 2, 2, 4048370063u, 3),
+            (18u, 7, 7, 7, 4048370063u, 3),
+            (18u, -9, 5, 5, 4048370063u, 3),
+            (18u, 9, 2, 9, 1283701268u, 2),
+            (18u, -2147483648, 2147483647, -2147483648, 1283701268u, 2),
+            (18u, 2147483647, -2147483648, -2147483648, 4048370063u, 3),
+            (20u, 0, 2, 0, 1343190632u, 4),
+            (20u, 7, 7, 7, 1343190632u, 4),
+            (20u, -9, 5, -5, 1343190632u, 4),
+            (20u, 9, 2, 9, 700849321u, 3),
+            (20u, -2147483648, 2147483647, -2147483648, 700849321u, 3),
+            (20u, 2147483647, -2147483648, 2147483647, 1343190632u, 4),
+        };
+        foreach (var v in vectors)
+        foreach (bool dispatch in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Random.Initialize(unchecked((int)v.Seed));
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(Side.Left), Controller = Side.Left };
+            int actual;
+            if (dispatch)
+            {
+                var value = engine.Api.InvokeByName("RandomIntFromRangeWithStream", ctx.Self,
+                    new object?[] { v.Lo, v.Hi, null }, ctx, out bool handled);
+                if (!handled || value is not int) return "随机辅助函数派发/整数输出缺失";
+                actual = (int)value;
+            }
+            else actual = engine.Api.RandomIntFromRangeWithStream(v.Lo, v.Hi);
+            if (actual != v.Result || state.Random.Seed != v.After || state.Random.ConsumedCount != v.Consumed)
+                return $"随机辅助函数向量不符：{v}/dispatch={dispatch}，实际{actual}/{state.Random.Seed}/{state.Random.ConsumedCount}";
+        }
+        return null;
+    }
+
     private static string? NativeRandomPriorityPools(CardDatabase db)
     {
         foreach (uint seed in new uint[] { 0, 1, 42, uint.MaxValue, 1000000000 })
@@ -10291,7 +10348,7 @@ internal static class SelfTest
             for (int draw = 0; draw < 12; draw++)
             {
                 long before = state.Random.ConsumedCount;
-                var want = expected.Length == 0 ? null : expected[oracle.Next(expected.Length)];
+                var want = expected.Length == 0 ? null : expected[NativeRandomDrawOracle(oracle, 0, expected.Length - 1)];
                 CardInstance? actual;
                 if (mode >= 3)
                 {
@@ -10300,8 +10357,8 @@ internal static class SelfTest
                 }
                 else actual = mode == 0 ? engine.Api.GetRandomCard(pool) : engine.Api.GetRandomCard(pool, skip);
                 if (actual != want || !pool.SequenceEqual(original) || state.Random.Seed != oracle.Seed
-                    || state.Random.ConsumedCount != before + (pool.Count == 0 ? 0 : 1))
-                    return $"优先候选/顺序/输入不变性/现有随机调用不符：seed={seed}/mode={mode}/pool={variant}/draw={draw}";
+                    || state.Random.ConsumedCount != oracle.ConsumedCount)
+                    return $"优先候选/顺序/输入不变性/现有辅助函数调用不符：seed={seed}/mode={mode}/pool={variant}/draw={draw}";
             }
         }
         return null;
@@ -10327,7 +10384,7 @@ internal static class SelfTest
             var oracle = new UeRandomStream(state.Random.Seed);
             for (int draw = 0; draw < 16; draw++)
             {
-                int index = oracle.Next(test.Priority ? 1 : 2);
+                int index = NativeRandomDrawOracle(oracle, 0, test.Priority ? 0 : 1);
                 var want = test.Priority ? candidate : pool[index];
                 if (engine.Api.GetRandomCard(pool) != want) return $"名称边界误识别：{test.Name1}/{test.Name2}";
             }
@@ -10343,7 +10400,7 @@ internal static class SelfTest
             if (!handled || royal.CustomJson.ContainsKey("customName1")) return "真实卡牌优先标记移除失败";
             var oracle = new UeRandomStream(state.Random.Seed);
             for (int draw = 0; draw < 16; draw++)
-                if (engine.Api.GetRandomCard(pool) != pool[oracle.Next(2)]) return "标记移除后不应按卡名继续强制选中";
+                if (engine.Api.GetRandomCard(pool) != pool[NativeRandomDrawOracle(oracle, 0, 1)]) return "标记移除后不应按卡名继续强制选中";
             normal.CustomJson["customName1"] = "AlwaysSelectedAsRandom";
             if (engine.Api.GetRandomCard(pool) != normal) return "优先标记新增后应立即生效";
         }
@@ -22330,6 +22387,11 @@ internal static class SelfTest
                      + $"result={raw ?? "null"}";
             }
 
+            var keywordOracle = new UeRandomStream(state.Random.Seed);
+            string[] expectedCandidates = target.Definition.Type == "fighter"
+                ? new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard, Keyword.HeavyArmor, Keyword.Shock }
+                : new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard, Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen };
+            string expectedKeyword = expectedCandidates[NativeRandomDrawOracle(keywordOracle, 0, expectedCandidates.Length - 1)];
             var random = engine.Api.InvokeByName("GiveRandomCombatKeyword", target,
                 new object?[] { target.CardId, target.CardId, null, null }, ctx, out bool randomHandled);
             if (!randomHandled || random is not object?[] randomOutputs
@@ -22338,6 +22400,10 @@ internal static class SelfTest
             {
                 return "GiveRandomCombatKeyword 的成功路径必须保留蓝图 out=0/false 的实际行为";
             }
+
+            if (!target.HasKeyword(expectedKeyword) || state.Random.Seed != keywordOracle.Seed
+                || state.Random.ConsumedCount != keywordOracle.ConsumedCount)
+                return "随机关键词结果/种子/额外消耗不符";
 
             string[] combatKeywords =
             [Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard,
@@ -23016,7 +23082,8 @@ internal static class SelfTest
             var first = state.CreateWithId(PlainUnit, Side.Left, 61, CardLocation.HandLeft, 0);
             var second = state.CreateWithId(PlainUnit, Side.Left, 62, CardLocation.HandLeft, 1);
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
-            int expectedIndex = new UeRandomStream(1).Next(2);
+            var discardOracle = new UeRandomStream(1);
+            int expectedIndex = NativeRandomDrawOracle(discardOracle, 0, 1);
             var result = engine.Api.InvokeByName("DiscardRandomCardFromHand", source,
                 new object?[] { (int)Side.Left, source.CardId, null }, ctx, out bool handled);
             if (!handled)
@@ -23027,7 +23094,7 @@ internal static class SelfTest
             var expected = expectedIndex == 0 ? first : second;
             var other = expectedIndex == 0 ? second : first;
             if ((int)(result ?? 0) != expected.CardId || expected.Location != CardLocation.Discard
-                || other.Location == CardLocation.Discard || state.Random.ConsumedCount != 1)
+                || other.Location == CardLocation.Discard || state.Random.ConsumedCount != discardOracle.ConsumedCount || state.Random.Seed != discardOracle.Seed)
             {
                 return $"多牌随机结果不符：期望 #{expected.CardId}，实际 result={result ?? "null"}，"
                      + $"位置={first.Location}/{second.Location}，cursor={state.Random.ConsumedCount}";
@@ -23263,8 +23330,8 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// `RandomIntFromRangeWithStream(min, max)` 透传 `RandomIntegerInRangeFromStream`，
-    /// 后者按 IDA 反编译是 `Min + floor(GetFraction() * (Max-Min+1))` ⇒ **闭区间**。
+    /// Raw RandomIntegerInRangeFromStream uses a closed interval.
+    /// Blueprint helper padding is tested separately by NativePaddedRandomVectors.
     /// 旧实现按半开区间处理，`(0,2)` 永远出不了 2。
     /// </summary>
     private static string? RandomIntFromRangeIsInclusive(CardDatabase db)

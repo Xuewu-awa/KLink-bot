@@ -2467,31 +2467,10 @@ public sealed partial class CardApi
                 isGold: c.State.ById(spawnerId)?.IsGold ?? false,
                 isSalvaged: salvageValue != 0, salvageFaction: salvageFaction);
 
-            // ★★ **必须消耗这一个随机数** —— 它是「随机效果与客户端不一致」这一类
-            //    在**消费点**上的第二个独立成因（第一个是 RNG 算法本身）。
-            //
-            // 蓝图 `BP_CardFunctions::SpawnCardInDeckBySide`（`spawnerID > 0` 分支，
-            // `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:34856-34867`）：
-            // <code>
-            //   CreateCard(...)                                   // L_0173 先建卡
-            //   GetDeckByside(side) → deckCardIDs                 // L_0225
-            //   len  = Array_Length(deckCardIDs)                  // L_0245（**含**刚建的这张）
-            //   rand = RandomIntegerInRangeFromStream(stream, 0, len)   // L_0280 ★ 每次生成都消耗
-            //   pos  = SelectInt(rand, -1, RandomWithoutShuffle)  // L_02B3
-            //   AddCardToDeckBySide(side, cardID, Not(bottom), pos)// L_0303
-            // </code>
-            // 注意 `rand` 是**无条件**算出来的（`SelectInt` 只是决定用不用它），
-            // 所以只要走了这条生成路径，每个生成的卡都恰好消耗 1 个随机数。
-            //
-            // 漏掉它会怎样（实测 773639 `#10 t3`，人类打 `card_event_colossus`）：
-            // 「Copy three random orders in the enemy deck」连抽 3 次，
-            // 每次抽完 `SpawnCardInDeckBySide` 都要消耗 1 个 —— 我们一个都没消耗
-            // ⇒ 游标**落后 1**，第二次抽签起全部错位。实测内核抽到
-            // `[iron_from_north, iron_from_north, baker_street]`，
-            // 而客户端（动作流揭示的 3001/3002）是 `[iron_from_north, royal_research, …]`
-            // —— 第一次对、第二次就不对了，正是"落后 1"的特征。
+            // Current pak SpawnCardInDeckBySide i=640 calls the padded Blueprint
+            // helper unconditionally before SelectInt chooses whether to use it.
             int deckLen = c.State.Deck(side).Count;
-            int rand = c.State.Random.RandRange(0, deckLen);
+            int rand = RandomIntFromRangeWithStream(0, deckLen);
             c.State.TraceRandom($"SpawnCardInDeckBySide {side} deckLen={deckLen} rand={rand} " +
                                 $"-> #{last.CardId} {cardName}");
 
@@ -3928,10 +3907,8 @@ public sealed partial class CardApi
     /// <summary>
     /// `RandomIntFromRangeWithStream(minimum, maximum, out randomResult)`.
     /// Raw draws use the closed interval [minimum, maximum].
-    /// TODO RULE-103: current pak i=51/205/280 first draws a count [1,10],
-    /// consumes that many dummy [0,1] draws, then makes the requested draw.
-    /// This implementation still omits that schedule; it is not a one-line
-    /// Blueprint forwarding function and native stream parity remains open.
+    /// Current pak/runtime i=51/205/280 draws a count [1,10], consumes
+    /// that many dummy [0,1] draws, then makes the requested draw (RULE-104).
     /// </summary>
     private object? DoRandomIntFromRange(EffectContext c, object?[] a)
     {
@@ -3939,7 +3916,7 @@ public sealed partial class CardApi
         int hi = IntArg(a, 1);
         uint seedBefore = c.State.Random.Seed;
         long cursorBefore = c.State.Random.ConsumedCount;
-        int v = c.State.Random.RandRange(lo, hi);
+        int v = RandomIntFromRangeWithStream(lo, hi);
         c.State.TraceRandom($"RandomIntFromRangeWithStream({lo},{hi}) -> {v} " +
                             $"cursor={cursorBefore}->{c.State.Random.ConsumedCount} " +
                             $"seed={seedBefore}->{c.State.Random.Seed}");
@@ -6088,7 +6065,7 @@ public sealed partial class CardApi
             return new object?[] { 0, false };
         }
 
-        int index = c.State.Random.RandRange(0, candidates.Count - 1);
+        int index = RandomIntFromRangeWithStream(0, candidates.Count - 1);
         int selected = candidates[index];
         c.State.TraceRandom($"GiveRandomCombatKeyword({target.CardId}) -> {selected}");
         int instigatorId = IntArg(args, 1, c.Self?.CardId ?? 0);
