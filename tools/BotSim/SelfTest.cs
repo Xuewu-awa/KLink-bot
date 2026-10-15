@@ -93,6 +93,7 @@ internal static class SelfTest
         new("抽牌：按手牌数量赋号，保留已有手牌的空位和重复编号", DrawHandNumberAssignment),
         new("抽牌容量：三条路径排除autoplay并按物理手牌位置计数", DrawHandCapacityAutoplay),
         new("抽牌容量：T3回调后再读取标签与手牌成员", DrawHandCapacityAfterDeckEvents),
+        new("选择容量守卫：开发非效果才阻挡，物理手牌排除autoplay", SelectionHandCapacityGuard),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
@@ -13555,6 +13556,60 @@ internal static class SelfTest
                 return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
         }
         return null;
+    }
+
+    private static string? SelectionHandCapacityGuard(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer", function = "GetChooseSpawnCards", field = "_auditSelectionPoolRead";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindLocalProgram(name, function) is not null) return "无法安装选择容量候选查询探针";
+        locals[function] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true },
+                null, -1, field, null) { DestinationScope = "instance" },
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int quantity in new[] { 8, 9, 10 })
+            foreach (int excluded in new[] { 0, 1, 2 })
+            foreach (bool oppositeOwner in new[] { false, true })
+            foreach (bool fromTop in new[] { false, true })
+            foreach (bool effect in new[] { false, true })
+            foreach (bool unavailable in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var selecting = state.CreateWithId(name, side, 30, unavailable ? CardLocation.NotAvailable : CardLocation.Discard, 0);
+                var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 20, CardLocation.Discard, 0);
+                for (int i = 0; i < quantity; i++)
+                {
+                    var hand = state.CreateWithId(i < excluded && i % 2 == 0 ? "card_event_resistance_new" : PlainUnit,
+                        oppositeOwner ? side.Opposite() : side, 100 + i, side.HandOf(), 4 + i * 3);
+                    if (i < excluded && i % 2 != 0) engine.Api.AddCustomGameplayTag(hand, "autoplay");
+                }
+                // The opposite physical hand is independently full. Receiver
+                // and Controller point there, but the explicit selecting ID wins.
+                for (int i = 0; i < 9; i++) state.CreateWithId(PlainUnit, side.Opposite(), 200 + i, side.Opposite().HandOf(), i);
+                var drawn = state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 7);
+                var ctx = new EffectContext { Engine = engine, State = state, Self = selecting, Controller = side.Opposite() };
+                int replies = 0;
+                engine.ChooseSpawnCard = (_, _) => { replies++; return null; };
+                object? result = engine.Api.InvokeByName("selectCardToDraw", decoy,
+                    new object?[] { 30, fromTop, effect, null }, ctx, out bool handled);
+                bool full = quantity - excluded >= 9;
+                bool blocked = !fromTop && !effect && full;
+                bool poolRead = selecting.BlueprintVariables.ContainsKey(field);
+                var draws = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDrawCardFromDeck").ToArray();
+                if (!handled || poolRead != (!fromTop && !blocked) || replies != 0 || state.Random.ConsumedCount != 0
+                    || decoy.BlueprintVariables.ContainsKey(field)
+                    || !Equals(result, fromTop ? 60 : 0)
+                    || draws.Length != (fromTop ? 1 : 0)
+                    || drawn.Location != (!fromTop ? side.DeckOf() : full ? CardLocation.Discard : side.HandOf()))
+                    return $"选择守卫分支错误：{side}/{quantity}/{excluded}/{oppositeOwner}/top={fromTop}/effect={effect}/unavailable={unavailable}/pool={poolRead}";
+            }
+            return null;
+        }
+        finally { locals.Remove(function); }
     }
 
     private static string? DrawHandCapacityAutoplay(CardDatabase db)

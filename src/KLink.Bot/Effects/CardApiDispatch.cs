@@ -2098,45 +2098,11 @@ public sealed partial class CardApi
         => SelfArg(c, receiver, args)?.HasKeyword(keyword) ?? false;
 
     /// <summary>
-    /// 「从牌库里挑一张」—— 按反编译蓝图实现（<c>BP_CardFunctions.selectCardToDraw</c>）。
-    ///
-    /// 签名（<c>ref/kards-sim/KardsSim/Generated/_index.g.cs</c> 登记的就是它）：
-    /// <code>
-    /// selectCardToDraw(cardSelectingCardToDraw:Int, selectFromTopOfDeck:Bool, isEffect:Bool,
-    ///                  out drawnCardID:Int)
-    /// </code>
-    /// 调用点实例：<c>card_event_pams.OnPlayedFromHand</c> 的 i=822
-    /// （<c>args=[cardID, false, false, out]</c>）。
-    ///
-    /// 蓝图原逻辑（逐条对应 <c>BP_CardFunctions.g.cs</c> 的 L_xxxx 标号）：
-    /// <list type="number">
-    /// <item><c>L_064B</c>：<c>!isEffect &amp;&amp; IsLocationFull(手牌)</c> → 直接返回 0，
-    ///   什么都不抽。（所以这里是"手牌满了就不抽"，而不是"抽了再弃"。）</item>
-    /// <item><c>L_0680</c>：候选 = <c>cardSelecting.GetChooseSpawnCards()</c>
-    ///   （出参 <c>cards / markAsSeen / keepOrder</c>）；<c>keepOrder</c> 为假时先
-    ///   <c>Array_ShuffleFromStream(cardsRandomStream)</c> 洗一遍。</item>
-    /// <item><c>L_0745</c>：<c>keepOrder</c> 分支下候选只取
-    ///   <c>0..Min(2, LastIndex)</c> —— **最多 3 张**，这正好解释了回放里
-    ///   <c>CS</c> 动作第 2 槽恒为 0/1/2。</item>
-    /// <item><c>L_0B57</c>（只有 1 张候选）：直接
-    ///   <c>DrawSpecificCardFromDeckBySide</c> + <c>OnHandTargetSelected</c>。</item>
-    /// <item><c>L_0D61</c>（多张候选）：只发 <c>NotifySelectCardToDrawPending</c>，
-    ///   **不在本函数里抽牌** —— 抽牌由答复（回放里的 <c>CS</c> 动作）触发。</item>
-    /// </list>
-    ///
-    /// **本内核的落地方式（2026-09-27 打通）**：
-    /// <list type="bullet">
-    /// <item>候选表：执行那张卡自己的 <c>GetChooseSpawnCards</c>（已编进 IR 的 <c>locals</c>），
-    ///   见 <see cref="GetChooseSpawnCards"/>。</item>
-    /// <item>答复来源：回放路径走 <c>MatchEngine.PickCardToDraw</c>，选中的是
-    ///   <c>CS</c> 动作第 3 槽的**卡组码 → 卡名**（比用下标猜候选表可靠）；
-    ///   自对弈路径退化到"候选表第一张"（蓝图**没有** Develop 族的自动兜底）。</item>
-    /// <item>落实：按卡名 <c>Create</c> 一张新卡（<see cref="DevelopChosenCard"/>）。</item>
-    /// </list>
-    ///
-    /// ⚠️ 仍然没做到的：`keepOrder` 为假时蓝图会 `Array_ShuffleFromStream` 洗候选，
-    ///    再取前 3 张 —— 回放路径不需要它（答复自带卡名），但**自对弈路径**的
-    ///    "第一张"与真实客户端的"洗完第一张"不是同一个分布。这是近似，不是复刻。
+    /// BP_CardFunctions.selectCardToDraw: top-deck selection takes the i=5
+    /// branch. Generated-pool selection uses i=1496..1663 to stop only when
+    /// !isEffect and IsLocationFull(selecting.side's hand). The pool is queried
+    /// at i=1675 only after that guard; complete selection/reply paths remain
+    /// subject to their separate audits.
     /// </summary>
     private object? SelectCardToDraw(EffectContext c, object? r, object?[] a)
     {
@@ -2150,8 +2116,8 @@ public sealed partial class CardApi
         // 所以不能用 `IsLocatedOnBoard` 之类的在场判据。
         Side side = selecting?.Owner ?? c.Controller;
 
-        // 蓝图 L_064B：非效果选择 + 手牌已满 → 不抽
-        if (!selectFromTopOfDeck && !isEffect && c.State.Hand(side).Count >= GameState.HandCapacity)
+        // Pak i=1579..1663: generated-pool, non-effect selection stops before querying candidates.
+        if (!selectFromTopOfDeck && !isEffect && CountCardsForHandCapacity(side.HandOf()) >= GameState.HandCapacity)
         {
             return 0;
         }
