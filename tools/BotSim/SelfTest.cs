@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("亡语窃取副本：保留原所属方、目标数组和名称，隔离原对象重入修改", StealDestructionCopyFields),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15170,6 +15171,65 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? StealDestructionCopyFields(CardDatabase db)
+    {
+        const string name = "card_unit_52_k", trigger = "OnDestroyed";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装窃取亡语副本探针";
+        var steps = new List<KismetStep>();
+        void Call(string function, params KismetExpr[] args) => steps.Add(new KismetStep(steps.Count, "call", function, args,
+            Array.Empty<int>(), null, null, -1, null, null));
+        KismetExpr Targets() => new() { Call = "getCardsBuffedByThisCard", Context = new KismetExpr { Self = true }, Args = new[] { KismetExpr.Empty } };
+        Call("JSON_SetInt", new() { Int = 60 }, new() { Str = "_auditCopyOriginalSide" }, new() { Var = "originalSide", Scope = "instance" });
+        Call("JSON_SetIntArray", new() { Int = 60 }, new() { Str = "_auditCopyTargetsBefore" }, Targets());
+        Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyNameBefore" }, new() { Var = "customName1", Scope = "instance" });
+        Call("SpawnCardInDeckBySide", new() { Int = 2 }, new() { Str = "card_unit_routed_troops" }, new() { Int = 30 }, new() { Int = 1 });
+        Call("JSON_SetIntArray", new() { Int = 60 }, new() { Str = "_auditCopyTargetsAfter" }, Targets());
+        Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyNameAfter" }, new() { Var = "customName1", Scope = "instance" });
+        Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyName2After" }, new() { Var = "customName2", Scope = "instance" });
+        steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+        locals.Add(trigger, steps); using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        foreach (Side original in new[] { Side.Left, Side.Right })
+        foreach (bool controlled in new[] { false, true })
+        foreach (bool steal in new[] { false, true })
+        foreach (int arrayKind in Enumerable.Range(0, 3))
+        foreach (int zone in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(name, original, 60, original.HqOf(), 1);
+            if (controlled) state.ChangeOwner(card, original.Opposite(), normalize: false);
+            card.Location = zone == 0 ? card.Owner.HqOf() : zone == 1 ? card.Owner.HandOf() : CardLocation.Discard;
+            var location = card.Location; var owner = card.Owner;
+            state.CreateWithId(PlainUnit, original, 30, CardLocation.Discard, 0);
+            card.Keywords.Add(Keyword.Destruction);
+            card.CustomJson["customName1"] = "native_copy_marker1";
+            card.CustomJson["customName2"] = "native_copy_marker2";
+            int[] ids = arrayKind == 0 ? Array.Empty<int>() : arrayKind == 1 ? new[] { 90, 10 } : new[] { 0, -7, 9999, 90, 90 };
+            card.CardsBuffedByThisCard.AddRange(ids);
+            int callbacks = 0; var previous = state.CardCreated;
+            state.CardCreated = made => {
+                previous?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                callbacks++;
+                card.CardsBuffedByThisCard.Add(888);
+                card.CustomJson["customName1"] = "changed_marker1";
+                card.CustomJson["customName2"] = "changed_marker2";
+            };
+            engine.Api.TriggerDestruction(card, null, steal, false);
+            var expectedAfter = steal ? ids : ids.Concat(new[] { 888 }).ToArray();
+            if (callbacks != 1 || engine.Api.JsonGetInt(card, "_auditCopyOriginalSide") != (int)original
+                || !engine.Api.JsonGetIntArray(card, "_auditCopyTargetsBefore").SequenceEqual(ids)
+                || !engine.Api.JsonGetIntArray(card, "_auditCopyTargetsAfter").SequenceEqual(expectedAfter)
+                || card.CustomJson.GetValueOrDefault("_auditCopyNameBefore") != "native_copy_marker1"
+                || card.CustomJson.GetValueOrDefault("_auditCopyNameAfter") != (steal ? "native_copy_marker1" : "changed_marker1")
+                || card.CustomJson.GetValueOrDefault("_auditCopyName2After") != (steal ? "native_copy_marker2" : "changed_marker2")
+                || !card.CardsBuffedByThisCard.SequenceEqual(ids.Concat(new[] { 888 }))
+                || !ReferenceEquals(state.ById(60), card) || card.Owner != owner || card.OriginalOwner != original || card.Location != location)
+                return $"窃取亡语副本字段/隔离错误：{original}/{controlled}/{steal}/{arrayKind}/{zone}, calls={callbacks}, side={engine.Api.JsonGetInt(card, "_auditCopyOriginalSide")}";
         }
         return null;
     }

@@ -1282,6 +1282,7 @@ public sealed partial class CardApi
             CardId = source.CardId,
             Name = source.Name,
             Owner = source.Owner.Opposite(),
+            OriginalOwner = source.OriginalOwner,
             Definition = source.Definition,
             IsGold = source.IsGold,
             Location = source.Location,
@@ -1335,6 +1336,8 @@ public sealed partial class CardApi
                 .ToList();
 
         copy.CustomJson.CopyFrom(source.CustomJson);
+        // Native CopyData (+0x108) copies the object-owned outgoing ID array.
+        copy.CardsBuffedByThisCard.AddRange(source.CardsBuffedByThisCard);
 
         copy.ReceivedAbilitiesFromCards.Clear();
         foreach (var (ability, givers) in source.ReceivedAbilitiesFromCards)
