@@ -53,6 +53,7 @@ internal static class SelfTest
         new("退却重入：换主后仍使用回调前保存的支援目的地", RetreatSavedSupportDestination),
         new("退却重入：死亡或再次移动后仍按保存的旧位置执行回手", RetreatSavedOldLocation),
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
+        new("回手容量：排除实时autoplay并在离场回调后重新判断", ReturnHandCapacityAutoplay),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15164,6 +15165,75 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ReturnHandCapacityAutoplay(CardDatabase db)
+    {
+        foreach (Side originalSide in new[] { Side.Left, Side.Right })
+        foreach (bool direct in new[] { false, true })
+        foreach (int quantity in new[] { 8, 9, 10 })
+        foreach (int excluded in new[] { 0, 1, 2 })
+        foreach (bool stolen in new[] { false, true })
+        foreach (bool oppositeResidentOwner in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, originalSide.Opposite(), 30, CardLocation.Discard, 0);
+            for (int i = 0; i < quantity; i++)
+            {
+                var hand = state.CreateWithId(i < excluded && i % 2 == 0 ? "card_event_resistance_new" : PlainUnit,
+                    oppositeResidentOwner ? originalSide.Opposite() : originalSide, 100 + i, originalSide.HandOf(), i * 3);
+                if (i < excluded && i % 2 != 0) engine.Api.AddCustomGameplayTag(hand, "autoplay");
+            }
+            var unit = state.CreateWithId(PlainUnit, originalSide, 62, originalSide.HqOf(), 1);
+            if (stolen) { state.ChangeOwner(unit, originalSide.Opposite(), normalize: false); unit.Location = originalSide.Opposite().HqOf(); unit.UnderEnemyControl = true; }
+            unit.Attack += 3;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = unit.Owner };
+            engine.Api.InvokeByName(direct ? "MoveCardFromBoardToOwnersHand" : "MoveUnitFromBoardToOwnersHand", unit,
+                direct ? new object?[] { 62, 30, (int)unit.Location, (int)originalSide.HandOf() } : new object?[] { unit, 30 }, ctx, out bool handled);
+            bool full = quantity - excluded >= 9;
+            var discards = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDiscardCard").ToArray();
+            if (!handled || unit.Location != (full ? CardLocation.Discard : originalSide.HandOf())
+                || unit.Owner != originalSide || unit.OriginalOwner != originalSide || unit.UnderEnemyControl || !unit.CardSeen
+                || unit.Attack != unit.Definition.Attack || discards.Length != (full ? 1 : 0)
+                || full && (discards[0].Values.First(x => x.Name == "cardID").Value != 62
+                    || discards[0].Values.First(x => x.Name == "discarderID").Value != 30))
+                return $"回手容量/归属/弃牌错误：{originalSide}/{direct}/{quantity}/{excluded}/{stolen}/{oppositeResidentOwner}";
+        }
+        foreach (Side originalSide in new[] { Side.Left, Side.Right })
+        foreach (bool direct in new[] { false, true })
+        foreach (int quantity in new[] { 7, 8 })
+        foreach (int mutation in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetMaxKredits(originalSide, 12); state.SetKredits(originalSide, 5);
+            state.CreateWithId("card_unit_dornier_do_17", originalSide, 20, originalSide.HqOf(), 1);
+            state.CreateWithId(PlainUnit, originalSide, 30, CardLocation.Discard, 0);
+            for (int i = 0; i < quantity; i++) state.CreateWithId(mutation == 2 && i == 0 ? "card_event_resistance_new" : PlainUnit,
+                originalSide, 100 + i, originalSide.HandOf(), i);
+            var drawn = state.CreateWithId("card_unit_51e_regiment", originalSide, 40, originalSide.DeckOf(), 0);
+            var unit = state.CreateWithId(PlainUnit, originalSide, 62, originalSide.HqOf(), 2);
+            state.ChangeOwner(unit, originalSide.Opposite(), normalize: false); unit.Location = originalSide.Opposite().HqOf(); unit.UnderEnemyControl = true;
+            int callbacks = 0;
+            using var probe = InstallDrawReentryProbe(state, () => {
+                callbacks++;
+                if (mutation == 1) engine.Api.AddCustomGameplayTag(state.ById(100)!, "autoplay");
+                if (mutation == 2) state.ById(100)!.RemovedGameplayTags.Add("autoplay");
+                if (mutation == 3) state.ById(100)!.Location = CardLocation.Discard;
+                if (mutation == 4) state.CreateWithId(PlainUnit, originalSide.Opposite(), 200, originalSide.HandOf(), 90);
+                if (mutation == 5) engine.Api.AddCustomGameplayTag(drawn, "autoplay");
+            });
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = unit.Owner };
+            engine.Api.InvokeByName(direct ? "MoveCardFromBoardToOwnersHand" : "MoveUnitFromBoardToOwnersHand", unit,
+                direct ? new object?[] { 62, 30, (int)unit.Location, (int)originalSide.HandOf() } : new object?[] { unit, 30 }, ctx, out _);
+            int expected = quantity + 1 + (mutation == 4 ? 1 : 0) - (mutation is 1 or 3 or 5 ? 1 : 0);
+            bool full = expected >= 9;
+            var discards = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDiscardCard").ToArray();
+            if (callbacks != 1 || drawn.Location != originalSide.HandOf() || state.Kredits(originalSide) != 7
+                || unit.Location != (full ? CardLocation.Discard : originalSide.HandOf()) || unit.Owner != originalSide
+                || discards.Length != (full ? 1 : 0))
+                return $"离场回调后实时回手容量错误：{originalSide}/{direct}/{quantity}/mutation={mutation}/calls={callbacks}";
         }
         return null;
     }

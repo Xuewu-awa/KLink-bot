@@ -3664,7 +3664,7 @@ public sealed partial class CardApi
             oldLocation: explicitLocations ? oldLocation : null);
         // MoveCardFromBoardToOwnersHand i=10 fires leave callbacks before i=59
         // queries capacity: those callbacks can draw into or empty the hand.
-        bool handFull = c.State.AllCards.Count(x => x.Location == handLocation) >= GameState.HandCapacity;
+        bool handFull = IsLocationFull(handLocation);
         CardLocation target = handFull ? CardLocation.Discard : handLocation;
         int slot = c.State.AllCards.Where(x => x.Location == target).Select(x => x.LocationNumber).DefaultIfEmpty(-1).Max() + 1;
         c.State.Move(card, target, locationNumber: slot, moveReason: CardMoveReason.BoardToHand,
@@ -5269,12 +5269,14 @@ public sealed partial class CardApi
     /// </list>
     /// </summary>
     private object? DoIsLocationFull(EffectContext c, object? r, object?[] a)
+        => IsLocationFull((CardLocation)IntArg(a, 0));
+
+    private bool IsLocationFull(CardLocation loc)
     {
-        var loc = (CardLocation)IntArg(a, 0);
-        int count = c.State.CardsUnordered().Count(x => x.Location == loc);
+        int count = State.CardsUnordered().Count(x => x.Location == loc);
         return loc switch
         {
-            CardLocation.BoardFrontline => count >= c.State.FrontlineCapacity,
+            CardLocation.BoardFrontline => count >= State.FrontlineCapacity,
             CardLocation.BoardHqLeft or CardLocation.BoardHqRight => count >= GameState.HalfBoardCapacity,
             CardLocation.HandLeft or CardLocation.HandRight => CountCardsForHandCapacity(loc) >= GameState.HandCapacity,
             _ => false,
