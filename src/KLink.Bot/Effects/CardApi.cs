@@ -3455,20 +3455,30 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 「这张卡的能力集变了」—— 出处 `out/bp-cardfn.json` 函数
-    /// `ExecuteOnOtherCardsAbilitiesChanged`（i=307），签名 `BaseCardObject.h:643`：
+    /// 能力变化通知。权威 parsed BP_CardFunctions 的
+    /// ExecuteOnOtherCardsAbilitiesChanged i=38查询T29，i=307直接调用：
     /// <code>void OnOtherCardAbilitiesChanged(UBaseCardObject* cardChanging);</code>
     /// 只有广播这一种形态（没有"自己"那个变体）。
     /// 调用点（同一份 dump）：`ChangeHeavyArmor`、以及 Give/Remove 关键字一族。
     /// </summary>
-    public void FireAbilitiesChanged(CardInstance card)
-        => FireTrigger("OnOtherCardAbilitiesChanged", card, card.Owner,
-            eventArgs: new object?[] { card },
-            eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardChanging"] = card,
-            });
+    public void FireAbilitiesChanged(CardInstance? card)
+    {
+        // ExecuteOnOtherCardsAbilitiesChanged queries T29 once, then directly
+        // invokes every saved object. No subject exclusion, location check,
+        // suppression/registration recheck or stopFurtherActions gate.
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { card };
+        var named = new Dictionary<string, object?> { ["cardChanging"] = card };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={card?.Name ?? "null"}#{card?.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, card, eventArgs: args, namedArgs: named);
+        }
+    }
 
     /// <summary>
     /// 「抑制」摘除的关键词集 —— 出处 `BP_CardFunctions::SuppressMultipleUnits`

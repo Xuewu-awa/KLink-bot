@@ -139,6 +139,10 @@ internal static class SelfTest
         new("奋战来源撤销：保留固有/其他来源，最后来源才截断额度", FurySourceRemove),
         new("奋战混合来源：零/负来源、增益记账与原始成员读取", FurySourceMixed),
         new("奋战来源边界：无效目标、位置、隐蔽、抑制与重置", FurySourceBoundaries),
+        new("能力变化T29：包含主体、无位置门及查询后不重复筛选", AbilitiesChangedSnapshot),
+        new("能力变化T29：重入保留外层快照及内外独立查询", AbilitiesChangedReentry),
+        new("能力变化T29：奋战去重、未知来源与skip通知的事件契约", FuryAbilitiesChangedIntegration),
+        new("能力变化T29：KV-1S自身获得奋战仍更新友方关键字攻击加成", AbilitiesChangedKv1s),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -9114,6 +9118,211 @@ internal static class SelfTest
                 if (card.HasFury || card.ReceivedAbilitiesFromCards.ContainsKey("fury") || card.BuffsBySource.Count != 0)
                     return "重置后不得残留来源Fury";
             }
+        }
+        return null;
+    }
+
+    private static IDisposable InstallAbilitiesChangedProbes()
+    {
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        var installed = new List<IDictionary<string, IReadOnlyList<KismetStep>>>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var prior in installed) prior.Remove(trigger);
+                throw new InvalidOperationException("无法安全安装T29探针：" + name);
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "cardChanging", Scope = "local" }, null, -1, "_auditT29Subject", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                        new KismetExpr { Var = "_auditT29Count", Scope = "instance" }, new KismetExpr { Int = 1 }
+                    } }, null, -1, "_auditT29Count", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add(locals);
+        }
+        return new AuditProbeCleanup(() => { foreach (var locals in installed) locals.Remove(trigger); });
+    }
+
+    private static string? AbilitiesChangedSnapshot(CardDatabase db)
+    {
+        using var probes = InstallAbilitiesChangedProbes();
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 22))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_event_honorifics", side.Opposite(), 20,
+                mode == 18 ? CardLocation.NotAvailable : side.Opposite().DeckOf(), 1);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21,
+                mode == 6 ? CardLocation.NotAvailable : CardLocation.Discard, 2);
+            var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60,
+                mode == 19 ? CardLocation.NotAvailable : side.HandOf(), 1);
+            var cards = new[] { first, last, subject };
+            foreach (var card in cards)
+            {
+                card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+                card.BlueprintVariables["_auditT29Count"] = 0;
+            }
+            if (mode == 1) state.StopFurtherActions = true;
+            if (mode is 2 or 3) subject.Keywords.Add(Keyword.Suppressed);
+            if (mode == 3) subject.SuppressionExceptionTriggers.Add(trigger);
+            if (mode is 4 or 5) first.Keywords.Add(Keyword.Suppressed);
+            if (mode == 5) first.SuppressionExceptionTriggers.Add(trigger);
+            if (mode is 11 or 12 or 17) last.Keywords.Add(Keyword.Suppressed);
+            if (mode is 12 or 17) last.SuppressionExceptionTriggers.Add(trigger);
+            if (mode == 15) subject.Definition = new CardDefinition { Name = subject.Name };
+            var called = new List<int>(); var created = state.CardCreated;
+            var seen = cards.ToDictionary(x => x.CardId, _ => 0);
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => Convert.ToInt32(x.BlueprintVariables["_auditT29Count"]) > seen[x.CardId]);
+                seen[current.CardId]++; called.Add(current.CardId);
+                if (current != first) return;
+                if (mode == 7) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 8) last.Definition = new CardDefinition { Name = last.Name };
+                if (mode == 9) last.Location = CardLocation.NotAvailable;
+                if (mode == 10) state.StopFurtherActions = true;
+                if (mode is 11 or 12) last.Keywords.Remove(Keyword.Suppressed);
+                if (mode == 13)
+                {
+                    var late = state.CreateWithId(last.Name, side, 22, side.HqOf(), 1);
+                    late.Definition = new CardDefinition { Name = late.Name, UsedTriggers = new[] { trigger } };
+                    late.BlueprintVariables["_auditT29Count"] = 0;
+                }
+                if (mode == 14) subject.Definition = new CardDefinition { Name = subject.Name };
+                if (mode == 16) subject.Location = CardLocation.NotAvailable;
+                if (mode == 17) last.SuppressionExceptionTriggers.Clear();
+            };
+            CardInstance? changing = mode == 20 ? null : mode == 21
+                ? new CardInstance { CardId = 999, Name = subject.Name, Owner = side, Definition = subject.Definition }
+                : subject;
+            engine.Api.TriggerTrace = new List<string>();
+            engine.Api.FireAbilitiesChanged(changing);
+            var expected = new List<int>();
+            if (mode != 4) expected.Add(20);
+            if (mode != 11) expected.Add(21);
+            if (mode is not (2 or 15)) expected.Add(60);
+            if (!called.SequenceEqual(expected))
+                return $"T29快照错误：{side} mode={mode} 期望{string.Join(",", expected)} 实际{string.Join(",", called)}";
+            foreach (int id in called)
+                if (!ReferenceEquals(cards.Single(x => x.CardId == id).BlueprintVariables["_auditT29Subject"], changing))
+                    return "T29必须始终携带同一个实际能力变化对象";
+            if (mode == 13 && Convert.ToInt32(state.ById(22)!.BlueprintVariables["_auditT29Count"]) != 0)
+                return "T29查询后新增订阅者不得加入当前批次";
+            if (mode is 1 or 10 && !state.StopFurtherActions) return "T29不得重置停止标志";
+        }
+        return null;
+    }
+
+    private static string? AbilitiesChangedReentry(CardDatabase db)
+    {
+        using var probes = InstallAbilitiesChangedProbes();
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_event_honorifics", side, 20, side.HqOf(), 1);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, side.HqOf(), 2);
+            var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 3);
+            var cards = new[] { first, last, subject };
+            foreach (var card in cards)
+            {
+                card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+                card.BlueprintVariables["_auditT29Count"] = 0;
+            }
+            bool nested = false;
+            var seen = cards.ToDictionary(x => x.CardId, _ => 0);
+            var called = new List<(int Recipient, int Subject)>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => Convert.ToInt32(x.BlueprintVariables["_auditT29Count"]) > seen[x.CardId]);
+                seen[current.CardId]++;
+                called.Add((current.CardId, ((CardInstance)current.BlueprintVariables["_auditT29Subject"]!).CardId));
+                if (nested) return;
+                nested = true;
+                last.Keywords.Add(Keyword.Suppressed);
+                engine.Api.FireAbilitiesChanged(first);
+            };
+            engine.Api.FireAbilitiesChanged(subject);
+            // Inner query excludes last, outer query retains it. Each frame keeps its payload.
+            if (!called.SequenceEqual(new[] { (20, 60), (20, 20), (60, 20), (21, 60), (60, 60) }))
+                return "T29重入应分别查询并保存内外接收者/载荷：" + string.Join(",", called);
+        }
+        return null;
+    }
+
+    private static string? FuryAbilitiesChangedIntegration(CardDatabase db)
+    {
+        using var probes = InstallAbilitiesChangedProbes();
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var subject = MakeActionQuotaProbe(state, side, "infantry");
+            var observer = state.CreateWithId("card_unit_51e_regiment", side.Opposite(), 21, CardLocation.NotAvailable, 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { trigger } };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            if (suppressed) subject.Keywords.Add(Keyword.Suppressed);
+            int Calls() => Convert.ToInt32(observer.BlueprintVariables["_auditT29Count"]);
+            var observed = new List<string>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                string sources = string.Join(",", subject.ReceivedAbilitiesFromCards.GetValueOrDefault("fury") ?? new List<int>());
+                int gives = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury");
+                int removesSoFar = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRemoveFury");
+                observed.Add($"{subject.HasFury}:{sources}:{gives}:{removesSoFar}");
+            };
+            engine.Api.GiveFury(subject, 71);
+            if (Calls() != 1) return "Fury给予必须在来源写入后执行T29，变化卡抑制不挡广播";
+            if (!ReferenceEquals(observer.BlueprintVariables["_auditT29Subject"], subject)
+                || !subject.HasFury || subject.BuffsBySource[(71, false)].Fury != 1) return "T29载荷/来源写入不符";
+            engine.Api.GiveFury(subject, 71);
+            engine.Api.RemoveFury(subject, 999, skip);
+            if (Calls() != 1) return "重复Fury来源和未知撤销来源不应广播T29";
+            engine.Api.GiveFury(subject, 72);
+            engine.Api.RemoveFury(subject, 71, skip);
+            if (Calls() != 3 || !subject.HasFury) return "有效Fury不变的新来源给予/撤销仍应广播T29";
+            engine.Api.RemoveFury(subject, 72, skip);
+            if (Calls() != 4 || subject.HasFury) return "最后来源撤销无论skipAction都应广播T29";
+            int removes = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRemoveFury");
+            if (removes != (skip ? 0 : 2)) return "skipAction只影响移除通知";
+            if (!observed.SequenceEqual(new[] { "True:71:1:0", "True:71,72:2:0",
+                $"True:72:2:{(skip ? 0 : 1)}", $"False::2:{(skip ? 0 : 2)}" }))
+                return "Fury来源字段与通知应在T29回调之前更新：" + string.Join(" | ", observed);
+        }
+        return null;
+    }
+
+    private static string? AbilitiesChangedKv1s(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var aura = state.CreateWithId("card_unit_kv_1s", side, 20, side.HqOf(), 1);
+            var ally = state.CreateWithId("card_unit_432_infantry_regiment", side, 21, side.HqOf(), 2);
+            var enemy = state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 60, side.Opposite().HqOf(), 1);
+            ally.Keywords.Add(Keyword.Blitz); enemy.Keywords.Add(Keyword.Blitz);
+            int allyAttack = ally.Attack, enemyAttack = enemy.Attack, auraAttack = aura.Attack;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.GiveFury(aura, 71);
+            if (ally.Attack != allyAttack + 1 || enemy.Attack != enemyAttack || aura.Attack != auraAttack
+                || !trace.Any(x => x.StartsWith("OnOtherCardAbilitiesChanged → card_unit_kv_1s#20", StringComparison.Ordinal)))
+                return "KV-1S自身变化应收到T29并更新友军关键词加成，不应增益自己或敌军";
+            engine.Api.RemoveFury(aura, 71, skipAction: true);
+            if (ally.Attack != allyAttack + 1) return "KV-1S重复更新不可累计已经施加的关键字攻击加成";
         }
         return null;
     }
