@@ -2425,7 +2425,7 @@ public sealed partial class CardApi
     ///   不能再扫任意整数猜位置：右阵营的 <c>side=2</c> 会把本应放底的卡误判成放顶，
     ///   而多张置顶时也必须按每次生成后的当前牌库重排。</item>
     /// <item><c>shuffle</c>（a[7]）为真时，蓝图在循环后调用
-    ///   `ShuffleDeckBySide(side, true, spawnerID, …)`；内部洗牌跳过其通知，外层生成通知仍是独立待审计路径。</item>
+    ///   `ShuffleDeckBySide(side, true, spawnerID, …)`；内部洗牌跳过其通知，外层生成通知在全部T22完成后读取当前牌库。</item>
     /// </list>
     ///
     /// ★ 出参 <c>spawnedCardIDs</c> **已经改成数组**（2026-10-02，见函数末尾的注释）：
@@ -2501,6 +2501,11 @@ public sealed partial class CardApi
         {
             ShuffleDeckBySide(c, side, spawnerId, skipSubAction: true);
         }
+
+        // i=997..1088: this outer receipt reads the CURRENT deck after all
+        // per-card T3 callbacks and the optional shuffle/T22 have completed.
+        RecordNewDeck(side, c.State.Deck(side).Select(card => card.CardId).ToArray(), spawned,
+            shuffle ? 3 : (toBottom ? 1 : 2), TruthyArg(a, 5), shuffle);
 
         // ★★ 出参必须是**数组**（`TArray<int32>` 的卡 ID），不是单张卡。
         //
@@ -3395,6 +3400,24 @@ public sealed partial class CardApi
         return 0;
     }
 
+    // BP_OnlineMatch:AddSubActionNewDeck: base fields, then optional fields
+    // in deckSpawn/hideSpawnFromEnemy/shuffle order. Main action branch only.
+    private void RecordNewDeck(Side side, IReadOnlyList<int> deck, IReadOnlyList<int> spawned,
+        int deckLocation, bool hideFromEnemy, bool shuffle)
+    {
+        static string Ids(IReadOnlyList<int> values) => string.Join(";", values.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        var values = new List<ActionValue2>
+        {
+            ActionValue2.Str("side", side.ToWire()),
+            ActionValue2.Str("cards", Ids(deck)),
+            ActionValue2.Str("spawnCards", Ids(spawned)),
+        };
+        if (deckLocation != 0) values.Add(ActionValue2.Int("deckSpawn", deckLocation));
+        if (hideFromEnemy) values.Add(ActionValue2.Bool("hideSpawnFromEnemy", true));
+        if (shuffle) values.Add(ActionValue2.Bool("shuffle", true));
+        _engine.FireSubAction("ZActionNewDeck", values);
+    }
+
     private void ShuffleDeckBySide(EffectContext c, Side side, int instigatorId, bool skipSubAction = false)
     {
         var order = c.State.Deck(side).ToList();
@@ -3413,13 +3436,7 @@ public sealed partial class CardApi
         // notifier, whose i=829 Pop resumes at i=299; true skips only it.
         ExecuteOnAfterDeckChanged(side);
         if (!skipSubAction)
-            c.Engine.FireSubAction("ZActionNewDeck", new[]
-            {
-                ActionValue2.Str("side", side.ToWire()),
-                ActionValue2.Str("cards", string.Join(";", notificationIds.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
-                ActionValue2.Str("spawnCards", ""),
-                ActionValue2.Bool("shuffle", true),
-            });
+            RecordNewDeck(side, notificationIds, Array.Empty<int>(), 0, false, true);
         var recipients = CaptureRegisteredTriggerSnapshot("OnDeckShuffled");
         var library = Blueprint.KismetLibrary.Default;
         if (library is null) return;

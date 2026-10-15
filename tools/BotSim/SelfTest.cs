@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("牌库生成通知：落点/隐藏/洗牌字段与零负数量矩阵", NativeSpawnDeckReceipt),
+        new("牌库生成通知：T3/T22后读取当前牌库并保留全部生成ID", NativeSpawnDeckReceiptTiming),
         new("洗牌通知：保存顺序、四字段、空牌库与skipSubAction", NativeShuffleNotification),
         new("洗牌通知：T3后通知再查询T22，载荷保留原洗牌快照", NativeShuffleNotificationTiming),
         new("情报通知：四字段、重复项、位置过滤与输入数组保持", NativeCardsSeenNotification),
@@ -10220,6 +10222,118 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeSpawnDeckReceipt(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { -2, 0, 1, 3 })
+        foreach (int initial in new[] { 0, 2 })
+        foreach (bool hidden in new[] { false, true })
+        foreach (bool bottom in new[] { false, true })
+        foreach (bool shuffle in new[] { false, true })
+        foreach (bool randomPosition in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            for (int i = 0; i < initial; i++) state.CreateWithId(PlainUnit, side, 90 - i * 10, side.DeckOf(), i);
+            var expectedDeck = state.Deck(side).Select(x => x.CardId).ToList();
+            var created = new List<int>();
+            state.CardCreated += card => { if (card.Name == "card_unit_1st_infantry_regiment_us") created.Add(card.CardId); };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnCardInDeckBySide", source, new object?[] { (int)side,
+                "card_unit_1st_infantry_regiment_us", 30, count, 0, hidden, bottom, shuffle, true, randomPosition, null }, ctx, out bool handled);
+            var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            var oracle = new UeRandomStream(1);
+            foreach (int id in created)
+            {
+                int roll = NativeRandomDrawOracle(oracle, 0, expectedDeck.Count + 1);
+                int at = randomPosition ? Math.Clamp(roll, 0, expectedDeck.Count) : (bottom ? expectedDeck.Count : 0);
+                expectedDeck.Insert(at, id);
+            }
+            if (shuffle) oracle.Shuffle(expectedDeck);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionNewDeck").ToArray();
+            var values = new List<ActionValue2> { ActionValue2.Str("side", side.ToWire()), ActionValue2.Str("cards", string.Join(";", expectedDeck)),
+                ActionValue2.Str("spawnCards", string.Join(";", created)), ActionValue2.Int("deckSpawn", shuffle ? 3 : (bottom ? 1 : 2)) };
+            if (hidden) values.Add(ActionValue2.Bool("hideSpawnFromEnemy", true));
+            if (shuffle) values.Add(ActionValue2.Bool("shuffle", true));
+            if (!handled || ids is null || !ids.SequenceEqual(created) || created.Count != Math.Max(0, count)
+                || actions.Length != 1 || !actions[0].Values.SequenceEqual(values)
+                || !state.Deck(side).Select(x => x.CardId).SequenceEqual(expectedDeck)
+                || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != oracle.ConsumedCount)
+                return $"生成外层通知/随机游标不符：{side}/{count}/{initial}/{hidden}/{bottom}/{shuffle}/{randomPosition}";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -1, 0 })
+        foreach (bool shuffle in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("SpawnCardInDeckBySide", source, new object?[] { (int)side,
+                "card_unit_1st_infantry_regiment_us", sourceId, 2, 0, true, false, shuffle, false, false, null }, ctx, out _);
+            if (state.ActionLog.Count != 0 || state.Random.ConsumedCount != 0 || state.Deck(side).Count != 1)
+                return "非正来源ID应在洗牌和外层通知之前返回";
+        }
+        return null;
+    }
+
+    private static string? NativeSpawnDeckReceiptTiming(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", spawnedName = "card_unit_1st_infantry_regiment_us";
+        string[] triggers = { "OnAfterDeckChanged", "OnDeckShuffled" };
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || triggers.Any(locals.ContainsKey)) return "无法安装生成通知探针";
+        foreach (string trigger in triggers)
+            locals[trigger] = new[] {
+                new KismetStep(0, "call", "SpawnCardInHandBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                    new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool shuffle in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var observer = state.CreateWithId(name, side, 20, CardLocation.NotAvailable, 0);
+                observer.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = triggers };
+                var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+                state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 0);
+                var made = new List<CardInstance>(); int phase = 0; bool beforeNotification = true;
+                state.CardCreated += card => {
+                    if (card.Name == spawnedName) made.Add(card);
+                    if (card.Name != "card_unit_routed_troops") return;
+                    beforeNotification &= !state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionNewDeck");
+                    phase++;
+                    if (phase == 1) made[0].Location = CardLocation.Discard;
+                    if (phase == 2)
+                    {
+                        var current = state.Deck(side); for (int i = 0; i < current.Count; i++) current[i].LocationNumber = current.Count - i - 1;
+                    }
+                    if (phase == 4)
+                    {
+                        foreach (var current in state.Deck(side)) current.Location = CardLocation.Discard;
+                        state.CreateWithId(PlainUnit, side, 1000, side.DeckOf(), 0);
+                    }
+                };
+                var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+                var result = engine.Api.InvokeByName("SpawnCardInDeckBySide", source, new object?[] { (int)side,
+                    spawnedName, 30, 2, 0, true, false, shuffle, false, false, null }, ctx, out _);
+                var ids = (result as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+                var receipt = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionNewDeck").ToArray();
+                var currentIds = state.Deck(side).Select(x => x.CardId).ToArray();
+                if (phase != (shuffle ? 4 : 2) || !beforeNotification || receipt.Length != 1 || ids is null
+                    || !ids.SequenceEqual(made.Select(x => x.CardId)) || made[0].Location != CardLocation.Discard
+                    || receipt[0].Values[1] != ActionValue2.Str("cards", string.Join(";", currentIds))
+                    || receipt[0].Values[2] != ActionValue2.Str("spawnCards", string.Join(";", ids))
+                    || (shuffle && !currentIds.SequenceEqual(new[] { 1000 })))
+                    return "生成通知必须在逐张T3及可选T22之后读取当前牌库，并保留已离开牌库的生成ID";
+            }
+        }
+        finally { foreach (string trigger in triggers) locals.Remove(trigger); }
+        return null;
     }
 
     private static string? NativeShuffleNotification(CardDatabase db)
