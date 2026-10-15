@@ -1859,6 +1859,13 @@ public sealed partial class CardApi
             ["WasLeftMostCardWhenPlayedFromHand"] = (c, r, a) =>
                 (AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a)) is { } card
                 && JsonGetBool(card, "WasLeftMostCardWhenPlayedFromHand"),
+            // BP_CardFunctions.SetAttackerHasAttacked: explicit attacker, no zone gate.
+            ["SetAttackerHasAttacked"] = (c, r, a) =>
+            {
+                if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } attacker)
+                    c.Engine.SetAttackerHasAttacked(attacker);
+                return null;
+            },
             ["hasActivePincerEffect"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pincer),
 

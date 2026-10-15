@@ -1420,6 +1420,7 @@ public sealed class KismetVm
                 {
                     ["cardsGivingAbility"] = kv.Value.Cast<object?>().ToList(),
                 }),
+            "hasEverAttacked" => card.HasEverAttacked,
             "hasAttackedThisTurn" => card.HasAttackedThisTurn,
             "hasBeenAttackedThisTurn" => card.HasBeenAttackedThisTurn,
             "isSuppressed" => card.IsSuppressed,
@@ -1751,6 +1752,11 @@ public sealed class KismetVm
                     if (name is "customName1" or "customName2")
                     {
                         CardCustomNames.Assign(self, name, value?.ToString() ?? "None");
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "hasEverAttacked")
+                    {
+                        self.HasEverAttacked = Truthy(value);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name == "pinnedTurns") self.PinnedTurns = ToInt(value);

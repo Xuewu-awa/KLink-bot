@@ -2618,6 +2618,7 @@ public sealed class MatchEngine
         // SetAttackerHasAttacked i=379 decrements movementLeft first when
         // the native armor/custom predicate is false (including stopped attacks).
         if (!attacker.CanMoveAndAttackInSameTurn) attacker.HasMovedThisTurn = true;
+        attacker.HasEverAttacked = true; // SetAttackerHasAttacked i=168.
         attacker.HasAttackedThisTurn = true;
         attacker.AttacksThisTurn++;
     }

@@ -69,6 +69,8 @@ public sealed class CardInstance
     // ---- 回合内状态 ----
     public int EnteredPlayOnTurn { get; set; } = -1;
     public int OperationsUsedThisTurn { get; set; }
+    // BaseCardObject +0x274; independent of the per-turn attack flag.
+    public bool HasEverAttacked { get; set; }
     public bool HasAttackedThisTurn { get; set; }
 
     /// <summary>
@@ -852,6 +854,7 @@ public sealed class CardInstance
         {
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
+            HasEverAttacked = HasEverAttacked,
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
@@ -1032,6 +1035,7 @@ public sealed record CardSnapshot(
     Dictionary<string, string> CustomJson)
 {
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
+    public bool HasEverAttacked { get; init; }
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }

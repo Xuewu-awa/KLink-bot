@@ -59,7 +59,8 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
-        new("亡语窃取副本：保留原所属方、控制标记、目标数组和名称，隔离原对象重入修改", StealDestructionCopyFields),
+        new("曾攻击状态：独立字段、攻击消耗、快照和 VM 读写", EverAttackedState),
+        new("亡语窃取副本：保留原所属方、控制标记、曾攻击状态、目标数组和名称，隔离原对象重入修改", StealDestructionCopyFields),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -5053,6 +5054,8 @@ internal static class SelfTest
             return "攻击被中止后没有派发攻击者 OnAttackStopped"
                    + $"\n       实际派发记录：{string.Join(" | ", trace)}";
         }
+
+        if (!attacker.HasEverAttacked) return "中止但消耗额度的攻击没有记录曾攻击标记";
 
         if (attacker.Location.IsBoard())
         {
@@ -15175,6 +15178,60 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? EverAttackedState(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { PlainUnit, "card_unit_panzer_iii_l" })
+        foreach (var location in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool initial in new[] { false, true })
+        foreach (int quota in new[] { -2, 0, 1, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(name, side, 60, location, 1);
+            if (card.HasEverAttacked) return "新建卡牌曾攻击标记不是 false";
+            card.HasEverAttacked = initial;
+            card.SetRemainingAttacks(quota);
+            var snapshot = card.Snapshot();
+            int count = card.AttacksThisTurn;
+            bool move = card.CanMoveAndAttackInSameTurn;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            for (int n = 1; n <= 2; n++)
+            {
+                engine.Api.InvokeByName("SetAttackerHasAttacked", null, new object?[] { card.CardId }, ctx, out bool handled);
+                if (!handled || !card.HasEverAttacked || !card.HasAttackedThisTurn
+                    || card.AttacksThisTurn != count + n || card.RemainingAttacks != quota - n
+                    || card.HasMovedThisTurn != !move || snapshot.HasEverAttacked != initial)
+                    return $"攻击消耗/快照错误：{side}/{name}/{location}/{initial}/{quota}/{n}";
+            }
+            // Typed member read and write must share the same storage, without a shadow variable.
+            KismetStep Set(int i, string key, KismetExpr value, string scope) =>
+                new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null)
+                    { DestinationScope = scope };
+            var program = new KismetProgram(new[] {
+                Set(0, "before", new() { Var = "hasEverAttacked", Scope = "instance" }, "local"),
+                Set(1, "hasEverAttacked", new() { Bool = false }, "instance"),
+                Set(2, "after", new() { Var = "hasEverAttacked", Scope = "instance" }, "local"),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            }, 0);
+            card.BlueprintVariables["hasEverAttacked"] = true;
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "before", "after");
+            if (!Equals(result["before"], true) || !Equals(result["after"], false)
+                || card.HasEverAttacked || card.BlueprintVariables.ContainsKey("hasEverAttacked"))
+                return "曾攻击标记的 VM 读写未使用实际字段";
+            engine.Api.InvokeByName("SetAttackerHasAttacked", null, new object?[] { 99999 }, ctx, out _);
+            if (card.HasEverAttacked) return "无效攻击者被回退成 self";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = Side.Left; state.SetKredits(Side.Left, 20);
+            var attacker = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.BoardFrontline, 1);
+            attacker.EnteredPlayOnTurn = -99;
+            if (!engine.Attack(attacker, state.Hq(Side.Right), out string reason)) return $"正常攻击失败：{reason}";
+            if (!attacker.HasEverAttacked) return "正常攻击未记录曾攻击标记";
+        }
+        return null;
+    }
+
     private static string? StealDestructionCopyFields(CardDatabase db)
     {
         const string name = "card_unit_52_k", trigger = "OnDestroyed";
@@ -15188,8 +15245,10 @@ internal static class SelfTest
         Call("JSON_SetIntArray", new() { Int = 60 }, new() { Str = "_auditCopyTargetsBefore" }, Targets());
         Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyNameBefore" }, new() { Var = "customName1", Scope = "instance" });
         Call("JSON_SetBool", new() { Int = 60 }, new() { Str = "_auditCopyControlBefore" }, new() { Var = "underEnemyControl", Scope = "instance" });
+        Call("JSON_SetBool", new() { Int = 60 }, new() { Str = "_auditCopyEverBefore" }, new() { Var = "hasEverAttacked", Scope = "instance" });
         Call("SpawnCardInDeckBySide", new() { Int = 2 }, new() { Str = "card_unit_routed_troops" }, new() { Int = 30 }, new() { Int = 1 });
         Call("JSON_SetBool", new() { Int = 60 }, new() { Str = "_auditCopyControlAfter" }, new() { Var = "underEnemyControl", Scope = "instance" });
+        Call("JSON_SetBool", new() { Int = 60 }, new() { Str = "_auditCopyEverAfter" }, new() { Var = "hasEverAttacked", Scope = "instance" });
         Call("JSON_SetIntArray", new() { Int = 60 }, new() { Str = "_auditCopyTargetsAfter" }, Targets());
         Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyNameAfter" }, new() { Var = "customName1", Scope = "instance" });
         Call("JSON_SetString", new() { Int = 60 }, new() { Str = "_auditCopyName2After" }, new() { Var = "customName2", Scope = "instance" });
@@ -15198,6 +15257,7 @@ internal static class SelfTest
         foreach (Side original in new[] { Side.Left, Side.Right })
         foreach (bool controlled in new[] { false, true })
         foreach (bool controlFlag in new[] { false, true })
+        foreach (bool ever in new[] { false, true })
         foreach (bool steal in new[] { false, true })
         foreach (int arrayKind in Enumerable.Range(0, 3))
         foreach (int zone in Enumerable.Range(0, 3))
@@ -15208,6 +15268,7 @@ internal static class SelfTest
             card.Location = zone == 0 ? card.Owner.HqOf() : zone == 1 ? card.Owner.HandOf() : CardLocation.Discard;
             var location = card.Location; var owner = card.Owner;
             card.UnderEnemyControl = controlFlag;
+            card.HasEverAttacked = ever;
             state.CreateWithId(PlainUnit, original, 30, CardLocation.Discard, 0);
             card.Keywords.Add(Keyword.Destruction);
             card.CustomJson["customName1"] = "native_copy_marker1";
@@ -15220,6 +15281,7 @@ internal static class SelfTest
                 if (made.Name != "card_unit_routed_troops") return;
                 callbacks++;
                 card.UnderEnemyControl = !controlFlag;
+                card.HasEverAttacked = !ever;
                 card.CardsBuffedByThisCard.Add(888);
                 card.CustomJson["customName1"] = "changed_marker1";
                 card.CustomJson["customName2"] = "changed_marker2";
@@ -15228,6 +15290,9 @@ internal static class SelfTest
             var expectedAfter = steal ? ids : ids.Concat(new[] { 888 }).ToArray();
             if (callbacks != 1 || engine.Api.JsonGetBool(card, "_auditCopyControlBefore") != controlFlag
                 || engine.Api.JsonGetBool(card, "_auditCopyControlAfter") != (steal ? controlFlag : !controlFlag)
+                || engine.Api.JsonGetBool(card, "_auditCopyEverBefore") != ever
+                || engine.Api.JsonGetBool(card, "_auditCopyEverAfter") != (steal ? ever : !ever)
+                || card.HasEverAttacked != !ever
                 || card.UnderEnemyControl != !controlFlag
                 || engine.Api.JsonGetInt(card, "_auditCopyOriginalSide") != (int)original
                 || !engine.Api.JsonGetIntArray(card, "_auditCopyTargetsBefore").SequenceEqual(ids)
@@ -15237,7 +15302,7 @@ internal static class SelfTest
                 || card.CustomJson.GetValueOrDefault("_auditCopyName2After") != (steal ? "native_copy_marker2" : "changed_marker2")
                 || !card.CardsBuffedByThisCard.SequenceEqual(ids.Concat(new[] { 888 }))
                 || !ReferenceEquals(state.ById(60), card) || card.Owner != owner || card.OriginalOwner != original || card.Location != location)
-                return $"窃取亡语副本字段/隔离错误：{original}/{controlled}/{controlFlag}/{steal}/{arrayKind}/{zone}, calls={callbacks}, side={engine.Api.JsonGetInt(card, "_auditCopyOriginalSide")}";
+                return $"窃取亡语副本字段/隔离错误：{original}/{controlled}/{controlFlag}/{ever}/{steal}/{arrayKind}/{zone}, calls={callbacks}, side={engine.Api.JsonGetInt(card, "_auditCopyOriginalSide")}";
         }
         return null;
     }
@@ -25582,7 +25647,7 @@ internal static class SelfTest
                 return $"① 互斗**不该扣油费**（谁都不是「攻击方」），实际 kredit 变成 {engine.State.Kredits(Side.Left)}";
             }
 
-            if (mine.HasAttackedThisTurn || mine.AttacksThisTurn != 0)
+            if (mine.HasAttackedThisTurn || mine.HasEverAttacked || mine.AttacksThisTurn != 0)
             {
                 return $"① 互斗**不该记「已攻击」**（蓝图全文没有 `SetAttackerHasAttacked`），"
                      + $"实际 HasAttackedThisTurn={mine.HasAttackedThisTurn} AttacksThisTurn={mine.AttacksThisTurn}";
@@ -26599,7 +26664,7 @@ internal static class SelfTest
                  + "门插在 `State.AddKredits` 之后了（门自己会算一次行动费，会变成减两次 ⇒ 误拒合法攻击）";
         }
 
-        if (attacker.HasAttackedThisTurn)
+        if (attacker.HasAttackedThisTurn || attacker.HasEverAttacked)
         {
             return "被拒的攻击置了 `HasAttackedThisTurn` —— 门插在副作用之后了";
         }

@@ -1295,6 +1295,7 @@ public sealed partial class CardApi
             OperationCost = source.OperationCost,
             EnteredPlayOnTurn = source.EnteredPlayOnTurn,
             OperationsUsedThisTurn = source.OperationsUsedThisTurn,
+            HasEverAttacked = source.HasEverAttacked,
             HasAttackedThisTurn = source.HasAttackedThisTurn,
             GotchaActivated = source.GotchaActivated,
             CardSeen = source.CardSeen,

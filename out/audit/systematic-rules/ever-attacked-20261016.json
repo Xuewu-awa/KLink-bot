@@ -1,0 +1,53 @@
+{
+  "rule": "RULE-130",
+  "status": "fixed independent hasEverAttacked field, attack consumption, detached destruction copy and typed VM access",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\ever-attacked-evidence-20261016.json",
+  "evidence_sha256": "4cb4fefb26fa48042dc08c29e7bf2a0e13c955df1d50bfd6f06a26345dbad8e3",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\native-copydata-linear-view-20261016.json": "aa25069c5d48daf7700e9714e1bff551cf0739a72eb0d91ec7834254a5265a03",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-ever-attacked-20261016.py": "21a2a45534c12ecd62a5095bee693f3e19dad1cc372071f9395de6d5aae407ba",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "1a5587c6553c2d6fa86fb783520454d94926dc3948187f83ccb8cabdc9767c22",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "f1f0329606a1fc8f574ac64d00a8971092e4fc41415caa8bd88d7662bd1cf362",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "0ac4cb6e551610a835145dab8961795d72aa8ede32dd401f51ec3b2577c84f41",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "898bdf9e87bef5f1a0c1d6f2b264a44e41f656156d8f35aa8eb429e43150e42d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "f4c01178922afe7cc53b2593370c8880e1f21d8f719da985bf2f48df19dcd644",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "57174e0b8f12ebf995754c589d901fda7573d7207d59dfde7a826728adfc051e",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ever-attacked-before-20261016.txt": "514a44c6bfbb4c84ac2804d17945d2438a47c4333edfca9849c92448bf91196a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ever-attacked-after-20261016.txt": "4bbb457819f8aa3555940e61823d87f32fb64de4e6539b6c8c43343f7a02a76c",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+  },
+  "offset": "0x274",
+  "native_copy_rvas": [
+    "0x4addbe6",
+    "0x4addbed"
+  ],
+  "tests": {
+    "formal_release": "495/495",
+    "direct_helper_matrix": 128,
+    "copy_matrix": 288,
+    "other_checks": [
+      "normal attack",
+      "consumed stopped attack",
+      "rejected attack",
+      "BattleUnits does not consume attack",
+      "typed VM read/write and invalid explicit attacker",
+      "snapshot independence"
+    ],
+    "regression": "With new model, dispatcher, VM and tests retained, removing only attack producer and copy assignment yields 3/495 failures. Restoring both yields 495/495."
+  },
+  "static_cdo_defaults": {
+    "False": 2019
+  },
+  "limits": [
+    "Full attack notification payload and exact client JSON serialization are not implemented or certified by this phase.",
+    "Snapshot export is covered; snapshot import, all card construction/replacement paths and native call-chain writes are still open.",
+    "ResetCardAttributes direct-body inspection found no +0x274 access; this does not prove every called helper preserves the member. No new reset rule is inferred.",
+    "CopyData remaining fields, containers, derived objects and full per-card PvP semantics remain unaudited."
+  ],
+  "fully_semantically_verified_cards": 0
+}
