@@ -2137,7 +2137,8 @@ public sealed partial class CardApi
         if (selectFromTopOfDeck)
         {
             // 牌库族的候选 = 牌库里的实例（蓝图 `FilterCardsToScry` 取前 3 张）。
-            var deckCandidates = ScryCandidates(selecting, side);
+            var deckCandidates = ScryCandidates(selecting, selectingId);
+            if (deckCandidates is null) return 0; // Explicitly unsupported object/default-output path.
             if (deckCandidates.Count == 0)
             {
                 _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
@@ -2297,14 +2298,37 @@ public sealed partial class CardApi
         return chosen;
     }
 
-    private List<CardInstance> ScryCandidates(CardInstance selecting, Side side)
-        => State.Deck(side).Where(candidate =>
+    private List<CardInstance>? ScryCandidates(CardInstance selecting, int selectingId)
+    {
+        var candidates = new List<CardInstance>();
+        for (int index = 0; candidates.Count < 3; index++)
         {
-            var outputs = RunOwnLocal(selecting, "FilterCardsToScry",
-                new Dictionary<string, object?> { ["card"] = candidate }, "isValid");
-            // Both default predicates are native virtuals returning true.
-            return outputs is null || KismetVmTruthy(outputs.GetValueOrDefault("isValid"));
-        }).Take(3).ToList();
+            // selectCardToDraw i=116/313 reads the saved selecting object's
+            // current side; i=458 separately resolves the predicate receiver.
+            var before = State.Deck(selecting.Owner);
+            if (index >= before.Count) break;
+            var receiver = State.ById(selectingId);
+            if (receiver is null)
+            {
+                NotifyUnimplemented("<selectCardToDraw:missing-filter-receiver>");
+                return null;
+            }
+            var outputs = RunOwnLocal(receiver, "FilterCardsToScry",
+                new Dictionary<string, object?> { ["card"] = before[index] }, "isValid");
+            // i=544 skips directly to the increment when the predicate rejects.
+            if (outputs is not null && !KismetVmTruthy(outputs.GetValueOrDefault("isValid"))) continue;
+            var after = State.Deck(selecting.Owner);
+            if (index >= after.Count)
+            {
+                NotifyUnimplemented("<selectCardToDraw:post-filter-index-object-output>");
+                return null;
+            }
+            // i=554/608/667 re-fetches the same index and resolves its object;
+            // i=699 adds it. i=826/860 stops as soon as there are three entries.
+            candidates.Add(after[index]);
+        }
+        return candidates;
+    }
 
     /// <summary>
     /// `selectTargetFromHand` —— 「**从手牌里挑一张**」。

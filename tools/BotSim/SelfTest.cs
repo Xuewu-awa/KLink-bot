@@ -97,6 +97,7 @@ internal static class SelfTest
         new("单候选抽牌：指定ID/来源/编号保持，抽后按ID解析回调", SingletonScryDrawContract),
         new("多候选回复：完整过滤、前三张移底、新牌库通知与原对象回调", MultiScryReplyContract),
         new("多候选过滤重入：实时长度与回调后同下标读取", MultiScryLiveFiltering),
+        new("候选展示重入：拒绝跳过、三张即停、实时阵营和过滤接收者", InitialScryLiveFiltering),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
@@ -13559,6 +13560,97 @@ internal static class SelfTest
                 return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
         }
         return null;
+    }
+
+    private static string? InitialScryLiveFiltering(CardDatabase db)
+    {
+        const string name = "card_unit_41st_infantry_regiment", filter = "FilterCardsToScry", marker = "card_unit_routed_troops";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(filter)) return "无法安装候选展示重入探针";
+        locals[filter] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "BooleanAND", Args = new[] {
+                new KismetExpr { Var = "_auditOfferValid", Context = new KismetExpr { Var = "card" } },
+                new KismetExpr { Var = "_auditOfferAllow", Scope = "instance" }
+            } }, null, -1, "isValid", null) { DestinationScope = "local" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardID", Context = new KismetExpr { Var = "card" } }, null, -1, "_auditOfferCurrent", null) { DestinationScope = "instance" },
+            new KismetStep(2, "call", "SpawnCardInHandBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                new KismetExpr { Str = marker }, new KismetExpr { Int = 30 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool full in new[] { false, true })
+            foreach (int mode in Enumerable.Range(0, 8))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var original = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+                original.BlueprintVariables["_auditOfferAllow"] = true;
+                if (full) for (int i = 0; i < 9; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i);
+                for (int i = 0; i < (mode == 0 ? 2 : 6); i++) state.CreateWithId(PlainUnit, side, 60 + i, side.DeckOf(), i * 4)
+                    .BlueprintVariables["_auditOfferValid"] = mode == 0 ? i != 1 : mode == 1 ? i is not (2 or 3) : mode == 4 ? i != 1 : true;
+                if (mode == 5) for (int i = 0; i < 6; i++) state.CreateWithId(PlainUnit, side.Opposite(), 70 + i, side.Opposite().DeckOf(), i * 4)
+                    .BlueprintVariables["_auditOfferValid"] = true;
+                var visits = new List<int>(); bool mutated = false; CardInstance? replacement = null;
+                state.CardCreated += card => {
+                    if (card.Name != marker) return;
+                    card.Location = CardLocation.Discard;
+                    var receiver = state.ById(30)!;
+                    int current = Convert.ToInt32(receiver.BlueprintVariables["_auditOfferCurrent"]); visits.Add(current);
+                    if (mutated || current != (mode == 6 ? 60 : 61) || mode == 7) return;
+                    mutated = true;
+                    if (mode == 0) for (int i = 0; i < 2; i++) state.CreateWithId(PlainUnit, side, 62 + i, side.DeckOf(), 20 + i)
+                        .BlueprintVariables["_auditOfferValid"] = true;
+                    if (mode == 1) { state.ById(64)!.Location = CardLocation.Discard; state.ById(65)!.Location = CardLocation.Discard; }
+                    if (mode == 2) { var a = state.ById(61)!; var b = state.ById(62)!; (a.LocationNumber, b.LocationNumber) = (b.LocationNumber, a.LocationNumber); }
+                    if (mode == 3) { state.ById(61)!.Location = CardLocation.Discard; state.CreateWithId(PlainUnit, side, 90, side.DeckOf(), 4).BlueprintVariables["_auditOfferValid"] = false; }
+                    if (mode == 4) foreach (var item in state.Deck(side).Where(x => x.CardId != 60)) item.Location = CardLocation.Discard;
+                    if (mode == 5) state.ChangeOwner(original, side.Opposite(), normalize: false);
+                    if (mode == 6) { state.Remove(original); replacement = state.CreateWithId(name, side, 30, CardLocation.Discard, 0); replacement.BlueprintVariables["_auditOfferAllow"] = false; }
+                };
+                int[] expectedVisits = mode switch {
+                    0 => new[] { 60, 61, 62, 63 }, 1 => new[] { 60, 61, 62, 63 }, 2 => new[] { 60, 61, 61 },
+                    5 => new[] { 60, 61, 72 }, 6 => new[] { 60, 61, 62, 63, 64, 65 },
+                    4 => new[] { 60, 61 }, _ => new[] { 60, 61, 62 },
+                };
+                int[] expectedOffers = mode switch {
+                    0 => new[] { 60, 62, 63 }, 1 => new[] { 60, 61 }, 2 => new[] { 60, 62, 61 },
+                    3 => new[] { 60, 90, 62 }, 5 => new[] { 60, 71, 72 }, 4 or 6 => new[] { 60 }, _ => new[] { 60, 61, 62 },
+                };
+                var offered = new List<int>(); int replies = 0;
+                engine.ChooseSpawnCard = (_, cards) => { replies++; offered.AddRange(cards.Select(x => x.CardId)); return null; };
+                engine.Api.InvokeByName("selectCardToDraw", original, new object?[] { 30, true, false, null },
+                    new EffectContext { Engine = engine, State = state, Self = original, Controller = side }, out _);
+                var draws = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDrawCardFromDeck").ToArray();
+                bool singleton = expectedOffers.Length == 1;
+                if (!visits.SequenceEqual(expectedVisits) || replies != (singleton ? 0 : 1)
+                    || !singleton && !offered.SequenceEqual(expectedOffers) || draws.Length != (singleton ? 1 : 0)
+                    || singleton && (draws[0].Values.First(x => x.Name == "instigatorID").Value != 30
+                        || state.ById(60)!.Location != (full ? CardLocation.Discard : side.HandOf()))
+                    || state.UnimplementedCalls.Keys.Any(x => x.StartsWith("<selectCardToDraw:", StringComparison.Ordinal)))
+                    return $"初次候选重入错误：{side}/full={full}/mode={mode}/visits={string.Join(",", visits)}/offers={string.Join(",", offered)}";
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool removeReceiver in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, side, 30, CardLocation.Discard, 0); source.BlueprintVariables["_auditOfferAllow"] = true;
+                for (int i = 0; i < 4; i++) state.CreateWithId(PlainUnit, side, 60 + i, side.DeckOf(), i).BlueprintVariables["_auditOfferValid"] = true;
+                state.CardCreated += card => { if (card.Name != marker) return; card.Location = CardLocation.Discard;
+                    if (removeReceiver) state.Remove(source); else foreach (var item in state.Deck(side)) item.Location = CardLocation.Discard;
+                };
+                int replies = 0; engine.ChooseSpawnCard = (_, _) => { replies++; return null; };
+                engine.Api.InvokeByName("selectCardToDraw", source, new object?[] { 30, true, false, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+                string gap = removeReceiver ? "<selectCardToDraw:missing-filter-receiver>" : "<selectCardToDraw:post-filter-index-object-output>";
+                if (state.UnimplementedCalls.GetValueOrDefault(gap) != 1 || replies != 0
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionDrawCardFromDeck"))
+                    return "不可表示的展示回调缺口应明确记账，不能伪造空候选完成";
+            }
+            return null;
+        }
+        finally { locals.Remove(filter); }
     }
 
     private static string? MultiScryLiveFiltering(CardDatabase db)
