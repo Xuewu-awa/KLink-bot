@@ -173,6 +173,11 @@ internal static class SelfTest
         new("原生攻击限制：名称和来源表双读及派发输出", NativeAttackRestrictionPredicates),
         new("攻击限制：具体类型/类别与豁免分支、枚举和结算一致", NativeAttackRestrictionMatrix),
         new("攻击限制：真实卡牌静态名称拒绝HQ攻击", NativeAttackRestrictionStaticCards),
+        new("原生压制：来源去重、账本、回合数及通知矩阵", NativePinSources),
+        new("原生解除：逐来源账本递减、保留来源表及重复来源", NativeUnpinSources),
+        new("原生IsPinned：只读取正回合数，操作门保持一致", NativePinnedPredicate),
+        new("原生T61/T62：包含主体、无位置门及查询后快照", NativePinBroadcastSnapshots),
+        new("压制与抑制：外来源保留后解除正确递减账本", NativePinSuppressionSources),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10133,6 +10138,202 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? NativePinSuppressionSources(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string key in new[] { "trigger", "destruction", "passive", "lethal", "custom", "cantMove", "canOperateWhilePinned", "cantBePinned", "" })
+        foreach (bool foreign in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+            card.ReceivedAbilitiesFromCards[key] = foreign ? new List<int> { 0, 60, 71, -7, 9999, 71 } : new List<int> { 0, 60 };
+            engine.Api.SuppressUnit(card);
+            bool keep = foreign && key is not ("trigger" or "destruction" or "passive" or "lethal" or "custom");
+            if (card.ReceivedAbilitiesFromCards.ContainsKey(key) != keep
+                || (keep && !card.ReceivedAbilitiesFromCards[key].SequenceEqual(new[] { 71, -7, 9999, 71 })))
+                return "抑制来源过滤必须保留外部重复/无效ID，排除零及自身：" + key;
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int source in new[] { 0, 60, 71, -7, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+            engine.Api.PinUnit(card, source);
+            engine.Api.SuppressUnit(card);
+            bool retained = source != 0 && source != card.CardId;
+            if (!card.IsPinned || card.ReceivedAbilitiesFromCards.ContainsKey("pinned") != retained
+                || card.BuffsBySource.GetValueOrDefault((source, false))?.Pinned != 1)
+                return "抑制只过滤压制的零/自身来源，不应解除回合数或删战斗账本";
+            engine.Api.RemovePin(card);
+            if ((card.BuffsBySource.GetValueOrDefault((source, false))?.Pinned ?? 0) != (retained ? 0 : 1))
+                return "抑制后解除压制应按保留来源递减账本";
+        }
+        return null;
+    }
+
+    private static string? NativePinSources(CardDatabase db)
+    {
+        using var t29 = InstallAbilitiesChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (int turns in new[] { -1, 0, 1, 4 })
+        foreach (int mode in Enumerable.Range(0, 4))
+        foreach (int giver in new[] { 0, -7, 9999 })
+        foreach (int old in new[] { -1, 0, 1 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = MakeActionQuotaProbe(state, side, "infantry");
+            state.CreateWithId("card_event_honorifics", side, 70, side.DeckOf(), 0);
+            state.ActiveSide = active ? side : side.Opposite();
+            target.PinnedTurns = turns;
+            target.Keywords.Add(Keyword.Covert); // PinUnit has no CanCardBeBuffed/Covert gate.
+            if (mode != 0) target.ReceivedAbilitiesFromCards["pinned"] = mode == 1 ? new List<int>()
+                : mode == 2 ? new List<int> { 1234 } : new List<int> { giver };
+            target.BuffsBySource[(giver, false)] = new CardBuff { SourceCardId = giver, Attack = 2, Pinned = old };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(side), Target = target, Controller = side };
+            engine.Api.InvokeByName("PinUnit", ctx.Self, new object?[] { 60, giver }, ctx, out bool handled);
+            bool duplicate = mode == 3;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var expectedSources = mode == 2 ? new[] { 1234, giver } : new[] { giver };
+            if (!handled || !target.ReceivedAbilitiesFromCards["pinned"].SequenceEqual(expectedSources)
+                || target.PinnedTurns != (duplicate ? turns : Math.Max(turns, active ? 3 : 2))
+                || target.BuffsBySource[(giver, false)].Pinned != old + (duplicate ? 0 : 1)
+                || target.BuffsBySource[(giver, false)].Attack != 2 || actions.Length != (duplicate ? 0 : 1))
+                return $"压制来源不符：{side}/active={active}/turns={turns}/mode={mode}/giver={giver}/old={old}";
+            if (!duplicate && (actions[0].Name != "ZActionPinUnit"
+                || !actions[0].Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "instigatorID" })
+                || actions[0].Values[0].Value != 60 || actions[0].Values[1].Value != giver)) return "压制通知丢失来源或字段顺序";
+            string before = System.Text.Json.JsonSerializer.Serialize(target.Snapshot());
+            engine.Api.InvokeByName("PinUnit", ctx.Self, new object?[] { 99999, giver }, ctx, out _);
+            engine.Api.InvokeByName("RemovePin", ctx.Self, new object?[] { 99999, null }, ctx, out _);
+            if (before != System.Text.Json.JsonSerializer.Serialize(target.Snapshot()) || state.Hq(side).IsPinned)
+                return "无效压制ID不得回退到自身";
+        }
+        return null;
+    }
+
+    private static string? NativeUnpinSources(CardDatabase db)
+    {
+        using var t29 = InstallAbilitiesChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (int mode in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, location, 1);
+            state.CreateWithId("card_event_honorifics", side, 70, side.DeckOf(), 0);
+            int[] sources = mode switch { 0 or 1 => Array.Empty<int>(), 2 => new[] { 0 },
+                3 => new[] { 71, 71, -7, 9999 }, _ => new[] { 71 } };
+            if (mode != 0) card.ReceivedAbilitiesFromCards["pinned"] = sources.ToList();
+            card.BuffsBySource[(71, false)] = new CardBuff { SourceCardId = 71, Pinned = 2 };
+            card.PinnedTurns = 2;
+            engine.Api.RemovePin(card);
+            if (card.IsPinned || card.Keywords.Contains(Keyword.Pinned)
+                || card.ReceivedAbilitiesFromCards.ContainsKey("pinned") != (mode != 0)
+                || (mode != 0 && !card.ReceivedAbilitiesFromCards["pinned"].SequenceEqual(sources))) return "解除不得删除来源表或保留正回合数";
+            foreach (int id in new[] { 0, 71, -7, 9999 })
+            {
+                int expected = (id == 71 ? 2 : 0) - sources.Count(x => x == id);
+                if ((card.BuffsBySource.GetValueOrDefault((id, false))?.Pinned ?? 0) != expected)
+                    return $"解除账本递减应保留重复条目和无效来源：{mode}/{id}";
+                if (expected == 0 && card.BuffsBySource.ContainsKey((id, false))) return "仅有Pinned且过零的账本应删除";
+            }
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (actions.Length != 1 || actions[0].Name != "ZActionUnpinUnit" || actions[0].Values.Count != 1
+                || actions[0].Values[0].Name != "cardID" || actions[0].Values[0].Value != 60) return "解除通知不是原生单字段";
+            string before = System.Text.Json.JsonSerializer.Serialize(card.Snapshot());
+            engine.Api.RemovePin(card);
+            if (before != System.Text.Json.JsonSerializer.Serialize(card.Snapshot()) || state.ActionLog.SelectMany(x => x.SubActions).Count() != 1)
+                return "未被压制时重复解除应无副作用";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+            engine.Api.PinUnit(card, 71);
+            if (card.Snapshot().PinnedBuffsBySource.GetValueOrDefault("71/False") != 1
+                || card.BuffsBySource[(71, false)].Clone().Pinned != 1) return "压制账本必须进入快照/Clone";
+            engine.Api.RemovePin(card);
+            int count = state.ActionLog.SelectMany(x => x.SubActions).Count();
+            engine.Api.PinUnit(card, 71);
+            if (card.IsPinned || state.ActionLog.SelectMany(x => x.SubActions).Count() != count) return "保留来源后同源重复压制必须提前返回";
+            engine.Api.PinUnit(card, 72);
+            if (!card.IsPinned || !card.ReceivedAbilitiesFromCards["pinned"].SequenceEqual(new[] { 71, 72 })) return "新来源压制必须仍然成功";
+            card.ResetAttributes();
+            if (card.IsPinned || card.BuffsBySource.Count != 0 || card.ReceivedAbilitiesFromCards.ContainsKey("pinned")) return "重置必须清除压制来源账本";
+        }
+        return null;
+    }
+
+    private static string? NativePinnedPredicate(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int turns in new[] { -2, 0, 1, 4 })
+        foreach (bool raw in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+            card.PinnedTurns = turns;
+            if (raw) card.Keywords.Add(Keyword.Pinned); else card.Keywords.Remove(Keyword.Pinned);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            object? result = engine.Api.InvokeByName("IsPinned", card, new object?[] { null }, ctx, out bool handled);
+            if (!handled || !Equals(result, turns > 0) || card.IsPinned != (turns > 0)) return "IsPinned不能读取独立关键字";
+            bool moved = engine.MoveUnit(card, 0, out _);
+            if (moved != (turns <= 0)) return "移动门应与原生IsPinned一致";
+        }
+        return null;
+    }
+
+    private static string? NativePinBroadcastSnapshots(CardDatabase db)
+    {
+        const string cardName = "card_unit_typhoon_mk_ib";
+        if (KismetLibrary.Default?.Find(cardName)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals)
+            return "无法安装压制快照探针";
+        string[] triggers = { "OnOtherUnitPinned", "OnOtherUnitUnpinned" };
+        foreach (string trigger in triggers)
+        {
+            if (locals.ContainsKey(trigger)) return "探针名称冲突";
+            locals[trigger] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = trigger == triggers[0] ? "cardBeingPinned" : "card", Scope = "local" }, null, -1, "_auditPinSubject", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = "_auditPinCount", Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, "_auditPinCount", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                    new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+        }
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool pin in new[] { false, true })
+            foreach (CardLocation location in new[] { side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var def = new CardDefinition { Name = cardName, Type = "infantry", Attack = 2, Defense = 20, UsedTriggers = triggers };
+                var subject = state.CreateWithId(cardName, side, 60, side.HqOf(), 1); subject.Definition = def;
+                state.ActiveSide = side;
+                var later = state.CreateWithId(cardName, side, 61, location, 1); later.Definition = def;
+                var initialSuppressed = state.CreateWithId(cardName, side, 62, side.HqOf(), 2); initialSuppressed.Definition = def;
+                initialSuppressed.Keywords.Add(Keyword.Suppressed);
+                CardInstance? added = null; bool first = true; bool notificationFirst = true;
+                state.CardCreated += created => {
+                    if (created.Name != "card_unit_routed_troops" || !first) return;
+                    first = false;
+                    notificationFirst &= state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == (pin ? "ZActionPinUnit" : "ZActionUnpinUnit"));
+                    later.Keywords.Add(Keyword.Suppressed); later.Definition = new CardDefinition { Name = cardName, Type = "infantry" };
+                    added = state.CreateWithId(cardName, side, 1000, side.HqOf(), 3); added.Definition = def;
+                };
+                if (pin) engine.Api.PinUnit(subject, 71);
+                else { subject.PinnedTurns = 2; engine.Api.RemovePin(subject); }
+                foreach (var observer in new[] { subject, later })
+                    if (!Equals(observer.BlueprintVariables.GetValueOrDefault("_auditPinCount"), 1)
+                        || observer.BlueprintVariables.GetValueOrDefault("_auditPinSubject") is not CardInstance payload || payload != subject)
+                        return $"T61/T62不能排除主体、限制位置或在查询后重筛：{side}/{pin}/{location}";
+                if (!notificationFirst || first || added is null || added.BlueprintVariables.ContainsKey("_auditPinCount")
+                    || initialSuppressed.BlueprintVariables.ContainsKey("_auditPinCount")) return "压制快照应在通知后查询，排除新注册和初始被抑制对象";
+            }
+        }
+        finally { foreach (string trigger in triggers) locals.Remove(trigger); }
+        return null;
+    }
+
     private static string? NativeAttackRestrictionPredicates(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })
@@ -13620,7 +13821,7 @@ internal static class SelfTest
         card.Defense = 1;
         card.Keywords.Clear();
         card.Keywords.Add(Keyword.Suppressed);
-        card.Keywords.Add(Keyword.Pinned);
+        card.PinnedTurns = 2;
         card.PinnedTurns = 3;
         card.CardSeen = true;
         card.IsRevealed = true;
@@ -13705,7 +13906,9 @@ internal static class SelfTest
             return "RemoveAllGivers 只应移除指定能力";
         engine.Api.CustomAbilityAdd(target, "trigger", second);
         engine.Api.SuppressUnit(target);
-        if (target.ReceivedAbilitiesFromCards.Count != 0) return "抑制后活动能力应清空";
+        if (target.ReceivedAbilitiesFromCards.Count != 1 || engine.Api.HasCustomAbility(target, "trigger")
+            || !engine.Api.HasCustomAbilityFromCard(target, "cantMove", first.CardId))
+            return "抑制应移除trigger并保留cantMove的外部来源";
         engine.Api.RestoreAfterSuppression(target);
         if (!engine.Api.HasCustomAbilityFromCard(target, "trigger", second.CardId)
             || !engine.Api.HasCustomAbilityFromCard(target, "cantMove", first.CardId))
@@ -15522,7 +15725,7 @@ internal static class SelfTest
 
         // ---- ⑤ 阳性对照：`Pinned`（压制）**仍然**禁止攻击与移动（玩家：压制不受抑制影响）----
         var (engine3, state3, pinned) = GuardBoard(db, PlainUnit, (PlainUnit, 1));
-        pinned.Keywords.Add(Keyword.Pinned);
+        pinned.PinnedTurns = 2;
         var defender3 = state3.Cards(Side.Right, CardLocation.BoardHqRight).First(c => !c.IsHq);
         if (engine3.Attack(pinned, defender3))
         {
@@ -15531,7 +15734,7 @@ internal static class SelfTest
         }
 
         var (engine4, state4, pinned2) = GuardBoard(db, PlainUnit, (PlainUnit, 1));
-        pinned2.Keywords.Add(Keyword.Pinned);
+        pinned2.PinnedTurns = 2;
         if (engine4.MoveUnit(pinned2, 1))
         {
             return "被**钉住**（压制）的单位能移动 —— 压制那道门被误删了" +
@@ -15808,7 +16011,7 @@ internal static class SelfTest
         }
 
         // 不在摘除集里的两个：`Pinned`（压制 —— 玩家明说抑制不影响压制）、`Veteran`（★ 该被摘）。
-        unit.Keywords.Add(Keyword.Pinned);
+        unit.PinnedTurns = 2;
         unit.Keywords.Add(Keyword.Veteran);
 
         // 卡自己的状态：`suppressionException` 必须活下来，其余键必须被洗掉。
@@ -16253,7 +16456,7 @@ internal static class SelfTest
         if (made is null) return $"卡库里缺 {PlainUnit}";
         var (engine, unit) = made.Value;
 
-        unit.Keywords.Add(Keyword.Pinned);
+        unit.PinnedTurns = 2;
 
         if (engine.MoveUnit(unit, 1, out string why))
         {
@@ -16267,7 +16470,7 @@ internal static class SelfTest
         }
 
         // 阴性对照：去掉钉住就该能移动（避免"门坏了所以什么都拒"）。
-        unit.Keywords.Remove(Keyword.Pinned);
+        unit.PinnedTurns = 0;
         if (!engine.MoveUnit(unit, 1, out string why2))
         {
             return $"**未被钉住**的同类单位也不能移动（{why2}）—— 门写坏了（阴性对照失败）";
@@ -16285,7 +16488,7 @@ internal static class SelfTest
     {
         var (engine, state, pinned) = GuardBoard(db, PlainUnit, (PlainUnit, 1));
         var defender = state.Cards(Side.Right, CardLocation.BoardHqRight).First(c => !c.IsHq);
-        pinned.Keywords.Add(Keyword.Pinned);
+        pinned.PinnedTurns = 2;
 
         if (engine.Attack(pinned, defender))
         {
@@ -16449,7 +16652,7 @@ internal static class SelfTest
         if (made is null) return $"卡库里缺 {PlainUnit}";
         var (engine, unit) = made.Value;
 
-        unit.Keywords.Add(Keyword.Pinned);
+        unit.PinnedTurns = 2;
         engine.Api.CustomAbilityAdd(unit, "canOperateWhilePinned", giver: null);
 
         if (!engine.Api.HasCustomAbility(unit, "canOperateWhilePinned"))
@@ -16466,7 +16669,7 @@ internal static class SelfTest
         // ---- ② 攻击也放行 ----
         var (engine2, state2, atk) = GuardBoard(db, PlainUnit, (PlainUnit, 1));
         var defender2 = state2.Cards(Side.Right, CardLocation.BoardHqRight).First(c => !c.IsHq);
-        atk.Keywords.Add(Keyword.Pinned);
+        atk.PinnedTurns = 2;
         engine2.Api.CustomAbilityAdd(atk, "canOperateWhilePinned", giver: null);
 
         if (!engine2.Attack(atk, defender2))
@@ -19986,7 +20189,7 @@ internal static class SelfTest
             return "没授予 Pinned 时 `IsPinned` 应当为假";
         }
 
-        card.Keywords.Add(Keyword.Pinned);
+        card.PinnedTurns = 2;
         card.Keywords.Add(Keyword.Bond);
 
         var pinned = engine.Api.InvokeByName("IsPinned", card, new object?[] { null }, ctx, out _);
@@ -20008,7 +20211,7 @@ internal static class SelfTest
         }
 
         card.PinnedTurns = 2;
-        var removed = engine.Api.InvokeByName("RemovePin", card, new object?[] { null }, ctx,
+        var removed = engine.Api.InvokeByName("RemovePin", card, new object?[] { card, null }, ctx,
             out bool removeHandled);
         if (!removeHandled || card.Keywords.Contains(Keyword.Pinned) || card.PinnedTurns != 0)
         {
@@ -21451,7 +21654,7 @@ internal static class SelfTest
             unit.HasMovedThisTurn = true;
             unit.HasAttackedThisTurn = true;
             unit.EnteredPlayOnTurn = state.Turn;
-            unit.Keywords.Add(Keyword.Pinned);
+            unit.PinnedTurns = 2;
             var result = engine.Api.InvokeByName(
                 "MoveUnitFromSupportToFrontLine", unit,
                 new object?[] { unit, 9001 }, Context(engine, state, unit), out bool handled);

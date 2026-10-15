@@ -3297,6 +3297,7 @@ public sealed partial class CardApi
 
     public void GiveKeyword(CardInstance target, string keyword)
     {
+        if (keyword == Keyword.Pinned) { PinUnit(target); return; }
         if (keyword == Keyword.Fury) { GiveFury(target); return; }
         if (keyword == Keyword.Blitz) { GiveBlitz(target); return; }
         GiveKeywordCore(target, keyword);
@@ -3413,6 +3414,7 @@ public sealed partial class CardApi
 
     public void RemoveKeyword(CardInstance target, string keyword)
     {
+        if (keyword == Keyword.Pinned) { RemovePin(target); return; }
         if (keyword == Keyword.Fury) { RemoveFury(target); return; }
         if (keyword == Keyword.Blitz) { RemoveBlitz(target); return; }
         RemoveKeywordCore(target, keyword);
@@ -3423,14 +3425,6 @@ public sealed partial class CardApi
         if (!target.Keywords.Remove(keyword))
         {
             return;
-        }
-
-        // ★ 钉住被摘掉时把剩余回合数清零 —— 蓝图 `RemovePin` i=1273
-        //   （`BP_CardFunctions.g.cs:31799`）就是 `card.pinnedTurns = 0`。
-        //   不清的话，下一次再被钉住时 `Max(旧值, 3或2)` 会把时长算长。
-        if (keyword == Keyword.Pinned)
-        {
-            target.PinnedTurns = 0;
         }
 
         _engine.FireSubAction($"ZActionRemove{keyword}", new[]
@@ -3450,21 +3444,13 @@ public sealed partial class CardApi
                 });
         }
 
-        if (keyword == Keyword.Pinned)
-        {
-            FireTrigger("OnOtherUnitUnpinned", target, target.Owner,
-                eventArgs: new object?[] { target }, eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = target,
-                });
-        }
+
     }
 
     /// <summary>
     /// 钉住一个单位（对应 `BP_CardFunctions::PinUnit`，`BP_CardFunctions.g.cs:27852`）。
     ///
-    /// 与 <see cref="SuppressUnit"/> 同构：加关键字 + **记下时长**。
+    /// 按来源记录pinned能力与战斗账本；重复来源直接返回。
     /// 时长照 `PinUnit` i=955（`BP_CardFunctions.g.cs:27957-27964`）：
     /// <code>
     ///   IsSideActive(_card, _card.side) -> active
@@ -3481,26 +3467,52 @@ public sealed partial class CardApi
     /// `IsLocatedOnBoard` / `i=266` `IsUnit`）；任一不满足都直接返回，不写
     /// `pinnedTurns`、不加关键字、也不派发钉住事件。
     /// </summary>
-    public void PinUnit(CardInstance target)
+    public void PinUnit(CardInstance target, int instigatorId = 0)
     {
-        if (HasCustomAbility(target, "cantBePinned")
-            || !IsLocatedOnBoard(target)
-            || !IsUnit(target))
+        if (HasCustomAbility(target, "cantBePinned") || !IsLocatedOnBoard(target) || !IsUnit(target)) return;
+        if (target.ReceivedAbilitiesFromCards.TryGetValue("pinned", out var sources) && sources.Contains(instigatorId)) return;
+        ChangePinnedLedger(target, instigatorId, 1);
+        if (sources is null) target.ReceivedAbilitiesFromCards["pinned"] = sources = new List<int>();
+        sources.Add(instigatorId);
+        target.PinnedTurns = Math.Max(target.PinnedTurns, IsSideActive(target.Owner) ? 3 : 2);
+        _engine.FireSubAction("ZActionPinUnit", new[] {
+            ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("instigatorID", instigatorId),
+        });
+        FirePinChanged(target, true);
+    }
+
+    public void RemovePin(CardInstance target)
+    {
+        if (!target.IsPinned) return;
+        // The authoritative RemovePin loops a saved array but does not remove
+        // the pinned source-map key. Each entry decrements its ledger once.
+        if (target.ReceivedAbilitiesFromCards.TryGetValue("pinned", out var sources))
+            foreach (int source in sources.ToArray()) ChangePinnedLedger(target, source, -1);
+        target.PinnedTurns = 0;
+        _engine.FireSubAction("ZActionUnpinUnit", new[] { ActionValue2.Int("cardID", target.CardId) });
+        FirePinChanged(target, false);
+    }
+
+    private void ChangePinnedLedger(CardInstance target, int source, int delta)
+    {
+        var buff = GetOrCreateBuff(target, source, false);
+        buff.Pinned += delta;
+        if (buff.IsEmpty) target.BuffsBySource.Remove((source, false));
+    }
+
+    private void FirePinChanged(CardInstance target, bool pinned)
+    {
+        string trigger = pinned ? "OnOtherUnitPinned" : "OnOtherUnitUnpinned";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { target };
+        var named = new Dictionary<string, object?> { [pinned ? "cardBeingPinned" : "card"] = target };
+        foreach (var observer in recipients)
         {
-            return;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, target, eventArgs: args, namedArgs: named);
         }
-
-        GiveKeyword(target, Keyword.Pinned);
-
-        int turns = IsSideActive(target.Owner) ? 3 : 2;
-        target.PinnedTurns = Math.Max(target.PinnedTurns, turns);
-
-        FireTrigger("OnOtherUnitPinned", target, target.Owner,
-            eventArgs: new object?[] { target }, eventSubject: target,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardBeingPinned"] = target,
-            });
     }
 
     /// <summary>
@@ -3769,11 +3781,11 @@ public sealed partial class CardApi
         //    现在算会把 `Keyword.HeavyArmor` 又挂回去。真正的重算在 ③ 之后统一做一次。
         target.HeavyArmorZeroedBySuppress = true;
 
-        // `TARGET` 的自定义能力（= 卡牌给单位添加的额外特效）也要失效。
-        // Preserve every ability and source while suppression is active.
-        if (target.CustomAbility is { Length: > 0 } ability)
+        // Suppression removes the five custom-effect keys; other keys retain
+        // foreign sources. Preserve the old snapshot for the legacy restore adapter.
+        if (target.ReceivedAbilitiesFromCards.Count > 0)
         {
-            target.SuppressStrippedCustomAbility = ability;
+            target.SuppressStrippedCustomAbility = target.CustomAbility;
             target.SuppressStrippedAbilities = target.ReceivedAbilitiesFromCards.ToDictionary(
                 kv => kv.Key, kv => new List<int>(kv.Value), StringComparer.Ordinal);
             // SuppressMultipleUnits i3231 selects these five ability keys;
@@ -3791,7 +3803,16 @@ public sealed partial class CardApi
                             target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>((source, false), saved));
                             RemoveCustomAbilityBuffDetail(target, source, giver.Name);
                         }
-            target.CustomAbility = null;
+            // SuppressMultipleUnits i6383..7800 retains foreign sources for
+            // keys outside the five custom-effect categories. Source 0 and
+            // the suppressed card's own ID are removed; empty keys disappear.
+            foreach (var key in target.ReceivedAbilitiesFromCards.Keys.ToArray())
+            {
+                var sources = target.ReceivedAbilitiesFromCards[key];
+                if (key is "trigger" or "destruction" or "passive" or "lethal" or "custom") sources.Clear();
+                else sources.RemoveAll(id => id == 0 || id == target.CardId);
+                if (sources.Count == 0) target.ReceivedAbilitiesFromCards.Remove(key);
+            }
         }
 
         // ---- ①b 解除 Pincer 关系（L_0803/L_083A）----

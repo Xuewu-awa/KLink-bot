@@ -1852,7 +1852,7 @@ public sealed partial class CardApi
             ["HasCantAttack"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantAttack(x),
             ["HasCantAttackType"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantAttackType(x, StrArg(a, 0)),
             ["HasCantBeAttackedBy"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantBeAttackedBy(x, StrArg(a, 0)),
-            ["IsPinned"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pinned),
+            ["IsPinned"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.IsPinned,
             ["HasBond"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasBond(x),
             // `GetIsGoldCard` is the native `isGoldCard` getter.  Its 24 IR call
             // sites use implicit self and expose only the boolean out slot.
@@ -6274,7 +6274,7 @@ public sealed partial class CardApi
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword is Keyword.Fury or Keyword.Blitz
+        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Pinned
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6301,18 +6301,12 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `PinUnit` —— 与 <see cref="DoGiveKeyword"/> 同一套目标解析（`TargetArg`），
-    /// 但落到 <see cref="CardApi.PinUnit"/> 上，因为钉住还要记 `pinnedTurns`
-    /// （出处 `BP_CardFunctions::PinUnit` i=955，见那个方法的注释）。
+    /// SDK PinUnit(cardID, instigatorID): invalid explicit IDs do not fall back to self.
+    /// The source ID is preserved, including zero, negative and unresolved IDs.
     /// </summary>
     private object? DoPinUnit(EffectContext c, object? r, object?[] a)
     {
-        var target = TargetArg(c, r, a);
-        if (target is not null)
-        {
-            PinUnit(target);
-        }
-
+        if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } target) PinUnit(target, IntArg(a, 1));
         return null;
     }
 

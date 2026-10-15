@@ -463,7 +463,18 @@ public sealed class CardInstance
     /// 「够不着（双方都在支援线）」（`out/_pinned-gate/after-389594.txt`）。
     /// `0` = 未钉住。
     /// </summary>
-    public int PinnedTurns { get; set; }
+    private int _pinnedTurns;
+    public int PinnedTurns
+    {
+        get => _pinnedTurns;
+        set
+        {
+            _pinnedTurns = value;
+            if (value > 0) Keywords.Add(Keyword.Pinned);
+            else Keywords.Remove(Keyword.Pinned);
+        }
+    }
+    public bool IsPinned => PinnedTurns > 0;
 
     /// <summary>
     /// **在场上，而且还没死** —— 能不能行动就靠这个。
@@ -840,6 +851,9 @@ public sealed class CardInstance
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
+            PinnedBuffsBySource = BuffsBySource.Where(kv => kv.Value.Pinned != 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Pinned),
             DestructionBuffsBySource = BuffsBySource.Where(kv => kv.Value.Destruction != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Destruction),
@@ -924,6 +938,7 @@ public sealed class CardBuff
     public int Blitz { get; set; }
     /// <summary>type-6 destruction amount; independent of raw hasDestruction and source arrays.</summary>
     public int Destruction { get; set; }
+    public int Pinned { get; set; }
     // customAdd stores a zero-valued type-5 entry. Presence, not its numeric
     // amount or the number of abilities, determines whether this record exists.
     public HashSet<string> CustomAbilityDetails { get; init; } = new(StringComparer.Ordinal);
@@ -960,7 +975,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Destruction == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
 
@@ -980,6 +995,7 @@ public sealed class CardBuff
         Fury = Fury,
         Blitz = Blitz,
         Destruction = Destruction,
+        Pinned = Pinned,
         CustomAbilityDetails = new HashSet<string>(CustomAbilityDetails, StringComparer.Ordinal),
         KreditCostSetsAbsoluteValue = KreditCostSetsAbsoluteValue,
         OperationCostSetsAbsoluteValue = OperationCostSetsAbsoluteValue,
@@ -1015,6 +1031,7 @@ public sealed record CardSnapshot(
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
+    public Dictionary<string, int> PinnedBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DestructionBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, string[]> CustomAbilityBuffDetails { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> BlitzBuffsBySource { get; init; } = new(StringComparer.Ordinal);

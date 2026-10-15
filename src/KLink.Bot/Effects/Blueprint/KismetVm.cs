@@ -1463,7 +1463,8 @@ public sealed class KismetVm
             "hasDestruction" => card.Keywords.Contains(Keyword.Destruction),
             "hasCovert" => card.Keywords.Contains(Keyword.Covert),
             "hasScrying" => card.Keywords.Contains(Keyword.Scrying),
-            "pinned" => card.Keywords.Contains(Keyword.Pinned),
+            "pinned" => card.IsPinned,
+            "pinnedTurns" => card.PinnedTurns,
 
             // ---- 「值就是自己的名字」的实例变量（JSON 键名）----
             //
@@ -1752,6 +1753,7 @@ public sealed class KismetVm
                         CardCustomNames.Assign(self, name, value?.ToString() ?? "None");
                         self.BlueprintVariables.Remove(name);
                     }
+                    else if (name == "pinnedTurns") self.PinnedTurns = ToInt(value);
                     else if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
                     else if (name is "ChooseOne" or "chooseOne") self.ChooseOne = ToInt(value);
                     else if (name == "hasDestruction")

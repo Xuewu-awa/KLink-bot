@@ -1857,7 +1857,7 @@ public sealed class MatchEngine
             }
 
             // PinnedTurns == 1 ⇒ 到期解除（蓝图 RemovePin）
-            if (card.Keywords.Contains(Keyword.Pinned))
+            if (card.IsPinned)
             {
                 Api.RemoveKeyword(card, Keyword.Pinned);
                 Say($"{card} 的钉住到期解除");
@@ -1916,7 +1916,7 @@ public sealed class MatchEngine
     /// 「被压制（= `Pinned`；中文客户端把 Pin 译作"压制"）还能上前线」。
     /// </summary>
     private bool PinnedBlocksOperation(CardInstance card)
-        => card.Keywords.Contains(Keyword.Pinned)
+        => card.IsPinned
            && !Api.HasCustomAbility(card, "canOperateWhilePinned");
 
     /// <summary>推进（不要原因）。见带 <c>out reason</c> 的重载。</summary>
