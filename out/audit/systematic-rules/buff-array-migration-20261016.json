@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-126",
+  "status": "confirmed_gaps_not_fixed",
+  "baseline_selftests": 492,
+  "diagnostic_failures": 2,
+  "scope": {
+    "parsed_function_files": 2559,
+    "direct_member_reference_statements": 6,
+    "direct_member_functions": [
+      "ChangeBuffsFromCards",
+      "ResetCardInBattle"
+    ],
+    "ChangeBuffsFromCards_call_sites": 51,
+    "query_call_sites": 26,
+    "kernel_candidate_files": 3,
+    "kernel_candidate_lines": 33
+  },
+  "diagnostics": {
+    "baseline": "492/492",
+    "temporary_probes": "2/494 fail; probe additions restored, not committed as passing tests",
+    "order": "Apply to 90 then 10; native contains/add preserves 90,10; adapter returns 10,90",
+    "source_identity": "Replacement source object with ID 60 inherits target 62 through old target rows; adapter is ID-derived, native field is object-owned"
+  },
+  "migration_contract": [
+    "Store object-owned independent integer array; getter returns a copy without sorting/filtering/rebuilding",
+    "After supported ledger changes, resolve valid current source and append target iff relation exists and absent, else RemoveItem when relation absent",
+    "Reset takes incoming source-key snapshot and removes reset ID from those source arrays before native reset/own callbacks",
+    "Track all writer/cleanup entry points before removing current reverse-scan fallback; include serialization, copy and direct Blueprint member access"
+  ],
+  "limits": [
+    "Full native writer scan outside reflected/parsed functions not completed",
+    "C# candidate lines are textual migration leads, not proven equivalent ledger writes",
+    "Fresh source diagnostic shows model aliasing; native constructor/CDO initialization still needs separate verification",
+    "Existing 492 selftests do not cover these newly reproduced contracts; no complete card or simulator parity claim"
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\buff-array-writers-evidence-20261016.json",
+  "evidence_sha256": "aa0931906a85d7136b2c6235f7c630b6a2336b46ad9159371e14e9353af2ed8f",
+  "installed_exe_sha256": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0"
+}
