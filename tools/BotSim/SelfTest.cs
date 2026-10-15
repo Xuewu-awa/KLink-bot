@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("GetTargetedCard：显式调用卡、覆盖优先、当前目标回退及未赋值输出", GetTargetedCardCallerContract),
         new("目标输出有效性：true加空目标不能成为出牌候选，无目标分支仍可出牌", TargetedCardOutputValidity),
         new("需目标指令可用性：空候选拒绝、实时标志及拒绝无副作用", TargetedOrderAvailability),
         new("选择选项结构：数组、布尔成员、索引和读取隔离", ChoiceOptionStructRead),
@@ -15180,6 +15181,62 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? GetTargetedCardCallerContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int overrideKind in Enumerable.Range(0, 3))
+        foreach (int currentKind in Enumerable.Range(0, 3))
+        foreach (bool contextTarget in new[] { false, true })
+        foreach (bool differentSelf in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 1);
+            var first = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 1);
+            var second = state.CreateWithId(PlainUnit, side.Opposite(), 62, CardLocation.Discard, 0);
+            if (overrideKind != 0) caller.BlueprintVariables["targetOverride"] = overrideKind == 1 ? first : second;
+            caller.CurrentTarget = currentKind == 0 ? null : currentKind == 1 ? first : second;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = differentSelf ? second : caller,
+                Target = contextTarget ? second : null, Controller = side };
+            var expected = overrideKind == 1 ? first : overrideKind == 2 ? second : caller.CurrentTarget;
+            var result = engine.Api.InvokeByName("GetTargetedCard", null, new object?[] { caller, null, null }, ctx, out bool handled) as object?[];
+            if (!handled || result is null || result.Length != 2 || !Equals(result[0], expected is not null)
+                || !ReferenceEquals(result[1], expected))
+                return $"GetTargetedCard未按显式caller读取：{side}/{overrideKind}/{currentKind}/{contextTarget}/{differentSelf}";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.HandLeft, 1);
+            var target = state.CreateWithId(PlainUnit, Side.Right, 61, CardLocation.BoardHqRight, 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = caller, Target = target, Controller = Side.Left };
+            var steps = new[] {
+                new KismetStep(0, "call", "GetTargetedCard", new KismetExpr[] {
+                    new() { None = true }, new() { Var = "hasTarget", Scope = "local" }, new() { Var = "card", Scope = "local" }
+                }, new[] { 1, 2 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["hasTarget"] = false, ["card"] = caller }, "hasTarget", "card");
+            if (!Equals(output["hasTarget"], false) || !ReferenceEquals(output["card"], caller))
+                return "无效caller没有保留未赋值输出";
+        }
+        foreach (bool existingOverride in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);state.SetKredits(Side.Left, 20);
+            var source = state.CreateWithId("card_event_air_corps_ferrying", Side.Left, 60, CardLocation.HandLeft, 1);
+            var candidate = state.CreateWithId(PlainUnit, Side.Left, 61, CardLocation.BoardHqLeft, 1);
+            var previous = state.CreateWithId(PlainUnit, Side.Right, 62, CardLocation.BoardHqRight, 1);
+            source.CurrentTarget = previous;
+            if (existingOverride) source.BlueprintVariables["targetOverride"] = previous;
+            if (!engine.Api.CanTarget(source, candidate).Can || engine.Api.CanTarget(source, previous).Can)
+                return "查询参数未作为显式候选传给GetTargetedCard";
+            if (!ReferenceEquals(source.CurrentTarget, previous)
+                || (existingOverride ? !ReferenceEquals(source.BlueprintVariables.GetValueOrDefault("targetOverride"), previous)
+                    : source.BlueprintVariables.ContainsKey("targetOverride")))
+                return "候选参数的临时绑定没有恢复原覆盖字段";
         }
         return null;
     }

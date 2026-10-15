@@ -394,26 +394,15 @@ public sealed partial class CardApi
             ["getCardsBuffedByThisCard"] = (c, r, a) => GetCardsBuffedByThisCard(c, r, a),
             ["GetTurnNumber"] = (c, r, a) => GetTurnNumber(),
             ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault()), TruthyArg(a, 1)),
-            // ⚠️⚠️ **两个出参，不是返回值**（2026-10-02，目标合法性门落地时发现）。
-            //
-            // 权威签名（调用点形态，全卡池 **431 处全部同形**）：
-            //   `GetTargetedCard(out bool hasTarget, out UBaseCardObject* card)`
-            // IR 形状（`card-ir.json` 的 438 个 `CanPlayFromHand` 里逐个核对过）：
-            //   `{"op":"call","fn":"GetTargetedCard","recv":{"var":"cardFunction"},
-            //     "args":[{"self":true}, {"var":"CallFunc_GetTargetedCard_hasTarget"},
-            //                          {"var":"CallFunc_GetTargetedCard_card"}],
-            //     "outs":[{"param":1,...},{"param":2,...}]}`
-            // —— 两个 out 槽，**没有**返回值。
-            //
-            // 旧写法 `=> c.Target` 只写第一个槽（`KismetVm.cs:650` 的单值约定）：
-            //   · `hasTarget` 拿到的是**卡对象**（truthy 恰好也对，掩盖了问题）；
-            //   · `card` 永远是 **null** ⇒ 紧接着的 `IsAirUnit(recv=card)` /
-            //     `IsVeteran(recv=card)` / `IsSameSideUnit(recv=card)` **一律恒假**。
-            // 因为 `GetTargetedCard` 只出现在 `CanPlayFromHand` 里，而那道门在本内核
-            // 此前**根本没实现**（`card-ir.json` 里 0 个调用点），所以这个 bug 一直没暴露；
-            // 一旦接上目标门，它的症状会是「**所有需要目标的牌都指不了任何目标**」。
-            // 多输出约定见 `KismetVm.cs:621-647`：返回 `object?[]` 即按下标写回各 out 槽。
-            ["GetTargetedCard"] = (c, r, a) => new object?[] { c.Target is not null, c.Target },
+            // BP_CardFunctions.GetTargetedCard: explicit caller; override before
+            // currentTarget. Invalid caller logs and leaves both out slots untouched.
+            ["GetTargetedCard"] = (c, r, a) =>
+            {
+                if (AsCardOrId(c, a.ElementAtOrDefault(0)) is not { } caller) return null;
+                var target = caller.BlueprintVariables.GetValueOrDefault("targetOverride") as CardInstance
+                    ?? caller.CurrentTarget;
+                return new object?[] { target is not null, target };
+            },
             ["GetCard"] = (c, r, a) => AsCard(r) ?? c.Target,
 
             // ── ★★ `CanSelectAsTarget`（规则库的目标合法性门，2026-10-02）──────────
@@ -7120,10 +7109,25 @@ public sealed partial class CardApi
 
     private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard)
     {
-        var outs = RunOwnLocal(
-            card, "CanPlayFromHand",
-            new Dictionary<string, object?>(StringComparer.Ordinal) { ["toCard"] = target },
-            "canIt", "reason", "reasonParam1", "reasonParam2", "targetedCard");
+        // This API accepts an explicit candidate. Bind it for the card-local call
+        // so the shared getter can use the real caller fields. Restore only this
+        // adapter binding; other query side effects (e.g. WhichChooseOne) remain.
+        // The native outer loop's persistent writes/clears are audited separately.
+        bool hadOverride = card.BlueprintVariables.TryGetValue("targetOverride", out var previousOverride);
+        IReadOnlyDictionary<string, object?>? outs;
+        card.BlueprintVariables["targetOverride"] = target;
+        try
+        {
+            outs = RunOwnLocal(
+                card, "CanPlayFromHand",
+                new Dictionary<string, object?>(StringComparer.Ordinal) { ["toCard"] = target },
+                "canIt", "reason", "reasonParam1", "reasonParam2", "targetedCard");
+        }
+        finally
+        {
+            if (hadOverride) card.BlueprintVariables["targetOverride"] = previousOverride;
+            else card.BlueprintVariables.Remove("targetOverride");
+        }
 
         if (outs is null)
         {

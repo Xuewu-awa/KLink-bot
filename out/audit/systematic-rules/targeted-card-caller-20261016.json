@@ -1,0 +1,35 @@
+{
+  "rule": "RULE-136",
+  "status": "fixed explicit caller and override/current target priority with both output slots; adapted candidate parameter binding",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\targeted-card-caller-evidence-20261016.json",
+  "evidence_sha256": "28e5f05955f1e4ed512a197af6bedc21b59722e15494fe5daaf34f2b642fce90",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "8194b84242cf3df74f33925e3165bb4673452c1e1634147c21904587b57d51db",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "22b6d88a868e8d064eb8084c5fdd8ce1b1468d3ba2cc05952470d642a501afa7",
+    "D:\\Codex Workshop\\kards-install-review\\audit-targeted-card-caller-20261016.py": "ad0f5a68fa83459c78b7c7b8f5f2cf5b7bd533efadefcad4236d66ae98f6e5c5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-card-caller-before-20261016.txt": "2bbd828b394eceb71c293bf71c8e4d5a01ef8fece64cae1c1cf4c7fb72ddfe1e",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-card-caller-after-20261016.txt": "e1a0fbaa2fb0355f4df8a381af707f7d3e85cf2bc61baf136d3f5bae332b1eb9"
+  },
+  "tests": {
+    "release": "502/502",
+    "caller_matrix": 72,
+    "matrix": "2 sides x 3 override states x 3 currentTarget states x 2 context-target states x 2 self/caller identity states",
+    "additional": [
+      "Invalid caller preserves deliberately different seeded VM output slots",
+      "Candidate API honors its explicit argument despite an existing different override/current target",
+      "Both prior override presence and absence are restored"
+    ],
+    "regression": "Old helper returns an unrelated ctx.Target when caller has no target: 1/502 failed. Corrected helper and adapter: 502/502 pass."
+  },
+  "limits": [
+    "Candidate API binding is temporary and restores only targetOverride; it does not reproduce the native outer loop persistent writes/conditional clears/early exit. That loop remains open.",
+    "Model validity is a non-null CardInstance; full UE UObject destruction and GC validity flags remain unmodeled. Discard location alone does not invalidate a UObject.",
+    "targetOverride remains stored through the existing BlueprintVariables dictionary; typed native field storage, full CopyData behavior, snapshot import and all other writers remain open.",
+    "Invalid caller logging is omitted from the headless rule result. Full GetTargetedCard integration, action selection and per-card PvP semantics are not certified."
+  ],
+  "fully_semantically_verified_cards": 0
+}
