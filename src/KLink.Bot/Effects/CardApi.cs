@@ -227,6 +227,37 @@ public sealed partial class CardApi
         => CaptureTriggerSnapshot().Where(card => card.Definition.IsRegisteredFor(programName)
             && !SuppressedSkipsTrigger(card, programName)).ToArray();
 
+    // ExecuteOnEnterPlayEvents i=74 queries T43 after the own hook; i=343
+    // excludes only the entering ID. The saved recipients are invoked directly.
+    internal void ExecuteOtherCardEnterPlayEvents(CardInstance entered, int method)
+    {
+        const string trigger = "OnOtherCardEnterPlay";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { entered, method };
+        var named = new Dictionary<string, object?> { ["cardPlayed"] = entered, ["Method"] = method };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == entered.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={entered.Name}#{entered.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, entered, eventArgs: args, namedArgs: named);
+        }
+    }
+
+    // SetRightLeftMostWhenPlayed runs before the card leaves its own hand.
+    internal void SetHandEdgesWhenPlayed(CardInstance card)
+    {
+        if (card.Location != card.Owner.HandOf()) return;
+        const string left = "WasLeftMostCardWhenPlayedFromHand", right = "WasRightMostWhenPlayedFromHandKey";
+        if (card.LocationNumber == 0) JsonSetBool(card, left, true);
+        else JsonClear(card, left);
+        int greatest = State.CardsUnordered().Where(x => x.Owner == card.Owner && x.Location == card.Owner.HandOf())
+            .Select(x => x.LocationNumber).DefaultIfEmpty(0).Max();
+        if (card.LocationNumber == greatest) JsonSetBool(card, right, true);
+        else JsonClear(card, right);
+    }
+
     internal void ExecuteOtherCardDrawnEvents(CardInstance drawn, Side side, bool startOfTurnDraw)
     {
         const string trigger = "OnOtherCardDrawnFromDeck";

@@ -1856,11 +1856,12 @@ public sealed partial class CardApi
             ["WasRightMostCardWhenPlayedFromHand"] = (c, r, a) =>
                 (AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a)) is { } card
                 && JsonGetBool(card, "WasRightMostWhenPlayedFromHandKey"),
-            // 左侧对应的 Blueprint wrapper，读取同一组动作流标记的 left key。
+            // CDO WasLeftMostWhenPlayedFromHandKey defaults to the different
+            // literal "WasLeftMostCardWhenPlayedFromHand"; the field name is not the JSON key.
             // 调用点既有显式 cardPlayed，也有隐式 self，形状与右侧完全一致。
             ["WasLeftMostCardWhenPlayedFromHand"] = (c, r, a) =>
                 (AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a)) is { } card
-                && JsonGetBool(card, "WasLeftMostWhenPlayedFromHandKey"),
+                && JsonGetBool(card, "WasLeftMostCardWhenPlayedFromHand"),
             ["hasActivePincerEffect"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pincer),
 

@@ -117,6 +117,9 @@ internal static class SelfTest
         new("手牌弃牌：取消、强制、限制、抑制和原始来源ID", HandDiscardCancellationFlags),
         new("手牌弃牌：通知开关、编号、移动事件及无位置门T41", HandDiscardNotificationBoundary),
         new("手牌弃牌：成功回调后查询T41，返回值不按最终位置重算", HandDiscardSuccessReentry),
+        new("直接出牌成功：不执行普通打牌链，重置字段并记录独立通知", DirectNonGotchaEntryBoundary),
+        new("直接出牌成功：字段重置先于入场，T43后查询，山地最后结算", DirectEntryFieldOrder),
+        new("直接出牌成功：入场前保存手牌两端标记并清理旧标记", DirectEntryHandEdges),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -3433,10 +3436,13 @@ internal static class SelfTest
         var (engine, state) = EmptyBoard(db);
         var card = state.CreateWithId(cardName, Side.Left, 501, CardLocation.HandLeft, 0);
         int startingTurn = state.Turn;
-        if (!engine.PlayCardDirectlyFromHand(card, toFrontline: false,
-                instigatorID: card.CardId, locationNumber: -1))
+        // Ordinary play executes OnPlayedFromHand. The audited direct primitive
+        // only moves and enters; it must not execute this order's normal effect.
+        state.SetMaxKredits(Side.Left, 24);
+        state.SetKredits(Side.Left, 24);
+        if (!engine.PlayCard(card))
         {
-            return "Calm Before the Storm 直接出牌失败";
+            return "Calm Before the Storm 普通出牌失败";
         }
 
         var hits = state.ActionLog
@@ -8794,6 +8800,136 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? DirectNonGotchaEntryBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (string name in new[] { "card_unit_10_5_cm_lefh", "card_event_calm_before_the_storm", "card_event_sunny1_blue_sky" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side.Opposite(); state.Turn = 7;
+            state.SetKredits(side, 4); state.StopFurtherActions = true;
+            var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
+            var remaining = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.HandOf(), 15);
+            var target = state.Hq(side.Opposite()); int defense = target.Defense;
+            card.BlueprintVariables["targetOverride"] = target;
+            card.CurrentTarget = remaining; card.IsSalvaged = salvaged;
+            card.CardSeen = true; card.KreditCost = 1;
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            bool result = engine.PlayCardDirectlyFromHand(card, frontline, 9004, -1);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var play = actions.SingleOrDefault(x => x.Name == "ZActionPlayCardFromHand");
+            var move = actions.SingleOrDefault(x => x.Name == "ZActionMoveCardToNewLocation");
+            int slot = frontline ? 0 : 1;
+            if (!result || card.Location != (frontline ? CardLocation.BoardFrontline : side.HqOf())
+                || card.LocationNumber != slot || remaining.LocationNumber != 0
+                || card.EnteredPlayOnTurn != 7 || card.CardSeen || card.CurrentTarget != remaining
+                || card.KreditCost != (salvaged ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits)
+                || state.Kredits(side) != 4 || state.Turn != 7 || target.Defense != defense
+                || state.CardsPlayedThisTurn.Count != 0 || state.HasPlayedWeatherCardThisTurn || !state.StopFurtherActions
+                || trace.Any(x => x.StartsWith("OnPlayedFromHand", StringComparison.Ordinal)
+                    || x.StartsWith("OnOtherCardPlayedFromHand", StringComparison.Ordinal)
+                    || x.StartsWith("OnBeforeOtherCardPlayedFromHand", StringComparison.Ordinal))
+                || play is null || move is null || Array.IndexOf(actions, play) >= Array.IndexOf(actions, move)
+                || play.Values.First(x => x.Name == "targetCardID").Value != target.CardId
+                || play.Values.First(x => x.Name == "instigatorID").Value != 9004
+                || play.Values.First(x => x.Name == "locationNumber").Value != slot
+                || !play.Values.Any(x => x.Name == "playedDirectly" && x.Value == 1)
+                || move.Values.First(x => x.Name == "newLocationNumber").Value != slot)
+                return $"直接出牌边界错误：{side} 前线{frontline} 抑制{suppressed} 打捞{salvaged} {name}";
+        }
+        return null;
+    }
+
+    private static string? DirectEntryFieldOrder(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnEnterPlay";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装直接入场探针";
+        // Synthetic own-entry reentry marker, not a claim about Typhoon's real effects.
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "Method", Scope = "local" }, null, -1, "_auditEntryMethod", null) { DestinationScope = "instance" },
+            new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool frontline in new[] { false, true })
+            foreach (bool timer in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db); state.Turn = 7;
+                var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
+                var first = state.CreateWithId("card_unit_panzer_iii_e", side, 20, side.HqOf(), 1);
+                state.CreateWithId(first.Name, side, 21, CardLocation.NotAvailable, 0);
+                var alpine = state.CreateWithId("card_unit_432_infantry_regiment", side, 22, side.HqOf(), 2);
+                alpine.Keywords.Add(Keyword.Alpine); card.Keywords.Add(Keyword.Alpine);
+                card.KreditCost = 1; card.CardSeen = true; card.IsSalvaged = timer;
+                engine.Api.JsonSetInt(card, "unrelated", 19);
+                if (timer) engine.Api.JsonSetInt(card, "countdown_timer", 3);
+                int atEntryAttack = -1, atEntryCost = -1, atEntryTurn = -1;
+                bool atEntrySeen = true, atEntryTimer = true;
+                int beforeAttack = card.Attack;
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    atEntryAttack = card.Attack; atEntryCost = card.KreditCost;
+                    atEntryTurn = card.EnteredPlayOnTurn; atEntrySeen = card.CardSeen;
+                    atEntryTimer = card.CustomJson.ContainsKey("countdown_timer");
+                    first.Keywords.Add(Keyword.Suppressed);
+                };
+                var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+                if (!engine.PlayCardDirectlyFromHand(card, frontline, 9004, 1)
+                    || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 2
+                    || atEntryAttack != beforeAttack || card.Attack != beforeAttack + 1
+                    || atEntryCost != (timer ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits)
+                    || atEntryTurn != 7 || atEntrySeen || atEntryTimer || engine.Api.JsonGetInt(card, "unrelated") != 19
+                    || trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#20", StringComparison.Ordinal))
+                    || !trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#21", StringComparison.Ordinal)))
+                    return $"直接入场顺序错误：{side} 前线{frontline} 计时{timer} Method={card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")} 攻{atEntryAttack}->{card.Attack} 费{atEntryCost}";
+                int persist = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionPersistCustomFields"
+                    && x.Values.Any(v => v.Name == "cardID" && v.Value == 60));
+                if (persist != (timer ? 1 : 0)) return "仅删除了countdown_timer时应持久化该卡JSON";
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId(name, side, 60, CardLocation.NotAvailable, 0);
+                engine.ExecuteOnEnterPlayEvents(card, 5);
+                if (Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 5)
+                    return "原生入场自身回调没有NotAvailable位置门";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
+    }
+
+    private static string? DirectEntryHandEdges(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int index in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hand = Enumerable.Range(0, 3).Select(i => state.CreateWithId("card_unit_432_infantry_regiment", side, 60 + i, side.HandOf(), i)).ToArray();
+            var card = hand[index];
+            engine.Api.JsonSetBool(card, "WasLeftMostCardWhenPlayedFromHand", true);
+            engine.Api.JsonSetBool(card, "WasRightMostWhenPlayedFromHandKey", true);
+            engine.PlayCardDirectlyFromHand(card, false, 9004, -1);
+            if (engine.Api.JsonGetBool(card, "WasLeftMostCardWhenPlayedFromHand") != (index == 0)
+                || engine.Api.JsonGetBool(card, "WasRightMostWhenPlayedFromHandKey") != (index == 2)
+                || state.Hand(side).Select(x => x.LocationNumber).Order().SequenceEqual(new[] { 0, 1 }) != true)
+                return $"直接入场手牌两端标记错误：{side} index={index}";
+        }
+        return null;
     }
 
     private static string? HandDiscardSuccessReentry(CardDatabase db)
@@ -17959,7 +18095,7 @@ internal static class SelfTest
         var (engine, state) = EmptyBoard(db);
         var source = state.CreateWithId(sourceName, Side.Left, 411, CardLocation.HandLeft, 0);
         var explicitCard = state.CreateWithId(explicitName, Side.Left, 412, CardLocation.HandLeft, 1);
-        const string key = "WasLeftMostWhenPlayedFromHandKey";
+        const string key = "WasLeftMostCardWhenPlayedFromHand";
         engine.Api.JsonSetBool(source, key, true);
         engine.Api.JsonSetBool(explicitCard, key, true);
         var ctx = new EffectContext
@@ -17976,6 +18112,7 @@ internal static class SelfTest
         }
 
         engine.Api.JsonSetBool(source, key, false);
+        engine.Api.JsonSetBool(source, "WasLeftMostWhenPlayedFromHandKey", true);
         object? explicitRaw = engine.Api.InvokeByName(
             "WasLeftMostCardWhenPlayedFromHand", source,
             new object?[] { explicitCard, null }, ctx, out bool explicitHandled);

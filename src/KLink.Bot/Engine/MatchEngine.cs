@@ -291,10 +291,9 @@ public sealed class MatchEngine
         if (!card.IsSuppressed)
             Api.FireTrigger("OnEnterPlay", card, card.Owner,
                 eventArgs: new object?[] { method },
-                namedArgs: new Dictionary<string, object?> { ["Method"] = method });
-        Api.FireTrigger("OnOtherCardEnterPlay", card, card.Owner,
-            eventArgs: new object?[] { card, method }, eventSubject: card,
-            namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = card, ["Method"] = method });
+                namedArgs: new Dictionary<string, object?> { ["Method"] = method },
+                recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
+        Api.ExecuteOtherCardEnterPlayEvents(card, method);
     }
 
     public GameState State { get; }
@@ -1098,11 +1097,11 @@ public sealed class MatchEngine
         }
     }
 
-    private void NotifyGotchaPlayFromHand(CardInstance card, int instigatorId,
-        int locationNumber, int targetId, bool playedDirectly)
+    private void NotifyPlayFromHand(CardInstance card, int instigatorId,
+        int locationNumber, int targetId, bool playedDirectly, CardLocation? destination = null)
     {
         Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
-            (int)card.Location, out string locationName);
+            (int)(destination ?? card.Location), out string locationName);
         var values = new List<ActionValue2>
         {
             ActionValue2.Int("cardID", card.CardId),
@@ -1120,7 +1119,7 @@ public sealed class MatchEngine
             values.Add(ActionValue2.Bool("playedDirectly", true));
         }
         FireSubAction("ZActionPlayCardFromHand", values);
-        _pendingGotchaPlayReceipts.Enqueue((card.CardId, playedDirectly));
+        if (Api.IsGotcha(card)) _pendingGotchaPlayReceipts.Enqueue((card.CardId, playedDirectly));
     }
 
     private bool _processingAutoPlayCards;
@@ -1145,7 +1144,7 @@ public sealed class MatchEngine
                 // Gotcha records a notification; receipt application is a later batch stage.
                 if (Api.IsGotcha(card))
                 {
-                    NotifyGotchaPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false);
+                    NotifyPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false);
                     continue;
                 }
                 PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
@@ -1371,7 +1370,7 @@ public sealed class MatchEngine
                 ["side"] = card.Owner.ToWire(),
             });
             ApplyNativeHandPlayCost(card, target);
-            NotifyGotchaPlayFromHand(card, card.CardId, card.LocationNumber, target?.CardId ?? 0,
+            NotifyPlayFromHand(card, card.CardId, card.LocationNumber, target?.CardId ?? 0,
                 playedDirectly: false);
             return true;
         }
@@ -1385,7 +1384,7 @@ public sealed class MatchEngine
     /// 蓝图 <c>PlayCardDirectlyFromHand</c> 的免费/特殊出牌路径。
     ///
     /// Gotcha 在手牌中只切换激活号，然后提前返回，不经过普通打牌链。
-    /// 非 Gotcha 当前仍复用共用出牌实现；其容量、事件与接收阶段边界待继续审计。
+    /// 非 Gotcha 只经过位置移动及Method=2入场事件，不执行普通手牌打牌链。
     /// </summary>
     public bool PlayCardDirectlyFromHand(CardInstance card, bool toFrontline,
                                          int instigatorID, int locationNumber)
@@ -1401,7 +1400,7 @@ public sealed class MatchEngine
             // activation, preserves the hand location/number, then i=853/908
             // returns before CardLocationMoved and enter-play effects.
             Api.AssignGotchaActivatedOnPlayFromHand(card);
-            NotifyGotchaPlayFromHand(card, instigatorID, card.LocationNumber,
+            NotifyPlayFromHand(card, instigatorID, card.LocationNumber,
                 card.BlueprintVariables.GetValueOrDefault("targetOverride") is CardInstance overrideTarget ? overrideTarget.CardId : 0,
                 playedDirectly: true);
             return true;
@@ -1417,9 +1416,47 @@ public sealed class MatchEngine
             return false;
         }
 
-        return PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
-            chargeKredits: false, recordAction: false, toFrontline,
-            locationNumber, instigatorID);
+        BeginEffectResolution();
+        try
+        {
+            var oldLocation = card.Location;
+            int slot = locationNumber >= 0 ? locationNumber : count;
+            int targetId = card.BlueprintVariables.GetValueOrDefault("targetOverride") is CardInstance directTarget
+                ? directTarget.CardId : 0;
+            // i=757 notifies before i=2809 moves. This path never calls CardPlayedFromHand.
+            NotifyPlayFromHand(card, instigatorID, slot, targetId, playedDirectly: true, destination);
+            Api.SetHandEdgesWhenPlayed(card);
+            // InjectCardIntoLocation: create a gap, then RefreshLocationStatus
+            // compacts both physical locations before movement callbacks.
+            foreach (var other in State.CardsUnordered().Where(x => x.Location == destination))
+                if (other.LocationNumber >= slot) other.LocationNumber++;
+            State.Move(card, destination, slot, moveReason: CardMoveReason.PlayCardForce,
+                notifyMoved: false, normalizeLocation: false);
+            Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+            Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
+            Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
+                (int)CardMoveReason.PlayCardForce, out string reasonName);
+            FireSubAction("ZActionMoveCardToNewLocation", new[] {
+                ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", instigatorID),
+                ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+                ActionValue2.Int("newLocationNumber", slot), ActionValue2.Int("nonVisualLocationNumber", slot),
+                ActionValue2.Str("moveReason", reasonName),
+                ActionValue2.Int("attackLeft", card.MaxAttacksThisTurn - card.AttacksThisTurn),
+                ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
+            });
+            Api.RearrangeLocation(oldLocation);
+            Api.RearrangeLocation(destination);
+            State.CardMoved?.Invoke(card, oldLocation, destination, false, CardMoveReason.PlayCardForce);
+            // Follow the execution-flow stack: clear/persist -> fields -> entry -> Alpine.
+            if (Api.JsonClear(card, "countdown_timer")) Api.PersistCustomFields(card);
+            card.EnteredPlayOnTurn = State.Turn;
+            card.KreditCost = card.IsSalvaged ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits;
+            card.CardSeen = false;
+            ExecuteOnEnterPlayEvents(card, 2);
+            if (card.Keywords.Contains(Keyword.Alpine)) Api.GiveAlpineBonus(card);
+            return true;
+        }
+        finally { EndEffectResolution(); }
     }
 
     private bool PlayCardFromHandCore(CardInstance card, CardInstance? target,
