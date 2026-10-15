@@ -1326,7 +1326,7 @@ public sealed partial class CardApi
             ["ShuffleDeckBySide"] = (c, r, a) =>
             {
                 var side = SideArg(r, a, 0, c.Controller);
-                ShuffleDeckBySide(c, side, IntArg(a, 2));
+                ShuffleDeckBySide(c, side, IntArg(a, 2), TruthyArg(a, 1));
                 return null;
             },
             // ⚠️ **数额在 `a[1]`，不在 `a[0]`**（审计 §5.2b）。
@@ -2425,7 +2425,7 @@ public sealed partial class CardApi
     ///   不能再扫任意整数猜位置：右阵营的 <c>side=2</c> 会把本应放底的卡误判成放顶，
     ///   而多张置顶时也必须按每次生成后的当前牌库重排。</item>
     /// <item><c>shuffle</c>（a[7]）为真时，蓝图在循环后调用
-    ///   `ShuffleDeckBySide(side, true, spawnerID, …)`；内核保留洗牌与事件，忽略纯客户端通知。</item>
+    ///   `ShuffleDeckBySide(side, true, spawnerID, …)`；内部洗牌跳过其通知，外层生成通知仍是独立待审计路径。</item>
     /// </list>
     ///
     /// ★ 出参 <c>spawnedCardIDs</c> **已经改成数组**（2026-10-02，见函数末尾的注释）：
@@ -2499,7 +2499,7 @@ public sealed partial class CardApi
 
         if (shuffle)
         {
-            ShuffleDeckBySide(c, side, spawnerId);
+            ShuffleDeckBySide(c, side, spawnerId, skipSubAction: true);
         }
 
         // ★★ 出参必须是**数组**（`TArray<int32>` 的卡 ID），不是单张卡。
@@ -3395,21 +3395,31 @@ public sealed partial class CardApi
         return 0;
     }
 
-    private void ShuffleDeckBySide(EffectContext c, Side side, int instigatorId)
+    private void ShuffleDeckBySide(EffectContext c, Side side, int instigatorId, bool skipSubAction = false)
     {
         var order = c.State.Deck(side).ToList();
         // i=86..151 exits before shuffle and both observer queries for an empty deck.
         if (order.Count == 0) return;
         c.State.Random.Shuffle(order);
+        // localDeckCardIDs contains integer values saved before T3 callbacks.
+        var notificationIds = order.Select(card => card.CardId).ToArray();
         c.State.TraceRandom($"ShuffleDeckBySide {side} n={order.Count}");
         for (int i = 0; i < order.Count; i++)
         {
             order[i].LocationNumber = i;
         }
 
-        // i=256 completes T3 before i=299 queries T22. skipSubAction only
-        // controls the later notifier, never either rules event.
+        // i=279 pushes the T22 continuation. false at i=284 jumps to the
+        // notifier, whose i=829 Pop resumes at i=299; true skips only it.
         ExecuteOnAfterDeckChanged(side);
+        if (!skipSubAction)
+            c.Engine.FireSubAction("ZActionNewDeck", new[]
+            {
+                ActionValue2.Str("side", side.ToWire()),
+                ActionValue2.Str("cards", string.Join(";", notificationIds.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+                ActionValue2.Str("spawnCards", ""),
+                ActionValue2.Bool("shuffle", true),
+            });
         var recipients = CaptureRegisteredTriggerSnapshot("OnDeckShuffled");
         var library = Blueprint.KismetLibrary.Default;
         if (library is null) return;

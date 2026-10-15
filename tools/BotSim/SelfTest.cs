@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("洗牌通知：保存顺序、四字段、空牌库与skipSubAction", NativeShuffleNotification),
+        new("洗牌通知：T3后通知再查询T22，载荷保留原洗牌快照", NativeShuffleNotificationTiming),
         new("情报通知：四字段、重复项、位置过滤与输入数组保持", NativeCardsSeenNotification),
         new("情报通知：零/负数量与空未见池的通知边界", NativeIntelNotificationBoundary),
         new("情报通知：转换到手牌的旗标与skipAction边界", NativeConvertedCardsSeen),
@@ -10218,6 +10220,110 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeShuffleNotification(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (uint seed in new uint[] { 1, 42, 773639 })
+        foreach (bool skip in new[] { false, true })
+        foreach (int count in new[] { 0, 1, 3, 5 })
+        {
+            var (engine, state) = EmptyBoard(db); state.Random.Initialize(unchecked((int)seed));
+            int[] ids = { 90, 10, 70, 20, 80 };
+            var pool = new List<CardInstance>();
+            for (int i = 0; i < count; i++) pool.Add(state.CreateWithId(PlainUnit, side, ids[i], side.DeckOf(), count - 1 - i));
+            var expected = pool.AsEnumerable().Reverse().ToList(); var oracle = new UeRandomStream(seed); oracle.Shuffle(expected);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(side), Controller = side };
+            engine.Api.InvokeByName("ShuffleDeckBySide", ctx.Self, new object?[] { (int)side, skip, 0, null }, ctx, out bool handled);
+            var records = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionNewDeck").ToArray();
+            if (!handled || !state.Deck(side).SequenceEqual(expected) || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != count
+                || records.Length != (count == 0 || skip ? 0 : 1)) return "洗牌顺序/原始流消耗/空牌库/跳过通知不符";
+            if (records.Length == 1 && !records[0].Values.SequenceEqual(new[] { ActionValue2.Str("side", side.ToWire()),
+                ActionValue2.Str("cards", string.Join(";", expected.Select(x => x.CardId))), ActionValue2.Str("spawnCards", ""), ActionValue2.Bool("shuffle", true) }))
+                return "洗牌通知必须为side/cards/spawnCards/shuffle四字段，无deckSpawn/hideSpawnFromEnemy默认字段";
+        }
+        return null;
+    }
+
+    private static string? NativeShuffleNotificationTiming(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        string[] triggers = { "OnAfterDeckChanged", "OnDeckShuffled" };
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || triggers.Any(locals.ContainsKey)) return "无法安装洗牌时序探针";
+        foreach (string trigger in triggers)
+            locals[trigger] = new[] {
+                new KismetStep(0, "call", "SpawnCardInHandBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                    new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool skip in new[] { false, true })
+            foreach (int mutation in new[] { 0, 1, 2 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var def = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = triggers, Defense = 20 };
+                var observer = state.CreateWithId(name, side, 60, CardLocation.Discard, 0); observer.Definition = def;
+                var initial = new[] { state.CreateWithId(PlainUnit, side, 90, side.DeckOf(), 2),
+                    state.CreateWithId(PlainUnit, side, 10, side.DeckOf(), 0), state.CreateWithId(PlainUnit, side, 70, side.DeckOf(), 1) };
+                var expected = new List<int> { 10, 70, 90 }; var oracle = new UeRandomStream(state.Random.Seed); oracle.Shuffle(expected);
+                int phase = 0; bool correct = true; int[] currentDeck = Array.Empty<int>();
+                state.CardCreated += created => {
+                    if (created.Name != "card_unit_routed_troops") return;
+                    var records = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionNewDeck").ToArray();
+                    if (phase++ == 0)
+                    {
+                        correct &= records.Length == 0; // T3 runs before notifier
+                        if (mutation == 1)
+                        {
+                            initial[0].Location = CardLocation.Discard;
+                            initial[1].LocationNumber = 4; initial[2].LocationNumber = 0;
+                            state.CreateWithId(PlainUnit, side, 1000, side.DeckOf(), 2);
+                        }
+                        if (mutation == 2) foreach (var card in initial) card.Location = CardLocation.Discard;
+                        currentDeck = state.Deck(side).Select(x => x.CardId).ToArray();
+                        var added = state.CreateWithId(name, side, 1100, CardLocation.NotAvailable, 0);
+                        added.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { triggers[1] } };
+                    }
+                    else
+                    {
+                        correct &= records.Length == (skip ? 0 : 1) && state.Deck(side).Select(x => x.CardId).SequenceEqual(currentDeck);
+                        if (!skip) correct &= records[0].Values[1] == ActionValue2.Str("cards", string.Join(";", expected));
+                    }
+                };
+                var ctx = new EffectContext { Engine = engine, State = state, Self = observer, Controller = side };
+                engine.Api.InvokeByName("ShuffleDeckBySide", observer, new object?[] { (int)side, skip, 60, null }, ctx, out _);
+                if (phase != 3 || !correct || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != 3)
+                    return $"T3/通知/T22顺序或保存的整型ID快照不符：{side}/{skip}/{mutation}/phase={phase}";
+            }
+            // The spawn wrapper calls ShuffleDeckBySide(..., true, ...).
+            // Inspect DURING T22; the wrapper's separate outer notification is
+            // a different event and must not be prohibited by this test.
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int amount in new[] { 0, 1 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var observer = state.CreateWithId(name, side, 20, CardLocation.NotAvailable, 0);
+                observer.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { triggers[1] } };
+                var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+                state.CreateWithId(PlainUnit, side, 60, side.DeckOf(), 0);
+                bool received = false, noInnerNotification = true;
+                state.CardCreated += created => {
+                    if (created.Name != "card_unit_routed_troops") return;
+                    received = true;
+                    noInnerNotification &= !state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionNewDeck");
+                };
+                var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+                engine.Api.InvokeByName("SpawnCardInDeckBySide", source, new object?[] {
+                    (int)side, PlainUnit, 30, amount, 0, false, false, true, false, false, null }, ctx, out _);
+                if (!received || !noInnerNotification) return "生成入口内部洗牌必须跳过本次NewDeck，同时保留T22";
+            }
+        }
+        finally { foreach (string trigger in triggers) locals.Remove(trigger); }
+        return null;
     }
 
     private static string? NativeCardsSeenNotification(CardDatabase db)
