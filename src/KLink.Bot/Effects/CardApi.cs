@@ -5010,25 +5010,33 @@ public sealed partial class CardApi
     /// :4048      card.cardSeen = True         ; ★ 真正"标为已见"的那一步
     /// :4058  IsActionProcess ⇒ :4071 NotifyCardsSeen(Notifier, IDs, seen, showAnimation, enemyTurn)
     /// </code>
-    /// NotifyCardsSeen 的通知载荷尚未接入，保留为独立审计项（RULE-106）。
+    /// 动作处理分支的 ZActionCardsSeen 载荷已接入；非动作模式仍待核查（RULE-108）。
     ///
     /// ⚠️ 第一个参数在蓝图里是**按引用进出的数组**（`Val.Out(...)` 回写）——
-    /// 本内核更新列表所引用对象的 CardSeen；数组引用的输出 ABI 仍待核查。
+    /// 本内核仅更新列表对象字段并保留原数组，通用VM的in/out引用接口仍待核查。
     /// </summary>
     public void ApplySetCardsSeenByCipher(List<CardInstance> cards, bool enemyTurn, bool showAnimation)
     {
-        _ = enemyTurn;
-        _ = showAnimation;
-
+        // Current pak Apply... i=253/294: each entry is independently checked.
+        // Keep duplicate IDs and already-seen cards; do not change the input list.
+        var ids = new List<int>();
         foreach (var card in cards)
         {
-            if (!IsLocatedInHand(card))
-            {
-                continue;
-            }
-
+            if (!IsLocatedInHand(card)) continue;
+            ids.Add(card.CardId);
             card.CardSeen = true;
         }
+
+        // Headless engine uses the action-processing branch, as for the other
+        // notifier adapters. Non-action/remote receipt routing remains separate.
+        // NotifyCardsSeen -> HandleCardsSeen -> AddSubActionCardsSeen i=175.
+        _engine.FireSubAction("ZActionCardsSeen", new[]
+        {
+            ActionValue2.Str("cardIDs", string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            ActionValue2.Str("seenValues", string.Join(";", Enumerable.Repeat("1", ids.Count))),
+            ActionValue2.Bool("showAnimation", showAnimation),
+            ActionValue2.Bool("enemyTurn", enemyTurn),
+        });
     }
 
     /// <summary>

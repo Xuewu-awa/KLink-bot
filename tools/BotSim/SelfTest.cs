@@ -184,6 +184,9 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("情报通知：四字段、重复项、位置过滤与输入数组保持", NativeCardsSeenNotification),
+        new("情报通知：零/负数量与空未见池的通知边界", NativeIntelNotificationBoundary),
+        new("情报通知：转换到手牌的旗标与skipAction边界", NativeConvertedCardsSeen),
         new("原生数组缩容：负数保留 typed/object 列表且VM继续执行", NativeNegativeArrayResize),
         new("情报候选：全局顺序、换主、跨手牌位置及天气排除", NativeIntelHandQuery),
         new("情报翻牌：筛选后原始洗牌、零数量及空候选", NativeIntelShuffle),
@@ -10215,6 +10218,88 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeCardsSeenNotification(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool enemyTurn in new[] { false, true })
+        foreach (bool animation in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var a = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 5);
+            var b = state.CreateWithId(PlainUnit, side.Opposite(), 10, side.Opposite().HandOf(), 1); b.CardSeen = true;
+            var deck = state.CreateWithId(PlainUnit, side, 70, side.DeckOf(), 0);
+            var board = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var discard = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            var weather = state.CreateWithId("card_event_rain2_deluge", side, 40, side.HandOf(), 2);
+            var unavailable = state.CreateWithId(PlainUnit, side, 50, CardLocation.NotAvailable, 0);
+            a.Keywords.Add(Keyword.Suppressed); a.Defense = 0;
+            var input = mode switch {
+                0 => new List<CardInstance>(), 1 => new() { a }, 2 => new() { a, deck, b, a, board, discard, weather, unavailable },
+                3 => new() { deck, board, discard, unavailable }, _ => new() { b, b },
+            };
+            var before = input.ToArray();
+            string ids = mode switch { 1 => "90", 2 => "90;10;90;40", 4 => "10;10", _ => "" };
+            string seen = mode switch { 1 => "1", 2 => "1;1;1;1", 4 => "1;1", _ => "" };
+            engine.Api.ApplySetCardsSeenByCipher(input, enemyTurn, animation);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (!input.SequenceEqual(before) || actions.Length != 1 || actions[0].Name != "ZActionCardsSeen"
+                || !actions[0].Values.SequenceEqual(new[] { ActionValue2.Str("cardIDs", ids), ActionValue2.Str("seenValues", seen),
+                    ActionValue2.Bool("showAnimation", animation), ActionValue2.Bool("enemyTurn", enemyTurn) })
+                || state.Random.ConsumedCount != 0 || deck.CardSeen || board.CardSeen || discard.CardSeen || unavailable.CardSeen
+                || a.CardSeen != (mode is 1 or 2) || weather.CardSeen != (mode == 2) || !b.CardSeen)
+                return $"标记通知/原数组/位置门不符：{side}/{enemyTurn}/{animation}/{mode}";
+        }
+        return null;
+    }
+
+    private static string? NativeIntelNotificationBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int amount in new[] { -3, 0, 1, 9 })
+        foreach (bool empty in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var victim = state.CreateWithId(PlainUnit, side.Opposite(), 70, side.Opposite().HandOf(), 0); victim.CardSeen = empty;
+            engine.Api.SetCardsSeenByCipher(amount, source.CardId, side);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (actions.Length != (empty ? 0 : 1)) return "没有未见候选时直接退出，有候选而数量零时仍发送空通知";
+            if (!empty)
+            {
+                bool reveal = amount != 0;
+                if (victim.CardSeen != reveal || actions[0].Name != "ZActionCardsSeen"
+                    || !actions[0].Values.SequenceEqual(new[] { ActionValue2.Str("cardIDs", reveal ? "70" : ""),
+                        ActionValue2.Str("seenValues", reveal ? "1" : ""), ActionValue2.Bool("showAnimation", true), ActionValue2.Bool("enemyTurn", false) }))
+                    return "情报必须固定showAnimation=true/enemyTurn=false，并区分零数量与负缩容保留";
+            }
+        }
+        return null;
+    }
+
+    private static string? NativeConvertedCardsSeen(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (Side active in new[] { Side.Left, Side.Right })
+        foreach (bool skip in new[] { false, true })
+        foreach (CardLocation location in new[] { side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = active;
+            var source = state.CreateWithId(PlainUnit, side, 60, location, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var output = engine.Api.InvokeByName("ConvertCard", source, new object?[] { new[] { 60 }, 0, "card_unit_routed_troops", 0, skip, null }, ctx, out bool handled);
+            var ids = (output as System.Collections.IEnumerable)?.Cast<object?>().Select(Convert.ToInt32).ToArray();
+            if (!handled || ids is not { Length: 1 } || state.ById(ids[0]) is not { } replacement) return "转换夹具未生成替代卡";
+            var notifications = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionCardsSeen").ToArray();
+            bool hand = location != side.DeckOf();
+            if (notifications.Length != (hand ? 1 : 0) || replacement.CardSeen != hand) return "只有转换到手牌的分支执行情报标记通知";
+            if (hand && !notifications[0].Values.SequenceEqual(new[] { ActionValue2.Str("cardIDs", ids[0].ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                ActionValue2.Str("seenValues", "1"), ActionValue2.Bool("showAnimation", false), ActionValue2.Bool("enemyTurn", side != active) }))
+                return "转换到手牌时showAnimation=false，enemyTurn取当前执行方，skipAction不跳过此通知";
+        }
+        return null;
     }
 
     private static string? NativeNegativeArrayResize(CardDatabase db)
