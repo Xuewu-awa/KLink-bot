@@ -1225,11 +1225,10 @@ public sealed partial class CardApi
                 return null;
             },
 
-            // 三选一（`Choose One`）的分支：**读卡自己存的 `ChooseOne`**，
-            // 由驱动在出牌时按动作流的 `PC[3]` 写进去（见 CardInstance.ChooseOne 的注释）。
-            // 旧实现是 `Random.Next(2)` —— 回放里会和真实对局选到不同分支，
-            // 而且同一个动作重放两次结果都不一样。默认 0（kardsim 的 ChooseOne 钩子默认也是 0）。
-            ["WhichChooseOne"] = (c, r, a) => SelfArg(c, r, a)?.ChooseOne ?? 0,
+            // Native WhichChooseOne returns the 0/1 enum and updates the selected
+            // option's target flag. The action index remains on CardInstance.ChooseOne;
+            // derived Blueprint variables named ChooseOne use independent storage.
+            ["WhichChooseOne"] = (c, r, a) => DoWhichChooseOne(c, r, a),
             ["GetPossibleCardsFromStaticCards"] = (c, r, a) => EvalArray(r, a),
             ["getTwoCardsFromPossibleCards"] = (c, r, a) => EvalArray(r, a).Take(2).ToList(),
             ["findPairOfUnits"] = (c, r, a) => EvalArray(r, a).Take(2).ToList(),
@@ -2335,6 +2334,21 @@ public sealed partial class CardApi
             candidates.Add(after[index]);
         }
         return candidates;
+    }
+
+    private object? DoWhichChooseOne(EffectContext c, object? r, object?[] a)
+    {
+        if (SelfArg(c, r, a) is not { } card) return 0;
+        int index = card.ChooseOne;
+        // Native RVA 0x4b13540 writes the enum byte, then copies the selected
+        // option's boolean at +0x10 to the card's +0x11d. No suppression/zone gate.
+        if ((uint)index < (uint)card.Definition.ChooseOneSelectTargets.Count)
+            card.SelectTargetOnPlayedFromHand = card.Definition.ChooseOneSelectTargets[index];
+        else
+            NotifyUnimplemented("WhichChooseOne<invalid-choice-index>");
+        // The final native call is UpdateChooseOneActive: it only updates the
+        // visual board, and its local out-bool is not the Branches output.
+        return index == 0 ? 0 : 1;
     }
 
     /// <summary>

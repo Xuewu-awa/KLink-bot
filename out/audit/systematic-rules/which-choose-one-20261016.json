@@ -1,0 +1,50 @@
+{
+  "rule": "RULE-132",
+  "status": "fixed native choice target flag, separated native/derived VM members, mapped UI-only callback",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\which-choose-one-evidence-20261016.json",
+  "evidence_sha256": "8c102e1b184fc0559864a64ad29d89747c044f4eeefbb86d59cfb56dcecf9b1b",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.live.json": "8f2a693baa53682c0a12cc2ec6586d64195105918b7d6e0df2fdcca6eb1defb0",
+    "D:\\Codex Workshop\\kards-install-review\\audit-which-choose-one-20261016.py": "db8a3a69e444bac154e3fac8c64b803ce0402f9faa402d2524be94e363319a95",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\card_event_allied_research_effort.hpp": "6094232bf173aa7fdb05555783d58ba35ab52147bc29d5fc5255c5f7ea85d3af",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\card_event_strategic_focus.hpp": "13a5c10015946e58ac17ab2788fb5d301d1ed88a8593b15194a1f88dbf3728a5",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-card-db.py": "4e2e2776a481fc018ef055a04332c0bd0a1deef6cf46185a1d03bfa373696168",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardDatabase.cs": "e5c10801d366b03b20c8c904f1defdd4dc4e1ea729311e3e0367a87c8cd48b08",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "4dc92c9a903b1aad8392774a3bc6cf4ce72232d4f04e1cf6011eab26532661bf",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "3037b7a1842790e38c56287fcc27e41520cda7683aa7f82ae8fcaba79041fe6f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "c98ce9641c547883903e8c94d238c31e1312f2b607ab7041d866fa0f7ab5c72e",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "cef9806c0f07c5979d87aaab747408f6849fe5a11f1dd78cd832efcb5bb51545",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "4535124df82a20fb8443a27c0dbcfb52c1f3dcf48b181e7dd493889791172a34",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-which-choose-one-before-20261016.txt": "cfc22ed0ef7a336715939beac8185bfc1f98202b1cf73e621a528713c4be95a9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-which-choose-one-after-20261016.txt": "41db2603c35897ea6008b4ae80c875f8e4f2ff81fefd33eabc3680dfb4ea5045"
+  },
+  "correction": "RULE-131 treated native chooseOneIndex and derived ChooseOne as aliases; SDK proves independent offsets. RULE-132 separates their VM storage. The target-selection field is a bool, not an enum. UpdateChooseOneActive writes a separate stack local, not Branches.",
+  "choice_cards": 51,
+  "choice_options": 102,
+  "static_flag_defaults": {
+    "False": 1602,
+    "True": 417
+  },
+  "tests": {
+    "release": "497/497",
+    "native_choice_matrix": 816,
+    "m1_damage_matrix_retained": 192,
+    "member_independence_matrix": 24,
+    "copy_target_flag_checks": 288,
+    "regression": "With new metadata/model/copy scaffold but old dispatcher and VM: 3/497 failures; corrected dispatcher/VM: 497/497 pass."
+  },
+  "limits": [
+    "Invalid native option indices have unchecked array access; simulator records unsupported input rather than claiming equivalent undefined memory behavior.",
+    "Full chooseOneCards text/struct exposure, other consumers (Interception/Secret Operatives), complete action input flow and targeting legality gates remain open.",
+    "All native writes, complete reset/reidentification semantics, snapshot import and full CopyData/derived state are not certified by this phase.",
+    "Blueprint derived-field CDO initialization and all per-card semantics remain open. The previous alias rule was corrected, not evidence of full-card completion."
+  ],
+  "fully_semantically_verified_cards": 0
+}

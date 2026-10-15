@@ -94,6 +94,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -204,6 +205,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -256,6 +258,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -455,6 +458,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1055,6 +1059,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1079,6 +1084,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -1086,8 +1093,7 @@
 ],
 "title": "LOST CAUSE",
 "text": "Take control of an enemy unit with cost 3 or less.",
-"source_pak": "kards/Content/Blueprints/Cards/BrawlCards/card_event_lost_cause_skirm.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/BrawlCards/card_event_lost_cause_skirm.uasset"
 },
 "card_event_red_skies_skirm": {
 "name": "card_event_red_skies_skirm",
@@ -1154,6 +1160,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1202,6 +1209,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -1210,9 +1219,7 @@
 "title": "AERIAL RECONNAISSANCE",
 "text": "When the enemy deploys a unit, reduce the cost of all orders in your hand by 1, to a minimum of 1.",
 "flavorText": "In 1928 the RAF developed an electrical heating system for aerial cameras which allowed reconnaissance aircraft to take pictures at a high altitude without the camera parts freezing. At the start of WWII the RAF developed high speed Spitfire PR variants that had their armament replaced with 5 cameras and could take photographs from up to 30,000 feet. Other aircraft were also adapted for photo-reconnaissance missions, such as the British Mosquito, the American P-38 Lightning and P-51 Mustang.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Allegiance/events/card_event_aerial_reconaissance.uasset",
-"customName1": "gotchaAfterPlayFromHand",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Allegiance/events/card_event_aerial_reconaissance.uasset"
 },
 "card_event_grounded": {
 "name": "card_event_grounded",
@@ -1231,6 +1238,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1308,6 +1316,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -1320,8 +1329,7 @@
 "title": "RAID",
 "text": "Cards in enemy hand cost 2 more next turn.",
 "flavorText": "Many raids were conducted by the British armed forces during WWII, mostly by the British commando forces. Most of the raids were against the Atlantic Wall, which was an extensive defense system and fortifications built by the Axis along the coast of continental Europe and Scandinavia. A total of  57 raids were conducted between 1940 and 1944 by the commandos, most of them against targets in France, but also Norway, the Channel Islands, Belgium and the Netherlands. Many of the raids resulted in the capture or death of all commandos involved, but many were successful, for example, Operation Chariot which was a raid against dock installations at Saint-Nazaire in France and has since been called “The Greatest Raid of All Time”.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Allegiance/events/card_event_raid.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Allegiance/events/card_event_raid.uasset"
 },
 "card_event_resolute_defense": {
 "name": "card_event_resolute_defense",
@@ -1340,6 +1348,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1471,6 +1480,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1779,6 +1789,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1804,6 +1815,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1904,6 +1916,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -1979,6 +1992,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2004,6 +2018,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2029,6 +2044,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2054,6 +2070,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -2083,6 +2100,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2158,6 +2176,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -2166,8 +2185,7 @@
 "title": "INTERCEPTION",
 "text": "Counter an enemy order that targets a friendly target.",
 "flavorText": "An interceptor aircraft, or simply interceptor, is a type of fighter aircraft designed to attack enemy aircraft, particularly bombers and reconnaissance aircraft, as they approach. During WWII, British fighters such as the Supermarine Spitfire and Hawker Hurricane developed an impressive reputation as interceptors, especially during the Battle of Britain.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_interception.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_interception.uasset"
 },
 "card_event_mi_5": {
 "name": "card_event_mi_5",
@@ -2211,6 +2229,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2236,6 +2255,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -2246,8 +2266,7 @@
 "title": "NATIONAL FIRE SERVICE",
 "text": "When your HQ receives damage this turn, reduce the damage to 1.",
 "flavorText": "The National Fire Service (NFS) was a fire service created in Great Britain during WWII. The NFS had full-time and part-time members, male and female, and were often called to attend the aftermath of German bombing raids and coastal shelling from France, often while these attacks were still ongoing.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_national_fire_service.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_national_fire_service.uasset"
 },
 "card_event_naval_power": {
 "name": "card_event_naval_power",
@@ -2266,6 +2285,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2291,6 +2311,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2341,6 +2362,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -2349,8 +2371,7 @@
 "title": "RADAR ALERT",
 "text": "When the enemy deploys a unit, add a random British air unit of similar cost.",
 "flavorText": "The British radar air defense system was code-named Chain Home and served as the backbone in their defense during the Battle of Britain. The system consisted of a ring of coastal radar installations, each with a maximum range of 322 km (200 miles), which meant they could detect German formations all the way to their bases in occupied France. This provided the RAF with nearly a half hour of lead time which could be used to gather squadrons of fighters to intercept threats. Each radar installation sent out a stream of short-pulse radio waves which scattered upon striking an object, such as an aircraft, and some of the energy returned as an echo that was displayed on a cathode-ray tube. The time between transmission and echo reception was used to calculate the distance to the reflecting object.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_radar_alert.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Base/events/card_event_radar_alert.uasset"
 },
 "card_event_rescue_mission": {
 "name": "card_event_rescue_mission",
@@ -2396,6 +2417,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2421,6 +2443,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2446,6 +2469,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2550,6 +2574,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2575,6 +2600,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2780,6 +2806,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -2885,6 +2912,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3310,6 +3338,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3335,6 +3364,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3360,6 +3390,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3439,6 +3470,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -3467,6 +3499,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3589,6 +3622,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3614,6 +3648,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -3641,6 +3676,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -3720,6 +3756,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4017,7 +4054,6 @@
 },
 "card_event_advanced_royal_research": {
 "name": "card_event_advanced_royal_research",
-"chooseOneOptionCount": 2,
 "kredits": 9,
 "operationcost": 0,
 "attack": 0,
@@ -4033,6 +4069,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4057,6 +4098,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4106,6 +4148,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4131,14 +4174,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "DOWDING SYSTEM",
 "text": "Counter an enemy order with cost 4 or more.",
 "flavorText": "The Dowding System was an elaborate air defence network that was built by RAF before WWII and gave the British a critical advantage during the Battle of Britain. The system was the first ground controlled interception network that could cover such a large area. It used the British telephone network to collect information from radar stations and the Royal Observer Corps which enabled the RAF Fighter Command to establish a clear overview of the airspace over Britain. The Dowding System was not only used to control the fighter force, but also anti aircraft guns, searchlights and barrage balloons against the attacking Luftwaffe.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/events/card_event_dowding_system.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/events/card_event_dowding_system.uasset"
 },
 "card_event_evasive_action": {
 "name": "card_event_evasive_action",
@@ -4157,6 +4200,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -4165,12 +4209,10 @@
 "title": "EVASIVE ACTION",
 "text": "Trigger this card when the enemy deploys a unit with a deployment effect. Cancel the effect.",
 "flavorText": "The “Corkscrew” was a defensive maneuver developed to help bombers to defend against attacking fighters, mostly against night fighters. The manoeuvre involved a high speed spiral, turning and diving, sometimes 600-1000 ft, followed by a steep climb and then to roll and repeat the manoeuvre. The dive was intended to pull enough G-force that it would tear off the wings of a fighter. Another evasive maneuver was the “Barrel Roll” which involved slowing down the forward motion by doing a Helical Roll around a straight flightpath. This would often force an attacking fighter to overshoot the bomber and fly out in front.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/events/card_event_evasive_action.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/events/card_event_evasive_action.uasset"
 },
 "card_event_expanded_royal_research": {
 "name": "card_event_expanded_royal_research",
-"chooseOneOptionCount": 2,
 "kredits": 6,
 "operationcost": 0,
 "attack": 0,
@@ -4186,6 +4228,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4210,6 +4257,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4271,7 +4319,6 @@
 },
 "card_event_royal_research": {
 "name": "card_event_royal_research",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -4287,6 +4334,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4312,6 +4364,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -4367,6 +4420,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4441,6 +4495,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4466,6 +4521,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4548,14 +4604,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "AlwaysSelectedAsRandom",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "ROYAL SCOTS",
 "text": "If in hand or on the battlefield, random effects always choose this unit.",
 "flavorText": "The Royal Scots Regiment was first raised in 1633 and existed until 2006 when it became the Royal Scottish Borderers. At the start of WWII the 1st Battalion of the Royal Scots was part of the British Expeditionary Force and fought in the Battle of France prior to being evacuated at Dunkirk. After Dunkirk the 1st Royal Scots worked on home defense preparations, but in 1942 they were sent to British India from where they would fight in the Burma Campaign. The 2nd Battalion was in Gibraltar in 1943 from where it was moved to Italy to participate in the Italian Campaign in 1944. The 2nd Royal Scots saw action in the Battle of Anzio and on the Gothic Line.  The 7th/9th Battalion was moved to the Netherlands in 1944 and participated in the  Battle of the Scheldt and later Operation Bluecoat followed by the advance across the Rhine and to Bremen by the end of the war. The 8th Battalion remained in the UK until it participated in the Normandy landings in 1944 and fought in a series of offensive battles and operations, from Paris to the Rhine, and were advancing to Hamburg when the war ended.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/units/card_unit_royal_scots.uasset",
-"customName1": "AlwaysSelectedAsRandom"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/Breakthrough/units/card_unit_royal_scots.uasset"
 },
 "card_unit_seaforth_highlanders": {
 "name": "card_unit_seaforth_highlanders",
@@ -4755,7 +4811,6 @@
 },
 "card_event_escort_group": {
 "name": "card_event_escort_group",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -4771,6 +4826,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4831,7 +4891,6 @@
 },
 "card_event_refit_bia": {
 "name": "card_event_refit_bia",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -4847,6 +4906,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -4924,6 +4988,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -5083,6 +5148,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -5165,6 +5231,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -5296,6 +5363,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -5371,6 +5439,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -5479,6 +5548,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -5504,6 +5574,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -5579,6 +5650,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -5679,6 +5751,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -6273,6 +6346,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6455,6 +6529,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6480,6 +6555,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6505,6 +6581,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6530,6 +6607,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6607,6 +6685,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6770,6 +6849,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6822,6 +6902,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -6911,7 +6992,6 @@
 },
 "card_event_planned_attack": {
 "name": "card_event_planned_attack",
-"chooseOneOptionCount": 2,
 "kredits": 2,
 "operationcost": 0,
 "attack": 0,
@@ -6927,6 +7007,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7253,7 +7338,6 @@
 },
 "card_event_air_power": {
 "name": "card_event_air_power",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -7269,6 +7353,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7449,6 +7538,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7474,6 +7564,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7499,6 +7590,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7524,6 +7616,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7630,6 +7723,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7812,6 +7906,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7837,6 +7932,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -7845,8 +7941,7 @@
 "title": "SUPPLY SHORTAGE",
 "text": "Enemy units get: \"Receives 1 damage at the start of owner's turn.\"",
 "flavorText": "A key contributor to the Allied victory in the North African Campaign was Ultra; the Allied intelligence project which allowed them to decrypt high level enemy communications. Ultra provided valuable information about the times and routes of Axis supply shipments across the Mediterranean to Africa and this information was used to intercept and destroy them. It is estimated that 40% to 60% of Axis supply shipping was located and destroyed due to decrypted information. This gave a crippling blow to the Afrika Korps as it was denied essential supplies for the war effort, from fuel to equipment ranging from tanks and guns all the way down to food and uniforms.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/WorldAtWar/events/card_event_supply_shortage.uasset",
-"customName1": "startofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/WorldAtWar/events/card_event_supply_shortage.uasset"
 },
 "card_unit_1st_london_brigade": {
 "name": "card_unit_1st_london_brigade",
@@ -7894,6 +7989,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -7998,6 +8094,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -8522,6 +8619,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -8530,8 +8629,7 @@
 "title": "ARMAMENTS",
 "text": "Deal 4 damage to any target. Deal 8 if this card spent 4+ turns in your deck.",
 "flavorText": "The bomb loads of four-engine British bombers during WWII varied depending on the type of aircraft, the target, and the mission. However, here are some examples of the bomb loads of some of the most common four-engine bombers used by the Royal Air Force:\r\n\r\nAvro Lancaster: The Lancaster had a maximum bomb load of up to 22,000 pounds (9,980 kg), although the typical bomb load for most missions was around 14,000 pounds (6,350 kg) of bombs.\r\n\r\nHandley Page Halifax: The Halifax had a maximum bomb load of up to 14,500 lb (6,600 kg), although the typical bomb load for most missions was ca.5,800 pounds (2,600 kg).\r\n\r\nShort Stirling: The Stirling had a maximum bomb load of up to 14,000 pounds (6,350 kg) of bombs, although the typical bomb load for most missions was around 8,000 pounds (3,600 kg).\r\n\r\nBoeing B-17 Flying Fortress (used by the RAF's No. 100 Group): The B-17 had a maximum bomb load of  8,000 pounds (3,600 kg) , although the typical bomb load for most missions was around 4,000-pound (1,800-kg).\r\n\r\nIt's worth noting that the weight and type of bombs used by these bombers varied depending on the mission and the target. For example, bombers on night bombing missions tended to carry more incendiary bombs, while those on daylight precision bombing missions often carried heavier high-explosive bombs.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_event_armaments_eg.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_event_armaments_eg.uasset"
 },
 "card_event_campaign_tunis1_commando_raid": {
 "name": "card_event_campaign_tunis1_commando_raid",
@@ -8622,6 +8720,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -8646,6 +8745,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -8654,8 +8754,7 @@
 "title": "MATERIALS",
 "text": "Draw 4 cards. Draw 8 if this card spent 4+ turns in your deck.",
 "flavorText": "During WWII, Britain relied heavily on imports to support its war effort and ensure that its population had enough food and other essentials to survive. The country imported a range of goods including food, oil, raw materials, machinery and equipment, medical supplies, and arms and ammunition. These imports were critical to keep Britain's factories and transportation systems running and to support its own war production efforts. Britain's imports were heavily regulated by the government, which prioritized the needs of the war effort, and the country relied heavily on imports from its Allies, particularly the United States.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_event_materials_eg.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_event_materials_eg.uasset"
 },
 "card_location_british_scen1": {
 "name": "card_location_british_scen1",
@@ -8851,6 +8950,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -8858,8 +8958,7 @@
 ],
 "title": "MERSA MATRUH",
 "text": "The town of Mersa Matruh in western Egypt sits on the road to Alexandria.",
-"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_location_german_scen2_ai.uasset",
-"customName2": "0"
+"source_pak": "kards/Content/Blueprints/Cards/Britain/specialCards/card_location_german_scen2_ai.uasset"
 },
 "card_location_german_scen3_ai": {
 "name": "card_location_german_scen3_ai",
@@ -9162,6 +9261,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9242,6 +9342,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -9273,6 +9374,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9325,6 +9427,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9402,6 +9505,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -9429,6 +9533,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9584,6 +9689,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -9592,8 +9698,7 @@
 "title": "SKI TROOPS",
 "text": "When the enemy deploys a unit, suppress it, then add a SISSI to your support line.",
 "flavorText": "When the Soviet Union invaded Finland in November 1939, Finnish ski troops quickly emerged as one of the defining forces of the Winter War. Outnumbered and lacking heavy equipment, they leveraged their skis, white winter camouflage, and deep knowledge of the forests to run circles around road-bound Soviet formations. This extreme mobility was the cornerstone of the Finnish motti tactics. Ski troops would strike the front and rear of long, vulnerable Soviet columns, chopping them into isolated pockets. Once trapped, these pockets were systematically dismantled using sniper fire, mortars, submachine guns, and Molotov cocktails. Beyond their physical toll, these sudden strikes inflicted heavy psychological damage. Gliding silently through the dense woods, Finnish soldiers would ambush camps and supply lines, melting back into the forest before the Soviets could even mount a response. At major engagements like the Battle of Suomussalmi, these hit-and-run tactics allowed vastly outnumbered Finnish forces to annihilate massive mechanized units, proving that speed and terrain mastery could overcome overwhelming numerical superiority.",
-"source_pak": "kards/Content/Blueprints/Cards/Finland/events/card_event_ski_troops.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Finland/events/card_event_ski_troops.uasset"
 },
 "card_event_strike_from_the_forest": {
 "name": "card_event_strike_from_the_forest",
@@ -9612,6 +9717,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9637,6 +9743,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9742,6 +9849,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -9817,6 +9925,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10320,6 +10429,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10345,6 +10455,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -10357,7 +10468,6 @@
 },
 "card_event_call_to_the_colonies": {
 "name": "card_event_call_to_the_colonies",
-"chooseOneOptionCount": 2,
 "kredits": 4,
 "operationcost": 0,
 "attack": 0,
@@ -10373,6 +10483,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10398,6 +10513,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10408,7 +10524,6 @@
 },
 "card_event_compromise": {
 "name": "card_event_compromise",
-"chooseOneOptionCount": 2,
 "kredits": 4,
 "operationcost": 0,
 "attack": 0,
@@ -10424,6 +10539,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10449,6 +10569,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -10483,6 +10604,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10533,6 +10655,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -10561,6 +10684,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10586,6 +10710,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10660,6 +10785,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10710,6 +10836,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10735,6 +10862,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10770,7 +10898,6 @@
 },
 "card_event_plan_d": {
 "name": "card_event_plan_d",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -10786,6 +10913,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10849,7 +10981,6 @@
 },
 "card_event_resistance": {
 "name": "card_event_resistance",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -10865,6 +10996,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10889,6 +11025,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -10941,6 +11078,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -10951,7 +11089,6 @@
 },
 "card_event_sortie": {
 "name": "card_event_sortie",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -10967,6 +11104,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11065,6 +11207,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11113,6 +11256,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11385,7 +11529,6 @@
 },
 "card_unit_1er_regiment_etranger": {
 "name": "card_unit_1er_regiment_etranger",
-"chooseOneOptionCount": 2,
 "kredits": 5,
 "operationcost": 1,
 "attack": 4,
@@ -11401,6 +11544,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11620,7 +11768,6 @@
 },
 "card_unit_51e_regiment": {
 "name": "card_unit_51e_regiment",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 1,
 "attack": 2,
@@ -11636,6 +11783,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11688,6 +11840,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -11952,6 +12105,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12139,6 +12293,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12296,6 +12451,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -12304,9 +12461,7 @@
 "title": "STRANGLEHOLD",
 "text": "When a unit is deployed, the enemy loses remaining kredits.",
 "flavorText": "What started as an Allied blockade of Germany, and a subsequent German counter-blockade of Allied shipping routes, came to be the longest campaign of WWII, the Battle of the Atlantic. During this time the German Kriegsmarine avoided large fleet engagements and instead they used their large fleet of submarines, and small groups of cruisers and battleships, to disrupt the logistics of the enemy by attacking Allied merchant ships. The Battle of the Atlantic ended with an Allied victory, but at a great cost. From 1939 until the war ended in 1945, the Allies lost 3,500 merchant ships and 175 warships while Germany lost 783 U-boats and 47 warships.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/events/card_event_stranglehold.uasset",
-"customName1": "gotchaAfterPlayFromHand",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/events/card_event_stranglehold.uasset"
 },
 "card_event_suppression_fire": {
 "name": "card_event_suppression_fire",
@@ -12325,6 +12480,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12378,14 +12534,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeTargetedByEnemyOrder",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "141. GEBIRGSJÄGER",
 "text": "Cannot be targeted by enemy orders.",
 "flavorText": "The 141st Gebergjäger Regiment (e. 141st Mountaineer Regiment) was part of the 6. Gebirgs Division (e. 6th Mountain Division) of the Wehrmacht during WWII. In 1940 the division was deployed in France, and later Poland for occupation duties. In 1941 the division participated in Operation Marita, which was the invasion of Greece, and that same year it was relocated to Lapland (northern Finland). In 1942 the 6. Gebirgs Division became part of the 20th Mountain Army that operated along the Arctic coast. In 1944 the division withdrew into Norway where it surrendered to the British at the end of the war in 1945.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/units/card_unit_141_gebirgsjager.uasset",
-"customName1": "cantBeTargetedByEnemyOrder"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/units/card_unit_141_gebirgsjager.uasset"
 },
 "card_unit_25_panzergrenadier": {
 "name": "card_unit_25_panzergrenadier",
@@ -12460,6 +12616,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12485,6 +12642,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12510,6 +12668,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12535,6 +12694,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12691,14 +12851,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeTargetedByEnemyOrder",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "TIGER I-E",
 "text": "Cannot be targeted by enemy orders.",
 "flavorText": "The Tiger I was a German heavy tank used by the Wehrmacht during WWII. The Tiger was built from 1942 to 1944 and was the first tank to mount the 8.8 cm KwK 36 gun, but despite its outstanding design it was a good example of German over-engineering and this high maintenance tank would be haunted by various failures and vulnerabilities throughout the war. The Tiger I would see a few small upgrades throughout the war but there was no significant change between the H and E variants. The Tiger I E had the cupola replaced with a lower profile design and an extra 100 mm armor was added in front of the gunner. The tank had a crew of 5 ((commander, gunner, loader, driver, assistant driver) and a secondary armament of 2 x 2× 7.92 mm MG 34 machine guns. A total of 1,347 Tiger I tanks were produced, but only seven survive today.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/units/card_unit_tiger_i_e.uasset",
-"customName1": "cantBeTargetedByEnemyOrder"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Allegiance/units/card_unit_tiger_i_e.uasset"
 },
 "card_event_admiral_hipper": {
 "name": "card_event_admiral_hipper",
@@ -12717,6 +12877,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -12744,6 +12905,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12769,6 +12931,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -12777,8 +12940,7 @@
 "title": "AIRSTRIKE",
 "text": "When the enemy deploys a unit, return it to hand. Enemy discards a random card.",
 "flavorText": "The German Luftwaffe performed well between 1939–41, using mainly Stuka dive bombers to support their advancing troops. However, the Luftwaffe was poorly coordinated and was lacking in radar technology which meant that it never reached the size and scope needed to gain total air supremacy during the later stages of the war. Advanced German aircraft designs came too late to make an impact, the Messerschmitt Me 262 jet fighter did not come to use until July 1944, and the Heinkel He 162 appeared only during the last months of the war in Europe.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_airstrike_new.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_airstrike_new.uasset"
 },
 "card_event_annihilation": {
 "name": "card_event_annihilation",
@@ -12797,6 +12959,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12822,6 +12985,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12847,6 +13011,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12899,6 +13064,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -12926,6 +13092,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -12934,8 +13101,7 @@
 "title": "CARELESS TALK",
 "text": "When your enemy deploys a unit, deal 3 damage to it.",
 "flavorText": "Anti gossip campaigns were launched by all fighting parties in WWII. The aim was to discourage talking about sensitive material where it could possibly be overheard by spies. Careless talk did indeed have an impact on the Nazi Germany war effort, and perhaps from where they least expected. As an example, Poles were used as forced laborers across the continent of the Nazi Reich, which put them in a unique position to spy on their enemy. It is believed that 48 percent of all reports received by British secret services during the war had come from these sources. The reports included advanced warnings of Operation Barbarossa, Operation Edelweiss, the German Caucasus Campaign and first intelligence on the Holocaust.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_careless_talk.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_careless_talk.uasset"
 },
 "card_event_combined_arms": {
 "name": "card_event_combined_arms",
@@ -12954,6 +13120,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -12979,6 +13146,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -13032,6 +13200,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -13107,6 +13276,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -13115,8 +13285,7 @@
 "title": "FROM THE DEEP",
 "text": "When your enemy deploys a unit, destroy it.",
 "flavorText": "At the start of WWII the German Kriegsmarine had the largest submarine fleet in the world and U-boat warfare became a major component during the Battle of the Atlantic, and throughout the war. At first the U-Boat tactics were somewhat civil, they would find a target, surface and advise the crew to abandon ship before bringing it down with deck guns or explosives (torpedoes were expensive and only used when absolutely necessary). However, when the Allies began arming merchant ships the Germans began firing without a warning. Throughout the war the German U-boats managed to sink 5,000 Allied ships.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_from_the_deep.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/events/card_event_from_the_deep.uasset"
 },
 "card_event_iron_from_the_north": {
 "name": "card_event_iron_from_the_north",
@@ -13239,6 +13408,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -13264,6 +13434,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -13289,6 +13460,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -13339,6 +13511,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -13622,6 +13795,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -13630,8 +13804,7 @@
 "title": "KOMET",
 "text": "At the end of your turn, return KOMET to your hand.",
 "flavorText": "The Messerschmitt Me 163 Komet was a German rocket-powered interceptor aircraft. It's the only rocket-powered fighter aircraft ever to have been operational and the first piloted aircraft to exceed 1000 km/h in level flight. Over 300 Komets were built, and although the design was revolutionary they were considered a tactical failure. Me 163 fighters began operations in May 1944 and their speed overwhelmed Allied fighters. However, the rocket engines soon became the aircrafts biggest weakness, due to the rocket's short fuel life which only allowed for a short time to attack. Allied pilots soon learned to simply wait until the rocket fuel ran out before beginning their attacks.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_comet.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_comet.uasset"
 },
 "card_unit_dornier_do_217": {
 "name": "card_unit_dornier_do_217",
@@ -13998,6 +14171,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14075,14 +14249,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeTargetedByEnemyOrder",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "PANTHER G",
 "text": "Cannot be targeted by enemy orders.",
 "flavorText": "The Panther G was a medium tank built and used by the Germans in WWII from 1943 to 1945. The tank was built to counter the Soviet T-34 and is today considered the best tank of WWII, both for its firepower and protection. The Panther G had a crew of 5 (driver, radio-operator/hull machine gunner, commander, gunner, loader),  a main armament of 1x 7.5 cm KwK 42 L/70 and a secondary armament of 2x 7.92 mm MG 34 machine guns.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_panther.uasset",
-"customName1": "cantBeTargetedByEnemyOrder"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_panther.uasset"
 },
 "card_unit_panzer_35_t": {
 "name": "card_unit_panzer_35_t",
@@ -14256,6 +14430,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14305,14 +14480,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "CanMoveAndAttackInTheSameTurn",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "59. PANZERGRENADIER",
 "text": "59. Panzergrenadier can move and attack during the same turn.",
 "flavorText": "Panzergrenadier is a German term for a motorized or mechanized infantryman and a term that was first adopted in 1942. The Panzergrenadier Divisions were combined arms formations, usually with two or three regiments of truck-mounted infantry, a battalion of tanks, artillery support, reconnaissance units, combat engineers, anti-tank and anti-aircraft artillery, etc. The 59th Panzergrenadier Regiment was attached to the 20th Panzer Division of the Whermacht which fought on the Eastern Front and took part in the battles of Moscow and Kursk. They surrendered with their division to the US and Soviet forces in Czechoslovakia in May 1945.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_panzergrenadier.uasset",
-"customName1": "CanMoveAndAttackInTheSameTurn"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_panzergrenadier.uasset"
 },
 "card_unit_panzerzug_6": {
 "name": "card_unit_panzerzug_6",
@@ -14459,6 +14634,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBePinned",
 "innateAbilities": {
 "cantBePinned": [
 0
@@ -14469,8 +14645,7 @@
 "title": "TIGER I-H",
 "text": "Cannot be pinned.",
 "flavorText": "The Tiger I-H (also Panzerkampfwagen VI Tiger Ausf. H) was a TIGER I variant, a German heavy tank used in WWII by the axis forces. The Tiger I had a crew of 5 (commander, gunner, loader, driver, assistant driver) and was the first tank that mounted a 8.8 cm KwK 36 gun. The Tiger I was an outstanding design of its time but the production and the maintenance was very expensive and only 1347 were built.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_tiger_i.uasset",
-"customName1": "cantBePinned"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Base/units/card_unit_tiger_i.uasset"
 },
 "card_unit_wirbelwind": {
 "name": "card_unit_wirbelwind",
@@ -14517,6 +14692,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14542,6 +14718,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14567,6 +14744,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14619,6 +14797,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -14645,6 +14824,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -14702,6 +14882,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -14755,6 +14936,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14805,6 +14987,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14858,6 +15041,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14935,6 +15119,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -14949,7 +15134,6 @@
 },
 "card_event_advanced_reich_research": {
 "name": "card_event_advanced_reich_research",
-"chooseOneOptionCount": 2,
 "kredits": 9,
 "operationcost": 0,
 "attack": 0,
@@ -14965,6 +15149,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -14989,6 +15178,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -14997,12 +15187,10 @@
 "title": "ENTRAPMENT",
 "text": "When a unit attacks, destroy it. Your units get +1+1.",
 "flavorText": "During the opening stages of WWII the German Blitzkrieg operations focused on breaking through the enemies line of defence by using short, fast and powerful attacks by motorized force. The aim was to knock holes in the enemy defensive lines, to set up objectives in the rear and encircle the enemy. During the early phases of the war this proved to be a successful tactic and resulted in the entrapment of large pockets of Allied troops and equipment which could easily be finished off. These tactics proved successful in the Invasion of Poland, the invasion of the low countries and France. At the start of Operation Barbarossa Blitzkrieg tactics resulted in huge encirclements that ended in heavy losses for the Red Army, with nearly 3.5 million prisoners of war being taken along with masses of equipment.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_entrapment.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_entrapment.uasset"
 },
 "card_event_expanded_reich_research": {
 "name": "card_event_expanded_reich_research",
-"chooseOneOptionCount": 2,
 "kredits": 6,
 "operationcost": 0,
 "attack": 0,
@@ -15018,6 +15206,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15094,6 +15287,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15104,7 +15298,6 @@
 },
 "card_event_reich_research": {
 "name": "card_event_reich_research",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -15120,6 +15313,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15145,6 +15343,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15153,8 +15352,7 @@
 "title": "NIGHT HUNTERS",
 "text": "When the enemy deploys a unit, destroy it. Draw a card.",
 "flavorText": "Intercepting bombers at night was a demanding and risky mission during WWII. It required carrying heavy armament and a primitive radar, plus being fast enough to catch the enemy aircraft, which could only be done with two engines aircraft.  The German Luftwaffe deployed a few night fighters during the war,  the Messerschmitt Bf-110G, the Junker Ju-88G6, the Dornier Do-217J and the Heinkel He-219A Uhu (Owl). Towards the end of the war, a night fighting version of the Me-262 was used.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_sea_hunters.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_sea_hunters.uasset"
 },
 "card_event_synthetic_oil": {
 "name": "card_event_synthetic_oil",
@@ -15199,6 +15397,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15226,6 +15425,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15234,8 +15435,7 @@
 "title": "U-16",
 "text": "Retreat target unit. Draw a card if there is a Navy card on top of your deck.",
 "flavorText": "The U-16 was a Type IIB u-boat that was launched in 1936 and used by the German Kriegsmarine during WWII as part of the 3rd U-boat Flotilla. In 1939 the submarine took part in laying mines in and around the English Channel and managed to sink a couple of merchant ships. In October 1939 the U-16 was attacked by the Royal Navy in the Dover Strait, and while trying to escape depth charges from both ships it ran aground on a sandbank in the North Sea and was lost with all hands.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_u_16.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Breakthrough/events/card_event_u_16.uasset"
 },
 "card_event_uranium_club": {
 "name": "card_event_uranium_club",
@@ -15278,6 +15478,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15302,6 +15503,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15327,6 +15529,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15433,6 +15636,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15512,6 +15716,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15592,6 +15797,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15694,6 +15900,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15719,6 +15926,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15748,6 +15956,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15831,6 +16040,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -15908,6 +16118,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -15935,6 +16146,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16147,6 +16359,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert;gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16156,8 +16369,7 @@
 "title": "HIT THE DROP POINT",
 "text": "When the enemy deploys a unit, suppress it. Can affect a Covert unit.",
 "flavorText": "In preparation for a potential Allied invasion, the German forces started undertaking several measures long before D-Day in June 1944. They started constructing the Atlantic Wall in 1942, a 2,400-mile network of bunkers, pillboxes, mines and landing obstacles along the European coastline. In addition, obstacles like “Rommel's asparagus” (stakes in fields to hinder glider landings) were placed in potential landing fields. Although millions of these wooden poles were placed in fields, their effect on the Allied invasion was inconsequential. Once Allied troops were on the ground, some German units used the “Rommel's asparagus” for defense by cutting them down and using the logs to reinforce their positions.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_hit_the_drop_point.uasset",
-"customName1": "canTargetCovert;gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_hit_the_drop_point.uasset"
 },
 "card_event_recuperation": {
 "name": "card_event_recuperation",
@@ -16176,6 +16388,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -16201,6 +16414,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16210,8 +16425,7 @@
 "title": "SHIFTING ATTACK",
 "text": "Send a friendly unit to hand. It costs 0 kredits to deploy this turn.",
 "flavorText": "As the war progressed, Germany would often redeploy units to new fronts and weaken existing ones. This was especially true in anticipation of the Allied landings in France. In early 1944 the German Western Front was significantly weakened by personnel and materiel being transferred to the Eastern Front. For instance, the entire II SS Panzer Corps was relocated from France to the Eastern Front to face the Soviet Dnieper-Carpathian Offensive. This included two elite SS Panzer Divisions (the 9th and 10th), an infantry division, a heavy tank battalion, and two assault gun brigades. Overall, this removed nearly 46,000 soldiers and over 360 armored vehicles from France, which severely impacted Germans defensive capabilities on the Western Front. This was a major change in German strategy, as previous orders had restricted such large transfers from the west to the east.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_shifting_attack.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_shifting_attack.uasset"
 },
 "card_event_tip_of_the_spear": {
 "name": "card_event_tip_of_the_spear",
@@ -16230,14 +16444,15 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "TIP OF THE SPEAR",
 "text": "Destroy target unit with cost 3 or less. Can target Covert units.",
 "flavorText": "While the Luftwaffe and infantry played crucial roles, the Panzer divisions were the most symbolic and effective representation of the German war machine's aggressive and relentless drive for conquest during the early stages of WWII. Their speed, firepower, and shock value made them the spearhead of the German advance, carving a path for the rest of the army to follow.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_tip_of_the_spear.uasset",
-"customName1": "canTargetCovert"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/CovertOp/events/card_event_tip_of_the_spear.uasset"
 },
 "card_unit_15_aufklarungs": {
 "name": "card_unit_15_aufklarungs",
@@ -16335,6 +16550,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16501,6 +16717,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -16551,6 +16768,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16578,6 +16796,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16740,6 +16959,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -16792,6 +17012,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -16842,6 +17063,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -16974,6 +17196,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -17051,6 +17274,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -17059,8 +17283,7 @@
 "title": "LOST CONVOY",
 "text": "When the enemy deploys a unit, give it -2 attack.",
 "flavorText": "Convoy PQ-17 was an Allied convoy that was located through German signals intelligence and cryptanalysis, shadowed for days and continuously attacked by the German Kriegsmarine and Luftwaffe. The convoy was the first large joint Anglo-American naval operation under British command and the ships were sailing from Hvalfjord in Iceland to Arkhangelsk in the Soviet Union with vital supplies for the war effort on the Eastern Front. At first PQ 17 had a strong escort of warships, but when the British Admiralty got word that the Bismarck-class battleship Tirpitz was on its way to intercept the convoy, the order was given to scatter since they didn’t want to risk losing their warships. They believed that scattering the convoy would make it harder for the Germans to sink the ships, but what happened was the exact opposite. Contrary to what the British believed, the Tirpitz was not heading towards the convoy, and the merchant ships became easy targets for the German submarines and aircraft which managed to sink 24 ships out of 35.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/Legions/events/card_event_lost_convoy.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/Legions/events/card_event_lost_convoy.uasset"
 },
 "card_event_propaganda": {
 "name": "card_event_propaganda",
@@ -17132,6 +17355,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -17438,6 +17662,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -17463,6 +17688,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "gotchaAfterPlayFromHand",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -17471,8 +17697,7 @@
 "title": "KM PRINZ EUGEN",
 "text": "When the enemy deploys a unit, put it on top of their deck and Convert it into PRODUCTION.",
 "flavorText": "The Prinz Eugen was a German heavy cruiser of the Admiral Hipper class which served in the Kriegsmarine during WWII. She was named after Prince Eugene of Savoy, a notable 18th-century general of the Austrian Habsburg dynasty. In May 1941, Prinz Eugen participated in Operation Rheinübung, accompanying the battleship Bismarck in an attempt to disrupt Allied shipping in the Atlantic. During the Battle of the Denmark Strait on 24 May, the two ships engaged British forces, resulting in the sinking of HMS Hood and damage to HMS Prince of Wales. In 1942, she took part in Operation Cerberus, a daring dash through the English Channel alongside Scharnhorst and Gneisenau to return to Germany. After that, she was deployed to Norway but suffered significant damage from a torpedo attack by the British submarine HMS Trident, necessitating extensive repairs. Later in the war, Prinz Eugen provided artillery support on the Eastern Front, assisting German forces during their retreat. After Germany's surrender in May 1945, the ship was handed over to the British as a war prize, and then transferred to the US Navy. She was renamed USS Prinz Eugen (IX-300) and subjected to nuclear testing during Operation Crossroads at Bikini Atoll. She survived the blasts, and was eventually towed to Kwajalein Atoll where she capsized and sank in December 1946. Today, parts of her wreck remain visible above the water.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/NavalWarfare/events/card_event_prinz_eugen.uasset",
-"customName1": "gotchaAfterPlayFromHand"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/NavalWarfare/events/card_event_prinz_eugen.uasset"
 },
 "card_event_tirpitz": {
 "name": "card_event_tirpitz",
@@ -17518,6 +17743,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -17843,6 +18069,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -17872,6 +18099,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18225,6 +18453,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -18330,6 +18559,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18458,6 +18688,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18688,6 +18919,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18713,6 +18945,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18738,6 +18971,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": true,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -18746,8 +18980,7 @@
 "title": "EAGLE DAY",
 "text": "Put a German air unit into play with Blitz. Return it to your hand at the end of the turn.",
 "flavorText": "Eagle Day (Adlertag) marked the first day of Operation Eagle Attack, (Unternehmen Adlerangriff), the codename of a military operation by the German Luftwaffe in 1940, with the intention of destroying the British Royal Air Force (RAF). This was done in preparation for Operation Sea Lion (Unternehmen Seelöwe), the German plan for the invasion of Britain, and the goal was to prevent the RAF from attacking the invasion fleet and to cripple the air defense of the Royal Navy Home Fleet. The operation was postponed several times due to bad weather, but was finally carried out on 13 August 1940. Hermann Göring, the commander in chief of the Luftwaffe, had promised Hitler that the RAF would be destroyed in a matter of days. However, the operation failed its objectives and the Germans never managed to gain air superiority in British airspace. This caused Operation Sea Lion to be postponed indefinitely.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/WorldAtWar/events/card_event_eagle_day.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/WorldAtWar/events/card_event_eagle_day.uasset"
 },
 "card_event_harass": {
 "name": "card_event_harass",
@@ -18766,6 +18999,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -18843,6 +19077,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "hidePassiveEffect",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -18851,8 +19086,7 @@
 "title": "FIESELER FI 156",
 "text": "At the end of your turn, activate a random Countermeasure in hand.",
 "flavorText": "The Fieseler Fi 156 Storch (e. stork) was a German liaison aircraft that was used by the Luftwaffe during WWII. The aircraft was designed to be versatile; it didn’t need a long runway and it had foldable wings which made it easy to transport by trailers or by being towed by vehicles. During WWII it was used by the Luftwaffe in all major theaters and perhaps most famously during the daring German commando rescue of Benito Mussolini in 1943. Over 2,900 Fi 156 Storch were built between 1937-1945, including variants, and the production for private use continued in France and Czechoslovakia after the war. Around 60 FI 156 were captured by the Allies during the war and one was assigned to Field Marshal Bernard Montgomery as his personal transport.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/WorldAtWar/units/card_unit_fieseler_156.uasset",
-"customName1": "hidePassiveEffect"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/WorldAtWar/units/card_unit_fieseler_156.uasset"
 },
 "card_unit_heinkel_he_111_waw": {
 "name": "card_unit_heinkel_he_111_waw",
@@ -18896,6 +19130,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -19870,6 +20105,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -19897,6 +20133,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -19923,6 +20160,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -19973,6 +20211,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -19997,6 +20236,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -20287,6 +20527,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -20299,8 +20540,7 @@
 ],
 "title": "TOBRUK",
 "text": "Tobruk is a city in eastern Libya.",
-"source_pak": "kards/Content/Blueprints/Cards/Germany/specialCards/card_location_german_scen5.uasset",
-"customName1": "0"
+"source_pak": "kards/Content/Blueprints/Cards/Germany/specialCards/card_location_german_scen5.uasset"
 },
 "card_location_soviet_scen1_ai": {
 "name": "card_location_soviet_scen1_ai",
@@ -20899,6 +21139,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21022,6 +21263,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21076,6 +21318,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21126,6 +21369,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21151,6 +21395,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21176,6 +21421,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName2": "sendtobattlelog",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -21184,8 +21430,7 @@
 "title": "DECISIVE DEFENSE",
 "text": "When a unit attacks your HQ, add a 6th ALPINI REGIMENT next to it defending.",
 "flavorText": "The First Battle of Bir el Gubi was fought in Libya in November 1941, between the Italian and Commonwealth forces. The battle was fought during Operation Crusader which was an Allied attempt to bypass Axis defenses on the Egyptian-Libyan frontier and to relieve the Siege of Tobruk. The battle ended with an Italian victory and this was the first tank battle in North Africa where the Italians armored forces were victorious. A couple of weeks later the Commonwealth forces made another attempt to capture Bir el Gubi, in what is known as the Second Battle of Bir el Gubi, but again the Italian forces managed to repel the attacks. The Axis forces would later retreat from Bir el Gubi after continuous Allied attacks.",
-"source_pak": "kards/Content/Blueprints/Cards/Italy/events/card_event_decisive_defense.uasset",
-"customName2": "sendtobattlelog"
+"source_pak": "kards/Content/Blueprints/Cards/Italy/events/card_event_decisive_defense.uasset"
 },
 "card_event_desert_push": {
 "name": "card_event_desert_push",
@@ -21204,6 +21449,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21254,6 +21500,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21279,6 +21526,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21304,6 +21552,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -21331,6 +21580,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21481,6 +21731,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -21491,8 +21743,7 @@
 "title": "RM ROMA",
 "text": "Deal 4 damage to an enemy. The top card of your deck has the Navy type until the end of your next turn.",
 "flavorText": "The Roma, commissioned in June 1942, was the third and final Littorio-class battleship of Italy's Regia Marina. Equipped with nine 15-inch guns and advanced armor, she was among the most formidable warships of her time. However, Italy's fuel shortages and strategic constraints limited her operational use. On September 9, 1943, following Italy's armistice with the Allies, Roma led a fleet departing La Spezia, intending to surrender at Malta. While navigating near Sardinia, the fleet was attacked by German Dornier Do 217 bombers deploying Fritz X radio-controlled glide bombs. Roma was struck twice: the first bomb caused significant flooding and power loss and the second detonated a forward magazine that resulted in a catastrophic explosion. The ship broke apart and sank, leading to the deaths of 1,393 crew members, including Admiral Carlo Bergamini. Roma's sinking marked the first instance of a battleship destroyed by a precision-guided weapon, signaling a shift in naval warfare. Her wreck was located in 2012 off Sardinia's coast at a depth of approximately 1,000 meters.",
-"source_pak": "kards/Content/Blueprints/Cards/Italy/events/card_event_rm_roma.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Italy/events/card_event_rm_roma.uasset"
 },
 "card_event_spirit_of_rome": {
 "name": "card_event_spirit_of_rome",
@@ -21511,6 +21762,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21561,6 +21813,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -21588,6 +21841,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -21638,6 +21892,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22357,14 +22612,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "isAlsoTank;CanMoveAndAttackInTheSameTurn",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "SAVOIA CAVALLERIA",
 "text": "Also counts as a tank.",
 "flavorText": "The Savoia Cavalleria Regiment (3rd) is one of the oldest cavalry regiments of the Italian Army, dating back to the 17th century. During WWII the Savoia Cavalleria Regiment was attached to the 3rd Fast Division \"Principe Amedeo Duca d'Aosta\" of the Italian Expeditionary Corps in Russia. The regiment earned its fame in what’s now called the Izbushensky Charge, which was a clash between the regiment and Soviet infantry. Col. Bettoni Cazzago, commander of the regiment ordered a cavalry charge with sabers drawn and hand grenades against two entrenched battalions of the 812th Siberian Infantry Regiment. The clash ended with an Italian victory, but there were heavy losses on both sides, and the outcome didn’t have much bearing on the Eastern Front. This event is however remembered as the last cavalry charges in history and it had great propaganda resonance in Italy at the time.",
-"source_pak": "kards/Content/Blueprints/Cards/Italy/units/card_unit_italian_cavalry.uasset",
-"customName1": "isAlsoTank;CanMoveAndAttackInTheSameTurn"
+"source_pak": "kards/Content/Blueprints/Cards/Italy/units/card_unit_italian_cavalry.uasset"
 },
 "card_unit_l6_40": {
 "name": "card_unit_l6_40",
@@ -22408,6 +22663,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22588,6 +22844,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22613,6 +22870,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22720,6 +22978,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22745,6 +23004,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -22772,6 +23032,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22823,6 +23084,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -22878,6 +23140,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -22905,6 +23168,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23062,6 +23326,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23320,6 +23585,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23345,6 +23611,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23395,6 +23662,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23420,6 +23688,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23470,6 +23739,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -23497,6 +23767,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": true,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23522,6 +23793,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23547,6 +23819,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23572,6 +23845,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23678,6 +23952,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -23706,6 +23981,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -23805,6 +24081,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "CanMoveAndAttackInTheSameTurn",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -23813,8 +24090,7 @@
 "title": "LIGHTNING CONQUEST",
 "text": "Friendly infantry units are immune to damage and can both move and attack this turn.",
 "flavorText": "The Japanese Imperial Army started out as military conquerors of the Pacific and East Asia. However, as the war progressed and the US and Soviet allies joined the war against Japan their strategy changed to a defensive war.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/events/card_event_lightning_conquest_new.uasset",
-"customName1": "CanMoveAndAttackInTheSameTurn"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/events/card_event_lightning_conquest_new.uasset"
 },
 "card_event_naval_operation": {
 "name": "card_event_naval_operation",
@@ -23935,6 +24211,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {
 "null": []
 },
@@ -24065,14 +24342,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantAttack:location",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "28cm COASTAL HOWITZER",
 "text": "Cannot attack the enemy HQ.",
 "flavorText": "The 28 cm howitzer L/10 was a Japanese coastal and siege howitzer. It was developed by the British manufacturing company called Armstrong before 1892 and saw service in the Russo-Japanese War during the siege of Port Arthur and the Second Sino-Japanese War. Due to a lack of other alternatives the Japanese reactivated the 28 cm howitzer for coastal defense in 1945, and it was used with some success during the Soviet invasion of Manchuria in 1945.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_28cm_coasttal_howitzer.uasset",
-"customName1": "cantAttack:location"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_28cm_coasttal_howitzer.uasset"
 },
 "card_unit_2nd_raiding_brigade": {
 "name": "card_unit_2nd_raiding_brigade",
@@ -24091,6 +24368,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -24214,14 +24492,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantAttack:location",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "75mm MOUNTAIN GUN",
 "text": "Cannot attack the enemy HQ.",
 "flavorText": "The type 41 75 mm mountain gun was used as an infantry gun and normally each regiment had four of them deployed. The 75 mm mountain gun was referred to as \"rentai ho\" (regimental artillery).",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_75mm_mountain_gun.uasset",
-"customName1": "cantAttack:location"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_75mm_mountain_gun.uasset"
 },
 "card_unit_a5m4_claude": {
 "name": "card_unit_a5m4_claude",
@@ -24240,6 +24518,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -24318,6 +24597,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeAttackedBy:ground",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -24326,8 +24606,7 @@
 "title": "C6N SAIUN",
 "text": "Cannot be attacked by ground units while in the support line. Countermeasures cannot trigger.",
 "flavorText": "The Nakajima C6N Saiun was a carrier-based reconnaissance aircraft used by the Imperial Japanese Navy Air Service in WWII. The Allied reporting name of the C6N Saiun was Myrt and it was the fastest carrier-based aircraft put into service by Japan during the war. However, it didn't enter service until 1944 when only a few carriers were left to operate from which meant that most were flown from land bases. 463 aircraft were produced including a few variants.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_c6n_saiun.uasset",
-"customName1": "cantBeAttackedBy:ground"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_c6n_saiun.uasset"
 },
 "card_unit_dinah": {
 "name": "card_unit_dinah",
@@ -24550,14 +24829,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantAttack:location",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "Ki-84 FRANK",
 "text": "Cannot attack the enemy HQ.",
 "flavorText": "The Nakajima Ki-84, code named \"Frank\" by the Allies, was a Japanese single-seat fighter aircraft used during the last two years of WWII. The Ki-84 was considered the best Japanese fighter, because it combined high speed capability with excellent maneuverability, and excellent firepower. The aircraft was a perfect match against any Allied single engine fighter, plus it had enough firepower to take down the high flying and well-defended Boeing B-29 Superfortress.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_ki_84_frank.uasset",
-"customName1": "cantAttack:location"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_ki_84_frank.uasset"
 },
 "card_unit_kumamoto_regiment": {
 "name": "card_unit_kumamoto_regiment",
@@ -24625,6 +24904,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -24702,14 +24982,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeAttackedBy:ground",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "F1M2 PETE",
 "text": "Cannot be attacked by ground units while in the support line.",
 "flavorText": "The Mitsubishi F1M  was a Japanese sea plane used in WWII (nicknamed \"Pete\" by the Allies). Although it was built as an reconnaissance aircraft it took on a number of roles including convoy escort, bomber, anti-submarine, maritime patrol, rescue, transport, and anti-shipping strike.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_pete.uasset",
-"customName1": "cantBeAttackedBy:ground"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Base/units/card_unit_pete.uasset"
 },
 "card_unit_sally": {
 "name": "card_unit_sally",
@@ -24753,6 +25033,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -25096,6 +25377,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -25121,6 +25403,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -25173,6 +25456,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -25201,6 +25485,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -25255,6 +25540,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -25521,6 +25807,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -25598,6 +25885,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -25675,6 +25963,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -25752,6 +26041,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -25761,8 +26051,7 @@
 "title": "Ki-100 GOSHIKISEN",
 "text": "Is immune to damage during your turn.",
 "flavorText": "The Kawasaki Ki-100 was a Japanese fighter aircraft that was used during WWII. The Ki-100 was first used in combat in March 1945 and although very few aircraft were available, it proved to be one of the most advanced fighters of WWII. The Ki-100 was able to outmaneuver American fighters such as the Republic P-47N Thunderbolts and P-51D Mustangs and it performed very well as an interceptor against the B-29 Superfortresses. 396 Ki-100’s were produced in a short period of time, including a few variants.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Breakthrough/units/card_unit_japan_ki_100_goshiken.uasset",
-"customName1": "startofturn0"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Breakthrough/units/card_unit_japan_ki_100_goshiken.uasset"
 },
 "card_unit_kawanishi_h6k": {
 "name": "card_unit_kawanishi_h6k",
@@ -26020,6 +26309,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -26100,6 +26390,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -26179,6 +26470,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -26207,6 +26499,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26282,6 +26575,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26468,6 +26762,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26493,6 +26788,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26803,6 +27099,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26828,6 +27125,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -26855,6 +27153,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26880,6 +27179,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26905,6 +27205,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -26930,6 +27231,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -26984,6 +27286,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27108,6 +27411,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27398,6 +27702,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27423,6 +27728,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -27554,14 +27860,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantAttack:location",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "B7A2 RYUSEI",
 "text": "Cannot attack the enemy HQ.",
 "flavorText": "The Aichi B7A Ryusei (Ryusei means \"Shooting Star\" in Japanese) was a Japanese carrier borne torpedo dive bomber that was produced during WWII for the Imperial Japanese Navy Air Service. The B7A Ryusei was a big and powerful aircraft and was intended to be used on a new type of carrier (Taihō-class) which could handle larger aircraft. The problem was that once the B7A entered production and was ready for service in 1944, there was only one carrier modern enough to handle the aircraft: the Taihō. And to make matters worse, the Taihō carrier was sunk during the Battle of the Philippine Sea, before any of the B7A’s were embarked. After this, some of the B7A’s operated from land, but they saw limited service until the war ended in 1945. A total of 105 B7A2 Ryusei were produced, plus a handful of other variants.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/Legions/units/card_unit_aichi_b7a2.uasset",
-"customName1": "cantAttack:location"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/Legions/units/card_unit_aichi_b7a2.uasset"
 },
 "card_unit_ki_42_ii_ko": {
 "name": "card_unit_ki_42_ii_ko",
@@ -27717,6 +28023,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27742,6 +28049,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27766,6 +28074,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -27818,6 +28127,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -28039,6 +28349,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28159,7 +28470,6 @@
 },
 "card_event_advanced_imperial_rnd": {
 "name": "card_event_advanced_imperial_rnd",
-"chooseOneOptionCount": 2,
 "kredits": 9,
 "operationcost": 0,
 "attack": 0,
@@ -28175,6 +28485,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28223,6 +28538,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -28235,7 +28551,6 @@
 },
 "card_event_expanded_imperial_rnd": {
 "name": "card_event_expanded_imperial_rnd",
-"chooseOneOptionCount": 2,
 "kredits": 6,
 "operationcost": 0,
 "attack": 0,
@@ -28251,6 +28566,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28275,6 +28595,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28285,7 +28606,6 @@
 },
 "card_event_imperial_research": {
 "name": "card_event_imperial_research",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -28301,6 +28621,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28375,6 +28700,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28426,6 +28752,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -28755,6 +29082,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28880,6 +29208,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -28905,6 +29234,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -28932,6 +29262,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -28984,6 +29315,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -29944,6 +30276,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -29968,6 +30301,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30040,6 +30374,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30088,6 +30423,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30112,6 +30448,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30160,6 +30497,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30184,6 +30522,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -30483,6 +30822,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "notMainHQ",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -30490,8 +30830,7 @@
 ],
 "title": "GALLOPING HORSE",
 "text": "Reduce damage to Mount Austen by 2.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/specialCards/card_location_usa_scen5_galloping.uasset",
-"customName1": "notMainHQ"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/specialCards/card_location_usa_scen5_galloping.uasset"
 },
 "card_location_usa_scen5_seahorse": {
 "name": "card_location_usa_scen5_seahorse",
@@ -30510,6 +30849,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "notMainHQ",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -30517,8 +30857,7 @@
 ],
 "title": "SEA HORSE",
 "text": "Deal 2 damage to units attacking Mount Austen.",
-"source_pak": "kards/Content/Blueprints/Cards/Japan/specialCards/card_location_usa_scen5_seahorse.uasset",
-"customName1": "notMainHQ"
+"source_pak": "kards/Content/Blueprints/Cards/Japan/specialCards/card_location_usa_scen5_seahorse.uasset"
 },
 "card_unit_1st_taipei_regiment_cam1": {
 "name": "card_unit_1st_taipei_regiment_cam1",
@@ -30758,6 +31097,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30782,6 +31122,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -30854,6 +31195,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -30861,8 +31203,7 @@
 ],
 "title": "MIST",
 "text": "Rain is on its way.",
-"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_rain1_mist.uasset",
-"customName1": "startofturn0"
+"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_rain1_mist.uasset"
 },
 "card_event_rain2_deluge": {
 "name": "card_event_rain2_deluge",
@@ -30929,6 +31270,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -31097,6 +31439,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31104,8 +31447,7 @@
 ],
 "title": "GALE",
 "text": "A Storm is coming.",
-"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_storm1_gale.uasset",
-"customName1": "startofturn0"
+"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_storm1_gale.uasset"
 },
 "card_event_storm2_thunderstorm": {
 "name": "card_event_storm2_thunderstorm",
@@ -31244,6 +31586,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -31292,6 +31635,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -31340,6 +31684,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31347,8 +31692,7 @@
 ],
 "title": "BLUE SKY",
 "text": "It will be Sunny.",
-"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_sunny1_blue_sky.uasset",
-"customName1": "startofturn0"
+"source_pak": "kards/Content/Blueprints/Cards/Neutral/events/card_event_sunny1_blue_sky.uasset"
 },
 "card_event_sunny2_heatwave": {
 "name": "card_event_sunny2_heatwave",
@@ -31470,6 +31814,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31750,6 +32095,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31827,6 +32173,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31856,6 +32203,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31883,6 +32231,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31910,6 +32259,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -31937,6 +32287,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -31962,6 +32313,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -32043,6 +32395,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32195,6 +32548,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -32302,6 +32656,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32356,6 +32711,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32433,6 +32789,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32568,6 +32925,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32647,6 +33005,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32724,6 +33083,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -32965,6 +33325,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -32975,8 +33337,7 @@
 "title": "LUBLIN R-XIII",
 "text": "Cards you play have Intel 1.\r\nDeployment: Reveal target Covert unit.",
 "flavorText": "The Lublin R-XIII was a reconnaissance and light bomber aircraft primarily used by the Polish Air Force during WWII, particularly in the early stages of the conflict. The Polish aircraft manufacturer Plage i Laśkiewicz built the aircraft in the 1930s and it proved to be an effective asset for its purpose. On the eve of the Invasion of Poland in 1939, the Polish Air Force had about 150 R-XIII at their disposal, but only 49 of them were combat ready. The rest were in reserve, used for training purposes or in repairs. The R-XIII turned out to be inferior to all Luftwaffe aircraft, including fighters, bombers, and reconnaissance planes, due to its slower speed and limited armament consisting of just one machine gun. However, it proved itself useful in close reconnaissance and liaison duties and was actively employed in these roles. A total of 273 Lublin R-XIII were built, including a few variants, and none have survived until today.",
-"source_pak": "kards/Content/Blueprints/Cards/Poland/units/card_unit_lublin_r_xiii.uasset",
-"customName1": "canTargetCovert"
+"source_pak": "kards/Content/Blueprints/Cards/Poland/units/card_unit_lublin_r_xiii.uasset"
 },
 "card_unit_p37los": {
 "name": "card_unit_p37los",
@@ -33022,6 +33383,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33186,6 +33548,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33386,6 +33749,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33395,7 +33759,6 @@
 },
 "card_event_dogfight_usa": {
 "name": "card_event_dogfight_usa",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -33411,6 +33774,12 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33420,7 +33789,6 @@
 },
 "card_event_flank_attack_sov": {
 "name": "card_event_flank_attack_sov",
-"chooseOneOptionCount": 2,
 "kredits": 5,
 "operationcost": 0,
 "attack": 0,
@@ -33436,6 +33804,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33460,6 +33833,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33485,6 +33859,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33557,6 +33932,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33581,6 +33957,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -33592,7 +33969,6 @@
 },
 "card_event_soviet_promo3": {
 "name": "card_event_soviet_promo3",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -33608,6 +33984,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33682,6 +34063,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33782,6 +34164,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33921,7 +34304,6 @@
 },
 "card_event_barrage": {
 "name": "card_event_barrage",
-"chooseOneOptionCount": 2,
 "kredits": 2,
 "operationcost": 0,
 "attack": 0,
@@ -33937,6 +34319,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -33962,6 +34349,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -33992,6 +34380,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34002,7 +34391,6 @@
 },
 "card_event_men_of_steel": {
 "name": "card_event_men_of_steel",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -34018,6 +34406,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34123,6 +34516,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34158,7 +34552,6 @@
 },
 "card_event_veteran_pilots": {
 "name": "card_event_veteran_pilots",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -34174,6 +34567,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -34285,6 +34683,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -34294,8 +34693,7 @@
 "title": "15th MOTOR RIFLES",
 "text": "Your HQ is immune to damage on enemy turns.",
 "flavorText": "The 15th Guards Rifle Regiment became part of the 2nd Guards RIfle Division in its second formation in 1942. After participating in the Novorossiysk-Taman offensive in 1943 the division was renamed to 2nd Guards (Tamanskaya) Motor Rifle Division and that same year it was under the command of the 56th Army in the Kerch-Eltigen Operation. In 1944 the division participated in the Crimean Offensive under the command of the Separate Coastal Army, and after that it was held in reserve with the 2nd Guards Army, or until July 1944 when the whole army was moved to the 1st Baltic Front. The division fought in the Battle of Memel in 1944 before it was transferred to the 3rd Belorussian Front to participate in the East Prussian offensive. When the war ended the 2nd Guards Motor Rifle Division was located in the Baltic Sea coast north of Primorsk.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/Allegiance/units/card_unit_6th_motor_rifles.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/Allegiance/units/card_unit_6th_motor_rifles.uasset"
 },
 "card_unit_83rd_naval_brigade": {
 "name": "card_unit_83rd_naval_brigade",
@@ -34314,6 +34712,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34649,6 +35048,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34674,6 +35074,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34724,6 +35125,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34749,6 +35151,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -34777,6 +35180,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34802,6 +35206,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34955,6 +35360,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -34980,6 +35386,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -35108,6 +35515,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -35133,6 +35541,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -35719,6 +36128,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -35772,6 +36182,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"customName1": "cantAttack;endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -35780,8 +36191,7 @@
 "title": "BP-43 ARMORED TRAIN",
 "text": "Can't attack. At the end of your turn, add a LIGHT INFANTRY to the same front.",
 "flavorText": "The BP-43 was an armored transport train that was used by the Red Army during WWII. It was developed in 1943 and designed to withstand both Axis air and ground attacks while carrying huge amounts of supplies to the battlefield. The BP-43 had six separate armored cars, each protected with a 50 mm armor and mounted with a 76.2 mm gun in a T-34 Medium Tank turret, a 37 mm anti-aircraft gun and machine gun ports. The locomotive weighted 362.8 metric tons, plus the optional flat cars for transport, and had a crew of over 100 men. Around 21 BP-43 armored trains were created during WWII.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/Base/units/card_unit_armored_train.uasset",
-"customName1": "cantAttack;endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/Base/units/card_unit_armored_train.uasset"
 },
 "card_unit_b4_203mm_howitzer": {
 "name": "card_unit_b4_203mm_howitzer",
@@ -36468,7 +36878,6 @@
 },
 "card_event_shock_tactics": {
 "name": "card_event_shock_tactics",
-"chooseOneOptionCount": 2,
 "kredits": 2,
 "operationcost": 0,
 "attack": 0,
@@ -36484,6 +36893,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -36538,6 +36952,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -36822,6 +37237,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -36872,6 +37288,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -36880,8 +37298,7 @@
 "title": "CONFUSION",
 "text": "Take control of an enemy unit with cost 3 or less until end of turn.",
 "flavorText": "“The whole secret lies in confusing the enemy, so that he cannot fathom our real intent.” -Sun Tzu, The Art of War",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/Breakthrough/events/card_event_confusion.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/Breakthrough/events/card_event_confusion.uasset"
 },
 "card_event_lesser_of_two_evils": {
 "name": "card_event_lesser_of_two_evils",
@@ -36925,6 +37342,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37055,6 +37473,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37080,6 +37499,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -37107,6 +37527,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -37115,8 +37536,7 @@
 "title": "25th INFANTRY REGIMENT",
 "text": "At the end of your turn, add a LIGHT INFANTRY to the same front.",
 "flavorText": "The 25th Infantry Regiment was a unit of the 44th Rifle Division of the Red Army. The division was formed in 1918 during the Russian Civil war and participated in the Finnish Winter War and WWII. The division was destroyed during the Winter War in 1940 and recreated in 1941 and became part of the 13th Rifle Corps of the 12th Army. The division was once more wiped out in combat, but recreated again and fought throughout the war with the 54th Army of the Volkhov Front and later with the 67th Army of the Leningrad Front.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/Breakthrough/units/card_unit_25th_infantry_regiment.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/Breakthrough/units/card_unit_25th_infantry_regiment.uasset"
 },
 "card_unit_35th_mountain_rifles": {
 "name": "card_unit_35th_mountain_rifles",
@@ -37187,6 +37607,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37239,6 +37660,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -37395,6 +37817,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37420,6 +37843,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37445,6 +37869,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37470,6 +37895,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37715,6 +38141,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37765,6 +38192,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37800,7 +38228,6 @@
 },
 "card_event_strategic_focus": {
 "name": "card_event_strategic_focus",
-"chooseOneOptionCount": 2,
 "kredits": 7,
 "operationcost": 0,
 "attack": 0,
@@ -37816,6 +38243,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -37841,6 +38273,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -38142,6 +38575,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -38167,6 +38601,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -38196,6 +38631,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -38248,6 +38684,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -38691,6 +39128,8 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -38699,8 +39138,7 @@
 "title": "PARTISANS",
 "text": "Take control of an enemy unit. At the end of turn, send it to owner's hand.",
 "flavorText": "The Soviet partisans fought a guerrilla war against the Axis forces on the Eastern Front during WWII. The partisans were coordinated and controlled by the Soviet government and covertly received arms, equipment, and orders from the Soviet forces fighting at the front. Their role was to operate in the rear and to harass, disrupt, sabotage, and to provide intelligence about German military and economic activities in the occupied territories. The Soviet Partisans movement grew from 90,000 men and women in 1941 to 550,000 in 1943 and managed to make a significant contribution to the Allied victory on the Eastern Front.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/Legions/events/card_event_partisans.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/Legions/events/card_event_partisans.uasset"
 },
 "card_event_promotion": {
 "name": "card_event_promotion",
@@ -38732,7 +39170,6 @@
 },
 "card_event_red_dawn": {
 "name": "card_event_red_dawn",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -38748,6 +39185,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -38773,6 +39215,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39491,6 +39934,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -39518,6 +39962,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -39546,6 +39991,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39571,6 +40017,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39596,6 +40043,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": true,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39621,6 +40069,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39875,7 +40324,6 @@
 },
 "card_event_advanced_soviet_research": {
 "name": "card_event_advanced_soviet_research",
-"chooseOneOptionCount": 2,
 "kredits": 9,
 "operationcost": 0,
 "attack": 0,
@@ -39891,6 +40339,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39915,6 +40368,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39939,6 +40393,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -39948,12 +40403,10 @@
 "title": "DO OR DIE",
 "text": "When a friendly unit is destroyed this turn, add a BLAST and a PRODUCTION to your hand.",
 "flavorText": "Pavlov’s House was a four-story apartment block in central Stalingrad, close to the Volga and overlooking 9th January Square. In late 1942, soldiers of the 42nd Guards Rifle Regiment, 13th Guards Rifle Division, took the building back from German forces and turned it into a fortified strongpoint. Its popular name came from Sergeant Yakov Pavlov, who led the small group that first seized it, though Lieutenant Ivan Afanasiev later commanded the position. The defenders mined the approaches, put barbed wire around the building, and placed machine guns and anti-tank rifles in windows and on upper floors. They broke holes through walls to move inside the building and dug a trench to connect with Soviet positions near the Volga. Supplies reached them through this trench or by boats crossing under fire. The garrison held the position for roughly two months, with soldiers and civilians sheltering in the same ruined structure. Some later accounts made Pavlov’s House more famous than wartime records suggest, but it remains one of the best known examples of Stalingrad street fighting.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/OceaniaStorm/events/card_event_do_or_die.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/OceaniaStorm/events/card_event_do_or_die.uasset"
 },
 "card_event_expanded_soviet_research": {
 "name": "card_event_expanded_soviet_research",
-"chooseOneOptionCount": 2,
 "kredits": 6,
 "operationcost": 0,
 "attack": 0,
@@ -39969,6 +40422,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -39978,7 +40436,6 @@
 },
 "card_event_form_battle_line": {
 "name": "card_event_form_battle_line",
-"chooseOneOptionCount": 2,
 "kredits": 4,
 "operationcost": 0,
 "attack": 0,
@@ -39994,6 +40451,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -40069,6 +40531,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -40080,7 +40543,6 @@
 },
 "card_event_soviet_military_research": {
 "name": "card_event_soviet_military_research",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -40096,6 +40558,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -40308,6 +40775,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -40318,8 +40786,7 @@
 "title": "641st RIFLES",
 "text": "Becomes Veteran at the start of your turn if damaged.",
 "flavorText": "The 641st Rifle Regiment served in both formations of the Soviet 165th Rifle Division. In the first formation, the division moved from the North Caucasus Military District to the Kyiv front in 1941. There, the 165th fought south of the Ukrainian capital before being caught in the encirclement of the Southwestern Front, the largest encirclement in the history of warfare, and effectively destroyed. A new 165th Rifle Division was formed in the Ural Military District in early 1942, and the 641st Rifle Regiment was again included in its order of battle. The rebuilt division went north to the Leningrad sector, where it fought in difficult operations around Lyuban, Krasny Bor, and Mga. It later moved west, fought near Nevel, and joined the advance through Belorussia and Poland. In 1944, the division was awarded the Order of the Red Banner and received the honorific title “Siedlce” after helping capture the city. In 1945, the 641st Rifle Regiment earned its own Order of the Red Banner during the East Pomeranian offensive, before the division ended the war near the Baltic coast.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/OceaniaStorm/units/card_unit_641st_rifles.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/OceaniaStorm/units/card_unit_641st_rifles.uasset"
 },
 "card_unit_75th_rifle_regiment": {
 "name": "card_unit_75th_rifle_regiment",
@@ -40522,6 +40989,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -40680,6 +41148,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -40755,6 +41224,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -40840,6 +41310,7 @@
 "targetTax": 0,
 "hasGuard": true,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -40850,8 +41321,7 @@
 "title": "122nd KORSUN",
 "text": "Costs 1 less to deploy for each of your units.",
 "flavorText": "The 122nd Guards Rifle Regiment was a unit of the 41st Guards Rifle Division, an elite unit which was formed in August 1942 from the 10th Airborne Corps, and served extensively throughout WWII. The division fought at Stalingrad and suffered heavy losses, but afterwards it underwent significant rebuilding before engaging in various operations. It participated in numerous battles in regions such as Donbas, eastern Ukraine, and Hungary, earning multiple battle honors (including “Korsun”) and decorations. In 1945 the division was stationed in Vienna briefly, but later moved to lower Austria where it connected with US forces towards the end of the war. Eventually, in October 1945, the division was transformed into the 18th Guards Mechanized Division.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/WinterWar/units/card_unit_122nd_korsun.uasset",
-"customName1": "canTargetCovert"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/WinterWar/units/card_unit_122nd_korsun.uasset"
 },
 "card_unit_146th_infantry_regiment": {
 "name": "card_unit_146th_infantry_regiment",
@@ -41112,6 +41582,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41137,6 +41608,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41162,6 +41634,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41187,6 +41660,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41344,6 +41818,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -41370,6 +41845,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41394,6 +41870,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41418,6 +41895,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41442,6 +41920,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41466,6 +41945,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41490,6 +41970,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41539,6 +42020,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -41628,6 +42110,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -41639,8 +42122,7 @@
 ],
 "title": "KLIN",
 "text": "The town of Klin lies between Kalinin and Moscow, 85 km from the capital.",
-"source_pak": "kards/Content/Blueprints/Cards/Soviet/specialCards/card_location_soviet_scen3.uasset",
-"customName1": "0"
+"source_pak": "kards/Content/Blueprints/Cards/Soviet/specialCards/card_location_soviet_scen3.uasset"
 },
 "card_location_soviet_scen4": {
 "name": "card_location_soviet_scen4",
@@ -42285,6 +42767,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42310,6 +42793,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42335,6 +42819,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42508,7 +42993,6 @@
 },
 "card_event_carrier_cover": {
 "name": "card_event_carrier_cover",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -42524,6 +43008,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42590,7 +43079,6 @@
 },
 "card_event_magic": {
 "name": "card_event_magic",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -42606,6 +43094,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42616,7 +43109,6 @@
 },
 "card_event_naval_task_force": {
 "name": "card_event_naval_task_force",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -42632,6 +43124,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42642,7 +43139,6 @@
 },
 "card_event_shore_bombardment": {
 "name": "card_event_shore_bombardment",
-"chooseOneOptionCount": 2,
 "kredits": 4,
 "operationcost": 0,
 "attack": 0,
@@ -42658,6 +43154,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42668,7 +43169,6 @@
 },
 "card_event_strafing": {
 "name": "card_event_strafing",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -42684,6 +43184,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+true,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42811,6 +43316,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -42989,6 +43495,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeTargetedByEnemyOrder",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -42997,8 +43504,7 @@
 "title": "M4A1",
 "text": "Can't be targeted by enemy orders. Draw this unit from deck if enemy makes you discard.",
 "flavorText": "The M4A1 was a Sherman medium tank variant and the first type to be used in US front line service. The M4A1 differed from other variants by its fully cast upper hull and its rounded appearance. The tank was first used by US forces in the North Africa Campaign and was the main Sherman type tank until late 1944 when the US Army began to replace them with the preferred M4A3 variant. The M4A1 was nevertheless used in front line service by the US and the Allies throughout the duration of the war.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Allegiance/units/card_unit_m4a1.uasset",
-"customName1": "cantBeTargetedByEnemyOrder"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Allegiance/units/card_unit_m4a1.uasset"
 },
 "card_unit_m8_howitzer": {
 "name": "card_unit_m8_howitzer",
@@ -43067,6 +43573,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "startofturn0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43076,8 +43583,7 @@
 "title": "P-61 BLACK WIDOW",
 "text": "At the start of your turn, give a random friendly air unit immune this turn.",
 "flavorText": "The Northrop P-61 Black Widow was an American night fighter introduced in 1944 and used for the remainder of the war. The P-61 was the first aircraft designed to carry a radar and although it was sufficiently armed it lacked the speed to engage some of the German fighters and medium bombers. 706 P-61 aircraft were built and were used in front line service in all theaters of the war and remained in service until 1954.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Allegiance/units/card_unit_p_61_black_widow.uasset",
-"customName1": "startofturn0"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Allegiance/units/card_unit_p_61_black_widow.uasset"
 },
 "card_event_air_defense": {
 "name": "card_event_air_defense",
@@ -43123,6 +43629,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43200,6 +43707,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43208,8 +43716,7 @@
 "title": "ENEMY SPOTTED",
 "text": "If your enemy captures the frontline, draw 3 cards.",
 "flavorText": "In warfare, spotting the enemy as fast as possible could often mean the difference between life and death. Besides relying on eyesight, troops used binoculars and periscopes, but were also heavily reliant on ground and air surveillance units, plus the radar technology to locate enemies and to predict their next movement. In 1942 US officers commenced special training in recognizing enemy aircraft and ships, using a special technique referred to as the Renshaw Training System for Aircraft and Ship Recognition. Officers studied pictures of planes and vessels and learned to identify them by their form in a fraction of a second. Over a million combined Navy and Army personnel learned Renshaw’s techniques and it is believed to have saved an untold amount of lives during the war.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_enemy_spotted.uasset",
-"customName1": "canTargetCovert"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_enemy_spotted.uasset"
 },
 "card_event_for_freedom": {
 "name": "card_event_for_freedom",
@@ -43228,6 +43735,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43253,6 +43761,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43305,6 +43814,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn2",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43314,8 +43824,7 @@
 "title": "INDUSTRIAL MIGHT",
 "text": "Draw a card for each unit you have deployed or added this turn.",
 "flavorText": "For America WWII meant the end of the Great Depression, as the government started to spend huge amounts of money to improve the industries in the USA, both to support themselves and their Allies during the war. Unemployment in the US  by 1945 had fallen to 1.9% from 14.6% in 1940, and from 1939 to 1944 the US government spent in total 106.3 billion dollars on munitions production, which was more than half of what the Allied powers spent in total.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_industrial_might.uasset",
-"customName1": "endofturn2"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_industrial_might.uasset"
 },
 "card_event_land_of_the_free": {
 "name": "card_event_land_of_the_free",
@@ -43334,6 +43843,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43386,6 +43896,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43413,6 +43924,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": true,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43438,6 +43950,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43463,6 +43976,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -43475,8 +43989,7 @@
 "title": "PATTON",
 "text": "Units you deploy cost 1 less kredit and have Blitz this turn.",
 "flavorText": "General George Smith Patton Jr. (November 11, 1885 – December 21, 1945), aka “Old Bloods and Guts”, was a brilliant but controversial general. He successfully lead US troops in North Africa where he fought and won against Rommel, and during the Invasion of Sicily he was the first Allied commander to reach Messina. One of his most famous achievements was at the Battle of the Bulge, where he turned and force-marched his entire army to the relief of the besieged Americans at Bastogne.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_patton.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Base/events/card_event_patton.uasset"
 },
 "card_event_seaborne_invasion": {
 "name": "card_event_seaborne_invasion",
@@ -43570,6 +44083,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43645,6 +44159,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43695,6 +44210,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43720,6 +44236,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43797,6 +44314,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -43850,6 +44368,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44075,6 +44594,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44153,6 +44673,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44378,6 +44899,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44919,6 +45441,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44944,6 +45467,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -44971,6 +45495,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -44996,6 +45521,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45206,6 +45732,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45303,7 +45830,6 @@
 },
 "card_event_advanced_us_research": {
 "name": "card_event_advanced_us_research",
-"chooseOneOptionCount": 2,
 "kredits": 9,
 "operationcost": 0,
 "attack": 0,
@@ -45319,6 +45845,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45328,7 +45859,6 @@
 },
 "card_event_allied_research_effort": {
 "name": "card_event_allied_research_effort",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -45344,6 +45874,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45369,6 +45904,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45433,7 +45969,6 @@
 },
 "card_event_expanded_us_research": {
 "name": "card_event_expanded_us_research",
-"chooseOneOptionCount": 2,
 "kredits": 6,
 "operationcost": 0,
 "attack": 0,
@@ -45449,6 +45984,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45609,7 +46149,6 @@
 },
 "card_event_us_military_research": {
 "name": "card_event_us_military_research",
-"chooseOneOptionCount": 2,
 "kredits": 3,
 "operationcost": 0,
 "attack": 0,
@@ -45625,6 +46164,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45635,7 +46179,6 @@
 },
 "card_unit_120mm_m1_gun": {
 "name": "card_unit_120mm_m1_gun",
-"chooseOneOptionCount": 2,
 "kredits": 5,
 "operationcost": 1,
 "attack": 3,
@@ -45651,6 +46194,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45777,6 +46325,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45802,14 +46351,14 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "cantBeTargetedByEnemyOrder",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "B-17F",
 "text": "Cannot be targeted by enemy orders.",
 "flavorText": "The Boeing B-17 Flying Fortress was an American heavy bomber that was developed in the 1930s and used by the USAAF and RAF in WWII. The B-17 had a reputation of being a tough aircraft and could take a lot of battle damage and still reach its target and bring the crew home safely. The B-17F was one of many variants, with 3,405 units built, one of them being the famous Memphis Belle  which was an aircraft of the Eighth Air Force and the first B-17 to complete 25 combat missions. A total of 12,731 B-17s were built and 46 of them still survive today.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Breakthrough/units/card_unit_b_17_f.uasset",
-"customName1": "cantBeTargetedByEnemyOrder"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Breakthrough/units/card_unit_b_17_f.uasset"
 },
 "card_unit_c47_skytrain": {
 "name": "card_unit_c47_skytrain",
@@ -45828,6 +46377,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -45836,8 +46386,7 @@
 "title": "C-47 SKYTRAIN",
 "text": "At the end of your turn, add a random 1-cost US infantry to your support line.",
 "flavorText": "The Douglas C-47 Skytrain, also known as R4D transports and the C-47 Dakota, was an American military transport aircraft manufactured by the Douglas Aircraft Company and used by the US Army Air Forces and the Allies in WWII. The C-47 was based on the design of the civilian passenger airliner DC-3. The aircraft served in all theaters of the war and was used to airlift military supplies, to evacuate wounded from remote islands suchs as the Guadalcanal and to drop paratroopers. Over 10,000 aircraft were produced, including variants, and they were still in service during the Korean and Vietnam war.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/Breakthrough/units/card_unit_c47_skytrain.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/USA/Breakthrough/units/card_unit_c47_skytrain.uasset"
 },
 "card_unit_m10_destroyer": {
 "name": "card_unit_m10_destroyer",
@@ -45958,6 +46507,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -45983,6 +46533,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46033,6 +46584,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46058,6 +46610,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46083,6 +46636,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46189,6 +46743,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -46423,6 +46978,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46448,6 +47004,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46458,7 +47015,6 @@
 },
 "card_event_hidden_plans": {
 "name": "card_event_hidden_plans",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -46474,14 +47030,19 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "canTargetCovert",
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+true
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
 "title": "HIDDEN PLANS",
 "text": "Choose One - Draw a Covert unit OR reveal a Covert unit and give it +1+1.",
 "flavorText": "One notable example of USA’s hidden plans during WWII is the Manhattan Project, a top-secret initiative to develop nuclear weapons. Led by scientists such as J. Robert Oppenheimer, the project resulted in the successful creation of atomic bombs, which were ultimately used against Japan in 1945. The goal was to keep the entire atomic bomb program secret from Germany and Japan which Manhattan Project security officials accomplished successfully. They also tried to keep word of the atomic bomb from reaching the Soviet Union despite them being their allies. Secrecy in the Manhattan Project was so complete that many people working for the organization did not know what they were working on until they heard about the bombing of Hiroshima on the radio.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/CovertOp/events/card_event_hidden_plans.uasset",
-"customName1": "canTargetCovert"
+"source_pak": "kards/Content/Blueprints/Cards/USA/CovertOp/events/card_event_hidden_plans.uasset"
 },
 "card_event_mayhem": {
 "name": "card_event_mayhem",
@@ -46500,6 +47061,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": true,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46710,6 +47272,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -46751,7 +47314,6 @@
 },
 "card_event_rationing": {
 "name": "card_event_rationing",
-"chooseOneOptionCount": 2,
 "kredits": 2,
 "operationcost": 0,
 "attack": 0,
@@ -46767,6 +47329,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46777,7 +47344,6 @@
 },
 "card_event_spars": {
 "name": "card_event_spars",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -46793,6 +47359,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -46895,6 +47466,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -47385,6 +47957,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -47797,6 +48370,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48018,7 +48592,6 @@
 },
 "card_event_naval_battle": {
 "name": "card_event_naval_battle",
-"chooseOneOptionCount": 2,
 "kredits": 7,
 "operationcost": 0,
 "attack": 0,
@@ -48034,6 +48607,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48084,6 +48662,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48122,7 +48701,6 @@
 },
 "card_event_us_weather_bureau": {
 "name": "card_event_us_weather_bureau",
-"chooseOneOptionCount": 2,
 "kredits": 2,
 "operationcost": 0,
 "attack": 0,
@@ -48138,6 +48716,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -48190,6 +48773,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -48332,6 +48916,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48489,6 +49074,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48539,6 +49125,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48666,6 +49253,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48704,7 +49292,6 @@
 },
 "card_event_production_order": {
 "name": "card_event_production_order",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -48720,6 +49307,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48730,7 +49322,6 @@
 },
 "card_event_supply_priorities": {
 "name": "card_event_supply_priorities",
-"chooseOneOptionCount": 2,
 "kredits": 1,
 "operationcost": 0,
 "attack": 0,
@@ -48746,6 +49337,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48771,6 +49367,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48899,6 +49496,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48924,6 +49522,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -48951,6 +49550,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -48976,6 +49576,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {
 "excess": [
 0
@@ -49005,6 +49606,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -49127,7 +49729,6 @@
 },
 "card_unit_5th_rangers": {
 "name": "card_unit_5th_rangers",
-"chooseOneOptionCount": 2,
 "kredits": 4,
 "operationcost": 4,
 "attack": 4,
@@ -49143,6 +49744,11 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"chooseOneOptionCount": 2,
+"chooseOneSelectTargets": [
+false,
+false
+],
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -49218,6 +49824,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "endofturn1",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -49229,8 +49836,7 @@
 "title": "SEAGULL",
 "text": "Your HQ cannot lose more than 4 defense each turn.",
 "flavorText": "The Curtiss SO3C Seamew was an American aircraft that was developed for the United States Navy as its standard floatplane scout. The manufacturer called the aircraft the Seamew, but in 1941 the US Navy started calling it the Seagull, which was the name of the Curtiss SOC biplane it was supposed to replace. Those in service of the Royal Navy were still called Seamew and this caused some confusion. From the time it entered service the SO3C suffered serious flaws, both with in-flight stability and with the Ranger engine. The in-flight stability problem was solved to some extent, but the engine problem remained, and its poor performance led to the aircraft being withdrawn from front line service. In some cases the SO3C was replaced with the old SOC Seagull, the one it was supposed to replace. In 1945 the Curtiss SO3C Seamew was retired and by that time a total of 795 aircraft had been produced, including variants.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/WorldAtWar/units/card_unit_seagull.uasset",
-"customName1": "endofturn1"
+"source_pak": "kards/Content/Blueprints/Cards/USA/WorldAtWar/units/card_unit_seagull.uasset"
 },
 "card_unit_seahawk": {
 "name": "card_unit_seahawk",
@@ -50176,6 +50782,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50350,6 +50957,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -50378,6 +50986,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50402,6 +51011,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50426,6 +51036,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50450,6 +51061,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50474,6 +51086,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50498,6 +51111,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50570,6 +51184,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50594,6 +51209,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -50620,6 +51236,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50670,6 +51287,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50694,6 +51312,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -50840,6 +51459,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"customName1": "0",
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [
@@ -50851,8 +51471,7 @@
 ],
 "title": "HENDERSON FIELD",
 "text": "Henderson Field is the air base the US is constructing on Guadalcanal.",
-"source_pak": "kards/Content/Blueprints/Cards/USA/specialCards/card_location_usa_scen1.uasset",
-"customName1": "0"
+"source_pak": "kards/Content/Blueprints/Cards/USA/specialCards/card_location_usa_scen1.uasset"
 },
 "card_location_usa_scen2": {
 "name": "card_location_usa_scen2",
@@ -51264,6 +51883,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],
@@ -51458,6 +52078,7 @@
 "targetTax": 0,
 "hasGuard": false,
 "waitForHandTarget": false,
+"selectTargetOnPlayedFromHand": true,
 "innateAbilities": {},
 "suppressionExceptionTriggers": [],
 "usedTriggers": [],

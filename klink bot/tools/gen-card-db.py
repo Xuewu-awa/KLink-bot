@@ -175,6 +175,11 @@ def main():
 
         if cdo.get("chooseOneCards"):
             entry["chooseOneOptionCount"] = len(cdo["chooseOneCards"])
+            entry["chooseOneSelectTargets"] = [
+                str(option.get("selectTargetOnPlayedFromHand", False)).lower() in ("true", "1")
+                for option in cdo["chooseOneCards"]]
+        if str(cdo.get("selectTargetOnPlayedFromHand", False)).lower() in ("true", "1"):
+            entry["selectTargetOnPlayedFromHand"] = True
         entry["innateAbilities"] = innate_abilities(cdo)
         entry["suppressionExceptionTriggers"] = [trigger_program(v) for v in cdo.get("suppressionExceptionTriggers", [])]
         entry["usedTriggers"] = [trigger_program(v) for v in cdo.get("usedTriggers", [])]

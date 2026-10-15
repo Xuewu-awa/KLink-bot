@@ -31,6 +31,8 @@ public sealed class CardDefinition
     public int Defense { get; init; }
     public int Range { get; init; }
     public int ChooseOneOptionCount { get; init; }
+    public IReadOnlyList<bool> ChooseOneSelectTargets { get; init; } = [];
+    public bool SelectTargetOnPlayedFromHand { get; init; }
     public string CustomName1 { get; init; } = "None";
     public string CustomName2 { get; init; } = "None";
     public int Cipher { get; init; }
@@ -335,6 +337,8 @@ public sealed class CardDatabase
                 Defense = c.Defense ?? 0,
                 Range = c.Range ?? 0,
                 ChooseOneOptionCount = c.ChooseOneOptionCount,
+                ChooseOneSelectTargets = c.ChooseOneSelectTargets ?? [],
+                SelectTargetOnPlayedFromHand = c.SelectTargetOnPlayedFromHand,
                 CustomName1 = c.CustomName1 ?? "None",
                 CustomName2 = c.CustomName2 ?? "None",
                 Cipher = c.Cipher ?? 0,
@@ -395,6 +399,8 @@ public sealed class CardDatabase
         [JsonPropertyName("range")] public int? Range { get; set; }
         [JsonPropertyName("heavyArmor")] public int? HeavyArmor { get; set; }
         [JsonPropertyName("chooseOneOptionCount")] public int ChooseOneOptionCount { get; set; }
+        [JsonPropertyName("chooseOneSelectTargets")] public bool[]? ChooseOneSelectTargets { get; set; }
+        [JsonPropertyName("selectTargetOnPlayedFromHand")] public bool SelectTargetOnPlayedFromHand { get; set; }
         [JsonPropertyName("customName1")] public string? CustomName1 { get; set; }
         [JsonPropertyName("customName2")] public string? CustomName2 { get; set; }
         [JsonPropertyName("cipher")] public int? Cipher { get; set; }

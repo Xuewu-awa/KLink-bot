@@ -236,7 +236,11 @@ public sealed class CardInstance
     /// 默认 0 与 kardsim 的 <c>EngineHost.ChooseOne = _ =&gt; 0</c> 一致。
     /// 老实现是 <c>Random.Next(2)</c>，会让回放里的分支选择和真实对局不一致。
     /// </summary>
+    // Public model name retained for compatibility: this is native chooseOneIndex (+0x310).
+    // Derived Blueprint ChooseOne fields are stored separately in BlueprintVariables.
     public int ChooseOne { get; set; }
+    /// <summary>Native +0x11d; a mutable target-selection flag, not a target type enum.</summary>
+    public bool SelectTargetOnPlayedFromHand { get; set; }
 
     /// <summary>
     /// 本回合是否已移动过战线。
@@ -644,6 +648,7 @@ public sealed class CardInstance
     public void InitializeFromDefinition()
     {
         InitializeRuleAttributesFromDefinition();
+        SelectTargetOnPlayedFromHand = Definition.SelectTargetOnPlayedFromHand;
         CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
         CardCustomNames.Assign(this, "customName2", Definition.CustomName2);
     }
@@ -854,6 +859,7 @@ public sealed class CardInstance
         {
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
+            SelectTargetOnPlayedFromHand = SelectTargetOnPlayedFromHand,
             HasEverAttacked = HasEverAttacked,
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
@@ -1035,6 +1041,7 @@ public sealed record CardSnapshot(
     Dictionary<string, string> CustomJson)
 {
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
+    public bool SelectTargetOnPlayedFromHand { get; init; }
     public bool HasEverAttacked { get; init; }
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }

@@ -1308,6 +1308,7 @@ public sealed partial class CardApi
             AttackQuotaOffset = source.AttackQuotaOffset,
             HasBeenAttackedThisTurn = source.HasBeenAttackedThisTurn,
             ChooseOne = source.ChooseOne,
+            SelectTargetOnPlayedFromHand = source.SelectTargetOnPlayedFromHand,
             HasMovedThisTurn = source.HasMovedThisTurn,
             SuppressedOnTurn = source.SuppressedOnTurn,
             HeavyArmorZeroedBySuppress = source.HeavyArmorZeroedBySuppress,

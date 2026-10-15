@@ -1425,10 +1425,10 @@ public sealed class KismetVm
             "hasBeenAttackedThisTurn" => card.HasBeenAttackedThisTurn,
             "isSuppressed" => card.IsSuppressed,
             "gotchaActivated" => card.GotchaActivated,
-            // 「三选一」卡把自己选的分支存在卡的 `ChooseOne` 成员上再回读
-            // （kardsim 注释里点名的例子：card_event_strategic_focus 用
-            //  `Switch(GetMember(self,"ChooseOne"), [(0,IsGroundUnit),(1,IsAirUnit)])`）。
-            "chooseOneIndex" or "ChooseOne" or "chooseOne" => card.ChooseOne,
+            // Native +0x310 is separate from derived Blueprint fields named ChooseOne.
+            // The model's public ChooseOne property retains the native action index.
+            "chooseOneIndex" => card.ChooseOne,
+            "selectTargetOnPlayedFromHand" => card.SelectTargetOnPlayedFromHand,
             "kredits" => card.KreditCost,
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
@@ -1548,7 +1548,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2" or "chooseOneIndex" or "ChooseOne" or "chooseOne")
+                if (name is "customName1" or "customName2" or "chooseOneIndex" or "selectTargetOnPlayedFromHand")
                     return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
@@ -1761,12 +1761,15 @@ public sealed class KismetVm
                     }
                     else if (name == "pinnedTurns") self.PinnedTurns = ToInt(value);
                     else if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
-                    else if (name is "chooseOneIndex" or "ChooseOne" or "chooseOne")
+                    else if (name == "chooseOneIndex")
                     {
                         self.ChooseOne = ToInt(value);
-                        self.BlueprintVariables.Remove("chooseOneIndex");
-                        self.BlueprintVariables.Remove("ChooseOne");
-                        self.BlueprintVariables.Remove("chooseOne");
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "selectTargetOnPlayedFromHand")
+                    {
+                        self.SelectTargetOnPlayedFromHand = Truthy(value);
+                        self.BlueprintVariables.Remove(name);
                     }
                     else if (name == "hasDestruction")
                     {
