@@ -1,0 +1,78 @@
+{
+  "rule": "RULE-133",
+  "status": "exposed selected-option boolean structs to VM; fixed choice/non-choice gate in Interception and Secret Operatives handlers",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\choice-consumers-evidence-20261016.json",
+  "evidence_sha256": "f627b4f3bb0c76f9457c905e9ca54c1d1ffffd2074f0b4955e498d14de3762db",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.live.json": "8f2a693baa53682c0a12cc2ec6586d64195105918b7d6e0df2fdcca6eb1defb0",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "9d1f6155c5a3c625614a056d5897ecffc7683c33ff3fec7e63b0a3dd8f78b64f",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "d19cf6c57422d300c9b75aeb93faf909e4be0508dd756ce807ff7a4eac3af81e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-choice-consumers-20261016.py": "6f09a79537b04b136fd70e55d28110acdec870cb8886fc8f2279abeb705e1795",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-choice-consumers-before-20261016.txt": "d436733289bd592b70a1cb92c114e5819ef69fca245511e076e39e332a6e9518",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-choice-consumers-after-20261016.txt": "a01fc9fd7b8c65c28bfa6f50f26f54688b6d1fa9b7d7ab10ecd54c96bc7f8d47",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_interception.functions.json": "42a1b3545fd2114437393f1e51c103d3547e8eb181ba1c996b3238ef27398089",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Allegiance\\events\\card_event_secret_operatives.functions.json": "01bcf9f508f4d758ca4f1c5961a495fd5bc58c07d086e3bd99c1ba75f0cbf344",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json": "73b7c91507fd7711d5ca3b5348e9de8c5315d28d07409dc42a04f00cc5c5480f",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_History.functions.json": "ebbc5768f4b3bee589c74a5fd4940b15e450d0ce552887d27a90b5132e869e9a",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_PlayerMoves.functions.json": "2b9cf263476388bad08fc9432a16ecd9fee80fd051a746eac50355f0ee856b1b",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.functions.json": "9fa1ddf907757789ac5d7593f93d96bcfbb2f067200813d503ce11e81aadbecd",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.functions.json": "6fe76657678e1f934d8d8775e35ad2c5bda5a13dc2a69fb4e7d64fb532b9e80a",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Homefront\\units\\card_unit_layforce.functions.json": "7b87defdf7fcd18808133ac6a9a0e8a92e00ac45e030cd490dbd5daa93c597f1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Homefront\\units\\card_unit_raf_mustang.functions.json": "e644e065ae5047f55143b06c43832b3cca6ba5416c369e5b6c5bbe3f00fdfbe9",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\France\\specialCards\\card_event_fortified_position_cam1.functions.json": "c4b6bda7a47dcfe6786be7f1bc82ceb839b976eb8f560b2a5ff548d05a55ec8e",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\events\\card_event_air_escort.functions.json": "dc741c1b70738b2faf5b1728b32669d8563f9d2ed33036014e278369a8caf3cb",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\specialCards\\card_event_desert_push_cam1.functions.json": "cb26ea967dbd65535c9e58cb81b81da2d0a8828eba47b99e7cfa9ee7d46aa735",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\units\\card_unit_sm_79.functions.json": "6e60972acc40f4c3808b8ab21c90e804e1d9f1cb86b9b1ff9f15806cf852c20a",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\specialCards\\card_event_naval_bombardment_cam1.functions.json": "991159ea8745327c40f78ed69ee4ff9511f844b5747f3a5a79681e94c69d8487",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_VisualController.functions.json": "e614b43bccfcdcef589c00f4a9e36c90430f5e78a06daf03dc8d8470c42c1620"
+  },
+  "mixed_option_cards": {
+    "card_event_refit_bia": [
+      false,
+      true
+    ],
+    "card_event_planned_attack": [
+      true,
+      false
+    ],
+    "card_event_sortie": [
+      true,
+      false
+    ],
+    "card_event_barrage": [
+      false,
+      true
+    ],
+    "card_event_red_dawn": [
+      true,
+      false
+    ],
+    "card_event_strafing": [
+      true,
+      false
+    ],
+    "card_event_hidden_plans": [
+      false,
+      true
+    ]
+  },
+  "tests": {
+    "formal_release": "499/499",
+    "option_projection_definitions": 52,
+    "countermeasure_matrix": 512,
+    "matrix_detail": "7 mixed cards x 2 options plus 2 non-choice controls = 16 branch inputs; x 2 counters x 2 sides x 4 target kinds x 2 instance flags = 512.",
+    "regression": "Old VM plus new tests: 2/499 failures, including a false-positive Interception on Refit choice 0. Corrected VM: 499/499 pass."
+  },
+  "limits": [
+    "This is a read-only rule-visible projection of the option boolean. FText/cardText and full native struct/array mutation are not exposed or certified.",
+    "Blueprint member writes to chooseOneCards, per-instance option mutations and full native CopyData container behavior remain open.",
+    "Two actual card handlers and their option gates are tested; complete Gotcha processing, receive/action payloads and full semantics of these cards are not certified.",
+    "Full CanPlayCardFromHand/target legality flow, other option consumers, derived CDO initialization, snapshot import and all per-card PvP semantics remain open."
+  ],
+  "fully_semantically_verified_cards": 0
+}

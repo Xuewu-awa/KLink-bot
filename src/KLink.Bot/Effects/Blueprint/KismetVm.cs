@@ -1427,6 +1427,10 @@ public sealed class KismetVm
             "gotchaActivated" => card.GotchaActivated,
             // Native +0x310 is separate from derived Blueprint fields named ChooseOne.
             // The model's public ChooseOne property retains the native action index.
+            // Rule-visible projection of ChooseOneCardStruct: cardText is UI-only
+            // and is not exposed here. Each read returns separate value containers.
+            "chooseOneCards" => card.Definition.ChooseOneSelectTargets.Select(flag => (object?)
+                new Dictionary<string, object?> { ["selectTargetOnPlayedFromHand"] = flag }).ToList(),
             "chooseOneIndex" => card.ChooseOne,
             "selectTargetOnPlayedFromHand" => card.SelectTargetOnPlayedFromHand,
             "kredits" => card.KreditCost,
@@ -1548,7 +1552,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2" or "chooseOneIndex" or "selectTargetOnPlayedFromHand")
+                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand")
                     return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.

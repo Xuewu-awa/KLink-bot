@@ -59,6 +59,8 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("选择选项结构：数组、布尔成员、索引和读取隔离", ChoiceOptionStructRead),
+        new("选择卡反制：Interception/Secret Operatives按选项标志判断，非选择卡保留实例标志", ChoiceCountermeasureOptions),
         new("WhichChooseOne：51张选择卡目标标志、分支输出及无位置/抑制门", WhichChooseOneNativeContract),
         new("原生选择字段：M1 Gun 伤害分支、原生与派生字段独立", NativeChooseOneMember),
         new("曾攻击状态：独立字段、攻击消耗、快照和 VM 读写", EverAttackedState),
@@ -15176,6 +15178,83 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ChoiceOptionStructRead(CardDatabase db)
+    {
+        foreach (var definition in db.All.Where(x => x.ChooseOneOptionCount != 0 || x.Name == PlainUnit))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(definition.Name, Side.Left, 60, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            source.BlueprintVariables["chooseOneCards"] = new List<object?>();
+            KismetStep Set(int i, string name, KismetExpr value) =>
+                new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, name, null)
+                    { DestinationScope = "local" };
+            var program = new KismetProgram(new[] {
+                Set(0, "options", new() { Var = "chooseOneCards", Scope = "instance" }),
+                Set(1, "context", new() { Var = "chooseOneCards", Context = new() { Self = true } }),
+                Set(2, "flag", new() { Var = "selectTargetOnPlayedFromHand", Context = new() {
+                    Math = "Array_Get", Args = new[] { new KismetExpr { Var = "chooseOneCards", Scope = "instance" }, new() { Int = 0 } }
+                } }),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "options", "context", "flag");
+            if (output["options"] is not System.Collections.IList options || output["context"] is not System.Collections.IList other
+                || options.Count != definition.ChooseOneOptionCount || other.Count != options.Count)
+                return $"选择选项数组缺失或被影子变量覆盖：{definition.Name}";
+            for (int i = 0; i < options.Count; i++)
+                if (options[i] is not IDictionary<string, object?> item
+                    || !Equals(item["selectTargetOnPlayedFromHand"], definition.ChooseOneSelectTargets[i]))
+                    return $"选项结构布尔值错误：{definition.Name}/{i}";
+            if (options.Count > 0)
+            {
+                if (!Equals(output["flag"], definition.ChooseOneSelectTargets[0])) return "数组索引后的结构成员读取失败";
+                ((IDictionary<string, object?>)options[0]!)["selectTargetOnPlayedFromHand"] = !definition.ChooseOneSelectTargets[0];
+                if (!Equals(((IDictionary<string, object?>)other[0]!)["selectTargetOnPlayedFromHand"], definition.ChooseOneSelectTargets[0]))
+                    return "一次读取的结构修改污染了另一次读取";
+            }
+        }
+        return null;
+    }
+
+    private static string? ChoiceCountermeasureOptions(CardDatabase db)
+    {
+        var mixed = db.All.Where(x => x.ChooseOneSelectTargets.Distinct().Count() == 2).ToArray();
+        if (mixed.Length != 7) return "混合选项目标标志的卡数变化";
+        var ordinary = new[] {
+            db.All.First(x => x.Type == "order" && x.ChooseOneOptionCount == 0 && x.SelectTargetOnPlayedFromHand),
+            db.All.First(x => x.Type == "order" && x.ChooseOneOptionCount == 0 && !x.SelectTargetOnPlayedFromHand)
+        };
+        foreach (var definition in mixed.Concat(ordinary))
+        foreach (int index in Enumerable.Range(0, Math.Max(1, definition.ChooseOneOptionCount)))
+        foreach (string name in new[] { "card_event_interception", "card_event_secret_operatives" })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int targetKind in Enumerable.Range(0, 4))
+        foreach (bool cardFlag in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side.Opposite();
+            var gotcha = state.CreateWithId(name, side, 60, side.HandOf(), 1);
+            gotcha.GotchaActivated = 1;
+            var played = state.CreateWithId(definition.Name, side.Opposite(), 61, CardLocation.Discard, 0);
+            played.ChooseOne = index;
+            played.SelectTargetOnPlayedFromHand = cardFlag;
+            CardInstance? target = targetKind == 3 ? null : targetKind == 2 ? state.Hq(side)
+                : state.CreateWithId(PlainUnit, targetKind == 0 ? side : side.Opposite(), 62,
+                    (targetKind == 0 ? side : side.Opposite()).HqOf(), 1);
+            played.CurrentTarget = target;
+            int defense = target?.Defense ?? 0;
+            bool targets = definition.ChooseOneOptionCount == 0 ? cardFlag : definition.ChooseOneSelectTargets[index];
+            bool expected = targets && targetKind != 1 && targetKind != 3
+                && (name == "card_event_interception" || targetKind == 0);
+            engine.Api.FireTrigger("OnOtherCardPlayedFromHand", played, played.Owner, eventArgs: new object?[] { played });
+            if ((gotcha.GotchaActivated == 0) != expected
+                || gotcha.Location != (expected ? CardLocation.Discard : side.HandOf())
+                || (target?.Defense ?? 0) != defense + (expected && name == "card_event_secret_operatives" ? 2 : 0))
+                return $"选择卡反制分支错误：{definition.Name}/{index}/{name}/{side}/{targetKind}/{cardFlag}, expected={expected}, activated={gotcha.GotchaActivated}";
         }
         return null;
     }
