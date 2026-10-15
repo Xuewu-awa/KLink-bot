@@ -986,7 +986,9 @@ public sealed class MatchEngine
         // 反证它确实是「抽之前」。
         // ⚠️ 以前这里写的是 `State.Move(...)` **之后**再读 `Hand(side).Count()`，是「抽之后」，
         //    比蓝图多 1（`ZActionDrawCardFromDeck` 的 PreQtyInHand 一直偏大 1）。
-        int preQtyInHand = State.Hand(handSide).Count();
+        // FetchCardsByLocation excludes current autoplay tags and uses physical
+        // location rather than current owner; query only after the T3 callbacks.
+        int preQtyInHand = Api.CountCardsForHandCapacity(handSide.HandOf());
 
         List<ActionValue2> DrawValues(bool full)
         {

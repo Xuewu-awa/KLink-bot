@@ -91,6 +91,8 @@ internal static class SelfTest
         new("指定抽牌：目标不在牌库时不得改抽同名卡", SpecificDrawExactMembership),
         new("指定抽牌：保留来源/公开参数及其余牌库编号，满手保留目标编号", SpecificDrawFieldsAndOrder),
         new("抽牌：按手牌数量赋号，保留已有手牌的空位和重复编号", DrawHandNumberAssignment),
+        new("抽牌容量：三条路径排除autoplay并按物理手牌位置计数", DrawHandCapacityAutoplay),
+        new("抽牌容量：T3回调后再读取标签与手牌成员", DrawHandCapacityAfterDeckEvents),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
@@ -13553,6 +13555,112 @@ internal static class SelfTest
                 return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
         }
         return null;
+    }
+
+    private static string? DrawHandCapacityAutoplay(CardDatabase db)
+    {
+        foreach (Side deckSide in new[] { Side.Left, Side.Right })
+        foreach (int route in Enumerable.Range(0, 3))
+        foreach (int quantity in new[] { 0, 8, 9, 10 })
+        foreach (int excluded in new[] { 0, 1, 2 })
+        foreach (bool oppositeOwner in new[] { false, true })
+        foreach (int drawnTag in Enumerable.Range(0, 4))
+        {
+            if (excluded > quantity) continue;
+            var (engine, state) = EmptyBoard(db);
+            Side recipient = route == 1 ? deckSide.Opposite() : deckSide;
+            for (int i = 0; i < quantity; i++)
+            {
+                var hand = state.CreateWithId(i < excluded && i % 2 == 0 ? "card_event_resistance_new" : PlainUnit,
+                    oppositeOwner ? recipient.Opposite() : recipient, 100 + i, recipient.HandOf(), 5 + i * 3);
+                if (i < excluded && i % 2 != 0) engine.Api.AddCustomGameplayTag(hand, "autoplay");
+            }
+            string name = drawnTag is 1 or 2 ? "card_event_resistance_new" : PlainUnit;
+            var first = state.CreateWithId(route == 2 ? PlainUnit : name, deckSide, 60, deckSide.DeckOf(), 7);
+            var second = state.CreateWithId(route == 2 ? name : PlainUnit, deckSide, 61, deckSide.DeckOf(), 17);
+            var drawn = route == 2 ? second : first;
+            if (drawnTag == 2) drawn.RemovedGameplayTags.Add("autoplay");
+            if (drawnTag == 3) engine.Api.AddCustomGameplayTag(drawn, "autoplay");
+            object? result = route == 2 ? engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", drawn,
+                new object?[] { 30, drawn.CardId, (int)deckSide, false },
+                new EffectContext { Engine = engine, State = state, Controller = recipient.Opposite() }, out _)
+                : engine.DrawCard(deckSide, instigatorId: 30, opponentDraw: route == 1);
+            int expectedCount = quantity - excluded;
+            bool full = expectedCount >= 9;
+            var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+            if (drawn.Location != (full ? CardLocation.Discard : recipient.HandOf())
+                || drawn.LocationNumber != (full ? route == 2 ? 17 : 7 : expectedCount)
+                || drawn.Owner != (full ? deckSide : recipient) || drawn.OriginalOwner != deckSide
+                || !Equals(action?.Values.FirstOrDefault(x => x.Name == "PreQtyInHand")?.Value, expectedCount)
+                || !Equals(action?.Values.FirstOrDefault(x => x.Name == "handIsFull")?.Value, full ? 1 : 0)
+                || !state.GetAutoPlayCards().SequenceEqual(!full && drawnTag is 1 or 3 ? new[] { drawn.CardId } : Array.Empty<int>())
+                || route != 2 && (full ? result is not null : !ReferenceEquals(result, drawn))
+                || state.Random.ConsumedCount != 0)
+                return $"抽牌容量/编号/通知/入队错误：{deckSide}/{route}/{quantity}/{excluded}/{oppositeOwner}/{drawnTag}";
+            for (int i = 0; i < quantity; i++)
+                if (state.ById(100 + i)!.LocationNumber != 5 + i * 3) return "抽牌不得压紧已有手牌编号";
+            if (!state.Deck(deckSide).Select(x => x.CardId).SequenceEqual(new[] { route == 2 ? 60 : 61 }))
+                return "容量分支不得移除其他牌库成员";
+        }
+        return null;
+    }
+
+    private static string? DrawHandCapacityAfterDeckEvents(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer", trigger = "OnAfterDeckChanged", marker = "card_unit_routed_troops";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(trigger)) return "无法安装抽牌容量T3探针";
+        locals[trigger] = new[] {
+            new KismetStep(0, "call", "SpawnCardInHandBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = marker }, new KismetExpr { Int = 30 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side deckSide in new[] { Side.Left, Side.Right })
+            foreach (int route in Enumerable.Range(0, 3))
+            foreach (int quantity in new[] { 8, 9 })
+            foreach (int mutation in Enumerable.Range(0, 5))
+            {
+                var (engine, state) = EmptyBoard(db);
+                Side recipient = route == 1 ? deckSide.Opposite() : deckSide;
+                var watcher = state.CreateWithId(name, deckSide, 20, CardLocation.Discard, 0);
+                watcher.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { trigger } };
+                state.CreateWithId(PlainUnit, deckSide, 30, CardLocation.Discard, 0);
+                for (int i = 0; i < quantity; i++) state.CreateWithId(PlainUnit, recipient, 100 + i, recipient.HandOf(), 5 + i * 3);
+                var changed = state.ById(100)!;
+                if (mutation == 2) engine.Api.AddCustomGameplayTag(changed, "autoplay");
+                var incoming = state.CreateWithId(PlainUnit, recipient.Opposite(), 200, CardLocation.Discard, 33);
+                var drawn = state.CreateWithId(PlainUnit, deckSide, 60, deckSide.DeckOf(), 17);
+                int callbacks = 0; bool correct = true;
+                state.CardCreated += card => {
+                    if (card.Name != marker) return;
+                    callbacks++;
+                    // Keep the marker out of either capacity query. This is a
+                    // controlled T3 callback, not a claimed real card combo.
+                    card.Location = CardLocation.Discard;
+                    correct &= drawn.Location == deckSide.DeckOf() && !state.Deck(deckSide).Any(x => x.CardId == drawn.CardId);
+                    if (mutation == 1) engine.Api.AddCustomGameplayTag(changed, "autoplay");
+                    if (mutation == 2) engine.Api.RemoveCustomGameplayTag(changed, "autoplay");
+                    if (mutation == 3) changed.Location = recipient.Opposite().HandOf();
+                    if (mutation == 4) incoming.Location = recipient.HandOf();
+                };
+                if (route == 2) engine.Api.InvokeByName("DrawSpecificCardFromDeckBySide", drawn,
+                    new object?[] { 30, 60, (int)deckSide, false }, new EffectContext { Engine = engine, State = state, Controller = recipient }, out _);
+                else engine.DrawCard(deckSide, instigatorId: 30, opponentDraw: route == 1);
+                int expected = quantity + (mutation == 4 ? 1 : mutation is 1 or 3 ? -1 : 0);
+                bool full = expected >= 9;
+                var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+                if (!correct || callbacks != 1 || drawn.Location != (full ? CardLocation.Discard : recipient.HandOf())
+                    || drawn.LocationNumber != (full ? 17 : expected)
+                    || !Equals(action?.Values.FirstOrDefault(x => x.Name == "PreQtyInHand")?.Value, expected)
+                    || !Equals(action?.Values.FirstOrDefault(x => x.Name == "handIsFull")?.Value, full ? 1 : 0))
+                    return $"T3后容量查询错误：{deckSide}/{route}/{quantity}/{mutation}/calls={callbacks}";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? DrawHandNumberAssignment(CardDatabase db)

@@ -5215,7 +5215,7 @@ public sealed partial class CardApi
 
     // BP_GameState_Battle.FetchCardsByLocation i=801 checks physical location;
     // i=1067/1135 excludes live autoplay tags from hand arrays and capacity.
-    private int CountCardsForHandCapacity(CardLocation location)
+    internal int CountCardsForHandCapacity(CardLocation location)
         => State.CardsUnordered().Count(card => card.Location == location && !HasInstanceGameplayTag(card, "autoplay"));
 
     /// <summary>
