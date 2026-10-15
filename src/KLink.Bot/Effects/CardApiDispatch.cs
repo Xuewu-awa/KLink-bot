@@ -5496,13 +5496,10 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `getCardsBuffedByThisCard(out Cards)` —— 返回当前来源卡仍挂着其 buff 的目标 ID。
-    ///
-    /// 客户端字段是 <c>cardsBuffedByThisCard: TArray&lt;int&gt;</c>。内核没有单独复制
-    /// 这个原生数组，而是把光环自己的名单写入 <c>buffedCards</c>，并把每个目标的
-    /// 实际增益记在 <see cref="CardInstance.BuffsBySource"/>。两份来源取并集：
-    /// JSON 名单保留蓝图的添加顺序，BuffsBySource 则覆盖 ChangeAttack/ChangeDefense
-    /// 等非光环路径，避免只靠某一条记账链漏掉目标。
+    /// `getCardsBuffedByThisCard(out Cards)` reads native cardsBuffedByThisCard
+    /// (+0x108), independently of the Blueprint JSON buffedCards key.
+    /// The current adapter derives supported entries from BuffsBySource; native
+    /// array order, stale/duplicate entries and complete writer coverage remain open.
     /// </summary>
     private object? GetCardsBuffedByThisCard(EffectContext c, object? receiver, object?[] args)
     {
@@ -5521,11 +5518,6 @@ public sealed partial class CardApi
             {
                 ids.Add(id);
             }
-        }
-
-        foreach (int id in JsonGetIntArray(source, BuffedCardsKey))
-        {
-            Add(id);
         }
 
         foreach (var target in c.State.AllCards)

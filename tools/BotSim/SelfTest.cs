@@ -57,6 +57,7 @@ internal static class SelfTest
         new("回手编号：查询数量落位、全体物理重排、弃牌及重置保留编号", ReturnLocationNumberContract),
         new("回手通知：移动前快照、满手仍公开、重置后按ID重新解析", ReturnNotificationContract),
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
+        new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -7996,8 +7997,8 @@ internal static class SelfTest
 
     /// <summary>
     /// `getCardsBuffedByThisCard` 的蓝图出参是来源卡维护的 int[]。
-    /// 内核同时覆盖直接 ChangeAttack/ChangeDefense 形成的 BuffsBySource 账本，
-    /// 因此这里用两个不同目标、一个无关来源验证并集口径。
+    /// 这里验证直接 ChangeAttack/ChangeDefense 的两个目标和一个无关来源；
+    /// 原生独立数组的完整顺序及生命周期另行审计。
     /// </summary>
     private static string? CardsBuffedByThisCardReturnsIds(CardDatabase db)
     {
@@ -15168,6 +15169,38 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? BuffTargetQueryJsonIndependence(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { CardLocation.NotAvailable, side.DeckOf(), side.HandOf(), side.HqOf(), CardLocation.BoardFrontline, CardLocation.Discard })
+        foreach (int mode in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 2);
+            var other = state.CreateWithId(PlainUnit, side.Opposite(), 63, side.Opposite().HandOf(), 0);
+            engine.Api.JsonSetIntArray(source, "buffedCards", new[] { 9999, 62, 62, 0, -7 });
+            string originalJson = source.CustomJson["buffedCards"];
+            if (mode is 1 or 3 or 4) engine.Api.ChangeAttack(target, 2, source);
+            if (mode == 2) engine.Api.ChangeDefense(other, 1, source);
+            if (mode == 4) target.BuffsBySource[(source.CardId, true)] = new CardBuff { SourceCardId = source.CardId, Temporary = true, Defense = 1 };
+            target.Location = location;
+            if (mode is 3 or 4) engine.Api.ResetCardInBattle(target);
+            if (mode == 5) source.CustomJson["buffedCards"] = "not-an-integer-array";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            List<int>? Query() => engine.Api.InvokeByName("getCardsBuffedByThisCard", source, new object?[] { null }, ctx, out _) as List<int>;
+            var expected = mode == 1 ? new[] { 62 } : mode == 2 ? new[] { 63 } : Array.Empty<int>();
+            var result = Query();
+            if (result == null || !result.SequenceEqual(expected)
+                || source.CustomJson["buffedCards"] != (mode == 5 ? "not-an-integer-array" : originalJson))
+                return $"增益查询混入JSON目标：{side}/{location}/mode={mode}: {string.Join(",", result ?? new())}";
+            // A returned array is a value copy; mutating it cannot alter later queries.
+            result.Add(7777);
+            if (Query() is not { } again || !again.SequenceEqual(expected)) return "增益目标查询数组未独立复制";
         }
         return null;
     }
