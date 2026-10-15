@@ -4107,6 +4107,19 @@ public sealed partial class CardApi
         => ability is null ? card.ReceivedAbilitiesFromCards.Count > 0
             : card.ReceivedAbilitiesFromCards.TryGetValue(ability, out var sources) && sources.Count > 0;
 
+    // Native attack predicates first query customName1, then the exact source-map key.
+    public bool HasCantAttack(CardInstance card)
+        => HasAttackRestriction(card, "cantAttack");
+
+    public bool HasCantAttackType(CardInstance card, string cardType)
+        => HasAttackRestriction(card, "cantAttack:" + cardType);
+
+    public bool HasCantBeAttackedBy(CardInstance card, string unitType)
+        => HasAttackRestriction(card, "cantBeAttackedBy:" + unitType);
+
+    private bool HasAttackRestriction(CardInstance card, string attribute)
+        => CustomNameHasAttribute(card, "customName1", attribute) || HasCustomAbility(card, attribute);
+
     public bool HasCustomAbilityFromCard(CardInstance card, string ability, int giverId)
         => card.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers) && givers.Contains(giverId);
 

@@ -1849,6 +1849,9 @@ public sealed partial class CardApi
             // 整数槽保持 null ⇒ 恒 0。对"这张卡是战斗机吗 / 它攻击力多少"这种问题，
             // 恒假/恒 0 是**错的**（`IsFighter` 15 点、`getAndDecryptAttack` 33 点）。
             ["IsFighter"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Definition.Type == "fighter",
+            ["HasCantAttack"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantAttack(x),
+            ["HasCantAttackType"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantAttackType(x, StrArg(a, 0)),
+            ["HasCantBeAttackedBy"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasCantBeAttackedBy(x, StrArg(a, 0)),
             ["IsPinned"] = (c, r, a) => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pinned),
             ["HasBond"] = (c, r, a) => SelfArg(c, r, a) is { } x && HasBond(x),
             // `GetIsGoldCard` is the native `isGoldCard` getter.  Its 24 IR call

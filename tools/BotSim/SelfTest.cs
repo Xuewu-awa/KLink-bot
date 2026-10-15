@@ -170,6 +170,9 @@ internal static class SelfTest
         new("静态名称：重置仅恢复Name1并保留当前Name2", StaticCustomNameReset),
         new("名称成员：VM读写与API/持久化共享状态", NativeCustomNameMemberVm),
         new("名称成员：五张真实单位离场清空Name2", NativeCustomNameRealLeave),
+        new("原生攻击限制：名称和来源表双读及派发输出", NativeAttackRestrictionPredicates),
+        new("攻击限制：具体类型/类别与豁免分支、枚举和结算一致", NativeAttackRestrictionMatrix),
+        new("攻击限制：真实卡牌静态名称拒绝HQ攻击", NativeAttackRestrictionStaticCards),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10126,6 +10129,117 @@ internal static class SelfTest
                 return "主动亡语通知应按权威字段顺序包含目标ID";
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static string? NativeAttackRestrictionPredicates(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string function in new[] { "HasCantAttack", "HasCantAttackType", "HasCantBeAttackedBy" })
+        foreach (int mode in Enumerable.Range(0, 12))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            var receiver = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 2);
+            receiver.CustomJson.Clear(); receiver.ReceivedAbilitiesFromCards.Clear();
+            string key = function == "HasCantAttack" ? "cantAttack"
+                : function == "HasCantAttackType" ? "cantAttack:infantry" : "cantBeAttackedBy:infantry";
+            if (mode == 1 || mode == 9) engine.Api.JsonSetString(receiver, "customName1", key);
+            if (mode == 2) engine.Api.JsonSetString(receiver, "customName1", key.ToUpperInvariant());
+            if (mode == 3) engine.Api.JsonSetString(receiver, "customName1", "prefix;" + key + ";suffix");
+            if (mode == 4) engine.Api.JsonSetString(receiver, "customName1", "prefix," + key);
+            if (mode is 5 or 6 or 10) receiver.ReceivedAbilitiesFromCards[key] = mode == 6 ? new List<int>() : new List<int> { 0, -7, 9999 };
+            if (mode == 7) receiver.ReceivedAbilitiesFromCards[key.ToUpperInvariant()] = new List<int> { 9999 };
+            if (mode == 8) engine.Api.JsonSetString(receiver, "customName2", key);
+            if (mode == 9) receiver.Keywords.Add(Keyword.Suppressed);
+            if (mode == 11) engine.Api.JsonSetString(receiver, "customName1", key + "Extra");
+            bool expected = mode is 1 or 2 or 3 or 5 or 9 or 10;
+            string before = System.Text.Json.JsonSerializer.Serialize(receiver.Snapshot());
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var args = function == "HasCantAttack" ? new object?[] { null } : new object?[] { "infantry", null };
+            object? actual = engine.Api.InvokeByName(function, receiver, args, ctx, out bool handled);
+            var exprs = function == "HasCantAttack" ? new[] { new KismetExpr { Var = "result" } }
+                : new[] { new KismetExpr { Str = "infantry" }, new KismetExpr { Var = "result" } };
+            var steps = new KismetStep[] {
+                new KismetStep(0, "call", function, exprs, new[] { exprs.Length - 1 }, null, null, -1, null, null)
+                    { Receiver = new KismetExpr { Var = "receiver" } },
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["receiver"] = receiver }, "result");
+            if (!handled || !Equals(actual, expected) || !Equals(output.GetValueOrDefault("result"), expected)
+                || before != System.Text.Json.JsonSerializer.Serialize(receiver.Snapshot()) || state.ActionLog.Count != 0)
+                return $"原生攻击查询不符：{side}/{function}/mode={mode} 期望{expected} 实际{actual}";
+        }
+        return null;
+    }
+
+    private static string? NativeAttackRestrictionMatrix(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string attackerType in new[] { "infantry", "tank", "artillery", "fighter", "bomber" })
+        foreach (string defenderType in new[] { "infantry", "tank", "artillery", "fighter", "bomber", "location" })
+        foreach (bool nameSource in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 14))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var attacker = MakeActionQuotaProbe(state, side, attackerType);
+            var defender = defenderType == "location" ? state.Hq(side.Opposite())
+                : state.CreateWithId(PlainUnit, side.Opposite(), 61, side.Opposite().HqOf(), 1);
+            if (defenderType != "location")
+                defender.Definition = new CardDefinition { Name = PlainUnit, Type = defenderType, Attack = 0, Defense = 100 };
+            defender.Attack = 0; defender.Defense = defender.MaxDefense = 100;
+            attacker.CustomJson.Clear(); attacker.ReceivedAbilitiesFromCards.Clear();
+            defender.CustomJson.Clear(); defender.ReceivedAbilitiesFromCards.Clear(); defender.Keywords.Clear();
+            string defenderGroup = defenderType is "fighter" or "bomber" ? "air" : defenderType == "location" ? "location" : "ground";
+            string attackerGroup = attackerType is "fighter" or "bomber" ? "air" : "ground";
+            void Restrict(CardInstance target, string key)
+            {
+                if (nameSource) engine.Api.JsonSetString(target, "customName1", "other;" + key);
+                else target.ReceivedAbilitiesFromCards[key] = new List<int> { 9999 };
+            }
+            if (mode == 1) Restrict(attacker, "cantAttack");
+            if (mode is 2 or 3 or 6 or 10 or 11 or 13) Restrict(attacker, "cantAttack:" + defenderType);
+            if (mode is 4 or 5) Restrict(attacker, "cantAttack:" + defenderGroup);
+            if (mode is 3 or 11) attacker.ReceivedAbilitiesFromCards["ignoreCantAttack_" + defenderType] = new List<int> { 9999 };
+            if (mode is 5 or 10) attacker.ReceivedAbilitiesFromCards["ignoreCantAttack_" + defenderGroup] = new List<int> { 9999 };
+            if (mode == 6) attacker.ReceivedAbilitiesFromCards["ignoreCantAttack_" + defenderType] = new List<int>();
+            if (mode == 7) Restrict(defender, "cantBeAttackedBy:" + attackerType);
+            if (mode == 8) Restrict(defender, "cantBeAttackedBy:" + attackerGroup);
+            if (mode == 9) defender.ReceivedAbilitiesFromCards["cantBeAttackedBy:" + attackerType] = new List<int>();
+            if (mode == 11) Restrict(attacker, "cantAttack:" + defenderGroup);
+            if (mode == 12) engine.Api.JsonSetString(defender, "customName2", "cantBeAttackedBy:" + attackerType);
+            if (mode == 13) engine.Api.JsonSetString(attacker, "customName1", "cantAttack:" + defenderType + ";ignoreCantAttack_" + defenderType);
+            bool blocked = mode is 1 or 2 or 4 or 6 or 7 or 8 or 13
+                || mode is 5 or 10 or 11 && defenderType != "location";
+            string expectedReason = mode == 1 ? "unit_cant_attack" : mode is 7 or 8 ? "unit_cant_be_attack_by_unit" : "cant_be_attacked_by_unit";
+            bool listed = engine.LegalTargets(attacker).Contains(defender);
+            int actionsBefore = state.ActionLog.Count, credits = state.Kredits(side);
+            bool attacked = engine.Attack(attacker, defender, out string reason);
+            if (listed != !blocked || attacked != !blocked)
+                return $"攻击限制枚举/结算：{side}/{attackerType}->{defenderType} name={nameSource} mode={mode} 应拒{blocked} 枚举{listed} 实际{attacked} reason={reason}";
+            if (blocked && (reason != expectedReason || state.Kredits(side) != credits || attacker.AttacksThisTurn != 0
+                || defender.Defense != 100 || state.ActionLog.Count != actionsBefore))
+                return "攻击限制拒绝后的原因或副作用错误：" + mode;
+        }
+        return null;
+    }
+
+    private static string? NativeAttackRestrictionStaticCards(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "card_unit_28cm_coasttal_howitzer", "card_unit_75mm_mountain_gun", "card_unit_ki_84_frank", "card_unit_aichi_b7a2", "card_unit_armored_train" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var attacker = state.CreateWithId(name, side, 60, CardLocation.BoardFrontline, 0);
+            state.ActiveSide = side; state.SetKredits(side, 20); attacker.EnteredPlayOnTurn = -99;
+            var hq = state.Hq(side.Opposite()); int defense = hq.Defense;
+            bool listed = engine.LegalTargets(attacker).Contains(hq);
+            if (engine.Attack(attacker, hq, out string reason) || listed || hq.Defense != defense
+                || reason != (name == "card_unit_armored_train" ? "unit_cant_attack" : "cant_be_attacked_by_unit")
+                || attacker.AttacksThisTurn != 0 || state.Kredits(side) != 20)
+                return "真实静态名称攻击限制未执行：" + name + "/" + reason;
         }
         return null;
     }

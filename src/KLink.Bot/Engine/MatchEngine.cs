@@ -2717,56 +2717,45 @@ public sealed class MatchEngine
     ///
     /// `cantAttack` 是攻击者自己的无条件限制；`cantAttack:&lt;type&gt;` 是
     /// 按目标类型限制（例如 `cantAttack:location` = 不能攻击 HQ），而
-    /// `cantBeAttackedBy:&lt;type&gt;` 是目标卡自己的防护标记。类型名来自
-    /// Blueprint 的 `HasCantAttackType` / `HasCantBeAttackedBy` 实参：
-    /// `location`、`air`、`ground`。
+    /// `cantBeAttackedBy:&lt;type&gt;` 是目标卡自己的防护标记。原生谓词同时
+    /// 查询名称与能力来源；Blueprint先检查具体类型（如location、infantry），
+    /// 再独立检查air/ground类别。
     /// </summary>
     private bool CanAttackByCardRestrictions(CardInstance attacker, CardInstance defender,
                                              out string reason)
     {
         reason = "";
-
-        if (Api.HasCustomAbility(attacker, "cantAttack"))
+        if (Api.HasCantAttack(attacker))
         {
             reason = "unit_cant_attack";
             return false;
         }
 
-        string? defenderType = AttackRestrictionType(defender);
-        if (defenderType is not null
-            && Api.HasCustomAbility(attacker, $"cantAttack:{defenderType}")
-            && !Api.HasCustomAbility(attacker, $"ignoreCantAttack_{defenderType}"))
+        // CanAttack checks the concrete enum label first. Only this check has
+        // an ignoreCantAttack_<type> exception; air/ground are separate gates.
+        string defenderType = defender.Definition.Type ?? "NotAvailable";
+        if (Api.HasCantAttackType(attacker, defenderType)
+                && !Api.HasCustomAbility(attacker, "ignoreCantAttack_" + defenderType)
+            || Api.IsAirUnit(defender) && Api.HasCantAttackType(attacker, "air")
+            || IsGroundAttackRestrictionUnit(defender) && Api.HasCantAttackType(attacker, "ground"))
         {
             reason = "cant_be_attacked_by_unit";
             return false;
         }
 
-        string? attackerType = AttackRestrictionType(attacker);
-        if (attackerType is not null
-            && CardApi.CustomNameHasAttribute(defender, "customName1",
-                $"cantBeAttackedBy:{attackerType}"))
+        string attackerType = attacker.Definition.Type ?? "NotAvailable";
+        if (Api.HasCantBeAttackedBy(defender, attackerType)
+            || Api.IsAirUnit(attacker) && Api.HasCantBeAttackedBy(defender, "air")
+            || IsGroundAttackRestrictionUnit(attacker) && Api.HasCantBeAttackedBy(defender, "ground"))
         {
             reason = "unit_cant_be_attack_by_unit";
             return false;
         }
-
         return true;
     }
 
-    private static string? AttackRestrictionType(CardInstance card)
-    {
-        if (card.IsHq)
-        {
-            return "location";
-        }
-
-        return card.Definition.Type switch
-        {
-            "fighter" or "bomber" => "air",
-            "infantry" or "tank" or "artillery" => "ground",
-            _ => null,
-        };
-    }
+    private static bool IsGroundAttackRestrictionUnit(CardInstance card)
+        => card.Definition.Type is "infantry" or "tank" or "artillery";
 
     /// <summary>
     /// 攻击路径的**目标合法性门**（规则库 `cardsCheckFunctions.CanSelectAsTarget`，
