@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("需目标指令可用性：空候选拒绝、实时标志及拒绝无副作用", TargetedOrderAvailability),
         new("选择选项结构：数组、布尔成员、索引和读取隔离", ChoiceOptionStructRead),
         new("选择卡反制：Interception/Secret Operatives按选项标志判断，非选择卡保留实例标志", ChoiceCountermeasureOptions),
         new("WhichChooseOne：51张选择卡目标标志、分支输出及无位置/抑制门", WhichChooseOneNativeContract),
@@ -15178,6 +15179,60 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? TargetedOrderAvailability(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool requiresTarget in new[] { false, true })
+        foreach (int kind in Enumerable.Range(0, 8))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side; state.SetKredits(side, 20);
+            var order = state.CreateWithId("card_event_air_corps_ferrying", side, 60, side.HandOf(), 1);
+            order.SelectTargetOnPlayedFromHand = requiresTarget;
+            // Friendly unit required; cover wrong side/location and unavailable Covert.
+            CardInstance? unit = null;
+            if (kind != 0)
+            {
+                Side owner = kind == 2 ? side.Opposite() : side;
+                var location = kind == 3 ? owner.HandOf() : kind == 4 ? CardLocation.Discard : owner.HqOf();
+                unit = state.CreateWithId(PlainUnit, owner, 61, location, 1);
+                if (kind == 5) { unit.Keywords.Add(Keyword.Covert); unit.IsRevealed = false; }
+                if (kind == 6) { unit.Keywords.Add(Keyword.Covert); unit.IsRevealed = true; }
+                if (kind == 7) unit.Location = CardLocation.NotAvailable;
+            }
+            bool available = kind is 1 or 6;
+            bool expected = !requiresTarget || available;
+            var oldLocation = order.Location; int kredits = state.Kredits(side);
+            bool actual = engine.CanPlay(order, out string reason);
+            if (actual != expected)
+                return $"指令目标可用性错误：{side}/{requiresTarget}/{kind}, actual={actual}, expected={expected}, reason={reason}";
+            if (!expected)
+            {
+                if (reason != "no_legal_play_target" || engine.PlayCard(order))
+                    return "没有合法目标的指令未在执行入口拒绝";
+                if (state.Kredits(side) != kredits || order.Location != oldLocation || order.CurrentTarget is not null)
+                    return "无目标拒绝产生扣费、移动或目标副作用";
+            }
+            if (unit is not null && kind == 1)
+            {
+                order.SelectTargetOnPlayedFromHand = true;
+                if (!engine.CanPlay(order, out _, unit)) return "存在合法指定目标却被拒绝";
+            }
+        }
+        // A full support line must not block an order; this gate is not for deployment.
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = Side.Left;state.SetKredits(Side.Left, 20);
+            for (int i = 0; i < 4; i++) state.CreateWithId(PlainUnit, Side.Left, 70 + i, CardLocation.BoardHqLeft, i + 1);
+            var order = state.CreateWithId("card_event_air_corps_ferrying", Side.Left, 60, CardLocation.HandLeft, 1);
+            if (!engine.CanPlay(order, out _)) return "友方满员错误阻止有目标的指令";
+            var plain = state.CreateWithId(PlainUnit, Side.Right, 80, CardLocation.HandRight, 0);
+            plain.SelectTargetOnPlayedFromHand = true;
+            state.ActiveSide = Side.Right;state.SetKredits(Side.Right, 20);
+            if (!engine.CanPlay(plain, out _)) return "指令目标可用性门错误用于普通部署单位";
         }
         return null;
     }

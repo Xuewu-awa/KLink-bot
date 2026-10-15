@@ -1303,6 +1303,16 @@ public sealed class MatchEngine
             return false;
         }
 
+        // BP_Logic.CanPlayCardFromHand i=1400: an order without a target
+        // requirement skips enumeration; otherwise i=1482..2618 must find a
+        // candidate passing its own and common target checks.
+        if (card.Definition.IsOrder && card.SelectTargetOnPlayedFromHand
+            && LegalPlayTargets(card).Count == 0)
+        {
+            reason = "no_legal_play_target";
+            return false;
+        }
+
         return true;
     }
 

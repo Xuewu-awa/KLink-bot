@@ -1,0 +1,35 @@
+{
+  "rule": "RULE-134",
+  "status": "reject target-required orders when the existing legal candidate query is empty",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\targeted-order-availability-evidence-20261016.json",
+  "evidence_sha256": "19ff810e49ed458e0cdc4a2f3530fd3b37038ffefd1610c8d9e79ed7f75dd37c",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\events\\card_event_air_corps_ferrying.functions.json": "23d3fac681037dae6cf4f5dbe736bd89e477009ba65f832730a322687f15aeb1",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "acf1eb273eb8f5d571f567b6705f95bc0cd7b8727248f668132be9cbbb4f1322",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "c98ce9641c547883903e8c94d238c31e1312f2b607ab7041d866fa0f7ab5c72e",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "1a6e8ae9bab1e9774d2ec23a8426e606623f083f6a9c1090afbc31e877eace2c",
+    "D:\\Codex Workshop\\kards-install-review\\audit-targeted-order-availability-20261016.py": "0e6b09b417b3da214d5cadfdeee3ef14f48297b9d74b53de0c5b41c659f4a90a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-order-availability-before-20261016.txt": "3d6a1ae544b7d524b323b7de3c1d621104592f34456f1ce86e1e29cf073fd4b6",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-order-availability-after-20261016.txt": "dd5a1bdc3d5b8bee90b3b04d6cc858e10c7278fae6240db5d173d6f29dcaa71b"
+  },
+  "tests": {
+    "release": "500/500",
+    "availability_matrix": 32,
+    "additional_checks": [
+      "full friendly support line still permits an order with a legal target",
+      "plain unit deployment is not blocked by the order-only gate"
+    ],
+    "matrix": "2 sides x 2 current flags x 8 target situations; rejected calls preserve credits, order location and currentTarget.",
+    "regression": "Original availability gate with new test: 1/500 fails on empty board; corrected gate: 500/500 pass."
+  },
+  "limits": [
+    "Candidate availability uses the existing LegalPlayTargets implementation; its global order, current array-index rereads, IsAlive prefilter and full native target semantics are not certified by this fix.",
+    "CanPlayFromHand targetedCard output validity, targetOverride writes/clearing, explicit selected-target execution validation and complete gate ordering remain open.",
+    "Normal action choice-input propagation, units own CanPlayFromHand branch, non-order cases and all per-card PvP semantics are not closed by this phase."
+  ],
+  "fully_semantically_verified_cards": 0
+}
