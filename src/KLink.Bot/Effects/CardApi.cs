@@ -245,6 +245,29 @@ public sealed partial class CardApi
         }
     }
 
+    // UpdateFrontlineIfNeeded queries T27 once. i=870 reads current ownership
+    // anew for every callback; earlier callbacks may change it through reentry.
+    internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner)
+    {
+        const string trigger = "OnFrontlineOwnershipChange";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        int instigatorId = instigator?.CardId ?? 0;
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            Side currentOwner = State.FrontlineOwner;
+            var args = new object?[] { instigatorId, (int)oldOwner, (int)currentOwner };
+            var named = new Dictionary<string, object?> {
+                ["instigator"] = instigatorId, ["instigatorID"] = instigatorId,
+                ["oldSide"] = (int)oldOwner, ["newSide"] = (int)currentOwner,
+            };
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={instigator?.Name ?? "null"}#{instigatorId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, instigator, eventArgs: args, namedArgs: named);
+        }
+    }
+
     // T47 and T49 both invoke a saved registered snapshot and exclude only
     // the subject ID. T49 alone checks stopFurtherActions before each item.
     internal void ExecuteMovementObservers(string trigger, CardInstance moved,

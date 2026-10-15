@@ -2143,17 +2143,15 @@ public sealed class MatchEngine
     /// 前线空 → <see cref="Side.NotAvailable"/>；非空 → **第一张牌的 side**。
     ///
     /// ⚠️ 蓝图用的是 `GetAllCardInBattle()` 的**数组顺序**第一张，
-    /// 不是 `locationNumber` 最小的那张。实战里前线只可能有一方的卡
-    /// （互斥规则保证），所以两者等价；这里取数组顺序以保持逐字一致。
+    /// 不是 `locationNumber` 最小的那张，也不先按阵营分组。
+    /// 重入中间状态仍必须按物理数组读取，不能依赖前线互斥假设。
     /// </summary>
     private void UpdateFrontlineOwner()
     {
-        var frontline = State.Cards(Side.Left, CardLocation.BoardFrontline)
-            .Concat(State.Cards(Side.Right, CardLocation.BoardFrontline))
-            .Where(c => !c.IsHq)
-            .ToList();
-
-        State.FrontlineOwner = frontline.Count == 0 ? Side.NotAvailable : frontline[0].Owner;
+        // FetchCardsByLocation returns the first physical battle-array match,
+        // without owner grouping, slot sorting or an HQ exclusion.
+        State.FrontlineOwner = State.AllCardsInBattleOrder
+            .FirstOrDefault(c => c.Location == CardLocation.BoardFrontline)?.Owner ?? Side.NotAvailable;
     }
 
     /// <summary>
@@ -2170,7 +2168,7 @@ public sealed class MatchEngine
     /// si=262  EnumCompareSide(old, FirstCard.side)
     /// si=352      相等 ⇒ 直接返回（**归属没变就不发事件**）
     /// si=...  GameStateRef.UpdateFrontlineOwnerSide(新归属)
-    /// si=811  FetchAllCardsWithEventTrigger(27) → OnFrontlineOwnershipChange(instigator, old, new)
+    /// si=601  FetchAllCardsWithEventTrigger(27)；si=870 每项重读当前归属后派发
     /// </code>
     /// ⇒ 「算 → 变了才发」是蓝图原样，不是本内核的取舍。
     ///
@@ -2193,22 +2191,7 @@ public sealed class MatchEngine
             return;
         }
 
-        // `UpdateFrontlineIfNeeded` uses FetchAllCardsWithEventTrigger(27) and
-        // invokes the same `OnFrontlineOwnershipChange` program on every
-        // subscriber.  This is a global event, despite its name lacking the
-        // usual `OnOther` prefix.  Keep the mover as the event payload while
-        // letting FireTrigger iterate every live card, including hand cards.
-        var named = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["instigator"] = subject?.CardId ?? 0,
-            ["instigatorID"] = subject?.CardId ?? 0,
-            ["oldSide"] = (int)oldOwner,
-            ["newSide"] = (int)State.FrontlineOwner,
-        };
-        Api.FireTrigger("OnFrontlineOwnershipChange", subject: null, controller: subject?.Owner ?? State.ActiveSide,
-            eventArgs: new object?[] { subject?.CardId ?? 0, (int)oldOwner, (int)State.FrontlineOwner },
-            eventSubject: subject,
-            namedArgs: named);
+        Api.ExecuteFrontlineOwnershipChange(subject, oldOwner);
     }
 
     // ==================== 离场触发点 ====================

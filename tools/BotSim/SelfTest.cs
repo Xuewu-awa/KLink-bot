@@ -123,6 +123,8 @@ internal static class SelfTest
         new("移动事件：T47/T49查询快照、无位置门及停止条件", MovementObserverSnapshots),
         new("移动事件：NotAvailable主体仍收到自身回调", MovementUnavailableOwnHook),
         new("真实弃牌重入：G4M1尝试直接入场后取消外层弃牌", BettyDiscardDirectEntry),
+        new("前线归属：按物理战斗数组首个对象判定，不按阵营/槽位/HQ过滤", FrontlinePhysicalFirst),
+        new("前线归属：T27快照保留资格，每次回调读取当前归属", FrontlineObserverSnapshot),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8803,6 +8805,103 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? FrontlinePhysicalFirst(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool hq in new[] { false, true })
+        foreach (bool unchanged in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = hq ? state.Hq(side)
+                : state.CreateWithId("card_unit_432_infantry_regiment", side, 90, CardLocation.BoardFrontline, 9);
+            first.Location = CardLocation.BoardFrontline; first.LocationNumber = 9;
+            var second = state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 20, CardLocation.BoardFrontline, 0);
+            state.FrontlineOwner = unchanged ? side : side.Opposite();
+            state.CardMoved?.Invoke(second, second.Owner.HqOf(), CardLocation.BoardFrontline, false, CardMoveReason.PlayCardForce);
+            if (state.FrontlineOwner != side)
+                return $"前线首对象应按物理数组：{side} HQ={hq} 未变化={unchanged} 实际={state.FrontlineOwner}";
+        }
+        return null;
+    }
+
+    private static string? FrontlineObserverSnapshot(CardDatabase db)
+    {
+        const string trigger = "OnFrontlineOwnershipChange";
+        var installed = new List<IDictionary<string, IReadOnlyList<KismetStep>>>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Remove(trigger);
+                return "无法安全安装前线归属探针";
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "instigator", Scope = "local" }, null, -1, "_auditFrontlineSource", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "oldSide", Scope = "local" }, null, -1, "_auditFrontlineOld", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "newSide", Scope = "local" }, null, -1, "_auditFrontlineNew", null) { DestinationScope = "instance" },
+                new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add(locals);
+        }
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 11))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60,
+                    mode >= 9 ? side.HandOf() : CardLocation.BoardFrontline, 0);
+                var first = state.CreateWithId("card_event_honorifics", side, 20, side.HqOf(), 1);
+                var last = state.CreateWithId("card_unit_51e_regiment", side, 21,
+                    mode == 2 ? CardLocation.NotAvailable : side.HqOf(), 2);
+                var cards = new[] { first, last, subject };
+                foreach (var card in cards) card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+                Side old = mode == 9 ? side : mode == 10 ? Side.NotAvailable : mode == 8 ? side : side.Opposite();
+                state.FrontlineOwner = old;
+                if (mode == 1) state.StopFurtherActions = true;
+                if (mode is 4 or 5) first.Keywords.Add(Keyword.Suppressed);
+                if (mode == 5) first.SuppressionExceptionTriggers.Add(trigger);
+                var called = new List<int>(); var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = cards.Single(x => !called.Contains(x.CardId)
+                        && x.BlueprintVariables.ContainsKey("_auditFrontlineNew"));
+                    called.Add(current.CardId);
+                    if (current == first)
+                    {
+                        if (mode == 3) { last.Keywords.Add(Keyword.Suppressed); last.Location = CardLocation.NotAvailable; }
+                        if (mode == 6) { state.FrontlineOwner = side.Opposite(); state.StopFurtherActions = true; }
+                        if (mode == 7) state.FrontlineOwner = Side.NotAvailable;
+                    }
+                };
+                state.CardMoved?.Invoke(subject, side.HqOf(), CardLocation.BoardFrontline, false, CardMoveReason.PlayCardForce);
+                int[] expected = mode is 8 or 10 ? Array.Empty<int>() : mode == 4 ? new[] { 21, 60 } : new[] { 20, 21, 60 };
+                if (!called.SequenceEqual(expected))
+                    return $"T27快照资格错误：{side} mode={mode} 实际{string.Join(",", called)}";
+                foreach (int id in called)
+                {
+                    var card = cards.Single(x => x.CardId == id);
+                    Side expectedNew = mode == 9 || mode == 7 && id != 20 ? Side.NotAvailable
+                        : mode == 6 && id != 20 ? side.Opposite() : side;
+                    if (Convert.ToInt32(card.BlueprintVariables["_auditFrontlineSource"]) != 60
+                        || Convert.ToInt32(card.BlueprintVariables["_auditFrontlineOld"]) != (int)old
+                        || Convert.ToInt32(card.BlueprintVariables["_auditFrontlineNew"]) != (int)expectedNew)
+                        return $"T27应固定oldSide但逐项读取newSide：{side} mode={mode} 接收者{id}";
+                }
+            }
+            return null;
+        }
+        finally { foreach (var item in installed) item.Remove(trigger); }
     }
 
     // Temporary registered definitions and programs probe the dispatcher only;
