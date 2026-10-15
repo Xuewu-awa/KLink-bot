@@ -196,14 +196,7 @@ public sealed class MatchEngine
         if (manageLocation && oldLocation == CardLocation.BoardFrontline
             && newLocation is CardLocation.BoardHqLeft or CardLocation.BoardHqRight)
         {
-            Api.FireTrigger("OnMoveFromFrontline", card, card.Owner,
-                "OnOtherCardMoveFromFrontline",
-                eventArgs: new object?[] { card },
-                eventSubject: card,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardMoved"] = card,
-                });
+            ExecuteOnCardMoveFromFrontline(card);
         }
 
         // ---- 前线归属重算（P0，2026-10-01 实测 replay-214436）----
@@ -273,16 +266,27 @@ public sealed class MatchEngine
         if (!card.IsSuppressed)
         {
             Api.FireTrigger("OnCardLocationMoved", card, card.Owner,
-                eventArgs: args, eventSubject: card, namedArgs: named,
-                oldLocation: oldLocation, newLocation: newLocation);
+                eventArgs: new object?[] { (int)oldLocation, (int)newLocation, changeOwner, reasonName },
+                eventSubject: card, namedArgs: named,
+                oldLocation: oldLocation, newLocation: newLocation,
+                recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
         }
 
-        // The Blueprint's observer loop follows the subject hook.  A
-        // suppressed card skips only its own hook but still reaches observers.
-        Api.FireTrigger("OnOtherCardLocationMoved", card, card.Owner,
-            eventArgs: args, eventSubject: card, namedArgs: named,
-            oldLocation: oldLocation, newLocation: newLocation,
-            broadcastName: true);
+        // Native i=125 queries T47 after the own hook; its direct loop has
+        // no physical-zone filter, repeated suppression check or stop flag.
+        Api.ExecuteMovementObservers("OnOtherCardLocationMoved", card, args, named,
+            oldLocation: oldLocation, newLocation: newLocation);
+    }
+
+    /// <summary>Native T49: own hook, query observers, stop check before each saved item.</summary>
+    public void ExecuteOnCardMoveFromFrontline(CardInstance card)
+    {
+        if (!card.IsSuppressed)
+            Api.FireTrigger("OnMoveFromFrontline", card, card.Owner,
+                eventArgs: Array.Empty<object?>(), recipientSnapshot: new[] { card },
+                includeUnavailableRecipients: true);
+        Api.ExecuteMovementObservers("OnOtherCardMoveFromFrontline", card, new object?[] { card },
+            new Dictionary<string, object?> { ["cardMoved"] = card }, stopFurtherActions: true);
     }
 
     /// <summary>ExecuteOnEnterPlayEvents: unsuppressed self first, then T43 observers.</summary>

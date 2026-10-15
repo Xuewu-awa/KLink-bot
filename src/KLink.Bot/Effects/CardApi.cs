@@ -245,6 +245,25 @@ public sealed partial class CardApi
         }
     }
 
+    // T47 and T49 both invoke a saved registered snapshot and exclude only
+    // the subject ID. T49 alone checks stopFurtherActions before each item.
+    internal void ExecuteMovementObservers(string trigger, CardInstance moved,
+        IReadOnlyList<object?> args, IReadOnlyDictionary<string, object?> named,
+        bool stopFurtherActions = false, CardLocation? oldLocation = null, CardLocation? newLocation = null)
+    {
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        foreach (var observer in recipients)
+        {
+            if (stopFurtherActions && State.StopFurtherActions) break;
+            if (observer.CardId == moved.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={moved.Name}#{moved.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, moved, eventArgs: args, namedArgs: named,
+                oldLocation: oldLocation, newLocation: newLocation);
+        }
+    }
+
     // SetRightLeftMostWhenPlayed runs before the card leaves its own hand.
     internal void SetHandEdgesWhenPlayed(CardInstance card)
     {

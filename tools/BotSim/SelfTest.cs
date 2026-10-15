@@ -120,6 +120,9 @@ internal static class SelfTest
         new("直接出牌成功：不执行普通打牌链，重置字段并记录独立通知", DirectNonGotchaEntryBoundary),
         new("直接出牌成功：字段重置先于入场，T43后查询，山地最后结算", DirectEntryFieldOrder),
         new("直接出牌成功：入场前保存手牌两端标记并清理旧标记", DirectEntryHandEdges),
+        new("移动事件：T47/T49查询快照、无位置门及停止条件", MovementObserverSnapshots),
+        new("移动事件：NotAvailable主体仍收到自身回调", MovementUnavailableOwnHook),
+        new("真实弃牌重入：G4M1尝试直接入场后取消外层弃牌", BettyDiscardDirectEntry),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8800,6 +8803,121 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    // Temporary registered definitions and programs probe the dispatcher only;
+    // these are not assertions about the named live cards' actual abilities.
+    private static IDisposable InstallMovementObserverProbes()
+    {
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        foreach (string trigger in new[] { "OnCardLocationMoved", "OnOtherCardLocationMoved", "OnMoveFromFrontline", "OnOtherCardMoveFromFrontline" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Locals.Remove(item.Trigger);
+                throw new InvalidOperationException("无法安全安装移动事件探针：" + name + " " + trigger);
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Bool = true }, null, -1, "_auditMovementCalled", null) { DestinationScope = "instance" },
+                new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add((locals, trigger));
+        }
+        return new AuditProbeCleanup(() => { foreach (var item in installed) item.Locals.Remove(item.Trigger); });
+    }
+
+    private static string? MovementObserverSnapshots(CardDatabase db)
+    {
+        using var probes = InstallMovementObserverProbes();
+        foreach (bool retreat in new[] { false, true })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 11))
+        {
+            var (engine, state) = EmptyBoard(db);
+            string trigger = retreat ? "OnOtherCardMoveFromFrontline" : "OnOtherCardLocationMoved";
+            var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId("card_event_honorifics", side, 20, side.HqOf(), 2);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, mode == 9 ? CardLocation.NotAvailable : side.HqOf(), 3);
+            var cards = new[] { subject, first, last };
+            foreach (var card in cards) card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+            if (mode == 1) state.StopFurtherActions = true;
+            if (mode == 5) subject.Keywords.Add(Keyword.Suppressed);
+            if (mode is 6 or 7) first.Keywords.Add(Keyword.Suppressed);
+            if (mode == 6) first.SuppressionExceptionTriggers.Add(trigger);
+            var called = new List<int>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => !called.Contains(x.CardId)
+                    && Equals(x.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true));
+                called.Add(current.CardId);
+                if (current == subject)
+                {
+                    if (mode == 2) state.StopFurtherActions = true;
+                    if (mode == 4) first.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 10) subject.Location = CardLocation.NotAvailable;
+                }
+                if (current == first)
+                {
+                    if (mode == 3) state.StopFurtherActions = true;
+                    if (mode == 8) { last.Keywords.Add(Keyword.Suppressed); last.Location = CardLocation.NotAvailable; }
+                }
+            };
+            if (retreat) engine.ExecuteOnCardMoveFromFrontline(subject);
+            else engine.ExecuteOnCardLocationMoved(subject, CardLocation.BoardFrontline, side.HqOf(), true, CardMoveReason.ControlRelease);
+            var expected = mode == 5 ? new List<int>() : new List<int> { 60 };
+            if (!(retreat && mode is 1 or 2))
+            {
+                if (mode is not (4 or 7)) expected.Add(20);
+                if (!(retreat && mode == 3)) expected.Add(21);
+            }
+            if (!called.SequenceEqual(expected))
+                return $"移动快照错误：T{(retreat ? 49 : 47)} {side} mode={mode} 期望{string.Join(",", expected)} 实际{string.Join(",", called)}";
+        }
+        return null;
+    }
+
+    private static string? MovementUnavailableOwnHook(CardDatabase db)
+    {
+        using var probes = InstallMovementObserverProbes();
+        foreach (bool retreat in new[] { false, true })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, CardLocation.NotAvailable, 0);
+            if (retreat) engine.ExecuteOnCardMoveFromFrontline(subject);
+            else engine.ExecuteOnCardLocationMoved(subject, CardLocation.BoardFrontline, CardLocation.NotAvailable);
+            if (!Equals(subject.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true))
+                return "原生移动自身回调没有额外NotAvailable门";
+        }
+        return null;
+    }
+
+    private static string? BettyDiscardDirectEntry(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool full in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            if (full) for (int i = 1; i < GameState.HalfBoardCapacity; i++)
+                state.CreateWithId("card_unit_432_infantry_regiment", side, 100 + i, side.HqOf(), i);
+            var card = state.CreateWithId("card_unit_g4m1_betty", side, 60, side.HandOf(), 0);
+            var other = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.HandOf(), 1);
+            var context = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var result = engine.Api.InvokeByName("DiscardCardFromHand", card,
+                new object?[] { 60, 9004, false, false, null }, context, out _);
+            if (result is not false || card.Location != (full ? CardLocation.Discard : side.HqOf())
+                || other.Location != side.HandOf() || state.CardsPlayedThisTurn.Count != 0
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionDiscardCard") != (full ? 1 : 0))
+                return $"G4M1尝试弃牌重入错误：{side} 满员{full}";
+        }
+        return null;
     }
 
     private static string? DirectNonGotchaEntryBoundary(CardDatabase db)
