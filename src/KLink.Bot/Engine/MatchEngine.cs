@@ -2288,26 +2288,7 @@ public sealed class MatchEngine
     /// The observer loop separately rejects suppressed recipients at i=381.
     /// </summary>
     private void FireOperationKreditsSpent(CardInstance operated, int cost)
-    {
-        if (!operated.IsSuppressed)
-        {
-            Api.FireTrigger("OnOperationKreditsSpent", operated, operated.Owner,
-                eventArgs: new object?[] { cost }, eventSubject: operated,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["kreditsSpent"] = cost,
-                });
-        }
-
-        Api.FireTrigger("OnOtherCardOperationKreditsSpent", operated, operated.Owner,
-            eventArgs: new object?[] { operated, cost }, eventSubject: operated,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardOperated"] = operated,
-                ["kreditsSpent"] = cost,
-            }, broadcastName: true, allowSuppressionExceptions: false,
-            includeUnavailableRecipients: true);
-    }
+        => Api.ExecuteOnOperationKreditsSpent(operated, cost);
 
     // ==================== 攻击 ====================
 

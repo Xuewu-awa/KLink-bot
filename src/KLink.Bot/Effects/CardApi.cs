@@ -245,6 +245,30 @@ public sealed partial class CardApi
         }
     }
 
+    // T68 differs from the direct snapshot loops: query allows suppression
+    // exceptions, but i=381 independently checks CURRENT suppression again.
+    public void ExecuteOnOperationKreditsSpent(CardInstance operated, int cost)
+    {
+        if (!operated.IsSuppressed)
+            FireTrigger("OnOperationKreditsSpent", operated, operated.Owner,
+                eventArgs: new object?[] { cost }, eventSubject: operated,
+                namedArgs: new Dictionary<string, object?> { ["kreditsSpent"] = cost },
+                recipientSnapshot: new[] { operated }, includeUnavailableRecipients: true);
+        const string trigger = "OnOtherCardOperationKreditsSpent";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { operated, cost };
+        var named = new Dictionary<string, object?> { ["cardOperated"] = operated, ["kreditsSpent"] = cost };
+        foreach (var observer in recipients)
+        {
+            if (ReferenceEquals(observer, operated) || observer.IsSuppressed
+                || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={operated.Name}#{operated.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, operated, eventArgs: args, namedArgs: named);
+        }
+    }
+
     // ExecuteOnMoveToFrontlineCardEffects: active Gotchas first, then own
     // hook and T50. A shared done set prevents duplicate Gotcha callbacks.
     public void ExecuteOnMoveToFrontlineCardEffects(CardInstance moved, bool forceMove, int moveCost)

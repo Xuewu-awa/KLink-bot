@@ -128,6 +128,8 @@ internal static class SelfTest
         new("推进前线事件：反制优先/去重、隐蔽及T50查询与停止边界", FrontlineEntryStages),
         new("强制推进：消费额度后执行T50和零费行动事件，VM输出false", ForceAdvanceQuotaAndZeroCost),
         new("强制推进：物理容量、数量槽位、同区注入与移动通知", ForceAdvancePlacement),
+        new("行动费事件：T68查询例外与执行时抑制复查分别生效", OperationSpendQueryAndExecution),
+        new("强制推进：T50移出可用位置后仍执行零费自身事件", ForceAdvanceUnavailableOperation),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8808,6 +8810,123 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static IDisposable InstallOperationSpendProbes()
+    {
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment", "card_unit_t_34_85" })
+        foreach (string trigger in new[] { "OnOperationKreditsSpent", "OnOtherCardOperationKreditsSpent" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Locals.Remove(item.Trigger);
+                throw new InvalidOperationException("无法安全安装T68探针");
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "kreditsSpent", Scope = "local" }, null, -1, "_auditT68Cost", null) { DestinationScope = "instance" },
+                new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add((locals, trigger));
+        }
+        return new AuditProbeCleanup(() => { foreach (var item in installed) item.Locals.Remove(item.Trigger); });
+    }
+
+    private static string? OperationSpendQueryAndExecution(CardDatabase db)
+    {
+        using var probe = InstallOperationSpendProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int cost in new[] { 0, 3 })
+        foreach (int mode in Enumerable.Range(0, 18))
+        {
+            const string trigger = "OnOtherCardOperationKreditsSpent";
+            var (engine, state) = EmptyBoard(db);
+            var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60,
+                mode == 2 ? CardLocation.NotAvailable : side.HqOf(), 1);
+            var first = state.CreateWithId("card_event_honorifics", side, 20,
+                mode == 3 ? CardLocation.NotAvailable : side.HqOf(), 2);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, side.HqOf(), 3);
+            var cards = new[] { subject, first, last };
+            foreach (var card in cards) card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+            if (mode == 1) subject.Keywords.Add(Keyword.Suppressed);
+            if (mode is 4 or 5 or 6) last.Keywords.Add(Keyword.Suppressed);
+            if (mode is 5 or 6) last.SuppressionExceptionTriggers.Add(trigger);
+            if (mode is 10 or 16 or 17) first.Keywords.Add(Keyword.Suppressed);
+            if (mode == 17) first.SuppressionExceptionTriggers.Add(trigger);
+            if (mode == 14) state.StopFurtherActions = true;
+            var called = new List<int>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => !called.Contains(x.CardId) && x.BlueprintVariables.ContainsKey("_auditT68Cost"));
+                called.Add(current.CardId);
+                if (current == subject)
+                {
+                    if (mode == 9) first.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 10) first.Keywords.Remove(Keyword.Suppressed);
+                    if (mode == 11) last.Definition = new CardDefinition { Name = last.Name };
+                    if (mode == 15) subject.Location = CardLocation.NotAvailable;
+                }
+                if (current == first)
+                {
+                    if (mode is 4 or 5) last.Keywords.Remove(Keyword.Suppressed);
+                    if (mode == 7) last.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 8) last.Location = CardLocation.NotAvailable;
+                    if (mode == 12) last.Definition = new CardDefinition { Name = last.Name };
+                    if (mode == 13) state.StopFurtherActions = true;
+                }
+            };
+            engine.Api.ExecuteOnOperationKreditsSpent(subject, cost);
+            int[] expected = mode == 1 ? new[] { 20, 21 }
+                : mode is 4 or 6 or 7 or 11 ? new[] { 60, 20 }
+                : mode is 9 or 16 or 17 ? new[] { 60, 21 } : new[] { 60, 20, 21 };
+            if (!called.SequenceEqual(expected))
+                return $"T68查询/执行门错误：{side} 费用{cost} mode={mode} 期望{string.Join(",", expected)} 实际{string.Join(",", called)}";
+            foreach (int id in called)
+                if (cards.Single(x => x.CardId == id).BlueprintVariables.GetValueOrDefault("_auditT68Cost") is not int value || value != cost)
+                    return "T68必须保留费用整数，包括0";
+            if (mode is 13 or 14 && !state.StopFurtherActions) return "T68不得重置停止标志";
+        }
+        return null;
+    }
+
+    private static string? ForceAdvanceUnavailableOperation(CardDatabase db)
+    {
+        using var probe = InstallOperationSpendProbes();
+        const string name = "card_unit_t_34_85", trigger = "OnMoveToFrontline";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装移出可用位置探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var unit = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                int moveCalls = 0, spendCalls = 0; var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    if (!unit.BlueprintVariables.ContainsKey("_auditT68Cost")) { moveCalls++; unit.Location = CardLocation.NotAvailable; }
+                    else if (unit.BlueprintVariables["_auditT68Cost"] is int value && value == 0) spendCalls++;
+                };
+                if (!engine.MoveUnitFromSupportToFrontLine(unit, 9004, out _)
+                    || unit.Location != CardLocation.NotAvailable || moveCalls != 1 || spendCalls != 1)
+                    return "推进事件移出可用位置后，原生仍继续零费自身行动事件";
+            }
+            return null;
+        }
+        finally { locals.Remove(trigger); }
     }
 
     private static string? ForceAdvanceQuotaAndZeroCost(CardDatabase db)
