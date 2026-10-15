@@ -1355,13 +1355,11 @@ public sealed partial class CardApi
     /// `CustomName{1,2}HasAttribute(标记)` 的**静态读法**（引擎内部用，不走派发表）。
     ///
     /// 存储键与派发表里的 <c>SuffixAdd</c>/<c>SuffixHas</c> 完全一致
-    /// （<c>customName1</c> / <c>customName2</c>，值是用逗号分隔的标记串）——
+    /// （<c>customName1</c> / <c>customName2</c>，值是用分号分隔的标记串）——
     /// 两处**必须**共用同一个读法，否则「谁写了、谁没看见」这种漂移没人能查。
     /// </summary>
     public static bool CustomNameHasAttribute(CardInstance card, string set, string attribute)
-        => card.CustomJson.TryGetValue(set, out string? v)
-           && v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-               .Contains(attribute, StringComparer.Ordinal);
+        => CardCustomNames.Has(card, set, attribute);
 
     /// <summary>诊断用：非 null 时记录每一次实际派发（`事件名 → 卡名#ID`）。</summary>
     public List<string>? TriggerTrace { get; set; }
@@ -4300,17 +4298,12 @@ public sealed partial class CardApi
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
-        string NativeCustomName(string key)
-        {
-            string value = JsonGetString(card, key);
-            return value.Length == 0 ? "None" : value;
-        }
         // AddSubActionPersistCustomFields replaces every quote after JSON encoding.
         _engine.FireSubAction("ZActionPersistCustomFields", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Str("customName1", NativeCustomName("customName1")),
-            ActionValue2.Str("customName2", NativeCustomName("customName2")),
+            ActionValue2.Str("customName1", CardCustomNames.Text(card, "customName1")),
+            ActionValue2.Str("customName2", CardCustomNames.Text(card, "customName2")),
             ActionValue2.Str("customJson", json.Replace("\"", "\\\"", StringComparison.Ordinal)),
         });
     }

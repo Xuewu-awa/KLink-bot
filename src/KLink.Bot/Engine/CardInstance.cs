@@ -331,8 +331,7 @@ public sealed class CardInstance
            || HasOperationMarker("CanMoveAndAttackInTheSameTurn");
 
     private bool HasOperationMarker(string marker)
-        => CustomJson.TryGetValue("customName1", out string? value)
-           && value.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(marker, StringComparer.Ordinal);
+        => CardCustomNames.Has(this, "customName1", marker);
 
     /// <summary>
     /// 被**抑制**（客户端中文译名；英文关键字 = `Suppress`，字段 = 卡对象上的

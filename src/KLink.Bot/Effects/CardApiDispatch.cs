@@ -1925,7 +1925,7 @@ public sealed partial class CardApi
             // 例：`card_event_sea_embargo` / `card_unit_commando` 一族用它记
             //     「这张牌被改造成了什么」。
             // 本内核用 `CardInstance.CustomJson` 存（和客户端的私有 JSON 同一层），
-            // 键 `customName1` / `customName2`，值用逗号分隔 —— 与参考实现一致。
+            // 键 `customName1` / `customName2`；原生名称使用分号分隔，允许重复。
             ["CustomName1Add"] = (c, r, a) => { SuffixAdd(c, r, a, "customName1"); return null; },
             ["CustomName1HasAttribute"] = (c, r, a) => SuffixHas(c, r, a, "customName1"),
             ["CustomName1Remove"] = (c, r, a) => { SuffixRemove(c, r, a, "customName1"); return null; },
@@ -5350,86 +5350,24 @@ public sealed partial class CardApi
         return new object?[] { true, (int)oldLocation, oldLocationNumber };
     }
 
-    // ---- 自定义名后缀（`CustomName1*` / `CustomName2*`）--------------------
-    //
-    // 语义出处：参考实现 `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:2160-2182`
-    // （`SuffixAdd` / `SuffixRemove`）与 `:1088/:1307/:1498-1500/:1639`（各条原语）。
-    // 存储：`CardInstance.CustomJson`（和客户端的卡私有 JSON 同一层），
-    // 值是用逗号分隔的标记串。**幂等**（重复 Add 同一个标记不重复追加）——
-    // 参考实现就是这么写的，而且客户端里 `CustomName1Add` 会被反复触发。
-    //
-    // 为什么值得补：`CardApi.cs:631` 早就记了一条「没做 `StopDestructionEffect` 那一半：
-    // 它是 `CustomName1` 属性（si=3539 `CustomName1Add("StopDestructionEffect")`），
-    // 而 `CustomName1*` 三件套内核里没有」。这一段就是来关掉那条 TODO 的。
-
-    /// <summary>`CustomName{1,2}Add(标记)`：往这张卡的后缀串里加一个标记（幂等）。</summary>
+    // Native BaseCardObject methods take an attribute string, not a target ID.
+    // Semicolon separation, duplicate appends and ASCII-insensitive comparisons
+    // are verified in the installed executable (RULE-097).
     private void SuffixAdd(EffectContext c, object? r, object?[] a, string key)
     {
-        var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a);
-        string tag = StrArg(a, 0);
-        if (card is null || tag.Length == 0)
-        {
-            return;
-        }
-
-        var parts = JsonGetString(card, key)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-        if (parts.Contains(tag, StringComparer.Ordinal))
-        {
-            return;
-        }
-
-        parts.Add(tag);
-        JsonSetString(card, key, string.Join(",", parts));
+        if (SelfArg(c, r, a) is { } card) CardCustomNames.Add(card, key, StrArg(a, 0));
     }
 
-    /// <summary>`CustomName{1,2}Remove(标记)`：从后缀串里删掉一个标记。</summary>
     private void SuffixRemove(EffectContext c, object? r, object?[] a, string key)
     {
-        var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a);
-        string tag = StrArg(a, 0);
-        if (card is null || tag.Length == 0)
-        {
-            return;
-        }
-
-        var kept = JsonGetString(card, key)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Where(x => !string.Equals(x, tag, StringComparison.Ordinal));
-        JsonSetString(card, key, string.Join(",", kept));
+        if (SelfArg(c, r, a) is { } card) CardCustomNames.Remove(card, key, StrArg(a, 0));
     }
 
-    /// <summary>
-    /// `CustomName{1,2}HasAttribute(标记, out doesIt)` —— 后缀串里有没有这个标记。
-    /// 形状：`recv` = 被查的卡（8 个 `CustomName1` 调用点里有 2 个 recv 是 null ⇒
-    /// 走 <see cref="SelfArg"/> 的 `c.Self` 兜底），`a[0]` = 标记串，`a[1]` = out。
-    /// </summary>
     private object? SuffixHas(EffectContext c, object? r, object?[] a, string key)
-    {
-        var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a);
-        string tag = StrArg(a, 0);
-        if (card is null || tag.Length == 0)
-        {
-            return false;
-        }
+        => SelfArg(c, r, a) is { } card && CardCustomNames.Has(card, key, StrArg(a, 0));
 
-        // 与引擎内部（`CardApi.ShouldTriggerDestructionEffect` 读 StopDestructionEffect）
-        // 共用同一个读法 —— 写方与读方分开实现过一次就会漂，这里不再留第二份。
-        return CustomNameHasAttribute(card, key, tag);
-    }
-
-    /// <summary>`GetCustomName2Attributes(out 属性数组)` —— 参考实现 `EngineHost.cs:1639`。</summary>
     private object? SuffixList(EffectContext c, object? r, object?[] a, string key)
-    {
-        var card = AsCardOrId(c, a.ElementAtOrDefault(0)) ?? SelfArg(c, r, a);
-        if (card is null)
-        {
-            return new List<string>();
-        }
-
-        return JsonGetString(card, key)
-            .Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-    }
+        => SelfArg(c, r, a) is { } card ? CardCustomNames.List(card, key) : new List<string>();
 
     // ==================== 光环（aura）的实现 ====================
     //

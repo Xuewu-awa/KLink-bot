@@ -164,6 +164,8 @@ internal static class SelfTest
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
+        new("原生名称：分号、重复、大小写、空值及整串移除", NativeCustomNameOperations),
+        new("原生名称：接收者绑定、行动例外和亡语标记共享读法", NativeCustomNameRuleConsumers),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10120,6 +10122,109 @@ internal static class SelfTest
                 return "主动亡语通知应按权威字段顺序包含目标ID";
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static string? NativeCustomNameOperations(CardDatabase db)
+    {
+        var cases = new (string Before, string Operation, string Argument, string After)[]
+        {
+            ("", "Add", "alpha", "alpha"),
+            ("None", "Add", "alpha", "alpha"),
+            ("nOnE", "Add", "alpha", "alpha"),
+            ("alpha", "Add", "alpha", "alpha;alpha"),
+            ("alpha", "Add", "ALPHA", "alpha;ALPHA"),
+            ("alpha", "Add", "", "alpha;"),
+            ("alpha", "Add", "beta;gamma", "alpha;beta;gamma"),
+            ("alpha", "Add", "beta,gamma", "alpha;beta,gamma"),
+            ("", "Add", "None", ""),
+            ("alpha;ALPHA;beta", "Remove", "aLpHa", "beta"),
+            ("alpha;beta", "Remove", "ALPHA;BETA", ""),
+            ("alpha;;beta;", "Remove", "missing", "alpha;beta"),
+            ("alpha;;beta;", "Remove", "", "alpha;beta"),
+            ("alpha;alpha", "Remove", "alpha", ""),
+            ("Alpha,beta;gamma", "Remove", "alpha", "Alpha,beta;gamma"),
+            ("None", "Remove", "missing", ""),
+            ("É;é;A;a", "Remove", "É", "é;A;a"),
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int member in new[] { 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            string key = "customName" + member, prefix = "CustomName" + member;
+            foreach (var test in cases)
+            {
+                engine.Api.JsonSetString(card, key, test.Before);
+                engine.Api.InvokeByName(prefix + test.Operation, card, new object?[] { test.Argument }, ctx, out bool handled);
+                string stored = engine.Api.JsonGetString(card, key);
+                if (!handled || stored != test.After)
+                    return $"名称操作错误：{side}/{member} [{test.Before}] {test.Operation} [{test.Argument}] => [{stored}] 应为[{test.After}]";
+            }
+            var queries = new (string Value, string Query, bool Expected)[]
+            {
+                ("", "None", true), ("None", "none", true), ("", "", false),
+                ("alpha;beta", "ALPHA", true), ("alpha;beta", "alpha;beta", false),
+                ("alpha,beta", "alpha", false), ("alpha,beta", "ALPHA,BETA", true),
+                (";alpha;;beta;", "", false), (";alpha;;beta;", "beta", true),
+                ("alpha;alpha", "alp", false), ("É", "é", false), ("É", "É", true),
+            };
+            foreach (var test in queries)
+            {
+                engine.Api.JsonSetString(card, key, test.Value);
+                object? actual = engine.Api.InvokeByName(prefix + "HasAttribute", card, new object?[] { test.Query, null }, ctx, out bool handled);
+                if (!handled || actual is not bool result || result != test.Expected
+                    || CardApi.CustomNameHasAttribute(card, key, test.Query) != test.Expected)
+                    return $"名称查询错误：{side}/{member} [{test.Value}] 查询[{test.Query}]";
+            }
+            if (member == 2)
+            {
+                foreach (var test in new (string Value, string[] Expected)[]
+                {
+                    ("", Array.Empty<string>()), ("None", Array.Empty<string>()),
+                    ("nOnE", Array.Empty<string>()), (";a;;A;b;", new[] { "a", "A", "b" }),
+                    ("a,b;a,b", new[] { "a,b", "a,b" }),
+                })
+                {
+                    engine.Api.JsonSetString(card, key, test.Value);
+                    var actual = engine.Api.InvokeByName("GetCustomName2Attributes", card, new object?[] { null }, ctx, out _);
+                    if (actual is not IEnumerable<string> items || !items.SequenceEqual(test.Expected))
+                        return $"名称列表不能去重、使用逗号或输出None：[{test.Value}]";
+                }
+            }
+        }
+        return null;
+    }
+
+    private static string? NativeCustomNameRuleConsumers(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            var other = state.CreateWithId("card_unit_hayabusa", side, 61, side.HqOf(), 2);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = other, Controller = side };
+            engine.Api.InvokeByName("CustomName1Add", card, new object?[] { "61" }, ctx, out _);
+            if (!CardApi.CustomNameHasAttribute(card, "customName1", "61")
+                || CardApi.CustomNameHasAttribute(other, "customName1", "61")) return "属性字符串不能被当作目标ID";
+            engine.Api.JsonSetString(card, "customName1", "unrelated;canmoveandattackinthesameturn;extra");
+            if (!card.CanMoveAndAttackInSameTurn) return "原生行动例外必须读取分号属性并忽略ASCII大小写";
+            engine.Api.JsonSetString(card, "customName1", "unrelated;ISARMORUNIT");
+            if (!card.CanMoveAndAttackInSameTurn) return "装甲标记必须共享原生名称查询";
+            engine.Api.JsonSetString(card, "customName1", "unrelated,isArmorUnit");
+            if (card.CanMoveAndAttackInSameTurn) return "逗号不是原生属性分隔符";
+            engine.Api.JsonSetString(other, "customName1", "unrelated;stopdestructioneffect;extra");
+            if (engine.Api.ShouldTriggerDestructionEffect(other)) return "亡语停止标记必须读取分号属性并忽略ASCII大小写";
+            engine.Api.InvokeByName("CustomName1Remove", other, new object?[] { "STOPDESTRUCTIONEFFECT" }, ctx, out _);
+            if (!engine.Api.ShouldTriggerDestructionEffect(other)) return "忽略大小写移除后应恢复原始亡语";
+            engine.Api.InvokeByName("CustomName1Add", other, new object?[] { "again" }, ctx, out _);
+            engine.Api.InvokeByName("CustomName1Add", other, new object?[] { "again" }, ctx, out _);
+            engine.Api.PersistCustomFields(other);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            if (action.Values.Single(x => x.Name == "customName1").Text != "unrelated;extra;again;again")
+                return "持久化必须保留原生名称顺序、分号和重复";
         }
         return null;
     }
@@ -20283,8 +20388,7 @@ internal static class SelfTest
     /// <summary>
     /// `CustomName1*` / `CustomName2*` 三件套（合计 267 个调用点）。
     ///
-    /// 语义出处：参考实现 `EngineHost.cs:2160-2182`（`SuffixAdd`/`SuffixRemove`，幂等、
-    /// 逗号分隔）+ `:1088/:1307/:1639`。
+    /// 语义出处：已安装客户端原生实现（RULE-097），分号分隔并保留重复添加。
     /// 这条同时关掉 `CardApi.cs:631` 里那条 TODO
     /// （「`StopDestructionEffect` 是 `CustomName1` 属性，而 `CustomName1*` 三件套内核里没有」）。
     /// </summary>
@@ -20337,12 +20441,12 @@ internal static class SelfTest
                 return $"{prefix}HasAttribute(\"played\") 不该为真（后缀串被当成子串匹配了？）";
             }
 
-            // 幂等：再加一次不该重复
+            // 原生重复添加会追加，移除则一次移除全部同名项。
             engine.Api.InvokeByName(prefix + "Add", card, new object?[] { "StopDestructionEffect" }, ctx, out _);
             string stored = card.CustomJson.GetValueOrDefault(key, "");
-            if (stored != "StopDestructionEffect")
+            if (stored != "StopDestructionEffect;StopDestructionEffect")
             {
-                return $"{prefix}Add 必须**幂等**（重复加同一个标记不重复追加），实际存的是 \"{stored}\"";
+                return $"{prefix}Add 应保留重复标记并使用分号分隔，实际存的是 \"{stored}\"";
             }
 
             // Remove
