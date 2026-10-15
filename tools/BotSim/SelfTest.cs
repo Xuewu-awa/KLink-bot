@@ -135,6 +135,10 @@ internal static class SelfTest
         new("奋战给予：无来源分支按攻击次数/现有额度决定是否加1", FuryGrantQuota),
         new("奋战移除：非正来源按攻击次数清零或Min截断，保持实际次数", FuryRemoveQuota),
         new("奋战边界：牌库通知、无效目标、隐蔽、负来源及抑制摘除", FuryQuotaBoundaries),
+        new("奋战来源给予：去重、原始标志、先前有效能力和额度矩阵", FurySourceGrant),
+        new("奋战来源撤销：保留固有/其他来源，最后来源才截断额度", FurySourceRemove),
+        new("奋战混合来源：零/负来源、增益记账与原始成员读取", FurySourceMixed),
+        new("奋战来源边界：无效目标、位置、隐蔽、抑制与重置", FurySourceBoundaries),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -7137,16 +7141,20 @@ internal static class SelfTest
             eventSubject: kyushu);
         kyushu.Defense = Math.Max(0, kyushu.MaxDefense - 1);
         int kyushuAttack = kyushu.Attack;
-        if (!kyushu.Keywords.Contains(Keyword.Fury) || kyushuAttack <= kyushu.Definition.Attack)
+        if (!kyushu.HasFury || kyushuAttack <= kyushu.Definition.Attack)
         {
             return $"Kyushu 入场 buff 未建立：期望基础攻击 {kyushu.Definition.Attack} 以上且带 Fury，"
-                 + $"实际={kyushuAttack}/{kyushu.Keywords.Contains(Keyword.Fury)}";
+                 + $"实际={kyushuAttack}/{kyushu.HasFury}";
         }
+        if (kyushu.Keywords.Contains(Keyword.Fury)
+            || !kyushu.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 310 })
+            || kyushu.BuffsBySource[(310, false)].Fury != 1)
+            return "Kyushu应由自身来源给予Fury，不应改写原始标志";
         FireSelfDamageEvent(kyushuEngine, kyushu, kyushu);
-        if (kyushu.Attack != kyushuAttack - 2 || kyushu.Keywords.Contains(Keyword.Fury))
+        if (kyushu.Attack != kyushuAttack - 2 || kyushu.HasFury)
         {
             return $"Kyushu 自定义伤害事件未执行：期望攻击/Fury={kyushuAttack - 2}/false，"
-                 + $"实际={kyushu.Attack}/{kyushu.Keywords.Contains(Keyword.Fury)}";
+                 + $"实际={kyushu.Attack}/{kyushu.HasFury}";
         }
 
         // SU-100: a damaged source dealing damage runs SelfCustomEventOnCardDealDamage
@@ -8643,15 +8651,19 @@ internal static class SelfTest
             var hudson = state.CreateWithId("card_unit_hudson", Side.Left, 20,
                 mode == 3 ? CardLocation.NotAvailable : CardLocation.BoardHqLeft, 1);
             var victim = state.CreateWithId("card_unit_432_infantry_regiment", Side.Right, 60, CardLocation.BoardHqRight, 1);
-            if (hudson.Keywords.Contains(Keyword.Fury)) return "Hudson 初始不应已有 Fury";
+            if (hudson.HasFury) return "Hudson 初始不应已有 Fury";
             if (mode is 1 or 2) hudson.Keywords.Add(Keyword.Suppressed);
             if (mode == 2) hudson.SuppressionExceptionTriggers.Add("OnOtherCardDestroyed");
             var trace = new List<string>();
             engine.Api.TriggerTrace = trace;
             engine.Destroy(victim, hudson);
             bool expected = mode != 1;
-            if (mode != 3 && hudson.Keywords.Contains(Keyword.Fury) != expected)
+            if (mode != 3 && hudson.HasFury != expected)
                 return $"Hudson 模式 {mode} 的 Fury 应为 {expected}，T39 查询抑制/位置门不符";
+            if (mode != 3 && expected && (hudson.Keywords.Contains(Keyword.Fury)
+                || !hudson.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 20 })
+                || hudson.BuffsBySource[(20, false)].Fury != 1))
+                return "Hudson击杀Fury应记录自身来源而非原始标志";
             bool received = trace.Any(x => x.StartsWith("OnOtherCardDestroyed → card_unit_hudson#20（", StringComparison.Ordinal));
             if (received != expected) return "T39 接收轨迹与查询结果不符";
         }
@@ -8911,6 +8923,196 @@ internal static class SelfTest
                 int expected = sample.Item1 != 0 ? 0 : Math.Min(sample.Item2, 1);
                 if (!card.IsSuppressed || card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != expected
                     || card.AttacksThisTurn != sample.Item1) return "抑制摘除Fury必须应用同样额度契约";
+            }
+        }
+        return null;
+    }
+
+    private static string? FurySourceGrant(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { 0, 1, 2, 3 })
+        foreach (int left in new[] { -1, 0, 1, 3 })
+        foreach (bool intrinsic in new[] { false, true })
+        foreach (int prior in new[] { 0, 71, 72 })
+        foreach (int giver in new[] { 71, -7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            if (intrinsic) card.Keywords.Add(Keyword.Fury);
+            if (prior != 0)
+            {
+                card.ReceivedAbilitiesFromCards["fury"] = new List<int> { prior };
+                card.BuffsBySource[(prior, false)] = new CardBuff { SourceCardId = prior, Fury = 1 };
+            }
+            card.AttacksThisTurn = count; card.SetRemainingAttacks(left);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("GiveFury", card, new object?[] { 60, giver }, ctx, out _);
+            bool duplicate = prior == giver;
+            bool had = intrinsic || prior != 0;
+            int expected = left + (!duplicate && !had && count < 2 && (count == 1 || left > 0) ? 1 : 0);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGiveFury").ToArray();
+            if (!card.HasFury || card.Keywords.Contains(Keyword.Fury) != intrinsic
+                || card.RemainingAttacks != expected || card.AttacksThisTurn != count
+                || !card.ReceivedAbilitiesFromCards["fury"].SequenceEqual(prior == 0 ? new[] { giver }
+                    : duplicate ? new[] { prior } : new[] { prior, giver })
+                || card.BuffsBySource[(giver, false)].Fury != 1
+                || actions.Length != (duplicate ? 0 : 1)
+                || actions.Length > 0 && (actions[0].Values.First(x => x.Name == "cardID").Value != 60
+                    || actions[0].Values.First(x => x.Name == "giverID").Value != giver))
+                return $"来源GiveFury错误：{side} count={count} left={left} intrinsic={intrinsic} prior={prior} giver={giver}";
+            engine.Api.InvokeByName("GiveFury", card, new object?[] { 60, giver }, ctx, out _);
+            if (card.RemainingAttacks != expected || card.BuffsBySource[(giver, false)].Fury != 1
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury") != actions.Length)
+                return "重复来源应完全无效";
+        }
+        return null;
+    }
+
+    private static string? FurySourceRemove(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { 0, 1, 2 })
+        foreach (int left in new[] { -2, 0, 1, 3 })
+        foreach (bool intrinsic in new[] { false, true })
+        foreach (bool other in new[] { false, true })
+        foreach (bool known in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            if (intrinsic) card.Keywords.Add(Keyword.Fury);
+            var sources = new List<int>();
+            if (known) sources.Add(71);
+            if (other) sources.Add(72);
+            card.ReceivedAbilitiesFromCards["fury"] = sources;
+            card.BuffsBySource[(71, false)] = new CardBuff { SourceCardId = 71, Fury = known ? 1 : 0, Attack = 4 };
+            if (other) card.BuffsBySource[(72, false)] = new CardBuff { SourceCardId = 72, Fury = 1 };
+            card.AttacksThisTurn = count; card.SetRemainingAttacks(left);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("RemoveFury", card, new object?[] { 60, 71, skip }, ctx, out _);
+            bool remains = intrinsic || other;
+            int expected = !known || remains ? left : count != 0 ? 0 : Math.Min(left, 1);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionRemoveFury").ToArray();
+            if (card.HasFury != remains || card.Keywords.Contains(Keyword.Fury) != intrinsic
+                || card.RemainingAttacks != expected || card.AttacksThisTurn != count
+                || !card.ReceivedAbilitiesFromCards["fury"].SequenceEqual(other ? new[] { 72 } : Array.Empty<int>())
+                || card.BuffsBySource[(71, false)].Fury != 0 || card.BuffsBySource[(71, false)].Attack != 4
+                || other && card.BuffsBySource[(72, false)].Fury != 1
+                || actions.Length != (known && !skip ? 1 : 0)
+                || actions.Length > 0 && (actions[0].Values.First(x => x.Name == "cardID").Value != 60
+                    || actions[0].Values.First(x => x.Name == "giverID").Value != 71))
+                return $"来源RemoveFury错误：{side} count={count} left={left} intrinsic={intrinsic} other={other} known={known} skip={skip}";
+        }
+        return null;
+    }
+
+    private static string? FurySourceMixed(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { 0, 1, 2 })
+        foreach (int left in new[] { 0, 1, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            engine.Api.GiveFury(card, 71);
+            card.AttacksThisTurn = count; card.SetRemainingAttacks(left);
+            // Raw hasFury remains false even though getHasFury is already true.
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var steps = new KismetStep[] {
+                new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "hasFury" }, null, -1, "__probe", null),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+            var effective = engine.Api.InvokeByName("getHasFury", card, Array.Empty<object?>(), ctx, out _);
+            var combat = engine.Api.InvokeByName("GetCombatKeywords", card, Array.Empty<object?>(), ctx, out _);
+            if (!Equals(bag.GetValueOrDefault("__probe"), false) || !Equals(effective, true)
+                || combat is not object?[] values || values[0] is not List<int> keywords || !keywords.Contains(3))
+                return "原始hasFury与有效getHasFury/战斗关键字必须分开读取";
+            engine.Api.GiveFury(card); // Intrinsic branch does not capture effective alreadyHadFury.
+            int expected = left + (count < 2 && (count == 1 || left > 0) ? 1 : 0);
+            if (!card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != expected)
+                return "先来源后零来源应按原始标志执行给予额度门";
+            engine.Api.RemoveFury(card, 71);
+            if (!card.HasFury || card.RemainingAttacks != expected || card.BuffsBySource.Count != 0)
+                return "撤最后来源不得撤销已经独立给予的固有Fury";
+            engine.Api.GiveFury(card, -7);
+            engine.Api.GiveFury(card, 72);
+            // Removing a nonpositive ID means global removal, not single negative-source removal.
+            engine.Api.RemoveFury(card, -7, skipAction: true);
+            int capped = count != 0 ? 0 : Math.Min(expected, 1);
+            if (card.HasFury || card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != capped
+                || card.ReceivedAbilitiesFromCards.ContainsKey("fury") || card.BuffsBySource.Count != 0)
+                return "全量移除应清原始标志、所有来源及对应Fury增益";
+        }
+        // Native getter reads the source array, not the independent numeric buff entry.
+        {
+            var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, Side.Left, "infantry");
+            card.BuffsBySource[(71, false)] = new CardBuff { SourceCardId = 71, Fury = 1 };
+            if (card.HasFury) return "仅增益账本不能替代来源数组";
+            card.ReceivedAbilitiesFromCards["fury"] = new List<int> { 72 };
+            if (!card.HasFury) return "来源数组非空即为有效Fury，不要求数值增益同步";
+            var snap = card.Snapshot();
+            card.ReceivedAbilitiesFromCards["fury"].Clear(); card.BuffsBySource[(71, false)].Fury = 5;
+            if (!snap.Keywords.Contains(Keyword.Fury) || snap.IntrinsicFury
+                || !snap.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 72 })
+                || snap.FuryBuffsBySource["71/False"] != 1) return "快照必须独立保留原始/有效Fury和来源账本";
+        }
+        return null;
+    }
+
+    private static string? FurySourceBoundaries(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            foreach (var location in new[] { side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, location, 1);
+                engine.Api.GiveFury(card, 71);
+                int actions = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury");
+                if (!card.HasFury || card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != 2
+                    || actions != (location == side.DeckOf() ? 0 : 1)) return "来源给予的位置/牌库通知门错误";
+                engine.Api.RemoveFury(card, 71);
+                if (card.HasFury || card.RemainingAttacks != 1 || card.BuffsBySource.Count != 0)
+                    return "来源撤销不应受牌库/弃牌/NA位置限制";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                foreach (string keyword in new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Guard,
+                    Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen }) card.Keywords.Add(keyword);
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                engine.Api.InvokeByName("GiveRandomCombatKeyword", card, new object?[] { 60, 71, null, null }, ctx, out _);
+                if (!card.HasFury || card.Keywords.Contains(Keyword.Fury)
+                    || !card.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 71 }))
+                    return "随机给予Fury必须转发instigatorID，不得误走零来源";
+                engine.Api.InvokeByName("GiveRandomCombatKeyword", card, new object?[] { 60, 72, null, null }, ctx, out _);
+                if (!card.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 71 })
+                    || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury") != 1)
+                    return "随机候选应排除来源Fury，不能重新抽到并多记来源";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                card.Keywords.Add(Keyword.Covert); engine.Api.GiveFury(card, 71);
+                if (card.HasFury || card.BuffsBySource.Count != 0 || card.ReceivedAbilitiesFromCards.ContainsKey("fury"))
+                    return "未揭示Covert不得记录来源";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                engine.Api.InvokeByName("GiveFury", card, new object?[] { 9999, 71 }, ctx, out _);
+                if (card.HasFury) return "来源给予无效目标不得回落Self";
+                engine.Api.GiveFury(card, 71);
+                engine.Api.InvokeByName("RemoveFury", card, new object?[] { 9999, 71, false }, ctx, out _);
+                if (!card.HasFury || card.RemainingAttacks != 2) return "来源撤销无效目标不得回落Self";
+                engine.Api.SuppressUnit(card);
+                if (card.HasFury || card.ReceivedAbilitiesFromCards.ContainsKey("fury") || card.BuffsBySource.Count != 0
+                    || card.RemainingAttacks != 1) return "抑制必须发现仅由来源给予的Fury并完整摘除";
+                card.ResetAttributes();
+                engine.Api.GiveFury(card, 72);
+                card.ResetAttributes();
+                if (card.HasFury || card.ReceivedAbilitiesFromCards.ContainsKey("fury") || card.BuffsBySource.Count != 0)
+                    return "重置后不得残留来源Fury";
             }
         }
         return null;

@@ -2102,7 +2102,7 @@ public sealed partial class CardApi
     /// 卡拿不到（IR 参数位错等）时返回 false —— 和旧行为一致，不会凭空为真。
     /// </summary>
     private static bool HasKeyword(EffectContext c, object? receiver, object?[] args, string keyword)
-        => SelfArg(c, receiver, args)?.Keywords.Contains(keyword) ?? false;
+        => SelfArg(c, receiver, args)?.HasKeyword(keyword) ?? false;
 
     /// <summary>
     /// 「从牌库里挑一张」—— 按反编译蓝图实现（<c>BP_CardFunctions.selectCardToDraw</c>）。
@@ -6133,7 +6133,7 @@ public sealed partial class CardApi
         }
 
         var keywords = CombatKeywordEntries
-            .Where(entry => card.Keywords.Contains(entry.Keyword)
+            .Where(entry => card.HasKeyword(entry.Keyword)
                 || (entry.Keyword == Keyword.HeavyArmor && card.HeavyArmor > 0))
             .Select(entry => entry.Value)
             .ToList();
@@ -6161,7 +6161,7 @@ public sealed partial class CardApi
             || string.Equals(target.Definition.Type, "fighter", StringComparison.OrdinalIgnoreCase)
             || target.Keywords.Contains(Keyword.Guard);
         var candidates = CombatKeywordEntries
-            .Where(entry => !target.Keywords.Contains(entry.Keyword)
+            .Where(entry => !target.HasKeyword(entry.Keyword)
                 && (entry.Keyword != Keyword.Smokescreen || !excludeSmokescreen))
             .Select(entry => entry.Value)
             .ToList();
@@ -6178,7 +6178,7 @@ public sealed partial class CardApi
         {
             case 1: GiveKeyword(target, Keyword.Ambush); break;
             case 2: GiveKeyword(target, Keyword.Blitz); break;
-            case 3: GiveKeyword(target, Keyword.Fury); break;
+            case 3: GiveFury(target, instigatorId); break;
             case 4: GiveKeyword(target, Keyword.Guard); break;
             case 5:
                 DoChangeHeavyArmor(c, receiver,
@@ -6226,7 +6226,7 @@ public sealed partial class CardApi
 
     private object? DoGiveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword == Keyword.Fury && IntArg(a, 1) == 0
+        var target = keyword == Keyword.Fury
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6257,8 +6257,7 @@ public sealed partial class CardApi
                 }
             }
 
-            if (keyword == Keyword.Fury && IntArg(a, 1) != 0)
-                GiveKeywordCore(target, keyword); // Source-backed branch not yet audited.
+            if (keyword == Keyword.Fury) GiveFury(target, IntArg(a, 1));
             else GiveKeyword(target, keyword);
         }
 
@@ -6333,14 +6332,13 @@ public sealed partial class CardApi
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword == Keyword.Fury && IntArg(a, 1) <= 0
+        var target = keyword == Keyword.Fury
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
             if (keyword == Keyword.Fury)
             {
-                if (IntArg(a, 1) <= 0) RemoveFuryWithoutSource(target, TruthyArg(a, 2), IntArg(a, 1));
-                else RemoveKeywordCore(target, keyword); // Source-backed branch remains pending.
+                RemoveFury(target, IntArg(a, 1), TruthyArg(a, 2));
             }
             else RemoveKeyword(target, keyword);
         }

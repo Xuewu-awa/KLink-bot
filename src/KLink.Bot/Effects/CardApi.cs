@@ -3147,39 +3147,80 @@ public sealed partial class CardApi
     public void DiscardCard(CardInstance card, CardInstance? discarder = null)
         => DiscardHandCard(card, discarder?.CardId ?? 0, skipSubAction: false, forceDiscard: false);
 
-    // Audited giverID=0 branch only. Source-backed Fury bookkeeping remains
-    // on its existing adapter pending a separate received-ability/buff audit.
-    private void GiveFuryWithoutSource(CardInstance target)
+    // GiveFury keeps the raw flag separate from receivedAbilitiesFromCards.
+    // Any nonzero source (including a negative ID) uses the source branch.
+    public void GiveFury(CardInstance target, int giverId = 0)
     {
-        if (!CanCardBeBuffed(target) || target.Keywords.Contains(Keyword.Fury)) return;
+        if (!CanCardBeBuffed(target)) return;
+        bool alreadyHadFury = false;
+        if (giverId == 0)
+        {
+            if (target.Keywords.Contains(Keyword.Fury)) return;
+        }
+        else
+        {
+            alreadyHadFury = target.HasFury;
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("fury", out var existing)
+                && existing.Contains(giverId)) return;
+        }
+
         int left = target.RemainingAttacks;
         int count = target.AttacksThisTurn;
-        target.Keywords.Add(Keyword.Fury);
-        bool addsAttack = count < 2 && (count == 1 || left > 0);
+        if (giverId == 0) target.Keywords.Add(Keyword.Fury);
+        else
+        {
+            if (!target.ReceivedAbilitiesFromCards.TryGetValue("fury", out var givers))
+                target.ReceivedAbilitiesFromCards["fury"] = givers = new List<int>();
+            ChangeFuryBuff(target, giverId, 1);
+            givers.Add(giverId);
+        }
+        bool addsAttack = !alreadyHadFury && count < 2 && (count == 1 || left > 0);
         target.SetRemainingAttacks(left + (addsAttack ? 1 : 0));
         if (!IsLocatedInDeck(target))
             _engine.FireSubAction("ZActionGiveFury", new[] {
-                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", 0) });
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId) });
         FireAbilitiesChanged(target);
     }
 
-    // RemoveFury giverID<=0: already attacked => zero, otherwise Min(left,1).
-    private void RemoveFuryWithoutSource(CardInstance target, bool skipAction = false, int giverId = 0)
+    // Positive IDs remove one registered source. Nonpositive IDs remove all.
+    public void RemoveFury(CardInstance target, int giverId = 0, bool skipAction = false)
     {
-        if (!target.Keywords.Contains(Keyword.Fury)) return;
         int left = target.RemainingAttacks;
-        target.Keywords.Remove(Keyword.Fury);
-        target.ReceivedAbilitiesFromCards.Remove("fury");
-        target.SetRemainingAttacks(target.AttacksThisTurn != 0 ? 0 : Math.Min(left, 1));
+        if (giverId <= 0)
+        {
+            if (!target.HasFury) return;
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("fury", out var all))
+                foreach (int source in all) ChangeFuryBuff(target, source, -1);
+            target.Keywords.Remove(Keyword.Fury);
+            target.ReceivedAbilitiesFromCards.Remove("fury");
+        }
+        else
+        {
+            if (!target.ReceivedAbilitiesFromCards.TryGetValue("fury", out var givers)
+                || givers.RemoveAll(source => source == giverId) == 0) return;
+            ChangeFuryBuff(target, giverId, -1);
+            // The Blueprint writes back the list even when it is empty.
+        }
+        target.SetRemainingAttacks(target.HasFury ? left
+            : target.AttacksThisTurn != 0 ? 0 : Math.Min(left, 1));
         if (!skipAction)
             _engine.FireSubAction("ZActionRemoveFury", new[] {
                 ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId) });
         FireAbilitiesChanged(target);
     }
 
+    private static void ChangeFuryBuff(CardInstance target, int sourceId, int amount)
+    {
+        var key = (sourceId, false);
+        if (!target.BuffsBySource.TryGetValue(key, out var buff))
+            target.BuffsBySource[key] = buff = new CardBuff { SourceCardId = sourceId };
+        buff.Fury += amount;
+        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+    }
+
     public void GiveKeyword(CardInstance target, string keyword)
     {
-        if (keyword == Keyword.Fury) { GiveFuryWithoutSource(target); return; }
+        if (keyword == Keyword.Fury) { GiveFury(target); return; }
         GiveKeywordCore(target, keyword);
     }
 
@@ -3294,7 +3335,7 @@ public sealed partial class CardApi
 
     public void RemoveKeyword(CardInstance target, string keyword)
     {
-        if (keyword == Keyword.Fury) { RemoveFuryWithoutSource(target); return; }
+        if (keyword == Keyword.Fury) { RemoveFury(target); return; }
         RemoveKeywordCore(target, keyword);
     }
 
@@ -3628,7 +3669,7 @@ public sealed partial class CardApi
         target.SuppressStrippedKeywords ??= new List<string>();
         foreach (string keyword in SuppressStrips)
         {
-            if (target.Keywords.Contains(keyword))
+            if (target.HasKeyword(keyword))
             {
                 if (keyword == Keyword.Mobilize)
                 {

@@ -198,10 +198,15 @@ public sealed class CardInstance
     /// （`BP_Logic.g.cs:3110` / `:3124`）。
     ///
     /// 当前上限由关键字推导，原生剩余额度写入通过偏移保留。
-    /// GiveFury/RemoveFury的已核实无来源/全量分支显式处理次数门及截断，
-    /// 不能只靠关键字增删隐式加减；正来源叠加与负移动额度仍待核查。
+    /// GiveFury/RemoveFury显式处理来源、次数门及截断，
+    /// 不能只靠关键字增删隐式加减；负移动额度仍待核查。
     /// </summary>
-    public int MaxAttacksThisTurn => Keywords.Contains(Keyword.Fury) ? 2 : 1;
+    // Keywords stores the raw hasFury flag. The native getter also accepts a
+    // nonempty received-ability source array (not the numeric buff ledger).
+    public bool HasFury => Keywords.Contains(Keyword.Fury)
+        || (ReceivedAbilitiesFromCards.TryGetValue("fury", out var givers) && givers.Count > 0);
+    public bool HasKeyword(string keyword) => keyword == Keyword.Fury ? HasFury : Keywords.Contains(keyword);
+    public int MaxAttacksThisTurn => HasFury ? 2 : 1;
 
     /// <summary>
     /// 本回合是否**还有攻击额度** —— 蓝图 `UBaseCardObject::HasAttackLeft(bool&)`
@@ -490,6 +495,8 @@ public sealed class CardInstance
         => string.Equals(Definition.Type, "tank", StringComparison.OrdinalIgnoreCase);
 
     // ---- 关键字 ----
+    // Fury here is the raw hasFury member; use HasFury/HasKeyword for effective
+    // combat ability, which also includes the received source list.
     public HashSet<string> Keywords { get; } = new(StringComparer.Ordinal);
 
     /// <summary>自定义能力（对应子动作 ActionCustomAbilityAdd/Remove 与 CustomAbilityAdd 调用）。</summary>
@@ -810,12 +817,17 @@ public sealed class CardInstance
         Attack, Defense, MaxDefense, KreditCost, OperationCost,
         EnteredPlayOnTurn, OperationsUsedThisTurn, HasAttackedThisTurn, HasMovedThisTurn,
         AttacksThisTurn,
-        Keywords.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+        Keywords.Concat(HasFury ? new[] { Keyword.Fury } : Array.Empty<string>())
+            .Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal).ToArray(),
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             AttackQuotaOffset = AttackQuotaOffset,
+            IntrinsicFury = Keywords.Contains(Keyword.Fury),
+            FuryBuffsBySource = BuffsBySource.Where(kv => kv.Value.Fury != 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Fury),
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
             IsRevealed = IsRevealed,
@@ -881,6 +893,9 @@ public sealed class CardBuff
     /// <summary>重甲点数（可叠加的数值，不是布尔）。</summary>
     public int HeavyArmor { get; set; }
 
+    /// <summary>combat_fury amount in this source's buff ledger; independent of the ability source array.</summary>
+    public int Fury { get; set; }
+
     /// <summary>
     /// 这个来源的改费是「显式设成绝对值」而不是「相对减费」。
     ///
@@ -913,7 +928,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0
                            && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
 
@@ -930,6 +945,7 @@ public sealed class CardBuff
         KreditCost = KreditCost,
         OperationCost = OperationCost,
         HeavyArmor = HeavyArmor,
+        Fury = Fury,
         KreditCostSetsAbsoluteValue = KreditCostSetsAbsoluteValue,
         OperationCostSetsAbsoluteValue = OperationCostSetsAbsoluteValue,
         Duration = Duration,
@@ -962,6 +978,8 @@ public sealed record CardSnapshot(
 {
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
     public int AttackQuotaOffset { get; init; }
+    public bool IntrinsicFury { get; init; }
+    public Dictionary<string, int> FuryBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
     public bool IsRevealed { get; init; }
