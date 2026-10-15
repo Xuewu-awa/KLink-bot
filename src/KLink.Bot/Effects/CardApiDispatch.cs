@@ -2214,19 +2214,10 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 把"选中的那张牌"落实成状态变化：从牌库抽到手牌，并给挑牌的那张卡派发
-    /// <c>OnHandTargetSelected(handTargetCardID, instigatorID)</c>。
-    ///
-    /// 依据：蓝图单候选分支（<c>BP_CardFunctions.g.cs</c> L_0B57~L_0C5B）就是
-    /// <c>DrawSpecificCardFromDeckBySide(挑牌卡, 选中卡.cardID, side, false)</c>
-    /// 紧跟 <c>OnHandTargetSelected(挑牌卡, 选中卡.cardID, 0)</c>。
-    /// 事件契约（<c>docs/event-contracts.json</c>）是 <c>[Int handTargetCardID, Int instigatorID]</c>，
-    /// 49 张卡订阅它 —— 例如 <c>card_event_pams</c> 的 <c>OnHandTargetSelected</c>
-    /// 会把自己 develop 出来的那张牌塞回牌库的随机位置，漏掉这一步就少一次洗牌。
-    ///
-    /// 公开给回放驱动用：回放里的 <c>CS</c> 动作到达时，如果挑牌卡的效果**没**走到
-    /// <c>selectCardToDraw</c>（例如那张牌根本没打出去），答复还得照样落实，
-    /// 否则这条动作就白丢了。
+    /// Multi-offer deck-selection reply: BP_OnlineMatch's i=2233 calls
+    /// ExecuteScryingEffectBySide with the chosen ID and original selecting
+    /// object. The headless reply boundary handles the subsequent wait/queue
+    /// continuation. This differs from selectCardToDraw's inline singleton.
     /// </summary>
     public CardInstance? DrawChosenCardToHand(CardInstance? selecting, CardInstance? chosen)
     {
@@ -2248,16 +2239,37 @@ public sealed partial class CardApi
     {
         Side side = selecting.Owner;
         if (chosen is null || chosen.Location != side.DeckOf()) return null;
-        // ExecuteScryingEffectBySide: unchosen offers go to the deck bottom.
-        var offers = ScryCandidates(selecting, side);
+        // ExecuteScryingEffectBySide scans the whole deck, even after three
+        // accepted entries. Initial offering instead stops after three matches.
+        var deck = State.Deck(side).ToArray();
+        var offers = new List<CardInstance>();
+        foreach (var candidate in deck)
+        {
+            var outputs = RunOwnLocal(selecting, "FilterCardsToScry",
+                new Dictionary<string, object?> { ["card"] = candidate }, "isValid");
+            if ((outputs is null || KismetVmTruthy(outputs.GetValueOrDefault("isValid"))) && offers.Count < 3)
+                offers.Add(candidate);
+        }
         if (!offers.Contains(chosen)) return null;
-        var remaining = State.Deck(side).Where(x => !offers.Contains(x)).ToArray();
-        var reordered = new[] { chosen }.Concat(remaining)
-            .Concat(offers.Where(x => !ReferenceEquals(x, chosen))).ToArray();
+        var promoted = offers.Concat(deck.Where(card => !offers.Contains(card))).ToArray();
+        // i=1086..1383 uses the first three of the complete promoted deck,
+        // including a nonmatching entry when there are fewer than three offers.
+        var displaced = promoted.Take(3).Where(card => !ReferenceEquals(card, chosen)).ToArray();
+        var reordered = promoted.Where(card => !displaced.Contains(card)).Concat(displaced).ToArray();
+        // Physical object numbers still back the simulator's deck representation;
+        // native SetDeckBySide changes an independent ID array (audit remains open).
         for (int i = 0; i < reordered.Length; i++) reordered[i].LocationNumber = i;
-        _engine.DrawCard(side);
-        FireTrigger("OnHandTargetSelected", selecting, side,
-            eventArgs: new object?[] { chosen.CardId, selecting.CardId }, eventSubject: chosen);
+        RecordNewDeck(side, reordered.Select(card => card.CardId).ToArray(), Array.Empty<int>(), 0, false, false);
+        _engine.DrawCard(side); // Native i=2005 uses draw instigator 0.
+        if (Blueprint.KismetLibrary.Default is { } library
+            && library.FindProgram(selecting.Name, "OnHandTargetSelected") is not null)
+        {
+            // Unlike the singleton wrapper, i=2143 retains cardPlayed itself.
+            TriggerTrace?.Add($"OnHandTargetSelected → {selecting.Name}#{selecting.CardId}（eventCard={chosen.Name}#{chosen.CardId}）");
+            RunTriggerProgram(library, selecting, selecting.Name, "OnHandTargetSelected", chosen,
+                eventArgs: new object?[] { chosen.CardId, selecting.CardId },
+                namedArgs: new Dictionary<string, object?> { ["handTargetCardID"] = chosen.CardId, ["instigatorID"] = selecting.CardId });
+        }
         return chosen;
     }
 
