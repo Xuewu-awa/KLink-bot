@@ -25,11 +25,9 @@ namespace KLink.Bot.Engine;
 /// - 播种：`BP_CardFunctions::SetRandomStreamByMatchID(MatchID)` 里
 ///   `cardsRandomStream = MakeRandomStream(MatchID)`（`BP_CardFunctions.cpp:12339-12347`），
 ///   对局开始时用 `match_id` 播一次（`BP_OnlineMatch.cpp:1734-1744`）。
-/// - ⚠️ **2026-08-25 之后不再逐动作重播种**：服务端撤回了 `validate_turn_switches`，
-///   `SetRandomStreamWithActionID`（`BP_OnlineMatch.cpp:24520-24536`）的重播种分支不再触发，
-///   `cardsRandomStream` 从开局那一次播种起**连续自由推进**。
-///   本仓库的 4 局回放都是 2026-10 采的，落在调整之后，所以内核只要
-///   "以 `match_id` 播种一次、然后连续推进"即可。
+/// - 当前 pak 的 `BP_OnlineMatch:SetRandomStreamWithActionID` 仅含 Return/Nothing
+///   和 EndOfScript；虽仍有行动接收/创建调用点，函数本身不重播种（RULE-105）。
+///   此结论来自当前资产，不能据此推断服务端历史改动日期或所有恢复路径。
 ///
 /// ## 验证
 ///

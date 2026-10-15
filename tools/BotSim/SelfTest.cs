@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("随机播种：构造使用int32低位且不提前消费", NativeMatchSeedWidth),
+        new("随机播种：回合开始/结束及行动编号不重置规则流", NativeMatchSeedContinuity),
         new("随机辅助：84个独立向量、全范围空耗次数与区间溢出", NativePaddedRandomVectors),
         new("随机候选：优先子集顺序、重复权重与skip参数派发", NativeRandomPriorityPools),
         new("随机候选：名称属性边界及真实Royal Scots动态移除", NativeRandomPriorityAttributes),
@@ -10209,6 +10211,58 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeMatchSeedWidth(CardDatabase db)
+    {
+        foreach (ulong seed in new ulong[] { 0, 1, 42, 0x7fffffff, 0x80000000, 0xffffffff,
+            0x100000000, 0x100000001, 0x123456780000002a, ulong.MaxValue })
+        {
+            var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed);
+            var state = engine.State;
+            uint truncated = unchecked((uint)seed);
+            if (state.Random.Seed != truncated || state.Random.InitialSeed != unchecked((int)truncated)
+                || state.Random.ConsumedCount != 0 || state.Seed != seed)
+                return $"构造种子应使用int32低位、不消费，原始输入仅作元数据：{seed}";
+            var oracle = new UeRandomStream(truncated);
+            for (int draw = 0; draw < 4; draw++)
+                if (engine.Api.RandomIntFromRangeWithStream(-9, 20) != NativeRandomDrawOracle(oracle, -9, 20)
+                    || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != oracle.ConsumedCount)
+                    return "等低32位种子应产生同一规则随机序列";
+        }
+        return null;
+    }
+
+    private static string? NativeMatchSeedContinuity(CardDatabase db)
+    {
+        foreach (ulong seed in new ulong[] { 0, 1, 42, 0xffffffff, 1000000000, 0x100000001 })
+        {
+            var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed);
+            var state = engine.State;
+            state.CreateWithId("card_location_berlin", Side.Left, 1, Side.Left.HqOf(), 0);
+            state.CreateWithId("card_location_berlin", Side.Right, 41, Side.Right.HqOf(), 0);
+            state.SetHqDefense(Side.Left, 20); state.SetHqDefense(Side.Right, 20);
+            foreach (Side side in new[] { Side.Left, Side.Right })
+                for (int i = 0; i < 4; i++) state.CreateWithId(PlainUnit, side, (int)side * 100 + i, side.DeckOf(), i);
+            state.Turn = 1; state.ActiveSide = Side.Left;
+            var oracle = new UeRandomStream(seed);
+            for (int turn = 0; turn < 4; turn++)
+            {
+                if (engine.Api.RandomIntFromRangeWithStream(0, 99) != NativeRandomDrawOracle(oracle, 0, 99))
+                    return "跨回合抽取未沿用连续流";
+                uint before = state.Random.Seed; long count = state.Random.ConsumedCount;
+                engine.StartTurn(state.ActiveSide, draw: false);
+                engine.EndTurn(state.ActiveSide); // records action ID, switches side and draws a fixed card
+                if (state.IsFinished || state.Random.Seed != before || state.Random.ConsumedCount != count
+                    || state.Random.InitialSeed != unchecked((int)(uint)seed))
+                    return "无随机效果的回合/行动不应重播种或消费规则流";
+            }
+            var ends = state.ActionLog.Where(x => x.ActionType == "XActionEndOfTurn").ToArray();
+            if (ends.Length != 4 || ends.Select(x => x.ActionId).Distinct().Count() != 4 || !ends.Select(x => x.ActionId).SequenceEqual(ends.Select(x => x.ActionId).OrderBy(x => x))
+                || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != oracle.ConsumedCount)
+                return "必须真实记录行动并保持跨行动的随机状态";
+        }
+        return null;
     }
 
     private static string? NativePaddedRandomVectors(CardDatabase db)
