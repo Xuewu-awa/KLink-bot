@@ -1298,6 +1298,7 @@ public sealed partial class CardApi
             SalvagedCardId = source.SalvagedCardId,
             Cipher = source.Cipher,
             AttacksThisTurn = source.AttacksThisTurn,
+            AttackQuotaOffset = source.AttackQuotaOffset,
             HasBeenAttackedThisTurn = source.HasBeenAttackedThisTurn,
             ChooseOne = source.ChooseOne,
             HasMovedThisTurn = source.HasMovedThisTurn,

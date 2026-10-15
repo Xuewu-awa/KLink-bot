@@ -130,6 +130,8 @@ internal static class SelfTest
         new("强制推进：物理容量、数量槽位、同区注入与移动通知", ForceAdvancePlacement),
         new("行动费事件：T68查询例外与执行时抑制复查分别生效", OperationSpendQueryAndExecution),
         new("强制推进：T50移出可用位置后仍执行零费自身事件", ForceAdvanceUnavailableOperation),
+        new("行动顺序：原生装甲/标记例外支持移动与攻击两种顺序", NativeArmorActionSequences),
+        new("攻击额度：移动清零不增加攻击次数，能力变化与重置保留独立额度", MovementAttackQuotaLifecycle),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -453,10 +455,10 @@ internal static class SelfTest
         new("抑制：三个触发点的先后必须是 **自己 OnSuppressed → T58 OnOtherCardSuppressed → T11 OnAfterOtherCardSuppressed**" +
             "（蓝图 L_0314→L_174B→L_0322→L_15A5；旧实现三个全错位）", SuppressTriggerOrderMatchesBlueprint),
         // ---- 行动限制（2026-10-02，服务器实测暴露）----
-        new("行动限制：**非坦克**移动后不能再攻击（规则表只有坦克能移动+攻击）", NonTankCannotMoveThenAttack),
-        new("行动限制：**坦克**可以移动后攻击（规则表明确写的例外）", TankCanMoveThenAttack),
-        new("行动限制：非坦克攻击后不能再移动（与上面对称）", NonTankCannotAttackThenMove),
-        new("Alpine 同回合行动能力：CustomName1 授予后非坦克可移动并攻击，撤销后恢复限制",
+        new("行动额度：非例外单位移动后攻击额度清零", NonTankCannotMoveThenAttack),
+        new("行动额度：坦克移动后保留攻击额度", TankCanMoveThenAttack),
+        new("行动额度：非例外单位攻击后移动额度耗尽", NonTankCannotAttackThenMove),
+        new("同回合行动能力：标记影响消费时判定，撤销不追溯清空额度",
             AlpineMoveAndAttackAbility),
         new("行动限制：**死亡单位不能移动也不能攻击**（实测 AI 移动了死单位）", DeadUnitCannotMoveOrAttack),
         // ---- 钉住（Pinned）：移动侧缺门（2026-10-02，玩家实测 + 日志 637706）----
@@ -8812,6 +8814,76 @@ internal static class SelfTest
         return new AuditProbeCleanup(() => locals.Remove(trigger));
     }
 
+    private static CardInstance MakeActionQuotaProbe(GameState state, Side side, string type)
+    {
+        const string name = "card_unit_432_infantry_regiment";
+        var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+        card.Definition = new CardDefinition { Name = name, Type = type, Attack = 2, Defense = 20, Range = 2 };
+        card.Attack = 2; card.Defense = card.MaxDefense = 20; card.OperationCost = 0;
+        card.EnteredPlayOnTurn = -99;
+        state.ActiveSide = side; state.SetKredits(side, 20);
+        return card;
+    }
+
+    private static string? NativeArmorActionSequences(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (int order in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = MakeActionQuotaProbe(state, side, mode == 1 ? "tank" : mode == 2 ? "tankdestroyer" : mode == 5 ? "fighter" : "infantry");
+            if (mode == 3) engine.Api.JsonSetString(unit, "customName1", "isArmorUnit");
+            if (mode == 4) engine.Api.JsonSetString(unit, "customName1", "CanMoveAndAttackInTheSameTurn");
+            bool allowed = mode is not (0 or 5);
+            if (unit.CanMoveAndAttackInSameTurn != allowed) return "原生装甲/标记谓词不符";
+            bool first = order == 1 ? engine.Attack(unit, state.Hq(side.Opposite()))
+                : order == 2 ? engine.MoveUnitFromSupportToFrontLine(unit, 9004, out _) : engine.MoveUnit(unit, 0, out _);
+            bool second = order == 1 ? engine.MoveUnit(unit, 0, out _) : engine.Attack(unit, state.Hq(side.Opposite()));
+            if (!first || second != allowed || unit.AttacksThisTurn != (order == 1 || allowed ? 1 : 0))
+                return $"实际行动顺序错误：{side} mode={mode} 顺序={order} 首={first} 次={second} 攻击次数={unit.AttacksThisTurn}";
+        }
+        return null;
+    }
+
+    private static string? MovementAttackQuotaLifecycle(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = MakeActionQuotaProbe(state, side, "infantry");
+            if (mode == 2) engine.Api.JsonSetString(unit, "customName1", "isArmorUnit");
+            if (!engine.MoveUnit(unit, 0, out _)) return "额度生命周期布景移动失败";
+            if (unit.AttacksThisTurn != 0 || unit.RemainingAttacks != (mode == 2 ? 1 : 0)
+                || unit.Snapshot().AttackQuotaOffset != (mode == 2 ? 0 : -1))
+                return "移动清空额度不得伪造实际攻击次数，快照必须保留额度偏移";
+            if (mode == 0)
+            {
+                engine.Api.GiveKeyword(unit, Keyword.Fury);
+                if (unit.RemainingAttacks != 1 || !engine.Attack(unit, state.Hq(side.Opposite())) || unit.HasAttackLeft)
+                    return "移动清零后给予Fury应增加一次额度，不能被移动历史阻挡";
+            }
+            else if (mode == 1)
+            {
+                engine.Api.JsonSetString(unit, "customName1", "CanMoveAndAttackInTheSameTurn");
+                if (unit.HasAttackLeft || engine.Attack(unit, state.Hq(side.Opposite())))
+                    return "移动后才获同回合行动能力不能恢复此前已清空的额度";
+            }
+            else
+            {
+                engine.Api.JsonClear(unit, "customName1");
+                if (!engine.Attack(unit, state.Hq(side.Opposite())))
+                    return "撤销同回合行动能力不追溯清除已保留额度";
+            }
+            engine.Api.InvokeByName("ResetUnitOperations", unit, new object?[] { 60, 9004, null },
+                new EffectContext { Engine = engine, State = state, Self = unit, Controller = side }, out _);
+            if (unit.AttackQuotaOffset != 0 || unit.AttacksThisTurn != 0 || unit.HasMovedThisTurn
+                || unit.RemainingAttacks != (mode == 0 ? 2 : 1)) return "重置行动应同时恢复独立攻击额度";
+        }
+        return null;
+    }
+
     private static IDisposable InstallOperationSpendProbes()
     {
         var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
@@ -8972,7 +9044,7 @@ internal static class SelfTest
                     created?.Invoke(made);
                     if (made.Name != "card_unit_routed_troops") return;
                     stages.Add(Convert.ToInt32(unit.BlueprintVariables.GetValueOrDefault("_auditForceStage")));
-                    quotaCorrect &= unit.HasMovedThisTurn && unit.AttacksThisTurn == (mode is 0 or 5 ? 2 : 1)
+                    quotaCorrect &= unit.HasMovedThisTurn && unit.AttacksThisTurn == 1 && unit.HasAttackLeft == (mode is not (0 or 5))
                         && unit.BlueprintVariables.GetValueOrDefault("_auditForceCost") is int value && value == 0;
                 };
                 bool movementSawOldQuota = false; var previous = state.CardMoved;
@@ -14282,7 +14354,8 @@ internal static class SelfTest
 
         if (unit.IsTank) return $"`{name}` 被判成坦克，选错了样本";
 
-        unit.HasMovedThisTurn = true;      // 模拟「本回合已经移动过」
+        unit.HasMovedThisTurn = true;      // 模拟原生非例外移动后的两个额度
+        unit.ClearAttackQuotaForMovement();
 
         if (unit.CanOperateThisTurn(engine.State))
         {
@@ -14330,6 +14403,7 @@ internal static class SelfTest
         if (unit.IsTank) return $"`{name}` 被判成坦克，选错了样本";
 
         unit.HasAttackedThisTurn = true;
+        unit.HasMovedThisTurn = true; // Native attack consumed movementLeft.
 
         if (unit.CanMoveThisTurn(engine.State))
         {
@@ -14387,8 +14461,8 @@ internal static class SelfTest
 
         unit.HasAttackedThisTurn = false;
         unit.HasMovedThisTurn = true;
-        if (unit.CanOperateThisTurn(engine.State))
-            return "撤销 Alpine 能力后，移动过的非坦克仍可攻击";
+        if (!unit.CanOperateThisTurn(engine.State))
+            return "撤销能力不能追溯清空已经保留的攻击额度";
 
         return null;
     }

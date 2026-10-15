@@ -715,6 +715,7 @@ public sealed class MatchEngine
             unit.HasBeenAttackedThisTurn = false;
             unit.HasMovedThisTurn = false;
             unit.AttacksThisTurn = 0;
+            unit.AttackQuotaOffset = 0;
             unit.OperationsUsedThisTurn = 0;
         }
 
@@ -1445,7 +1446,7 @@ public sealed class MatchEngine
                 ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
                 ActionValue2.Int("newLocationNumber", slot), ActionValue2.Int("nonVisualLocationNumber", slot),
                 ActionValue2.Str("moveReason", reasonName),
-                ActionValue2.Int("attackLeft", card.MaxAttacksThisTurn - card.AttacksThisTurn),
+                ActionValue2.Int("attackLeft", card.RemainingAttacks),
                 ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
             });
             Api.RearrangeLocation(oldLocation);
@@ -2042,7 +2043,6 @@ public sealed class MatchEngine
         int moveCost = unit.OperationCost;
         State.AddKredits(unit.Owner, -moveCost);
         State.AddOperationKreditsSpentThisTurn(moveCost);
-        unit.HasMovedThisTurn = true;
 
         RecordAction("XActionMoveCardToLine", unit.Owner, new Dictionary<string, object?>
         {
@@ -2065,6 +2065,8 @@ public sealed class MatchEngine
         //    旧实现是反的（先 `OnMoveToFrontline`、再刷新归属并补发事件），
         //    收口到钩子里正好把这个顺序也扳正。
         State.Move(unit, CardLocation.BoardFrontline, targetSlot, moveReason: CardMoveReason.AdvancePlayerMove);
+        if (!unit.CanMoveAndAttackInSameTurn) unit.ClearAttackQuotaForMovement();
+        unit.HasMovedThisTurn = true;
         Api.ExecuteOnMoveToFrontlineCardEffects(unit, false, moveCost);
 
         FireOperationKreditsSpent(unit, moveCost);
@@ -2129,7 +2131,7 @@ public sealed class MatchEngine
             ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
             ActionValue2.Int("newLocationNumber", quantity), ActionValue2.Int("nonVisualLocationNumber", quantity),
             ActionValue2.Str("moveReason", reasonName),
-            ActionValue2.Int("attackLeft", unit.MaxAttacksThisTurn - unit.AttacksThisTurn),
+            ActionValue2.Int("attackLeft", unit.RemainingAttacks),
             ActionValue2.Int("movementLeft", unit.HasMovedThisTurn ? 0 : 1),
         });
         Api.RearrangeLocation(oldLocation);
@@ -2137,11 +2139,7 @@ public sealed class MatchEngine
         State.CardMoved?.Invoke(unit, oldLocation, CardLocation.BoardFrontline, false, CardMoveReason.AdvanceForce);
         // Native CanMoveAndAttackInTheSameTurn: IsArmorUnit (tank or
         // tankdestroyer or its customName1 marker), otherwise the explicit marker.
-        bool canMoveAndAttack = unit.IsTank
-            || string.Equals(unit.Definition.Type, "tankdestroyer", StringComparison.OrdinalIgnoreCase)
-            || CardApi.CustomNameHasAttribute(unit, "customName1", "isArmorUnit")
-            || unit.CanMoveAndAttackInSameTurn;
-        if (!canMoveAndAttack) unit.AttacksThisTurn = unit.MaxAttacksThisTurn;
+        if (!unit.CanMoveAndAttackInSameTurn) unit.ClearAttackQuotaForMovement();
         unit.HasMovedThisTurn = true;
         Api.ExecuteOnMoveToFrontlineCardEffects(unit, true, 0);
         FireOperationKreditsSpent(unit, 0);
@@ -2631,6 +2629,9 @@ public sealed class MatchEngine
     // after calculation/before receive hooks. CanMoveThisTurn also consults this flag.
     internal void SetAttackerHasAttacked(CardInstance attacker)
     {
+        // SetAttackerHasAttacked i=379 decrements movementLeft first when
+        // the native armor/custom predicate is false (including stopped attacks).
+        if (!attacker.CanMoveAndAttackInSameTurn) attacker.HasMovedThisTurn = true;
         attacker.HasAttackedThisTurn = true;
         attacker.AttacksThisTurn++;
     }
@@ -3301,6 +3302,7 @@ public sealed class MatchEngine
         {
             card.HasMovedThisTurn = false;
             card.AttacksThisTurn = 0;
+            card.AttackQuotaOffset = 0;
             card.HasAttackedThisTurn = false;
         }
 

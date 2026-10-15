@@ -5024,6 +5024,7 @@ public sealed partial class CardApi
         card.HasMovedThisTurn = false;
         card.HasAttackedThisTurn = false;
         card.AttacksThisTurn = 0;
+        card.AttackQuotaOffset = 0;
         return null;
     }
 

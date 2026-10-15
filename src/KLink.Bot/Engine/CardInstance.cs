@@ -181,6 +181,10 @@ public sealed class CardInstance
     /// 「攻击者本回合不能行动（…已攻击=True…）」⇒ 动作流少应用一条。
     /// </summary>
     public int AttacksThisTurn { get; set; }
+    /// <summary>Quota offset from native writes to attackLeft, independent of attackCountThisTurn.</summary>
+    public int AttackQuotaOffset { get; set; }
+    public int RemainingAttacks => MaxAttacksThisTurn - AttacksThisTurn + AttackQuotaOffset;
+    public void ClearAttackQuotaForMovement() => AttackQuotaOffset = AttacksThisTurn - MaxAttacksThisTurn;
 
     /// <summary>
     /// Whether this unit has already been attacked during the current turn.
@@ -199,8 +203,8 @@ public sealed class CardInstance
     /// <item>`RemoveFury`（同文件 `:30759-30769`）用
     ///   `Min(attackLeft, 1)` 把额度收回 —— 中途失去奋战就只剩 1 次。</item>
     /// </list>
-    /// 现算正好等价于这两条：`AttacksThisTurn` 是「已用掉的次数」，
-    /// 上限跟着关键字走，两个方向的动态增删都对。
+    /// 当前上限由关键字推导，实际攻击次数与移动清零的偏移分别保存。
+    /// 这不构成原生整数attackLeft的完整模型；移除Fury的截断交互仍待专审。
     /// </summary>
     public int MaxAttacksThisTurn => Keywords.Contains(Keyword.Fury) ? 2 : 1;
 
@@ -208,9 +212,9 @@ public sealed class CardInstance
     /// 本回合是否**还有攻击额度** —— 蓝图 `UBaseCardObject::HasAttackLeft(bool&)`
     /// （声明 `BaseCardObject.h:969`，函数体在 shipping 二进制里，`BaseCardObject.cpp`
     /// 只是空桩）。语义由上面三条证据钉死为 `attackLeft > 0`，
-    /// 也就是本内核的 `AttacksThisTurn &lt; MaxAttacksThisTurn`。
+    /// 当前用RemainingAttacks表示，包含独立的移动清零偏移。
     /// </summary>
-    public bool HasAttackLeft => AttacksThisTurn < MaxAttacksThisTurn;
+    public bool HasAttackLeft => RemainingAttacks > 0;
 
     /// <summary>
     /// 「三选一」卡（<c>Choose One</c>）选的是第几个分支（0/1）。
@@ -294,23 +298,14 @@ public sealed class CardInstance
            //   （蓝图门是 `HasAttackLeft(attackerCard)`，额度 `attackLeft` 回合开始
            //   被设成 `getHasFury() ? 2 : 1`）。实测对局 389594 `#85/#86 t19`。
            && HasAttackLeft
-           // ★ 移动过就不能再攻击 —— **除非是坦克或蓝图授予的同回合行动能力**。
-           //   出处 `KARDS基础规则参考.md` 兵种表：
-           //     「**坦克**：能在同一回合移动并攻击（一次移动 + 一次攻击，顺序任意）」
-           //   表里**只有坦克**有这条例外；步兵/炮兵/战斗机/轰炸机都没写
-           //   ⇒ 它们都是「移动**或**攻击，二选一」。
-           //   （实测 2026-10-02：AI 的步兵部署后立刻移动并攻击，就是缺这条。）
-           //   蓝图同结论：`MoveCardToFrontline`（`BP_CardFunctions.g.cs:26978-27043`）
-           //   对**不是** `CanMoveAndAttackInTheSameTurn` 的单位把 `attackLeft` 直接置 0
-           //   （`MakeCountAsTank` 与 `card_unit_obice_da_75_13` 都通过该能力名放行）。
-           && (IsTank || CanMoveAndAttackInSameTurn || !HasMovedThisTurn)
            && !HasDeploymentSickness(state);
 
     /// <summary>
     /// 该卡本回合是否还能移动战线（同样受召唤失调限制，见
     /// <see cref="HasDeploymentSickness"/> 里 `CanCardDoAnything` 的出处）。
     ///
-    /// ★ 与 <see cref="CanOperateThisTurn"/> 对称：**攻击过就不能再移动，除非是坦克或蓝图授予的同回合行动能力**。
+    /// 读取剩余移动额度表示；攻击的额度消费由SetAttackerHasAttacked处理，
+    /// 不再额外按HasAttackedThisTurn施加历史门。
     /// </summary>
     public bool CanMoveThisTurn(GameState state)
         => AliveOnBoard
@@ -318,18 +313,22 @@ public sealed class CardInstance
            //    移动侧的蓝图门是 `BP_Logic::CanCardDoAnything`（i=198 是 `IsPinned`），
            //    里面**没有** `isSuppressed`（全文件 0 次）。
            && !HasMovedThisTurn
-           && (IsTank || CanMoveAndAttackInSameTurn || !HasAttackedThisTurn)
            && !HasDeploymentSickness(state);
 
     /// <summary>
-    /// 蓝图的 `CanMoveAndAttackInTheSameTurn` 自定义能力标记。
-    /// `card_unit_obice_da_75_13` 在 Alpine 单位进入或离场时通过
-    /// `CustomName1Add/Remove` 维护这个标记；它和坦克一样允许移动、攻击顺序互换。
+    /// Native CanMoveAndAttackInTheSameTurn: IsArmorUnit (tank,
+    /// tankdestroyer or customName1 isArmorUnit), then the explicit marker.
+    /// Verified against the installed PE implementation and KardsCore enum.
     /// </summary>
     public bool CanMoveAndAttackInSameTurn
+        => string.Equals(Definition.Type, "tank", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(Definition.Type, "tankdestroyer", StringComparison.OrdinalIgnoreCase)
+           || HasOperationMarker("isArmorUnit")
+           || HasOperationMarker("CanMoveAndAttackInTheSameTurn");
+
+    private bool HasOperationMarker(string marker)
         => CustomJson.TryGetValue("customName1", out string? value)
-           && value.Split(',', StringSplitOptions.RemoveEmptyEntries)
-               .Contains("CanMoveAndAttackInTheSameTurn", StringComparer.Ordinal);
+           && value.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(marker, StringComparer.Ordinal);
 
     /// <summary>
     /// 被**抑制**（客户端中文译名；英文关键字 = `Suppress`，字段 = 卡对象上的
@@ -489,8 +488,8 @@ public sealed class CardInstance
     /// `order` 732 / `infantry` 568 / `location` 180 / **`tank` 154** /
     /// `fighter` 144 / `bomber` 98 / `artillery` 60 / 其它 83。
     ///
-    /// 为什么只认坦克：见 <see cref="CanOperateThisTurn"/> 的注释 ——
-    /// 规则表里只有坦克写了"能在同一回合移动并攻击"。
+    /// 这里只识别严格的tank类型；装甲及同回合行动例外由
+    /// CanMoveAndAttackInSameTurn按原生谓词独立处理。
     /// </summary>
     public bool IsTank
         => string.Equals(Definition.Type, "tank", StringComparison.OrdinalIgnoreCase);
@@ -666,6 +665,7 @@ public sealed class CardInstance
         UnderEnemyControl = false;
         HasMovedThisTurn = false;
         AttacksThisTurn = 0;
+        AttackQuotaOffset = 0;
         IsRevealed = false;
         foreach (string key in new[] { "effects", "handbuff", "veteran", "countdown_timer", "extra_play_triggers" })
             CustomJson.Remove(key);
@@ -820,6 +820,7 @@ public sealed class CardInstance
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
+            AttackQuotaOffset = AttackQuotaOffset,
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
             PinnedTurns = PinnedTurns,
             IsRevealed = IsRevealed,
@@ -965,6 +966,7 @@ public sealed record CardSnapshot(
     Dictionary<string, string> CustomJson)
 {
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
+    public int AttackQuotaOffset { get; init; }
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
     public bool IsRevealed { get; init; }
