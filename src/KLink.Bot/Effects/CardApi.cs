@@ -4128,7 +4128,11 @@ public sealed partial class CardApi
     {
         card.ResetAttributes();
         if (card.OriginalOwner is Side.Left or Side.Right)
-            State.ChangeOwner(card, card.OriginalOwner);
+        {
+            // Native ResetCardAttributes restores side directly (+0x277 -> +0x276);
+            // it does not run location rearrangement for other cards.
+            State.ChangeOwner(card, card.OriginalOwner, normalize: false);
+        }
         FireTrigger("OnCardReset", card, card.Owner);
 
         FireTrigger("OnOtherCardReset", card, card.Owner,

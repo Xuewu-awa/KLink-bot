@@ -3666,17 +3666,18 @@ public sealed partial class CardApi
         // queries capacity: those callbacks can draw into or empty the hand.
         bool handFull = IsLocationFull(handLocation);
         CardLocation target = handFull ? CardLocation.Discard : handLocation;
-        int slot = c.State.AllCards.Where(x => x.Location == target).Select(x => x.LocationNumber).DefaultIfEmpty(-1).Max() + 1;
+        // i=127 saves the queried NewLocation quantity, not max(slot)+1.
+        // SetCardLocationAndLocNumber preserves the old number for Discard;
+        // RefreshLocationStatus rearranges only physical locations 3..7.
+        int quantity = handLocation is CardLocation.HandLeft or CardLocation.HandRight
+            ? CountCardsForHandCapacity(handLocation)
+            : c.State.AllCards.Count(x => x.Location == handLocation);
+        int slot = target == CardLocation.Discard ? card.LocationNumber : quantity;
         c.State.Move(card, target, locationNumber: slot, moveReason: CardMoveReason.BoardToHand,
-            notifyMoved: !explicitLocations);
-        if (explicitLocations)
-        {
-            // The direct helper takes OldLocation explicitly, even if a prior
-            // callback already moved/destroyed the still-registered object.
-            RearrangeLocation(oldLocation);
-            RearrangeLocation(target);
-            c.State.CardMoved?.Invoke(card, oldLocation, target, false, CardMoveReason.BoardToHand);
-        }
+            notifyMoved: false, normalizeLocation: false);
+        if ((int)oldLocation is >= 3 and <= 7) RearrangeLocation(oldLocation);
+        if (target != oldLocation && (int)target is >= 3 and <= 7) RearrangeLocation(target);
+        c.State.CardMoved?.Invoke(card, oldLocation, target, false, CardMoveReason.BoardToHand);
         c.Engine.FireAfterLeaveTrigger(card, target, oldLocation);
 
         if (handFull)

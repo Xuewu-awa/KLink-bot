@@ -54,6 +54,7 @@ internal static class SelfTest
         new("退却重入：死亡或再次移动后仍按保存的旧位置执行回手", RetreatSavedOldLocation),
         new("回手容量在离场回调后判断：Dornier 抽满手牌时退回单位进弃牌堆", ReturnCapacityAfterLeaveCallbacks),
         new("回手容量：排除实时autoplay并在离场回调后重新判断", ReturnHandCapacityAutoplay),
+        new("回手编号：查询数量落位、全体物理重排、弃牌及重置保留编号", ReturnLocationNumberContract),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15165,6 +15166,75 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ReturnLocationNumberContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool direct in new[] { false, true })
+        foreach (bool stolen in new[] { false, true })
+        foreach (bool oppositeResidents in new[] { false, true })
+        foreach (int quantity in new[] { 3, 8, 9 })
+        foreach (int excluded in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 17);
+            if (stolen) { state.ChangeOwner(unit, side.Opposite(), normalize: false); unit.Location = side.Opposite().HqOf(); }
+            var oldLocation = unit.Location;
+            var residentSide = oppositeResidents ? side.Opposite() : side;
+            for (int i = 0; i < quantity; i++)
+            {
+                // Reverse IDs and tied sparse slots distinguish stable battle order
+                // from CardId order, owner filtering, and append-to-max placement.
+                var resident = state.CreateWithId(PlainUnit, residentSide, 180 - i, side.HandOf(), (i % 3) * 5);
+                if (i < excluded) engine.Api.AddCustomGameplayTag(resident, "autoplay");
+            }
+            state.CreateWithId(PlainUnit, residentSide, 200, oldLocation, 21);
+            state.CreateWithId(PlainUnit, residentSide, 190, oldLocation, 21);
+            state.CreateWithId(PlainUnit, unit.Owner, 210, CardLocation.Discard, 45);
+            state.CreateWithId(PlainUnit, unit.Owner, 220, CardLocation.Discard, 90);
+            bool full = quantity - excluded >= 9;
+            var target = full ? CardLocation.Discard : side.HandOf();
+            var expected = state.AllCardsInBattleOrder.ToDictionary(x => x.CardId, x => x.LocationNumber);
+            if (!full) expected[62] = quantity - excluded;
+            foreach (var location in new[] { oldLocation, target }.Distinct())
+            {
+                if ((int)location is < 3 or > 7) continue;
+                var ordered = state.AllCardsInBattleOrder
+                    .Where(x => (x == unit ? target : x.Location) == location)
+                    .OrderBy(x => expected[x.CardId]).ToArray();
+                for (int i = 0; i < ordered.Length; i++) expected[ordered[i].CardId] = i;
+            }
+            string? Mismatch() => state.AllCardsInBattleOrder
+                .Where(x => x.LocationNumber != expected[x.CardId])
+                .Select(x => $"id={x.CardId}:slot={x.LocationNumber},expected={expected[x.CardId]}").FirstOrDefault();
+            int callbacks = 0; string? atMove = null;
+            var previous = state.CardMoved;
+            state.CardMoved = (card, old, next, ownerChange, reason) => {
+                if (card == unit) { callbacks++; atMove = Mismatch(); }
+                previous?.Invoke(card, old, next, ownerChange, reason);
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = unit.Owner };
+            engine.Api.InvokeByName(direct ? "MoveCardFromBoardToOwnersHand" : "MoveUnitFromBoardToOwnersHand", unit,
+                direct ? new object?[] { 62, 0, (int)oldLocation, (int)side.HandOf() } : new object?[] { unit, 0 }, ctx, out bool handled);
+            if (!handled || callbacks != 1 || atMove != null || Mismatch() is not null
+                || unit.Location != target || unit.Owner != side)
+                return $"回手位置编号错误：{side}/{direct}/{stolen}/{oppositeResidents}/{quantity}/{excluded}, event={atMove}, final={Mismatch()}";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool discard in new[] { false, true })
+        foreach (bool sameResidentOwner in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var location = discard ? CardLocation.Discard : side.HandOf();
+            var unit = state.CreateWithId(PlainUnit, side, 62, location, 17);
+            state.ChangeOwner(unit, side.Opposite(), normalize: false);
+            var resident = state.CreateWithId(PlainUnit, sameResidentOwner ? unit.Owner : side, 100, location, 45);
+            engine.Api.ResetCardInBattle(unit);
+            if (unit.Owner != side || unit.LocationNumber != 17 || resident.LocationNumber != 45)
+                return $"属性重置错误重排了编号：{side}/{discard}/{sameResidentOwner}";
         }
         return null;
     }
