@@ -4133,16 +4133,27 @@ public sealed partial class CardApi
             // it does not run location rearrangement for other cards.
             State.ChangeOwner(card, card.OriginalOwner, normalize: false);
         }
-        FireTrigger("OnCardReset", card, card.Owner);
-
-        FireTrigger("OnOtherCardReset", card, card.Owner,
-            eventArgs: new object?[] { card, card.CardId },
-            eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardReset"] = card,
-                ["resetCardID"] = card.CardId,
-            });
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        // i=815 is a direct call: no registration, location or suppression gate.
+        const string own = "OnCardReset";
+        if (library.FindProgram(card.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {card.Name}#{card.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, card, card.Name, own, card);
+        }
+        // i=851 queries AFTER the own hook. i=1120 invokes the captured objects
+        // without a subject exclusion, stop gate or per-item eligibility recheck.
+        const string other = "OnOtherCardReset";
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, card,
+                eventArgs: new object?[] { card, card.CardId },
+                namedArgs: new Dictionary<string, object?> { ["cardReset"] = card, ["resetCardID"] = card.CardId });
+        }
     }
 
     public bool HasCustomAbility(CardInstance card, string? ability = null)

@@ -56,6 +56,7 @@ internal static class SelfTest
         new("回手容量：排除实时autoplay并在离场回调后重新判断", ReturnHandCapacityAutoplay),
         new("回手编号：查询数量落位、全体物理重排、弃牌及重置保留编号", ReturnLocationNumberContract),
         new("回手通知：移动前快照、满手仍公开、重置后按ID重新解析", ReturnNotificationContract),
+        new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15167,6 +15168,98 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ResetDispatchSnapshotContract(CardDatabase db)
+    {
+        const string own = "OnCardReset", other = "OnOtherCardReset";
+        const string subjectName = "card_unit_51e_regiment", firstName = "card_unit_typhoon_mk_ib", lastName = "card_unit_52_k";
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        using var cleanup = new AuditProbeCleanup(() => { foreach (var item in installed) item.Locals.Remove(item.Trigger); });
+        foreach (string name in new[] { subjectName, firstName, lastName })
+        foreach (string trigger in name == subjectName ? new[] { own, other } : new[] { other })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装重置派发探针";
+            var steps = new List<KismetStep>();
+            void Set(string key, KismetExpr expr) => steps.Add(new KismetStep(steps.Count, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), expr, null, -1, key, null) { DestinationScope = "instance" });
+            Set(trigger == own ? "_auditResetOwn" : "_auditResetOther", new KismetExpr { Bool = true });
+            if (trigger == other)
+            {
+                Set("_auditResetSubject", new KismetExpr { Var = "cardReset" });
+                Set("_auditResetID", new KismetExpr { Var = "resetCardID" });
+            }
+            steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(trigger, steps); installed.Add((locals, trigger));
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { CardLocation.NotAvailable, side.DeckOf(), side.HandOf(), side.HqOf(), CardLocation.BoardFrontline, CardLocation.Discard })
+        foreach (int mode in Enumerable.Range(0, 19))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            var subject = state.CreateWithId(subjectName, side, 60, location, 0);
+            var first = state.CreateWithId(firstName, side, 20, side.HqOf(), 1);
+            var last = state.CreateWithId(lastName, side.Opposite(), 21, mode == 7 ? CardLocation.NotAvailable : side.HandOf(), 2);
+            var cards = new List<CardInstance> { subject, first, last };
+            foreach (var card in cards) card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { other } };
+            if (mode == 18) subject.Definition = new CardDefinition { Name = subject.Name };
+            if (mode == 1) state.StopFurtherActions = true;
+            if (mode is 8 or 9 or 10) last.Keywords.Add(Keyword.Suppressed);
+            if (mode == 9) last.SuppressionExceptionTriggers.Add(other);
+            bool ownCalled = false; var called = new List<CardInstance>();
+            CardInstance? replacement = null; var created = state.CardCreated;
+            void AddLateObserver()
+            {
+                var late = state.CreateWithId(lastName, side, 22, side.DeckOf(), 0);
+                late.Definition = new CardDefinition { Name = late.Name, UsedTriggers = new[] { other } }; cards.Add(late);
+            }
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                if (!ownCalled && Equals(subject.BlueprintVariables.GetValueOrDefault("_auditResetOwn"), true))
+                {
+                    ownCalled = true;
+                    if (mode == 2) state.StopFurtherActions = true;
+                    if (mode == 4) first.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 10) last.Keywords.Remove(Keyword.Suppressed);
+                    if (mode == 14) AddLateObserver();
+                    if (mode is 16 or 17) subject.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 17) subject.SuppressionExceptionTriggers.Add(other);
+                    return;
+                }
+                var current = cards.Single(x => !called.Contains(x) && Equals(x.BlueprintVariables.GetValueOrDefault("_auditResetOther"), true));
+                called.Add(current);
+                if (current != first) return;
+                if (mode == 3) state.StopFurtherActions = true;
+                if (mode == 5) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 6) last.Location = CardLocation.NotAvailable;
+                if (mode == 11) last.Definition = new CardDefinition { Name = last.Name };
+                if (mode is 12 or 13)
+                {
+                    state.Remove(last);
+                    if (mode == 13) replacement = state.CreateWithId(lastName, side, 21, side.HandOf(), 0);
+                }
+                if (mode == 15) AddLateObserver();
+            };
+            engine.Api.ResetCardInBattle(subject);
+            var expected = new List<CardInstance>();
+            if (mode != 4) expected.Add(first);
+            if (mode != 8) expected.Add(last);
+            if (mode == 14) expected.Add(cards.Single(x => x.CardId == 22));
+            if (mode is not (16 or 18)) expected.Add(subject);
+            if (!ownCalled || !called.SequenceEqual(expected)
+                || called.Any(x => !ReferenceEquals(x.BlueprintVariables.GetValueOrDefault("_auditResetSubject"), subject)
+                    || !Equals(x.BlueprintVariables.GetValueOrDefault("_auditResetID"), 60))
+                || replacement?.BlueprintVariables.ContainsKey("_auditResetOther") == true)
+                return $"重置快照错误：{side}/{location}/mode={mode}, own={ownCalled}, called={string.Join(",", called.Select(x => x.CardId))}, expected={string.Join(",", expected.Select(x => x.CardId))}";
         }
         return null;
     }
