@@ -245,6 +245,48 @@ public sealed partial class CardApi
         }
     }
 
+    // ExecuteOnMoveToFrontlineCardEffects: active Gotchas first, then own
+    // hook and T50. A shared done set prevents duplicate Gotcha callbacks.
+    public void ExecuteOnMoveToFrontlineCardEffects(CardInstance moved, bool forceMove, int moveCost)
+    {
+        State.StopFurtherActions = false;
+        var library = Blueprint.KismetLibrary.Default;
+        var done = new HashSet<int>();
+        const string trigger = "OnOtherCardMoveToFrontline";
+        var args = new object?[] { moved, forceMove, moveCost };
+        var named = new Dictionary<string, object?> {
+            ["cardMoved"] = moved, ["ForceMove"] = forceMove, ["moveCost"] = moveCost,
+        };
+        void InvokeObserver(CardInstance observer)
+        {
+            if (library?.FindProgram(observer.Name, trigger) is null) return;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={moved.Name}#{moved.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, moved, eventArgs: args, namedArgs: named);
+        }
+        var active = GetActiveGotchasOrdered().ToArray();
+        foreach (int id in active)
+        {
+            if (State.StopFurtherActions) return;
+            if (State.ById(id) is { } gotcha) InvokeObserver(gotcha);
+            done.Add(id);
+        }
+        if (State.StopFurtherActions || moved.Location != CardLocation.BoardFrontline) return;
+        if (!moved.IsSuppressed)
+            FireTrigger("OnMoveToFrontline", moved, moved.Owner,
+                eventArgs: new object?[] { forceMove, moveCost }, namedArgs: named,
+                recipientSnapshot: new[] { moved }, includeUnavailableRecipients: true);
+        done.Add(moved.CardId);
+        if (IsUnrevealedCovertCard(moved)) return;
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        foreach (var observer in recipients)
+        {
+            if (State.StopFurtherActions) return;
+            if (done.Contains(observer.CardId)) continue;
+            InvokeObserver(observer);
+            done.Add(observer.CardId);
+        }
+    }
+
     // UpdateFrontlineIfNeeded queries T27 once. i=870 reads current ownership
     // anew for every callback; earlier callbacks may change it through reentry.
     internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner)

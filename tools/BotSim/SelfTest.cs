@@ -125,6 +125,7 @@ internal static class SelfTest
         new("真实弃牌重入：G4M1尝试直接入场后取消外层弃牌", BettyDiscardDirectEntry),
         new("前线归属：按物理战斗数组首个对象判定，不按阵营/槽位/HQ过滤", FrontlinePhysicalFirst),
         new("前线归属：T27快照保留资格，每次回调读取当前归属", FrontlineObserverSnapshot),
+        new("推进前线事件：反制优先/去重、隐蔽及T50查询与停止边界", FrontlineEntryStages),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8805,6 +8806,121 @@ internal static class SelfTest
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
         return new AuditProbeCleanup(() => locals.Remove(trigger));
+    }
+
+    private static string? FrontlineEntryStages(CardDatabase db)
+    {
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        foreach (string trigger in new[] { "OnMoveToFrontline", "OnOtherCardMoveToFrontline" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Locals.Remove(item.Trigger);
+                return "无法安全安装推进事件探针";
+            }
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "ForceMove", Scope = "local" }, null, -1, "_auditT50Force", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "moveCost", Scope = "local" }, null, -1, "_auditT50Cost", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add((locals, trigger));
+        }
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool force in new[] { false, true })
+            foreach (int mode in Enumerable.Range(0, 19))
+            {
+                const string trigger = "OnOtherCardMoveToFrontline";
+                var (engine, state) = EmptyBoard(db);
+                state.StopFurtherActions = true; // The helper must reset this at entry.
+                var subject = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60,
+                    mode == 18 ? side.HqOf() : CardLocation.BoardFrontline, 0);
+                var gotcha = state.CreateWithId("card_event_honorifics", side.Opposite(), 30, side.Opposite().HandOf(), 0);
+                var first = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+                var last = state.CreateWithId(first.Name, side, 21, mode == 13 ? CardLocation.NotAvailable : side.HqOf(), 2);
+                var cards = new List<CardInstance> { subject, gotcha, first, last };
+                foreach (var card in cards) card.Definition = new CardDefinition {
+                    Name = card.Name, Type = card == gotcha ? "gotcha" : "infantry",
+                    UsedTriggers = card == gotcha && mode == 4 ? Array.Empty<string>() : new[] { trigger }
+                };
+                gotcha.GotchaActivated = 1;
+                if (mode == 3) gotcha.Keywords.Add(Keyword.Suppressed);
+                if (mode == 5) subject.Keywords.Add(Keyword.Suppressed);
+                if (mode is 6 or 7) subject.Keywords.Add(Keyword.Covert);
+                if (mode is 16 or 17) first.Keywords.Add(Keyword.Suppressed);
+                if (mode == 16) first.SuppressionExceptionTriggers.Add(trigger);
+                CardInstance? secondGotcha = null;
+                if (mode == 15)
+                {
+                    secondGotcha = state.CreateWithId(gotcha.Name, gotcha.Owner, 31, gotcha.Owner.HandOf(), 1);
+                    secondGotcha.Definition = gotcha.Definition; secondGotcha.GotchaActivated = 2; cards.Add(secondGotcha);
+                }
+                int cost = force ? 0 : 3;
+                var called = new List<int>(); var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = cards.Single(x => !called.Contains(x.CardId)
+                        && x.BlueprintVariables.ContainsKey("_auditT50Cost"));
+                    called.Add(current.CardId);
+                    if (current == gotcha)
+                    {
+                        if (mode == 1) state.StopFurtherActions = true;
+                        if (mode == 2) subject.Location = CardLocation.Discard;
+                        if (mode == 14)
+                        {
+                            var added = state.CreateWithId(gotcha.Name, gotcha.Owner, 40, gotcha.Owner.HandOf(), 1);
+                            added.Definition = gotcha.Definition; added.GotchaActivated = 2; cards.Add(added);
+                        }
+                        if (mode == 15)
+                        {
+                            secondGotcha!.GotchaActivated = 0; secondGotcha.Keywords.Add(Keyword.Suppressed);
+                            secondGotcha.Location = CardLocation.NotAvailable;
+                        }
+                    }
+                    if (current == subject)
+                    {
+                        if (mode == 7) subject.IsRevealed = true;
+                        if (mode == 8) subject.Location = CardLocation.Discard;
+                        if (mode == 9) state.StopFurtherActions = true;
+                        if (mode == 10) first.Keywords.Add(Keyword.Suppressed);
+                    }
+                    if (current == first)
+                    {
+                        if (mode == 11) state.StopFurtherActions = true;
+                        if (mode == 12) { last.Keywords.Add(Keyword.Suppressed); last.Location = CardLocation.NotAvailable; }
+                    }
+                };
+                engine.Api.ExecuteOnMoveToFrontlineCardEffects(subject, force, cost);
+                var expected = mode is 1 or 2 or 18 ? new List<int> { 30 }
+                    : mode is 6 or 9 ? new List<int> { 30, 60 }
+                    : mode == 5 ? new List<int> { 30, 20, 21 }
+                    : mode is 10 or 17 ? new List<int> { 30, 60, 21 }
+                    : mode == 11 ? new List<int> { 30, 60, 20 }
+                    : mode == 14 ? new List<int> { 30, 60, 20, 21, 40 }
+                    : mode == 15 ? new List<int> { 30, 31, 60, 20, 21 }
+                    : new List<int> { 30, 60, 20, 21 };
+                if (!called.SequenceEqual(expected))
+                    return $"T50阶段错误：{side} force={force} mode={mode} 期望{string.Join(",", expected)} 实际{string.Join(",", called)}";
+                foreach (int id in called)
+                {
+                    var card = cards.Single(x => x.CardId == id);
+                    if (!Equals(card.BlueprintVariables.GetValueOrDefault("_auditT50Force"), force)
+                        || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditT50Cost")) != cost)
+                        return "推进自身/反制/观察者的forceMove与moveCost载荷错误";
+                }
+            }
+            return null;
+        }
+        finally { foreach (var item in installed) item.Locals.Remove(item.Trigger); }
     }
 
     private static string? FrontlinePhysicalFirst(CardDatabase db)

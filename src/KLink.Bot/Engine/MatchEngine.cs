@@ -2065,17 +2065,7 @@ public sealed class MatchEngine
         //    旧实现是反的（先 `OnMoveToFrontline`、再刷新归属并补发事件），
         //    收口到钩子里正好把这个顺序也扳正。
         State.Move(unit, CardLocation.BoardFrontline, targetSlot, moveReason: CardMoveReason.AdvancePlayerMove);
-        var moveEventArgs = new object?[] { unit, false, moveCost };
-        var moveNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardMoved"] = unit,
-            ["ForceMove"] = false,
-            ["moveCost"] = moveCost,
-        };
-        Api.FireTrigger("OnMoveToFrontline", unit, unit.Owner, "OnOtherCardMoveToFrontline",
-            eventArgs: moveEventArgs,
-            eventSubject: unit,
-            namedArgs: moveNamedArgs);
+        Api.ExecuteOnMoveToFrontlineCardEffects(unit, false, moveCost);
 
         FireOperationKreditsSpent(unit, moveCost);
 
@@ -2086,8 +2076,9 @@ public sealed class MatchEngine
     /// 蓝图 <c>MoveUnitFromSupportToFrontLine</c> 的效果位移路径。
     ///
     /// 这是卡牌效果调用的免费移动，不经过普通行动方、召唤失调、压制或油费门；
-    /// 蓝图只检查卡在场、<c>cantMove</c>、前线归属和前线容量。成功后不消耗
-    /// 单位的本回合移动额度，但仍派发位置变化与前线进入触发。
+    /// 蓝图检查卡在场、<c>cantMove</c>、前线归属和前线容量。
+    /// 当前额度消费、零费行动事件及qqq输出仍有已确认差异，见审计RULE-084；
+    /// 本方法的进入前线事件已接入独立的反制/自身/T50流程。
     /// </summary>
     public bool MoveUnitFromSupportToFrontLine(CardInstance unit, int instigatorID,
                                                out string reason)
@@ -2123,18 +2114,7 @@ public sealed class MatchEngine
         int locationNumber = State.NextLocationNumber(unit.Owner, CardLocation.BoardFrontline);
         State.Move(unit, CardLocation.BoardFrontline, locationNumber, moveReason: CardMoveReason.AdvanceForce);
 
-        var moveEventArgs = new object?[] { unit, true, 0 };
-        var moveNamedArgs = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["cardMoved"] = unit,
-            ["ForceMove"] = true,
-            ["moveCost"] = 0,
-            ["instigatorID"] = instigatorID,
-        };
-        Api.FireTrigger("OnMoveToFrontline", unit, unit.Owner, "OnOtherCardMoveToFrontline",
-            eventArgs: moveEventArgs,
-            eventSubject: unit,
-            namedArgs: moveNamedArgs);
+        Api.ExecuteOnMoveToFrontlineCardEffects(unit, true, 0);
         return true;
     }
 
