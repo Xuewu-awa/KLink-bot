@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
+        new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
         new("牌库生成通知：落点/隐藏/洗牌字段与零负数量矩阵", NativeSpawnDeckReceipt),
         new("牌库生成通知：T3/T22后读取当前牌库并保留全部生成ID", NativeSpawnDeckReceiptTiming),
         new("洗牌通知：保存顺序、四字段、空牌库与skipSubAction", NativeShuffleNotification),
@@ -10222,6 +10224,60 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeSpawnHandInitialFields(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (Side contextSide in new[] { Side.Left, Side.Right })
+        foreach (bool gold in new[] { false, true })
+        foreach (bool sourceSalvage in new[] { false, true })
+        foreach (var salvage in new[] { (Id: 0, Faction: (string?)null), (Id: 2, Faction: (string?)"Britain"), (Id: 5, Faction: (string?)"USA") })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, contextSide, 20, CardLocation.Discard, 0); self.IsGold = !gold;
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 30, CardLocation.Discard, 0);
+            source.IsGold = gold; source.IsSalvaged = sourceSalvage; source.SalvageFaction = sourceSalvage ? "Germany" : null; source.SalvagedCardId = 999;
+            bool correct = true; int created = 0, modifiers = 0;
+            bool Matches(CardInstance card) => card.Owner == side && card.IsGold == gold && card.IsSalvaged == (salvage.Id != 0)
+                && card.SalvageFaction == salvage.Faction && card.SalvagedCardId == 0;
+            state.CardCreated += card => { if (card.Name == "card_unit_routed_troops") { created++; correct &= Matches(card); } };
+            state.CardCreationModifiers += card => { if (card.Name == "card_unit_routed_troops") { modifiers++; correct &= Matches(card); } };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = contextSide };
+            var result = engine.Api.InvokeByName("SpawnCardInHandBySide", self, new object?[] { (int)side,
+                "card_unit_routed_troops", 30, false, false, false, "card_unit_432_infantry_regiment", "", salvage.Id, null }, ctx, out bool handled);
+            if (!handled || result is not CardInstance card || card.Name != "card_unit_routed_troops" || !Matches(card)
+                || !correct || created != 1 || modifiers != 1 || card.Location != side.HandOf() || state.Random.ConsumedCount != 0)
+                return $"手牌生成初始字段不符：{side}/{contextSide}/{gold}/{sourceSalvage}/{salvage}";
+        }
+        return null;
+    }
+
+    private static string? NativeSpawnHandSourceGuard(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -5, -1, 0 })
+        foreach (bool explicitOut in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            int count = state.AllCards.Count;
+            var direct = engine.Api.InvokeByName("SpawnCardInHandBySide", source, new object?[] { (int)side,
+                "card_unit_routed_troops", sourceId, false, false, false, "", "", 0, null }, ctx, out bool handled);
+            var args = new[] { new KismetExpr { Int = (int)side }, new KismetExpr { Name = "card_unit_routed_troops" }, new KismetExpr { Int = sourceId },
+                new KismetExpr { Bool = false }, new KismetExpr { Bool = false }, new KismetExpr { Bool = false }, new KismetExpr { Str = "" },
+                new KismetExpr { Str = "" }, new KismetExpr { Int = 0 }, new KismetExpr { Var = "spawnedID" } };
+            var steps = new KismetStep[] {
+                new(0, "call", "SpawnCardInHandBySide", args, explicitOut ? new[] { 9 } : Array.Empty<int>(), null, null, -1, null, null),
+                new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, new Dictionary<string, object?> { ["spawnedID"] = 777 }, "spawnedID");
+            if (!handled || direct is not null || state.AllCards.Count != count || state.ActionLog.Count != 0
+                || state.Random.ConsumedCount != 0 || !Equals(output.GetValueOrDefault("spawnedID"), 777))
+                return "非正来源必须提前返回且不伪造默认输出或使用上下文来源";
+        }
+        return null;
     }
 
     private static string? NativeSpawnDeckReceipt(CardDatabase db)

@@ -4799,10 +4799,21 @@ public sealed partial class CardApi
 
     private object? DoSpawnInHand(EffectContext c, object? r, object?[] a)
     {
-        // SpawnCardInHandBySide(side, ?, instigatorID, bool, bool, bool, 卡名, textVar, int, out)
+        // Current BP SpawnCardinHandbySide i=43/77 guards the entire spawn.
+        // Unassigned outputs stay untouched; do not fall back to ctx.Self.
+        int spawnerId = IntArg(a, 2);
+        if (spawnerId <= 0) return null;
         var side = SideArg(r, a, 0, c.Controller);
-        string? cardName = FindCardNameArg(c, a);
-        return cardName is null ? null : SpawnCardInHand(side, cardName);
+        string? cardName = StrArgOrNull(a, 1);
+        if (cardName is null || c.State.Database.Find(cardName) is null) return null;
+        int salvage = IntArg(a, 8);
+        string? faction = null;
+        if (salvage != 0 && Blueprint.LiveRuleTables.TryGetEnumName(
+            "/Script/KardsCore.EFactionEnum", salvage, out string factionName)) faction = factionName;
+        // i=250/333 forwards source gold and explicit salvage, before OnCreate/T35.
+        // Full-hand, cardSeen timing and draw notifications remain open (RULE-111).
+        return SpawnCardInHand(side, cardName, isGold: c.State.ById(spawnerId)?.IsGold ?? false,
+            isSalvaged: salvage != 0, salvageFaction: faction);
     }
 
     /// <summary>

@@ -2915,10 +2915,12 @@ public sealed partial class CardApi
         return drawn;
     }
 
-    /// <summary>把一张卡生成到手牌（对应 SpawnCardInHandBySide / doSpawnCardInHand）。</summary>
-    public CardInstance SpawnCardInHand(Side side, string cardName)
+    /// <summary>生成手牌对象并执行当前事件适配；完整CreateCard手牌流程仍待审计（RULE-111）。</summary>
+    public CardInstance SpawnCardInHand(Side side, string cardName, bool isGold = false,
+        bool isSalvaged = false, string? salvageFaction = null)
     {
-        var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()));
+        var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()),
+            isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction);
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
