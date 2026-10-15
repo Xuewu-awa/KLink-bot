@@ -1,0 +1,34 @@
+{
+  "rule": "RULE-135",
+  "status": "require valid targetedCard output for card-local play target candidates; retain no-target play availability",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\targeted-card-output-evidence-20261016.json",
+  "evidence_sha256": "f7cf61f8357d33976d9f5fd636dabbf4a7b2221b81fb7e083fbc63a3547fc899",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "1071e54b4ddb3ed13afc988990da6b725c843f7de10f5500ddb65b6cf854d103",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "4dc92c9a903b1aad8392774a3bc6cf4ce72232d4f04e1cf6011eab26532661bf",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "acb8c55dbfe997ce0f340329f1ebcced289c4dd0376c6cdf107f97ed3c2ee0dc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-targeted-card-output-20261016.py": "0e65bad540757b14bd58a1ee53d85c78fd0168c56f8738c3e2def417765c2f21",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_hidden_plans.functions.json": "aeb38acfe1d10e9aed80d8139481d732e4f775a859511bf3026795e5ecde6c43",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.functions.json": "32d2ef9f96535b194273087a8b5bfb94f0f8e568bdddbf403c3c0227d2861ab0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\BrothersInArms\\events\\card_event_refit_bia.functions.json": "649deb5564a0f20e3bb876ee303e39a964cddafaa20d5bb9469c7856f9e9a4c3",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-card-output-before-20261016.txt": "6b830d898f2967395261ece2eb5413738d89b14a36f0074e56022bb8834cfef8",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-targeted-card-output-after-20261016.txt": "7243d14e53a2b52c44ed7f29259c9d0f24a4d67017b754e99b1fe693cb40ecd4"
+  },
+  "tests": {
+    "release": "501/501",
+    "real_card_matrix": 96,
+    "matrix": "3 cards x 2 sides x 4 candidate kinds x 2 byPlay modes x 2 credit levels",
+    "additional": "2 sides verify Hidden Plans valid Covert target branch and absent-local-program fallback. No-target branches remain CanPlayFromHandOn=true and CanPlay=true when affordable.",
+    "regression": "Original dispatcher with final tests: 1/501 fails, Hidden Plans choice 0 with 20 credits incorrectly accepts a target. Corrected dispatcher: 501/501 pass."
+  },
+  "resolved_lead": "IsAlive only excludes Discard/NotAvailable. For already-on-board candidates the existing IsAlive prefilter is redundant, not a defense<=0 filter. No fix was made for this rejected lead.",
+  "limits": [
+    "No independent IR program retains the prior fallback; native base CanPlayFromHand output ABI and default implementation are not certified.",
+    "Model validity is a non-null CardInstance result, not complete UE UObject destruction/GC flag emulation. Output identity need not equal the probed candidate; the native loop checks validity, then applies common checks to its current candidate.",
+    "Candidate global order, targetOverride writes/clearing, live map/array rereads, explicit selected-target execution checks and full gate order remain open.",
+    "Complete side-effect handling across all CanPlayFromHand functions and full per-card semantics are not certified."
+  ],
+  "fully_semantically_verified_cards": 0
+}

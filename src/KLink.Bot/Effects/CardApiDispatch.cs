@@ -7110,60 +7110,15 @@ public sealed partial class CardApi
     private const string CommandoCard = "card_unit_no_3_commando";
 
     /// <summary>
-    /// ★★ **卡自己的**目标判据 —— 执行这张卡的 `CanPlayFromHand`（IR 的 `locals`），
-    /// 把候选目标当作客户端的 `targetOverride` 传进去。
-    ///
-    /// ## 为什么必须执行函数体，而不是写一条 C# 规则
-    ///
-    /// 全卡池 **438 张卡**各自实现了它，判据五花八门（`card-ir.json` 的
-    /// `locals.CanPlayFromHand` 全量统计，45 个不同被调函数）：
-    /// <code>
-    /// card_event_aa_barrage       "Target air unit must retreat"
-    ///     → IsAirUnit(目标) ? (HasCustomAbility(目标,"cantRetreat") ? 拒 : 放) : 拒("air_unit")
-    /// card_event_breakout         "…"
-    ///     → IsVeteran(目标) ? 放 : 拒("veteran_unit")
-    /// card_unit_m16_halftrack     "An enemy air or infantry unit must retreat"
-    ///     → 敌方 && (IsAirUnit || IsInfantry) ? … : 拒("enemy_air_or_infantry_unit")
-    /// </code>
-    /// 「一条通用公式」不可能存在 —— 唯一忠实的做法是**跑那张卡自己的函数体**，
-    /// 与 `GetPlayFromHandDamage` / `GetChooseSpawnCards` 走的是同一条路
-    /// （`KismetVm.RunLocalProgramMulti` + `CardApi.RunOwnLocal`）。
-    ///
-    /// ## 为什么 IR 里原来没有它
-    ///
-    /// `klink bot/tools/gen-kismet-ir.py` 的 `LOCAL_FUNCTIONS` 是一个**白名单**，
-    /// 以前只有 78 个名字，注释里明写「别的局部函数（`CanPlayFromHand` /
-    /// `ShouldHighlightInHand` …）有各自的调用路径，不在这次修复范围内」。
-    /// 本次把它加进白名单并重生成 `card-ir.json`
-    /// （已验证：`steps` / `entrypoints` **逐字节不变**，只多了 438 个 `locals` 条目）。
-    ///
-    /// ## 返回值
-    ///
-    /// 这张卡**没有** `CanPlayFromHand` ⇒ 客户端也没有这道门 ⇒ **放行**，
-    /// 而且**不计**未实现（"没有这道门"是事实，不是缺口）。
-    ///
-    /// ## ⚠️ 为什么"跑一遍函数体"是安全的（不会污染局面）
-    ///
-    /// 这个方法会在**候选枚举**里被逐张候选调用（`MatchEngine.LegalPlayTargets`），
-    /// 而 `NnPolicy.Choose` 是**在实时引擎 `live` 上**枚举的
-    ///（`verifyEveryReplay: false`，见 `BotTurnService.cs:528`）——
-    /// 万一门有副作用，就会把实时局面改掉而没人发现。
-    ///
-    /// 所以把 438 张卡的 `CanPlayFromHand` 函数体里**所有被调函数**扫了一遍
-    ///（`card-ir.json` 全量统计，**45 种**）：`GetTargetedCard`(431) / `IsUnit`(201) /
-    /// `IsSameSideUnit`(132) / `GetOppositeSide`(125) / `HasCampaignUpgrade`(30) /
-    /// `IsTank`(29) / `IsInfantry`(29) / `HasCustomAbility`(25) / `Array_Get`(20) /
-    /// `getTotalAttack`(20) / `getAndDecryptKredit`(19) … ——
-    /// **全部是只读谓词/取值**，没有任何 `Change*` / `Damage*` / `Destroy*` / `Spawn*` /
-    /// `Pin*` / `MakeCardRetreat`。唯一一个写操作是 `Array_Clear`（1 处，
-    /// 清的是**函数自己的局部数组**，不进引擎状态）。
-    ///
-    /// 另外 `RunOwnLocal` 自带独立的 `Frame` + `EffectContext`，共享的可变状态只有
-    /// VM 的计数器与 `_triggerDepth`。⇒ 这道门是纯函数。
-    /// **将来若某张卡的 `CanPlayFromHand` 里出现写操作，这条结论就失效** ——
-    /// 那时要么把它做成"在副本上判"，要么把副作用单独摘出来。
+    /// Run the card's own CanPlayFromHand and preserve its canIt/reason outputs.
+    /// A no-target branch may legitimately return true with targetedCard=None.
+    /// WhichChooseOne can update the card's target flag during this query;
+    /// these local programs must not be assumed to be pure predicates.
     /// </summary>
     public TargetCheck CanPlayFromHandOn(CardInstance card, CardInstance? target)
+        => CheckPlayFromHandOn(card, target, requireTargetedCard: false);
+
+    private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard)
     {
         var outs = RunOwnLocal(
             card, "CanPlayFromHand",
@@ -7175,22 +7130,28 @@ public sealed partial class CardApi
             return TargetCheck.Ok;
         }
 
+        bool can = Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("canIt"));
+        // BP_Logic.CanPlayCardFromHand i=2266..2305 requires both canIt
+        // and a valid BaseCardObject output before the common target checks.
+        if (can && requireTargetedCard && outs.GetValueOrDefault("targetedCard") is not CardInstance)
+            return new TargetCheck(false, "invalid_targeted_card", "", "");
+
         return new TargetCheck(
-            Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("canIt")),
+            can,
             outs.GetValueOrDefault("reason") as string ?? "",
             outs.GetValueOrDefault("reasonParam1") as string ?? "",
             outs.GetValueOrDefault("reasonParam2") as string ?? "");
     }
 
     /// <summary>
-    /// ★★ **两道门一起过** —— 这就是客户端选一个目标时的完整判据
+    /// 卡自身判据、出牌时的targetedCard输出有效性与共用目标门
     /// （`BP_Logic.g.cs:1235-1355` 的循环体，顺序也一致）。
     ///
     /// 调用方：`NnPolicy` / `GreedyBot` / `BotTurnService` 的**候选枚举**，
     /// 以及 `ReplayRunner` 的**目标校验**。
     ///
     /// ⚠️ `target` 为 null 时返回**拒绝**（`no_target`）：调用方必须先判
-    /// "这张牌到底需不需要目标"（`Definition.ExternalCalls` 含 `GetTargetedCard`），
+    /// "这张牌当前是否需要目标"（实例SelectTargetOnPlayedFromHand），
     /// 不要拿 null 当"无目标合法"。
     /// </summary>
     public TargetCheck CanTarget(CardInstance card, CardInstance? target, bool byPlayFromHand = true)
@@ -7201,7 +7162,7 @@ public sealed partial class CardApi
         }
 
         // ① 卡自己的 CanPlayFromHand（客户端枚举里先调的就是它）
-        var own = CanPlayFromHandOn(card, target);
+        var own = CheckPlayFromHandOn(card, target, requireTargetedCard: byPlayFromHand);
         if (!own.Can)
         {
             return own;

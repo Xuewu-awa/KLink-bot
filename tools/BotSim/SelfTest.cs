@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("目标输出有效性：true加空目标不能成为出牌候选，无目标分支仍可出牌", TargetedCardOutputValidity),
         new("需目标指令可用性：空候选拒绝、实时标志及拒绝无副作用", TargetedOrderAvailability),
         new("选择选项结构：数组、布尔成员、索引和读取隔离", ChoiceOptionStructRead),
         new("选择卡反制：Interception/Secret Operatives按选项标志判断，非选择卡保留实例标志", ChoiceCountermeasureOptions),
@@ -15179,6 +15180,52 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? TargetedCardOutputValidity(CardDatabase db)
+    {
+        foreach (string name in new[] { "card_event_hidden_plans", "card_event_barrage", "card_event_refit_bia" })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int targetKind in Enumerable.Range(0, 4))
+        foreach (bool byPlay in new[] { false, true })
+        foreach (int credits in new[] { 20, 0 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;state.SetKredits(side, credits);
+            var source = state.CreateWithId(name, side, 60, side.HandOf(), 1);
+            source.ChooseOne = 0; // All three real functions return canIt=true, targetedCard=None.
+            var target = targetKind == 2 ? state.Hq(side)
+                : state.CreateWithId(PlainUnit, targetKind == 1 ? side.Opposite() : side, 61,
+                    targetKind == 3 ? CardLocation.Discard : (targetKind == 1 ? side.Opposite() : side).HqOf(), 1);
+            if (!engine.Api.CanPlayFromHandOn(source, target).Can)
+                return $"无目标分支自身判据错误：{name}";
+            var actual = engine.Api.CanTarget(source, target, byPlay);
+            if (byPlay)
+            {
+                if (actual.Can || actual.Reason != "invalid_targeted_card")
+                    return $"未拒绝空targetedCard输出：{name}/{side}/{targetKind}/{credits}, can={actual.Can}, reason={actual.Reason}";
+                if (engine.LegalPlayTargets(source).Count != 0)
+                    return "无目标分支仍列出了可选对象";
+                if (credits == 20 && !engine.CanPlay(source, out _))
+                    return "目标输出为空错误禁止无目标分支出牌";
+            }
+            else if (actual != engine.Api.CanSelectAsTarget(source, target, false))
+                return "仅出牌目标枚举的输出门改变了其他模式";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;state.SetKredits(side, 20);
+            var source = state.CreateWithId("card_event_hidden_plans", side, 60, side.HandOf(), 1);
+            source.ChooseOne = 1;
+            var target = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 1);
+            target.Keywords.Add(Keyword.Covert);target.IsRevealed = true;
+            if (!engine.Api.CanTarget(source, target).Can || !engine.LegalPlayTargets(source).Contains(target))
+                return "有效targetedCard输出被错误拒绝";
+            var plain = state.CreateWithId(PlainUnit, side, 62, side.HandOf(), 2);
+            if (!engine.Api.CanTarget(plain, target).Can)
+                return "无独立CanPlayFromHand程序的既有回退被改变";
         }
         return null;
     }
