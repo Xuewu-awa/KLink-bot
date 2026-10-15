@@ -4813,21 +4813,29 @@ public sealed partial class CardApi
     public int GetTotalAttack(Side s) => State.Board(s).Sum(u => u.Attack);
     public int GetTotalDefense(Side s) => State.Board(s).Sum(u => u.Defense);
 
-    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool)
+    public CardInstance? GetRandomCard(IReadOnlyList<CardInstance> pool, bool skipCustomAlways = false)
     {
         if (pool.Count == 0)
         {
             return null;
         }
 
-        // `GetRandomCard(cards, skipCustomAlways, out randomCard)` 在蓝图里是
-        // `RandomIntegerInRangeFromStream(cardsRandomStream, 0, Length-1)`
-        // （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:21682-21698`）——
-        // 一次消费、闭区间。游标探针记下候选集大小与选中下标，用来和客户端对账。
+        // Authoritative BP_CardFunctions:GetRandomCard i=112/363..981:
+        // scan the supplied array in order; Array_Add preserves duplicate entries.
+        // This helper adds no owner, zone, suppression, or defense filter.
+        IReadOnlyList<CardInstance> selectionPool = pool;
+        if (!skipCustomAlways)
+        {
+            var priority = pool.Where(card => CardCustomNames.Has(card, "customName1", "AlwaysSelectedAsRandom")).ToList();
+            if (priority.Count > 0) selectionPool = priority;
+        }
+
+        // Candidate selection only. The underlying random-stream helper's extra
+        // consumption remains a separate open audit item (RULE-103).
         uint seedBefore = State.Random.Seed;
         long cursorBefore = State.Random.ConsumedCount;
-        int index = State.Random.Next(pool.Count);
-        CardInstance picked = pool[index];
+        int index = State.Random.Next(selectionPool.Count);
+        CardInstance picked = selectionPool[index];
         // 候选集的**内容与顺序**也要记 —— 同一次消费、同一个下标，
         // 候选集排列不同就会取到不同的卡（这是"随机效果与客户端不一致"的第三个成因）。
         //
@@ -4835,8 +4843,8 @@ public sealed partial class CardApi
         if (State.CollectRandomTrace)
         {
             // Full order is required to distinguish a pool mismatch from an RNG mismatch.
-            string poolDump = string.Join(",", pool.Select(x => x.Name));
-            State.TraceRandom($"GetRandomCard n={pool.Count} idx={index} -> {picked.Name} " +
+            string poolDump = string.Join(",", selectionPool.Select(x => x.Name));
+            State.TraceRandom($"GetRandomCard n={selectionPool.Count} inputN={pool.Count} skipCustomAlways={skipCustomAlways} idx={index} -> {picked.Name} " +
                 $"cursor={cursorBefore}->{State.Random.ConsumedCount} " +
                 $"seed={seedBefore}->{State.Random.Seed} 池=[{poolDump}]");
         }

@@ -184,6 +184,8 @@ internal static class SelfTest
         new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
         new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
         new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
+        new("随机候选：优先子集顺序、重复权重与skip参数派发", NativeRandomPriorityPools),
+        new("随机候选：名称属性边界及真实Royal Scots动态移除", NativeRandomPriorityAttributes),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10255,6 +10257,95 @@ internal static class SelfTest
                         return "相同随机下标必须命中全局顺序中的同一候选，且仅消费一次";
                 }
             }
+        }
+        return null;
+    }
+
+    // These tests isolate candidate selection using the existing stream as an
+    // index oracle; they do not certify the native helper's consumption schedule.
+    private static string? NativeRandomPriorityPools(CardDatabase db)
+    {
+        foreach (uint seed in new uint[] { 0, 1, 42, uint.MaxValue, 1000000000 })
+        foreach (int mode in Enumerable.Range(0, 6)) // direct default/false/true, dispatch false/true/default
+        foreach (int variant in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Random.Initialize(unchecked((int)seed));
+            var n = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.BoardFrontline, 1);
+            var p = state.CreateWithId(PlainUnit, Side.Right, 10, CardLocation.Discard, 0);
+            var q = state.CreateWithId(PlainUnit, Side.Left, 70, Side.Left.DeckOf(), 0);
+            p.CustomJson["customName1"] = "x;alwaysselectedasrandom;;";
+            q.CustomJson["customName1"] = "AlwaysSelectedAsRandom;AlwaysSelectedAsRandom";
+            p.Keywords.Add(Keyword.Suppressed); p.Defense = 0;
+            var pool = variant switch {
+                0 => new List<CardInstance>(), 1 => new() { n }, 2 => new() { p },
+                3 => new() { n, p }, 4 => new() { q, n, p, q }, _ => new() { n, n },
+            };
+            var original = pool.ToArray();
+            bool skip = mode is 2 or 4;
+            var expected = skip ? original : variant switch {
+                2 or 3 => new[] { p }, 4 => new[] { q, p, q }, _ => original,
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = n, Controller = Side.Left };
+            var oracle = new UeRandomStream(seed);
+            for (int draw = 0; draw < 12; draw++)
+            {
+                long before = state.Random.ConsumedCount;
+                var want = expected.Length == 0 ? null : expected[oracle.Next(expected.Length)];
+                CardInstance? actual;
+                if (mode >= 3)
+                {
+                    actual = engine.Api.InvokeByName("GetRandomCard", n, (mode == 5 ? new object?[] { pool } : new object?[] { pool, skip, null }), ctx, out bool handled) as CardInstance;
+                    if (!handled) return "GetRandomCard派发缺失";
+                }
+                else actual = mode == 0 ? engine.Api.GetRandomCard(pool) : engine.Api.GetRandomCard(pool, skip);
+                if (actual != want || !pool.SequenceEqual(original) || state.Random.Seed != oracle.Seed
+                    || state.Random.ConsumedCount != before + (pool.Count == 0 ? 0 : 1))
+                    return $"优先候选/顺序/输入不变性/现有随机调用不符：seed={seed}/mode={mode}/pool={variant}/draw={draw}";
+            }
+        }
+        return null;
+    }
+
+    private static string? NativeRandomPriorityAttributes(CardDatabase db)
+    {
+        var cases = new (string Name1, string Name2, bool Priority)[] {
+            ("AlwaysSelectedAsRandom", "", true), ("ALWAYSSELECTEDASRANDOM", "", true),
+            ("x;;AlwaysSelectedAsRandom;y", "", true), ("AlwaysSelectedAsRandom;AlwaysSelectedAsRandom", "", true),
+            (" AlwaysSelectedAsRandom", "", false), ("AlwaysSelectedAsRandom ", "", false),
+            ("xAlwaysSelectedAsRandom", "", false), ("AlwaysSelectedAsRandomx", "", false),
+            ("x,AlwaysSelectedAsRandom", "", false), ("", "AlwaysSelectedAsRandom", false),
+            ("None", "", false), ("", "", false),
+        };
+        foreach (var test in cases)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var n = state.CreateWithId(PlainUnit, Side.Left, 60, Side.Left.HandOf(), 0);
+            var candidate = state.CreateWithId(PlainUnit, Side.Right, 70, CardLocation.NotAvailable, 0);
+            candidate.CustomJson["customName1"] = test.Name1; candidate.CustomJson["customName2"] = test.Name2;
+            var pool = new List<CardInstance> { n, candidate };
+            var oracle = new UeRandomStream(state.Random.Seed);
+            for (int draw = 0; draw < 16; draw++)
+            {
+                int index = oracle.Next(test.Priority ? 1 : 2);
+                var want = test.Priority ? candidate : pool[index];
+                if (engine.Api.GetRandomCard(pool) != want) return $"名称边界误识别：{test.Name1}/{test.Name2}";
+            }
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            var normal = state.CreateWithId(PlainUnit, Side.Left, 60, Side.Left.HqOf(), 1);
+            var royal = state.CreateWithId("card_unit_royal_scots", Side.Right, 70, Side.Right.HandOf(), 0);
+            var pool = new List<CardInstance> { normal, royal };
+            if (engine.Api.GetRandomCard(pool) != royal) return "Royal Scots静态标记未进入优先池";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = royal, Controller = Side.Right };
+            engine.Api.InvokeByName("CustomName1Remove", royal, new object?[] { "AlwaysSelectedAsRandom" }, ctx, out bool handled);
+            if (!handled || royal.CustomJson.ContainsKey("customName1")) return "真实卡牌优先标记移除失败";
+            var oracle = new UeRandomStream(state.Random.Seed);
+            for (int draw = 0; draw < 16; draw++)
+                if (engine.Api.GetRandomCard(pool) != pool[oracle.Next(2)]) return "标记移除后不应按卡名继续强制选中";
+            normal.CustomJson["customName1"] = "AlwaysSelectedAsRandom";
+            if (engine.Api.GetRandomCard(pool) != normal) return "优先标记新增后应立即生效";
         }
         return null;
     }

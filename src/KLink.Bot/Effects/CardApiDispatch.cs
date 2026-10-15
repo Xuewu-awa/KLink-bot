@@ -393,7 +393,7 @@ public sealed partial class CardApi
             ["getTotalDefense"] = (c, r, a) => SelfArg(c, r, a)?.Defense ?? 0,
             ["getCardsBuffedByThisCard"] = (c, r, a) => GetCardsBuffedByThisCard(c, r, a),
             ["GetTurnNumber"] = (c, r, a) => GetTurnNumber(),
-            ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault())),
+            ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault()), TruthyArg(a, 1)),
             // ⚠️⚠️ **两个出参，不是返回值**（2026-10-02，目标合法性门落地时发现）。
             //
             // 权威签名（调用点形态，全卡池 **431 处全部同形**）：
@@ -3926,22 +3926,12 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `RandomIntFromRangeWithStream(minimum, maximum, out randomResult)` ——
-    /// **闭区间** `[minimum, maximum]` 的均匀整数。
-    ///
-    /// ⚠️ **这条以前写错了，是「随机效果与客户端不一致」的第二个独立成因**：
-    /// 旧注释/旧实现按**半开区间** `[minimum, maximum)` 处理
-    /// （`c.State.Random.Next(min, max)`），于是 `RandomIntFromRangeWithStream(0, 2)`
-    /// 只会出 0/1，而客户端会出 0/1/2。
-    ///
-    /// 权威判据（两条独立互证）：
-    /// 1. 这个函数在蓝图里是**一行转发**
-    ///    （`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:29203-29224`）：
-    ///    `RandomIntegerInRangeFromStream(cardsRandomStream, minimum, maximum)` —— 直接透传。
-    /// 2. `RandomIntegerInRangeFromStream` 的 IDA 反编译
-    ///    （`Kards_RNG_report` 的 `Weather.md` §4.2，地址 `0x143ddce50`）：
-    ///    <c>Min + (int)(GetFraction() * (Max - Min + 1))</c> —— 除数是 `Max-Min+1`，
-    ///    也就是**两端都取得到**。
+    /// `RandomIntFromRangeWithStream(minimum, maximum, out randomResult)`.
+    /// Raw draws use the closed interval [minimum, maximum].
+    /// TODO RULE-103: current pak i=51/205/280 first draws a count [1,10],
+    /// consumes that many dummy [0,1] draws, then makes the requested draw.
+    /// This implementation still omits that schedule; it is not a one-line
+    /// Blueprint forwarding function and native stream parity remains open.
     /// </summary>
     private object? DoRandomIntFromRange(EffectContext c, object?[] a)
     {
