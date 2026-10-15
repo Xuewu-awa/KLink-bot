@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-137",
+  "status": "dedicated order availability loop with persistent overrides, global-order rereads and first-success return",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\order-availability-loop-evidence-20261016.json",
+  "evidence_sha256": "02d095044956a2ade9a297f56aaf1a4b8084d5723c3bca2c2dc12ff1b3002529",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "a0954bc21493d40d10cc71e48ca6e9ac46155824608c00bd1852342a2e1c3942",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "004c6439c56a7715dab332de370a75a47c81d6b58433d25bc551d760b5a2df7c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "e3c34807c2f9c13fd7d02c1c0dd48655643da4cace6fb8f44125c4aedc0e6850",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "4a99b2cfbd9d72a267ed2f47808548115fc25be4115106ae77c61c300f007581",
+    "D:\\Codex Workshop\\kards-install-review\\audit-order-availability-loop-20261016.py": "a1f312d1867c5ae279efa64886bba2d9e09eea76f8141f614826efd761da5555",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-order-availability-loop-before-20261016.txt": "d8a99322e622484133a3619269e7509b26c29fe888fee544ccda811594916c09",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-order-availability-loop-after-20261016.txt": "dbeafe665a791133509e4fe43f4df089c0233d16c47ef8628ced5a37ac98946c"
+  },
+  "static_target_required_orders": 308,
+  "missing_parsed_own_functions": 0,
+  "tests": {
+    "release": "504/504",
+    "real_card_matrix": 24,
+    "controlled_reentrant_cases": 4,
+    "matrix": "2 sides x 6 scenarios x prior override presence/absence; check own-call counts, first-success stop, enemy-only immunity prefilter, failed/cleared/untouched final overrides.",
+    "reentrancy": "Temporary CanPlayFromHand on Meteor with a test-only order definition captures its override, creates a marker, then a callback removes the candidate. Same-index replacement succeeds in one call; appending a target is discovered in a later iteration, two calls. This is a control-flow probe, not certification of Meteor rules.",
+    "regression": "Original MatchEngine availability with final tests: 2/504 fail (two callbacks instead of one; five own queries instead of four). New availability subflow: 504/504 pass."
+  },
+  "limits": [
+    "The current model global order is used. Native TMap sparse slot reuse, removal/reinsertion order and all map mutation histories are not proven equivalent.",
+    "Missing card-local output records an unsupported diagnostic and skips that candidate. Current static target-required orders all have parsed own functions, but inherited/native defaults and dynamically modified definitions remain open.",
+    "Only the order target-search subflow is replaced. Complete CanPlayCardFromHand gate ordering, source flag/choice propagation, all query side effects and explicit selected-target execution validation remain open.",
+    "Model non-null CardInstance validity does not emulate all UE UObject destruction/GC flags. Complete per-card semantics remain open."
+  ],
+  "fully_semantically_verified_cards": 0
+}

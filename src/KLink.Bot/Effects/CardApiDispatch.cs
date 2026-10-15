@@ -7107,6 +7107,48 @@ public sealed partial class CardApi
     public TargetCheck CanPlayFromHandOn(CardInstance card, CardInstance? target)
         => CheckPlayFromHandOn(card, target, requireTargetedCard: false);
 
+    /// <summary>BP_Logic.CanPlayCardFromHand order-target search, not full candidate enumeration.</summary>
+    internal bool HasPlayableOrderTarget(CardInstance card)
+    {
+        // CanPlay established that the active/controller side owns this card.
+        Side clientSide = card.Owner;
+        CardInstance? AtIndex(int index)
+        {
+            var values = State.AllCardsInBattleOrder;
+            return index < values.Count ? values[index] : null;
+        }
+
+        // The Blueprint obtains Map_Values again at the length check, prefilter,
+        // override assignment and final common check. Do not freeze one array.
+        for (int index = 0; index < State.AllCardsInBattleOrder.Count; index++)
+        {
+            var candidate = AtIndex(index);
+            if (candidate is null || !candidate.Location.IsBoard()
+                || (candidate.Owner != clientSide
+                    && CustomNameHasAttribute(candidate, "customName1", "cantBeTargetedByEnemyOrder")))
+                continue;
+
+            var queried = AtIndex(index);
+            card.BlueprintVariables["targetOverride"] = queried; // i=2144.
+            var outputs = RunOwnLocal(card, "CanPlayFromHand",
+                new Dictionary<string, object?>(StringComparer.Ordinal) { ["toCard"] = queried },
+                "canIt", "reason", "reasonParam1", "reasonParam2", "targetedCard");
+            if (outputs is null)
+            {
+                NotifyUnimplemented("OrderPlayAvailability<missing-CanPlayFromHand-output>");
+                continue;
+            }
+            if (!Blueprint.KismetVm.Truthy(outputs.GetValueOrDefault("canIt"))
+                || outputs.GetValueOrDefault("targetedCard") is not CardInstance)
+                continue; // Native failure paths retain the override.
+
+            card.BlueprintVariables["targetOverride"] = null; // i=2315, before common checks.
+            if (CanSelectAsTarget(card, AtIndex(index), byPlayFromHand: true).Can)
+                return true; // i=2554: do not inspect later candidates.
+        }
+        return false;
+    }
+
     private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard)
     {
         // This API accepts an explicit candidate. Bind it for the card-local call

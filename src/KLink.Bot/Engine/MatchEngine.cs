@@ -1307,7 +1307,7 @@ public sealed class MatchEngine
         // requirement skips enumeration; otherwise i=1482..2618 must find a
         // candidate passing its own and common target checks.
         if (card.Definition.IsOrder && card.SelectTargetOnPlayedFromHand
-            && LegalPlayTargets(card).Count == 0)
+            && !Api.HasPlayableOrderTarget(card))
         {
             reason = "no_legal_play_target";
             return false;

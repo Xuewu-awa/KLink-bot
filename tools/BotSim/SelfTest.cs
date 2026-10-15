@@ -59,6 +59,8 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("指令可用性重入：自身判据后同下标重读、循环长度包含新增对象", OrderAvailabilityLiveReread),
+        new("指令可用性循环：全局顺序、首次成功停止及覆盖写回/清除", OrderAvailabilityOverrideContract),
         new("GetTargetedCard：显式调用卡、覆盖优先、当前目标回退及未赋值输出", GetTargetedCardCallerContract),
         new("目标输出有效性：true加空目标不能成为出牌候选，无目标分支仍可出牌", TargetedCardOutputValidity),
         new("需目标指令可用性：空候选拒绝、实时标志及拒绝无副作用", TargetedOrderAvailability),
@@ -15181,6 +15183,95 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? OrderAvailabilityLiveReread(CardDatabase db)
+    {
+        const string probe = "card_unit_meteor", function = "CanPlayFromHand";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindLocalProgram(probe, function) is not null)
+            return "无法安全安装候选循环重入探针";
+        var steps = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new() { Var = "targetOverride", Scope = "instance" }, null, -1, "targetedCard", null),
+            new KismetStep(1, "call", "SpawnCardInDeckBySide", new KismetExpr[] {
+                new() { Var = "side", Scope = "instance" }, new() { Str = "card_unit_routed_troops" }, new() { Int = 60 }, new() { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new() { Bool = true }, null, -1, "canIt", null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+        };
+        locals.Add(function, steps);using var cleanup = new AuditProbeCleanup(() => locals.Remove(function));
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool appendTarget in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;state.SetKredits(side, 20);
+            foreach (var hq in state.AllCardsInBattleOrder) hq.Location = CardLocation.Discard;
+            var source = state.CreateWithId(probe, side, 60, side.HandOf(), 1);
+            source.Definition = new CardDefinition { Name = probe, Type = "order", SelectTargetOnPlayedFromHand = true };
+            source.KreditCost = 0;source.SelectTargetOnPlayedFromHand = true;
+            var removed = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 1);
+            CardInstance? replacement = appendTarget ? null : state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 2);
+            int callbacks = 0;var previous = state.CardCreated;
+            state.CardCreated = created => {
+                previous?.Invoke(created);
+                if (created.Name != "card_unit_routed_troops") return;
+                callbacks++;
+                if (callbacks != 1) return;
+                state.Remove(removed);
+                if (appendTarget) replacement = state.CreateWithId(PlainUnit, side, 90, side.HqOf(), 1);
+            };
+            if (!engine.CanPlay(source, out string reason) || callbacks != (appendTarget ? 2 : 1)
+                || state.ById(61) is not null || replacement is null
+                || source.BlueprintVariables.GetValueOrDefault("targetOverride") is not null)
+                return $"实时同下标/长度重读错误：{side}/{appendTarget}, callbacks={callbacks}, reason={reason}";
+        }
+        return null;
+    }
+
+    private static string? OrderAvailabilityOverrideContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int scenario in Enumerable.Range(0, 6))
+        foreach (bool previousOverride in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;state.SetKredits(side, 20);
+            var source = state.CreateWithId("card_event_air_corps_ferrying", side, 60, side.HandOf(), 1);
+            var sentinel = state.CreateWithId(PlainUnit, side.Opposite(), 90, CardLocation.Discard, 0);
+            if (previousOverride) source.BlueprintVariables["targetOverride"] = sentinel;
+            var enemy = state.CreateWithId(PlainUnit, side.Opposite(), 80, side.Opposite().HqOf(), 1);
+            if (scenario == 2) enemy.CustomJson["customName1"] = "cantBeTargetedByEnemyOrder";
+            CardInstance? first = null;
+            if (scenario is 0 or 2 or 3)
+            {
+                first = state.CreateWithId(PlainUnit, side, 10, side.HqOf(), 2);
+                if (scenario == 3) first.CustomJson["customName1"] = "cantBeTargetedByEnemyOrder";
+                state.CreateWithId(PlainUnit, side, 11, side.HqOf(), 1); // Must not be queried after success.
+            }
+            if (scenario == 4)
+            {
+                first = state.CreateWithId(PlainUnit, side, 10, side.HqOf(), 1);
+                first.Keywords.Add(Keyword.Covert);first.IsRevealed = false;
+            }
+            if (scenario == 5)
+            {
+                foreach (var card in state.AllCardsInBattleOrder.Where(x => x.Location.IsBoard())) card.Location = CardLocation.Discard;
+            }
+            var trace = new List<string>();engine.Api.TriggerTrace = trace;
+            bool expected = scenario is 0 or 2 or 3;
+            bool actual = engine.CanPlay(source, out string reason);
+            int attempts = trace.Count(x => x.StartsWith("CanPlayFromHand(out ", StringComparison.Ordinal));
+            int expectedAttempts = scenario switch { 0 or 3 => 4, 1 => 3, 2 => 3, 4 => 4, _ => 0 };
+            bool hasOverride = source.BlueprintVariables.TryGetValue("targetOverride", out var finalOverride);
+            object? expectedOverride = scenario == 1 ? enemy : scenario == 5 && previousOverride ? sentinel : null;
+            bool expectedPresence = scenario != 5 || previousOverride;
+            if (actual != expected || attempts != expectedAttempts || hasOverride != expectedPresence
+                || !ReferenceEquals(finalOverride, expectedOverride)
+                || (!actual && reason != "no_legal_play_target"))
+                return $"可用性循环顺序/提前停止/覆盖状态错误：{side}/{scenario}/{previousOverride}, can={actual}, attempts={attempts}/{expectedAttempts}, override={finalOverride}";
+            if (source.CurrentTarget is not null || state.Kredits(side) != 20 || source.Location != side.HandOf())
+                return "可用性查询误改了当前目标、费用或手牌位置";
         }
         return null;
     }
