@@ -184,7 +184,8 @@ public sealed class CardInstance
     /// <summary>Quota offset from native writes to attackLeft, independent of attackCountThisTurn.</summary>
     public int AttackQuotaOffset { get; set; }
     public int RemainingAttacks => MaxAttacksThisTurn - AttacksThisTurn + AttackQuotaOffset;
-    public void ClearAttackQuotaForMovement() => AttackQuotaOffset = AttacksThisTurn - MaxAttacksThisTurn;
+    public void ClearAttackQuotaForMovement() => SetRemainingAttacks(0);
+    public void SetRemainingAttacks(int value) => AttackQuotaOffset = value - MaxAttacksThisTurn + AttacksThisTurn;
 
     /// <summary>
     /// Whether this unit has already been attacked during the current turn.
@@ -196,15 +197,9 @@ public sealed class CardInstance
     /// 本回合最多能攻击几次 —— 蓝图 `DoOnStartOfTurn` 给 `attackLeft` 赋的**初值**
     /// （`BP_Logic.g.cs:3110` / `:3124`）。
     ///
-    /// 用「按当前关键字**现算**」而不是「回合开始时存一个数」，是照蓝图的两条行为：
-    /// <list type="bullet">
-    /// <item>`GiveFury`（`BP_CardFunctions.g.cs:22691-22721`）在 `hasFury` 置位后
-    ///   `attackLeft += 1` —— 本回合中途获得奋战**立刻**多一次攻击额度。</item>
-    /// <item>`RemoveFury`（同文件 `:30759-30769`）用
-    ///   `Min(attackLeft, 1)` 把额度收回 —— 中途失去奋战就只剩 1 次。</item>
-    /// </list>
-    /// 当前上限由关键字推导，实际攻击次数与移动清零的偏移分别保存。
-    /// 这不构成原生整数attackLeft的完整模型；移除Fury的截断交互仍待专审。
+    /// 当前上限由关键字推导，原生剩余额度写入通过偏移保留。
+    /// GiveFury/RemoveFury的已核实无来源/全量分支显式处理次数门及截断，
+    /// 不能只靠关键字增删隐式加减；正来源叠加与负移动额度仍待核查。
     /// </summary>
     public int MaxAttacksThisTurn => Keywords.Contains(Keyword.Fury) ? 2 : 1;
 

@@ -3147,7 +3147,43 @@ public sealed partial class CardApi
     public void DiscardCard(CardInstance card, CardInstance? discarder = null)
         => DiscardHandCard(card, discarder?.CardId ?? 0, skipSubAction: false, forceDiscard: false);
 
+    // Audited giverID=0 branch only. Source-backed Fury bookkeeping remains
+    // on its existing adapter pending a separate received-ability/buff audit.
+    private void GiveFuryWithoutSource(CardInstance target)
+    {
+        if (!CanCardBeBuffed(target) || target.Keywords.Contains(Keyword.Fury)) return;
+        int left = target.RemainingAttacks;
+        int count = target.AttacksThisTurn;
+        target.Keywords.Add(Keyword.Fury);
+        bool addsAttack = count < 2 && (count == 1 || left > 0);
+        target.SetRemainingAttacks(left + (addsAttack ? 1 : 0));
+        if (!IsLocatedInDeck(target))
+            _engine.FireSubAction("ZActionGiveFury", new[] {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", 0) });
+        FireAbilitiesChanged(target);
+    }
+
+    // RemoveFury giverID<=0: already attacked => zero, otherwise Min(left,1).
+    private void RemoveFuryWithoutSource(CardInstance target, bool skipAction = false, int giverId = 0)
+    {
+        if (!target.Keywords.Contains(Keyword.Fury)) return;
+        int left = target.RemainingAttacks;
+        target.Keywords.Remove(Keyword.Fury);
+        target.ReceivedAbilitiesFromCards.Remove("fury");
+        target.SetRemainingAttacks(target.AttacksThisTurn != 0 ? 0 : Math.Min(left, 1));
+        if (!skipAction)
+            _engine.FireSubAction("ZActionRemoveFury", new[] {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId) });
+        FireAbilitiesChanged(target);
+    }
+
     public void GiveKeyword(CardInstance target, string keyword)
+    {
+        if (keyword == Keyword.Fury) { GiveFuryWithoutSource(target); return; }
+        GiveKeywordCore(target, keyword);
+    }
+
+    private void GiveKeywordCore(CardInstance target, string keyword)
     {
         if (!target.IsAlive || !CanCardBeBuffed(target))
         {
@@ -3257,6 +3293,12 @@ public sealed partial class CardApi
     }
 
     public void RemoveKeyword(CardInstance target, string keyword)
+    {
+        if (keyword == Keyword.Fury) { RemoveFuryWithoutSource(target); return; }
+        RemoveKeywordCore(target, keyword);
+    }
+
+    private void RemoveKeywordCore(CardInstance target, string keyword)
     {
         if (!target.Keywords.Remove(keyword))
         {

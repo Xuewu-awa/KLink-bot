@@ -6226,7 +6226,8 @@ public sealed partial class CardApi
 
     private object? DoGiveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = TargetArg(c, r, a);
+        var target = keyword == Keyword.Fury && IntArg(a, 1) == 0
+            ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
             if (keyword == Keyword.Alpine)
@@ -6256,7 +6257,9 @@ public sealed partial class CardApi
                 }
             }
 
-            GiveKeyword(target, keyword);
+            if (keyword == Keyword.Fury && IntArg(a, 1) != 0)
+                GiveKeywordCore(target, keyword); // Source-backed branch not yet audited.
+            else GiveKeyword(target, keyword);
         }
 
         return null;
@@ -6330,10 +6333,16 @@ public sealed partial class CardApi
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = TargetArg(c, r, a);
+        var target = keyword == Keyword.Fury && IntArg(a, 1) <= 0
+            ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
-            RemoveKeyword(target, keyword);
+            if (keyword == Keyword.Fury)
+            {
+                if (IntArg(a, 1) <= 0) RemoveFuryWithoutSource(target, TruthyArg(a, 2), IntArg(a, 1));
+                else RemoveKeywordCore(target, keyword); // Source-backed branch remains pending.
+            }
+            else RemoveKeyword(target, keyword);
         }
 
         return null;

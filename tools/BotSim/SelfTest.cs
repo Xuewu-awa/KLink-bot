@@ -132,6 +132,9 @@ internal static class SelfTest
         new("强制推进：T50移出可用位置后仍执行零费自身事件", ForceAdvanceUnavailableOperation),
         new("行动顺序：原生装甲/标记例外支持移动与攻击两种顺序", NativeArmorActionSequences),
         new("攻击额度：移动清零不增加攻击次数，能力变化与重置保留独立额度", MovementAttackQuotaLifecycle),
+        new("奋战给予：无来源分支按攻击次数/现有额度决定是否加1", FuryGrantQuota),
+        new("奋战移除：非正来源按攻击次数清零或Min截断，保持实际次数", FuryRemoveQuota),
+        new("奋战边界：牌库通知、无效目标、隐蔽、负来源及抑制摘除", FuryQuotaBoundaries),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -8814,6 +8817,105 @@ internal static class SelfTest
         return new AuditProbeCleanup(() => locals.Remove(trigger));
     }
 
+    private static string? FuryGrantQuota(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { 0, 1, 2, 3 })
+        foreach (int left in new[] { -1, 0, 1, 2, 5 })
+        foreach (bool had in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            if (had) card.Keywords.Add(Keyword.Fury);
+            card.AttacksThisTurn = count; card.SetRemainingAttacks(left);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("GiveFury", card, new object?[] { 60, 0 }, ctx, out _);
+            int expected = left + (!had && count < 2 && (count == 1 || left > 0) ? 1 : 0);
+            int actions = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury");
+            if (!card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != expected || card.AttacksThisTurn != count
+                || actions != (had ? 0 : 1)) return $"GiveFury额度错误：{side} 已有{had} count={count} left={left} 实际={card.RemainingAttacks}";
+            engine.Api.InvokeByName("GiveFury", card, new object?[] { 60, 0 }, ctx, out _);
+            if (card.RemainingAttacks != expected || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveFury") != actions)
+                return "重复无来源GiveFury应无额外额度或通知";
+        }
+        return null;
+    }
+
+    private static string? FuryRemoveQuota(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int count in new[] { 0, 1, 2 })
+        foreach (int left in new[] { -2, 0, 1, 2, 5 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool had in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            if (had) card.Keywords.Add(Keyword.Fury);
+            card.AttacksThisTurn = count; card.SetRemainingAttacks(left);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("RemoveFury", card, new object?[] { 60, 0, skip }, ctx, out _);
+            int expected = !had ? left : count != 0 ? 0 : Math.Min(left, 1);
+            if (card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != expected || card.AttacksThisTurn != count
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRemoveFury") != (had && !skip ? 1 : 0))
+                return $"RemoveFury额度错误：{side} 已有{had} skip={skip} count={count} left={left} 实际={card.RemainingAttacks}";
+        }
+        return null;
+    }
+
+    private static string? FuryQuotaBoundaries(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            foreach (var location in new[] { side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, location, 1);
+                engine.Api.GiveKeyword(card, Keyword.Fury);
+                var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionGiveFury");
+                if (!card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != 2
+                    || (action is null) != (location == side.DeckOf())
+                    || action is not null && (action.Values.First(x => x.Name == "cardID").Value != 60
+                        || action.Values.First(x => x.Name == "giverID").Value != 0))
+                    return "GiveFury只按有效对象与可增益门处理，牌库省略给予通知";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                card.Keywords.Add(Keyword.Covert);
+                engine.Api.GiveKeyword(card, Keyword.Fury);
+                if (card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != 1) return "未揭示场上Covert不能获得Fury";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                engine.Api.InvokeByName("GiveFury", card, new object?[] { 9999, 0 }, ctx, out _);
+                card.Keywords.Add(Keyword.Fury); card.SetRemainingAttacks(2);
+                engine.Api.InvokeByName("RemoveFury", card, new object?[] { 9999, 0, false }, ctx, out _);
+                if (!card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != 2 || state.ActionLog.Count != 0)
+                    return "无效Fury目标不得回落到施动卡";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                card.Keywords.Add(Keyword.Fury); card.SetRemainingAttacks(2);
+                engine.Api.InvokeByName("RemoveFury", card, new object?[] { 60, -7, false },
+                    new EffectContext { Engine = engine, State = state, Self = card, Controller = side }, out _);
+                var action = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionRemoveFury");
+                if (card.RemainingAttacks != 1 || action.Values.First(x => x.Name == "giverID").Value != -7)
+                    return "全量RemoveFury必须保留非正原始giverID";
+            }
+            foreach (var sample in new[] { (0, 2), (0, 0), (1, 1), (1, 0), (2, 0), (2, -1) })
+            {
+                var (engine, state) = EmptyBoard(db); var card = MakeActionQuotaProbe(state, side, "infantry");
+                card.Keywords.Add(Keyword.Fury); card.AttacksThisTurn = sample.Item1; card.SetRemainingAttacks(sample.Item2);
+                engine.Api.SuppressUnit(card);
+                int expected = sample.Item1 != 0 ? 0 : Math.Min(sample.Item2, 1);
+                if (!card.IsSuppressed || card.Keywords.Contains(Keyword.Fury) || card.RemainingAttacks != expected
+                    || card.AttacksThisTurn != sample.Item1) return "抑制摘除Fury必须应用同样额度契约";
+            }
+        }
+        return null;
+    }
+
     private static CardInstance MakeActionQuotaProbe(GameState state, Side side, string type)
     {
         const string name = "card_unit_432_infantry_regiment";
@@ -8861,8 +8963,8 @@ internal static class SelfTest
             if (mode == 0)
             {
                 engine.Api.GiveKeyword(unit, Keyword.Fury);
-                if (unit.RemainingAttacks != 1 || !engine.Attack(unit, state.Hq(side.Opposite())) || unit.HasAttackLeft)
-                    return "移动清零后给予Fury应增加一次额度，不能被移动历史阻挡";
+                if (unit.RemainingAttacks != 0 || engine.Attack(unit, state.Hq(side.Opposite())))
+                    return "尚未攻击且额度已清零时，给予Fury不得重开攻击额度";
             }
             else if (mode == 1)
             {
