@@ -1269,8 +1269,6 @@ public sealed class MatchEngine
             return false;
         }
 
-        if (Api.IsBlockedFromPlay(card, out reason)) return false;
-
         if (CardApi.IsWeatherCard(card) && !State.CanPlayWeatherCard())
         {
             reason = "本回合已经打过天气牌";
@@ -1282,6 +1280,10 @@ public sealed class MatchEngine
             reason = "kredit 不足";
             return false;
         }
+
+        // BP_Logic.CanPlayCardFromHand i=56..234 handles weather; i=468..717
+        // checks affordability before invoking the card-local blocker at i=731.
+        if (Api.IsBlockedFromPlay(card, out reason)) return false;
 
         if (card.Definition.IsOrder && State.HasGameplayRestriction(card.Owner,
             GameplayRestrictionType.CannotPlayOrders))

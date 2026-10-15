@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("出牌前置门顺序：天气与费用早于卡自身阻挡判据", PlayPreflightBlockOrder),
         new("指令可用性重入：自身判据后同下标重读、循环长度包含新增对象", OrderAvailabilityLiveReread),
         new("指令可用性循环：全局顺序、首次成功停止及覆盖写回/清除", OrderAvailabilityOverrideContract),
         new("GetTargetedCard：显式调用卡、覆盖优先、当前目标回退及未赋值输出", GetTargetedCardCallerContract),
@@ -15183,6 +15184,54 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? PlayPreflightBlockOrder(CardDatabase db)
+    {
+        const string probe = "card_unit_meteor", function = "BlockCardFromBeingPlayedFromHand";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindLocalProgram(probe, function) is not null)
+            return "无法安全安装出牌阻挡查询探针";
+        var steps = new[] {
+            new KismetStep(0, "call", "JSON_SetBool", new KismetExpr[] {
+                new() { Int = 60 }, new() { Str = "_auditBlockQueried" }, new() { Bool = true }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new() { Var = "auditBlocked", Scope = "instance" }, null, -1, "blocked", null),
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new() { Var = "auditBlockReason", Scope = "instance" }, null, -1, "reason", null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+        };
+        locals.Add(function, steps);using var cleanup = new AuditProbeCleanup(() => locals.Remove(function));
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool weather in new[] { false, true })
+        foreach (bool alreadyPlayedWeather in new[] { false, true })
+        foreach (bool affordable in new[] { false, true })
+        foreach (bool blocked in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;
+            state.SetKredits(side, affordable ? 1 : 0);
+            state.SetHasPlayedWeatherCardThisTurn(alreadyPlayedWeather);
+            var source = state.CreateWithId(probe, side, 60, side.HandOf(), 1);
+            source.KreditCost = 1;source.BlueprintVariables["auditBlocked"] = blocked;
+            source.BlueprintVariables["auditBlockReason"] = blocked ? "_audit_blocked" : "";
+            if (weather) engine.Api.AddCustomGameplayTag(source, "subtype.rain");
+            var trace = new List<string>();engine.Api.TriggerTrace = trace;
+            bool weatherBlocked = weather && alreadyPlayedWeather;
+            bool shouldQuery = !weatherBlocked && affordable;
+            bool expected = shouldQuery && !blocked;
+            bool actual = engine.CanPlay(source, out string reason);
+            int calls = trace.Count(x => x.StartsWith("BlockCardFromBeingPlayedFromHand(out ", StringComparison.Ordinal));
+            string expectedReason = weatherBlocked ? "本回合已经打过天气牌" : !affordable ? "kredit 不足" : blocked ? "_audit_blocked" : "";
+            if (actual != expected || calls != (shouldQuery ? 1 : 0)
+                || source.CustomJson.ContainsKey("_auditBlockQueried") != shouldQuery
+                || reason != expectedReason)
+                return $"出牌前置门顺序错误：{side}/{weather}/{alreadyPlayedWeather}/{affordable}/{blocked}, can={actual}, calls={calls}, reason={reason}";
+            if (!expected && engine.PlayCard(source)) return "前置门拒绝后执行入口仍成功";
+            if (source.Location != side.HandOf() || state.Kredits(side) != (affordable ? 1 : 0))
+                return "前置查询或拒绝执行产生费用/位置副作用";
         }
         return null;
     }

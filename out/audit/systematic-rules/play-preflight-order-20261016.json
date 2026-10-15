@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-138",
+  "status": "weather and affordability checks precede the card-local play blocker",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\play-preflight-order-evidence-20261016.json",
+  "evidence_sha256": "92dae8cfbd480f08f68afe28c6aeb16e5662d36f61032d481914a749f0ac5368",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "522b9b8e0e7b5bfe88e4743968a7a0a933948df17fa3a5babc2d303fd0a3a43a",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "fd138579310560db0ce27bf327593d39a259099ff2a3fecbaaad84e65494cc37",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "3037b7a1842790e38c56287fcc27e41520cda7683aa7f82ae8fcaba79041fe6f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-play-preflight-order-20261016.py": "1a09048f102d4db12a3fa3370d52ece8dee9b3c4b0bcb8b2445be39419b12fd6",
+    "D:\\Codex Workshop\\kards-install-review\\play-block-ability-scan-20261016.json": "2060c810cc277159125e09186fb83833adab37ec4508c40fa92ba1d9cdceee28",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-play-preflight-order-before-20261016.txt": "42adbf551d94117cc67a8456676f5a80b9c365f3d56db937b8e7f94d68b3c56c",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-play-preflight-order-after-20261016.txt": "3cb6d132c1320d5ad4a2764447b6d3b4aac4ef0028d1134d8f4b349a286a3323"
+  },
+  "tests": {
+    "release": "505/505",
+    "preflight_matrix": 32,
+    "matrix": "2 sides x weather/ordinary tag x prior-weather flag x affordable/unaffordable x card-local blocked flag",
+    "fixture": "Temporary Meteor BlockCardFromBeingPlayedFromHand program records a query marker and returns seeded block/reason values; this probes gate order, not Meteor card rules.",
+    "checks": [
+      "Expected availability and reason priority",
+      "Zero blocker calls/markers on earlier rejection; exactly one on pass-through",
+      "Rejected PlayCard does not spend credits or move the card"
+    ],
+    "regression": "Old gate order with new test: 1/505 fails, blocker invoked on an unaffordable card. Reordered gate: 505/505 pass."
+  },
+  "limits": [
+    "The HQ/location-card blockplayfromhand and CantPlayCards checks at i=239..463 are not implemented or certified here. The exact-name asset scan found consumers, not PvP producers.",
+    "Existing model owner/hand/trust guards remain before these checks. Full native preflight order is not certified.",
+    "The existing combined cost check, including its explicit-target tax behavior, is retained. Native getTotalKreditCost and later target-tax placement require separate auditing.",
+    "Unit own CanPlayFromHand, support capacity/deployment restriction ordering, other state mutations and full per-card PvP semantics remain open."
+  ],
+  "fully_semantically_verified_cards": 0
+}
