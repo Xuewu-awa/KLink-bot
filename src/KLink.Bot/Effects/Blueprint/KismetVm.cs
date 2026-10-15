@@ -1428,8 +1428,7 @@ public sealed class KismetVm
             // 「三选一」卡把自己选的分支存在卡的 `ChooseOne` 成员上再回读
             // （kardsim 注释里点名的例子：card_event_strategic_focus 用
             //  `Switch(GetMember(self,"ChooseOne"), [(0,IsGroundUnit),(1,IsAirUnit)])`）。
-            "ChooseOne" => card.ChooseOne,
-            "chooseOne" => card.ChooseOne,
+            "chooseOneIndex" or "ChooseOne" or "chooseOne" => card.ChooseOne,
             "kredits" => card.KreditCost,
             "operationCost" => card.OperationCost,
             "isGoldCard" => card.IsGold,
@@ -1549,7 +1548,8 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2") return GetMember(_ctx.Self, name);
+                if (name is "customName1" or "customName2" or "chooseOneIndex" or "ChooseOne" or "chooseOne")
+                    return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
                 return GetMember(_ctx.Self, name);
@@ -1761,7 +1761,13 @@ public sealed class KismetVm
                     }
                     else if (name == "pinnedTurns") self.PinnedTurns = ToInt(value);
                     else if (name == "currentTarget") self.CurrentTarget = value as CardInstance;
-                    else if (name is "ChooseOne" or "chooseOne") self.ChooseOne = ToInt(value);
+                    else if (name is "chooseOneIndex" or "ChooseOne" or "chooseOne")
+                    {
+                        self.ChooseOne = ToInt(value);
+                        self.BlueprintVariables.Remove("chooseOneIndex");
+                        self.BlueprintVariables.Remove("ChooseOne");
+                        self.BlueprintVariables.Remove("chooseOne");
+                    }
                     else if (name == "hasDestruction")
                     {
                         if (Truthy(value)) self.Keywords.Add(Keyword.Destruction);

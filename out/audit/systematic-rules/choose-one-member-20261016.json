@@ -1,0 +1,45 @@
+{
+  "rule": "RULE-131",
+  "status": "fixed native chooseOneIndex VM member mapping to existing ChooseOne storage",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\choose-one-member-evidence-20261016.json",
+  "evidence_sha256": "a30d4b064c2ed1154a6a67de52c230dd2e08c513cd037e27e2ad63336b8c02fc",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\native-copydata-linear-view-20261016.json": "aa25069c5d48daf7700e9714e1bff551cf0739a72eb0d91ec7834254a5265a03",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.functions.json": "56ff709ee03d8106391d2f96f70a936dedccde9fe9d8a21a501a7d24ea063b48",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-choose-one-member-20261016.py": "0520912a105a17517d127f8d4b55c354a5b8fad9b6bbee718f10df3989808988",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "0ac8d856f543fa497f0b75775e0570a205f333fbf8296cfca2c8832454988aaf",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "e5a5b81a95408e0523c72676dd209230e827d2969da5c4776d4ec1cfe8f25016",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-choose-one-member-before-20261016.txt": "3b2869eb1bd797148694c3a1b4cb052cda68152b034b04016a789e7db6d65122",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-choose-one-member-after-20261016.txt": "3773a42d4d4453c14caba6cb79aec910001d7fcd5da8ccfe48f7caa113b42d90",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json": "73b7c91507fd7711d5ca3b5348e9de8c5315d28d07409dc42a04f00cc5c5480f",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.functions.json": "9fa1ddf907757789ac5d7593f93d96bcfbb2f067200813d503ce11e81aadbecd",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Allegiance\\events\\card_event_secret_operatives.functions.json": "01bcf9f508f4d758ca4f1c5961a495fd5bc58c07d086e3bd99c1ba75f0cbf344",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_interception.functions.json": "42a1b3545fd2114437393f1e51c103d3547e8eb181ba1c996b3238ef27398089",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\BattleUtilityFunctions.functions.json": "e0a741aad519cd6c66a282b706ce27242d44b6eea0010472046d7e96f033b7e2"
+  },
+  "field_offset": "0x310",
+  "tests": {
+    "formal_release": "496/496",
+    "actual_m1_damage_matrix": 192,
+    "typed_member_alias_matrix": 24,
+    "regression": "Original VM with new tests: 1/496 fails; chosen branch 1 versus tank yields 3 instead of 6. Corrected VM: 496/496 pass."
+  },
+  "member_hit_statements": 27,
+  "static_cdo_defaults": {
+    "0": 2019
+  },
+  "new_confirmed_open_issue": "WhichChooseOne native helper is not equivalent to the existing pure integer dispatcher: it writes a boolean output (index != 0), updates selectTargetOnPlayedFromHand from the selected option table, and calls RVA 0x4a7f740. These side effects and that call remain open.",
+  "limits": [
+    "WhichChooseOne native helper is not equivalent to the existing pure integer dispatcher: it writes a boolean output (index != 0), updates selectTargetOnPlayedFromHand from the selected option table, and calls RVA 0x4a7f740. These side effects and that call remain open.",
+    "Complete chooseOneCards data, Interception/Secret Operatives option consumers, normal action input propagation, snapshot import/export and remaining native writes are not certified by this field-mapping fix.",
+    "Full CopyData fields/containers and all per-card PvP semantics remain open. No full-card semantic completion is claimed."
+  ],
+  "fully_semantically_verified_cards": 0
+}

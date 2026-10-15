@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("原生选择字段：M1 Gun 伤害分支、别名共享存储及影子变量隔离", NativeChooseOneMember),
         new("曾攻击状态：独立字段、攻击消耗、快照和 VM 读写", EverAttackedState),
         new("亡语窃取副本：保留原所属方、控制标记、曾攻击状态、目标数组和名称，隔离原对象重入修改", StealDestructionCopyFields),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
@@ -15174,6 +15175,58 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? NativeChooseOneMember(CardDatabase db)
+    {
+        const string gun = "card_unit_120mm_m1_gun", tank = "card_unit_stug_iii_g", infantry = "card_unit_85_pioneer_company";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int index in new[] { 0, 1, -1, 2 })
+        foreach (bool custom in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (string targetName in new[] { tank, PlainUnit, infantry })
+        foreach (int damage in new[] { 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(gun, side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId(targetName, side.Opposite(), 61, side.Opposite().HqOf(), 1);
+            source.ChooseOne = index;
+            source.CustomAbility = custom ? "custom" : "";
+            if (suppressed) source.Keywords.Add(Keyword.Suppressed);
+            int expected = damage * (custom && !suppressed
+                && ((index == 1 && targetName == tank) || (index == 0 && targetName == PlainUnit)) ? 2 : 1);
+            int actual = engine.Api.ExecuteOnDealDamageAddDamage(source, target, damage, false, false, false);
+            if (actual != expected)
+                return $"M1 Gun 原生选择字段伤害分支错误：{side}/{index}/{custom}/{suppressed}/{targetName}/{damage}, actual={actual}, expected={expected}";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string alias in new[] { "chooseOneIndex", "ChooseOne", "chooseOne" })
+        foreach (int index in new[] { 0, 1, -1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(gun, side, 60, side.HqOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            source.ChooseOne = index;
+            foreach (string key in new[] { "chooseOneIndex", "ChooseOne", "chooseOne" }) source.BlueprintVariables[key] = 99;
+            KismetStep Set(int i, string name, KismetExpr value, string scope) =>
+                new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, name, null)
+                    { DestinationScope = scope };
+            var program = new KismetProgram(new[] {
+                Set(0, "before", new() { Var = "chooseOneIndex", Scope = "instance" }, "local"),
+                Set(1, alias, new() { Int = index + 10 }, "instance"),
+                Set(2, "after", new() { Var = "chooseOneIndex", Scope = "instance" }, "local"),
+                Set(3, "legacy", new() { Var = "ChooseOne", Scope = "instance" }, "local"),
+                Set(4, "context", new() { Var = "chooseOneIndex", Context = new() { Self = true } }, "local"),
+                new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "before", "after", "legacy", "context");
+            if (!Equals(output["before"], index) || !Equals(output["after"], index + 10)
+                || !Equals(output["legacy"], index + 10) || !Equals(output["context"], index + 10)
+                || source.ChooseOne != index + 10
+                || new[] { "chooseOneIndex", "ChooseOne", "chooseOne" }.Any(source.BlueprintVariables.ContainsKey))
+                return $"选择字段读写分叉或残留影子变量：{side}/{alias}/{index}";
         }
         return null;
     }
