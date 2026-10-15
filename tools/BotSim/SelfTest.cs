@@ -96,6 +96,7 @@ internal static class SelfTest
         new("选择容量守卫：开发非效果才阻挡，物理手牌排除autoplay", SelectionHandCapacityGuard),
         new("单候选抽牌：指定ID/来源/编号保持，抽后按ID解析回调", SingletonScryDrawContract),
         new("多候选回复：完整过滤、前三张移底、新牌库通知与原对象回调", MultiScryReplyContract),
+        new("多候选过滤重入：实时长度与回调后同下标读取", MultiScryLiveFiltering),
         new("抽牌：不派发通用位置移动事件，保留自身抽牌事件", DrawWithoutLocationMoved),
         new("自动打出入队：正常/对方/指定抽牌检查有效标签，满手不入队", DrawAutoPlayQueue),
         new("自动打出队列：事件后检查标签，不重新过滤位置，保序去重及快照独立", DrawAutoPlayAfterEvents),
@@ -13558,6 +13559,101 @@ internal static class SelfTest
                 return "位置事件正向对照未触发，不能证明抽牌路径的事件隔离";
         }
         return null;
+    }
+
+    private static string? MultiScryLiveFiltering(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", filter = "FilterCardsToScry", marker = "card_unit_routed_troops";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(filter)) return "无法安装实时牌库过滤探针";
+        locals[filter] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "_auditLiveScryValid", Context = new KismetExpr { Var = "card" } }, null, -1, "isValid", null) { DestinationScope = "local" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardID", Context = new KismetExpr { Var = "card" } }, null, -1, "_auditLiveScryCurrent", null) { DestinationScope = "instance" },
+            new KismetStep(2, "call", "SpawnCardInHandBySide", new[] { new KismetExpr { Int = (int)Side.Right },
+                new KismetExpr { Str = marker }, new KismetExpr { Int = 30 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool full in new[] { false, true })
+            foreach (int triggerIndex in new[] { 1, 4 })
+            foreach (bool predicate in new[] { false, true })
+            foreach (int mutation in Enumerable.Range(0, 4))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+                if (full) for (int i = 0; i < 9; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i);
+                var flags = Enumerable.Range(60, 6).ToDictionary(id => id, _ => true);
+                int triggerId = 60 + triggerIndex; flags[triggerId] = predicate; flags[90] = !predicate;
+                for (int i = 0; i < 6; i++) state.CreateWithId(PlainUnit, side, 60 + i, side.DeckOf(), i * 4)
+                    .BlueprintVariables["_auditLiveScryValid"] = flags[60 + i];
+                var expectedPhysical = Enumerable.Range(60, 6).ToList();
+                if (mutation == 0) { expectedPhysical.Add(90); flags[90] = true; }
+                if (mutation == 1) expectedPhysical.Remove(65);
+                if (mutation == 2) (expectedPhysical[triggerIndex], expectedPhysical[triggerIndex + 1]) = (expectedPhysical[triggerIndex + 1], expectedPhysical[triggerIndex]);
+                if (mutation == 3) expectedPhysical[triggerIndex] = 90;
+                var expectedVisits = expectedPhysical.ToArray(); expectedVisits[triggerIndex] = triggerId;
+                var expected = new List<int>(); int accepted = 0;
+                for (int i = 0; i < expectedPhysical.Count; i++)
+                {
+                    bool valid = i == triggerIndex ? predicate : flags[expectedVisits[i]];
+                    if (valid && accepted < 3) expected.Insert(accepted++, expectedPhysical[i]); else expected.Add(expectedPhysical[i]);
+                }
+                var displaced = expected.Take(3).Where(id => id != 60).ToArray();
+                foreach (int id in displaced) { expected.Remove(id); expected.Add(id); }
+                bool mutated = false; var visited = new List<int>();
+                state.CardCreated += card => {
+                    if (card.Name != marker) return;
+                    card.Location = CardLocation.Discard;
+                    int current = Convert.ToInt32(source.BlueprintVariables["_auditLiveScryCurrent"]); visited.Add(current);
+                    if (current != triggerId || mutated) return;
+                    mutated = true;
+                    if (mutation == 0) state.CreateWithId(PlainUnit, side, 90, side.DeckOf(), 100).BlueprintVariables["_auditLiveScryValid"] = true;
+                    if (mutation == 1) state.ById(65)!.Location = CardLocation.Discard;
+                    if (mutation == 2) { var a = state.ById(triggerId)!; var b = state.ById(triggerId + 1)!; (a.LocationNumber, b.LocationNumber) = (b.LocationNumber, a.LocationNumber); }
+                    if (mutation == 3) {
+                        int number = state.ById(triggerId)!.LocationNumber; state.ById(triggerId)!.Location = CardLocation.Discard;
+                        state.CreateWithId(PlainUnit, side, 90, side.DeckOf(), number).BlueprintVariables["_auditLiveScryValid"] = !predicate;
+                    }
+                };
+                var chosen = state.ById(60)!;
+                engine.Api.DrawChosenCardToHand(source, chosen);
+                var receipt = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionNewDeck");
+                if (!mutated || !visited.SequenceEqual(expectedVisits) || receipt?.Values.First(x => x.Name == "cards").Text != string.Join(";", expected)
+                    || !state.Deck(side).Select(x => x.CardId).SequenceEqual(expected.Skip(1))
+                    || chosen.Location != (full ? CardLocation.Discard : side.HandOf())
+                    || state.UnimplementedCalls.Keys.Any(x => x.StartsWith("<ExecuteScryingEffectBySide:", StringComparison.Ordinal)))
+                    return $"过滤实时重入错误：{side}/{full}/index={triggerIndex}/valid={predicate}/mutation={mutation}/visits={string.Join(",", visited)}";
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in new[] { 0, 1 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+                for (int i = 0; i < 4; i++) state.CreateWithId(PlainUnit, side, 60 + i, side.DeckOf(), i)
+                    .BlueprintVariables["_auditLiveScryValid"] = true;
+                bool changed = false;
+                state.CardCreated += card => {
+                    if (card.Name != marker) return;
+                    card.Location = CardLocation.Discard;
+                    int current = Convert.ToInt32(source.BlueprintVariables["_auditLiveScryCurrent"]);
+                    if (changed || current != (mode == 0 ? 60 : 61)) return;
+                    changed = true;
+                    if (mode == 0) foreach (var item in state.Deck(side)) item.Location = CardLocation.Discard;
+                    else state.ById(60)!.Location = CardLocation.Discard;
+                };
+                var result = engine.Api.DrawChosenCardToHand(source, state.ById(60));
+                string gap = mode == 0 ? "<ExecuteScryingEffectBySide:post-filter-index-default-ID>" : "<ExecuteScryingEffectBySide:independent-ID-array-required>";
+                if (!changed || result is not null || state.UnimplementedCalls.GetValueOrDefault(gap) != 1
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name is "ZActionNewDeck" or "ZActionDrawCardFromDeck"))
+                    return $"不可表示的原生牌库状态未明确记账：{side}/mode={mode}";
+            }
+            return null;
+        }
+        finally { locals.Remove(filter); }
     }
 
     private static string? MultiScryReplyContract(CardDatabase db)

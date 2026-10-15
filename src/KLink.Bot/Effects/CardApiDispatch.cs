@@ -2241,17 +2241,41 @@ public sealed partial class CardApi
         if (chosen is null || chosen.Location != side.DeckOf()) return null;
         // ExecuteScryingEffectBySide scans the whole deck, even after three
         // accepted entries. Initial offering instead stops after three matches.
-        var deck = State.Deck(side).ToArray();
+        var promoted = new List<CardInstance>();
         var offers = new List<CardInstance>();
-        foreach (var candidate in deck)
+        for (int index = 0; ; index++)
         {
+            // i=166/220 re-read length on every iteration, before i=508's callback.
+            var before = State.Deck(side);
+            if (index >= before.Count) break;
             var outputs = RunOwnLocal(selecting, "FilterCardsToScry",
-                new Dictionary<string, object?> { ["card"] = candidate }, "isValid");
-            if ((outputs is null || KismetVmTruthy(outputs.GetValueOrDefault("isValid"))) && offers.Count < 3)
-                offers.Add(candidate);
+                new Dictionary<string, object?> { ["card"] = before[index] }, "isValid");
+            bool valid = outputs is null || KismetVmTruthy(outputs.GetValueOrDefault("isValid"));
+            // i=648/702 and i=2294/2348 re-read the same index after filtering.
+            var after = State.Deck(side);
+            if (index >= after.Count)
+            {
+                NotifyUnimplemented("<ExecuteScryingEffectBySide:post-filter-index-default-ID>");
+                return null; // Out-of-range integer output needs the independent native ID-array path.
+            }
+            var current = after[index];
+            if (valid && offers.Count < 3)
+            {
+                promoted.Insert(offers.Count, current);
+                offers.Add(current);
+            }
+            else promoted.Add(current);
         }
         if (!offers.Contains(chosen)) return null;
-        var promoted = offers.Concat(deck.Where(card => !offers.Contains(card))).ToArray();
+        // A native ID array can contain duplicates or a removed object's ID.
+        // Do not silently pretend the physical-card representation supports those.
+        var physical = State.Deck(side);
+        if (promoted.Count != physical.Count || promoted.Distinct().Count() != promoted.Count
+            || physical.Any(card => !promoted.Contains(card)))
+        {
+            NotifyUnimplemented("<ExecuteScryingEffectBySide:independent-ID-array-required>");
+            return null;
+        }
         // i=1086..1383 uses the first three of the complete promoted deck,
         // including a nonmatching entry when there are fewer than three offers.
         var displaced = promoted.Take(3).Where(card => !ReferenceEquals(card, chosen)).ToArray();
