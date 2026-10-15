@@ -187,6 +187,9 @@ internal static class SelfTest
         new("手牌生成公开：自身创建之后、T35之前写入，后续修改保留", NativeSpawnHandSeenTiming),
         new("创建阶段：公开赋值可选，跳过T35及省略参数保持独立", NativeCreationSeenPhase),
         new("手牌生成事件：自身无抑制位置门，T57后查快照并重查抑制", NativeSpawnHandEventSnapshot),
+        new("手牌容量：按物理位置统计，排除实时autoplay标签", NativeHandCapacityAutoplay),
+        new("手牌生成满手：创建前快照与T35后标签分别取值", NativeSpawnHandFullness),
+        new("手牌生成自动打出：自身与T57结束后检查实时位置和标签", NativeSpawnHandAutoplayEvents),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
         new("牌库生成通知：落点/隐藏/洗牌字段与零负数量矩阵", NativeSpawnDeckReceipt),
@@ -10227,6 +10230,130 @@ internal static class SelfTest
         int count = raw.RandRange(1, 10);
         for (int i = 1; i <= count; i++) raw.RandRange(0, 1);
         return raw.RandRange(lo, hi);
+    }
+
+    private static string? NativeHandCapacityAutoplay(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int quantity in new[] { 8, 9, 10 })
+        foreach (int excluded in new[] { 0, 1, 2 })
+        foreach (bool oppositeOwner in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 0; i < quantity; i++)
+            {
+                var card = state.CreateWithId(i < excluded && i % 2 == 0 ? "card_event_resistance_new" : PlainUnit,
+                    oppositeOwner ? side.Opposite() : side, 100 + i, side.HandOf(), i * 3);
+                if (i < excluded && i % 2 != 0) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            }
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            bool Full() => engine.Api.InvokeByName("IsLocationFull", null, new object?[] { (int)side.HandOf(), null }, ctx, out _) is true;
+            if (Full() != (quantity - excluded >= 9)) return "容量必须排除autoplay并忽略当前归属及槽位编号";
+            if (excluded > 0)
+            {
+                var first = state.ById(100)!; first.RemovedGameplayTags.Add("autoplay");
+                if (Full() != (quantity - excluded + 1 >= 9)) return "容量必须读取已移除的实时静态标签";
+            }
+            int before = quantity - excluded + (excluded > 0 ? 1 : 0);
+            var generated = engine.Api.SpawnCardInHand(side, "card_unit_51e_regiment");
+            if (generated.Location != (before >= 9 ? CardLocation.Discard : side.HandOf()))
+                return "生成满手快照必须采用排除autoplay后的相同容量";
+        }
+        return null;
+    }
+
+    private static string? NativeSpawnHandFullness(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int quantity in new[] { 8, 9, 10 })
+        foreach (bool oppositeOwner in new[] { false, true })
+        foreach (int tagMode in Enumerable.Range(0, 4))
+        foreach (int modifier in Enumerable.Range(0, 3))
+        foreach (int handMutation in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            string name = tagMode is 1 or 2 ? "card_event_resistance_new" : "card_unit_51e_regiment";
+            var source = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            for (int i = 0; i < quantity; i++)
+                state.CreateWithId(PlainUnit, oppositeOwner ? side.Opposite() : side, 100 + i, side.HandOf(), i * 3);
+            state.CardCreated += card => {
+                if (card.Name != name) return;
+                if (tagMode == 2) card.RemovedGameplayTags.Add("autoplay");
+                if (tagMode == 3) engine.Api.AddCustomGameplayTag(card, "autoplay");
+            };
+            int callbacks = 0;
+            state.CardCreationModifiers += card => {
+                if (card.Name != name) return;
+                callbacks++;
+                if (modifier == 1) engine.Api.AddCustomGameplayTag(card, "autoplay");
+                if (modifier == 2) { engine.Api.RemoveCustomGameplayTag(card, "autoplay"); card.RemovedGameplayTags.Add("autoplay"); }
+                if (handMutation == 1) state.ById(100)!.Location = CardLocation.Discard;
+                if (handMutation == 2)
+                    for (int i = 0; i < 2; i++) state.CreateWithId(PlainUnit, side, 200 + i, side.HandOf(), 50 + i);
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnCardInHandBySide", source,
+                new object?[] { (int)side, name, 30, false, false, false, "", "", 0, null }, ctx, out bool handled);
+            bool tagged = modifier == 1 || modifier == 0 && tagMode is 1 or 3;
+            bool burned = quantity >= 9 && !tagged;
+            if (!handled || result is not CardInstance spawned || callbacks != 1
+                || spawned.Location != (burned ? CardLocation.Discard : side.HandOf())
+                || !state.GetAutoPlayCards().SequenceEqual(tagged ? new[] { spawned.CardId } : Array.Empty<int>())
+                || state.ById(101)!.LocationNumber != 3 || state.Random.ConsumedCount != 0)
+                return $"满手快照/创建修正标签错误：{side}/{quantity}/{oppositeOwner}/{tagMode}/{modifier}/{handMutation}";
+        }
+        return null;
+    }
+
+    private static string? NativeSpawnHandAutoplayEvents(CardDatabase db)
+    {
+        const string name = "card_unit_51e_regiment", own = "OnCardSpawnedInHand", other = "OnOtherCardSpawnedInHand";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || locals.ContainsKey(own) || locals.ContainsKey(other)) return "无法安装手牌自动打出探针";
+        var program = new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        locals[own] = program; locals[other] = program;
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool full in new[] { false, true })
+            foreach (bool initiallyTagged in new[] { false, true })
+            foreach (int ownMutation in Enumerable.Range(0, 5))
+            foreach (int otherMutation in Enumerable.Range(0, 5))
+            {
+                var (engine, state) = EmptyBoard(db);
+                if (full) for (int i = 0; i < 9; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HandOf(), i);
+                state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+                var watcher = state.CreateWithId(name, side.Opposite(), 20, CardLocation.Discard, 0);
+                watcher.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { other } };
+                CardInstance? spawned = null;
+                state.CardCreationModifiers += card => { if (card.Name == name) { spawned = card; if (initiallyTagged) engine.Api.AddCustomGameplayTag(card, "autoplay"); } };
+                CardLocation expectedLocation = full && !initiallyTagged ? CardLocation.Discard : side.HandOf();
+                bool expectedTag = initiallyTagged, correct = true; int events = 0;
+                state.CardCreated += card => {
+                    if (card.Name != "card_unit_routed_troops") return;
+                    events++; correct &= spawned is not null && spawned.Location == expectedLocation && state.GetAutoPlayCards().Length == 0;
+                    int mode = events == 1 ? ownMutation : otherMutation;
+                    if (mode is 1 or 4) { engine.Api.AddCustomGameplayTag(spawned!, "autoplay"); expectedTag = true; }
+                    if (mode == 2) { engine.Api.RemoveCustomGameplayTag(spawned!, "autoplay"); expectedTag = false; }
+                    if (mode == 3) spawned!.Location = expectedLocation = CardLocation.Discard;
+                    if (mode == 4) spawned!.Location = expectedLocation = side.Opposite().HandOf();
+                    state.StopFurtherActions = true;
+                };
+                var result = engine.Api.SpawnCardInHand(side, name);
+                bool queue = expectedTag && expectedLocation is CardLocation.HandLeft or CardLocation.HandRight;
+                if (!correct || events != 2 || result.Location != expectedLocation
+                    || !state.GetAutoPlayCards().SequenceEqual(queue ? new[] { result.CardId } : Array.Empty<int>()))
+                    return $"生成后入队门错误：{side}/full={full}/tag={initiallyTagged}/{ownMutation}/{otherMutation}/events={events}";
+            }
+        }
+        finally { locals.Remove(own); locals.Remove(other); }
+        return null;
     }
 
     private static string? NativeSpawnHandEventSnapshot(CardDatabase db)

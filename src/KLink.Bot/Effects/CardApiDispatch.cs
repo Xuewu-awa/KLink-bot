@@ -1962,7 +1962,7 @@ public sealed partial class CardApi
             // 容量规则（`out/Generated-gap` 的 `FetchCardsByLocation` 体）：
             //   前线 7 → `GameStateRef.FrontlineCapacity`（默认 5，有 limiter 时 2）；
             //   半场 5/6 → `HalfBoardCapacity`（5，**含 HQ 占 1 格**）；
-            //   手牌 3/4 → `HandCapacity`（9）；牌库/弃牌堆 → 永不"满"。
+            //   手牌 3/4 → `HandCapacity`（9），排除当前autoplay；牌库/弃牌堆 → 永不"满"。
             ["IsLocationFull"] = (c, r, a) => DoIsLocationFull(c, r, a),
 
             // ── `DestroyMultipleCards(cardsToDestroy, destroyerCardID, out)`（20 点）─
@@ -4812,7 +4812,7 @@ public sealed partial class CardApi
             "/Script/KardsCore.EFactionEnum", salvage, out string factionName)) faction = factionName;
         // i=250/333 forwards source gold and explicit salvage, before OnCreate/T35.
         // CardSeen is assigned after own OnCreate and before T35 (RULE-112).
-        // Full-hand and complete creation/draw notifications remain open.
+        // Full-hand snapshot and autoplay gates are adapted; complete notifications remain open.
         return SpawnCardInHand(side, cardName, isGold: c.State.ById(spawnerId)?.IsGold ?? false,
             isSalvaged: salvage != 0, salvageFaction: faction, cardSeen: TruthyArg(a, 3));
     }
@@ -5213,6 +5213,11 @@ public sealed partial class CardApi
         return cards;
     }
 
+    // BP_GameState_Battle.FetchCardsByLocation i=801 checks physical location;
+    // i=1067/1135 excludes live autoplay tags from hand arrays and capacity.
+    private int CountCardsForHandCapacity(CardLocation location)
+        => State.CardsUnordered().Count(card => card.Location == location && !HasInstanceGameplayTag(card, "autoplay"));
+
     /// <summary>
     /// `IsLocationFull(location, out isFull)` —— 20 调用点 / 17 张卡。
     ///
@@ -5226,7 +5231,7 @@ public sealed partial class CardApi
     ///       （默认 <see cref="GameState.DefaultFrontlineCapacity"/>=5，有 limiter 时 2）。</item>
     /// <item><c>5</c>/<c>6</c> 半场 → <see cref="GameState.HalfBoardCapacity"/>=5，
     ///       **计数含 HQ**（`MatchEngine.HalfBoardFull` 的注释已定案）。</item>
-    /// <item><c>3</c>/<c>4</c> 手牌 → <see cref="GameState.HandCapacity"/>=9。</item>
+    /// <item><c>3</c>/<c>4</c> 手牌 → <see cref="GameState.HandCapacity"/>=9，排除当前autoplay。</item>
     /// <item>牌库 <c>1</c>/<c>2</c>、弃牌堆 <c>8</c> → **永不"满"**（蓝图里没有上限）。</item>
     /// </list>
     /// </summary>
@@ -5238,7 +5243,7 @@ public sealed partial class CardApi
         {
             CardLocation.BoardFrontline => count >= c.State.FrontlineCapacity,
             CardLocation.BoardHqLeft or CardLocation.BoardHqRight => count >= GameState.HalfBoardCapacity,
-            CardLocation.HandLeft or CardLocation.HandRight => count >= GameState.HandCapacity,
+            CardLocation.HandLeft or CardLocation.HandRight => CountCardsForHandCapacity(loc) >= GameState.HandCapacity,
             _ => false,
         };
     }

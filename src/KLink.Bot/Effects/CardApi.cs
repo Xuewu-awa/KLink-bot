@@ -2915,12 +2915,17 @@ public sealed partial class CardApi
         return drawn;
     }
 
-    /// <summary>生成手牌对象并执行当前事件适配；完整CreateCard手牌流程仍待审计（RULE-111）。</summary>
+    /// <summary>生成手牌并适配满手/生成事件/自动打出入队；完整CreateCard通知仍待审计（RULE-114）。</summary>
     public CardInstance SpawnCardInHand(Side side, string cardName, bool isGold = false,
         bool isSalvaged = false, string? salvageFaction = null, bool? cardSeen = null)
     {
+        // CreateCard i=244/276 saves capacity before own creation and T35.
+        bool wasFull = CountCardsForHandCapacity(side.HandOf()) >= GameState.HandCapacity;
         var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()),
             isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction, cardSeenBeforeModifiers: cardSeen);
+        // i=2212..2399 uses the post-T35 tag but the saved pre-creation fullness.
+        // This is a direct field write, with no discard events or renumbering.
+        if (wasFull && !HasInstanceGameplayTag(card, "autoplay")) card.Location = CardLocation.Discard;
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
             ActionValue2.Int("cardID", card.CardId),
@@ -2928,6 +2933,8 @@ public sealed partial class CardApi
         });
 
         ExecuteOnSpawnedInHandEvents(card, side);
+        // i=2592..2721 re-reads both hand location and autoplay after own/T57.
+        if (IsLocatedInHand(card) && HasInstanceGameplayTag(card, "autoplay")) State.AddAutoPlayCards(card.CardId);
         return card;
     }
 
