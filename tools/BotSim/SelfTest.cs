@@ -181,6 +181,9 @@ internal static class SelfTest
         new("压制时长：参数、32位加法、夹值与三字段通知", NativeChangePinnedTurnsContract),
         new("回合末压制：位置/单位门、通知与到期解除", NativePinExpiryMatrix),
         new("回合末压制：对局表实时索引、增删和移出场上", NativePinExpiryLiveIndex),
+        new("场上查询：双方交错创建后保持全局顺序与各自过滤", NativeGlobalBoardQueryOrder),
+        new("场上查询：换主和往返换主不改对局顺序", NativeOwnerBoardQueryOrder),
+        new("场上查询：候选顺序绑定随机下标且查询不消费随机流", NativeBoardQueryRandomOrder),
         new("destruction前置账本：负值不移除固有亡语，真实摧毁仍执行", DestructionLedgerKeepsInnateEffect),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
@@ -10137,6 +10140,121 @@ internal static class SelfTest
                 return "主动亡语通知应按权威字段顺序包含目标ID";
             if (clears && Array.FindIndex(actions, x => x.Name == "ZActionTriggerDestruction")
                 >= Array.FindIndex(actions, x => x.Name == "ZActionCustomAbilityRemove")) return "主动触发通知必须先于后续能力移除通知";
+        }
+        return null;
+    }
+
+    private static (MatchEngine Engine, GameState State, CardInstance[] Board, CardInstance[] Units, CardInstance[] Front, CardInstance[] All)
+        MakeNativeBoardQueryFixture(CardDatabase db, Side primary, int ownerMode)
+    {
+        var (engine, state) = EmptyBoard(db); Side other = primary.Opposite();
+        CardInstance Make(int id, Side owner, CardLocation location, int slot, string type = "infantry", int defense = 20)
+        {
+            var card = state.CreateWithId(PlainUnit, owner, id, location, slot);
+            card.Definition = new CardDefinition { Name = PlainUnit, Type = type, Defense = defense, Attack = 2 };
+            card.Keywords.Clear(); card.Defense = card.MaxDefense = defense;
+            return card;
+        }
+        var a = Make(90, other, other.HqOf(), 9);
+        var b = Make(10, primary, CardLocation.BoardFrontline, 4); b.Keywords.Add(Keyword.Covert);
+        var c = Make(70, other, CardLocation.BoardFrontline, 0, "order");
+        var d = Make(20, primary, primary.HqOf(), 2, defense: 0);
+        var e = Make(80, other, CardLocation.BoardFrontline, 2, "fighter");
+        var f = Make(30, primary, CardLocation.BoardFrontline, 1, defense: -1);
+        var g = Make(60, other, other.HandOf(), 0);
+        var h = Make(40, primary, primary.DeckOf(), 0);
+        var i = Make(100, other, CardLocation.Discard, 0);
+        var j = Make(110, primary, primary.HqOf(), 0); j.Keywords.Add(Keyword.Covert); j.IsRevealed = true;
+        if (ownerMode is 1 or 3 or 4) state.ChangeOwner(a, primary);
+        if (ownerMode is 2 or 4) state.ChangeOwner(b, other);
+        if (ownerMode == 3) state.ChangeOwner(a, other);
+        var left = state.Hq(Side.Left); var right = state.Hq(Side.Right);
+        return (engine, state, new[] { left, right, a, b, c, d, e, f, j }, new[] { a, b, e, j },
+            new[] { b, c, e, f }, new[] { left, right, a, b, c, d, e, f, g, h, i, j });
+    }
+
+    private static string? NativeGlobalBoardQueryOrder(CardDatabase db)
+    {
+        foreach (Side primary in new[] { Side.Left, Side.Right })
+        foreach (int ownerMode in Enumerable.Range(0, 5))
+        foreach (bool include in new[] { false, true })
+        {
+            var fixture = MakeNativeBoardQueryFixture(db, primary, ownerMode);
+            var (engine, state) = (fixture.Engine, fixture.State);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(primary), Controller = primary };
+            long consumed = state.Random.ConsumedCount;
+            foreach (var query in new[] { (Name: "GetAllUnitsOnBoard", Expected: fixture.Units),
+                (Name: "GetAllCardsOnBoard", Expected: fixture.Board), (Name: "GetAllCardsInFrontline", Expected: fixture.Front) })
+            {
+                var expected = query.Expected.Where(x => include || x.CardId != 10).Select(x => x.CardId).ToArray();
+                object? raw = engine.Api.InvokeByName(query.Name, ctx.Self, new object?[] { include, null }, ctx, out bool handled);
+                var direct = query.Name == "GetAllUnitsOnBoard" ? engine.Api.GetAllUnitsOnBoard(include)
+                    : query.Name == "GetAllCardsOnBoard" ? engine.Api.GetAllCardsOnBoard(include) : engine.Api.GetAllCardsInFrontline(include);
+                if (!handled || raw is not IEnumerable<CardInstance> list || !list.Select(x => x.CardId).SequenceEqual(expected)
+                    || !direct.Select(x => x.CardId).SequenceEqual(expected) || state.Random.ConsumedCount != consumed)
+                    return $"全局查询顺序/过滤错误：{primary}/mode={ownerMode}/{query.Name}/covert={include}";
+            }
+            if (!engine.Api.GetAllCards().Select(x => x.CardId).SequenceEqual(fixture.All.Select(x => x.CardId)))
+                return "换主不应改变全局对局卡表";
+        }
+        return null;
+    }
+
+    private static string? NativeOwnerBoardQueryOrder(CardDatabase db)
+    {
+        foreach (Side primary in new[] { Side.Left, Side.Right })
+        foreach (int ownerMode in Enumerable.Range(0, 5))
+        {
+            var fixture = MakeNativeBoardQueryFixture(db, primary, ownerMode);
+            var (engine, state) = (fixture.Engine, fixture.State);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(primary), Controller = primary };
+            foreach (Side queried in new[] { Side.Left, Side.Right })
+            {
+                var board = fixture.Board.Where(x => x.Owner == queried).ToArray();
+                if (!state.BattleCardsInOrder(queried).SequenceEqual(board)
+                    || !state.BoardInBattleOrder(queried).SequenceEqual(board.Where(x => !x.IsHq)))
+                    return "阵营查询必须从全局卡表筛选，不能使用换主后追加的阵营索引";
+                foreach (bool unitsOnly in new[] { false, true })
+                foreach (bool include in new[] { false, true })
+                {
+                    var expected = (unitsOnly ? fixture.Units : fixture.Board.Where(x => x.CardId is not (20 or 30)))
+                        .Where(x => x.Owner == queried && (include || x.CardId != 10));
+                    object? raw = engine.Api.InvokeByName("GetCardsOnBoardBySide", ctx.Self,
+                        new object?[] { (int)queried, unitsOnly, include, null }, ctx, out bool handled);
+                    if (!handled || raw is not IEnumerable<CardInstance> list || !list.SequenceEqual(expected))
+                        return $"换主后阵营候选集顺序错误：{primary}/{ownerMode}/{queried}/units={unitsOnly}/covert={include}";
+                }
+            }
+        }
+        return null;
+    }
+
+    private static string? NativeBoardQueryRandomOrder(CardDatabase db)
+    {
+        foreach (Side primary in new[] { Side.Left, Side.Right })
+        foreach (int ownerMode in Enumerable.Range(0, 5))
+        foreach (bool include in new[] { false, true })
+        {
+            var fixture = MakeNativeBoardQueryFixture(db, primary, ownerMode);
+            var (engine, state) = (fixture.Engine, fixture.State);
+            var pools = new[] {
+                (Actual: engine.Api.GetAllUnitsOnBoard(include).ToArray(), Expected: fixture.Units),
+                (Actual: engine.Api.GetAllCardsOnBoard(include).ToArray(), Expected: fixture.Board),
+                (Actual: engine.Api.GetAllCardsInFrontline(include).ToArray(), Expected: fixture.Front),
+            };
+            var oracle = new UeRandomStream(state.Random.Seed);
+            foreach (var pool in pools)
+            {
+                var expected = pool.Expected.Where(x => include || x.CardId != 10).ToArray();
+                for (int draw = 0; draw < 6; draw++)
+                {
+                    long before = state.Random.ConsumedCount;
+                    int index = oracle.Next(expected.Length);
+                    var selected = engine.Api.GetRandomCard(pool.Actual);
+                    if (selected != expected[index] || state.Random.Seed != oracle.Seed || state.Random.ConsumedCount != before + 1)
+                        return "相同随机下标必须命中全局顺序中的同一候选，且仅消费一次";
+                }
+            }
         }
         return null;
     }

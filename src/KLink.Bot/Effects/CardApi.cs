@@ -2397,8 +2397,8 @@ public sealed partial class CardApi
         }
 
         // si=290..905：数「场上**其它**同阵营 Alpine 单位」
-        // （`GetAllUnitsOnBoard(includeCovertCards=False)` —— 内核的
-        //  `GetAllUnitsOnBoard()` 就是"棋盘上的非 HQ 卡"，Covert 未建模）
+        // GetAllUnitsOnBoard(false): positive-defense units in global battle
+        // order, excluding unrevealed Covert cards.
         int bonus = 0;
         foreach (var item in GetAllUnitsOnBoard())
         {
@@ -4714,8 +4714,8 @@ public sealed partial class CardApi
     /// ★★ **顺序必须是「进入战斗的顺序」**（2026-10-02 从蓝图定案）。
     /// 客户端遍历场上一律走 `GetAllCardInBattle()` = `Map_Values(AllCardsInBattle)`
     ///（`_deps/BP_GameState_Battle.g.cs:1571`），而那个映射**只增不删**
-    ///（全树 0 处 `Map_Remove`，见 `AddCardToAllCardsInBattle` `:301-319`）
-    /// ⇒ 顺序 = **插入顺序**。详见 <see cref="GameState.BoardInBattleOrder"/>。
+    ///（当前完整蓝图导出未发现单卡Map_Remove），这里采用全局登记顺序，
+    /// 换主不重排。更广泛的TMap行为边界见 <see cref="GameState.BoardInBattleOrder"/>。
     ///
     /// ⚠️ 以前这里用的是 `State.Board(s)`（按 `LocationNumber` 排序）——
     /// 同一次消费、同一个下标会**取到不同的卡**，这正是「随机效果与客户端不一致」
@@ -4744,17 +4744,19 @@ public sealed partial class CardApi
             .DefaultIfEmpty(0)
             .Max();
 
-    public IEnumerable<CardInstance> GetAllUnitsOnBoard() => State.Board(Side.Left).Concat(State.Board(Side.Right));
-    public IEnumerable<CardInstance> GetAllCardsOnBoard() => GetAllUnitsOnBoard().Concat(new[] { State.Hq(Side.Left), State.Hq(Side.Right) });
-    /// <summary>
-    /// Blueprint `GetAllCardsInFrontline`: return every card currently in the
-    /// shared frontline, regardless of owner. Covert visibility is not modeled,
-    /// so the only effective filter is the location.
-    /// </summary>
-    public IEnumerable<CardInstance> GetAllCardsInFrontline()
-        => State.BattleCardsInOrder(Side.Left)
-            .Concat(State.BattleCardsInOrder(Side.Right))
-            .Where(card => card.Location == CardLocation.BoardFrontline);
+    public IEnumerable<CardInstance> GetAllUnitsOnBoard(bool includeCovert = false)
+        => State.AllCardsInBattleOrder.Where(card => card.Location.IsBoard() && IsUnit(card)
+            && card.Defense > 0 && (includeCovert || !IsUnrevealedCovertCard(card)));
+
+    // Unlike GetAllUnitsOnBoard, the native all-card/frontline queries do not
+    // require positive defense or a unit type. Preserve the global map order.
+    public IEnumerable<CardInstance> GetAllCardsOnBoard(bool includeCovert = false)
+        => State.AllCardsInBattleOrder.Where(card => card.Location.IsBoard()
+            && (includeCovert || !IsUnrevealedCovertCard(card)));
+
+    public IEnumerable<CardInstance> GetAllCardsInFrontline(bool includeCovert = false)
+        => State.AllCardsInBattleOrder.Where(card => card.Location == CardLocation.BoardFrontline
+            && (includeCovert || !IsUnrevealedCovertCard(card)));
     public IEnumerable<CardInstance> GetAllCards() => State.AllCardsInBattleOrder;
     public IEnumerable<CardInstance> GetCardsInHandBySide(Side s) => State.Hand(s);
     /// <summary>

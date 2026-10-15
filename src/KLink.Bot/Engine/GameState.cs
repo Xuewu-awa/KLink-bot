@@ -607,8 +607,9 @@ public sealed class GameState
     /// `Map_Values(self.AllCardsInBattle)` ⇒ 顺序 = **这个 `TMap` 的迭代顺序**。
     /// 而 `AddCardToAllCardsInBattle`（同文件 `:301-319`）是
     /// 「`cardID &gt; 0` 且 `Map_Find` 查不到 ⇒ `Map_Add`」——
-    /// **全树 0 处 `Map_Remove`** ⇒ 该映射**只增不删**、永不出现 swap-remove 的洞
-    /// ⇒ **`Map_Values` 的顺序就是插入顺序**（= 卡进入战斗的顺序）。
+    /// 当前完整蓝图导出未发现该映射的Map_Remove，只有登记与整局清空。
+    /// 当前无单卡删除的规则路径以全局登记顺序建模，换主不重排；原生反射
+    /// 写入、外部恢复或空槽复用仍需独立证据，不能据此证明所有TMap行为。
     ///
     /// ⚠️ `Board(s)` 是按 `LocationNumber` **排序**的（见 <see cref="Cards"/>），
     /// 与客户端的插入序**不是一回事**。而「随机挑一张」这类效果的候选集顺序
@@ -616,7 +617,7 @@ public sealed class GameState
     /// 见 `CardApi.GetRandomCard` 的注释），所以**随机族必须用本方法**。
     /// </summary>
     public List<CardInstance> BoardInBattleOrder(Side s)
-        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard() && !c.IsHq);
+        => _battleCardOrder.FindAll(c => c.Owner == s && c.Location.IsBoard() && !c.IsHq);
 
     /// <summary>
     /// 该方**在战场上**的**全部**卡（**含 HQ**），按**进入战斗的顺序**。
@@ -628,7 +629,7 @@ public sealed class GameState
     /// 详见 <see cref="BoardInBattleOrder"/> 里那段蓝图依据。
     /// </summary>
     public List<CardInstance> BattleCardsInOrder(Side s)
-        => _cardsBySide[(int)s].FindAll(c => c.Location.IsBoard());
+        => _battleCardOrder.FindAll(c => c.Owner == s && c.Location.IsBoard());
     public List<CardInstance> Discard(Side s) => Cards(s, CardLocation.Discard);
 
     public CardInstance Hq(Side s) => _cardsBySide[(int)s].First(c => c.IsHq);

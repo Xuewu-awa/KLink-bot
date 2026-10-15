@@ -327,26 +327,13 @@ public sealed partial class CardApi
             // 权威签名（`CardFunctionsStub.h:455/464`）：
             //   `GetAllUnitsOnBoard(bool includeCovertCards, TArray& Cards)`
             //   `GetAllCardsOnBoard(bool includeCovertCards, TArray& Cards)`
-            // 两个函数的**唯一**区别就是"单位"与"卡" —— 说明"场上所有卡"**严格多于**
-            // "场上所有单位"，多出来的只能是 HQ（棋盘上唯一的非单位卡）。
+            // Native unit query additionally requires IsUnit and positive defense;
+            // the all-card query has neither gate. Both retain global battle order.
             // 旧实现把 `a[0]` 当成 `includeHq` 解释（注释里还写了推理），
             // 于是 90 个传 `false` 的调用点拿到的是"只有单位"，少了 HQ。
-            ["GetAllUnitsOnBoard"] = (c, r, a) =>
-            {
-                bool includeCovert = TruthyArg(a, 0);
-                return GetAllUnitsOnBoard()
-                    .Where(card => card.Defense > 0
-                        && (includeCovert || !IsUnrevealedCovertCard(card)))
-                    .ToList();
-            },
-            ["GetAllCardsOnBoard"] = (c, r, a) =>
-            {
-                bool includeCovert = TruthyArg(a, 0);
-                return GetAllCardsOnBoard()
-                    .Where(card => includeCovert || !IsUnrevealedCovertCard(card))
-                    .ToList();
-            },
-            ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline().ToList(),
+            ["GetAllUnitsOnBoard"] = (c, r, a) => GetAllUnitsOnBoard(TruthyArg(a, 0)).ToList(),
+            ["GetAllCardsOnBoard"] = (c, r, a) => GetAllCardsOnBoard(TruthyArg(a, 0)).ToList(),
+            ["GetAllCardsInFrontline"] = (c, r, a) => GetAllCardsInFrontline(TruthyArg(a, 0)).ToList(),
             ["GetAllCards"] = (c, r, a) => GetAllCards().ToList(),
             // SDF's private ApplyAndCorrectBuff counts the controller's board Guards.
             ["CountFriendlyGuardUnits"] = (c, r, a) => c.State.Board(c.Controller)
