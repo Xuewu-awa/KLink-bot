@@ -6177,7 +6177,7 @@ public sealed partial class CardApi
         switch (selected)
         {
             case 1: GiveKeyword(target, Keyword.Ambush); break;
-            case 2: GiveKeyword(target, Keyword.Blitz); break;
+            case 2: GiveBlitz(target, instigatorId); break;
             case 3: GiveFury(target, instigatorId); break;
             case 4: GiveKeyword(target, Keyword.Guard); break;
             case 5:
@@ -6226,7 +6226,7 @@ public sealed partial class CardApi
 
     private object? DoGiveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword == Keyword.Fury
+        var target = keyword is Keyword.Fury or Keyword.Blitz
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6258,6 +6258,7 @@ public sealed partial class CardApi
             }
 
             if (keyword == Keyword.Fury) GiveFury(target, IntArg(a, 1));
+            else if (keyword == Keyword.Blitz) GiveBlitz(target, IntArg(a, 1));
             else GiveKeyword(target, keyword);
         }
 
@@ -6332,7 +6333,7 @@ public sealed partial class CardApi
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword == Keyword.Fury
+        var target = keyword is Keyword.Fury or Keyword.Blitz
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6340,6 +6341,7 @@ public sealed partial class CardApi
             {
                 RemoveFury(target, IntArg(a, 1), TruthyArg(a, 2));
             }
+            else if (keyword == Keyword.Blitz) RemoveBlitz(target, IntArg(a, 2), TruthyArg(a, 3));
             else RemoveKeyword(target, keyword);
         }
 

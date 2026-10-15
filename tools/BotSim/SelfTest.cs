@@ -143,6 +143,11 @@ internal static class SelfTest
         new("能力变化T29：重入保留外层快照及内外独立查询", AbilitiesChangedReentry),
         new("能力变化T29：奋战去重、未知来源与skip通知的事件契约", FuryAbilitiesChangedIntegration),
         new("能力变化T29：KV-1S自身获得奋战仍更新友方关键字攻击加成", AbilitiesChangedKv1s),
+        new("闪击给予：原始/来源去重、牌库通知与两次T29顺序", BlitzGrantSourcesAndPhases),
+        new("闪击撤销：单来源/全量/未知来源与通知skip状态矩阵", BlitzRemoveSources),
+        new("闪击T33：独立注册、查询快照及T33/通知/T29阶段顺序", BlitzChangedSnapshots),
+        new("闪击给予重入：两次T29分别查询，首次回调可改变后续成员", BlitzGrantReentry),
+        new("闪击边界：SDK出参槽、原始成员、隐蔽、快照、抑制与随机来源", BlitzSourceBoundaries),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -410,7 +415,7 @@ internal static class SelfTest
             LoseSmokescreenEventCarriesPayload),
         new("事件层：OnDeckShuffled 传递牌库阵营并触发 110e REGIMENT 光环",
             DeckShuffledEventCarriesPayload),
-        new("事件层：OnOtherCardBlitzChanged 传递目标并触发 PANZER III L 光环",
+        new("事件层：闪击变化经T29更新PANZER III L，不伪造T33注册",
             BlitzChangedEventCarriesPayload),
         new("原语：getCardsBuffedByThisCard 返回来源卡实际增益目标 ID",
             CardsBuffedByThisCardReturnsIds),
@@ -6925,8 +6930,6 @@ internal static class SelfTest
                 (e, s, p) => { e.Api.MakeVeteran(Plain(s, victim, 63)); return p; }),
             ("OnOtherCardAbilitiesChanged", "card_unit_royal_west_kents",
                 (e, s, p) => { e.Api.GiveKeyword(Plain(s, victim, 64), Keyword.Blitz); return p; }),
-            ("OnOtherCardBlitzChanged", "card_unit_panzer_iii_l",
-                (e, s, p) => { var changed = Plain(s, victim, 65); e.Api.GiveKeyword(changed, Keyword.Blitz); e.Api.RemoveKeyword(changed, Keyword.Blitz); return p; }),
             ("OnOtherCardLoseSmokescreen", "card_unit_hirosaki_regiment",
                 (e, s, p) =>
                 {
@@ -7951,6 +7954,7 @@ internal static class SelfTest
             return $"PANZER III L 错误给敌方坦克加攻：期望={enemyAttack}，实际={enemy.Attack}";
         }
 
+        trace.Clear();
         try
         {
             engine.Api.RemoveKeyword(ally, Keyword.Blitz);
@@ -7960,11 +7964,13 @@ internal static class SelfTest
             return $"RemoveKeyword(Blitz) 抛出 {ex.GetType().Name}: {ex.Message}";
         }
 
-        string removePrefix = $"OnOtherCardBlitzChanged → {watcher.Name}#{watcher.CardId}";
+        if (trace.Any(t => t.StartsWith("OnOtherCardBlitzChanged →", StringComparison.Ordinal)))
+            return "当前CDO没有T33注册者，PANZER III L不可按T29别名收到T33";
+        string removePrefix = $"OnOtherCardAbilitiesChanged → {watcher.Name}#{watcher.CardId}";
         if (!trace.Any(t => t.StartsWith(removePrefix, StringComparison.Ordinal)
                          && t.Contains($"eventCard={ally.Name}#{ally.CardId}", StringComparison.Ordinal)))
         {
-            return "OnOtherCardBlitzChanged 没有把实际失去 Blitz 的己方坦克作为事件主体传给 PANZER III L"
+            return "OnOtherCardAbilitiesChanged 没有把实际失去 Blitz 的己方坦克作为事件主体传给 PANZER III L"
                  + $"\n       实际派发记录：{string.Join(" | ", trace)}";
         }
 
@@ -9323,6 +9329,284 @@ internal static class SelfTest
                 return "KV-1S自身变化应收到T29并更新友军关键词加成，不应增益自己或敌军";
             engine.Api.RemoveFury(aura, 71, skipAction: true);
             if (ally.Attack != allyAttack + 1) return "KV-1S重复更新不可累计已经施加的关键字攻击加成";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallBlitzChangedProbes()
+    {
+        const string trigger = "OnOtherCardBlitzChanged";
+        var installed = new List<IDictionary<string, IReadOnlyList<KismetStep>>>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+                throw new InvalidOperationException("无法安装T33探针：" + name);
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "cardChanged", Scope = "local" }, null, -1, "_auditT33Subject", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                        new KismetExpr { Var = "_auditT33Count", Scope = "instance" }, new KismetExpr { Int = 1 }
+                    } }, null, -1, "_auditT33Count", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add(locals);
+        }
+        return new AuditProbeCleanup(() => { foreach (var locals in installed) locals.Remove(trigger); });
+    }
+
+    private static string? BlitzGrantSourcesAndPhases(CardDatabase db)
+    {
+        using var probe = InstallAbilitiesChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool intrinsic in new[] { false, true })
+        foreach (int prior in new[] { 0, 71, 72 })
+        foreach (int giver in new[] { 0, 71, -7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = MakeActionQuotaProbe(state, side, "infantry");
+            target.Location = deck ? side.DeckOf() : side.HqOf(); target.EnteredPlayOnTurn = state.Turn;
+            var observer = state.CreateWithId("card_unit_51e_regiment", side.Opposite(), 21, CardLocation.NotAvailable, 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardAbilitiesChanged" } };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            if (intrinsic) target.Keywords.Add(Keyword.Blitz);
+            if (prior != 0)
+            {
+                target.ReceivedAbilitiesFromCards["blitz"] = new List<int> { prior };
+                target.BuffsBySource[(prior, false)] = new CardBuff { SourceCardId = prior, Blitz = 1 };
+            }
+            var observed = new List<int>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == "card_unit_routed_troops")
+                {
+                    if (!target.HasBlitz) throw new InvalidOperationException("T29应在闪击写入后执行");
+                    observed.Add(state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveBlitz"));
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+            engine.Api.InvokeByName("GiveBlitz", target, new object?[] { 60, giver }, ctx, out _);
+            bool duplicate = giver == 0 ? intrinsic : prior == giver;
+            bool had = intrinsic || prior != 0;
+            int notifications = !duplicate && !deck ? 1 : 0;
+            int[] expected = duplicate ? Array.Empty<int>() : had ? new[] { notifications } : new[] { 0, notifications };
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGiveBlitz").ToArray();
+            if (!target.HasBlitz || target.Keywords.Contains(Keyword.Blitz) != (intrinsic || giver == 0)
+                || !observed.SequenceEqual(expected) || actions.Length != notifications
+                || actions.Length > 0 && (actions[0].Values.First(x => x.Name == "cardID").Value != 60
+                    || actions[0].Values.First(x => x.Name == "giverID").Value != giver))
+                return $"GiveBlitz来源/阶段错误：{side} deck={deck} raw={intrinsic} prior={prior} giver={giver} events={string.Join(",", observed)}";
+            var sources = prior == 0 ? new List<int>() : new List<int> { prior };
+            if (giver != 0 && !sources.Contains(giver)) sources.Add(giver);
+            if (!(target.ReceivedAbilitiesFromCards.GetValueOrDefault("blitz") ?? new List<int>()).SequenceEqual(sources)
+                || sources.Any(id => target.BuffsBySource[(id, false)].Blitz != 1)) return "闪击来源数组/数值账本不符";
+            if (target.RemainingAttacks != 1 || !deck && target.HasDeploymentSickness(state)) return "来源闪击必须解除召唤失调且不改攻击额度";
+            engine.Api.InvokeByName("GiveBlitz", target, new object?[] { 60, giver }, ctx, out _);
+            if (!observed.SequenceEqual(expected)) return "重复来源/原始闪击不得多发T29";
+        }
+        return null;
+    }
+
+    private static string? BlitzRemoveSources(CardDatabase db)
+    {
+        using var p29 = InstallAbilitiesChangedProbes(); using var p33 = InstallBlitzChangedProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool intrinsic in new[] { false, true })
+        foreach (int sourceCount in new[] { 0, 1, 2 })
+        foreach (int giver in new[] { 0, -7, 71, 99 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            var observer = state.CreateWithId("card_unit_51e_regiment", side, 21, CardLocation.NotAvailable, 1);
+            observer.Definition = new CardDefinition { Name = observer.Name,
+                UsedTriggers = new[] { "OnOtherCardAbilitiesChanged", "OnOtherCardBlitzChange" } };
+            observer.BlueprintVariables["_auditT29Count"] = observer.BlueprintVariables["_auditT33Count"] = 0;
+            if (intrinsic) target.Keywords.Add(Keyword.Blitz);
+            int[] prior = new[] { 71, -7 }.Take(sourceCount).ToArray();
+            target.ReceivedAbilitiesFromCards["blitz"] = prior.ToList();
+            foreach (int id in prior) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Blitz = 1, Attack = 2 };
+            bool accepted = giver <= 0 ? intrinsic || sourceCount > 0 : prior.Contains(giver);
+            bool raw = intrinsic && !(accepted && giver <= 0);
+            int[] remaining = !accepted ? prior : giver <= 0 ? Array.Empty<int>() : prior.Where(x => x != giver).ToArray();
+            bool effective = raw || remaining.Length > 0;
+            engine.Api.InvokeByName("RemoveBlitz", target, new object?[] { 60, true, giver, skip },
+                new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out _);
+            int t29 = Convert.ToInt32(observer.BlueprintVariables["_auditT29Count"]);
+            int t33 = Convert.ToInt32(observer.BlueprintVariables["_auditT33Count"]);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionRemoveBlitz").ToArray();
+            if (target.HasBlitz != effective || target.Keywords.Contains(Keyword.Blitz) != raw || target.RemainingAttacks != 1
+                || t29 != (accepted ? 1 : 0) || t33 != (accepted && !effective ? 1 : 0)
+                || actions.Length != (accepted && !skip ? 1 : 0)
+                || !(target.ReceivedAbilitiesFromCards.GetValueOrDefault("blitz") ?? new List<int>()).SequenceEqual(remaining)
+                || accepted && giver <= 0 && target.ReceivedAbilitiesFromCards.ContainsKey("blitz")
+                || prior.Any(id => target.BuffsBySource[(id, false)].Attack != 2
+                    || target.BuffsBySource[(id, false)].Blitz != (remaining.Contains(id) ? 1 : 0)))
+                return $"RemoveBlitz状态错误：{side} raw={intrinsic} sources={sourceCount} giver={giver} skip={skip}";
+        }
+        return null;
+    }
+
+    private static string? BlitzChangedSnapshots(CardDatabase db)
+    {
+        using var p29 = InstallAbilitiesChangedProbes(); using var p33 = InstallBlitzChangedProbes();
+        const string t33 = "OnOtherCardBlitzChange", t29 = "OnOtherCardAbilitiesChanged";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool skip in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 14))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_event_honorifics", side, 20, CardLocation.NotAvailable, 1);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, CardLocation.Discard, 1);
+            var target = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 2);
+            var cards = new[] { first, last, target };
+            foreach (var card in cards)
+            {
+                card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { t33, t29 } };
+                card.BlueprintVariables["_auditT29Count"] = card.BlueprintVariables["_auditT33Count"] = 0;
+            }
+            target.Keywords.Add(Keyword.Blitz);
+            if (mode == 1) state.StopFurtherActions = true;
+            if (mode is 2 or 3) target.Keywords.Add(Keyword.Suppressed);
+            if (mode == 3) target.SuppressionExceptionTriggers.Add(t33);
+            if (mode == 4) target.Location = CardLocation.NotAvailable;
+            if (mode is 7 or 8) last.Keywords.Add(Keyword.Suppressed);
+            if (mode == 8) last.SuppressionExceptionTriggers.Add(t33);
+            if (mode == 11) last.Definition = new CardDefinition { Name = last.Name, UsedTriggers = new[] { t29 } };
+            if (mode == 12) target.Definition = new CardDefinition { Name = target.Name, UsedTriggers = new[] { t29 } };
+            if (mode == 13) first.Definition = new CardDefinition { Name = first.Name, UsedTriggers = new[] { t29 } };
+            var seen = cards.ToDictionary(x => x.CardId, _ => (T29: 0, T33: 0));
+            var observed = new List<string>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => Convert.ToInt32(x.BlueprintVariables["_auditT29Count"]) > seen[x.CardId].T29
+                    || Convert.ToInt32(x.BlueprintVariables["_auditT33Count"]) > seen[x.CardId].T33);
+                var prior = seen[current.CardId];
+                bool is33 = Convert.ToInt32(current.BlueprintVariables["_auditT33Count"]) > prior.T33;
+                seen[current.CardId] = (Convert.ToInt32(current.BlueprintVariables["_auditT29Count"]), Convert.ToInt32(current.BlueprintVariables["_auditT33Count"]));
+                if (!ReferenceEquals(current.BlueprintVariables[is33 ? "_auditT33Subject" : "_auditT29Subject"], target))
+                    throw new InvalidOperationException("闪击事件载荷必须保留变化对象");
+                int notifications = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRemoveBlitz");
+                observed.Add($"{(is33 ? 33 : 29)}:{current.CardId}:{notifications}");
+                if (!is33 || current != first) return;
+                if (mode == 5) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 6) last.Definition = new CardDefinition { Name = last.Name };
+                if (mode == 7) last.Keywords.Remove(Keyword.Suppressed);
+                if (mode == 8) last.SuppressionExceptionTriggers.Clear();
+                if (mode == 9) state.StopFurtherActions = true;
+                if (mode == 10) last.Location = CardLocation.NotAvailable;
+            };
+            engine.Api.RemoveBlitz(target, skipAction: skip);
+            var expected = new List<string>();
+            if (mode != 13) expected.Add("33:20:0");
+            if (mode is not (7 or 11)) expected.Add("33:21:0");
+            if (mode is not (2 or 12)) expected.Add("33:60:0");
+            expected.Add($"29:20:{(skip ? 0 : 1)}");
+            if (mode is not (5 or 6 or 8)) expected.Add($"29:21:{(skip ? 0 : 1)}");
+            if (mode is not (2 or 3)) expected.Add($"29:60:{(skip ? 0 : 1)}");
+            if (!observed.SequenceEqual(expected)) return $"T33阶段/查询错误：{side} mode={mode} skip={skip} 实际{string.Join(",", observed)}";
+            if (mode is 1 or 9 && !state.StopFurtherActions) return "T33不得重置或消费停止标志";
+        }
+        return null;
+    }
+
+    private static string? BlitzGrantReentry(CardDatabase db)
+    {
+        using var probes = InstallAbilitiesChangedProbes();
+        const string trigger = "OnOtherCardAbilitiesChanged";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = MakeActionQuotaProbe(state, side, "infantry");
+            var first = state.CreateWithId("card_event_honorifics", side, 20, side.HqOf(), 1);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, side.HqOf(), 2);
+            var cards = new[] { first, last };
+            foreach (var card in cards)
+            {
+                card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { trigger } };
+                card.BlueprintVariables["_auditT29Count"] = 0;
+            }
+            var seen = cards.ToDictionary(x => x.CardId, _ => 0);
+            var observed = new List<string>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(x => Convert.ToInt32(x.BlueprintVariables["_auditT29Count"]) > seen[x.CardId]);
+                seen[current.CardId]++;
+                int notifications = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGiveBlitz");
+                observed.Add($"{current.CardId}:{notifications}");
+                if (current != first || seen[20] != 1) return;
+                if (mode == 0) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 1) last.Definition = new CardDefinition { Name = last.Name };
+                if (mode == 2) target.Location = side.DeckOf();
+                if (mode == 3) state.StopFurtherActions = true;
+            };
+            engine.Api.GiveBlitz(target, 71);
+            string[] expected = mode is 0 or 1 ? new[] { "20:0", "21:0", "20:1" }
+                : mode == 2 ? new[] { "20:0", "21:0", "20:0", "21:0" } : new[] { "20:0", "21:0", "20:1", "21:1" };
+            if (!observed.SequenceEqual(expected)) return "GiveBlitz两次T29必须独立查询并在首次回调后再判断牌库通知：" + string.Join(",", observed);
+        }
+        return null;
+    }
+
+    private static string? BlitzSourceBoundaries(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            {
+                var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+                var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+                engine.Api.InvokeByName("GiveBlitz", target, new object?[] { 9999, 71 }, ctx, out _);
+                if (target.HasBlitz || target.BuffsBySource.Count != 0) return "无效GiveBlitz目标不得回落Self";
+                engine.Api.GiveBlitz(target, 71);
+                engine.Api.GiveBlitz(target, 72);
+                var steps = new KismetStep[] {
+                    new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "hasBlitz" }, null, -1, "__probe", null),
+                    new(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+                var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
+                var effective = engine.Api.InvokeByName("getHasBlitz", target, Array.Empty<object?>(), ctx, out _);
+                if (!Equals(bag.GetValueOrDefault("__probe"), false) || !Equals(effective, true))
+                    return "原始hasBlitz和有效getter必须分离";
+                var snap = target.Snapshot();
+                engine.Api.InvokeByName("RemoveBlitz", target, new object?[] { 9999, true, 71, false }, ctx, out _);
+                if (!target.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71, 72 })) return "无效RemoveBlitz目标不得回落Self";
+                // SDK: cardID, out qqq, giverID, skipAction. qqq=true must not become source ID 1.
+                engine.Api.InvokeByName("RemoveBlitz", target, new object?[] { 60, true, 71, true }, ctx, out _);
+                if (!target.HasBlitz || !target.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 72 })
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionRemoveBlitz"))
+                    return "RemoveBlitz必须忽略第2参数输出槽，正确读取第3来源和第4skip";
+                if (!snap.Keywords.Contains(Keyword.Blitz) || snap.IntrinsicBlitz
+                    || !snap.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71, 72 })
+                    || snap.BlitzBuffsBySource["71/False"] != 1) return "闪击快照应独立保留有效/原始状态与两类来源记录";
+                engine.Api.SuppressUnit(target);
+                if (target.HasBlitz || target.ReceivedAbilitiesFromCards.ContainsKey("blitz") || target.BuffsBySource.Count != 0)
+                    return "抑制必须完整摘除仅由来源赋予的闪击";
+                target.ResetAttributes(); engine.Api.GiveBlitz(target, 72); target.ResetAttributes();
+                if (target.HasBlitz || target.BuffsBySource.Count != 0) return "重置不得残留动态闪击来源";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+                target.Keywords.Add(Keyword.Covert); engine.Api.GiveBlitz(target, 71);
+                if (target.HasBlitz || target.ReceivedAbilitiesFromCards.ContainsKey("blitz") || target.BuffsBySource.Count != 0)
+                    return "未揭示场上Covert不得记录闪击来源";
+            }
+            {
+                var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+                foreach (string keyword in new[] { Keyword.Ambush, Keyword.Fury, Keyword.Guard,
+                    Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen }) target.Keywords.Add(keyword);
+                var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+                engine.Api.InvokeByName("GiveRandomCombatKeyword", target, new object?[] { 60, 71, null, null }, ctx, out _);
+                if (!target.HasBlitz || target.Keywords.Contains(Keyword.Blitz)
+                    || !target.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71 })) return "随机闪击必须传递来源";
+                engine.Api.InvokeByName("GiveRandomCombatKeyword", target, new object?[] { 60, 72, null, null }, ctx, out _);
+                if (!target.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71 })) return "随机候选应排除已有来源闪击";
+            }
         }
         return null;
     }
@@ -14015,7 +14299,7 @@ internal static class SelfTest
             var args = Args(1, false, card);
             args[5] = true;
             var spawned = engine.Api.InvokeByName("SpawnCardOnBattlefield", null, args, ctx, out _) as CardInstance;
-            if (spawned is null || !spawned.Keywords.Contains(Keyword.Blitz))
+            if (spawned is null || !spawned.HasBlitz)
             {
                 return "NewGiveBlitz=true 时生成的卡应自带 Blitz";
             }
@@ -18519,7 +18803,7 @@ internal static class SelfTest
                 return $"handled={handled}、返回 {result}";
             }
 
-            if (!spawned.Keywords.Contains(Keyword.Blitz))
+            if (!spawned.HasBlitz)
             {
                 return $"`giveBlitz=true`（a[4]）必须挂上 Blitz，实际关键字 [{string.Join(",", spawned.Keywords)}]";
             }
@@ -20438,7 +20722,7 @@ internal static class SelfTest
         if (spawned.Any(card => card is null
                 || card.Location != CardLocation.BoardHqLeft
                 || !card.IsGold
-                || !card.Keywords.Contains(Keyword.Blitz)
+                || !card.HasBlitz
                 || !card.Keywords.Contains(Keyword.Veteran)))
         {
             return "生成卡必须按顺序落在左方半场，并继承金卡、Blitz 和 Veteran 状态";
@@ -20626,7 +20910,7 @@ internal static class SelfTest
             string[] combatKeywords =
             [Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Guard,
              Keyword.HeavyArmor, Keyword.Shock, Keyword.Smokescreen];
-            if (!target.Keywords.Any(combatKeywords.Contains))
+            if (!combatKeywords.Any(target.HasKeyword))
             {
                 return "GiveRandomCombatKeyword 成功调用没有授予任何战斗关键字";
             }
@@ -20969,7 +21253,7 @@ internal static class SelfTest
         engine.Api.InvokeByName("GiveBlitz", source,
             new object?[] { board.CardId, source.CardId }, ctx, out bool blitzHandled);
         if (!costHandled || !blitzHandled || hand.KreditCost != Math.Max(0, handCost - 1)
-            || !board.Keywords.Contains(Keyword.Blitz))
+            || !board.HasBlitz)
         {
             return "L4 光环前置状态未正确施加到 Sherman 手牌/场面";
         }
@@ -20977,10 +21261,10 @@ internal static class SelfTest
         object? result = engine.Api.InvokeByName("Remove the Buff", source,
             Array.Empty<object?>(), ctx, out bool handled);
         return handled && result is null && hand.KreditCost == handCost
-            && !board.Keywords.Contains(Keyword.Blitz)
+            && !board.HasBlitz
             ? null
             : $"Remove the Buff 未撤销 Sherman 光环：handled={handled}, "
-              + $"cost={hand.KreditCost}/{handCost}, blitz={board.Keywords.Contains(Keyword.Blitz)}";
+              + $"cost={hand.KreditCost}/{handCost}, blitz={board.HasBlitz}";
     }
 
     private static string? GetXAndMoreAttackCardsOnBoard(CardDatabase db)

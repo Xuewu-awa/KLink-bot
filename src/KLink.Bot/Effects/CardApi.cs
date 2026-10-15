@@ -187,7 +187,7 @@ public sealed partial class CardApi
     private static bool HasSuppressionException(CardInstance card, string trigger)
         // Current pak FetchAllCardsWithEventTrigger i=682 checks the instance
         // array only. All 2019 CDO arrays have been verified against live memory.
-        => card.SuppressionExceptionTriggers.Contains(trigger);
+        => card.SuppressionExceptionTriggers.Contains(Cards.CardDefinition.RegisteredTriggerName(trigger));
 
     private static bool SuppressedSkipsTrigger(CardInstance card, string trigger)
         => card.IsSuppressed && !HasSuppressionException(card, trigger);
@@ -3218,9 +3218,85 @@ public sealed partial class CardApi
         if (buff.IsEmpty) target.BuffsBySource.Remove(key);
     }
 
+    // GiveBlitz i895 and i973 are separate T29 queries. The first runs only
+    // when effective Blitz changed; notification lies between them outside deck.
+    public void GiveBlitz(CardInstance target, int giverId = 0)
+    {
+        if (!CanCardBeBuffed(target)) return;
+        bool alreadyHad = target.HasBlitz;
+        if (giverId == 0)
+        {
+            if (target.Keywords.Contains(Keyword.Blitz)) return;
+            target.Keywords.Add(Keyword.Blitz);
+        }
+        else
+        {
+            if (!target.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var givers))
+                target.ReceivedAbilitiesFromCards["blitz"] = givers = new List<int>();
+            if (givers.Contains(giverId)) return;
+            ChangeBlitzBuff(target, giverId, 1);
+            givers.Add(giverId);
+        }
+        if (target.HasBlitz != alreadyHad) FireAbilitiesChanged(target);
+        if (!IsLocatedInDeck(target))
+            _engine.FireSubAction("ZActionGiveBlitz", new[] {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId) });
+        FireAbilitiesChanged(target);
+    }
+
+    public void RemoveBlitz(CardInstance target, int giverId = 0, bool skipAction = false)
+    {
+        bool alreadyHad = target.HasBlitz;
+        if (giverId <= 0)
+        {
+            if (!alreadyHad) return;
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var all))
+                foreach (int source in all) ChangeBlitzBuff(target, source, -1);
+            target.Keywords.Remove(Keyword.Blitz);
+            target.ReceivedAbilitiesFromCards.Remove("blitz");
+        }
+        else
+        {
+            if (!target.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var givers)
+                || givers.RemoveAll(source => source == giverId) == 0) return;
+            ChangeBlitzBuff(target, giverId, -1);
+        }
+        if (target.HasBlitz != alreadyHad) ExecuteOtherCardBlitzChanged(target);
+        if (!skipAction)
+            _engine.FireSubAction("ZActionRemoveBlitz", new[] {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId) });
+        FireAbilitiesChanged(target);
+    }
+
+    private static void ChangeBlitzBuff(CardInstance target, int sourceId, int amount)
+    {
+        var key = (sourceId, false);
+        if (!target.BuffsBySource.TryGetValue(key, out var buff))
+            target.BuffsBySource[key] = buff = new CardBuff { SourceCardId = sourceId };
+        buff.Blitz += amount;
+        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+    }
+
+    private void ExecuteOtherCardBlitzChanged(CardInstance changed)
+    {
+        const string trigger = "OnOtherCardBlitzChanged";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { changed };
+        var named = new Dictionary<string, object?> { ["cardChanged"] = changed };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={changed.Name}#{changed.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, changed, eventArgs: args, namedArgs: named);
+        }
+    }
+
     public void GiveKeyword(CardInstance target, string keyword)
     {
         if (keyword == Keyword.Fury) { GiveFury(target); return; }
+        if (keyword == Keyword.Blitz) { GiveBlitz(target); return; }
         GiveKeywordCore(target, keyword);
     }
 
@@ -3336,6 +3412,7 @@ public sealed partial class CardApi
     public void RemoveKeyword(CardInstance target, string keyword)
     {
         if (keyword == Keyword.Fury) { RemoveFury(target); return; }
+        if (keyword == Keyword.Blitz) { RemoveBlitz(target); return; }
         RemoveKeywordCore(target, keyword);
     }
 
@@ -3360,15 +3437,6 @@ public sealed partial class CardApi
         });
 
         FireAbilitiesChanged(target);
-        if (keyword == Keyword.Blitz)
-        {
-            FireTrigger("OnOtherCardBlitzChanged", target, target.Owner,
-                eventArgs: new object?[] { target }, eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardChanged"] = target,
-                });
-        }
 
         if (keyword == Keyword.Smokescreen)
         {

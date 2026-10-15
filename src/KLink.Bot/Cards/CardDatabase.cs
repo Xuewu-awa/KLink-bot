@@ -40,11 +40,13 @@ public sealed class CardDefinition
     /// <summary>CDO usedTriggers, registered by CreateCardObject in the event map.</summary>
     public IReadOnlyList<string> UsedTriggers { get; init; } = [];
 
+    // The SDK enum names T33 OnOtherCardBlitzChange; its callback UFunction
+    // is named OnOtherCardBlitzChanged. It is distinct from T29.
+    public static string RegisteredTriggerName(string programName)
+        => programName == "OnOtherCardBlitzChanged" ? "OnOtherCardBlitzChange" : programName;
+
     public bool IsRegisteredFor(string programName)
-        // RemoveBlitz fetches enum 29 (abilities changed), then invokes the
-        // distinct OnOtherCardBlitzChanged UFunction on those same recipients.
-        => UsedTriggers.Contains(programName == "OnOtherCardBlitzChanged"
-            ? "OnOtherCardAbilitiesChanged" : programName, StringComparer.OrdinalIgnoreCase);
+        => UsedTriggers.Contains(RegisteredTriggerName(programName), StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 卡面自带的重甲点数（CDO 的 <c>heavyArmor</c>，全部 2019 张里只有 52 张有）。

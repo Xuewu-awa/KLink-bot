@@ -205,7 +205,11 @@ public sealed class CardInstance
     // nonempty received-ability source array (not the numeric buff ledger).
     public bool HasFury => Keywords.Contains(Keyword.Fury)
         || (ReceivedAbilitiesFromCards.TryGetValue("fury", out var givers) && givers.Count > 0);
-    public bool HasKeyword(string keyword) => keyword == Keyword.Fury ? HasFury : Keywords.Contains(keyword);
+    public bool HasBlitz => Keywords.Contains(Keyword.Blitz)
+        || (ReceivedAbilitiesFromCards.TryGetValue("blitz", out var givers) && givers.Count > 0);
+    public bool HasKeyword(string keyword) => keyword switch {
+        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, _ => Keywords.Contains(keyword),
+    };
     public int MaxAttacksThisTurn => HasFury ? 2 : 1;
 
     /// <summary>
@@ -267,7 +271,7 @@ public sealed class CardInstance
     public bool HasDeploymentSickness(GameState state)
         => Location.IsBoard()
            && EnteredPlayOnTurn == state.Turn
-           && !Keywords.Contains(Keyword.Blitz);
+           && !HasBlitz;
 
     /// <summary>
     /// 该卡本回合是否还能发起攻击。
@@ -495,7 +499,7 @@ public sealed class CardInstance
         => string.Equals(Definition.Type, "tank", StringComparison.OrdinalIgnoreCase);
 
     // ---- 关键字 ----
-    // Fury here is the raw hasFury member; use HasFury/HasKeyword for effective
+    // Fury/Blitz here are raw members; use HasKeyword for effective
     // combat ability, which also includes the received source list.
     public HashSet<string> Keywords { get; } = new(StringComparer.Ordinal);
 
@@ -818,6 +822,7 @@ public sealed class CardInstance
         EnteredPlayOnTurn, OperationsUsedThisTurn, HasAttackedThisTurn, HasMovedThisTurn,
         AttacksThisTurn,
         Keywords.Concat(HasFury ? new[] { Keyword.Fury } : Array.Empty<string>())
+            .Concat(HasBlitz ? new[] { Keyword.Blitz } : Array.Empty<string>())
             .Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal).ToArray(),
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
@@ -825,6 +830,10 @@ public sealed class CardInstance
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
+            IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
+            BlitzBuffsBySource = BuffsBySource.Where(kv => kv.Value.Blitz != 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Blitz),
             FuryBuffsBySource = BuffsBySource.Where(kv => kv.Value.Fury != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Fury),
@@ -895,6 +904,8 @@ public sealed class CardBuff
 
     /// <summary>combat_fury amount in this source's buff ledger; independent of the ability source array.</summary>
     public int Fury { get; set; }
+    /// <summary>combat/blitz source amount, separate from received-ability registration.</summary>
+    public int Blitz { get; set; }
 
     /// <summary>
     /// 这个来源的改费是「显式设成绝对值」而不是「相对减费」。
@@ -928,7 +939,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0
                            && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
 
@@ -946,6 +957,7 @@ public sealed class CardBuff
         OperationCost = OperationCost,
         HeavyArmor = HeavyArmor,
         Fury = Fury,
+        Blitz = Blitz,
         KreditCostSetsAbsoluteValue = KreditCostSetsAbsoluteValue,
         OperationCostSetsAbsoluteValue = OperationCostSetsAbsoluteValue,
         Duration = Duration,
@@ -979,6 +991,8 @@ public sealed record CardSnapshot(
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
+    public bool IntrinsicBlitz { get; init; }
+    public Dictionary<string, int> BlitzBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> FuryBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public bool HasBeenAttackedThisTurn { get; init; }
     public int PinnedTurns { get; init; }
