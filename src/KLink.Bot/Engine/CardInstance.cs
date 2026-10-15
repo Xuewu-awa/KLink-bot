@@ -576,6 +576,9 @@ public sealed class CardInstance
     /// </summary>
     public Dictionary<(int SourceCardId, bool Temporary), CardBuff> BuffsBySource { get; } = new();
 
+    /// <summary>Object-owned native +0x108 array; independent of JSON and current target enumeration.</summary>
+    public List<int> CardsBuffedByThisCard { get; } = new();
+
     /// <summary>
     /// Blueprint's runtime <c>attackBuff</c> member: the aggregate attack
     /// modifier currently applied to this card. ChangeAttack mutations are
@@ -848,6 +851,7 @@ public sealed class CardInstance
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
+            CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
@@ -1031,6 +1035,7 @@ public sealed record CardSnapshot(
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
+    public int[] CardsBuffedByThisCard { get; init; } = [];
     public Dictionary<string, int> PinnedBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DestructionBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, string[]> CustomAbilityBuffDetails { get; init; } = new(StringComparer.Ordinal);

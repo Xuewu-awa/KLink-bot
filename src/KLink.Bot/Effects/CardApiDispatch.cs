@@ -4329,8 +4329,9 @@ public sealed partial class CardApi
         buff.KreditCostSetsAbsoluteValue = false;
         if (buff.IsEmpty)
         {
-            target.BuffsBySource.Remove(key);
+            RemoveBuffEntry(target, key);
         }
+        else SynchronizeBuffTarget(target, sourceId);
 
         target.RecalculateStats();
     }
@@ -4338,7 +4339,7 @@ public sealed partial class CardApi
     /// <summary>撤销某个来源在目标卡上的**全部永久** buff（`RemoveTheBuff` 的通用形态）。</summary>
     private void RemoveBuffFromSource(CardInstance target, int sourceId)
     {
-        if (target.BuffsBySource.Remove((sourceId, false)))
+        if (RemoveBuffEntry(target, (sourceId, false)))
         {
             target.RecalculateStats();
         }
@@ -4388,8 +4389,9 @@ public sealed partial class CardApi
         buff.Attack = 0;
         if (buff.IsEmpty)
         {
-            target.BuffsBySource.Remove(key);
+            RemoveBuffEntry(target, key);
         }
+        else SynchronizeBuffTarget(target, sourceId);
 
         target.RecalculateStats();
     }
@@ -4437,8 +4439,9 @@ public sealed partial class CardApi
                 existing.OperationCostSetsAbsoluteValue = false;
                 if (existing.IsEmpty)
                 {
-                    target.BuffsBySource.Remove(key);
+                    RemoveBuffEntry(target, key);
                 }
+                else SynchronizeBuffTarget(target, sourceId);
 
                 target.RecalculateStats();
                 if (operationCostReset)
@@ -4522,8 +4525,9 @@ public sealed partial class CardApi
                 existing.HeavyArmor = 0;
                 if (existing.IsEmpty)
                 {
-                    target.BuffsBySource.Remove((sourceId, false));
+                    RemoveBuffEntry(target, (sourceId, false));
                 }
+                else SynchronizeBuffTarget(target, sourceId);
 
                 target.RecalculateStats();
             }
@@ -5496,40 +5500,11 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `getCardsBuffedByThisCard(out Cards)` reads native cardsBuffedByThisCard
-    /// (+0x108), independently of the Blueprint JSON buffedCards key.
-    /// The current adapter derives supported entries from BuffsBySource; native
-    /// array order, stale/duplicate entries and complete writer coverage remain open.
+    /// `getCardsBuffedByThisCard(out Cards)` copies the native object-owned array
+    /// without sorting, filtering or reconstructing current ID relationships.
     /// </summary>
     private object? GetCardsBuffedByThisCard(EffectContext c, object? receiver, object?[] args)
-    {
-        var source = SelfArg(c, receiver, args);
-        if (source is null)
-        {
-            return new List<int>();
-        }
-
-        var ids = new List<int>();
-        var seen = new HashSet<int>();
-
-        void Add(int id)
-        {
-            if (id > 0 && seen.Add(id))
-            {
-                ids.Add(id);
-            }
-        }
-
-        foreach (var target in c.State.AllCards)
-        {
-            if (target.BuffsBySource.Keys.Any(key => key.SourceCardId == source.CardId))
-            {
-                Add(target.CardId);
-            }
-        }
-
-        return ids;
-    }
+        => SelfArg(c, receiver, args)?.CardsBuffedByThisCard.ToList() ?? new List<int>();
 
     /// <summary>
     /// 取「改费/改行动费/改重甲」的**来源卡 ID**（这些原语的第 2 个实参）。
@@ -5829,8 +5804,8 @@ public sealed partial class CardApi
         AuraTrace?.Add($"RemoveTheBuff: {aura.Definition.Name} → {target.Name}#{target.CardId}" +
                        $"（buff槽={target.BuffsBySource.Count} 含本来源={target.BuffsBySource.ContainsKey((aura.CardId, false)) || target.BuffsBySource.ContainsKey((aura.CardId, true))}）");
 
-        bool removed = target.BuffsBySource.Remove((aura.CardId, false));
-        removed |= target.BuffsBySource.Remove((aura.CardId, true));
+        bool removed = RemoveBuffEntry(target, (aura.CardId, false));
+        removed |= RemoveBuffEntry(target, (aura.CardId, true));
         if (!removed)
         {
             return;

@@ -1,0 +1,47 @@
+{
+  "rule": "RULE-127",
+  "status": "core_model_and_supported_mutation_paths_implemented",
+  "implemented": [
+    "Object-owned integer list; read returns exact copy preserving order, duplicates and arbitrary IDs",
+    "Valid current source object resolved on supported ledger mutations; first registration appends, duplicate touch keeps place",
+    "All supported slot removals route through one synchronizing helper; remaining temporary/permanent row keeps registration",
+    "Reset detaches target ID using incoming source-key snapshot before attributes/own callbacks",
+    "Snapshot output includes a copied array; new same-ID objects cannot infer old object arrays"
+  ],
+  "tests": {
+    "main_matrix": 54,
+    "temporary_permanent_and_raw_reader_cases": 2,
+    "release": "493/493",
+    "previous_gap_probes": "Both previously failed probes pass (495/495 with the then-current permanent suite); final suite additionally checks individual removal paths",
+    "kinds": [
+      "attack",
+      "defense",
+      "kreditCost",
+      "operationCost",
+      "heavyArmor",
+      "blitz",
+      "fury",
+      "pinned",
+      "customAbility"
+    ],
+    "contracts": [
+      "order",
+      "no duplicate on touch",
+      "individual undo",
+      "reset/re-add at tail",
+      "snapshot/output copy",
+      "source replacement",
+      "old-object stale entry retention",
+      "mixed temporary/permanent rows"
+    ]
+  },
+  "open": [
+    "Existing CopyCard incoming-ledger clone remains separate and has not been proven against native array copy behavior",
+    "Snapshot restore/import and old snapshot migration do not reconstruct historical ordering",
+    "VM direct member writes, raw external dictionary writes and native constructor/CDO defaults remain separately unverified",
+    "Pre-existing per-buff zero-value, changeType and cleanup approximations remain outside this array model correction",
+    "Complete native reset side effects, TSet subscription order and all per-card semantics remain unverified"
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\buff-array-model-evidence-20261016.json",
+  "evidence_sha256": "516c9a0f2f734f59e0bd82fe9ada021f598c8f2f3a2bf41fa2659e67524fdfbf"
+}

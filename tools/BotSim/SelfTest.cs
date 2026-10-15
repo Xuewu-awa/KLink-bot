@@ -58,6 +58,7 @@ internal static class SelfTest
         new("回手通知：移动前快照、满手仍公开、重置后按ID重新解析", ReturnNotificationContract),
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
+        new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
         new("满手回退通知保留卡ID、显式来源（含0）和旧位置；退却不丢来源", ReturnOverflowDiscardPayload),
         new("回手离场载荷：未赋值局部枚举为0，随后才决定手牌或弃牌目标", ReturnInitialLeavePayload),
         new("转换观察者T34：保留查询快照，转换出的新卡不响应自身转换", ConversionObserverSnapshot),
@@ -15169,6 +15170,82 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? IndependentBuffTargetArray(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int kind in Enumerable.Range(0, 9))
+        foreach (var location in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(PlainUnit, side, 90, side.HqOf(), 2);
+            var second = state.CreateWithId(PlainUnit, side, 10, side.HqOf(), 3);
+            void Apply(CardInstance target)
+            {
+                var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+                if (kind == 0) engine.Api.ChangeAttack(target, 1, source);
+                if (kind == 1) engine.Api.ChangeDefense(target, 1, source);
+                if (kind is 2 or 3 or 4) engine.Api.InvokeByName(kind == 2 ? "ChangeKreditCost" : kind == 3 ? "ChangeOperationCost" : "ChangeHeavyArmor",
+                    null, new object?[] { target, 60, kind == 4 ? 1 : -1, 1 }, ctx, out _);
+                if (kind == 5) engine.Api.GiveBlitz(target, 60);
+                if (kind == 6) engine.Api.GiveFury(target, 60);
+                if (kind == 7) engine.Api.PinUnit(target, 60);
+                if (kind == 8) engine.Api.CustomAbilityAdd(target, "trigger", 60);
+            }
+            List<int> Query(CardInstance card)
+            {
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                return (List<int>)engine.Api.InvokeByName("getCardsBuffedByThisCard", card, new object?[] { null }, ctx, out _)!;
+            }
+            Apply(first); Apply(second); Apply(first);
+            if (!Query(source).SequenceEqual(new[] { 90, 10 })) return $"登记顺序/去重错误：{side}/{kind}";
+            var readCopy = Query(source); readCopy.Add(9999);
+            var snapshot = source.Snapshot();
+            var removeCtx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (kind is 0 or 2 or 3 or 4) engine.Api.InvokeByName(kind == 0 ? "ChangeAttack" : kind == 2 ? "ChangeKreditCost" : kind == 3 ? "ChangeOperationCost" : "ChangeHeavyArmor",
+                null, new object?[] { first, 60, 0, 4 }, removeCtx, out _);
+            if (kind == 5) engine.Api.RemoveBlitz(first, 60);
+            if (kind == 6) engine.Api.RemoveFury(first, 60);
+            if (kind == 7) engine.Api.RemovePin(first);
+            if (kind == 8) engine.Api.CustomAbilityRemove(first, "trigger", 60, false);
+            if (kind != 1 && !Query(source).SequenceEqual(new[] { 10 }))
+                return $"撤销后未移除目标：{side}/{kind}";
+            first.Location = location;
+            engine.Api.ResetCardInBattle(first);
+            if (!Query(source).SequenceEqual(new[] { 10 }) || !snapshot.CardsBuffedByThisCard.SequenceEqual(new[] { 90, 10 }))
+                return $"重置清理或快照副本错误：{side}/{kind}/{location}";
+            first.Location = side.HqOf(); Apply(first);
+            if (!Query(source).SequenceEqual(new[] { 10, 90 })) return $"重新登记未追加到尾部：{side}/{kind}";
+            state.Remove(source);
+            var replacement = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            if (Query(replacement).Count != 0 || !Query(source).SequenceEqual(new[] { 10, 90 }))
+                return $"同ID新旧来源数组混用：{side}/{kind}";
+            engine.Api.ChangeAttack(first, 1, replacement);
+            if (!Query(replacement).SequenceEqual(new[] { 90 }) || !Query(source).SequenceEqual(new[] { 10, 90 }))
+                return "后续登记没有更新当前来源对象的独立数组";
+            engine.Api.ResetCardInBattle(first);
+            if (Query(replacement).Count != 0 || !Query(source).SequenceEqual(new[] { 10, 90 }))
+                return "重置错误清理了同ID旧来源对象的数组";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 2);
+            engine.Api.ChangeAttack(target, 1, source, temporary: true);
+            engine.Api.ChangeDefense(target, 1, source);
+            engine.Api.RemoveTemporaryBuffs();
+            if (!source.CardsBuffedByThisCard.SequenceEqual(new[] { 62 })) return "临时槽移除时错误删除仍有永久槽的目标";
+            engine.Api.ResetCardInBattle(target);
+            if (source.CardsBuffedByThisCard.Count != 0) return "重置没有清掉多槽来源的目标";
+            source.CardsBuffedByThisCard.AddRange(new[] { 0, -7, 9999, -7 });
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var raw = (List<int>)engine.Api.InvokeByName("getCardsBuffedByThisCard", source, new object?[] { null }, ctx, out _)!;
+            if (!raw.SequenceEqual(new[] { 0, -7, 9999, -7 })) return "原生数组读取错误过滤/去重了现存条目";
         }
         return null;
     }

@@ -2756,7 +2756,7 @@ public sealed partial class CardApi
 
             foreach (var (key, buff) in doomed)
             {
-                card.BuffsBySource.Remove(key);
+                RemoveBuffEntry(card, key);
 
                 bool operationCostReset = buff.OperationCost != 0
                     || buff.OperationCostSetsAbsoluteValue;
@@ -3230,13 +3230,12 @@ public sealed partial class CardApi
         FireAbilitiesChanged(target);
     }
 
-    private static void ChangeFuryBuff(CardInstance target, int sourceId, int amount)
+    private void ChangeFuryBuff(CardInstance target, int sourceId, int amount)
     {
         var key = (sourceId, false);
-        if (!target.BuffsBySource.TryGetValue(key, out var buff))
-            target.BuffsBySource[key] = buff = new CardBuff { SourceCardId = sourceId };
+        var buff = GetOrCreateBuff(target, sourceId);
         buff.Fury += amount;
-        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
     }
 
     // GiveBlitz i895 and i973 are separate T29 queries. The first runs only
@@ -3289,13 +3288,12 @@ public sealed partial class CardApi
         FireAbilitiesChanged(target);
     }
 
-    private static void ChangeBlitzBuff(CardInstance target, int sourceId, int amount)
+    private void ChangeBlitzBuff(CardInstance target, int sourceId, int amount)
     {
         var key = (sourceId, false);
-        if (!target.BuffsBySource.TryGetValue(key, out var buff))
-            target.BuffsBySource[key] = buff = new CardBuff { SourceCardId = sourceId };
+        var buff = GetOrCreateBuff(target, sourceId);
         buff.Blitz += amount;
-        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
     }
 
     private void ExecuteOtherCardBlitzChanged(CardInstance changed)
@@ -3516,7 +3514,7 @@ public sealed partial class CardApi
     {
         var buff = GetOrCreateBuff(target, source, false);
         buff.Pinned += delta;
-        if (buff.IsEmpty) target.BuffsBySource.Remove((source, false));
+        if (buff.IsEmpty) RemoveBuffEntry(target, (source, false));
     }
 
     private void FirePinChanged(CardInstance target, bool pinned)
@@ -3889,8 +3887,9 @@ public sealed partial class CardApi
             buff.OperationCost = 0;
             if (buff.IsEmpty)
             {
-                target.BuffsBySource.Remove(key);
+                RemoveBuffEntry(target, key);
             }
+            else SynchronizeBuffTarget(target, key.SourceCardId);
         }
 
         // ---- ④ 数值回落到卡面静态值（L_136A / L_1441 / L_1504）----
@@ -4126,6 +4125,10 @@ public sealed partial class CardApi
     /// </summary>
     public void ResetCardInBattle(CardInstance card)
     {
+        // Reset prelude removes this ID from current source objects before own events.
+        foreach (int sourceId in card.BuffsBySource.Keys.Select(k => k.SourceCardId).Distinct().ToArray())
+            if (sourceId > 0 && State.ById(sourceId) is { } source)
+                source.CardsBuffedByThisCard.RemoveAll(id => id == card.CardId);
         card.ResetAttributes();
         if (card.OriginalOwner is Side.Left or Side.Right)
         {
@@ -4185,7 +4188,7 @@ public sealed partial class CardApi
             var key = (giverId, false);
             var buff = GetOrCreateBuff(target, giverId, false);
             buff.Destruction--;
-            if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+            if (buff.IsEmpty) RemoveBuffEntry(target, key);
         }
         bool changed = false;
         if (target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
@@ -4225,12 +4228,13 @@ public sealed partial class CardApi
             ? "_" + giver.ChooseOne.ToString(System.Globalization.CultureInfo.InvariantCulture) : "");
     }
 
-    private static void RemoveCustomAbilityBuffDetail(CardInstance target, int sourceId, string detail)
+    private void RemoveCustomAbilityBuffDetail(CardInstance target, int sourceId, string detail)
     {
         var key = (sourceId, false);
         if (!target.BuffsBySource.TryGetValue(key, out var buff)) return;
         buff.CustomAbilityDetails.Remove(detail);
-        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
+        else SynchronizeBuffTarget(target, sourceId);
     }
 
     /// <summary>
@@ -5479,7 +5483,7 @@ public sealed partial class CardApi
     /// <see cref="CardInstance.BuffsBySource"/> 上那段说明：临时的和永久的两笔
     /// 必须分开存，否则回合结束清理会把永久那笔一起删掉。
     /// </summary>
-    private static CardBuff GetOrCreateBuff(CardInstance card, int sourceCardId, bool temporary = false)
+    private CardBuff GetOrCreateBuff(CardInstance card, int sourceCardId, bool temporary = false)
     {
         var key = (sourceCardId, temporary);
         if (!card.BuffsBySource.TryGetValue(key, out var buff))
@@ -5488,6 +5492,28 @@ public sealed partial class CardApi
             card.BuffsBySource[key] = buff;
         }
 
+        SynchronizeBuffTarget(card, sourceCardId);
         return buff;
+    }
+
+    // ChangeBuffsFromCards i=2471..3024: only a currently valid source object
+    // owns the array. Do not rebuild it from ID relations on reads.
+    private void SynchronizeBuffTarget(CardInstance target, int sourceId)
+    {
+        if (sourceId <= 0 || State.ById(sourceId) is not { } source) return;
+        bool hasRelation = target.BuffsBySource.Keys.Any(k => k.SourceCardId == sourceId);
+        if (hasRelation)
+        {
+            if (!source.CardsBuffedByThisCard.Contains(target.CardId))
+                source.CardsBuffedByThisCard.Add(target.CardId);
+        }
+        else source.CardsBuffedByThisCard.RemoveAll(id => id == target.CardId);
+    }
+
+    private bool RemoveBuffEntry(CardInstance card, (int SourceCardId, bool Temporary) key)
+    {
+        bool removed = card.BuffsBySource.Remove(key);
+        SynchronizeBuffTarget(card, key.SourceCardId);
+        return removed;
     }
 }
