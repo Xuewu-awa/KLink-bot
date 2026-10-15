@@ -168,6 +168,8 @@ def main():
             if src_key in cdo:
                 entry[out_key] = str(cdo[src_key]).strip().lower() in ("true", "1")
 
+        if cdo.get("chooseOneCards"):
+            entry["chooseOneOptionCount"] = len(cdo["chooseOneCards"])
         entry["innateAbilities"] = innate_abilities(cdo)
         entry["suppressionExceptionTriggers"] = [trigger_program(v) for v in cdo.get("suppressionExceptionTriggers", [])]
         entry["usedTriggers"] = [trigger_program(v) for v in cdo.get("usedTriggers", [])]

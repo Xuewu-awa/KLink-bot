@@ -3774,6 +3774,21 @@ public sealed partial class CardApi
             target.SuppressStrippedCustomAbility = ability;
             target.SuppressStrippedAbilities = target.ReceivedAbilitiesFromCards.ToDictionary(
                 kv => kv.Key, kv => new List<int>(kv.Value), StringComparer.Ordinal);
+            // SuppressMultipleUnits i3231 selects these five ability keys;
+            // i4049 skips unresolved givers, i4368 removes their unsuffixed name.
+            foreach (var (key, sources) in target.SuppressStrippedAbilities)
+                if (key is "trigger" or "destruction" or "passive" or "lethal" or "custom")
+                    foreach (int source in sources)
+                        if (State.ById(source) is { } giver
+                            && target.BuffsBySource.TryGetValue((source, false), out var buff)
+                            && buff.CustomAbilityDetails.Contains(giver.Name))
+                        {
+                            var saved = new CardBuff { SourceCardId = source };
+                            saved.CustomAbilityDetails.Add(giver.Name);
+                            target.SuppressStrippedBuffs ??= new List<KeyValuePair<(int, bool), CardBuff>>();
+                            target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>((source, false), saved));
+                            RemoveCustomAbilityBuffDetail(target, source, giver.Name);
+                        }
             target.CustomAbility = null;
         }
 
@@ -3938,6 +3953,7 @@ public sealed partial class CardApi
                 live.Defense += saved.Defense;
                 live.HeavyArmor += saved.HeavyArmor;
                 live.OperationCost += saved.OperationCost;
+                live.CustomAbilityDetails.UnionWith(saved.CustomAbilityDetails);
                 if (saved.Duration > 0)
                 {
                     live.Duration = saved.Duration;
@@ -4023,8 +4039,8 @@ public sealed partial class CardApi
     public bool CustomAbilityAdd(CardInstance target, string ability, CardInstance? giver)
         => CustomAbilityAdd(target, ability, giver?.CardId ?? 0);
 
-    // Source-map and notification contract. NameDetail custom-buff records
-    // and the destruction combat-buff prepass remain separate audit items.
+    // Source-map, type-5 custom-buff entries and notifications. The destruction
+    // combat-buff prepass remains a separate audit item.
     public bool CustomAbilityAdd(CardInstance target, string ability, int giverId, bool skipSubActions = false,
         bool skipBuffTexts = false, bool skipAddToBattlelog = false)
     {
@@ -4033,6 +4049,7 @@ public sealed partial class CardApi
             target.ReceivedAbilitiesFromCards[ability] = givers = [];
         if (givers.Contains(giverId)) return false;
         int left = target.RemainingAttacks;
+        if (!skipBuffTexts) GetOrCreateBuff(target, giverId, false).CustomAbilityDetails.Add(CustomAbilityNameDetail(target, giverId));
         givers.Add(giverId);
         // Raw source-map mutations do not write native attackLeft.
         target.SetRemainingAttacks(left);
@@ -4097,6 +4114,19 @@ public sealed partial class CardApi
         if (target.ReceivedAbilitiesFromCards.TryGetValue(ability, out var givers))
         {
             int left = target.RemainingAttacks;
+            string detail = CustomAbilityNameDetail(target, giverId);
+            if (removeAllGivers)
+            {
+                if (givers.Count > 0 && detail.Length > 0)
+                    foreach (int source in givers)
+                    {
+                        // Destruction alone recomputes each source's unsuffixed
+                        // name. Other abilities reuse the caller giver's detail.
+                        if (ability == "destruction") detail = State.ById(source)?.Name ?? "";
+                        RemoveCustomAbilityBuffDetail(target, source, detail);
+                    }
+            }
+            else if (detail.Length > 0) RemoveCustomAbilityBuffDetail(target, giverId, detail);
             if (!removeAllGivers && givers.RemoveAll(source => source == giverId) == 0) return false;
             if (removeAllGivers || givers.Count == 0) target.ReceivedAbilitiesFromCards.Remove(ability);
             target.SetRemainingAttacks(left);
@@ -4108,6 +4138,22 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("giverID", giverId),
             ActionValue2.Str("ability", ability), ActionValue2.Bool("RemoveAllGivers", removeAllGivers) });
         return changed; // Internal mutation result, not Blueprint's qqq output.
+    }
+
+    private string CustomAbilityNameDetail(CardInstance target, int giverId)
+    {
+        var giver = State.ById(giverId);
+        if (giver is null) return "";
+        return giver.Name + (giver.CardId == target.CardId && giver.Definition.ChooseOneOptionCount != 0
+            ? "_" + giver.ChooseOne.ToString(System.Globalization.CultureInfo.InvariantCulture) : "");
+    }
+
+    private static void RemoveCustomAbilityBuffDetail(CardInstance target, int sourceId, string detail)
+    {
+        var key = (sourceId, false);
+        if (!target.BuffsBySource.TryGetValue(key, out var buff)) return;
+        buff.CustomAbilityDetails.Remove(detail);
+        if (buff.IsEmpty) target.BuffsBySource.Remove(key);
     }
 
     /// <summary>

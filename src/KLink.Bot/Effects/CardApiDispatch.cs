@@ -5900,7 +5900,7 @@ public sealed partial class CardApi
         // 来源 ID 在 a[0]（实测 102 个调用点里绝大多数是 `isBuffedByCard(卡, cardID, out)`；
         // 也有 0 参形态，那时 a[0] 是 out 槽 = null）。
         // 认不出来时退回「有没有被任何来源 buff 过」——这是旧行为，比恒 false 安全。
-        if (a.Length > 0 && a[0] is int sourceId && sourceId > 0)
+        if (a.Length > 0 && a[0] is int sourceId)
         {
             return target.BuffsBySource.ContainsKey((sourceId, false))
                 || target.BuffsBySource.ContainsKey((sourceId, true));

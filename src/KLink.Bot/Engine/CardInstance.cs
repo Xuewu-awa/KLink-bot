@@ -831,6 +831,10 @@ public sealed class CardInstance
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
+            CustomAbilityBuffDetails = BuffsBySource.Where(kv => kv.Value.CustomAbilityDetails.Count > 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}",
+                    kv => kv.Value.CustomAbilityDetails.OrderBy(x => x, StringComparer.Ordinal).ToArray()),
             BlitzBuffsBySource = BuffsBySource.Where(kv => kv.Value.Blitz != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Blitz),
@@ -906,6 +910,9 @@ public sealed class CardBuff
     public int Fury { get; set; }
     /// <summary>combat/blitz source amount, separate from received-ability registration.</summary>
     public int Blitz { get; set; }
+    // customAdd stores a zero-valued type-5 entry. Presence, not its numeric
+    // amount or the number of abilities, determines whether this record exists.
+    public HashSet<string> CustomAbilityDetails { get; init; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// 这个来源的改费是「显式设成绝对值」而不是「相对减费」。
@@ -940,7 +947,7 @@ public sealed class CardBuff
 
     public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0
-                           && !KreditCostSetsAbsoluteValue
+                           && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
 
     /// <summary>
@@ -958,6 +965,7 @@ public sealed class CardBuff
         HeavyArmor = HeavyArmor,
         Fury = Fury,
         Blitz = Blitz,
+        CustomAbilityDetails = new HashSet<string>(CustomAbilityDetails, StringComparer.Ordinal),
         KreditCostSetsAbsoluteValue = KreditCostSetsAbsoluteValue,
         OperationCostSetsAbsoluteValue = OperationCostSetsAbsoluteValue,
         Duration = Duration,
@@ -992,6 +1000,7 @@ public sealed record CardSnapshot(
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
+    public Dictionary<string, string[]> CustomAbilityBuffDetails { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> BlitzBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> FuryBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public bool HasBeenAttackedThisTurn { get; init; }

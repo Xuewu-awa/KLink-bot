@@ -30,6 +30,7 @@ public sealed class CardDefinition
     public int Attack { get; init; }
     public int Defense { get; init; }
     public int Range { get; init; }
+    public int ChooseOneOptionCount { get; init; }
     public int Cipher { get; init; }
     public int TargetTax { get; init; }
     /// <summary>CDO: defer played/entry observers until OnHandTargetSelected completes.</summary>
@@ -331,6 +332,7 @@ public sealed class CardDatabase
                 Attack = c.Attack ?? 0,
                 Defense = c.Defense ?? 0,
                 Range = c.Range ?? 0,
+                ChooseOneOptionCount = c.ChooseOneOptionCount,
                 Cipher = c.Cipher ?? 0,
                 TargetTax = c.TargetTax ?? 0,
                 WaitForHandTarget = c.WaitForHandTarget,
@@ -388,6 +390,7 @@ public sealed class CardDatabase
         [JsonPropertyName("defense")] public int? Defense { get; set; }
         [JsonPropertyName("range")] public int? Range { get; set; }
         [JsonPropertyName("heavyArmor")] public int? HeavyArmor { get; set; }
+        [JsonPropertyName("chooseOneOptionCount")] public int ChooseOneOptionCount { get; set; }
         [JsonPropertyName("cipher")] public int? Cipher { get; set; }
         [JsonPropertyName("targetTax")] public int? TargetTax { get; set; }
         [JsonPropertyName("waitForHandTarget")] public bool WaitForHandTarget { get; set; }

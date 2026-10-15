@@ -154,6 +154,11 @@ internal static class SelfTest
         new("自定义能力新增：三标志、空键、来源去重、通知载荷及无T29", CustomAbilityAddContract),
         new("自定义能力移除：缺键通知、未知来源短路、全量与额度保持", CustomAbilityRemoveContract),
         new("自定义能力边界：有效位置、隐蔽、无效ID与移除不走增益门", CustomAbilityWriteBoundaries),
+        new("自定义能力账本：零值存在、文本开关与非正来源查询", CustomAbilityLedgerAdd),
+        new("自定义能力账本：全量移除复用来源名，destruction逐来源取名", CustomAbilityLedgerRemoveAll),
+        new("自定义能力账本：选择卡自身名称后缀及不同能力共用记录", CustomAbilityLedgerChooseOne),
+        new("自定义能力账本：未知来源早退前仍可撤销同源名称条目", CustomAbilityLedgerUnknownRemove),
+        new("自定义能力账本：快照/深拷贝、抑制精确名称清理及重置", CustomAbilityLedgerLifecycle),
         new("原生重置恢复卡面与原主，只删除规定的五个 JSON 键", LiveNativeReset),
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
@@ -9856,6 +9861,144 @@ internal static class SelfTest
                 if (!target.ReceivedAbilitiesFromCards["trigger"].SequenceEqual(new[] { 71 }) || state.ActionLog.Count != 0)
                     return "无效自定义能力目标不能回落到Self或生成动作";
             }
+        }
+        return null;
+    }
+
+    private static bool AuditIsBuffedBy(MatchEngine engine, GameState state, CardInstance target, int giver)
+        => engine.Api.InvokeByName("isBuffedByCard", target, new object?[] { giver, null },
+            new EffectContext { Engine = engine, State = state, Self = target, Controller = target.Owner }, out _) is true;
+
+    private static string? CustomAbilityLedgerAdd(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string ability in new[] { "trigger", "destruction", "" })
+        foreach (int giver in new[] { 71, 9999, 0, -7 })
+        foreach (bool skipText in new[] { false, true })
+        foreach (bool skipSub in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            var source = state.CreateWithId("card_unit_432_infantry_regiment", side, 71, CardLocation.Discard, 1);
+            target.BuffsBySource[(88, false)] = new CardBuff { SourceCardId = 88, KreditCost = 1 };
+            engine.Api.CustomAbilityAdd(target, ability, giver, skipSub, skipText);
+            bool present = target.BuffsBySource.TryGetValue((giver, false), out var buff);
+            string expected = giver == 71 ? source.Name : "";
+            if (present != !skipText || AuditIsBuffedBy(engine, state, target, giver) != !skipText
+                || present && (buff!.IsEmpty || !buff.CustomAbilityDetails.SetEquals(new[] { expected }))
+                || !target.ReceivedAbilitiesFromCards[ability].SequenceEqual(new[] { giver }))
+                return $"自定义账本新增错误：{side} '{ability}' giver={giver} skipText={skipText} skipSub={skipSub}";
+            // A later duplicate call cannot backfill a skipped text record.
+            engine.Api.CustomAbilityAdd(target, ability, giver, skipBuffTexts: false);
+            if (target.BuffsBySource.ContainsKey((giver, false)) != present) return "重复来源不能补写此前跳过的账本";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var reverse = engine.Api.InvokeByName("getCardsBuffedByThisCard", source, new object?[] { null }, ctx, out _);
+            if (giver == 71 && (reverse is not List<int> ids || ids.Contains(target.CardId) != !skipText))
+                return "自定义零值条目应进入来源卡的反向增益查询";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityLedgerRemoveAll(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string ability in new[] { "trigger", "destruction", "custom" })
+        foreach (int giver in new[] { 71, 72, 9999 })
+        foreach (bool sameName in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", side, 71, CardLocation.Discard, 1);
+            var second = state.CreateWithId(sameName ? first.Name : "card_unit_t_34_85", side.Opposite(), 72, CardLocation.NotAvailable, 1);
+            engine.Api.CustomAbilityAdd(target, ability, 71);
+            engine.Api.CustomAbilityAdd(target, ability, 72);
+            target.BuffsBySource[(71, false)].Attack = 2;
+            engine.Api.CustomAbilityRemove(target, ability, giver, true);
+            bool firstRemoved = giver != 9999 && (ability == "destruction" || sameName || giver == 71);
+            bool secondRemoved = giver != 9999 && (ability == "destruction" || sameName || giver == 72);
+            if (target.ReceivedAbilitiesFromCards.ContainsKey(ability)
+                || target.BuffsBySource[(71, false)].CustomAbilityDetails.Contains(first.Name) == firstRemoved
+                || target.BuffsBySource[(71, false)].Attack != 2
+                || AuditIsBuffedBy(engine, state, target, 72) == secondRemoved)
+                return $"RemoveAll名称规则错误：{side} {ability} giver={giver} sameName={sameName}";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityLedgerChooseOne(CardDatabase db)
+    {
+        if (db.All.Count(x => x.ChooseOneOptionCount != 0) != 51
+            || db.All.Where(x => x.ChooseOneOptionCount != 0).Any(x => x.ChooseOneOptionCount != 2))
+            return "静态选择卡计数应对应51张、每张2个选项";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int index in new[] { 0, 1, 7 })
+        foreach (bool self in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 71, side.HqOf(), 1);
+            var target = self ? source : MakeActionQuotaProbe(state, side, "infantry");
+            source.ChooseOne = index;
+            string expected = source.Name + (self ? "_" + index : "");
+            engine.Api.CustomAbilityAdd(target, "trigger", 71);
+            engine.Api.CustomAbilityAdd(target, "lethal", 71);
+            if (!target.BuffsBySource[(71, false)].CustomAbilityDetails.SetEquals(new[] { expected }))
+                return "自身选择卡按索引后缀记账，多个能力共享同一零值名称条目";
+            if (self) source.ChooseOne++;
+            engine.Api.CustomAbilityRemove(target, "trigger", 71, false);
+            if (AuditIsBuffedBy(engine, state, target, 71) != self)
+                return "移除按当前名称/选择索引查条目，不得按能力名回溯旧键";
+            source.ChooseOne = index;
+            engine.Api.CustomAbilityRemove(target, "lethal", 71, false);
+            if (AuditIsBuffedBy(engine, state, target, 71)) return "最后匹配名称移除后零值来源槽应删除";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityLedgerUnknownRemove(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db); var target = MakeActionQuotaProbe(state, side, "infantry");
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 71, CardLocation.Discard, 1);
+            state.CreateWithId("card_unit_t_34_85", side, 72, CardLocation.Discard, 2);
+            engine.Api.CustomAbilityAdd(target, "custom", 71);
+            engine.Api.CustomAbilityAdd(target, "trigger", 72);
+            int before = state.ActionLog.SelectMany(x => x.SubActions).Count();
+            if (engine.Api.CustomAbilityRemove(target, "trigger", 71, false)
+                || AuditIsBuffedBy(engine, state, target, 71)
+                || !target.ReceivedAbilitiesFromCards["custom"].SequenceEqual(new[] { 71 })
+                || !target.ReceivedAbilitiesFromCards["trigger"].SequenceEqual(new[] { 72 })
+                || state.ActionLog.SelectMany(x => x.SubActions).Count() != before)
+                return "未知来源的早退位于账本清理之后，保留来源表但可清除同源其他能力共用的名称条目";
+        }
+        return null;
+    }
+
+    private static string? CustomAbilityLedgerLifecycle(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 71, side.HqOf(), 1);
+            var target = mode == 1 ? source : MakeActionQuotaProbe(state, side, "infantry");
+            int giver = mode == 2 ? 9999 : 71;
+            engine.Api.CustomAbilityAdd(target, "trigger", giver, skipBuffTexts: mode == 3);
+            var snapshot = target.Snapshot();
+            if (mode != 3)
+            {
+                var clone = target.BuffsBySource[(giver, false)].Clone();
+                clone.CustomAbilityDetails.Clear();
+                if (target.BuffsBySource[(giver, false)].CustomAbilityDetails.Count != 1) return "自定义条目Clone不能共享集合";
+            }
+            engine.Api.SuppressUnit(target);
+            bool retained = mode is 1 or 2;
+            if (AuditIsBuffedBy(engine, state, target, giver) != retained)
+                return $"抑制只清有效来源的未加后缀名称，不应清掉不匹配或未知来源条目：{side} mode={mode}";
+            engine.Api.RestoreAfterSuppression(target);
+            if (AuditIsBuffedBy(engine, state, target, giver) != (mode != 3)) return "既有解除抑制适配器应恢复被摘除的名称条目";
+            target.ResetAttributes();
+            if (target.BuffsBySource.Count != 0) return "原生属性重置应清除所有自定义账本";
+            if (mode != 3 && snapshot.CustomAbilityBuffDetails[$"{giver}/False"].Length != 1)
+                return "快照必须独立保留原自定义名称记录";
         }
         return null;
     }
