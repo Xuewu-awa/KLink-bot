@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-141",
+  "status": "existing attack-cost capture verified; no payment behavior change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\attack-cost-capture-evidence-20261016.json",
+  "evidence_sha256": "8c3dcd37d30cd908ae972fe14c31f4840b00c0f94197ffc2c745e08b8bd26a61",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-attack-cost-capture-20261016.py": "11c94b2f36e632045df0070e23a7ca4b667d81bd72c8e6ea41dd75528b8543fd",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-cost-capture-20261016.txt": "a4021a6a45d1908288c8c21a636333082e2337393863af695d08af42aa672a92",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-cost-capture-late-mutant-20261016.txt": "6f3587f1a293f186318c15b848c9cbbd3824b0ef83ce9a2515298e5a9f1c6db9",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "3eb60b92dc62e16456cccf6d05e603cf0a6b20cbd5903b76c4cb247352152ec8",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "2c6cfa880a0a9f1b2ab328326bb8853f8335541968af42970652f9a89cef88f1",
+    "D:\\Codex Workshop\\kards-install-review\\total-operation-bounds-evidence-20261016.json": "d0e77ce2b6f4184966c10e6d34bf90d69477494df7f747e002c378abf5bcc5c8"
+  },
+  "tests": {
+    "release": "508/508",
+    "snapshot_cases": 72,
+    "matrix": "2 sides x original tax [-2,0,3] x switch/no switch x callback cost delta [-2,5] x [normal,stopAttack,AttackedAndStopped]",
+    "checks": [
+      "Both T30 and T31 callbacks execute and modify current fees/taxes.",
+      "Original early fee is charged and added to operation history; replacement tax is ignored.",
+      "stopAttack charges zero and consumes no attack; AttackedAndStopped charges original fee and consumes one attack without damage.",
+      "Normal damage reaches only the selected final target."
+    ],
+    "mutation": "Temporary late cost recalculation fails the new contract case (1/508); original behavior restored and full 508/508 rerun passed."
+  },
+  "limits": [
+    "This closes the apparent late operation-cost reread lead from RULE-140; it does not certify complete AttackCard semantics.",
+    "Function/field names use parsed pak mapping; runtime verification covers full capture hash/length and all top-level flow opcodes/targets, not independent symbol recovery for every pointer.",
+    "Reveal-time callback effects, owner transfer, object removal/replacement by ID, invalid T30 outputs and global stopAttack mutations remain outside this test matrix.",
+    "Probe callbacks are temporary synthetic Meteor functions and controlled state mutations, not claims about Meteor card rules; no live process was modified.",
+    "Native integer overflow, complete payment notifications, T68 payload semantics and all-card PvP equivalence remain open."
+  ],
+  "fully_semantically_verified_cards": 0
+}

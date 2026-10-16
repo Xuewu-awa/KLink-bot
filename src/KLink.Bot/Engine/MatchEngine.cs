@@ -2524,7 +2524,9 @@ public sealed class MatchEngine
             return false;
         }
 
-        // AttackCard i=436..615 captures the ORIGINAL target's tax before reveal/T30/T31.
+        // AttackCard captures cost before reveal/T30/T31 using the ORIGINAL target.
+        // Positive tax: i=492 falls through to i=506/547/615. Otherwise jump to
+        // i=4706/4747; PopExecutionFlow i=4774 returns to i=643, not a late reread.
         int attackCost = attacker.TotalOperationCost + Math.Max(0, defender.KreditsTaxAsEnemyTarget);
         RecordAction("XActionAttackCard", attacker.Owner, new Dictionary<string, object?>
         {

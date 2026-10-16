@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("攻击费用快照：回调改费、原目标税、换目标及两种中止", AttackCostCaptureContract),
         new("总行动费用：零下限、无99上限及实际移动攻击扣费", TotalOperationCostBounds),
         new("总指挥点费用：0至99边界、扣费与税顺序及来源账本保留", TotalKreditCostBounds),
         new("出牌前置门顺序：天气与费用早于卡自身阻挡判据", PlayPreflightBlockOrder),
@@ -15186,6 +15187,61 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? AttackCostCaptureContract(CardDatabase db)
+    {
+        const string probeName = "card_unit_meteor", switchEvent = "OnOtherCardAttackSwitchTarget", attackEvent = "OnOtherCardAttacks";
+        if (KismetLibrary.Default?.Find(probeName)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals)
+            return "缺少攻击费用探针容器";
+        foreach (string trigger in new[] { switchEvent, attackEvent })
+            if (KismetLibrary.Default.FindProgram(probeName, trigger) is not null) return "不能覆盖已有攻击函数";
+        KismetStep Set(int i, string output, string source) => new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+            new KismetExpr { Var = source, Scope = "instance" }, null, -1, output, null) { DestinationScope = "local" };
+        KismetStep Marker() => new(0, "call", "SpawnCardInDeckBySide", new[] {
+            new KismetExpr { Int = (int)Side.Left }, new KismetExpr { Str = "card_unit_routed_troops" },
+            new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+        }, Array.Empty<int>(), null, null, -1, null, null);
+        KismetStep End(int i) => new(i, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null);
+        locals.Add(switchEvent, new[] { Marker(), Set(1, "newDefender", "_auditReplacement"), End(2) });
+        locals.Add(attackEvent, new[] { Marker(), Set(1, "stopAttack", "_auditStop"), Set(2, "AttackedAndStopped", "_auditAttackedStop"), End(3) });
+        using var cleanup = new AuditProbeCleanup(() => { locals.Remove(switchEvent); locals.Remove(attackEvent); });
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int tax in new[] { -2, 0, 3 })
+        foreach (bool replace in new[] { false, true })
+        foreach (int delta in new[] { -2, 5 })
+        foreach (int stop in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var attacker = MakeActionQuotaProbe(state, side, "infantry");attacker.OperationCost = 3;
+            var original = state.Hq(side.Opposite());original.KreditsTaxAsEnemyTarget = tax;
+            var replacement = state.CreateWithId(PlainUnit, side.Opposite(), 61, side.Opposite().HqOf(), 1);
+            replacement.Defense = replacement.MaxDefense = 20;replacement.KreditsTaxAsEnemyTarget = 12;
+            var observer = state.CreateWithId(probeName, side, 62, side.DeckOf(), 0);
+            observer.Definition = new CardDefinition { Name = probeName, UsedTriggers = new[] { switchEvent, attackEvent } };
+            observer.BlueprintVariables["_auditReplacement"] = replace ? replacement : original;
+            observer.BlueprintVariables["_auditStop"] = stop == 1;
+            observer.BlueprintVariables["_auditAttackedStop"] = stop == 2;
+            state.SetKredits(side, 20);int callbacks = 0;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                callbacks++;attacker.OperationCost = 3 + delta + callbacks - 1;
+                original.KreditsTaxAsEnemyTarget = 8;replacement.KreditsTaxAsEnemyTarget = 14;
+            };
+            int originalHp = original.Defense, replacementHp = replacement.Defense;
+            int expectedCost = stop == 1 ? 0 : 3 + Math.Max(0, tax);
+            if (!engine.Attack(attacker, original, out string reason) || callbacks != 2)
+                return $"攻击快照布景失败：{side}/{tax}/{replace}/{delta}/{stop}, calls={callbacks}, reason={reason}";
+            if (state.Kredits(side) != 20 - expectedCost || state.OperationKreditsSpentThisTurn != expectedCost
+                || attacker.OperationCost != 4 + delta || attacker.AttacksThisTurn != (stop == 1 ? 0 : 1))
+                return $"攻击未沿用早期费用或中止扣费错误：{side}/{tax}/{replace}/{delta}/{stop}, funds={state.Kredits(side)}, spent={state.OperationKreditsSpentThisTurn}";
+            int originalDamage = stop == 0 && !replace ? 2 : 0, replacementDamage = stop == 0 && replace ? 2 : 0;
+            if (original.Defense != originalHp - originalDamage || replacement.Defense != replacementHp - replacementDamage)
+                return "攻击替换或中止结果未与费用快照场景对应";
         }
         return null;
     }
