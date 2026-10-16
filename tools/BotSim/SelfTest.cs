@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("烟幕移除事件：T48先于T29、包含自身及查询快照", SmokescreenLossDispatchContract),
         new("攻击后T4：自身后查询、保存对象、按ID排除及费用伤害载荷", AttackAfterQuerySnapshot),
         new("攻击前T13：自身抑制门、回调后查询及接收者快照", AttackBeforeQuerySnapshot),
         new("T30目标替换：注册查询快照、接收者变更、含自身及首换停止", AttackSwitchQuerySnapshot),
@@ -15191,6 +15192,92 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? SmokescreenLossDispatchContract(CardDatabase db)
+    {
+        const string t48 = "OnOtherCardLoseSmokescreen", t29 = "OnOtherCardAbilitiesChanged";
+        using var abilities = InstallAbilitiesChangedProbes();
+        var installed = new List<IDictionary<string, IReadOnlyList<KismetStep>>>();
+        using var cleanup = new AuditProbeCleanup(() => { foreach (var locals in installed) locals.Remove(t48); });
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, t48) is not null) return "无法安全安装T48探针";
+            locals.Add(t48, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Bool = true }, null, -1, "_auditSmokeCalled", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "cardLostSmokescreen", Scope = "local" }, null, -1, "_auditSmokeLost", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add(locals);
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool viaApi in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 16))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId("card_event_honorifics", side, 20, side.DeckOf(), 0);
+            var last = state.CreateWithId("card_unit_51e_regiment", side, 21, side.DeckOf(), 1);
+            var target = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 1);
+            var all = new List<CardInstance> { first, last, target };
+            CardDefinition Registered(string name) => new() { Name = name, UsedTriggers = new[] { t48, t29 } };
+            foreach (var card in all) { card.Definition = Registered(card.Name);card.BlueprintVariables["_auditT29Count"] = 0; }
+            if (mode != 14) target.Keywords.Add(Keyword.Smokescreen);
+            if (mode is 1 or 2 or 3) target.Keywords.Add(Keyword.Suppressed);
+            if (mode is 2 or 3) target.SuppressionExceptionTriggers.Add(t48);
+            if (mode == 3) target.SuppressionExceptionTriggers.Add(t29);
+            if (mode is 8 or 9) last.Keywords.Add(Keyword.Suppressed);
+            if (mode == 9) last.SuppressionExceptionTriggers.Add(t48);
+            if (mode == 7) last.Definition = new CardDefinition { Name = last.Name };
+            if (mode == 13) target.Location = CardLocation.NotAvailable;
+            var expected48 = all.Where(c => c.Definition.IsRegisteredFor(t48)
+                && (!c.IsSuppressed || c.SuppressionExceptionTriggers.Contains(t48))).ToArray();
+            var called48 = new List<CardInstance>();var called29 = new List<CardInstance>();var phases = new List<int>();
+            var counts = all.ToDictionary(c => c, _ => 0);var created = state.CardCreated;CardInstance? late = null;
+            state.CardCreated = made => {
+                created?.Invoke(made);if (made.Name != "card_unit_routed_troops") return;
+                var ability = all.FirstOrDefault(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_auditT29Count") ?? 0) > counts[c]);
+                if (ability is not null) { counts[ability]++;called29.Add(ability);phases.Add(29);return; }
+                var current = all.Single(c => !called48.Contains(c) && Equals(c.BlueprintVariables.GetValueOrDefault("_auditSmokeCalled"), true));
+                called48.Add(current);phases.Add(48);if (current != first) return;
+                if (mode == 4) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 5) last.Location = CardLocation.NotAvailable;
+                if (mode == 6) last.Definition = new CardDefinition { Name = last.Name };
+                if (mode == 7) last.Definition = Registered(last.Name);
+                if (mode == 8) last.Keywords.Remove(Keyword.Suppressed);
+                if (mode == 9) last.SuppressionExceptionTriggers.Clear();
+                if (mode == 10) state.StopFurtherActions = true;
+                if (mode == 15) target.Keywords.Add(Keyword.Smokescreen);
+                if (mode == 12) state.Remove(last);
+                if (mode is 11 or 12)
+                {
+                    late = state.CreateWithId("card_unit_51e_regiment", side, mode == 12 ? 21 : 22, side.DeckOf(), 2);
+                    late.Definition = Registered(late.Name);late.BlueprintVariables["_auditT29Count"] = 0;all.Add(late);counts[late] = 0;
+                }
+            };
+            if (viaApi)
+                engine.Api.InvokeByName("RemoveSmokescreen", null, new object?[] { target.CardId, 0, true, false },
+                    new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out _);
+            else engine.Api.RemoveKeyword(target, Keyword.Smokescreen);
+            var expected29 = mode == 14 ? Array.Empty<CardInstance>() : state.AllCards.Where(c => all.Contains(c)
+                && c.Definition.IsRegisteredFor(t29) && (!c.IsSuppressed || c.SuppressionExceptionTriggers.Contains(t29))).ToArray();
+            if (mode == 14) expected48 = Array.Empty<CardInstance>();
+            if (!called48.SequenceEqual(expected48) || !called29.SequenceEqual(expected29)
+                || !phases.SequenceEqual(Enumerable.Repeat(48, expected48.Length).Concat(Enumerable.Repeat(29, expected29.Length))))
+                return $"烟幕T48/T29顺序或快照错误：{side}/{viaApi}/{mode}, phases={string.Join(",", phases)}, T48={string.Join(",", called48.Select(c => c.CardId))}";
+            foreach (var card in called48)
+                if (!ReferenceEquals(card.BlueprintVariables.GetValueOrDefault("_auditSmokeLost"), target)) return "烟幕T48载荷对象错误";
+            foreach (var card in called29)
+                if (!ReferenceEquals(card.BlueprintVariables.GetValueOrDefault("_auditT29Subject"), target)) return "烟幕后T29载荷对象错误";
+            if (target.Keywords.Contains(Keyword.Smokescreen) != (mode == 15)) return "烟幕事件重入后状态错误";
+            if (late?.BlueprintVariables.GetValueOrDefault("_auditSmokeLost") is CardInstance) return "晚建/同ID新对象不应加入已保存T48查询";
         }
         return null;
     }

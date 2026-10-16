@@ -3509,19 +3509,26 @@ public sealed partial class CardApi
             ActionValue2.Int("giverID", target.CardId),
         });
 
+        if (keyword == Keyword.Smokescreen) ExecuteSmokescreenLossEvents(target);
         FireAbilitiesChanged(target);
+    }
 
-        if (keyword == Keyword.Smokescreen)
+    // RemoveSmokescreen i=2459 queries T48, including the changed card.
+    // i=2732 invokes each saved object before i=2852 queries ability changes.
+    private void ExecuteSmokescreenLossEvents(CardInstance target)
+    {
+        const string trigger = "OnOtherCardLoseSmokescreen";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { target };
+        var named = new Dictionary<string, object?> { ["cardLostSmokescreen"] = target };
+        foreach (var observer in recipients)
         {
-            FireTrigger("OnOtherCardLoseSmokescreen", target, target.Owner,
-                eventArgs: new object?[] { target }, eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = target,
-                });
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, target, eventArgs: args, namedArgs: named);
         }
-
-
     }
 
     /// <summary>

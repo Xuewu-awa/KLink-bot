@@ -1,0 +1,56 @@
+{
+  "rule": "RULE-146",
+  "status": "complete smoke-loss event suffix dispatches saved T48 recipients including self before T29 query",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\smokescreen-loss-evidence-20261016.json",
+  "evidence_sha256": "590c173a80ecba58ac33c882d9bf5b4feb9cb4074bb059cc950eff7a9e11277d",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-smokescreen-loss-20261016.py": "7916f90dad5bc6f45ba1f8bf988a402880e60c714ef57b723095188298483055",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "fcaa0b16c73bac7f1296c76c94048f31a8dc35a13153027268ab481006c190ba",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "d86e36a7260438061f2cc1eb8f70f15ea649d12f58d7490e0aad77e2bf4e5312",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "e314818654e60062807c8c787c6ec61a7c847a3490c94b5f25c786bcc1855a15",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-smokescreen-loss-before-20261016.txt": "51d5ca0cf9ca602fd73001297fef61520e2723369da717040ae3ba669ea16bbe",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-smokescreen-loss-after-20261016.txt": "3ab1d6db00935d903bd849113d3f62da86c356a339bb4292eb27f2b27c07f1a9"
+  },
+  "tests": {
+    "release": "513/513",
+    "cases": 64,
+    "matrix": "2 sides x direct/RemoveSmokescreen API x 16 modes; raw smoke loss without smoke source-ledger fixtures",
+    "modes": [
+      "stable",
+      "target suppressed",
+      "target T48 suppression exception",
+      "target T48/T29 exceptions",
+      "T48 suppresses later recipient",
+      "T48 changes later location to NotAvailable",
+      "T48 deregisters later recipient",
+      "T48 registers initially unregistered recipient",
+      "T48 unsuppresses initially suppressed recipient",
+      "T48 removes query-time suppression exception",
+      "T48 sets stopFurtherActions",
+      "T48 creates late observer",
+      "T48 removes object and new object reuses ID",
+      "target is NotAvailable",
+      "initial smoke absent",
+      "T48 restores raw smoke before T29"
+    ],
+    "checks": [
+      "Complete T48 phase precedes a fresh T29 query",
+      "Changed card is included when registered/query-eligible",
+      "T48 retains saved object references; late changes affect T29 membership only",
+      "No stopFurtherActions gate added",
+      "Exact target payload in T48 and T29; initial absent smoke emits no events",
+      "Raw smoke restored during T48 remains restored while T29 still runs"
+    ],
+    "regression": "Original emits T29 first and T48 omits subject (1/513); corrected event suffix passes 513/513."
+  },
+  "limits": [
+    "Only the event suffix after complete raw smoke loss is corrected; full raw/base/buff/giver storage and effective getHasSmokescreen equivalence are not certified.",
+    "The existing RemoveSmokescreen API still does not fully model giverID, RemoveAllGivers, source-ledger updates, skipAction and notification payload; those confirmed structural gaps remain open.",
+    "Attack caller uses its existing raw removal route; attacker ID re-resolution and callbacks that replace/remove the attacker before removal remain open.",
+    "Native registration order, invalid UObject lifetime and non-action receive/presentation path remain open.",
+    "Synthetic callbacks certify orchestration only; no full single-card certification, game writes, injection, replay authority or new live capture."
+  ],
+  "fully_semantically_verified_cards": 0
+}
