@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("攻击前T13：自身抑制门、回调后查询及接收者快照", AttackBeforeQuerySnapshot),
         new("T30目标替换：注册查询快照、接收者变更、含自身及首换停止", AttackSwitchQuerySnapshot),
         new("T31全局停止标志：重置、逐项写回、后续清除及查询快照", AttackStopFlagContract),
         new("攻击费用快照：回调改费、原目标税、换目标及两种中止", AttackCostCaptureContract),
@@ -15189,6 +15190,94 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? AttackBeforeQuerySnapshot(CardDatabase db)
+    {
+        const string ownName = "card_unit_typhoon_mk_ib", otherName = "card_unit_51e_regiment";
+        const string own = "OnBeforeAttack", other = "OnBeforeOtherCardAttacks";
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        using var cleanup = new AuditProbeCleanup(() => { foreach (var item in installed) item.Locals.Remove(item.Trigger); });
+        foreach (var pair in new[] { (ownName, own), (otherName, other), (ownName, other) })
+        {
+            if (KismetLibrary.Default?.Find(pair.Item1)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(pair.Item1, pair.Item2) is not null) return "无法安全安装攻击前查询探针";
+            var steps = new List<KismetStep>();
+            void Set(string key, KismetExpr value) => steps.Add(new KismetStep(steps.Count, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null) { DestinationScope = "instance" });
+            Set(pair.Item2 == own ? "_auditBeforeOwn" : "_auditBeforeOther", new() { Bool = true });
+            Set("_auditBeforeDefender", new() { Var = "defender", Scope = "local" });
+            if (pair.Item2 == other) Set("_auditBeforeAttacker", new() { Var = "attacker", Scope = "local" });
+            steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Left }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(pair.Item2, steps);installed.Add((locals, pair.Item2));
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 15))
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;
+            var attacker = state.CreateWithId(ownName, side, 60, side.HqOf(), 1);
+            attacker.Attack = 2;attacker.Defense = attacker.MaxDefense = 20;attacker.EnteredPlayOnTurn = -99;
+            attacker.Definition = new CardDefinition { Name = ownName, Type = "infantry", Range = 2, Attack = 2, Defense = 20, UsedTriggers = new[] { other } };
+            attacker.OperationCost = 3;state.SetKredits(side, 20);var target = state.Hq(side.Opposite());
+            if (suppressed) { attacker.Keywords.Add(Keyword.Suppressed);attacker.SuppressionExceptionTriggers.Add(own); }
+            var first = state.CreateWithId(otherName, side, 61, side.DeckOf(), 0);
+            var last = state.CreateWithId(otherName, side, 62, side.DeckOf(), 1);
+            CardDefinition Registered() => new() { Name = otherName, UsedTriggers = new[] { other } };
+            first.Definition = Registered();last.Definition = Registered();
+            if (mode is 2 or 8 or 10) last.Keywords.Add(Keyword.Suppressed);
+            if (mode == 10) last.SuppressionExceptionTriggers.Add(other);
+            if (mode is 4 or 9) last.Definition = new CardDefinition { Name = otherName };
+            bool ownCalled = false;var called = new List<CardInstance>();var all = new List<CardInstance> { first, last };
+            CardInstance? late = null;var created = state.CardCreated;
+            void AddLate(int id)
+            {
+                late = state.CreateWithId(otherName, side, id, side.DeckOf(), 2);late.Definition = Registered();all.Add(late);
+            }
+            state.CardCreated = made => {
+                created?.Invoke(made);if (made.Name != "card_unit_routed_troops") return;
+                if (!ownCalled && Equals(attacker.BlueprintVariables.GetValueOrDefault("_auditBeforeOwn"), true))
+                {
+                    ownCalled = true;
+                    if (mode == 1) last.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 2) last.Keywords.Remove(Keyword.Suppressed);
+                    if (mode == 3) last.Definition = new CardDefinition { Name = otherName };
+                    if (mode == 4) last.Definition = Registered();
+                    if (mode == 12) AddLate(63);
+                    return;
+                }
+                if (Equals(attacker.BlueprintVariables.GetValueOrDefault("_auditBeforeOther"), true))
+                    throw new InvalidOperationException("T13不得调用攻击者自身");
+                var current = all.Single(c => !called.Contains(c) && Equals(c.BlueprintVariables.GetValueOrDefault("_auditBeforeOther"), true));
+                called.Add(current);if (current != first) return;
+                if (mode == 5) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 6) last.Location = CardLocation.NotAvailable;
+                if (mode == 7) last.Definition = new CardDefinition { Name = otherName };
+                if (mode == 8) last.Keywords.Remove(Keyword.Suppressed);
+                if (mode == 9) last.Definition = Registered();
+                if (mode == 10) last.SuppressionExceptionTriggers.Clear();
+                if (mode == 11) AddLate(63);
+                if (mode == 13) state.StopFurtherActions = true;
+                if (mode == 14) { state.Remove(last);AddLate(62); }
+            };
+            bool includeLast = mode switch { 1 or 3 => suppressed, 2 or 4 => !suppressed, 8 or 9 => false, _ => true };
+            var expected = new List<CardInstance> { first };if (includeLast) expected.Add(last);
+            if (!engine.Attack(attacker, target, out string reason)) return $"攻击前快照布景失败：{side}/{suppressed}/{mode}, {reason}";
+            if (mode == 12 && !suppressed) expected.Add(late!);
+            if (ownCalled != !suppressed || !called.SequenceEqual(expected))
+                return $"攻击前查询时机或快照错误：{side}/{suppressed}/{mode}, own={ownCalled}, expected={string.Join(",", expected.Select(c => c.CardId))}, actual={string.Join(",", called.Select(c => c.CardId))}";
+            if (ownCalled && !ReferenceEquals(attacker.BlueprintVariables.GetValueOrDefault("_auditBeforeDefender"), target)) return "攻击前自身回调的defender载荷错误";
+            foreach (var card in called)
+                if (!ReferenceEquals(card.BlueprintVariables.GetValueOrDefault("_auditBeforeDefender"), target)
+                    || !ReferenceEquals(card.BlueprintVariables.GetValueOrDefault("_auditBeforeAttacker"), attacker)) return "T13攻击者/防守者载荷错误";
+            if (state.Kredits(side) != 17 || state.OperationKreditsSpentThisTurn != 3 || attacker.AttacksThisTurn != 1)
+                return "攻击前查询回调不应改变既定行动费和攻击消费";
         }
         return null;
     }

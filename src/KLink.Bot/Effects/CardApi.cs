@@ -311,6 +311,31 @@ public sealed partial class CardApi
         }
     }
 
+    // AttackCard i=3590/3635 calls the unsuppressed attacker before querying T13.
+    // i=3275 excludes only the same object; saved recipients are invoked directly.
+    internal void ExecuteBeforeAttackEvents(CardInstance attacker, CardInstance defender)
+    {
+        const string own = "OnBeforeAttack", other = "OnBeforeOtherCardAttacks";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        if (!attacker.IsSuppressed && library.FindProgram(attacker.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {attacker.Name}#{attacker.CardId}（eventCard={defender.Name}#{defender.CardId}）");
+            RunTriggerProgram(library, attacker, attacker.Name, own, defender,
+                eventArgs: new object?[] { defender },
+                namedArgs: new Dictionary<string, object?> { ["defender"] = defender });
+        }
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { attacker, defender };
+        var named = new Dictionary<string, object?> { ["attacker"] = attacker, ["defender"] = defender };
+        foreach (var observer in recipients)
+        {
+            if (ReferenceEquals(observer, attacker) || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={attacker.Name}#{attacker.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, attacker, eventArgs: args, namedArgs: named);
+        }
+    }
+
     // UpdateFrontlineIfNeeded queries T27 once. i=870 reads current ownership
     // anew for every callback; earlier callbacks may change it through reentry.
     internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner)

@@ -2579,14 +2579,7 @@ public sealed class MatchEngine
         State.AddOperationKreditsSpentThisTurn(attackCost);
         if (attacker.Location.IsBoard())
         {
-            if (!attacker.IsSuppressed)
-                Api.FireTrigger("OnBeforeAttack", attacker, attacker.Owner,
-                    eventSubject: defender, eventArgs: new object?[] { defender },
-                    namedArgs: new Dictionary<string, object?> { ["defender"] = defender });
-            Api.FireTrigger("OnBeforeOtherCardAttacks", attacker, attacker.Owner,
-                eventArgs: new object?[] { attacker, defender },
-                namedArgs: new Dictionary<string, object?> { ["attacker"] = attacker, ["defender"] = defender },
-                broadcastName: true);
+            Api.ExecuteBeforeAttackEvents(attacker, defender);
             Api.RemoveKeyword(attacker, Keyword.Smokescreen);
         }
         else

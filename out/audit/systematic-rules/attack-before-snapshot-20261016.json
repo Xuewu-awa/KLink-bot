@@ -1,0 +1,55 @@
+{
+  "rule": "RULE-144",
+  "status": "own before-attack event precedes T13 query; saved recipients dispatched directly",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\attack-before-snapshot-evidence-20261016.json",
+  "evidence_sha256": "095b86b55a337d3d7e7d11527b56d9414de40849590bc0fc06debdcc9d7af7f8",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-attack-before-snapshot-20261016.py": "525fe6d3ae255bb3608edc869b4b3f5482fa83ad8f929e3d1407e342f9621c05",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "1d2bc38157db10d28d9bb881c06b3da40f109442bbfb76beed30606ec449d6a5",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "035f3878cae0248ca033dafd3c77b86ebf98bc8d7e7e4f8fe03779365381b48d",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "a9c55a45d0bb4192253adf09654b58d001b77595f439184e33e63b316b4a1327",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-before-snapshot-before-20261016.txt": "753182c9a6f5cb40b7e1f18935e0b78cb159882c4f0e3e0eee51155f753cf283",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-before-snapshot-after-20261016.txt": "f57854f2385970733558b6bf091820746f707981b355c32a9a95d4530fbe85d2"
+  },
+  "tests": {
+    "release": "511/511",
+    "cases": 60,
+    "matrix": "2 sides x attacker suppressed/unsuppressed x 15 modes",
+    "modes": [
+      "stable",
+      "own callback suppresses later observer",
+      "own callback unsuppresses observer",
+      "own callback deregisters observer",
+      "own callback registers observer",
+      "first observer suppresses later observer",
+      "first observer makes later NotAvailable",
+      "first observer deregisters later observer",
+      "first observer unsuppresses initially suppressed observer",
+      "first observer registers initially unregistered observer",
+      "query-time suppression exception later removed",
+      "observer creates late subscriber",
+      "own callback creates subscriber before query",
+      "observer sets stopFurtherActions",
+      "saved observer removed and new object reuses ID"
+    ],
+    "checks": [
+      "Suppressed attacker skips own event even with own suppression exception",
+      "Own event precedes query; own callback mutations and newly created subscriber affect membership",
+      "Later callbacks preserve saved recipients despite status changes and exclude late subscribers",
+      "Attacker object is excluded from T13 even when registered",
+      "attacker and defender payload references are exact",
+      "Attack payment and consumption remain intact"
+    ],
+    "regression": "Original FireTrigger refilter skips observer 62 after suppression (1/511); dedicated direct saved-recipient dispatch passes 511/511."
+  },
+  "limits": [
+    "Native registration collection order and full UObject pending-kill/GC semantics are not certified.",
+    "Attacker removal/ownership/identity changes during own callback, invalid defender pointers and complete AttackCard branch behavior remain open.",
+    "RemoveSmokescreen remains after the helper; complete smokescreen notification and callback contract is outside this fix.",
+    "Synthetic Typhoon and 51e programs test orchestration only; no complete per-card verification claim.",
+    "No historical replay authority, new live process capture, injection or game memory writes."
+  ],
+  "fully_semantically_verified_cards": 0
+}
