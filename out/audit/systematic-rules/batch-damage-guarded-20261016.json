@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-158",
+  "status": "batch damage deaths preserve discard numbers and refresh dead-target physical zones before callbacks; no-death/survivor-only zones preserved; other damage/lifecycle/attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-damage-guarded-evidence-20261016.json",
+  "evidence_sha256": "2e08c489de37008c7b12692aeb519d2275ddc2f475265da3972a5f26b77067e2",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-damage-guarded-20261016.py": "e09f89e1278641a4bab4eab9189024d35dc95973ed0c38e69fa16d6782a136a3",
+    "D:\\Codex Workshop\\kards-install-review\\batch-destroy-guarded-evidence-20261016.json": "c4ba05d9a4188c2880c3a355d7d495d8ae19f712f52f498a9e732cd251ed1f50",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-damage-guarded-before-20261016.txt": "b23fa65948aa9d069213cfe0f920b321154e961da53389ef45e8c726f3b895a5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-damage-guarded-after-20261016.txt": "3eba7d86fa5e9222b4e9b88ab7dc973daac74d5f298bb63392dc2dbdcd0460f1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "d46079b9de74dfda9ced5f2b3c2a97dc349b663962ed99904c2d2d061a4654e5",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5c157f61febc8ca9403aba2044f646c42e238029bb4faacaed312ce65ba0b8b6"
+  },
+  "tests": {
+    "release": "525/525",
+    "damage_batch_cases": 48,
+    "callbacks_per_lethal_batch": 6,
+    "mixed_or_no_death_cases": 4,
+    "existing_direct_destroy_batch_cases": 48,
+    "matrix": "2 sides x support/frontline first zone plus opposite support x remaining Guard none/raw/source x hidden Covert false/true x normal/reversed victim order",
+    "checks": [
+      "Actual DamageMultipleCards returns the two destroyed IDs and completes all deaths before callbacks",
+      "Own/observer movement and actual OnDestroyed probes see every affected physical location compacted with updated guard cache",
+      "Raw/source/hidden Guard and mixed-owner frontline obey physical rather than per-owner slots",
+      "Victims keep number20, discard resident77 and damage source99 remain unchanged",
+      "Only dead-target regions refresh; no-death batches and survivor-only opposite regions retain old numbers/cache",
+      "Shared fixture also runs separate DestroyMultiple cases unchanged"
+    ],
+    "regression": "Old damage death path renumbers existing discard source: 1/525 fails; preserving numbers and full location refresh yield 525/525."
+  },
+  "limits": [
+    "Only DealDamageMultiple/ApplyDamageToMultipleCards death-move numbering and location refresh subset is repaired. Full damage arithmetic, receivers/immunity/HP/native proxies, callback reentry and destruction lifecycle are not certified.",
+    "Shared synthetic fixture probes dispatcher/cache contracts, not named cards full abilities; native TMap/TSet iteration/order and UObject ID re-resolution remain open.",
+    "Combat pair/generic single destruction, other movement/conversion/spawning, MakeVeteran and dynamic attack cache consumer remain separate work.",
+    "Full notifications/non-action receive branches, reset/copy/import and CopyData remain open.",
+    "No new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

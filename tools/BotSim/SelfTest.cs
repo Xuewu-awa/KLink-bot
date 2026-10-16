@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
         new("强制移动刷新：直接部署/推进在回调前更新新旧位置掩护缓存", ForceMoveGuardedRefresh),
         new("位置刷新：先重排再计算掩护，回手回调看到新缓存", RefreshLocationGuardedContract),
@@ -15207,7 +15208,30 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? BatchDestroyGuardedRefresh(CardDatabase db)
+    private static string? BatchDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false);
+    private static string? BatchDamageGuardedRefresh(CardDatabase db)
+    {
+        if(BatchDeathGuardedRefresh(db,true) is { } failure)return failure;
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool lethal in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var target=state.CreateWithId(PlainUnit,side,60,side.HqOf(),20);target.Defense=lethal?1:3;
+            var survivor=state.CreateWithId(PlainUnit,side,61,side.HqOf(),40);survivor.IsBeingGuarded=true;survivor.Keywords.Remove(Keyword.Guard);
+            var other=state.CreateWithId(PlainUnit,side.Opposite(),62,side.Opposite().HqOf(),30);other.Defense=3;other.IsBeingGuarded=true;
+            var source=state.CreateWithId(PlainUnit,side,99,CardLocation.Discard,77);
+            var result=engine.Api.InvokeByName("DamageMultipleCards",null,new object?[]{new List<CardInstance>{target,other},1,99,null},
+                new EffectContext{Engine=engine,State=state,Self=source,Controller=side},out _);
+            if(result is not int[] ids||!ids.SequenceEqual(lethal?new[]{60}:Array.Empty<int>())||other.Defense!=2)
+                return "混合批量伤害死亡名单或存活受伤目标错误";
+            if(survivor.LocationNumber!=(lethal?1:40)||survivor.IsBeingGuarded==lethal
+                ||other.LocationNumber!=30||!other.IsBeingGuarded||source.LocationNumber!=77)
+                return "仅有死亡目标的区域需要刷新；无死亡或仅受伤区域须保持旧编号和缓存";
+        }
+        return null;
+    }
+
+    private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage)
     {
         using var movement=InstallMovementObserverProbes();
         const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
@@ -15260,7 +15284,18 @@ internal static class SelfTest
                 if(resident.LocationNumber!=77||victims.Any(v=>v.LocationNumber!=20))failure="批量移入弃牌堆必须保留原编号且不重排现有弃牌";
                 if(!untouched.IsBeingGuarded||untouched.LocationNumber!=91)failure="批量刷新不得改写未受影响手牌";
             };
-            engine.DestroyMultiple(reverse?victims.AsEnumerable().Reverse().ToArray():victims.ToArray(),null);
+            var ordered=reverse?victims.AsEnumerable().Reverse().ToArray():victims.ToArray();
+            if(fromDamage)
+            {
+                foreach(var victim in victims)victim.Defense=1;
+                var source=state.CreateWithId(PlainUnit,side,203,CardLocation.Discard,99);
+                var result=engine.Api.InvokeByName("DamageMultipleCards",null,new object?[]{ordered.ToList(),1,source.CardId,null},
+                    new EffectContext{Engine=engine,State=state,Self=source,Controller=side},out bool handled);
+                if(!handled||result is not int[] destroyed||!destroyed.SequenceEqual(ordered.Select(v=>v.CardId)))
+                    return "批量伤害未返回实际死亡目标名单";
+                if(source.LocationNumber!=99)return "批量伤害致死不应重排既有弃牌中的伤害来源";
+            }
+            else engine.DestroyMultiple(ordered,null);
             if(callbacks!=6||victims.Any(v=>!Equals(v.BlueprintVariables.GetValueOrDefault("_auditBatchDestroyed"),true))||failure is not null)
                 return $"{failure??"批量移动/亡语探针次数错误"}：{side}/{frontline}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
         }
