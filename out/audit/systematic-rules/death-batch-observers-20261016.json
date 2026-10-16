@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-167",
+  "status": "T39 already-discarded same-batch recipient eligibility and Also flag verified for combat/batch destroy/batch damage initial calls; complete destruction parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\death-batch-observers-evidence-20261016.json",
+  "evidence_sha256": "29e607667133a7d4a8e9d30d44a01ecefc37c409765c5da0b39f215a317a2c11",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-death-batch-observers-20261016.py": "df566f934fb5b4bed37e75d287f438924e2b7481ca3aeefd6a66b32167a057c8",
+    "D:\\Codex Workshop\\kards-install-review\\combat-event-payloads-evidence-20261016.json": "59f48add7ea40dfc0f6a8e97cb31725a59befd8fd01530ddce8c49e10582cc29",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-death-batch-observers-20261016.txt": "465418dfc1009fbee80bbc81cf2bd4457cdbade481afc07ee67a6f2c437ff672",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "b32359bc7b4a2ab6a39590a64732cbb9adb1a300e523a6197064b45823338a41",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b11725f60a47db487833fc41175d816b886eb8a5da38bb21264b54269e6b444b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "6dd4a692b9e364bcfb7d0e98c2b6d8d33259c179076f4f35b9c20de00276e8e8"
+  },
+  "tests": {
+    "release": "534/534",
+    "actual_entry_cases": 24,
+    "T39_payload_observations": 96,
+    "same_death_batch_true_observations": 48,
+    "outside_batch_false_observations": 48,
+    "matrix": "3 routes (real Attack/batch destroy/batch damage) x2 sides x2 first-victim zones (support/frontline) x2 death orders",
+    "checks": [
+      "Both victims already in Discard when T39 begins, but each remains eligible to receive other victim event",
+      "Destroyed subject excluded from its own T39; each victim receives1 and external deck observer receives2",
+      "Victim observer Also=true while external deck observer Also=false, all booleans explicitly non-null",
+      "Combat killers are reciprocal victim objects, effect killers are provided source; stored old locations preserved",
+      "Combat=true only for actual Attack; repeat=false on all initial calls",
+      "Two events for first subject precede two events for second, without certifying receiver ordering inside each query"
+    ],
+    "result": "No new kernel discrepancy observed; engine unchanged."
+  },
+  "limits": [
+    "Only initial, unsuppressed T39 calls for two-victim batches tested. Repeated effects, suppression exceptions and callback registration mutation remain open.",
+    "No precise order certification within one native T39 receiver array, no native collection ordering proof.",
+    "Synthetic programs validate dispatch/VM payload subset, not complete named real-card semantics or arbitrary ABI.",
+    "Object deletion/replacement and arbitrary nested callbacks, full combat/destruction/notification semantics remain open.",
+    "Retreat/control, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

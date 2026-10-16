@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("死亡批次旁观者：已离场仍接收T39，同批标志与凶手正确", DeathBatchObserverPayloads),
         new("双亡参数：搬移后离场后事件与死亡旁观者位置/凶手/战斗标志", CombatPairEventPayloads),
         new("双亡旧位置：受伤回调搬移后仍使用执行阶段保存位置", CombatPairOldLocationCapture),
         new("同前线双亡：攻击方重排后编号保留，分阶段缓存及亡语", SameFrontlineCombatPairRefresh),
@@ -15372,7 +15373,7 @@ internal static class SelfTest
     private static string? SameFrontlineCombatPairRefresh(CardDatabase db) => SameFrontlineCombatPairRefresh(db,false);
     private static string? CombatPairOldLocationCapture(CardDatabase db) => SameFrontlineCombatPairRefresh(db,true);
 
-    private static IDisposable InstallCombatPayloadProbes()
+    private static IDisposable InstallCombatPayloadProbes(bool onlyDestroyed = false)
     {
         var installed=new List<(IDictionary<string,IReadOnlyList<KismetStep>> Locals,string Trigger)>();
         foreach(var spec in new[]{
@@ -15381,6 +15382,7 @@ internal static class SelfTest
             ("card_unit_typhoon_mk_ib","OnOtherCardDestroyed",new[]{("cardDestroyed","Card"),("destroyedLocation","Old"),
                 ("killer","Killer"),("destroyedInCombat","Combat"),("selfIsAlsoGettingDestroyed","Also"),("TriggerNotDestroyed","Repeat")})})
         {
+            if(onlyDestroyed&&spec.Item2!="OnOtherCardDestroyed")continue;
             var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(spec.Item1)!.Locals!;
             if(KismetLibrary.Default.FindProgram(spec.Item1,spec.Item2) is not null)
             {
@@ -15399,6 +15401,81 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? DeathBatchObserverPayloads(CardDatabase db)
+    {
+        using var probes=InstallCombatPayloadProbes(onlyDestroyed:true);
+        const string name="card_unit_typhoon_mk_ib";
+        foreach(int route in Enumerable.Range(0,3)) // real attack / batch destroy / batch damage
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool frontline in new[]{false,true})
+        foreach(bool reverse in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var first=state.CreateWithId(name,side,60,frontline?CardLocation.BoardFrontline:side.HqOf(),20);
+            var second=state.CreateWithId(name,side.Opposite(),61,side.Opposite().HqOf(),30);
+            var external=state.CreateWithId(name,side,62,side.DeckOf(),0);
+            foreach(var card in new[]{first,second,external})
+            {
+                card.Definition=new CardDefinition{Name=name,Type="infantry",Attack=2,Defense=1,Range=2,UsedTriggers=new[]{"OnOtherCardDestroyed"}};
+                card.Keywords.Clear();card.Attack=2;card.Defense=card.MaxDefense=1;
+                card.EnteredPlayOnTurn=-99;card.OperationCost=0;
+            }
+            first.Keywords.Add(Keyword.Guard);second.Keywords.Add(Keyword.Guard);
+            var source=state.CreateWithId(PlainUnit,side,99,CardLocation.Discard,77);
+            var ordered=reverse?new[]{second,first}:new[]{first,second};
+            var old=ordered.ToDictionary(c=>c.CardId,c=>(int)c.Location);
+            var seen=new Dictionary<int,int>();
+            var hits=new List<(int Receiver,int Subject,int Killer,int Old,bool Also,bool Combat,bool Repeat)>();
+            string? failure=null;var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                foreach(var receiver in new[]{first,second,external})
+                {
+                    var v=receiver.BlueprintVariables;
+                    int serial=Convert.ToInt32(v.GetValueOrDefault("_auditDeathPayloadSerial"));
+                    if(serial<=seen.GetValueOrDefault(receiver.CardId))continue;
+                    seen[receiver.CardId]=serial;
+                    if(first.Location!=CardLocation.Discard||second.Location!=CardLocation.Discard)
+                        failure="T39开始时批次双方必须已离场";
+                    if(!Equals(v.GetValueOrDefault("_auditDeathPayloadKind"),"OnOtherCardDestroyed"))failure="意外的非T39参数探针";
+                    if(v.GetValueOrDefault("_auditPayloadAlso") is not bool||v.GetValueOrDefault("_auditPayloadCombat") is not bool
+                        ||v.GetValueOrDefault("_auditPayloadRepeat") is not bool)failure="T39布尔载荷不能缺省为null";
+                    hits.Add((receiver.CardId,(v.GetValueOrDefault("_auditPayloadCard") as CardInstance)?.CardId??0,
+                        (v.GetValueOrDefault("_auditPayloadKiller") as CardInstance)?.CardId??0,
+                        Convert.ToInt32(v.GetValueOrDefault("_auditPayloadOld")),
+                        Equals(v.GetValueOrDefault("_auditPayloadAlso"),true),Equals(v.GetValueOrDefault("_auditPayloadCombat"),true),
+                        !Equals(v.GetValueOrDefault("_auditPayloadRepeat"),false)));
+                    return;
+                }
+                failure="T39探针未找到接收者写入";
+            };
+            if(route==0)
+            {
+                state.ActiveSide=ordered[1].Owner;state.SetKredits(state.ActiveSide,20);
+                if(!engine.Attack(ordered[1],ordered[0],out string reason))return $"批次旁观者测试攻击被拒：{reason}";
+            }
+            else if(route==1)engine.DestroyMultiple(ordered,source);
+            else
+            {
+                var result=engine.Api.InvokeByName("DamageMultipleCards",null,new object?[]{ordered.ToList(),1,source.CardId,null},
+                    new EffectContext{Engine=engine,State=state,Self=source,Controller=side},out bool handled);
+                if(!handled||result is not int[] ids||!ids.SequenceEqual(ordered.Select(c=>c.CardId)))return "批次伤害死亡名单错误";
+            }
+            if(failure is not null)return failure;
+            if(hits.Count!=4||hits.Take(2).Any(h=>h.Subject!=ordered[0].CardId)||hits.Skip(2).Any(h=>h.Subject!=ordered[1].CardId))
+                return "同批死亡及外部旁观者应分别收到两轮共4个事件";
+            foreach(var hit in hits)
+            {
+                int other=hit.Subject==first.CardId?second.CardId:first.CardId;
+                if(hit.Receiver==hit.Subject||hit.Killer!=(route==0?other:source.CardId)||hit.Old!=old[hit.Subject]
+                    ||hit.Also!=(hit.Receiver!=external.CardId)||hit.Combat!=(route==0)||hit.Repeat)
+                    return $"T39同批true/外部false、凶手、旧位置或战斗标志错误：route={route}/{side}/{frontline}/{reverse}";
+            }
+            if(hits.Count(h=>h.Receiver==first.CardId)!=1||hits.Count(h=>h.Receiver==second.CardId)!=1||hits.Count(h=>h.Receiver==external.CardId)!=2)
+                return "已离场死亡卡须收到另一张卡的T39且不能收到自身的T39";
+        }
+        return null;
     }
 
     private static string? CombatPairEventPayloads(CardDatabase db) => SameFrontlineCombatPairRefresh(db,true,true);
