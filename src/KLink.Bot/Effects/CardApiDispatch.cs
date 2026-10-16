@@ -1461,7 +1461,7 @@ public sealed partial class CardApi
             //    `getTotalKreditCost(卡) == 4`，按整手牌求和永远不可能等于 4，
             //    于是它会把每张手牌都"设成 4 费"，把已经被别的来源改过的牌也算进去。
             ["getTotalKreditCost"] = (c, r, a) => SelfArg(c, r, a)?.TotalKreditCost ?? 0,
-            ["getTotalOperationCost"] = (c, r, a) => SelfArg(c, r, a)?.OperationCost ?? 0,
+            ["getTotalOperationCost"] = (c, r, a) => SelfArg(c, r, a)?.TotalOperationCost ?? 0,
             // `getKreditTempBuffAmount(cardID, out amount)` —— 返回指定来源在
             // 目标卡上的改费偏移。蓝图把它用于 RemoveTheBuff：先确认该来源
             // 确实改过费用，再以 changeType=4 撤销；没有该来源时必须返回 0。
@@ -6828,7 +6828,7 @@ public sealed partial class CardApi
         }
 
         // ⑤ 费用够不够（`SelectInt(卡费, 行动费, byPlayFromHand)` = byPlayFromHand ? 卡费 : 行动费）
-        int cost = byPlayFromHand ? targeting.TotalKreditCost : targeting.OperationCost;
+        int cost = byPlayFromHand ? targeting.TotalKreditCost : targeting.TotalOperationCost;
         int remaining = State.Kredits(targeting.Owner) - cost;
         if (remaining < 0)
         {

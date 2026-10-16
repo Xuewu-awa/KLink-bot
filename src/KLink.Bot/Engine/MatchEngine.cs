@@ -2007,9 +2007,9 @@ public sealed class MatchEngine
             return false;
         }
 
-        if (unit.OperationCost > State.Kredits(unit.Owner))
+        if (unit.TotalOperationCost > State.Kredits(unit.Owner))
         {
-            reason = $"油费不足（油费={unit.OperationCost} kredit={State.Kredits(unit.Owner)}）";
+            reason = $"油费不足（油费={unit.TotalOperationCost} kredit={State.Kredits(unit.Owner)}）";
             return false;
         }
 
@@ -2038,7 +2038,7 @@ public sealed class MatchEngine
 
         // 事件签名携带的是这次推进实际支付的费用。先保存再扣费，避免后续
         // 任何费用重算让订阅卡读到错误值。
-        int moveCost = unit.OperationCost;
+        int moveCost = unit.TotalOperationCost;
         State.AddKredits(unit.Owner, -moveCost);
         State.AddOperationKreditsSpentThisTurn(moveCost);
 
@@ -2405,9 +2405,9 @@ public sealed class MatchEngine
             return false;
         }
 
-        if (attacker.OperationCost > State.Kredits(attacker.Owner))
+        if (attacker.TotalOperationCost > State.Kredits(attacker.Owner))
         {
-            reason = $"油费不足（油费={attacker.OperationCost} kredit={State.Kredits(attacker.Owner)}）";
+            reason = $"油费不足（油费={attacker.TotalOperationCost} kredit={State.Kredits(attacker.Owner)}）";
             return false;
         }
 
@@ -2525,7 +2525,7 @@ public sealed class MatchEngine
         }
 
         // AttackCard i=436..615 captures the ORIGINAL target's tax before reveal/T30/T31.
-        int attackCost = attacker.OperationCost + Math.Max(0, defender.KreditsTaxAsEnemyTarget);
+        int attackCost = attacker.TotalOperationCost + Math.Max(0, defender.KreditsTaxAsEnemyTarget);
         RecordAction("XActionAttackCard", attacker.Owner, new Dictionary<string, object?>
         {
             ["attackerCardID"] = attacker.CardId,

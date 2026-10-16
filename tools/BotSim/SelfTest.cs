@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("总行动费用：零下限、无99上限及实际移动攻击扣费", TotalOperationCostBounds),
         new("总指挥点费用：0至99边界、扣费与税顺序及来源账本保留", TotalKreditCostBounds),
         new("出牌前置门顺序：天气与费用早于卡自身阻挡判据", PlayPreflightBlockOrder),
         new("指令可用性重入：自身判据后同下标重读、循环长度包含新增对象", OrderAvailabilityLiveReread),
@@ -15185,6 +15186,56 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? TotalOperationCostBounds(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var pair in new[] { (int.MinValue, 0), (-10, 0), (-1, 0), (0, 0), (1, 1), (98, 98), (99, 99), (100, 100), (int.MaxValue, int.MaxValue) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = MakeActionQuotaProbe(state, side, "infantry");source.OperationCost = pair.Item1;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("getTotalOperationCost", source, new object?[] { null }, ctx, out bool handled);
+            if (!handled || !Equals(result, pair.Item2) || source.OperationCost != pair.Item1)
+                return $"总行动费边界或原值保留错误：{side}/{pair.Item1}, result={result}";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var pair in new[] { (-5, 0), (0, 0), (99, 99), (100, 100) })
+        foreach (int mode in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = MakeActionQuotaProbe(state, side, "infantry");source.OperationCost = pair.Item1;
+            var target = state.Hq(side.Opposite());target.KreditsTaxAsEnemyTarget = mode == 2 ? 2 : 0;
+            int cost = pair.Item2 + (mode == 2 ? 2 : 0);
+            if (mode != 0)
+            {
+                state.SetKredits(side, cost);
+                if (!engine.Api.CanSelectAsTarget(source, target, false).Can)
+                    return $"行动目标判据未读取总费用：{side}/{pair.Item1}/{mode}";
+                if (cost > 0)
+                {
+                    state.SetKredits(side, cost - 1);
+                    if (engine.Api.CanSelectAsTarget(source, target, false).Can)
+                        return $"不足行动费/目标税却允许指定：{side}/{pair.Item1}/{mode}";
+                }
+            }
+            state.SetKredits(side, cost);
+            bool ok = mode == 0 ? engine.MoveUnit(source, 0, out _) : engine.Attack(source, target);
+            if (!ok || state.Kredits(side) != 0)
+                return $"行动扣费必须使用非负总费且不设99上限：{side}/{pair.Item1}/{mode}, remaining={state.Kredits(side)}";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);var source = MakeActionQuotaProbe(state, Side.Left, "infantry");
+            source.BuffsBySource[(90, false)] = new CardBuff { OperationCost = 200 };source.RecalculateStats();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            object? Total() => engine.Api.InvokeByName("getTotalOperationCost", source, new object?[] { null }, ctx, out _);
+            if (!Equals(Total(), 200) || source.BuffsBySource[(90, false)].OperationCost != 200)
+                return "行动总费用不得套用出牌99上限或裁剪来源账本";
+            source.BuffsBySource[(90, false)].OperationCost = 10;source.RecalculateStats();
+            if (!Equals(Total(), 10)) return "调整行动费来源后总费用恢复错误";
         }
         return null;
     }

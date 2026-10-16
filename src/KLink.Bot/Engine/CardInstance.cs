@@ -67,6 +67,8 @@ public sealed class CardInstance
     /// <summary>Native getTotalKreditCost output clamp; preserve the raw proxy and source ledger.</summary>
     public int TotalKreditCost => Math.Clamp(KreditCost, 0, 99);
     public int OperationCost { get; set; }
+    /// <summary>Native getTotalOperationCost has a zero floor and no upper clamp.</summary>
+    public int TotalOperationCost => Math.Max(0, OperationCost);
 
     // ---- 回合内状态 ----
     public int EnteredPlayOnTurn { get; set; } = -1;

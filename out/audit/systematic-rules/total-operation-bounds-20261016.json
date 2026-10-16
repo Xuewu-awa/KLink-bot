@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-140",
+  "status": "total operation cost uses zero floor without upper clamp; movement, attack and common target consumers updated",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\total-operation-bounds-evidence-20261016.json",
+  "evidence_sha256": "d0e77ce2b6f4184966c10e6d34bf90d69477494df7f747e002c378abf5bcc5c8",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\cardsCheckFunctions.functions.json": "ed57bef6b025dfc6e513c0c6e10035a67a8bee45c9db547bcd4487b3d296408b",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-total-operation-bounds-20261016.py": "b1eb76443cc3a1777d7d3f8d2f8c9a108972d4c2a229146dfcad107da0d62c30",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-total-operation-bounds-before-20261016.txt": "6b440ff787866652cca29eb6b2cc5cc79302ee9e7055fabc72acd7d2c4d9b34a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-total-operation-bounds-after-20261016.txt": "3e1cf3345e643889be79d437ddcc650e373f01cef350c2d30d74629452b2fb24",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "7adc6ef56ca4f4d254108bdae47c196e1fdd5ef83c7451582e1b80e81b23c015",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "1ff78227524db152cee7e442b68150249d1da7f011edefbd621656929789e739",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cd8db4986e0a691936816a6eaed2fb8cf11f8ad3ee3dd838062447567a8363dd",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "ee1e6042e24e996fb1a095b0bc3977a8edfa3f080b7598ce0e897a7fbb74f220"
+  },
+  "tests": {
+    "release": "507/507",
+    "scalar_cases": 18,
+    "action_cases": 24,
+    "ledger_cases": 1,
+    "action_matrix": "2 sides x raw costs [-5,0,99,100] x [move,attack without tax,attack with tax 2]",
+    "checks": [
+      "Native getter zero floor and no upper clamp, including int.MaxValue.",
+      "Common attack target affordability at exact funds and one below when positive.",
+      "Successful movement/attack spends exactly total operation cost plus applicable target tax.",
+      "Raw operation proxy and 200-point source ledger are not clipped."
+    ],
+    "regression": "Original registered getter fails int.MinValue; corrected implementation passes 507/507."
+  },
+  "limits": [
+    "The native sum uses 32-bit addition; overflow/base-versus-buff storage semantics of the aggregate model proxy are not certified here.",
+    "CanSelectAsTarget is verified against parsed pak; there is no same-named function in the saved runtime capture.",
+    "AttackCard reads operation cost at i=506 and again at i=4706 on another path; complete payment branch selection, callback-time rereads and action gate ordering are not certified here.",
+    "Other cost modifiers, raw VM member writes, notification payloads and all-card PvP semantics remain open.",
+    "High and negative raw values are boundary fixtures, not observed PvP states. There is no new live process capture in this phase."
+  ],
+  "fully_semantically_verified_cards": 0
+}
