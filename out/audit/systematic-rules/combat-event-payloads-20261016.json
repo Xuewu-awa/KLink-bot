@@ -1,0 +1,40 @@
+{
+  "rule": "RULE-166",
+  "status": "post-relocation combat double-death after-leave/T39 payload subset verified; no new engine discrepancy observed",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\combat-event-payloads-evidence-20261016.json",
+  "evidence_sha256": "59f48add7ea40dfc0f6a8e97cb31725a59befd8fd01530ddce8c49e10582cc29",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-combat-event-payloads-20261016.py": "7ffaa5b5459649ba4f72322f1d54b330fec9e5b4ceefc7303d72f79ea8aa6d21",
+    "D:\\Codex Workshop\\kards-install-review\\combat-old-location-evidence-20261016.json": "b7a817f7d3f8018db47c05f8b3055a6da9bbc78fe9f9381e5916d912379205eb",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-combat-event-payloads-20261016.txt": "07c2408712e88cd903d935f72dba53d31eb1a36437abd5d851bf3310d1cc6cb5",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "b32359bc7b4a2ab6a39590a64732cbb9adb1a300e523a6197064b45823338a41",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b11725f60a47db487833fc41175d816b886eb8a5da38bb21264b54269e6b444b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "701bf68a2e462a5679fa626bd265589d04e77b2cb56768728c7efe175d75c756"
+  },
+  "tests": {
+    "release": "533/533",
+    "actual_attack_damage_relocation_cases": 24,
+    "new_payload_observations": 144,
+    "existing_movement_death_observations": 144,
+    "receive_observations": 48,
+    "matrix": "2 sides x survivor Guard none/raw/source x hidden Covert false/true x attack direction",
+    "checks": [
+      "Own OnAfterLeaveBoard reads destination Discard via event variable",
+      "T8 OnAfterOtherCardLeaveBoardOrOwner reads saved frontline OldLocation and correct subject object after defender relocation",
+      "T39 OnOtherCardDestroyed reads correct victim/killer references, saved frontline, combat true, repeat false, observer-in-death-batch false",
+      "After-leave own and observer occur after both movements; T39 for each victim follows its own death callback",
+      "Synthetic VM programs read event variables into instance fields before observations; payload probes removed after Case"
+    ],
+    "result": "No additional kernel discrepancy found in this event payload subset; no engine changes."
+  },
+  "limits": [
+    "T39 observer is outside the death batch: selfIsAlsoGettingDestroyed=false only. True branch, repeated destruction, suppression and registration mutation are not certified here.",
+    "Synthetic probes validate event dispatch and current VM event-name resolution, not arbitrary native function ABI or complete real-card semantics.",
+    "Object replacement/removal and arbitrary nested reentry, full death/combat/notifications remain open.",
+    "Retreat/control, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
