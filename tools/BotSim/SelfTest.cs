@@ -63,6 +63,7 @@ internal static class SelfTest
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
+        new("普通推进刷新：通知后、移动回调前更新新旧位置掩护", OrdinaryMoveGuardedRefresh),
         new("强制移动刷新：直接部署/推进在回调前更新新旧位置掩护缓存", ForceMoveGuardedRefresh),
         new("位置刷新：先重排再计算掩护，回手回调看到新缓存", RefreshLocationGuardedContract),
         new("揭示缓存时序：标志→刷新→通知→回调，重复及牌库分支", RevealGuardedCacheTiming),
@@ -15444,21 +15445,24 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? ForceMoveGuardedRefresh(CardDatabase db)
+    private static string? ForceMoveGuardedRefresh(CardDatabase db) => MovementGuardedRefresh(db,false);
+    private static string? OrdinaryMoveGuardedRefresh(CardDatabase db) => MovementGuardedRefresh(db,true);
+
+    private static string? MovementGuardedRefresh(CardDatabase db, bool ordinaryOnly)
     {
         foreach(Side side in new[]{Side.Left,Side.Right})
-        foreach(int route in Enumerable.Range(0,3)) // advance / direct front / direct support
+        foreach(int route in ordinaryOnly?new[]{3}:Enumerable.Range(0,3)) // force / direct front / direct support / action
         foreach(int ownGuard in Enumerable.Range(0,3))
         foreach(bool hidden in new[]{false,true})
         foreach(bool residentGuard in new[]{false,true})
-        foreach(int insertion in route==0?new[]{-1}:new[]{-1,0})
+        foreach(int insertion in route is 0 or 3?new[]{-1}:new[]{-1,0})
         {
-            var(engine,state)=EmptyBoard(db);state.FrontlineOwner=side;
-            var old=route==0?side.HqOf():side.HandOf();
+            var(engine,state)=EmptyBoard(db);state.FrontlineOwner=side;state.ActiveSide=side;state.SetKredits(side,20);
+            var old=route is 0 or 3?side.HqOf():side.HandOf();
             var destination=route==2?side.HqOf():CardLocation.BoardFrontline;
             state.Hq(side).Keywords.Remove(Keyword.Guard);state.Hq(side.Opposite()).IsBeingGuarded=true;
-            var oldA=state.CreateWithId(PlainUnit,side,50,old,route==0?1:0);
-            var oldB=state.CreateWithId(PlainUnit,side,51,old,route==0?2:1);
+            var oldA=state.CreateWithId(PlainUnit,side,50,old,route is 0 or 3?1:0);
+            var oldB=state.CreateWithId(PlainUnit,side,51,old,route is 0 or 3?2:1);
             foreach(var card in new[]{oldA,oldB}){card.Keywords.Remove(Keyword.Guard);card.IsBeingGuarded=true;}
             var mover=state.CreateWithId(PlainUnit,side,60,old,3);
             mover.Definition=new CardDefinition{Name=mover.Name,Type="infantry",Attack=2,Defense=5};
@@ -15475,6 +15479,7 @@ internal static class SelfTest
                 card.Keywords.Remove(Keyword.Guard);if(residentGuard)card.Keywords.Add(Keyword.Guard);
                 card.IsBeingGuarded=true;
             }
+            mover.EnteredPlayOnTurn=-99;mover.OperationCost=1;
             mover.IsBeingGuarded=true;int calls=0;string? failure=null;var prior=state.CardMoved;
             state.CardMoved=(card,from,to,changed,reason)=>{
                 if(ReferenceEquals(card,mover)&&from==old&&to==destination)
@@ -15485,7 +15490,7 @@ internal static class SelfTest
                     bool expectedA=!residentGuard&&ownGuard==1&&!hidden&&Near(mover,residentA);
                     bool expectedB=!residentGuard&&ownGuard==1&&!hidden&&Near(mover,residentB);
                     if(mover.IsBeingGuarded!=expectedMover||residentA.IsBeingGuarded!=expectedA||residentB.IsBeingGuarded!=expectedB
-                        ||oldA.IsBeingGuarded!=(route!=0)||oldB.IsBeingGuarded!=(route!=0)||!state.Hq(side.Opposite()).IsBeingGuarded)
+                        ||oldA.IsBeingGuarded!=(route is not (0 or 3))||oldB.IsBeingGuarded!=(route is not (0 or 3))||!state.Hq(side.Opposite()).IsBeingGuarded)
                         failure="强制移动回调读取了旧掩护缓存，或误刷新非棋盘/无关位置";
                     foreach(var zone in new[]{old,destination})
                     {
@@ -15493,13 +15498,14 @@ internal static class SelfTest
                         if(!numbers.SequenceEqual(Enumerable.Range(0,numbers.Length)))failure="移动回调前受影响物理位置未完成压紧";
                     }
                     var notifications=state.ActionLog.SelectMany(a=>a.SubActions).Where(a=>a.Name=="ZActionMoveCardToNewLocation").ToArray();
-                    if(notifications.Length!=1||notifications[0].Values.First(v=>v.Name=="cardID").Value!=60)
+                    if(notifications.Length!=1||route!=3&&notifications[0].Values.First(v=>v.Name=="cardID").Value!=60)
                         failure="移动通知必须在完整位置刷新及回调前发出，且不重复";
                 }
                 prior?.Invoke(card,from,to,changed,reason);
             };
             bool ok=route==0?engine.MoveUnitFromSupportToFrontLine(mover,99,out _)
-                :engine.PlayCardDirectlyFromHand(mover,route==1,99,insertion);
+                :route==3?engine.MoveUnit(mover,2):engine.PlayCardDirectlyFromHand(mover,route==1,99,insertion);
+            if(route==3&&(state.Kredits(side)!=19||!mover.HasMovedThisTurn))return "普通推进仍应支付实际行动费并消耗移动额度";
             if(!ok||calls!=1||failure is not null)return $"{failure??"强制移动未到达回调"}：{side}/{route}/{ownGuard}/{hidden}/{residentGuard}/{insertion}";
         }
         return null;

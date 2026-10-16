@@ -2052,16 +2052,15 @@ public sealed class MatchEngine
             ActionValue2.Int("locationNumber", targetSlot),
         });
 
-        // 我方已经占着前线时是"挪槽位"，否则是"推进"。
-        //
-        // ⚠️ 这里**不再**手工刷新前线归属：换区钩子（`FireLocationMoved`）已经按蓝图
-        //    在 `State.Move` 内部做了。依据是 `MoveCardToFrontline` 的语句顺序 ——
-        //    si=13 `CardLocationMoved`（内部 si=53 `UpdateFrontlineIfNeeded`
-        //    ⇒ 发 `OnFrontlineOwnershipChange`）**先**、si=21
-        //    `ExecuteOnMoveToFrontlineCardEffects`（⇒ `OnMoveToFrontline`）**后**。
-        //    旧实现是反的（先 `OnMoveToFrontline`、再刷新归属并补发事件），
-        //    收口到钩子里正好把这个顺序也扳正。
-        State.Move(unit, CardLocation.BoardFrontline, targetSlot, moveReason: CardMoveReason.AdvancePlayerMove);
+        // CardLocationMoved refreshes physical old/new locations before its
+        // movement callbacks and location tail. Retain the existing slot writer
+        // and same-location callback policy until their separate audit.
+        var oldLocation = unit.Location;
+        State.Move(unit, CardLocation.BoardFrontline, targetSlot,
+            moveReason: CardMoveReason.AdvancePlayerMove, notifyMoved: false);
+        Api.RefreshLocationStatus(new[] { oldLocation, CardLocation.BoardFrontline });
+        if (oldLocation != CardLocation.BoardFrontline)
+            State.CardMoved?.Invoke(unit, oldLocation, CardLocation.BoardFrontline, false, CardMoveReason.AdvancePlayerMove);
         if (!unit.CanMoveAndAttackInSameTurn) unit.ClearAttackQuotaForMovement();
         unit.HasMovedThisTurn = true;
         Api.ExecuteOnMoveToFrontlineCardEffects(unit, false, moveCost);
