@@ -1,0 +1,48 @@
+{
+  "rule": "RULE-152",
+  "status": "Guard withdrawal source/raw/ledger/notification/T29 branches fixed, smoke self-source dependency unified; native guarded cache remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\remove-guard-sources-evidence-20261016.json",
+  "evidence_sha256": "6e26361ef82dedffd5c140fca5dbbc11eabcb84c59fcd7b106d5fb98011349cc",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-remove-guard-sources-20261016.py": "6d9e0f9ad0f511a3c8c937139de8e70b1227642f65f54726cb6a1015b56facca",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-remove-guard-sources-before-20261016.txt": "39fe8ba5e035a0b4a06503d95faa853e3249d1878fe2225c9253bb26405ea977",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-remove-guard-sources-after-20261016.txt": "73525b8c3153fc4362076840b54493a35c7357659891e21ffa3562d364d04d93",
+    "D:\\Codex Workshop\\kards-install-review\\give-guard-sources-evidence-20261016.json": "66aacf69b48566c665dd48e394872df3938f7c5497c0bab1b5536a67519f090d",
+    "D:\\Codex Workshop\\kards-install-review\\native-guard-read-evidence-20261016.json": "c1f7f80428806233a1e0f2986254e7eeafd742e7e2fa3554668789c56b2aaea1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "50f0a1e94c7419caf13f1111c5fb8185160dee1241c70f0a11374e2a3152728d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "f4a846acd37908d5edfbe03e98b96dd2a8d64704c3202465ab80f0c482876a0e",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "4b274d118b6065ceddb4e34eac47b98be73712d62065fa8ebd00431782838b60"
+  },
+  "tests": {
+    "release": "519/519",
+    "removal_matrix": 1344,
+    "grant_remove_integration": 16,
+    "invalid_target_ids": 3,
+    "matrix": "2 sides x raw guard false/true x sources absent/empty/[9]/[9,10]/[9,9]/[10]/[99] x instigator [-3,0,9,99] x RemoveAll false/true x skipAction false/true x board/deck/NotAvailable",
+    "checks": [
+      "Nonpositive instigator selects full branch regardless of original RemoveAll flag",
+      "Full branch uses effective getter; missing effective Guard is no-op preserving empty key",
+      "All registered array occurrences decrement their signed ledger; positive unregistered caller decrements additionally without static-CDO guard gate",
+      "Individual missing caller is no-op; remove all duplicate occurrences but decrement once",
+      "Last-source removal clears raw Guard and map key; other sources preserve existing raw flag",
+      "Tail notification precedes T29; T29 tests raw flag, even when another source remains effective",
+      "Notification always includes cardID, instigatorID (including zero/negative), original RemoveAllGivers, no deck suppression; skipAction suppresses notification only",
+      "Snapshots/cloned ledgers preserve effective/raw state and signed details; unrelated source attack buffs remain",
+      "Actual grant -> individual/all withdrawal prunes zero ledger and reverse source target array",
+      "GiveSmokescreen now reuses RemoveGuard(self,self,false,true); prior phase smoke tests also pass"
+    ],
+    "regression": "Generic RemoveGuard leaves source-only Guard registered: 1/519 fails; repaired removal passes 519/519."
+  },
+  "limits": [
+    "RemoveGuard source/raw/ledger/notification/T29 subset only. Native UpdateGuarded call at 2354 remains unmodeled; guarded target/cache lifecycle is not certified.",
+    "Native action-authority branch is represented; non-action client receive/transport/presentation are outside this change.",
+    "Notifier/online action payload uses parsed pak only, no same-named runtime capture is claimed.",
+    "Native FString/source label internals, full ChangeBuffsFromCards and source-array malformed nonpositive IDs, integer overflow, object lifetime/reentry, collection order, snapshot import and CopyData remain open.",
+    "No live client writes, injection, new live capture or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

@@ -3393,9 +3393,7 @@ public sealed partial class CardApi
                 && prior.Contains(instigatorId)) return;
             var sources = prior is null ? new List<int>() : new List<int>(prior);
             sources.Add(instigatorId);
-            var buff = GetOrCreateBuff(target, instigatorId);
-            buff.Guard += 1;
-            if (buff.IsEmpty) RemoveBuffEntry(target, (instigatorId, false));
+            ChangeGuardBuff(target, instigatorId, 1);
             target.ReceivedAbilitiesFromCards["guard"] = sources;
         }
         bool alreadyRaw = target.Keywords.Contains(Keyword.Guard);
@@ -3438,28 +3436,8 @@ public sealed partial class CardApi
             if (giverId != 0) values.Add(ActionValue2.Int("giverID", giverId));
             _engine.FireSubAction("ZActionGiveSmokescreen", values);
         }
-        RemoveSelfGuardSourceForSmokescreen(target);
+        RemoveGuard(target, target.CardId, removeAllGivers: false, skipAction: true);
         FireAbilitiesChanged(target);
-    }
-
-    // Reconstruct only GiveSmokescreen's RemoveGuard(cardID,cardID,false,true)
-    // dependency. General Guard granting/removal and cached UpdateGuarded parity
-    // remain separate audit work; the engine currently computes guarded status.
-    private void RemoveSelfGuardSourceForSmokescreen(CardInstance target)
-    {
-        if (!target.ReceivedAbilitiesFromCards.TryGetValue("guard", out var sources)
-            || !sources.Contains(target.CardId)) return;
-        sources.RemoveAll(id => id == target.CardId);
-        var key = (target.CardId, false);
-        var buff = GetOrCreateBuff(target, target.CardId);
-        buff.Guard -= 1;
-        if (buff.IsEmpty) RemoveBuffEntry(target, key);
-        if (sources.Count == 0)
-        {
-            target.Keywords.Remove(Keyword.Guard);
-            target.ReceivedAbilitiesFromCards.Remove("guard");
-        }
-        if (!target.Keywords.Contains(Keyword.Guard)) FireAbilitiesChanged(target);
     }
 
     private void GiveKeywordCore(CardInstance target, string keyword)
@@ -3577,6 +3555,7 @@ public sealed partial class CardApi
         if (keyword == Keyword.Fury) { RemoveFury(target); return; }
         if (keyword == Keyword.Blitz) { RemoveBlitz(target); return; }
         if (keyword == Keyword.Smokescreen) { RemoveSmokescreen(target); return; }
+        if (keyword == Keyword.Guard) { RemoveGuard(target); return; }
         RemoveKeywordCore(target, keyword);
     }
 
@@ -3593,6 +3572,57 @@ public sealed partial class CardApi
         });
 
         FireAbilitiesChanged(target);
+    }
+
+    // Guard withdrawal differs from smoke: last-source removal clears the raw
+    // flag/key, and the tail tests raw Guard rather than the effective getter.
+    public void RemoveGuard(CardInstance target, int instigatorId = 0,
+        bool removeAllGivers = true, bool skipAction = false)
+    {
+        bool hasSources = target.ReceivedAbilitiesFromCards.TryGetValue("guard", out var sources);
+        if (instigatorId <= 0 || removeAllGivers)
+        {
+            if (!target.HasGuard) return;
+            if (hasSources)
+            {
+                if (instigatorId > 0 && !sources!.Contains(instigatorId))
+                    ChangeGuardBuff(target, instigatorId, -1);
+                foreach (int source in sources!.ToArray()) ChangeGuardBuff(target, source, -1);
+            }
+            else if (instigatorId > 0) ChangeGuardBuff(target, instigatorId, -1);
+            target.Keywords.Remove(Keyword.Guard);
+            target.ReceivedAbilitiesFromCards.Remove("guard");
+        }
+        else
+        {
+            if (!hasSources || !sources!.Contains(instigatorId)) return;
+            var remaining = sources!.Where(id => id != instigatorId).ToList();
+            ChangeGuardBuff(target, instigatorId, -1);
+            if (remaining.Count == 0)
+            {
+                target.Keywords.Remove(Keyword.Guard);
+                target.ReceivedAbilitiesFromCards.Remove("guard");
+            }
+            else target.ReceivedAbilitiesFromCards["guard"] = remaining;
+        }
+        if (!skipAction)
+        {
+            _engine.FireSubAction("ZActionRemoveGuard", new[] {
+                ActionValue2.Int("cardID", target.CardId),
+                ActionValue2.Int("instigatorID", instigatorId),
+                ActionValue2.Bool("RemoveAllGivers", removeAllGivers) });
+        }
+        if (target.Keywords.Contains(Keyword.Guard)) return;
+        // Native UpdateGuarded(location) precedes T29 here. Cached guarded-state
+        // timing remains unmodeled; only source/raw/ledger/notification/T29 parity.
+        FireAbilitiesChanged(target);
+    }
+
+    private void ChangeGuardBuff(CardInstance target, int sourceId, int amount)
+    {
+        var buff = GetOrCreateBuff(target, sourceId);
+        buff.Guard += amount;
+        if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
     }
 
     // Blueprint RemoveSmokescreen: nonpositive giver or RemoveAll clears raw

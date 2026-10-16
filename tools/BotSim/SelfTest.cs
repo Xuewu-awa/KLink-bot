@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("Guard撤销：指定/全部来源、原始尾链、完整通知与零账本清理", RemoveGuardSources),
         new("Guard授予：来源去重、原始分支、烟幕互斥与通知", GiveGuardSources),
         new("烟幕授予：来源去重、原始标志、牌库通知与自身Guard来源依赖", GiveSmokescreenSources),
         new("烟幕来源撤销：指定/全部、空键、账本及skipAction通知", RemoveSmokescreenSources),
@@ -15197,6 +15198,93 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? RemoveGuardSources(CardDatabase db)
+    {
+        using var probe=InstallAbilitiesChangedProbes();
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool raw in new[]{false,true})
+        foreach(int[]? initial in new int[]?[]{null,Array.Empty<int>(),new[]{9},new[]{9,10},new[]{9,9},new[]{10},new[]{99}})
+        foreach(int giver in new[]{-3,0,9,99})
+        foreach(bool all in new[]{false,true})
+        foreach(bool skip in new[]{false,true})
+        foreach(CardLocation location in new[]{side.HqOf(),side.DeckOf(),CardLocation.NotAvailable})
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId("card_unit_typhoon_mk_ib",side,60,location,1);
+            target.Definition=new CardDefinition{Name=target.Name,Type="infantry"};target.Keywords.Remove(Keyword.Guard);
+            if(raw)target.Keywords.Add(Keyword.Guard);
+            if(initial is not null)target.ReceivedAbilitiesFromCards["guard"]=initial.ToList();
+            foreach(int id in new[]{9,10,99})
+                target.BuffsBySource[(id,false)]=new CardBuff{SourceCardId=id,Attack=2,Guard=initial?.Count(x=>x==id)??0};
+            var observer=state.CreateWithId("card_event_honorifics",side,20,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardAbilitiesChanged"}};
+            observer.BlueprintVariables["_auditT29Count"]=0;var seen=new List<(int,bool)>();var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name=="card_unit_routed_troops")
+                seen.Add((state.ActionLog.SelectMany(a=>a.SubActions).Count(a=>a.Name=="ZActionRemoveGuard"),target.Keywords.Contains(Keyword.Guard)));};
+            bool full=giver<=0||all;
+            bool active=full?(raw||initial is {Length:>0}):(initial?.Contains(giver)??false);
+            var expected=initial?.ToList();bool endRaw=raw;
+            var deltas=new Dictionary<int,int>{{9,0},{10,0},{99,0}};
+            if(active&&full)
+            {
+                if(giver>0&&!(initial?.Contains(giver)??false))deltas[giver]--;
+                foreach(int id in initial??Array.Empty<int>())deltas[id]--;
+                expected=null;endRaw=false;
+            }
+            else if(active)
+            {
+                expected!.RemoveAll(id=>id==giver);deltas[giver]--;
+                if(expected.Count==0){expected=null;endRaw=false;}
+            }
+            engine.Api.InvokeByName("RemoveGuard",null,new object?[]{60,giver,all,skip},
+                new EffectContext{Engine=engine,State=state,Self=target,Controller=side},out bool handled);
+            bool key=target.ReceivedAbilitiesFromCards.TryGetValue("guard",out var actual);
+            if(!handled||key!=(expected is not null)||(expected is not null&&!actual!.SequenceEqual(expected))
+                ||target.Keywords.Contains(Keyword.Guard)!=endRaw)
+                return $"Guard指定/全部撤销状态错误：{side}/{raw}/{giver}/{all}/{skip}/{location}";
+            foreach(int id in new[]{9,10,99})
+            {
+                int amount=(initial?.Count(x=>x==id)??0)+deltas[id];var buff=target.BuffsBySource[(id,false)];
+                if(buff.Guard!=amount||buff.Attack!=2||buff.Clone().Guard!=amount
+                    ||target.Snapshot().GuardBuffsBySource.GetValueOrDefault($"{id}/False")!=amount)
+                    return "Guard来源递减须保留重复数组计数和独立账本，不得删除同来源其他增益";
+            }
+            int queries=active&&!endRaw?1:0,notifies=active&&!skip?1:0;
+            if(Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditT29Count")??0)!=queries
+                ||seen.Count!=queries||seen.Any(x=>x!=(notifies,false)))
+                return "Guard尾链按原始标志派发T29，且通知在回调之前，不能按有效Guard筛掉";
+            var actions=state.ActionLog.SelectMany(a=>a.SubActions).Where(a=>a.Name=="ZActionRemoveGuard").ToArray();
+            if(actions.Length!=notifies)return "Guard撤销通知仅遵守来源命中和skipAction，牌库也应通知";
+            if(actions.Any(a=>!a.Values.Select(v=>v.Name).SequenceEqual(new[]{"cardID","instigatorID","RemoveAllGivers"})
+                ||a.Values[0].Value!=60||a.Values[1].Value!=giver||a.Values[2].Value!=(all?1:0)))
+                return "Guard撤销通知必须始终含instigatorID（包括0和负值）及原始RemoveAllGivers";
+            var snapshot=target.Snapshot();bool effective=endRaw||expected is {Count:>0};
+            if(target.HasGuard!=effective||snapshot.IntrinsicGuard!=endRaw||snapshot.Keywords.Contains(Keyword.Guard)!=effective)
+                return "Guard撤销后的快照原始/有效状态混淆";
+        }
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool selfSource in new[]{false,true})
+        foreach(bool all in new[]{false,true})
+        foreach(bool skip in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId(PlainUnit,side,60,side.HqOf(),1);
+            target.Keywords.Remove(Keyword.Guard);var external=state.CreateWithId(PlainUnit,side,9,side.DeckOf(),0);
+            int source=selfSource?60:9;var ctx=new EffectContext{Engine=engine,State=state,Self=target,Controller=side};
+            engine.Api.InvokeByName("GiveGuard",null,new object?[]{60,source},ctx,out _);
+            engine.Api.InvokeByName("RemoveGuard",null,new object?[]{60,source,all,skip},ctx,out _);
+            if(target.HasGuard||target.ReceivedAbilitiesFromCards.ContainsKey("guard")||target.BuffsBySource.ContainsKey((source,false))
+                ||(selfSource?target:external).CardsBuffedByThisCard.Contains(60))return "真实Guard授予→撤销未清空来源链及零账本目标登记";
+        }
+        foreach(int id in new[]{0,-5,99999})
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId(PlainUnit,Side.Left,60,CardLocation.BoardHqLeft,1);
+            target.Keywords.Add(Keyword.Guard);
+            engine.Api.InvokeByName("RemoveGuard",target,new object?[]{id,0,true,false},
+                new EffectContext{Engine=engine,State=state,Self=target,Target=target,Controller=Side.Left},out _);
+            if(!target.HasGuard)return "Guard撤销无效显式ID不得回退到self/target/receiver";
         }
         return null;
     }

@@ -6312,7 +6312,7 @@ public sealed partial class CardApi
 
     private object? DoRemoveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Pinned or Keyword.Smokescreen
+        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Pinned or Keyword.Smokescreen or Keyword.Guard
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6322,6 +6322,7 @@ public sealed partial class CardApi
             }
             else if (keyword == Keyword.Blitz) RemoveBlitz(target, IntArg(a, 2), TruthyArg(a, 3));
             else if (keyword == Keyword.Smokescreen) RemoveSmokescreen(target, IntArg(a, 1), TruthyArg(a, 2), TruthyArg(a, 3));
+            else if (keyword == Keyword.Guard) RemoveGuard(target, IntArg(a, 1), TruthyArg(a, 2), TruthyArg(a, 3));
             else RemoveKeyword(target, keyword);
         }
 
