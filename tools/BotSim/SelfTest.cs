@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("亡语通知T24：每位接收者前重查主体抑制并累加已执行输出", DestructionSubjectSuppressionPerRecipient),
         new("死亡批次旁观者：已离场仍接收T39，同批标志与凶手正确", DeathBatchObserverPayloads),
         new("双亡参数：搬移后离场后事件与死亡旁观者位置/凶手/战斗标志", CombatPairEventPayloads),
         new("双亡旧位置：受伤回调搬移后仍使用执行阶段保存位置", CombatPairOldLocationCapture),
@@ -15401,6 +15402,53 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? DestructionSubjectSuppressionPerRecipient(CardDatabase db)
+    {
+        const string name="card_unit_typhoon_mk_ib",trigger="OnDestructionEffectTriggered";
+        var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        if(KismetLibrary.Default.FindProgram(name,trigger) is not null)return "无法安全安装T24抑制探针";
+        locals.Add(trigger,new[]{
+            new KismetStep(0,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),new KismetExpr{Math="Add_IntInt",Args=new[]{
+                new KismetExpr{Var="_auditT24Calls",Scope="instance"},new KismetExpr{Int=1}}},null,-1,"_auditT24Calls",null){DestinationScope="instance"},
+            new KismetStep(1,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
+                new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
+            new KismetStep(2,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),new KismetExpr{Var="_auditT24Output",Scope="instance"},null,-1,"TriggerMultiple",null),
+            new KismetStep(3,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+        using var cleanup=new AuditProbeCleanup(()=>locals.Remove(trigger));
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool reverse in new[]{false,true})
+        foreach(bool initiallySuppressed in new[]{false,true})
+        foreach(bool changeInCallback in new[]{false,true})
+        foreach(bool skip in new[]{false,true})
+        foreach(int secondValue in new[]{-2,0,3})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var victim=state.CreateWithId(PlainUnit,side,50,CardLocation.Discard,20);
+            if(initiallySuppressed)victim.Keywords.Add(Keyword.Suppressed);else victim.Keywords.Remove(Keyword.Suppressed);
+            var first=state.CreateWithId(name,side,60,side.DeckOf(),0);
+            var second=state.CreateWithId(name,side.Opposite(),61,CardLocation.Discard,30);
+            foreach(var observer in new[]{first,second})observer.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{trigger}};
+            first.BlueprintVariables["_auditT24Output"]=2;second.BlueprintVariables["_auditT24Output"]=secondValue;
+            var selected=engine.Api.CaptureRegisteredTriggerSnapshot(trigger).ToArray();
+            if(reverse)Array.Reverse(selected);
+            if(selected.Length!=2)return "T24接收者夹具错误";
+            int callbacks=0;var prior=state.CardCreated;
+            state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                callbacks++;
+                if(changeInCallback&&callbacks==1)
+                {
+                    if(victim.IsSuppressed)victim.Keywords.Remove(Keyword.Suppressed);else victim.Keywords.Add(Keyword.Suppressed);
+                }
+            };
+            int total=engine.Api.FireDestructionEffectTriggered(victim,null,new[]{victim.CardId,first.CardId},selected,skip);
+            int expectedCalls=initiallySuppressed&&!skip?0:!skip&&changeInCallback?1:2;
+            int expected=selected.Take(expectedCalls).Sum(c=>Convert.ToInt32(c.BlueprintVariables["_auditT24Output"]));
+            if(callbacks!=expectedCalls||total!=expected)
+                return $"T24须逐项重查主体抑制，已执行输出仍计入：{side}/{reverse}/{initiallySuppressed}/{changeInCallback}/{skip}/{secondValue}, calls={callbacks}/{expectedCalls}, sum={total}/{expected}";
+        }
+        return null;
     }
 
     private static string? DeathBatchObserverPayloads(CardDatabase db)

@@ -1188,25 +1188,28 @@ public sealed partial class CardApi
             ["instigatorID"] = instigator?.CardId ?? 0,
         };
 
-        var outs = BroadcastWithOutParams(
-            "OnDestructionEffectTriggered", card, card.Owner, new[] { "TriggerMultiple" },
-            eventArgs: new object?[] { card, instigator?.CardId ?? 0, false },
-            eventSubject: card,
-            namedArgs: named,
-            seedFactory: observer => new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardTriggered"] = card,
-                ["instigatorID"] = instigator?.CardId ?? 0,
-                // si=398：CardsToDestroy 就是「被摧毁的那一张」，所以这个 bool 等价于
-                // 「订阅卡自己也在被摧毁的那批里」。
-                ["SelfAlsoDestroyed"] = batch?.Contains(observer.CardId) ?? observer.CardId == card.CardId,
-            }, only: recipients ?? CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered"),
-            recipientsAlreadyFiltered: true);
-
         int total = 0;
-        foreach (var hit in outs)
+        var selected = (recipients ?? CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered")).ToArray();
+        foreach (var recipient in selected)
         {
-            total += AsInt(hit.Outs.GetValueOrDefault("TriggerMultiple"));
+            // Blueprint i=325/710 rechecks the subject for each saved recipient.
+            if (!skipSuppressCheck && card.IsSuppressed) continue;
+            var outs = BroadcastWithOutParams(
+                "OnDestructionEffectTriggered", card, card.Owner, new[] { "TriggerMultiple" },
+                eventArgs: new object?[] { card, instigator?.CardId ?? 0, false },
+                eventSubject: card,
+                namedArgs: named,
+                seedFactory: observer => new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["cardTriggered"] = card,
+                    ["instigatorID"] = instigator?.CardId ?? 0,
+                    // i=398 tests this observer ID against the supplied death batch.
+                    ["SelfAlsoDestroyed"] = batch?.Contains(observer.CardId) ?? observer.CardId == card.CardId,
+                }, only: new[] { recipient },
+                recipientsAlreadyFiltered: true);
+
+            foreach (var hit in outs)
+                total += AsInt(hit.Outs.GetValueOrDefault("TriggerMultiple"));
         }
 
         return total;
