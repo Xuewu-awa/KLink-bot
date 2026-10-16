@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("揭示缓存时序：标志→刷新→通知→回调，重复及牌库分支", RevealGuardedCacheTiming),
         new("掩护缓存：有效自身Guard、原始邻卡Guard、Covert与字段读写", UpdateGuardedCacheContract),
         new("Guard撤销：指定/全部来源、原始尾链、完整通知与零账本清理", RemoveGuardSources),
         new("Guard授予：来源去重、原始分支、烟幕互斥与通知", GiveGuardSources),
@@ -15199,6 +15200,74 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? RevealGuardedCacheTiming(CardDatabase db)
+    {
+        const string own="OnCardRevealed",other="OnOtherCardRevealed";
+        var installed=new List<(IDictionary<string,IReadOnlyList<KismetStep>> Locals,string Trigger)>();
+        using var cleanup=new AuditProbeCleanup(()=>{foreach(var entry in installed)entry.Locals.Remove(entry.Trigger);});
+        foreach(var entry in new[]{("card_unit_typhoon_mk_ib",own),("card_event_honorifics",other)})
+        {
+            if(KismetLibrary.Default?.Find(entry.Item1)?.Locals is not IDictionary<string,IReadOnlyList<KismetStep>> locals
+                ||KismetLibrary.Default.FindProgram(entry.Item1,entry.Item2) is not null)return "无法安全安装揭示缓存时序探针";
+            locals.Add(entry.Item2,new[]{
+                new KismetStep(0,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},
+                    new KismetExpr{Str="card_unit_routed_troops"},new KismetExpr{Int=30},new KismetExpr{Int=1}},
+                    Array.Empty<int>(),null,null,-1,null,null),
+                new KismetStep(1,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+            installed.Add((locals,entry.Item2));
+        }
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(CardLocation location in new[]{side.HqOf(),CardLocation.BoardFrontline,side.DeckOf()})
+        foreach(int ownGuard in Enumerable.Range(0,3))
+        foreach(int neighborGuard in Enumerable.Range(0,3))
+        foreach(bool suppressed in new[]{false,true})
+        foreach(int giver in new[]{-3,0,9})
+        foreach(bool revealed in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId("card_unit_typhoon_mk_ib",side,60,location,10);
+            target.Definition=new CardDefinition{Name=target.Name,Type="infantry",UsedTriggers=new[]{own}};
+            target.Keywords.Remove(Keyword.Guard);if(ownGuard==1)target.Keywords.Add(Keyword.Guard);
+            if(ownGuard==2)target.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            target.Keywords.Add(Keyword.Covert);target.IsRevealed=revealed;
+            if(suppressed)target.Keywords.Add(Keyword.Suppressed);
+            var adjacent=state.CreateWithId(PlainUnit,side,61,location,9);adjacent.Keywords.Remove(Keyword.Guard);
+            if(neighborGuard==1)adjacent.Keywords.Add(Keyword.Guard);
+            if(neighborGuard==2)adjacent.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            var observer=state.CreateWithId("card_event_honorifics",side,20,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{other}};
+            var untouched=state.CreateWithId(PlainUnit,side.Opposite(),62,side.Opposite().HqOf(),0);untouched.IsBeingGuarded=true;
+            bool expectedTarget=location.IsBoard()?ownGuard==0&&neighborGuard==1:true;
+            bool expectedAdjacent=location.IsBoard()?neighborGuard==0&&ownGuard==1:false;
+            var seen=new List<(bool,bool,bool,bool,int)>();var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name=="card_unit_routed_troops")
+                seen.Add((target.IsBeingGuarded,adjacent.IsBeingGuarded,target.IsRevealed,target.Keywords.Contains(Keyword.Covert),
+                    state.ActionLog.SelectMany(a=>a.SubActions).Count(a=>a.Name=="ZActionRevealCard")));};
+            var ctx=new EffectContext{Engine=engine,State=state,Self=observer,Controller=side};
+            for(int repeat=0;repeat<2;repeat++)
+            {
+                target.IsBeingGuarded=true;adjacent.IsBeingGuarded=false;seen.Clear();
+                var result=engine.Api.InvokeByName("RevealCard",null,new object?[]{60,giver},ctx,out bool handled);
+                if(!handled||!Equals(result,0)||!target.IsRevealed||target.Keywords.Contains(Keyword.Covert)
+                    ||target.IsBeingGuarded!=expectedTarget||adjacent.IsBeingGuarded!=expectedAdjacent||!untouched.IsBeingGuarded)
+                    return $"揭示须先写标志并刷新当前物理位置缓存：{side}/{location}/{ownGuard}/{neighborGuard}/{suppressed}/{giver}/{revealed}/{repeat}";
+                if(seen.Count!=(suppressed?1:2)||seen.Any(x=>x!=(expectedTarget,expectedAdjacent,true,false,repeat+1)))
+                    return "揭示自身/T55回调必须观察到已刷缓存、清Covert与先发送的揭示通知";
+                var notifications=state.ActionLog.SelectMany(a=>a.SubActions).Where(a=>a.Name=="ZActionRevealCard").ToArray();
+                if(notifications.Length!=repeat+1||notifications.Any(a=>!a.Values.Select(v=>v.Name).SequenceEqual(new[]{"cardID","instigatorID"})
+                    ||a.Values[0].Value!=60||a.Values[1].Value!=giver))return "揭示通知应重复发送且始终保留cardID和零/负instigatorID，牌库也通知";
+            }
+        }
+        foreach(int id in new[]{0,-5,99999})
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId(PlainUnit,Side.Left,60,CardLocation.BoardHqLeft,1);
+            target.IsRevealed=false;target.Keywords.Add(Keyword.Covert);target.IsBeingGuarded=true;
+            engine.Api.InvokeByName("RevealCard",target,new object?[]{id,0},new EffectContext{Engine=engine,State=state,Self=target,Target=target,Controller=Side.Left},out _);
+            if(target.IsRevealed||!target.Keywords.Contains(Keyword.Covert)||!target.IsBeingGuarded
+                ||state.ActionLog.SelectMany(a=>a.SubActions).Any(a=>a.Name=="ZActionRevealCard"))return "无效揭示目标ID不应回退到调用者或产生通知";
         }
         return null;
     }

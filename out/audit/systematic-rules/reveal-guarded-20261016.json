@@ -1,0 +1,75 @@
+{
+  "rule": "RULE-154",
+  "status": "RevealCard clears raw flags then updates guarded cache and notifies before callbacks; other lifecycle/attack consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\reveal-guarded-evidence-20261016.json",
+  "evidence_sha256": "499f050a2403f3e544a8b8f772258c094f9aff7d34ab888a54e829013298ff09",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-reveal-guarded-20261016.py": "5b0df27ae6dd3beb67e27c928888bc6386a62da7d4b50f278ff71d09c3dee8a2",
+    "D:\\Codex Workshop\\kards-install-review\\update-guarded-evidence-20261016.json": "6d6d8f66b4d5b6327c05c1691d00491b58fdd32e526dfac18b246f33ad9e53ad",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reveal-guarded-before-20261016.txt": "773f5d6246aaad1ced6f2f2216a0110f8e82e5b0cd9ba091ec18c121a5304585",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reveal-guarded-after-20261016.txt": "f278dde674772454ce45ff626a18dc73dd0403328416feb3ba06fe63fb483aa8",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "ca099b7a93ef89f928bef58c04ea4db23d50b35b8c39af686b7548c501c8f116",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "9c2b8a208992c06a692c0002906fcc25685d17e8d3cfc2ca041beebd3addf8a8"
+  },
+  "update_guarded_callsites": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "GiveGuard",
+      "index": 1058,
+      "cache_call_status": "wired computation; full lifecycle still open"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "MakeVeteran",
+      "index": 2303,
+      "cache_call_status": "not wired; pending branch/lifecycle audit"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RefreshLocationStatus",
+      "index": 946,
+      "cache_call_status": "not wired; pending branch/lifecycle audit"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RemoveGuard",
+      "index": 2354,
+      "cache_call_status": "wired computation; full lifecycle still open"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RevealCard",
+      "index": 122,
+      "cache_call_status": "wired computation; full lifecycle still open"
+    }
+  ],
+  "tests": {
+    "release": "521/521",
+    "reveal_matrix": 648,
+    "identical_calls_per_case": 2,
+    "invalid_target_ids": 3,
+    "matrix": "2 sides x support/frontline/deck x own guard none/raw/source x adjacent guard none/raw/source x suppression false/true x instigator [-3,0,9] x initial isRevealed false/true",
+    "checks": [
+      "Reveal clears raw Covert and sets revealed before refreshing current physical location",
+      "Effective own Guard and raw adjacent Guard produce expected caches; unrelated location untouched; deck cache preserved",
+      "Own reveal and T55 observer callbacks see refreshed caches, cleared Covert and already-emitted reveal notification",
+      "Suppressed subject skips own reveal callback but still notifies and reaches observer",
+      "Already-revealed/repeated calls still refresh and notify, without a new idempotence gate",
+      "Payload cardID then instigatorID always present, preserving zero and negative values; deck notification not suppressed",
+      "Explicit invalid IDs do not fall back to caller or emit reveal notification"
+    ],
+    "regression": "Previous RevealCard omits UpdateGuarded and action notification: 1/521 fails; repaired prefix passes 521/521."
+  },
+  "limits": [
+    "This restores only action-authority RevealCard prefix cache refresh and headless notification before existing callbacks. Full RevealCard observer snapshot/registration/suppression/lifetime semantics and enter-play/location tail are not certified here.",
+    "Native IsActionProcess false receive branch is not modeled by the current headless API; notifier/online bridge uses parsed pak only, not same-named runtime capture.",
+    "MakeVeteran and RefreshLocationStatus explicit cache calls remain unwired/unaudited. MatchEngine attack filtering still uses dynamic approximation; full target/cache lifecycle parity not claimed.",
+    "Malformed null UObject context writes, omitted argument ABI/default instigator, native collection order, reset/copy/snapshot import and full CopyData remain open.",
+    "No new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

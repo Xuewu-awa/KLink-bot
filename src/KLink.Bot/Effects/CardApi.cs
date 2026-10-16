@@ -2356,11 +2356,17 @@ public sealed partial class CardApi
     public static bool IsUnrevealedCovertCard(CardInstance card)
         => card.Keywords.Contains(Keyword.Covert) && !card.IsRevealed;
 
-    /// <summary>逐蓝图执行 `RevealCard(cardID, instigatorID, out qqq)`。</summary>
+    /// <summary>揭示的标志写入、掩护刷新和动作通知先于揭示/入场回调。</summary>
     public int RevealCard(CardInstance card, int instigatorId)
     {
         card.IsRevealed = true;
         card.Keywords.Remove(Keyword.Covert);
+        // Native i=122 refreshes before i=200 notifies and any reveal hook runs.
+        UpdateGuarded(card.Location);
+        _engine.FireSubAction("ZActionRevealCard", new[] {
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("instigatorID", instigatorId) });
+
 
         // RevealCard's JumpIfNot(isSuppressed) sends ordinary targets through
         // their own reveal hook before the observer broadcast. Suppressed
