@@ -1463,8 +1463,7 @@ public sealed class MatchEngine
                 ActionValue2.Int("attackLeft", card.RemainingAttacks),
                 ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
             });
-            Api.RearrangeLocation(oldLocation);
-            Api.RearrangeLocation(destination);
+            Api.RefreshLocationStatus(new[] { oldLocation, destination });
             State.CardMoved?.Invoke(card, oldLocation, destination, false, CardMoveReason.PlayCardForce);
             // Follow the execution-flow stack: clear/persist -> fields -> entry -> Alpine.
             if (Api.JsonClear(card, "countdown_timer")) Api.PersistCustomFields(card);
@@ -2132,8 +2131,7 @@ public sealed class MatchEngine
             ActionValue2.Int("attackLeft", unit.RemainingAttacks),
             ActionValue2.Int("movementLeft", unit.HasMovedThisTurn ? 0 : 1),
         });
-        Api.RearrangeLocation(oldLocation);
-        Api.RearrangeLocation(CardLocation.BoardFrontline);
+        Api.RefreshLocationStatus(new[] { oldLocation, CardLocation.BoardFrontline });
         State.CardMoved?.Invoke(unit, oldLocation, CardLocation.BoardFrontline, false, CardMoveReason.AdvanceForce);
         // Native CanMoveAndAttackInTheSameTurn: IsArmorUnit (tank or
         // tankdestroyer or its customName1 marker), otherwise the explicit marker.

@@ -1,0 +1,38 @@
+{
+  "rule": "RULE-156",
+  "status": "direct unit deployment and forced advance refresh old/new location cache before movement callbacks; other lifecycle/attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\force-move-guarded-evidence-20261016.json",
+  "evidence_sha256": "448ed2e2d122cb9da26721b1e0dd673ce50bcf149fb642063d323e23a3da1b17",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-force-move-guarded-20261016.py": "42e0f63f6c86c7eb10c137730a37d7279151dce812f2dd8a1f1fd1a1e4f30735",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-force-move-guarded-before-20261016.txt": "1692ca15c6e4759d0f2559397428251592abaf11a5014a41eff68cd3f2ed3fb1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-force-move-guarded-after-20261016.txt": "73b2b66b2bc86cff261b7b8add724a1dfd8c0220f7ebd7734ca3bce5b333733a",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "346cf8cdfcafd651a427bcd5a3bc0b2f9d06e8712cdf3d6b042deb603ddfc28d",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "14deccd3f7e086ae1db9eb80bb5f56ca2afd9332554c858cd838932e89a07c47"
+  },
+  "tests": {
+    "release": "523/523",
+    "integration_cases": 120,
+    "matrix": "2 sides x (forced advance:1 append position, direct-front:append/0, direct-support:append/0) x own guard none/raw/source x hidden Covert false/true x destination resident Guard false/true",
+    "checks": [
+      "Move notification is present once before CardMoved callback",
+      "Old/new physical locations compact before callback",
+      "Old support guarded cache clears on forced departure; old hand cache remains unchanged",
+      "Mover and destination residents see refreshed cache using effective own Guard, raw neighbor Guard and hidden Covert",
+      "Insertion before HQ and append use actual compacted adjacency",
+      "Opposite support cache remains untouched"
+    ],
+    "regression": "Previous direct/forced paths compact but leave guarded caches stale: 1/523 fails; replacing with RefreshLocationStatus passes 523/523."
+  },
+  "limits": [
+    "Only PlayCardDirectlyFromHand unit movement and forced MoveUnitFromSupportToFrontLine refresh callsites are changed. Other general movement paths, batch damage/destruction, conversion and spawning remain open.",
+    "This verifies the cache refresh timing, not complete direct-play/forced-movement payloads, quotas, reaction ordering or native UObject lifetime semantics.",
+    "Native GetAllCardInBattle/TSet ordering, malformed slot/identity states, default output ABI and non-action receiver branch remain open.",
+    "MakeVeteran and MatchEngine dynamic attack-target approximation still need audit/migration; full guarded rule parity not claimed.",
+    "Cache reset/copy/import and full CopyData remain open; no new live capture, injection, process writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
