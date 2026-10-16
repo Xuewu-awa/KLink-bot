@@ -1,0 +1,48 @@
+{
+  "rule": "RULE-148",
+  "status": "smoke source withdrawal branches, ledger and headless notification corrected; attack/frontline call shape matched",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\remove-smoke-sources-evidence-20261016.json",
+  "evidence_sha256": "a9eefbe527897d694be08afdb60ca06247807f750ab9036ce04d559a03895096",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-remove-smoke-sources-20261016.py": "01f6a20d5ec41ad234bc5da729b4fc483f852bf167668e280bbcace2fe7bd492",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-remove-smoke-sources-before-20261016.txt": "a6d402f98ff31c8175f68d63868e884c60e9f2012ee834a51fbe958276d6759e",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-remove-smoke-sources-after-20261016.txt": "e89e6241695e7ff775f9c6696205a371f0ea7415bb6d0cd790bf9c73e381c82d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "4a8bc18ed26c5fd226bb508c3f08851951661083558f43ab4bc0aa3b86a16b58",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "aef9a43c33d4900bbff084a8576bad79a5a14373882b3bc332d9729b7cc881c1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "67d7e7ce4fd6f26a06dd8dcdec6fd56c16494d836c41180a51892f039e37bb73",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "35e65aff6eec4e2537f427aa3c6c04306b6f6f387c58f0f98ee94f0a5ce7f291",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardInnateTable.cs": "fbb9b4f7487319781d0921375778183410a4b4c50cad1d51560065c35ef37c91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "ed5f5cd2d83c11f1a73948edeaafc17ab7f78ef9bc63b097978bd9aa00e5462d"
+  },
+  "tests": {
+    "release": "515/515",
+    "removal_matrix": 128,
+    "integration_cases": 16,
+    "invalid_id_cases": 3,
+    "matrix": "2 sides x 2 static-raw-smoke card definitions x skipAction false/true x 16 explicit branch fixtures",
+    "checks": [
+      "Positive missing source no-op; individual removal retains raw flag and empty source key",
+      "Nonpositive giver or RemoveAll clears raw and all source registrations; complete loss alone emits T48/T29",
+      "Duplicate source removal: remove all array matches but decrement ledger once; all-source loop decrements per element",
+      "Static innate extra decrement and no-map positive-giver decrement preserve signed counter and unrelated buffs",
+      "Notification order cardID,RemoveAllGivers,optional nonzero giverID; caller flag not normalized",
+      "Attack/frontline use own ID plus removeAll=true; effective smoke removed and empty source ledger/reverse registration cleared",
+      "Snapshot exports effective smoke, intrinsic raw flag and per-source smoke ledger; Clone and IsEmpty preserve it",
+      "Invalid explicit IDs do not fall back to self/target/receiver"
+    ],
+    "regression": "Original removal path leaves [9,10] unchanged for requested source 9 (1/515); new branch handling passes 515/515."
+  },
+  "limits": [
+    "GiveSmokescreen positive-source registration, deduplication and Guard dependency remain unimplemented; this phase fixes withdrawal using controlled seeded source states.",
+    "Only the headless action-process notifier/add-subaction path is mapped; receive/presentation and transport behavior remain open. Notifier/online functions have parsed pak evidence but no same-named saved runtime match.",
+    "Full ChangeBuffsFromCards semantics for other buff types, malformed/unassigned ABI, source-name text and integer overflow are not certified.",
+    "Snapshots now export smoke distinctions; snapshot import and all CopyData fields remain open.",
+    "Native registration order, UObject invalid/pending-kill lifetime and full attack/movement reentry are not certified; no game writes or replay authority."
+  ],
+  "fully_semantically_verified_cards": 0
+}

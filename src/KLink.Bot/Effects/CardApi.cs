@@ -3494,6 +3494,7 @@ public sealed partial class CardApi
         if (keyword == Keyword.Pinned) { RemovePin(target); return; }
         if (keyword == Keyword.Fury) { RemoveFury(target); return; }
         if (keyword == Keyword.Blitz) { RemoveBlitz(target); return; }
+        if (keyword == Keyword.Smokescreen) { RemoveSmokescreen(target); return; }
         RemoveKeywordCore(target, keyword);
     }
 
@@ -3509,8 +3510,54 @@ public sealed partial class CardApi
             ActionValue2.Int("giverID", target.CardId),
         });
 
-        if (keyword == Keyword.Smokescreen) ExecuteSmokescreenLossEvents(target);
         FireAbilitiesChanged(target);
+    }
+
+    // Blueprint RemoveSmokescreen: nonpositive giver or RemoveAll clears raw
+    // and all registrations; a positive individual giver only removes that source.
+    public void RemoveSmokescreen(CardInstance target, int giverId = 0,
+        bool removeAllGivers = true, bool skipAction = false)
+    {
+        bool hasSources = target.ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var sources);
+        if (giverId <= 0 || removeAllGivers)
+        {
+            if (!target.HasSmokescreen) return;
+            if (hasSources)
+            {
+                if (giverId > 0 && !sources!.Contains(giverId)
+                    && State.Database.Find(target.Name)?.Keywords.Contains(Keyword.Smokescreen) == true)
+                    ChangeSmokescreenBuff(target, giverId, -1);
+                foreach (int source in sources!.ToArray()) ChangeSmokescreenBuff(target, source, -1);
+            }
+            else if (giverId > 0) ChangeSmokescreenBuff(target, giverId, -1);
+            target.Keywords.Remove(Keyword.Smokescreen);
+            target.ReceivedAbilitiesFromCards.Remove("smokescreen");
+        }
+        else
+        {
+            if (!hasSources || !sources!.Contains(giverId)) return;
+            sources!.RemoveAll(id => id == giverId);
+            ChangeSmokescreenBuff(target, giverId, -1);
+            // Map_Add writes an empty array back rather than removing the key.
+        }
+        if (!skipAction)
+        {
+            var values = new List<ActionValue2> {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Bool("RemoveAllGivers", removeAllGivers) };
+            if (giverId != 0) values.Add(ActionValue2.Int("giverID", giverId));
+            _engine.FireSubAction("ZActionRemoveSmokescreen", values);
+        }
+        if (target.HasSmokescreen) return;
+        ExecuteSmokescreenLossEvents(target);
+        FireAbilitiesChanged(target);
+    }
+
+    private void ChangeSmokescreenBuff(CardInstance target, int sourceId, int amount)
+    {
+        var key = (sourceId, false);
+        var buff = GetOrCreateBuff(target, sourceId);
+        buff.Smokescreen += amount;
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
     }
 
     // RemoveSmokescreen i=2459 queries T48, including the changed card.

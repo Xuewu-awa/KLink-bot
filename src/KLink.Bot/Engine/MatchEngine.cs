@@ -186,9 +186,9 @@ public sealed class MatchEngine
         // 放在这里而不是 `MoveUnit` 里：`CardLocationMoved` 是**所有**移位路径的
         // 唯一入口（移动 / 生成落场 / 退却），蓝图也是在它里面判的。
         if (manageLocation && newLocation == CardLocation.BoardFrontline
-            && card.Keywords.Contains(Keyword.Smokescreen))
+            && card.HasSmokescreen)
         {
-            Api.RemoveKeyword(card, Keyword.Smokescreen);
+            if (State.ById(card.CardId) is { } current) Api.RemoveSmokescreen(current, card.CardId, true, false);
         }
 
         // CardLocationMoved i=775..987: T49 only runs from frontline to a
@@ -2580,7 +2580,8 @@ public sealed class MatchEngine
         if (attacker.Location.IsBoard())
         {
             Api.ExecuteBeforeAttackEvents(attacker, defender);
-            Api.RemoveKeyword(attacker, Keyword.Smokescreen);
+            if (State.ById(attackerCardIdAtStart) is { } current)
+                Api.RemoveSmokescreen(current, attackerCardIdAtStart, true, false);
         }
         else
         {

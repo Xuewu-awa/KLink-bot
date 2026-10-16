@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("烟幕来源撤销：指定/全部、空键、账本及skipAction通知", RemoveSmokescreenSources),
         new("原生烟幕读取：原始标志或非空来源，VM字段独立且不发事件", NativeSmokescreenReadContract),
         new("烟幕移除事件：T48先于T29、包含自身及查询快照", SmokescreenLossDispatchContract),
         new("攻击后T4：自身后查询、保存对象、按ID排除及费用伤害载荷", AttackAfterQuerySnapshot),
@@ -15194,6 +15195,119 @@ internal static class SelfTest
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
         }
+        return null;
+    }
+
+    private static string? RemoveSmokescreenSources(CardDatabase db)
+    {
+        using var probe = InstallAbilitiesChangedProbes();
+        // Raw, sources, giver, removeAll, final raw/sources, ledger deltas, notify, loss, static extra decrement.
+        var cases = new (bool Raw, int[]? Ids, int Giver, bool All, bool EndRaw, int[]? EndIds,
+            int D9, int D10, int D99, bool Notify, bool Loss, bool StaticExtra)[] {
+            (false, new[]{9,10}, 9, false, false, new[]{10}, -1,0,0, true,false,false),
+            (false, new[]{9}, 9, false, false, Array.Empty<int>(), -1,0,0, true,true,false),
+            (true, new[]{9}, 9, false, true, Array.Empty<int>(), -1,0,0, true,false,false),
+            (true, new[]{9,10}, 99, false, true, new[]{9,10}, 0,0,0, false,false,false),
+            (false, null, 99, false, false, null, 0,0,0, false,false,false),
+            (true, null, 99, true, false, null, 0,0,-1, true,true,false),
+            (false, new[]{9,10}, 99, true, false, null, -1,-1,0, true,true,true),
+            (true, new[]{9,10}, 99, true, false, null, -1,-1,0, true,true,true),
+            (false, new[]{9,9}, 9, false, false, Array.Empty<int>(), -1,0,0, true,true,false),
+            (false, new[]{9,9}, 0, false, false, null, -2,0,0, true,true,false),
+            (false, Array.Empty<int>(), 99, true, false, Array.Empty<int>(), 0,0,0, false,false,false),
+            (true, Array.Empty<int>(), 0, false, false, null, 0,0,0, true,true,false),
+            (false, new[]{9}, -3, false, false, null, -1,0,0, true,true,false),
+            (true, null, 9, false, true, null, 0,0,0, false,false,false),
+            (true, new[]{9}, 9, true, false, null, -1,0,0, true,true,false),
+            (true, null, 0, false, false, null, 0,0,0, true,true,false),
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_unit_85_pioneer_company" })
+        foreach (bool skip in new[] { false, true })
+        foreach (var test in cases)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = name, Type = "infantry" };
+            target.Keywords.Remove(Keyword.Smokescreen);if (test.Raw) target.Keywords.Add(Keyword.Smokescreen);
+            if (test.Ids is not null) target.ReceivedAbilitiesFromCards["smokescreen"] = test.Ids.ToList();
+            foreach (int id in new[] { 9,10,99 })
+            {
+                state.CreateWithId(PlainUnit, side, id, side.DeckOf(), id);
+                target.BuffsBySource[(id,false)] = new CardBuff { SourceCardId = id, Attack = 2,
+                    Smokescreen = test.Ids?.Count(x => x == id) ?? 0 };
+            }
+            var observer = state.CreateWithId("card_event_honorifics", side, 20, side.DeckOf(), 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[]{"OnOtherCardAbilitiesChanged"} };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+            engine.Api.InvokeByName("RemoveSmokescreen", null,
+                new object?[]{60,test.Giver,test.All,skip}, ctx, out bool handled);
+            bool hasKey = target.ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var ids);
+            if (!handled || target.Keywords.Contains(Keyword.Smokescreen) != test.EndRaw
+                || hasKey != (test.EndIds is not null) || (test.EndIds is not null && !ids!.SequenceEqual(test.EndIds)))
+                return $"烟幕指定/全部撤销状态错误：{side}/{name}/{skip}/{test.Giver}/{test.All}, raw={target.Keywords.Contains(Keyword.Smokescreen)}, key={hasKey}";
+            int[] deltas = { test.D9, test.D10, test.D99 - (test.StaticExtra && db.Require(name).Keywords.Contains(Keyword.Smokescreen) ? 1 : 0) };
+            int index = 0;
+            foreach (int id in new[] {9,10,99})
+            {
+                var buff = target.BuffsBySource[(id,false)];int expected = (test.Ids?.Count(x => x == id) ?? 0) + deltas[index++];
+                if (buff.Smokescreen != expected || buff.Attack != 2 || buff.Clone().Smokescreen != expected)
+                    return "烟幕来源账本递减或克隆错误，不得撤销同来源其他增益";
+                var snapshot = target.Snapshot();
+                if (snapshot.SmokescreenBuffsBySource.GetValueOrDefault($"{id}/False") != expected
+                    || snapshot.IntrinsicSmokescreen != test.EndRaw
+                    || snapshot.Keywords.Contains(Keyword.Smokescreen) != target.HasSmokescreen)
+                    return "快照须分别保留烟幕原始标志、有效关键词及来源账本";
+            }
+            int events = Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditT29Count") ?? 0);
+            if (events != (test.Loss ? 1 : 0)) return "仍有原始/其他来源烟幕时不应发T48/T29尾链，完全失去时应发";
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionRemoveSmokescreen").ToArray();
+            if (actions.Length != (test.Notify && !skip ? 1 : 0)) return "烟幕通知未遵守无效来源或skipAction";
+            if (actions.Length == 1)
+            {
+                var values = actions[0].Values;string[] names = test.Giver == 0 ? new[]{"cardID","RemoveAllGivers"} : new[]{"cardID","RemoveAllGivers","giverID"};
+                if (!values.Select(x => x.Name).SequenceEqual(names) || values[0].Value != 60
+                    || values[1].Value != (test.All ? 1 : 0) || (test.Giver != 0 && values[2].Value != test.Giver))
+                    return "烟幕通知字段顺序、目标、原始RemoveAllGivers或可选来源错误";
+            }
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool move in new[] { false, true })
+        foreach (bool raw in new[] { false, true })
+        foreach (bool sourced in new[] { false, true })
+        {
+            var (engine,state) = EmptyBoard(db);var unit = MakeActionQuotaProbe(state,side,"infantry");
+            unit.Keywords.Remove(Keyword.Smokescreen);if (raw) unit.Keywords.Add(Keyword.Smokescreen);
+            var giver = state.CreateWithId(PlainUnit,side,9,side.DeckOf(),0);
+            if (sourced)
+            {
+                unit.ReceivedAbilitiesFromCards["smokescreen"] = new List<int>{9};
+                unit.BuffsBySource[(9,false)] = new CardBuff { SourceCardId=9,Smokescreen=1 };
+                giver.CardsBuffedByThisCard.Add(unit.CardId);
+            }
+            bool ok = move ? engine.MoveUnit(unit,0) : engine.Attack(unit,state.Hq(side.Opposite()));
+            if (!ok || unit.HasSmokescreen || unit.ReceivedAbilitiesFromCards.ContainsKey("smokescreen"))
+                return "攻击/推进必须经有效烟幕判据清除全部来源";
+            if (sourced && (unit.BuffsBySource.ContainsKey((9,false)) || giver.CardsBuffedByThisCard.Contains(unit.CardId)))
+                return "烟幕唯一增益归零时须清理空账本和来源目标登记";
+            var actions = state.ActionLog.SelectMany(x=>x.SubActions).Where(x=>x.Name=="ZActionRemoveSmokescreen").ToArray();
+            if (actions.Length != (raw || sourced ? 1 : 0)) return "攻击/推进烟幕清除次数错误";
+            if (actions.Length == 1 && (!actions[0].Values.Select(v=>v.Name).SequenceEqual(new[]{"cardID","RemoveAllGivers","giverID"})
+                || actions[0].Values[0].Value!=60 || actions[0].Values[1].Value!=1 || actions[0].Values[2].Value!=60))
+                return "攻击/推进应以自身ID、RemoveAllGivers=true发起烟幕移除";
+        }
+        // Invalid explicit IDs must not resolve to receiver, target or self.
+        foreach (int id in new[]{0,-5,99999})
+        {
+            var (engine,state) = EmptyBoard(db);var target = state.CreateWithId(PlainUnit,Side.Left,60,CardLocation.BoardHqLeft,1);
+            target.Keywords.Add(Keyword.Smokescreen);
+            engine.Api.InvokeByName("RemoveSmokescreen", target, new object?[]{id,0,true,false},
+                new EffectContext { Engine=engine,State=state,Self=target,Target=target,Controller=Side.Left },out _);
+            if (!target.Keywords.Contains(Keyword.Smokescreen)) return "无效烟幕目标ID错误回退到调用者";
+        }
+        if (new CardBuff { Smokescreen=1 }.IsEmpty || new CardBuff { Smokescreen=-1 }.Clone().Smokescreen != -1)
+            return "独立烟幕账本不能被空增益清理或克隆丢失";
         return null;
     }
 
