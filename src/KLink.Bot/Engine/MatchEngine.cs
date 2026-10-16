@@ -3131,12 +3131,14 @@ public sealed class MatchEngine
         State.RecordDestroyedCard(card.CardId, card.Owner, Api.IsUnit(card));
         // Capture T24 before OnDestroyed can create/remove subscribers (i=225).
         var destructionRecipients = Api.CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered");
+        // Native i=667/893 calls the saved object directly, even if an earlier
+        // callback moved it to NotAvailable; eligibility is checked only before the loop.
         void SelfDestroyed(bool repeated) => Api.FireTrigger("OnDestroyed", card, card.Owner,
             eventArgs: new object?[] { killer, repeated }, eventSubject: card,
             namedArgs: new Dictionary<string, object?>
             {
                 ["killer"] = killer, ["TriggerNotDestroyed"] = repeated,
-            });
+            }, recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
         int NotifyDestruction(bool skipSuppress = false) => Api.FireDestructionEffectTriggered(
             card, killer, batch, destructionRecipients, skipSuppress);
 
@@ -3198,7 +3200,7 @@ public sealed class MatchEngine
             namedArgs: new Dictionary<string, object?>
             {
                 ["killer"] = killer, ["TriggerNotDestroyed"] = false,
-            });
+            }, recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
     }
 
     // ==================== 动作记录 ====================

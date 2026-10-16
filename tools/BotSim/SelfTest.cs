@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("重复亡语：次数固定，移出局后继续直接调用，通知独立抑制", RepeatedDeathHeldRecipient),
         new("亡语通知T24：每位接收者前重查主体抑制并累加已执行输出", DestructionSubjectSuppressionPerRecipient),
         new("死亡批次旁观者：已离场仍接收T39，同批标志与凶手正确", DeathBatchObserverPayloads),
         new("双亡参数：搬移后离场后事件与死亡旁观者位置/凶手/战斗标志", CombatPairEventPayloads),
@@ -15402,6 +15403,75 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? RepeatedDeathHeldRecipient(CardDatabase db)
+    {
+        const string name="card_unit_m36_destroyer",own="OnDestroyed",notify="OnDestructionEffectTriggered",after="OnAfterDestroyed";
+        var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        if(KismetLibrary.Default.FindProgram(name,own) is not null||KismetLibrary.Default.FindProgram(name,notify) is not null||KismetLibrary.Default.FindProgram(name,after) is not null)
+            return "无法安全安装重复亡语探针";
+        KismetStep Store(int i,string field,KismetExpr value,string scope="instance")=>new(i,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),value,null,-1,field,null){DestinationScope=scope};
+        KismetStep Count()=>Store(0,"_auditRepeatCalls",new KismetExpr{Math="Add_IntInt",Args=new[]{new KismetExpr{Var="_auditRepeatCalls",Scope="instance"},new KismetExpr{Int=1}}});
+        KismetStep Marker(int i)=>new(i,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null);
+        KismetStep Return(int i)=>new(i,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null);
+        locals.Add(own,new[]{Count(),Store(1,"_auditRepeatFlag",new KismetExpr{Var="K2Node_Event_TriggerNotDestroyed"}),
+            Store(2,"_auditRepeatKiller",new KismetExpr{Var="K2Node_Event_killer"}),Marker(3),Return(4)});
+        locals.Add(notify,new[]{Count(),Marker(1),Store(2,"TriggerMultiple",new KismetExpr{Var="_auditRepeatOutput",Scope="instance"},"local"),Return(3)});
+        locals.Add(after,new[]{Store(0,"_auditRepeatAfter",new KismetExpr{Bool=true}),
+            Store(1,"_auditRepeatAfterFlag",new KismetExpr{Var="K2Node_Event_TriggerNotDestroyed"}),
+            Store(2,"_auditRepeatAfterKiller",new KismetExpr{Var="K2Node_Event_killer"}),Marker(3),Return(4)});
+        using var cleanup=new AuditProbeCleanup(()=>{locals.Remove(own);locals.Remove(notify);locals.Remove(after);});
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(int budget in new[]{0,1,3})
+        foreach(int mutation in Enumerable.Range(0,4)) // none / suppress / unavailable / both
+        foreach(int laterOutput in new[]{-2,7})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var victim=state.CreateWithId(name,side,60,side.HqOf(),1);
+            victim.Definition=new CardDefinition{Name=name,Type="infantry",UsedTriggers=new[]{own,after}};
+            victim.Keywords.Clear();victim.Keywords.Add(Keyword.Destruction);
+            var watcher=state.CreateWithId(name,side.Opposite(),61,side.Opposite().DeckOf(),0);
+            watcher.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{notify}};
+            var killer=state.CreateWithId(PlainUnit,side.Opposite(),99,CardLocation.Discard,77);
+            int selfCalls=0,notifications=0,afterCalls=0;string? failure=null;var order=new List<string>();var prior=state.CardCreated;
+            state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                if(Equals(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatAfter"),true))
+                {
+                    afterCalls++;order.Add("after");
+                    if(!Equals(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatAfterFlag"),false)
+                        ||!ReferenceEquals(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatAfterKiller"),killer))failure="亡语尾事件参数错误";
+                    return;
+                }
+                int ownCount=Convert.ToInt32(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatCalls"));
+                if(ownCount>selfCalls)
+                {
+                    selfCalls=ownCount;order.Add(selfCalls==1?"own:false":"own:true");
+                    if(!Equals(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatFlag"),selfCalls>1)
+                        ||!ReferenceEquals(victim.BlueprintVariables.GetValueOrDefault("_auditRepeatKiller"),killer))failure="重复亡语参数错误";
+                    if(selfCalls==2)
+                    {
+                        if(mutation is 1 or 3)victim.Keywords.Add(Keyword.Suppressed);
+                        if(mutation is 2 or 3)state.Move(victim,CardLocation.NotAvailable,9,notifyMoved:false,normalizeLocation:false);
+                    }
+                }
+                else
+                {
+                    notifications++;order.Add("T24");
+                    watcher.BlueprintVariables["_auditRepeatOutput"]=notifications==1?budget:laterOutput;
+                    // The caller's saved T24 array must survive later registration/suppression changes.
+                    watcher.Definition=new CardDefinition{Name=name};watcher.Keywords.Add(Keyword.Suppressed);
+                }
+            };
+            engine.Destroy(victim,killer);
+            int expectedNotifications=budget>0&&mutation is 1 or 3?1:1+budget;
+            var expected=new List<string>{"own:false","T24"};
+            for(int i=0;i<budget;i++){expected.Add("own:true");if(mutation is 0 or 2)expected.Add("T24");}
+            expected.Add("after");
+            if(failure is not null||afterCalls!=1||selfCalls!=1+budget||notifications!=expectedNotifications||!order.SequenceEqual(expected))
+                return $"{failure??"重复次数应固定且移出局不应截断自身回调"}：{side}/{budget}/{mutation}/{laterOutput}, self={selfCalls}/{1+budget}, notify={notifications}/{expectedNotifications}";
+        }
+        return null;
     }
 
     private static string? DestructionSubjectSuppressionPerRecipient(CardDatabase db)

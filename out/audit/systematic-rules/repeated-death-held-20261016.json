@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-169",
+  "status": "own destruction repeats and final OnAfterDestroyed call saved recipient even after NotAvailable; complete destruction parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\repeated-death-held-evidence-20261016.json",
+  "evidence_sha256": "ebefdd1ebfefbc801fdf99bf2f353f95508211cc543fb86c08733b3410a53886",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-repeated-death-held-20261016.py": "3be6d2253d7709878ae74e022a86c601930a02c356b8b8657b37c6418b456367",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-repeated-death-held-before-20261016.txt": "8edd984b46d72f97696f754cb3edaa0b81d7ef17831766738de7992abe187699",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-repeated-death-held-after-20261016.txt": "25b1aeeaf17e4e3a2a54a7786bafe6d714ddb5dce2f105e975d0e24a779dd5b1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "487364c8ca6bb7346967fcc66d4ac4e100e8ca017da15822b4c2209eb25477e9",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b75a874ab146d4ec787f1618037c480f73afd317e9cd206b1da9e6a5cb9f81b0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "f6546dc42ae0f7dcd5c5b9f0257118ad1a487d534d40020bddb5ba9712d44da6"
+  },
+  "tests": {
+    "release": "536/536",
+    "real_single_destroy_cases": 48,
+    "matrix": "2 sides x3 initial repeat budgets(0,1,3) x4 first-repeat mutations(none,suppress,NotAvailable,both) x2 later T24 outputs(-2,7)",
+    "checks": [
+      "Initial self false then fixed number of self true calls; killer reference preserved",
+      "Subject NotAvailable after first repeat does not truncate later own callbacks",
+      "Suppression after first repeat does not re-evaluate own destruction eligibility, but gates subsequent T24 notifications",
+      "T24 saved recipients still receive despite watcher unregistering/suppressing itself after first notification",
+      "Subsequent positive7 or negative-2 outputs do not change original repeat budget",
+      "One final OnAfterDestroyed after entire loop, even suppressed/NotAvailable, with killer and repeat=false"
+    ],
+    "regression": "Initial regression probe reproduces2/4 own callbacks after NotAvailable while T24 still4/4. Final probe also verifies direct OnAfterDestroyed tail and passes536/536."
+  },
+  "limits": [
+    "Only own destruction repeat path and direct OnAfterDestroyed tail are repaired. Granted external destruction/T39 repeat branches remain open.",
+    "NotAvailable is a retained object with changed location in synthetic test, not object deletion or invalid native UObject proof.",
+    "No new null/unwritten native output ABI or integer-overflow certification; nested calls and stop-action semantics remain open.",
+    "No complete real-card semantics, native collection order or copy/reset/import certification.",
+    "Retreat/control, multiple spawn, MakeVeteran and attack guarded-cache consumer remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
