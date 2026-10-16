@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("外部亡语：来源门在首次T39后读取，重复预算固定及通知抑制分离", ExternalDeathRepeatContract),
         new("重复亡语：次数固定，移出局后继续直接调用，通知独立抑制", RepeatedDeathHeldRecipient),
         new("亡语通知T24：每位接收者前重查主体抑制并累加已执行输出", DestructionSubjectSuppressionPerRecipient),
         new("死亡批次旁观者：已离场仍接收T39，同批标志与凶手正确", DeathBatchObserverPayloads),
@@ -15403,6 +15404,77 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? ExternalDeathRepeatContract(CardDatabase db)
+    {
+        const string name="card_unit_m36_destroyer",other="OnOtherCardDestroyed",notify="OnDestructionEffectTriggered";
+        var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        if(KismetLibrary.Default.FindProgram(name,other) is not null||KismetLibrary.Default.FindProgram(name,notify) is not null)return "无法安全安装外部亡语探针";
+        KismetStep Store(int i,string field,KismetExpr value,string scope="instance")=>new(i,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),value,null,-1,field,null){DestinationScope=scope};
+        KismetStep Count(string field)=>Store(0,field,new KismetExpr{Math="Add_IntInt",Args=new[]{new KismetExpr{Var=field,Scope="instance"},new KismetExpr{Int=1}}});
+        KismetStep Marker(int i)=>new(i,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null);
+        KismetStep Return(int i)=>new(i,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null);
+        var program=new List<KismetStep>{Count("_auditExternalCount")};
+        foreach(var field in new[]{("cardDestroyed","Card"),("killer","Killer"),("TriggerNotDestroyed","Repeat"),
+            ("destroyedLocation","Old"),("selfIsAlsoGettingDestroyed","Also"),("destroyedInCombat","Combat")})
+            program.Add(Store(program.Count,"_auditExternal"+field.Item2,new KismetExpr{Var="K2Node_Event_"+field.Item1}));
+        program.Add(Marker(program.Count));program.Add(Return(program.Count));locals.Add(other,program);
+        // Identical notification program to RepeatedDeathHeldRecipient: reuse its cached local safely.
+        locals.Add(notify,new[]{Count("_auditRepeatCalls"),Marker(1),Store(2,"TriggerMultiple",new KismetExpr{Var="_auditRepeatOutput",Scope="instance"},"local"),Return(3)});
+        using var cleanup=new AuditProbeCleanup(()=>{locals.Remove(other);locals.Remove(notify);});
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(int budget in new[]{0,2})
+        foreach(bool suppressed in new[]{false,true})
+        foreach(int grantMode in Enumerable.Range(0,3)) // retained / added in first T39 / removed in first T39
+        foreach(bool mutateProvider in new[]{false,true})
+        foreach(int laterOutput in new[]{-2,7})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var victim=state.CreateWithId(PlainUnit,side,60,side.HqOf(),1);victim.Keywords.Clear();
+            if(suppressed)victim.Keywords.Add(Keyword.Suppressed);
+            var provider=state.CreateWithId(name,side,61,side.DeckOf(),0);
+            provider.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{other}};
+            var watcher=state.CreateWithId(name,side.Opposite(),62,side.Opposite().DeckOf(),0);
+            watcher.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{notify}};
+            var killer=state.CreateWithId(PlainUnit,side.Opposite(),99,CardLocation.Discard,77);
+            if(grantMode!=1)victim.ReceivedAbilitiesFromCards["destruction"]=new List<int>{provider.CardId};
+            int calls=0,notifications=0;var order=new List<string>();string? failure=null;var prior=state.CardCreated;
+            state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                int count=Convert.ToInt32(provider.BlueprintVariables.GetValueOrDefault("_auditExternalCount"));
+                if(count>calls)
+                {
+                    calls=count;order.Add(calls==1?"other:false":"other:true");var v=provider.BlueprintVariables;
+                    if(!ReferenceEquals(v.GetValueOrDefault("_auditExternalCard"),victim)||!ReferenceEquals(v.GetValueOrDefault("_auditExternalKiller"),killer)
+                        ||!Equals(v.GetValueOrDefault("_auditExternalRepeat"),calls>1)||Convert.ToInt32(v.GetValueOrDefault("_auditExternalOld"))!=(int)side.HqOf()
+                        ||!Equals(v.GetValueOrDefault("_auditExternalAlso"),false)||!Equals(v.GetValueOrDefault("_auditExternalCombat"),false))failure="外部亡语T39参数错误";
+                    if(calls==1)
+                    {
+                        if(grantMode==1)victim.ReceivedAbilitiesFromCards["destruction"]=new List<int>{provider.CardId};
+                        if(grantMode==2)victim.ReceivedAbilitiesFromCards.Remove("destruction");
+                        if(mutateProvider)
+                        {
+                            provider.Definition=new CardDefinition{Name=name};provider.Keywords.Add(Keyword.Suppressed);
+                            state.Move(provider,CardLocation.NotAvailable,9,notifyMoved:false,normalizeLocation:false);
+                        }
+                    }
+                    else victim.ReceivedAbilitiesFromCards.Remove("destruction");
+                }
+                else
+                {
+                    notifications++;order.Add("T24");watcher.BlueprintVariables["_auditRepeatOutput"]=notifications==1?budget:laterOutput;
+                    watcher.Definition=new CardDefinition{Name=name};watcher.Keywords.Add(Keyword.Suppressed);
+                }
+            };
+            engine.Destroy(victim,killer);
+            bool granted=grantMode!=2;int repeats=granted?budget:0;
+            var expected=new List<string>{"other:false"};
+            if(granted){expected.Add("T24");for(int i=0;i<repeats;i++){expected.Add("other:true");if(!suppressed)expected.Add("T24");}}
+            int expectedNotify=!granted?0:suppressed?1:1+budget;
+            if(failure is not null||calls!=1+repeats||notifications!=expectedNotify||!order.SequenceEqual(expected))
+                return $"{failure??"外部亡语来源门/固定预算/抑制绕过或保存接收者错误"}：{side}/{budget}/{suppressed}/{grantMode}/{mutateProvider}/{laterOutput}, other={calls}, notify={notifications}";
+        }
+        return null;
     }
 
     private static string? RepeatedDeathHeldRecipient(CardDatabase db)

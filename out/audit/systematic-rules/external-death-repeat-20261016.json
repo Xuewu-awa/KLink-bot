@@ -1,0 +1,38 @@
+{
+  "rule": "RULE-170",
+  "status": "external-grant death repeat subset verified for grant-check timing, skip-suppression split, fixed budget and saved provider; no new engine discrepancy",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\external-death-repeat-evidence-20261016.json",
+  "evidence_sha256": "667c465d66d5bba75c79000439dd1756c4880392cff54ca0f81b904329124a8d",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-external-death-repeat-20261016.py": "4a92020a45c97111d3cd8fa87601540052f2677198969e38b060e1641077a53a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-external-death-repeat-20261016.txt": "ae9adb1a53150b7495d7d67f6c03e0cdb5f270a1aa6b5472221ea97e7c80c785",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "487364c8ca6bb7346967fcc66d4ac4e100e8ca017da15822b4c2209eb25477e9",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b75a874ab146d4ec787f1618037c480f73afd317e9cd206b1da9e6a5cb9f81b0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "9e4844278509a677d3e355b5662f6b85fb8d430b2fb1b45aa761d4e45a0b541b"
+  },
+  "tests": {
+    "release": "537/537",
+    "real_single_destroy_cases": 96,
+    "matrix": "2 sides x2 initial repeat budgets(0,2) x2 subject suppression states x3 source modes(retain/add in initial T39/remove in initial T39) x2 provider mutation states x2 later T24 outputs(-2,7)",
+    "checks": [
+      "Initial T39 always executes before source grant check; add/remove there controls subsequent external effect notification",
+      "First T24 skips subject suppression, repeated T24 uses normal subject gate",
+      "Original repeat budget retained despite later output changes and grant removed during first repeat",
+      "Saved provider still gets repeated T39 after NotAvailable/suppression/unregistration changes",
+      "Saved T24 watcher still receives despite self suppression/unregistration after first notification",
+      "T39 subject/killer/old-location/combat=false/also=false and initial=false/repeat=true parameters are exact"
+    ],
+    "result": "No additional engine discrepancy observed in external-grant repeat subset; engine unchanged."
+  },
+  "limits": [
+    "Tests use a single external grant provider, not overlapping provider order or multi-object invalidation.",
+    "Destruction source map is synthetic setup/mutation; native source storage/getter full semantics not newly certified.",
+    "Initial repeat budgets0/2 and later-2/7 are explicit outputs; null/unwritten native output ABI and overflow remain open.",
+    "NotAvailable is retained object location, not native UObject deletion. Arbitrary nesting, stop-action state and native query ordering remain open.",
+    "Complete real-card/combat/destruction semantics, retreat/control, multiple spawn, MakeVeteran, attack guarded-cache consumer and reset/copy/import remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
