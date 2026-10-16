@@ -3295,14 +3295,14 @@ public sealed class MatchEngine
             card.HasAttackedThisTurn = false;
         }
 
+        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
         FireSubAction("ZActionChangeUnitOwnership", new[]
         {
+            ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("oldSide", oldOwner.ToWire()),
+            ActionValue2.Str("newLocation", newName), ActionValue2.Str("newSide", toSide.ToWire()),
             ActionValue2.Bool("releaseControl", releaseControl),
-            ActionValue2.Int("newLocation", (int)destination),
-            ActionValue2.Str("newSide", toSide.ToWire()),
-            ActionValue2.Int("oldLocation", (int)oldLocation),
-            ActionValue2.Str("oldSide", oldOwner.ToWire()),
-            ActionValue2.Int("instigatorID", instigatorId),
         });
 
         // Both ownership branches notify first, then CardLocationMoved refreshes
@@ -3321,8 +3321,6 @@ public sealed class MatchEngine
         State.Move(card, destination, locationNumber: plannedSlot, changeOwner: true,
             moveReason: releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake,
             notifyMoved: false, normalizeLocation: false);
-        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
-        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
         KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
             (int)(releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake), out string reasonName);
         FireSubAction("ZActionMoveCardToNewLocation", new[]

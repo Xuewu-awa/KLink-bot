@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-175",
+  "status": "ownership notification emits native7-field ordering and typed enum text/ID/boolean values; full ownership parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\ownership-notify-evidence-20261016.json",
+  "evidence_sha256": "66b11935e3cbf3d10507f807c970aed29142d6ba1031e6057f5fa3031abd42a9",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-ownership-notify-20261016.py": "b6593e5f5d09693b39227b529bca4a32cac8951d1adff010c8bec619fb7f9e35",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-notify-before-20261016.txt": "e17d3180734a501486c611f6343e71e62ffb6b705fd260bce6230a3b6b583d57",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-notify-after-20261016.txt": "05f297d9e6b10e51ebaa25c2d7bbcb5a8b48d6d5aff3b945d79844c16c443c49",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "f11a2d17d244d94649d3e369dee7133b372ccc3493a129e966b5c57120a51555",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\LiveRuleTables.cs": "fa54fb5563557461ef0a364a81d1d0d2479fd3e3e4fc0858798f4c2309e33179",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "89ab3d7a975519ded46262bf0d43d193ce6ace8435c6c016760f3cbbafea38ec"
+  },
+  "tests": {
+    "release": "542/542",
+    "ownership_notification_cases": 80,
+    "matrix": "2 sides x5 ownership routes x2 dense/sparse positions x2 Fury x2 instigatorIDs(0,9004)",
+    "checks": [
+      "Exactly one ownership notification before separate movement notification and callback",
+      "Field order cardID,instigatorID,oldLocation,oldSide,newLocation,newSide,releaseControl",
+      "ID numeric and release0/1 with empty text; locations/side enum text with numeric sentinel-1",
+      "Same/cross-location, take/release and blocked release preserve old/destination and side values",
+      "Existing80 injection and192 cache/quota scenarios remain passing"
+    ],
+    "regression": "Old6-field payload fails missing-cardID/order assertion1/542. Correct7-field typed payload passes542/542."
+  },
+  "limits": [
+    "Only ownership notification serialization subset repaired; complete ownership lifecycle remains open.",
+    "Notifier, online handler/writer and serializers inspected from parsed pak only; absent runtime bodies are not certified.",
+    "Native schema enum names are prior read-only captures; no new live capture here.",
+    "Leave-callback reentry/occupancy/owner mutation, equal-slot native ordering, object validity and quota ABI remain open.",
+    "Multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and complete real-card semantics remain open.",
+    "No replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

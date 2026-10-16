@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("换主专用通知：7字段顺序、位置/阵营文本与标志编码", OwnershipNotificationPayload),
         new("控制权插槽：保存的通知编号与注入重排后编号分离", OwnershipSlotAndMoveNotification),
         new("控制权刷新：跨区/同区回调前额度和物理掩护已更新", OwnershipGuardedRefresh),
         new("退却刷新：通知先于回调，新旧区域掩护及位置已更新", RetreatGuardedRefresh),
@@ -15410,7 +15411,10 @@ internal static class SelfTest
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
     }
 
-    private static string? OwnershipSlotAndMoveNotification(CardDatabase db)
+    private static string? OwnershipSlotAndMoveNotification(CardDatabase db) => OwnershipSlotAndMoveNotification(db,false);
+    private static string? OwnershipNotificationPayload(CardDatabase db) => OwnershipSlotAndMoveNotification(db,true);
+
+    private static string? OwnershipSlotAndMoveNotification(CardDatabase db, bool checkOwnershipPayload)
     {
         foreach(Side from in new[]{Side.Left,Side.Right})
         foreach(int route in Enumerable.Range(0,5)) // take support / release support / lone take front / release front / blocked release front
@@ -15445,6 +15449,23 @@ internal static class SelfTest
                     if(route==1&&(state.Hq(to).LocationNumber!=1||a!.LocationNumber!=2||b!.LocationNumber!=3))failure="释放应在0号注入且移动总部与住牌";
                     if(route is 3 or 4&&(a!.LocationNumber!=(expectedSlot==0?1:0)||b!.LocationNumber!=(expectedSlot==2?1:2)))failure="同区注入必须先紧排其他卡再留空";
                     var actions=state.ActionLog.SelectMany(x=>x.SubActions).ToArray();
+                    if(checkOwnershipPayload)
+                    {
+                        var owners=actions.Where(x=>x.Name=="ZActionChangeUnitOwnership").ToArray();
+                        if(owners.Length!=1||!owners[0].Values.Select(v=>v.Name).SequenceEqual(new[]{"cardID","instigatorID","oldLocation","oldSide","newLocation","newSide","releaseControl"}))
+                            failure="换主专用通知须按原生顺序包含cardID等7字段";
+                        else
+                        {
+                            var v=owners[0].Values.ToDictionary(v=>v.Name);
+                            string oldText=old==CardLocation.BoardFrontline?"Board_Frontline":from==Side.Left?"Board_HQLeft":"Board_HQRight";
+                            string newText=dest==CardLocation.BoardFrontline?"Board_Frontline":to==Side.Left?"Board_HQLeft":"Board_HQRight";
+                            if(v["cardID"].Value!=card.CardId||v["instigatorID"].Value!=sourceId||v["releaseControl"].Value!=(release?1:0)
+                                ||v["cardID"].Text!=""||v["instigatorID"].Text!=""||v["releaseControl"].Text!=""
+                                ||v["oldLocation"].Text!=oldText||v["newLocation"].Text!=newText
+                                ||v["oldSide"].Text!=(from==Side.Left?"left":"right")||v["newSide"].Text!=(to==Side.Left?"left":"right")
+                                ||new[]{"oldLocation","newLocation","oldSide","newSide"}.Any(key=>v[key].Value!=-1))failure="换主字段编码应为数字ID/布尔与-1加枚举文本";
+                        }
+                    }
                     var moves=actions.Where(x=>x.Name=="ZActionMoveCardToNewLocation").ToArray();
                     if(moves.Length!=1)failure="控制权须在移动回调前写独立移动通知";
                     else
