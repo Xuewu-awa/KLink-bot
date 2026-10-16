@@ -3841,8 +3841,20 @@ public sealed partial class CardApi
                     if (other.LocationNumber >= slot) other.LocationNumber++;
                 c.State.Move(card, destination, locationNumber: slot,
                     moveReason: CardMoveReason.Retreat, notifyMoved: false);
-                RearrangeLocation(oldLocation);
-                RearrangeLocation(destination);
+                // CardLocationMoved notifies before refreshing, then dispatches movement.
+                Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+                Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
+                Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason", (int)CardMoveReason.Retreat, out string reasonName);
+                c.Engine.FireSubAction("ZActionMoveCardToNewLocation", new[]
+                {
+                    ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", instigatorId),
+                    ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+                    ActionValue2.Int("newLocationNumber", slot),
+                    ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
+                    ActionValue2.Int("attackLeft", card.RemainingAttacks),
+                    ActionValue2.Int("nonVisualLocationNumber", slot), ActionValue2.Str("moveReason", reasonName),
+                });
+                RefreshLocationStatus(new[] { oldLocation, destination });
                 c.State.CardMoved?.Invoke(card, oldLocation, destination, false, CardMoveReason.Retreat);
             }
             else

@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("退却刷新：通知先于回调，新旧区域掩护及位置已更新", RetreatGuardedRefresh),
         new("多提供者亡语：保存接收者、后续来源重读、迟注册者不插队", MultipleExternalDeathProviders),
         new("外部亡语：来源门在首次T39后读取，重复预算固定及通知抑制分离", ExternalDeathRepeatContract),
         new("重复亡语：次数固定，移出局后继续直接调用，通知独立抑制", RepeatedDeathHeldRecipient),
@@ -15405,6 +15406,61 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? RetreatGuardedRefresh(CardDatabase db)
+    {
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(int ownGuard in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool residentGuard in new[]{false,true})
+        foreach(int sourceId in new[]{0,9004})
+        {
+            var(engine,state)=EmptyBoard(db);var old=CardLocation.BoardFrontline;var destination=side.HqOf();
+            var oldA=state.CreateWithId(PlainUnit,side,50,old,10);
+            var mover=state.CreateWithId(PlainUnit,side,60,old,20);
+            var oldB=state.CreateWithId(PlainUnit,side.Opposite(),51,old,30);
+            mover.Definition=new CardDefinition{Name=mover.Name,Type="infantry",Attack=2,Defense=5};mover.Keywords.Clear();
+            if(ownGuard==1)mover.Keywords.Add(Keyword.Guard);
+            if(ownGuard==2)mover.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            if(hidden){mover.Keywords.Add(Keyword.Covert);mover.IsRevealed=false;}
+            foreach(var card in new[]{oldA,oldB}){card.Keywords.Clear();card.IsBeingGuarded=true;}
+            var a=state.CreateWithId(PlainUnit,side,70,destination,1);
+            var b=state.CreateWithId(PlainUnit,side,71,destination,2);
+            foreach(var card in new[]{a,b}){card.Keywords.Clear();if(residentGuard)card.Keywords.Add(Keyword.Guard);card.IsBeingGuarded=true;}
+            var hq=state.Hq(side);hq.Keywords.Clear();hq.IsBeingGuarded=!residentGuard;
+            var otherHq=state.Hq(side.Opposite());otherHq.IsBeingGuarded=true;
+            mover.IsBeingGuarded=true;int attacks=mover.RemainingAttacks;int calls=0;string? failure=null;var prior=state.CardMoved;
+            string oldName="Board_Frontline",newName=side==Side.Left?"Board_HQLeft":"Board_HQRight",reasonName="Retreat";
+            state.CardMoved=(card,from,to,changed,reason)=>{
+                if(ReferenceEquals(card,mover))
+                {
+                    calls++;
+                    if(from!=old||to!=destination||changed||reason!=CardMoveReason.Retreat||!card.HasMovedThisTurn)
+                        failure="退却移动上下文或额度错误";
+                    if(oldA.LocationNumber!=0||oldB.LocationNumber!=1||hq.LocationNumber!=0||a.LocationNumber!=1||mover.LocationNumber!=2||b.LocationNumber!=3)
+                        failure="退却回调前新旧物理位置未完成重排";
+                    if(oldA.IsBeingGuarded||oldB.IsBeingGuarded||!otherHq.IsBeingGuarded||hq.IsBeingGuarded!=residentGuard
+                        ||mover.IsBeingGuarded!=((ownGuard==0||hidden)&&residentGuard)
+                        ||a.IsBeingGuarded!=(!residentGuard&&ownGuard==1&&!hidden)||b.IsBeingGuarded!=(!residentGuard&&ownGuard==1&&!hidden))
+                        failure="退却回调读取旧掩护缓存或误更新无关区域";
+                    var notices=state.ActionLog.SelectMany(x=>x.SubActions).Where(x=>x.Name=="ZActionMoveCardToNewLocation").ToArray();
+                    if(notices.Length!=1)failure="退却须在移动回调前写一次移动通知";
+                    else
+                    {
+                        var v=notices[0].Values.ToDictionary(x=>x.Name);
+                        if(v.Count!=9||v["cardID"].Value!=mover.CardId||v["instigatorID"].Value!=sourceId
+                            ||v["newLocationNumber"].Value!=2||v["nonVisualLocationNumber"].Value!=2||v["movementLeft"].Value!=0||v["attackLeft"].Value!=attacks
+                            ||v["oldLocation"].Text!=oldName||v["newLocation"].Text!=newName||v["moveReason"].Text!=reasonName)failure="退却移动通知字段错误";
+                    }
+                }
+                prior?.Invoke(card,from,to,changed,reason);
+            };
+            engine.Api.InvokeByName("MakeCardRetreat",null,new object?[]{new[]{mover.CardId},sourceId},
+                new EffectContext{Engine=engine,State=state,Self=mover,Controller=side},out bool handled);
+            if(!handled||calls!=1||failure is not null)return $"{failure??"退却移动未执行"}：{side}/{ownGuard}/{hidden}/{residentGuard}/{sourceId}";
+        }
+        return null;
     }
 
     private static IDisposable InstallExternalDeathProbes()

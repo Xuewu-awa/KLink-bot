@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-172",
+  "status": "frontline retreat emits move notification then refreshes old/new physical location guards before movement callbacks; full retreat parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\retreat-guarded-evidence-20261016.json",
+  "evidence_sha256": "c62937a83c0f2da2bf28bda1237b4c1cd949e7f4efd4c5c5ada990487573db1b",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-retreat-guarded-20261016.py": "08d0048d371a226ead91b7bfeadc7d0ec832399b674a5821503e691cd5932438",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-retreat-guarded-before-20261016.txt": "d98f2ca7ba403646c36bcf3a30036cae8ae398fd29c9d33b82a9e20951029f74",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-retreat-guarded-after-20261016.txt": "045cc9496c688dd9b5295e019c4d1de2a76dcfdfe7964593add6c4338235737f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "dd9f60aef67c63506fa91ac3058f5848885cb4eca8744a44facdcfaa82849813",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\LiveRuleTables.cs": "fa54fb5563557461ef0a364a81d1d0d2479fd3e3e4fc0858798f4c2309e33179",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "bfd8588b6404589e7e55f444ceeb61620d390745e144e882dfdcf1edb65d056c"
+  },
+  "tests": {
+    "release": "539/539",
+    "frontline_to_support_cases": 48,
+    "matrix": "2 sides x3 mover Guard modes(none/raw/source) x2 hidden Covert states x2 support resident raw Guard states x2 instigatorIDs(0,9004)",
+    "checks": [
+      "Actual MakeCardRetreat entry, one movement callback sees reasonRetreat and movement quota consumed",
+      "Source physical frontline and support compact before callback; source mixed ownership not partitioned",
+      "Own effective Guard/raw neighboring Guard/hidden Covert caches refreshed; opposite support cache untouched",
+      "Nine-field move notification exactly once before callback: card/source/old/new/slot2/nonvisual2/movement0/attackleft/reason enum text",
+      "Existing retreat sorting/cancellation/reentry/overflow tests remain passing"
+    ],
+    "regression": "Old retreat path misses move notification and leaves guard caches stale; new Case1/539 fails. New notify->Refresh->movement path passes539/539."
+  },
+  "limits": [
+    "Only successful frontline-to-support retreat notification and cache refresh are repaired; full retreat parity is not certified.",
+    "Movement/attack quota fields use existing simulator 0/1 movement and RemainingAttacks representation; arbitrary native quota values remain open.",
+    "Existing insertion and owner normalization retained; no new full certification of native injection, capacity and all batch layouts.",
+    "Notification notifier/online writer inspected from parsed pak only; absent from saved runtime function list, no runtime equivalence claim for those bridges.",
+    "Raw runtime identity/reentry, native order, hand/overflow full lifecycle and complete real-card semantics remain open.",
+    "Control/other setters, multiple spawn, MakeVeteran, attack guarded-cache consumer and copy/reset/import remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
