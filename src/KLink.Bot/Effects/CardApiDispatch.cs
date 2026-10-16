@@ -3920,12 +3920,14 @@ public sealed partial class CardApi
                 c.Engine.FireLeaveTrigger(card, CardLocation.Discard, method: 6);
                 // ApplyRemoveCardFromBoard -> CardLocationMoved i=348 refreshes
                 // the saved physical zone before i=578 dispatches callbacks.
-                c.State.Move(card, CardLocation.Discard, 0, moveReason: CardMoveReason.Convert, notifyMoved: false);
-                RearrangeLocation(oldLocation);
+                c.State.Move(card, CardLocation.Discard, card.LocationNumber, moveReason: CardMoveReason.Convert,
+                    notifyMoved: false, normalizeLocation: false);
+                RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
                 c.State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Convert);
                 c.Engine.FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation);
             }
-            else c.State.Move(card, CardLocation.Discard, 0, notifyMoved: false);
+            else c.State.Move(card, CardLocation.Discard, card.LocationNumber,
+                notifyMoved: false, normalizeLocation: false);
 
             // ConvertCard i=1716 resolves the template inside each iteration,
             // after removal callbacks. i=2040..2384 then reads its live fields.
@@ -3966,7 +3968,7 @@ public sealed partial class CardApi
                 created.Location = destination;
                 created.LocationNumber = oldNumber;
                 created.RecalculateStats();
-                RearrangeLocation(destination);
+                RefreshLocationStatus(new[] { destination });
                 c.Engine.ExecuteOnCardLocationMoved(created, CardLocation.NotAvailable, destination,
                     moveReason: CardMoveReason.Convert);
                 if (IsLocatedOnBoard(created)) created.EnteredPlayOnTurn = c.State.Turn;

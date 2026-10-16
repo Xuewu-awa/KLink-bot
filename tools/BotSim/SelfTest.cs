@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
@@ -15205,6 +15206,78 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? ConvertGuardedRefreshTiming(CardDatabase db)
+    {
+        using var movement=InstallMovementObserverProbes();
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool frontline in new[]{false,true})
+        foreach(bool oldGuard in new[]{false,true})
+        foreach(int newGuard in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool lastGuard in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var where=frontline?CardLocation.BoardFrontline:side.HqOf();int start=frontline?0:1;
+            state.Hq(side).Keywords.Remove(Keyword.Guard);state.Hq(side.Opposite()).IsBeingGuarded=true;
+            var first=state.CreateWithId(PlainUnit,side,70,where,start);first.Keywords.Remove(Keyword.Guard);first.IsBeingGuarded=!lastGuard;
+            var old=state.CreateWithId("card_unit_typhoon_mk_ib",side,60,where,start+1);
+            old.Definition=new CardDefinition{Name=old.Name,Type="infantry",UsedTriggers=new[]{"OnCardLocationMoved"}};
+            old.Keywords.Remove(Keyword.Guard);if(oldGuard)old.Keywords.Add(Keyword.Guard);
+            var last=state.CreateWithId(PlainUnit,frontline?side.Opposite():side,71,where,start+2);
+            last.Keywords.Remove(Keyword.Guard);if(lastGuard)last.Keywords.Add(Keyword.Guard);last.IsBeingGuarded=true;
+            var discarded=state.CreateWithId(PlainUnit,side,200,CardLocation.Discard,77);
+            var observer=state.CreateWithId("card_event_honorifics",side,90,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardLocationMoved"}};
+            CardInstance? replacement=null;int removed=0,inserted=0;string? failure=null;var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);
+                if(made.Name==old.Name&&made.CardId!=old.CardId)
+                {
+                    if(first.IsBeingGuarded!=lastGuard||last.IsBeingGuarded)failure="替代卡创建前须先刷新移除旧卡后的掩护";
+                    replacement=made;made.Definition=new CardDefinition{Name=made.Name,Type="infantry",UsedTriggers=new[]{"OnCardLocationMoved"}};
+                    made.Keywords.Remove(Keyword.Guard);made.Keywords.Remove(Keyword.Covert);made.Keywords.Remove(Keyword.Smokescreen);
+                    if(newGuard==1)made.Keywords.Add(Keyword.Guard);
+                    if(newGuard==2)made.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+                    if(hidden){made.Keywords.Add(Keyword.Covert);made.IsRevealed=false;}else made.IsRevealed=true;
+                    made.IsBeingGuarded=true;
+                }
+                else if(made.Name=="card_unit_routed_troops")
+                {
+                    if(replacement is null)
+                    {
+                        removed++;
+                        if(first.LocationNumber!=start||last.LocationNumber!=start+1||first.IsBeingGuarded!=lastGuard||last.IsBeingGuarded)
+                            failure="转换旧卡离场的移动回调未看到首次重排/掩护刷新";
+                    }
+                    else
+                    {
+                        inserted++;bool rawNew=newGuard==1&&!hidden;
+                        bool expectedNew=(newGuard==0||hidden)&&lastGuard;
+                        if(first.LocationNumber!=start||replacement.LocationNumber!=start+1||last.LocationNumber!=start+2
+                            ||first.IsBeingGuarded!=rawNew||replacement.IsBeingGuarded!=expectedNew||last.IsBeingGuarded!=(!lastGuard&&rawNew))
+                            failure="转换新卡插入的移动回调未看到二次重排/掩护刷新";
+                    }
+                    if(old.Location!=CardLocation.Discard||old.LocationNumber!=start+1||discarded.LocationNumber!=77)
+                        failure="转换旧卡进弃牌应保持编号且不重排既有弃牌";
+                    if(!state.Hq(side.Opposite()).IsBeingGuarded)failure="转换刷新误改无关位置缓存";
+                }
+            };
+            var result=engine.Api.InvokeByName("ConvertCard",null,new object?[]{new[]{60},60,old.Name,0,true,null},
+                new EffectContext{Engine=engine,State=state,Self=old,Controller=side},out bool handled);
+            if(!handled||result is not List<int> ids||ids.Count!=1||replacement?.CardId!=ids[0]||removed!=2||inserted!=2||failure is not null)
+                return $"{failure??"转换刷新探针次数或输出错误"}：{side}/{frontline}/{oldGuard}/{newGuard}/{hidden}/{lastGuard}, callbacks={removed}/{inserted}";
+        }
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(CardLocation location in new[]{side.HandOf(),side.DeckOf(),CardLocation.Discard})
+        {
+            var(engine,state)=EmptyBoard(db);var old=state.CreateWithId(PlainUnit,side,60,location,7);
+            var discarded=state.CreateWithId(PlainUnit,side.Opposite(),200,CardLocation.Discard,77);
+            engine.Api.InvokeByName("ConvertCard",null,new object?[]{new[]{60},60,PlainUnit,0,true,null},
+                new EffectContext{Engine=engine,State=state,Self=old,Controller=side},out _);
+            if(old.Location!=CardLocation.Discard||old.LocationNumber!=7||discarded.LocationNumber!=77)
+                return "非棋盘转换同样使用保留弃牌编号的设置位置语义";
         }
         return null;
     }

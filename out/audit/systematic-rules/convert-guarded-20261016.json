@@ -1,0 +1,40 @@
+{
+  "rule": "RULE-160",
+  "status": "conversion refreshes guarded caches after old removal and new insertion, preserves old discard numbering; full conversion/lifecycle and attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\convert-guarded-evidence-20261016.json",
+  "evidence_sha256": "c02f1b106bb6d31e0a54ecee464598313f9180dfa148a3b9a591c5c16a140dd5",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-convert-guarded-20261016.py": "83427e9c3ea9c1a2dfccc17c2a3eeeecc8321112b32ed4c9171af682f57176b8",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\return-numbering-evidence-20261016.json": "6b02518be9eaf16df526935b82442c696e53c9d35e2d863d226af2f461d46135",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-convert-guarded-before-20261016.txt": "4045d80620b76d9091d79bf3c934e74d3908a5c94d8f22911fea5269d8e6c0e8",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-convert-guarded-after-20261016.txt": "2420efff7238887d3ac0193584e99a4152e82eab2e4388d1ea6c165e23f21f8d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "e549581992eed54757eb21c9473123b81086384bb00ac19f8c0dcfd416bef49e",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "c422c2fbccc35f1fafcf9cf868fc838f61fe72f523f08550e53e394e625c7161"
+  },
+  "tests": {
+    "release": "527/527",
+    "board_cases": 96,
+    "nonboard_number_cases": 6,
+    "matrix": "2 sides x support/frontline x old raw Guard false/true x replacement Guard none/raw/source x replacement hidden Covert false/true x remaining resident raw Guard false/true",
+    "checks": [
+      "Old own/observer movement callbacks see first compacted location and guarded cache after removal",
+      "Replacement creation callback sees removal-stage cache before insertion",
+      "Replacement own/observer movement callbacks see second compacted location and cache after insertion",
+      "Effective replacement Guard and raw neighbor Guard/Covert stay distinct; mixed-owner frontline uses physical adjacency",
+      "Old converted card keeps original number; preexisting discard77 untouched",
+      "Hand/deck/discard conversions also preserve old number7 and existing discard77; opposite support cache untouched"
+    ],
+    "regression": "Old conversion overwrites discard numbers and omits both guarded refreshes: 1/527 fails; corrected removal/insertion refresh and setters pass 527/527."
+  },
+  "limits": [
+    "Only conversion removal/insertion guarded refresh timing and old-card discard numbering are repaired; full ConvertCard semantic parity is not claimed.",
+    "Controlled replacement field overrides and local movement probes are synthetic contracts, not full named-card certification.",
+    "Template/CDO copy, exact insertion capacity/slot algorithm, invalid IDs/templates, callback reentry and object replacement, native collection order, nonboard deck/hand semantics remain open.",
+    "Multiple spawn/general movement, MakeVeteran, dynamic attack cache consumers, reset/copy/import and full CopyData remain separate work.",
+    "Complete conversion/movement notifications and non-action receive branches remain open; no new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
