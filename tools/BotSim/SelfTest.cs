@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("同前线双亡：攻击方重排后编号保留，分阶段缓存及亡语", SameFrontlineCombatPairRefresh),
         new("战斗双亡刷新：防守方先移走并刷新，攻击方随后，亡语最后", CombatPairGuardedRefresh),
         new("单卡摧毁刷新：弃牌保留编号且回调读取新掩护", SingleDestroyGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
@@ -15353,6 +15354,78 @@ internal static class SelfTest
         return null;
     }
 
+    private static IDisposable InstallDeathObserverProbe()
+    {
+        const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
+        if(KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string,IReadOnlyList<KismetStep>> locals
+            ||KismetLibrary.Default.FindProgram(name,trigger) is not null)throw new InvalidOperationException("无法安全安装亡语缓存探针");
+        locals.Add(trigger,new[]{
+            new KismetStep(0,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),new KismetExpr{Bool=true},null,-1,"_auditBatchDestroyed",null){DestinationScope="instance"},
+            new KismetStep(1,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
+                new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
+            new KismetStep(2,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+        return new AuditProbeCleanup(()=>locals.Remove(trigger));
+    }
+
+    private static string? SameFrontlineCombatPairRefresh(CardDatabase db)
+    {
+        using var movement=InstallMovementObserverProbes();
+        using var death=InstallDeathObserverProbe();
+        const string name="card_unit_typhoon_mk_ib";
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(int guardMode in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool reverse in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var zone=CardLocation.BoardFrontline;
+            var a=state.CreateWithId(PlainUnit,side,70,zone,10);
+            var left=state.CreateWithId(name,side,60,zone,20);
+            var right=state.CreateWithId(name,side.Opposite(),61,zone,30);
+            var b=state.CreateWithId(PlainUnit,side.Opposite(),71,zone,40);
+            a.Keywords.Clear();b.Keywords.Clear();a.IsBeingGuarded=false;b.IsBeingGuarded=false;
+            if(guardMode==1)b.Keywords.Add(Keyword.Guard);
+            if(guardMode==2)b.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            if(hidden){b.Keywords.Add(Keyword.Covert);b.IsRevealed=false;}
+            foreach(var victim in new[]{left,right})
+            {
+                victim.Definition=new CardDefinition{Name=name,Type="infantry",Attack=2,Defense=1,
+                    UsedTriggers=new[]{"OnCardLocationMoved","OnDestroyed"}};
+                victim.Keywords.Clear();victim.Keywords.Add(Keyword.Guard);victim.Keywords.Add(Keyword.Destruction);
+                victim.Attack=2;victim.Defense=victim.MaxDefense=1;victim.EnteredPlayOnTurn=-99;victim.OperationCost=0;
+            }
+            var defender=reverse?right:left;var attacker=reverse?left:right;
+            int defenderNumber=reverse?30:20;
+            state.ActiveSide=attacker.Owner;state.FrontlineOwner=attacker.Owner;state.SetKredits(attacker.Owner,20);
+            state.Hq(Side.Left).IsBeingGuarded=true;state.Hq(Side.Right).IsBeingGuarded=true;
+            var discard=state.CreateWithId(PlainUnit,side,200,CardLocation.Discard,77);
+            var observer=state.CreateWithId("card_event_honorifics",side,202,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardLocationMoved"}};
+            int callbacks=0;string? failure=null;var prior=state.CardCreated;
+            bool Marked(CardInstance card,string key)=>Equals(card.BlueprintVariables.GetValueOrDefault(key),true);
+            state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                callbacks++;
+                bool first=callbacks<=2;
+                if(defender.Location!=CardLocation.Discard||defender.LocationNumber!=defenderNumber
+                    ||attacker.Location!=(first?zone:CardLocation.Discard)||attacker.LocationNumber!=1
+                    ||discard.LocationNumber!=77)
+                    failure="同前线首张保留旧编号；第二张须先重排为1，随后弃牌仍为1";
+                if(a.LocationNumber!=0||b.LocationNumber!=(first?2:1)
+                    ||a.IsBeingGuarded!=(first||guardMode==1&&!hidden)
+                    ||b.IsBeingGuarded!=(first&&(guardMode==0||hidden)))
+                    failure="同前线两阶段编号或原始/来源/隐蔽掩护缓存错误";
+                if(!Marked(defender,"_auditMovementCalled")||Marked(attacker,"_auditMovementCalled")==first
+                    ||Marked(defender,"_auditBatchDestroyed")!=(callbacks>=5)
+                    ||Marked(attacker,"_auditBatchDestroyed")!=(callbacks>=6))
+                    failure="双亡回调顺序应为防守方移动、自身及旁观、攻击方移动、自身及旁观，最后双方亡语";
+                if(!state.Hq(Side.Left).IsBeingGuarded||!state.Hq(Side.Right).IsBeingGuarded)
+                    failure="同前线刷新不得重写无关支援区掩护";
+            };
+            if(!engine.Attack(attacker,defender,out string reason))return $"同前线测试攻击被拒：{reason}";
+            if(callbacks!=6||failure is not null)return $"{failure??"同前线探针次数错误"}：{side}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
+        }
+        return null;
+    }
+
     private static string? CombatPairGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false, combat:true);
 
     private static string? SingleDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false, single:true);
@@ -15383,15 +15456,8 @@ internal static class SelfTest
     private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage, bool single = false, bool combat = false)
     {
         using var movement=InstallMovementObserverProbes();
+        using var deathProbe=InstallDeathObserverProbe();
         const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
-        if(KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string,IReadOnlyList<KismetStep>> locals
-            ||KismetLibrary.Default.FindProgram(name,trigger) is not null)return "无法安全安装批量亡语缓存探针";
-        locals.Add(trigger,new[]{
-            new KismetStep(0,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),new KismetExpr{Bool=true},null,-1,"_auditBatchDestroyed",null){DestinationScope="instance"},
-            new KismetStep(1,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
-                new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
-            new KismetStep(2,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
-        using var cleanup=new AuditProbeCleanup(()=>locals.Remove(trigger));
         foreach(Side side in new[]{Side.Left,Side.Right})
         foreach(bool frontline in new[]{false,true})
         foreach(int guardMode in Enumerable.Range(0,3))

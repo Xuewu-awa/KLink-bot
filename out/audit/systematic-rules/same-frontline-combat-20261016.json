@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-164",
+  "status": "same-frontline double-death sub-contract checked; no new engine discrepancy observed; complete combat parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\same-frontline-combat-evidence-20261016.json",
+  "evidence_sha256": "d3bd39bed13ac4f425d8fb8f13abe52cd44522bf4b402a0a9ad4d795d628f7ac",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-same-frontline-combat-20261016.py": "a2db626512b0d7aa09da516bdcc7400391791da2173e3844d505b469c30868de",
+    "D:\\Codex Workshop\\kards-install-review\\combat-pair-guarded-evidence-20261016.json": "d41fdcb034065660982f0d70c8665cba453d9a8d1e9457c4d6269acf0462a75f",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-same-frontline-combat-20261016.txt": "d7abbe8d53971f2151693a5b6183cc1688e0c8dedb2813215e1bbad616f26058",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "0d2baee613f39df5244ed0180fe9d629645b107ab10d6cbcb5359fa055b292fa",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "a60fe10ca24b3d2724a09bbc182674e796e1fedae2f6f01cf05ab42ff57c3ca0"
+  },
+  "tests": {
+    "release": "531/531",
+    "same_frontline_real_attack_cases": 24,
+    "callback_observations": 144,
+    "matrix": "2 sides x survivor Guard none/raw/source x survivor hidden Covert false/true x attack direction",
+    "fixture": "Four frontline units: survivorA10,victimLeft20,victimRight30,survivorB40; each victim raw Guard and 2 attack/1 defense. No new engine changes.",
+    "checks": [
+      "First two probes see survivorA0,still-board attacker1,survivorB2 and defender discarded at20 or30",
+      "Last four probes see survivors0/1, defender discard20 or30 and attacker discard1",
+      "Intermediate guard from zero-defense-but-still-board attacker; final raw/source/Covert distinction",
+      "Own movement markers before each observer, both own deaths only after both movements",
+      "Existing discard77 and both unrelated support HQ caches remain untouched"
+    ],
+    "result": "No additional discrepancy found within tested same-frontline sub-contract; RULE-163 implementation passes without engine edits."
+  },
+  "limits": [
+    "Only same-frontline double-death ordering/numbering/cache subset is verified. Full combat/card semantics remain uncertified.",
+    "No callback relocation/removal/reentry, duplicate location numbers, native object validity or native collection tie order certification.",
+    "FetchCardsByLocationSorted parsed Blueprint selects by location and sorts; native GetAllCardInBattle and SortCardsByLocationNumber internals are not newly certified.",
+    "Retreat/control and other setters, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
