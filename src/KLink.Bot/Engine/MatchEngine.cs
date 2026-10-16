@@ -2528,6 +2528,7 @@ public sealed class MatchEngine
         // Positive tax: i=492 falls through to i=506/547/615. Otherwise jump to
         // i=4706/4747; PopExecutionFlow i=4774 returns to i=643, not a late reread.
         int attackCost = attacker.TotalOperationCost + Math.Max(0, defender.KreditsTaxAsEnemyTarget);
+        int attackerCardIdAtStart = attacker.CardId;
         RecordAction("XActionAttackCard", attacker.Owner, new Dictionary<string, object?>
         {
             ["attackerCardID"] = attacker.CardId,
@@ -2554,15 +2555,24 @@ public sealed class MatchEngine
             }
         }
 
-        // T31 i=1725..2759: stopAttack cancels before cost/action consumption;
-        // AttackedAndStopped instead follows ExecuteStoppedAttack after the before hooks.
-        var stopped = Api.BroadcastLocalWithOutParams("OnOtherCardAttacks", attacker,
-            new[] { "stopAttack", "AttackedAndStopped" }, new Dictionary<string, object?>
-            {
-                ["cardAttacking"] = attacker, ["defenderCard"] = defender,
-            });
-        if (stopped.Any(hit => hit.Outs.GetValueOrDefault("stopAttack") is true)) return true;
-        bool attackedAndStopped = stopped.Any(hit => hit.Outs.GetValueOrDefault("AttackedAndStopped") is true);
+        // T31 resets the shared flag before querying. Every saved recipient runs;
+        // a true output writes the flag immediately, while later callbacks may
+        // change it (including through a reentrant attack). Read it only at the end.
+        State.StopAttack = false;
+        bool attackedAndStopped = false;
+        var attackObservers = Api.CaptureRegisteredTriggerSnapshot("OnOtherCardAttacks");
+        foreach (var observer in attackObservers)
+        {
+            if (observer.CardId == attackerCardIdAtStart) continue;
+            var hit = Api.BroadcastLocalWithOutParams("OnOtherCardAttacks", attacker,
+                new[] { "stopAttack", "AttackedAndStopped" }, new Dictionary<string, object?>
+                {
+                    ["cardAttacking"] = attacker, ["defenderCard"] = defender,
+                }, only: new[] { observer }, includeSubject: true, recipientsAlreadyFiltered: true).FirstOrDefault();
+            if (hit.Outs?.GetValueOrDefault("stopAttack") is true) State.StopAttack = true;
+            if (hit.Outs?.GetValueOrDefault("AttackedAndStopped") is true) attackedAndStopped = true;
+        }
+        if (State.StopAttack) return true;
 
         State.AddKredits(attacker.Owner, -attackCost);
         State.AddOperationKreditsSpentThisTurn(attackCost);

@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("T31全局停止标志：重置、逐项写回、后续清除及查询快照", AttackStopFlagContract),
         new("攻击费用快照：回调改费、原目标税、换目标及两种中止", AttackCostCaptureContract),
         new("总行动费用：零下限、无99上限及实际移动攻击扣费", TotalOperationCostBounds),
         new("总指挥点费用：0至99边界、扣费与税顺序及来源账本保留", TotalKreditCostBounds),
@@ -15187,6 +15188,84 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? AttackStopFlagContract(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardAttacks";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装全局停止标志探针";
+        KismetStep Set(int i, string output, string source) => new(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+            new KismetExpr { Var = source, Scope = "instance" }, null, -1, output, null) { DestinationScope = "local" };
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Left }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            Set(1, "stopAttack", "_auditStop"), Set(2, "AttackedAndStopped", "_auditAttackedStop"),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool initial in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 9))
+        {
+            var (engine, state) = EmptyBoard(db);var attacker = MakeActionQuotaProbe(state, side, "infantry");
+            attacker.OperationCost = 3;state.SetKredits(side, 20);
+            var target = state.Hq(side.Opposite());int hp = target.Defense;
+            var observers = Enumerable.Range(0, 3).Select(i => state.CreateWithId(name, side, 61 + i, side.DeckOf(), i)).ToArray();
+            foreach (var card in observers)
+            {
+                card.Definition = new CardDefinition { Name = name, UsedTriggers = new[] { trigger } };
+                card.BlueprintVariables["_auditStop"] = false;card.BlueprintVariables["_auditAttackedStop"] = false;
+            }
+            observers[0].BlueprintVariables["_auditStop"] = mode is 1 or 2 or 4 or 5 or 8;
+            observers[1].BlueprintVariables["_auditStop"] = mode == 4;
+            observers[1].BlueprintVariables["_auditAttackedStop"] = mode == 5;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = attacker, Controller = side };
+            void Write(bool value) => engine.Api.InvokeByName("SetStopAttack", null, new object?[] { value }, ctx, out _);
+            bool Read() => engine.Api.InvokeByName("GetStopAttack", null, new object?[] { null }, ctx, out _) is true;
+            engine.Api.InvokeByName("SetStopAttack", null, new object?[] { initial }, ctx, out bool setter);
+            object? first = engine.Api.InvokeByName("GetStopAttack", null, new object?[] { null }, ctx, out bool getter);
+            if (!setter || !getter || !Equals(first, initial)) return "全局停止标志API未保持布尔值";
+            CardInstance? nested = null;
+            if (mode == 8)
+            {
+                nested = state.CreateWithId(PlainUnit, side, 64, side.HqOf(), 1);
+                nested.Definition = attacker.Definition;nested.Attack = 2;nested.Defense = nested.MaxDefense = 20;
+                nested.OperationCost = 1;nested.EnteredPlayOnTurn = -99;
+            }
+            bool insideNested = false, nestedOk = false;int nestedCalls = 0;
+            int calls = 0;var seen = new List<bool>();var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);if (made.Name != "card_unit_routed_troops") return;
+                if (insideNested) { nestedCalls++; return; }
+                calls++;seen.Add(Read());
+                if (calls == 2 && mode == 8)
+                {
+                    observers[0].BlueprintVariables["_auditStop"] = false;insideNested = true;
+                    try { nestedOk = engine.Attack(nested!, target); }
+                    finally { insideNested = false;observers[0].BlueprintVariables["_auditStop"] = true; }
+                }
+                if (calls == 1 && mode == 6) observers[2].Location = CardLocation.NotAvailable;
+                if (calls == 1 && mode == 7) observers[2].Keywords.Add(Keyword.Suppressed);
+                if (calls == 2 && mode is 2 or 4 or 5) Write(false);
+                if (calls == 2 && mode == 3) Write(true);
+            };
+            bool cancelled = mode is 1 or 3 or 4;
+            if (!engine.Attack(attacker, target, out string reason) || calls != 3)
+                return $"T31全局标志布景/快照错误：{side}/{initial}/{mode}, calls={calls}, reason={reason}";
+            bool beforeSecond = mode is 1 or 2 or 4 or 5 or 8;
+            if (!seen.SequenceEqual(new[] { false, beforeSecond, cancelled }) || Read() != cancelled)
+                return $"T31未按逐项回调更新全局状态：{side}/{initial}/{mode}, seen={string.Join(",", seen)}, final={Read()}";
+            if (mode == 8 && (!nestedOk || nestedCalls != 3 || nested!.AttacksThisTurn != 1))
+                return "T31嵌套攻击未完整执行且不应恢复外层旧停止标志";
+            int cost = cancelled ? 0 : mode == 8 ? 4 : 3, attacks = cancelled ? 0 : 1;
+            int damage = cancelled || mode == 5 ? 0 : mode == 8 ? 4 : 2;
+            if (state.Kredits(side) != 20 - cost || state.OperationKreditsSpentThisTurn != cost
+                || attacker.AttacksThisTurn != attacks || target.Defense != hp - damage)
+                return $"T31最终全局标志未决定扣费/消耗：{side}/{initial}/{mode}";
         }
         return null;
     }

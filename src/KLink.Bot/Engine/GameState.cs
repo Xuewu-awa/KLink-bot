@@ -250,6 +250,8 @@ public sealed class GameState
     // match-wide value for the active turn.
     private readonly int[] _hqDamagedThisTurn = new int[3];
     public int OperationKreditsSpentThisTurn { get; private set; }
+    /// <summary>BP_GameState_Battle.stopAttack; shared across reentrant attack calls.</summary>
+    public bool StopAttack { get; set; }
 
     public int GetHQDamagedAmountThisTurn(Side side)
         => side is Side.Left or Side.Right ? _hqDamagedThisTurn[(int)side] : 0;

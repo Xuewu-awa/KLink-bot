@@ -1,0 +1,56 @@
+{
+  "rule": "RULE-142",
+  "status": "T31 global stop flag and sequential output writes corrected; saved query recipients retained",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\attack-stop-flag-evidence-20261016.json",
+  "evidence_sha256": "b64797357876e55220cd272a1847abf8c56425cbfe64351fb75f2629b5f75976",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-attack-stop-flag-20261016.py": "8186d018f5db8d8594ee8f37a92106b9f63bf304d91d456d8c9f975ee2b2a267",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-stop-flag-before-20261016.txt": "a797151bf534efef71fbb16744b0c8a51cc1ba5ac6c9f4b648481fbb38d576cc",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-stop-flag-after-20261016.txt": "f128943aa86f24cb1c9032c7680cacd6683011e3929430e94a576da18e194dfb",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-stop-flag-aggregate-mutant-20261016.txt": "d02181f84cad182ec195827056216bc3ed3d6fe24fd204c2a2b4bbd4e3023a01",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "f4426a910598c341119698cfccb18d11573ac083b054a1ebcd8d808829100c00",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "d86e36a7260438061f2cc1eb8f70f15ea649d12f58d7490e0aad77e2bf4e5312",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "d78de526b6554b1a3d896720db3b4ec975bae110d355ca42638daef91a63a87e"
+  },
+  "exact_name_scan": {
+    "files": 2559,
+    "calls": 5,
+    "member_uses": 3
+  },
+  "tests": {
+    "release": "509/509",
+    "cases": 36,
+    "matrix": "2 sides x initial global flag [false,true] x 9 modes",
+    "modes": [
+      "all false",
+      "first output true",
+      "first true then later direct clear",
+      "later direct true",
+      "later clear then true output",
+      "clear with AttackedAndStopped",
+      "last recipient becomes NotAvailable",
+      "last recipient becomes suppressed",
+      "real nested simulator attack resets shared flag"
+    ],
+    "checks": [
+      "Set/Get roundtrip and reset before first callback",
+      "All three saved recipients execute, with expected shared flag observed at each callback",
+      "Final shared flag controls payment and attack consumption",
+      "AttackedAndStopped remains a separate local accumulated flag",
+      "Nested attack consumes one operation and does not restore outer old flag; outer attack proceeds"
+    ],
+    "regression": "Original missing API fails new case; an aggregate-Any mutant with APIs present also fails (1/509); restored final implementation passes 509/509."
+  },
+  "limits": [
+    "Exact-name corpus scan found no card Blueprint setter calls; the direct writes and nested attack are controlled contract fixtures, not proof that a current card invokes these scenarios.",
+    "GameState stopAttack snapshot serialization/import and raw VM member access are not added or certified here; Set/Get primitives share the model match state.",
+    "Native registration collection order, invalid/default out-param ABI, full object lifetime rules and skipCardMarkers presentation differences remain open.",
+    "The T31 loop preserves query membership and current observed card-ID exclusion, but complete AttackCard/global-action start behavior is not certified.",
+    "No historical replay authority, game writes, injection or new live memory capture was used. Full per-card semantic verification remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

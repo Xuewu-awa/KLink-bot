@@ -2082,6 +2082,8 @@ public sealed partial class CardApi
                 return null;
             },
             ["GetStopFurtherActions"] = (c, r, a) => GetStopFurtherActions(),
+            ["SetStopAttack"] = (c, r, a) => { State.StopAttack = TruthyArg(a, 0); return null; },
+            ["GetStopAttack"] = (c, r, a) => State.StopAttack,
         };
 
     /// <summary>
