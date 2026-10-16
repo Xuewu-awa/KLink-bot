@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("批量生成卡号重查：当前引用保留，后续Blitz/移动及下一张按ID解析", BatchSpawnIdentityLookup),
         new("批量生成生命周期：全部创建后T35/进场，来源Blitz、Alpine及批量通知", BatchSpawnLifecycle),
         new("批量生成门槛：敌方前线、动态容量及物理位置计数", BatchSpawnAdmission),
         new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
@@ -27068,6 +27069,86 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? BatchSpawnIdentityLookup(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe();
+        using var movement = InstallMovementObserverProbes();
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool blitz in new[] { false, true })
+        foreach (int mutation in new[] { 0, 1, 2 })
+        foreach (bool oppositeOwner in new[] { false, true })
+        foreach (bool discard in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            var source = state.Create(PlainUnit, side, side.HandOf(), 0);
+            var originals = new List<CardInstance>(); CardInstance? replacement = null;
+            bool replacing = false, changed = false;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name && !replacing)
+                {
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                    originals.Add(made);
+                }
+                else if (made.Name == "card_unit_routed_troops" && originals.Count == 2)
+                {
+                    // Exact shared probes mark movement before their marker creation.
+                    bool firstEntry = !changed && !Equals(originals[0].BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true);
+                    if (firstEntry)
+                    {
+                        changed = true;
+                        if (mutation > 0)
+                        {
+                            var old = originals[mutation == 1 ? 0 : 1];
+                            int id = old.CardId;
+                            state.Remove(old);
+                            replacing = true;
+                            replacement = state.CreateWithId(name, oppositeOwner ? side.Opposite() : side, id,
+                                discard ? CardLocation.Discard : location, 17);
+                            replacing = false;
+                            replacement.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                            replacement.Keywords.Clear(); replacement.Attack = 2; replacement.Defense = replacement.MaxDefense = 5;
+                        }
+                    }
+
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, frontline, new List<string> { name, name }, source.CardId, blitz, null, false }, ctx, out _);
+            if (result is not List<int> ids || !ids.SequenceEqual(originals.Select(x => x.CardId)))
+                return $"batch identity case={cases}: saved result IDs changed";
+            foreach (var old in originals)
+            {
+                var current = state.ById(old.CardId)!;
+                bool moved = Equals(current.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true);
+                bool sourced = current.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var sources) && sources.Contains(source.CardId);
+                if (!moved || current.HasBlitz != blitz || sourced != blitz)
+                    return $"batch identity case={cases} {side}/{frontline}/{blitz}/{mutation}/{oppositeOwner}/{discard}: mapped moved={moved}, blitz={current.HasBlitz}, source={sourced}";
+                if (!ReferenceEquals(old, current))
+                {
+                    if (old.HasBlitz || Equals(old.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true))
+                        return $"batch identity case={cases}: detached old object incorrectly received ID-based Blitz/movement";
+                    bool replacementEntered = Equals(current.BlueprintVariables.GetValueOrDefault("_auditEntryMethod"), 3);
+                    if (replacementEntered != (mutation == 2))
+                        return $"batch identity case={cases}: current iteration must retain entry receiver, later iteration must re-resolve saved ID";
+                    if (current.Owner != (oppositeOwner ? side.Opposite() : side)
+                        || current.Location != (discard ? CardLocation.Discard : location))
+                        return $"batch identity case={cases}: callbacks must not force replacement to saved owner/location";
+                }
+            }
+            if (!changed || (mutation > 0 && replacement is null)) return "identity mutation probe did not run";
+            cases++;
+        }
+        return cases == 96 ? null : $"batch identity matrix count={cases}";
     }
 
     private static string? BatchSpawnLifecycle(CardDatabase db)

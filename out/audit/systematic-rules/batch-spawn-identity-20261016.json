@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-179",
+  "status": "batch spawn Blitz and movement independently re-resolve held cardID after callbacks; entry/Alpine retain held reference, later iteration re-resolves saved ID",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-spawn-identity-evidence-20261016.json",
+  "evidence_sha256": "2f2de9d577c63075c304b372f470bccad777fcff23d2c52960a06c20fc2a083d",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-spawn-identity-20261016.py": "1f82e4b6ec3ca760aba5d86198e62573bc9e4606d4b32c95eee51b7145f53103",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-identity-before-20261016.txt": "4cfb7528d4ba1a4f34458d107a4158d4730b61ba4eff26cfe8e07c7dfc3011ef",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-identity-after-20261016.txt": "e977e079439bbd1721eb273aee91b85bc5222501ad4177ab781994ae878a1a8c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cbfc31c2abb1943a7ffbd05006e63de62a8ea5a721373819a333c7232f10010d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "df6d4e9eccd10e635f73df2afee23b3609780d30bece1e1c5445ab2f25a2ac52"
+  },
+  "tests": {
+    "release": "546/546",
+    "identity_cases": 96,
+    "matrix": "2 sides x2 spawn locations x2 Blitz flags x3 mutation modes(no change/replace current object during own entry/replace next object during first entry) x2 replacement owners x2 replacement locations(original/discard)",
+    "controlled_replacements": 64,
+    "unchanged_controls": 32,
+    "checks": [
+      "Current entry retains its original object; replacing current ID during entry does not run replacement entry again",
+      "Next saved ID is re-resolved at its turn and replacement gets method3 entry",
+      "Blitz source belongs to mapped current ID target; detached object gains neither Blitz nor movement",
+      "Mapped replacement receives movement even with different owner or discard location; callback does not force original owner/location",
+      "Saved batch result IDs retained; existing96 lifecycle and384 admission cases still pass"
+    ],
+    "regression": "Before:case4 current ID replacement loses mapped movement;1/546 fails. After:546/546 pass."
+  },
+  "limits": [
+    "Controlled simulator ID-map replacement proves caller/callee lookup contract, not which live card effects can cause replacement or exact UE UObject destruction/GC behavior.",
+    "Mutation occurs in first own-entry callback; repeated replacement during Blitz/Alpine callbacks, changing the held cardID itself, null/missing IDs and UObject validity remain open.",
+    "T35/T43 late registration, suppression transitions, capacity changes and source-card replacement require separate dedicated matrices.",
+    "Alpine still receives the held object as native; this matrix does not certify Alpine behavior of detached/replaced native objects.",
+    "GameState map-lookup function is parsed pak evidence only; saved runtime verification covers selected library lengths/hashes/top-level flow, not complete semantic equivalence.",
+    "No new process reads/writes/injection or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

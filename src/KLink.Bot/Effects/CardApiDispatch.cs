@@ -5036,11 +5036,17 @@ public sealed partial class CardApi
             if (c.State.ById(id) is not { } card) continue;
             ExecuteCardCreationModifiers(card, 3);
             _engine.ExecuteOnEnterPlayEvents(card, 3);
-            if (giveBlitz) GiveBlitz(card, spawnerId);
+            // Native GiveBlitz i=11 resolves the held object's CURRENT cardID.
+            // T35/entry may have changed the ID map; Alpine still uses the held object.
+            if (giveBlitz && c.State.ById(card.CardId) is { } blitzTarget)
+                GiveBlitz(blitzTarget, spawnerId);
             GiveAlpineBonus(card);
             RefreshLocationStatus(new[] { location });
-            _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, location,
-                false, CardMoveReason.Uncategorized);
+            // ExecuteOnCardLocationMoved i=38 independently resolves the ID after
+            // Blitz/Alpine callbacks. Do not reuse either prior object lookup.
+            if (c.State.ById(card.CardId) is { } movedCard)
+                _engine.ExecuteOnCardLocationMoved(movedCard, CardLocation.NotAvailable, location,
+                    false, CardMoveReason.Uncategorized);
             if (frontline) _engine.RefreshFrontlineOwner(card);
         }
 
