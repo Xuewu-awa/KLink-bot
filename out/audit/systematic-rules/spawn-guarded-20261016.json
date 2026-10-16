@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-159",
+  "status": "single spawn refreshes guarded cache after Alpine callbacks and before movement callbacks; full spawn/multi-spawn/lifecycle and attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\spawn-guarded-evidence-20261016.json",
+  "evidence_sha256": "ef5ed78c8c626ec22e8f42bea5d1b38f0d6c9c01b8aa13880d10220c3b30394f",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-spawn-guarded-20261016.py": "976d7990e5787eaa566d346aed8c44c2997573bebce78deaf3bf6dfdf7cc0720",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-spawn-guarded-before-20261016.txt": "accd427a898e894138e91070d264a38d0f87147006da9bcd6904c397b7422ad4",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-spawn-guarded-after-20261016.txt": "5229578d57692774a222b0787ca93325ced0b72585edfbcd2d27f20d1d0cfd79",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "6589ed129b7d45d51589f2545917488757bf97d9923e60217bc14c5f008cd7ea",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "bbfd73943eec89510a68fbbd372f2092f2fd86414e3580b5dd65f436d3362092"
+  },
+  "tests": {
+    "release": "526/526",
+    "spawn_cases": 96,
+    "matrix": "2 sides x support/frontline x spawned Guard none/raw/source x hidden Covert false/true x resident raw Guard false/true x Alpine false/true; append position only",
+    "checks": [
+      "Alpine gain-defense observer callback sees old spawned/resident guarded caches, before explicit refresh",
+      "Own and observer movement callbacks see compacted physical slots and refreshed guard cache",
+      "Effective own Guard/raw neighbor Guard/Covert preserved, including mixed-owner frontline residents",
+      "Alpine stats complete before movement callbacks, with hidden Covert buff gate retained",
+      "Unrelated opposite support cache unchanged",
+      "Each case has two movement callbacks and optionally one pre-refresh Alpine callback"
+    ],
+    "regression": "Old spawn lacks refresh after Alpine: 1/526 fails on stale movement cache; corrected call order passes 526/526."
+  },
+  "limits": [
+    "Only single SpawnOnBattlefield/SpawnCardToBoard refresh call after Alpine and before movement events is repaired. SpawnMultipleCardsOnBattlefield is separate/unverified.",
+    "Creation fixture overrides are synthetic contracts, not proof of the named card full semantics.",
+    "Spawn capacity, exact append/injection slot algorithm, object creation/CDO copy, newGiveBlitz source semantics, gold handling and complete spawn notification/receive ordering remain open.",
+    "Alpine/ChangeAttack/ChangeDefense full native semantic parity and reentrant callbacks that move/remove/replace the spawned object are not certified here.",
+    "Other movement/conversion, MakeVeteran, dynamic attack cache consumers, reset/copy/import and CopyData remain open.",
+    "No new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

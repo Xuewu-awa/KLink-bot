@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
         new("强制移动刷新：直接部署/推进在回调前更新新旧位置掩护缓存", ForceMoveGuardedRefresh),
@@ -15204,6 +15205,74 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? SpawnGuardedRefreshTiming(CardDatabase db)
+    {
+        using var movement=InstallMovementObserverProbes();
+        const string watcher="card_event_honorifics",gain="OnAfterOtherCardGainDefense",spawnName="card_unit_typhoon_mk_ib";
+        if(KismetLibrary.Default?.Find(watcher)?.Locals is not IDictionary<string,IReadOnlyList<KismetStep>> locals
+            ||KismetLibrary.Default.FindProgram(watcher,gain) is not null)return "无法安全安装生成Alpine时序探针";
+        locals.Add(gain,new[]{new KismetStep(0,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},
+                new KismetExpr{Str="card_unit_routed_troops"},new KismetExpr{Int=30},new KismetExpr{Int=1}},
+                Array.Empty<int>(),null,null,-1,null,null),
+            new KismetStep(1,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+        using var cleanup=new AuditProbeCleanup(()=>locals.Remove(gain));
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool frontline in new[]{false,true})
+        foreach(int ownGuard in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool residentGuard in new[]{false,true})
+        foreach(bool alpine in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var where=frontline?CardLocation.BoardFrontline:side.HqOf();
+            state.Hq(side).Keywords.Remove(Keyword.Guard);state.Hq(side.Opposite()).IsBeingGuarded=true;
+            int offset=frontline?0:1;
+            var first=state.CreateWithId(PlainUnit,side,70,where,offset);
+            var last=state.CreateWithId(PlainUnit,frontline?side.Opposite():side,71,where,offset+1);
+            foreach(var card in new[]{first,last}){card.Keywords.Remove(Keyword.Guard);if(residentGuard)card.Keywords.Add(Keyword.Guard);card.IsBeingGuarded=true;}
+            first.Keywords.Add(Keyword.Alpine);
+            var observer=state.CreateWithId(watcher,side,90,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=watcher,UsedTriggers=new[]{gain,"OnOtherCardLocationMoved"}};
+            CardInstance? spawned=null;int before=0,after=0;string? failure=null;var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);
+                if(made.Name==spawnName&&spawned is null)
+                {
+                    spawned=made;made.Definition=new CardDefinition{Name=spawnName,Type="infantry",Attack=2,Defense=5,UsedTriggers=new[]{"OnCardLocationMoved"}};
+                    made.Attack=2;made.Defense=made.MaxDefense=5;made.IsBeingGuarded=true;
+                    made.Keywords.Remove(Keyword.Guard);made.Keywords.Remove(Keyword.Covert);made.Keywords.Remove(Keyword.Alpine);
+                    if(ownGuard==1)made.Keywords.Add(Keyword.Guard);
+                    if(ownGuard==2)made.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+                    if(hidden){made.Keywords.Add(Keyword.Covert);made.IsRevealed=false;}else made.IsRevealed=true;
+                    if(alpine)made.Keywords.Add(Keyword.Alpine);
+                }
+                else if(made.Name=="card_unit_routed_troops"&&spawned is not null)
+                {
+                    bool moving=Equals(spawned.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"),true);
+                    if(!moving)
+                    {
+                        before++;
+                        if(!spawned.IsBeingGuarded||!first.IsBeingGuarded||!last.IsBeingGuarded)failure="Alpine加成回调不应提前刷新掩护缓存";
+                    }
+                    else
+                    {
+                        after++;
+                        bool expected=(ownGuard==0||hidden)&&residentGuard;
+                        bool lastExpected=!residentGuard&&ownGuard==1&&!hidden;
+                        if(spawned.IsBeingGuarded!=expected||first.IsBeingGuarded||last.IsBeingGuarded!=lastExpected
+                            ||!state.Hq(side.Opposite()).IsBeingGuarded)failure="生成移动回调未看到物理位置更新后的掩护缓存";
+                        var numbers=state.AllCardsInBattleOrder.Where(c=>c.Location==where).Select(c=>c.LocationNumber).OrderBy(x=>x).ToArray();
+                        if(!numbers.SequenceEqual(Enumerable.Range(0,numbers.Length)))failure="生成移动回调前物理编号未压紧";
+                        int bonus=alpine&&!hidden?1:0;
+                        if(spawned.Attack!=2+bonus||spawned.Defense!=5+bonus)failure="移动回调前Alpine加成应已经完成";
+                    }
+                }
+            };
+            var result=engine.Api.SpawnOnBattlefield(side,spawnName,frontline:frontline);
+            if(!ReferenceEquals(result,spawned)||before!=(alpine&&!hidden?1:0)||after!=2||failure is not null)
+                return $"{failure??"生成时序探针次数错误"}：{side}/{frontline}/{ownGuard}/{hidden}/{residentGuard}/{alpine}, before={before}, after={after}";
         }
         return null;
     }

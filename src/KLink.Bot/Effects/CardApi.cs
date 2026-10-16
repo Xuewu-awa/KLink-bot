@@ -3153,6 +3153,7 @@ public sealed partial class CardApi
         // `tmpCardToSet.location = Location`）里就已经设好，且 si=1838 在 si=872 之前可达 ——
         // 所以这里放在 `State.Move` **之后**，与蓝图同序（详见 `GiveAlpineBonus` 的注释）。
         GiveAlpineBonus(card);
+        RefreshLocationStatus(new[] { where });
 
         _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, where);
         if (where == CardLocation.BoardFrontline)
