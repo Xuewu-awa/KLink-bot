@@ -1,0 +1,37 @@
+{
+  "rule": "RULE-162",
+  "status": "single destruction preserves discard numbering and refreshes physical location/guarded state before movement callbacks; complete destruction parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\single-destroy-guarded-evidence-20261016.json",
+  "evidence_sha256": "9f285338022660d2ba1a7cbae601263e223be69f7a5e1c46892991bfba8bad23",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-single-destroy-guarded-20261016.py": "5febe65a1518d54f97f57308f884a8d1b1fa90c8b10b70daa9827d76e462e62f",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-single-destroy-guarded-before-20261016.txt": "e5793dce06ea01f92cb61aeec5db2dde20e31dcb7b17db8bf61b0168c9bdbde9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-single-destroy-guarded-after-20261016.txt": "f6d8706f9e13a099e293bf3b1c8613da6b01a5e0b684378dbc282315b0949f8c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "129af799f34aabbaa624333a9d3810685c80a4e0bd494e738edd4d6c97308aeb",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5bcaedc1a08c85c55f2229875495992f9e0af37f6d978013f15d9c43fc82f8a2"
+  },
+  "tests": {
+    "release": "529/529",
+    "single_destruction_cases": 24,
+    "callback_observations": 72,
+    "matrix": "2 sides x support/frontline x neighbor Guard none/raw/source x hidden Covert false/true",
+    "checks": [
+      "Own movement, other movement and own OnDestroyed callbacks see refreshed source physical slots and guard caches",
+      "Discarded victim retains20; existing discard retains77; unrelated hand retains91 and cache",
+      "Effective own Guard versus raw neighbor and hidden Covert distinction; mixed-owner frontline ordering",
+      "Existing direct batch destruction and damage death tests continue passing"
+    ],
+    "regression": "Old Destroy path fails new Case (discard numbers); repaired path passes529/529. Cache and physical ordering are asserted at all three callbacks."
+  },
+  "limits": [
+    "Only single Destroy discard numbering and refresh-before-movement are repaired; complete destruction lifecycle/notification parity is not certified.",
+    "No global State.Move hook change. Combat-pair simultaneous death, retreat/control and other setters remain open.",
+    "Single test covers board deaths; nonboard Destroy, callback relocation/removal/reentry and object invalidation remain to audit.",
+    "Multiple spawn, MakeVeteran, attack guarded-cache consumer, native collection order, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

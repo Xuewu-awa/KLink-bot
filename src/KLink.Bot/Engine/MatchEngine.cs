@@ -3026,7 +3026,12 @@ public sealed class MatchEngine
             ActionValue2.Int("destroyerCardID", destroyer?.CardId ?? 0),
             ActionValue2.Int("destroyedLocation", (int)oldLocation),
         });
-        State.Move(card, CardLocation.Discard, moveReason: CardMoveReason.Destroyed);
+        // ApplyRemoveCardFromBoard -> CardLocationMoved: Discard retains its old number,
+        // then RefreshLocationStatus runs before ExecuteOnCardLocationMoved.
+        State.Move(card, CardLocation.Discard, locationNumber: card.LocationNumber,
+            moveReason: CardMoveReason.Destroyed, notifyMoved: false, normalizeLocation: false);
+        Api.RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
+        State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Destroyed);
         FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation);
         ExecuteDestroyed(card, destroyer, oldLocation, batch, destroyedInCombat);
     }

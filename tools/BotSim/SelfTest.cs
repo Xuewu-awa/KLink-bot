@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("单卡摧毁刷新：弃牌保留编号且回调读取新掩护", SingleDestroyGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
         new("普通推进刷新：通知后、移动回调前更新新旧位置掩护", OrdinaryMoveGuardedRefresh),
         new("强制移动刷新：直接部署/推进在回调前更新新旧位置掩护缓存", ForceMoveGuardedRefresh),
@@ -15351,6 +15352,8 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? SingleDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false, single:true);
+
     private static string? BatchDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false);
     private static string? BatchDamageGuardedRefresh(CardDatabase db)
     {
@@ -15374,7 +15377,7 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage)
+    private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage, bool single = false)
     {
         using var movement=InstallMovementObserverProbes();
         const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
@@ -15390,13 +15393,13 @@ internal static class SelfTest
         foreach(bool frontline in new[]{false,true})
         foreach(int guardMode in Enumerable.Range(0,3))
         foreach(bool hidden in new[]{false,true})
-        foreach(bool reverse in new[]{false,true})
+        foreach(bool reverse in single?new[]{false}:new[]{false,true})
         {
             var(engine,state)=EmptyBoard(db);var firstZone=frontline?CardLocation.BoardFrontline:side.HqOf();
             var zones=new[]{firstZone,side.Opposite().HqOf()};var victims=new List<CardInstance>();
             var survivors=new List<(CardInstance First,CardInstance Last,CardLocation Location)>();
             bool expectedGuard=guardMode==1&&!hidden;
-            for(int i=0;i<2;i++)
+            for(int i=0;i<(single?1:2);i++)
             {
                 Side owner=i==0?side:side.Opposite();
                 var first=state.CreateWithId(PlainUnit,owner,70+i*10,zones[i],10);first.Keywords.Remove(Keyword.Guard);first.IsBeingGuarded=!expectedGuard;
@@ -15438,8 +15441,9 @@ internal static class SelfTest
                     return "批量伤害未返回实际死亡目标名单";
                 if(source.LocationNumber!=99)return "批量伤害致死不应重排既有弃牌中的伤害来源";
             }
+            else if(single)engine.Destroy(ordered[0]);
             else engine.DestroyMultiple(ordered,null);
-            if(callbacks!=6||victims.Any(v=>!Equals(v.BlueprintVariables.GetValueOrDefault("_auditBatchDestroyed"),true))||failure is not null)
+            if(callbacks!=(single?3:6)||victims.Any(v=>!Equals(v.BlueprintVariables.GetValueOrDefault("_auditBatchDestroyed"),true))||failure is not null)
                 return $"{failure??"批量移动/亡语探针次数错误"}：{side}/{frontline}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
         }
         return null;
