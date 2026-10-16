@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
         new("强制移动刷新：直接部署/推进在回调前更新新旧位置掩护缓存", ForceMoveGuardedRefresh),
         new("位置刷新：先重排再计算掩护，回手回调看到新缓存", RefreshLocationGuardedContract),
         new("揭示缓存时序：标志→刷新→通知→回调，重复及牌库分支", RevealGuardedCacheTiming),
@@ -15202,6 +15203,66 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? BatchDestroyGuardedRefresh(CardDatabase db)
+    {
+        using var movement=InstallMovementObserverProbes();
+        const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
+        if(KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string,IReadOnlyList<KismetStep>> locals
+            ||KismetLibrary.Default.FindProgram(name,trigger) is not null)return "无法安全安装批量亡语缓存探针";
+        locals.Add(trigger,new[]{
+            new KismetStep(0,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),new KismetExpr{Bool=true},null,-1,"_auditBatchDestroyed",null){DestinationScope="instance"},
+            new KismetStep(1,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
+                new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
+            new KismetStep(2,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+        using var cleanup=new AuditProbeCleanup(()=>locals.Remove(trigger));
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool frontline in new[]{false,true})
+        foreach(int guardMode in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool reverse in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var firstZone=frontline?CardLocation.BoardFrontline:side.HqOf();
+            var zones=new[]{firstZone,side.Opposite().HqOf()};var victims=new List<CardInstance>();
+            var survivors=new List<(CardInstance First,CardInstance Last,CardLocation Location)>();
+            bool expectedGuard=guardMode==1&&!hidden;
+            for(int i=0;i<2;i++)
+            {
+                Side owner=i==0?side:side.Opposite();
+                var first=state.CreateWithId(PlainUnit,owner,70+i*10,zones[i],10);first.Keywords.Remove(Keyword.Guard);first.IsBeingGuarded=!expectedGuard;
+                var victim=state.CreateWithId(name,owner,60+i,zones[i],20);
+                victim.Definition=new CardDefinition{Name=name,Type="infantry",UsedTriggers=new[]{"OnCardLocationMoved",trigger}};
+                victim.Keywords.Add(Keyword.Destruction);victim.Keywords.Add(Keyword.Guard);victims.Add(victim);
+                var last=state.CreateWithId(PlainUnit,frontline&&i==0?owner.Opposite():owner,71+i*10,zones[i],30);
+                last.Keywords.Remove(Keyword.Guard);if(guardMode==1)last.Keywords.Add(Keyword.Guard);
+                if(guardMode==2)last.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+                if(hidden){last.Keywords.Add(Keyword.Covert);last.IsRevealed=false;}
+                last.IsBeingGuarded=true;survivors.Add((first,last,zones[i]));
+            }
+            var resident=state.CreateWithId(PlainUnit,side,200,CardLocation.Discard,77);
+            var untouched=state.CreateWithId(PlainUnit,side,201,side.HandOf(),91);untouched.IsBeingGuarded=true;
+            var observer=state.CreateWithId("card_event_honorifics",side,202,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardLocationMoved"}};
+            string? failure=null;int callbacks=0;var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                callbacks++;
+                if(victims.Any(v=>v.Location!=CardLocation.Discard))failure="批量首个回调前必须全部离场";
+                foreach(var item in survivors)
+                {
+                    int start=item.Location==CardLocation.BoardFrontline?0:1;
+                    if(item.First.LocationNumber!=start||item.Last.LocationNumber!=start+1
+                        ||item.First.IsBeingGuarded!=expectedGuard||item.Last.IsBeingGuarded)
+                        failure="批量摧毁回调未看到所有受影响物理位置的新编号和掩护缓存";
+                }
+                if(resident.LocationNumber!=77||victims.Any(v=>v.LocationNumber!=20))failure="批量移入弃牌堆必须保留原编号且不重排现有弃牌";
+                if(!untouched.IsBeingGuarded||untouched.LocationNumber!=91)failure="批量刷新不得改写未受影响手牌";
+            };
+            engine.DestroyMultiple(reverse?victims.AsEnumerable().Reverse().ToArray():victims.ToArray(),null);
+            if(callbacks!=6||victims.Any(v=>!Equals(v.BlueprintVariables.GetValueOrDefault("_auditBatchDestroyed"),true))||failure is not null)
+                return $"{failure??"批量移动/亡语探针次数错误"}：{side}/{frontline}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
         }
         return null;
     }

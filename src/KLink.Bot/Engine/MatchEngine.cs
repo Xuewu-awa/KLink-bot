@@ -3073,14 +3073,12 @@ public sealed class MatchEngine
         foreach (var card in targets)
         {
             // The batch Blueprint uses SetCardLocationAndLocNumber, not CardLocationMoved.
-            State.Move(card, CardLocation.Discard, locationNumber: 0, notifyMoved: false);
+            // That setter skips the locationNumber write for Discard.
+            State.Move(card, CardLocation.Discard, locationNumber: card.LocationNumber,
+                notifyMoved: false, normalizeLocation: false);
         }
         // i=1509 refreshes affected locations before any move callback.
-        foreach (var location in affected)
-        {
-            State.NormalizeLocationNumbers(Side.Left, location);
-            State.NormalizeLocationNumbers(Side.Right, location);
-        }
+        Api.RefreshLocationStatus(affected);
         for (int i = 0; i < targets.Length; i++)
             ExecuteLocationMovedEvents(targets[i], locations.GetValueOrDefault(targets[i].CardId), CardLocation.Discard, false, CardMoveReason.Destroyed);
         for (int i = 0; i < targets.Length; i++)

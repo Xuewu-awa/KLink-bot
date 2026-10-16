@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-157",
+  "status": "batch destruction preserves discard numbers and refreshes all affected physical locations before move/destruction callbacks; other lifecycle and attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-destroy-guarded-evidence-20261016.json",
+  "evidence_sha256": "c4ba05d9a4188c2880c3a355d7d495d8ae19f712f52f498a9e732cd251ed1f50",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-destroy-guarded-20261016.py": "788b8dcabbcbb13299d90ace86a3c00f88754ddc16356530cebd03d3ec8f466d",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\return-numbering-evidence-20261016.json": "6b02518be9eaf16df526935b82442c696e53c9d35e2d863d226af2f461d46135",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-destroy-guarded-before-20261016.txt": "35841a05442fba1661076b80d2aaa0e8d8cbb50b1b2d2087052db9c22af093f9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-destroy-guarded-after-20261016.txt": "72879bf676de8c1702cb5d722e3618915786128304a3b0e26f90f2858e5b8c43",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "d85b8ef792903c09922cfa36c2e8c0e381046faf02583137acf828d9ab2e7fc8",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "62bdb9e39751863bf0a6023fe40cfd9470bbb60806949ead7484b3f207e9d6f4"
+  },
+  "tests": {
+    "release": "524/524",
+    "batch_cases": 48,
+    "callbacks_per_case": 6,
+    "matrix": "2 sides x support-or-frontline first zone (plus opposite support) x remaining Guard none/raw/source x remaining hidden Covert false/true x normal/reversed victim order",
+    "checks": [
+      "Both victims are in discard before any movement or destruction probe",
+      "Every affected physical board location compacts and refreshes guarded cache before first callback",
+      "Mixed-owner frontline survivors keep distinct continuous physical slots, not per-owner duplicates",
+      "Remaining raw/source/hidden Guard cases use correct effective/raw/covert cache semantics",
+      "Victims retain locationNumber20 and existing discard resident retains77; no discard normalization",
+      "Unrelated hand number91/cache remain untouched",
+      "Two own movement, two observer movement and two actual OnDestroyed probes all see updated state"
+    ],
+    "regression": "Old batch path overwrites discard numbers and leaves per-owner/stale cache state: 1/524 fails; corrected setter and refresh yield 524/524."
+  },
+  "limits": [
+    "Only DestroyMultiple/ApplyDestroyMultipleCards discard-number and affected-location refresh subset is repaired. ApplyDamageToMultipleCards batch damage death and combat pair/generic single destruction remain separate lifecycle work.",
+    "The test probes are synthetic local programs, not certification of the named cards actual abilities.",
+    "Full target validation, before/leave callback reentry and ID re-resolution, native TSet/object ordering, batch notifications/receiver paths are not certified.",
+    "Other movement, conversion/spawning, MakeVeteran, dynamic attack cache consumers, reset/copy/import and full CopyData remain open.",
+    "No new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
