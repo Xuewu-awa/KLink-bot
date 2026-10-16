@@ -2610,20 +2610,8 @@ public sealed class MatchEngine
                 ActionValue2.Int("defenderDefense", defender.Defense),
             }));
 
-        // ExecuteOnAfterAttackEvents i=38/440/503/74: own event then a fresh T4
-        // snapshot, with exact arguments. This chain also runs after lethal HQ damage.
-        if (!attacker.IsSuppressed)
-            Api.FireTrigger("OnAfterAttack", attacker, attacker.Owner,
-                eventSubject: defender, eventArgs: new object?[] { defender, shockAttack, attackCost },
-                namedArgs: new Dictionary<string, object?>
-                { ["defender"] = defender, ["afterShockAttack"] = shockAttack, ["attackCost"] = attackCost });
-        Api.FireTrigger("OnAfterOtherCardAttacks", attacker, attacker.Owner,
-            eventArgs: new object?[] { defender, attacker, damage.ToDefender, attackCost },
-            namedArgs: new Dictionary<string, object?>
-            {
-                ["defender"] = defender, ["attacker"] = attacker,
-                ["damageToDefenderFinal"] = damage.ToDefender, ["attackCost"] = attackCost,
-            }, broadcastName: true);
+        // Own after-attack event precedes the T4 query, including lethal HQ attacks.
+        Api.ExecuteAfterAttackEvents(attacker, defender, damage.ToDefender, shockAttack, attackCost);
         FireOperationKreditsSpent(attacker, attackCost);
         CheckDeaths();
         return true;

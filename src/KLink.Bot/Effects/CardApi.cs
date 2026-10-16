@@ -336,6 +336,35 @@ public sealed partial class CardApi
         }
     }
 
+    // ExecuteOnAfterAttackEvents i=440/503 runs own callback before querying T4.
+    // i=343/425 excludes the attacker's current ID; no repeated recipient gates.
+    internal void ExecuteAfterAttackEvents(CardInstance attacker, CardInstance defender,
+        int damageToDefenderFinal, bool afterShockAttack, int attackCost)
+    {
+        const string own = "OnAfterAttack", other = "OnAfterOtherCardAttacks";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        if (!attacker.IsSuppressed && library.FindProgram(attacker.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {attacker.Name}#{attacker.CardId}（eventCard={defender.Name}#{defender.CardId}）");
+            RunTriggerProgram(library, attacker, attacker.Name, own, defender,
+                eventArgs: new object?[] { defender, afterShockAttack, attackCost },
+                namedArgs: new Dictionary<string, object?> {
+                    ["defender"] = defender, ["afterShockAttack"] = afterShockAttack, ["attackCost"] = attackCost });
+        }
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { defender, attacker, damageToDefenderFinal, attackCost };
+        var named = new Dictionary<string, object?> {
+            ["defender"] = defender, ["attacker"] = attacker,
+            ["damageToDefenderFinal"] = damageToDefenderFinal, ["attackCost"] = attackCost };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == attacker.CardId || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={attacker.Name}#{attacker.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, attacker, eventArgs: args, namedArgs: named);
+        }
+    }
+
     // UpdateFrontlineIfNeeded queries T27 once. i=870 reads current ownership
     // anew for every callback; earlier callbacks may change it through reentry.
     internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner)
