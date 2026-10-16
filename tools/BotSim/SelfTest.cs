@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("控制权刷新：跨区/同区回调前额度和物理掩护已更新", OwnershipGuardedRefresh),
         new("退却刷新：通知先于回调，新旧区域掩护及位置已更新", RetreatGuardedRefresh),
         new("多提供者亡语：保存接收者、后续来源重读、迟注册者不插队", MultipleExternalDeathProviders),
         new("外部亡语：来源门在首次T39后读取，重复预算固定及通知抑制分离", ExternalDeathRepeatContract),
@@ -15406,6 +15407,72 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? OwnershipGuardedRefresh(CardDatabase db)
+    {
+        foreach(Side from in new[]{Side.Left,Side.Right})
+        foreach(int route in Enumerable.Range(0,4)) // take support / release support / take lone front / release same front
+        foreach(int ownGuard in Enumerable.Range(0,3))
+        foreach(bool hidden in new[]{false,true})
+        foreach(bool residentGuard in new[]{false,true})
+        foreach(bool fury in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);Side to=from.Opposite();bool release=route is 1 or 3;
+            var old=route>=2?CardLocation.BoardFrontline:from.HqOf();var dest=route>=2?old:to.HqOf();
+            var mover=state.CreateWithId(PlainUnit,from,60,old,20);
+            mover.Definition=new CardDefinition{Name=mover.Name,Type="infantry",Attack=2,Defense=5};mover.Keywords.Clear();
+            if(ownGuard==1)mover.Keywords.Add(Keyword.Guard);
+            if(ownGuard==2)mover.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            if(hidden){mover.Keywords.Add(Keyword.Covert);mover.IsRevealed=false;}
+            if(fury)mover.Keywords.Add(Keyword.Fury);
+            mover.HasMovedThisTurn=true;mover.HasAttackedThisTurn=true;mover.AttacksThisTurn=1;mover.AttackQuotaOffset=-1;mover.IsBeingGuarded=true;int releaseAttacks=mover.RemainingAttacks;
+            var oldNeighbors=new List<CardInstance>();
+            if(route<2)
+                foreach(int id in new[]{50,51})
+                {
+                    var neighbor=state.CreateWithId(PlainUnit,from,id,old,id==50?10:30);neighbor.Keywords.Clear();neighbor.IsBeingGuarded=true;oldNeighbors.Add(neighbor);
+                }
+            var residents=new List<CardInstance>();
+            if(route!=2)
+                foreach(int id in new[]{70,71})
+                {
+                    var resident=state.CreateWithId(PlainUnit,to,id,dest,(route==3?0:1)+id-70);resident.Keywords.Clear();
+                    if(residentGuard)resident.Keywords.Add(Keyword.Guard);resident.IsBeingGuarded=true;residents.Add(resident);
+                }
+            state.Hq(from).Keywords.Clear();state.Hq(to).Keywords.Clear();state.Hq(from).IsBeingGuarded=true;state.Hq(to).IsBeingGuarded=true;
+            state.FrontlineOwner=to;int calls=0;string? failure=null;var prior=state.CardMoved;
+            state.CardMoved=(card,fromLocation,toLocation,changed,reason)=>{
+                if(ReferenceEquals(card,mover))
+                {
+                    calls++;bool Near(CardInstance left,CardInstance right)=>Math.Abs(left.LocationNumber-right.LocationNumber)==1;
+                    if(card.Owner!=to||card.UnderEnemyControl==release||fromLocation!=old||toLocation!=dest||!changed
+                        ||reason!=(release?CardMoveReason.ControlRelease:CardMoveReason.ControlTake))failure="控制权移动上下文错误";
+                    if(card.HasMovedThisTurn!=release||card.HasAttackedThisTurn!=release||card.AttacksThisTurn!=(release?1:0)
+                        ||card.AttackQuotaOffset!=(release?-1:0)||card.RemainingAttacks!=(release?releaseAttacks:fury?2:1))failure="夺取必须在回调前重置额度，释放必须保持额度";
+                    bool expectedMover=(ownGuard==0||hidden)&&residentGuard&&residents.Any(r=>Near(r,card));
+                    if(card.IsBeingGuarded!=expectedMover||oldNeighbors.Any(n=>n.IsBeingGuarded))failure="控制权回调读取旧掩护";
+                    foreach(var resident in residents)
+                        if(resident.IsBeingGuarded!=(!residentGuard&&ownGuard==1&&!hidden&&Near(resident,card)))failure="控制权邻卡raw/source/Covert掩护错误";
+                    if(route<2)
+                    {
+                        bool expectedHq=residentGuard&&residents.Any(r=>Near(r,state.Hq(to)))||ownGuard==1&&!hidden&&Near(card,state.Hq(to));
+                        if(state.Hq(from).IsBeingGuarded||state.Hq(to).IsBeingGuarded!=expectedHq)failure="跨区换主应刷新双方支援缓存";
+                    }
+                    else if(!state.Hq(from).IsBeingGuarded||!state.Hq(to).IsBeingGuarded)failure="同前线换主不得刷新支援缓存";
+                    foreach(var zone in new[]{old,dest}.Distinct())
+                    {
+                        var numbers=state.AllCardsInBattleOrder.Where(c=>c.Location==zone).Select(c=>c.LocationNumber).OrderBy(n=>n).ToArray();
+                        if(!numbers.SequenceEqual(Enumerable.Range(0,numbers.Length)))failure="控制权回调前物理区域未压紧";
+                    }
+                    if(state.ActionLog.SelectMany(a=>a.SubActions).Count(a=>a.Name=="ZActionChangeUnitOwnership")!=1)failure="控制权通知须先于位置回调";
+                }
+                prior?.Invoke(card,fromLocation,toLocation,changed,reason);
+            };
+            if(!engine.ChangeUnitOwnership(mover,9004,from,to,dest,release)||calls!=1||failure is not null)
+                return $"{failure??"控制权回调次数错误"}：{from}/{route}/{ownGuard}/{hidden}/{residentGuard}/{fury}, callbacks={calls}";
+        }
+        return null;
     }
 
     private static string? RetreatGuardedRefresh(CardDatabase db)

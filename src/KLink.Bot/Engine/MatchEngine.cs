@@ -3280,8 +3280,6 @@ public sealed class MatchEngine
         }
 
         card.UnderEnemyControl = !releaseControl;
-        State.Move(card, destination, locationNumber: null, changeOwner: true,
-            moveReason: releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake);
         // ChangeUnitOwnership resets movement/attack allowance only when taking
         // control (i=1090/1190/2859), not in the release branch i=1527..1948.
         if (!releaseControl)
@@ -3292,14 +3290,6 @@ public sealed class MatchEngine
             card.HasAttackedThisTurn = false;
         }
 
-        // CardLocationMoved is also explicitly called for same-location owner
-        // changes (i=1363/1780); GameState.Move only notifies on location changes.
-        if (oldLocation == destination)
-            ExecuteLocationMovedEvents(card, oldLocation, destination, true,
-                releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake, true);
-
-        FireAfterLeaveTrigger(card, destination, oldLocation);
-
         FireSubAction("ZActionChangeUnitOwnership", new[]
         {
             ActionValue2.Bool("releaseControl", releaseControl),
@@ -3309,6 +3299,16 @@ public sealed class MatchEngine
             ActionValue2.Str("oldSide", oldOwner.ToWire()),
             ActionValue2.Int("instigatorID", instigatorId),
         });
+
+        // Both ownership branches notify first, then CardLocationMoved refreshes
+        // physical locations before movement callbacks, including same-location changes.
+        State.Move(card, destination, locationNumber: null, changeOwner: true,
+            moveReason: releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake,
+            notifyMoved: false);
+        Api.RefreshLocationStatus(new[] { oldLocation, destination });
+        State.CardMoved?.Invoke(card, oldLocation, destination, true,
+            releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake);
+        FireAfterLeaveTrigger(card, destination, oldLocation);
 
         if (destination.IsBoard())
         {

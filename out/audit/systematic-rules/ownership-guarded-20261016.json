@@ -1,0 +1,38 @@
+{
+  "rule": "RULE-173",
+  "status": "ownership movement callbacks see refreshed guard caches and early take-quota reset, ownership notification reordered; full control parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\ownership-guarded-evidence-20261016.json",
+  "evidence_sha256": "d73d285ad4ad97a5e79388835c2aef4689103633d6354da8e2e47e92e76868c9",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-ownership-guarded-20261016.py": "b363b0c7424c878b9c539f45182768e549525dd571bf8201b365b6d32986c252",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-guarded-before-20261016.txt": "ef3310da362544c2117b5761b84bf17c6a9fa6b1872642a7c45b7e2f4ddf3fd7",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-guarded-after-20261016.txt": "707462fb9cb7ad276a12fa10f8414aaa11ad9a785a37e6548202597ca442b7b2",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "41ba8b216abd0165e5cc6be285ff31a5216ee18c570bc62bb4e28a47f965b49f",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "c3db6ade69bcc0a3fb1ff3a2e4e2798a03ffa4df699102664251a682200166fe"
+  },
+  "tests": {
+    "release": "540/540",
+    "ownership_move_cases": 192,
+    "matrix": "2 sides x4 routes(take support/release support/take lone frontline/release same frontline) x3 own Guard modes x2 hidden Covert x2 resident Guard x2 Fury",
+    "checks": [
+      "One CardMoved callback including same-location change, new controller/underEnemyControl/reason correct",
+      "Take resets movement and attack counters/offset before callbacks, Fury gets2 otherwise1; release preserves original fields and signed remaining count",
+      "Old/new physical locations compact and effective-own/raw-neighbor/Covert guarded caches refreshed",
+      "Cross-support refresh touches both supports; same-frontline change leaves support caches alone",
+      "Existing ownership notification present once before movement; full payload not certified",
+      "Existing ownership capacity/retreat/control scenarios remain passing"
+    ],
+    "regression": "Old path reports ownership notification after callback and also lacks cache refresh/early take quota reset;1/540 fails. Explicit deferred movement + refresh before dispatch passes540/540."
+  },
+  "limits": [
+    "Only ownership cache/quota/ownership-notification ordering repaired; full ownership parity remains open.",
+    "Existing destination/slot and owner normalization retained. Native tmpLocationNumber capture/injection and separate movement notification are known follow-up audit items.",
+    "Existing ZActionChangeUnitOwnership payload retained; no claim of complete native payload equivalence here.",
+    "Synthetic fixtures cover four normal routes; blocked/full release retreat, callback reentry/identity and quota ABI not newly certified.",
+    "Native ordering, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and complete real-card semantics remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
