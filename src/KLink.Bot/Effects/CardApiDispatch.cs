@@ -4975,8 +4975,9 @@ public sealed partial class CardApi
     /// giveBlitz, out spawnedCardIDs, makeVeteran)`。
     ///
     /// 蓝图先要求卡名数组非空且 <c>spawnerID &gt; 0</c>，再按数组顺序逐张生成。
-    /// 半场在包含 HQ 的 5 格达到上限时停止；前线沿用蓝图的特殊路径，不在此处
-    /// 额外截断。生成卡继承生成者的金卡标记，出参是实际生成卡的 ID 数组。
+    /// 每张创建前检查物理位置容量；前线还要求不由对手控制。
+    /// 生成卡继承生成者的金卡标记，出参是实际生成卡的 ID 数组。
+    /// 尚未对齐原生的两阶段创建/回调流程，见 RULE-177。
     /// </summary>
     private object? DoSpawnMultipleOnBattlefield(EffectContext c, object? r, object?[] a)
     {
@@ -5003,11 +5004,13 @@ public sealed partial class CardApi
 
         foreach (string name in names)
         {
-            if (!frontline
-                && c.State.Cards(side, side.HqOf()).Count >= GameState.HalfBoardCapacity)
-            {
-                break;
-            }
+            // Native i=613 saves physical-location fullness. Frontline i=1915..2216
+            // skips an entry if controlled by the opposite side; otherwise i=745
+            // stops creation when full (including the dynamic frontline limiter).
+            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            bool locationFull = IsLocationFull(location);
+            if (frontline && c.State.FrontlineOwner == side.Opposite()) continue;
+            if (locationFull) break;
 
             var card = SpawnOnBattlefield(side, name,
                 frontline: frontline,

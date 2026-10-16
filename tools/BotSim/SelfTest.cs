@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("批量生成门槛：敌方前线、动态容量及物理位置计数", BatchSpawnAdmission),
         new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
             SpawnMultipleCardsOnBattlefield),
         new("SpawnNextToCard：沿生成者战区插入到相邻位置，并支持金卡、老兵和攻击力复制",
@@ -27062,6 +27063,50 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? BatchSpawnAdmission(CardDatabase db)
+    {
+        string[] names = { "card_unit_arado_ar_196", "card_unit_brewster_f2a", "card_unit_arado_ar_196" };
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool limited in new[] { false, true })
+        foreach (int ownerMode in new[] { 0, 1, 2 })
+        foreach (int occupancyMode in new[] { 0, 1, 2, 3 })
+        foreach (bool mixedOwners in new[] { false, true })
+        foreach (bool zeroDefense in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var opposite = side == Side.Left ? Side.Right : Side.Left;
+            if (limited) state.FrontlineLimiters.Add(900001);
+            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            int capacity = frontline ? (limited ? 2 : 5) : 5;
+            int occupancy = occupancyMode switch { 0 => frontline ? 0 : 1, 1 => capacity - 1, 2 => capacity, _ => capacity + 1 };
+            while (state.AllCards.Count(x => x.Location == location) < occupancy)
+            {
+                var resident = state.Create(names[0], mixedOwners ? opposite : side, location, 17);
+                if (zeroDefense) resident.Defense = 0;
+            }
+            state.FrontlineOwner = ownerMode switch { 0 => Side.NotAvailable, 1 => side, _ => opposite };
+            var spawner = state.Create(names[0], side, side.HandOf(), 0, isGold: true);
+            int before = state.AllCards.Count();
+            int expected = frontline && ownerMode == 2 ? 0 : Math.Min(names.Length, Math.Max(0, capacity - occupancy));
+            var ctx = new EffectContext { Engine = engine, State = state, Self = spawner, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", spawner,
+                new object?[] { (int)side, frontline, names.ToList(), spawner.CardId, false, null, false }, ctx, out bool handled);
+            if (!handled || result is not List<int> ids || ids.Count != expected
+                || state.AllCards.Count() != before + expected)
+                return $"batch admission case={cases}, side={side}, front={frontline}, limited={limited}, owner={ownerMode}, occupancy={occupancy}, mixed={mixedOwners}, zero={zeroDefense}: expected={expected}, got={(result is List<int> got ? got.Count : -1)}";
+            for (int i = 0; i < ids.Count; i++)
+            {
+                var card = state.ById(ids[i]);
+                if (card is null || card.Name != names[i] || card.Owner != side || card.Location != location || !card.IsGold)
+                    return $"batch admission case={cases}: accepted card {i} has incorrect identity/location/gold";
+            }
+            cases++;
+        }
+        return cases == 384 ? null : $"batch admission matrix count={cases}";
     }
 
     private static string? SpawnMultipleCardsOnBattlefield(CardDatabase db)

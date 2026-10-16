@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-177",
+  "status": "batch spawn admission respects enemy frontline and physical-location capacities",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-spawn-admission-evidence-20261016.json",
+  "evidence_sha256": "55aa3bcc63821ef8b029ecbd16462dc5e65aabb9428bc940ab4b15a251f7eab0",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-spawn-admission-20261016.py": "4cc068cf63d77feee8578986e36530f3e44ca032507b646627e93b649c954e2f",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-admission-before-20261016.txt": "47b14f96992a6657ec4ffc3523b37b579212914ced07877394c20db013a4fed3",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-admission-after-20261016.txt": "c7e6eee250dce7e0cc6823a7dbbffe5784cc048dc12584656c6fd7d7240bfbeb",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "b08ceaa0529a1a4b4c80e32cb508238f4cd4e8a8709a60d4cf72085384859815",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "1b915305fa9d229ba0e2471dfa677d68987a81af08393ec2f4b763c7d95d0467"
+  },
+  "tests": {
+    "release": "544/544",
+    "cases": 384,
+    "matrix": "2 sides x2 locations(support/frontline) x2 limiter states x3 frontline ownership states x4 occupancy levels x2 resident ownership patterns x2 defense states",
+    "checks": [
+      "Enemy frontline denies all requested cards",
+      "Default5/limited2 frontline and support5 capacities stop at physical-location capacity",
+      "HQ, opposite-owner residents and zero-defense residents consume physical slots",
+      "Accepted prefix keeps requested order, side, location and inherited gold; denied entries create no objects"
+    ],
+    "regression": "Old code creates3 with physical support occupancy4 but opposite-owner residents; expected1. New matrix fails before and passes after."
+  },
+  "limits": [
+    "Admission gate only: native two-phase creation then callbacks remains unimplemented; current implementation still invokes single spawn per entry.",
+    "Native saved-fullness behavior across callbacks, T35 method3, enter-play3, batch notification, Blitz attribution, Alpine timing and insertion slots remain open.",
+    "Tests use synthetic limiter membership and physical resident mutation, not full real-card Black Prince lifecycle.",
+    "GameState FetchCardsByLocation evidence is parsed pak only; runtime flow verification applies to the two library functions, not full semantic equivalence.",
+    "No historical replay authority, process writes, injections or new runtime capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
