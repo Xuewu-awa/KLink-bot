@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("战斗双亡刷新：防守方先移走并刷新，攻击方随后，亡语最后", CombatPairGuardedRefresh),
         new("单卡摧毁刷新：弃牌保留编号且回调读取新掩护", SingleDestroyGuardedRefresh),
         new("批量摧毁刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDestroyGuardedRefresh),
         new("普通推进刷新：通知后、移动回调前更新新旧位置掩护", OrdinaryMoveGuardedRefresh),
@@ -15352,6 +15353,8 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? CombatPairGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false, combat:true);
+
     private static string? SingleDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false, single:true);
 
     private static string? BatchDestroyGuardedRefresh(CardDatabase db) => BatchDeathGuardedRefresh(db, false);
@@ -15377,7 +15380,7 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage, bool single = false)
+    private static string? BatchDeathGuardedRefresh(CardDatabase db, bool fromDamage, bool single = false, bool combat = false)
     {
         using var movement=InstallMovementObserverProbes();
         const string name="card_unit_typhoon_mk_ib",trigger="OnDestroyed";
@@ -15419,9 +15422,22 @@ internal static class SelfTest
             string? failure=null;int callbacks=0;var created=state.CardCreated;
             state.CardCreated=made=>{created?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
                 callbacks++;
-                if(victims.Any(v=>v.Location!=CardLocation.Discard))failure="批量首个回调前必须全部离场";
+                var orderedVictims=reverse?victims.AsEnumerable().Reverse().ToArray():victims.ToArray();
+                if(combat&&callbacks<=2)
+                {
+                    if(orderedVictims[0].Location!=CardLocation.Discard||orderedVictims[1].Location==CardLocation.Discard)
+                        failure="战斗防守方移动回调必须看到攻击方尚未离场";
+                }
+                else if(victims.Any(v=>v.Location!=CardLocation.Discard))failure="末次移动及亡语前必须全部离场";
                 foreach(var item in survivors)
                 {
+                    if(combat&&callbacks<=2&&item.Location==orderedVictims[1].Location)
+                    {
+                        if(item.First.LocationNumber!=10||item.Last.LocationNumber!=30
+                            ||item.First.IsBeingGuarded==expectedGuard||!item.Last.IsBeingGuarded)
+                            failure="战斗首个移动回调不得提前刷新尚未离场的攻击方区域";
+                        continue;
+                    }
                     int start=item.Location==CardLocation.BoardFrontline?0:1;
                     if(item.First.LocationNumber!=start||item.Last.LocationNumber!=start+1
                         ||item.First.IsBeingGuarded!=expectedGuard||item.Last.IsBeingGuarded)
@@ -15431,7 +15447,20 @@ internal static class SelfTest
                 if(!untouched.IsBeingGuarded||untouched.LocationNumber!=91)failure="批量刷新不得改写未受影响手牌";
             };
             var ordered=reverse?victims.AsEnumerable().Reverse().ToArray():victims.ToArray();
-            if(fromDamage)
+            if(combat)
+            {
+                state.ActiveSide=ordered[1].Owner;state.SetKredits(state.ActiveSide,20);
+                foreach(var victim in victims)
+                {
+                    victim.Definition=new CardDefinition{Name=name,Type="infantry",Range=2,Attack=2,Defense=1,
+                        UsedTriggers=new[]{"OnCardLocationMoved",trigger}};
+                    victim.Keywords.Clear();victim.Keywords.Add(Keyword.Destruction);victim.Keywords.Add(Keyword.Guard);
+                    victim.Attack=2;victim.Defense=victim.MaxDefense=1;
+                    victim.EnteredPlayOnTurn=-99;victim.OperationCost=0;
+                }
+                if(!engine.Attack(ordered[1],ordered[0],out string reason))return $"双亡刷新测试攻击被拒：{reason}";
+            }
+            else if(fromDamage)
             {
                 foreach(var victim in victims)victim.Defense=1;
                 var source=state.CreateWithId(PlainUnit,side,203,CardLocation.Discard,99);

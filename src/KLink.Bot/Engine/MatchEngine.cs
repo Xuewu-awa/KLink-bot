@@ -3046,7 +3046,12 @@ public sealed class MatchEngine
         foreach (var card in cards) FireLeaveTrigger(card, CardLocation.Discard, method: 1);
         for (int i = 0; i < cards.Length; i++)
         {
-            State.Move(cards[i], CardLocation.Discard, moveReason: CardMoveReason.Destroyed);
+            // ExecuteAttackCard i=4151/4208 calls CardLocationMoved separately:
+            // each removal refreshes its location before its own movement callbacks.
+            State.Move(cards[i], CardLocation.Discard, locationNumber: cards[i].LocationNumber,
+                moveReason: CardMoveReason.Destroyed, notifyMoved: false, normalizeLocation: false);
+            Api.RefreshLocationStatus(new[] { oldLocations[i], CardLocation.Discard });
+            State.CardMoved?.Invoke(cards[i], oldLocations[i], CardLocation.Discard, false, CardMoveReason.Destroyed);
         }
         for (int i = 0; i < cards.Length; i++) FireAfterLeaveTrigger(cards[i], CardLocation.Discard, oldLocations[i]);
         for (int i = 0; i < cards.Length; i++)

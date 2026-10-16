@@ -1,0 +1,37 @@
+{
+  "rule": "RULE-163",
+  "status": "combat double-death refreshes each removal separately before movement callbacks and preserves discard numbering; complete combat parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\combat-pair-guarded-evidence-20261016.json",
+  "evidence_sha256": "d41fdcb034065660982f0d70c8665cba453d9a8d1e9457c4d6269acf0462a75f",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-combat-pair-guarded-20261016.py": "64ea5ba0dd74b3e0a038f36423e4ca92a9eb9b0df7b344a857b554292dea207d",
+    "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-combat-pair-guarded-before-20261016.txt": "6e5e71244426bf0c169765e54a3772d7f265fee9c6c59ed4e1136bd2a3f7cf66",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-combat-pair-guarded-after-20261016.txt": "bf0cdf55c56ffab9268d423599a40ec777c02a57dcd13ca3e79f29cc37630119",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "0d2baee613f39df5244ed0180fe9d629645b107ab10d6cbcb5359fa055b292fa",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "428bd246bb935640d26b2373870c5100305fc53ce51016a094237944d22af5b8"
+  },
+  "tests": {
+    "release": "530/530",
+    "real_attack_double_death_cases": 48,
+    "callback_observations": 288,
+    "matrix": "2 sides x first victim support/frontline x neighbor Guard none/raw/source x hidden Covert false/true x reverse attack direction",
+    "checks": [
+      "First defender own/observer movement sees attacker still at old location and its zone unchanged",
+      "Each removed victim zone is compacted and guarded caches refreshed before own/observer movement",
+      "Both own death callbacks occur after both removals",
+      "Discarded victims retain20 and existing discard retains77; unrelated hand retains91 and cache"
+    ],
+    "regression": "Original combat-pair path fails new Case (discard numbering),1/530; fixed path passes530/530. Intermediate per-zone caches are asserted at six callbacks per case."
+  },
+  "limits": [
+    "Only combat-pair discard numbering and per-move refresh are repaired. Full combat and destruction lifecycle/notification parity is not certified.",
+    "Tests use real Attack entry with two distinct physical zones; same-frontline pair and callback relocation/removal/reentry remain open.",
+    "No global State.Move hook change; retreat/control and other setters remain open.",
+    "Multiple spawn, MakeVeteran, attack guarded-cache consumer, native collection order, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
