@@ -64,6 +64,8 @@ public sealed class CardInstance
     public int Defense { get; set; }
     public int MaxDefense { get; set; }
     public int KreditCost { get; set; }
+    /// <summary>Native getTotalKreditCost output clamp; preserve the raw proxy and source ledger.</summary>
+    public int TotalKreditCost => Math.Clamp(KreditCost, 0, 99);
     public int OperationCost { get; set; }
 
     // ---- 回合内状态 ----

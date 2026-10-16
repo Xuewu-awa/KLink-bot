@@ -1460,7 +1460,7 @@ public sealed partial class CardApi
             //    `card_unit_big_red_one` 的「手牌里的牌都是 4 费」判据就是
             //    `getTotalKreditCost(卡) == 4`，按整手牌求和永远不可能等于 4，
             //    于是它会把每张手牌都"设成 4 费"，把已经被别的来源改过的牌也算进去。
-            ["getTotalKreditCost"] = (c, r, a) => SelfArg(c, r, a)?.KreditCost ?? 0,
+            ["getTotalKreditCost"] = (c, r, a) => SelfArg(c, r, a)?.TotalKreditCost ?? 0,
             ["getTotalOperationCost"] = (c, r, a) => SelfArg(c, r, a)?.OperationCost ?? 0,
             // `getKreditTempBuffAmount(cardID, out amount)` —— 返回指定来源在
             // 目标卡上的改费偏移。蓝图把它用于 RemoveTheBuff：先确认该来源
@@ -1509,12 +1509,13 @@ public sealed partial class CardApi
                     : 0;
             },
 
-            // `getAndDecryptKredit` —— 「这张卡当前的费用」，和 `getTotalKreditCost` 同义。
+            // `getAndDecryptKredit` 当前读取模型原始费用代理；原生基础/增益解密语义仍待核实。
+            // `getTotalKreditCost` 另有 0..99 输出边界，两者不可视为同义。
             //
             // ## 为什么必须有它（2026-10-01，对局 508065 #36）
             //
-            // 客户端把费用**加密**存在卡对象里，读的时候要"解密"，所以蓝图里到处是
-            // `getAndDecryptKredit(卡)` 而不是直接读字段。权威实现见
+            // 以下为历史实现背景，不作为本轮权威依据。客户端费用采用加密存储，蓝图使用
+            // `getAndDecryptKredit(卡)`。旧模型参考实现见
             // `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:1556`：
             //     ["getAndDecryptKredit"] = (h, a) => Out(a, h.Card_(a[0])?.KreditCost ?? 0)
             //
@@ -2960,7 +2961,7 @@ public sealed partial class CardApi
         "IsLocatedOnBoard", "IsLocatedInHand", "IsVeteran", "IsDamaged", "IsBuffed",
         "IsGroundUnit", "IsForecastCard", "IsForecasted",
         "getTotalKreditCost", "getTotalOperationCost", "getTotalAttack", "getTotalDefense",
-        // `getAndDecryptKredit` 与 `getTotalKreditCost` 同义（都只读卡自己的费用字段），
+        // 两个费用入口在模型中均为纯读；总费用另有限幅，此白名单不证明原生值语义相同。
         // 是纯读 —— 不列进来会让"用解密费用做判据"的那些 `GetChooseSpawnCards`
         // 被判成不可缓存（`IsPoolPureProgram` 要求**每个**原语都在本表里）。
         "getAndDecryptKredit",
@@ -6827,7 +6828,7 @@ public sealed partial class CardApi
         }
 
         // ⑤ 费用够不够（`SelectInt(卡费, 行动费, byPlayFromHand)` = byPlayFromHand ? 卡费 : 行动费）
-        int cost = byPlayFromHand ? targeting.KreditCost : targeting.OperationCost;
+        int cost = byPlayFromHand ? targeting.TotalKreditCost : targeting.OperationCost;
         int remaining = State.Kredits(targeting.Owner) - cost;
         if (remaining < 0)
         {

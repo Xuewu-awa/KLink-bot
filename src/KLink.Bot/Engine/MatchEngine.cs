@@ -1327,10 +1327,10 @@ public sealed class MatchEngine
     {
         if (target is null || target.Owner == card.Owner || target.KreditsTaxAsEnemyTarget <= 0)
         {
-            return card.KreditCost;
+            return card.TotalKreditCost;
         }
 
-        return card.KreditCost + target.KreditsTaxAsEnemyTarget;
+        return card.TotalKreditCost + target.KreditsTaxAsEnemyTarget;
     }
 
     /// <summary>

@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("总指挥点费用：0至99边界、扣费与税顺序及来源账本保留", TotalKreditCostBounds),
         new("出牌前置门顺序：天气与费用早于卡自身阻挡判据", PlayPreflightBlockOrder),
         new("指令可用性重入：自身判据后同下标重读、循环长度包含新增对象", OrderAvailabilityLiveReread),
         new("指令可用性循环：全局顺序、首次成功停止及覆盖写回/清除", OrderAvailabilityOverrideContract),
@@ -15184,6 +15185,51 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? TotalKreditCostBounds(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var pair in new[] { (int.MinValue, 0), (-10, 0), (-1, 0), (0, 0), (1, 1), (98, 98), (99, 99), (100, 99), (int.MaxValue, 99) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 1);
+            source.KreditCost = pair.Item1;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("getTotalKreditCost", source, new object?[] { null }, ctx, out bool handled);
+            if (!handled || !Equals(result, pair.Item2) || source.KreditCost != pair.Item1)
+                return $"总费用边界或原值保留错误：{side}/{pair.Item1}, result={result}";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (var pair in new[] { (-5, 0), (0, 0), (100, 99) })
+        foreach (bool enemy in new[] { false, true })
+        foreach (int tax in new[] { 0, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);state.ActiveSide = side;
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 1);
+            var target = state.CreateWithId(PlainUnit, enemy ? side.Opposite() : side, 61,
+                (enemy ? side.Opposite() : side).HqOf(), 1);
+            source.KreditCost = pair.Item1;target.KreditsTaxAsEnemyTarget = tax;
+            int cost = pair.Item2 + (enemy ? tax : 0);
+            state.SetKredits(side, cost);
+            if (!engine.CanPlay(source, out _, target) || !engine.Api.CanSelectAsTarget(source, target, true).Can)
+                return $"总费用边界未用于出牌/目标费用检查：{side}/{pair.Item1}/{enemy}/{tax}";
+            if (!engine.PlayCard(source, target) || state.Kredits(side) != 0)
+                return $"扣费未先限制基础总费用再加税：{side}/{pair.Item1}/{enemy}/{tax}, remaining={state.Kredits(side)}";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.HandLeft, 1);
+            source.BuffsBySource[(90, false)] = new CardBuff { KreditCost = 200 };
+            source.RecalculateStats();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            object? Total() => engine.Api.InvokeByName("getTotalKreditCost", source, new object?[] { null }, ctx, out _);
+            if (!Equals(Total(), 99) || source.BuffsBySource[(90, false)].KreditCost != 200)
+                return "总费用上限破坏了原始来源账本";
+            source.BuffsBySource[(90, false)].KreditCost = 10;source.RecalculateStats();
+            if (!Equals(Total(), source.Definition.Kredits + 10)) return "撤销超额来源后总费用未恢复正确值";
         }
         return null;
     }

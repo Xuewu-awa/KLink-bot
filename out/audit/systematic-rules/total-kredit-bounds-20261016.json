@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-139",
+  "status": "native final total-cost clamp and direct model consumers corrected",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\total-kredit-bounds-evidence-20261016.json",
+  "evidence_sha256": "a4128bb98ecaa29eb282673fa7510a54a537db7d9484a8b9cf448ce1db389198",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\cardsCheckFunctions.functions.json": "ed57bef6b025dfc6e513c0c6e10035a67a8bee45c9db547bcd4487b3d296408b",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-total-kredit-bounds-20261016.py": "f5b2fbbbdbbd28dd67ca7c7877a62ca50a2532909e27bc514e28ee4068d90495",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-total-kredit-bounds-before-20261016.txt": "c98434c7d0882fe3e79be2080c4c7addb760ff7f5aafc18a3ba8710ca9118539",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-total-kredit-bounds-after-20261016.txt": "c697c0f07d3ff2ca2a6d2a353ca33a9e698e67ab5e599250fca678618ebfcfd7",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "048afde1f381dea251e04d1fc076be4964416058cadacbbe1050eb4248ececc8",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "34abcdecd4c939d329f77d986e07312a5ecc25745528525fab6528eae51ce28c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "1aab1c39dea13617830887932c8650c9b3e21810a300951a2dea18564b6f55c2",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "8f1a4f82244ae72433f0e0db48ccf12d65ddaf90218dbeb8cd1ea8e2b7830a29"
+  },
+  "tests": {
+    "release": "506/506",
+    "scalar_cases": 18,
+    "payment_target_cases": 24,
+    "ledger_preservation_cases": 1,
+    "regression": "Old raw getter fails int.MinValue case; bounded getter and consumers pass all 506 tests.",
+    "contract": [
+      "Raw proxy and source ledger remain intact.",
+      "Enemy positive target tax is added after the base clamp, including 99+2=101.",
+      "Friendly target does not add enemy tax."
+    ]
+  },
+  "limits": [
+    "CanSelectAsTarget is checked from parsed pak; no same-named function exists in this saved runtime capture, so no runtime match is claimed for it.",
+    "Only the final native signed 0..99 clamp is certified; encrypted base/buff and integrity callees are not fully mapped to model fields.",
+    "getAndDecryptKredit remains a raw model proxy; its complete native semantics are open.",
+    "Complete payment notifications, anti-cheat, preflight target-tax placement, operation-cost bounds, other raw consumers and all-card PvP semantics remain open.",
+    "Native linear view crosses .pdata fragments; direct branch coverage is checked, not transitive external callee coverage.",
+    "Boundary payment fixtures can exceed normal available-credit limits; they are controlled tests, not observed PvP states."
+  ],
+  "fully_semantically_verified_cards": 0
+}
