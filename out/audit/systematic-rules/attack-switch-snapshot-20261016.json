@@ -1,0 +1,49 @@
+{
+  "rule": "RULE-143",
+  "status": "T30 saves registered query membership and directly invokes retained recipients",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\attack-switch-snapshot-evidence-20261016.json",
+  "evidence_sha256": "46a45f25813dd706a9e0a05aa1304b6a60d6ddefac0952642036cc5431aa5b53",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-attack-switch-snapshot-20261016.py": "db1a3c4e0d3b55f849b4f4ff64ab3305ad48a3b7d13101215531eb06375d6acd",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "c264067b66b13ecb85eb6c45f9d7404391c30374178f43d254c7f97b73b62484",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "3037b7a1842790e38c56287fcc27e41520cda7683aa7f82ae8fcaba79041fe6f",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "6e1ac38c2423985e4e7399cf97d0ee87366d05e48c98d5117404f563116b197e",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-switch-snapshot-before-20261016.txt": "37f293a8f323ce8b820717888b2dded3779b863d98b3d1e5254def77dc6f57af",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-attack-switch-snapshot-after-20261016.txt": "a5f2a4b9e77e6947b7525ddf9ced742283a6a7a73d63d54097a0180fc7e3ac29"
+  },
+  "tests": {
+    "release": "510/510",
+    "cases": 80,
+    "matrix": "2 sides x 10 membership/state modes x [no replacement,first/second/third recipient replacement]",
+    "modes": [
+      "stable",
+      "later suppression",
+      "later NotAvailable",
+      "later deregistration",
+      "initial suppressed then unsuppressed",
+      "initial unregistered then registered",
+      "initial suppression exception removed after query",
+      "late subscriber",
+      "attacker is first subscriber",
+      "saved recipient removed and new object reuses ID"
+    ],
+    "checks": [
+      "Saved object references and query membership retained through callbacks",
+      "Initial query suppression/registration and exception determine membership",
+      "First changed valid target stops remaining recipients; same original target continues",
+      "Attacker can receive T30; late or same-ID new object cannot replace saved recipient",
+      "Damage reaches final target while original target tax remains captured"
+    ],
+    "regression": "Original dynamic eligibility checks skip recipient 62 after suppression (1/510); saved query membership passes 510/510."
+  },
+  "limits": [
+    "Native registration-set order is not certified; these scenarios use current model recipient order, not a proof of all actual card priority order.",
+    "Only valid CardInstance callback outputs are tested; null/invalid and unassigned output ABI, including native different-object comparison with null, remain open.",
+    "The defenderCardID out-parameter and cached defender location/name/defense payload equivalence are not fully mapped to the public simulator API.",
+    "Object removal case tests model retained references; full Unreal pending-kill/GC lifetime is not certified.",
+    "The Typhoon callback is a temporary synthetic probe; these tests do not certify its card rules or all PvP semantics. No live client writes or replay authority."
+  ],
+  "fully_semantically_verified_cards": 0
+}

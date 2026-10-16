@@ -2539,14 +2539,15 @@ public sealed class MatchEngine
         if (!attacker.Location.IsBoard() || !defender.Location.IsBoard()) return false;
 
         // T30 i=1058..1650: the first changed target ends the loop.
-        // The snapshot includes the attacker; unlike T31 there is no self exclusion.
-        foreach (var observer in Api.CaptureTriggerSnapshot())
+        // Save query-time membership, including the attacker. Invoke saved objects
+        // without rechecking registration, suppression or location after callbacks.
+        foreach (var observer in Api.CaptureRegisteredTriggerSnapshot("OnOtherCardAttackSwitchTarget"))
         {
             var hit = Api.BroadcastLocalWithOutParams("OnOtherCardAttackSwitchTarget", attacker,
                 new[] { "newDefender" }, new Dictionary<string, object?>
                 {
                     ["cardAttacking"] = attacker, ["oldDefender"] = defender,
-                }, only: new[] { observer }, includeSubject: true).FirstOrDefault();
+                }, only: new[] { observer }, includeSubject: true, recipientsAlreadyFiltered: true).FirstOrDefault();
             if (hit.Outs?.GetValueOrDefault("newDefender") is CardInstance replacement
                 && !ReferenceEquals(replacement, defender))
             {

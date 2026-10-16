@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("T30目标替换：注册查询快照、接收者变更、含自身及首换停止", AttackSwitchQuerySnapshot),
         new("T31全局停止标志：重置、逐项写回、后续清除及查询快照", AttackStopFlagContract),
         new("攻击费用快照：回调改费、原目标税、换目标及两种中止", AttackCostCaptureContract),
         new("总行动费用：零下限、无99上限及实际移动攻击扣费", TotalOperationCostBounds),
@@ -15188,6 +15189,79 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? AttackSwitchQuerySnapshot(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardAttackSwitchTarget";
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装T30查询探针";
+        KismetStep Set(int i, string output, KismetExpr value, string scope) => new(i, "set", null,
+            Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, output, null) { DestinationScope = scope };
+        locals.Add(trigger, new[] {
+            Set(0, "_auditT30Called", new() { Bool = true }, "instance"),
+            new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Left }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            Set(2, "newDefender", new() { Var = "_auditReplacement", Scope = "instance" }, "local"),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 10))
+        foreach (int winner in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);var attacker = MakeActionQuotaProbe(state, side, "infantry");
+            attacker.OperationCost = 3;state.SetKredits(side, 20);
+            var original = state.Hq(side.Opposite());original.KreditsTaxAsEnemyTarget = 2;
+            var replacement = state.CreateWithId(PlainUnit, side.Opposite(), 70, side.Opposite().HqOf(), 1);
+            replacement.Defense = replacement.MaxDefense = 20;replacement.KreditsTaxAsEnemyTarget = 9;
+            var cards = new[] {
+                mode == 8 ? attacker : state.CreateWithId(name, side, 61, side.DeckOf(), 0),
+                state.CreateWithId(name, side, 62, side.DeckOf(), 1),
+                state.CreateWithId(name, side, 63, side.DeckOf(), 2) };
+            foreach (var card in cards)
+            {
+                card.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 20,
+                    Range = 2, UsedTriggers = new[] { trigger } };
+                card.BlueprintVariables["_auditReplacement"] = original;
+            }
+            if (winner != 0) cards[winner - 1].BlueprintVariables["_auditReplacement"] = replacement;
+            if (mode is 4 or 6) cards[1].Keywords.Add(Keyword.Suppressed);
+            if (mode == 6) cards[1].SuppressionExceptionTriggers.Add(trigger);
+            if (mode == 5) cards[1].Definition = new CardDefinition { Name = name };
+            var queried = mode is 4 or 5 ? new[] { cards[0], cards[2] } : cards;
+            var expected = new List<CardInstance>();
+            foreach (var card in queried) { expected.Add(card);if (winner != 0 && ReferenceEquals(card, cards[winner - 1])) break; }
+            var called = new List<CardInstance>();var created = state.CardCreated;CardInstance? late = null;
+            state.CardCreated = made => {
+                created?.Invoke(made);if (made.Name != "card_unit_routed_troops") return;
+                var current = cards.Single(c => !called.Contains(c) && Equals(c.BlueprintVariables.GetValueOrDefault("_auditT30Called"), true));
+                called.Add(current);if (called.Count != 1) return;
+                if (mode == 1) cards[1].Keywords.Add(Keyword.Suppressed);
+                if (mode == 2) cards[1].Location = CardLocation.NotAvailable;
+                if (mode == 3) cards[1].Definition = new CardDefinition { Name = name };
+                if (mode == 4) cards[1].Keywords.Remove(Keyword.Suppressed);
+                if (mode == 5) cards[1].Definition = new CardDefinition { Name = name, UsedTriggers = new[] { trigger } };
+                if (mode == 6) cards[1].SuppressionExceptionTriggers.Clear();
+                if (mode == 9) state.Remove(cards[1]);
+                if (mode is 7 or 9)
+                {
+                    late = state.CreateWithId(name, side, mode == 9 ? 62 : 64, side.DeckOf(), 3);
+                    late.Definition = new CardDefinition { Name = name, UsedTriggers = new[] { trigger } };
+                    late.BlueprintVariables["_auditReplacement"] = replacement;
+                }
+            };
+            int hp = original.Defense, replacementHp = replacement.Defense;
+            if (!engine.Attack(attacker, original, out string reason) || !called.SequenceEqual(expected))
+                return $"T30查询快照/首换停止错误：{side}/{mode}/{winner}, expected={string.Join(",", expected.Select(c => c.CardId))}, actual={string.Join(",", called.Select(c => c.CardId))}, reason={reason}";
+            bool switched = winner != 0 && expected.Contains(cards[winner - 1]);
+            if (original.Defense != hp - (switched ? 0 : 2) || replacement.Defense != replacementHp - (switched ? 2 : 0)
+                || state.Kredits(side) != 15 || state.OperationKreditsSpentThisTurn != 5 || attacker.AttacksThisTurn != 1
+                || late?.BlueprintVariables.GetValueOrDefault("_auditT30Called") is true)
+                return $"T30保存对象身份/最终目标或原税费用错误：{side}/{mode}/{winner}";
         }
         return null;
     }
