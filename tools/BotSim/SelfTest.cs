@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("位置刷新：先重排再计算掩护，回手回调看到新缓存", RefreshLocationGuardedContract),
         new("揭示缓存时序：标志→刷新→通知→回调，重复及牌库分支", RevealGuardedCacheTiming),
         new("掩护缓存：有效自身Guard、原始邻卡Guard、Covert与字段读写", UpdateGuardedCacheContract),
         new("Guard撤销：指定/全部来源、原始尾链、完整通知与零账本清理", RemoveGuardSources),
@@ -15200,6 +15201,68 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? RefreshLocationGuardedContract(CardDatabase db)
+    {
+        foreach(CardLocation location in Enumerable.Range(0,10).Concat(new[]{10,255}).Select(x=>(CardLocation)x))
+        foreach(bool initial in new[]{false,true})
+        foreach(int guardMode in Enumerable.Range(0,4))
+        foreach(bool dispatch in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var last=state.CreateWithId(PlainUnit,Side.Right,90,location,100);
+            var guard=state.CreateWithId(PlainUnit,Side.Left,30,location,10);
+            var middle=state.CreateWithId(PlainUnit,Side.Right,70,location,50);
+            foreach(var card in new[]{last,guard,middle}){card.Keywords.Remove(Keyword.Guard);card.IsBeingGuarded=initial;}
+            if(guardMode is 1 or 3)guard.Keywords.Add(Keyword.Guard);
+            if(guardMode==2)guard.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            if(guardMode==3){guard.Keywords.Add(Keyword.Covert);guard.IsRevealed=false;}
+            var untouched=state.CreateWithId(PlainUnit,Side.Right,91,location==CardLocation.BoardHqLeft?CardLocation.BoardHqRight:CardLocation.BoardHqLeft,200);
+            untouched.IsBeingGuarded=true;
+            int actions=state.ActionLog.Count;var trace=new List<string>();engine.Api.TriggerTrace=trace;
+            // Use one set for the VM form and duplicated input for the typed API form.
+            if(dispatch)
+            {
+                engine.Api.InvokeByName("RefreshLocationStatus",null,new object?[]{new HashSet<object?>{(int)location}},
+                    new EffectContext{Engine=engine,State=state,Self=guard,Controller=Side.Left},out bool handled);
+                if(!handled)return "RefreshLocationStatus未接入派发表";
+            }
+            else engine.Api.RefreshLocationStatus(new[]{location,location});
+            bool compact=(int)location is >=3 and <=7;
+            int start=location is CardLocation.BoardHqLeft or CardLocation.BoardHqRight?1:0;
+            if(guard.LocationNumber!=(compact?start:10)||middle.LocationNumber!=(compact?start+1:50)||last.LocationNumber!=(compact?start+2:100))
+                return "位置刷新只能压紧3至7，按物理位置排序且不按Owner拆分";
+            bool middleCache=location.IsBoard()?guardMode==1:initial;
+            if(middle.IsBeingGuarded!=middleCache||guard.IsBeingGuarded!=(location.IsBoard()?false:initial)
+                ||last.IsBeingGuarded!=(location.IsBoard()?false:initial)||!untouched.IsBeingGuarded||untouched.LocationNumber!=200)
+                return "位置刷新须在重排后计算掩护，其他位置/非棋盘缓存保持";
+            if(state.ActionLog.Count!=actions||trace.Count!=0)return "位置刷新本身不应发动作或事件";
+        }
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool frontline in new[]{false,true})
+        foreach(bool full in new[]{false,true})
+        foreach(bool movingGuard in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var old=frontline?CardLocation.BoardFrontline:side.HqOf();
+            var mover=state.CreateWithId("card_unit_typhoon_mk_ib",side,60,old,10);
+            mover.Definition=new CardDefinition{Name=mover.Name,Type="infantry"};mover.Keywords.Remove(Keyword.Guard);
+            if(movingGuard)mover.Keywords.Add(Keyword.Guard);
+            var survivor=state.CreateWithId(PlainUnit,side,61,old,20);survivor.Keywords.Remove(Keyword.Guard);survivor.IsBeingGuarded=movingGuard;
+            var last=state.CreateWithId(PlainUnit,side,62,old,30);last.Keywords.Remove(Keyword.Guard);
+            if(!movingGuard)last.Keywords.Add(Keyword.Guard);
+            if(full)for(int i=0;i<9;i++)state.CreateWithId(PlainUnit,side,100+i,side.HandOf(),i*3);
+            var seen=new List<(int,bool,int)>();var prior=state.CardMoved;
+            state.CardMoved=(card,from,to,changed,reason)=>{
+                if(ReferenceEquals(card,mover)&&from==old)
+                    seen.Add((survivor.LocationNumber,survivor.IsBeingGuarded,state.ActionLog.SelectMany(a=>a.SubActions).Count(a=>a.Name=="ZActionMoveCardToNewLocation")));
+                prior?.Invoke(card,from,to,changed,reason);};
+            engine.Api.InvokeByName("MoveCardFromBoardToOwnersHand",null,new object?[]{60,0,(int)old,(int)side.HandOf()},
+                new EffectContext{Engine=engine,State=state,Self=mover,Controller=side},out _);
+            if(!seen.SequenceEqual(new[]{(frontline?0:1,!movingGuard,1)}))
+                return "回手移动通知后、移动回调前须重排旧位置并刷新掩护，满手弃置也一样";
         }
         return null;
     }

@@ -1,0 +1,69 @@
+{
+  "rule": "RULE-155",
+  "status": "explicit location refresh compacts before guarded cache; return path refreshes before move callbacks; other movement lifecycle/attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\refresh-guarded-evidence-20261016.json",
+  "evidence_sha256": "39aa6bc8b4165c730122a8b7fefd5923cb5a31b3354c105383e2c2ac7dd18244",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-refresh-guarded-20261016.py": "e2568a056b8b132561170036200b2ef711ac8deda22dba68c6bb7821956c20f2",
+    "D:\\Codex Workshop\\kards-install-review\\return-numbering-evidence-20261016.json": "6b02518be9eaf16df526935b82442c696e53c9d35e2d863d226af2f461d46135",
+    "D:\\Codex Workshop\\kards-install-review\\update-guarded-evidence-20261016.json": "6d6d8f66b4d5b6327c05c1691d00491b58fdd32e526dfac18b246f33ad9e53ad",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-refresh-guarded-before-20261016.txt": "60798944e1c3cf3e5129715b05f21f546046430e2841e3b5201d2e4a336244e3",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-refresh-guarded-after-20261016.txt": "4aab7c4d5de167c2e734b5df6e592fc009b1a8c6607216ca9dd403f11f3d5822",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "0eebdf748fc060e1b01ddb705e0ac5d1417a7a94632a40f3392892c70fffa950",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "f3da5dd22b53a7b57c3a0f2b8977894cb664254a057cef511888a7c273681a3c",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "b2b64f9df17916582d42c7156265d0fe93df77f9575a684195214473c697c189"
+  },
+  "library_refresh_callsites": [
+    {
+      "function": "ApplyDamageToMultipleCards",
+      "index": 7136
+    },
+    {
+      "function": "ApplyDestroyMultipleCards",
+      "index": 1509
+    },
+    {
+      "function": "CardLocationMoved",
+      "index": 348
+    },
+    {
+      "function": "ConvertCard",
+      "index": 4349
+    },
+    {
+      "function": "SpawnCardToBoard",
+      "index": 919
+    },
+    {
+      "function": "SpawnMultipleCardsOnBattlefield",
+      "index": 2651
+    }
+  ],
+  "tests": {
+    "release": "522/522",
+    "primitive_matrix": 192,
+    "return_move_callback_cases": 16,
+    "matrix": "locations 0..9,10,255 x old cache false/true x raw/source/hidden-raw/no Guard x typed API/VM dispatch",
+    "checks": [
+      "Affected locations snapshot/dedup; only 3..7 rearrange, only 5..7 update cache",
+      "Physical stable location-number ordering across owners, including gaps and existing HQ",
+      "Board guard cache uses compacted slots rather than old gaps; nonboard and unrelated location cache/numbers preserved",
+      "Refresh primitive emits no actions/events",
+      "Board-to-hand old location compacts and updates cache after move notification, before CardMoved callback",
+      "Return integration spans both sides, support/frontline, free/full hand and removed Guard versus remaining Guard; discard overflow also refreshes old board"
+    ],
+    "regression": "RefreshLocationStatus dispatch absent: 1/522 fails before repair. Typed helper, dispatch and return-path wiring pass 522/522."
+  },
+  "limits": [
+    "Only explicit RefreshLocationStatus primitive and board-to-owner-hand path are wired in this change. Other CardLocationMoved users, batch damage/destruction, conversion and spawns still need individual lifecycle audit/wiring.",
+    "Six callsites are counted within parsed BP_CardFunctions only, not claimed exhaustive across every asset/native implementation.",
+    "Managed distinct/insertion and physical object order are used; native TSet iteration/slot reuse and GetAllCardInBattle identity order are not certified.",
+    "Dispatcher covers VM integer location-set elements and typed CardLocation, not arbitrary malformed boxed enum/byte/null ABI.",
+    "Existing RearrangeLocation sorted-ID resolver/reentry and full set/array aliasing semantics are not certified here.",
+    "MakeVeteran and attack cache consumers, full move notification/receive branches, reset/copy/import and CopyData remain open.",
+    "No new live capture, injection, process writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

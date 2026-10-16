@@ -2049,6 +2049,13 @@ public sealed partial class CardApi
             // `side == 1 ? 3 : 4` 完全一致。
             ["GetHandLocationBySide"] = (c, r, a) =>
                 (int)GetHandLocationBySide(SideArgOrNull(a, 0) ?? Side.NotAvailable),
+            ["RefreshLocationStatus"] = (c, r, a) =>
+            {
+                if (a.ElementAtOrDefault(0) is System.Collections.IEnumerable values and not string)
+                    RefreshLocationStatus(values.Cast<object?>().Select(value => value is CardLocation location
+                        ? location : (CardLocation)Blueprint.KismetVm.ToInt(value)));
+                return null;
+            },
             // `RearrangeLocation(location)` —— 只有 1 个实参，没有出参。
             // IR 里 0 个调用点（只被库函数 `GotchaTriggered` / `SuppressMultipleUnits` 调），
             // 注册它是为了让「名字 → 实现」可查。
@@ -3705,8 +3712,7 @@ public sealed partial class CardApi
             ActionValue2.Int("attackLeft", card.RemainingAttacks),
             ActionValue2.Int("nonVisualLocationNumber", quantity), ActionValue2.Str("moveReason", reasonName),
         });
-        if ((int)oldLocation is >= 3 and <= 7) RearrangeLocation(oldLocation);
-        if (target != oldLocation && (int)target is >= 3 and <= 7) RearrangeLocation(target);
+        RefreshLocationStatus(new[] { oldLocation, target });
         c.State.CardMoved?.Invoke(card, oldLocation, target, false, CardMoveReason.BoardToHand);
         c.Engine.FireAfterLeaveTrigger(card, target, oldLocation);
 

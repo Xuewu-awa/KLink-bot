@@ -5236,6 +5236,18 @@ public sealed partial class CardApi
     public CardLocation GetHandLocationBySide(Side side)
         => side == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight;
 
+    // RefreshLocationStatus snapshots its affected set, compacts 3..7, then
+    // updates the board cache immediately for each physical location.
+    public void RefreshLocationStatus(IEnumerable<CardLocation> affectedLocations)
+    {
+        foreach (var location in affectedLocations.Distinct().ToArray())
+        {
+            if ((int)location is < 3 or > 7) continue;
+            RearrangeLocation(location);
+            if (location.IsBoard()) UpdateGuarded(location);
+        }
+    }
+
     /// <summary>
     /// `RearrangeLocation(location)`（`BP_CardFunctions.g.cs:29227-29300`）：
     /// <code>
