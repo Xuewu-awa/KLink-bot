@@ -3378,7 +3378,40 @@ public sealed partial class CardApi
         if (keyword == Keyword.Fury) { GiveFury(target); return; }
         if (keyword == Keyword.Blitz) { GiveBlitz(target); return; }
         if (keyword == Keyword.Smokescreen) { GiveSmokescreen(target); return; }
+        if (keyword == Keyword.Guard) { GiveGuard(target); return; }
         GiveKeywordCore(target, keyword);
+    }
+
+    // GiveGuard continues from positive-source registration to the raw-flag branch.
+    // An already-raw Guard only notifies; a newly-raw Guard removes all smoke.
+    public void GiveGuard(CardInstance target, int instigatorId = 0)
+    {
+        if (!CanCardBeBuffed(target)) return;
+        if (instigatorId > 0)
+        {
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("guard", out var prior)
+                && prior.Contains(instigatorId)) return;
+            var sources = prior is null ? new List<int>() : new List<int>(prior);
+            sources.Add(instigatorId);
+            var buff = GetOrCreateBuff(target, instigatorId);
+            buff.Guard += 1;
+            if (buff.IsEmpty) RemoveBuffEntry(target, (instigatorId, false));
+            target.ReceivedAbilitiesFromCards["guard"] = sources;
+        }
+        bool alreadyRaw = target.Keywords.Contains(Keyword.Guard);
+        if (!alreadyRaw) target.Keywords.Add(Keyword.Guard);
+        bool inDeck = IsLocatedInDeck(target);
+        if (!inDeck)
+        {
+            var values = new List<ActionValue2> { ActionValue2.Int("cardID", target.CardId) };
+            if (instigatorId != 0) values.Add(ActionValue2.Int("instigatorID", instigatorId));
+            _engine.FireSubAction("ZActionGiveGuard", values);
+        }
+        if (alreadyRaw) return;
+        // The pak calls UpdateGuarded here only outside the deck. Native cached
+        // isBeingGuarded lifecycle is still unmodeled; do not claim cache parity.
+        RemoveSmokescreen(target, instigatorId, removeAllGivers: true, skipAction: inDeck);
+        FireAbilitiesChanged(target);
     }
 
     // GiveSmokescreen uses positive sources; zero/negative giver sets only raw state.

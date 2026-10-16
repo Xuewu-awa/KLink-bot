@@ -1,0 +1,51 @@
+{
+  "rule": "RULE-151",
+  "status": "Guard granting source/raw split, repeated notification branches, all-smoke withdrawal and T29 fixed; native guarded cache dependency remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\give-guard-sources-evidence-20261016.json",
+  "evidence_sha256": "66aacf69b48566c665dd48e394872df3938f7c5497c0bab1b5536a67519f090d",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-give-guard-sources-20261016.py": "a89aaab02e5852b0463b937b27f320976833090b74299883def86f587f823695",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-give-guard-sources-before-20261016.txt": "3d822a5b10264ed70261993349425570cbc097907ba31a95ba35c58317805bf5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-give-guard-sources-after-20261016.txt": "d18dcbbe39c805a28f3beb529640f08fcd2aee803bf12fde3321e73556a41876",
+    "D:\\Codex Workshop\\kards-install-review\\remove-smoke-sources-evidence-20261016.json": "a9eefbe527897d694be08afdb60ca06247807f750ab9036ce04d559a03895096",
+    "D:\\Codex Workshop\\kards-install-review\\native-guard-read-evidence-20261016.json": "c1f7f80428806233a1e0f2986254e7eeafd742e7e2fa3554668789c56b2aaea1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "63d2680a1554cebb6a3ced8a4fea9242de7d2c95591737fd69759b079779f445",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "945a3d93db01f2146046c78cec9e9956a2bd2f229d1403eb889beeeb9aef0e15",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "3d23e1535f895ddc4eeab9a2ba3a2c455e503cd116f57d4a4bd7615b565dd9dc"
+  },
+  "tests": {
+    "release": "518/518",
+    "grant_matrix": 576,
+    "give_guard_then_smoke_integration": 4,
+    "signed_ledger_cases": 3,
+    "invalid_target_ids": 3,
+    "blocked_covert_case": 1,
+    "matrix": "2 sides x raw guard false/true x sources absent/empty/[9] x instigator [-3,0,9,99] x board/deck/NotAvailable x smoke absent/raw/source/both; each identical grant twice",
+    "checks": [
+      "Positive duplicate source returns before raw state/notification changes",
+      "New positive source +1 guard ledger and registered giver, then continues into raw state branch",
+      "Nonpositive source does not alter guard registration/ledger",
+      "Raw already true branch only notifies outside deck, without smoke removal/T29; repeated nonpositive grant notifies twice",
+      "New raw guard removes all smoke, skipAction true in deck and false otherwise, then final T29",
+      "GiveGuard payload cardID plus optional nonzero instigatorID (not giverID), preserving negatives",
+      "Guard notification and smoke removal precede inner/final T29; other-source buffs remain intact",
+      "Real guard -> smoke preserves external guard source but removes self source; reverse target arrays remain consistent",
+      "Signed ledger sums prune only zero entry and its reverse target without clearing independent source array",
+      "Strict target resolution and CanCardBeBuffed gate prevent fallback/blocked mutation"
+    ],
+    "regression": "Original generic Guard gives duplicate T29: 1/518 fails; repaired grant passes 518/518."
+  },
+  "limits": [
+    "GiveGuard source/raw/notification/smoke dependency/T29 subset only. Native UpdateGuarded call at 1058 remains unmodeled, so full grant state and guarded-target/cache parity are not claimed. In-deck native branch skips this cache call.",
+    "General RemoveGuard and other guard consumers remain open; earlier RULE-149 self-source dependency is not a general removal implementation.",
+    "IsActionProcess is represented as action-authority execution. Non-action client receive/transport/presentation paths remain outside this change.",
+    "Notifier/online payload evidence is parsed pak only, not a same-named saved runtime match.",
+    "Object lifetime/reentry and native iteration order, FText source labels, integer overflow, full ChangeBuffsFromCards, snapshot import and full CopyData remain open.",
+    "No new live capture, injection, process writes or replay authority; fixture coverage does not certify every card."
+  ],
+  "fully_semantically_verified_cards": 0
+}
