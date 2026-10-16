@@ -1,0 +1,49 @@
+{
+  "rule": "RULE-149",
+  "status": "smoke granting raw/source split, deduplication and headless notification fixed; self Guard dependency mutation/T29 subset restored",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\give-smoke-sources-evidence-20261016.json",
+  "evidence_sha256": "f3994a84ece5aae2d254af2685c4e2c995da42a07ad4223c657b270999796560",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-give-smoke-sources-20261016.py": "29711799b29e1286c9ac42ca494e9b06f1b74f4a3ec5faea1358412a9269eda8",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-give-smoke-sources-before-20261016.txt": "53579f88ef7ce6502f150180dfeca4a5763a09649efa357594158a11969b6015",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-give-smoke-sources-after-20261016.txt": "618c93e7962d64b3ea4d03bd24ab5a2ce25a18e0b0e7fa8031015b1413c87d97",
+    "D:\\Codex Workshop\\kards-install-review\\remove-smoke-sources-evidence-20261016.json": "a9eefbe527897d694be08afdb60ca06247807f750ab9036ce04d559a03895096",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "cbfe5d0c4ac7c9fca161670de31af1ac2595c44c8d3b3fde0a1bdc2bb3802eeb",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "680986952f11c31b75454712cb1665497eb2748c21c56797abb2d50096743aed",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "1d7506a51837e21f6b89714b8e9a6c0f82d5fbf3b0650a88bc3e742c5076e495",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "c584527794abc8aff6e870a5e79468ebe361495ee66807a3ab0c78396ae0e627"
+  },
+  "tests": {
+    "release": "516/516",
+    "grant_matrix": 144,
+    "guard_dependency_matrix": 40,
+    "grant_withdraw_integration": 4,
+    "invalid_target_ids": 3,
+    "blocked_covert_case": 1,
+    "grant_axes": "2 sides x raw false/true x source key absent/empty/[9] x giver [-3,0,9,99] x board/deck/NotAvailable; each request repeated twice",
+    "guard_axes": "2 sides x raw guard false/true x source key absent/empty/[self]/[self,other]/[self,self] x board/deck",
+    "checks": [
+      "Positive giver appends one unique source and +1 ledger; nonpositive giver sets raw only",
+      "Existing raw/source grant returns with no repeated notification, ledger growth or T29",
+      "CardID first; optional nonzero giverID retains negative values; deck suppresses give notification",
+      "Notification precedes self-source Guard mutation/T29 and final smoke T29",
+      "Only self Guard source removed; empty guard list removes key and raw Guard, other source retained; guard ledger -1 once even with duplicate self IDs",
+      "Guard clone/IsEmpty/snapshot retain independent detail",
+      "Live grant -> attack/frontline removal clears source registration, buff and reverse target array",
+      "Explicit invalid IDs do not fall back; CanCardBeBuffed rejects unrevealed board Covert"
+    ],
+    "regression": "Original generic give repeats T29 on identical raw grant (1/516); dedicated give and dependency mutation pass 516/516."
+  },
+  "limits": [
+    "Only the storage/raw-flag/T29 subset of RemoveGuard(cardID,cardID,false,true) is reconstructed. General GiveGuard/RemoveGuard, effective Guard source reads and native UpdateGuarded cached field timing remain open.",
+    "The dependency assumes valid positive PvP target IDs; malformed existing nonpositive target objects and all UObject lifetime/identity reentry are not certified.",
+    "Notifier/online headless action payloads use parsed pak evidence; no same-named notifier/online runtime capture is claimed. Client receive/presentation/transport remain outside this fix.",
+    "Source display title/FText, integer overflow, full ChangeBuffsFromCards and all snapshot import/CopyData fields are not certified.",
+    "No replay authority, client memory writes, injection or new live capture; these controlled source fixtures do not certify every card."
+  ],
+  "fully_semantically_verified_cards": 0
+}

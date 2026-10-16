@@ -6203,7 +6203,7 @@ public sealed partial class CardApi
 
     private object? DoGiveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword is Keyword.Fury or Keyword.Blitz
+        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Smokescreen
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
@@ -6236,6 +6236,7 @@ public sealed partial class CardApi
 
             if (keyword == Keyword.Fury) GiveFury(target, IntArg(a, 1));
             else if (keyword == Keyword.Blitz) GiveBlitz(target, IntArg(a, 1));
+            else if (keyword == Keyword.Smokescreen) GiveSmokescreen(target, IntArg(a, 1));
             else GiveKeyword(target, keyword);
         }
 

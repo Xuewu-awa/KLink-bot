@@ -3377,7 +3377,56 @@ public sealed partial class CardApi
         if (keyword == Keyword.Pinned) { PinUnit(target); return; }
         if (keyword == Keyword.Fury) { GiveFury(target); return; }
         if (keyword == Keyword.Blitz) { GiveBlitz(target); return; }
+        if (keyword == Keyword.Smokescreen) { GiveSmokescreen(target); return; }
         GiveKeywordCore(target, keyword);
+    }
+
+    // GiveSmokescreen uses positive sources; zero/negative giver sets only raw state.
+    public void GiveSmokescreen(CardInstance target, int giverId = 0)
+    {
+        if (!CanCardBeBuffed(target)) return;
+        if (giverId > 0)
+        {
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var prior)
+                && prior.Contains(giverId)) return;
+            var sources = prior is null ? new List<int>() : new List<int>(prior);
+            sources.Add(giverId);
+            ChangeSmokescreenBuff(target, giverId, 1);
+            target.ReceivedAbilitiesFromCards["smokescreen"] = sources;
+        }
+        else
+        {
+            if (target.Keywords.Contains(Keyword.Smokescreen)) return;
+            target.Keywords.Add(Keyword.Smokescreen);
+        }
+        if (!IsLocatedInDeck(target))
+        {
+            var values = new List<ActionValue2> { ActionValue2.Int("cardID", target.CardId) };
+            if (giverId != 0) values.Add(ActionValue2.Int("giverID", giverId));
+            _engine.FireSubAction("ZActionGiveSmokescreen", values);
+        }
+        RemoveSelfGuardSourceForSmokescreen(target);
+        FireAbilitiesChanged(target);
+    }
+
+    // Reconstruct only GiveSmokescreen's RemoveGuard(cardID,cardID,false,true)
+    // dependency. General Guard granting/removal and cached UpdateGuarded parity
+    // remain separate audit work; the engine currently computes guarded status.
+    private void RemoveSelfGuardSourceForSmokescreen(CardInstance target)
+    {
+        if (!target.ReceivedAbilitiesFromCards.TryGetValue("guard", out var sources)
+            || !sources.Contains(target.CardId)) return;
+        sources.RemoveAll(id => id == target.CardId);
+        var key = (target.CardId, false);
+        var buff = GetOrCreateBuff(target, target.CardId);
+        buff.Guard -= 1;
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
+        if (sources.Count == 0)
+        {
+            target.Keywords.Remove(Keyword.Guard);
+            target.ReceivedAbilitiesFromCards.Remove("guard");
+        }
+        if (!target.Keywords.Contains(Keyword.Guard)) FireAbilitiesChanged(target);
     }
 
     private void GiveKeywordCore(CardInstance target, string keyword)

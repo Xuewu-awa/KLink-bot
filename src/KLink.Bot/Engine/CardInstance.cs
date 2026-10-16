@@ -873,6 +873,9 @@ public sealed class CardInstance
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
             IntrinsicSmokescreen = Keywords.Contains(Keyword.Smokescreen),
+            GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Guard),
             SmokescreenBuffsBySource = BuffsBySource.Where(kv => kv.Value.Smokescreen != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Smokescreen),
@@ -963,6 +966,8 @@ public sealed class CardBuff
     public int Blitz { get; set; }
     /// <summary>combat_smokescreen source amount; separate from received-ability registration.</summary>
     public int Smokescreen { get; set; }
+    /// <summary>Type-6 guard detail, independent of raw flag and source registration.</summary>
+    public int Guard { get; set; }
     /// <summary>type-6 destruction amount; independent of raw hasDestruction and source arrays.</summary>
     public int Destruction { get; set; }
     public int Pinned { get; set; }
@@ -1002,7 +1007,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Destruction == 0 && Pinned == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
 
@@ -1022,6 +1027,7 @@ public sealed class CardBuff
         Fury = Fury,
         Blitz = Blitz,
         Smokescreen = Smokescreen,
+        Guard = Guard,
         Destruction = Destruction,
         Pinned = Pinned,
         CustomAbilityDetails = new HashSet<string>(CustomAbilityDetails, StringComparer.Ordinal),
@@ -1062,6 +1068,7 @@ public sealed record CardSnapshot(
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
     public bool IntrinsicSmokescreen { get; init; }
+    public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public int[] CardsBuffedByThisCard { get; init; } = [];
     public Dictionary<string, int> PinnedBuffsBySource { get; init; } = new(StringComparer.Ordinal);
