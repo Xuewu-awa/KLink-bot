@@ -1889,6 +1889,9 @@ public sealed partial class CardApi
         int toAttacker = CalculateCombatDamage(defender, attacker, false);
         toDefender = ExecuteOnDealDamageAddDamageAfterCalc(attacker, defender, toDefender, true, true, false);
         toAttacker = ExecuteOnDealDamageAddDamageAfterCalc(defender, attacker, toAttacker, true, false, false);
+        // ExecuteAttackCard i=104/202 captures locations before attack flags and receive callbacks.
+        var attackerOldLocation = attacker.Location;
+        var defenderOldLocation = defender.Location;
         _engine.SetAttackerHasAttacked(attacker); // ExecuteAttackCard i=279.
         defender.HasBeenAttackedThisTurn = true;
         // i=335..617: attacks against Locations preserve Shock.
@@ -1924,7 +1927,7 @@ public sealed partial class CardApi
             return (toDefender, toAttacker);
         }
         if (!defenderDestroyed && toDefender > 0 && defender.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(defender);
-        if (attackerDestroyed && defenderDestroyed) _engine.DestroyCombatPair(defender, attacker);
+        if (attackerDestroyed && defenderDestroyed) _engine.DestroyCombatPair(defender, attacker, defenderOldLocation, attackerOldLocation);
         else if (attackerDestroyed) _engine.Destroy(attacker, defender, destroyedInCombat: true);
         else if (defenderDestroyed) _engine.Destroy(defender, attacker, destroyedInCombat: true);
         if (!attackerDestroyed && toAttacker > 0 && attacker.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(attacker);

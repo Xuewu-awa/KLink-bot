@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("双亡旧位置：受伤回调搬移后仍使用执行阶段保存位置", CombatPairOldLocationCapture),
         new("同前线双亡：攻击方重排后编号保留，分阶段缓存及亡语", SameFrontlineCombatPairRefresh),
         new("战斗双亡刷新：防守方先移走并刷新，攻击方随后，亡语最后", CombatPairGuardedRefresh),
         new("单卡摧毁刷新：弃牌保留编号且回调读取新掩护", SingleDestroyGuardedRefresh),
@@ -15367,11 +15368,27 @@ internal static class SelfTest
         return new AuditProbeCleanup(()=>locals.Remove(trigger));
     }
 
-    private static string? SameFrontlineCombatPairRefresh(CardDatabase db)
+    private static string? SameFrontlineCombatPairRefresh(CardDatabase db) => SameFrontlineCombatPairRefresh(db,false);
+    private static string? CombatPairOldLocationCapture(CardDatabase db) => SameFrontlineCombatPairRefresh(db,true);
+
+    private static string? SameFrontlineCombatPairRefresh(CardDatabase db, bool relocateDuringDamage)
     {
         using var movement=InstallMovementObserverProbes();
         using var death=InstallDeathObserverProbe();
         const string name="card_unit_typhoon_mk_ib";
+        IDisposable? receiveCleanup=null;
+        if(relocateDuringDamage)
+        {
+            const string receive="OnReceiveDamage";
+            var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+            if(KismetLibrary.Default.FindProgram(name,receive) is not null)return "无法安全安装受伤搬移探针";
+            locals.Add(receive,new[]{
+                new KismetStep(0,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
+                    new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
+                new KismetStep(1,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+            receiveCleanup=new AuditProbeCleanup(()=>locals.Remove(receive));
+        }
+        using var cleanup=receiveCleanup;
         foreach(Side side in new[]{Side.Left,Side.Right})
         foreach(int guardMode in Enumerable.Range(0,3))
         foreach(bool hidden in new[]{false,true})
@@ -15389,20 +15406,35 @@ internal static class SelfTest
             foreach(var victim in new[]{left,right})
             {
                 victim.Definition=new CardDefinition{Name=name,Type="infantry",Attack=2,Defense=1,
-                    UsedTriggers=new[]{"OnCardLocationMoved","OnDestroyed"}};
+                    UsedTriggers=relocateDuringDamage?new[]{"OnCardLocationMoved","OnDestroyed","OnReceiveDamage"}:new[]{"OnCardLocationMoved","OnDestroyed"}};
                 victim.Keywords.Clear();victim.Keywords.Add(Keyword.Guard);victim.Keywords.Add(Keyword.Destruction);
                 victim.Attack=2;victim.Defense=victim.MaxDefense=1;victim.EnteredPlayOnTurn=-99;victim.OperationCost=0;
             }
             var defender=reverse?right:left;var attacker=reverse?left:right;
-            int defenderNumber=reverse?30:20;
+            int defenderNumber=relocateDuringDamage?9:reverse?30:20;
             state.ActiveSide=attacker.Owner;state.FrontlineOwner=attacker.Owner;state.SetKredits(attacker.Owner,20);
             state.Hq(Side.Left).IsBeingGuarded=true;state.Hq(Side.Right).IsBeingGuarded=true;
             var discard=state.CreateWithId(PlainUnit,side,200,CardLocation.Discard,77);
             var observer=state.CreateWithId("card_event_honorifics",side,202,side.DeckOf(),0);
             observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardLocationMoved"}};
-            int callbacks=0;string? failure=null;var prior=state.CardCreated;
+            int callbacks=0,received=0,moves=0;string? failure=null;var prior=state.CardCreated;
+            var priorMoved=state.CardMoved;
+            state.CardMoved=(card,from,to,changed,reason)=>{
+                if(ReferenceEquals(card,defender)&&to==CardLocation.Discard)
+                {
+                    moves++;
+                    if(from!=zone)failure="双亡移动必须携带ExecuteAttackCard入口保存的旧位置";
+                }
+                priorMoved?.Invoke(card,from,to,changed,reason);
+            };
             bool Marked(CardInstance card,string key)=>Equals(card.BlueprintVariables.GetValueOrDefault(key),true);
             state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                if(relocateDuringDamage&&received<2)
+                {
+                    received++;
+                    if(received==1)state.Move(defender,defender.Owner.HqOf(),9,notifyMoved:false,normalizeLocation:false);
+                    return;
+                }
                 callbacks++;
                 bool first=callbacks<=2;
                 if(defender.Location!=CardLocation.Discard||defender.LocationNumber!=defenderNumber
@@ -15421,7 +15453,7 @@ internal static class SelfTest
                     failure="同前线刷新不得重写无关支援区掩护";
             };
             if(!engine.Attack(attacker,defender,out string reason))return $"同前线测试攻击被拒：{reason}";
-            if(callbacks!=6||failure is not null)return $"{failure??"同前线探针次数错误"}：{side}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
+            if(callbacks!=6||moves!=1||received!=(relocateDuringDamage?2:0)||failure is not null)return $"{failure??"同前线探针次数错误"}：{side}/{guardMode}/{hidden}/{reverse}, callbacks={callbacks}";
         }
         return null;
     }

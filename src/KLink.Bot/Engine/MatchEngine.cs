@@ -3037,11 +3037,12 @@ public sealed class MatchEngine
     }
 
     /// <summary>ExecuteAttackCard i=3967..4442: simultaneous destruction with distinct killers.</summary>
-    internal void DestroyCombatPair(CardInstance defender, CardInstance attacker)
+    internal void DestroyCombatPair(CardInstance defender, CardInstance attacker,
+        CardLocation defenderOldLocation, CardLocation attackerOldLocation)
     {
         var cards = new[] { defender, attacker };
         var killers = new[] { attacker, defender };
-        var oldLocations = cards.Select(c => c.Location).ToArray();
+        var oldLocations = new[] { defenderOldLocation, attackerOldLocation };
         for (int i = 0; i < cards.Length; i++) BeforeDestroyed(cards[i], killers[i], true);
         foreach (var card in cards) FireLeaveTrigger(card, CardLocation.Discard, method: 1);
         for (int i = 0; i < cards.Length; i++)

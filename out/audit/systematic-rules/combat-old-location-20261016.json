@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-165",
+  "status": "double-death old locations captured at ExecuteAttackCard entry before receive/damage callbacks; complete combat parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\combat-old-location-evidence-20261016.json",
+  "evidence_sha256": "b7a817f7d3f8018db47c05f8b3055a6da9bbc78fe9f9381e5916d912379205eb",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-combat-old-location-20261016.py": "aacd077cd3a1e58bacae0df8c7c93f49d07385c7da712c4f995c522edfebb35c",
+    "D:\\Codex Workshop\\kards-install-review\\same-frontline-combat-evidence-20261016.json": "d3bd39bed13ac4f425d8fb8f13abe52cd44522bf4b402a0a9ad4d795d628f7ac",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-combat-old-location-before-20261016.txt": "09d8736a8024678de5eee3ab74a7884ec0527cf66935bbc4237f5e5db11716e1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-combat-old-location-after-20261016.txt": "f1abd34ef26a8b1f9c5e9da0fa613952ec33b7c08472997bf3b56a09b9131ed0",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "b32359bc7b4a2ab6a39590a64732cbb9adb1a300e523a6197064b45823338a41",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b11725f60a47db487833fc41175d816b886eb8a5da38bb21264b54269e6b444b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "3a3ae9252114e3034cadb5fa2308921447bbbaa5b045ba955f66a50776f55e25"
+  },
+  "tests": {
+    "release": "532/532",
+    "damage_callback_relocation_cases": 24,
+    "movement_death_observations": 144,
+    "receive_callback_observations": 48,
+    "matrix": "2 sides x survivor Guard none/raw/source x survivor hidden Covert false/true x attack direction",
+    "fixture": "Existing four-unit same-frontline attack. First own receive callback relocates defender to its support with number9 without movement events or normalization; second receive callback leaves it there.",
+    "checks": [
+      "Defender discard preserves current9 while movement from argument remains saved frontline",
+      "Frontline refresh occurs before defender own/observer movement despite current support relocation",
+      "Second attacker discard retains rearranged1; final survivors frontline0/1",
+      "Both support HQ caches stay untouched because refresh uses entry-time old locations",
+      "Existing same-frontline no-relocation and distinct-zone double-death tests continue passing"
+    ],
+    "regression": "Late DestroyCombatPair location capture refreshes wrong support zone and fails1/532; early ExecuteAttackCard-stage capture passes532/532."
+  },
+  "limits": [
+    "Only double-death old-location capture time is fixed. This does not certify complete damage/combat/notification semantics.",
+    "Callback relocation is a synthetic kernel probe, not a replay or claim of a particular real card complete implementation.",
+    "Calculating damage precedes ExecuteAttackCard and remains before capture; relocation during damage calculation is not separately tested.",
+    "Object removal/replacement, identity/lifetime and arbitrary nested callbacks remain open; no new native sorting certification.",
+    "Retreat/control, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and CopyData remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
