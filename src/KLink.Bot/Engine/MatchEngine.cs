@@ -3273,8 +3273,13 @@ public sealed class MatchEngine
             && (frontlineCount > 1 || oldLocation != CardLocation.BoardFrontline);
         bool shouldRetreat = releaseControl && (destinationFull || frontlineBlocked);
 
+        // Save the native wire/injection slot before leave callbacks (i=271/485/886).
+        int plannedSlot = releaseControl
+            ? destination == CardLocation.BoardFrontline && State.FrontlineOwner == fromSide && frontlineCount > 1
+                ? card.LocationNumber : 0
+            : destination == CardLocation.BoardFrontline ? 0 : State.AllCards.Count(x => x.Location == destination);
         FireLeaveTrigger(card, destination, method: 5);
-        if (!State.ChangeOwner(card, toSide))
+        if (!State.ChangeOwner(card, toSide, normalize: false))
         {
             return false;
         }
@@ -3302,9 +3307,33 @@ public sealed class MatchEngine
 
         // Both ownership branches notify first, then CardLocationMoved refreshes
         // physical locations before movement callbacks, including same-location changes.
-        State.Move(card, destination, locationNumber: null, changeOwner: true,
+        var destinationCards = State.AllCardsInBattleOrder.Where(x => x.Location == destination)
+            .OrderBy(x => x.LocationNumber).ToArray();
+        // Same-location injection first packs the other cards, then creates a gap.
+        if (destinationCards.Contains(card))
+        {
+            int number = 0;
+            foreach (var resident in destinationCards)
+                if (resident.CardId != card.CardId) resident.LocationNumber = number++;
+        }
+        foreach (var resident in destinationCards)
+            if (resident.CardId != card.CardId && resident.LocationNumber >= plannedSlot) resident.LocationNumber++;
+        State.Move(card, destination, locationNumber: plannedSlot, changeOwner: true,
             moveReason: releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake,
-            notifyMoved: false);
+            notifyMoved: false, normalizeLocation: false);
+        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
+        KLink.Bot.Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
+            (int)(releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake), out string reasonName);
+        FireSubAction("ZActionMoveCardToNewLocation", new[]
+        {
+            ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+            ActionValue2.Int("newLocationNumber", plannedSlot),
+            ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
+            ActionValue2.Int("attackLeft", card.RemainingAttacks),
+            ActionValue2.Int("nonVisualLocationNumber", plannedSlot), ActionValue2.Str("moveReason", reasonName),
+        });
         Api.RefreshLocationStatus(new[] { oldLocation, destination });
         State.CardMoved?.Invoke(card, oldLocation, destination, true,
             releaseControl ? CardMoveReason.ControlRelease : CardMoveReason.ControlTake);

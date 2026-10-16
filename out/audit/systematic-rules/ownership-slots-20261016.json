@@ -1,0 +1,43 @@
+{
+  "rule": "RULE-174",
+  "status": "ownership captures native planned slots, injects into physical locations and emits separate move notification before refresh/callback; full control parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\ownership-slots-evidence-20261016.json",
+  "evidence_sha256": "3bcdbdf952d82d605fd7792086e8c8065898d9e12664fc4cc6d42ccd2db4e34b",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-ownership-slots-20261016.py": "642ccca9c3bb57c2465664ec497c941d99c190037dd1a18838ee1a24a0df9d7d",
+    "D:\\Codex Workshop\\kards-install-review\\retreat-guarded-evidence-20261016.json": "c62937a83c0f2da2bf28bda1237b4c1cd949e7f4efd4c5c5ada990487573db1b",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-slots-before-20261016.txt": "eb4a66bce81869531c6f41e3302bcad98f0e196a2d019dbbd9a948cdfcf64f04",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-slots-after-20261016.txt": "bd7ccae97e340a3c1c3898b219424323c43ec384510238029a30b998867844b5",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "154d8313afd86c5c96f11b21ebcdf8d77b14169c2b7670bba7f69058894eb74a",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "34d53883085c325abf7f51e325179d7445b512e4057c761ff6dc58c299ba1385"
+  },
+  "tests": {
+    "release": "541/541",
+    "ownership_injection_cases": 80,
+    "matrix": "2 sides x5 routes(take support/release support/lone take front/release same front/blocked release front) x2 slot layouts(dense/sparse) x2 Fury x2 instigatorIDs(0,9004)",
+    "checks": [
+      "Take support planned count3: dense final3 versus sparse final1, notification retains3",
+      "Release support planned0 inserts before HQ and shifts HQ/residents to1/2/3",
+      "Same-frontline injection packs other cards first, then opens gap; unblocked release planned0",
+      "Blocked release captures old mover number1/20, refresh may yield1/2, then later retreats after enter chain",
+      "Exactly one 9-field ownership move notice before control move callback, ownership notice precedes it",
+      "Take movement1 and attack1/2, release movement0 and attack0 reflected in notification",
+      "Existing192 ownership guarded/quota cases remain passing"
+    ],
+    "regression": "Old append/no-move-notification path fails new Case1/541; captured planned slots + physical injection + separate move notice pass541/541."
+  },
+  "limits": [
+    "Only ownership slot selection/physical injection and separate movement notification repaired. Complete ownership payload/lifecycle still open.",
+    "Pre-leave slot capture is statically verified; this Case does not add leave-callback mutation of occupancy or ownership.",
+    "Native equal-slot stable ordering/GetAllCardInBattle order, invalid/replaced objects, arbitrary reentry and quota ABI remain open.",
+    "Notification bridge inspected from parsed pak only, absent from saved runtime list; no runtime equivalence claim for notifier/online writer.",
+    "Existing ownership-specific notification payload retained, not fully certified here.",
+    "Multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and complete real-card semantics remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

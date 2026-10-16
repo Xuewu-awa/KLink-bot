@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("控制权插槽：保存的通知编号与注入重排后编号分离", OwnershipSlotAndMoveNotification),
         new("控制权刷新：跨区/同区回调前额度和物理掩护已更新", OwnershipGuardedRefresh),
         new("退却刷新：通知先于回调，新旧区域掩护及位置已更新", RetreatGuardedRefresh),
         new("多提供者亡语：保存接收者、后续来源重读、迟注册者不插队", MultipleExternalDeathProviders),
@@ -15407,6 +15408,64 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? OwnershipSlotAndMoveNotification(CardDatabase db)
+    {
+        foreach(Side from in new[]{Side.Left,Side.Right})
+        foreach(int route in Enumerable.Range(0,5)) // take support / release support / lone take front / release front / blocked release front
+        foreach(bool sparse in new[]{false,true})
+        foreach(bool fury in new[]{false,true})
+        foreach(int sourceId in new[]{0,9004})
+        {
+            var(engine,state)=EmptyBoard(db);Side to=from.Opposite();bool release=route is 1 or 3 or 4;
+            var old=route>=2?CardLocation.BoardFrontline:from.HqOf();var dest=route>=2?old:to.HqOf();
+            var mover=state.CreateWithId(PlainUnit,from,60,old,sparse?20:1);
+            mover.Definition=new CardDefinition{Name=mover.Name,Type="infantry",Attack=2,Defense=5};mover.Keywords.Clear();
+            if(fury)mover.Keywords.Add(Keyword.Fury);
+            mover.HasMovedThisTurn=true;mover.HasAttackedThisTurn=true;mover.AttacksThisTurn=1;mover.SetRemainingAttacks(0);
+            CardInstance? a=null,b=null;
+            if(route!=2)
+            {
+                a=state.CreateWithId(PlainUnit,to,70,dest,sparse?10:route>=3?0:1);
+                b=state.CreateWithId(PlainUnit,to,71,dest,sparse?30:2);
+                a.Keywords.Clear();b.Keywords.Clear();
+            }
+            state.FrontlineOwner=route==4?from:to;
+            int planned=route==0?3:route==4?(sparse?20:1):0;
+            int expectedSlot=route==0?(sparse?1:3):route==4?(sparse?2:1):0;
+            int calls=0;string? failure=null;var prior=state.CardMoved;
+            state.CardMoved=(card,oldLocation,newLocation,changed,reason)=>{
+                if(ReferenceEquals(card,mover)&&reason==(release?CardMoveReason.ControlRelease:CardMoveReason.ControlTake))
+                {
+                    calls++;
+                    if(card.LocationNumber!=expectedSlot||card.Location!=dest||oldLocation!=old||newLocation!=dest||!changed)
+                        failure="控制权原生插入位置/同区留空或物理压紧错误";
+                    if(route==0&&(state.Hq(to).LocationNumber!=0||a!.LocationNumber!=(sparse?2:1)||b!.LocationNumber!=(sparse?3:2)))failure="夺取应以旧数量插槽注入";
+                    if(route==1&&(state.Hq(to).LocationNumber!=1||a!.LocationNumber!=2||b!.LocationNumber!=3))failure="释放应在0号注入且移动总部与住牌";
+                    if(route is 3 or 4&&(a!.LocationNumber!=(expectedSlot==0?1:0)||b!.LocationNumber!=(expectedSlot==2?1:2)))failure="同区注入必须先紧排其他卡再留空";
+                    var actions=state.ActionLog.SelectMany(x=>x.SubActions).ToArray();
+                    var moves=actions.Where(x=>x.Name=="ZActionMoveCardToNewLocation").ToArray();
+                    if(moves.Length!=1)failure="控制权须在移动回调前写独立移动通知";
+                    else
+                    {
+                        var v=moves[0].Values.ToDictionary(x=>x.Name);
+                        string oldName=old==CardLocation.BoardFrontline?"Board_Frontline":from==Side.Left?"Board_HQLeft":"Board_HQRight";
+                        string newName=dest==CardLocation.BoardFrontline?"Board_Frontline":to==Side.Left?"Board_HQLeft":"Board_HQRight";
+                        if(v.Count!=9||v["cardID"].Value!=card.CardId||v["instigatorID"].Value!=sourceId
+                            ||v["newLocationNumber"].Value!=planned||v["nonVisualLocationNumber"].Value!=planned
+                            ||v["movementLeft"].Value!=(release?0:1)||v["attackLeft"].Value!=(release?0:fury?2:1)
+                            ||v["oldLocation"].Text!=oldName||v["newLocation"].Text!=newName||v["moveReason"].Text!=(release?"Control_Release":"Control_Take"))failure="控制权移动通知应保留计划编号而非刷新后编号";
+                        if(Array.FindIndex(actions,x=>x.Name=="ZActionChangeUnitOwnership")>=Array.FindIndex(actions,x=>x.Name=="ZActionMoveCardToNewLocation"))failure="换主通知必须先于移动通知";
+                    }
+                }
+                prior?.Invoke(card,oldLocation,newLocation,changed,reason);
+            };
+            if(!engine.ChangeUnitOwnership(mover,sourceId,from,to,dest,release)||calls!=1||failure is not null)
+                return $"{failure??"控制权位置回调次数错误"}：{from}/{route}/{sparse}/{fury}/{sourceId}";
+            if(route==4&&mover.Location!=to.HqOf())return "受阻前线释放应在恢复位置和进场后退却";
+        }
+        return null;
     }
 
     private static string? OwnershipGuardedRefresh(CardDatabase db)
