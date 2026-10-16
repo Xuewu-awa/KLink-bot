@@ -1,0 +1,75 @@
+{
+  "rule": "RULE-153",
+  "status": "explicit guarded cache calculation and VM field restored; GiveGuard/RemoveGuard update before T29; other refresh lifecycle and attack cache consumers remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\update-guarded-evidence-20261016.json",
+  "evidence_sha256": "6d6d8f66b4d5b6327c05c1691d00491b58fdd32e526dfac18b246f33ad9e53ad",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-update-guarded-20261016.py": "70a881f413e86a1db982a9cdfc41d64b54c2cdf9eec3595edcdc19b8590c5ee5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-update-guarded-before-20261016.txt": "324d13351f9142f6177bc1b54e5f68a0d840d533aa0a9d57d28f04e2022e26db",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-update-guarded-after-20261016.txt": "1ad68d46094d3b8a068f7487aa1d7f39be2a8f70ac5430e6818d77cc0d50380c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "5b78f674e3b7dfe24c8b674602f40a77e5eba8ba85a963ffccd207dba499b644",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "50335e57a0d14decf676f9635855d4918dfeb04f32f8d73cd00efdcc5a7b9d79",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "ecc2a3694f0cbd20b94fd1d78361ba14f9cc9379a66faee1893cf03f0c797ee9",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "8bdb748813fd80f6d85c9b1aa895f473928ed138d2e534b75b08f52d6f66da98",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "f209fa485a0b16be09c67acc8fa58e6a7cea817bce276cfe99f63c66a4d0f5c0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "db314d9d4a62da3c8f0dd9548487bb6137c17f6e1fcac0092af6aabb24413d19"
+  },
+  "parsed_files_scanned": 2559,
+  "update_guarded_callsites": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "GiveGuard",
+      "index": 1058
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "MakeVeteran",
+      "index": 2303
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RefreshLocationStatus",
+      "index": 946
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RemoveGuard",
+      "index": 2354
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "function": "RevealCard",
+      "index": 122
+    }
+  ],
+  "tests": {
+    "release": "520/520",
+    "cache_vm_matrix": 960,
+    "give_remove_callback_sequences": 4,
+    "duplicate_slot_neighbor_cases": 3,
+    "matrix": "6 locations x old cache false/true x own raw false/true x own source false/true x own hidden-Covert false/true x neighbor none/raw/source-only/hidden-raw/revealed-raw x same/opposite owner",
+    "checks": [
+      "Only board locations update; unrelated location cache unchanged",
+      "Current effective Guard without hidden Covert clears its cache; neighbor eligibility uses raw Guard and excludes hidden Covert",
+      "Location adjacency uses physical list and slot +/-1, no owner gate; first two selected before Guard/Covert filter",
+      "Update emits no actions or triggers",
+      "VM cache read/write bypasses shadow storage; snapshot preserves cache independently",
+      "GiveGuard and RemoveGuard refresh board cache before T29; deck branch preserves old cache",
+      "Direct raw mutation keeps stale cache until explicit UpdateGuarded; existing raw GiveGuard and remaining raw RemoveGuard branches skip refresh"
+    ],
+    "regression": "Before primitive restoration, isolated cache-field scaffolding compiles but UpdateGuarded unsupported (1/520 fails); after function, VM and guard call wiring 520/520 pass."
+  },
+  "limits": [
+    "This restores explicit UpdateGuarded computation, raw cache VM access and GiveGuard/RemoveGuard callsites only. RevealCard, MakeVeteran and RefreshLocationStatus cache call timing remain unaudited/unwired.",
+    "MatchEngine.IsBeingGuarded still dynamically approximates attack filtering; it does not yet read the native cache. Full guarded-target parity is not claimed; misleading exact-parity comment corrected.",
+    "The private board calculation mirrors GetAdjacentCards(card,true) only; the existing general GetAdjacentCards dispatcher and includeCovert=false or nonboard behavior are not migrated.",
+    "Managed physical object order is used; native GetAllCardInBattle order, malformed/null UObject entries, duplicated lifecycle references and full collection identity are not certified.",
+    "Cache export is added; snapshot import, reset/copy/reidentify and full CopyData cache lifecycle remain open.",
+    "No new live capture, injection, client writes or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

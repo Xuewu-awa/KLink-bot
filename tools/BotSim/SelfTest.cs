@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("掩护缓存：有效自身Guard、原始邻卡Guard、Covert与字段读写", UpdateGuardedCacheContract),
         new("Guard撤销：指定/全部来源、原始尾链、完整通知与零账本清理", RemoveGuardSources),
         new("Guard授予：来源去重、原始分支、烟幕互斥与通知", GiveGuardSources),
         new("烟幕授予：来源去重、原始标志、牌库通知与自身Guard来源依赖", GiveSmokescreenSources),
@@ -15198,6 +15199,97 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? UpdateGuardedCacheContract(CardDatabase db)
+    {
+        foreach(CardLocation location in new[]{CardLocation.BoardHqLeft,CardLocation.BoardHqRight,CardLocation.BoardFrontline,
+            CardLocation.HandLeft,CardLocation.DeckRight,CardLocation.NotAvailable})
+        foreach(bool initial in new[]{false,true})
+        foreach(bool ownRaw in new[]{false,true})
+        foreach(bool ownSource in new[]{false,true})
+        foreach(bool ownHidden in new[]{false,true})
+        foreach(int neighbor in Enumerable.Range(0,5))
+        foreach(bool enemyOwner in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var card=state.CreateWithId(PlainUnit,Side.Left,60,location,10);card.IsBeingGuarded=initial;
+            card.Keywords.Remove(Keyword.Guard);if(ownRaw)card.Keywords.Add(Keyword.Guard);
+            if(ownSource)card.ReceivedAbilitiesFromCards["guard"]=new List<int>{0};
+            if(ownHidden){card.Keywords.Add(Keyword.Covert);card.IsRevealed=false;}
+            var adjacent=state.CreateWithId(PlainUnit,enemyOwner?Side.Right:Side.Left,61,location,9);
+            adjacent.Keywords.Remove(Keyword.Guard);
+            // none / raw / source-only / unrevealed raw / revealed Covert raw.
+            if(neighbor is 1 or 3 or 4)adjacent.Keywords.Add(Keyword.Guard);
+            if(neighbor==2)adjacent.ReceivedAbilitiesFromCards["guard"]=new List<int>{9};
+            if(neighbor is 3 or 4){adjacent.Keywords.Add(Keyword.Covert);adjacent.IsRevealed=neighbor==4;}
+            var untouched=state.CreateWithId(PlainUnit,Side.Left,62,location==CardLocation.BoardHqLeft?CardLocation.BoardHqRight:CardLocation.BoardHqLeft,0);
+            untouched.IsBeingGuarded=true;
+            int actions=state.ActionLog.Count;var trace=new List<string>();engine.Api.TriggerTrace=trace;
+            engine.Api.InvokeByName("UpdateGuarded",null,new object?[]{(int)location},
+                new EffectContext{Engine=engine,State=state,Self=card,Controller=Side.Left},out bool handled);
+            bool expected=location.IsBoard()?(!((ownRaw||ownSource)&&!ownHidden)&&neighbor is 1 or 4):initial;
+            if(!handled||card.IsBeingGuarded!=expected||!untouched.IsBeingGuarded)
+                return $"UpdateGuarded缺失或缓存分支错误：{location}/{initial}/{ownRaw}/{ownSource}/{ownHidden}/{neighbor}/{enemyOwner}";
+            if(card.Snapshot().IsBeingGuarded!=expected)return "掩护缓存未保留到快照";
+            if(state.ActionLog.Count!=actions||trace.Count!=0)return "UpdateGuarded只能写缓存，不应发动作或事件";
+            card.BlueprintVariables["isBeingGuarded"]=!expected;
+            KismetStep Set(int i,string key,KismetExpr value,string scope)=>new(i,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),value,null,-1,key,null){DestinationScope=scope};
+            var program=new KismetProgram(new[]{
+                Set(0,"before",new(){Var="isBeingGuarded",Scope="instance"},"local"),
+                Set(1,"isBeingGuarded",new(){Bool=!expected},"instance"),
+                Set(2,"after",new(){Var="isBeingGuarded",Scope="instance"},"local"),
+                new KismetStep(3,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)},0);
+            var values=engine.Api.Vm.RunLocalProgramMulti(program,new EffectContext{Engine=engine,State=state,Self=card,Controller=Side.Left},null,"before","after");
+            if(!Equals(values["before"],expected)||!Equals(values["after"],!expected)||card.IsBeingGuarded!=!expected
+                ||card.BlueprintVariables.ContainsKey("isBeingGuarded"))return "VM掩护缓存原始字段不应被影子值覆盖或写入动作逻辑";
+        }
+        using var probe=InstallAbilitiesChangedProbes();
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool deck in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);var location=deck?side.DeckOf():side.HqOf();
+            var target=state.CreateWithId(PlainUnit,side,60,location,10);target.IsBeingGuarded=true;
+            target.Keywords.Remove(Keyword.Guard);target.Keywords.Remove(Keyword.Smokescreen);
+            var adjacent=state.CreateWithId(PlainUnit,side,61,location,9);adjacent.Keywords.Remove(Keyword.Guard);
+            var observer=state.CreateWithId("card_event_honorifics",side,20,side.DeckOf(),0);
+            observer.Definition=new CardDefinition{Name=observer.Name,UsedTriggers=new[]{"OnOtherCardAbilitiesChanged"}};
+            var seen=new List<(bool,bool)>();var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name=="card_unit_routed_troops")seen.Add((target.IsBeingGuarded,adjacent.IsBeingGuarded));};
+            var ctx=new EffectContext{Engine=engine,State=state,Self=target,Controller=side};
+            engine.Api.InvokeByName("GiveGuard",null,new object?[]{60,0},ctx,out _);
+            engine.Api.InvokeByName("RemoveGuard",null,new object?[]{60,0,true,false},ctx,out _);
+            if(!seen.SequenceEqual(deck?new[]{(true,false),(true,false)}:new[]{(false,true),(false,false)}))
+                return "Guard授予/撤销必须在T29前更新棋盘缓存，牌库缓存保持";
+            if(!deck)
+            {
+                adjacent.Keywords.Add(Keyword.Guard);
+                if(target.IsBeingGuarded||target.Snapshot().IsBeingGuarded)return "raw变化不应隐式重新计算掩护缓存";
+                engine.Api.UpdateGuarded(location);
+                if(!target.IsBeingGuarded)return "显式刷新须消除raw变化后的旧缓存";
+                target.Keywords.Add(Keyword.Guard);target.IsBeingGuarded=true;
+                engine.Api.GiveGuard(target);
+                if(!target.IsBeingGuarded)return "已有原始Guard的重复授予分支不得刷新缓存";
+                target.ReceivedAbilitiesFromCards["guard"]=new List<int>{9,10};
+                engine.Api.RemoveGuard(target,9,false,true);
+                if(!target.IsBeingGuarded)return "原始Guard仍真时撤销尾链不得刷新缓存";
+            }
+        }
+        foreach(int mode in Enumerable.Range(0,3))
+        {
+            var(engine,state)=EmptyBoard(db);var target=state.CreateWithId(PlainUnit,Side.Left,60,CardLocation.BoardHqLeft,10);
+            target.Keywords.Remove(Keyword.Guard);
+            for(int i=0;i<3;i++)
+            {
+                var other=state.CreateWithId(PlainUnit,Side.Left,61+i,CardLocation.BoardHqLeft,9);
+                other.Keywords.Remove(Keyword.Guard);
+                if(i==2||mode==2&&i==0)other.Keywords.Add(Keyword.Guard);
+                if(mode==1&&i<2){other.Keywords.Add(Keyword.Covert);other.IsRevealed=false;}
+            }
+            engine.Api.UpdateGuarded(CardLocation.BoardHqLeft);
+            if(target.IsBeingGuarded!=(mode==2))return "GetAdjacentCards(true)先取两张再检查Guard/Covert，不得跳过无效邻卡去取第三张";
         }
         return null;
     }

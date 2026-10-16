@@ -3406,8 +3406,7 @@ public sealed partial class CardApi
             _engine.FireSubAction("ZActionGiveGuard", values);
         }
         if (alreadyRaw) return;
-        // The pak calls UpdateGuarded here only outside the deck. Native cached
-        // isBeingGuarded lifecycle is still unmodeled; do not claim cache parity.
+        if (!inDeck) UpdateGuarded(target.Location);
         RemoveSmokescreen(target, instigatorId, removeAllGivers: true, skipAction: inDeck);
         FireAbilitiesChanged(target);
     }
@@ -3574,6 +3573,28 @@ public sealed partial class CardApi
         FireAbilitiesChanged(target);
     }
 
+    // BP UpdateGuarded updates an explicit cache only for board locations.
+    // Current-card effective Guard differs from adjacent-card raw Guard.
+    public void UpdateGuarded(CardLocation location)
+    {
+        if (!location.IsBoard()) return;
+        var cards = State.AllCardsInBattleOrder.Where(c => c.Location == location).ToArray();
+        foreach (var card in cards)
+        {
+            if (card.HasGuard && !IsUnrevealedCovertCard(card))
+            {
+                card.IsBeingGuarded = false;
+                continue;
+            }
+            // GetAdjacentCards(card,true) selects up to two physical neighbors
+            // before UpdateGuarded filters hidden Covert and raw hasGuard.
+            int lower = unchecked(card.LocationNumber - 1), higher = unchecked(card.LocationNumber + 1);
+            card.IsBeingGuarded = cards
+                .Where(other => other.LocationNumber == lower || other.LocationNumber == higher)
+                .Take(2).Any(other => other.Keywords.Contains(Keyword.Guard) && !IsUnrevealedCovertCard(other));
+        }
+    }
+
     // Guard withdrawal differs from smoke: last-source removal clears the raw
     // flag/key, and the tail tests raw Guard rather than the effective getter.
     public void RemoveGuard(CardInstance target, int instigatorId = 0,
@@ -3613,8 +3634,7 @@ public sealed partial class CardApi
                 ActionValue2.Bool("RemoveAllGivers", removeAllGivers) });
         }
         if (target.Keywords.Contains(Keyword.Guard)) return;
-        // Native UpdateGuarded(location) precedes T29 here. Cached guarded-state
-        // timing remains unmodeled; only source/raw/ledger/notification/T29 parity.
+        UpdateGuarded(target.Location);
         FireAbilitiesChanged(target);
     }
 

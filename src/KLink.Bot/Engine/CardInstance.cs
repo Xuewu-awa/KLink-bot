@@ -43,6 +43,8 @@ public sealed class CardInstance
     // ---- 位置 ----
     public CardLocation Location { get; set; }
     public int LocationNumber { get; set; }
+    /// <summary>Native isBeingGuarded cache (+0x288); refreshed explicitly by UpdateGuarded.</summary>
+    public bool IsBeingGuarded { get; set; }
 
     /// <summary>
     /// 这张卡最近一次从手牌触发时收到的目标。
@@ -876,6 +878,7 @@ public sealed class CardInstance
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
+            IsBeingGuarded = IsBeingGuarded,
             IntrinsicGuard = Keywords.Contains(Keyword.Guard),
             IntrinsicSmokescreen = Keywords.Contains(Keyword.Smokescreen),
             GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
@@ -1072,6 +1075,7 @@ public sealed record CardSnapshot(
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
+    public bool IsBeingGuarded { get; init; }
     public bool IntrinsicGuard { get; init; }
     public bool IntrinsicSmokescreen { get; init; }
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);

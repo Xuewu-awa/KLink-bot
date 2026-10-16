@@ -1551,6 +1551,7 @@ public sealed partial class CardApi
 
                 return c.State.Board(card.Owner).Where(x => x.LocationNumber < card.LocationNumber).ToList();
             },
+            ["UpdateGuarded"] = (c, r, a) => { UpdateGuarded((CardLocation)IntArg(a, 0)); return null; },
             ["GetAdjacentCards"] = (c, r, a) =>
             {
                 // ⚠️ 必须用 `TargetArg`（**实参优先**）—— `r` 恒为 `cardFunction`

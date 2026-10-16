@@ -1452,6 +1452,7 @@ public sealed class KismetVm
             //    `hasMobilize`(2) / `hasDeployment`(1) —— 全部读成 null → 判假。
             //    `hasCovert` 以前是**显式不认**（"本内核的 Keyword 里没有 Covert"），
             //    现在 `Keyword.Covert` 有了（CDO 字段 11 张），所以照常认。
+            "isBeingGuarded" => card.IsBeingGuarded,
             "hasGuard" => card.Keywords.Contains(Keyword.Guard),
             "hasBlitz" => card.Keywords.Contains(Keyword.Blitz),
             "hasAmbush" => card.Keywords.Contains(Keyword.Ambush),
@@ -1552,7 +1553,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand" or "hasSmokescreen" or "hasGuard")
+                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand" or "hasSmokescreen" or "hasGuard" or "isBeingGuarded")
                     return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
@@ -1773,6 +1774,11 @@ public sealed class KismetVm
                     else if (name == "selectTargetOnPlayedFromHand")
                     {
                         self.SelectTargetOnPlayedFromHand = Truthy(value);
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "isBeingGuarded")
+                    {
+                        self.IsBeingGuarded = Truthy(value);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name is "hasSmokescreen" or "hasGuard")

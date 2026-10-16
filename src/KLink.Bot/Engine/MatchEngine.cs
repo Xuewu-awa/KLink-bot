@@ -2814,16 +2814,11 @@ public sealed class MatchEngine
     }
 
     /// <summary>
-    /// 「这张卡被掩护了吗」—— 逐字对应 `BP_CardFunctions::UpdateGuarded`
-    /// （62 条语句，出处见 <see cref="LegalTargets"/> 里的逐语句引用）。
-    ///
-    /// 判据：
-    /// 1. 只对棋盘上的卡（location ∈ {5,6,7}）成立；
-    /// 2. **自己有 Guard ⇒ 恒 false**（掩护卡自己不免疫，si=686/718）；
-    /// 3. 否则 ⟺ **同一条线上 locationNumber ± 1 的邻卡有 Guard**（si=847/1276/1405）。
-    ///
-    /// 蓝图里还有一条 `!IsUnrevealedCovertCard` 的过滤（si=564/1206），
-    /// 由卡面 Covert 关键字和 `IsRevealed` 状态共同判定。
+    /// Legacy dynamic approximation used by attack target filtering.
+    /// Native UpdateGuarded writes CardInstance.IsBeingGuarded explicitly and
+    /// distinguishes effective own Guard, raw neighbor Guard and hidden Covert.
+    /// This helper still reads raw Guard and owner adjacency. Migrate consumers
+    /// only after RevealCard/MakeVeteran/RefreshLocationStatus cache timing is audited.
     /// </summary>
     public bool IsBeingGuarded(CardInstance card)
     {
