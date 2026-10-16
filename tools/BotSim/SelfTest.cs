@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("换主离场回调：目标占用变化保留插槽，提前改主不截断后续", OwnershipLeaveMutation),
         new("换主专用通知：7字段顺序、位置/阵营文本与标志编码", OwnershipNotificationPayload),
         new("控制权插槽：保存的通知编号与注入重排后编号分离", OwnershipSlotAndMoveNotification),
         new("控制权刷新：跨区/同区回调前额度和物理掩护已更新", OwnershipGuardedRefresh),
@@ -15409,6 +15410,64 @@ internal static class SelfTest
             locals.Add(spec.Item2,steps);installed.Add((locals,spec.Item2));
         }
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
+    }
+
+    private static string? OwnershipLeaveMutation(CardDatabase db)
+    {
+        const string name="card_unit_m36_destroyer",trigger="OnLeaveBoardOrOwner";
+        var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        if(KismetLibrary.Default.FindProgram(name,trigger) is not null)return "无法安全安装换主离场探针";
+        locals.Add(trigger,new[]{new KismetStep(0,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},
+            new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null),
+            new KismetStep(1,"return",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),null,null,-1,null,null)});
+        using var cleanup=new AuditProbeCleanup(()=>locals.Remove(trigger));
+        foreach(Side from in new[]{Side.Left,Side.Right})
+        foreach(int route in Enumerable.Range(0,3)) // take support / release support / release same frontline
+        foreach(int occupancyChange in Enumerable.Range(0,3)) // none / append / remove resident
+        foreach(bool ownerAlreadyChanged in new[]{false,true})
+        foreach(bool changeNumber in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);Side to=from.Opposite();bool release=route!=0;
+            var old=route==2?CardLocation.BoardFrontline:from.HqOf();var destination=route==2?old:to.HqOf();
+            var mover=state.CreateWithId(name,from,60,old,route==2?1:20);
+            mover.Definition=new CardDefinition{Name=name,Type="infantry",UsedTriggers=new[]{trigger}};mover.Keywords.Clear();
+            mover.HasMovedThisTurn=true;mover.HasAttackedThisTurn=true;mover.AttacksThisTurn=1;mover.SetRemainingAttacks(0);
+            var a=state.CreateWithId(PlainUnit,to,70,destination,route==2?0:1);
+            var b=state.CreateWithId(PlainUnit,to,71,destination,2);a.Keywords.Clear();b.Keywords.Clear();
+            state.FrontlineOwner=to;int leaves=0,moves=0;string? failure=null;var created=state.CardCreated;
+            state.CardCreated=made=>{created?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                leaves++;
+                if(occupancyChange==1){var added=state.CreateWithId(PlainUnit,to,72,destination,100);added.Keywords.Clear();}
+                if(occupancyChange==2)state.Remove(a);
+                if(changeNumber)mover.LocationNumber=77;
+                if(ownerAlreadyChanged&&!state.ChangeOwner(mover,to,normalize:false))failure="未制造离场中改主状态";
+            };
+            var prior=state.CardMoved;
+            state.CardMoved=(card,fromLocation,toLocation,changed,reason)=>{
+                if(ReferenceEquals(card,mover))
+                {
+                    moves++;
+                    int expectedSlot=route==0?(occupancyChange==2?2:3):0;
+                    if(card.Owner!=to||card.Location!=destination||card.LocationNumber!=expectedSlot||fromLocation!=old||toLocation!=destination||!changed)
+                        failure="换主离场回调后应继续原位置流程";
+                    var owner=state.ActionLog.SelectMany(a=>a.SubActions).SingleOrDefault(a=>a.Name=="ZActionChangeUnitOwnership");
+                    var move=state.ActionLog.SelectMany(a=>a.SubActions).SingleOrDefault(a=>a.Name=="ZActionMoveCardToNewLocation");
+                    if(owner is null||move is null)failure="离场已改主不能漏掉后续通知";
+                    else if(move.Values.First(v=>v.Name=="newLocationNumber").Value!=(route==0?3:0)
+                        ||move.Values.First(v=>v.Name=="nonVisualLocationNumber").Value!=(route==0?3:0)
+                        ||move.Values.First(v=>v.Name=="movementLeft").Value!=(release?0:1)
+                        ||move.Values.First(v=>v.Name=="attackLeft").Value!=(release?0:1)
+                        ||owner.Values.First(v=>v.Name=="oldSide").Text!=(from==Side.Left?"left":"right"))
+                        failure="占用/卡编号/控制方变化后仍应使用保存插槽及旧阵营，额度依分支处理";
+                }
+                prior?.Invoke(card,fromLocation,toLocation,changed,reason);
+            };
+            bool success=engine.ChangeUnitOwnership(mover,9004,from,to,destination,release);
+            if(!success||leaves!=1||moves!=1||failure is not null
+                ||state.Cards(to,destination).Count(c=>ReferenceEquals(c,mover))!=1||state.Cards(from,old).Any(c=>ReferenceEquals(c,mover)))
+                return $"{failure??"离场已改主不应提前失败或破坏阵营索引"}：{from}/{route}/{occupancyChange}/{ownerAlreadyChanged}/{changeNumber}, result={success}, leave={leaves}, move={moves}";
+        }
+        return null;
     }
 
     private static string? OwnershipSlotAndMoveNotification(CardDatabase db) => OwnershipSlotAndMoveNotification(db,false);

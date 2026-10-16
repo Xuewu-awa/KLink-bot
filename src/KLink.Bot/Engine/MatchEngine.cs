@@ -3279,7 +3279,9 @@ public sealed class MatchEngine
                 ? card.LocationNumber : 0
             : destination == CardLocation.BoardFrontline ? 0 : State.AllCards.Count(x => x.Location == destination);
         FireLeaveTrigger(card, destination, method: 5);
-        if (!State.ChangeOwner(card, toSide, normalize: false))
+        // The native Blueprint assigns side after the leave callbacks unconditionally.
+        // A callback that already selected toSide must not cancel the remaining transfer.
+        if (card.Owner != toSide && !State.ChangeOwner(card, toSide, normalize: false))
         {
             return false;
         }

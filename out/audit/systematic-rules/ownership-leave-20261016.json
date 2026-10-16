@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-176",
+  "status": "ownership leave callback already selecting target side no longer aborts native transfer tail; pre-leave slots preserved across occupancy/number mutations",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\ownership-leave-evidence-20261016.json",
+  "evidence_sha256": "986dc754df33844c29f091fcc5054bdfc0bedda7b442fcf2a6e269c47d77acd5",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-ownership-leave-20261016.py": "e7bd748f8b10abf922df4ecb2380d37ca367d5a8303f469d2fd46de41337d2dd",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-leave-before-20261016.txt": "110e48348352501f7121a02d62aea896bd2280d44188fcb82f738c481980af53",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-ownership-leave-after-20261016.txt": "224818462de1f182deaccd3da972f22092ca602931eb5780dfebd4c8575a56a0",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "a9fab99ed423e62433692ed40c4d6b19b66a640a2d4d3cc2470fe870e80536fd"
+  },
+  "tests": {
+    "release": "543/543",
+    "real_ownership_entry_cases": 72,
+    "matrix": "2 sides x3 routes(take support/release support/release same frontline) x3 destination occupancy mutations(none/add/remove) x2 owner mutations(none/already-toSide) x2 mover-number mutations(none/77)",
+    "checks": [
+      "Exactly one leave and one control move callback, success even if leave callback already changes owner to target",
+      "Saved wire slot remains take3/release0 despite occupancy changes or number77 in leave callback",
+      "Actual injected position follows current destination residents: removal can yield actual2 while notification remains3",
+      "Movement/attack quotas still reset on take and retained on release; oldSide notification remains original from",
+      "Side index contains transferred object exactly once in target side and never in former side",
+      "Existing80 slot/80 typed-notification/192 guard-quota cases remain passing"
+    ],
+    "regression": "Old same-target ChangeOwner return cancels remainder: resultFalse,leave1,move0;1/543 fails. Conditional index transfer continues native tail and passes543/543."
+  },
+  "limits": [
+    "Only retained same-object owner already-toSide case repaired; raw inconsistent side-index writes are not certified.",
+    "Synthetic callbacks model ownership and occupancy mutation; this is not complete nested ChangeUnitOwnership execution proof.",
+    "New mutation matrix excludes blocked/frontline fallback and take-lone-front callback mutations; existing nonmutation coverage retained.",
+    "Native object deletion/replacement/identity, equal-slot order, quota ABI, query/creation side effects and arbitrary nested effects remain open.",
+    "Multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and complete real-card/control semantics remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
