@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-147",
+  "status": "native effective smoke getter and raw VM field separated; attack gates use effective smoke",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\native-smoke-read-evidence-20261016.json",
+  "evidence_sha256": "ed7c1f56b01ee1d8b165e3c1c8542212685410b2214b344262a81bd1a06e4206",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\cardsCheckFunctions.functions.json": "ed57bef6b025dfc6e513c0c6e10035a67a8bee45c9db547bcd4487b3d296408b",
+    "D:\\Codex Workshop\\kards-install-review\\audit-native-smoke-read-20261016.py": "c052c106e6bda6e6a4b94a9ad10a4a55712e2ee322c6e57415aba59aca324ddf",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-native-smoke-read-before-20261016.txt": "dddee7d5b39b72577a7d1cf0e4af2e4344a62d5a2c0dda65a4a89e1fc09ad438",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-native-smoke-read-after-20261016.txt": "8f4f8ccf696d975771866ff2bdd3be0bbfdc0cfb6445e6c1644a305d64c37ba1",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "acf07d5e9806b064cf9aef33c7c0ebd811e1cbc2bbc9b7283b7ced5d51562cde",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "87691ecc4cf23e10b5bd300cdebebf690e399c4e187bda5bbce860614245f490",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "c8f20e4d46c729cb1766b71300fccbf882e4c464442934a836f43efe95f792a2",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "a996bcd0f830c4c56c5c510ce85dcb11beb4552e2804fbf8f6c4ec8ef5f5d09b"
+  },
+  "tests": {
+    "release": "514/514",
+    "getter_vm_cases": 144,
+    "attack_cases": 8,
+    "getter_matrix": "2 sides x raw false/true x source [9]/absent/empty/[0]/[-5]/[9,9] x suppressed/unsuppressed x board/deck/NotAvailable",
+    "checks": [
+      "Effective getter returns raw OR source-array Count>0, without positive-ID filtering",
+      "Raw VM member ignores shadow dictionary and writes raw flag without clearing source array",
+      "Raw member assignment has no automatic action or event dispatch",
+      "LegalTargets and actual attack both reject effective smoke from raw or source",
+      "Source arrays remain unchanged, including duplicate/nonpositive IDs"
+    ],
+    "regression": "Original getter returns false for raw=false with source [9] (1/514); corrected getter/VM/attack consumers pass 514/514."
+  },
+  "limits": [
+    "Give/RemoveSmokescreen source registration, source buff ledger, giverID/RemoveAllGivers/skipAction and complete notifications remain open; no writer migration is claimed.",
+    "Map lookup and FString helper internals are not transitively reverse-engineered; key references, reflected map/array layout and final Num>0 check are mapped from this function.",
+    "Malformed native arrays with negative Num, map mutation between the duplicated lookups and invalid UObject memory are not represented by managed lists.",
+    "Snapshot effective-keyword export/import, other raw smoke consumers, creation/frontline removal and full CopyData semantics are not certified here.",
+    "No new live memory capture, client writes, injection or replay authority. Full per-card semantic verification remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

@@ -2472,7 +2472,7 @@ public sealed class MatchEngine
         // 烟幕（`CanAttack` si=3596-3793，出处见 `LegalTargets` 里那段注释）。
         // 蓝图里这一段的落点比掩护更靠后（si=3596 vs si=2627），所以放在射程之后、
         // 与蓝图同序 —— 拒绝本身与顺序无关，但保持同序便于以后逐条对账。
-        if (defender.Keywords.Contains(Keyword.Smokescreen))
+        if (defender.HasSmokescreen)
         {
             reason = "目标有烟幕（无法被攻击）";
             State.UnimplementedCalls[defender.IsHq
@@ -2682,7 +2682,7 @@ public sealed class MatchEngine
         // </code>
         // 卡面互证：`card_unit_85_pioneer_company` / `card_unit_coastwatchers` /
         // `card_unit_royal_ulster_rifles` 等 54 张的「Smokescreen」文本。
-        targets = targets.Where(t => !t.Keywords.Contains(Keyword.Smokescreen)).ToList();
+        targets = targets.Where(t => !t.HasSmokescreen).ToList();
 
         // 末尾这条 `CanReachAcrossFrontline` 是射程判据（见 CanReachAcrossFrontline 的出处注释）。
         // ⚠️ 它现在对**所有**分支一致生效（包括原来那条 Guard 分支）——

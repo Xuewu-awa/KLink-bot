@@ -1552,7 +1552,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand")
+                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand" or "hasSmokescreen")
                     return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
@@ -1773,6 +1773,12 @@ public sealed class KismetVm
                     else if (name == "selectTargetOnPlayedFromHand")
                     {
                         self.SelectTargetOnPlayedFromHand = Truthy(value);
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "hasSmokescreen")
+                    {
+                        if (Truthy(value)) self.Keywords.Add(Keyword.Smokescreen);
+                        else self.Keywords.Remove(Keyword.Smokescreen);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name == "hasDestruction")

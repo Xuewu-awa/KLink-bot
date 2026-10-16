@@ -59,6 +59,7 @@ internal static class SelfTest
         new("重置派发：自身无位置门、T53后查快照含自身且不重复筛选", ResetDispatchSnapshotContract),
         new("增益目标查询：JSON名单独立，重置清账后不因JSON残留重现", BuffTargetQueryJsonIndependence),
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
+        new("原生烟幕读取：原始标志或非空来源，VM字段独立且不发事件", NativeSmokescreenReadContract),
         new("烟幕移除事件：T48先于T29、包含自身及查询快照", SmokescreenLossDispatchContract),
         new("攻击后T4：自身后查询、保存对象、按ID排除及费用伤害载荷", AttackAfterQuerySnapshot),
         new("攻击前T13：自身抑制门、回调后查询及接收者快照", AttackBeforeQuerySnapshot),
@@ -15192,6 +15193,62 @@ internal static class SelfTest
                 || action.Values[0].Value != unit.CardId || action.Values[1].Value != (route == 3 ? 0 : sourceId)
                 || action.Values[2].Value != -1 || action.Values[2].Text != "Board_HQRight")
                 return $"{method} 来源={sourceId} 通知载荷错误：" + string.Join(",", action.Values.Select(x => $"{x.Name}={x.Value}/{x.Text}"));
+        }
+        return null;
+    }
+
+    private static string? NativeSmokescreenReadContract(CardDatabase db)
+    {
+        int[]?[] sources = { new[] { 9 }, null, Array.Empty<int>(), new[] { 0 }, new[] { -5 }, new[] { 9, 9 } };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool raw in new[] { false, true })
+        foreach (int[]? ids in sources)
+        foreach (bool suppressed in new[] { false, true })
+        foreach (CardLocation location in new[] { side.HqOf(), side.DeckOf(), CardLocation.NotAvailable })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, location, 1);
+            card.Keywords.Remove(Keyword.Smokescreen);if (raw) card.Keywords.Add(Keyword.Smokescreen);
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            if (ids is not null) card.ReceivedAbilitiesFromCards["smokescreen"] = ids.ToList();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            object? Read() => engine.Api.InvokeByName("getHasSmokescreen", card, new object?[] { null }, ctx, out _);
+            bool nonempty = ids is { Length: > 0 };
+            if (!Equals(Read(), raw || nonempty))
+                return $"原生烟幕getter遗漏来源数组：{side}/{raw}/{(ids is null ? "absent" : string.Join(",", ids))}/{suppressed}/{location}, result={Read()}";
+            int actions = state.ActionLog.Count;var trace = new List<string>();engine.Api.TriggerTrace = trace;
+            card.BlueprintVariables["hasSmokescreen"] = !raw;
+            KismetStep Set(int i, string key, KismetExpr value, string scope) => new(i, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null) { DestinationScope = scope };
+            var program = new KismetProgram(new[] {
+                Set(0, "beforeRaw", new() { Var = "hasSmokescreen", Scope = "instance" }, "local"),
+                Set(1, "hasSmokescreen", new() { Bool = !raw }, "instance"),
+                Set(2, "afterRaw", new() { Var = "hasSmokescreen", Scope = "instance" }, "local"),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "beforeRaw", "afterRaw");
+            if (!Equals(result["beforeRaw"], raw) || !Equals(result["afterRaw"], !raw)
+                || card.Keywords.Contains(Keyword.Smokescreen) != !raw || card.BlueprintVariables.ContainsKey("hasSmokescreen")
+                || !Equals(Read(), !raw || nonempty)) return "VM原始烟幕字段与有效来源读取混淆或存在影子字段";
+            if (state.ActionLog.Count != actions || trace.Count != 0) return "原始烟幕字段写入不应自动调用授予/移除或派发事件";
+            if ((ids is null && card.ReceivedAbilitiesFromCards.ContainsKey("smokescreen"))
+                || (ids is not null && !card.ReceivedAbilitiesFromCards["smokescreen"].SequenceEqual(ids))) return "只读/原始写入破坏独立烟幕来源数组";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool raw in new[] { false, true })
+        foreach (bool fromSource in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);var attacker = MakeActionQuotaProbe(state, side, "infantry");
+            var defender = state.CreateWithId(PlainUnit, side.Opposite(), 61, side.Opposite().HqOf(), 1);
+            defender.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry", Attack = 0, Defense = 20 };
+            defender.Defense = defender.MaxDefense = 20;defender.Attack = 0;
+            defender.Keywords.Remove(Keyword.Smokescreen);if (raw) defender.Keywords.Add(Keyword.Smokescreen);
+            if (fromSource) defender.ReceivedAbilitiesFromCards["smokescreen"] = new List<int> { 0 };
+            bool can = !raw && !fromSource;
+            if (engine.LegalTargets(attacker).Contains(defender) != can || engine.Attack(attacker, defender) != can)
+                return $"攻击烟幕判据未使用有效来源：{side}/{raw}/{fromSource}";
+            if (defender.Defense != (can ? 18 : 20) || state.Kredits(side) != 20)
+                return "烟幕拒绝的攻击不应造成伤害或扣费";
         }
         return null;
     }

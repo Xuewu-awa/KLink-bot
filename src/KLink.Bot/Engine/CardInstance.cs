@@ -213,8 +213,11 @@ public sealed class CardInstance
         || (ReceivedAbilitiesFromCards.TryGetValue("fury", out var givers) && givers.Count > 0);
     public bool HasBlitz => Keywords.Contains(Keyword.Blitz)
         || (ReceivedAbilitiesFromCards.TryGetValue("blitz", out var givers) && givers.Count > 0);
+    // Native getHasSmokescreen: raw flag OR a nonempty registered giver array.
+    public bool HasSmokescreen => Keywords.Contains(Keyword.Smokescreen)
+        || (ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var sources) && sources.Count > 0);
     public bool HasKeyword(string keyword) => keyword switch {
-        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, _ => Keywords.Contains(keyword),
+        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, Keyword.Smokescreen => HasSmokescreen, _ => Keywords.Contains(keyword),
     };
     public int MaxAttacksThisTurn => HasFury ? 2 : 1;
 
