@@ -61,6 +61,7 @@ internal static class SelfTest
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
         new("烟幕授予：来源去重、原始标志、牌库通知与自身Guard来源依赖", GiveSmokescreenSources),
         new("烟幕来源撤销：指定/全部、空键、账本及skipAction通知", RemoveSmokescreenSources),
+        new("原生Guard读取：原始标志或非空来源，VM字段与账本独立", NativeGuardReadContract),
         new("原生烟幕读取：原始标志或非空来源，VM字段独立且不发事件", NativeSmokescreenReadContract),
         new("烟幕移除事件：T48先于T29、包含自身及查询快照", SmokescreenLossDispatchContract),
         new("攻击后T4：自身后查询、保存对象、按ID排除及费用伤害载荷", AttackAfterQuerySnapshot),
@@ -15418,6 +15419,53 @@ internal static class SelfTest
         }
         if (new CardBuff { Smokescreen=1 }.IsEmpty || new CardBuff { Smokescreen=-1 }.Clone().Smokescreen != -1)
             return "独立烟幕账本不能被空增益清理或克隆丢失";
+        return null;
+    }
+
+    private static string? NativeGuardReadContract(CardDatabase db)
+    {
+        int[]?[] sources = { new[] { 9 }, null, Array.Empty<int>(), new[] { 0 }, new[] { -5 }, new[] { 9, 9 } };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool raw in new[] { false, true })
+        foreach (int[]? ids in sources)
+        foreach (bool suppressed in new[] { false, true })
+        foreach (CardLocation location in new[] { side.HqOf(), side.DeckOf(), CardLocation.NotAvailable })
+        foreach (int ledger in new[] { 0, -7, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, location, 1);
+            card.Keywords.Remove(Keyword.Guard);if (raw) card.Keywords.Add(Keyword.Guard);
+            if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+            if (ids is not null) card.ReceivedAbilitiesFromCards["guard"] = ids.ToList();
+            card.BuffsBySource[(99, false)] = new CardBuff { Guard = ledger };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            object? Read() => engine.Api.InvokeByName("getHasGuard", card, new object?[] { null }, ctx, out _);
+            bool nonempty = ids is { Length: > 0 };
+            if (!Equals(Read(), raw || nonempty))
+                return $"原生Guardgetter遗漏来源数组：{side}/{raw}/{(ids is null ? "absent" : string.Join(",", ids))}/{suppressed}/{location}, result={Read()}";
+            var snapshot = card.Snapshot();var clone = card.BuffsBySource[(99, false)].Clone();
+            if (snapshot.Keywords.Contains(Keyword.Guard) != (raw || nonempty)
+                || snapshot.IntrinsicGuard != raw
+                || clone.Guard != ledger)
+                return "Guard快照须区分有效状态与原始状态，克隆保留独立账本";
+            int actions = state.ActionLog.Count;var trace = new List<string>();engine.Api.TriggerTrace = trace;
+            card.BlueprintVariables["hasGuard"] = !raw;
+            KismetStep Set(int i, string key, KismetExpr value, string scope) => new(i, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null) { DestinationScope = scope };
+            var program = new KismetProgram(new[] {
+                Set(0, "beforeRaw", new() { Var = "hasGuard", Scope = "instance" }, "local"),
+                Set(1, "hasGuard", new() { Bool = !raw }, "instance"),
+                Set(2, "afterRaw", new() { Var = "hasGuard", Scope = "instance" }, "local"),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "beforeRaw", "afterRaw");
+            if (!Equals(result["beforeRaw"], raw) || !Equals(result["afterRaw"], !raw)
+                || card.Keywords.Contains(Keyword.Guard) != !raw || card.BlueprintVariables.ContainsKey("hasGuard")
+                || !Equals(Read(), !raw || nonempty)) return "VM原始Guard字段与有效来源读取混淆或存在影子字段";
+            if (state.ActionLog.Count != actions || trace.Count != 0) return "原始Guard字段写入不应自动调用授予/移除或派发事件";
+            if ((ids is null && card.ReceivedAbilitiesFromCards.ContainsKey("guard"))
+                || (ids is not null && !card.ReceivedAbilitiesFromCards["guard"].SequenceEqual(ids))) return "只读/原始写入破坏独立Guard来源数组";
+        }
         return null;
     }
 

@@ -216,8 +216,11 @@ public sealed class CardInstance
     // Native getHasSmokescreen: raw flag OR a nonempty registered giver array.
     public bool HasSmokescreen => Keywords.Contains(Keyword.Smokescreen)
         || (ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var sources) && sources.Count > 0);
+    // Native getHasGuard uses raw state or a nonempty source array, not the buff sum.
+    public bool HasGuard => Keywords.Contains(Keyword.Guard)
+        || (ReceivedAbilitiesFromCards.TryGetValue("guard", out var sources) && sources.Count > 0);
     public bool HasKeyword(string keyword) => keyword switch {
-        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, Keyword.Smokescreen => HasSmokescreen, _ => Keywords.Contains(keyword),
+        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, Keyword.Smokescreen => HasSmokescreen, Keyword.Guard => HasGuard, _ => Keywords.Contains(keyword),
     };
     public int MaxAttacksThisTurn => HasFury ? 2 : 1;
 
@@ -860,6 +863,7 @@ public sealed class CardInstance
         AttacksThisTurn,
         Keywords.Concat(HasFury ? new[] { Keyword.Fury } : Array.Empty<string>())
             .Concat(HasBlitz ? new[] { Keyword.Blitz } : Array.Empty<string>())
+            .Concat(HasGuard ? new[] { Keyword.Guard } : Array.Empty<string>())
             .Concat(HasSmokescreen ? new[] { Keyword.Smokescreen } : Array.Empty<string>())
             .Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal).ToArray(),
         CustomAbility,
@@ -872,6 +876,7 @@ public sealed class CardInstance
             AttackQuotaOffset = AttackQuotaOffset,
             IntrinsicFury = Keywords.Contains(Keyword.Fury),
             IntrinsicBlitz = Keywords.Contains(Keyword.Blitz),
+            IntrinsicGuard = Keywords.Contains(Keyword.Guard),
             IntrinsicSmokescreen = Keywords.Contains(Keyword.Smokescreen),
             GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
@@ -1067,6 +1072,7 @@ public sealed record CardSnapshot(
     public int AttackQuotaOffset { get; init; }
     public bool IntrinsicFury { get; init; }
     public bool IntrinsicBlitz { get; init; }
+    public bool IntrinsicGuard { get; init; }
     public bool IntrinsicSmokescreen { get; init; }
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);

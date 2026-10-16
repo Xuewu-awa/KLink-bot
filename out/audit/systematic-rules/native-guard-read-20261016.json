@@ -1,0 +1,40 @@
+{
+  "rule": "RULE-150",
+  "status": "native effective Guard getter and raw VM field separated; snapshot effective/raw export fixed; guarded target/cache parity remains open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\native-guard-read-evidence-20261016.json",
+  "evidence_sha256": "c1f7f80428806233a1e0f2986254e7eeafd742e7e2fa3554668789c56b2aaea1",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\native-schema-reference.json": "9ba84fd378f2535193d0981b4f2596a5d95ce695a19c7c7c1cdc2917a72a1235",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\audit-native-guard-read-20261016.py": "e8300bf4a134ce97e3ad2448c49af8c2e0fb64a40f14a34d38d70540d1e2c228",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-native-guard-read-before-20261016.txt": "64973a79635d67cb39d06f9b03b3f579644d0e0e46ed0f0544e46a2b165531c9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-native-guard-read-after-20261016.txt": "b3d84e2de8e05edb2e9793ef91e4339aaac0a9e544fc60a6a5a1feea70083ca5",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "b678dc555cca5b90e2e2f1dfab300ba5694ffb4a2aecbf7f394aba68abc7a86c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "e059c723e8abe7ba857d1c6d11e5a4305ceb7310db39a2ee71c1c48be4e21b24",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "f7c0ce86fe5a0ac4a7a4c0dd66e1b3ef11c2708a748880bd975a823c19c5d662"
+  },
+  "tests": {
+    "release": "517/517",
+    "getter_vm_snapshot_cases": 432,
+    "matrix": "2 sides x raw false/true x source [9]/absent/empty/[0]/[-5]/[9,9] x suppressed/unsuppressed x board/deck/NotAvailable x buff ledger 0/-7/7",
+    "checks": [
+      "Effective getter returns raw OR nonempty source array, independent of ledger, suppression or location",
+      "Zero, negative and duplicate source IDs count when array is nonempty",
+      "VM instance read bypasses shadow storage; write changes raw only and clears shadow",
+      "Raw writes neither mutate source array nor emit actions/events",
+      "Snapshot exports effective Guard and separate IntrinsicGuard; CardBuff clone retains independent ledger"
+    ],
+    "regression": "Original getHasGuard returns false for raw=false with [9]; 1/517 fails before correction, 517/517 pass after."
+  },
+  "limits": [
+    "General GiveGuard/RemoveGuard, UpdateGuarded cache timing and IsBeingGuarded target parity remain open. No MatchEngine neighbor/target changes are claimed.",
+    "UpdateGuarded reads current-card effective getter but neighbor raw hasGuard; blindly replacing all Guard reads with effective state would contradict pak. Full function control flow and covert/cache lifecycle are not certified here.",
+    "Snapshot export adds effective Guard and IntrinsicGuard; snapshot import and full CopyData remain open.",
+    "Map lookup/FString helper internals are not transitively reverse-engineered; reflected map and array layout, key references, raw check and final Num>0 branch are mapped.",
+    "Malformed arrays with negative Num, concurrent mutation during repeated map lookups and invalid UObject memory are outside managed-list tests.",
+    "No new live capture, client writes, injection or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
