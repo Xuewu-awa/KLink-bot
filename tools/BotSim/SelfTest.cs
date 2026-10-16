@@ -62,6 +62,7 @@ internal static class SelfTest
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
+        new("多提供者亡语：保存接收者、后续来源重读、迟注册者不插队", MultipleExternalDeathProviders),
         new("外部亡语：来源门在首次T39后读取，重复预算固定及通知抑制分离", ExternalDeathRepeatContract),
         new("重复亡语：次数固定，移出局后继续直接调用，通知独立抑制", RepeatedDeathHeldRecipient),
         new("亡语通知T24：每位接收者前重查主体抑制并累加已执行输出", DestructionSubjectSuppressionPerRecipient),
@@ -15406,11 +15407,11 @@ internal static class SelfTest
         return new AuditProbeCleanup(()=>{foreach(var item in installed)item.Locals.Remove(item.Trigger);});
     }
 
-    private static string? ExternalDeathRepeatContract(CardDatabase db)
+    private static IDisposable InstallExternalDeathProbes()
     {
         const string name="card_unit_m36_destroyer",other="OnOtherCardDestroyed",notify="OnDestructionEffectTriggered";
         var locals=(IDictionary<string,IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
-        if(KismetLibrary.Default.FindProgram(name,other) is not null||KismetLibrary.Default.FindProgram(name,notify) is not null)return "无法安全安装外部亡语探针";
+        if(KismetLibrary.Default.FindProgram(name,other) is not null||KismetLibrary.Default.FindProgram(name,notify) is not null)throw new InvalidOperationException("无法安全安装外部亡语探针");
         KismetStep Store(int i,string field,KismetExpr value,string scope="instance")=>new(i,"set",null,Array.Empty<KismetExpr>(),Array.Empty<int>(),value,null,-1,field,null){DestinationScope=scope};
         KismetStep Count(string field)=>Store(0,field,new KismetExpr{Math="Add_IntInt",Args=new[]{new KismetExpr{Var=field,Scope="instance"},new KismetExpr{Int=1}}});
         KismetStep Marker(int i)=>new(i,"call","SpawnCardInDeckBySide",new[]{new KismetExpr{Int=(int)Side.Right},new KismetExpr{Str="card_unit_routed_troops"},new KismetExpr{Int=30},new KismetExpr{Int=1}},Array.Empty<int>(),null,null,-1,null,null);
@@ -15422,7 +15423,79 @@ internal static class SelfTest
         program.Add(Marker(program.Count));program.Add(Return(program.Count));locals.Add(other,program);
         // Identical notification program to RepeatedDeathHeldRecipient: reuse its cached local safely.
         locals.Add(notify,new[]{Count("_auditRepeatCalls"),Marker(1),Store(2,"TriggerMultiple",new KismetExpr{Var="_auditRepeatOutput",Scope="instance"},"local"),Return(3)});
-        using var cleanup=new AuditProbeCleanup(()=>{locals.Remove(other);locals.Remove(notify);});
+        return new AuditProbeCleanup(()=>{locals.Remove(other);locals.Remove(notify);});
+    }
+
+    private static string? MultipleExternalDeathProviders(CardDatabase db)
+    {
+        using var probes=InstallExternalDeathProbes();
+        const string name="card_unit_m36_destroyer",other="OnOtherCardDestroyed",notify="OnDestructionEffectTriggered";
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(bool reverseCreate in new[]{false,true})
+        foreach(int sourceChange in Enumerable.Range(0,3)) // keep / remove later source / add later source
+        foreach(bool suppressed in new[]{false,true})
+        foreach(bool duplicates in new[]{false,true})
+        {
+            var(engine,state)=EmptyBoard(db);
+            var victim=state.CreateWithId(PlainUnit,side,60,side.HqOf(),1);victim.Keywords.Clear();
+            if(suppressed)victim.Keywords.Add(Keyword.Suppressed);
+            foreach(int id in reverseCreate?new[]{62,61}:new[]{61,62})
+            {
+                var card=state.CreateWithId(name,id==61?side:side.Opposite(),id,side.DeckOf(),id-61);
+                card.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{other}};
+            }
+            var selected=engine.Api.CaptureRegisteredTriggerSnapshot(other).ToArray();
+            if(selected.Length!=2)return "多提供者T39夹具错误";
+            var first=selected[0];var later=selected[1];
+            var sources=new List<int>{first.CardId};if(sourceChange!=2)sources.Add(later.CardId);
+            if(duplicates)sources.AddRange(sources.ToArray());victim.ReceivedAbilitiesFromCards["destruction"]=sources;
+            var watcher=state.CreateWithId(name,side.Opposite(),64,side.Opposite().DeckOf(),0);
+            watcher.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{notify}};
+            watcher.BlueprintVariables["_auditRepeatOutput"]=1;
+            var killer=state.CreateWithId(PlainUnit,side.Opposite(),99,CardLocation.Discard,77);
+            var seen=new Dictionary<int,int>();var order=new List<string>();CardInstance? late=null;
+            int notifications=0;string? failure=null;var prior=state.CardCreated;
+            state.CardCreated=made=>{prior?.Invoke(made);if(made.Name!="card_unit_routed_troops")return;
+                foreach(var receiver in selected)
+                {
+                    int count=Convert.ToInt32(receiver.BlueprintVariables.GetValueOrDefault("_auditExternalCount"));
+                    if(count<=seen.GetValueOrDefault(receiver.CardId))continue;
+                    seen[receiver.CardId]=count;bool initial=count==1;string tag=ReferenceEquals(receiver,first)?"first":"later";
+                    order.Add(tag+(initial?":false":":true"));var v=receiver.BlueprintVariables;
+                    if(!ReferenceEquals(v.GetValueOrDefault("_auditExternalCard"),victim)||!ReferenceEquals(v.GetValueOrDefault("_auditExternalKiller"),killer)
+                        ||!Equals(v.GetValueOrDefault("_auditExternalRepeat"),!initial)||Convert.ToInt32(v.GetValueOrDefault("_auditExternalOld"))!=(int)side.HqOf()
+                        ||!Equals(v.GetValueOrDefault("_auditExternalAlso"),false)||!Equals(v.GetValueOrDefault("_auditExternalCombat"),false))failure="多提供者T39参数错误";
+                    if(ReferenceEquals(receiver,first)&&initial)
+                    {
+                        if(sourceChange==1)sources.RemoveAll(id=>id==later.CardId);
+                        if(sourceChange==2){sources.Add(later.CardId);if(duplicates)sources.Add(later.CardId);}
+                        later.Definition=new CardDefinition{Name=name};later.Keywords.Add(Keyword.Suppressed);
+                        state.Move(later,CardLocation.NotAvailable,9,notifyMoved:false,normalizeLocation:false);
+                        late=state.CreateWithId(name,side,65,side.DeckOf(),0);
+                        late.Definition=new CardDefinition{Name=name,UsedTriggers=new[]{other,notify}};
+                        late.BlueprintVariables["_auditRepeatOutput"]=9;sources.Add(late.CardId);
+                    }
+                    return;
+                }
+                int countNotify=Convert.ToInt32(watcher.BlueprintVariables.GetValueOrDefault("_auditRepeatCalls"));
+                if(countNotify>notifications){notifications=countNotify;order.Add("T24");return;}
+                failure="迟注册接收者不得插入已保存的T39或T24数组";
+            };
+            engine.Destroy(victim,killer);
+            var expected=new List<string>{"first:false","T24","first:true"};if(!suppressed)expected.Add("T24");
+            expected.Add("later:false");
+            if(sourceChange!=1){expected.Add("T24");expected.Add("later:true");if(!suppressed)expected.Add("T24");}
+            if(failure is not null||!order.SequenceEqual(expected)||late is null
+                ||late.BlueprintVariables.ContainsKey("_auditExternalCount")||late.BlueprintVariables.ContainsKey("_auditRepeatCalls"))
+                return $"{failure??"多提供者来源重读/保存名单/去重语义错误"}：{side}/{reverseCreate}/{sourceChange}/{suppressed}/{duplicates}, order={string.Join(",",order)}";
+        }
+        return null;
+    }
+
+    private static string? ExternalDeathRepeatContract(CardDatabase db)
+    {
+        const string name="card_unit_m36_destroyer",other="OnOtherCardDestroyed",notify="OnDestructionEffectTriggered";
+        using var cleanup=InstallExternalDeathProbes();
         foreach(Side side in new[]{Side.Left,Side.Right})
         foreach(int budget in new[]{0,2})
         foreach(bool suppressed in new[]{false,true})

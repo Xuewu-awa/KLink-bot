@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-171",
+  "status": "two external providers source mutation and saved T39/T24 membership verified; native ordering and complete semantics remain open",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\multiple-external-death-evidence-20261016.json",
+  "evidence_sha256": "3612eb0c889d22c144d1c917f088bc262ccb2a264703d9de4cabd025554b5625",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-multiple-external-death-20261016.py": "312f81ea3f6a9aaca6e6c73fc9f15acbb00b5ac60d51e7b4a10965300740115e",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-multiple-external-death-20261016.txt": "8b3bf17b5b6ba0f5c2ae5d107a14cd7f7fbb411df8331a4c3d712797880b09df",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "487364c8ca6bb7346967fcc66d4ac4e100e8ca017da15822b4c2209eb25477e9",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "b75a874ab146d4ec787f1618037c480f73afd317e9cd206b1da9e6a5cb9f81b0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "ae5fcef003b182a3290680d25b00f305520097b0957b3ae480f76f4e8c33498b"
+  },
+  "tests": {
+    "release": "538/538",
+    "real_single_destroy_cases": 48,
+    "matrix": "2 sides x2 creation orders x3 changes to later provider source(keep/remove/add) x2 victim suppression states x2 duplicate-source-list states",
+    "checks": [
+      "Roles assigned from simulator query result, without claiming exact native ordering",
+      "First provider retains fixed repeat1; later provider always gets saved initial T39 even after suppression/unregistration/NotAvailable",
+      "Later provider repeat eligibility reflects source edits made by first provider",
+      "Late subscriber created during first T39, registered for T39/T24 and added as grant source, gets neither saved broadcast",
+      "Duplicate source IDs do not multiply membership-based repeat eligibility",
+      "Initial bypass/repeated normal T24 suppression split preserved across both providers",
+      "T39 subject/killer/old-location/repeat/also/combat payloads checked; previous96 single-provider cases remain passing"
+    ],
+    "result": "No additional engine discrepancy observed; only test probe installation refactored and new coverage added."
+  },
+  "limits": [
+    "Exact native T39/T24 query order remains uncertified; tests define first/later from simulator query, test both creation orders.",
+    "Only two external providers and one late subscriber; not arbitrary nested destruction or native object deletion/replacement.",
+    "Source lists are synthetic setup/mutation; no new full native source getter/storage or integer/null-output ABI proof.",
+    "Creation-time or query-time native side effects, stop-action state and full real-card semantics remain open.",
+    "Retreat/control, multiple spawn, MakeVeteran, attack guarded-cache consumer, reset/copy/import and complete combat/destruction remain open.",
+    "No replay authority or new live capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
