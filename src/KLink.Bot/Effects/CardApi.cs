@@ -441,16 +441,17 @@ public sealed partial class CardApi
         }
     }
 
-    public void ExecuteCardCreationModifiers(CardInstance created)
+    public void ExecuteCardCreationModifiers(CardInstance created, int method = 0)
     {
-        // CreateCard i=1036 queries T35 once. i=1309 invokes the saved objects
-        // with no repeated eligibility checks and does not exclude the new ID.
+        // CreateCard i=1036 queries T35 once (method0); batch spawn i=1391
+        // queries again for each card (method3). Both loops invoke the saved
+        // objects without repeated eligibility checks or excluding the new ID.
         const string trigger = "OnOtherCardCreatedAlterCard";
         var recipients = CaptureRegisteredTriggerSnapshot(trigger);
         var library = Blueprint.KismetLibrary.Default;
         if (library is null) return;
-        var args = new object?[] { created, 0 };
-        var named = new Dictionary<string, object?> { ["cardPlayed"] = created, ["method"] = 0 };
+        var args = new object?[] { created, method };
+        var named = new Dictionary<string, object?> { ["cardPlayed"] = created, ["method"] = method };
         foreach (var observer in recipients)
         {
             if (library.FindProgram(observer.Name, trigger) is null) continue;
@@ -2431,7 +2432,7 @@ public sealed partial class CardApi
     /// `card-ir.json` 里调用它的卡 = **0** —— 它是引擎内函数，得由内核在部署流程里主动调）：
     /// <code>
     /// SpawnCardToBoard              si=872    ↔ 内核 CardApi.SpawnOnBattlefield
-    /// SpawnMultipleCardsOnBattlefield si=2968 ↔ 内核没有；IR 里也没有调用点
+    /// SpawnMultipleCardsOnBattlefield si=2968 ↔ CardApiDispatch 的批量生成第二阶段
     /// PlayCardFromHand              si=2207   ↔ 内核 MatchEngine.PlayCard 那条链
     /// PlayCardDirectlyFromHand      si=3053   ↔ 内核 MatchEngine 直接出牌路径
     /// AfterWaitCardPlayFromHand     si=974    ↔ 内核没有；IR 里 0 个调用点

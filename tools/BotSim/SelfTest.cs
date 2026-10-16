@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("批量生成生命周期：全部创建后T35/进场，来源Blitz、Alpine及批量通知", BatchSpawnLifecycle),
         new("批量生成门槛：敌方前线、动态容量及物理位置计数", BatchSpawnAdmission),
         new("SpawnMultipleCardsOnBattlefield：按数组顺序生成、继承金卡/关键字并受半场容量限制",
             SpawnMultipleCardsOnBattlefield),
@@ -12666,11 +12667,11 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? DirectEntryFieldOrder(CardDatabase db)
+    private static IDisposable InstallEntryMethodProbe()
     {
         const string name = "card_unit_typhoon_mk_ib", trigger = "OnEnterPlay";
         if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
-            || KismetLibrary.Default.FindProgram(name, trigger) is not null) return "无法安全安装直接入场探针";
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null) throw new InvalidOperationException("无法安全安装直接入场探针");
         // Synthetic own-entry reentry marker, not a claim about Typhoon's real effects.
         locals.Add(trigger, new[] {
             new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
@@ -12680,58 +12681,62 @@ internal static class SelfTest
                 new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
-        try
-        {
-            foreach (Side side in new[] { Side.Left, Side.Right })
-            foreach (bool frontline in new[] { false, true })
-            foreach (bool timer in new[] { false, true })
-            {
-                var (engine, state) = EmptyBoard(db); state.Turn = 7;
-                var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
-                var first = state.CreateWithId("card_unit_panzer_iii_e", side, 20, side.HqOf(), 1);
-                state.CreateWithId(first.Name, side, 21, CardLocation.NotAvailable, 0);
-                var alpine = state.CreateWithId("card_unit_432_infantry_regiment", side, 22, side.HqOf(), 2);
-                alpine.Keywords.Add(Keyword.Alpine); card.Keywords.Add(Keyword.Alpine);
-                card.KreditCost = 1; card.CardSeen = true; card.IsSalvaged = timer;
-                engine.Api.JsonSetInt(card, "unrelated", 19);
-                if (timer) engine.Api.JsonSetInt(card, "countdown_timer", 3);
-                int atEntryAttack = -1, atEntryCost = -1, atEntryTurn = -1;
-                bool atEntrySeen = true, atEntryTimer = true;
-                int beforeAttack = card.Attack;
-                var created = state.CardCreated;
-                state.CardCreated = made => {
-                    created?.Invoke(made);
-                    if (made.Name != "card_unit_routed_troops") return;
-                    atEntryAttack = card.Attack; atEntryCost = card.KreditCost;
-                    atEntryTurn = card.EnteredPlayOnTurn; atEntrySeen = card.CardSeen;
-                    atEntryTimer = card.CustomJson.ContainsKey("countdown_timer");
-                    first.Keywords.Add(Keyword.Suppressed);
-                };
-                var trace = new List<string>(); engine.Api.TriggerTrace = trace;
-                if (!engine.PlayCardDirectlyFromHand(card, frontline, 9004, 1)
-                    || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 2
-                    || atEntryAttack != beforeAttack || card.Attack != beforeAttack + 1
-                    || atEntryCost != (timer ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits)
-                    || atEntryTurn != 7 || atEntrySeen || atEntryTimer || engine.Api.JsonGetInt(card, "unrelated") != 19
-                    || trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#20", StringComparison.Ordinal))
-                    || !trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#21", StringComparison.Ordinal)))
-                    return $"直接入场顺序错误：{side} 前线{frontline} 计时{timer} Method={card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")} 攻{atEntryAttack}->{card.Attack} 费{atEntryCost}";
-                int persist = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionPersistCustomFields"
-                    && x.Values.Any(v => v.Name == "cardID" && v.Value == 60));
-                if (persist != (timer ? 1 : 0)) return "仅删除了countdown_timer时应持久化该卡JSON";
-            }
-            foreach (Side side in new[] { Side.Left, Side.Right })
-            {
-                var (engine, state) = EmptyBoard(db);
-                var card = state.CreateWithId(name, side, 60, CardLocation.NotAvailable, 0);
-                engine.ExecuteOnEnterPlayEvents(card, 5);
-                if (Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 5)
-                    return "原生入场自身回调没有NotAvailable位置门";
-            }
-            return null;
-        }
-        finally { locals.Remove(trigger); }
+        return new AuditProbeCleanup(() => locals.Remove(trigger));
     }
+
+    private static string? DirectEntryFieldOrder(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        using var entryProbe = InstallEntryMethodProbe();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool timer in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var card = state.CreateWithId(name, side, 60, side.HandOf(), 7);
+            var first = state.CreateWithId("card_unit_panzer_iii_e", side, 20, side.HqOf(), 1);
+            state.CreateWithId(first.Name, side, 21, CardLocation.NotAvailable, 0);
+            var alpine = state.CreateWithId("card_unit_432_infantry_regiment", side, 22, side.HqOf(), 2);
+            alpine.Keywords.Add(Keyword.Alpine); card.Keywords.Add(Keyword.Alpine);
+            card.KreditCost = 1; card.CardSeen = true; card.IsSalvaged = timer;
+            engine.Api.JsonSetInt(card, "unrelated", 19);
+            if (timer) engine.Api.JsonSetInt(card, "countdown_timer", 3);
+            int atEntryAttack = -1, atEntryCost = -1, atEntryTurn = -1;
+            bool atEntrySeen = true, atEntryTimer = true;
+            int beforeAttack = card.Attack;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                atEntryAttack = card.Attack; atEntryCost = card.KreditCost;
+                atEntryTurn = card.EnteredPlayOnTurn; atEntrySeen = card.CardSeen;
+                atEntryTimer = card.CustomJson.ContainsKey("countdown_timer");
+                first.Keywords.Add(Keyword.Suppressed);
+            };
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            if (!engine.PlayCardDirectlyFromHand(card, frontline, 9004, 1)
+                || Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 2
+                || atEntryAttack != beforeAttack || card.Attack != beforeAttack + 1
+                || atEntryCost != (timer ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits)
+                || atEntryTurn != 7 || atEntrySeen || atEntryTimer || engine.Api.JsonGetInt(card, "unrelated") != 19
+                || trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#20", StringComparison.Ordinal))
+                || !trace.Any(x => x.StartsWith("OnOtherCardEnterPlay → card_unit_panzer_iii_e#21", StringComparison.Ordinal)))
+                return $"直接入场顺序错误：{side} 前线{frontline} 计时{timer} Method={card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")} 攻{atEntryAttack}->{card.Attack} 费{atEntryCost}";
+            int persist = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionPersistCustomFields"
+                && x.Values.Any(v => v.Name == "cardID" && v.Value == 60));
+            if (persist != (timer ? 1 : 0)) return "仅删除了countdown_timer时应持久化该卡JSON";
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(name, side, 60, CardLocation.NotAvailable, 0);
+            engine.ExecuteOnEnterPlayEvents(card, 5);
+            if (Convert.ToInt32(card.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 5)
+                return "原生入场自身回调没有NotAvailable位置门";
+        }
+        return null;
+    }
+
 
     private static string? DirectEntryHandEdges(CardDatabase db)
     {
@@ -27065,6 +27070,99 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? BatchSpawnLifecycle(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe();
+        using var movement = InstallMovementObserverProbes();
+        const string name = "card_unit_typhoon_mk_ib", watcher = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardCreatedAlterCard";
+        if (KismetLibrary.Default?.Find(watcher)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(watcher, trigger) is not null) return "无法安全安装批量创建参数探针";
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_cardPlayed" }, null, -1, "_auditBatchCreatedCard", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_method" }, null, -1, "_auditBatchCreatedMethod", null) { DestinationScope = "instance" },
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int count in new[] { 1, 2, 3 })
+        foreach (bool blitz in new[] { false, true })
+        foreach (bool veteran in new[] { false, true })
+        foreach (bool sparse in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            var resident = state.Create(PlainUnit, side, location, sparse ? 17 : (frontline ? 0 : 1));
+            resident.Keywords.Add(Keyword.Alpine); resident.IsBeingGuarded = true;
+            var observer = state.Create(watcher, side, side.DeckOf(), 0);
+            observer.Definition = new CardDefinition { Name = watcher, UsedTriggers = new[] { trigger } };
+            var spawner = state.Create(PlainUnit, side, side.HandOf(), 0, isGold: true);
+            var spawned = new List<CardInstance>(); int entered = 0, moved = 0; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name)
+                {
+                    if (entered != 0 || moved != 0) failure = "全部对象创建结束之前不应执行进场或移动回调";
+                    int expectedSlot = (frontline ? 1 : 2) + spawned.Count;
+                    if (made.LocationNumber != expectedSlot || !resident.IsBeingGuarded)
+                        failure = "创建阶段应按物理数量落位且不提前刷新缓存";
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                    made.Keywords.Clear(); made.Keywords.Add(Keyword.Alpine); made.IsRevealed = true;
+                    made.IsBeingGuarded = true; spawned.Add(made);
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    bool isMove = moved < spawned.Count && Equals(spawned[moved].BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true);
+                    int index = isMove ? moved : entered;
+                    if (index >= spawned.Count) { failure = "意外的批量生命周期回调"; return; }
+                    var current = spawned[index];
+                    var batch = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSpawnMultipleCards").ToArray();
+                    if (spawned.Count != count || spawned.Any(x => x.EnteredPlayOnTurn != 7 || x.CardSeen || !x.IsGold)
+                        || batch.Length != 1) failure = "进场前应已创建整个批次、设置回合并发一次批量通知";
+                    if (!isMove)
+                    {
+                        if (Convert.ToInt32(current.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 3
+                            || Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditBatchCreatedMethod")) != 3
+                            || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditBatchCreatedCard"), current)
+                            || current.HasBlitz || current.Attack != 2 || current.Keywords.Contains(Keyword.Veteran))
+                            failure = $"T35/进场method应为3，且先于Blitz和Alpine；skipAction不应用Veteran: entryMethod={current.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")}, creationMethod={observer.BlueprintVariables.GetValueOrDefault("_auditBatchCreatedMethod")}, creationCard={observer.BlueprintVariables.GetValueOrDefault("_auditBatchCreatedCard")}, blitz={current.HasBlitz}, attack={current.Attack}";
+                        if (index == 0 && !resident.IsBeingGuarded) failure = "首张进场不能提前刷新缓存";
+                        entered++;
+                    }
+                    else
+                    {
+                        if (entered != moved + 1 || current.Attack != 2 + count || current.Defense != 5 + count
+                            || current.HasBlitz != blitz || current.IsBeingGuarded || resident.IsBeingGuarded)
+                            failure = "每张依次进场、Blitz、全批次Alpine、刷新、移动的顺序错误";
+                        bool sourced = current.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var sources) && sources.Contains(spawner.CardId);
+                        if (sourced != blitz || current.Keywords.Contains(Keyword.Blitz)) failure = "Blitz应归因于生成者而非写固有标志";
+                        moved++;
+                    }
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = spawner, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", spawner,
+                new object?[] { (int)side, frontline, Enumerable.Repeat(name, count).ToList(), spawner.CardId, blitz, null, veteran }, ctx, out _);
+            if (failure is not null || result is not List<int> ids || !ids.SequenceEqual(spawned.Select(x => x.CardId))
+                || entered != count || moved != count)
+                return $"batch lifecycle case={cases} {side}/{frontline}/{count}/{blitz}/{veteran}/{sparse}: {failure ?? "callback count"}, entry={entered}, move={moved}";
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var notification = actions.Single(x => x.Name == "ZActionSpawnMultipleCards");
+            string locName = frontline ? "Board_Frontline" : side == Side.Left ? "Board_HQLeft" : "Board_HQRight";
+            var expectedValues = new[] { ActionValue2.Str("side", side == Side.Left ? "left" : "right"),
+                ActionValue2.Str("cardIDs", string.Join(";", ids)), ActionValue2.Int("instigatorID", spawner.CardId),
+                ActionValue2.Str("cardTypes", string.Join(";", Enumerable.Repeat(name, count))), ActionValue2.Str("location", locName) };
+            if (!notification.Values.SequenceEqual(expectedValues) || actions.Any(x => x.Name == "ZActionSpawnCard"))
+                return $"batch lifecycle case={cases}: batch notification fields or redundant single-spawn notification";
+            cases++;
+        }
+        return cases == 96 ? null : $"batch lifecycle matrix count={cases}";
+    }
+
     private static string? BatchSpawnAdmission(CardDatabase db)
     {
         string[] names = { "card_unit_arado_ar_196", "card_unit_brewster_f2a", "card_unit_arado_ar_196" };
@@ -27145,9 +27243,9 @@ internal static class SelfTest
                 || card.Location != CardLocation.BoardHqLeft
                 || !card.IsGold
                 || !card.HasBlitz
-                || !card.Keywords.Contains(Keyword.Veteran)))
+                || card.Keywords.Contains(Keyword.Veteran)))
         {
-            return "生成卡必须按顺序落在左方半场，并继承金卡、Blitz 和 Veteran 状态";
+            return "生成卡必须按顺序落在左方半场，并继承金卡和来源 Blitz；skipAction 应跳过 Veteran";
         }
 
         if (state.Cards(Side.Left, CardLocation.BoardHqLeft).Count != 5)

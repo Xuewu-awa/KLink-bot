@@ -4977,7 +4977,7 @@ public sealed partial class CardApi
     /// 蓝图先要求卡名数组非空且 <c>spawnerID &gt; 0</c>，再按数组顺序逐张生成。
     /// 每张创建前检查物理位置容量；前线还要求不由对手控制。
     /// 生成卡继承生成者的金卡标记，出参是实际生成卡的 ID 数组。
-    /// 尚未对齐原生的两阶段创建/回调流程，见 RULE-177。
+    /// 先创建全部对象，再逐张执行 T35/进场/Blitz/Alpine/移动（RULE-178）。
     /// </summary>
     private object? DoSpawnMultipleOnBattlefield(EffectContext c, object? r, object?[] a)
     {
@@ -4998,31 +4998,50 @@ public sealed partial class CardApi
 
         bool frontline = TruthyArg(a, 1);
         bool giveBlitz = TruthyArg(a, 4);
-        bool makeVeteran = TruthyArg(a, 6);
         bool forceGoldCard = c.State.ById(spawnerId)?.IsGold ?? false;
+        var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
         var spawnedIds = new List<int>(names.Count);
 
         foreach (string name in names)
         {
-            // Native i=613 saves physical-location fullness. Frontline i=1915..2216
-            // skips an entry if controlled by the opposite side; otherwise i=745
-            // stops creation when full (including the dynamic frontline limiter).
-            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            // i=613 saves fullness; i=1915..2216 skips enemy-controlled frontline.
             bool locationFull = IsLocationFull(location);
             if (frontline && c.State.FrontlineOwner == side.Opposite()) continue;
             if (locationFull) break;
 
-            var card = SpawnOnBattlefield(side, name,
-                frontline: frontline,
-                locationNumber: -1,
-                newGiveBlitz: giveBlitz,
-                forceGoldCard: forceGoldCard);
-            if (makeVeteran)
-            {
-                MakeVeteran(card);
-            }
-
+            // CreateCard i=478/492/519 returns early for skipAction=true.
+            // Keep own OnCreateCard, but defer T35; even makeVeteran is skipped.
+            // GetNextCardLocationNumber i=483/551 uses physical quantity, not max slot.
+            int slot = c.State.AllCards.Count(card => card.Location == location);
+            var card = c.State.Create(name, side, location, slot, isGold: forceGoldCard,
+                skipCreationModifiers: true, cardSeenBeforeModifiers: false);
+            card.EnteredPlayOnTurn = c.State.Turn;
             spawnedIds.Add(card.CardId);
+        }
+
+        if (spawnedIds.Count == 0) return spawnedIds;
+        // i=974: one notification after all creations and before any T35/entry hook.
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ESideEnum", (int)side, out string sideName);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)location, out string locationName);
+        _engine.FireSubAction("ZActionSpawnMultipleCards", new[] {
+            ActionValue2.Str("side", sideName),
+            ActionValue2.Str("cardIDs", string.Join(";", spawnedIds.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            ActionValue2.Int("instigatorID", spawnerId),
+            ActionValue2.Str("cardTypes", string.Join(";", names)),
+            ActionValue2.Str("location", locationName),
+        });
+        foreach (int id in spawnedIds)
+        {
+            // i=1303 re-resolves each saved ID. T35 is queried afresh per card.
+            if (c.State.ById(id) is not { } card) continue;
+            ExecuteCardCreationModifiers(card, 3);
+            _engine.ExecuteOnEnterPlayEvents(card, 3);
+            if (giveBlitz) GiveBlitz(card, spawnerId);
+            GiveAlpineBonus(card);
+            RefreshLocationStatus(new[] { location });
+            _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, location,
+                false, CardMoveReason.Uncategorized);
+            if (frontline) _engine.RefreshFrontlineOwner(card);
         }
 
         return spawnedIds;

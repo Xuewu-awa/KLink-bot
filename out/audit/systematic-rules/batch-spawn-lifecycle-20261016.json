@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-178",
+  "status": "batch creation precedes per-card T35/entry3, source Blitz, Alpine, refresh and movement; skipAction bypasses Veteran and single spawn notifications",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-spawn-lifecycle-evidence-20261016.json",
+  "evidence_sha256": "8fc80eee9b68e12d4a9aca576b63f4bc7ede62343a4d8ce7c2fdd5679bdda5ac",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-spawn-lifecycle-20261016.py": "98eee6a1699b42ac358bbe68da034c9573422bb8a698f4908ffbf21546623c98",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-lifecycle-before-20261016.txt": "1e1e4238ecd209e486bc230b5d4a5aebd503d8f7e5690d831a91632c02606725",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-lifecycle-after-20261016.txt": "4a96620e7158286aebb18984bf0b8f7b435548103a31a38e5eb95b1a4873150d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "2d0cbec7ec42e4b11bd0df16a7e1d67eb401fca97b73a70ad651e9e050b193d5",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5a7258f7e0382262e2d23f5110cda72a1e9a75ced97410354ab7f694d274e0aa"
+  },
+  "tests": {
+    "release": "545/545",
+    "new_lifecycle_cases": 96,
+    "matrix": "2 sides x2 locations x3 batch sizes(1/2/3) x2 Blitz flags x2 Veteran request flags x2 dense/sparse initial positions",
+    "checks": [
+      "All objects published before any entry/movement; physical quantity slots, no creation-stage guard refresh",
+      "At entry all batch objects have current turn, gold, unseen; T35 and entry carry3 and batch notification already exists",
+      "Each card enters before source-attributed Blitz and full-batch Alpine, then guard refresh before movement",
+      "skipAction bypasses Veteran even when requested; no raw Blitz invented",
+      "Exactly one five-field batch notification with semicolon arrays and enum text, no per-card spawn notification",
+      "Existing384 admission cases and ordinary creation/defaultmethod0 tests retained"
+    ],
+    "baseline": "Same final tests run against pre-change core:2/545 fail (entry0/move1 and erroneous Veteran). Repaired core545/545 pass."
+  },
+  "limits": [
+    "Headless action-process branch only; visual reception, campaign and tutorial excluded.",
+    "Tests are synthetic probes using live definitions; not certification of named Typhoon/51e abilities or all batch-spawning cards.",
+    "Complete UE CreateCardObject construction, malformed/unknown names, native UObject identity/deletion/replacement and equal-slot collection order remain open.",
+    "Nested callbacks mutating later IDs, trigger registration, ownership, source identity or capacity need dedicated cases; native null handling remains unproven.",
+    "MakeVeteran full implementation elsewhere and effective source-only Alpine getter/ABI require separate audit.",
+    "Notification bridge/serializers and SDK are parsed/dumped evidence only; saved runtime flow verification is for selected library functions, not full semantic equivalence.",
+    "No replay authority or new live memory capture; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
