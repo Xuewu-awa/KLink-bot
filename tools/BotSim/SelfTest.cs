@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("对象创建重入：先内层通知，外层重查容量/归属并保持金卡快照", ReentrantObjectCreationBatch),
         new("创建回调卡号重查：进场回合写映射对象，cardSeen仍写创建对象", BatchCreationTurnLookup),
         new("重入批量生成：内层先完成，外层快照与结果数组保持隔离", ReentrantBatchCreation),
         new("批量T35→进场：主体抑制重读，T43订阅与例外在进场前生效", BatchCreationToEntryBoundary),
@@ -27180,6 +27181,95 @@ internal static class SelfTest
             cases++;
         }
         return cases == 192 ? null : $"entry subject matrix count={cases}";
+    }
+
+    private static string? ReentrantObjectCreationBatch(CardDatabase db)
+    {
+        using var ownProbe = InstallEntryMethodProbe();
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool outerFrontline in new[] { false, true })
+        foreach (bool sameDestination in new[] { false, true })
+        foreach (bool limited in new[] { false, true })
+        foreach (int innerRequest in new[] { 1, 3 })
+        foreach (bool changeSourceGold in new[] { false, true })
+        foreach (bool blockOuterFrontline in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            if (limited) state.FrontlineLimiters.Add(900001);
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0, isGold: true);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            bool innerFrontline = sameDestination ? outerFrontline : !outerFrontline;
+            int frontCapacity = limited ? 2 : 5;
+            int innerCapacity = innerFrontline ? frontCapacity : 5;
+            int initialOuter = outerFrontline ? 0 : 1;
+            int initialInner = sameDestination ? initialOuter + 1 : innerFrontline ? 0 : 1;
+            int expectedInner = Math.Min(innerRequest, innerCapacity - initialInner);
+            int expectedOuter = outerFrontline && blockOuterFrontline ? 1
+                : Math.Min(3, (outerFrontline ? frontCapacity : 5) - initialOuter - (sameDestination ? expectedInner : 0));
+            var outer = new List<CardInstance>(); var inner = new List<CardInstance>();
+            var entered = new HashSet<CardInstance>(); var events = new List<(string Phase, int Id)>();
+            bool inside = false, nested = false; List<int>? innerIds = null; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name)
+                {
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                    (inside ? inner : outer).Add(made); events.Add(("create", made.CardId));
+                    if (!nested)
+                    {
+                        nested = true;
+                        if (outer.Count != 1 || made.EnteredPlayOnTurn != -1) failure = "创建回调重入应发生在首张进场回合设置之前";
+                        if (changeSourceGold) source.IsGold = false;
+                        inside = true;
+                        var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                            new object?[] { (int)side, innerFrontline, Enumerable.Repeat(name, innerRequest).ToList(), source.CardId, false, null, false }, ctx, out _);
+                        innerIds = result as List<int>; inside = false;
+                        if (inner.Count != expectedInner || inner.Any(x => !entered.Contains(x))) failure = "创建阶段内层返回前未完成内层进场";
+                        if (blockOuterFrontline && outerFrontline) state.FrontlineOwner = side.Opposite();
+                    }
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    var hits = outer.Concat(inner).Where(x => !entered.Contains(x)
+                        && Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) == 3).ToArray();
+                    if (hits.Length != 1) { failure = "创建重入进场主体不唯一"; return; }
+                    var subject = hits[0]; entered.Add(subject); events.Add(("entry", subject.CardId));
+                    int notices = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSpawnMultipleCards");
+                    if (inside)
+                    {
+                        if (!inner.Contains(subject) || outer.Count != 1 || outer[0].EnteredPlayOnTurn != -1 || notices != 1)
+                            failure = "内层进场前不应提前设置外层回合、发送外层通知或继续外层创建";
+                    }
+                    else if (!outer.Contains(subject) || notices != 2) failure = "外层进场应在内层返回和外层通知之后";
+                }
+            };
+            var output = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, outerFrontline, Enumerable.Repeat(name, 3).ToList(), source.CardId, false, null, false }, ctx, out _);
+            var expectedEvents = new List<(string Phase, int Id)> { ("create", outer[0].CardId) };
+            expectedEvents.AddRange(inner.Select(x => ("create", x.CardId)));
+            expectedEvents.AddRange(inner.Select(x => ("entry", x.CardId)));
+            expectedEvents.AddRange(outer.Skip(1).Select(x => ("create", x.CardId)));
+            expectedEvents.AddRange(outer.Select(x => ("entry", x.CardId)));
+            if (failure is not null || output is not List<int> ids || !ids.SequenceEqual(outer.Select(x => x.CardId))
+                || innerIds is null || !innerIds.SequenceEqual(inner.Select(x => x.CardId))
+                || outer.Count != expectedOuter || inner.Count != expectedInner || !events.SequenceEqual(expectedEvents)
+                || entered.Count != expectedOuter + expectedInner || outer.Any(x => !x.IsGold || x.EnteredPlayOnTurn != 7)
+                || inner.Any(x => x.IsGold == changeSourceGold || x.EnteredPlayOnTurn != 7))
+                return $"OnCreate batch case={cases} {side}/{outerFrontline}/{sameDestination}/{limited}/{innerRequest}/{changeSourceGold}/{blockOuterFrontline}: {failure ?? "admission/gold snapshot/interleaving"}; outer={outer.Count}/{expectedOuter}, inner={inner.Count}/{expectedInner}";
+            var notifications = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSpawnMultipleCards").ToArray();
+            if (notifications.Length != 2
+                || notifications[0].Values.Single(x => x.Name == "cardIDs").Text != string.Join(";", innerIds)
+                || notifications[1].Values.Single(x => x.Name == "cardIDs").Text != string.Join(";", ids)
+                || notifications[0].Values.Single(x => x.Name == "cardTypes").Text != string.Join(";", Enumerable.Repeat(name, innerRequest))
+                || notifications[1].Values.Single(x => x.Name == "cardTypes").Text != string.Join(";", Enumerable.Repeat(name, 3)))
+                return $"OnCreate batch case={cases}: inner-first notification order or requested names/results mixed";
+            cases++;
+        }
+        return cases == 128 ? null : $"OnCreate batch matrix count={cases}";
     }
 
     private static string? BatchCreationTurnLookup(CardDatabase db)

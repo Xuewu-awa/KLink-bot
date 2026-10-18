@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-186",
+  "status": "tested object-creation nested batch notification/interleaving, subsequent admission rechecks and invocation-scoped gold; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\oncreate-batch-reentry-evidence-20261018.json",
+  "evidence_sha256": "15d0d3e6aef3663fd113a8a14348a3d9a6186ecef0bf8d3f4f19a2d9c875d4e8",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-oncreate-batch-reentry-20261018.py": "2d1fbd0f0ea5348b61f8d8b047c078eba9ac1b8326b2e58c47ce337ac30284ec",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-oncreate-batch-reentry-20261018.txt": "b03dd23061d1062811dda0588c3e1af9f89b4413f8a7f9727fc512d604029a83",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "c58a8c2fb762c563b1f85e19758b4affc91a281f332fca8a4851daff61590774",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "925724edfd3e4f917b71d4c3543823e70a89731049d1a1fa68ba09071c928a82"
+  },
+  "tests": {
+    "release": "553/553",
+    "object_creation_reentry_cases": 128,
+    "matrix": "2 sides x2 outer locations x2 same/other nested destinations x2 initial limiter states x2 nested requests(1/3) x2 source gold changes x2 callback opponent-frontline blocks",
+    "checks": [
+      "Nested batch starts while only first outer object exists and its entered-turn is still-1",
+      "Nested batch fully enters before outer first creation returns; nested notice precedes outer notice",
+      "After nested occupancy changes, outer next entry rechecks physical capacity including dynamic limiter2/default5",
+      "Callback setting opponent frontline owner rejects subsequent outer frontline entries, not the already-created first card",
+      "Outer gold is invocation-start snapshot; nested reads changed source gold at its own start",
+      "Inner/outer results stay separate; notification cardTypes preserve full requested arrays even when accepted IDs are truncated",
+      "Exact creation/entry interleaving, entered-turn7 and notification order checked"
+    ],
+    "finding": "No discrepancy in tested controlled creation-stage reentry; no kernel implementation modified."
+  },
+  "limits": [
+    "Nested call is issued from simulator CardCreated fixture after own OnCreateCard hook, not from a specific native card IR; it verifies caller orchestration, not full native scheduling.",
+    "One nested level, same side/source and stable turn only; limiter membership is set synthetically before invocation and opponent ownership is assigned directly after nested return.",
+    "No full native ownership/Black Prince effects, mid-nested limiter changes, cross-side source changes, cardID/map replacement, malformed input or exception recovery is certified.",
+    "No certification of UObject lifetime/GC, native TSet iteration, deeper recursion, complete OnCreateCard initialization or all real-card behaviors.",
+    "State capacity logic is parsed pak evidence; selected library runtime checks verify lengths/hashes/top-level flow rather than all semantics.",
+    "No kernel edits, replay authority or new process memory access/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
