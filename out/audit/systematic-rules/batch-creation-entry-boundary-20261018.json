@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-183",
+  "status": "tested T35 changes are read by current-card own-entry suppression gate and fresh T43 subscription/exception query; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-creation-entry-boundary-evidence-20261018.json",
+  "evidence_sha256": "ab9ece81ec2eb598aff5d8fc1d9f654e9f0476579698ea68d8517f915c7146c7",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-creation-entry-boundary-20261018.py": "bedf9e53624e87084dbb70ccc0bcbc045ede123715471aca7492661f2fd1cbb1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-creation-entry-boundary-20261018.txt": "1c0234b74a48008ea5f59d87c9d50f92cc143542eaf436d15214f536e4f486ad",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cbfc31c2abb1943a7ffbd05006e63de62a8ea5a721373819a333c7232f10010d",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "ee4b146e79a83dc4c1b898d6bce5623dd7f68c2dbe04d153f59070f557b26352"
+  },
+  "tests": {
+    "release": "550/550",
+    "cross_phase_cases": 192,
+    "matrix": "2 sides x2 batch locations x2 batch sizes(2/3) x3 T35 subject changes(none/suppress/clear initial suppression) x4 T35 T43-observer changes(none/suppress/unregister/register initially absent) x2 observer T43 exception states",
+    "checks": [
+      "Every card records T35method3 before optional own entry and optional T43method3",
+      "T35 suppression prevents own entry despite subject own exception; clearing initial suppression restores own entry immediately",
+      "T35 registration/unregistration changes current-card T43 query, not only the next card",
+      "T35-suppressed observer is excluded unless its T43 exception is present",
+      "Suppressed subject still reaches eligible T43 observer and all batch objects already exist at first T35",
+      "Same actual subject and method3 passed across phase boundaries; all preceding batch snapshot/subject/identity tests retained"
+    ],
+    "finding": "No new kernel discrepancy in tested cross-phase state/query timing; regression coverage only."
+  },
+  "limits": [
+    "Mutations use controlled simulator state in marker callbacks, not complete real-card rule implementations or proof of native registration lifecycle.",
+    "No nested full suppression/reset/conversion APIs are run; direct flags/definitions isolate read timing and do not certify all side effects of those APIs.",
+    "No same-ID replacement, cardID mutation, missing/invalid object, T35 reentrant batch generation or native TSet order/GC certification.",
+    "Subject and observer locations/owners are stable in this matrix; movement, Blitz/Alpine callbacks and waiting target routes remain separate audit work.",
+    "State query is parsed pak evidence only; runtime checks cover selected library lengths/hashes/top-level flow and not full semantic equivalence.",
+    "No kernel implementation edits, replay authority or new process memory access/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
