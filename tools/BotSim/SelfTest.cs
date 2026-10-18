@@ -161,7 +161,9 @@ internal static class SelfTest
         new("自动打出消费：只检查有效手牌，按当前标签付费并清空失效条目", AutoPlayConsumerGate),
         new("自动打出行动边界：开始/结束回合、打牌、移动、攻击后自动消费", AutoPlayActionBoundaries),
         new("自动打出行动边界：被拒绝的出牌/移动/攻击不消费队列", AutoPlayRejectedActions),
-        new("自动打出选牌回复：消费先于额外触发，支持左右方", AutoPlaySelectionBeforeExtra),
+        new("自动打出选牌回复：本批先消费，额外触发产生的牌逐张续行", AutoPlaySelectionBeforeExtra),
+        new("独立自动出牌：逐张接收限制者，实时追加/清空队列且保持当前帧容量", QueuedAutoPlayActionReceipts),
+        new("独立自动出牌：首张Gotcha先接收，再执行下一张单位", QueuedAutoPlayGotchaReceiptOrder),
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
@@ -13037,9 +13039,9 @@ internal static class SelfTest
                     engine.Api.DrawChosenCardToHand(source, first);
                 }
                 if (first.GotchaActivated != 1 || first.Location != side.HandOf()
-                    || engine.Api.JsonGetInt(first, "kreditsPayed") != 1 || second.GotchaActivated != 0
+                    || engine.Api.JsonGetInt(first, "kreditsPayed") != 1 || second.GotchaActivated != (handReply ? 0 : 2)
                     || second.Location != (handReply ? side.DeckOf() : side.HandOf())
-                    || !state.GetAutoPlayCards().SequenceEqual(handReply ? Array.Empty<int>() : new[] { 61 }))
+                    || state.GetAutoPlayCards().Length != 0)
                     return $"选择回复未正确应用本批Gotcha通知：方={side} 手牌回复={handReply}";
             }
         }
@@ -13308,6 +13310,108 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? QueuedAutoPlayActionReceipts(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool initiallyLimited in new[] { false, true })
+        foreach (int queueMutation in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.StopAttack = true; state.StopFurtherActions = true;
+            if (initiallyLimited) state.FrontlineLimiters.Add(777);
+            var first = state.CreateWithId("card_unit_432_infantry_regiment", side, 60, side.HandOf(), 0);
+            var second = state.CreateWithId(first.Name, side, 61, side.HandOf(), 1);
+            foreach (var card in new[] { first, second })
+            {
+                card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Attack = 2, Defense = 5,
+                    ChooseOneOptionCount = card == second ? 2 : 0 };
+                card.Keywords.Clear(); card.Attack = 2; card.Defense = card.MaxDefense = 5; card.KreditCost = 0;
+                card.ChooseOne = 1; // Only second has choices; first must omit the field.
+            }
+            state.AddAutoPlayCards(first.CardId);
+            if (queueMutation == 0) state.AddAutoPlayCards(second.CardId);
+            int seenFirst = 0, seenSecond = 0, admitted = 0; string? failure = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (newLocation != side.HqOf() || oldLocation != side.HandOf() || card != first && card != second) return;
+                bool isFirst = card == first;
+                if (isFirst) seenFirst++; else seenSecond++;
+                bool expected = isFirst ? initiallyLimited : !initiallyLimited;
+                if (state.IsFrontlineLimited != expected) failure = "下一张未看到上一张的接收结果";
+                if (state.StopAttack || state.StopFurtherActions) failure = "独立动作开始未清理停止标志";
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                engine.Api.InvokeByName("ChangeFrontlineLimiter", card, new object?[] { 777, expected }, ctx, out _);
+                if (state.IsFrontlineLimited != expected) failure = "当前张的通知提前应用";
+                if (isFirst && queueMutation != 0)
+                {
+                    if (queueMutation == 2) state.ClearAutoPlayCards();
+                    state.AddAutoPlayCards(second.CardId);
+                }
+                if (isFirst) { state.StopAttack = true; state.StopFurtherActions = true; }
+                if (!isFirst)
+                {
+                    var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", card,
+                        new object?[] { (int)side, true, Enumerable.Repeat("card_unit_typhoon_mk_ib", 4).ToList(), card.CardId, false, null, false }, ctx, out _);
+                    admitted = result is List<int> ids ? ids.Count : -1;
+                }
+            };
+            engine.ExecuteQueuedAutoPlayActions();
+            bool skippedSecond = queueMutation == 2;
+            var actions = state.ActionLog.Where(x => x.ActionType == "XActionPlayCardFromHand").ToArray();
+            var expectedIds = skippedSecond ? new[] { 60 } : new[] { 60, 61 };
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPlayCardFromHand").ToArray();
+            if (failure is not null || seenFirst != 1 || seenSecond != (skippedSecond ? 0 : 1)
+                || state.IsFrontlineLimited != (skippedSecond ? !initiallyLimited : initiallyLimited)
+                || state.GetAutoPlayCards().Length != 0 || second.Location != (skippedSecond ? side.HandOf() : side.HqOf())
+                || !actions.Select(x => Convert.ToInt32(x.ActionData["cardID"])).SequenceEqual(expectedIds)
+                || actions.Any(x => Convert.ToInt32(x.ActionData["location"]) != 8)
+                || notices.Length != expectedIds.Length
+                || notices[0].Values.Any(x => x.Name == "chooseOneIndex")
+                || !skippedSecond && (!notices[1].Values.Contains(ActionValue2.Int("chooseOneIndex", 1)) || admitted != (initiallyLimited ? 4 : 2)))
+                return $"queued autoplay case={cases} {side}/{initiallyLimited}/{queueMutation}: {failure ?? "queue/receipt/action"}, first={seenFirst}, second={seenSecond}, admitted={admitted}";
+            int logCount = state.ActionLog.Count;
+            engine.ExecuteQueuedAutoPlayActions();
+            if (state.ActionLog.Count != logCount) return "空独立自动出牌队列产生了新动作";
+            cases++;
+        }
+        return cases == 12 ? null : $"queued autoplay cases={cases}";
+    }
+
+    private static string? QueuedAutoPlayGotchaReceiptOrder(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var gotcha = state.CreateWithId("card_event_interception", side, 60, side.HandOf(), 0);
+            gotcha.GotchaActivated = active ? 3 : 0;
+            engine.Api.JsonSetInt(gotcha, "kreditsPayed", 2);
+            var next = state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.HandOf(), 1);
+            next.Definition = new CardDefinition { Name = next.Name, Type = "infantry", Attack = 2, Defense = 5 };
+            next.Keywords.Clear(); next.KreditCost = 0;
+            state.AddAutoPlayCards(gotcha.CardId); state.AddAutoPlayCards(next.CardId);
+            bool reachedNext = false; string? failure = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card == next && newLocation == side.HqOf())
+                {
+                    reachedNext = true;
+                    if (gotcha.GotchaActivated != (active ? 0 : 1)) failure = "上一张Gotcha尚未接收";
+                }
+            };
+            engine.ExecuteQueuedAutoPlayActions();
+            if (!reachedNext || failure is not null || gotcha.Location != side.HandOf()
+                || gotcha.GotchaActivated != (active ? 0 : 1) || state.GetAutoPlayCards().Length != 0)
+                return $"queued Gotcha {side}/{active}: {failure ?? "queue/receipt"}";
+        }
+        return null;
+    }
+
     private static string? AutoPlaySelectionBeforeExtra(CardDatabase db)
     {
         using var probe = InstallSelectionDrawProbe("card_unit_m36_destroyer", "OnPlayedFromHand");
@@ -13323,9 +13427,10 @@ internal static class SelfTest
             var extra = state.CreateWithId(first.Name, side, 62, side.DeckOf(), 2);
             engine.Api.DrawChosenCardToHand(source, first);
             if (first.Location != CardLocation.Discard || normal.Location != side.HandOf()
-                || extra.Location != side.HandOf() || !state.GetAutoPlayCards().SequenceEqual(new[] { 62 })
-                || source.ExtraPlayTriggers != 0 || state.HqDefense(side) != 19 || state.Kredits(side) != 4)
-                return $"选牌回复应先消费首张RESISTANCE，再由额外触发抽第二张且保留其队列：方={side}";
+                || extra.Location != CardLocation.Discard || state.GetAutoPlayCards().Length != 0
+                // Second RESISTANCE deals1, then its empty-deck draw causes1 fatigue.
+                || source.ExtraPlayTriggers != 0 || state.HqDefense(side) != 17 || state.Kredits(side) != 3)
+                return $"选牌回复应先消费首张RESISTANCE，再由额外触发抽第二张并逐张续行：方={side} extra={extra.Location}, hp={state.HqDefense(side)}, kredits={state.Kredits(side)}";
         }
         return null;
     }

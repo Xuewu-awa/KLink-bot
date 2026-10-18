@@ -1,0 +1,73 @@
+{
+  "rule": "RULE-192",
+  "status": "fixed-post-reply-independent-autoplay-continuation",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_PlayerMoves.functions.json": "2b9cf263476388bad08fc9432a16ecd9fee80fd051a746eac50355f0ee856b1b",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "9a3712423df135dc2b84f9f067ea7844609c90c371fcdc05f8936548e7be72f0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "0412fcbf0267c895df032e2ca39fd4cb7ce81688406118b34350be7d8f825224",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-standalone-autoplay-before-20261018.txt": "60156df8024446bef6ebec5c30cbe3a611c121f4854eabfe1ba0eae3fdc1710c",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-standalone-autoplay-after-20261018.txt": "9038d626f24541174fb0b02d3d4e38016629eea406f0569597925784bb3beabe",
+    "D:\\Codex Workshop\\kards-install-review\\audit-standalone-autoplay-20261018.py": "54b087e8f643de92b74770075a71d724cc3a4073351d2c6beadc2b8653d785ce",
+    "D:\\Codex Workshop\\kards-install-review\\own-action-consumption-evidence-20261018.json": "b4f75a52794344e2268d6eb1663c30cab5222bf5eb17535c9d6d637f85b6b226",
+    "D:\\Codex Workshop\\kards-install-review\\limiter-receipt-fix-evidence-20261018.json": "5200dddcab02839dbd297a9e24a6d96bf75882bf700aa27148b605d26f1844ad"
+  },
+  "findings": [
+    "PlayerMoves hand-target and draw-selection reply tails call DoNextInQueue after their respective End/local receipt. Extra-trigger draws left after ExecuteAutoPlayCards must continue there.",
+    "The independent autoplay loop starts and ends an action per entry, resets stop flags, rereads the live array length and ID, receives local subactions before advancing, and clears the array after the loop.",
+    "Headless reply completion now runs that separate autoplay continuation after receiving the requesting reply. ExecuteAutoPlayCards inside one action is retained as a distinct path.",
+    "New independent consumer records per-card play actions, uses the existing library cost/body logic without CanPlay gating, emits play notification, and consumes limiter/Gotcha receipts after each card.",
+    "New12case matrix covers both sides, initial limiter on/off and existing/append/clear-and-replace queue entries. Next card sees previous receipt; its own nested batch uses pre-receipt capacity; start resets stop flags; choices notification is forwarded.",
+    "New4case matrix verifies a Gotcha activation/cancellation is received before the next unit body. Existing reply regressions now consume the extra RESISTANCE/Gotcha rather than leave it queued."
+  ],
+  "queue_graph_states": 38,
+  "reply_tail_calls": [
+    [
+      {
+        "index": 9330,
+        "call": "CreateAction_HandTargetSelected_End"
+      },
+      {
+        "index": 9389,
+        "call": "DoNextInQueue"
+      }
+    ],
+    [
+      {
+        "index": 10981,
+        "call": "CreateAction_CardToDrawSelected_End"
+      },
+      {
+        "index": 11063,
+        "call": "DoNextInQueue"
+      }
+    ]
+  ],
+  "runtime_function_matches": {
+    "ExecuteUbergraph_BP_PlayerMoves": [],
+    "DoNextInQueue": [],
+    "ExecuteAutoPlayCards": []
+  },
+  "tests": {
+    "before": "2/557 failed (revised reply expectations, prior kernel)",
+    "after": "559/559 passed",
+    "queued_action_cases": 12,
+    "gotcha_order_cases": 4
+  },
+  "limits": [
+    "This implements the normal autoplay portion, not the entire PlayerMoves queue. Manual queued player actions, timers, forced-end branches, native receive reentry and full nested choice scheduling remain unaudited.",
+    "Valid ordinary cards are the tested scope. Missing IDs are skipped defensively after recording an attempt; native null access/default behavior, special card types, moved/replaced objects and unassigned local output ABI are not certified.",
+    "Start/end is represented with the existing headless ActionLog and local receipts, not complete native packet grouping, action-ID random reseeding, snapshots, markers, reconnect or ActionProcess lifecycle.",
+    "Notification construction reuses existing modeled fields; the complete sender/receiver ABI for all card classes is not certified. Only limiter/Gotcha receipts are presently modeled.",
+    "Tests use controlled state and callbacks with current card definitions/IR; they are not a complete real-card parity proof or UE concurrency/exception/lifetime test.",
+    "No historical replay authority, game process writes/injection or new memory capture. Fully semantically verified cards remains0."
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\standalone-autoplay-evidence-20261018.json",
+  "evidence_sha256": "42c5b05285db8859f39a769adf96d7b1b135d0ac832818d3d68f4e58168a49ef",
+  "runtime_verified_functions": 4,
+  "fully_semantically_verified_cards": 0
+}

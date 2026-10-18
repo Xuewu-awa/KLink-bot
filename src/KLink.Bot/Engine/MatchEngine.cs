@@ -41,7 +41,13 @@ public sealed class MatchEngine
             }
             else if (updateExtraTriggers)
                 Api.ResolveTriggerQueue();
-            if (consumeAutoPlay) ApplyPendingLocalRuleReceipts();
+            if (consumeAutoPlay)
+            {
+                ApplyPendingLocalRuleReceipts();
+                // PlayerMoves reply tails i=9389/11063 call DoNextInQueue
+                // after their own End/receipt, including extra-trigger draws.
+                ExecuteQueuedAutoPlayActions();
+            }
         }
         if (defer && _pendingSelections is { } pending) pending.Enqueue(Complete);
         else Complete();
@@ -1134,7 +1140,8 @@ public sealed class MatchEngine
     }
 
     private void NotifyPlayFromHand(CardInstance card, int instigatorId,
-        int locationNumber, int targetId, bool playedDirectly, CardLocation? destination = null)
+        int locationNumber, int targetId, bool playedDirectly, CardLocation? destination = null,
+        int? chooseOneIndex = null)
     {
         Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
             (int)(destination ?? card.Location), out string locationName);
@@ -1154,13 +1161,72 @@ public sealed class MatchEngine
             values.Add(ActionValue2.Int("chooseOneIndex", 0));
             values.Add(ActionValue2.Bool("playedDirectly", true));
         }
+        else if (chooseOneIndex is >= 0)
+            values.Add(ActionValue2.Int("chooseOneIndex", chooseOneIndex.Value));
         FireSubAction("ZActionPlayCardFromHand", values);
         if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly));
     }
 
     private bool _processingAutoPlayCards;
+    private bool _processingQueuedAutoPlayActions;
 
-    /// <summary>Process autoplay rules; action boundaries apply local Gotcha receipts afterwards.</summary>
+    /// <summary>
+    /// Model the autoplay portion of BP_PlayerMoves.DoNextInQueue. Each valid
+    /// card gets a separate action/receipt before advancing the live queue.
+    /// Unlike ExecuteAutoPlayCards inside an action, this caller has no hand
+    /// location filter and does not recursively drain autoplay within each card.
+    /// The other player-move queue, timer and forced-turn branches are separate.
+    /// </summary>
+    public void ExecuteQueuedAutoPlayActions()
+    {
+        if (_processingQueuedAutoPlayActions || State.GetAutoPlayCards().Length == 0) return;
+        BeginEffectResolution();
+        _processingQueuedAutoPlayActions = true;
+        try
+        {
+            for (int index = 0; ; index++)
+            {
+                // i=11917/11962: loop length is re-read after each card.
+                var ids = State.GetAutoPlayCards();
+                if (index >= ids.Length) break;
+                int actionCardId = ids[index];
+                // CreateAction_InitStart -> SuperActionStarted, before the body.
+                State.StopFurtherActions = false;
+                State.StopAttack = false;
+                RecordAction("XActionPlayCardFromHand", State.ById(actionCardId)?.Owner ?? State.ActiveSide,
+                    new Dictionary<string, object?> {
+                        ["cardID"] = actionCardId,
+                        ["location"] = (int)CardLocation.Discard, // Start i=12209 passes enum8.
+                        ["locationNumber"] = 0,
+                        ["targetCardID"] = 0,
+                    });
+                // i=12266/12311 re-read the ID after starting the action.
+                ids = State.GetAutoPlayCards();
+                var card = index < ids.Length ? State.ById(ids[index]) : null;
+                if (card is not null)
+                {
+                    ApplyNativeHandPlayCost(card);
+                    var destination = Api.IsGotcha(card) ? card.Location
+                        : card.Definition.IsUnit || card.Definition.IsLocationCard ? card.Owner.HqOf() : CardLocation.Discard;
+                    NotifyPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false, destination,
+                        card.Definition.ChooseOneOptionCount > 0 ? card.ChooseOne : -1);
+                    if (!Api.IsGotcha(card))
+                        PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
+                            chargeKredits: false, recordAction: false, toFrontline: false,
+                            locationNumber: 0, instigatorID: card.CardId);
+                }
+                ApplyPendingLocalRuleReceipts(); // End i=12486 precedes index advance.
+            }
+            State.ClearAutoPlayCards(); // i=12597, after the loop, not per card.
+        }
+        finally
+        {
+            _processingQueuedAutoPlayActions = false;
+            EndEffectResolution();
+        }
+    }
+
+    /// <summary>Process autoplay inside one action; the caller applies its receipts afterwards.</summary>
     public void ExecuteAutoPlayCards()
     {
         if (_processingAutoPlayCards) return;
