@@ -1,0 +1,45 @@
+{
+  "rule": "RULE-188",
+  "status": "open-native-action-application-boundary",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\limiter-action-boundary-evidence-20261018.json",
+  "evidence_sha256": "a2b7d532221f67460466bb5a39531ab68927175c88c415f1727af5e3c8b166f3",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\add-action-with-sub-native-fragments-20261018.json": "a6e7594c0d8588d26c91a58eeb01c96498eef5efff6c5c3d5969a3c6fbd78c8a",
+    "D:\\Codex Workshop\\kards-install-review\\audit-limiter-action-boundary-20261018.py": "eb7b85ef50e0bc321fc0448e154baeb075373d4339ec4ec1da37ca876345cbb1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-dynamic-limiter-after-20261018.txt": "4a55c9404362539de26e098ed11dc2446a63822fc98c44d8742b6f4f3ffeb7dd",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "6c0ae0e697d0e6d4c42e88e7da0e7996bf63857e1e8eafa99c8612c9577b7e2f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea"
+  },
+  "findings": [
+    "Native library ChangeFrontlineLimiter only produces a notification in action process.",
+    "Parsed notifier/online bridge appends a subaction; collection update is in received-subaction handling.",
+    "Simulator merges producer and applied collection outcome immediately and emits each SubAction as a separate GameAction.",
+    "SendActionWithSub reaches StopActionProcess and native MatchControllerV2:AddActionWithSub; native delivery/consumer scheduling still unresolved.",
+    "RULE-187 tests validate adapter parameter/output/state and synthetic immediate-model capacity behavior, not native queue timing."
+  ],
+  "runtime_verified_functions": 6,
+  "runtime_missing": [],
+  "parsed_field_functions": [
+    "ClearGameStateVariables",
+    "getStateAsJsonString",
+    "IsFrontlineLimited",
+    "UpdateFrontlineLimiter"
+  ],
+  "last_release_selftests": "555/555 (unchanged; no new run)",
+  "limits": [
+    "This is static authority-chain audit; no new selftest was added or re-run because kernel/test code did not change. Last full suite remains555/555.",
+    "No blind delay/queue fix: a headless action boundary cannot be selected reliably until native delivery and local-subaction/reconnect routes are mapped.",
+    "Four captured native PE .pdata ranges are fragments/callee ranges; they are not a complete implementation or proven function-ownership map. Fallthrough beyond0x4ad7a85 remains unresolved.",
+    "Online bridge functions are absent saved runtime bytecode; claims about those functions rely on parsed pak only.",
+    "Parsed field-name search does not rule out native C++ writes or reflection/indirect writes.",
+    "No current process memory access/write/injection or replay authority; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
