@@ -1,0 +1,123 @@
+{
+  "rule": "RULE-210",
+  "status": "conditional-path-order-reconstruction-matches-all2019-class-branch-premises-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-tree-20261019.json": "6a122211f797b664f634b02c24d7d5f23db21e5b6189bbe0b7eadd34a8765ca4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registry-enum-20261019.json": "95aadbdd6261ada4c0465fc4814c6b478c797c9c3d74292fc728d46d0d275eb4",
+    "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-path-tree-20261019.txt": "c0895456fd896f23bb15f1eab8591092c368e96b7aacfaf01cad9aba99937976",
+    "D:\\Codex Workshop\\kards-install-review\\capture-path-tree-20261019.py": "b9c664b895da90772a5b6b4bc92e5fe2fe43446c39b1a23024609a01015ebe9b",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registry-enum-20261019.py": "95a52c3a603e72923edb0a762a5317d2cba0bce2399e2c3cae0a43eea1ee8462",
+    "D:\\Codex Workshop\\kards-install-review\\ExportAssetScanSeedsVerified.java": "bc625ae0ae97a7fbd2d2738017a71158b58bf2f7651df8642a302026456c1394",
+    "D:\\Codex Workshop\\kards-install-review\\make-path-tree-seeds-20261019.py": "ee1d2153aef06501be8724be221756dd247040e15ce77f3ae77dca9b769ac5df",
+    "D:\\Codex Workshop\\kards-install-review\\path-tree-seeds-current-20261019.txt": "4d12b0aad30510ed94528de8b7fac898b3ea852c4d26f81796824a9afafb4433",
+    "D:\\Codex Workshop\\kards-install-review\\audit-path-tree-20261019.py": "8b04340a027e8ec16cd9ec7388bcf12b8de50ca636f88460181cdc54e2eed4e1"
+  },
+  "findings": [
+    "Current path expansion is rooted at registry+6c0: CompileFilter passes registry+8 and CompileCore expands from that+6b8. Live map stride60 maps full FName paths to child sets; its child-set slot order is validated by bitmap/free/hash invariants. The native enumerator calls the callback on a child before recursively visiting that child when recursive=true. The callback inserts FNames into the compiled path set.",
+    "Current card subtree contains246 unique paths, including170 paths with indexed asset records. Pre-order child traversal plus initial root insertion combines the4101 indexed records in a specific order. Path-index storage order or lexical path order is not interchangeable with this expansion.",
+    "A conditional reconstruction now matches all2019 positions of the live primary-asset map: traverse those paths, concatenate their asset-pointer arrays, swap-remove records whose class is not Blueprint, and select primary membership/identity from independent FModel Blueprint PrimaryAssetType tags keyed by package/name. All2019 tag-source package/name pairs exist in current assets. The reference primary map is used for comparison only, not to select or rank output names.",
+    "Control models also retain2019 names but disagree on order: path-index storage order, lexical path order, and admitting WidgetBlueprint alongside Blueprint. The latter matches only25 positions. This discriminates the model premises; it does not by itself prove the actual compiled class set or selected intersection branch.",
+    "The actual gather root class is BlueprintCore, resolved from the current class-getter global with a live UClass name check. The persistent inheritance-cache flag is disabled in the exploratory read, so no persistent compiled class set is claimed. Still required: recover BlueprintCore descendant expansion against registry class keys and prove the cost/size branch and callback acceptance/normalization. Thus exact output agreement is not promoted to a complete native semantic restoration."
+  ],
+  "limits": [
+    "The model uses a specified Blueprint-only class predicate and swap-removal strategy. Actual derived-class membership and chosen/native-equivalent branch remain unproved; the alternative WidgetBlueprint model is a control, not a claim that the client should include it.",
+    "The membership source is the user-provided registry export, not the reference order. Its2019 package/name pairs are checked against current asset records; its overall version, card balances and full current acceptance semantics are not thereby certified.",
+    "Current path/index buffers and asset records were checked for stability. They do not record historical startup temporary structures or all configurations/registration histories.",
+    "Four additional native ranges total1309 bytes match live process and installed EXE. Old Ghidra decompilation is auxiliary; masked targets and missing body gaps require independent verification.",
+    "No simulator kernel/candidate-order/balance change; no selftest addition or rerun. Latest executed full Release suite remains582/582 (RULE-205), fully semantically verified cards0. No game calls/writes/injection or historical replay authority."
+  ],
+  "kernel_changed": false,
+  "live_pid": 24220,
+  "expanded_paths": 246,
+  "indexed_card_paths": 170,
+  "indexed_asset_records": 4101,
+  "conditional_order_count": 2019,
+  "conditional_order_position_matches": 2019,
+  "reference_order_used_for_selection": false,
+  "conditional_order_sha256": "c1878a805f162b798a22fb48dc3f7e8036bfc47e224f3ffa46a2108cb5b3ae5e",
+  "membership_source": {
+    "path": "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json",
+    "sha256": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807",
+    "criterion": "Blueprint assets tagged PrimaryAssetType=BaseCardObject, keyed by PackageName/AssetName; use PrimaryAssetName as output identity",
+    "entries": 2019,
+    "all_package_name_pairs_match_current_assets": true,
+    "version_limit": "Export registry version is not equated to installed EXE; only membership name/package pairs are matched in this model."
+  },
+  "controls": [
+    {
+      "label": "path-index-order",
+      "count": 2019,
+      "position_matches": 1902,
+      "names_sha256": "0e743520e54f809f97350b272555750a30f1f913ca0b5c7add5976aa80129909"
+    },
+    {
+      "label": "lexical-path-order",
+      "count": 2019,
+      "position_matches": 1432,
+      "names_sha256": "efd03c4b8028a07b4152569d68d60e2f76af607f6906ff380009c09e19135f6e"
+    },
+    {
+      "label": "dfs-plus-widget",
+      "count": 2019,
+      "position_matches": 25,
+      "names_sha256": "5888e400ce53c0312c2f81989b2527df53f193160f4206e01b1fee5c5b00b596"
+    }
+  ],
+  "native_code_ranges": 4,
+  "native_code_bytes": 1309,
+  "native_call_site_checks": 9,
+  "old_ghidra_guide_checks": [
+    {
+      "label": "ExpandPaths",
+      "spans": [
+        {
+          "old_rva": "0x2299890",
+          "current_rva": "0x2299670",
+          "length": 98,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0
+        }
+      ]
+    },
+    {
+      "label": "TreeEnumerate",
+      "spans": [
+        {
+          "old_rva": "0x22966d0",
+          "current_rva": "0x22964b0",
+          "length": 443,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0
+        },
+        {
+          "old_rva": "0x229689d",
+          "current_rva": "0x229667d",
+          "length": 543,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0
+        }
+      ]
+    },
+    {
+      "label": "ExpandPathCallback",
+      "spans": [
+        {
+          "old_rva": "0x2294ba0",
+          "current_rva": "0x2294980",
+          "length": 40,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "run_this_phase": false,
+    "last_full_suite": "582/582 (RULE-205)"
+  },
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\path-tree-evidence-20261019.json",
+  "evidence_sha256": "58ce60382aeb8d64094f6cc74f289eb9e2a19220e7b1358e12a39bf02f027b5e"
+}
