@@ -1,0 +1,131 @@
+{
+  "rule": "RULE-212",
+  "status": "callback-gates-and-parentclass-primary-tag-keys-verified-live-tag-values-and-normalization-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scan-callback-20261019.json": "a6dfd744d77a095b83c80c6edf8f35f4e2161cb06b82d7dbbf76de298ae04331",
+    "D:\\Codex Workshop\\kards-install-review\\capture-scan-callback-20261019.py": "4ec980ceeae25444f7a794f6d62413ce7e099abb72f9df41e75e8a5f115ff04f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-scan-callback-20261019.py": "724da6795ba1000d084ead89744cde1d030a8f1c00bc1556aa44ebeea34ec515",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-scan-callback-20261019.txt": "a05f0cce08a1dfffae1fa6333ecc1e4b1f0f2692a0dbe40b8f7aa03da35e9395",
+    "D:\\Codex Workshop\\kards-install-review\\make-scan-callback-seeds-20261019.py": "76d169545bba947235b8782ed7218d5f4e4478a21b7e70d6ac2c410daa8734af",
+    "D:\\Codex Workshop\\kards-install-review\\scan-callback-seeds-current-20261019.txt": "dc0be86c9c5d2b6371af221f9daced8ca1d8901f37b40fcb56cc62b5bebd9296",
+    "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "The gather callback always returns continue=true; rejects do not stop registry enumeration. When Blueprint scanning is enabled it first invokes virtual+478, then the search-rule predicate, and appends accepted0x68-byte records at the output count.",
+    "Current KardsAssetManager virtual+478 is an11-byte register-adjusting tail wrapper to229bca0. Its actual tag-key global decodes to ParentClass, independently read from the running client. The helper converts that tag through export-text/soft-path-related helpers and tests one or two candidate full class paths against the supplied set. It does not use PrimaryAssetType as this acceptance gate.",
+    "Search-rule predicate includes allow/exclude string checks, virtual+588 and optional virtual+58. The current+588 policy can call+580 when settings exclusions are nonempty; the current exclusion list contains Cards/Templates. These remaining helpers and actual temporary rule/set values are not all certified.",
+    "The subsequent primary-ID resolver calls a tag reader whose two live globals are PrimaryAssetType and PrimaryAssetName. The tag reader returns an empty ID unless both converted FNames are nonzero. The current manager inference flag+341 is false. This identifies the tagged path and disables the observed inference branch, without certifying every tag conversion/normalization case.",
+    "Independent FModel export has2043 Blueprint assets in the card subtree:2019 have direct ParentClass kards.BaseCardObject, exactly the same package/name members as the2019 primary-tagged cards;24 are others. This is structural concordance of exported metadata, not a read of current compressed tag values or proof of all runtime acceptance decisions."
+  ],
+  "limits": [
+    "Live compressed ParentClass/PrimaryAssetType/PrimaryAssetName values and temporary derived-class acceptance set remain undecoded. No new complete2019/2019 native acceptance claim.",
+    "Export-text/soft-path normalization helpers, tag-to-FName conversion and excluded-path helper+580 need further verification.",
+    "The FModel export overall version is not equated with current client; no balance import.",
+    "Nine current intervals total2626 bytes match live and installed EXE. Old Ghidra guides certify only compared nonrelative bytes; missing intervals and masked targets are not automatically certified.",
+    "No kernel change or selftest rerun; latest complete Release selftests582/582 (RULE-205), fully semantically verified cards0. No replay authority, process writes, injection or game function calls."
+  ],
+  "live_pid": 24220,
+  "tag_key_globals": [
+    {
+      "function": "BlueprintClassAcceptBody",
+      "instruction_rva": "0x229bcc4",
+      "global_rva": "0x91dd788",
+      "fname_hex": "2b06000000000000",
+      "name": "ParentClass"
+    },
+    {
+      "function": "GetPrimaryTags",
+      "instruction_rva": "0x140186c",
+      "global_rva": "0x91e5e98",
+      "fname_hex": "c207000000000000",
+      "name": "PrimaryAssetType"
+    },
+    {
+      "function": "GetPrimaryTags",
+      "instruction_rva": "0x14018ab",
+      "global_rva": "0x91e6008",
+      "fname_hex": "cb07000000000000",
+      "name": "PrimaryAssetName"
+    }
+  ],
+  "settings_excluded_paths": [
+    "/Game/Blueprints/Cards/Templates"
+  ],
+  "primary_id_inference_enabled": false,
+  "exported_blueprint_assets": 2043,
+  "exported_direct_basecard_parent_assets": 2019,
+  "exported_other_parent_assets": 24,
+  "exported_parent_counts": {
+    "Class'/Script/kards.BaseCardObject'": 2019,
+    "Class'/Script/Engine.StaticMeshActor'": 1,
+    "BlueprintGeneratedClass'/Game/Blueprints/Cards/BP_BaseCard.BP_BaseCard_C'": 5,
+    "Class'/Script/Engine.Actor'": 14,
+    "Class'/Script/kards.CardFunctionsStub'": 1,
+    "BlueprintGeneratedClass'/Game/Blueprints/Cards/BP_HandCardLook.BP_HandCardLook_C'": 1,
+    "Class'/Script/CoreUObject.Interface'": 1,
+    "Class'/Script/kards.VisualCardActionBaseStub'": 1
+  },
+  "native_code_ranges": 9,
+  "native_code_bytes": 2626,
+  "native_call_site_checks": 18,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "GatherCallback",
+      "length": 131,
+      "old_rva": "0x39785e0",
+      "current_rva": "0x3977f50",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "GatherPredicate",
+      "length": 374,
+      "old_rva": "0x39965f0",
+      "current_rva": "0x3995fb0",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "GetPrimaryAssetId",
+      "length": 575,
+      "old_rva": "0x3986460",
+      "current_rva": "0x3985e20",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BlueprintClassAcceptBody",
+      "length": 694,
+      "old_rva": "0x229bec0",
+      "current_rva": "0x229bca0",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "GetPrimaryTags",
+      "length": 194,
+      "old_rva": "0x14018d0",
+      "current_rva": "0x1401860",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ConstructSearchRules",
+      "length": 474,
+      "old_rva": "0x3974c70",
+      "current_rva": "0x39745e0",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "AssetPolicy",
+      "length": 168,
+      "old_rva": "0x39a2220",
+      "current_rva": "0x39a1be0",
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
