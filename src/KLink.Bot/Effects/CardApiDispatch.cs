@@ -557,30 +557,26 @@ public sealed partial class CardApi
             ["SetKreditCost"] = (c, r, a) => DoSetKreditCost(c, r, a),
             ["ChangeOperationCost"] = (c, r, a) => DoChangeOperationCost(c, r, a),
             ["ChangeHeavyArmor"] = (c, r, a) => DoChangeHeavyArmor(c, r, a),
-            // `BP_CardFunctions::ChangeFrontlineLimiter` 只维护
+            // `BP_CardFunctions::ChangeFrontlineLimiter` 发送更新通知，接收时维护
             // `BP_GameState_Battle.FrontlineLimiters`：Add 时限制前线为 2，Remove
             // 时恢复默认容量。`GameState` 已按蓝图建模为卡 ID 集合，而不是计数器。
             // 权威形状为 `(limiterCardID, remove, out qqq)`；这里的第一个参数
             // 可能是卡实例，也可能是整数 cardID。
             ["ChangeFrontlineLimiter"] = (c, r, a) =>
             {
+                // Native ChangeFrontlineLimiter i=37 forwards the explicit
+                // limiter as both cardID and instigatorID, including zero/negative.
                 int limiterId = IdOf(a.ElementAtOrDefault(0));
-                if (limiterId == 0)
-                {
-                    limiterId = c.Self?.CardId ?? AsCard(r)?.CardId ?? 0;
-                }
-
-                if (limiterId != 0)
-                {
-                    if (TruthyArg(a, 1))
-                    {
-                        c.State.FrontlineLimiters.Remove(limiterId);
-                    }
-                    else
-                    {
-                        c.State.FrontlineLimiters.Add(limiterId);
-                    }
-                }
+                bool remove = TruthyArg(a, 1);
+                // Headless application of ReceiveSubActionUpdateFrontlineLimiter
+                // -> GameState.UpdateFrontlineLimiter (unconditional Set_Add/Remove).
+                if (remove) c.State.FrontlineLimiters.Remove(limiterId);
+                else c.State.FrontlineLimiters.Add(limiterId);
+                _engine.FireSubAction("ZActionUpdateFrontlineLimiter", new[] {
+                    ActionValue2.Int("cardID", limiterId),
+                    ActionValue2.Int("instigatorID", limiterId),
+                    ActionValue2.Bool("remove", remove),
+                });
 
                 return null;
             },

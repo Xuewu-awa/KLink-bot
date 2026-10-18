@@ -352,6 +352,8 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("限制者入口：显式零/负数、重复增删及三字段通知", FrontlineLimiterContract),
+        new("动态前线容量：创建时影响下一张，进场时不追溯截断", DynamicBatchFrontlineLimit),
         new("对象创建重入：先内层通知，外层重查容量/归属并保持金卡快照", ReentrantObjectCreationBatch),
         new("创建回调卡号重查：进场回合写映射对象，cardSeen仍写创建对象", BatchCreationTurnLookup),
         new("重入批量生成：内层先完成，外层快照与结果数组保持隔离", ReentrantBatchCreation),
@@ -27181,6 +27183,105 @@ internal static class SelfTest
             cases++;
         }
         return cases == 192 ? null : $"entry subject matrix count={cases}";
+    }
+
+    private static string? FrontlineLimiterContract(CardDatabase db)
+    {
+        int scenarios = 0, calls = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int argument in new[] { 0, -7, 777, 90 })
+        foreach (int initial in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0);
+            var expected = new HashSet<int>();
+            if (initial == 1) expected.Add(argument);
+            if (initial == 2) expected.Add(888);
+            state.FrontlineLimiters.UnionWith(expected);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            foreach (bool remove in new[] { false, false, true, true })
+            {
+                int previous = state.ActionLog.SelectMany(x => x.SubActions).Count();
+                engine.Api.InvokeByName("ChangeFrontlineLimiter", source,
+                    new object?[] { argument == 90 ? source : argument, remove, null }, ctx, out bool handled);
+                if (remove) expected.Remove(argument); else expected.Add(argument);
+                var added = state.ActionLog.SelectMany(x => x.SubActions).Skip(previous).ToArray();
+                var values = new[] { ActionValue2.Int("cardID", argument), ActionValue2.Int("instigatorID", argument), ActionValue2.Bool("remove", remove) };
+                if (!handled || !state.FrontlineLimiters.SetEquals(expected) || state.FrontlineCapacity != (expected.Count > 0 ? 2 : 5)
+                    || added.Length != 1 || added[0].Name != "ZActionUpdateFrontlineLimiter" || !added[0].Values.SequenceEqual(values))
+                    return $"limiter contract scenario={scenarios}, id={argument}, remove={remove}, initial={initial}: set={string.Join(',', state.FrontlineLimiters)}, notifications={added.Length}";
+                calls++;
+            }
+            scenarios++;
+        }
+        return scenarios == 24 && calls == 96 ? null : $"limiter matrix={scenarios}/{calls}";
+    }
+
+    private static string? DynamicBatchFrontlineLimit(CardDatabase db)
+    {
+        using var ownProbe = InstallEntryMethodProbe();
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int initial in new[] { 0, 1, 2 })
+        foreach (int mutation in new[] { 0, 1, 2, 3 })
+        foreach (bool duringCreation in new[] { false, true })
+        foreach (int residents in new[] { 0, 1 })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            for (int i = 0; i < initial; i++) state.FrontlineLimiters.Add(101 + i);
+            if (residents == 1) state.CreateWithId(PlainUnit, side, 70, CardLocation.BoardFrontline, 0);
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var expectedSet = new HashSet<int>(state.FrontlineLimiters);
+            if (mutation == 0) expectedSet.Add(101);
+            if (mutation == 1) expectedSet.Add(103);
+            if (mutation == 2) expectedSet.Remove(101);
+            if (mutation == 3) { expectedSet.Remove(101); expectedSet.Remove(102); }
+            int expectedCapacity = expectedSet.Count > 0 ? 2 : 5;
+            int expectedCount = Math.Min(4, (duringCreation ? expectedCapacity : initial > 0 ? 2 : 5) - residents);
+            var spawned = new List<CardInstance>(); var entered = new HashSet<int>(); bool changed = false; string? failure = null;
+            void Mutate()
+            {
+                changed = true;
+                int batchNotices = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSpawnMultipleCards");
+                if (batchNotices != (duringCreation ? 0 : 1)) failure = "限制变化相对批量通知的时机错误";
+                if (mutation is 0 or 1)
+                    engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { mutation == 0 ? 101 : 103, false, null }, ctx, out _);
+                else
+                {
+                    engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 101, true, null }, ctx, out _);
+                    if (mutation == 3) engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 102, true, null }, ctx, out _);
+                }
+            }
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name)
+                {
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5; spawned.Add(made);
+                    if (duringCreation && !changed) Mutate();
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    var current = spawned.Where(x => !entered.Contains(x.CardId)
+                        && Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) == 3).ToArray();
+                    if (current.Length != 1) { failure = "动态容量进场主体错误"; return; }
+                    entered.Add(current[0].CardId);
+                    if (!duringCreation && !changed) Mutate();
+                }
+            };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, true, Enumerable.Repeat(name, 4).ToList(), source.CardId, false, null, false }, ctx, out _);
+            if (failure is not null || !changed || result is not List<int> ids || ids.Count != expectedCount
+                || !ids.SequenceEqual(spawned.Select(x => x.CardId)) || entered.Count != expectedCount
+                || !state.FrontlineLimiters.SetEquals(expectedSet) || state.FrontlineCapacity != expectedCapacity
+                || state.AllCards.Count(x => x.Location == CardLocation.BoardFrontline) != residents + expectedCount)
+                return $"dynamic limiter case={cases} {side}/{initial}/{mutation}/{duringCreation}/{residents}: {failure ?? "capacity admission or retroactive truncation"}, spawned={spawned.Count}/{expectedCount}";
+            cases++;
+        }
+        return cases == 96 ? null : $"dynamic limiter matrix count={cases}";
     }
 
     private static string? ReentrantObjectCreationBatch(CardDatabase db)

@@ -1,0 +1,45 @@
+{
+  "rule": "RULE-187",
+  "status": "preserve explicit limiter ID and emit missing ordered update notification; tested creation/entry dynamic admission boundary",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\dynamic-limiter-evidence-20261018.json",
+  "evidence_sha256": "7aa31498cf90df24fbbf1b6d0c8a9d9bdafd5d51927642e385e28cc410f7c6d6",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-dynamic-limiter-20261018.py": "a37964b16caed1539fce5d28727fc407a3ba49ed70466166fb0717d15e386aae",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-dynamic-limiter-before-20261018.txt": "5959e8fc7607a98d25aa1995e56fa6de70b9be5889f6c41a991b9e942ad2a32d",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-dynamic-limiter-after-20261018.txt": "4a55c9404362539de26e098ed11dc2446a63822fc98c44d8742b6f4f3ffeb7dd",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "6c0ae0e697d0e6d4c42e88e7da0e7996bf63857e1e8eafa99c8612c9577b7e2f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "407da4894f9e62e7aa7b2a4472310a0118214cbe2545cdc17cdbde9f6936607c"
+  },
+  "tests": {
+    "release": "555/555",
+    "limiter_contract_scenarios": 24,
+    "limiter_contract_calls": 96,
+    "dynamic_capacity_cases": 96,
+    "contract_matrix": "2 sides x4 arguments(0/-7/nonexistent777/card-object90) x3 initial sets(empty/argument/unrelated888), each add/add/remove/remove",
+    "dynamic_matrix": "2 sides x3 initial limiter counts(0/1/2) x4 operations(add same/add new/remove one/remove all) x2 mutation phases(first object creation/first own entry) x2 initial frontline resident counts(0/1)",
+    "checks": [
+      "Explicit zero/negative preserved, not replaced by Self; unknown positive ID does not require object lookup",
+      "Set semantics preserve unrelated/multiple sources, duplicate add and absent remove; exactly one ordered cardID/instigatorID/remove notification per call",
+      "Creation-stage limiter changes affect subsequent admission; already accepted first object remains",
+      "Entry-stage capacity shrink does not retroactively truncate already-created batch; capacity expansion does not resume finished creation loop",
+      "Every accepted card still enters with correct method; final physical count and limiter set match expected"
+    ],
+    "regression": "Old first scenario substitutes90 for0 and emits no notification;1/555 fails. Repaired555/555 passes."
+  },
+  "limits": [
+    "Headless model keeps existing immediate application of limiter state, corresponding to receipt/apply outcome. Full native action-process notification queue timing, producer/consumer interleaving and state-vs-notice observation order remain uncertified.",
+    "Zero/negative/nonexistent IDs are boundary contract probes, not proof normal PvP cards supply them; object-valued argument is adapter compatibility, native ABI is integer.",
+    "Dynamic mutation is issued by synthetic CardCreated/entry marker callback using dispatcher, not full Black Prince or native suppression/leave lifecycle.",
+    "No native TSet ordering/GC, same-ID replacement, deep reentry, cross-side admission or complete real-card semantics are certified.",
+    "Notification bridge, receiver, serializer and state functions are parsed-pak evidence; saved runtime checks verify selected library lengths/hashes/top-level flow, not full semantic equivalence.",
+    "No replay authority or new game process memory access/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
