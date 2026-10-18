@@ -1,0 +1,50 @@
+{
+  "rule": "RULE-191",
+  "status": "fixed-limiter-application-at-known-local-receipt-boundaries",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "60fec7e1ab904645d956829b56eea000b5560169f7fc217effba8a0d8575dc91",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "6cc45b62c5b49020de210efe234aa33c5b84ad4ebe5d73e9b9dc89c891295a03",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "43fa5bc77175eafbd239db229d8207fa763484078612f06d2aba3cee7d33f2cb",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-limiter-receipt-before-20261018.txt": "1d88c631edb8aac5b3fb5cc8952aacbb32e037d321a40705aa37db4307c9c269",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-limiter-receipt-after-20261018.txt": "1b8b06ee3fc31e5852816fe5a9a0792c4c72431106fa7ce5159d0ba1cfe003ad",
+    "D:\\Codex Workshop\\kards-install-review\\audit-limiter-receipt-fix-20261018.py": "7951b5a0346cf59361dbec88619fec52eda3a1c56c1d4bcd24652ad73886fbfc",
+    "D:\\Codex Workshop\\kards-install-review\\limiter-action-boundary-evidence-20261018.json": "a2b7d532221f67460466bb5a39531ab68927175c88c415f1727af5e3c8b166f3",
+    "D:\\Codex Workshop\\kards-install-review\\limiter-local-consumption-evidence-20261018.json": "82680fa019e551b9515bed8c1b7baf87d4392a0f5e226875309a40fbf98df5c7",
+    "D:\\Codex Workshop\\kards-install-review\\own-action-consumption-evidence-20261018.json": "b4f75a52794344e2268d6eb1663c30cab5222bf5eb17535c9d6d637f85b6b226"
+  },
+  "findings": [
+    "ChangeFrontlineLimiter now only emits its three-field notification and queues captured integer/remove parameters; it does not mutate the limiter collection during production.",
+    "Limiter and existing Gotcha play receipts share a FIFO queue. Collection add/remove happens only while consuming the local receipt batch, without re-emitting notifications or looking up a limiter object.",
+    "Existing known finish sites (play/move/attack/start/end turn and selection completion) consume the shared queue. Old Gotcha-only public method forwards for compatibility. No outer-effect-end blanket drain was introduced.",
+    "Existing24scenario/96call parameter contract now verifies production vs consumption;96dynamic batch cases now retain initial capacity throughout construction/entry and only update the collection at receipt.",
+    "New48case integration matrix covers both sides, normal play, hand-target reply, draw-selection reply, initial limiter on/off, and add/remove/add-then-remove/remove-then-add. Nested batch admission uses initial capacity, Gotcha remains deferred, final receipts apply once.",
+    "New4case deferred-hand-reply matrix verifies initial action receipt before answering, inverse update remains unapplied during reply/AfterWait, and reply completion consumes it.",
+    "Mutable synthetic IR fixtures evict and restore only their own local cache entry, preventing prior probe programs from contaminating the new matrix."
+  ],
+  "tests": {
+    "before": "3/555 failed with deferred expectations and old kernel",
+    "after": "557/557 passed",
+    "parameter_scenarios": 24,
+    "parameter_calls": 96,
+    "batch_cases": 96,
+    "integration_cases": 48,
+    "deferred_reply_cases": 4
+  },
+  "limits": [
+    "This repairs the evidenced limiter production/application difference at existing normal action and reply finish sites, not complete PvP action scheduling.",
+    "Only limiter and Gotcha receipts are modeled here; other local/remote subaction handlers, marker insertion, reconnect/validation/error paths and native receive reentry remain unaudited.",
+    "PlayerMoves.DoNextInQueue per-card standalone autoplay path is still separate and not fully modeled. This change does not certify it or add a universal receipt boundary.",
+    "Headless dispatch still assumes the gameplay/IsActionProcess=true path; native false-path no-op behavior and full flag lifecycle are not restored.",
+    "Direct standalone API callers must explicitly finish a local receipt batch. ActionLog still represents emitted subactions as separate GameActions rather than native grouped action packets.",
+    "Tests use controlled synthetic programs/callbacks and captured static definitions. They do not certify each real card, full native timing, exceptions, GC/TSet iteration, or deeper nested receive behavior.",
+    "No historical replay authority, live process writes/injection or new game memory capture. Fully semantically verified cards remains0."
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\limiter-receipt-fix-evidence-20261018.json",
+  "evidence_sha256": "5200dddcab02839dbd297a9e24a6d96bf75882bf700aa27148b605d26f1844ad",
+  "runtime_verified_functions": 6,
+  "fully_semantically_verified_cards": 0
+}

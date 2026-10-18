@@ -353,7 +353,9 @@ internal static class SelfTest
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
         new("限制者入口：显式零/负数、重复增删及三字段通知", FrontlineLimiterContract),
-        new("动态前线容量：创建时影响下一张，进场时不追溯截断", DynamicBatchFrontlineLimit),
+        new("动态前线容量：创建/进场只排队，接收后更新容量", DynamicBatchFrontlineLimit),
+        new("本地接收：出牌/两类选择各自应用限制者与Gotcha，保留批内顺序", LimiterLocalReceiptIntegration),
+        new("延后选择：最初出牌先接收，回复期间保持旧容量，回复收尾再应用", LimiterDeferredSelectionBoundary),
         new("对象创建重入：先内层通知，外层重查容量/归属并保持金卡快照", ReentrantObjectCreationBatch),
         new("创建回调卡号重查：进场回合写映射对象，cardSeen仍写创建对象", BatchCreationTurnLookup),
         new("重入批量生成：内层先完成，外层快照与结果数组保持隔离", ReentrantBatchCreation),
@@ -1189,6 +1191,8 @@ internal static class SelfTest
 
         engine.Api.InvokeByName("ChangeFrontlineLimiter", limiter,
             new object?[] { limiter.CardId, false }, ctx, out bool handledAdd);
+        if (state.IsFrontlineLimited) return "限制者通知在接收前错误地修改集合";
+        engine.ApplyPendingGotchaPlayReceipts(); // Existing local receipt boundary.
         if (!handledAdd || !state.IsFrontlineLimited
             || state.FrontlineCapacity != GameState.LimitedFrontlineCapacity)
         {
@@ -1210,6 +1214,8 @@ internal static class SelfTest
 
         engine.Api.InvokeByName("ChangeFrontlineLimiter", limiter,
             new object?[] { limiter.CardId, true }, ctx, out bool handledRemove);
+        if (!state.IsFrontlineLimited) return "移除限制者通知在接收前错误地修改集合";
+        engine.ApplyPendingGotchaPlayReceipts();
         if (!handledRemove || state.IsFrontlineLimited
             || state.FrontlineCapacity != GameState.DefaultFrontlineCapacity)
         {
@@ -27185,6 +27191,148 @@ internal static class SelfTest
         return cases == 192 ? null : $"entry subject matrix count={cases}";
     }
 
+    private static IDisposable InstallLimiterReceiptProbe(string name, string trigger, bool[] removals)
+    {
+        if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            throw new InvalidOperationException("无法安全安装限制者接收探针");
+        // Synthetic programs isolate receipt timing; these are not real card effects.
+        var steps = new List<KismetStep>();
+        foreach (bool remove in removals)
+            steps.Add(new KismetStep(steps.Count, "call", "ChangeFrontlineLimiter", new[] {
+                new KismetExpr { Int = 777 }, new KismetExpr { Bool = remove }
+            }, Array.Empty<int>(), null, null, -1, null, null));
+        steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+            new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+            new KismetExpr { Int = 20 }, new KismetExpr { Int = 1 }
+        }, Array.Empty<int>(), null, null, -1, null, null));
+        steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+        // These fixtures vary the program between cases. Evict only this local
+        // cache entry and restore it on disposal, including prior audit probes.
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(KismetLibrary.Default)!;
+        KismetProgram? previous = null;
+        if (cache.TryGetValue(name, out var programs)) programs.Remove(trigger, out previous);
+        locals.Add(trigger, steps);
+        return new AuditProbeCleanup(() => {
+            locals.Remove(trigger);
+            if (cache.TryGetValue(name, out var current))
+            {
+                current.Remove(trigger);
+                if (previous is not null) current[trigger] = previous;
+            }
+        });
+    }
+
+    private static string? LimiterLocalReceiptIntegration(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (bool initiallyLimited in new[] { false, true })
+        foreach (var removals in new[] { new[] { false }, new[] { true }, new[] { false, true }, new[] { true, false } })
+        {
+            string name = route == 0 ? "card_unit_typhoon_mk_ib" : route == 1 ? "card_unit_52_k" : "card_unit_m36_destroyer";
+            using var probe = InstallLimiterReceiptProbe(name, route == 0 ? "OnEnterPlay" : route == 1 ? "OnHandTargetSelected" : "OnPlayedFromHand", removals);
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            if (initiallyLimited) state.FrontlineLimiters.Add(777);
+            var source = state.CreateWithId(name, side, 20, route == 0 ? side.HandOf() : CardLocation.Discard, 0);
+            if (route == 0)
+            {
+                source.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                source.Keywords.Clear(); source.Attack = 2; source.Defense = source.MaxDefense = 5; source.KreditCost = 0;
+            }
+            var target = state.CreateWithId("card_unit_432_infantry_regiment", side, 30, route == 2 ? side.DeckOf() : side.HandOf(), 0);
+            var gotcha = state.CreateWithId("card_event_interception", side, 80, side.HandOf(), route == 0 ? 1 : 2);
+            state.AddAutoPlayCards(gotcha.CardId);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            int callbackCount = 0, admitted = 0; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                callbackCount++;
+                if (state.IsFrontlineLimited != initiallyLimited || gotcha.GotchaActivated != 0)
+                    failure = "规则/选择回调看到尚未接收的更新";
+                var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                    new object?[] { (int)side, true, Enumerable.Repeat(PlainUnit, 4).ToList(), source.CardId, false, null, false }, ctx, out _);
+                admitted = result is List<int> ids ? ids.Count : -1;
+                if (state.IsFrontlineLimited != initiallyLimited || gotcha.GotchaActivated != 0)
+                    failure = "嵌套批量生成提前消费接收队列";
+            };
+            bool success;
+            if (route == 0) success = engine.PlayCard(source);
+            else if (route == 1)
+            {
+                engine.PickHandTargetId = (_, _) => target.CardId;
+                engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { source.CardId }, ctx, out success);
+            }
+            else
+            {
+                source.ExtraPlayTriggers = 1;
+                success = engine.Api.DrawChosenCardToHand(source, target) is not null;
+            }
+            bool expectedLimited = !removals[^1];
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionUpdateFrontlineLimiter").ToArray();
+            if (!success || failure is not null || callbackCount != 1 || admitted != (initiallyLimited ? 2 : 4)
+                || state.IsFrontlineLimited != expectedLimited || gotcha.GotchaActivated != 1
+                || state.GetAutoPlayCards().Length != 0 || notices.Length != removals.Length)
+                return $"local receipt case={cases} {side}/{route}/{initiallyLimited}: {failure ?? "receipt/order/capacity"}, calls={callbackCount}, admitted={admitted}, limited={state.IsFrontlineLimited}, gotcha={gotcha.GotchaActivated}, notices={notices.Length}, values={string.Join(';', notices.Select(x => string.Join(',', x.Values)))}";
+            int actionCount = state.ActionLog.Count;
+            engine.ApplyPendingLocalRuleReceipts();
+            if (state.IsFrontlineLimited != expectedLimited || gotcha.GotchaActivated != 1 || state.ActionLog.Count != actionCount)
+                return "已消费的本地接收队列被重复应用";
+            cases++;
+        }
+        return cases == 48 ? null : $"local receipt matrix count={cases}";
+    }
+
+    private static string? LimiterDeferredSelectionBoundary(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool firstRemove in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 2; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            if (firstRemove) state.FrontlineLimiters.Add(777);
+            var source = state.CreateWithId("card_unit_gordon_highlanders", side, 20, side.HandOf(), 0);
+            state.CreateWithId("card_unit_dornier_do_18g", side, 30, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_convoy_175", side, 31, side.HandOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            bool notified = false, answered = false, afterWait = false; string? failure = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                if (card == source && oldLocation == side.HandOf() && newLocation == side.HqOf())
+                {
+                    notified = true;
+                    engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 777, firstRemove }, ctx, out _);
+                    if (state.IsFrontlineLimited != firstRemove) failure = "最初出牌提前应用限制者";
+                }
+                if (card == source && newLocation == CardLocation.BoardFrontline)
+                {
+                    afterWait = true;
+                    if (!answered || state.IsFrontlineLimited != !firstRemove) failure = "等待恢复前提前消费回复通知";
+                }
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            };
+            engine.PickHandTargetId = (_, _) => {
+                answered = true;
+                if (!notified || state.IsFrontlineLimited != !firstRemove) failure = "回复开始前尚未接收最初动作";
+                engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 777, !firstRemove }, ctx, out _);
+                if (state.IsFrontlineLimited != !firstRemove) failure = "回复通知立即生效";
+                return target.CardId;
+            };
+            bool success = engine.PlayCard(source);
+            if (!success || !notified || !answered || !afterWait || failure is not null || state.IsFrontlineLimited != firstRemove)
+                return $"deferred limiter {side}/{firstRemove}: {failure ?? "missing action/reply receipt"}, first={notified}, reply={answered}, wait={afterWait}, limited={state.IsFrontlineLimited}";
+        }
+        return null;
+    }
+
     private static string? FrontlineLimiterContract(CardDatabase db)
     {
         int scenarios = 0, calls = 0;
@@ -27204,12 +27352,19 @@ internal static class SelfTest
                 int previous = state.ActionLog.SelectMany(x => x.SubActions).Count();
                 engine.Api.InvokeByName("ChangeFrontlineLimiter", source,
                     new object?[] { argument == 90 ? source : argument, remove, null }, ctx, out bool handled);
+                if (!state.FrontlineLimiters.SetEquals(expected))
+                    return $"limiter changed during notification: id={argument}, remove={remove}";
                 if (remove) expected.Remove(argument); else expected.Add(argument);
                 var added = state.ActionLog.SelectMany(x => x.SubActions).Skip(previous).ToArray();
                 var values = new[] { ActionValue2.Int("cardID", argument), ActionValue2.Int("instigatorID", argument), ActionValue2.Bool("remove", remove) };
-                if (!handled || !state.FrontlineLimiters.SetEquals(expected) || state.FrontlineCapacity != (expected.Count > 0 ? 2 : 5)
-                    || added.Length != 1 || added[0].Name != "ZActionUpdateFrontlineLimiter" || !added[0].Values.SequenceEqual(values))
+                if (!handled || added.Length != 1 || added[0].Name != "ZActionUpdateFrontlineLimiter" || !added[0].Values.SequenceEqual(values))
                     return $"limiter contract scenario={scenarios}, id={argument}, remove={remove}, initial={initial}: set={string.Join(',', state.FrontlineLimiters)}, notifications={added.Length}";
+                engine.ApplyPendingGotchaPlayReceipts();
+                if (!state.FrontlineLimiters.SetEquals(expected) || state.FrontlineCapacity != (expected.Count > 0 ? 2 : 5))
+                    return $"limiter receipt failed: id={argument}, remove={remove}";
+                engine.ApplyPendingGotchaPlayReceipts();
+                if (!state.FrontlineLimiters.SetEquals(expected) || state.ActionLog.SelectMany(x => x.SubActions).Count() != previous + 1)
+                    return "second receipt drain changed state or emitted another notification";
                 calls++;
             }
             scenarios++;
@@ -27233,13 +27388,14 @@ internal static class SelfTest
             if (residents == 1) state.CreateWithId(PlainUnit, side, 70, CardLocation.BoardFrontline, 0);
             var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0);
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var initialSet = new HashSet<int>(state.FrontlineLimiters);
             var expectedSet = new HashSet<int>(state.FrontlineLimiters);
             if (mutation == 0) expectedSet.Add(101);
             if (mutation == 1) expectedSet.Add(103);
             if (mutation == 2) expectedSet.Remove(101);
             if (mutation == 3) { expectedSet.Remove(101); expectedSet.Remove(102); }
             int expectedCapacity = expectedSet.Count > 0 ? 2 : 5;
-            int expectedCount = Math.Min(4, (duringCreation ? expectedCapacity : initial > 0 ? 2 : 5) - residents);
+            int expectedCount = Math.Min(4, (initial > 0 ? 2 : 5) - residents);
             var spawned = new List<CardInstance>(); var entered = new HashSet<int>(); bool changed = false; string? failure = null;
             void Mutate()
             {
@@ -27253,18 +27409,21 @@ internal static class SelfTest
                     engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 101, true, null }, ctx, out _);
                     if (mutation == 3) engine.Api.InvokeByName("ChangeFrontlineLimiter", source, new object?[] { 102, true, null }, ctx, out _);
                 }
+                if (!state.FrontlineLimiters.SetEquals(initialSet)) failure = "生产通知时提前应用限制者";
             }
             var created = state.CardCreated;
             state.CardCreated = made => {
                 created?.Invoke(made);
                 if (made.Name == name)
                 {
+                    if (!state.FrontlineLimiters.SetEquals(initialSet)) failure = "后续创建看到了尚未接收的限制者";
                     made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
                     made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5; spawned.Add(made);
                     if (duringCreation && !changed) Mutate();
                 }
                 else if (made.Name == "card_unit_routed_troops")
                 {
+                    if (!state.FrontlineLimiters.SetEquals(initialSet)) failure = "进场时提前应用限制者";
                     var current = spawned.Where(x => !entered.Contains(x.CardId)
                         && Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) == 3).ToArray();
                     if (current.Length != 1) { failure = "动态容量进场主体错误"; return; }
@@ -27276,9 +27435,13 @@ internal static class SelfTest
                 new object?[] { (int)side, true, Enumerable.Repeat(name, 4).ToList(), source.CardId, false, null, false }, ctx, out _);
             if (failure is not null || !changed || result is not List<int> ids || ids.Count != expectedCount
                 || !ids.SequenceEqual(spawned.Select(x => x.CardId)) || entered.Count != expectedCount
-                || !state.FrontlineLimiters.SetEquals(expectedSet) || state.FrontlineCapacity != expectedCapacity
+                || !state.FrontlineLimiters.SetEquals(initialSet)
                 || state.AllCards.Count(x => x.Location == CardLocation.BoardFrontline) != residents + expectedCount)
                 return $"dynamic limiter case={cases} {side}/{initial}/{mutation}/{duringCreation}/{residents}: {failure ?? "capacity admission or retroactive truncation"}, spawned={spawned.Count}/{expectedCount}";
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (!state.FrontlineLimiters.SetEquals(expectedSet) || state.FrontlineCapacity != expectedCapacity
+                || state.AllCards.Count(x => x.Location == CardLocation.BoardFrontline) != residents + expectedCount)
+                return $"limiter receipt altered admitted batch: case={cases}";
             cases++;
         }
         return cases == 96 ? null : $"dynamic limiter matrix count={cases}";

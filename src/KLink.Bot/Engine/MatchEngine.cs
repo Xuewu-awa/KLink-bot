@@ -41,7 +41,7 @@ public sealed class MatchEngine
             }
             else if (updateExtraTriggers)
                 Api.ResolveTriggerQueue();
-            if (consumeAutoPlay) ApplyPendingGotchaPlayReceipts();
+            if (consumeAutoPlay) ApplyPendingLocalRuleReceipts();
         }
         if (defer && _pendingSelections is { } pending) pending.Enqueue(Complete);
         else Complete();
@@ -562,7 +562,7 @@ public sealed class MatchEngine
             StartTurnCore(side, draw);
             // OpponentActionsStartTurn: StartTurnBySide then ExecuteAutoPlayCards.
             ExecuteAutoPlayCards();
-            ApplyPendingGotchaPlayReceipts();
+            ApplyPendingLocalRuleReceipts();
         }
         finally
         {
@@ -808,7 +808,7 @@ public sealed class MatchEngine
 
         // OpponentActionsEndTurn i=673 precedes SwitchPlayingSide/IncrementTurnNumber.
         ExecuteAutoPlayCards();
-        ApplyPendingGotchaPlayReceipts();
+        ApplyPendingLocalRuleReceipts();
 
         RecordAction("XActionEndOfTurn", side, new Dictionary<string, object?>
         {
@@ -1078,17 +1078,36 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
-    private readonly Queue<(int CardId, bool PlayedDirectly)> _pendingGotchaPlayReceipts = new();
+    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter }
+    private readonly Queue<(LocalReceiptKind Kind, int CardId, bool Flag)> _pendingLocalRuleReceipts = new();
 
-    /// <summary>Apply the rule-bearing Gotcha part of local ReceiveActionPlayCardFromHand.</summary>
+    /// <summary>Compatibility entry for callers of the original Gotcha-only receiver.</summary>
     public void ApplyPendingGotchaPlayReceipts()
+        => ApplyPendingLocalRuleReceipts();
+
+    /// <summary>
+    /// Apply the currently modeled rule-bearing local receipts in production order.
+    /// These are the Gotcha play and frontline-limiter receivers, not a complete
+    /// implementation of BP_OnlineMatch.ResolveSubAction. Normal actions call
+    /// this after autoplay and before deferred selection replies; standalone API
+    /// callers must explicitly finish their local receipt batch.
+    /// </summary>
+    public void ApplyPendingLocalRuleReceipts()
     {
-        while (_pendingGotchaPlayReceipts.TryDequeue(out var receipt))
+        while (_pendingLocalRuleReceipts.TryDequeue(out var receipt))
         {
+            if (receipt.Kind == LocalReceiptKind.FrontlineLimiter)
+            {
+                // ReceiveSubActionUpdateFrontlineLimiter i=451 -> GameState:
+                // unconditional integer Set_Add/Remove, without object lookup.
+                if (receipt.Flag) State.FrontlineLimiters.Remove(receipt.CardId);
+                else State.FrontlineLimiters.Add(receipt.CardId);
+                continue;
+            }
             var card = State.ById(receipt.CardId);
             if (card is null || !Api.IsGotcha(card)) continue;
             // i=1294/1308: local direct-play notifications must not toggle twice.
-            if (receipt.PlayedDirectly) continue;
+            if (receipt.Flag) continue;
             if (card.GotchaActivated > 0) card.GotchaActivated = 0;
             else
             {
@@ -1102,6 +1121,16 @@ public sealed class MatchEngine
                 card.GotchaActivated = next + 1;
             }
         }
+    }
+
+    internal void NotifyFrontlineLimiter(int limiterId, bool remove)
+    {
+        FireSubAction("ZActionUpdateFrontlineLimiter", new[] {
+            ActionValue2.Int("cardID", limiterId),
+            ActionValue2.Int("instigatorID", limiterId),
+            ActionValue2.Bool("remove", remove),
+        });
+        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.FrontlineLimiter, limiterId, remove));
     }
 
     private void NotifyPlayFromHand(CardInstance card, int instigatorId,
@@ -1126,7 +1155,7 @@ public sealed class MatchEngine
             values.Add(ActionValue2.Bool("playedDirectly", true));
         }
         FireSubAction("ZActionPlayCardFromHand", values);
-        if (Api.IsGotcha(card)) _pendingGotchaPlayReceipts.Enqueue((card.CardId, playedDirectly));
+        if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly));
     }
 
     private bool _processingAutoPlayCards;
@@ -1366,7 +1395,7 @@ public sealed class MatchEngine
             if (completed)
             {
                 ExecuteAutoPlayCards();
-                ApplyPendingGotchaPlayReceipts();
+                ApplyPendingLocalRuleReceipts();
             }
             return completed;
         }
@@ -1937,7 +1966,7 @@ public sealed class MatchEngine
             if (completed)
             {
                 ExecuteAutoPlayCards();
-                ApplyPendingGotchaPlayReceipts();
+                ApplyPendingLocalRuleReceipts();
             }
             return completed;
         }
@@ -2308,7 +2337,7 @@ public sealed class MatchEngine
             if (completed)
             {
                 ExecuteAutoPlayCards();
-                ApplyPendingGotchaPlayReceipts();
+                ApplyPendingLocalRuleReceipts();
             }
             return completed;
         }

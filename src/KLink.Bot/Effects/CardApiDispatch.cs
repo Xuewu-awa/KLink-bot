@@ -568,15 +568,9 @@ public sealed partial class CardApi
                 // limiter as both cardID and instigatorID, including zero/negative.
                 int limiterId = IdOf(a.ElementAtOrDefault(0));
                 bool remove = TruthyArg(a, 1);
-                // Headless application of ReceiveSubActionUpdateFrontlineLimiter
-                // -> GameState.UpdateFrontlineLimiter (unconditional Set_Add/Remove).
-                if (remove) c.State.FrontlineLimiters.Remove(limiterId);
-                else c.State.FrontlineLimiters.Add(limiterId);
-                _engine.FireSubAction("ZActionUpdateFrontlineLimiter", new[] {
-                    ActionValue2.Int("cardID", limiterId),
-                    ActionValue2.Int("instigatorID", limiterId),
-                    ActionValue2.Bool("remove", remove),
-                });
+                // Production only: native collection application belongs to
+                // DoSubActions after autoplay / StopActionProcess (RULE-189/190).
+                _engine.NotifyFrontlineLimiter(limiterId, remove);
 
                 return null;
             },
