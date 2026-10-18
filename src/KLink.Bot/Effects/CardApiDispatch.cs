@@ -3123,6 +3123,21 @@ public sealed partial class CardApi
         return card;
     }
 
+    // GetStaticCard returns a stored static object, without a battle controller
+    // or turn-start action quotas. Current live static-map objects have these
+    // raw fields at0. Other selection wrappers retain their existing projection.
+    internal static CardInstance NativeStaticCardInstance(CardDefinition definition)
+    {
+        var card = TemplateInstance(definition, Side.NotAvailable);
+        card.EnteredPlayOnTurn = 0;
+        card.MaxDefense = 0;
+        card.SetRemainingAttacks(0);
+        // This bool is the headless representation of the native0/1 movement
+        // quota, not an assertion that the static object actually moved.
+        card.HasMovedThisTurn = true;
+        return card;
+    }
+
     private static CardDefinition? FindVeteranDefinition(CardDatabase database, CardInstance card)
     {
         string baseName = CardDatabase.ResolveBaseName(card.Definition.Name);

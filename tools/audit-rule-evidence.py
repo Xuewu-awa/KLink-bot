@@ -180,6 +180,7 @@ def main():
     (output / 'inventory.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
     report = ['# 系统规则审计：结构基线', '', f'代码基线：`{git_head}`', '',
               '本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。', '',
+              '版本范围：统计来自指定证据目录中的快照，不会自动复核当前安装版本；适用版本及当前复核范围见各轮规则审计记录。', '',
               '| 检查项 | 数量 |', '|---|---:|']
     report += [f'| {key} | {value} |' for key,value in counts.items()]
     report += ['', '## 直接 IR 缺失候选', '', '必须检查继承、原生默认实现和 PvP 适用范围后才能认定缺陷。', '']

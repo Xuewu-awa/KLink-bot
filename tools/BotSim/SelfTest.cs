@@ -240,6 +240,7 @@ internal static class SelfTest
         new("静态卡身份：同定义查询为同一对象，不同定义及战斗ID0不混同", StaticTemplateObjectIdentity),
         new("对象运算身份：战斗引用及空值相等/不等互补，同号不同对象不合并", ObjectOperatorBattleIdentity),
         new("对象运算身份：重复静态查询及卡池包装保留同一原生对象身份", ObjectOperatorStaticIdentity),
+        new("GetStaticCard 原始规则状态：无归属、进场回合/行动额度/最大防御为0", NativeStaticCardRuleState),
         new("对象集合身份：同卡号对象分别追加/查找/移除，共用比较器回归", ObjectSetIdentity),
         new("AKITA实际IR：死亡killer与当前同号对象不同，不误删伤害候选", AkitaDistinctKillerIdentity),
         new("真实重置IR：芬兰Bf109/PROLONGED SIEGE清理全部重复卡号后按需持久化", ResetTrackedCardArrayCleanup),
@@ -12134,6 +12135,46 @@ internal static class SelfTest
                     return $"missing Pincer {side}/{route}: invalid-object default payload";
         }
         return null;
+    }
+
+    private static string? NativeStaticCardRuleState(CardDatabase db)
+    {
+        string furyName = db.All.First(x => x.Keywords.Contains(Keyword.Fury)).Name;
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { PlainUnit, "card_event_barrage", furyName })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "GetStaticCard", Args = new[] { new KismetExpr { Name = name } } },
+                    null, -1, "staticCard", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            int actions = state.ActionLog.Count;
+            var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "staticCard");
+            if (result["staticCard"] is not CardInstance card) return $"lookup missing for known {name}";
+            if (card.Owner != Side.NotAvailable || card.OriginalOwner != Side.NotAvailable
+                || card.CardId != 0 || card.Location != CardLocation.NotAvailable || card.LocationNumber != 0
+                || card.EnteredPlayOnTurn != 0 || card.MaxDefense != 0)
+                return $"static raw state {side}/{name}: owner={card.Owner}, enter={card.EnteredPlayOnTurn}, maxDefense={card.MaxDefense}";
+            if (engine.Api.InvokeByName("HasAttackLeft", card, Array.Empty<object?>(), ctx, out _) is not false
+                || engine.Api.InvokeByName("HasMovementLeft", card, Array.Empty<object?>(), ctx, out _) is not false)
+                return $"static quotas {side}/{name}: native static attackLeft/movementLeft must be0";
+            // The change must retain the database-backed card attributes and
+            // canonical object identity, and must not affect the executing card.
+            if (card.Name != name || card.Definition != db.Require(name)
+                || card.Attack != card.Definition.Attack || card.Defense != card.Definition.Defense
+                || card.KreditCost != card.Definition.Kredits || self.Owner != side || state.ActionLog.Count != actions)
+                return $"static lookup data/context regression {side}/{name}";
+            string? identityError = ProbeObjectOperators(ctx, new() { Var = "lookedUp" }, new() { Var = "wrapped" }, true,
+                new Dictionary<string, object?> { ["lookedUp"] = card, ["wrapped"] = CardApi.TemplateInstance(card.Definition, side) });
+            if (identityError is not null) return $"static identity {side}/{name}: {identityError}";
+            cases++;
+        }
+        return cases == 6 ? null : $"static raw state cases={cases}";
     }
 
     private static string? ProbeObjectOperators(EffectContext ctx, KismetExpr left, KismetExpr right,

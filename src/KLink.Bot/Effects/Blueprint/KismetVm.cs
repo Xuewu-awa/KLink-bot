@@ -1281,9 +1281,9 @@ public sealed class KismetVm
             //   `LocalVariable CallFunc_GetCardName_cardName`
             //   `Context{...}._card` / `._cardFromID`（结构体字段，`ToString()` 后就是卡名）
             //
-            // 返回 `TemplateInstance`（`CardId = 0`、`Location = NotAvailable`）——
-            // 和 `GetAllActiveStaticCards()` 返回的池子是同一种东西，
-            // 这样下游谓词（`IsUnit` / faction 比较 / 读 tag）行为才一致。
+            // A known-name lookup uses the native static-object projection: no side,
+            // enterPlayOnTurn/quotas/maxDefense0, retaining canonical identity.
+            // Unknown names and the legacy object argument remain unaudited here.
             case "GetStaticCard":
                 {
                     string? cardName = a?.ToString();
@@ -1300,7 +1300,7 @@ public sealed class KismetVm
                     }
 
                     var def = ctx.State.Database.Find(cardName);
-                    return def is null ? null : KLink.Bot.Effects.CardApi.TemplateInstance(def, ctx.Controller);
+                    return def is null ? null : CardApi.NativeStaticCardInstance(def);
                 }
             default:
                 UnimplementedCalls[$"math:{fn}"] = UnimplementedCalls.GetValueOrDefault($"math:{fn}") + 1;

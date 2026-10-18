@@ -1,0 +1,63 @@
+{
+  "rule": "RULE-204",
+  "status": "fixed-known-static-lookup-raw-state-with-current-build-live-evidence",
+  "current_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "prior_exe_sha256": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\client-versions\\b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305\\kards-Win64-Shipping.exe": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\relocation-evidence.json": "9c0f896255c1fcd0d39f6db5dd6a422f3d105f65dd9d7c124939972a8df9e650",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\native-class-capture.json": "340b0a03af27afe1d9deba548f241a9ffaa3aa96e4fe8484dd0ae6be247550a1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\static-map-rule-fields.json": "115669ae2453889390a5e3079df3ada9908890ebddcd3fca832678b3200f8663",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\runtime-uobject-index.json": "99dd0a35e1702f098e42ddc6029d835ac752804fb1d79e6c412aac12422c6817",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\current-minimal-mapping.json": "04f7518d8ebfa0b394f9f28c8b390ffc09383f82b6182e7a77fcaac878407fab",
+    "D:\\Codex Workshop\\kards-install-review\\object-identity-evidence-20261018.json": "39a31c2a5777c69a1768afccf9d6a1f4891c4a305bf01ea4e20200c755e89373",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json": "a369dfbfb30abc2a39460c9bd11d69b62c259e059e61c77cc2da146b8a5dd7c9",
+    "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\audit-rule-evidence.py": "293b9ed7aaa855f658810758b0231847bb80b88258297f2ac7358764bfe1e509",
+    "D:\\Codex Workshop\\kards-install-review\\relocate-current-runtime-20261018.py": "92adb451b9e2a99f6d5e3c3b75b2357b379554ac337e08ce0a2e1111b5b825ed",
+    "D:\\Codex Workshop\\kards-install-review\\capture-current-native-class-20261018.py": "5590a4a1e3d70f5f877d276506be56df4aea923f84af2e96a613ef10ae607d28",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "b3c2ffb6189254514291835c6f5f371a922be4a212a5be8cedaca688ba58942c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "56898779d7e3627d4195cc1169fe5e874ba111ce36720c7acaea1231dff602a4",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "8bd906b8365d5121f5b4d479a71cbf272441078d65e6c9914c9d364181614d0c",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-static-rule-state-before-20261018.txt": "3cb7ca96b5d16d31e57d80ae08ef510009cb7bc0880fa081096c96e0e0ce452f",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-static-rule-state-after-20261018.txt": "8a4dd06a06b4e305c5c2d011a2e8bf0af276acd25792752c0915c56cdb61a759",
+    "D:\\Codex Workshop\\kards-install-review\\audit-static-rule-state-20261018.py": "86253e514d99d011b65eec4e339120cd1d2c6e7f8b96dbc5d41caf1a1e26840d"
+  },
+  "findings": [
+    "Client EXE changed. Old GUObjectArray RVA91fc450 was invalid. Unique masked code signatures plus two correlated object-array field references relocated it to91f91d0 and FName.ToString to138b470; frozen EXE bytes and live code/bounds were checked before object enumeration. The old maps and reports remain untouched.",
+    "Current PID14052 enumeration has101630 valid objects and zero object-header/class read errors. BaseCardObject current flags305000a0, property chain136 fields, post-construction and destructor chains empty.101 scalar offsets/sizes match the earlier layout. Three live native UClass callback slots point to current return-only stub11ad330, whose bytes match the new EXE.",
+    "The current GetStaticCard lookup was relocated by its full387-byte instruction span, live bytes equal the frozen new EXE, fixed instructions match the old seed and all internal branch offsets agree. Its actual static map has2019 unique FName keys; stored bucket chains/bitmap/free-list/stability were checked. Every key matches the returned card Name and the simulator database key set.",
+    "These2019 table values are actual stored derived-class instances, not Default__ CDO objects. Across each, CardID/movementLeft/attackLeft/enterPlayOnTurn/Location/side/originalSide/locationNumber/maxAttack/maxDefense are0:20190 checked values. No changed balance fields or card effects were used to infer these generic raw-state rules.",
+    "Known-name VM GetStaticCard previously used a battle-side selection wrapper: owner was caller side, turn=-1, MaxDefense=printed defense, and default attack/movement quota remained available. It now uses a dedicated native-static projection with no side, turn/maxDefense0 and both quotas0; card definition data and canonical static identity are retained.",
+    "Six integration scenarios use the actual Name-argument VM lookup for both controllers and a normal unit/order/Fury unit; they check raw state, quota queries, canonical identity, retained definition-backed attributes and no action/context mutation. The same full final fixtures fail1/581 on the baseline and pass581/581 after the fix."
+  ],
+  "live_pid": 14052,
+  "live_static_objects": 2019,
+  "live_raw_field_comparisons": 20190,
+  "live_raw_field_nonzero": 0,
+  "scalar_layout_fields_verified": 101,
+  "property_chain_fields": 136,
+  "post_construct_chain_fields": 0,
+  "current_verified_callback_slots": 3,
+  "kernel_changed": true,
+  "tests": {
+    "before": "1/581 failed (same final fixtures, baseline kernel)",
+    "after": "581/581 passed",
+    "known_lookup_cases": 6,
+    "test_card_kinds": [
+      "ordinary unit",
+      "order",
+      "Fury unit"
+    ]
+  },
+  "limits": [
+    "Only the relocated symbols, three callbacks, BaseCardObject layout/chains, static map and ten raw fields are verified on this new build. The prior5585-function runtime match and2019-card balance-value comparison belong to the earlier snapshot; they are not automatically recertified for the new EXE/pak.",
+    "Known canonical name GetStaticCard math route only. Unknown-name allocation/default final state, variant fallback, case/number FName coercion and invalid CardInstance argument bridge remain open. Empty base post-construct chain narrows the allocation gap but does not fully reconstruct every initializer branch.",
+    "Other TemplateInstance/StaticCardPool/selection/veteran wrappers retain their current representation and need separate audit. Complete shared mutable static state, JSON/container aliasing, allocation/GC/lifetime and arbitrary writes through static references remain unresolved.",
+    "Headless HasMovedThisTurn=true encodes native movementLeft0 in the existing bool quota model; it does not assert the static object moved. maxAttack is among the live zero checks but its general missing member/API projection is not added here.",
+    "No new card balance data/effects or UI/campaign behavior changed. No process writes, injection or game-function calls. A transient BaseCardObject observed in the process is a populated card copy, not a certified fresh fallback object; it was not used as constructor-default proof. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\static-rule-state-evidence-20261018.json",
+  "evidence_sha256": "48946558b8c146b4304b628c65758832a57269cb5b17e155348c9d825c81de67"
+}
