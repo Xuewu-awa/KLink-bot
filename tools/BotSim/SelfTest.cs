@@ -164,6 +164,8 @@ internal static class SelfTest
         new("自动打出选牌回复：本批先消费，额外触发产生的牌逐张续行", AutoPlaySelectionBeforeExtra),
         new("独立自动出牌：逐张接收限制者，实时追加/清空队列且保持当前帧容量", QueuedAutoPlayActionReceipts),
         new("独立自动出牌：首张Gotcha先接收，再执行下一张单位", QueuedAutoPlayGotchaReceiptOrder),
+        new("普通/自动出牌：移动前准备当前目标，保留回调改写，Gotcha也清理旧目标", HandPlayCurrentTargetBoundary),
+        new("出牌反制：SECRET OPERATIVES在反制阶段读取本次目标", HandPlayCounterReadsCurrentTarget),
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
@@ -13306,6 +13308,91 @@ internal static class SelfTest
             engine.ExecuteAutoPlayCards();
             if (!card.Location.IsBoard() || state.Kredits(side) != 1 || state.GetAutoPlayCards().Length != 0)
                 return "PayCardCost失败时不能部分扣款；PlayCardFromHand不读取该success输出";
+        }
+        return null;
+    }
+
+    private static string? HandPlayCurrentTargetBoundary(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool gotcha in new[] { false, true })
+        foreach (bool stale in new[] { false, true })
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (int targetKind in Enumerable.Range(0, route == 0 ? 5 : 1))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var source = state.CreateWithId(gotcha ? "card_event_interception" : "card_unit_432_infantry_regiment", side, 60, side.HandOf(), 0);
+            if (!gotcha)
+            {
+                source.Definition = new CardDefinition { Name = source.Name, Type = "infantry", Attack = 2, Defense = 5 };
+                source.Keywords.Clear(); source.Attack = 2; source.Defense = source.MaxDefense = 5;
+            }
+            source.KreditCost = 0;
+            var target = state.CreateWithId(PlainUnit, side.Opposite(), targetKind == 2 ? 0 : targetKind == 3 ? -7 : 70,
+                side.Opposite().HqOf(), 1);
+            var previous = state.CreateWithId(PlainUnit, side, 72, CardLocation.Discard, 0);
+            var rewrite = state.CreateWithId(PlainUnit, side, 73, CardLocation.Discard, 1);
+            source.CurrentTarget = stale ? previous : null;
+            CardInstance? requested = targetKind == 0 ? null : targetKind == 4
+                ? new CardInstance { CardId = target.CardId, Name = target.Name, Owner = target.Owner,
+                    OriginalOwner = target.Owner, Definition = target.Definition, Attack = 2, Defense = 5, MaxDefense = 5 }
+                : target;
+            CardInstance? expected = route == 0 && (targetKind == 1 || targetKind == 4) ? target : null;
+            bool movedOnce = false; string? failure = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                if (card == source && oldLocation == side.HandOf() && newLocation == side.HqOf())
+                {
+                    movedOnce = true;
+                    if (!ReferenceEquals(source.CurrentTarget, expected)) failure = "移动回调未看到本次查号后的目标";
+                    source.CurrentTarget = rewrite;
+                }
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+            };
+            bool success = true;
+            if (route == 0) success = engine.PlayCard(source, requested);
+            else
+            {
+                state.AddAutoPlayCards(source.CardId);
+                if (route == 1)
+                {
+                    engine.ExecuteAutoPlayCards();
+                    engine.ApplyPendingLocalRuleReceipts();
+                }
+                else engine.ExecuteQueuedAutoPlayActions();
+            }
+            if (!success || failure is not null || movedOnce == gotcha
+                || !ReferenceEquals(source.CurrentTarget, gotcha ? expected : rewrite))
+                return $"hand target case={cases} {side}/{gotcha}/{stale}/{route}/{targetKind}: {failure ?? "late overwrite or Gotcha stale target"}";
+            cases++;
+        }
+        return cases == 56 ? null : $"hand target boundary cases={cases}";
+    }
+
+    private static string? HandPlayCounterReadsCurrentTarget(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            // Real BARRAGE and SECRET OPERATIVES IR, with a durable ground
+            // target so later BARRAGE damage cannot hide the counter's buff.
+            var source = state.CreateWithId("card_event_barrage", side, 60, side.HandOf(), 0);
+            source.ChooseOne = Enumerable.Range(0, source.Definition.ChooseOneOptionCount)
+                .First(i => source.Definition.ChooseOneSelectTargets[i]);
+            var target = state.CreateWithId("card_unit_432_infantry_regiment", side.Opposite(), 70, side.Opposite().HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Attack = 2, Defense = 20 };
+            target.Keywords.Clear(); target.Attack = 2; target.Defense = target.MaxDefense = 20;
+            var counter = state.CreateWithId("card_event_secret_operatives", side.Opposite(), 80, side.Opposite().HandOf(), 0);
+            counter.GotchaActivated = 1;
+            bool played = engine.PlayCard(source, target);
+            int defenseBuff = target.BuffsBySource.GetValueOrDefault((counter.CardId, false))?.Defense ?? 0;
+            if (!played || counter.GotchaActivated != 0 || counter.Location != CardLocation.Discard || defenseBuff != 2)
+                return $"counter target {side}: played={played}, active={counter.GotchaActivated}, defense buff={defenseBuff}/2";
         }
         return null;
     }

@@ -1206,6 +1206,7 @@ public sealed class MatchEngine
                 if (card is not null)
                 {
                     ApplyNativeHandPlayCost(card);
+                    PrepareHandPlayCurrentTarget(card, target: null);
                     var destination = Api.IsGotcha(card) ? card.Location
                         : card.Definition.IsUnit || card.Definition.IsLocationCard ? card.Owner.HqOf() : CardLocation.Discard;
                     NotifyPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false, destination,
@@ -1213,7 +1214,7 @@ public sealed class MatchEngine
                     if (!Api.IsGotcha(card))
                         PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
                             chargeKredits: false, recordAction: false, toFrontline: false,
-                            locationNumber: 0, instigatorID: card.CardId);
+                            locationNumber: 0, instigatorID: card.CardId, currentTargetPrepared: true);
                 }
                 ApplyPendingLocalRuleReceipts(); // End i=12486 precedes index advance.
             }
@@ -1246,6 +1247,7 @@ public sealed class MatchEngine
                 // Gotcha records a notification; receipt application is a later batch stage.
                 if (Api.IsGotcha(card))
                 {
+                    PrepareHandPlayCurrentTarget(card, target: null);
                     NotifyPlayFromHand(card, card.CardId, 0, 0, playedDirectly: false);
                     continue;
                 }
@@ -1257,6 +1259,14 @@ public sealed class MatchEngine
             State.ClearAutoPlayCards();
         }
         finally { _processingAutoPlayCards = false; }
+    }
+
+    private void PrepareHandPlayCurrentTarget(CardInstance card, CardInstance? target)
+    {
+        // PlayCardFromHand i=694/728: positive IDs resolve through the map;
+        // zero/negative IDs take i=1950 (NoObject). This precedes notification,
+        // movement, countermeasures and entry, including the Gotcha early return.
+        card.CurrentTarget = target is { CardId: > 0 } ? State.ById(target.CardId) : null;
     }
 
     private void ApplyNativeHandPlayCost(CardInstance card, CardInstance? target = null)
@@ -1484,6 +1494,7 @@ public sealed class MatchEngine
                 ["side"] = card.Owner.ToWire(),
             });
             ApplyNativeHandPlayCost(card, target);
+            PrepareHandPlayCurrentTarget(card, target);
             NotifyPlayFromHand(card, card.CardId, card.LocationNumber, target?.CardId ?? 0,
                 playedDirectly: false);
             return true;
@@ -1575,13 +1586,13 @@ public sealed class MatchEngine
     private bool PlayCardFromHandCore(CardInstance card, CardInstance? target,
                                       bool skipLeaveTrigger, bool chargeKredits,
                                       bool recordAction, bool toFrontline,
-                                      int locationNumber, int instigatorID)
+                                      int locationNumber, int instigatorID, bool currentTargetPrepared = false)
     {
         BeginEffectResolution();
         try
         {
             return PlayCardFromHandCoreImpl(card, target, skipLeaveTrigger, chargeKredits,
-                recordAction, toFrontline, locationNumber, instigatorID);
+                recordAction, toFrontline, locationNumber, instigatorID, currentTargetPrepared);
         }
         finally
         {
@@ -1592,7 +1603,7 @@ public sealed class MatchEngine
     private bool PlayCardFromHandCoreImpl(CardInstance card, CardInstance? target,
                                           bool skipLeaveTrigger, bool chargeKredits,
                                           bool recordAction, bool toFrontline,
-                                          int locationNumber, int instigatorID)
+                                          int locationNumber, int instigatorID, bool currentTargetPrepared)
     {
         if (CardApi.IsWeatherCard(card))
         {
@@ -1603,6 +1614,8 @@ public sealed class MatchEngine
         {
             State.AddKredits(card.Owner, -GetPlayCardCost(card, target));
         }
+
+        if (!currentTargetPrepared) PrepareHandPlayCurrentTarget(card, target);
 
         // Gotcha uses separate processing/receipt branches before this common path.
 
@@ -1780,7 +1793,8 @@ public sealed class MatchEngine
         // CardPlayedFromHand sets ExecuteWaitPlayFromHand before invoking the
         // card's own effect. A one-card selection resolves inside that effect,
         // so registering this continuation afterwards leaves a stale wait.
-        card.CurrentTarget = target;
+        // currentTarget was prepared before movement; preserve callback writes
+        // rather than restoring the original argument at this later stage.
         bool waitsForTarget = card.Definition.WaitForHandTarget;
         if (waitsForTarget)
             _waitPlayContinuations[card.CardId] = () => ContinuePlay(waited: true);

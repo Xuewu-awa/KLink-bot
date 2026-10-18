@@ -1,0 +1,50 @@
+{
+  "rule": "RULE-193",
+  "status": "fixed-hand-play-current-target-preparation-and-late-overwrite",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Allegiance\\events\\card_event_secret_operatives.functions.json": "01bcf9f508f4d758ca4f1c5961a495fd5bc58c07d086e3bd99c1ba75f0cbf344",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.functions.json": "32d2ef9f96535b194273087a8b5bfb94f0f8e568bdddbf403c3c0227d2861ab0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "83e8aad839ceee6c013a912dc61a68b8b7248b652baf3398646b5ee61f12671b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "8aff09a24ae6f92f951cc31b88fa7325f6834dbedb1f3ec7df9bd0019cfb430d",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-current-target-before-20261018.txt": "623733d5aca9ff109fc241ef0ee683696015f50e90cd9f956a7a832bffe85fc3",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-current-target-after-20261018.txt": "332a64b72d63c35e905ddfe1c460ccc6996e9e6cf4f093311ac0ac1a02983863",
+    "D:\\Codex Workshop\\kards-install-review\\audit-current-target-boundary-20261018.py": "3ab9a34638babc08f2716346b57e549d5851d90ec27bc61a6392fb53ea639502",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json": "a369dfbfb30abc2a39460c9bd11d69b62c259e059e61c77cc2da146b8a5dd7c9",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json": "95b223d680cfd073d752e70ba12dc3edf931a0b7c4b7ba986bbdb73b6c060bbb"
+  },
+  "findings": [
+    "Gameplay PlayCardFromHand prepares currentTarget before play notification, Gotcha early return, movement and CardPlayedFromHand: positive IDs resolve by map, zero/negative IDs assign NoObject.",
+    "Headless code previously wrote currentTarget only after counter/entry callbacks, overwriting any callback update; ordinary Gotcha and autoplay Gotcha returns did not clear stale targets.",
+    "Preparation now occurs after cost and before notification/movement in normal play and both autoplay callers. The independent caller marks its target prepared so the common body does not overwrite it again. The late assignment is removed.",
+    "The separate direct-play path is unchanged; its parsed body does not assign currentTarget and existing direct-entry tests preserve that distinction.",
+    "New56case matrix covers both sides, unit/Gotcha, stale/null initial state, normal and two autoplay callers; normal calls test null/positive/zero/negative and same-ID alias input. Movement observes the mapped target and its intentional rewrite survives.",
+    "New2case interaction uses real BARRAGE/SECRET OPERATIVES IR with the single-target choice selected and a durable controlled ground target. The counter now triggers and records its own permanent+2defense source buff."
+  ],
+  "normal_flow_assumptions": {
+    "469_ActionProcess": true,
+    "2099_ActionProcess": true,
+    "valid_contexts": true
+  },
+  "graph_states": 105,
+  "tests": {
+    "before": "2/561 failed (same final fixtures, baseline kernel)",
+    "after": "561/561 passed",
+    "target_boundary_cases": 56,
+    "counter_interaction_cases": 2
+  },
+  "limits": [
+    "This fixes currentTarget storage timing and lookup, not every target parameter/requery elsewhere in the play/deployment/choice pipeline.",
+    "Flow proof assumes ActionProcess remains true and valid contexts/normal returns; it does not inline callbacks, model false flag paths, exceptions or native lifetime/reentry.",
+    "The matrix uses controlled definitions, aliases, zero/negative IDs and field rewrites. It is not proof those probes arise in ordinary real-card matches, nor a UObject replacement/GC test.",
+    "The two-card interaction certifies the exercised target-dependent counter path only, not complete BARRAGE or SECRET OPERATIVES semantics. Target durability is synthetic to isolate its buff.",
+    "Full action scheduling, missing source/target IDs, moving identity maps during callbacks, native packet/notification ABI and action-ID random reseeding remain open.",
+    "No historical replay authority, new game memory reads, writes or injection. Fully semantically verified cards remains0."
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\current-target-boundary-evidence-20261018.json",
+  "evidence_sha256": "050fa6c5592c1a6b36c8bc93c27fb578779ea4ce36f481bd2d5718b603626dc9",
+  "runtime_verified_functions": 9,
+  "fully_semantically_verified_cards": 0
+}
