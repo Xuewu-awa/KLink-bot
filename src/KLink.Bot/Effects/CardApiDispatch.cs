@@ -5015,8 +5015,12 @@ public sealed partial class CardApi
             int slot = c.State.AllCards.Count(card => card.Location == location);
             var card = c.State.Create(name, side, location, slot, isGold: forceGoldCard,
                 skipCreationModifiers: true, cardSeenBeforeModifiers: false);
-            card.EnteredPlayOnTurn = c.State.Turn;
             spawnedIds.Add(card.CardId);
+            // i=2429/2461 resolves the created ID AFTER OnCreateCard; i=2503
+            // writes the current map object. CreateCard's cardSeen write stays
+            // on its separately retained created object (i=400).
+            if (c.State.ById(card.CardId) is { } current)
+                current.EnteredPlayOnTurn = c.State.Turn;
         }
 
         if (spawnedIds.Count == 0) return spawnedIds;

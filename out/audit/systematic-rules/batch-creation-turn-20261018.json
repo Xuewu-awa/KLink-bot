@@ -1,0 +1,40 @@
+{
+  "rule": "RULE-185",
+  "status": "batch caller re-resolves creation ID before setting entered turn; CreateCard cardSeen stays on held created object",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-creation-turn-evidence-20261018.json",
+  "evidence_sha256": "be04052d29cbd41fa5abb35072c0e9640db24e3febab3d55eed5b15de7292c3d",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-creation-turn-20261018.py": "2612790ed2e019f4700ef189b53c0eabe670c60b7431d52ced5280c834f4d478",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-creation-turn-before-20261018.txt": "90e70151784501b8e700e03253c300d1eadeddd4982d735cb0c1878502f88db2",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-creation-turn-after-20261018.txt": "ae42e6968b424ea05234c7d59ec4d154d6975318d2d40e47b69075e5e1a478cd",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "c58a8c2fb762c563b1f85e19758b4affc91a281f332fca8a4851daff61590774",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "b548b5b0914424352bc6bd65d39e42ca2c63cbeba976f69eb53b782d1b170159"
+  },
+  "tests": {
+    "release": "552/552",
+    "creation_lookup_cases": 96,
+    "matrix": "2 sides x2 spawn locations x3 creation mutations(none/replace first/replace all) x2 replacement owners x2 replacement locations(original/discard) x2 batch sizes(2/3)",
+    "checks": [
+      "OnCreateCard-controlled map replacement is re-resolved before writing entered turn",
+      "Mapped objects have turn7 before own method3 entry; removed original retains turn-1",
+      "CreateCard cardSeen=false remains on retained original; replacement cardSeen=true and gold=false sentinels survive",
+      "Replacement owner/location is not overwritten by caller; resultIDs and per-card entry refer to current mapping",
+      "No-replacement controls preserve ordinary gold/unseen/current-turn behavior"
+    ],
+    "regression": "Before:case8 replacement retains sentinel turn41;1/552 fails. After:552/552 pass."
+  },
+  "limits": [
+    "Map replacement is directly constructed by simulator marker fixture; no claim about a real card causing it or complete UE UObject replacement/GC semantics.",
+    "No mutation of immutable CardId, absent-ID or dangling UObject path, reentrant creation of different batches or replacement during deeper initialization is certified.",
+    "Only batch caller turn assignment repaired; low-level CreateCardObject completeness and other creation callers remain separate audit work.",
+    "Replacement location/owner/gold/cardSeen sentinels test write targets, not full real-card initialization logic or all T35/T43 effects.",
+    "State lookup is parsed pak evidence only; runtime checks cover selected library lengths/hashes/top-level flow and not complete semantic equivalence.",
+    "No replay authority or new process memory reads/writes/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("创建回调卡号重查：进场回合写映射对象，cardSeen仍写创建对象", BatchCreationTurnLookup),
         new("重入批量生成：内层先完成，外层快照与结果数组保持隔离", ReentrantBatchCreation),
         new("批量T35→进场：主体抑制重读，T43订阅与例外在进场前生效", BatchCreationToEntryBoundary),
         new("进场主体门：抑制不接受自身例外，T43按卡号排除而非对象引用", EntrySubjectSuppressionAndId),
@@ -27179,6 +27180,73 @@ internal static class SelfTest
             cases++;
         }
         return cases == 192 ? null : $"entry subject matrix count={cases}";
+    }
+
+    private static string? BatchCreationTurnLookup(CardDatabase db)
+    {
+        using var ownProbe = InstallEntryMethodProbe();
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int mutation in new[] { 0, 1, 2 })
+        foreach (bool oppositeOwner in new[] { false, true })
+        foreach (bool discard in new[] { false, true })
+        foreach (int count in new[] { 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var location = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0, isGold: true);
+            var originals = new List<CardInstance>(); var replaced = new HashSet<int>(); var entered = new HashSet<int>();
+            bool replacing = false; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name && !replacing)
+                {
+                    originals.Add(made); made.CardSeen = true;
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                    if (mutation == 2 || (mutation == 1 && originals.Count == 1))
+                    {
+                        int id = made.CardId; state.Remove(made); replacing = true;
+                        var replacement = state.CreateWithId(name, oppositeOwner ? side.Opposite() : side, id,
+                            discard ? CardLocation.Discard : location, 17);
+                        replacing = false;
+                        replacement.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                        replacement.Keywords.Clear(); replacement.Attack = 2; replacement.Defense = replacement.MaxDefense = 5;
+                        replacement.EnteredPlayOnTurn = 41; replacement.CardSeen = true; replacement.IsGold = false;
+                        replaced.Add(id);
+                    }
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    var current = originals.Select(x => state.ById(x.CardId)!).Where(x => !entered.Contains(x.CardId)
+                        && Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) == 3).ToArray();
+                    if (current.Length != 1) { failure = "进场回调主体计数错误"; return; }
+                    var subject = current[0]; entered.Add(subject.CardId);
+                    if (originals.Count != count || subject.EnteredPlayOnTurn != 7)
+                        failure = $"创建后应重取映射对象设置进场回合，实际={subject.EnteredPlayOnTurn}";
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, frontline, Enumerable.Repeat(name, count).ToList(), source.CardId, false, null, false }, ctx, out _);
+            if (failure is not null || result is not List<int> ids || !ids.SequenceEqual(originals.Select(x => x.CardId)) || entered.Count != count)
+                return $"creation turn lookup case={cases} {side}/{frontline}/{mutation}/{oppositeOwner}/{discard}/{count}: {failure ?? "result/entry identity"}";
+            foreach (var original in originals)
+            {
+                var current = state.ById(original.CardId)!; bool wasReplaced = replaced.Contains(original.CardId);
+                if (current.EnteredPlayOnTurn != 7 || original.EnteredPlayOnTurn != (wasReplaced ? -1 : 7)
+                    || original.CardSeen || current.CardSeen != wasReplaced || current.IsGold == wasReplaced)
+                    return $"creation turn lookup case={cases}: mapped turn vs retained CreateCard cardSeen receiver incorrect";
+                if (wasReplaced && (current.Owner != (oppositeOwner ? side.Opposite() : side)
+                    || current.Location != (discard ? CardLocation.Discard : location)))
+                    return $"creation turn lookup case={cases}: replacement owner/location overwritten";
+            }
+            cases++;
+        }
+        return cases == 96 ? null : $"creation turn lookup matrix count={cases}";
     }
 
     private static string? ReentrantBatchCreation(CardDatabase db)
