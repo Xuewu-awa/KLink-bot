@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-203",
+  "status": "resolved-three-registered-native-class-callbacks-as-return-only",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-native-class-registration-20261018.txt": "03f1249d84a197c2e055d4ef29e0544dcdf99e96f78b8e7ea30032a17502cc33",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-class-builder-20261018.txt": "0cc73f75f6d8390f3ae8711d15391e6dd0d896d5266fbf25c4eccb71de77e128",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-native-class-base-20261018.txt": "00a3121830b74f10d8952f23fd335fc997e97ab5936de0ba2e086c761339d228",
+    "D:\\Codex Workshop\\kards-install-review\\ExportNativeClassRegistrationVerified.java": "02c70dcaf0c24ae7b8819b25f51d11842152362f3b316968fc45d4dd120da850",
+    "D:\\Codex Workshop\\kards-install-review\\ExportClassBuilderVerified.java": "2313538799a4226d967a73d417f7ed0369464a75c2dd9ffb26631bbb852eb5d8",
+    "D:\\Codex Workshop\\kards-install-review\\ExportNativeClassBaseVerified.java": "e1e680a9945d22ead2236b10db4c332c5bbfa4d3acfa14f5a2baa07f213c6151",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-static-card-fallback-20261018.txt": "f3924ce9c54d1ffa5ae61dea3a40955e08122c78517c72f9382ea6210de5f79d",
+    "D:\\Codex Workshop\\kards-install-review\\basecard-initialization-evidence-20261018.json": "91dc160aab07b03f8844d41f8a6a07a284d57cf4b4fae1229169cfc1b4ab239e",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\CoreUObject.hpp": "dff4d76cc50467a3920034346202ca52b775c11540b268dae1435e7d6b9ad3cd",
+    "D:\\Codex Workshop\\kards-install-review\\audit-native-class-callbacks-20261018.py": "765a5aa544f61f3818eadf4925200a5515cb25242d9b2bd00d2fa6290f8e5c55"
+  },
+  "findings": [
+    "The current BaseCardObject class getter4a7a720 calls native registration146dcf0, which forwards to145b6d0. The builder constructs the0x200-byte UClass storage and installs vtable70de370, stores the constructor at+0xb0 and publishes the class pointer through its output. The supplied SDK independently reports UClass size0x200.",
+    "Native UClass vtable slots+0x370,+0x380,+0x3a0 all point to11ad3f0. Its complete terminating instruction is c20000 (ret0): it returns without side effects or setting a return value. This resolves the three callback targets for the native registration table, not every possible Blueprint/generated/live-mutated class table.",
+    "The previously traced post-construction and property-copy paths call exactly these three slots. For the registered native UClass table, they add no state changes. RULE-202 listed+0x370/+0x3a0 as unresolved targets; this phase narrows that boundary, with+0x380 checked too.",
+    "The BaseCardObject getter passes class flags0x10000000; the class builder adds0x80. InitProperties tests mask0x10000080 and source/class relationships to choose its path. This supports a conditional native fast-path analysis but does not prove actual live flag mutations, source identity or property-chain membership.",
+    "Base struct/class initialization helpers and native superclass link/bind bodies were byte-checked for context. Ghidra gives registration146dcf0 a void/no-argument signature and reports an unrecovered final indirect jump in145b6d0; wrapper forwarding, vtable assignment and slot destinations are additionally checked from installed instructions rather than trusting those inferred signatures."
+  ],
+  "native_verified_functions": 5,
+  "native_verified_ranges": 5,
+  "verified_callback_slots": 3,
+  "unique_callback_targets": 1,
+  "kernel_changed": false,
+  "tests": {
+    "last_full_release": "580/580 (RULE-200)",
+    "rerun": false,
+    "evidence_checks": "5 native ranges, registration forwarding, vtable assignment,3 callback slots and ret terminator passed"
+  },
+  "limits": [
+    "No simulator kernel/selftest changes or full test rerun. Last full Release remains580/580 (RULE-200). Executed5 native-range checks, wrapper/vtable instruction assertions and3 slot/terminator checks.",
+    "The proof is static: registered native UClass table only. Current KARDS process was not running at the process check; no live virtual-table overwrite/hook/flags/CDO/property-chain verification was made. A main-menu launch has been requested for further read-only collection.",
+    "GetStaticCard miss fallback remains unimplemented: exact selected property-chain contents/copy routines, JSON/container aliasing, final state, object identity and lifetime remain open. Resolving these three native callbacks alone is insufficient to replace null/base-name fallback faithfully.",
+    "Other object virtuals, optional global initialization hooks, deferred/config/subobject branches, BlueprintGeneratedClass overrides and complete UObject construction ABI are outside this callback-target proof.",
+    "No current process memory reads/writes, injection, game-function calls, Ghidra analysis mutation or historical replay authority. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\native-class-callbacks-evidence-20261018.json",
+  "evidence_sha256": "1fbf2037a44a594f787f8edb2cc35269ce28346e0fd191b2805fe5d0ba085401"
+}
