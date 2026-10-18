@@ -1,0 +1,152 @@
+{
+  "rule": "RULE-211",
+  "status": "current-source-derived-classes-and-class-filter-equivalence-verified-startup-contract-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\derived-classes-20261019.json": "550ec0a29f8082e79e98b390c5e8c2f2046b360bd2765a3b7449c7ff1e2b0486",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registry-enum-20261019.json": "95aadbdd6261ada4c0465fc4814c6b478c797c9c3d74292fc728d46d0d275eb4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-tree-20261019.json": "6a122211f797b664f634b02c24d7d5f23db21e5b6189bbe0b7eadd34a8765ca4",
+    "D:\\Codex Workshop\\kards-install-review\\capture-derived-classes-20261019.py": "cec52506b4e0bbf4b859d7dc9b455808216ed0d3513b50ee0913db716e3d944f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-derived-classes-20261019.py": "e312a52c4cd6cfc7e149db45e2734b1a5e6e42ccabab8b8c322d592defc1bf4b",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-derived-classes-20261019.txt": "270f23676097b82805ef00f5ef2af46635d277f93cf23992a3d03544e36772dd",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-derived-helpers-20261019.txt": "62324ab5a073525bb441f859facdf797b7b7c426a407d052d67a3eb9ca6f9014",
+    "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807"
+  },
+  "findings": [
+    "Reconstructed the current BlueprintCore descendant closure from the native class-to-child map and registry generated-class parent map, including interface edges and the native 0x82000000 class-flag exclusion. Every native child pointer agrees with its UStruct SuperStruct; all captured sources were reread stable.",
+    "The closure has seven classes, but only /Script/Engine.Blueprint intersects the current asset-registry class index. /Script/UMG.UserWidgetBlueprint is in the closure; /Script/UMGEditor.WidgetBlueprint is a distinct path and is not. The previous Blueprint-only predicate now has an independent source-based basis for this snapshot.",
+    "The matching global class-index union has2406 unique asset pointers. Against the previously verified4101 path candidates, both direct class-membership swap filtering and the smaller-union hash/swap branch produce exactly the same2043 asset-pointer sequence. This establishes branch equivalence for these captured nonempty inputs, not the historically selected branch.",
+    "Using the prior independent membership tags then matches2019/2019 primary-map positions. Full callback acceptance and naming normalization, historical startup class source/cost data and a general order contract remain unproved. No simulator candidate-order fix is made."
+  ],
+  "limits": [
+    "This is a read-only current-source reconstruction. It did not invoke CompileFilter, inspect its historical temporary output or prove all startup configurations.",
+    "Native source version4353 equals registry refresh version4353; this guards the current refresh premise but does not date the saved primary pool initialization.",
+    "Class-filter branch equivalence is limited to the captured4101 path candidate input and2406-pointer union. Other candidate counts/order or other filter stages are not certified.",
+    "Old Ghidra project is only an aid; nonmatching ranges and masked targets are not semantically certified.",
+    "No kernel change or selftest rerun; latest complete Release suite remains582/582 (RULE-205), fully semantically verified cards0. No replay authority, writes, injection or game calls."
+  ],
+  "kernel_changed": false,
+  "live_pid": 24220,
+  "native_parent_rows": 790,
+  "captured_class_objects": 7191,
+  "generated_parent_rows": 2406,
+  "native_super_mismatches": 0,
+  "excluded_class_objects": 14,
+  "root_class": [
+    "/Script/Engine",
+    "BlueprintCore"
+  ],
+  "derived_class_closure": [
+    [
+      "/Script/Engine",
+      "AnimBlueprint"
+    ],
+    [
+      "/Script/Engine",
+      "Blueprint"
+    ],
+    [
+      "/Script/Engine",
+      "BlueprintCore"
+    ],
+    [
+      "/Script/Engine",
+      "LevelScriptBlueprint"
+    ],
+    [
+      "/Script/InterchangeEngine",
+      "InterchangeBlueprintPipelineBase"
+    ],
+    [
+      "/Script/LevelSequence",
+      "LegacyLevelSequenceDirectorBlueprint"
+    ],
+    [
+      "/Script/UMG",
+      "UserWidgetBlueprint"
+    ]
+  ],
+  "indexed_class_intersection": [
+    [
+      "/Script/Engine",
+      "Blueprint"
+    ]
+  ],
+  "class_union_asset_count": 2406,
+  "path_candidate_count": 4101,
+  "class_filter_output_count": 2043,
+  "direct_and_hash_swap_sequences_equal": true,
+  "conditional_primary_position_matches": 2019,
+  "reference_order_used_for_selection": false,
+  "native_class_version": 4353,
+  "registry_native_class_version": 4353,
+  "native_code_ranges": 8,
+  "native_code_bytes": 5790,
+  "native_call_site_checks": 18,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "GetDerivedClasses",
+      "old_rva": "0x2257360",
+      "current_rva": "0x2257140",
+      "length": 367,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BuildClassHierarchy",
+      "old_rva": "0x22791e0",
+      "current_rva": "0x2278fc0",
+      "length": 3463,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BuildClassHierarchy",
+      "old_rva": "0x2279f79",
+      "current_rva": "0x2279d59",
+      "length": 8,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BuildClassHierarchy",
+      "old_rva": "0x2279f82",
+      "current_rva": "0x2279d62",
+      "length": 5,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BuildClassHierarchy",
+      "old_rva": "0x2279f88",
+      "current_rva": "0x2279d68",
+      "length": 8,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "RefreshClassInheritance",
+      "old_rva": "0x2248730",
+      "current_rva": "0x2248510",
+      "length": 653,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "VisitDerivedClass",
+      "old_rva": "0x22574f0",
+      "current_rva": "0x22572d0",
+      "length": 588,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "CopyNativeClassMap",
+      "old_rva": "0x15d28b0",
+      "current_rva": "0x15d2840",
+      "length": 158,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
