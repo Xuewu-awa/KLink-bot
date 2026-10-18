@@ -4609,8 +4609,15 @@ public sealed partial class CardApi
     }
 
     /// <summary>对应 PersistCustomFields —— 游戏用它把卡上的临时状态写进子动作。</summary>
-    public void PersistCustomFields(CardInstance card)
+    public void PersistCustomFields(CardInstance card) => PersistCustomFields(card.CardId);
+
+    public void PersistCustomFields(int cardId)
     {
+        // BP_CardFunctions PersistCustomFields i=37 resolves its integer ID;
+        // a held/alias object never supplies the notification fields directly.
+        // Missing-object default notifications remain unmodeled; do not substitute
+        // the caller or a synthetic nonpositive map entry for the missing object.
+        if (cardId <= 0 || State.ById(cardId) is not { } card) return;
         // Native customName members and gameplay tags share our local backing store,
         // but are not members of the client's BlueprintJson object.
         var fields = new Dictionary<string, object?>(StringComparer.Ordinal);
@@ -4751,7 +4758,7 @@ public sealed partial class CardApi
     {
         // PersistCustomFields takes an ID and resolves the notification object.
         // Missing-object notification defaults are not certified here.
-        if (PincerCardFromId(cardId) is { } current) PersistCustomFields(current);
+        PersistCustomFields(cardId);
     }
 
     /// <summary>

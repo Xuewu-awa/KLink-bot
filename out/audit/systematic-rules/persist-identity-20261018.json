@@ -1,0 +1,52 @@
+{
+  "rule": "RULE-196",
+  "status": "fixed-persistence-id-lookup-and-caller-fallback-missing-payload-still-open",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-persist-json-20261018.txt": "59055be6954754d0af9a3131467fc64c29cf0953a35d93aee1158c8771eb13bc",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-persist-json-body-20261018.txt": "ec3578ad2b00dee9df7e17f5d1c6bb908e4bbdee828dddac3bfdd0d8d894a566",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-context-null-20261018.txt": "ab3677f89ebcb4d6245d9ca9281124571737c9c056d3d8030b5aeb2716f5ccbd",
+    "D:\\Codex Workshop\\kards-install-review\\ExportPersistJsonVerified.java": "68f9aa10a0bb6404e1fb1885fdf448c13f32a030020816ad38b914708b80f581",
+    "D:\\Codex Workshop\\kards-install-review\\ExportPersistJsonBodyVerified.java": "c0aa4d2b954d9e471e339483d2af0b2a86809c33872f27c75200afd38cf59c84",
+    "D:\\Codex Workshop\\kards-install-review\\ExportContextNullVerified.java": "1cf8dc6aef3ea3274bb2da9ba54f1f7a5865c6b019ac2883afd683bd124bd0af",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "4cc191c497673a8ce6015200ef9850ebddf9637a132457fcf9e03d85be60332c",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "1e3fad6dec7c297ae4047bc3c9cb0ab6946f089c8b085c1bb7a0680cbc4673b8",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "f6d090902f1576c6dd54704471bb834f47349f98ff875f83ed042cbc9ef4ec0a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-persist-identity-before-20261018.txt": "503f6926473985ee3ee07849bf9fcb4d15bd52edaef51d2c313c6df04bf02951",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-persist-identity-after-20261018.txt": "84f894a5c3b4c9a84c4918305c3d512e50d918a96d168eef1eabb6c2b2dd16b3",
+    "D:\\Codex Workshop\\kards-install-review\\audit-persist-identity-20261018.py": "a6ba135cd5b258e5d2c44e049aa0f8f7b0f8598b460a74004225044c356e1e65"
+  },
+  "findings": [
+    "The authoritative library function has six top-level statements: ActionProcess guard, explicit cardID lookup, notifier call, return/end. Its notification field contexts read only the lookup object; no receiver/self fallback exists.",
+    "Public object convenience calls now convert the argument to its ID and resolve the current map before serializing names/JSON. Dispatcher object aliases and integer arguments use the same path; internal Pincer persistence shares it.",
+    "A missing or nonpositive target no longer causes dispatcher fallback to serialize the caller. Existing headless skipping of invalid-object notifications is retained as an unresolved model boundary, not certified as the native result.",
+    "24 identity cases exercise both sides, public/dispatcher integer/dispatcher alias routes, detached aliases and same-ID replacements, both refresh flag values.36 invalid-input scenarios reject caller identity/payload leakage and synthetic nonpositive map fields without asserting native missing notification count.",
+    "Read-only Ghidra exports match installed EXE bytes for the JSON conversion wrapper/body, frame step and common object-context handler. The conversion body zeroes the output FString then serializes only when the input shared object is nonnull: invalid BlueprintJson serializes to empty string.",
+    "The EX_Context0x19 static initializer installs RVA15a3550 at GNativeFuncs+19*8; its thunk jumps to159bfa0. The null-context path skips the expression and uses property clearing/initialization. Exact BlueprintJson struct default construction after that virtual call remains unresolved, so no missing notification payload is guessed."
+  ],
+  "tests": {
+    "before": "2/569 failed (same final fixtures, baseline kernel)",
+    "after": "569/569 passed",
+    "identity_cases": 24,
+    "invalid_input_scenarios": 36
+  },
+  "runtime_verified_functions": 3,
+  "native_verified_ranges": 4,
+  "limits": [
+    "This fixes notification object identity and excludes caller fallback. It does not complete invalid-object emission/default payloads or the full persistence receiver/network lifecycle.",
+    "NotifyPersistCustomFields, HandlePersistCustomFields and the OnlineMatch notifier path use parsed pak authority; these functions are absent from the saved runtime bytecode capture. Three lookup/library functions have runtime identity and branch checks.",
+    "Ghidra native export proves bytes and the observed invalid-shared-object serialization branch; struct property ClearValue/CppStructOps defaults and every UObject access-none/error state are not proven.",
+    "The same-named JSON registration getter/thunk was located statically; broader native symbol/type ownership and all serializer formatting/number behavior remain outside this bounded audit.",
+    "Object aliases, mapping replacement, omitted/null parameters and invalid IDs are controlled fixtures, not proof real PvP cards necessarily produce them. The invalid-case test intentionally avoids asserting native notification count/default payload.",
+    "ActionProcess=false, pending-kill/GC, refresh/UI receiver semantics, queue and native ABI remain open. UI work is excluded from the headless simulator scope.",
+    "No KARDS process was running at the check; work used authoritative saved captures/pak and installed EXE plus the supplied Ghidra project in read-only/noanalysis mode. No client memory writes, injection or historical replay authority. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\persist-identity-evidence-20261018.json",
+  "evidence_sha256": "6a14b83934404e31bf302604cd3a9963f73fc72740b958b3b6c44ce267bde3cc"
+}

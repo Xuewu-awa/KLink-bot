@@ -731,28 +731,10 @@ public sealed partial class CardApi
             },
             ["AddCustomGameplayTag"] = (c, r, a) => DoAddCustomGameplayTag(c, r, a),
             ["RemoveCustomGameplayTag"] = (c, r, a) => DoRemoveCustomGameplayTag(c, r, a),
-            // ⚠️ 同形「接收者优先」bug（2026-10-03）：旧写法 `if (AsCard(r) is {} x) PersistCustomFields(x)`
-            //    只认接收者，而 `r` 恒为 `cardFunction`（= `ctx.Self`，施法的那张牌自己）
-            //    ⇒ **永远持久化施法者，`a[0]` 指的别人那张卡的临时字段从没被写出去**。
-            //
-            // 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:27828-27849`）：
-            //    `0: cardID`、`1: refreshEffectBar` —— 蓝图体把 `args[0]` 喂给
-            //    `GetCardFromID`（`g.cs:27840`），再取那张卡的 `customJson` 通知客户端。
-            //
-            // IR 实测（`docs/card-ir.json` 扫描，2026-10-03）：489 个调用点，`recv` =
-            //    `{"var":"cardFunction"}` **489/489**；`a[0]` =
-            //      · 裸 `{"var":"cardID"}`（= `ctx.Self.CardId`）×459 —— 旧写法在这 459 处
-            //        **碰巧等价**（`AsCardOrId(自己的 cardID)` ≡ 旧 `AsCard(r)`）；
-            //      · `{"var":"cardID","ctx":{…}}` = **别人卡的 cardID** ×22
-            //        （`K2Node_Event_targetCard` / `spawnedCard` / `CallFunc_Array_Get_Item` …）
-            //      · 别的整数 cardID 形状（数组元素、`spawnedCardID` 变量…）×8
-            //    ⇒ 那 **30 处 / 21 张卡**持久化的是**错卡**（`card_event_no_retreat`、
-            //      `card_event_maginot_line`、`card_event_seize_the_initiative`、
-            //      `card_unit_obice_da_75_13`、`card_event_carrier_battle` …）。
-            //
-            // 用 `AsCardOrId(c, a[0]) ?? AsCard(r)`（实参优先、接收者兜底）后，459 处 self
-            // 形状解析结果**逐位不变**，30 处修正。同族先例见下面的 `MakeVeteran`。
-            ["PersistCustomFields"] = (c, r, a) => { if ((AsCardOrId(c, a.ElementAtOrDefault(0)) ?? AsCard(r)) is { } x) PersistCustomFields(x); return null; },
+            // Native signature is (cardID, refreshEffectBar). Resolve the
+            // explicit ID, including when a headless caller supplies an object
+            // convenience argument; the function has no caller fallback branch.
+            ["PersistCustomFields"] = (c, r, a) => { PersistCustomFields(IdOf(a.ElementAtOrDefault(0))); return null; },
             // ⚠️ 同形「接收者优先」bug（2026-10-02）：旧写法 `if (AsCard(r) is {} x) MakeVeteran(x)`
             //    只认接收者，而 `r` 恒为 `cardFunction`（= `ctx.Self`，施法的那张牌自己）
             //    ⇒ **永远把施法者自己变成老兵，目标从没被命中过**。

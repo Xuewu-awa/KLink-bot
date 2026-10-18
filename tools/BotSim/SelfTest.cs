@@ -234,6 +234,8 @@ internal static class SelfTest
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
+        new("持久化身份：对象参数也按ID重查，别名及替换不读取旧对象", PersistCustomFieldsIdentityLookup),
+        new("持久化缺失目标：不得回退泄漏调用者的身份和字段", PersistCustomFieldsNoCallerFallback),
         new("原生名称：分号、重复、大小写、空值及整串移除", NativeCustomNameOperations),
         new("原生名称：接收者绑定、行动例外和亡语标记共享读法", NativeCustomNameRuleConsumers),
         new("静态名称：全卡池CDO摘要、双方建卡与模板", StaticCustomNameCatalogue),
@@ -11964,6 +11966,90 @@ internal static class SelfTest
                 return "持久化必须保留原生名称顺序、分号和重复";
         }
         return null;
+    }
+
+    private static string? PersistCustomFieldsIdentityLookup(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        foreach (bool replaced in new[] { false, true })
+        foreach (bool refresh in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var original = state.CreateWithId(PlainUnit, side.Opposite(), 70, CardLocation.Discard, 0);
+            var argument = original;
+            CardInstance mapped;
+            if (replaced)
+            {
+                state.Remove(original);
+                mapped = state.CreateWithId(PlainUnit, side.Opposite(), 70, CardLocation.NotAvailable, 0);
+            }
+            else
+            {
+                mapped = original;
+                argument = new CardInstance { CardId = mapped.CardId, Name = mapped.Name, Owner = mapped.Owner,
+                    OriginalOwner = mapped.Owner, Definition = mapped.Definition };
+            }
+            engine.Api.JsonSetString(argument, "customName1", "stale");
+            engine.Api.JsonSetInt(argument, "auditIdentity", 901);
+            engine.Api.JsonSetString(mapped, "customName1", "mapped-one");
+            engine.Api.JsonSetString(mapped, "customName2", "mapped-two");
+            engine.Api.JsonSetInt(mapped, "auditIdentity", 202);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = caller, Controller = side };
+            if (route == 0) engine.Api.PersistCustomFields(argument);
+            else engine.Api.InvokeByName("PersistCustomFields", caller,
+                new object?[] { route == 1 ? argument.CardId : argument, refresh }, ctx, out _);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            if (notices.Length != 1 || notices[0].Values[0].Value != 70
+                || notices[0].Values[1].Text != "mapped-one" || notices[0].Values[2].Text != "mapped-two")
+                return $"persist identity {side}/{route}/{replaced}/{refresh}: wrong mapped object/names/count";
+            string json = notices[0].Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.GetProperty("auditIdentity").GetInt32() != 202)
+                return $"persist identity {side}/{route}/{replaced}/{refresh}: stale JSON";
+            cases++;
+        }
+        return cases == 24 ? null : $"persist identity cases={cases}";
+    }
+
+    private static string? PersistCustomFieldsNoCallerFallback(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int receiverKind in new[] { 0, 1, 2 })
+        foreach (int targetKind in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            engine.Api.JsonSetString(caller, "customName1", "do-not-leak-caller");
+            var zero = state.CreateWithId(PlainUnit, side, 0, CardLocation.Discard, 0);
+            var negative = state.CreateWithId(PlainUnit, side, -7, CardLocation.Discard, 1);
+            engine.Api.JsonSetInt(zero, "auditNonPositive", 99);
+            engine.Api.JsonSetInt(negative, "auditNonPositive", 99);
+            var missing = new CardInstance { CardId = 777, Name = caller.Name, Owner = side, OriginalOwner = side, Definition = caller.Definition };
+            object?[] args = targetKind switch {
+                0 => Array.Empty<object?>(), 1 => new object?[] { null, true },
+                2 => new object?[] { 0, false }, 3 => new object?[] { -7, true },
+                4 => new object?[] { 777, false }, _ => new object?[] { missing, true } };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = caller, Controller = side };
+            engine.Api.InvokeByName("PersistCustomFields", receiverKind == 0 ? caller : receiverKind == 1 ? null : missing, args, ctx, out _);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            // This checks only the proven exclusion of receiver fallback. It
+            // deliberately does not certify missing-object notification count
+            // or its native default JSON payload (still an open boundary).
+            if (notices.Any(x => x.Values[0].Value == caller.CardId
+                || x.Values.Any(v => v.Name == "customName1" && v.Text == "do-not-leak-caller")))
+                return $"persist missing {side}/{receiverKind}/{targetKind}: leaked caller identity/payload";
+            int before = notices.Length;
+            engine.Api.PersistCustomFields(targetKind % 2 == 0 ? zero : negative);
+            var extra = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").Skip(before).ToArray();
+            if (extra.Any(x => x.Values.Any(v => v.Name == "customJson" && v.Text.Contains("auditNonPositive"))))
+                return "nonpositive mapped fixture leaked fields";
+            cases++;
+        }
+        return cases == 36 ? null : $"persist no-fallback cases={cases}";
     }
 
     private static string? PersistCustomFieldsPayload(CardDatabase db)
