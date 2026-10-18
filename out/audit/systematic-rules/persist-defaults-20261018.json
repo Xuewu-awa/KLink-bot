@@ -1,0 +1,59 @@
+{
+  "rule": "RULE-197",
+  "status": "fixed-missing-persistence-default-payload-and-pincer-notification-id",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BlueprintJson.hpp": "74e82ffbd33d42b0094cdad76c5b2d07981143cc892174369e0d7e08f4cc3309",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-json-struct-20261018.txt": "4851d640c875b545d7986bcbb0fd0df77df6deaa95bed8976e8a717a7fda28fe",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-json-struct-ops-20261018.txt": "6c08e496d399ba637ace62732f08fd1232b8df207ae931228e88238ee8a2cc54",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-struct-property-20261018.txt": "6e3e99a88f4f2c48f1fe93634527620e065465b2ce2af69d7f4d2fcd368e14de",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-clear-script-struct-20261018.txt": "8245231dda12165d84e81f16c8158de899b0eb44e877227dbe00152457c954e3",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-name-property-20261018.txt": "8118bdcc5fe7f9893c6064fe4d64ff7a33a53813fa416fb1163643cbbe4aacd6",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-context-null-20261018.txt": "ab3677f89ebcb4d6245d9ca9281124571737c9c056d3d8030b5aeb2716f5ccbd",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-persist-json-body-20261018.txt": "ec3578ad2b00dee9df7e17f5d1c6bb908e4bbdee828dddac3bfdd0d8d894a566",
+    "D:\\Codex Workshop\\kards-install-review\\ExportJsonStructVerified.java": "543ac72826cae02475dbbcfddf69991b2aabf36646e73baf920d8a9df1a06d1f",
+    "D:\\Codex Workshop\\kards-install-review\\ExportJsonStructOpsVerified.java": "b8b25e45860586d4ab45a83c0f8eb88b11390cc78b9ad7d4c327148285394f9c",
+    "D:\\Codex Workshop\\kards-install-review\\ExportStructPropertyVerified.java": "6675b104d9c33433b9e99c7bfe510629602a0ea758e19ae16b7e21bc8f7b8007",
+    "D:\\Codex Workshop\\kards-install-review\\ExportClearScriptStructVerified.java": "9af014fcf7832355fdaacf06b7bfa19ff368fa86a8fc4adfa693a501e5ebeb38",
+    "D:\\Codex Workshop\\kards-install-review\\ExportNamePropertyVerified.java": "d1acaf0321cdb46e324c9d4cc706419611db6fdaa56b9f298a8e1919e209c399",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "3cd3d63ef391123f5707b7683bb3b5eb5b68af854a1124f04fab9a5fa35363ad",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "2cfdfa81383147789318970c8a96f2c8aebebb52fa9927d9bf7c0978c2f9a484",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-persist-defaults-before-20261018.txt": "fc1c9dfba7d4d497bac9dd6f5afb0b5a668f3d700a615d748aab70656d41917c",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-persist-defaults-after-20261018.txt": "284706c15d8fd3635bfa039886ad23e3acdddf74a21f3173f3803bb25c700b1e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-persist-defaults-20261018.py": "1bb0c015e541063e92e9e8f172646ec6f01755ac9c6223e91f9b5fa8d6ef8122"
+  },
+  "findings": [
+    "Closes the bounded missing-lookup payload frontier left by RULE195/196: in normal ActionProcess with valid notifier/receiver, PersistCustomFields still notifies when lookup yields NoObject. The original integer ID is retained; names are None and customJson is empty string, not an empty JSON object.",
+    "BlueprintJsonObject UScriptStruct registration links native ops factory2358fa0 and the named16byte type. Its ops vtable73b3fe0 capabilities are2004 and Construct10/18 both point to13fa820, which zeroes both qwords.",
+    "The common object-context handler159bfa0 clears failed property reads; FStructProperty constructor1580e20 installs vtable70e3150, whose ClearValue130 thunk1580bd0 calls1462c60. That routine destructs then invokes ops Construct10, yielding a null shared JSON object. Converter4517ef0 zeroes the FString and skips serialization for null input.",
+    "FNameProperty constructor1550460 installs vtable70e2a10; ClearValue130 points to1462f40, which writes a zero FName (None). The native POD clearing alternative also zeroes the result.",
+    "Headless persistence now emits missing-object default payloads instead of returning early; valid mapped-card serialization and explicit ID lookup remain unchanged.",
+    "Pincer Remove receiver branch633/665 passes the looked-up receiver.cardID, default0 when absent. The giver branch1482 passes the saved array ID, preserving missing/negative IDs and duplicates. The receiver notification argument is corrected separately.",
+    "24 missing-payload scenarios cover both sides, both refresh flags, zero/negative IDs present in the local map, absent positive ID, detached object, omitted/null arguments, dispatcher and public integer routes.6 Pincer integration scenarios cover disappearance during Apply, missing receiver and repeated invalid giver IDs.48 earlier Remove routing cases now assert the missing receiver notification ID/count too."
+  ],
+  "tests": {
+    "before": "3/571 failed (same final test semantics, baseline kernel)",
+    "after": "571/571 passed",
+    "missing_payload_cases": 24,
+    "pincer_missing_scenarios": 6,
+    "strengthened_remove_routing_cases": 48
+  },
+  "runtime_verified_functions": 5,
+  "native_verified_ranges": 9,
+  "limits": [
+    "The recovered default notification branch assumes normal ActionProcess and valid notifier/OnlineMatch receiver. It does not certify ActionProcess=false, invalid notifier, pending-kill/GC, exceptions or the full network/receiver lifecycle.",
+    "Five library/state functions match saved runtime length/hash/branch operands; notifier/OnlineMatch helpers rely on parsed pak authority and are absent from that saved runtime capture.",
+    "Short undefined-in-Ghidra constructor/thunk functions are checked directly against exact installed PE bytes and decoded instruction effects; no user project functions or analysis were modified.",
+    "This verifies default construction, missing-lookup notification construction and bounded Pincer caller differences, not all BlueprintJson formatting/number precision or all native property types.",
+    "Missing IDs, synthetic nonpositive mappings, detached objects and disappearing maps are controlled probes, not proof real PvP cards necessarily produce these states.",
+    "No historical replay authority, new client-memory reads, process writes or injection. Ghidra runs are read-only/noanalysis. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\persist-defaults-evidence-20261018.json",
+  "evidence_sha256": "032ddbbb6919b88e3232d432d2cc7ceaf4a87d2c96ede289130c839e8f65496f"
+}

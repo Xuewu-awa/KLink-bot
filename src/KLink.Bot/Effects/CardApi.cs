@@ -4615,33 +4615,37 @@ public sealed partial class CardApi
     {
         // BP_CardFunctions PersistCustomFields i=37 resolves its integer ID;
         // a held/alias object never supplies the notification fields directly.
-        // Missing-object default notifications remain unmodeled; do not substitute
-        // the caller or a synthetic nonpositive map entry for the missing object.
-        if (cardId <= 0 || State.ById(cardId) is not { } card) return;
+        // Missing lookup contexts produce None names and a zero-initialized
+        // BlueprintJsonObject, whose native conversion returns an empty string.
+        // The notification still carries the original integer ID.
+        var card = cardId > 0 ? State.ById(cardId) : null;
         // Native customName members and gameplay tags share our local backing store,
         // but are not members of the client's BlueprintJson object.
         var fields = new Dictionary<string, object?>(StringComparer.Ordinal);
-        foreach (var pair in card.CustomJson)
+        if (card is not null)
         {
-            if (pair.Key is "customName1" or "customName2" || pair.Key == DynamicGameplayTagsKey) continue;
-            fields[pair.Key] = card.CustomJson.TypeOf(pair.Key) switch
+            foreach (var pair in card.CustomJson)
             {
-                CardJsonType.Number => double.Parse(pair.Value, System.Globalization.CultureInfo.InvariantCulture),
-                CardJsonType.Boolean => pair.Value == "1",
-                CardJsonType.IntArray => JsonGetIntArray(card, pair.Key),
-                _ => pair.Value,
-            };
+                if (pair.Key is "customName1" or "customName2" || pair.Key == DynamicGameplayTagsKey) continue;
+                fields[pair.Key] = card.CustomJson.TypeOf(pair.Key) switch
+                {
+                    CardJsonType.Number => double.Parse(pair.Value, System.Globalization.CultureInfo.InvariantCulture),
+                    CardJsonType.Boolean => pair.Value == "1",
+                    CardJsonType.IntArray => JsonGetIntArray(card, pair.Key),
+                    _ => pair.Value,
+                };
+            }
         }
-        string json = System.Text.Json.JsonSerializer.Serialize(fields, new System.Text.Json.JsonSerializerOptions
+        string json = card is null ? "" : System.Text.Json.JsonSerializer.Serialize(fields, new System.Text.Json.JsonSerializerOptions
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
         // AddSubActionPersistCustomFields replaces every quote after JSON encoding.
         _engine.FireSubAction("ZActionPersistCustomFields", new[]
         {
-            ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Str("customName1", CardCustomNames.Text(card, "customName1")),
-            ActionValue2.Str("customName2", CardCustomNames.Text(card, "customName2")),
+            ActionValue2.Int("cardID", cardId),
+            ActionValue2.Str("customName1", card is null ? "None" : CardCustomNames.Text(card, "customName1")),
+            ActionValue2.Str("customName2", card is null ? "None" : CardCustomNames.Text(card, "customName2")),
             ActionValue2.Str("customJson", json.Replace("\"", "\\\"", StringComparison.Ordinal)),
         });
     }
@@ -4757,7 +4761,7 @@ public sealed partial class CardApi
     private void PersistPincerFields(int cardId)
     {
         // PersistCustomFields takes an ID and resolves the notification object.
-        // Missing-object notification defaults are not certified here.
+        // Missing lookups retain this ID and emit the native default payload.
         PersistCustomFields(cardId);
     }
 
@@ -4778,7 +4782,9 @@ public sealed partial class CardApi
                 && JsonGetIntArray(afterRemoval, "pincer_givers").Count == 0)
                 JsonClear(afterRemoval, "pincer_givers");
             JsonClear(cardLeaving, "pincer_receiver");
-            PersistPincerFields(receiverId);
+            // si=633/665 passes the looked-up object's cardID, which defaults
+            // to zero when the receiver is missing (unlike giver IDs below).
+            PersistPincerFields(PincerCardFromId(receiverId)?.CardId ?? 0);
         }
 
         // si=712/766 snapshots the array from the current mapped leaving ID,

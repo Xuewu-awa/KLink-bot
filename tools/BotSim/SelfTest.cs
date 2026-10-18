@@ -234,6 +234,8 @@ internal static class SelfTest
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
+        new("持久化缺失对象：保留输入ID，名称None及空字符串JSON，不跳过通知", PersistMissingObjectPayload),
+        new("Pincer缺失对象通知：承受方空ID0，赠予者保留原ID和重复次数", PincerMissingObjectNotifications),
         new("持久化身份：对象参数也按ID重查，别名及替换不读取旧对象", PersistCustomFieldsIdentityLookup),
         new("持久化缺失目标：不得回退泄漏调用者的身份和字段", PersistCustomFieldsNoCallerFallback),
         new("原生名称：分号、重复、大小写、空值及整串移除", NativeCustomNameOperations),
@@ -12036,9 +12038,8 @@ internal static class SelfTest
             var ctx = new EffectContext { Engine = engine, State = state, Self = caller, Controller = side };
             engine.Api.InvokeByName("PersistCustomFields", receiverKind == 0 ? caller : receiverKind == 1 ? null : missing, args, ctx, out _);
             var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
-            // This checks only the proven exclusion of receiver fallback. It
-            // deliberately does not certify missing-object notification count
-            // or its native default JSON payload (still an open boundary).
+            // Keep this focused on excluding receiver fallback; the separate
+            // missing-object contract below checks the native count/defaults.
             if (notices.Any(x => x.Values[0].Value == caller.CardId
                 || x.Values.Any(v => v.Name == "customName1" && v.Text == "do-not-leak-caller")))
                 return $"persist missing {side}/{receiverKind}/{targetKind}: leaked caller identity/payload";
@@ -12050,6 +12051,80 @@ internal static class SelfTest
             cases++;
         }
         return cases == 36 ? null : $"persist no-fallback cases={cases}";
+    }
+
+    private static string? PersistMissingObjectPayload(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool refresh in new[] { false, true })
+        foreach (int kind in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var caller = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            engine.Api.JsonSetString(caller, "customName1", "not-default");
+            var zero = state.CreateWithId(PlainUnit, side, 0, CardLocation.Discard, 0);
+            var negative = state.CreateWithId(PlainUnit, side, -7, CardLocation.Discard, 1);
+            engine.Api.JsonSetInt(zero, "notDefault", 99); engine.Api.JsonSetInt(negative, "notDefault", 99);
+            var detached = new CardInstance { CardId = 777, Name = caller.Name, Owner = side, OriginalOwner = side, Definition = caller.Definition };
+            engine.Api.JsonSetInt(detached, "notDefault", 99);
+            int id = kind == 1 ? -7 : kind is 2 or 3 ? 777 : 0;
+            object?[] args = kind switch {
+                0 => new object?[] { 0, refresh }, 1 => new object?[] { -7, refresh },
+                2 => new object?[] { 777, refresh }, 3 => new object?[] { detached, refresh },
+                4 => new object?[] { null, refresh }, _ => Array.Empty<object?>() };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = caller, Controller = side };
+            engine.Api.InvokeByName("PersistCustomFields", caller, args, ctx, out _);
+            engine.Api.PersistCustomFields(id);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            if (notices.Length != 2 || notices.Any(x => x.Values.Count != 4
+                || x.Values[0] != ActionValue2.Int("cardID", id)
+                || x.Values[1] != ActionValue2.Str("customName1", "None")
+                || x.Values[2] != ActionValue2.Str("customName2", "None")
+                || x.Values[3] != ActionValue2.Str("customJson", "")))
+                return $"missing persistence {side}/{refresh}/{kind}: count/defaults/original ID";
+            cases++;
+        }
+        return cases == 24 ? null : $"missing persistence cases={cases}";
+    }
+
+    private static string? PincerMissingObjectNotifications(CardDatabase db)
+    {
+        using var probe = InstallPincerCallbackProbe();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_brewster_f2a", side, 70, side.HqOf(), 2);
+            var events = new List<(CardInstance, string, CardInstance?)>();
+            CapturePincerCallbacks(state, new() { source, target }, (r, k, a) => {
+                events.Add((r, k, a));
+                if (route == 0 && events.Count == 1) state.Remove(source);
+                if (route == 0 && events.Count == 3) state.Remove(target);
+            });
+            int[] expectedIds;
+            if (route == 0)
+            {
+                engine.Api.ApplyPincerEffects(source, target); expectedIds = new[] { 60, 70 };
+                if (events.Count != 4) return "missing Apply maps must preserve held callback objects";
+            }
+            else
+            {
+                if (route == 1) engine.Api.JsonSetInt(source, "pincer_receiver", 777);
+                else engine.Api.JsonSetIntArray(source, "pincer_givers", new[] { 777, 0, -7, 777 });
+                engine.Api.RemovePincerEffects(source);
+                expectedIds = route == 1 ? new[] { 0, 60 } : new[] { 777, 0, -7, 777, 60 };
+                if (events.Count != (route == 1 ? 2 : 0)) return "missing Remove receivers routed incorrectly";
+            }
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            if (!notices.Select(x => x.Values[0].Value).SequenceEqual(expectedIds))
+                return $"missing Pincer {side}/{route}: notify ID/count/order";
+            foreach (var notice in route == 0 ? notices : notices.Take(notices.Length - 1))
+                if (notice.Values[1].Text != "None" || notice.Values[2].Text != "None" || notice.Values[3].Text != "")
+                    return $"missing Pincer {side}/{route}: invalid-object default payload";
+        }
+        return null;
     }
 
     private static string? PersistCustomFieldsPayload(CardDatabase db)
@@ -26198,8 +26273,8 @@ internal static class SelfTest
             var expectedIds = new List<int>();
             if (receiverKind == 1) expectedIds.Add(receiver.CardId);
             expectedIds.AddRange(Enumerable.Repeat(giver.CardId, giverCount)); expectedIds.Add(leaving.CardId);
-            // Missing-object notification defaults are outside this bounded proof.
-            if (receiverKind != 3 && !persistedIds.SequenceEqual(expectedIds))
+            if (receiverKind == 3) expectedIds.Insert(0, 0);
+            if (!persistedIds.SequenceEqual(expectedIds))
                 return $"remove Pincer case={cases}: persist order/count";
             cases++;
         }
