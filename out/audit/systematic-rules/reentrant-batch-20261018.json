@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-184",
+  "status": "tested one-level nested batch dispatch: inner completion, outer snapshot retention, capacity and notification/result isolation; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\reentrant-batch-evidence-20261018.json",
+  "evidence_sha256": "3b7771fe50341823592ec609f941cdf990de6ec2100c6f643df9fa738bce55c6",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-reentrant-batch-20261018.py": "b16d7068ad93b156ef3cd8ae118453c4100a777d0b06a60bba7697459e2001ea",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reentrant-batch-20261018.txt": "840236c40bbf65cd0a7c8dc8d8c10dcd4d51a982cacc62fcfd371d9158eb670f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cbfc31c2abb1943a7ffbd05006e63de62a8ea5a721373819a333c7232f10010d",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "4cc3909f1b658cf990cf31c7eac813294a7b18d52f7cc614822239c351106e91",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5155252e1cfac0cd6b212ee8be5cf6ac3791bd5423f69f1693bd4a6eb584d02a"
+  },
+  "tests": {
+    "release": "551/551",
+    "nested_batch_cases": 192,
+    "matrix": "2 sides x2 outer locations x2 same/other inner locations x2 outer sizes(2/3) x2 inner requests(2/3) x3 receiver mutations(none/suppress/unregister) x2 receiver exception states",
+    "checks": [
+      "Entire outer batch exists and its notification precedes first T35-triggered nested call",
+      "Nested batch observes outer physical occupancy and may create fewer cards than requested",
+      "Nested creations, T35 callbacks and own method3 entries finish before outer retained receiver continues",
+      "Outer first-card saved receiver still runs after suppression/unregistration; nested and later outer queries use changed eligibility",
+      "Observed create/T35/entry sequence exactly matches expected synchronous nesting",
+      "Inner/outer return ID arrays and both batch notifications remain separate; gold and entered-turn persist"
+    ],
+    "finding": "No mismatch in controlled synchronous nested-dispatch cases; regression tests/evidence only."
+  },
+  "limits": [
+    "Nested dispatcher invocation is issued by the synthetic marker callback while the outer probe VM is suspended; not a real-card IR recursion or full UE scheduler/queue certification.",
+    "One nesting level, one trigger point and shared controller/source only; recursive depth limits, different controller/source, exceptions and arbitrary reentrant effects remain open.",
+    "No subject suppression/identity mutation, T43/Blitz/Alpine nested reentry, mid-creation OnCreateCard reentry, native object lifetime/GC or TSet ordering certification.",
+    "Capacity cases use current default frontline5/support5 with HQ; dynamic limiters during nested calls require separate audit.",
+    "Runtime verification covers selected library lengths/hashes/top-level control flow, not all semantics; state query is parsed pak evidence.",
+    "No kernel edits, replay authority or new game process memory access/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

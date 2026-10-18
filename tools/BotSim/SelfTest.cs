@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("重入批量生成：内层先完成，外层快照与结果数组保持隔离", ReentrantBatchCreation),
         new("批量T35→进场：主体抑制重读，T43订阅与例外在进场前生效", BatchCreationToEntryBoundary),
         new("进场主体门：抑制不接受自身例外，T43按卡号排除而非对象引用", EntrySubjectSuppressionAndId),
         new("批量进场T43：自身先于查询，查询内快照及迟注册", BatchSpawnEntrySnapshots),
@@ -27178,6 +27179,113 @@ internal static class SelfTest
             cases++;
         }
         return cases == 192 ? null : $"entry subject matrix count={cases}";
+    }
+
+    private static string? ReentrantBatchCreation(CardDatabase db)
+    {
+        using var creationProbe = InstallBatchCreationSnapshotProbe();
+        using var ownProbe = InstallEntryMethodProbe();
+        const string name = "card_unit_typhoon_mk_ib", probe = "card_unit_brewster_f2a", trigger = "OnOtherCardCreatedAlterCard";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool outerFrontline in new[] { false, true })
+        foreach (bool sameDestination in new[] { false, true })
+        foreach (int outerCount in new[] { 2, 3 })
+        foreach (int innerRequest in new[] { 2, 3 })
+        foreach (int mutation in new[] { 0, 1, 2 })
+        foreach (bool exception in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var first = state.CreateWithId(probe, side, 20, side.DeckOf(), 0);
+            var later = state.CreateWithId(probe, side.Opposite(), 21, CardLocation.Discard, 0);
+            foreach (var observer in new[] { first, later })
+            { observer.Keywords.Clear(); observer.Definition = new CardDefinition { Name = probe, UsedTriggers = new[] { trigger } }; }
+            if (exception) later.SuppressionExceptionTriggers.Add(trigger);
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0, isGold: true);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            bool innerFrontline = sameDestination ? outerFrontline : !outerFrontline;
+            int innerExpected = sameDestination ? Math.Min(innerRequest, (outerFrontline ? 5 : 4) - outerCount) : innerRequest;
+            var outer = new List<CardInstance>(); var inner = new List<CardInstance>();
+            var seen = new Dictionary<CardInstance, int>(); var entered = new HashSet<CardInstance>();
+            var events = new List<(string Phase, int Subject, int Receiver)>(); List<int>? innerIds = null;
+            bool inside = false, nested = false; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name)
+                {
+                    made.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                    (inside ? inner : outer).Add(made); events.Add(("create", made.CardId, 0));
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    int notifications = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSpawnMultipleCards");
+                    var hits = new[] { first, later }.Where(x => Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotCount")) > seen.GetValueOrDefault(x)).ToArray();
+                    if (hits.Length == 1)
+                    {
+                        var receiver = hits[0]; seen[receiver] = Convert.ToInt32(receiver.BlueprintVariables["_auditBatchSnapshotCount"]);
+                        if (receiver.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotSubject") is not CardInstance subject
+                            || Convert.ToInt32(receiver.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotMethod")) != 3)
+                        { failure = "重入T35主体或method3错误"; return; }
+                        events.Add(("T35", subject.CardId, receiver.CardId));
+                        if (!nested)
+                        {
+                            nested = true;
+                            if (receiver != first || outer.Count != outerCount || notifications != 1) failure = "重入前必须已创建全部外层卡并发一次外层通知";
+                            if (mutation == 1) later.Keywords.Add(Keyword.Suppressed);
+                            if (mutation == 2) later.Definition = new CardDefinition { Name = probe };
+                            inside = true;
+                            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                                new object?[] { (int)side, innerFrontline, Enumerable.Repeat(name, innerRequest).ToList(), source.CardId, false, null, false }, ctx, out _);
+                            innerIds = result as List<int>; inside = false;
+                            if (inner.Count != innerExpected || inner.Any(x => !entered.Contains(x))) failure = "内层调用返回前应完成全部实际生成卡的进场";
+                        }
+                        else if (notifications != 2) failure = "内层及外层后续回调前应已有两条批量通知";
+                    }
+                    else if (hits.Length == 0)
+                    {
+                        var own = outer.Concat(inner).Where(x => !entered.Contains(x)
+                            && Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) == 3).ToArray();
+                        if (own.Length != 1) { failure = "重入进场主体不唯一"; return; }
+                        entered.Add(own[0]); events.Add(("entry", own[0].CardId, own[0].CardId));
+                        if (notifications != 2) failure = "进场前缺少内外批量通知";
+                    }
+                    else failure = "重入观察计数无法分辨";
+                }
+            };
+            var output = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, outerFrontline, Enumerable.Repeat(name, outerCount).ToList(), source.CardId, false, null, false }, ctx, out _);
+            bool eligibleLater = mutation == 0 || (mutation == 1 && exception);
+            var expected = outer.Select(x => ("create", x.CardId, 0)).ToList();
+            expected.Add(("T35", outer[0].CardId, 20));
+            expected.AddRange(inner.Select(x => ("create", x.CardId, 0)));
+            foreach (var card in inner)
+            {
+                expected.Add(("T35", card.CardId, 20));
+                if (eligibleLater) expected.Add(("T35", card.CardId, 21));
+                expected.Add(("entry", card.CardId, card.CardId));
+            }
+            expected.Add(("T35", outer[0].CardId, 21)); // retained outer snapshot
+            expected.Add(("entry", outer[0].CardId, outer[0].CardId));
+            foreach (var card in outer.Skip(1))
+            {
+                expected.Add(("T35", card.CardId, 20));
+                if (eligibleLater) expected.Add(("T35", card.CardId, 21));
+                expected.Add(("entry", card.CardId, card.CardId));
+            }
+            if (failure is not null || !nested || output is not List<int> ids || !ids.SequenceEqual(outer.Select(x => x.CardId))
+                || innerIds is null || !innerIds.SequenceEqual(inner.Select(x => x.CardId)) || innerIds.Count != innerExpected
+                || !events.SequenceEqual(expected) || entered.Count != outerCount + innerExpected
+                || outer.Concat(inner).Any(x => !x.IsGold || x.EnteredPlayOnTurn != 7))
+                return $"reentrant batch case={cases} {side}/{outerFrontline}/{sameDestination}/{outerCount}/{innerRequest}/{mutation}/{exception}: {failure ?? "interleaving/snapshot/result isolation"}; inner={inner.Count}/{innerExpected}";
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSpawnMultipleCards").ToArray();
+            if (notices.Length != 2 || notices[0].Values.Single(x => x.Name == "cardIDs").Text != string.Join(";", ids)
+                || notices[1].Values.Single(x => x.Name == "cardIDs").Text != string.Join(";", innerIds))
+                return $"reentrant batch case={cases}: inner/outer notification IDs mixed";
+            cases++;
+        }
+        return cases == 192 ? null : $"reentrant batch matrix count={cases}";
     }
 
     private static string? BatchCreationToEntryBoundary(CardDatabase db)
