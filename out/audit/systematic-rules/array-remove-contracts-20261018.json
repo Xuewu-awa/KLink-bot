@@ -1,0 +1,54 @@
+{
+  "rule": "RULE-198",
+  "status": "fixed-array-value-index-removal-and-local-helper-classification",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-remove-item-20261018.txt": "f4aa85f4375dceafbba2a2faa4e2ed521ad1cf029acf53ce66147e65bc8eaa04",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-remove-item-bodies-20261018.txt": "cf8b5aebf0089aee0c9560b7b970598843754d5c097639515fce80ee708c59e4",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-remove-index-20261018.txt": "8b725c476e46d855dac07653c396959e27a54f9082793151fcac739ff3ff730d",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-remove-storage-20261018.txt": "9feb660e201cf32af9774c7941906c7ece6d5c3adb063464e17d4e11679e2a3a",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayRemoveItemVerified.java": "af6b9ab53b4e7886422067d41813cad1ee21b0ce3c12a54677ac8cc30ff8425d",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayRemoveItemBodiesVerified.java": "6bad50b474774f81bf1334098ecab9a22a5193eb13fde88aa0717ffc05bb6d49",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayRemoveIndexVerified.java": "37641064c112da4017bad06487b805ce298d7f95c7c8ba1ba28181ee8eaf55d1",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayRemoveStorageVerified.java": "b4e5b86da2ea47d4be79ab67159134f64bb15c440f09aab5d254da44e4660fed",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Finland\\units\\card_unit_me_bf_109_fin.functions.json": "3cc4660baab8e5e5e079c2f39ac229ee33eb46cfc906076ca084e6b45c995712",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Finland\\events\\card_event_prolonged_siege.functions.json": "c76cc507f3d359cdc1c1ab10e8ec8e0fd7e3308a5f58f59e2ff6b65b8e6a8162",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json": "95b223d680cfd073d752e70ba12dc3edf931a0b7c4b7ba986bbdb73b6c060bbb",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "84e34c1cb9cc2651f0f1f8e9734846fc7025611370a01b8e723fcc82b044fa5e",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "3756341f3d58b70ac0a1d5708985dac989e09633b0087f27370d2dceead62fb0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "83f7c4f3d5adbab093408dd06edf093d553f5c183dca32755810c86cc75f568b",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-array-remove-item-before-20261018.txt": "e6d766075732f9ba3cc61dc8b836c54ac686e7d5f1ec02463ccf5dd795b7875b",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-array-remove-item-after-20261018.txt": "57d61fc873be94b67f85f13a9d4f1983a5febce41a831116d7f76e574aa7023c",
+    "D:\\Codex Workshop\\kards-install-review\\audit-array-remove-contracts-20261018.py": "7d2fada3fc45b49497da5048de251ffc67d8c2309ec7faa103974562bfd46450"
+  },
+  "findings": [
+    "Installed Array_RemoveItem native thunk3d93ff0 repeatedly calls find3d7a730 and indexed remove3d7ad10 until find returns-1. It returns false when none were found and true after any removal. Headless previously removed only the first value and returned null.",
+    "Installed Array_Remove thunk3d93f00 reads an int32 index and calls the same indexed removal helper once; the headless handler incorrectly treated it as an all-values removal. It now removes one indexed element and leaves invalid indices unchanged.",
+    "Native find uses the element FProperty Identical operation; indexed removal count is1 and storage1530470 memmoves the remaining suffix, preserving survivor order. This audit does not certify the full headless equality model for arbitrary object/struct elements.",
+    "updateCustomJsonIfNeeded is a same-card Blueprint local in Finnish Bf109 and PROLONGED SIEGE, not a universal native/persistence primitive. VM already prioritizes same-card locals; the unsupported generic persistence substitute is removed and stale comments claiming dispatch-first are corrected.",
+    "21 scalar typed-array scenarios cover ints/strings/bools, duplicates/all matches/none/empty, return value and idempotent second call.28 index scenarios cover scalars/card references, duplicate entries and valid/invalid indices.",
+    "32 real-IR reset cases cover both cards/sides and absent/wrong-type/empty/unmatched/single/all-duplicate/mixed arrays. Each performs two reset callbacks and checks preserved sibling JSON, all-ID removal, empty-field clearing and exactly one persistence notification only when a change occurs.",
+    "Current card IR contains19 Array_RemoveItem sites in17 assets, including out-of-scope assets; this is an inventory, not PvP or full-card certification. No current direct Array_Remove card-IR sites exist, so its correction is a generic handler contract repair."
+  ],
+  "tests": {
+    "before": "3/574 failed (same final fixtures, baseline kernel)",
+    "after": "574/574 passed",
+    "remove_item_scenarios": 21,
+    "remove_index_scenarios": 28,
+    "real_reset_ir_scenarios": 32
+  },
+  "runtime_verified_functions": 6,
+  "native_verified_ranges": 7,
+  "limits": [
+    "Generic array UObject pointer identity versus headless card-ID equality, arbitrary structs/names/floats and custom Identical operators remain unaudited. Scalar checks do not certify all19 call sites or17 cards.",
+    "Invalid array property metadata, missing parameters, native diagnostics, allocator capacity/destructors and side effects during equality are outside this bounded managed-array model.",
+    "The real-IR tests invoke the actual OnOtherCardReset entrypoint with controlled tracked arrays; they do not certify the complete reset pipeline, legality/registration or every effect of either card. Duplicates and invalid tracked IDs are controlled states.",
+    "JSON_RemoveFromIntArray retains its separate first-match contract; no JSON helper semantics are changed by this repair.",
+    "Runtime byte length/hash and branch operands match six saved card functions; complete property decoding and native Blueprint local invocation ABI remain wider audit items.",
+    "All native exports use the supplied Ghidra project read-only/noanalysis and match installed PE bytes. No historical replay authority, new client memory reads, process writes or injection. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\array-remove-contracts-evidence-20261018.json",
+  "evidence_sha256": "4282d20edecf8370fc3162566b88e8708ae30bb5ca0f88e3aff88329d09dd7fd"
+}

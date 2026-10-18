@@ -1004,41 +1004,34 @@ public sealed partial class CardApi
 
                 return null;
             },
-            // UE 的 `Array_Remove(目标数组, 项)` 按**值**删掉**所有**匹配项（原地）。
+            // Native Array_Remove takes an int32 index and removes one item.
+            // Array_RemoveItem below is the separate all-matching-values API.
             ["Array_Remove"] = (c, r, a) =>
             {
                 var arr = EvalList(r, a);
-                if (a.Length > 1)
-                {
-                    for (int i = arr.Count - 1; i >= 0; i--)
-                    {
-                        if (SameArrayValue(arr[i], a[1]))
-                        {
-                            arr.RemoveAt(i);
-                        }
-                    }
-                }
-
+                int index = IntArg(a, 1, -1);
+                if (index >= 0 && index < arr.Count) arr.RemoveAt(index);
                 return null;
             },
-            // UE 的 `Array_RemoveItem(目标数组, 项)` 按**值**删掉第一处匹配（不是按下标）。
-            // 之前没有这一项（进的是"未实现调用"榜，实测 4 次）。
+            // Installed Array_RemoveItem repeatedly finds/removes a matching
+            // element, then returns whether any match existed (RVA 0x3d93ff0).
             ["Array_RemoveItem"] = (c, r, a) =>
             {
                 var arr = EvalList(r, a);
+                bool removed = false;
                 if (a.Length > 1)
                 {
-                    for (int i = 0; i < arr.Count; i++)
+                    for (int i = 0; i < arr.Count;)
                     {
                         if (SameArrayValue(arr[i], a[1]))
                         {
                             arr.RemoveAt(i);
-                            break;
+                            removed = true;
                         }
+                        else i++;
                     }
                 }
-
-                return null;
+                return removed;
             },
 
             // ---------------- 集合（Blueprint TSet）----------------
@@ -1152,7 +1145,6 @@ public sealed partial class CardApi
             ["GetDestroyedCardsCountBySide"] = (c, r, a) => c.State.DestroyedCardsIdsBySide(SideArg(r, a, 0, c.Controller)).Count,
             ["isBuffedByCard"] = (c, r, a) => IsBuffedByCard(c, r, a),
             ["GetUnitTypeCountOnBoard"] = (c, r, a) => GetUnitTypeCountOnBoard(SideArg(r, a, 0, c.Controller)),
-            ["updateCustomJsonIfNeeded"] = (c, r, a) => { if (AsCard(r) is { } x) PersistCustomFields(x); return null; },
             ["checkAndUpdateBuffOnCard"] = (c, r, a) => DoCheckAndUpdateBuffOnCard(c, r, a),
             ["checkAndUpdateBuffOnAllCards"] = (c, r, a) => DoCheckAndUpdateBuffOnAllCards(c),
 

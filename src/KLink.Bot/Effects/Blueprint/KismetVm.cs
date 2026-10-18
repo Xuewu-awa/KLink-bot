@@ -584,29 +584,10 @@ public sealed class KismetVm
         object? result = localProgram is null
             ? _api.InvokeByName(fn, receiver, args, ctx, out handled) : null;
 
-        // ---- ★ 卡自己的局部函数（P0 第 3 族，2026-09-27）----
-        //
-        // 蓝图里的「卡内私有函数」（`ApplyBuff` / `RemoveBuff` / `didPlayBritishInfantryLastTurn` /
-        // `hasGuardAdjacentUnit` / `Random Card` …）编译成**独立 export**、不在 ubergraph 里，
-        // 所以它们既不是引擎原语、也没有 C# 替身 —— 旧实现只会记一笔 Unimplemented、
-        // **等于什么都不做**（审计 §5.7：67 个名字属于这一类，覆盖 ~70 张卡）。
-        // 现在 IR 带了这些函数体（`locals`；生成器 `LOCAL_FUNCTIONS` 2 → 78 个：
-        // 见 `klink bot/tools/gen-kismet-ir.py` 与清单 `out/audit/private-fns-cards-only.txt`），
-        // 于是这里补一条兜底：**派发表认不出来 ⇒ 看这张卡自己有没有同名函数体**。
-        //
-        // ⚠️ 三条必须写清楚的取舍：
-        // 1. **派发表优先**，不是 locals 优先。派发表里有 9 个同名手写 C# 替身
-        //    （`ApplyTheBuff`/`RemoveTheBuff`/`updateCustomJsonIfNeeded`/`anyOrderPlayedThisTurn`/
-        //    `checkAndUpdateBuffOnCard`/`checkAndUpdateBuffOnAllCards`/`getTwoCardsFromPossibleCards`/
-        //    `getPossibleCardsFromStaticCards`/`_isBigRedOne`），它们有自测守着（四条光环自测）。
-        //    locals 优先会把它们换掉 —— 那要单独验证，本轮不做。
-        // 2. **出参名从调用点的 out 槽名反推**：蓝图里 out 槽叫 `CallFunc_<函数名>_<出参名>`
-        //    （实测 `CallFunc_HasCustomAbilityFromCard_doesIt` → `doesIt`），
-        //    于是把函数名前缀剥掉就是函数体里那个变量名。剥不出来就只跑副作用。
-        // 3. **显式形参仍没有元数据**：dump 里没有参数名（`cards.full.json` 的函数项只有
-        //    `expr_count` + `bytecode`）。局部函数现在会继承调用方帧中的局部槽（例如
-        //    `_tmp_card`），覆盖绝大多数由调用方先写槽、再调用 helper 的形态；但需要
-        //    独立形参绑定的私有函数仍可能拿到 null，用 `<local-ran:名字>` 留痕。
+        // Same-card local exports take precedence over generic dispatch.
+        // Inputs/outputs bind through the program's formal metadata; older
+        // exports without output metadata retain the call-slot name fallback.
+        // Local slots are reset before binding the arguments below.
         if (!handled && localProgram is { } local)
         {
             var outNames = new List<string>();

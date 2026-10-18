@@ -234,6 +234,9 @@ internal static class SelfTest
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
+        new("数组RemoveItem：删除全部匹配，返回是否移除，保序且再次调用为false", ArrayRemoveItemAllMatches),
+        new("数组Remove：按下标只删一项，越界不改数组，区别于按值删除", ArrayRemoveUsesIndex),
+        new("真实重置IR：芬兰Bf109/PROLONGED SIEGE清理全部重复卡号后按需持久化", ResetTrackedCardArrayCleanup),
         new("持久化缺失对象：保留输入ID，名称None及空字符串JSON，不跳过通知", PersistMissingObjectPayload),
         new("Pincer缺失对象通知：承受方空ID0，赠予者保留原ID和重复次数", PincerMissingObjectNotifications),
         new("持久化身份：对象参数也按ID重查，别名及替换不读取旧对象", PersistCustomFieldsIdentityLookup),
@@ -12125,6 +12128,99 @@ internal static class SelfTest
                     return $"missing Pincer {side}/{route}: invalid-object default payload";
         }
         return null;
+    }
+
+    private static string? ArrayRemoveUsesIndex(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var self = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.Discard, 0);
+        var first = state.CreateWithId(PlainUnit, Side.Left, 70, CardLocation.Discard, 1);
+        var second = state.CreateWithId(PlainUnit, Side.Left, 71, CardLocation.Discard, 2);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
+        int[][] expectedIndices = { new[] { 0, 1, 2, 3 }, new[] { 1, 2, 3 }, new[] { 0, 2, 3 },
+            new[] { 0, 1, 3 }, new[] { 0, 1, 2 }, new[] { 0, 1, 2, 3 }, new[] { 0, 1, 2, 3 } };
+        int[] indices = { -1, 0, 1, 2, 3, 4, int.MaxValue };
+        int cases = 0;
+        foreach (int type in new[] { 0, 1, 2, 3 })
+        for (int j = 0; j < indices.Length; j++)
+        {
+            object[] original = type == 0 ? new object[] { 70, 71, 70, 72 }
+                : type == 1 ? new object[] { "A", "B", "A", "C" }
+                : type == 2 ? new object[] { true, false, true, false }
+                : new object[] { first, second, first, self };
+            var list = original.ToList();
+            object? result = engine.Api.InvokeByName("Array_Remove", null, new object?[] { list, indices[j] }, ctx, out bool handled);
+            if (!handled || result is not null || !list.SequenceEqual(expectedIndices[j].Select(i => original[i])))
+                return $"Array_Remove index {type}/{indices[j]}: removed a value or all duplicates instead of one indexed element";
+            cases++;
+        }
+        return cases == 28 ? null : $"Array_Remove index cases={cases}";
+    }
+
+    private static string? ArrayRemoveItemAllMatches(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var self = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.Discard, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = Side.Left };
+        int[][] patterns = { Array.Empty<int>(), new[] { 1, 2 }, new[] { 0 }, new[] { 0, 1, 0, 2, 0 },
+            new[] { 1, 0, 0, 2 }, new[] { 0, 0 }, new[] { 0, 0, 1, 1, 0 } };
+        int[][] survivors = { Array.Empty<int>(), new[] { 1, 2 }, Array.Empty<int>(), new[] { 1, 2 },
+            new[] { 1, 2 }, Array.Empty<int>(), new[] { 1, 1 } };
+        int cases = 0;
+        foreach (int type in new[] { 0, 1, 2 })
+        for (int pattern = 0; pattern < patterns.Length; pattern++)
+        {
+            object Value(int v) => type == 0 ? v + 70 : type == 1 ? v == 0 ? "match" : v == 1 ? "MATCH" : "other" : v == 0;
+            System.Collections.IList list = type == 0 ? patterns[pattern].Select(v => (int)Value(v)).ToList()
+                : type == 1 ? patterns[pattern].Select(v => (string)Value(v)).ToList()
+                : patterns[pattern].Select(v => (bool)Value(v)).ToList();
+            var expected = survivors[pattern].Select(Value).ToArray();
+            object? result = engine.Api.InvokeByName("Array_RemoveItem", null, new object?[] { list, Value(0) }, ctx, out bool handled);
+            if (!handled || result is not bool removed || removed != (pattern >= 2)
+                || !list.Cast<object>().SequenceEqual(expected))
+                return $"RemoveItem {type}/{pattern}: result={result ?? "null"}, survivors={list.Count}/{expected.Length}";
+            result = engine.Api.InvokeByName("Array_RemoveItem", null, new object?[] { list, Value(0) }, ctx, out handled);
+            if (!handled || result is not false || !list.Cast<object>().SequenceEqual(expected))
+                return $"RemoveItem {type}/{pattern}: second removal must return false without mutation";
+            cases++;
+        }
+        return cases == 21 ? null : $"RemoveItem cases={cases}";
+    }
+
+    private static string? ResetTrackedCardArrayCleanup(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "card_unit_me_bf_109_fin", "card_event_prolonged_siege" })
+        foreach (int kind in Enumerable.Range(0, 8))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(name, side, 60, name.StartsWith("card_event", StringComparison.Ordinal) ? CardLocation.Discard : side.HqOf(), 1);
+            var reset = state.CreateWithId(PlainUnit, side.Opposite(), 70, side.Opposite().HqOf(), 1);
+            string key = name == "card_unit_me_bf_109_fin" ? "stolenCards" : "burncards";
+            engine.Api.JsonSetInt(source, "auditKeep", 9);
+            int[] initial = kind switch { 3 => new[] { 71, 72 }, 4 => new[] { 70 }, 5 => new[] { 70, 70 },
+                6 => new[] { 70, 71, 70, 72, 70 }, 7 => new[] { 0, -7, 70, 70 }, _ => Array.Empty<int>() };
+            if (kind == 1) engine.Api.JsonSetString(source, key, "70");
+            else if (kind >= 2) engine.Api.JsonSetIntArray(source, key, initial);
+            int[] expected = kind switch { 3 or 6 => new[] { 71, 72 }, 7 => new[] { 0, -7 }, _ => Array.Empty<int>() };
+            for (int pass = 0; pass < 2; pass++)
+            {
+                engine.Api.FireTrigger("OnOtherCardReset", source, side, selfProgramName: "OnOtherCardReset",
+                    eventArgs: new object?[] { reset, reset.CardId }, eventSubject: reset,
+                    namedArgs: new Dictionary<string, object?> { ["cardReset"] = reset, ["resetCardID"] = reset.CardId });
+                bool exists = kind is 1 or 2 or 3 or 6 or 7;
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+                if (source.CustomJson.ContainsKey(key) != exists || engine.Api.JsonGetInt(source, "auditKeep") != 9
+                    || kind == 1 && engine.Api.JsonGetString(source, key) != "70"
+                    || kind != 1 && !engine.Api.JsonGetIntArray(source, key).SequenceEqual(expected)
+                    || notices.Length != (kind >= 4 ? 1 : 0)
+                    || notices.Any(x => x.Values[0].Value != source.CardId))
+                    return $"reset array {side}/{name}/{kind}/pass{pass}: typed guard/all-match removal/empty clear/idempotent notification";
+            }
+            cases++;
+        }
+        return cases == 32 ? null : $"reset array cases={cases}";
     }
 
     private static string? PersistCustomFieldsPayload(CardDatabase db)
