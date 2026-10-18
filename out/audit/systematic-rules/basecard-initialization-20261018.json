@@ -1,0 +1,49 @@
+{
+  "rule": "RULE-202",
+  "status": "audited-native-basecard-initialization-chain-final-state-open",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-object-initializer-20261018.txt": "939f93f574752ed46ff2261248bff55fdbefa00e1e9f07f45378c0b9fa501846",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-post-construct-20261018.txt": "6183ce0f9494014e56608e8de9be36049cdef89b1925a160c946fae6152d8dfa",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-init-properties-20261018.txt": "82bf8d9574c68b9750cf48108452d8aab9c85bab9b2a42643677fa5868121cb6",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-basecard-postinit-20261018.txt": "96516066091be26849ac7c2b3b3f73e5e29349dc63c9f93220721d1dc694426b",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-basecard-body-20261018.txt": "03389e45d152d9ab8efada003c315ecfd8e5f022e4e5a62309a2f86de0d57f52",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-static-card-fallback-20261018.txt": "f3924ce9c54d1ffa5ae61dea3a40955e08122c78517c72f9382ea6210de5f79d",
+    "D:\\Codex Workshop\\kards-install-review\\ExportObjectInitializerVerified.java": "c29f41ceadb53a73287a5b760432a9ed9ef36f63b77d12c9166f311f87388745",
+    "D:\\Codex Workshop\\kards-install-review\\ExportPostConstructVerified.java": "9cfadbd3c06bd09b3802e4df5760f5f3098367f60cc9c3d64483c1dc90c9f99b",
+    "D:\\Codex Workshop\\kards-install-review\\ExportInitPropertiesVerified.java": "f8c3948d5a9509ed45d4e866964ddcc7e271e1df29353841f4f34813018aef67",
+    "D:\\Codex Workshop\\kards-install-review\\ExportBaseCardPostInitVerified.java": "45e8ddcb2af3829fcc3907a7618298a3145ffaf019f0c58c094f0660f1991b57",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "d4c28f40bc43cd97e16c26ed69b19f9cf304984fc819bd233c455a1890ae5dfc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "c453bcc917d598099fb7e8f9a4c237850bba3b59cc5370db387b439adbf04beb",
+    "D:\\Codex Workshop\\kards-install-review\\audit-basecard-initialization-20261018.py": "bec8d7b8be31c70b331d69eb6fd6a1a1f289940f94ee2b9fe0e0e6b0d84bd8d3"
+  },
+  "findings": [
+    "The allocation routine15c61d0 explicitly memsets the new object storage to zero. StaticConstruct15c6d40 pushes an initializer15b9ae0, invokes the class constructor, then tears down the initializer15b5b60. This teardown conditionally calls post-construction15c1320 rather than merely freeing bookkeeping.",
+    "Post-construction selects a default/template source (including class+0x110 when needed), invokes15bef90 for the object and separately for recorded subobjects. Property flags/class flags choose full versus post-construct property chains; POD copies use memcpy, other types dispatch property virtual+0xf0. Therefore copying every observed CDO field indiscriminately is not justified.",
+    "The BaseCardObject instance vtable+0x50 points to15c1810. Its post-init callback invokes class virtual+0x3a0 and optional global hooks; post-construction also invokes class virtual+0x370. These class callback implementations and final resulting state are not resolved by this phase.",
+    "The1326-byte BaseCardObject constructor explicitly constructs its JSON backing object through4518450, which allocates a0x50 backing block and0x18 reference-control block. This differs from assuming the struct remains the all-zero invalid BlueprintJson value. Post-copy JSON aliasing/deep-copy remains unresolved.",
+    "A restricted projection of zero allocation plus direct known constructor stores, excluding all callees/property copies/callbacks, matches101/101 saved base-CDO fields. All101 offsets/sizes independently match the supplied SDK. Only two unknown direct stores remain in this restricted decoder, both vtable writes outside those101 field ranges. This is a candidate-value cross-check, not proof of101 final live fallback values."
+  ],
+  "new_native_verified_functions": 7,
+  "new_native_verified_ranges": 9,
+  "sdk_and_candidate_cdo_fields": 101,
+  "candidate_cdo_differences": 0,
+  "kernel_changed": false,
+  "tests": {
+    "last_full_release": "580/580 (RULE-200)",
+    "rerun": false,
+    "evidence_checks": "native ranges, chain assertions, SDK offsets,101 candidate fields passed"
+  },
+  "limits": [
+    "No kernel/selftest changes or new full selftest run. Last full Release remains580/580 (RULE-200). Executed native byte checks, chain assertions, SDK layout checks and101-field candidate matrix checks.",
+    "The scalar projection is deliberately not a native emulator: callee writes, post-copy selection/flags and late callbacks are excluded. Saved base CDO state is not a newly allocated missing-name object and does not prove static map identity/content.",
+    "GetStaticCard miss handling remains open: final default-property values, container copies/aliasing, JSON serialization, unknown-name object identity, lifetime/GC, initialization and abnormal/deferred branches still need verification before a faithful simulator fallback can replace null/base-name reuse.",
+    "Class callbacks+0x370/+0x3a0 and property-copy virtual targets are unresolved, as are complete config/subobject behavior and init hooks. Visual/config/class machinery is not being reimplemented unless it changes headless PvP observable state.",
+    "No current process memory reading/writing, injection, game-function calls, Ghidra analysis mutation or historical replay authority. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\basecard-initialization-evidence-20261018.json",
+  "evidence_sha256": "91dc160aab07b03f8844d41f8a6a07a284d57cf4b4fae1229169cfc1b4ab239e"
+}
