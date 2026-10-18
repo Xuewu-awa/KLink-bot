@@ -1,0 +1,135 @@
+{
+  "rule": "RULE-189",
+  "status": "partial-local-subaction-consumption-mapped",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-limiter-action-verified-20261018.txt": "a30c0034d6cb71621ba0800f98fa13a1ccfae38b17ff961dfa6a8e1023d95d21",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\audit-limiter-local-consumption-20261018.py": "642224d1a867e49f970a672ddfb8f12aa5483a701619a3def0fbec9a97ae103a",
+    "D:\\Codex Workshop\\kards-install-review\\ExportLimiterActionVerified.java": "2dcd8c6c0f932757490fb415e8b82e8edb0a7ebd60c698385b42a06b883dcd7f",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "6c0ae0e697d0e6d4c42e88e7da0e7996bf63857e1e8eafa99c8612c9577b7e2f"
+  },
+  "native_bodies": [
+    {
+      "entry_rva": "0x4a95b70",
+      "ranges": [
+        {
+          "rva": "0x4a95b70",
+          "length": 610,
+          "sha256": "3b5603751e7d70bb47c7b2eff59b2cdb26e49023f1eae959a8201d23ebc960ed",
+          "disk_identical": true
+        }
+      ],
+      "bytes": 610
+    },
+    {
+      "entry_rva": "0x4ad79f0",
+      "ranges": [
+        {
+          "rva": "0x4ad79f0",
+          "length": 765,
+          "sha256": "93205f8bb829640aef05ecfd491783c4167ab5a5e59e8480dae5880c02670c89",
+          "disk_identical": true
+        }
+      ],
+      "bytes": 765
+    },
+    {
+      "entry_rva": "0x4adb760",
+      "ranges": [
+        {
+          "rva": "0x4adb760",
+          "length": 426,
+          "sha256": "542febeab923b5b59a971a75cdfb96ab15b4a97a36d30022739fa93dfc7b7747",
+          "disk_identical": true
+        }
+      ],
+      "bytes": 426
+    },
+    {
+      "entry_rva": "0x4affa70",
+      "ranges": [
+        {
+          "rva": "0x4affa70",
+          "length": 4236,
+          "sha256": "7823d6cf9da48cdc64b7d95effec6e28063a03da62d52cd2322ec1b13b296769",
+          "disk_identical": true
+        }
+      ],
+      "bytes": 4236
+    },
+    {
+      "entry_rva": "0x4b05a80",
+      "ranges": [
+        {
+          "rva": "0x4b05a80",
+          "length": 1093,
+          "sha256": "5ca37b5ac2cee4bf2e07afeac86d7e62dadb4d12f5b87e688d449c066a6fad38",
+          "disk_identical": true
+        }
+      ],
+      "bytes": 1093
+    }
+  ],
+  "runtime_online_function_matches": {
+    "SuperActionStarted": [],
+    "OpponentActionsPlayCard": [],
+    "DoSubActions": [],
+    "ReceiveActionXActionPlayCardFromHand": [],
+    "ResolveSubAction": [],
+    "ReceiveSubActionUpdateFrontlineLimiter": [],
+    "ExecuteXActionsWithLocalSubActions": [],
+    "GetUseLocalSubActions": []
+  },
+  "findings": [
+    "Ghidra body ranges for five native functions match the installed EXE byte-for-byte; the mapped AddActionWithSub wrapper also matches saved runtime bytes.",
+    "Actual AddActionWithSub entry RVA0x4ad79f0 has Ghidra body0x4ad79f0..0x4ad7cec inclusive (765bytes), rather than a complete134byte pdata fragment.",
+    "Native implementation guards and serializes the action, appends24byte queue entries at this+0xbf8/count+0xc00/capacity+0xc04, then starts0x4b05a80 when flag+0xc08 was clear.",
+    "Send pump reads the first queue entry, constructs a request body, stores a request at this+0xd50, and invokes RVA0x451ee50; callbacks and the complete queue lifecycle are not mapped.",
+    "Parsed OpponentActionsPlayCard reaches PlayCardFromHand with flow stack[2885,668]. After its normal return, an unconditional exec-flow chain calls autoplay, stops action process, then DoSubActions(subActions,true) and clears the subaction array.",
+    "DoSubActions uses the same ResolveSubAction loop for either ReceiveFromLocal value (false takes an extra snapshot); limiter receiver is not gated on that flag and calls GameState.UpdateFrontlineLimiter.",
+    "The audited recomputation path applies limiter subactions after the synchronous PlayCardFromHand/autoplay phase. This narrows RULE188, but does not establish all own-action, choice, nested receive, exception, or reconnect boundaries."
+  ],
+  "limits": [
+    "Static audit only: no simulator or selftest changes. No suite rerun; last full Release result remains555/555, not a timing equivalence certificate.",
+    "Control-flow proof assumes normal function return and valid context references; it abstracts conditions, card semantics, native/latent effects and faults. It is not an end-to-end client execution trace.",
+    "OnlineMatch statements are parsed-pak evidence; saved runtime capture matches are listed explicitly, not presumed present.",
+    "Ghidra body bytes are verified; disassembly/decompiler annotations, inferred queue roles and helper semantics still require interpretation. No complete native implementation equivalence claim.",
+    "No blind simulator delay was introduced. Need map own player action completion, autoplay and choices before choosing a shared headless consumption boundary.",
+    "No historical replay authority, no live process reads/writes/injection. Fully semantically verified cards remains0."
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\limiter-local-consumption-evidence-20261018.json",
+  "evidence_sha256": "82680fa019e551b9515bed8c1b7baf87d4392a0f5e226875309a40fbf98df5c7",
+  "fully_semantically_verified_cards": 0,
+  "last_release_selftests": "555/555 (unchanged; no new run)",
+  "opponent_play_after_return": [
+    {
+      "index": 673,
+      "call": "ExecuteAutoPlayCards"
+    },
+    {
+      "index": 707,
+      "call": "StopActionProcess"
+    },
+    {
+      "index": 749,
+      "call": "DoSubActions"
+    },
+    {
+      "index": 782,
+      "call": "AddActionToVisualQueue"
+    },
+    {
+      "index": 823,
+      "call": "Array_Clear"
+    },
+    {
+      "index": 955,
+      "call": "GetPlayerMoves"
+    }
+  ],
+  "opponent_play_graph_states": 98
+}
