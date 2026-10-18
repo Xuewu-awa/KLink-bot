@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-182",
+  "status": "tested raw subject suppression independent of exceptions, continued observers and cardID-based exclusion including distinct held alias; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\entry-subject-gates-evidence-20261018.json",
+  "evidence_sha256": "69c2a58e7a8b265fbd308e837dc04bd6f37e70a484535b5a1e29a6e3d61ee18a",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-entry-subject-gates-20261018.py": "6fb7a2ca4f2410d644a257819bd32efac9c389d6438f2fc1e361d90cb577df43",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-entry-subject-gates-20261018.txt": "7b744f2c1bbb80f9768ed0ac9050d4dac62c1fc711da37dfc85e0343c22cd309",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "8bdb748813fd80f6d85c9b1aa895f473928ed138d2e534b75b08f52d6f66da98",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "7ed54fb216fc5fc011691e1de2336fad2344d66cab28da99bb005e9cda7a0729"
+  },
+  "tests": {
+    "release": "549/549",
+    "subject_gate_cases": 192,
+    "matrix": "2 sides x4 subject locations(support/deck/discard/NotAvailable) x2 subject suppression states x2 subject exception states(OnEnterPlay+T43) x2 identities(mapped subject60/held unmapped alias21) x3 receiver21 states(normal/suppressed/suppressed+T43exception)",
+    "checks": [
+      "Suppressed subject never runs own entry, even with explicit own suppression exception",
+      "Other observers still receive actual subject reference and method3 with suppressed subject and every tested location",
+      "Mapped subject is registered for T43 but excluded from own other-entry event",
+      "A distinct observer21 is excluded when a separate held subject has sameID21: comparison is ID rather than reference",
+      "Other observer suppression exception admits observer21 only when no subject-ID collision",
+      "Existing192 batch T43 snapshot cases pass using shared identical observer probe installer"
+    ],
+    "finding": "No kernel mismatch in tested subject gate/ID-exclusion cases; regression probes and evidence only."
+  },
+  "limits": [
+    "The alias is a deliberately constructed independent simulator object, not a native game snapshot or evidence that a real card creates duplicate identities.",
+    "This matrix does not mutate init-only CardId during callbacks; dynamic ID changes and map repair remain open.",
+    "Registered query ordering/TSet slots, same-ID replacement during query, null subject, UObject validity/GC and full native object lifecycle remain uncertified.",
+    "Only direct ExecuteOnEnterPlayEvents method3 is exercised; other entry methods and complete PvP/wait/UI paths are not certified by these tests.",
+    "State query evidence is parsed pak only; runtime checks cover selected library lengths/hashes/top-level flow and are not full semantic equivalence.",
+    "No rule-kernel edits, replay authority or new process memory reads/writes/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}

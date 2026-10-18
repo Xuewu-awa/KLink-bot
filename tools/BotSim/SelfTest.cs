@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("进场主体门：抑制不接受自身例外，T43按卡号排除而非对象引用", EntrySubjectSuppressionAndId),
         new("批量进场T43：自身先于查询，查询内快照及迟注册", BatchSpawnEntrySnapshots),
         new("批量生成T35快照：每张重查，旧接收者保留，迟注册下一张生效", BatchSpawnCreationSnapshots),
         new("批量生成卡号重查：当前引用保留，后续Blitz/移动及下一张按ID解析", BatchSpawnIdentityLookup),
@@ -27073,33 +27074,116 @@ internal static class SelfTest
         return null;
     }
 
+    private static IDisposable InstallEntrySubjectObservers(bool includeSubject = true)
+    {
+        const string spawnedName = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardEnterPlay";
+        var installed = new List<IDictionary<string, IReadOnlyList<KismetStep>>>();
+        foreach (string probe in includeSubject ? new[] { "card_unit_brewster_f2a", spawnedName } : new[] { "card_unit_brewster_f2a" })
+        {
+            if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(probe, trigger) is not null)
+            {
+                foreach (var previous in installed) previous.Remove(trigger);
+                throw new InvalidOperationException("无法安全安装T43主体探针");
+            }
+            // Ignore marker cards so nested probe creation cannot recursively trigger itself.
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "jumpIfNot", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null,
+                    new KismetExpr { Math = "EqualEqual_NameName", Args = new[] {
+                        new KismetExpr { Var = "name", Context = new KismetExpr { Var = "K2Node_Event_cardPlayed" } },
+                        new KismetExpr { Name = spawnedName } } }, 6, null, null),
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "K2Node_Event_cardPlayed" }, null, -1, "_auditBatchEntrySnapshotSubject", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "K2Node_Event_Method" }, null, -1, "_auditBatchEntrySnapshotMethod", null) { DestinationScope = "instance" },
+                new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                        new KismetExpr { Var = "_auditBatchEntrySnapshotCount", Scope = "instance" }, new KismetExpr { Int = 1 } } },
+                    null, -1, "_auditBatchEntrySnapshotCount", null) { DestinationScope = "instance" },
+                new KismetStep(4, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(6, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            });
+            installed.Add(locals);
+        }
+        return new AuditProbeCleanup(() => { foreach (var locals in installed) locals.Remove(trigger); });
+    }
+
+    private static string? EntrySubjectSuppressionAndId(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe();
+        using var observersProbe = InstallEntrySubjectObservers();
+        const string name = "card_unit_typhoon_mk_ib", probe = "card_unit_brewster_f2a", trigger = "OnOtherCardEnterPlay";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { side.HqOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exceptions in new[] { false, true })
+        foreach (bool sameIdAlias in new[] { false, true })
+        foreach (int observerState in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId(probe, side.Opposite(), 20, CardLocation.NotAvailable, 0);
+            var second = state.CreateWithId(probe, side, 21, CardLocation.Discard, 17);
+            foreach (var receiver in new[] { first, second })
+            {
+                receiver.Keywords.Clear();
+                receiver.Definition = new CardDefinition { Name = probe, UsedTriggers = new[] { trigger } };
+            }
+            if (observerState > 0) second.Keywords.Add(Keyword.Suppressed);
+            if (observerState == 2) second.SuppressionExceptionTriggers.Add(trigger);
+            // Alias is an independently held object sharing receiver21's ID.
+            // No map/index rewrite or claim about a real card creating aliases.
+            var subject = sameIdAlias
+                ? new CardInstance { CardId = 21, Name = name, Owner = side,
+                    Definition = new CardDefinition { Name = name, UsedTriggers = new[] { trigger } }, Location = location }
+                : state.CreateWithId(name, side, 60, location, 0);
+            subject.Definition = new CardDefinition { Name = name, UsedTriggers = new[] { trigger } };
+            subject.Keywords.Clear();
+            if (suppressed) subject.Keywords.Add(Keyword.Suppressed);
+            if (exceptions) { subject.SuppressionExceptionTriggers.Add("OnEnterPlay"); subject.SuppressionExceptionTriggers.Add(trigger); }
+            var receivers = new[] { first, second, subject };
+            var seen = new Dictionary<CardInstance, int>(); var calls = new List<int>(); int ownCalls = 0; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var hits = receivers.Where(x => Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditBatchEntrySnapshotCount"))
+                    > seen.GetValueOrDefault(x)).ToArray();
+                if (hits.Length == 0)
+                {
+                    ownCalls++; calls.Add(0);
+                    if (Convert.ToInt32(subject.BlueprintVariables.GetValueOrDefault("_auditEntryMethod")) != 3)
+                        failure = "自身进场method丢失";
+                    return;
+                }
+                if (hits.Length != 1) { failure = "旁观事件探针计数错误"; return; }
+                var receiver = hits[0]; seen[receiver] = Convert.ToInt32(receiver.BlueprintVariables["_auditBatchEntrySnapshotCount"]);
+                calls.Add(receiver.CardId);
+                if (!ReferenceEquals(receiver.BlueprintVariables.GetValueOrDefault("_auditBatchEntrySnapshotSubject"), subject)
+                    || Convert.ToInt32(receiver.BlueprintVariables.GetValueOrDefault("_auditBatchEntrySnapshotMethod")) != 3)
+                    failure = "旁观者必须收到实际主体引用及method3";
+            };
+            engine.ExecuteOnEnterPlayEvents(subject, 3);
+            var expected = new List<int>();
+            if (!suppressed) expected.Add(0);
+            expected.Add(20);
+            if (!sameIdAlias && observerState != 1) expected.Add(21);
+            if (failure is not null || ownCalls != (suppressed ? 0 : 1) || !calls.SequenceEqual(expected)
+                || subject.BlueprintVariables.ContainsKey("_auditBatchEntrySnapshotCount"))
+                return $"entry subject case={cases} {side}/{location}/{suppressed}/{exceptions}/{sameIdAlias}/{observerState}: {failure ?? "suppression/ID exclusion"}, got={string.Join(',', calls)}, expected={string.Join(',', expected)}";
+            cases++;
+        }
+        return cases == 192 ? null : $"entry subject matrix count={cases}";
+    }
+
     private static string? BatchSpawnEntrySnapshots(CardDatabase db)
     {
         using var entry = InstallEntryMethodProbe();
         const string probe = "card_unit_brewster_f2a", spawnedName = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardEnterPlay";
-        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
-            || KismetLibrary.Default.FindProgram(probe, trigger) is not null) return "无法安全安装批量T43快照探针";
-        // Ignore marker cards so nested probe creation cannot recursively trigger itself.
-        locals.Add(trigger, new[] {
-            new KismetStep(0, "jumpIfNot", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null,
-                new KismetExpr { Math = "EqualEqual_NameName", Args = new[] {
-                    new KismetExpr { Var = "name", Context = new KismetExpr { Var = "K2Node_Event_cardPlayed" } },
-                    new KismetExpr { Name = spawnedName } } }, 6, null, null),
-            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
-                new KismetExpr { Var = "K2Node_Event_cardPlayed" }, null, -1, "_auditBatchEntrySnapshotSubject", null) { DestinationScope = "instance" },
-            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
-                new KismetExpr { Var = "K2Node_Event_Method" }, null, -1, "_auditBatchEntrySnapshotMethod", null) { DestinationScope = "instance" },
-            new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
-                new KismetExpr { Math = "Add_IntInt", Args = new[] {
-                    new KismetExpr { Var = "_auditBatchEntrySnapshotCount", Scope = "instance" }, new KismetExpr { Int = 1 } } },
-                null, -1, "_auditBatchEntrySnapshotCount", null) { DestinationScope = "instance" },
-            new KismetStep(4, "call", "SpawnCardInDeckBySide", new[] {
-                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
-                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
-            new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
-            new KismetStep(6, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
-        });
-        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        using var observersProbe = InstallEntrySubjectObservers(includeSubject: false);
         int cases = 0;
         foreach (var side in new[] { Side.Left, Side.Right })
         foreach (bool frontline in new[] { false, true })
