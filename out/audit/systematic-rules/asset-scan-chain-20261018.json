@@ -1,0 +1,180 @@
+{
+  "rule": "RULE-208",
+  "status": "corrected-override-role-and-traced-configured-scan-registration",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\asset-scan-chain.json": "456f54b3ad8f32d19a83c7d3ff155e5d7cd004bcafa30e77b8abaf180f983a3e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\static-pool-origin.json": "85bbd30025c5787a00397c21be93b4964e50e31bd5d425d2b4a3aa7a57eed059",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-asset-scan-complete-20261018.txt": "a03f9ba023a58bf500c66c470019b58912c180cd8677b423f1f4f40aecbb6610",
+    "D:\\Codex Workshop\\kards-install-review\\ExportAssetScanSeedsVerified.java": "bc625ae0ae97a7fbd2d2738017a71158b58bf2f7651df8642a302026456c1394",
+    "D:\\Codex Workshop\\kards-install-review\\make-asset-scan-seeds-20261018.py": "13c3dbf8d97434f9bcaeb79a6056ca999890f8517045653c7e11c4fa737586cd",
+    "D:\\Codex Workshop\\kards-install-review\\asset-scan-complete-seeds-current-20261018.txt": "229e7e88eb4c5e500611b95de42279fe5fa121fac060f2a3d23c1f22f87969fc",
+    "D:\\Codex Workshop\\kards-install-review\\capture-asset-scan-chain-20261018.py": "a0471f817103f679d52da15f43f257b36797d3a51a1bc1d37d3371f82ab1c2ec",
+    "D:\\Codex Workshop\\kards-install-review\\audit-asset-scan-chain-20261018.py": "bc552b93c2fee21781b99fdb10aefe2b351146bcd3044da48dac63209735621a"
+  },
+  "findings": [
+    "Correction to RULE-207: live vtable+568 target399e720 traverses AssetManagerSettings.PrimaryAssetRules (+58, stride1c) and CustomPrimaryAssetRules (+68, stride38), calling override application targets. It is not the upstream primary-asset scanner. Both current arrays are empty. The preceding parent marks reflected bIsPrimaryAssetDirectoryCurrent and bHasCompletedInitialScan true, placing this hop at scan completion rather than as proof of asset insertion.",
+    "Actual current vtable+560 target399e800 contains the installed literal UAssetManager::ScanPrimaryAssetTypesFromConfig. The current Settings CDO has5 PrimaryAssetTypesToScan entries of reflected size88. BaseCardObject uses /Game/Blueprints/Cards, Blueprint classes=true and editor-only=false; Templates is excluded. These are read-only current values; old INI/export order was not substituted for current settings.",
+    "The configured type loop applies eligibility at vtable+4c0 (39a1c90), invokes the actual path scanner at+2b0 (399d930), then applies type rules at+430. The path scanner obtains asset data through+4b0 (399ec50) and visits its returned68-byte elements forward, registering accepted type/name records through+538 (39a4fe0).",
+    "The gatherer reaches the current registry interface enumeration slot+80 and supplies a callback thunk397ea70 ->3977f50. The callback performs eligibility/filter checks and appends accepted68-byte records at the current output count. Registration reaches3987e20 ->39710b0; FindOrAdd returns an existing named entry without relocating it, or calls3970550 for insertion. That insertion reuses the free-list head when available, otherwise grows sparse storage, marks the allocated bit and maintains hash links. These selected list/insertion paths do not impose lexical ordering.",
+    "The earliest unresolved ordering boundary is now the registry interface enumeration target at RVA224ce30 and the history of scan callbacks, duplicates and sparse-slot reuse. The original primary-asset payload remains byte-identical to RULE-207 in this process. Five-layer2019-name agreement remains valid; the former slot568 scanner role is superseded.",
+    "Read-only Ghidra export searches7 masked current prefixes uniquely in the older supplied project and saves its full available function ranges/decompilation. Per-range nonrelative-byte comparisons are recorded separately; relative target mappings and incomplete Ghidra ranges are not treated as automatic updated-version equivalence. Current conclusions above use the captured current code, actual virtual targets, reflection and settings."
+  ],
+  "limits": [
+    "13 current code ranges total7568 bytes match live and installed executable; this includes5-byte callback thunk and split pdata spans. It does not mean every descendant function or filter condition has complete semantics.",
+    "Current settings and empty override arrays do not prove all historical startup arguments or server/platform configurations. Actual type-rule/eligibility effects and registry enumeration ordering still need separate completion.",
+    "No universal static pool permutation is inferred from one process or older FModel JSON. Simulator ordinal ordering discrepancy remains open until a reproducible source-order contract or appropriately scoped input exists.",
+    "No kernel, balance or candidate-order edit. No new selftest or rerun; latest executed full Release suite remains582/582 from RULE-205. Fully semantically verified cards remains0. No historical replay authority, process writes, injection or game calls."
+  ],
+  "kernel_changed": false,
+  "native_code_ranges": 13,
+  "native_code_bytes": 7568,
+  "current_native_instruction_checks": 29,
+  "settings_scan_types": 5,
+  "current_override_arrays_empty": true,
+  "registry_enum_slot80_rva": "0x224ce30",
+  "corrected_prior_role": {
+    "rule": "RULE-207",
+    "field": "upstream_scan_slot568_rva",
+    "rva": "0x399e720",
+    "actual_role": "apply asset-rule overrides; not the primary-asset scanner"
+  },
+  "old_ghidra_guide_checks": [
+    {
+      "label": "RulesOverrides",
+      "old_entry_rva": "0x399ed60",
+      "current_entry_rva": "0x399e720",
+      "spans": [
+        {
+          "old_rva": "0x399ed60",
+          "current_rva": "0x399e720",
+          "old_length": 221,
+          "current_available": 221,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "ScanTypeConfig",
+      "old_entry_rva": "0x399ee40",
+      "current_entry_rva": "0x399e800",
+      "spans": [
+        {
+          "old_rva": "0x399ee40",
+          "current_rva": "0x399e800",
+          "old_length": 1094,
+          "current_available": 1094,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "TypeEligibility",
+      "old_entry_rva": "0x39a22d0",
+      "current_entry_rva": "0x39a1c90",
+      "spans": [
+        {
+          "old_rva": "0x39a22d0",
+          "current_rva": "0x39a1c90",
+          "old_length": 94,
+          "current_available": 94,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "ScanPathsActual",
+      "old_entry_rva": "0x399df70",
+      "current_entry_rva": "0x399d930",
+      "spans": [
+        {
+          "old_rva": "0x399df70",
+          "current_rva": "0x399d930",
+          "old_length": 1713,
+          "current_available": 1713,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "GatherAssetData",
+      "old_entry_rva": "0x399f290",
+      "current_entry_rva": "0x399ec50",
+      "spans": [
+        {
+          "old_rva": "0x399f290",
+          "current_rva": "0x399ec50",
+          "old_length": 2121,
+          "current_available": 2121,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "RegisterAssetData",
+      "old_entry_rva": "0x39a5620",
+      "current_entry_rva": "0x39a4fe0",
+      "spans": [
+        {
+          "old_rva": "0x39a5620",
+          "current_rva": "0x39a4fe0",
+          "old_length": 183,
+          "current_available": 183,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        },
+        {
+          "old_rva": "0x39a56f2",
+          "current_rva": "0x39a50b2",
+          "old_length": 707,
+          "current_available": 707,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    },
+    {
+      "label": "PerAssetRules",
+      "old_entry_rva": "0x39a1b30",
+      "current_entry_rva": "0x39a14f0",
+      "spans": [
+        {
+          "old_rva": "0x39a1b30",
+          "current_rva": "0x39a14f0",
+          "old_length": 167,
+          "current_available": 167,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_difference_offsets": []
+        }
+      ],
+      "limit": "Masked RIP/branch operand targets require independent mapping; this is not whole semantic equivalence."
+    }
+  ],
+  "tests": {
+    "run_this_phase": false,
+    "last_full_suite": "582/582 (RULE-205)"
+  },
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\asset-scan-chain-evidence-20261018.json",
+  "evidence_sha256": "e6f2e9ada70b764396800a907ac525be9cefd34b351ccaeff41624e7ce10c69e"
+}
