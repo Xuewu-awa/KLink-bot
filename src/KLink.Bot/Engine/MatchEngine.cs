@@ -1605,6 +1605,10 @@ public sealed class MatchEngine
                                           bool recordAction, bool toFrontline,
                                           int locationNumber, int instigatorID, bool currentTargetPrepared)
     {
+        // Native PlayCardFromHand/CardPlayedFromHand pass an integer ID;
+        // callbacks may replace the object mapped to it before each use.
+        int targetCardId = target?.CardId ?? 0;
+        CardInstance? ResolveTarget() => targetCardId > 0 ? State.ById(targetCardId) : null;
         if (CardApi.IsWeatherCard(card))
         {
             State.SetHasPlayedWeatherCardThisTurn(true);
@@ -1668,7 +1672,7 @@ public sealed class MatchEngine
         card.EnteredPlayOnTurn = State.Turn;
 
         if (card.Name is "card_event_sunny1_blue_sky" or "card_event_rain1_mist" or "card_event_storm1_gale")
-            Api.RunCardEffect(card, target);
+            Api.RunCardEffect(card, ResolveTarget());
         State.StopFurtherActions = false;
         var cardsDone = new HashSet<int>();
         var afterPlayGotchas = new List<CardInstance>();
@@ -1784,25 +1788,30 @@ public sealed class MatchEngine
             Api.GiveAlpineBonus(card);
         }
 
-        // CardPlayedFromHand runs the Pincer relation after OnEnterPlay and
-        // before the card's own OnPlayedFromHand (si=4561..4728).  Deployment
-        // cancellation takes this branch too; it only bypasses the own effect.
-        if (card.Keywords.Contains(Keyword.Pincer) && target is not null)
-            Api.ApplyPincerEffects(card, target);
-
-        // CardPlayedFromHand sets ExecuteWaitPlayFromHand before invoking the
-        // card's own effect. A one-card selection resolves inside that effect,
-        // so registering this continuation afterwards leaves a stale wait.
-        // currentTarget was prepared before movement; preserve callback writes
-        // rather than restoring the original argument at this later stage.
+        // CardPlayedFromHand i=6069/6162/6367 resolves the target for each
+        // own invocation, then i=6157 -> 4469 -> 4561/4696/4728 applies Pincer.
+        // Cancellation also reaches Pincer. Do not overwrite currentTarget:
+        // it is a separate field prepared before movement (RULE-193).
         bool waitsForTarget = card.Definition.WaitForHandTarget;
+        bool ownEffectReturned = false, inlineReply = false;
         if (waitsForTarget)
-            _waitPlayContinuations[card.CardId] = () => ContinuePlay(waited: true);
+            _waitPlayContinuations[card.CardId] = () => {
+                if (!ownEffectReturned) inlineReply = true;
+                else ContinuePlay(waited: true);
+            };
         cardsDone.Add(card.CardId);
 
-        bool effectExecuted = RunDeploymentEffect(card, target);
+        bool effectExecuted = RunDeploymentEffect(card, targetCardId);
+        ownEffectReturned = true;
+        if (card.Keywords.Contains(Keyword.Pincer) && ResolveTarget() is { } pincerTarget)
+            Api.ApplyPincerEffects(card, pincerTarget);
 
-        if (!waitsForTarget || !effectExecuted)
+        if (inlineReply && effectExecuted)
+        {
+            _waitPlayContinuations.Remove(card.CardId);
+            ContinuePlay(waited: true);
+        }
+        else if (!waitsForTarget || !effectExecuted)
         {
             _waitPlayContinuations.Remove(card.CardId);
             ContinuePlay(waited: false);
@@ -1819,14 +1828,14 @@ public sealed class MatchEngine
     /// ChooseOne/weather/Pincer and played/entry observers continue (i=4297..5703).
     /// Non-targeted deployment uses T23 to determine extra own-effect executions.
     /// </summary>
-    private bool RunDeploymentEffect(CardInstance card, CardInstance? target, int? instigatorId = null,
-        bool nonTargeting = false)
+    private bool RunDeploymentEffect(CardInstance card, int targetCardId, int? instigatorId = null)
     {
-        // si=3640：没有 hasDeployment 的卡（全部指令 + 21 张没这个字段的单位）走 si=5840，
+        CardInstance? ResolveTarget() => targetCardId > 0 ? State.ById(targetCardId) : null;
+        // si=3640：没有 hasDeployment 的卡（全部指令 + 21 张没这个字段的单位）走 si=5920，
         // 那条路上 `_triggerMultiple` 恒 0 ⇒ 只跑一次，且**没有取消钩子**。
         if (!card.Keywords.Contains(Keyword.Deployment))
         {
-            Api.RunCardEffect(card, target);
+            Api.RunCardEffect(card, ResolveTarget());
             return true;
         }
 
@@ -1836,22 +1845,22 @@ public sealed class MatchEngine
             return false;   // Own deployment is cancelled; PlayCard continues the common chain.
         }
 
-        // si=5702/5750：只在「非指向性」部署时取翻倍数（targetCardID == 0）。
-        int triggerMultiple = nonTargeting || target is null
+        // si=5782/5816/5830: only the original integer ID == 0 queries T23.
+        int triggerMultiple = targetCardId == 0
             ? Api.SumDeploymentTriggerMultiple(card, instigatorId)
             : 0;
 
         if (card.Definition.WaitForHandTarget && triggerMultiple > 0)
         {
             card.ExtraPlayTriggers = triggerMultiple;
-            Api.RunCardEffect(card, target);
+            Api.RunCardEffect(card, ResolveTarget());
             return true;
         }
 
-        // si=6114（第 1 次）+ si=6230..6434（再 triggerMultiple 次）。
+        // si=6194 (first), then si=6399 repeated triggerMultiple times.
         for (int i = 0; i <= triggerMultiple; i++)
         {
-            Api.RunCardEffect(card, target);
+            Api.RunCardEffect(card, ResolveTarget());
         }
         return true;
     }

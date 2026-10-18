@@ -166,6 +166,9 @@ internal static class SelfTest
         new("独立自动出牌：首张Gotcha先接收，再执行下一张单位", QueuedAutoPlayGotchaReceiptOrder),
         new("普通/自动出牌：移动前准备当前目标，保留回调改写，Gotcha也清理旧目标", HandPlayCurrentTargetBoundary),
         new("出牌反制：SECRET OPERATIVES在反制阶段读取本次目标", HandPlayCounterReadsCurrentTarget),
+        new("出牌目标：自身效果及随后Pincer独立按ID读取，非正ID无对象", HandPlayTargetRequery),
+        new("部署倍数：原始目标ID为0才查询，不以查号结果代替", HandPlayTargetIdDeploymentGate),
+        new("内联选牌：自身返回和Pincer完成后才续行旁观者", HandPlayInlinePincerBoundary),
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
@@ -686,8 +689,8 @@ internal static class SelfTest
             ExecuteOnDeploymentTriggeredDispatch),
         new("部署：TriggerDeployment 按目标卡触发非目标部署效果并忽略无 Deployment 目标",
             TriggerDeploymentDispatch),
-        new("出牌时序：Pincer 关系必须在卡自身 OnPlayedFromHand 之前建立",
-            PincerPrecedesPlayedFromHand),
+        new("出牌时序：自身 OnPlayedFromHand 返回后才建立 Pincer 关系",
+            PincerFollowsPlayedFromHand),
 
         // ---- P1：摧毁 Destruction（2026-09-30）----
         // TriggerDestruction si=905 门 → si=1237 OnDestroyed → si=1286 事件24
@@ -13372,6 +13375,143 @@ internal static class SelfTest
         return cases == 56 ? null : $"hand target boundary cases={cases}";
     }
 
+    private static string? HandPlayInlinePincerBoundary(CardDatabase db)
+    {
+        using var observerProbe = InstallEntrySubjectObservers(includeSubject: false);
+        const string name = "card_unit_typhoon_mk_ib";
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool singleton in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var observer = state.CreateWithId("card_unit_brewster_f2a", side, 80, CardLocation.Discard, 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardEnterPlay" } };
+            var source = state.CreateWithId(name, side, 60, side.HandOf(), 0);
+            source.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = true };
+            source.Keywords.Clear(); source.Keywords.Add(Keyword.Pincer); source.KreditCost = 0;
+            var target = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 1);
+            if (singleton) state.CreateWithId(PlainUnit, side, 71, side.DeckOf(), 0);
+            bool ownReturned = false; int observations = 0; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                observations++;
+                if (!ownReturned || engine.Api.JsonGetInt(source, "pincer_receiver") != target.CardId)
+                    failure = "旁观者早于自身返回或Pincer完成";
+            };
+            CardEffectScripts.Register(name, ctx => {
+                ctx.Engine.Api.InvokeByName("selectCardToDraw", source, new object?[] { source.CardId, true, false }, ctx, out _);
+                if (observations != 0 || source.CustomJson.ContainsKey("pincer_receiver")) failure = "内联回复提前续行";
+                ownReturned = true;
+            });
+            bool played;
+            try { played = engine.PlayCard(source, target); }
+            finally { CardEffectScripts.Unregister(name); }
+            if (!played || observations != 1 || failure is not null)
+                return $"inline Pincer {side}/{singleton}: {failure ?? "missing/duplicate continuation"}, observers={observations}";
+        }
+        return null;
+    }
+
+    private static string? HandPlayTargetIdDeploymentGate(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool wait in new[] { false, true })
+        foreach (int kind in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            PutOnBoard(state, "card_unit_b_26_marauder", side, 80, 1);
+            var source = state.CreateWithId(name, side, 60, side.HandOf(), 0);
+            source.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = wait };
+            source.Keywords.Clear(); source.Keywords.Add(Keyword.Deployment);
+            source.Attack = 2; source.Defense = source.MaxDefense = 5; source.KreditCost = 0;
+            var target = state.CreateWithId(PlainUnit, side, kind == 1 ? 0 : kind == 2 ? -7 : 70, side.HqOf(), 2);
+            if (kind == 3) state.Remove(target);
+            CardInstance? expected = kind == 4 ? target : null;
+            int effects = 0; bool wrongTarget = false;
+            CardEffectScripts.Register(name, ctx => { effects++; wrongTarget |= !ReferenceEquals(ctx.Target, expected); });
+            bool played;
+            try { played = engine.PlayCard(source, kind == 0 ? null : target); }
+            finally { CardEffectScripts.Unregister(name); }
+            bool zeroId = kind <= 1;
+            int expectedEffects = zeroId && !wait ? 2 : 1;
+            if (!played || wrongTarget || effects != expectedEffects || source.ExtraPlayTriggers != (zeroId && wait ? 1 : 0))
+                return $"target ID gate {side}/{wait}/{kind}: effects={effects}/{expectedEffects}, extra={source.ExtraPlayTriggers}, wrongTarget={wrongTarget}";
+            cases++;
+        }
+        return cases == 20 ? null : $"target ID gate cases={cases}";
+    }
+
+    private static string? HandPlayTargetRequery(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool deployment in new[] { false, true })
+        foreach (bool pincer in new[] { false, true })
+        foreach (int mutation in Enumerable.Range(0, 8))
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var source = state.CreateWithId(name, side, 60, side.HandOf(), 0);
+            source.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+            source.Keywords.Clear(); source.Attack = 2; source.Defense = source.MaxDefense = 5; source.KreditCost = 0;
+            if (deployment) source.Keywords.Add(Keyword.Deployment);
+            if (pincer) source.Keywords.Add(Keyword.Pincer);
+            int id = mutation == 4 ? 0 : mutation == 5 ? -7 : 70;
+            var original = state.CreateWithId(PlainUnit, side, id, side.HqOf(), 1);
+            CardInstance? requested = mutation == 7 ? null : mutation == 3
+                ? new CardInstance { CardId = id, Name = original.Name, Owner = side, OriginalOwner = side,
+                    Definition = original.Definition, Attack = 2, Defense = 5, MaxDefense = 5 } : original;
+            CardInstance? expectedOwn = mutation is 4 or 5 or 6 or 7 ? null : original;
+            CardInstance? expectedPincer = null;
+            var rewrite = state.CreateWithId(PlainUnit, side, 73, CardLocation.Discard, 1);
+            bool movedOnce = false; int effects = 0; string? failure = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card != source || oldLocation != side.HandOf() || newLocation != side.HqOf()) return;
+                movedOnce = true; source.CurrentTarget = rewrite;
+                if (mutation is 1 or 2 or 6)
+                {
+                    state.Remove(original);
+                    expectedOwn = mutation == 2 ? state.CreateWithId(PlainUnit, side, id, side.HqOf(), 1) : null;
+                }
+            };
+            // Controlled callback replaces the ID map twice: movement -> own
+            // effect, then own effect -> Pincer. It is not a real-card claim.
+            CardEffectScripts.Register(name, ctx => {
+                effects++;
+                if (!ReferenceEquals(ctx.Target, expectedOwn)) failure = "自身效果未按ID重新读取目标";
+                if (source.CustomJson.ContainsKey("pincer_receiver")) failure = "Pincer早于自身效果";
+                if (expectedOwn is not null)
+                {
+                    state.Remove(expectedOwn);
+                    expectedPincer = state.CreateWithId(PlainUnit, side, id, side.HqOf(), 1);
+                }
+            });
+            bool played;
+            try { played = engine.PlayCard(source, requested); }
+            finally { CardEffectScripts.Unregister(name); }
+            bool linked = source.CustomJson.ContainsKey("pincer_receiver");
+            bool expectedLinked = pincer && expectedPincer is not null;
+            if (!played || !movedOnce || effects != 1 || failure is not null
+                || !ReferenceEquals(source.CurrentTarget, rewrite) || linked != expectedLinked
+                || expectedLinked && (!expectedPincer!.CustomJson.ContainsKey("pincer_givers")
+                    || expectedOwn!.CustomJson.ContainsKey("pincer_givers")))
+                return $"target requery case={cases} {side}/{deployment}/{pincer}/{mutation}: {failure ?? "target identity/Pincer timing/currentTarget"}; effects={effects}, linked={linked}/{expectedLinked}";
+            cases++;
+        }
+        return cases == 64 ? null : $"target requery cases={cases}";
+    }
+
     private static string? HandPlayCounterReadsCurrentTarget(CardDatabase db)
     {
         foreach (var side in new[] { Side.Left, Side.Right })
@@ -25801,7 +25941,7 @@ internal static class SelfTest
         return null;
     }
 
-    private static string? PincerPrecedesPlayedFromHand(CardDatabase db)
+    private static string? PincerFollowsPlayedFromHand(CardDatabase db)
     {
         const string giverName = "card_unit_t_28_pincer";
         const string receiverName = "card_unit_91st_astrakhan";
@@ -25820,13 +25960,12 @@ internal static class SelfTest
         var giver = state.CreateWithId(giverName, Side.Left, 21,
             CardLocation.HandLeft, 0);
 
-        bool ownEffectSawPincer = false;
+        bool ownEffectSawUnlinkedTarget = false;
         CardEffectScripts.Register(giverName, ctx =>
         {
-            ownEffectSawPincer = ctx.Self is { } self
+            ownEffectSawUnlinkedTarget = ctx.Self is { } self
                 && ctx.Target is { } target
-                && self.CustomJson.ContainsKey("pincer_receiver")
-                && ctx.Engine.Api.JsonGetInt(self, "pincer_receiver") == target.CardId;
+                && !self.CustomJson.ContainsKey("pincer_receiver");
         });
 
         try
@@ -25841,9 +25980,9 @@ internal static class SelfTest
             CardEffectScripts.Unregister(giverName);
         }
 
-        return ownEffectSawPincer
+        return ownEffectSawUnlinkedTarget && engine.Api.JsonGetInt(giver, "pincer_receiver") == receiver.CardId
             ? null
-            : "卡自身 OnPlayedFromHand 执行时 Pincer 关系尚未建立";
+            : "自身 OnPlayedFromHand 应先执行，返回后才建立 Pincer 关系";
     }
 
     private static string? PincerRelationship(CardDatabase db)

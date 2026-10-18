@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-194",
+  "status": "fixed-own-effect-target-requery-deployment-id-gate-and-pincer-order",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "830fdcfe3d7e71f04c2a0241fa995090aa2e957a80d3b2f4a92a3245a1f227fa",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "fb330f014964f5ccb7569327851d7c07e9d10733f80bf13fcda5e20e40d66ced",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-target-requery-before-20261018.txt": "03ff87b2ffeccbd95161579610ae12c259b4ff013a7e19ff200a8d8383fa7bac",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-target-requery-after-20261018.txt": "51323086c3770d8ee843c382497ba46c2700dea88587a3365b26ade88a3b2206",
+    "D:\\Codex Workshop\\kards-install-review\\audit-target-requery-20261018.py": "7463e87b28bdb71def3c3972cdbd2b3bbe1a2a30714d9e2ccba5ea3b07eeddf8"
+  },
+  "findings": [
+    "Supersedes the earlier Pincer-before-own-effect assertion: normal own effects return via6157->4469 before Pincer4728; deployment cancellation reaches Pincer without an own effect. Full top-level stack traversal checks both cases.",
+    "Each own-effect parameter and the subsequent Pincer parameter independently resolves the original targetCardID. GetCardFromID delegates to FetchCardFromCardID, which returns NoObject for nonpositive or missing IDs.",
+    "The headless core snapshots the ID before callbacks, resolves it for early weather, each own invocation and subsequent Pincer, and leaves the separately prepared currentTarget field unchanged.",
+    "Deployment multiplicity queries T23 only when the original integer ID equals0 (5782/5816/5830); a missing positive target or negative ID is not a non-targeted deployment.",
+    "Inline selection continuation is held until the own effect returns and Pincer completes. Four additional empty/singleton cases observe that T43 callbacks run once, after both stages.",
+    "64 controlled identity cases cover both sides, deployment/nondeployment, Pincer/noPincer and eight target/map states. The own callback replaces the mapping again to verify Pincer uses its own lookup.20 multiplier cases exercise real B26 IR, zero/negative/missing/normal IDs and wait/nonwait modes. The old real T28 Pincer timing test is corrected."
+  ],
+  "tests": {
+    "before": "4/564 failed (final fixtures, baseline kernel)",
+    "after": "564/564 passed",
+    "identity_cases": 64,
+    "deployment_gate_cases": 20,
+    "corrected_pincer_cases": 1,
+    "inline_selection_cases": 4
+  },
+  "runtime_verified_functions": 4,
+  "graph_states": 428,
+  "limits": [
+    "Top-level control flow assumes valid context objects and callbacks returning normally; conditions are explored nondeterministically, not a full interpreter/native proof.",
+    "Runtime checks verify saved script identity, byte length and branch operands; operand/property decoding and UObject pending-kill/GC semantics are not fully certified.",
+    "Map replacements, invalid IDs and controlled definitions/scripts are isolation probes, not proof real PvP cards necessarily create those states.",
+    "Four inline-continuation scenarios and the existing full selection suite pass; this is not an exhaustive scheduler/reentry proof. Native choice/network/action bundle ABI remain open.",
+    "TriggerDeployment is a separate path and was not changed. Full card effects, legal target validation, all Pincer subcallbacks and notification pipeline remain unaudited beyond prior bounded evidence.",
+    "Historical replay is not authority. No new game memory reads, writes or injection. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\target-requery-evidence-20261018.json",
+  "evidence_sha256": "ffeca3920194b74305e8c67118b80dc5c61a81dece92b4b1bc7a8107e79cd913"
+}
