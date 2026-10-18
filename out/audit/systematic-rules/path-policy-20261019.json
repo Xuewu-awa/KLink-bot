@@ -1,0 +1,97 @@
+{
+  "rule": "RULE-214",
+  "status": "ascii-substring-exclusion-and-quoted-path-wrapper-verified-full-path-acceptance-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-policy-20261019.json": "b3536a438288dc6abd7416685b9398592c4cf0373584b25bc475d795d5ce5576",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\capture-path-policy-20261019.py": "a858daeaa31f72708ff4cf8e59eef1eb2a647ac6caf8f9d36724eda19eb3025f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-path-policy-20261019.py": "dc8f356a2e69594b8543965ccba67ed0992f5807bd71e038a6453eec4a73ef25",
+    "D:\\Codex Workshop\\kards-install-review\\make-path-policy-seeds-20261019.py": "9c86d71a9269f24f08c3c4750aa8bfdbae8003168b3cf48865d75d369167de50",
+    "D:\\Codex Workshop\\kards-install-review\\path-policy-seeds-current-20261019.txt": "942f1e0026d265d15b537942e48db5bcd3876dcdac7e66becfdfc189c494d9a7",
+    "D:\\Codex Workshop\\kards-install-review\\ExportPathPolicyHelpersVerified.java": "ff03cfe99cb7f62f63b0e51652ee89b91e30ff12a10b20cd178e4028d807c04e",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-path-policy-20261019.txt": "637a3a47b7ba1df96aa218aa74330fdfb455fbfe8f7c93728ff1ff6e352b3479",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-path-policy-helpers-20261019.txt": "e52112578fd063616bae57e203b2f93a7b8f955ce1d2dd8fe617176b2d9ce83c"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "Current manager virtual+580 searches the package-name string for each excluded string using FindString(mode1,forward,start=-1). It tests a found index, with no directory-boundary or prefix-anchor check. For the captured ASCII domain mode1 ignores case; the bounded helper uses the captured128-byte A-Z to a-z fold table. Unicode/general search modes are not certified here.",
+    "None of the2043 current Blueprint package names contain the configured Cards/Templates string under this ASCII search. Thus this settings-exclusion gate does not remove any current candidate. This does not remove optional policy-object or temporary-rule gates.",
+    "Compact ParentClass export rendering reaches a builder that emits single quotes around the object portion and a dot between package and nonempty asset name. The next export-text wrapper strips a valid single-quoted payload; strings without the valid quote shape are copied. Canonical sample strings built from all2043 captured component tuples yield their package.asset object path through that wrapper model.",
+    "No recorded game calls were made. The quote-removal model is scoped to captured canonical components and explicit controls; full class-prefix rendering, soft-path parsing, redirects/subobjects, top-level-name conversion and the temporary accepted class set remain pending."
+  ],
+  "limits": [
+    "ASCII substring controls and canonical quote controls are offline model checks, not native execution or simulator regressions.",
+    "No claim that every ParentClass path helper or complete callback acceptance has been restored.",
+    "Whole current intervals match memory and installed EXE; old Ghidra guides certify only available nonrelative byte spans. One nonunique ExportPathToString prefix was rejected; its old address was exported separately and compared at full available range.",
+    "No kernel/order/balance change or selftest rerun; last full Release tests582/582 (RULE-205), fully semantically verified cards0. No replay authority, process writes/injection/game calls."
+  ],
+  "live_pid": 24220,
+  "candidate_package_names_checked": 2043,
+  "settings_exclusion_matches": 0,
+  "ascii_fold_table_bytes": 128,
+  "substring_model_controls": 5,
+  "quote_wrapper_model_controls": 3,
+  "canonical_parent_component_samples": 2043,
+  "native_code_ranges": 7,
+  "native_code_bytes": 2048,
+  "native_call_site_checks": 16,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "ExcludeAssetPath",
+      "old_rva": "0x3992e60",
+      "current_rva": "0x3992820",
+      "length": 206,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "CompactExportPathToString",
+      "old_rva": "0x142a0c0",
+      "current_rva": "0x142a050",
+      "length": 141,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ExportTextToObjectPath",
+      "old_rva": "0x1416970",
+      "current_rva": "0x1416900",
+      "length": 254,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "FindString",
+      "old_rva": "0x11d6cc0",
+      "current_rva": "0x11d6c00",
+      "length": 801,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ExportPathToString",
+      "old_rva": "0x1429ed0",
+      "current_rva": "0x1429e60",
+      "length": 212,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ExportPathAppend",
+      "old_rva": "0x1429fc0",
+      "current_rva": "0x1429f50",
+      "length": 248,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BoundedCaseCompare",
+      "old_rva": "0x1215ad0",
+      "current_rva": "0x1215a10",
+      "length": 165,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
