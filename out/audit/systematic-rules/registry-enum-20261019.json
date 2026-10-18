@@ -1,0 +1,323 @@
+{
+  "rule": "RULE-209",
+  "status": "live-registry-indices-and-order-changing-intersections-traced",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\registry-enum-offline-capture-20261019.json": "85fdc1a2b5f829343baa77a1feca7bfd2a91a556c549f5a9bf832795e5fa868e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registry-enum-20261019.json": "95aadbdd6261ada4c0465fc4814c6b478c797c9c3d74292fc728d46d0d275eb4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\asset-scan-chain.json": "456f54b3ad8f32d19a83c7d3ff155e5d7cd004bcafa30e77b8abaf180f983a3e",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\CoreUObject.hpp": "dff4d76cc50467a3920034346202ca52b775c11540b268dae1435e7d6b9ad3cd",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-registry-enum-20261018.txt": "c78159c16a5cbe4b3c93e6b33c62a53a594334722fcb2a7abb4adff904f56f0d",
+    "D:\\Codex Workshop\\kards-install-review\\ExportAssetScanSeedsVerified.java": "bc625ae0ae97a7fbd2d2738017a71158b58bf2f7651df8642a302026456c1394",
+    "D:\\Codex Workshop\\kards-install-review\\make-registry-enum-seeds-20261018.py": "7b8b45d8a5f98653e624031d1e6406230f5437aab96dc3367bff44ca0208a9f5",
+    "D:\\Codex Workshop\\kards-install-review\\registry-enum-seeds-current-20261018.txt": "c2fb1ad4b6fd1b5b96f964d996e2ae85c51c772fc4b894c47f13ad94b2f81227",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registry-enum-offline-20261019.py": "1a15c656c5103e360ed1953fc30114692f4ed24e3b065ea28e8333c62633ade4",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registry-enum-20261019.py": "95a52c3a603e72923edb0a762a5317d2cba0bce2399e2c3cae0a43eea1ee8462",
+    "D:\\Codex Workshop\\kards-install-review\\audit-registry-enum-20261019.py": "025d809d0880a1a6ad2756bfec2466b9c61b4230e472290171a79548f7b75350"
+  },
+  "findings": [
+    "The registry +80 entry224ce30 compiles its input filter through virtual+1d8 (2248c60), then dispatches compiled-filter enumeration through+68 (224ca80). The selected KARDS gather path sets input filter offset142 to1 in both setup branches. CompileCore copies142 to compiled offset238; EnumerateCompiled tests238 and skips its in-memory branch when set. Thus the selected path is disk-only; observed candidate order cannot be attributed to that skipped memory-first branch.",
+    "Compiled enumeration obtains buffered disk records through registry-state enumeration2295da0, then invokes the caller callback forward at68-byte intervals, outside the corresponding state-read lock. BufferCallback appends in arrival order. This preserves the order supplied by state enumeration; it does not sort names at the wrapper boundary.",
+    "Registry-state enumeration intersects candidate sets from configured indices. PathCandidates22832c0 and ClassCandidates2282cf0 both have a count/cost-dependent choice between direct membership filtering and a shared intersection helper2293aa0. Their rejection blocks replace the current8-byte asset pointer with a pointer from the tail, decrement count and recheck the same index; accepted entries advance the index. This is swap removal and may change survivor order.",
+    "The shared intersection helper also has two size-dependent strategies: one builds a membership set and swap-removes rejected entries from the current list; the other hashes the existing list, clears the output and appends first matching candidates in the other input-group traversal order, marking emitted pointers to avoid duplicates. These are not a universal stable-filter contract and neither is lexical-name sorting.",
+    "Abstract counterexamples are recorded solely to explain why membership equality is insufficient: rejecting A from A,B,C,D under swap removal produces D,B,C, while stable filtering yields B,C,D. They are not simulator regressions, native execution tests or proof of the branch used by the earlier startup.",
+    "After the previous process had exited, the user restarted KARDS. New PID24220 was captured with new module-base/FName-pool/manager/registry resolution; no old process pointer was reused. All9 selected code ranges (9045 bytes) match the new live process and installed/frozen executable. Current path/class maps pass bitmap/free-list/unique-key/full-hash-chain and stable-read checks. The path index has1173 entries, including170 card-directory rows with4101 asset records. All2019 primary-card generated-class names are present. Blueprint and BlueprintGeneratedClass global index arrays count2406/2429 and each overlaps2043 card-directory records.",
+    "The new primary-asset map and asset-manager card cache share exactly the same2019-name order. It also matches the previous process order with0 positional differences. This adds two-startup same-build agreement, not a universal order guarantee across configurations or proof of historical compiled filters."
+  ],
+  "limits": [
+    "The same-build caller flag constants and compiled copy/branch support the selected disk-only path; other API callers/filters may enumerate memory assets.",
+    "Actual startup compiled path/class sets, index-array order, intersection branch counts, duplicate registration and slot reuse history are still missing. Finding swap removal in code does not prove it caused the entire previously captured2019-name permutation.",
+    "The alternative intersection and cost branches are located, not a full semantic certification of every filter/tag/package predicate or descendant allocator. Further work must reconstruct the precise inputs, not apply stable filtering or a fixed reversal to FModel JSON.",
+    "No simulator kernel, card balance or candidate-order edit; no new selftests or rerun. Latest executed full Release suite remains582/582 (RULE-205), fully semantically verified cards0. No historical replay authority, game writes, injection or game calls.",
+    "Old Ghidra uniquely matched prefixes and exported available ranges only. Per-range nonrelative-byte checks do not certify masked call targets, unrecognized code gaps or all current semantics."
+  ],
+  "kernel_changed": false,
+  "native_code_ranges": 9,
+  "native_code_bytes": 9045,
+  "native_instruction_checks": 26,
+  "live_verified_this_phase": true,
+  "live_pid": 24220,
+  "previous_pid": 14052,
+  "live_path_index_entries": 1173,
+  "live_card_directory_rows": 170,
+  "live_card_directory_assets": 4101,
+  "generated_primary_card_names_matched": 2019,
+  "same_primary_name_order_across_two_processes": true,
+  "primary_order_position_differences": 0,
+  "selected_gather_path_disk_only": true,
+  "candidate_intersection_order": "count/cost dependent; swap removal or rebuild in other-group order",
+  "illustrative_counterexamples": [
+    {
+      "input": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "accepted": [
+        "B",
+        "C",
+        "D"
+      ],
+      "swap_removal": [
+        "D",
+        "B",
+        "C"
+      ],
+      "stable_filter": [
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "input": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "accepted": [
+        "A",
+        "C",
+        "E"
+      ],
+      "swap_removal": [
+        "A",
+        "E",
+        "C"
+      ],
+      "stable_filter": [
+        "A",
+        "C",
+        "E"
+      ]
+    },
+    {
+      "input": [
+        "A",
+        "B",
+        "C"
+      ],
+      "accepted": [
+        "A",
+        "B"
+      ],
+      "swap_removal": [
+        "A",
+        "B"
+      ],
+      "stable_filter": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "old_ghidra_guide_checks": [
+    {
+      "label": "RegistryEnumerate",
+      "spans": [
+        {
+          "old_rva": "0x224d050",
+          "current_rva": "0x224ce30",
+          "length": 150,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "CompileFilter",
+      "spans": [
+        {
+          "old_rva": "0x2248e80",
+          "current_rva": "0x2248c60",
+          "length": 779,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "EnumerateCompiled",
+      "spans": [
+        {
+          "old_rva": "0x224cca0",
+          "current_rva": "0x224ca80",
+          "length": 517,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x224ceb4",
+          "current_rva": "0x224cc94",
+          "length": 342,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "StateEnumerate",
+      "spans": [
+        {
+          "old_rva": "0x2295fc0",
+          "current_rva": "0x2295da0",
+          "length": 755,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "BufferCallback",
+      "spans": [
+        {
+          "old_rva": "0x2247ab0",
+          "current_rva": "0x2247890",
+          "length": 100,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "CompileCore",
+      "spans": [
+        {
+          "old_rva": "0x22489c0",
+          "current_rva": "0x22487a0",
+          "length": 1175,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2248e58",
+          "current_rva": "0x2248c38",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2248e61",
+          "current_rva": "0x2248c41",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2248e6a",
+          "current_rva": "0x2248c4a",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "PathCandidates",
+      "spans": [
+        {
+          "old_rva": "0x22834e0",
+          "current_rva": "0x22832c0",
+          "length": 1405,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2283a6c",
+          "current_rva": "0x228384c",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2283a75",
+          "current_rva": "0x2283855",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "ClassCandidates",
+      "spans": [
+        {
+          "old_rva": "0x2282f10",
+          "current_rva": "0x2282cf0",
+          "length": 1446,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x22834c3",
+          "current_rva": "0x22832a3",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x22834cc",
+          "current_rva": "0x22832ac",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    },
+    {
+      "label": "IntersectCandidates",
+      "spans": [
+        {
+          "old_rva": "0x2293cc0",
+          "current_rva": "0x2293aa0",
+          "length": 2172,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2294557",
+          "current_rva": "0x2294337",
+          "length": 30,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        },
+        {
+          "old_rva": "0x2294576",
+          "current_rva": "0x2294356",
+          "length": 8,
+          "nonrelative_bytes_match": true,
+          "difference_count": 0,
+          "first_differences": []
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "run_this_phase": false,
+    "last_full_suite": "582/582 (RULE-205)"
+  },
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\registry-enum-evidence-20261019.json",
+  "evidence_sha256": "cd66a9b579e9897d0d63967054823c09aa10875719f2274302972af45c3d6a66"
+}
