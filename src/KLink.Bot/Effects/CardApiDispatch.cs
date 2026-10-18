@@ -6582,6 +6582,15 @@ public sealed partial class CardApi
         }
     }
 
+    // Object operators and object-property container comparisons observe the
+    // same native pointer identity. Static wrappers preserve that identity via
+    // their definition token; no CardId or scalar conversion belongs here.
+    internal static bool SameObjectIdentity(object? x, object? y)
+        => ReferenceEquals(x, y)
+            || x is CardInstance left && y is CardInstance right
+                && left.StaticTemplateIdentity is { } identity
+                && ReferenceEquals(identity, right.StaticTemplateIdentity);
+
     /// <summary>
     /// Object elements use native identity (FObjectProperty Identical, PortFlags=0).
     /// Static wrappers share a definition token; battle objects use references.
@@ -6591,9 +6600,8 @@ public sealed partial class CardApi
     /// </summary>
     private static bool SameArrayValue(object? x, object? y)
     {
-        if (x is CardInstance left && y is CardInstance right)
-            return ReferenceEquals(left, right)
-                || left.StaticTemplateIdentity is { } identity && ReferenceEquals(identity, right.StaticTemplateIdentity);
+        if (x is CardInstance && y is CardInstance)
+            return SameObjectIdentity(x, y);
         if (x is CardInstance && y is int || x is int && y is CardInstance)
             return IdOf(x) == IdOf(y);
         return Equals(x, y);

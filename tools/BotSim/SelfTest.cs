@@ -238,6 +238,8 @@ internal static class SelfTest
         new("数组Remove：按下标只删一项，越界不改数组，区别于按值删除", ArrayRemoveUsesIndex),
         new("对象数组身份：同卡号不同对象不合并，整数卡号仍按值比较", ObjectArrayIdentity),
         new("静态卡身份：同定义查询为同一对象，不同定义及战斗ID0不混同", StaticTemplateObjectIdentity),
+        new("对象运算身份：战斗引用及空值相等/不等互补，同号不同对象不合并", ObjectOperatorBattleIdentity),
+        new("对象运算身份：重复静态查询及卡池包装保留同一原生对象身份", ObjectOperatorStaticIdentity),
         new("对象集合身份：同卡号对象分别追加/查找/移除，共用比较器回归", ObjectSetIdentity),
         new("AKITA实际IR：死亡killer与当前同号对象不同，不误删伤害候选", AkitaDistinctKillerIdentity),
         new("真实重置IR：芬兰Bf109/PROLONGED SIEGE清理全部重复卡号后按需持久化", ResetTrackedCardArrayCleanup),
@@ -12130,6 +12132,80 @@ internal static class SelfTest
             foreach (var notice in route == 0 ? notices : notices.Take(notices.Length - 1))
                 if (notice.Values[1].Text != "None" || notice.Values[2].Text != "None" || notice.Values[3].Text != "")
                     return $"missing Pincer {side}/{route}: invalid-object default payload";
+        }
+        return null;
+    }
+
+    private static string? ProbeObjectOperators(EffectContext ctx, KismetExpr left, KismetExpr right,
+        bool expected, IReadOnlyDictionary<string, object?>? seed = null)
+    {
+        foreach (bool reverse in new[] { false, true })
+        foreach (string fn in new[] { "EqualEqual_ObjectObject", "NotEqual_ObjectObject" })
+        {
+            var args = reverse ? new[] { right, left } : new[] { left, right };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = fn, Args = args }, null, -1, "result", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var output = ctx.Engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, seed, "result");
+            bool wanted = fn == "EqualEqual_ObjectObject" ? expected : !expected;
+            if (!Equals(output["result"], wanted)) return $"{fn}/reverse={reverse}: expected {wanted}";
+        }
+        return null;
+    }
+
+    private static string? ObjectOperatorBattleIdentity(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { 0, 70, -7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 0);
+            state.Remove(first);
+            var replacement = state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = first, Controller = side };
+            foreach (var (left, right, equal) in new (object?, object?, bool)[] {
+                (first, first, true), (first, replacement, false), (replacement, replacement, true),
+                (first, null, false), (null, replacement, false), (null, null, true),
+            })
+            {
+                var seed = new Dictionary<string, object?> { ["left"] = left, ["right"] = right };
+                var error = ProbeObjectOperators(ctx, new() { Var = "left" }, new() { Var = "right" }, equal, seed);
+                if (error is not null) return $"battle {side}/{id}: {error}";
+            }
+        }
+        return null;
+    }
+
+    private static string? ObjectOperatorStaticIdentity(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var battle = state.CreateWithId(PlainUnit, side, 0, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = battle, Controller = side };
+            var first = CardApi.TemplateInstance(db.Find(PlainUnit)!, side);
+            var same = CardApi.TemplateInstance(db.Find(PlainUnit)!, side.Opposite());
+            var other = CardApi.TemplateInstance(db.Find("card_unit_432_infantry_regiment")!, side);
+            foreach (var (left, right, equal) in new (object?, object?, bool)[] {
+                (first, same, true), (first, other, false), (first, battle, false), (first, null, false),
+            })
+            {
+                var seed = new Dictionary<string, object?> { ["left"] = left, ["right"] = right };
+                var error = ProbeObjectOperators(ctx, new() { Var = "left" }, new() { Var = "right" }, equal, seed);
+                if (error is not null) return $"static wrappers {side}: {error}";
+            }
+            KismetExpr Lookup(string name) => new() { Math = "GetStaticCard", Args = new[] { new KismetExpr { Str = name } } };
+            foreach (bool sameName in new[] { true, false })
+            {
+                var error = ProbeObjectOperators(ctx, Lookup(PlainUnit),
+                    Lookup(sameName ? PlainUnit : "card_unit_432_infantry_regiment"), sameName);
+                if (error is not null) return $"actual GetStaticCard expressions {side}/{sameName}: {error}";
+            }
+            var poolError = ProbeObjectOperators(ctx, Lookup(PlainUnit), new() { Var = "poolCard" }, true,
+                new Dictionary<string, object?> { ["poolCard"] = first });
+            if (poolError is not null) return $"static pool/lookup {side}: {poolError}";
         }
         return null;
     }

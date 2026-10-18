@@ -1144,8 +1144,8 @@ public sealed class KismetVm
             case "NotEqual_StriStri": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
             case "EqualEqual_NameName": return string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
             case "NotEqual_NameName": return !string.Equals(a?.ToString(), b?.ToString(), StringComparison.OrdinalIgnoreCase);
-            case "EqualEqual_ObjectObject": return ReferenceEquals(a, b);
-            case "NotEqual_ObjectObject": return !ReferenceEquals(a, b);
+            case "EqualEqual_ObjectObject": return CardApi.SameObjectIdentity(a, b);
+            case "NotEqual_ObjectObject": return !CardApi.SameObjectIdentity(a, b);
             case "EqualEqual_BoolBool": return Truthy(a) == Truthy(b);
             case "NotEqual_BoolBool": return Truthy(a) != Truthy(b);
             case "BooleanAND": return Truthy(a) && Truthy(b);
