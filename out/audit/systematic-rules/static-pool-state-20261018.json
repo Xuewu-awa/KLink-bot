@@ -1,0 +1,57 @@
+{
+  "rule": "RULE-205",
+  "status": "fixed-static-pool-raw-state-and-recorded-unresolved-order-boundary",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\static-pool-source.json": "76defb2da2f9596da2e66fd0aef9016f79d233a198496e456342a1efb4ad5eca",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\runtime-blueprint-bytecode-current-20261018.json": "ba0e75e951d7074419c46c58cf782717a9ad3a3fa1314dad2b61a945301f6638",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\native-class-capture.json": "340b0a03af27afe1d9deba548f241a9ffaa3aa96e4fe8484dd0ae6be247550a1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\capture-static-pool-source-20261018.py": "6107b032d0818910225496e754d6d4236dd771a87bff52d71ae6a9b505ff99e6",
+    "D:\\Codex Workshop\\kards-install-review\\export-runtime-blueprint-bytecode.py": "e274c8aff94f8ce796286f7080ae5bd919904fb62d9e586d98473e8bee7b81ed",
+    "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "a4b401d65950023477b1b0a9630ada61d272d7a40fa70b65b7ceaf0193e04d18",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "01e53e8d2d38a78ca70c21832cfb6ce8417d03dad13c174e44df1744b4583e7b",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-static-pool-state-before-20261018.txt": "41184994149c8e64b9d9b4dee9ff4e299b362856a628fa4c710a22e861780e7c",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-static-pool-state-after-20261018.txt": "99bf60fbc07f5810fa0db4b4585aa19bee7d048e745f2fd6e176179f6da70861",
+    "D:\\Codex Workshop\\kards-install-review\\audit-static-pool-state-20261018.py": "cfb9b15b705108083a0f82f9ce0d24159ed51e13fc1a211c604bb59179496188"
+  },
+  "findings": [
+    "Read-only current client capture shows the actual GameState AllStaticCardsSortedByName array has2019 unique pointers, exactly the native static map pointer set. Seven raw fields on each (14133 values) remain0. Its30-byte getter directly assigns this member to the out array; the field pointer and out parameter were decoded against current reflection.",
+    "The headless StaticCardPool still built TemplateInstance(def,first controller), caching battle-side ownership and nonzero/default turn/defense/action quota state even after RULE-204 corrected GetStaticCard. It now builds the same dedicated NativeStaticCardInstance projection, preserving the existing pool filtering, order and list-container copy policy.",
+    "Tests cover2 initialization controller orders x4 flag combinations, queried from both controllers (16 queries). Every candidate is checked for native raw-state defaults; clearing the returned list does not lose cached references; the selected candidate remains the same logical object as GetStaticCard; battle ownership/action logs remain unchanged.",
+    "New ordering boundary: despite its field/function name, the main-menu stored array is not ordinal internal-name sorted. It currently matches native-map iteration. Parsed LoadAllStaticCards sets the saved array from Map_Values at1375, fetches it at1420 and calls SortCardsByName at1465. The sort/copy/writeback and PvP lifecycle are not fully traced, so neither replacing headless ordering blindly nor certifying the existing ordinal order is justified.",
+    "Current runtime bytecode was captured for7065 nonempty rule-range functions with no skipped reads. This phase checks four selected function lengths and top-level flow operands, and fully decodes only the tiny getter. Runtime pointer/name fixups make old/new whole-script hash equality inappropriate; no7065-function semantic equivalence is claimed."
+  ],
+  "live_static_pool_objects": 2019,
+  "live_raw_field_comparisons": 14133,
+  "live_raw_nonzero": 0,
+  "runtime_functions_layout_flow_checked": 4,
+  "current_runtime_script_capture_functions": 7065,
+  "kernel_changed": true,
+  "tests": {
+    "before": "1/582 failed (same final fixtures, baseline kernel)",
+    "after": "582/582 passed",
+    "flag_and_initial_controller_scenarios": 8,
+    "pool_queries": 16,
+    "pool_lookup_operator_comparisons": 64
+  },
+  "ordering": {
+    "current_array_sorted_ordinal": false,
+    "current_array_matches_map_iteration": true,
+    "headless_order_changed": false,
+    "status": "unresolved sort/copy/lifecycle boundary"
+  },
+  "limits": [
+    "Candidate field-state initialization only. Full configuration/reserved/blacklist membership, sort comparator/ABI, copy/writeback, seeded random candidate order and full card semantics are not certified here. Existing ordinal pool order is unchanged and explicitly remains an audit gap.",
+    "This is a main-menu GameState capture, not proof of every battle/reconnect path. Static-object mutable fields, same-object state sharing between wrappers, custom JSON/container aliasing and lifecycle remain open.",
+    "Veteran templates and other TemplateInstance users remain separate pending paths. Unknown-name GetStaticCard behavior is not fixed by this pool change.",
+    "Whole-script hashes include runtime fixups. The four selected source/control checks do not prove every nested operand or compare all updated card effects. Historical replay was not used as authority.",
+    "No process writes, injection, game-function calls, UI/campaign implementation or card-balance edits. Same final suite fails1/582 before and passes582/582 after. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\static-pool-state-evidence-20261018.json",
+  "evidence_sha256": "6d99796d459dcf35f7b61a6316f953b1b7683efc50dd38723e90f8f835846845"
+}

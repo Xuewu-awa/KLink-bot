@@ -2780,9 +2780,11 @@ public sealed partial class CardApi
         if (!ReferenceEquals(_staticPoolDb, db) || _staticPool is null)
         {
             var pool = new List<CardInstance>(db.Count);
+            // Retain the existing headless order pending the separate native
+            // SortCardsByName/copy/lifecycle audit (RULE-205).
             foreach (var def in db.All.OrderBy(d => d.Name, StringComparer.Ordinal))
             {
-                pool.Add(TemplateInstance(def, c.Controller));
+                pool.Add(NativeStaticCardInstance(def));
             }
 
             _staticPool = pool;
@@ -3123,7 +3125,7 @@ public sealed partial class CardApi
         return card;
     }
 
-    // GetStaticCard returns a stored static object, without a battle controller
+    // Known static getters/pools expose stored static objects, without a battle controller
     // or turn-start action quotas. Current live static-map objects have these
     // raw fields at0. Other selection wrappers retain their existing projection.
     internal static CardInstance NativeStaticCardInstance(CardDefinition definition)

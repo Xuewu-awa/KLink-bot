@@ -241,6 +241,7 @@ internal static class SelfTest
         new("对象运算身份：战斗引用及空值相等/不等互补，同号不同对象不合并", ObjectOperatorBattleIdentity),
         new("对象运算身份：重复静态查询及卡池包装保留同一原生对象身份", ObjectOperatorStaticIdentity),
         new("GetStaticCard 原始规则状态：无归属、进场回合/行动额度/最大防御为0", NativeStaticCardRuleState),
+        new("静态候选池原始状态：缓存不带首位调用者阵营，所有过滤变体保留零额度", NativeStaticPoolRuleState),
         new("对象集合身份：同卡号对象分别追加/查找/移除，共用比较器回归", ObjectSetIdentity),
         new("AKITA实际IR：死亡killer与当前同号对象不同，不误删伤害候选", AkitaDistinctKillerIdentity),
         new("真实重置IR：芬兰Bf109/PROLONGED SIEGE清理全部重复卡号后按需持久化", ResetTrackedCardArrayCleanup),
@@ -12135,6 +12136,54 @@ internal static class SelfTest
                     return $"missing Pincer {side}/{route}: invalid-object default payload";
         }
         return null;
+    }
+
+    private static string? NativeStaticPoolRuleState(CardDatabase db)
+    {
+        int queries = 0;
+        foreach (var firstSide in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var left = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.Discard, 0);
+            var right = state.CreateWithId(PlainUnit, Side.Right, 70, CardLocation.Discard, 0);
+            int actions = state.ActionLog.Count;
+            foreach (bool includeNotAttainable in new[] { false, true })
+            foreach (bool includeReserved in new[] { false, true })
+            {
+                int count = -1;
+                CardInstance? cachedFirst = null;
+                foreach (var side in new[] { firstSide, firstSide.Opposite() })
+                {
+                    var ctx = new EffectContext { Engine = engine, State = state,
+                        Self = side == Side.Left ? left : right, Controller = side };
+                    var result = engine.Api.InvokeByName("GetAllActiveStaticCards", null,
+                        new object?[] { includeNotAttainable, includeReserved }, ctx, out bool handled);
+                    if (!handled || result is not List<CardInstance> pool || pool.Count == 0)
+                        return "static pool query must return candidates";
+                    if (count >= 0 && (pool.Count != count || !ReferenceEquals(pool[0], cachedFirst)))
+                        return "clearing returned array or switching controller must preserve cached card references";
+                    count = pool.Count; cachedFirst = pool[0];
+                    foreach (var card in pool)
+                    {
+                        if (card.Owner != Side.NotAvailable || card.OriginalOwner != Side.NotAvailable
+                            || card.CardId != 0 || card.Location != CardLocation.NotAvailable || card.LocationNumber != 0
+                            || card.EnteredPlayOnTurn != 0 || card.MaxDefense != 0
+                            || card.RemainingAttacks != 0 || !card.HasMovedThisTurn)
+                            return $"static pool raw state {firstSide}/{side}/{includeNotAttainable}/{includeReserved}/{card.Name}";
+                    }
+                    string? identityError = ProbeObjectOperators(ctx, new() { Var = "candidate" },
+                        new() { Math = "GetStaticCard", Args = new[] { new KismetExpr { Name = cachedFirst.Name } } },
+                        true, new Dictionary<string, object?> { ["candidate"] = cachedFirst });
+                    if (identityError is not null) return $"pool/lookup identity: {identityError}";
+                    // Array containers are copied; the cached object identities survive.
+                    pool.Clear();
+                    queries++;
+                }
+            }
+            if (left.Owner != Side.Left || right.Owner != Side.Right || state.ActionLog.Count != actions)
+                return "static pool must not change battle ownership or emit actions";
+        }
+        return queries == 16 ? null : $"static pool queries={queries}";
     }
 
     private static string? NativeStaticCardRuleState(CardDatabase db)
