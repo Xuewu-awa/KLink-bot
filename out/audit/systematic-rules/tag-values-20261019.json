@@ -1,0 +1,150 @@
+{
+  "rule": "RULE-213",
+  "status": "live-compressed-tags-decoded-all2043-runtime-only-identity-order-match2019-full-acceptance-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registry-enum-20261019.json": "95aadbdd6261ada4c0465fc4814c6b478c797c9c3d74292fc728d46d0d275eb4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-tree-20261019.json": "6a122211f797b664f634b02c24d7d5f23db21e5b6189bbe0b7eadd34a8765ca4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scan-callback-20261019.json": "a6dfd744d77a095b83c80c6edf8f35f4e2161cb06b82d7dbbf76de298ae04331",
+    "D:\\Codex Workshop\\kards-install-review\\capture-tag-values-20261019.py": "3dbbedf82cb074ab4c8f82387f083dd4911ab13760c111625c2a6728cf14ed9e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-tag-values-20261019.py": "9791b1b26fc66bb4333ff21fa4fb8e95de34ec01233d66028a327683e093ef8e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-tag-values-20261019.txt": "06f9652514c68cd77c49eaa2ce73f9741f59ad563082b9efe5018a6c385464b9",
+    "D:\\Codex Workshop\\kards-install-review\\make-tag-values-seeds-20261019.py": "9a8f2e468b5f560fac4c2948fc7b20268a526926db3e293340add0c08c205afb",
+    "D:\\Codex Workshop\\kards-install-review\\tag-values-seeds-current-20261019.txt": "a2677459b2c2326eed8cbb00f56f3f83e888188166c9180411d1ccc4ba4493e8"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "Decoded the observed compressed tag handle form3 directly from current memory: store slot,16-bit pair count,32-bit start index, compact key/value entries and value ID kind/index. Store/header, selected pair buffers, dense name/export component tables and required FNamePool entries were captured and reread stable. No game function was invoked.",
+    "All2043 Blueprint records have ParentClass kind4 with four numberless FName components.2019 are CoreUObject.Class / kards.BaseCardObject;24 have other parent components. Those2019 also have PrimaryAssetType and PrimaryAssetName, while both tags are absent for the other24.",
+    "PrimaryAssetType uses kind2 for2019 entries. PrimaryAssetName uses kind2 for1911 and full FName kind3 for108, with the numeric component preserved. All decoded names match the current asset names; all raw type FNames match the current BaseCardObject type key.",
+    "Applying these runtime tag IDs to the previously verified path/class candidate model now matches2019/2019 primary-map positions in both decoded text and raw FName index/number. Membership/identity no longer depends on FModel tags or the reference name set. Reference is comparison only.",
+    "This advances current tag/value evidence, not complete native acceptance. Temporary callback class set, all ParentClass export-text/path conversions, exclusion policy and historical startup initialization remain boundaries. No simulator order fix is made."
+  ],
+  "limits": [
+    "Decoder scope is observed handle form3/value kinds2,3,4. Other storage forms/value kinds, mutated maps, arbitrary strings/text and generic FName creation are not certified.",
+    "ParentClass raw stored components are recovered; complete client string rendering/normalization is not thereby certified.",
+    "The2019/2019 sequence is a source-backed reconstruction using the prior path/class strategy, not a recorded execution of every callback gate.",
+    "The original path/class indexes, all4101 card records and pointer arrays, path tree/visited child sets and primary map were reread stable in this capture. Historical startup sources are still not proven.",
+    "No kernel changes or selftest rerun; last complete Release selftests582/582 (RULE-205), fully semantically verified cards0. No replay authority, process writes/injection/game calls."
+  ],
+  "live_pid": 24220,
+  "decoded_blueprint_records": 2043,
+  "decoded_parentclass_records": 2043,
+  "direct_basecard_parent_records": 2019,
+  "other_parent_records": 24,
+  "complete_primary_tag_pairs": 2019,
+  "missing_primary_tag_pairs": 24,
+  "primary_name_kind2": 1911,
+  "primary_name_kind3": 108,
+  "required_fname_entries": 2007,
+  "runtime_only_identity_position_matches": 2019,
+  "raw_fname_position_matches": 2019,
+  "reference_used_for_selection": false,
+  "external_registry_used_for_membership": false,
+  "native_code_ranges": 5,
+  "native_code_bytes": 1977,
+  "switch_table_bytes": 56,
+  "native_call_site_checks": 11,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "FindTag",
+      "old_rva": "0x14012f0",
+      "current_rva": "0x1401280",
+      "length": 290,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "TagValueToName",
+      "old_rva": "0x1411d70",
+      "current_rva": "0x1411d00",
+      "length": 113,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "FindCompressedTag",
+      "old_rva": "0x1419310",
+      "current_rva": "0x14192a0",
+      "length": 165,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ],
+  "parent_component_counts": [
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/CoreUObject",
+        "Interface"
+      ],
+      "count": 1
+    },
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/Engine",
+        "Actor"
+      ],
+      "count": 14
+    },
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/Engine",
+        "StaticMeshActor"
+      ],
+      "count": 1
+    },
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/kards",
+        "BaseCardObject"
+      ],
+      "count": 2019
+    },
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/kards",
+        "CardFunctionsStub"
+      ],
+      "count": 1
+    },
+    {
+      "components": [
+        "/Script/CoreUObject",
+        "Class",
+        "/Script/kards",
+        "VisualCardActionBaseStub"
+      ],
+      "count": 1
+    },
+    {
+      "components": [
+        "/Script/Engine",
+        "BlueprintGeneratedClass",
+        "/Game/Blueprints/Cards/BP_BaseCard",
+        "BP_BaseCard_C"
+      ],
+      "count": 5
+    },
+    {
+      "components": [
+        "/Script/Engine",
+        "BlueprintGeneratedClass",
+        "/Game/Blueprints/Cards/BP_HandCardLook",
+        "BP_HandCardLook_C"
+      ],
+      "count": 1
+    }
+  ]
+}
