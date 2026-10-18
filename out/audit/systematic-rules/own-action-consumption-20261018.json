@@ -1,0 +1,217 @@
+{
+  "rule": "RULE-190",
+  "status": "own-play-and-selection-receipt-paths-mapped",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_PlayerMoves.functions.json": "2b9cf263476388bad08fc9432a16ecd9fee80fd051a746eac50355f0ee856b1b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-own-action-consumption-20261018.py": "e72b6e2bb30d8ebe62dec3124a21b0bd4a33e602cf2ca7884ffbf731d66c1b2a",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "6c0ae0e697d0e6d4c42e88e7da0e7996bf63857e1e8eafa99c8612c9577b7e2f",
+    "D:\\Codex Workshop\\kards-install-review\\limiter-local-consumption-evidence-20261018.json": "82680fa019e551b9515bed8c1b7baf87d4392a0f5e226875309a40fbf98df5c7"
+  },
+  "runtime_function_matches": {
+    "CreateAction_PlayCardFromHand_Start": [],
+    "CreateAction_PlayCardFromHand_End": [],
+    "ReceiveActionXActionPlayCardFromHand": [],
+    "CreateAction_HandTargetSelected_Start": [],
+    "CreateAction_HandTargetSelected_End": [],
+    "ReceiveActionXActionHandTargetSelected": [],
+    "CreateAction_CardToDrawSelected_Start": [],
+    "CreateAction_CardToDrawSelected_End": [],
+    "Receive Action XAction Card to Draw Selected": [],
+    "ExecuteUbergraph_BP_OnlineMatch": [],
+    "CreateAction_SendActionWithSub": [],
+    "CreateAction_InitStart": [],
+    "resolveSelectCardToDrawPendingQueue": [],
+    "AddActionEnd": [],
+    "ExecuteAutoPlayCards": [],
+    "ExecuteUbergraph_BP_PlayerMoves": [],
+    "ResolvePlayerMoveQueue": [],
+    "DoNextInQueue": []
+  },
+  "findings": [
+    "Own normal hand play has an unconditional normal-return call sequence PlayCardFromHand -> ExecuteAutoPlayCards -> CreateAction_PlayCardFromHand_End in BP_PlayerMoves.",
+    "Each verified own action End wrapper calls send, then its local ReceiveAction with receiveFromLocal=true, then OnXActionFinished. No wait for an HTTP completion is present in these caller exec chains.",
+    "CreateAction_SendActionWithSub converges on StopActionProcess before any syntactically reachable normal return; matching non-tutorial includeMatchState=false passes AddActionWithSub first.",
+    "Both hand-target and draw-selection replies run optional AfterWait before autoplay. Draw-selection then runs HandleExtraPlayTriggersAfterSelectHandCard; its End wrapper also resolves the pending draw queue before send.",
+    "PlayerMoves.DoNextInQueue is a distinct autoplay caller: each loop iteration calls CreateAction_PlayCardFromHand_Start -> PlayCardFromHand -> End before advancing. Do not conflate this with OnlineMatch.ExecuteAutoPlayCards inside the requesting action.",
+    "All three receive functions call DoSubActions with the forwarded receiveFromLocal flag; RULE189 establishes the shared limiter application loop.",
+    "Existing engine ApplyPendingGotchaPlayReceipts sites approximate these local receipt boundaries, but are not a general ordered subaction consumer. Deferred selections and nested effects use a different shared depth mechanism."
+  ],
+  "limits": [
+    "Parsed-pak static control flow only, assuming valid context and normal returns. Calls are not inlined; branch conditions abstracted except the three explicitly recorded normal-send assumptions.",
+    "No assertion that every live action routes here, or that errors, native calls, asynchronous/latent behavior, reentry or disconnected paths are semantically modeled.",
+    "Full pending-draw queue implementation, action marker insertion, nested receive reentry, ActionProcess flag changes from callbacks and all other subaction consumers remain unverified.",
+    "Do not simply flush limiter updates on outer EndEffectResolution: it drains selection replies, while native first-action receipt precedes those replies. Need an ordered action consumer that preserves the separate reply boundaries.",
+    "No kernel or test changes; no suite rerun. Last full Release555/555 is unchanged and does not certify native limiter timing. Fully semantically verified cards remains0.",
+    "No historical replay authority or live game process access/modification."
+  ],
+  "player_sequences": {
+    "play": [
+      {
+        "index": 5307,
+        "call": "PlayCardFromHand"
+      },
+      {
+        "index": 5433,
+        "call": "ExecuteAutoPlayCards"
+      },
+      {
+        "index": 5469,
+        "call": "CreateAction_PlayCardFromHand_End"
+      }
+    ],
+    "hand_target_wait": [
+      {
+        "index": 9240,
+        "call": "AfterWaitCardPlayFromHand"
+      },
+      {
+        "index": 9294,
+        "call": "ExecuteAutoPlayCards"
+      },
+      {
+        "index": 9330,
+        "call": "CreateAction_HandTargetSelected_End"
+      }
+    ],
+    "draw_selection_wait": [
+      {
+        "index": 10800,
+        "call": "AfterWaitCardPlayFromHand"
+      },
+      {
+        "index": 10854,
+        "call": "ExecuteAutoPlayCards"
+      },
+      {
+        "index": 10890,
+        "call": "GetCardFunctions"
+      },
+      {
+        "index": 10936,
+        "call": "HandleExtraPlayTriggersAfterSelectHandCard"
+      },
+      {
+        "index": 10981,
+        "call": "CreateAction_CardToDrawSelected_End"
+      }
+    ],
+    "do_next_autoplay": [
+      {
+        "index": 12209,
+        "call": "CreateAction_PlayCardFromHand_Start"
+      },
+      {
+        "index": 12266,
+        "call": "GetAutoPlayCards"
+      },
+      {
+        "index": 12311,
+        "call": "Array_Get"
+      },
+      {
+        "index": 12370,
+        "call": "GetCardFunctions"
+      },
+      {
+        "index": 12416,
+        "call": "PlayCardFromHand"
+      },
+      {
+        "index": 12486,
+        "call": "CreateAction_PlayCardFromHand_End"
+      }
+    ]
+  },
+  "player_graph_states": 225,
+  "player_play_call_states": [
+    [
+      5307,
+      [
+        13887
+      ]
+    ]
+  ],
+  "do_next_graph_states": 38,
+  "do_next_play_states": [
+    [
+      12416,
+      [
+        13887,
+        12523
+      ]
+    ]
+  ],
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\own-action-consumption-evidence-20261018.json",
+  "evidence_sha256": "b4f75a52794344e2268d6eb1663c30cab5222bf5eb17535c9d6d637f85b6b226",
+  "fully_semantically_verified_cards": 0,
+  "last_release_selftests": "555/555 (unchanged; no new run)",
+  "events": [
+    {
+      "label": "play",
+      "start_entry": 25473,
+      "end_entry": 25581,
+      "normal_return_call_chain": [
+        {
+          "index": 25581,
+          "call": "CreateAction_SendActionWithSub"
+        },
+        {
+          "index": 25621,
+          "call": "ReceiveActionXActionPlayCardFromHand"
+        },
+        {
+          "index": 25654,
+          "call": "OnXActionFinished"
+        }
+      ],
+      "end_graph_states": 5
+    },
+    {
+      "label": "hand-target",
+      "start_entry": 29197,
+      "end_entry": 29289,
+      "normal_return_call_chain": [
+        {
+          "index": 29289,
+          "call": "CreateAction_SendActionWithSub"
+        },
+        {
+          "index": 29331,
+          "call": "ReceiveActionXActionHandTargetSelected"
+        },
+        {
+          "index": 29364,
+          "call": "OnXActionFinished"
+        }
+      ],
+      "end_graph_states": 5
+    },
+    {
+      "label": "draw-selection",
+      "start_entry": 29401,
+      "end_entry": 29511,
+      "normal_return_call_chain": [
+        {
+          "index": 29511,
+          "call": "resolveSelectCardToDrawPendingQueue"
+        },
+        {
+          "index": 29525,
+          "call": "CreateAction_SendActionWithSub"
+        },
+        {
+          "index": 29567,
+          "call": "Receive Action XAction Card to Draw Selected"
+        },
+        {
+          "index": 29600,
+          "call": "OnXActionFinished"
+        }
+      ],
+      "end_graph_states": 6
+    }
+  ]
+}
