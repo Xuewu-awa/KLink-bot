@@ -236,6 +236,10 @@ internal static class SelfTest
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
         new("数组RemoveItem：删除全部匹配，返回是否移除，保序且再次调用为false", ArrayRemoveItemAllMatches),
         new("数组Remove：按下标只删一项，越界不改数组，区别于按值删除", ArrayRemoveUsesIndex),
+        new("对象数组身份：同卡号不同对象不合并，整数卡号仍按值比较", ObjectArrayIdentity),
+        new("静态卡身份：同定义查询为同一对象，不同定义及战斗ID0不混同", StaticTemplateObjectIdentity),
+        new("对象集合身份：同卡号对象分别追加/查找/移除，共用比较器回归", ObjectSetIdentity),
+        new("AKITA实际IR：死亡killer与当前同号对象不同，不误删伤害候选", AkitaDistinctKillerIdentity),
         new("真实重置IR：芬兰Bf109/PROLONGED SIEGE清理全部重复卡号后按需持久化", ResetTrackedCardArrayCleanup),
         new("持久化缺失对象：保留输入ID，名称None及空字符串JSON，不跳过通知", PersistMissingObjectPayload),
         new("Pincer缺失对象通知：承受方空ID0，赠予者保留原ID和重复次数", PincerMissingObjectNotifications),
@@ -401,7 +405,7 @@ internal static class SelfTest
             BigThreeCountsFriendlyFactions),
         new("Blueprint Array_Resize：原地裁剪/扩容且负长度保留原数组",
             BlueprintArrayResize),
-        new("Blueprint Array_Identical：按顺序比较整数数组和卡 ID 数组",
+        new("Blueprint Array_Identical：保序比较，同号不能混同对象与整数类型",
             BlueprintArrayIdentical),
         new("Blueprint 数学边界：短名 Max/Min/Clamp 按整数节点求值",
             BlueprintNumericBounds),
@@ -12126,6 +12130,115 @@ internal static class SelfTest
             foreach (var notice in route == 0 ? notices : notices.Take(notices.Length - 1))
                 if (notice.Values[1].Text != "None" || notice.Values[2].Text != "None" || notice.Values[3].Text != "")
                     return $"missing Pincer {side}/{route}: invalid-object default payload";
+        }
+        return null;
+    }
+
+    private static string? StaticTemplateObjectIdentity(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = CardApi.TemplateInstance(db.Find(PlainUnit)!, side);
+            var same = CardApi.TemplateInstance(db.Find(PlainUnit)!, side.Opposite());
+            var other = CardApi.TemplateInstance(db.Find("card_unit_432_infantry_regiment")!, side);
+            var battleZero = state.CreateWithId(PlainUnit, side, 0, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = battleZero, Controller = side };
+            object? Call(string fn, params object?[] args) => engine.Api.InvokeByName(fn, null, args, ctx, out _);
+            var list = new List<CardInstance> { first };
+            if (Call("Array_Identical", list, new List<CardInstance> { same }) is not true
+                || Call("Array_AddUnique", list, same) is not 0 || list.Count != 1
+                || Call("Array_Contains", list, other) is not false || Call("Array_AddUnique", list, other) is not 1
+                || Call("Array_Contains", list, battleZero) is not false || Call("Array_AddUnique", list, battleZero) is not 2
+                || Call("Array_RemoveItem", list, same) is not true || list.Count != 2
+                || !ReferenceEquals(list[0], other) || !ReferenceEquals(list[1], battleZero))
+                return $"static template identity {side}: repeated static lookup/different static definition/battle ID0";
+            var set = new HashSet<object?> { first };
+            Call("Set_Add", set, same); Call("Set_Add", set, other);
+            if (set.Count != 2 || Call("Set_Remove", set, same) is not true || set.Count != 1 || !set.Contains(other))
+                return $"static template identity {side}: shared comparer set regression";
+        }
+        return null;
+    }
+
+    private static string? ObjectArrayIdentity(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { 0, 70, -7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0);
+            var first = state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 1);
+            state.Remove(first);
+            var replacement = state.CreateWithId(PlainUnit, side, id, side.HqOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            object? Call(string fn, params object?[] args) => engine.Api.InvokeByName(fn, null, args, ctx, out _);
+            var list = new List<CardInstance?> { first, null, first };
+            if (Call("Array_Contains", list, replacement) is not false
+                || Call("Array_Identical", new List<CardInstance> { first }, new List<CardInstance> { replacement }) is not false
+                || Call("Array_AddUnique", list, replacement) is not 3 || list.Count != 4
+                || !ReferenceEquals(list[3], replacement) || Call("Array_AddUnique", list, first) is not 0 || list.Count != 4)
+                return $"object array identity {side}/{id}: same-ID distinct objects collapsed";
+            if (Call("Array_RemoveItem", list, first) is not true || list.Count != 2 || list[0] is not null
+                || !ReferenceEquals(list[1], replacement) || Call("Array_RemoveItem", list, first) is not false
+                || Call("Array_RemoveItem", list, replacement) is not true || list.Count != 1
+                || Call("Array_Contains", list, null) is not true || Call("Array_RemoveItem", list, null) is not true || list.Count != 0)
+                return $"object array removal {side}/{id}: removed the other identity or mishandled null";
+            var ids = new List<int> { id, id, id + 1 };
+            if (Call("Array_RemoveItem", ids, id) is not true || !ids.SequenceEqual(new[] { id + 1 }))
+                return "integer card-ID equality must remain value based";
+            cases++;
+        }
+        return cases == 6 ? null : $"object array identity cases={cases}";
+    }
+
+    private static string? ObjectSetIdentity(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { 0, 70, -7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var first = state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 0); state.Remove(first);
+            var replacement = state.CreateWithId(PlainUnit, side, id, side.HqOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = replacement, Controller = side };
+            object? Call(string fn, params object?[] args) => engine.Api.InvokeByName(fn, null, args, ctx, out _);
+            var set = new HashSet<object?> { first, null };
+            if (Call("Set_Contains", set, replacement) is not false) return $"object set {side}/{id}: false same-ID match";
+            Call("Set_Add", set, replacement); Call("Set_Add", set, first);
+            if (set.Count != 3 || !set.Contains(first) || !set.Contains(replacement)
+                || Call("Set_Remove", set, replacement) is not true || set.Count != 2 || !set.Contains(first))
+                return $"object set {side}/{id}: uniqueness/removal collapsed distinct objects";
+            Call("Set_RemoveItems", set, new List<object?> { first });
+            if (set.Count != 1 || !set.Contains(null) || Call("Set_Remove", set, null) is not true || set.Count != 0)
+                return $"object set {side}/{id}: bulk removal/null";
+            cases++;
+        }
+        return cases == 6 ? null : $"object set identity cases={cases}";
+    }
+
+    private static string? AkitaDistinctKillerIdentity(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sameId in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.Turn = 7; state.Move(state.Hq(side.Opposite()), CardLocation.Discard);
+            var source = state.CreateWithId("card_unit_akita_regiment", side, 60, CardLocation.Discard, 0);
+            var oldKiller = state.CreateWithId(PlainUnit, side.Opposite(), sameId ? 70 : 71, CardLocation.Discard, 1);
+            oldKiller.Defense = oldKiller.MaxDefense = 0; state.Remove(oldKiller);
+            var current = state.CreateWithId(PlainUnit, side.Opposite(), 70, side.Opposite().HqOf(), 1);
+            current.Definition = new CardDefinition { Name = current.Name, Type = "infantry", Attack = 2, Defense = 10 };
+            current.Keywords.Clear(); current.Attack = 2; current.Defense = current.MaxDefense = 10;
+            // Actual Akita IR removes the supplied dead killer object from an
+            // object-array snapshot. A different current object with the same ID
+            // must remain eligible; only one candidate removes RNG ambiguity.
+            engine.Api.FireTrigger("OnDestroyed", source, side,
+                eventArgs: new object?[] { oldKiller, false }, eventSubject: oldKiller,
+                namedArgs: new Dictionary<string, object?> { ["killer"] = oldKiller, ["TriggerNotDestroyed"] = false });
+            if (current.Defense != 8)
+                return $"Akita distinct killer {side}/{sameId}: current object should receive2 damage, defense={current.Defense}";
         }
         return null;
     }
@@ -29486,10 +29599,13 @@ internal static class SelfTest
 
         object? cardVsIds = Compare(new List<CardInstance> { first, second },
             new List<int> { first.CardId, second.CardId }, out bool cardHandled);
-        if (!cardHandled || cardVsIds is not true)
+        if (!cardHandled || cardVsIds is not false)
         {
-            return $"卡实例数组与 card ID 数组应按卡号相等（handled={cardHandled}, result={cardVsIds ?? "null"}）";
+            return $"对象数组与整数数组的元素属性类型不同，不能按卡号判为Identical（handled={cardHandled}, result={cardVsIds ?? "null"}）";
         }
+        if (Compare(new List<CardInstance>(), new List<int>(), out _) is not false
+            || Compare(new List<int>(), new List<CardInstance>(), out _) is not false)
+            return "空数组也必须保留对象/整数元素类型区别";
 
         object? reordered = Compare(new List<int> { first.CardId, second.CardId },
             new List<int> { second.CardId, first.CardId }, out bool orderHandled);

@@ -13,6 +13,11 @@ public sealed class CardInstance
     /// <summary>协议里的 cardID。左侧 HQ=1、首张牌=2 起；右侧 HQ=41、首张牌=42 起。</summary>
     public required int CardId { get; init; }
 
+    // Separate managed wrappers can represent the same native static-card
+    // object. Battle instances leave this null and retain reference identity.
+    internal CardDefinition? StaticTemplateIdentity { get; init; }
+
+
     /// <summary>
     /// 卡名。
     ///

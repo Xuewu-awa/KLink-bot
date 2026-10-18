@@ -1,0 +1,62 @@
+{
+  "rule": "RULE-199",
+  "status": "fixed-object-container-identity-static-wrappers-and-typed-array-identity",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-object-property-20261018.txt": "30bed71b7be7b657a4359d26073a16019334622406471deb6dbfa6cc1a4d23ed",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-object-property-constructors-20261018.txt": "3755688b2c90b72b7d41a001b0117a20bac6be19793209e619fb870d0550f482",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-object-identical-20261018.txt": "a6070d0efc414e1fc168681da965cde1ba93af496aea95b96ef01cfd77798633",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-identity-wrappers-20261018.txt": "4a56a50134224e53ecc8f48fe083dab7d95f4cf2f2a47d0a740a6d98857b8649",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-array-identity-bodies-20261018.txt": "c1d5af1b68dcc852c6cc046a90845178e78932a0959c4139434a448e051c3489",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-static-card-identity-20261018.txt": "0f206cc274e70cf16c97b008ec05043ba259b621db2b959d3af94bfcc0a93aec",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-static-card-lookup-20261018.txt": "871bc87182b46031b45247383406ab6cbbf0a0a01d907d3ceedd03487f077309",
+    "D:\\Codex Workshop\\kards-install-review\\ExportObjectPropertyVerified.java": "b0edf61750db3446236abeb984eb9c4ac81f06fc3f7ed5ae7802e4567d0b6fed",
+    "D:\\Codex Workshop\\kards-install-review\\ExportObjectPropertyConstructorsVerified.java": "048a4762588b21582e3e67c74040179ddea94f6122769209591db14b21bc5496",
+    "D:\\Codex Workshop\\kards-install-review\\ExportObjectIdenticalVerified.java": "3d1db050887fabe4521b5e1542c0e1cd99a719a7b842da0d01ab6960b3d0d249",
+    "D:\\Codex Workshop\\kards-install-review\\ExportStaticCardIdentityVerified.java": "8c80d6895cbd39f0b574c879da3d6f2f2132c1d1be71660ef6e75a190746792c",
+    "D:\\Codex Workshop\\kards-install-review\\ExportStaticCardLookupVerified.java": "cb4ec31eb92d5263495a07682cc1a54413e8723a56b83441dbf5bba0b95e6565",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayIdentityWrappersVerified.java": "9832923fccb40782ae9b2c5aebeb2a3153584423444f89568058715a00190e6f",
+    "D:\\Codex Workshop\\kards-install-review\\ExportArrayIdentityBodiesVerified.java": "31bee78a1e59d6f9efee86014e754c1aedee21c7c390578e749a1e31872d02a0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kards-native-bodies-verified-battle-20261014.json": "aa64070569728e1c989817f30b4f5ec0191c8aaa0766f14b73ddbf8a1fd0337d",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_akita_regiment.functions.json": "ecdfabe8e265fae6a29d42c86fa1d843461e38f155cb0662b3e83767aaedef5d",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "ffbf2c6c0802f6105695011097b997bebc73161dac05df9a12363ad8b3ac7139",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs": "d4c28f40bc43cd97e16c26ed69b19f9cf304984fc819bd233c455a1890ae5dfc",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "3cae7d7672bb2c481cd455269f61b91a139b1692f46e7f2e327639c5ff651a40",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-object-identity-before-20261018.txt": "ba675567c42377026dda7df924bcd5373309d7ac1f7a6f8ca122566c09ed2c00",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-object-identity-after-20261018.txt": "22502e219d159b51de2890d6a388ad372d544673c621e6cc156358f01ebf733d",
+    "D:\\Codex Workshop\\kards-install-review\\audit-object-identity-20261018.py": "75f16e1088c9adee97e62e3cb2cd3850a183a799285d8f711bf47d3a5b2512e0"
+  },
+  "findings": [
+    "Concrete FObjectProperty constructor15506c0 installs vtable70e1af0; Identical slotb8 points to155f030. With PortFlags0 it compares the stored object pointers and returns false for distinct objects, without reading cardID. Native generic array find and identical pass PortFlags0.",
+    "The shared headless comparer previously collapsed two CardInstance objects with equal CardId. Battle objects now compare by reference; integer values retain value equality. The existing CardInstance/int representation bridge is retained and remains a separate unverified coercion boundary.",
+    "Static wrappers require a separate identity representation: native GetStaticCard wrapper4a8c400 calls4b2f700, whose found-name map path returns the stored pointer. TemplateInstance wrappers now share an internal definition token, independent of placeholder ID0, so same static definition remains one logical native object and different definitions/battle ID0 do not collapse.",
+    "Native Array_Identical checks element-property SameType before per-element Identical. Known typed CardInstance/int arrays now reject equality, including empty arrays; an old test incorrectly requiring ID-based equality between those types is corrected. Full untyped-list metadata remains unresolved.",
+    "Six object-array scenarios cover same-ID distinct objects at0/positive/negative IDs, both sides, contains/unique-add/identical/all-match removal, null and integer controls. Six shared-comparer set scenarios and two static-wrapper scenarios check the same identity distinctions and null/removal behavior.",
+    "Four actual AKITA OnDestroyed IR scenarios pass a held dead killer object and a distinct current board object. Same-ID and different-ID controls both leave the current object eligible for2 damage; the old comparer incorrectly removed it in the same-ID case. Controlled single-candidate boards avoid RNG ambiguity."
+  ],
+  "tests": {
+    "before": "5/578 failed (same final fixtures, baseline kernel)",
+    "after": "578/578 passed",
+    "object_array_cases": 6,
+    "object_set_cases": 6,
+    "static_wrapper_cases": 2,
+    "akita_ir_cases": 4,
+    "corrected_typed_array_contract": true
+  },
+  "runtime_verified_blueprint_functions": 2,
+  "runtime_verified_native_wrappers": 1,
+  "native_verified_ranges": 15,
+  "limits": [
+    "Concrete object-property comparison is certified only for ordinary PortFlags0. Deep/duplicate-object port flags, other object-property subclasses, handle resolution, pending-kill/GC and complete native property ABI remain open.",
+    "The shared comparer affects Set operations and has regression coverage; complete TSet hashing/iteration/layout/ABI are not certified by this array/property audit.",
+    "CardInstance/int bridging remains a legacy convenience. General array element metadata, mixed/untyped VM lists, other type coercions, names/structs/floats and non-array object comparison operators still require audit.",
+    "Static definition tokens represent the confirmed found-name map identity. Unknown-name fallback creation, cross-database aliases, static wrapper shared mutable fields/owner presentation and cache mutation/lifetime are not fully modeled.",
+    "Ghidra reports a split lookup function and loses its return semantics; the proof explicitly uses the complete387byte installed span including its epilogue and found-pointer return. No project analysis was modified.",
+    "AKITA is tested through its actual event IR with controlled object replacement, unit durability and HQ placement; this does not certify the complete destruction pipeline, reachable real-card histories or the whole card.",
+    "Two Blueprint functions and one native wrapper match saved runtime evidence; all selected native bytes match the installed EXE. No historical replay authority, new process-memory reads, writes or injection. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\object-identity-evidence-20261018.json",
+  "evidence_sha256": "39a31c2a5777c69a1768afccf9d6a1f4891c4a305bf01ea4e20200c755e89373"
+}

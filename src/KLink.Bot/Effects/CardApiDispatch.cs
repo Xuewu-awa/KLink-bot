@@ -888,8 +888,8 @@ public sealed partial class CardApi
                 return false;
             },
             // UE `Array_Identical` compares two arrays element-by-element,
-            // preserving order. Card arrays and integer card-ID arrays use
-            // the same identity rule as `Array_Contains`.
+            // preserving order. Object pairs use native identity; scalar
+            // pairs use value equality, as in Array_Contains.
             ["Array_Identical"] = (c, r, a) =>
             {
                 var left = a.ElementAtOrDefault(0) as System.Collections.IList;
@@ -899,6 +899,11 @@ public sealed partial class CardApi
                     return false;
                 }
 
+                // GenericArray_Identical checks native element-property type
+                // before equality. Reject the two distinct typed shapes that
+                // are known here; untyped VM lists still lack full metadata.
+                if (left is IList<CardInstance> && right is IList<int>
+                    || left is IList<int> && right is IList<CardInstance>) return false;
                 for (int i = 0; i < left.Count; i++)
                 {
                     if (!SameArrayValue(left[i], right[i]))
@@ -1037,7 +1042,7 @@ public sealed partial class CardApi
             // ---------------- 集合（Blueprint TSet）----------------
             // Set nodes receive the target by reference.  KismetVm seeds a
             // missing local target with HashSet<object?>; values are compared
-            // using the same card-ID-aware rule as Array_Contains.
+            // using the same native-object/scalar-value rule as Array_Contains.
             ["Set_Add"] = (c, r, a) =>
             {
                 var set = EvalSet(r, a);
@@ -3092,15 +3097,16 @@ public sealed partial class CardApi
     /// 这三个原语在本内核里都要求实参是 <see cref="CardInstance"/>（见 `GetMember` 与 `SelfArg`）。
     /// 用 `CardDefinition` 的话这三个读法全落空，过滤条件会**静默恒假**、候选表永远是空的。
     ///
-    /// `CardId` 取 0：卡池模板在真实客户端有自己的号，但本内核没有那份号表，
-    /// 而这条链路上**没有任何一步读模板的 cardID**
-    /// （玩家答复带的是卡组码→卡名，生成时走 `Create` 重新发号）。
+    /// The headless placeholder ID is0. StaticTemplateIdentity retains the
+    /// database definition's canonical identity independently of that placeholder:
+    /// repeated native GetStaticCard lookups return the stored object pointer.
     /// </summary>
     public static CardInstance TemplateInstance(CardDefinition def, Side side)
     {
         var card = new CardInstance
         {
             CardId = 0,
+            StaticTemplateIdentity = def,
             Name = def.Name,
             Owner = side,
             Definition = def,
@@ -6577,25 +6583,21 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 蓝图数组元素的**值比较**（`Array_Contains` / `Array_Remove` / `Array_RemoveItem` 用）。
-    ///
-    /// 两种元素表示都要认，而且可以**混在同一个数组里**：
-    /// <list type="bullet">
-    /// <item>卡实例（<c>TArray&lt;UObject*&gt;</c>，例 `GetCardsOnBoardBySide` 的 `Cards`）</item>
-    /// <item>整数卡 ID（<c>TArray&lt;int&gt;</c>，例 `GetDeckByside` 的 `deckCardIDs`；
-    ///       见 <see cref="CardApi.GetDeckBySide"/> 的注释）</item>
-    /// </list>
-    /// 全卡池有 94 张卡用**整数 ID 形状**攒数组（见 <see cref="AsCardOrId"/> 的注释），
-    /// 所以"拿整数 ID 去查一个装着实例的数组"也必须命中 —— 这一条在
-    /// `AsCardOrId` 那一族里已经是既成事实。
-    ///
-    /// 旧写法是 `ReferenceEquals(x, y) || x.CardId == y.CardId`，
-    /// 只对"两边都是卡实例"成立；ID 数组上 `AsInt(卡实例)=0` ⇒ 恒假。
+    /// Object elements use native identity (FObjectProperty Identical, PortFlags=0).
+    /// Static wrappers share a definition token; battle objects use references.
+    /// Scalar elements retain value equality. CardInstance/int
+    /// bridging is a legacy headless representation conversion, not a native
+    /// object-equality rule; its full type/coercion contract remains unaudited.
     /// </summary>
     private static bool SameArrayValue(object? x, object? y)
-        => ReferenceEquals(x, y) || (x is CardInstance || y is CardInstance)
-            && x is CardInstance or int && y is CardInstance or int && IdOf(x) == IdOf(y)
-            || Equals(x, y);
+    {
+        if (x is CardInstance left && y is CardInstance right)
+            return ReferenceEquals(left, right)
+                || left.StaticTemplateIdentity is { } identity && ReferenceEquals(identity, right.StaticTemplateIdentity);
+        if (x is CardInstance && y is int || x is int && y is CardInstance)
+            return IdOf(x) == IdOf(y);
+        return Equals(x, y);
+    }
 
     /// <summary>数组元素的「整数身份」：卡实例取它的卡 ID，别的走 <see cref="AsInt"/>。</summary>
     private static int IdOf(object? v) => v is CardInstance c ? c.CardId : AsInt(v);
