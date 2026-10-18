@@ -4718,114 +4718,77 @@ public sealed partial class CardApi
     /// </summary>
     public void ApplyPincerEffects(CardInstance cardPlayed, CardInstance cardTargeted)
     {
-        if (cardPlayed.Location == CardLocation.Discard)
-        {
-            return;
-        }
+        if (cardPlayed.Location == CardLocation.Discard) return;
 
-        FireTrigger("OnPincerEffectApplied", cardPlayed, cardPlayed.Owner,
-            eventArgs: new object?[] { cardPlayed },
-            eventSubject: cardPlayed,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["card"] = cardPlayed,
-            });
-
+        // Native context and event argument are distinct. The giver receives
+        // both Applied calls; the second carries the held target object.
+        RunPincerCallback("OnPincerEffectApplied", cardPlayed, cardPlayed);
         JsonSetInt(cardPlayed, "pincer_receiver", cardTargeted.CardId);
-        PersistCustomFields(cardPlayed);
-
-        FireTrigger("OnPincerEffectReceived", cardPlayed, cardPlayed.Owner,
-            eventArgs: new object?[] { cardPlayed },
-            eventSubject: cardPlayed,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["PincerGiver"] = cardPlayed,
-            });
-
-        FireTrigger("OnPincerEffectApplied", cardTargeted, cardTargeted.Owner,
-            eventArgs: new object?[] { cardTargeted },
-            eventSubject: cardTargeted,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["card"] = cardTargeted,
-            });
-
+        PersistPincerFields(cardPlayed.CardId);
+        RunPincerCallback("OnPincerEffectReceived", cardPlayed, cardPlayed);
+        RunPincerCallback("OnPincerEffectApplied", cardPlayed, cardTargeted);
         JsonAddToIntArray(cardTargeted, "pincer_givers", cardPlayed.CardId);
-        PersistCustomFields(cardTargeted);
+        PersistPincerFields(cardTargeted.CardId);
+        RunPincerCallback("OnPincerEffectReceived", cardTargeted, cardPlayed);
+    }
 
-        FireTrigger("OnPincerEffectReceived", cardTargeted, cardTargeted.Owner,
-            eventArgs: new object?[] { cardPlayed },
-            eventSubject: cardPlayed,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["PincerGiver"] = cardPlayed,
-            });
+    // These are direct object calls, including held objects removed from the
+    // map or at NotAvailable. No registration/location/suppression gate occurs
+    // in ApplyPincerEffects/RemovePincerEffects around their Context opcodes.
+    private void RunPincerCallback(string program, CardInstance? receiver, CardInstance? argument)
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (receiver is null || library?.FindProgram(receiver.Name, program) is null) return;
+        TriggerTrace?.Add($"{program} → {receiver.Name}#{receiver.CardId}（eventCard={argument?.Name ?? "null"}#{argument?.CardId}）");
+        RunTriggerProgram(library, receiver, receiver.Name, program, argument,
+            eventArgs: new object?[] { argument },
+            namedArgs: new Dictionary<string, object?> { [program == "OnPincerEffectReceived" ? "PincerGiver" : "card"] = argument });
+    }
+
+    private CardInstance? PincerCardFromId(int cardId) => cardId > 0 ? State.ById(cardId) : null;
+
+    private void PersistPincerFields(int cardId)
+    {
+        // PersistCustomFields takes an ID and resolves the notification object.
+        // Missing-object notification defaults are not certified here.
+        if (PincerCardFromId(cardId) is { } current) PersistCustomFields(current);
     }
 
     /// <summary>
-    /// `RemovePincerEffects(cardLeaving)` —— 解除离场卡作为 receiver 的关系，
-    /// 以及它作为 giver 记录的所有关系。事件在字段清理前派发，和正版函数的
-    /// `JSON_Get* → OnPincerEffectRemoved → JSON_Clear/Persist` 顺序一致。
+    /// RemovePincerEffects: typed receiver field, two callbacks on the leaving
+    /// object, then per-stage ID queries; duplicate giver IDs are not collapsed.
     /// </summary>
     public void RemovePincerEffects(CardInstance cardLeaving)
     {
-        CardInstance? receiver = null;
-        if (cardLeaving.CustomJson.ContainsKey("pincer_receiver"))
+        if (cardLeaving.CustomJson.HasType("pincer_receiver", CardJsonType.Number))
         {
-            receiver = State.ById(JsonGetInt(cardLeaving, "pincer_receiver"));
+            int receiverId = JsonGetInt(cardLeaving, "pincer_receiver");
+            RunPincerCallback("OnPincerEffectRemoved", cardLeaving, PincerCardFromId(receiverId));
+            RunPincerCallback("OnPincerEffectRemoved", cardLeaving, cardLeaving);
+            if (PincerCardFromId(receiverId) is { } receiver)
+                JsonRemoveFromIntArray(receiver, "pincer_givers", cardLeaving.CardId);
+            if (PincerCardFromId(receiverId) is { } afterRemoval
+                && JsonGetIntArray(afterRemoval, "pincer_givers").Count == 0)
+                JsonClear(afterRemoval, "pincer_givers");
+            JsonClear(cardLeaving, "pincer_receiver");
+            PersistPincerFields(receiverId);
         }
 
-        if (receiver is not null)
+        // si=712/766 snapshots the array from the current mapped leaving ID,
+        // rather than from the held argument; the array itself stays a snapshot.
+        var givers = PincerCardFromId(cardLeaving.CardId) is { } currentLeaving
+            ? JsonGetIntArray(currentLeaving, "pincer_givers") : new List<int>();
+        foreach (int giverId in givers)
         {
-            FireTrigger("OnPincerEffectRemoved", receiver, receiver.Owner,
-                eventArgs: new object?[] { receiver },
-                eventSubject: receiver,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = receiver,
-                });
-            FireTrigger("OnPincerEffectRemoved", cardLeaving, cardLeaving.Owner,
-                eventArgs: new object?[] { cardLeaving },
-                eventSubject: cardLeaving,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = cardLeaving,
-                });
-
-            JsonRemoveFromIntArray(receiver, "pincer_givers", cardLeaving.CardId);
-            PersistCustomFields(receiver);
+            var giver = PincerCardFromId(giverId);
+            RunPincerCallback("OnPincerEffectRemoved", giver, giver);
+            RunPincerCallback("OnPincerEffectRemoved", PincerCardFromId(giverId), cardLeaving);
+            if (PincerCardFromId(giverId) is { } afterCallbacks) JsonClear(afterCallbacks, "pincer_receiver");
+            PersistPincerFields(giverId);
         }
 
-        foreach (int giverId in JsonGetIntArray(cardLeaving, "pincer_givers").Distinct().ToList())
-        {
-            CardInstance? giver = State.ById(giverId);
-            if (giver is null)
-            {
-                continue;
-            }
-
-            FireTrigger("OnPincerEffectRemoved", giver, giver.Owner,
-                eventArgs: new object?[] { giver },
-                eventSubject: giver,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = giver,
-                });
-            FireTrigger("OnPincerEffectRemoved", cardLeaving, cardLeaving.Owner,
-                eventArgs: new object?[] { cardLeaving },
-                eventSubject: cardLeaving,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["card"] = cardLeaving,
-                });
-
-            JsonClear(giver, "pincer_receiver");
-            PersistCustomFields(giver);
-        }
-
-        JsonClear(cardLeaving, "pincer_receiver");
         JsonClear(cardLeaving, "pincer_givers");
-        PersistCustomFields(cardLeaving);
+        PersistPincerFields(cardLeaving.CardId);
     }
 
     /// <summary>

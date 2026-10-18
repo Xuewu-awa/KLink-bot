@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-195",
+  "status": "fixed-pincer-direct-callback-routing-and-identity-cleanup",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "af804ddeaa1f0b65ea3e8f430ec4a83095709738b39d2d44ad1cb4d98c6976cd",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "a19fbcf71d11ff4395369efab2eb497c05749b2cb3f4ced0632e683c74f08ec5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-pincer-callbacks-before-20261018.txt": "cf7707ae40b5530cc0973928384be1c5bd5ce2648240c47ea5383dabaf152955",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-pincer-callbacks-after-20261018.txt": "df81640ea58fffddd9e15d11e47015665d9460c96c2c152bcaa53ef7b54c1327",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pincer-callbacks-20261018.py": "2dd2a96d857095091d6b765731d9b564035eaaa79911be8ce7f471331c6b958b"
+  },
+  "findings": [
+    "ApplyPincerEffects invokes Applied(giver) and Received(giver) on the giver, then Applied(target) on the giver, and finally Received(giver) on the target. Previous code incorrectly invoked the second Applied on the target.",
+    "These are direct Context object calls, without registration, suppression or NotAvailable gating. The sole Apply entry gate is giver.location != Discard. A dedicated bounded callback helper preserves held object references and explicit null event arguments.",
+    "Remove receiver-branch invokes Removed(receiver) then Removed(leaving) on the held leaving object whenever the numeric JSON receiver field exists, even if the lookup returns NoObject. Previous code invoked the first on the receiver and skipped both for missing targets.",
+    "Receiver removal re-queries the saved receiver ID after callbacks; an empty pincer_givers field is cleared, then the leaving receiver field is cleared within this typed-field branch only.",
+    "The giver array is copied from GetCardFromID(leaving.cardID) after the receiver branch. Duplicate IDs are preserved. Each iteration re-queries before Removed(giver), Removed(held leaving), JSON_Clear and ID-based persistence; both callbacks belong to the giver.",
+    "Apply JSON mutations retain their object arguments, while persistence resolves the current ID mapping. Remove final JSON_Clear acts on the held leaving object, while final persistence uses its mapped ID. Controlled replacements verify this distinction."
+  ],
+  "tests": {
+    "before": "3/567 failed (same final fixtures, baseline kernel)",
+    "after": "567/567 passed",
+    "apply_cases": 72,
+    "remove_cases": 48,
+    "identity_scenarios": 4
+  },
+  "runtime_verified_functions": 9,
+  "trace_scenarios": 5,
+  "limits": [
+    "This certifies bounded call routing, argument identities, selected JSON cleanup and lookup boundaries, not all Pincer card effects or BaseCardObject native implementations.",
+    "Runtime verification checks saved script length/hash and control-flow opcodes/operands. Parsed property/type decoding and BlueprintJson native semantics for arbitrary malformed values are not fully proven.",
+    "Concrete trace checks assume valid object contexts and normally returning callbacks; they are not an exhaustive interpreter or native lifecycle proof.",
+    "Wrong JSON types, duplicates, missing IDs, NotAvailable and same-ID replacements are controlled probes, not evidence ordinary PvP cards necessarily produce those states.",
+    "Missing-object persistence defaults are unresolved: headless skips those notifications; native may emit default context fields. UObject pending-kill, exceptions, null argument API wrappers and deep callback/selection reentry remain open.",
+    "Dedicated callback execution retains existing VM recursion protection; complete native callback scheduling and network ABI remain unaudited.",
+    "Historical replays were not used as authority. No new client-memory reads, process writes or injection. Fully semantically verified cards remains0."
+  ],
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\pincer-callbacks-evidence-20261018.json",
+  "evidence_sha256": "d528a28d8f837eb224ebc2e8c47cc4805c531f46745dce50a72bac8827c19b19"
+}

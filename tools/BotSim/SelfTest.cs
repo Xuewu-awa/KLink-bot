@@ -689,6 +689,9 @@ internal static class SelfTest
             ExecuteOnDeploymentTriggeredDispatch),
         new("部署：TriggerDeployment 按目标卡触发非目标部署效果并忽略无 Deployment 目标",
             TriggerDeploymentDispatch),
+        new("Pincer施加：直接回调接收者/参数/写入顺序，保留重复赠予者", PincerApplyCallbackRouting),
+        new("Pincer身份重入：保留调用对象，逐阶段查号及映射快照和持久化", PincerCallbackIdentityRequery),
+        new("Pincer移除：离场方及赠予方双回调、重复项、类型和空字段清理", PincerRemoveCallbackRouting),
         new("出牌时序：自身 OnPlayedFromHand 返回后才建立 Pincer 关系",
             PincerFollowsPlayedFromHand),
 
@@ -25983,6 +25986,247 @@ internal static class SelfTest
         return ownEffectSawUnlinkedTarget && engine.Api.JsonGetInt(giver, "pincer_receiver") == receiver.CardId
             ? null
             : "自身 OnPlayedFromHand 应先执行，返回后才建立 Pincer 关系";
+    }
+
+    private static IDisposable InstallPincerCallbackProbe()
+    {
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (var name in new[] { "card_unit_typhoon_mk_ib", "card_unit_brewster_f2a" })
+        foreach (var trigger in new[] { "OnPincerEffectApplied", "OnPincerEffectReceived", "OnPincerEffectRemoved" })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+                throw new InvalidOperationException("无法安全安装Pincer回调探针: " + name + "/" + trigger);
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Str = trigger }, null, -1, "_auditPincerKind", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = trigger == "OnPincerEffectReceived" ? "PincerGiver" : "card", Scope = "local" },
+                    null, -1, "_auditPincerArg", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                        new KismetExpr { Var = "_auditPincerCount", Scope = "instance" }, new KismetExpr { Int = 1 } } },
+                    null, -1, "_auditPincerCount", null) { DestinationScope = "instance" },
+                new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+            installed.Add((locals, trigger));
+        }
+        return new AuditProbeCleanup(() => { foreach (var item in installed) item.Locals.Remove(item.Trigger); });
+    }
+
+    private static void CapturePincerCallbacks(GameState state, List<CardInstance> actors,
+        Action<CardInstance, string, CardInstance?> callback)
+    {
+        var counts = new Dictionary<CardInstance, int>();
+        var created = state.CardCreated;
+        state.CardCreated = made => {
+            created?.Invoke(made);
+            if (made.Name != "card_unit_routed_troops") return;
+            var changed = actors.Where(x => Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditPincerCount"))
+                != counts.GetValueOrDefault(x)).ToArray();
+            if (changed.Length != 1) throw new InvalidOperationException("Pincer探针事件计数不唯一");
+            var receiver = changed[0];
+            counts[receiver] = Convert.ToInt32(receiver.BlueprintVariables["_auditPincerCount"]);
+            callback(receiver, (string)receiver.BlueprintVariables["_auditPincerKind"]!,
+                receiver.BlueprintVariables.GetValueOrDefault("_auditPincerArg") as CardInstance);
+        };
+    }
+
+    private static string? PincerApplyCallbackRouting(CardDatabase db)
+    {
+        using var probe = InstallPincerCallbackProbe(); int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var sourceLocation in new[] { side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (var targetLocation in new[] { side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool duplicate in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var giver = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, sourceLocation, 1);
+            var target = state.CreateWithId("card_unit_brewster_f2a", side.Opposite(), 70, targetLocation, 2);
+            if (suppressed) { giver.Keywords.Add(Keyword.Suppressed); target.Keywords.Add(Keyword.Suppressed); }
+            if (duplicate) engine.Api.JsonSetIntArray(target, "pincer_givers", new[] { giver.CardId });
+            var events = new List<(CardInstance, string, CardInstance?)>(); string? failure = null;
+            CapturePincerCallbacks(state, new() { giver, target }, (receiver, kind, arg) => {
+                events.Add((receiver, kind, arg)); int n = events.Count;
+                int persisted = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionPersistCustomFields");
+                if (persisted != (n == 1 ? 0 : n == 4 ? 2 : 1)) failure = "回调与持久化时机不符";
+                if (giver.CustomJson.ContainsKey("pincer_receiver") != (n > 1)) failure = "施加方字段写入时机错误";
+                if (engine.Api.JsonGetIntArray(target, "pincer_givers").Count != (duplicate ? 1 : 0) + (n == 4 ? 1 : 0))
+                    failure = "承受方数组写入时机错误";
+            });
+            engine.Api.ApplyPincerEffects(giver, target);
+            var expected = sourceLocation == CardLocation.Discard ? Array.Empty<(CardInstance, string, CardInstance?)>()
+                : new[] { (giver, "OnPincerEffectApplied", (CardInstance?)giver), (giver, "OnPincerEffectReceived", giver),
+                    (giver, "OnPincerEffectApplied", target), (target, "OnPincerEffectReceived", giver) };
+            if (failure is not null || !events.SequenceEqual(expected))
+                return $"apply Pincer case={cases} {side}/{sourceLocation}/{targetLocation}/{suppressed}/{duplicate}: {failure ?? "receiver/argument/order"}; events={events.Count}/{expected.Length}";
+            cases++;
+        }
+        return cases == 72 ? null : $"Pincer apply cases={cases}";
+    }
+
+    private static string? PincerRemoveCallbackRouting(CardDatabase db)
+    {
+        using var probe = InstallPincerCallbackProbe(); int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int receiverKind in Enumerable.Range(0, 4))
+        foreach (int giverCount in new[] { 0, 1, 2 })
+        foreach (bool unavailable in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var leaving = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60,
+                unavailable ? CardLocation.NotAvailable : side.HqOf(), 1);
+            var receiver = state.CreateWithId("card_unit_brewster_f2a", side, 70, side.HqOf(), 2);
+            var giver = state.CreateWithId(receiver.Name, side, 80, side.HqOf(), 3);
+            if (receiverKind == 1) engine.Api.JsonSetInt(leaving, "pincer_receiver", receiver.CardId);
+            if (receiverKind == 2) engine.Api.JsonSetString(leaving, "pincer_receiver", "wrong-type");
+            if (receiverKind == 3) engine.Api.JsonSetInt(leaving, "pincer_receiver", 777);
+            engine.Api.JsonSetIntArray(receiver, "pincer_givers", new[] { leaving.CardId });
+            engine.Api.JsonSetIntArray(leaving, "pincer_givers", Enumerable.Repeat(giver.CardId, giverCount).ToArray());
+            engine.Api.JsonSetInt(giver, "pincer_receiver", leaving.CardId);
+            var events = new List<(CardInstance, string, CardInstance?)>();
+            CapturePincerCallbacks(state, new() { leaving, receiver, giver }, (r, k, a) => events.Add((r, k, a)));
+            engine.Api.RemovePincerEffects(leaving);
+            var expected = new List<(CardInstance, string, CardInstance?)>();
+            if (receiverKind is 1 or 3)
+            {
+                expected.Add((leaving, "OnPincerEffectRemoved", receiverKind == 1 ? receiver : null));
+                expected.Add((leaving, "OnPincerEffectRemoved", leaving));
+            }
+            for (int i = 0; i < giverCount; i++)
+            {
+                expected.Add((giver, "OnPincerEffectRemoved", giver));
+                expected.Add((giver, "OnPincerEffectRemoved", leaving));
+            }
+            if (!events.SequenceEqual(expected)
+                || receiverKind == 1 && receiver.CustomJson.ContainsKey("pincer_givers")
+                || leaving.CustomJson.ContainsKey("pincer_receiver") != (receiverKind == 2)
+                || leaving.CustomJson.ContainsKey("pincer_givers")
+                || giverCount > 0 && giver.CustomJson.ContainsKey("pincer_receiver"))
+                return $"remove Pincer case={cases} {side}/{receiverKind}/{giverCount}/{unavailable}: routing/duplicates/typed lookup/empty field cleanup; events={events.Count}/{expected.Count}";
+            var persistedIds = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields")
+                .Select(x => x.Values.First(v => v.Name == "cardID").Value).ToArray();
+            var expectedIds = new List<int>();
+            if (receiverKind == 1) expectedIds.Add(receiver.CardId);
+            expectedIds.AddRange(Enumerable.Repeat(giver.CardId, giverCount)); expectedIds.Add(leaving.CardId);
+            // Missing-object notification defaults are outside this bounded proof.
+            if (receiverKind != 3 && !persistedIds.SequenceEqual(expectedIds))
+                return $"remove Pincer case={cases}: persist order/count";
+            cases++;
+        }
+        return cases == 48 ? null : $"Pincer remove cases={cases}";
+    }
+
+    private static string? PincerCallbackIdentityRequery(CardDatabase db)
+    {
+        using var probe = InstallPincerCallbackProbe();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            // Apply keeps event/JSON arguments, but PersistCustomFields resolves
+            // the current ID map independently after the callback returns.
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 1);
+                var target = state.CreateWithId("card_unit_brewster_f2a", side, 70, side.HqOf(), 2);
+                var actors = new List<CardInstance> { source, target };
+                CardInstance? mappedSource = null, mappedTarget = null;
+                var events = new List<(CardInstance, string, CardInstance?)>();
+                CapturePincerCallbacks(state, actors, (r, k, a) => {
+                    events.Add((r, k, a));
+                    if (events.Count == 1)
+                    {
+                        state.Remove(source);
+                        mappedSource = state.CreateWithId(source.Name, side, source.CardId, CardLocation.NotAvailable, 0);
+                        engine.Api.JsonSetInt(mappedSource, "auditMapped", 101); actors.Add(mappedSource);
+                    }
+                    if (events.Count == 3)
+                    {
+                        state.Remove(target);
+                        mappedTarget = state.CreateWithId(target.Name, side, target.CardId, CardLocation.NotAvailable, 0);
+                        engine.Api.JsonSetInt(mappedTarget, "auditMapped", 202); actors.Add(mappedTarget);
+                    }
+                });
+                engine.Api.ApplyPincerEffects(source, target);
+                var expected = new[] { (source, "OnPincerEffectApplied", (CardInstance?)source),
+                    (source, "OnPincerEffectReceived", source), (source, "OnPincerEffectApplied", target),
+                    (target, "OnPincerEffectReceived", source) };
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+                if (!events.SequenceEqual(expected) || mappedSource is null || mappedTarget is null
+                    || engine.Api.JsonGetInt(source, "pincer_receiver") != 70
+                    || !engine.Api.JsonGetIntArray(target, "pincer_givers").SequenceEqual(new[] { 60 })
+                    || mappedSource.CustomJson.ContainsKey("pincer_receiver") || mappedTarget.CustomJson.ContainsKey("pincer_givers")
+                    || notices.Length != 2 || !notices[0].Values.Any(x => x.Name == "customJson" && x.Text?.Contains("101") == true)
+                    || !notices[1].Values.Any(x => x.Name == "customJson" && x.Text?.Contains("202") == true))
+                    return $"Pincer apply identity {side}: held callbacks/JSON and mapped persistence";
+            }
+            // Remove: callbacks can replace the receiver/leaving/giver map.
+            // Giver membership is captured once from the mapped leaving object;
+            // each duplicate entry performs fresh queries for both callbacks.
+            {
+                var (engine, state) = EmptyBoard(db);
+                var leaving = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 1);
+                var receiver = state.CreateWithId("card_unit_brewster_f2a", side, 70, side.HqOf(), 2);
+                var oldGiver = state.CreateWithId(receiver.Name, side, 80, side.HqOf(), 3);
+                var giverA = state.CreateWithId(receiver.Name, side, 81, CardLocation.Discard, 0);
+                engine.Api.JsonSetInt(leaving, "pincer_receiver", 70);
+                engine.Api.JsonSetIntArray(leaving, "pincer_givers", new[] { 80 });
+                engine.Api.JsonSetIntArray(receiver, "pincer_givers", new[] { 60 });
+                engine.Api.JsonSetInt(oldGiver, "pincer_receiver", 60); engine.Api.JsonSetInt(giverA, "pincer_receiver", 60);
+                var actors = new List<CardInstance> { leaving, receiver, oldGiver, giverA };
+                CardInstance? receiverA = null, receiverB = null, mappedLeaving = null, giverB = null, giverC = null;
+                CardInstance Replace(CardInstance old)
+                {
+                    state.Remove(old);
+                    var fresh = state.CreateWithId(old.Name, side, old.CardId, CardLocation.NotAvailable, 0);
+                    actors.Add(fresh); return fresh;
+                }
+                var events = new List<(CardInstance, string, CardInstance?)>();
+                CapturePincerCallbacks(state, actors, (r, k, a) => {
+                    events.Add((r, k, a));
+                    if (events.Count == 1)
+                    {
+                        receiverA = Replace(receiver); engine.Api.JsonSetIntArray(receiverA, "pincer_givers", new[] { 60 });
+                        mappedLeaving = Replace(leaving);
+                        engine.Api.JsonSetIntArray(mappedLeaving, "pincer_givers", new[] { 81, 81 });
+                        engine.Api.JsonSetString(mappedLeaving, "pincer_receiver", "mapped-kept");
+                    }
+                    if (events.Count == 2)
+                    {
+                        receiverB = Replace(receiverA!); engine.Api.JsonSetIntArray(receiverB, "pincer_givers", new[] { 60 });
+                    }
+                    if (events.Count == 3)
+                    {
+                        giverB = Replace(giverA); engine.Api.JsonSetInt(giverB, "pincer_receiver", 60);
+                        engine.Api.JsonSetIntArray(mappedLeaving!, "pincer_givers", new[] { 80 });
+                    }
+                    if (events.Count == 4)
+                    {
+                        giverC = Replace(giverB!); engine.Api.JsonSetInt(giverC, "pincer_receiver", 60);
+                    }
+                });
+                engine.Api.RemovePincerEffects(leaving);
+                var expected = new[] { (leaving, "OnPincerEffectRemoved", (CardInstance?)receiver),
+                    (leaving, "OnPincerEffectRemoved", leaving), (giverA, "OnPincerEffectRemoved", giverA),
+                    (giverB!, "OnPincerEffectRemoved", leaving), (giverC!, "OnPincerEffectRemoved", giverC),
+                    (giverC!, "OnPincerEffectRemoved", leaving) };
+                var ids = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields")
+                    .Select(x => x.Values.First(v => v.Name == "cardID").Value).ToArray();
+                if (!events.SequenceEqual(expected) || !ids.SequenceEqual(new[] { 70, 81, 81, 60 })
+                    || receiverA is null || receiverB is null || giverB is null || giverC is null || mappedLeaving is null
+                    || !receiver.CustomJson.ContainsKey("pincer_givers") || !receiverA.CustomJson.ContainsKey("pincer_givers")
+                    || receiverB.CustomJson.ContainsKey("pincer_givers") || giverC.CustomJson.ContainsKey("pincer_receiver")
+                    || !giverA.CustomJson.ContainsKey("pincer_receiver") || !giverB.CustomJson.ContainsKey("pincer_receiver")
+                    || !oldGiver.CustomJson.ContainsKey("pincer_receiver") || leaving.CustomJson.ContainsKey("pincer_receiver")
+                    || leaving.CustomJson.ContainsKey("pincer_givers")
+                    || !engine.Api.JsonGetIntArray(mappedLeaving, "pincer_givers").SequenceEqual(new[] { 80 })
+                    || engine.Api.JsonGetString(mappedLeaving, "pincer_receiver") != "mapped-kept")
+                    return $"Pincer remove identity {side}: staged queries/held leaving/snapshot duplicates; events={events.Count}";
+            }
+        }
+        return null;
     }
 
     private static string? PincerRelationship(CardDatabase db)
