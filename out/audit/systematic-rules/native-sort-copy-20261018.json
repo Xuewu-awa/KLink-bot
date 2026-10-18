@@ -1,0 +1,54 @@
+{
+  "rule": "RULE-206",
+  "status": "native-initialization-sort-copy-path-verified-order-fix-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\native-sort-copy.json": "b9e83519f152dd5a2dd8cacf0ba8ac457f46e018dd4f7f15be90ce96eb20b307",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\native-class-newbuild-20261018-122533\\static-pool-source.json": "76defb2da2f9596da2e66fd0aef9016f79d233a198496e456342a1efb4ad5eca",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\runtime-uobject-index.json": "aca4527b6d9f582cf294c3f5d144b138bf6976af4ac81bba1beb4bcd9e0c6ced",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\capture-native-sort-copy-20261018.py": "1a5f918da961afcd1d914f7fe23ae8a5772c7ffdf21f4eb2950949d626b64ed3",
+    "D:\\Codex Workshop\\kards-install-review\\audit-native-sort-copy-20261018.py": "959753531115cd61cfac9696c6a24e5c4b7e1c6d02537408128003462bfe77ec"
+  },
+  "findings": [
+    "A fresh read-only snapshot at turn18 in the loaded AI battle finds2019 unique static-card references. Their order matches the earlier main-menu saved array and native static map iteration, and is not ordinal internal-name order. The battle map has82 sparse slots; this is not reported as82 live members.",
+    "Current runtime LoadAllStaticCards operands resolve SetAllStaticCardsSortedByName at1375, getter at1420 and native SortCardsByName at1465. The getter output and sort input resolve the same local array property. Its pointer appears only at1456 and1475 in current bytecode. Parsed caller likewise has only one setter, preceding getter/sort; no sorted-array writeback is present in this initialization path.",
+    "Both30-byte accessors are decoded against current reflection. GNatives opcode0x0f (Let),0x48 (LocalOutVariable) and0x01 (InstanceVariable) are resolved in live memory. For actual properties, native accessor gates returnfalse and the array is non-POD. Getter RHS therefore reaches source FArrayProperty container-copy +0x110 then CopyValuesInternal +0xf0. That routine resizes destination storage and copies from the source buffer into distinct destination elements. It does not assign the source array data pointer as a shared list container. Referenced card objects are still shared.",
+    "The actual native SortCardsByName executor receives the evaluated array address, calls the sort wrapper and swaps card-pointer elements using Name at+0x50. Sort comparison resolves FName comparison rather than a translated display name. Four pdata fragments were captured together, including the small-array block after an earlier ret; the heap fallback and full text collation helpers are not certified.",
+    "Together these establish the observed initialization behavior: Map_Values is stored, getter copies that list, and native sorting changes the local copy with no writeback. The simulator still applies OrderBy(Name,Ordinal), so candidate-order equality remains an identified unresolved discrepancy. Replacing it with descending order or silently treating one runtime array as every configuration/version contract would not be justified."
+  ],
+  "limits": [
+    "Current client hash is build-pinned; no old Ghidra addresses are used directly as current executable proof. All11 captured code ranges match live and frozen installed executable bytes.",
+    "This closes the selected initialization copy/writeback question. It does not prove every alternative map initialization, reconnect path, server-config card pool or PvP lifecycle.",
+    "No candidate-order kernel change yet. Need recover the authoritative CardsClassList/StaticCards insertion/iteration contract and resulting filtered index sequence for the simulator data version. Random index equivalence also depends on RNG semantics.",
+    "Array element objects remain shared; complete mutable static-object state, allocator implementation, custom JSON aliasing and full card behavior remain pending.",
+    "No new selftests were added or rerun: this phase changes evidence/docs only. Last executed full Release suite remains582/582 (RULE-205), not a fresh result for this phase. Fully semantically verified cards remains0.",
+    "No game writes, injection, game-function invocation or historical replay authority."
+  ],
+  "kernel_changed": false,
+  "battle_turn": 18,
+  "battle_map_sparse_slots": 82,
+  "live_static_pool_objects": 2019,
+  "native_code_ranges": 11,
+  "native_code_bytes": 3727,
+  "current_small_accessors_fully_decoded": 2,
+  "sort_local_pointer_operand_offsets": [
+    1456,
+    1475
+  ],
+  "ordering": {
+    "sorted_ordinal": false,
+    "matches_native_map_iteration": true,
+    "same_as_main_menu": true,
+    "init_sort_writes_back": false,
+    "headless_order_changed": false,
+    "status": "source-order-contract-pending"
+  },
+  "tests": {
+    "run_this_phase": false,
+    "last_full_suite": "582/582 (RULE-205)"
+  },
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\native-sort-copy-evidence-20261018.json",
+  "evidence_sha256": "513cadff9f18cb8ef13aa746d380f51cec08c380d0fee2dd9475d08fd881ecf7"
+}
