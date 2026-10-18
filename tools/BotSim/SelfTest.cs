@@ -352,6 +352,7 @@ internal static class SelfTest
             MoveUnitFromSupportToFrontLine),
         new("ForceCardChangeLocation：按 cardID 移动并回写 moved/旧位置，cantMove 时拒绝",
             ForceCardChangeLocation),
+        new("批量生成T35快照：每张重查，旧接收者保留，迟注册下一张生效", BatchSpawnCreationSnapshots),
         new("批量生成卡号重查：当前引用保留，后续Blitz/移动及下一张按ID解析", BatchSpawnIdentityLookup),
         new("批量生成生命周期：全部创建后T35/进场，来源Blitz、Alpine及批量通知", BatchSpawnLifecycle),
         new("批量生成门槛：敌方前线、动态容量及物理位置计数", BatchSpawnAdmission),
@@ -27069,6 +27070,102 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? BatchSpawnCreationSnapshots(CardDatabase db)
+    {
+        const string probe = "card_unit_brewster_f2a", spawnedName = "card_unit_typhoon_mk_ib", trigger = "OnOtherCardCreatedAlterCard";
+        if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(probe, trigger) is not null) return "无法安全安装批量T35快照探针";
+        // Ignore marker cards so nested probe creation cannot recursively trigger itself.
+        locals.Add(trigger, new[] {
+            new KismetStep(0, "jumpIfNot", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null,
+                new KismetExpr { Math = "EqualEqual_NameName", Args = new[] {
+                    new KismetExpr { Var = "name", Context = new KismetExpr { Var = "K2Node_Event_cardPlayed" } },
+                    new KismetExpr { Name = spawnedName } } }, 6, null, null),
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_cardPlayed" }, null, -1, "_auditBatchSnapshotSubject", null) { DestinationScope = "instance" },
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "K2Node_Event_method" }, null, -1, "_auditBatchSnapshotMethod", null) { DestinationScope = "instance" },
+            new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = "_auditBatchSnapshotCount", Scope = "instance" }, new KismetExpr { Int = 1 } } },
+                null, -1, "_auditBatchSnapshotCount", null) { DestinationScope = "instance" },
+            new KismetStep(4, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(6, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        });
+        using var cleanup = new AuditProbeCleanup(() => locals.Remove(trigger));
+        int cases = 0;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int count in new[] { 2, 3 })
+        foreach (bool initialSuppression in new[] { false, true })
+        foreach (int mutation in Enumerable.Range(0, 6))
+        foreach (bool lateRegistration in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            CardDefinition Registered() => new() { Name = probe, Type = "fighter", UsedTriggers = new[] { trigger } };
+            var first = state.CreateWithId(probe, side, 20, side.DeckOf(), 0);
+            var later = state.CreateWithId(probe, side.Opposite(), 21, CardLocation.Discard, 17);
+            foreach (var card in new[] { first, later }) { card.Definition = Registered(); card.Keywords.Clear(); }
+            if (initialSuppression) later.Keywords.Add(Keyword.Suppressed);
+            var source = state.CreateWithId(PlainUnit, side, 90, side.HandOf(), 0);
+            var observers = new List<CardInstance> { first, later };
+            var seenCounts = new Dictionary<int, int>(); var calls = new List<(int Receiver, int Subject)>();
+            var spawned = new List<CardInstance>(); bool changed = false; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == spawnedName)
+                {
+                    made.Definition = new CardDefinition { Name = spawnedName, Type = "infantry", Attack = 2, Defense = 5 };
+                    made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 5; spawned.Add(made);
+                }
+                else if (made.Name == "card_unit_routed_troops")
+                {
+                    var hits = observers.Where(x => Convert.ToInt32(x.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotCount"))
+                        > seenCounts.GetValueOrDefault(x.CardId)).ToArray();
+                    if (hits.Length != 1) { failure = "T35探针应每次只增加一个接收者计数"; return; }
+                    var receiver = hits[0]; seenCounts[receiver.CardId] = Convert.ToInt32(receiver.BlueprintVariables["_auditBatchSnapshotCount"]);
+                    if (receiver.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotSubject") is not CardInstance subject
+                        || Convert.ToInt32(receiver.BlueprintVariables.GetValueOrDefault("_auditBatchSnapshotMethod")) != 3)
+                    { failure = "批量T35主体或method=3丢失"; return; }
+                    calls.Add((receiver.CardId, subject.CardId));
+                    if (!changed)
+                    {
+                        changed = true;
+                        if (spawned.Count != count || receiver != first || subject != spawned[0]) failure = "首个T35必须在整个批次创建完成后运行";
+                        if (mutation is 1 or 4 or 5) later.Keywords.Add(Keyword.Suppressed);
+                        if (mutation is 2 or 5) later.Definition = new CardDefinition { Name = probe };
+                        if (mutation is 3 or 5) state.Remove(later);
+                        if (mutation == 4) later.SuppressionExceptionTriggers.Add(trigger);
+                        if (lateRegistration)
+                        {
+                            var late = state.CreateWithId(probe, side, 22, CardLocation.NotAvailable, 0);
+                            late.Keywords.Clear(); late.Definition = Registered(); observers.Add(late);
+                        }
+                    }
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
+                new object?[] { (int)side, frontline, Enumerable.Repeat(spawnedName, count).ToList(), source.CardId, false, null, false }, ctx, out _);
+            var expected = new List<(int Receiver, int Subject)>();
+            for (int i = 0; i < spawned.Count; i++)
+            {
+                expected.Add((20, spawned[i].CardId));
+                bool receivesLater = i == 0 ? !initialSuppression : mutation == 4 || (mutation == 0 && !initialSuppression);
+                if (receivesLater) expected.Add((21, spawned[i].CardId));
+                if (i > 0 && lateRegistration) expected.Add((22, spawned[i].CardId));
+            }
+            if (failure is not null || !changed || result is not List<int> ids || ids.Count != count || !calls.SequenceEqual(expected))
+                return $"batch T35 snapshot case={cases} {side}/{frontline}/{count}/{initialSuppression}/{mutation}/{lateRegistration}: {failure ?? "recipient/query boundary"}; got={string.Join(',', calls)}, expected={string.Join(',', expected)}";
+            cases++;
+        }
+        return cases == 192 ? null : $"batch T35 snapshot matrix count={cases}";
     }
 
     private static string? BatchSpawnIdentityLookup(CardDatabase db)

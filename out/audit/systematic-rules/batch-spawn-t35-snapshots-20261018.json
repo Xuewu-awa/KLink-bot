@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-180",
+  "status": "tested batch T35 per-card fresh queries, fixed in-query receiver snapshot and next-card late registration/suppression exceptions; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-spawn-t35-snapshots-evidence-20261018.json",
+  "evidence_sha256": "5d141d5939fd59c4fd64e56c3c61cc3afec8c1d4b2508d6a36079e2426602d1e",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-spawn-t35-snapshots-20261018.py": "9bfe7902fc628c46ca23c831f2db560b30b218b0ad784f48707a9182023fc6be",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-t35-snapshots-20261016.txt": "410a942eb39ef068b377211e8e99683549dedb70abfac6e7055341e6bdf5852a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-t35-snapshots-20261018.txt": "410a942eb39ef068b377211e8e99683549dedb70abfac6e7055341e6bdf5852a",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cbfc31c2abb1943a7ffbd05006e63de62a8ea5a721373819a333c7232f10010d",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "ebdf9d66429011cc2d83ef30d16097ce2dd67e008e4a921b3fd74e7e94a682de"
+  },
+  "tests": {
+    "release": "547/547",
+    "batch_t35_cases": 192,
+    "matrix": "2 sides x2 spawn locations x2 batch sizes(2/3) x2 initial suppression states x6 mutations(none/suppress/unregister/remove/suppress+exception/all remove-unregister-suppress) x2 late registration states",
+    "checks": [
+      "First query runs after all batch objects exist and delivers actual subject/method3",
+      "Query-time eligibility controls first-card membership; later suppression/unregistration/map removal does not cancel saved recipient",
+      "Every following card queries current eligibility again; newly added suppression exception admits suppressed receiver",
+      "Late registered receiver at NotAvailable joins subsequent card queries but never the current saved array",
+      "Observer in deck/discard and opposite side is not excluded by physical zone or controller",
+      "Exact expected callback sequence is asserted for simulator deterministic recipient order"
+    ],
+    "finding": "No new kernel mismatch in tested snapshot/query-boundary cases; only regression tests and evidence added."
+  },
+  "limits": [
+    "Synthetic callbacks directly mutate simulator registration definition, suppression flags/exceptions and map membership; this does not prove complete live registration lifecycle or which real cards make these mutations.",
+    "Tests intentionally arrange simulator receiver20 before21; UE TSet order, slot reuse and cross-client ordering remain uncertified.",
+    "No T43 snapshot matrix, native object validity/GC, same-ID replacement during T35 or absent subject-ID semantics are covered.",
+    "State query evidence is parsed pak only; runtime verification covers selected library lengths/hashes/top-level flow and is not full semantic equivalence.",
+    "Previous log dates from interrupted work are retained;20261018 log confirms current checkout.",
+    "No rule-kernel code changed, replay authority used, new process memory reads/writes or injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
