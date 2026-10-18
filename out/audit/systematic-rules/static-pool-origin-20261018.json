@@ -1,0 +1,55 @@
+{
+  "rule": "RULE-207",
+  "status": "five-layer-native-order-origin-matched-upstream-scan-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\static-pool-origin.json": "85bbd30025c5787a00397c21be93b4964e50e31bd5d425d2b4a3aa7a57eed059",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\battle-pool-sort-20261018-130042\\native-sort-copy.json": "b9e83519f152dd5a2dd8cacf0ba8ac457f46e018dd4f7f15be90ce96eb20b307",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807",
+    "D:\\Codex Workshop\\kards-install-review\\capture-static-pool-origin-20261018.py": "10cff3567a435943ddb1fd47d60f4faff5633d883b285e2f3fb90c13e08f7790",
+    "D:\\Codex Workshop\\kards-install-review\\audit-static-pool-origin-20261018.py": "fd24f5f3efeabc11b376739e8a5146122549c426d5c616ebd4bb01e9be7e63a0"
+  },
+  "findings": [
+    "A fresh turn18 capture links five live layers: UAssetManager BaseCardObject primary-asset map, KardsAssetManager card cache, BP_Logic.CardsClassList, BP_Logic.StaticCards, and the saved GameState static-card array. All2019 names and their index order match exactly. A separately cached primary-ID vector matches too. Each static object class equals the corresponding CardsClassList UClass (2019/2019).",
+    "Four populated card maps are decoded independently using their actual strides (primary map0x98, card cache0x20, classes/statics0x18). Bitmap populations, free lists, unique FNames and every bucket chain are checked, and all buffers are reread for stability. All four maps currently have2019 live entries and no free slots. Enumeration here follows allocated sparse slot indices, not hash bucket order.",
+    "Current native GetKardMap executes at RVA4b39920 and calls4b2c580, which traverses the card cache at manager+4d0 and builds name-to-soft-class results. The once-gated cache builder at4b33e70 requests type BaseCardObject through vtable+358 and inserts the returned primary IDs into that cache. The actual +358 target398dc70 walks the underlying type-data map at+178 in ascending occupied-bit order and appends type/name pairs. No lexical sort is present in these selected enumeration/insertion loops.",
+    "Current Blueprint operands resolve two GetKardMap calls and five selected Map_Keys/Map_Add/Map_Values calls, including CardsClassList creation and StaticCards population. Selected top-level branch operands in ExecuteUbergraph_BP_Logic and LoadAllStaticCards also match the parsed layout. This is a path check, not full semantic certification of both functions.",
+    "FModel AssetRegistry.json has exactly the same2019 BaseCardObject generated-class primary names after filtering by authoritative tags. Its export order matches only1 live position; reversing it matches27, not2019. Therefore neither JSON order nor its simple reverse supplies the observed live candidate sequence. This comparison does not establish the updated registry version or imply loader nondeterminism."
+  ],
+  "limits": [
+    "The earliest unresolved order boundary is now upstream asset-registry scan/registration into the primary-asset map. The cache-builder parent reaches live vtable+568 target399e720; that full scan and its insertion history are not yet traced. Same process main-menu/battle agreement does not prove same-build cross-process stability.",
+    "A frozen list of2019 names would reproduce this selected snapshot, but without the upstream contract cannot be claimed to reproduce every server configuration, startup/load history, reconnect or client version. The simulator ordinal ordering discrepancy remains open; no static permutation is installed as a universal fix.",
+    "Native body names other than reflected GetKardMap are descriptive behavior labels, not recovered PDB symbols. Five bodies total3160 bytes match current live and installed executable bytes; split pdata is handled. Descendant callees are not thereby all certified.",
+    "Existing config/balance-card replacement, ISBN filtering, complete reservation/blacklist rules, RNG and mutable static-object state are separate gaps. This phase does not change balances or certify complete cards.",
+    "Evidence and documentation only. No kernel edit, new selftest or test rerun. Latest executed Release suite remains582/582 from RULE-205. Fully semantically verified cards remains0. No historical replay authority or process writes/calls."
+  ],
+  "battle_turn": 18,
+  "live_layers": 5,
+  "live_card_entries_per_layer": 2019,
+  "class_pointer_matches": 2019,
+  "ordered_names_sha256": "c1878a805f162b798a22fb48dc3f7e8036bfc47e224f3ffa46a2108cb5b3ae5e",
+  "native_code_ranges": 5,
+  "native_code_bytes": 3160,
+  "current_map_call_operands_resolved": 5,
+  "control_flow_checks": 517,
+  "offline_registry_comparison": {
+    "source": "D:\\Fmodel\\Output\\Exports\\kards\\AssetRegistry.json",
+    "sha256": "e0457a5b47812734f38498d7b42e4f867604d93d02f4684ce5ec2af4086a0807",
+    "generated_class_entries": 2019,
+    "same_name_set": true,
+    "same_order": false,
+    "reverse_order": false,
+    "same_position_count": 1,
+    "reversed_same_position_count": 27,
+    "version_limit": "User-supplied export is authoritative for its contents, but its registry version was not matched to the updated executable. JSON array order is not assumed to be engine enumeration order."
+  },
+  "kernel_changed": false,
+  "tests": {
+    "run_this_phase": false,
+    "last_full_suite": "582/582 (RULE-205)"
+  },
+  "fully_semantically_verified_cards": 0,
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\static-pool-origin-evidence-20261018.json",
+  "evidence_sha256": "6395aeae2eec3e5e4082259de91cadf7b131728c907e6a6766af6b6df0dff0d8"
+}
