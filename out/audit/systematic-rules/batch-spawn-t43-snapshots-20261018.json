@@ -1,0 +1,41 @@
+{
+  "rule": "RULE-181",
+  "status": "tested batch entry own-hook before T43 query, fixed receiver snapshots and next-card late registration/exception behavior; no kernel change",
+  "evidence": "D:\\Codex Workshop\\kards-install-review\\batch-spawn-t43-snapshots-evidence-20261018.json",
+  "evidence_sha256": "d9c96d17f00d9b64f79604b4047acce315f473cda5c29692bfc71a614000820f",
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe": "09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-blueprint-bytecode-battle-20261014.json": "ecb72b84fcf657b202c0034c1912c2be10bfedeb2e46570e6277cfd0683605bc",
+    "D:\\Codex Workshop\\kards-install-review\\audit-batch-spawn-t43-snapshots-20261018.py": "49eca9f610efdaee743d3a2aea74ca9a0e74811b158bfd24faf7cda099fb829a",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-batch-spawn-t43-snapshots-20261018.txt": "d8bcf03977241e72293266f2fea84e328db755975c13f83c979556ec9f510f08",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "e31df125978ca0d226e709dcdbb65ee2bce635212d274324ae1a401f4a1a83ea",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs": "33819c93c8389ae327fd6e42cf7b05e75e98497223c9cc840a286235882f258b",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "cbfc31c2abb1943a7ffbd05006e63de62a8ea5a721373819a333c7232f10010d",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5b0c4307fc145b0a5a49e29abdb44f4af07ba37295022f443c198f4bae9abecf"
+  },
+  "tests": {
+    "release": "548/548",
+    "batch_t43_cases": 192,
+    "matrix": "2 sides x2 spawn locations x2 batch sizes(2/3) x3 own-hook changes(none/suppress later/add exception to initially suppressed later) x4 first-observer changes(none/suppress later/unregister later/remove later) x2 late registration states",
+    "checks": [
+      "Every method3 own entry is recorded before that card T43 receivers",
+      "Own-hook suppression excludes receiver before query; own-hook exception admits initially suppressed receiver before query",
+      "Saved eligible later receiver still runs after first observer suppression/unregistration/removal",
+      "Next entering card re-queries current eligibility; suppression exception remains effective",
+      "Receiver registered during first observer only joins later card queries, even at NotAvailable",
+      "Actual subject/method3 preserved for all observed callbacks; deck/discard and opposite-side observers included"
+    ],
+    "finding": "No mismatch in tested own-hook/query/saved-recipient boundaries; no kernel implementation modified."
+  },
+  "limits": [
+    "Synthetic probes and direct definition/map/flag changes validate event contracts; they do not certify named real-card effects or complete registration lifecycle.",
+    "Model receiver order20 then21 is arranged intentionally; UE TSet ordering and slot reuse are not certified.",
+    "This matrix does not vary entering-subject suppression, self-ID exclusion/reidentification, same-ID receiver replacement, null/missing subjects or native UObject validity/GC.",
+    "Nested T35-to-T43 interactions, stop flags, recurring own-hook effects and wait-for-hand-target routes require separate audit.",
+    "State query is parsed-pak evidence only; saved runtime checks cover selected library lengths/hashes/top-level flow, not full semantic equivalence.",
+    "No replay authority or new memory reads/writes/injection; fully semantically verified cards remains zero."
+  ],
+  "fully_semantically_verified_cards": 0
+}
