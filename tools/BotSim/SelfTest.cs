@@ -434,6 +434,7 @@ internal static class SelfTest
         // 下面四条直接断言**池子的张数与成员**，以及"同一流下标 → 同一张卡"。
         new("候选池口径：Special/OnlySpawnable/Placeholder/Expansion1/Wildcards 不得进池",
             StaticPoolCardSetFilter),
+        new("预备判定：独立老兵变体保留非预备默认值，不继承基础卡预备状态", ReservedVariantOwnDefault),
         new("候选池口径：预备卡默认不进池，includeReserved=true 时必须在池里",
             StaticPoolReservedFilter),
         new("CheckHasUnitToSpawn：四张苏联随机生成事件与其候选池条件一致",
@@ -3995,6 +3996,53 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    // RULE-235: current read-only CDOs give these independent variants false,
+    // while each exact base card is reserved. This checks the CDO-only policy;
+    // server reservation changes remain outside this fixture.
+    private static string? ReservedVariantOwnDefault(CardDatabase db)
+    {
+        string[] variants =
+        {
+            "card_unit_119_grenadier_vet",
+            "card_unit_14th_guards_rifles_vet",
+            "card_unit_179th_tomahawks_vet",
+            "card_unit_252nd_RIFLES_vet",
+            "card_unit_266th_guards_rifles_vet",
+            "card_unit_35_grenadier_vet",
+            "card_unit_392nd_rifles_vet",
+            "card_unit_47th_infantry_regiment_vet",
+            "card_unit_64_panzergrenadier_vet",
+            "card_unit_6th_infantry_regiment_usa_vet",
+            "card_unit_bt_7_1937_vet",
+            "card_unit_hurricane_mk_ii_c_trop_vet",
+            "card_unit_ki_45_dragon_slayer_vet",
+            "card_unit_panzer_i_brothers_vet",
+            "card_unit_stuka_brothers_vet",
+        };
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        foreach (string variant in variants)
+        {
+            if (!db.All.Any(d => d.Name == variant)) return $"缺少独立变体 {variant}";
+            object? answer = engine.Api.InvokeByName("IsCardReserved", null,
+                new object?[] { variant }, ctx, out bool handled);
+            if (!handled || answer is not false) return $"{variant} 应使用自身非预备默认值，实际 {answer}";
+            string baseName = variant[..^4];
+            answer = engine.Api.InvokeByName("IsCardReserved", null,
+                new object?[] { baseName }, ctx, out handled);
+            if (!handled || answer is not true) return $"基础卡 {baseName} 应保持预备";
+        }
+        string? error = TryStaticPool(engine, state, includeNotAttainable: true,
+            includeReserved: false, out var pool);
+        if (error is not null) return error;
+        foreach (string variant in variants)
+        {
+            if (!pool.Any(c => c.Name == variant)) return $"非预备独立变体 {variant} 被候选池错误排除";
+            if (pool.Any(c => c.Name == variant[..^4])) return $"预备基础卡 {variant[..^4]} 错误进入候选池";
+        }
         return null;
     }
 

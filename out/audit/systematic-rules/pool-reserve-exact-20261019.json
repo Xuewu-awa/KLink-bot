@@ -1,0 +1,67 @@
+{
+  "rule": "RULE-235",
+  "status": "known-veteran-reserved-default-inheritance-fixed",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-cdo-exact-20261019.json": "823750fd4b56d02d03430e17efa01fc6bbb6e7981a3e394956bcadab4ab2c7a2",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-reserve-cdo-exact-20261019.py": "387541ba0bdfed6eae0baaa97476266171a57e24a191045b3053abc9fc6f8be2",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-reserve-exact-20261019.py": "1a618b56d6e41da467f1d85f50172f1e85a03ecc81cc7aaadbcb42539be8424a",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-20261019.json": "8afb171a050f804dce6ef52a2d7f50d61784c01af6e85bd839cf7c7ad3782351",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-card-pool-table.py": "f51121bee3c0d96baf38a8df26cabbabfdffd9ad3df0db03414720e37b9b0693",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardPoolTable.cs": "bdcaa834ed7d61d12194fd6ce33f48892d5a0c76a15a20ee9841ec4b72f5fabc",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "e281416e2588c2b85a6cc15f1f8cf45a64c4af6988ad89c198130b2a8da2eb07",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json": "a369dfbfb30abc2a39460c9bd11d69b62c259e059e61c77cc2da146b8a5dd7c9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reserved-variant-before-20261019.txt": "285e15e7f26c166e2689de878ae83769f63273a2bace948fab0e669dcd0cc9d9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reserved-variant-after-20261019.txt": "1c9626e71a9d474f316eb1f148c1be53607cba70c38a7cbbfec5ba4f92a807f2"
+  },
+  "kernel_changed": true,
+  "cdo_cards": 2019,
+  "reserved_cdos": 563,
+  "raw_reserved_offset": "0x132",
+  "field_mask": "0xff",
+  "native_lookup_code_bytes": 387,
+  "known_cdo_default_differences_before": 15,
+  "known_cdo_default_differences_after": 0,
+  "generated_nonreserved_overrides": [
+    "card_unit_119_grenadier_vet",
+    "card_unit_14th_guards_rifles_vet",
+    "card_unit_179th_tomahawks_vet",
+    "card_unit_252nd_RIFLES_vet",
+    "card_unit_266th_guards_rifles_vet",
+    "card_unit_35_grenadier_vet",
+    "card_unit_392nd_rifles_vet",
+    "card_unit_47th_infantry_regiment_vet",
+    "card_unit_64_panzergrenadier_vet",
+    "card_unit_6th_infantry_regiment_usa_vet",
+    "card_unit_bt_7_1937_vet",
+    "card_unit_hurricane_mk_ii_c_trop_vet",
+    "card_unit_ki_45_dragon_slayer_vet",
+    "card_unit_panzer_i_brothers_vet",
+    "card_unit_stuka_brothers_vet"
+  ],
+  "generation_deterministic": true,
+  "release_selftests_before": {
+    "total": 583,
+    "failed": 1
+  },
+  "release_selftests_after": {
+    "total": 583,
+    "failed": 0
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Fresh current2019 class CDOs and their exact FName keys have563 reserved flags. Runtime reflection and SDK agree on byte offset132; the native bool property field mask isff. Independently validate map bitmap/free list/unique full FName keys/stored hash-chain coverage and raw CDO name/class/default flags.",
+    "Fifteen exact known veteran names have their own false flag, while each exact base name is true. The previous helper treated a false-name absence from Reserved as permission to strip a suffix and incorrectly returned true for all15.",
+    "The generator now emits15 nonreserved variant overrides derived from authoritative card source data; IsReserved tests them before the legacy suffix fallback. Across all2019 current CDO defaults the differences drop15 to0; reserved names and enum mapping are unchanged. Unknown-name compatibility remains unchanged and unaudited.",
+    "A new C# regression exercises IsCardReserved dispatch for all15 variants and bases, plus candidate pool inclusion with includeNotAttainable=true/includeReserved=false. It fails before the fix; complete Release selftest changes from1/583 failed to583/583 passed. Repeated generation is byte-identical."
+  ],
+  "limits": [
+    "The current static map persists2019 keys, but an attempted static-object read failed with ReadProcessMemory299. This snapshot intentionally does not dereference any static object pointer; only currently valid class CDOs are sampled. No claim is made about actual session static-object state, mutations or GC cause. A loaded match was requested for a separate follow-up.",
+    "This fixes the simulator CDO-only compatibility policy for canonical known names, not the full native IsCardReserved session chain. Dynamic server changes/clock/static-object resolution, FName case/number semantics and unknown-name construction/fallback remain pending. Stored map bucket chains are validated without newly certifying the native FName hash implementation.",
+    "No full-card semantic certification, historical replay authority, game function execution, writes, injection or gameplay changes. Fully semantically verified cards remains0."
+  ]
+}

@@ -677,11 +677,31 @@ internal static class CardPoolTable
         "card_unit_zero_a6m2_21",
     };
 
+    // RULE-235: independent known CDOs whose false value overrides a reserved base name.
+    private static readonly HashSet<string> NonReservedVariantOverrides = new(StringComparer.Ordinal)
+    {
+        "card_unit_119_grenadier_vet",
+        "card_unit_14th_guards_rifles_vet",
+        "card_unit_179th_tomahawks_vet",
+        "card_unit_252nd_RIFLES_vet",
+        "card_unit_266th_guards_rifles_vet",
+        "card_unit_35_grenadier_vet",
+        "card_unit_392nd_rifles_vet",
+        "card_unit_47th_infantry_regiment_vet",
+        "card_unit_64_panzergrenadier_vet",
+        "card_unit_6th_infantry_regiment_usa_vet",
+        "card_unit_bt_7_1937_vet",
+        "card_unit_hurricane_mk_ii_c_trop_vet",
+        "card_unit_ki_45_dragon_slayer_vet",
+        "card_unit_panzer_i_brothers_vet",
+        "card_unit_stuka_brothers_vet",
+    };
+
     /// <summary>
     /// `UtilityFunctions.isCardReserved(cardName)` 的离线近似 —— 见 <see cref="Reserved"/>。
     ///
-    /// 变体名（`xxx_bal` / `xxx_vet`）先按 <see cref="CardDatabase.ResolveBaseName"/>
-    /// 剥后缀再查，与 <see cref="CardInnateTable"/> 用同一套回退规则。
+    /// 已知独立变体使用其自身 CDO 默认值，不继承预备基础卡的 true。
+    /// 未知变体仍保留历史后缀回退作兼容；该分支并未认证为原生缺失名契约。
     /// </summary>
     public static bool IsReserved(string? cardName)
     {
@@ -693,6 +713,11 @@ internal static class CardPoolTable
         if (Reserved.Contains(cardName))
         {
             return true;
+        }
+
+        if (NonReservedVariantOverrides.Contains(cardName))
+        {
+            return false;
         }
 
         string baseName = CardDatabase.ResolveBaseName(cardName);
