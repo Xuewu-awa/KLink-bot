@@ -92,20 +92,23 @@ internal static class CardPoolTable
     /// → `UtilityFunctions.isCardReserved(name)`
     /// （`_deps/UtilityFunctions.g.cs:6551-6698`）。后者是：
     /// <code>
-    /// foreach (change in DSession.cards_reserve_changes)          // 服务端下发的调档表
+    /// latest = 0; selected = false;
+    /// foreach (change in DSession.cards_reserve_changes)
     ///     if (change.to_be_reserved ∪ change.coming_back 含 name)
-    ///         if (change.activation_date &lt;= now)
-    ///             _isMovedToReserved = name ∈ change.to_be_reserved
-    ///             _isComingBack      = name ∈ change.coming_back
-    /// if (_isMovedToReserved || _isComingBack) return _isMovedToReserved;
-    /// return GetStaticCard(name).isReserved;                      // ← CDO 那个布尔字段
+    ///         if (change.activation_date &lt;= 当前服务器 UTC &amp;&amp; change.activation_date &gt;= latest)
+    ///             latest = change.activation_date; selected = true;
+    ///             result = name ∈ change.to_be_reserved;
+    /// if (selected) return result; // 同日期的后续记录覆盖前项；两个集合同时命中时预备优先
+    /// return 有效 GetStaticCard(name) ? GetStaticCard(name).isReserved : false;
     /// </code>
-    /// 也就是说：**没有被服务端调档表命中时，判据就是卡自己的 CDO `isReserved`**。
+    /// RULE-234 已逐操作数/控制流对照当前客户端 1541 字节、52 条语句；
+    /// 上述归纳以会话及调档数组稳定、局部日期初始为零、原生容器/比较契约为前提。
+    /// 实际蓝图反复查询会话和数组，并为每个相关记录读取服务器时钟。
     ///
-    /// ⚠️ 本内核没有 `DSession`，所以整表按 CDO 字段算 —— 这是**近似**，
-    /// 唯一会偏的地方是「调档表把某张卡 `coming_back` 回来了」的那些卡
-    /// （那种卡 CDO 里仍是 true、真实客户端已经算 false）。
-    /// 现有回放里没有能区分这两种情形的观测，所以按 CDO 走。
+    /// 本内核尚未接入会话调档与服务器时钟，当前集合仅提供 CDO 兼容默认。
+    /// 已生效的移入预备和回归记录都可能使真实结果与默认值不同，
+    /// 也可能受最新日期、同日期记录顺序及静态卡查找结果影响。
+    /// 历史回放不作为依据；完整会话链及动态候选缓存失效仍待还原。
     /// </summary>
     public static readonly HashSet<string> Reserved = new(StringComparer.Ordinal)
     {

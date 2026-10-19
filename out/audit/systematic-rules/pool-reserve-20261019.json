@@ -1,0 +1,48 @@
+{
+  "rule": "RULE-234",
+  "status": "current-reservation-blueprint-and-bounded-latest-date-policy-model-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\pool-reserve-generation-check-20261019.json": "54badc398a6e49a6df39d1833f24b25d8f9631a72cd8386b34f9a05667baa701",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-20261019.json": "8afb171a050f804dce6ef52a2d7f50d61784c01af6e85bd839cf7c7ad3782351",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\UtilityFunctions.functions.json": "40076098d9f768074de0987445bce4c6027ae7ac8109b0e82d214a35ee0c6528",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-reserve-20261019.py": "3c3a69b9347c3bb09b8c69953fdec4a6230d40257020f52843131bb92f750c39",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-234.py": "5196b2cc5cbe67e2fcd3dd2480b8c0ebd14419419d6cbe8a4f216077cdbbd1f1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-reserve-20261019.py": "b935b1bb9a4ed014820a83537a2c158e584fc5776f05ac0a8776f504edfe58b9",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-card-pool-table.py": "8cc820d3245a57ce636aacf2b2a141d7f8df147069e4c3afcbf0bfbb22493f34",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardPoolTable.cs": "a67422cc9b9de1a17c392c354d7f3522395dc5a552c4181143392e459ff591fe"
+  },
+  "runtime_script_bytes": 1541,
+  "statements": 52,
+  "script_sha256": "379bb80d70a7228bf83aa77f76fb27c227d851909254caef3ee211cf9b9cccd3",
+  "operand_control_flow_match": true,
+  "conditional_model_cases": 819,
+  "conditional_model_cdo_only_differences": 360,
+  "named_cases": {
+    "move_in": true,
+    "come_back": false,
+    "newer_before_older": false,
+    "equal_later_wins": false,
+    "both_sets_reserve_wins": true,
+    "future_ignored": false
+  },
+  "kernel_behavior_changed": false,
+  "generated_comments_corrected": true,
+  "generated_non_comment_csharp_unchanged": true,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "The1541-byte52-statement current IsCardReserved graph matches the installed-pak-derived parsed graph in all operands and control-flow offsets. Property/function/object names are decoded from live headers; native object/function owners are cross-checked.",
+    "Only records containing the queried name reach the clock read. A relevant record is accepted when activation_date<=current UTC and activation_date>=the previously selected date. Later equal-date records replace earlier ones; older records cannot override a newer accepted record.",
+    "An accepted to_be_reserved membership wins even if the name appears in both sets; otherwise accepted coming_back membership clears reserved. When no record is accepted, fallback uses a valid static card isReserved field; invalid static card returns false. GetDSession and Array_Get are repeated at several sites, not a captured atomic list.",
+    "Under stable-list, fixed-now, zero-local and native-container/comparison premises,819 abstract control-flow cases agree with an independent latest-date reducer. These cases include both move-to-reserved and come-back deviations from a CDO-only default, and are not actual card defect counts.",
+    "Corrected generator/source comments that incorrectly restricted deviations to coming_back and cited historical replay absence. The full session changes/clock/static-card resolution chain remains unimplemented; no server data or new runtime policy is fabricated."
+  ],
+  "limits": [
+    "No actual session changes table was decoded or executed. Current game has no selected actual session; runtime current UTC and repeated-session mutation behavior are not certified.",
+    "Native Set_Contains/Array_Get/date-comparison implementations, zero-local initialization and GetStaticCard fallback resolution are explicit model dependencies, not newly fully audited native semantics.",
+    "No simulator behavior fix, kernel test rerun or full-card semantic certification. Last full Release582/582 remains RULE205. Historical replays are not authority."
+  ]
+}
