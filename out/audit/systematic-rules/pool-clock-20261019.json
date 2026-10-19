@@ -1,0 +1,89 @@
+{
+  "rule": "RULE-229",
+  "status": "current-activation-clock-graphs-compared-and-session-time-model-verified-conditionally",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-clock-20261019.json": "74466538ecaadf2bf3da92a2ef98e93b5599fa19f4df3e01303d64b5699b34d1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-clock-config-20261019.json": "20a694f91377293dbe99a129f9e5c05bfbda29d1a7bbc28b1a6daab343e23a21",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\DeckAndCollectionUtilityFunctions.functions.json": "10bf52261beae6a1ef6d5f1d1bc257050ff9db1a64277d627f648adf5b3167b7",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\UtilityFunctions.functions.json": "40076098d9f768074de0987445bce4c6027ae7ac8109b0e82d214a35ee0c6528",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-clock-20261019.py": "986a6e1952e4010a5108d32c3d6f5c1a982ede05fb6a339a730c72dbb5937e06",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-clock-config-20261019.py": "f5e641eaf2c1466ca459395c92def8b31489474f264ad86cc5fa9116dfdc4abd",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset.py": "eb0df7b522debc057af88c8d61e4504b8b6cbfd64e2eaa8af021f7983f80370e",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-clock-20261019.py": "504cb54535b74b071eabbfec1bf9e9f99e890e354ea9efb9645aa55bf943af1c"
+  },
+  "kernel_changed": false,
+  "decoded_graphs": [
+    {
+      "name": "isCardSetConfigActive",
+      "bytes": 522,
+      "statements": 17,
+      "operand_control_flow_match": true,
+      "case_aliases": [
+        {
+          "asset": "CardSet",
+          "current": "cardSet"
+        },
+        {
+          "asset": "isActive",
+          "current": "IsActive"
+        }
+      ]
+    },
+    {
+      "name": "getAntiCheatServerUTC",
+      "bytes": 204,
+      "statements": 7,
+      "operand_control_flow_match": true,
+      "case_aliases": []
+    }
+  ],
+  "decoded_script_bytes": 726,
+  "decoded_statements": 24,
+  "native_code_ranges": 7,
+  "native_code_bytes": 2353,
+  "instruction_checks": 16,
+  "session_field_offset": "0x750",
+  "session_instances": 1,
+  "conditional_clock_models": [
+    {
+      "session": "0x1cb1b339070",
+      "world": "0x1ca80f048a0",
+      "world_name": "StartingLevel",
+      "login_utc": "2026-10-19T05:11:36",
+      "real_seconds": [
+        197.15855572372675,
+        197.15855572372675
+      ],
+      "modeled_server_ticks": [
+        639279836931585557,
+        639279836931585557
+      ],
+      "configured_date": "2026.06.11-08.00.00",
+      "modeled_greater": [
+        true,
+        true
+      ],
+      "conditional_on": [
+        "OwningWorld is the same world selected from the actual Blueprint world context.",
+        "GetDSession returns this actor and the configured string parses to the calendar date used by the offline model."
+      ]
+    }
+  ],
+  "full_activation_result_certified": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "The current522-byte activation and204-byte clock scripts independently decode to17 and7 statements. Their opcodes, control flow, function operands, variable dataflow and literal strings match authority offline graphs after explicitly handling property-name case aliases and one serialized missing context-result descriptor; ContextClass and object outers are checked separately.",
+    "Activation branches only on the first GetString boolean. It reads the date a second time after obtaining server UTC, then parses and compares; neither the second read boolean nor DateTimeFromString success is branched on. Do not invent success guards absent from the graph.",
+    "Current native comparison uses signed64-bit strict greater; DateTime+Timespan adds ticks. For finite ordinary seconds within captured bounds, FromSeconds uses floor(seconds*10000000+0.5), not simple truncation. GetRealTimeSeconds selects a context world and reads its double at+7a8, or zero on the null-world route.",
+    "A real session actor is present after user loading, alongside its excluded CDO. Reflection proves server_time_on_logon is an8-byte DateTime at+750; login UTC is2026-10-19T05:11:36. Its outer Level owning-world relation and two world-clock reads are captured; fresh date config remains2026.06.11-08.00.00 despite config-wrapper replacement since RULE228.",
+    "Under explicitly stated world/actor/date-parse premises, the independently reconstructed server time is greater than the date at both observed endpoints. This is conditional evaluation, not a function execution trace or universal approval of the fixed true constant."
+  ],
+  "limits": [
+    "Decoder scope is only the observed opcodes and numberless12-byte local-function-name operands with both extra words zero. Non-observed forms, generic name/type semantics and full VM equivalence are not certified.",
+    "GetDSession549-byte script is captured but not decoded here; world-scoped actor enumeration and GetWorldFromContextObject backend remain pending. Native date parser1334ea0, enum-to-snake-case implementation and configuration subsystem selection are also pending.",
+    "The clock observations are not atomic and are not constrained to remain unchanged; two reads record advancing time rather than falsely asserting immutable clock state. No game calls/writes/injection/suspension.",
+    "No kernel modification or kernel test rerun. Latest full Release582/582 RULE205; fully semantically verified card logic0; historical replays are not authority."
+  ]
+}
