@@ -1,0 +1,58 @@
+{
+  "rule": "RULE-220",
+  "status": "current-card-reverse-map-bijection-and-update-call-sequence-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reverse-path-20261019.json": "5cccb3cfca49fec3bc6560b5995559f880d5e2ab493a8f85fa5d7b2aa51f03fc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registration-class-20261019.json": "7c6cf021661854ce2a3bb481dd943c448473a7a17de96cacecc7ed33dc8d0e49",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-reverse-path-helpers-20261019.txt": "0994d18d1e6261346be4b19f91c0171e380fe7fbd3f1205259be5cb9b54dcc91",
+    "D:\\Codex Workshop\\kards-install-review\\capture-reverse-path-20261019.py": "b6022afd8a579401a644f7d1239f031424ee57c780ce6eeb67c88d9796bf9699",
+    "D:\\Codex Workshop\\kards-install-review\\audit-reverse-path-20261019.py": "46443b9c33139433cde2f6530eb1fc0662764a29155d2b3ad4cd7ba4aff4528e",
+    "D:\\Codex Workshop\\kards-install-review\\make-reverse-path-seeds-20261019.py": "2ad88e65882fa0377ef10f3486e48746e44cc42f833cb5b1d5760df3ca594b03",
+    "D:\\Codex Workshop\\kards-install-review\\reverse-path-seeds-current-20261019.txt": "a3188f4def2bcd1b7c0d69b9e331ce2e7361ab971ff906d4628f545f1ca9037a",
+    "D:\\Codex Workshop\\kards-install-review\\ExportReversePathHelpersVerified.java": "962dc6dedb6cbe33124b1b7b458cb1b131d3b27f8f62b2fd7f4053414e88664c",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-reverse-path-20261019.console.txt": "e2315a79253916fc3968dec05df15ef17a9f0202e6afc6b806e73a4c9d011d8c"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 5,
+  "native_code_bytes": 2259,
+  "instruction_checks": 22,
+  "reverse_entries": 2227,
+  "reverse_type_counts": {
+    "BaseCardObject": 2019,
+    "Cardback": 169,
+    "BoardItem": 39
+  },
+  "card_pairs": 2019,
+  "card_pair_differences": 0,
+  "original_asset_path_reverse_hits": 0,
+  "reverse_free_slots": 0,
+  "primary_order_differences": 0,
+  "old_guide_checks": [
+    {
+      "function": "ReversePathRemove",
+      "bytes": 301,
+      "nonrelative_match": true
+    },
+    {
+      "function": "ReversePathInsert",
+      "bytes": 725,
+      "nonrelative_match": true
+    }
+  ],
+  "old_remove_prefix_nonunique": true,
+  "findings": [
+    "RegisterAssetData passes manager+28 reverse map into PrimaryAssetUpdate. Update obtains the primary payload, conditionally removes its old generated soft path, copies new generated and original paths, then conditionally inserts generated path -> primary ID. These are distinct tables.",
+    "Reverse removal traverses the path hash chain, compares full soft paths, calls deletion helper1aa7650 on a hit and returns1; empty/miss returns0. This routine spans three pdata fragments through399c04d. Lower deletion-helper internals remain pending.",
+    "Reverse insertion uses stride38 sparse slots: reuse free-list head or grow, construct key/ID, find existing equal path, replace existing key/ID payload and release the temporary slot if duplicate, otherwise link/rehash. This is reverse-map slot behavior, not an additional primary-map insertion.",
+    "Current reverse map has2227 entries:2019 BaseCardObject,169 Cardback,39 BoardItem. All subobject headers are empty. Each of the2019 primary rows maps by raw generated package/object identity to exactly one matching BaseCardObject ID, with no extra card IDs. Original ungenerated card paths have0 reverse hits. Primary allocated-slot key order matches RULE-219.",
+    "Capture revalidates sparse/hash/free invariants and rereads buffers stable. No process writes, injection or function calls; current matching outcomes do not establish historical registration callbacks."
+  ],
+  "limits": [
+    "Soft-path copy, sparse destruction/unlink/rehash and string hashing helper internals remain pending; indirect effects cannot be universally excluded by checking these call sites.",
+    "No duplicate or removal operation was executed or observed. No historical registration trace; current bijection does not prove all transient states.",
+    "Short removal prefix was nonunique in the older project and not accepted as proof. Explicit candidate exports match301 removal and725 insertion bytes after masking relative operands; removal caller xref is at the matching update call offset. Masked call targets remain separately unverified.",
+    "No kernel change or selftest rerun. Last complete Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
