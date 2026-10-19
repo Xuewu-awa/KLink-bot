@@ -20,6 +20,20 @@ public sealed class CardBlacklistPolicy
 
     public CardBlacklistPolicy WithServerUtcTicks(long ticks) => new(_endTicks, ticks);
 
+    /// <summary>
+    /// RULE-239: apply the stable, valid/connected session branch after card_type
+    /// has been resolved to canonical names. This merges without clearing;
+    /// repeated keys overwrite in input order, including expired dates.
+    /// </summary>
+    public CardBlacklistPolicy WithSessionEntries(
+        IEnumerable<KeyValuePair<string, long>> canonicalEntries, bool sessionValid, bool connected)
+    {
+        if (!sessionValid || !connected) return this;
+        var merged = new Dictionary<string, long>(_endTicks, StringComparer.Ordinal);
+        foreach (var entry in canonicalEntries) merged[entry.Key] = entry.Value;
+        return new(merged, ServerUtcTicks);
+    }
+
     public bool IsBlacklisted(string? canonicalName) => canonicalName is not null
         && _endTicks.TryGetValue(canonicalName, out long end) && end >= ServerUtcTicks;
 

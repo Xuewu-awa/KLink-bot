@@ -434,6 +434,8 @@ internal static class SelfTest
         // 下面四条直接断言**池子的张数与成员**，以及"同一流下标 → 同一张卡"。
         new("候选池口径：Special/OnlySpawnable/Placeholder/Expansion1/Wildcards 不得进池",
             StaticPoolCardSetFilter),
+        new("会话黑名单导入：有效/连接门、保留旧键与同名末项覆盖", SessionBlacklistImportOrder),
+        new("会话黑名单导入：重复截止值及空数组不清空开发候选限制", SessionBlacklistImportCaches),
         new("会话黑名单：缺失键、截止时刻包含及有符号时间边界", SessionBlacklistBoundary),
         new("会话黑名单：权威映射快照、过期恢复及 includeReserved 不绕过", SessionBlacklistCapturedMap),
         new("会话黑名单：开发缓存更新与跨局隔离", SessionBlacklistCacheUpdates),
@@ -4002,6 +4004,64 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? SessionBlacklistImportOrder(CardDatabase db)
+    {
+        const string changed = "card_unit_8th_cavalry_regiment";
+        const string retained = "card_unit_1st_london_brigade";
+        var original = new CardBlacklistPolicy(new Dictionary<string, long>
+        {
+            [changed] = 20, [retained] = 30
+        }, 10);
+        var updates = new[]
+        {
+            new KeyValuePair<string, long>(changed, 40),
+            new KeyValuePair<string, long>(changed, 9)
+        };
+        foreach (bool valid in new[] { false, true })
+        foreach (bool connected in new[] { false, true })
+        {
+            var updated = original.WithSessionEntries(updates, valid, connected);
+            if (updated.IsBlacklisted(changed) != (!valid || !connected))
+                return "无效/未连接门或末项覆盖错误";
+            if (!updated.IsBlacklisted(retained)) return "导入错误清除了未提及旧键";
+        }
+        if (!original.IsBlacklisted(changed)) return "合并修改了旧策略";
+        var final = original.WithSessionEntries(updates.Reverse(), true, true);
+        if (!final.IsBlacklisted(changed)) return "重复项顺序没有影响最后截止日期";
+        var empty = final.WithSessionEntries(Array.Empty<KeyValuePair<string, long>>(), true, true);
+        if (!empty.IsBlacklisted(changed) || !empty.IsBlacklisted(retained)) return "空数组清除了旧映射";
+        return null;
+    }
+
+    private static string? SessionBlacklistImportCaches(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var selecting = state.Create("card_event_pams", Side.Left, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left, Self = selecting };
+        var baseline = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (baseline.Count == 0) return "PAMS 基线候选为空";
+        string changed = baseline[0].Name;
+        state.CardBlacklist = new CardBlacklistPolicy(new Dictionary<string, long>(), 10);
+        engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        state.CardBlacklist = state.CardBlacklist.WithSessionEntries(
+            new[] { new KeyValuePair<string, long>(changed, 20) }, true, true);
+        if (engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "导入后未清理开发候选缓存";
+        state.CardBlacklist = state.CardBlacklist.WithSessionEntries(
+            Array.Empty<KeyValuePair<string, long>>(), true, true);
+        if (engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "空数组导入错误清除了黑名单";
+        state.CardBlacklist = state.CardBlacklist.WithSessionEntries(new[]
+        {
+            new KeyValuePair<string, long>(changed, 30),
+            new KeyValuePair<string, long>(changed, 9)
+        }, true, true);
+        var restored = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (!restored.Select(c => c.Name).SequenceEqual(baseline.Select(c => c.Name)))
+            return "过期末项覆盖没有恢复完整候选顺序";
         return null;
     }
 

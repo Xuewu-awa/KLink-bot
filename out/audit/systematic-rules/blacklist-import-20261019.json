@@ -1,0 +1,46 @@
+{
+  "rule": "RULE-239",
+  "status": "gated-canonical-session-blacklist-merge-api-implemented",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-init-20261019.json": "c82d712e0e8e7de4539f8fbe068ece6b320ad0c62607e592a53b03e6008d60b2",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-init-native-complete-20261019.json": "ffd2721c5d071a4a7ecfc967c18e2446722923b09ce64ac0154b3b38c9427664",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-map-20261019.json": "0eade968700fb4dec0fefd5a3e4336577f2efa70f778894210c007928edd1097",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-blacklist-init-20261019.py": "13fb021fbadbb1fa04b7a9ee8bb797761c54c734abfaec50e4ba08d8a2fcbce8",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-init-native-20261019.py": "56d66ddbe34c4695c9b7528620e2e0069a245b739906f9c430b11ad6d4d42e78",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-import-20261019.py": "e95e77111140e05d6ee8c33414d8c8c62f3f95b7357b8bf629ae8347834b1eef",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardBlacklistPolicy.cs": "52e789b01848afa45ba9a5be9fc4f7c11bd006c4715f2a2a85a7856e258a858b",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "07bef0815d259bed28b78af72f2475193ae558a50b7ccc30a4eba64072f0fe7f",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-blacklist-import-after-20261019.txt": "69c3acd4d3fd6d60287b26936d695e4d4b0c3860af180c2349ad53e963579c57"
+  },
+  "kernel_changed": true,
+  "captured_ubergraph_bytes": 45675,
+  "decoded_window_bytes": 744,
+  "decoded_window_statements": 21,
+  "native_ranges": 14,
+  "native_bytes": 2965,
+  "native_instruction_checks": 24,
+  "direct_property_pointer_occurrences": 1,
+  "logic_cdo_default_map_entries": 0,
+  "bounded_stable_loop_cases": 584,
+  "current_session_reconstruction_matches": true,
+  "release_selftests": {
+    "total": 591,
+    "failed": 0
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Decoded four selected ready/session-loop windows744 bytes21 statements from the current45675-byte ubergraph. They match pak-derived operands and branch offsets. The invalid-session and disconnected gates precede this branch; after they pass the array is scanned from index0, with GetDSession/length and Array_Get repeated during iteration. No map clear or date filter occurs in the selected loop.",
+    "The blacklistedCards FField pointer occurs once in this captured ubergraph, at the Map_Add input. The observed BP_Logic CDO map is empty. Neither fact establishes all indirect/native mutations or startup/refresh history.",
+    "Fourteen native spans2965 bytes match the fixed current executable. Actual map flag0 selects the sparse helper. Existing full64-bit FName key equality takes a found-entry branch, destroys/copies into the existing pair and returns without allocating that pair again. Value offset8/size8, actual DateTime struct copy flag and its C++ callback are resolved; the selected callback copies each64-bit date and returns true. Later duplicate canonical entries therefore replace earlier end ticks, even when earlier/larger dates would stay active.",
+    "Added CardBlacklistPolicy.WithSessionEntries(canonicalEntries,sessionValid,connected). False gates preserve the immutable policy; true gates copy/merge in input order, retain unmentioned old keys and keep expired dates. Empty input does not clear the map. Replacing the resulting policy uses RULE238 candidate-cache invalidation.",
+    "Under stable-array, resolved-canonical-name, valid-container and successful native allocation premises,584 bounded loop/gate/seed-map combinations pass. Starting from an empty map with the observed single session entry reproduces the observed logical map, without claiming historical execution. Two new C# cases verify gate/order/retention/immutability and warmed Develop candidate updates; Release591/591 passes."
+  ],
+  "limits": [
+    "This is a selected stable connected branch and an explicit canonical-entry API, not automatic live acquisition or complete FString-to-FName conversion. Case/number normalization, unknown names, dynamic array/session replacement and GetDSession/IsValid internals remain pending.",
+    "Native hash implementation, new-slot allocation/failure/rehash and unrelated Map_Add layouts are not fully certified. Existing-key update/copy is proved for this actual Name/DateTime property layout; stored map iteration is not used as a simulator candidate ordering proof.",
+    "Computed entry dispatch, latent wait/retry continuations, delegate setup and full refresh/clear lifecycle remain pending. No generic claim is made that the blacklist can never be cleared by other code.",
+    "No game-function execution, writes, injection, gameplay mutation or historical replay authority. Fully semantically verified cards remains0."
+  ]
+}
