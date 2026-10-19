@@ -1,0 +1,88 @@
+{
+  "rule": "RULE-217",
+  "status": "current-default-redirect-key-misses-verified-no-alternative-for-eight-parent-paths",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\redirect-table-20261019.json": "59ce35fa5a4a8b14990527f0c11dc440072517f254ba7891f61b6af634ce9e8e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\capture-redirect-table-20261019.py": "3c7e62ed88ff3e7bbe449b14e4c99daa3f43513751e93e85d96b93ea3f7ca18a",
+    "D:\\Codex Workshop\\kards-install-review\\audit-redirect-table-20261019.py": "2ae0c00c3bed9395fd6da5d23a100172249167f4b405f885f4f3acf0f1c47b50",
+    "D:\\Codex Workshop\\kards-install-review\\readonly-thread-tls.py": "eafcdedfb59b79151be4ca9c65b073bb14edc8533ba67466c59f13ff3a194f7a",
+    "D:\\Codex Workshop\\kards-install-review\\make-redirect-table-seeds-20261019.py": "c49821a832d657567ddbc804bc1290897a9ec1c0208160fab20982bb98884ce5",
+    "D:\\Codex Workshop\\kards-install-review\\redirect-table-seeds-current-20261019.txt": "eddd0de8774848994f2a1b9b1d6028f9c862e145bc283c6a3a3417b2beeaf0ca",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-redirect-table-20261019.txt": "d97b05937c3a78e86c2a19f9daf7127e6a6694252b429251157d6cb163174795",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-parent-path-20261019.txt": "54195beeacd4960657f568aa05d83a11ee1d1e6bf98df1bbe7d1c201b6afb433",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-scan-callback-20261019.txt": "a05f0cce08a1dfffae1fa6333ecc1e4b1f0f2692a0dbe40b8f7aa03da35e9395"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "The native lookup selects a per-thread state override from module TLS+a98 when nonzero, otherwise the pinned default global. Query-only thread/TEB reads before and after table capture found235 threads, all readable with module TLS and zero overrides; the two enumerations agree. This is a bounded current observation, not an atomic or historical thread-state proof.",
+    "Default state has9 groups. Reproducing current flags2/match0 selection admits only flags2 and40, with553 and209 allocated name keys respectively. Neither selected group takes the wildcard branch. Sparse allocation/free/hash-chain invariants were checked during capture and source buffers reread stable.",
+    "For the eight distinct captured canonical package.object parents, the redirect-name parser yields object/empty-outer/package fields. Class-name or package-name key lookup as selected by group flags misses all16 query/group combinations in raw FName identity. No candidate records enter detailed match, sorting or apply logic on this observed path.",
+    "With no matches the name query retains the original; the outer wrapper sees no change and, with the observed false optional flag, adds no alternative candidate. This closes the current-snapshot redirect uncertainty for the24 prior original nonmatches. It does not record actual startup callbacks or certify generic redirect semantics."
+  ],
+  "limits": [
+    "Thread enumeration and memory reads are not atomic. TLS overrides or redirect registration may change before/after this capture; no universal empty-override claim.",
+    "Only the observed no-key-match path is reconstructed; matched/wildcard records, sorting, redirects with chains/cycles, value changes and short-class fallback remain unverified outside this path.",
+    "No game function was called. Thread handles requested query access only; no suspend, context modification, process write or injection.",
+    "Six current intervals3274 bytes include1196 bytes revalidating the earlier wrapper/Blueprint helper. Guide matches cover existing nonrelative spans, not masked targets.",
+    "No kernel/order/balance change or selftest rerun; latest complete Release suite582/582 (RULE-205), fully semantically verified cards0. No replay authority."
+  ],
+  "live_pid": 24220,
+  "thread_count": 235,
+  "thread_probe_errors": 0,
+  "thread_overrides_nonzero": 0,
+  "thread_before_after_equal": true,
+  "redirect_groups": 9,
+  "selected_group_keys": 762,
+  "selected_group_flags": [
+    "0x2",
+    "0x40"
+  ],
+  "distinct_parent_queries": 8,
+  "query_group_checks": 16,
+  "matching_keys": 0,
+  "current_alternative_candidates": 0,
+  "prior24_redirect_boundary_closed_for_snapshot": true,
+  "native_code_ranges": 6,
+  "native_code_bytes": 3274,
+  "native_call_site_checks": 14,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "GetRedirectedName",
+      "length": 491,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "GetMatchingRedirects",
+      "length": 697,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ParseRedirectObjectName",
+      "length": 137,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "SplitRedirectObjectName",
+      "length": 753,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ResolveRedirect",
+      "length": 502,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BlueprintClassAcceptBody",
+      "length": 694,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
