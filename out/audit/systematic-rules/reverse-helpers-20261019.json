@@ -1,0 +1,69 @@
+{
+  "rule": "RULE-221",
+  "status": "reverse-slot-unlink-copy-rehash-and-current-hash-chains-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reverse-helpers-20261019.json": "107290f4b704d69e4f057893371634965cbb891178e9bbf386ff62fe5fe0346b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reverse-path-20261019.json": "5cccb3cfca49fec3bc6560b5995559f880d5e2ab493a8f85fa5d7b2aa51f03fc",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-reverse-low-helpers-20261019.txt": "1dfa09ce9791f144923719a3bf3588a655f420b965e513ee284eeea50a1d8b56",
+    "D:\\Codex Workshop\\kards-install-review\\capture-reverse-helpers-20261019.py": "7605cd90900dbfae6739cd57480999c0dbd3ac97a57ac22ebd7610dd8ecb8651",
+    "D:\\Codex Workshop\\kards-install-review\\audit-reverse-helpers-20261019.py": "870855d0926023480f0a9e8aedfd88d760ce397dbd41eec544f02ddd790b59bd",
+    "D:\\Codex Workshop\\kards-install-review\\ExportReverseLowHelpersVerified.java": "2fd0fc90054839918553c40c27c3e7f9d89b091df78fc4aa1fbc19df489fcc7c",
+    "D:\\Codex Workshop\\kards-install-review\\make-reverse-helpers-seeds-20261019.py": "1d974a329b752c01b17288795796e5de4b5850165e48b0ff359c18b95eb6a7f0",
+    "D:\\Codex Workshop\\kards-install-review\\reverse-helpers-seeds-current-20261019.txt": "798d4ca9345283f8bd0b4da8e221b5a624376d2d00f96acacc52eec0438a2cf0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-reverse-helpers-20261019.console.txt": "606153cc207d280626f1c1954ca63a6864ddab4ee6cedb12e01b529a343f8068"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 7,
+  "native_code_bytes": 2262,
+  "helper_code_bytes": 1112,
+  "instruction_checks": 25,
+  "reverse_entries": 2227,
+  "hash_buckets": 2048,
+  "hash_bucket_differences": 0,
+  "chain_link_differences": 0,
+  "chain_head_differences": 0,
+  "numbered_key_rows": 117,
+  "primary_order_differences": 0,
+  "old_guide_checks": [
+    {
+      "function": "ReverseUnlink",
+      "bytes": 134,
+      "nonrelative_match": true
+    },
+    {
+      "function": "ReverseSlotFree",
+      "bytes": 174,
+      "nonrelative_match": true
+    },
+    {
+      "function": "SoftPathCopy",
+      "bytes": 144,
+      "nonrelative_match": true
+    },
+    {
+      "function": "ReverseRehash",
+      "bytes": 627,
+      "nonrelative_match": true
+    },
+    {
+      "function": "NameIndexHash",
+      "bytes": 33,
+      "nonrelative_match": true
+    }
+  ],
+  "findings": [
+    "Unlink updates either the bucket head or predecessor link to target.next, frees nonnull subpath buffer, then tail-calls slot free with count1. Slot free prepends freed slots to a doubly linked free list, increments free count, changes free head and clears allocation bits; it contains no allocation or payload-compaction call.",
+    "SoftPathCopy copies the two FNames then copies the subpath storage unless that storage is self-assigned. Stored length is passed directly as the byte count, not multiplied by2. The empty/zero-capacity branch needs no allocation; nonempty allocation/copy primitives remain lower-level dependencies.",
+    "ReverseRehash initializes buckets then iterates allocated sparse slots and updates only hash-next and bucket-index fields in each row plus bucket heads. No key/ID relocation appears in the helper body; external allocator/iterator contracts remain explicitly scoped.",
+    "Recovered33-byte index hash and number addition, followed by path hash combine, explain every one of2227 current empty-subpath keys bucket indices. Rebuilding bucket chains by allocated-slot order matches all2227 next links and2048 heads exactly. This is observational consistency, not a historical rehash trace.",
+    "Current reverse key/ID pairs and primary key order equal RULE-220; all buffers were reread stable. No game function calls, process writes or injection."
+  ],
+  "limits": [
+    "General nonempty subpath string hash/equality/encoding and memory allocator/free/copy internals are not certified. All current captured subpaths are empty.",
+    "Sparse slot free is verified by native control/data flow; no actual runtime remove/reuse operation was triggered or recorded, and no historical branch is inferred solely from chain equality.",
+    "Some short old-project helper signatures are nonunique. Explicit full old candidates match1112 bytes with relative operands masked; masked target addresses need separate current-build verification.",
+    "No kernel change or test rerun. Last full Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
