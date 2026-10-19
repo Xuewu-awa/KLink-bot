@@ -1,0 +1,50 @@
+{
+  "rule": "RULE-218",
+  "status": "registration-gate-and-existing-key-return-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registration-gate-20261019.json": "f1c3ee42ba4e6468ec242e0482cf2ce539f250ea6df80c8ec9b5d55d8fd99eaf",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-registration-gate-20261019.txt": "adfb44a407e68081542b27584245fce98165073bc4babb936586ca6a74b5f80b",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registration-gate-20261019.py": "d2f5a5acf94d3b63e8f4c70fe4f586072daf89e0ec06be8ce3ebe18ba3f8e7d5",
+    "D:\\Codex Workshop\\kards-install-review\\audit-registration-gate-20261019.py": "d96f9e155f8cb095338f56ff1303c5f4101e231a5c9069317e0076ee66f921cf",
+    "D:\\Codex Workshop\\kards-install-review\\ExportRegistrationHelpersVerified.java": "0bf60f424e13dfde3aa23d7da686ff06279143e6ff633ab2acb70127808cdc28"
+  },
+  "kernel_changed": false,
+  "live_pid": 24220,
+  "initial_validity_records": 2043,
+  "initial_validity_passes": 2043,
+  "native_code_ranges": 6,
+  "native_code_bytes": 2086,
+  "instruction_checks": 17,
+  "old_guide_checks": [
+    {
+      "function": "BuildRegistrationPath",
+      "length": 600,
+      "nonrelative_bytes_match": true
+    },
+    {
+      "function": "AssetDataObjectPath",
+      "length": 71,
+      "nonrelative_bytes_match": true
+    },
+    {
+      "function": "ExistingPathEqual",
+      "length": 83,
+      "nonrelative_bytes_match": true
+    }
+  ],
+  "findings": [
+    "Registration path construction rejects empty package or asset FNames. All2043 captured Blueprint records were reread stable and pass this initial gate; subsequent class-dependent path construction is not thereby certified.",
+    "RegisterAssetData branches to the false return path when path construction fails, before PrimaryAssetUpdate. This gate must precede any order model insertion.",
+    "The existing-path helper1594f70 is equality comparison, not mutation. Its return is ignored by this caller. Earlier tentative update wording is superseded.",
+    "FindOrAdd compares the full8-byte name key. A hit returns existing row+8, bypassing3970550 insertion; Update uses that payload. This establishes slot retention at this operation, not a trace of startup duplicate registrations.",
+    "BuildRegistrationPath spans three pdata fragments through39734b3. The first fragment alone stops before a complete instruction path; the full611-byte interval and epilogue are captured. Old Ghidra provides600 bytes with misleading return flow; current machine branches control interpretation."
+  ],
+  "limits": [
+    "No actual registration callback/duplicate history observed. Reverse-index operations and other side effects remain to audit.",
+    "Class test3984fc0, secondary predicatec7bc80 and generated-class suffix path construction remain pending. Passing initial validity does not prove all registrations accepted.",
+    "Old guide comparisons mask relative addresses; called targets are not certified by byte similarity.",
+    "No kernel change or test rerun. Latest full Release selftest582/582 in RULE-205. Fully semantically verified cards0. No replay authority."
+  ]
+}
