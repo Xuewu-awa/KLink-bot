@@ -1,0 +1,63 @@
+{
+  "rule": "RULE-222",
+  "status": "current-loaded-card-class-and-selected-conversion-path-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-load-20261019.json": "8e80dd91b792771e3de42f5d16b8d3b81af51f6433621ddfc0c819d3ed262135",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\accept-class-sources-20261019.json": "42cbe9768286813bbfd6e740ff6e5946b9b32daedd349a7b40ebad01820fc620",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registration-class-20261019.json": "7c6cf021661854ce2a3bb481dd943c448473a7a17de96cacecc7ed33dc8d0e49",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-class-load-20261019.txt": "104c51be8f1439ff42313cc082f39725107997392008bde69e3d3a626386c117",
+    "D:\\Codex Workshop\\kards-install-review\\capture-class-load-20261019.py": "68bc1b81b9d3a091924513780be4000be7aceb2b4d019472fb6fc1fd93d11b57",
+    "D:\\Codex Workshop\\kards-install-review\\audit-class-load-20261019.py": "1441481024c982c07da07cf043a3d14312394e9700ad49b971ca3acead3e8018",
+    "D:\\Codex Workshop\\kards-install-review\\make-class-load-seeds-20261019.py": "6c997ebaa245bca47d8b60ac3d1044a5ba24f4dc872bdfb055cf611578b5f5f3",
+    "D:\\Codex Workshop\\kards-install-review\\class-load-seeds-current-20261019.txt": "f3071b8ad5761992a8328aaf6f45ff18b845855511fe59295e7a2fe736ee3c02"
+  },
+  "kernel_changed": false,
+  "loaded_card_classes": 2019,
+  "class_path_differences": 0,
+  "base_card_inheritance_differences": 0,
+  "fast_inheritance_differences": 0,
+  "blueprint_script_bytes": 45675,
+  "resolved_function_or_class_operands": 4,
+  "resolved_property_operands": 9,
+  "instruction_checks": 13,
+  "native_code_ranges": 5,
+  "native_code_bytes": 1236,
+  "old_guide_checks": [
+    {
+      "function": "ConvertSoftClassExec",
+      "bytes": 507,
+      "nonrelative_match": true
+    },
+    {
+      "function": "BlockingLoadClassExec",
+      "bytes": 391,
+      "nonrelative_match": true
+    },
+    {
+      "function": "WeakObjectGet",
+      "bytes": 80,
+      "nonrelative_match": true
+    },
+    {
+      "function": "ResolvePathGate",
+      "bytes": 56,
+      "nonrelative_match": true
+    }
+  ],
+  "findings": [
+    "The selected current Blueprint calls Map_Find, Conv_SoftClassReferenceToClass, MetaCast BaseCardObject, computes cast success and calls Map_Add CardsClassList with the cast result. There is no intervening conditional branch on either success flag. Failure must not be modeled automatically as skipping the key; generic Map_Add internals remain separate.",
+    "MetaCast opcode13 dispatches to15a5650. Its null/type/ancestry failure path writes null; success returns the input class. The selected Blueprint operands resolve the actual functions, class and9 property references rather than relying on old labels alone.",
+    "All2019 primary generated paths resolve by package/name to currently loaded UObject entries, with matching pointer/index and non-rejected item flags. Their super chains and fast ancestry slots include BaseCardObject; class objects also pass the captured Class type fast-ancestry check. This is current availability, not a recorded conversion result or startup trace.",
+    "Reflected conversion and blocking load have distinct native entries3da58c0 and3dc9eb0. Conversion first checks a weak object, then a path-resolution gate when needed, and performs class checks. Blocking-load entry calls15648b0. Full fallback descendant semantics are not yet certified, so no universal no-loading claim is made."
+  ],
+  "limits": [
+    "No game conversion/load functions were called. Current loaded classes do not prove initialization or failure history; Blueprint runtime loop execution is not recorded.",
+    "The selected script window is verified, not the entire45675-byte ubergraph. Generic Map_Add semantics and loop key extraction remain separate dependencies.",
+    "ResolvePathGate tails to159e700; blocking loader15648b0 and other conversion/cache/GC helpers remain pending. Do not claim full class-load chain restoration.",
+    "Guide comparisons mask relative operands; MetaCast uses current code and current dispatch pointer without an old-guide claim.",
+    "No kernel change or selftest rerun. Last complete Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
