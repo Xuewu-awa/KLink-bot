@@ -1,0 +1,61 @@
+{
+  "rule": "RULE-245",
+  "status": "blacklist-startup-and-wait-control-flow-verified-conditionally",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-lifecycle-complete-20261019.json": "9772f414c85a57a15b9f381155930c8a97741b7980d44cd9b6cef78666edb04c",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-245.py": "c8a241c546d2dd230905451cb306308e2b94313e211142cc942f622714bcfff1",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-blacklist-lifecycle-20261019.py": "9c73cbd185521b90c97dd6031edd29324217f8338af26e05131315d9afe3db83",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-lifecycle-20261019.py": "07e4395563879fddbc3d63e6c087c3cc3ea52e9862863c3627b6fd2e4fd3bba7"
+  },
+  "kernel_changed": false,
+  "decoded_bytes": 3519,
+  "decoded_statements": 232,
+  "conditional_scenarios": 120,
+  "conditional_late_diagnostic_prints": 20,
+  "latent_requests": [
+    {
+      "at": 1035,
+      "seconds": 10.0,
+      "linkage": 1090,
+      "uuid": 1686683353
+    },
+    {
+      "at": 1223,
+      "seconds": 0.10000000149011612,
+      "linkage": 1278,
+      "uuid": -67496264
+    },
+    {
+      "at": 1901,
+      "seconds": 0.10000000149011612,
+      "linkage": 15,
+      "uuid": -1952077066
+    },
+    {
+      "at": 1966,
+      "seconds": 10.0,
+      "linkage": 2021,
+      "uuid": -248085114
+    }
+  ],
+  "release_selftests": {
+    "total": 594,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "ReceiveBeginPlay calls ubergraph entry41088, which jumps2599. Non-editor initialization requests spawnCardFunctions before jumping15 into session validity/connection wait and blacklist import. The spawn helper requests notifier lookup and receiver-to-self setup before returning; actual success requires valid spawned objects/interface.",
+    "Invalid-session branch requests float32 approximately0.1s callback linkage15; disconnected branch requests linkage1278 which jumps176 to connection check. Independent10s diagnostic callbacks use linkages2021/1090 and distinct UUIDs. Ready branch imports all entries before idle timer/server-closing/disconnect delegate setup, with no short retry request on that path.",
+    "Current reflected LatentActionInfo fields are Linkage0,size4;UUID4,size4;ExecutionFunction8,size8;CallbackTarget16,size8. LinearColor is RGBA at0,4,8,12. VM struct constant size metadata32 is retained separately from reflected LatentActionInfo runtime size24.",
+    "Under persistent-zero-initialized-local, stable-session, valid-array and abstract Delay-request assumptions,120 bounded status histories agree: no import while waiting, ordered import on ready, old keys retained, and late diagnostic continuations never reimport/schedule in this model; some can still print under retained gate state. This does not certify actual latent-manager scheduling or frame persistence."
+  ],
+  "limits": [
+    "Context-null reads in the status model are abstracted to false. Once the connection retry path is entered it returns176 and does not re-run the initial IsValid branch. Actual invalidation/output ABI still needs checking.",
+    "Delay native request/dedup/clock semantics, UberGraphFrame persistence/defaults, real callback execution and object teardown remain open. Recorded requests are not proof of accepted or executed timers.",
+    "Audio/spawn/SetGameState/timer primitives are opaque in the conditional interpreter; notifier spawn/interface casting and lifecycle backend are decoded but not executed or certified.",
+    "No periodic blacklist refresh is introduced in the simulator. Explicit merge/time APIs remain; session/world selection, provider replacement and automatic refresh/clear require additional evidence. No complete card semantics certified."
+  ]
+}
