@@ -128,7 +128,7 @@ def main():
     lines.append("/// 遍历 `GameStateRef.GetAllStaticCardsSortedByName()`，按")
     lines.append("/// ① `cardSet`（见 <see cref=\"IsSetInPool\"/>）")
     lines.append("/// ② `NotifyCheckCardReserved`（= `IsCardReserved`，见 <see cref=\"IsReserved\"/>）")
-    lines.append("/// ③ `NotifyCheckCardBlacklisted`（服务端 `DSession.cards_blacklist`，离线不可得）")
+    lines.append("/// ③ `NotifyCheckCardBlacklisted`（逻辑对象 `blacklistedCards`，显式会话策略）")
     lines.append("/// 三层过滤。")
     lines.append("/// </summary>")
     lines.append("internal static class CardPoolTable")

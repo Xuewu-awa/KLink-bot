@@ -1,0 +1,76 @@
+{
+  "rule": "RULE-238",
+  "status": "explicit-logical-blacklist-policy-and-independent-pool-filter-implemented",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-chain-20261019.json": "ea3de27c2b809976f23950008c6afa504828861490dca94c8e7c712665b1c869",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-map-20261019.json": "0eade968700fb4dec0fefd5a3e4336577f2efa70f778894210c007928edd1097",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-blacklist-native-20261019.json": "76ab4b70dee09c4fb7990f0c0cf7f9ba1f3085f16144ce7609a6a0322e215432",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\UtilityFunctions.functions.json": "40076098d9f768074de0987445bce4c6027ae7ac8109b0e82d214a35ee0c6528",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-blacklist-session-20261019.json": "69609c6db053676d2261fc7ee4ccf889222c671ab9f4a0c03473b67a9a16a863",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-blacklist-chain-20261019.py": "ea59a5c1acf0ecac070fd0325dffb34572020a966e7d5a6cfe71c9dd2fcf5e7c",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-blacklist-map-20261019.py": "22fdec3138992975310d2b0ca5c289f15b3ae1d177654e2b0b5acaf7f5519ae8",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-blacklist-native-20261019.py": "45949859861b8adcfbdbba8900be7c9cfb7f311bdd952c72f92c4c70e190a1d0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-238.py": "4f62801c660ca1f1ee2c21b382a2953f13a992d1e7cbf8cf4eb3116c4993820f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-policy-20261019.py": "12dae0c404f52e42e6fad7f0dad6fcd3f694508f9996f02a3884d4304fbaae59",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardBlacklistPolicy.cs": "2948bc7ee3092a0799c462ae4b1deb4aa6c47f065f68a8196b0e60e2eda6e041",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "909166a14758a8ad65609337cf1d8f22c8456186ad183e145dee0713b4390612",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "a7ad8fcaeb7080e2e7f791b17527b63c15e7b11176c618e7361d14fbc803a963",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "fc93d55167cc602e8efd21f6f8759401acb2e44be20409381b095a9788b099f6",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-blacklist-before-20261019.txt": "321f545031f79325ca48007304add9ebc6efc7f73effc27104ada23853dea6f0",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-blacklist-after-20261019.txt": "ccd09f88369bc327cf361ca7ab1e85274ef47d63b921410dd2247c34efa138c4"
+  },
+  "kernel_changed": true,
+  "current_graphs": [
+    {
+      "name": "isCardBlacklisted",
+      "bytes": 368,
+      "statements": 12
+    },
+    {
+      "name": "HandleCheckCardBlackListed",
+      "bytes": 77,
+      "statements": 4
+    },
+    {
+      "name": "GetAllActiveStaticCards",
+      "bytes": 2638,
+      "statements": 85
+    }
+  ],
+  "graph_bytes": 3083,
+  "graph_statements": 101,
+  "native_exec_bytes": 198,
+  "native_signed_comparison_checks": 5,
+  "bounded_predicate_cases": 50,
+  "bounded_eligible_card_gates": 8,
+  "live_logical_entries": 1,
+  "live_session_array_matches": true,
+  "current_observed_active_blacklist": 0,
+  "optional_policy_fixture": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-blacklist-session-20261019.json",
+  "fixture_is_automatically_installed": false,
+  "release_selftests_before": {
+    "total": 589,
+    "failed": 2
+  },
+  "release_selftests_after": {
+    "total": 589,
+    "failed": 0
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Three current runtime Blueprint graphs totaling3083 bytes/101 statements match pak-derived operands/control flow: isCardBlacklisted, HandleCheckCardBlackListed and GetAllActiveStaticCards. The provider forwards the helper output. The helper reads BP_Logic.blacklistedCards, not the raw session array directly.",
+    "Missing first Map_Find returns false without a clock read. A stable-map hit performs a second GetLogic/Map_Find and signed end>=serverUTC comparison. The second lookup boolean is not branched on. Its198-byte native exec wrapper matches the frozen executable and uses setge on the two64-bit tick operands, so equality remains active.",
+    "Current logical map has one exact canonical FName entry matching the independently read session array:8th_cavalry_regiment. At the captured explicit server time it is expired; all2019 current canonical names model false. This does not establish generic session-array-to-map lifecycle or duplicate-key conversion.",
+    "Added copied immutable CardBlacklistPolicy and per-state optional CardBlacklist. Explicit logical-map JSON snapshot and explicit UTC support query dispatch plus independent static-pool filtering, including includeReserved=true. Policy/time replacement invalidates both static and Develop candidate caches before lookup. Null keeps legacy empty-blacklist compatibility.",
+    "Fifty signed-boundary stable-map graph cases and eight already-eligible includeReserved/reserved/blacklisted combinations pass offline. Three C# tests cover copied input/missing keys/tick limits, actual fixture with exact cutoff and expiry/pool gating, and warmed Develop cache/cross-match isolation. Two integration cases fail before wiring; Release589/589 passes after."
+  ],
+  "limits": [
+    "This is the stable logical-map contract for canonical names. GetLogic resolution/actual card-caller context, delegate binding/lifetime, generic Map_Find output ABI/concurrent disappearance, FName case/number comparison and raw session-to-map initialization remain pending.",
+    "The actual captured blacklist is expired. Active/expiry behavior is certified with explicit simulated time and bounded tests, not by changing the live game clock or gameplay. Session acquisition/refresh and clock advancement remain caller responsibilities; no universal live default is installed.",
+    "Reservation and blacklist policies have separate explicit times; callers modeling the same session must advance both consistently. Card-set activation/config, static candidate ordering, shared template aliases and complete PvP semantics remain pending.",
+    "No process writes, injection, game-function execution or historical replay authority. Fully semantically verified cards remains0."
+  ]
+}

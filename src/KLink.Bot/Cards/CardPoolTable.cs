@@ -13,7 +13,7 @@ namespace KLink.Bot.Cards;
 /// 遍历 `GameStateRef.GetAllStaticCardsSortedByName()`，按
 /// ① `cardSet`（见 <see cref="IsSetInPool"/>）
 /// ② `NotifyCheckCardReserved`（= `IsCardReserved`，见 <see cref="IsReserved"/>）
-/// ③ `NotifyCheckCardBlacklisted`（服务端 `DSession.cards_blacklist`，离线不可得）
+/// ③ `NotifyCheckCardBlacklisted`（逻辑对象 `blacklistedCards`，显式会话策略）
 /// 三层过滤。
 /// </summary>
 internal static class CardPoolTable

@@ -434,6 +434,9 @@ internal static class SelfTest
         // 下面四条直接断言**池子的张数与成员**，以及"同一流下标 → 同一张卡"。
         new("候选池口径：Special/OnlySpawnable/Placeholder/Expansion1/Wildcards 不得进池",
             StaticPoolCardSetFilter),
+        new("会话黑名单：缺失键、截止时刻包含及有符号时间边界", SessionBlacklistBoundary),
+        new("会话黑名单：权威映射快照、过期恢复及 includeReserved 不绕过", SessionBlacklistCapturedMap),
+        new("会话黑名单：开发缓存更新与跨局隔离", SessionBlacklistCacheUpdates),
         new("会话预备：最新生效日期、同日期后项与双集合优先级", SessionReservationPriority),
         new("会话预备：读取当前权威快照，覆盖直接查询与候选过滤", SessionReservationCapturedPolicy),
         new("会话预备：策略/时间更新清理静态池与开发候选缓存，跨局隔离", SessionReservationCacheUpdates),
@@ -3999,6 +4002,73 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? SessionBlacklistBoundary(CardDatabase db)
+    {
+        var entries = new Dictionary<string, long> { ["x"] = 10 };
+        var policy = new CardBlacklistPolicy(entries, 9);
+        entries.Clear();
+        if (!policy.IsBlacklisted("x") || policy.IsBlacklisted("missing") || policy.IsBlacklisted(null))
+            return "映射复制或缺失键处理错误";
+        if (!policy.WithServerUtcTicks(10).IsBlacklisted("x")) return "截止时刻必须仍在黑名单";
+        if (policy.WithServerUtcTicks(11).IsBlacklisted("x")) return "截止后必须解除";
+        var signed = new CardBlacklistPolicy(new Dictionary<string, long> { ["x"] = long.MinValue }, long.MaxValue);
+        if (signed.IsBlacklisted("x")) return "日期比较错误地使用无符号数";
+        if (!signed.WithServerUtcTicks(long.MinValue).IsBlacklisted("x")) return "最小有符号截止边界错误";
+        return null;
+    }
+
+    private static string? SessionBlacklistCapturedMap(CardDatabase db)
+    {
+        const string name = "card_unit_8th_cavalry_regiment";
+        const long endTicks = 639085644000000000;
+        var policy = CardBlacklistPolicy.Load(Path.Combine(AppContext.BaseDirectory,
+            "Data", "card-blacklist-session-20261019.json"));
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        state.CardBlacklist = policy;
+        object? value = engine.Api.InvokeByName("IsCardBlacklisted", null,
+            new object?[] { name }, ctx, out bool handled);
+        if (!handled || value is not false) return "当前已过期的黑名单应为 false";
+        // Explicit time travel exercises the captured cutoff, not a claim about current gameplay.
+        state.CardBlacklist = policy.WithServerUtcTicks(endTicks);
+        value = engine.Api.InvokeByName("IsCardBlacklisted", null,
+            new object?[] { name }, ctx, out handled);
+        if (!handled || value is not true) return "权威截止时刻未命中黑名单";
+        string? error = TryStaticPool(engine, state, true, true, out var blocked);
+        if (error is not null) return error;
+        if (blocked.Any(c => c.Name == name)) return "includeReserved=true 绕过了黑名单";
+        state.CardBlacklist = policy.WithServerUtcTicks(endTicks + 1);
+        error = TryStaticPool(engine, state, true, true, out var expired);
+        if (error is not null) return error;
+        if (!expired.Any(c => c.Name == name)) return "黑名单过期后候选未恢复";
+        return null;
+    }
+
+    private static string? SessionBlacklistCacheUpdates(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var selecting = state.Create("card_event_pams", Side.Left, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left, Self = selecting };
+        var original = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (original.Count == 0) return "PAMS 基线候选为空";
+        string changed = original[0].Name;
+        engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        state.CardBlacklist = new CardBlacklistPolicy(new Dictionary<string, long> { [changed] = 10 }, 10);
+        if (engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "开发候选没有随黑名单更新";
+        var (otherEngine, otherState) = EmptyBoard(db);
+        string? error = TryStaticPool(otherEngine, otherState, true, true, out var otherPool);
+        if (error is not null) return error;
+        if (!otherPool.Any(c => c.Name == changed)) return "黑名单泄漏到另一局";
+        state.CardBlacklist = state.CardBlacklist.WithServerUtcTicks(11);
+        if (!engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "开发候选没有随黑名单过期恢复";
+        state.CardBlacklist = null;
+        if (!engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _)
+            .Select(c => c.Name).SequenceEqual(original.Select(c => c.Name))) return "清空黑名单未恢复原候选顺序";
         return null;
     }
 

@@ -1,0 +1,9 @@
+{
+  "description": "Optional captured BP_Logic blacklist map; not an automatic global policy.",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_utc": "2026-10-19T10:12:12.404475+00:00",
+  "server_utc_ticks": 639280015341974259,
+  "blacklisted_cards": {
+    "card_unit_8th_cavalry_regiment": 639085644000000000
+  }
+}

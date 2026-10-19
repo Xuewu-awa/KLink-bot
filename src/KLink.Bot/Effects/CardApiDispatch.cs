@@ -86,6 +86,7 @@ public sealed partial class CardApi
             //      （例：`card_event_atlantic_convoy.g.cs:182-184`）。
             //      原来恒 false ⇒ 预备卡永远进候选池（见 `StaticCardPool`）。
             ["IsCardReserved"] = (c, r, a) => IsReservedForSession(c, StrArgOrNull(a, 0)),
+            ["IsCardBlacklisted"] = (c, r, a) => c.State.CardBlacklist?.IsBlacklisted(StrArgOrNull(a, 0)) ?? false,
             // `IsForecastCard` is the weather-card predicate, not the
             // `ability.forecast` keyword carried by cards that trigger Forecast.
             // The Blueprint `GetAllForecastCards` implementation uses these same
@@ -2649,7 +2650,7 @@ public sealed partial class CardApi
     ///   1/8/9/10/12/13/15/16/17/18/19/20 直接保留；21 看 `isCardSetConfigActive(21)`；
     ///   2..7 只在 `includeNotAttainable` 为真时保留；0/11/14/其余**无条件剔除**。</item>
     /// <item>`includeReserved` 为假时过 `NotifyCheckCardReserved`（= `IsCardReserved`）；</item>
-    /// <item>`NotifyCheckCardBlacklisted`（服务端 `DSession.cards_blacklist`，离线恒空）。</item>
+    /// <item>`NotifyCheckCardBlacklisted`（逻辑对象 blacklistedCards，显式 CardBlacklist 策略）。</item>
     /// </list>
     ///
     /// ## 历史（2026-10-02 修正）
@@ -2793,9 +2794,11 @@ public sealed partial class CardApi
             _staticPoolDb = db;
         }
         // Policies are immutable; changing records or simulated time replaces the reference.
-        if (rebuilt || !ReferenceEquals(_staticPoolReservationPolicy, c.State.CardReservations))
+        if (rebuilt || !ReferenceEquals(_staticPoolReservationPolicy, c.State.CardReservations)
+            || !ReferenceEquals(_staticPoolBlacklistPolicy, c.State.CardBlacklist))
         {
             _staticPoolReservationPolicy = c.State.CardReservations;
+            _staticPoolBlacklistPolicy = c.State.CardBlacklist;
             _staticPoolGeneration++;
             _staticPoolVariants.Clear();
             _gcsCache.Clear();
@@ -2821,6 +2824,12 @@ public sealed partial class CardApi
                 }
 
                 if (!includeReserved && IsReservedForSession(c, card.Name))
+                {
+                    continue;
+                }
+
+                // Blacklist filtering is independent of includeReserved.
+                if (c.State.CardBlacklist?.IsBlacklisted(card.Name) == true)
                 {
                     continue;
                 }
@@ -2896,6 +2905,7 @@ public sealed partial class CardApi
     private CardDatabase? _staticPoolDb;
     private List<CardInstance>? _staticPool;
     private CardReservationPolicy? _staticPoolReservationPolicy;
+    private CardBlacklistPolicy? _staticPoolBlacklistPolicy;
 
     /// <summary>
     /// `(includeNotAttainable, includeReserved)` → 过滤后的卡池（元素是 <see cref="_staticPool"/> 的模板实例）。
