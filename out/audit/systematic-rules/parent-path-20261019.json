@@ -1,0 +1,72 @@
+{
+  "rule": "RULE-216",
+  "status": "canonical-initial-parent-paths-verified-redirect-alternatives-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\parent-path-20261019.json": "8f3be0df15f65d5d82089aa62b6e4919d4f9e95139d4a5c6112dd75394eb8efa",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\accept-set-20261019.json": "3217c50c5e3949db1a96e90141c91cc0280f7b94ad36bc12fe7682f56398d6a8",
+    "D:\\Codex Workshop\\kards-install-review\\capture-parent-path-20261019.py": "772d916672688a5c5862fab95bab18d0d046f8f66e5b480b819e5900eb6de1e1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-parent-path-20261019.py": "3c69313b81367c0901223c9187ccf9fa3d853ea94f678d0436e257749bf2a6e5",
+    "D:\\Codex Workshop\\kards-install-review\\make-parent-path-seeds-20261019.py": "ddb29444e088f36d84f2dcbe06a270f588d7c664435bb9d8f32800168bbc320c",
+    "D:\\Codex Workshop\\kards-install-review\\parent-path-seeds-current-20261019.txt": "a99cd95fd87ca15f14a3d633ebb5d8607add886e5218ff781227e4be6eb493c0",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-parent-path-20261019.txt": "54195beeacd4960657f568aa05d83a11ee1d1e6bf98df1bbe7d1c201b6afb433",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-scan-callback-20261019.txt": "a05f0cce08a1dfffae1fa6333ecc1e4b1f0f2692a0dbe40b8f7aa03da35e9395"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "For captured slash-prefixed canonical strings, the top-level parser splits at the first dot; its invalid-asset bitmask contains dot and colon. Package-only paths can succeed with an empty asset FName. The observed canonical parent component tuples all use the direct slash-prefixed branch and produce their existing package/name pair.",
+    "The Blueprint acceptance helper saves the original parsed pair in a candidate array before calling the redirect wrapper. It appends a nonempty redirected candidate rather than overwriting the original. The membership loop checks these candidates in order.2019 captured originals equal the resolved BaseCardObject root, which is included by the previously traced derived-class query.",
+    "The caller passes false to the redirect wrapper optional flag. The wrapper performs the flags2 lookup; the extra10002 lookup is conditional on that flag and skipped for this call. No current redirect-table contents or outcomes are inferred from the code alone.",
+    "The remaining24 originals were nonmatches in the prior source-derived model, but redirected alternatives may still matter. They cannot be declared finally rejected solely from initial ParentClass components. This phase narrows parsing evidence without claiming all callback decisions or a generic path parser are complete."
+  ],
+  "limits": [
+    "The offline parser model covers the captured canonical slash-prefixed domain and five controls, not all malformed/quoted inputs, None handling, relative paths or generic FName creation.",
+    "Current CoreRedirects tables, chain/cycle behavior, short-class fallback and possible redirected membership for the24 nonmatches remain pending.",
+    "Original candidate retained is a membership fact; no claim that the redirect helper has no side effects or can be skipped in every execution.",
+    "Four current intervals2012 bytes include694 bytes revalidating the earlier Blueprint helper. Old guide matches cover available nonrelative spans only.",
+    "No kernel/order/balance change or selftest rerun; last complete Release suite582/582 (RULE-205), fully semantically verified cards0. No replay authority, process writes/injection/game calls."
+  ],
+  "live_pid": 24220,
+  "canonical_parent_paths_checked": 2043,
+  "initial_candidates_equal_resolved_root": 2019,
+  "remaining_original_nonmatches": 24,
+  "redirect_results_captured": false,
+  "original_candidate_retained": true,
+  "parser_model_controls": 5,
+  "native_code_ranges": 4,
+  "native_code_bytes": 2012,
+  "native_call_site_checks": 13,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "SetTopLevelPath",
+      "length": 332,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "SetTopLevelPath",
+      "length": 170,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "TopLevelPathToString",
+      "length": 289,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ResolveRedirect",
+      "length": 502,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "BlueprintClassAcceptBody",
+      "length": 694,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
