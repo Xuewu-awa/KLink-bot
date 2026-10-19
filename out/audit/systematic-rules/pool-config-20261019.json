@@ -1,0 +1,42 @@
+{
+  "rule": "RULE-228",
+  "status": "current-cardset-config-date-captured-replay-authority-removed-server-time-gate-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-config-20261019.json": "9b42a704d8b5bddbab47ac4bcf0d065274873aa5e6b183425dff65d10531b54b",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\DeckAndCollectionUtilityFunctions.functions.json": "10bf52261beae6a1ef6d5f1d1bc257050ff9db1a64277d627f648adf5b3167b7",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-config-20261019.py": "ddfe96e56c9b09ee42860bc5aa9ad7fe12a1d4765dbeca6c1d8271c0b345c0c8",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-config-20261019.py": "cb2fcaa91ff3677a8d90a32ad13c920c641f0effe066f758bb862b60f6738c4a",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-card-pool-table.py": "a11a540314dd189694d5a0f5a91282ea820a4350106d8a7140841cf1b971cb4a",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardPoolTable.cs": "ee2e27a49b886698a01ba22d543a227d607f206fcde37b5bdde01f4d82c5f2a7"
+  },
+  "kernel_behavior_changed": false,
+  "provenance_comment_corrected": true,
+  "code_comparison_baseline": "3891b4c2dda15625cb74abcadcc65f2b401a79c3",
+  "generated_table_nondoc_code_sha256": "7b28ec82a9697e8cf4dffb872eb2b70b6e71b6bcd6a5904a5ce95667cfd9cf17",
+  "native_code_ranges": 8,
+  "native_code_bytes": 1044,
+  "instruction_checks": 28,
+  "config_ready": true,
+  "map_entries": 149,
+  "selected_key": "oceania_storm_date",
+  "selected_value": "2026.06.11-08.00.00",
+  "current_blueprint_script_bytes": 522,
+  "current_blueprint_semantics_verified": false,
+  "server_utc_comparison_verified": false,
+  "activation_result_verified": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Current ConfigSubsystem readiness is1. Its selected JSON wrapper is type6, and the actual TryGetObject virtual accessor returns the shared object at+10. The149-entry string-key map passes sparse bitmap/free/hash-chain coverage and unique-key checks; only oceania_storm_date value is decoded, yielding2026.06.11-08.00.00 as a type2 JSON string.",
+    "The current reflected native GetString thunk calls4593b60. Its ready/HasString/read/boolean branches are verified from pinned current code. Eight captured intervals include two explicitly partial AsObject success fragments; they are not eight complete function certifications. Lookup/hash/string conversion subfunctions are not fully certified.",
+    "The authority offline Blueprint graph reads the configured date, obtains server UTC and compares strictly greater. Current runtime script is retained for subsequent decoding, but equality of current graph/semantics is not yet proven. Host wall-clock time is not substituted for the game server clock.",
+    "Removed historical-replay justification from the generator and regenerated CardPoolTable with the authority card manifest. Only comments changed; all reserved entries, set mappings and fixed true value are unchanged. The fixed value is now explicitly a provisional headless compatibility default, not an authority-backed result."
+  ],
+  "limits": [
+    "Candidate order restoration remains pending; current membership/config activation must not be inferred from an ordering match.",
+    "The selected date alone does not certify activation or universal constancy. Missing/changed configuration, server-time comparison, current Blueprint decoding and full runtime configuration lifecycle remain pending.",
+    "No game calls, writes, suspension or gameplay changes. Stable rereads are not atomic. Unrelated config values are not decoded.",
+    "No behavior change or kernel test rerun; last full Release582/582 RULE205. All-card semantic verification remains0."
+  ]
+}

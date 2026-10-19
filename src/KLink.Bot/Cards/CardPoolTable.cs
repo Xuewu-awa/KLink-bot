@@ -59,10 +59,10 @@ internal static class CardPoolTable
     /// 读 `ConfigSubsystem` 的字符串 `oceania_storm_date`，`now > 那个日期` 才算生效
     /// （`_deps/DeckAndCollectionUtilityFunctions.g.cs:756-803`）。
     ///
-    /// 本内核没有 `ConfigSubsystem`，所以取**观测证据**代替：
-    /// `out/_server-replays/replay-508065` 里客户端从 `card_event_atlantic_convoy`
-    /// 的候选池（= `GetAllActiveStaticCards` 的子集）抽到了 `card_unit_fifth_ohio`，
-    /// 而那张卡的 `cardSet` 正是 `OceaniaStorm` ⇒ 那一局该卡集**是生效的**。
+    /// 当前仍为离线兼容默认值，不代表已经还原配置和服务器时钟判据。
+    /// RULE-228 只读客户端配置：oceania_storm_date = 2026.06.11-08.00.00。
+    /// 配置值不等于启用结果；当前蓝图与服务器 UTC 的完整比较链仍待核对。
+    /// 历史回放不作为依据，不能据此常量宣称所有版本和会话都会启用。
     /// </summary>
     public const bool OceaniaStormActive = true;
 
