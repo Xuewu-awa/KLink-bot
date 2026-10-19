@@ -1,0 +1,34 @@
+{
+  "rule": "RULE-246",
+  "status": "native-delay-existing-action-gate-and-response-queue-verified-conditionally",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-native-20261019.json": "5e68dc538f85da9944b6099a2e9cc8cc2f7e9da4fd759a1a32839e65c02a83b6",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-20261019.py": "b955c2e911104f01862a1beda94d510665618263035051c34fa60a44c1e4af73",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-20261019.py": "1541de492834f371dc44717e6a5f4b5ed1de1033f40dfe36ba3bbb1b6a3ea997"
+  },
+  "kernel_changed": false,
+  "native_ranges": 6,
+  "native_bytes": 1368,
+  "offline_existing_action_lookup_cases": 180,
+  "offline_exec_gate_cases": 32,
+  "offline_update_queue_cases": 192,
+  "release_selftests": {
+    "total": 594,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Current Delay exec3daa430..3daa5e5 resolves world then manager, finds existing action by callback weak identity and signed32-bit UUID, and skips allocation/constructor/AddAction when lookup returns nonnull, preserving the original action bytes and remaining duration. Native constructor stores float duration, full8-byte execution FName, linkage and weak callback target.",
+    "Synthetic valid outer weak-key and inner UUID hash chains execute actual FindExistingAction and CountUUIDActions, including missing target, signed UUID extremes and duplicate UUID entries; lookup returns the first matching chain value. Weak construction is substituted, not certified.",
+    "Current constructed action vtable slot8 points DelayUpdate3d8fd80. Real Update subtracts response+0x64 float32 elapsed time from remaining time and calls real FinishAndQueue36fa720. It writes done flag and, when due, appends20-byte execution-name/linkage/weak-target record; actual callback invocation is a later consumer.",
+    "192 Update/queue cases include the4 recovered startup linkages, finite/equal/negative/zero and nonfinite boundaries. x64 COMISS/setbe marks unordered NaN as done; this is instruction behavior, not evidence of nonfinite gameplay time."
+  ],
+  "limits": [
+    "Exec test substitutes parameter stepping, world/manager resolution, weak construction, allocation/AddAction and optional GC barrier. These are explicit contracts, not verified runtime side effects. Exec duplicate skip and constructor transfer are conditional on them.",
+    "Lookup fixtures use inline single-bucket indexes; general hash widths/external buckets, container mutation and weak-reference implementation are not certified.",
+    "Actual AddAction registration, manager ticking/elapsed-time source, queue consumption/ProcessEvent, object invalidation and removal, response growth and live concurrency remain open. No deadline or wall-clock scheduler is introduced.",
+    "No kernel change or rerun of kernel selftests. Last complete Release594/594; full card semantics verified0. All live acquisition was read-only and emulation isolated."
+  ]
+}
