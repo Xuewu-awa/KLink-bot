@@ -1,0 +1,115 @@
+{
+  "rule": "RULE-215",
+  "status": "resolved-root-and-current-derived-parent-model-verified-historical-temporary-not-captured",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\accept-set-20261019.json": "3217c50c5e3949db1a96e90141c91cc0280f7b94ad36bc12fe7682f56398d6a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\accept-class-sources-20261019.json": "42cbe9768286813bbfd6e740ff6e5946b9b32daedd349a7b40ebad01820fc620",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\capture-accept-set-20261019.py": "5b1414d4186d8d5f78e00e521f33ea2d055c81b9fb530e7e9e10f066cc219ec5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-accept-class-sources-20261019.py": "b0a9d742059494e3776fffcf35ab5e006a10ee5eef21ebe17c8a33ebd822a4bb",
+    "D:\\Codex Workshop\\kards-install-review\\audit-accept-set-20261019.py": "33998edf564a488d9dc4871890734af82ea29bc42db76918ead8cd633b1cf945",
+    "D:\\Codex Workshop\\kards-install-review\\ExportAcceptSetHelpersVerified.java": "e1022c8893efa0c323fc90c83eeb687ceede5f4792201dbb108810162afb4df9",
+    "D:\\Codex Workshop\\kards-install-review\\make-accept-set-seeds-20261019.py": "df323593ddc805744d71bc7c3c7f01e890ac56f55addb6bf0ca6ec5c13faa009",
+    "D:\\Codex Workshop\\kards-install-review\\accept-set-seeds-current-20261019.txt": "af8455467371d0cd1ceb7ed1b65a675f135f3fa5dfc75ff47e15b7af5f10d5ce",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-accept-set-20261019.txt": "bfa29b25e5583411bf28d83217f35f34fe51b351a1a4b10a6745045bfb93f228",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-accept-set-helpers-20261019.txt": "035db1c8a82e7339358292682aebdc2966fa4c10f52c5b33ff5898408d3015ee",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-scan-callback-20261019.txt": "a05f0cce08a1dfffae1fa6333ecc1e4b1f0f2692a0dbe40b8f7aa03da35e9395",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-asset-scan-complete-20261018.txt": "a03f9ba023a58bf500c66c470019b58912c180cd8677b423f1f4f40aecbb6610"
+  },
+  "kernel_changed": false,
+  "findings": [
+    "The settings object loaded-class field currently reads CoreUObject.Object, but its soft class path is kards.BaseCardObject. ResolveTypeRuntimeData resolves the soft reference and writes the loaded class at+30. The active cached type holds kards.BaseCardObject and scan path Cards. The settings loaded field alone is not the final scan root; an intermediate commentary inference of Object as final root is superseded.",
+    "Current scan configuration hook only expands path-array tokens AssetSearchRoots/DynamicSearchRoots. Neither token appears in the Cards path. The copy/search-rule constructor carries the resolved class and adds its full class path to roots; gather supplies that root list and an empty excluded set to registry virtual+170, whose current wrapper reaches the previously audited recursive derived-class query.",
+    "Fresh class sources reconstruct2020 paths rooted at kards.BaseCardObject, including the root.2019 current Blueprint ParentClass component pairs match;24 do not. The2019 matches are exactly those with current complete BaseCardObject primary tags. A negative control incorrectly using the settings Object field matches all2043, demonstrating why resolving the root matters.",
+    "Current class-source snapshot has7183 objects, eight fewer than the earlier211 snapshot, with790 native parent rows and2406 generated parent rows. Native/source refresh versions agree. Counts are snapshot observations, not immutable constants. The2020 closure remains a source reconstruction, not a live capture of the historical stack temporary."
+  ],
+  "limits": [
+    "No claim of recording actual startup query output or every callback decision. Full SoftPath/FTopLevelAssetPath transformations, all configurations, policy-object variants and historical initialization remain pending.",
+    "Settings loaded field vs resolved cache are both preserved as evidence. Do not replace one with the other or infer class from primary-type name alone.",
+    "Eight current chain intervals7355 bytes include revalidation of previously studied functions; the fresh source collector also rechecks earlier hierarchy intervals, not counted as new distinct code. Old-project missing tails/masked targets are not certified by guide matches.",
+    "No kernel/order/balance change or selftest rerun; last complete Release suite582/582 (RULE-205), fully semantically verified cards0. No replay authority, process writes/injection/game calls."
+  ],
+  "live_pid": 24220,
+  "settings_loaded_class": [
+    "/Script/CoreUObject",
+    "Object"
+  ],
+  "settings_soft_class": [
+    "/Script/kards",
+    "BaseCardObject"
+  ],
+  "cached_resolved_class": [
+    "/Script/kards",
+    "BaseCardObject"
+  ],
+  "active_scan_paths": [
+    "/Game/Blueprints/Cards"
+  ],
+  "path_tokens": [
+    "$AssetSearchRoots",
+    "$DynamicSearchRoots"
+  ],
+  "path_tokens_match_active_scan_path": false,
+  "class_objects": 7183,
+  "native_parent_rows": 790,
+  "generated_parent_rows": 2406,
+  "derived_class_path_count": 2020,
+  "parent_component_matches": 2019,
+  "parent_component_nonmatches": 24,
+  "wrong_unresolved_root_control_matches": 2043,
+  "historical_temporary_set_captured": false,
+  "native_code_ranges": 8,
+  "native_code_bytes": 7355,
+  "native_call_site_checks": 12,
+  "old_ghidra_guide_checks": [
+    {
+      "function": "GetDerivedClassNames",
+      "length": 721,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "CopySearchRules",
+      "length": 566,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ResolveTypeRuntimeData",
+      "length": 705,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ConfigureSearchRules",
+      "length": 939,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ConstructSearchRules",
+      "length": 474,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "TypeEligibility",
+      "length": 94,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "ScanPathsActual",
+      "length": 1713,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    },
+    {
+      "function": "GatherAssetData",
+      "length": 2121,
+      "nonrelative_bytes_match": true,
+      "difference_count": 0
+    }
+  ]
+}
