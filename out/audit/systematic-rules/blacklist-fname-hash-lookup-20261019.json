@@ -1,0 +1,44 @@
+{
+  "rule": "RULE-242",
+  "status": "real-name-hash-and-existing-card-name-lookup-verified-in-offline-snapshot",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-fname-hash-lookup-complete-20261019.json": "2b6ff2cd051cf27d95348008c54a207749eb9463312399f9e47786278c38f37e",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-fname-hash-lookup-20261019.py": "130204ff898bd3b6c3ead51553532484db3eb5fe3bd8d8001fae0b7d4aca5614",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-fname-hash-lookup-20261019.py": "bbfa110b2361fd2442abfde3f4f39d34cf85c097dab3faa92124ffef457173e4"
+  },
+  "kernel_changed": false,
+  "native_ranges": 13,
+  "native_bytes": 5152,
+  "offline_real_hash_cases": 2095,
+  "hash_crosscheck": "cityhash0.4.10 CityHash64 independent library, not rules authority",
+  "static_card_keys": 2019,
+  "offline_card_lookup_cases": 6057,
+  "offline_none_cases": 32,
+  "offline_empty_cases": 4,
+  "max_entry_comparisons_per_card_lookup": 1,
+  "max_occupied_slots_per_card_lookup": 7,
+  "card_lookups_probing_multiple_occupied_slots": 1089,
+  "pool_blocks": 40,
+  "pool_shards": 256,
+  "live_functions_invoked": false,
+  "native_insertion_executed": false,
+  "release_selftests": {
+    "total": 591,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Captured complete1230db0..1231307 across pdata fragments; actual x64 hash executes for all byte lengths0..2046 plus boundary-pattern cases and matches independent CityHash64 implementation. No synthetic hash is used in this phase.",
+    "Replayed complete UTF16 constructor/suffix/view/hash/shard-probe/entry-comparison path against current live read-only pool data. All2019 current static keys match original/uppercase/alternating-case input spellings,6057 lookups total. All returned full8-byte FNames equal actual static-map keys.",
+    "All16 case spellings of None resolve to zero FName in this snapshot. Their _0 spellings resolve to comparison index0, Number1, not full zero. Empty text, initial NUL and underscore-only numeric bases tested return full zero.",
+    "Unknown-name sample reaches the insertion call; emulator stops before it. Snapshot buffers are guarded against emulated writes. Only output/stack writes are permitted; lock calls and security-cookie checks are skipped offline. No game functions or live locks are invoked."
+  ],
+  "limits": [
+    "Existing-key offline lookup is not a proof of live synchronization, insertion/rehash/allocation/failure or pool initialization. Captured InsertNameEntry body is recorded but not executed or certified.",
+    "Hash crosscheck is finite coverage against an independent library, not exhaustive equivalence for every possible byte string. Maximum tested length2046 matches1023 wide units; longer inputs and diagnostics still have separate boundaries.",
+    "Current ASCII card names are certified against this snapshot; unknown names, cross-width aliases, Unicode identity for all inputs and lifecycle are not a universal resolver. Do not automatically change blacklist canonical-key contract or strip arbitrary card-name suffixes.",
+    "No kernel behavior changed or card effect completed. Structural coverage does not certify all PvP semantics. Stable rereads are not an atomic snapshot."
+  ]
+}
