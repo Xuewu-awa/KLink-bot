@@ -1,0 +1,118 @@
+{
+  "rule": "RULE-231",
+  "status": "actor-iterator-call-filter-and-additional-buffer-model-verified-class-query-backend-pending",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\actor-enum-20261019.json": "ea3f0c6557d45187a6ef034a6f9fb61649500cf6c89bcc656883fc4e3c210da5",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-session-date-20261019.json": "43fcf674f57844bc0e78b242729e2a11a64fcc1d58e83796f1bf99b32a8aec17",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-actor-enum-20261019.txt": "691753381aeb13f22e81c9ac7d9031d315a0893eaf4b568efea1bbec1d1c739c",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-actor-iterator-20261019.txt": "5efc098ac6cd82c39261064461e87bb61b8740e5951e5d76092196022faea656",
+    "D:\\Codex Workshop\\kards-install-review\\capture-actor-enum-20261019.py": "3787be9e32d779e0dd096944e6572a9f7455171e0236185bdad1f5daae9b7d5f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-actor-enum-20261019.py": "38bc7508703a2e1efa82877be765060eca50365894c07b0d11e318176e4179c8",
+    "D:\\Codex Workshop\\kards-install-review\\make-actor-enum-seeds-20261019.py": "639d21fe872ab41e4f9c427f1dca5527f139527b67550575031a2ff11e41f9cf",
+    "D:\\Codex Workshop\\kards-install-review\\actor-enum-seeds-current-20261019.txt": "830db2b906030e6d5be8c7af63064b4d3555297afbae57f80c67c70f41f5fc74",
+    "D:\\Codex Workshop\\kards-install-review\\make-actor-iterator-seeds-20261019.py": "97f6356a7b3d1f0e402ce560eed83c88bb9ff1a88bd469703457f1181bedceb5",
+    "D:\\Codex Workshop\\kards-install-review\\actor-iterator-seeds-current-20261019.txt": "b3a38214cace7eac99594306f2ac26060cd2c035321287b905d51e58ab08a3e4"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 12,
+  "native_code_bytes": 2814,
+  "instruction_checks": 57,
+  "old_guide_checks": [
+    {
+      "function": "GetActorsThunk",
+      "guide_bytes": 1111,
+      "current_bytes": 1120,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 9
+    },
+    {
+      "function": "ActorIteratorConstruct",
+      "guide_bytes": 187,
+      "current_bytes": 187,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "ActorGetLevel",
+      "guide_bytes": 30,
+      "current_bytes": 30,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "LevelGetWorld",
+      "guide_bytes": 8,
+      "current_bytes": 8,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "ActorIteratorState",
+      "guide_bytes": 387,
+      "current_bytes": 387,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "ActorIteratorAdvance",
+      "guide_bytes": 463,
+      "current_bytes": 463,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "GetObjectsOfClass",
+      "guide_bytes": 54,
+      "current_bytes": 54,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    }
+  ],
+  "iterator_flags": 5,
+  "class_query_include_derived": true,
+  "class_query_object_exclusion": "0x10",
+  "class_query_internal_exclusion_argument": "0x200000",
+  "world_delegate_offset": "0x460",
+  "scan_read_errors": 0,
+  "observed_class_candidates": 2,
+  "specified_class_query_mask_passes": 1,
+  "conditional_iterator_filter_passes": 1,
+  "candidate_models": [
+    {
+      "name": "Default__BP_KardsSession_C",
+      "address": "0x1cb1f599070",
+      "specified_class_query_masks_pass": false
+    },
+    {
+      "name": "BP_KardsSession_C_2147478702",
+      "address": "0x1cb1b339070",
+      "specified_class_query_masks_pass": true,
+      "bit30_clear": true,
+      "active_level_model": true,
+      "collection_model": true,
+      "target_world_model": true,
+      "persistent_or_non_worldsettings": true,
+      "iterator_flag5_model_pass": true
+    }
+  ],
+  "callback_unique_scope": "additional-buffer-only",
+  "callback_model_cases": 5,
+  "actual_native_actor_enumeration_called": false,
+  "full_activation_result_certified": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "The current reflected GetAllActorsOfClass native thunk clears the output count before class/world validation, requires an Actor-derived class, resolves world with mode1 and constructs an iterator with flags5. The state requests objects including derived classes with caller object-exclusion10 and internal-exclusion argument200000; its wrapper delegates to15d1130, whose retrieval/ordering remains pending.",
+    "Flags5 checks object-header bit30 and the active-level/collection predicate; the separate flag2 validity-call branch is not selected. World equality is still required, and WorldSettings-derived actors are excluded outside the persistent level. Current bytes for first advancement and the inline subsequent loop are both captured; they are not replaced by a global UObject/name-sorted list.",
+    "A no-read-error independent UObject inventory yields a CDO and one actual session candidate, with subclass ancestry checked. The CDO fails the specified class-query object mask; the real candidate passes the specified numeric masks and the flag5 level/world model for the previously captured world. This is conditional candidate filtering, not the native class-query output or a proof of historical actor selection.",
+    "Iterator state registers a callback on world+460. Callback type-checks the incoming class and searches only its additional pointer buffer before appending; iterator traversal covers initial count plus the live additional count. A bounded5-event model demonstrates that extra-buffer uniqueness does not imply global uniqueness across both buffers. The precise producer/event name and concurrent histories remain pending; no delegate is registered by the collector.",
+    "GetActorsThunk full current range includes1120 bytes, while the first pdata span is only29 bytes. The older available1111-byte guide omits9 current tail bytes. Callback full154 bytes likewise spans beyond its first54-byte pdata range. All selected native bytes match the pinned executable and the7 older guides match their nonrelative portions."
+  ],
+  "limits": [
+    "Native class-hash GetObjectsOfClass backend15d1130, derived-class traversal, extra flag merging and initial object order are not fully audited. Current candidate inventory is not promoted to actual ordered actor enumeration.",
+    "The world+460 delegate producer, callback lifetime/removal, mutation/GC/reentrancy, null/invalid incoming objects and complete runtime histories remain pending. No general claim of snapshot-only or globally unique enumeration is justified.",
+    "The actual card caller context, generic date string helpers, configuration selection and complete activation gate remain pending. No constant-true or candidate-order fix is made.",
+    "Read-only selected buffers are reread-stable but not atomic; unrelated objects/classes can change during the independent scan. No game calls/writes/injection/suspension. No kernel edit/test rerun; last full Release582/582 RULE205, fully semantically verified cards0."
+  ]
+}
