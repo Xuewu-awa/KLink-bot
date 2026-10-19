@@ -1,0 +1,56 @@
+{
+  "rule": "RULE-225",
+  "status": "loader-fast-reconciliation-branch-and-current-candidate-flag-mask-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\load-core-20261019.json": "baf671d0a89fbff5f9dcd067db68727816678bd4fcc029350b6391404044ae4f",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-load-20261019.json": "8e80dd91b792771e3de42f5d16b8d3b81af51f6433621ddfc0c819d3ed262135",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-resolve-20261019.json": "7ab322f85072c66f16742b5c1e1343037bf04695301d1742e1d7d47a6d38f910",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-load-core-20261019.txt": "e78243f54053eedb5294cb155d8ce7027d32d17f4b75de09063fdd7b938b5af4",
+    "D:\\Codex Workshop\\kards-install-review\\capture-load-core-20261019.py": "e228a3148e1e0134a322a80f5d880d8c4880869bd70f00891023324b01ce8c09",
+    "D:\\Codex Workshop\\kards-install-review\\audit-load-core-20261019.py": "b6b1d8f1544c4c2aa4cbcaa2193224c420e9afb01801807be28c6dff300c652c",
+    "D:\\Codex Workshop\\kards-install-review\\make-load-core-seeds-20261019.py": "ff44306b35a03db6ec22f6301b9743bf98bbbf4da126a564cae073098e718572",
+    "D:\\Codex Workshop\\kards-install-review\\load-core-seeds-current-20261019.txt": "cddeb5e20eb9b0d14dd03f06ca411dbde4f3f08d9c5875f2bbc9ac83992e6214"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 3,
+  "native_code_bytes": 1607,
+  "instruction_checks": 22,
+  "card_class_candidates": 2019,
+  "blocked_by_8003400": 0,
+  "object_flag_counts": {
+    "0x280009": 2019
+  },
+  "class_identity_differences": 0,
+  "primary_order_differences": 0,
+  "old_guide_checks": [
+    {
+      "function": "LoadObjectCore",
+      "guide_bytes": 1366,
+      "current_bytes": 1386,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 20
+    },
+    {
+      "function": "FindObjectFast",
+      "guide_bytes": 152,
+      "current_bytes": 152,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    }
+  ],
+  "findings": [
+    "Current diagnostics identify15c9df0 as StaticLoadObjectInternal and15c8b50 as StaticFindObjectFast. Labels are tied to current RIP-relative UTF16 strings, not inferred solely from old decompiler names.",
+    "The root TryLoad call uses zero load flags and enables object reconciliation. Core resolves the name; with a resolved outer, reconciliation enabled and dot present, it calls fast find. A nonnull result with(flags&08003400)==0 branches to the common return path. Package loading, post-load lookup, redirector lookup and path-only recursive fallback remain other branches.",
+    "Fresh headers for2019 generated card class candidates have identical flags00280009, all outside08003400, with the same package/name, pointer and internal index as the source class capture. Their canonical package.object paths all contain one dot. This only verifies observed candidates against that one state mask, not the fast-find result.",
+    "Fast-find wrapper has serialization and GC diagnostics, obtains an additional exclusion mask, ORs it with caller filters and tails to15d72f0. Thus matching pointer/name and passing the object-state mask are insufficient to certify all lookup behavior.",
+    "Two old guides match1518 available nonrelative bytes; current core capture adds20 tail bytes. No lookup/load functions executed and no game state changed."
+  ],
+  "limits": [
+    "Actual hash lookup15d72f0, filter mask1537d60, package load15bfad0, outer/name resolution and fallback branches remain pending. Do not call this complete loader restoration.",
+    "Candidate snapshots and mask checks are not recorded executions, return values, initialization history or proof that asset loading never occurs.",
+    "Nonempty subpaths, alias/short names, recursive package fallback and GC/serialization edge cases remain outside the observed card input scope.",
+    "No kernel change or test rerun. Last full Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
