@@ -1,0 +1,67 @@
+{
+  "rule": "RULE-227",
+  "status": "current-thread-context-exclusion-model-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\async-filter-20261019.json": "c8b84bb08ff75ddbf4bc2f23c72b176add9d00a75f93ca69c89962e5aee2847c",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\find-fast-20261019.json": "1faa6f8b35c8e4b1061efa42160aeab7ddcd04d042af46238751aadc86d80b35",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-async-filter-20261019.txt": "88d3c5fa70a7105bcd36f541bb48947feb9f434a16395375141811e5cdcb7c2c",
+    "D:\\Codex Workshop\\kards-install-review\\capture-async-filter-20261019.py": "822c60cd4f7a28bbcfd0a2a6841badaa862fd76e75906533015167aae21ac0a1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-async-filter-20261019.py": "756978017aab586b604b604a02d96924298d73d062556caa4680d01db870fad8",
+    "D:\\Codex Workshop\\kards-install-review\\make-async-filter-seeds-20261019.py": "310f1d3d2072fb3ad99d1f1c5c095a900b22eadc991461551e08ab74cf1951dd",
+    "D:\\Codex Workshop\\kards-install-review\\async-filter-seeds-current-20261019.txt": "06ac84536d1abc85355ec1def8ada1709151b24078ca1aa0df4535cac80d3376",
+    "D:\\Codex Workshop\\kards-install-review\\readonly-thread-tls.py": "eafcdedfb59b79151be4ca9c65b073bb14edc8533ba67466c59f13ff3a194f7a"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 7,
+  "native_code_bytes": 648,
+  "instruction_checks": 38,
+  "old_guide_checks": [
+    {
+      "function": "GetOrCreateContext",
+      "bytes": 247,
+      "nonrelative_match": true
+    },
+    {
+      "function": "ContextConstructor",
+      "bytes": 175,
+      "nonrelative_match": true
+    },
+    {
+      "function": "FindInternalExclusions",
+      "bytes": 88,
+      "nonrelative_match": true
+    }
+  ],
+  "dynamic_tls_index": 151,
+  "threads": 236,
+  "nonnull_contexts": 2,
+  "async_tid": 2376,
+  "async_context_mask": 0,
+  "main_load_counter": 0,
+  "default_filter_threads": 235,
+  "effective_filter_thread_counts": {
+    "0x18420000": 235,
+    "0x10020000": 1
+  },
+  "card_internal_flag_counts": {
+    "0x4000": 2019
+  },
+  "card_filter_passes": {
+    "0x18420000": 2019,
+    "0x10020000": 2019
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "The current initialized descriptor uses dynamic TLS151. The imported TlsGetValue implementation reads TEB+1780 expansion pointer and slot(index-64)*8 for this index; GetCurrentThreadId reads TEB+48. Both imported API identities are reconstructed from the pinned PE, and their live code is decoded without invoking them.",
+    "Query-only thread handles yielded236 TEBs with stable before/after membership. Two existing contexts have matching creator thread IDs and mask0. Counter0 eliminates the predicate second route regardless of the unresolved IsGameThread helper; only thread2376 matches the captured enabled async-thread route.",
+    "For this snapshot, thread2376 selects custom mask0 and235 other threads select8400000. Adding mandatory10020000 gives10020000 and18420000. Fresh2019 card class item flags4000 pass both filter models; this extends RULE226 conditional default filtering to the captured thread states only.",
+    "The context getter can allocate and write on uninitialized/null TLS paths; it was not called. Constructor mask initialization0 is verified from code but is not used as a substitute for observing an existing active context."
+  ],
+  "limits": [
+    "Stable rereads are not atomic and do not record an actual finder invocation, lock ownership, transient masks or future threads. Snapshot-specific counts are not constants.",
+    "Nonzero main-load-counter states still require the complete game-thread predicate and actual thread tag proof. Generic lazy context creation/allocation/cleanup is not fully audited.",
+    "This is class-loading infrastructure evidence, not card-effect semantic equivalence; fully verified card logic remains0. No kernel edit or kernel test rerun; last full Release582/582 RULE205."
+  ]
+}
