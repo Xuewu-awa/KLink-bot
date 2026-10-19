@@ -1,0 +1,105 @@
+{
+  "rule": "RULE-232",
+  "status": "current-no-child-inline-class-query-order-and-mask-model-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-query-20261019.json": "5dae534aea219671bea7e4db76e4447cbc6b3f2d59ae158c364cce6711e963b5",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\actor-enum-20261019.json": "ea3f0c6557d45187a6ef034a6f9fb61649500cf6c89bcc656883fc4e3c210da5",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-query-thread-filters-20261019.json": "1f0020447ae1bdd52876162301466eb15b397b05afe305c6d9b1e4ba4b6af95b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\async-filter-20261019.json": "c8b84bb08ff75ddbf4bc2f23c72b176add9d00a75f93ca69c89962e5aee2847c",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-class-query-20261019.txt": "2a70649f04cb6c7a65be59900d1441cbf8af5d57eeaf1cee22b9c1a734d5cf36",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-class-derived-20261019.txt": "26f5f6ed09b7a141ad08994af38b9245d8b8aecf19d45ee64fd1a7e94fe2a9a9",
+    "D:\\Codex Workshop\\kards-install-review\\capture-class-query-20261019.py": "d8ea8e70df336dbffba6096c3334718d34659d4b7c5adc8ce203d03554e5cfee",
+    "D:\\Codex Workshop\\kards-install-review\\capture-class-query-thread-filters-20261019.py": "403f39509ee7fb192c3deff3f9773f5a9d0e04d0db1e13f9a2ac4b1ccf4f9661",
+    "D:\\Codex Workshop\\kards-install-review\\audit-class-query-20261019.py": "3167b0ccc022727b003fd3bb0f10d0aa5e0149f91b3d1dbd7e1a121b95dce163",
+    "D:\\Codex Workshop\\kards-install-review\\make-class-query-seeds-20261019.py": "b0824d415650afc236227264594e4ccc4f890191e20c3bb815f557c5ebf3581f",
+    "D:\\Codex Workshop\\kards-install-review\\class-query-seeds-current-20261019.txt": "45175c22a98b1bd1f72ca762ce79435b3257e9e41cc6a23cccea6e1075a3b645",
+    "D:\\Codex Workshop\\kards-install-review\\make-class-derived-seeds-20261019.py": "e91d331c2582691a3534fff9b06effab62834ed000747d2c3e46511638871be8",
+    "D:\\Codex Workshop\\kards-install-review\\class-derived-seeds-current-20261019.txt": "17259124a8c2a93a29a29dd47aa3c6296da0bcd3969a53f4f0042fc24021162c"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 6,
+  "native_code_bytes": 2989,
+  "instruction_checks": 30,
+  "old_guide_checks": [
+    {
+      "function": "ClassQueryBackend",
+      "guide_bytes": 1360,
+      "current_bytes": 1393,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 33
+    },
+    {
+      "function": "ClassQueryCallback",
+      "guide_bytes": 68,
+      "current_bytes": 68,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "ExpandDerivedClasses",
+      "guide_bytes": 929,
+      "current_bytes": 930,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 1
+    }
+  ],
+  "class_map": {
+    "slots": 7211,
+    "allocated": 7202,
+    "free": 9
+  },
+  "derived_map": {
+    "slots": 791,
+    "allocated": 791,
+    "free": 0
+  },
+  "queried_derived_rows": 0,
+  "modeled_class_worklist": [
+    "0x1cb0cc1a6f0"
+  ],
+  "inline_candidates": [
+    {
+      "address": "0x1cb1f599070",
+      "name": "Default__BP_KardsSession_C",
+      "object_flags": 2621489,
+      "internal_flags": 16384
+    },
+    {
+      "address": "0x1cb1b339070",
+      "name": "BP_KardsSession_C_2147478702",
+      "object_flags": 8,
+      "internal_flags": 16384
+    }
+  ],
+  "fresh_threads": 215,
+  "effective_mask_thread_counts": {
+    "0x18620000": 214,
+    "0x10220000": 1
+  },
+  "modeled_initial_outputs": {
+    "0x18620000": [
+      "0x1cb1b339070"
+    ],
+    "0x10220000": [
+      "0x1cb1b339070"
+    ]
+  },
+  "actual_native_query_called": false,
+  "full_activation_result_certified": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "The current class-key map at hash owner+118 uses32-byte rows; the direct-derived-class map at+168 uses96-byte rows. Independent bitmap/free/unique-key/full bucket coverage and pointer-hash bucket checks pass across7202 and791 allocated rows respectively. Pointer hash is a32-bit mix of pointer>>4, not FName hashing or name ordering.",
+    "The queried BP_KardsSession class is absent from the derived map. The expansion helper miss path advances the seeded one-item class list and returns without appending children. Its class bucket contains two nonnull inline pointers in order: CDO then actual session. This closes the observed no-child/two-inline-object source branch, not generic child-set or heap-bucket iteration.",
+    "Backend combines caller internal200000, mandatory10020000 and thread exclusions. Fresh query-only TEB observations cover215 threads; current counter0 permits the same predicate reduction as RULE227. One async-thread extra mask0 gives10220000;214 default8400000 threads give18620000. Class-query object exclusions remain a distinct object-header mask10.",
+    "Applying those captured masks in inline order excludes the CDO and yields the same one actual session pointer under both effective masks. The callback appends passing pointers to its output array; it does not perform a global deduplication or clear an existing array itself. RULE231 caller clearing remains a separate step.",
+    "Six native intervals totaling2989 bytes match the pinned current executable. Three old guide intervals match their available nonrelative bytes; current backend adds33 captured tail bytes, and the derivation helper includes an additional terminal trap byte. No game query, callback, TLS getter or lock acquisition is invoked."
+  ],
+  "limits": [
+    "Class-map and thread snapshots are separately reread-stable but not atomic; the result is a bounded reconstruction, not an actual native query trace or historical GetDSession invocation. Thread counts/masks and object flags are observations, not constants.",
+    "Nonempty derived-class sets, recursive/breadth-first expansion details, duplicate/cyclic class inputs, heap bucket traversal, allocator/locking/GC branches and arbitrary class queries remain pending.",
+    "World+460 delegate producer/lifetime and dynamic arrivals, actual card caller context, generic date parsing/config selection and complete activation remain pending. No fixed-true or static-card order fix is made.",
+    "No kernel edit or kernel test rerun; last full Release582/582 RULE205. Fully semantically verified card logic remains0; no historical replay authority."
+  ]
+}
