@@ -1,0 +1,87 @@
+{
+  "rule": "RULE-224",
+  "status": "current-simple-card-path-core-redirect-misses-and-unchanged-return-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\object-name-20261019.json": "599534e76bb542cf4cb5d6e059d5281b9aefa8e241cd7a4b901e1d88cdbfe086",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-resolve-20261019.json": "7ab322f85072c66f16742b5c1e1343037bf04695301d1742e1d7d47a6d38f910",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\redirect-table-20261019.json": "59ce35fa5a4a8b14990527f0c11dc440072517f254ba7891f61b6af634ce9e8e",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-object-name-20261019.txt": "61727b481dc44cf45871bd9c00bb4b4e30f95c47b4b5ca445bd90951a0d683de",
+    "D:\\Codex Workshop\\kards-install-review\\capture-object-name-20261019.py": "1cc086cc6c94152dffa41ec1d67eba6eb3ee244566f26f64ec3ee45a002efbb1",
+    "D:\\Codex Workshop\\kards-install-review\\audit-object-name-20261019.py": "d6a826567b710ed5a473e7524abd3a1d2a962d6849d3f6eeab06ade4c9139f03",
+    "D:\\Codex Workshop\\kards-install-review\\make-object-name-seeds-20261019.py": "1dc999963074cdda4428273eab12ecbc09b30448167fba991feccd6fdc83e7ee",
+    "D:\\Codex Workshop\\kards-install-review\\object-name-seeds-current-20261019.txt": "1aff165b31930344d99007638bb731d9c9f86cf6642d01d8c25985515fadfa79",
+    "D:\\Codex Workshop\\kards-install-review\\readonly-thread-tls.py": "eafcdedfb59b79151be4ca9c65b073bb14edc8533ba67466c59f13ff3a194f7a"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 6,
+  "native_code_bytes": 6002,
+  "instruction_checks": 25,
+  "card_paths": 2019,
+  "thread_count": 234,
+  "thread_overrides_nonzero": 0,
+  "thread_before_after_equal": true,
+  "flag_trials": [
+    {
+      "flags": "0x1",
+      "selected_groups": [
+        "0x40"
+      ],
+      "queries": 2019,
+      "key_hits": 0
+    },
+    {
+      "flags": "0xffff",
+      "selected_groups": [
+        "0x2",
+        "0x4",
+        "0x10",
+        "0x20",
+        "0x8",
+        "0x40"
+      ],
+      "queries": 12114,
+      "key_hits": 0
+    }
+  ],
+  "query_group_checks": 14133,
+  "redirect_key_hits": 0,
+  "current_card_fixup_changes": 0,
+  "old_guide_checks": [
+    {
+      "function": "LoadObjectWrapper",
+      "guide_bytes": 2671,
+      "current_bytes": 2688,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 17
+    },
+    {
+      "function": "FixupSoftPath",
+      "guide_bytes": 598,
+      "current_bytes": 618,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 20
+    },
+    {
+      "function": "ResolveObjectName",
+      "guide_bytes": 1265,
+      "current_bytes": 1282,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 17
+    }
+  ],
+  "findings": [
+    "Name parser scans NUL/dot/colon delimiters; colon changes a mode flag, NUL reaches success return. This certifies delimiter control flow, not the whole normalization and package lookup policy.",
+    "FixupSoftPath builds object/outer/package redirect fields from a soft path. For all current empty-subpath cards, direct copy yields object FName, empty outer and package FName without a string round trip. Query flags are exactly1 orffff, match flags0. We cover both flag values instead of assuming the classifier helper meaning.",
+    "Fresh default redirect tables and before/after query-only TLS probes agree across234 threads, all with no override. Flags1 selects package group40; flagsffff selects2/4/10/20/8/40. All14133 card/group queries miss raw FName keys. No candidate reaches detailed matching. This is a bounded, non-atomic current observation.",
+    "Unchanged redirect triplets take1598f38 ->1599075, returnfalse and bypass later lookup/string/writeback. Therefore the captured simple card paths do not change through this CoreRedirect query under either possible flag. This does not prove arbitrary redirect cases or startup history.",
+    "LoadObjectWrapper first calls backend15c9df0 and branches to common return when it returns nonnull. Failure enters the remaining body. The actual backend and all diagnostic/failure side effects remain pending; wrapper capture alone is not full loader restoration."
+  ],
+  "limits": [
+    "TLS/table reads are not atomic and do not prove historical/future state. No lookup, load, registration or game function was called.",
+    "The classifier141f3a0, generic parser normalization/package creation, changed-triplet writeback checks, loader backend15c9df0 and diagnostic side effects remain unverified.",
+    "No detailed redirect record match, wildcard, chain/cycle or nonempty subpath semantics certified. Current no-key-match paths cannot be generalized to other clients/configurations.",
+    "No kernel change or test rerun. Last full Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
