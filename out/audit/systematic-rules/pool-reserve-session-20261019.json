@@ -1,0 +1,74 @@
+{
+  "rule": "RULE-236",
+  "status": "loaded-match-static-defaults-confirmed-and-session-overlay-gap-observed",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-session-20261019.json": "2e34507696d14639074dab27696fff2eb9962e96939ed2231d10542a9f77bb6b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-exact-20261019.json": "07438af0d3b6c9ed1988ef84c13a45cfd6b09ba56cda2cfdff42f899ab471b8b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-cdo-exact-20261019.json": "823750fd4b56d02d03430e17efa01fc6bbb6e7981a3e394956bcadab4ab2c7a2",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-reserve-exact-20261019.py": "cc41887ffc9f6552d5c0cd963c8c3a77357a7f55ce5a4be8c926db858a6adfc3",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-reserve-session-20261019.py": "1c22bf2facd0337629d7856501351f05150e60020200663a5642f48198f6debe",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-reserve-session-20261019.py": "392b3c46b005cd293e659317d57fa04cddc4c67bfd18783fcc019250c9472580",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-20261019.json": "8afb171a050f804dce6ef52a2d7f50d61784c01af6e85bd839cf7c7ad3782351",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "D:\\Codex Workshop\\KLink-bot\\out\\audit\\systematic-rules\\pool-reserve-exact-20261019.json": "05f033280fff0570f23234aa2dfee61b2fdc75cc4adf0e11e8ac1156fb55c3b3"
+  },
+  "kernel_changed": false,
+  "actual_static_objects": 2019,
+  "guobject_item_membership_matches": 2019,
+  "static_vs_cdo_reserved_differences": 0,
+  "rule235_variants_confirmed": 15,
+  "session_reserve_records": 1,
+  "reserve_set_stats": [
+    {
+      "record": 0,
+      "member": "to_be_reserved",
+      "slots": 129,
+      "allocated": 129,
+      "free": 0,
+      "bitmap_storage": "heap"
+    },
+    {
+      "record": 0,
+      "member": "coming_back",
+      "slots": 22,
+      "allocated": 22,
+      "free": 0,
+      "bitmap_storage": "inline"
+    }
+  ],
+  "session_blacklist_records": 1,
+  "activation_utc": "2026-06-11T10:00:00",
+  "conditional_server_utc_observations": [
+    "2026-10-19T09:56:01.368431",
+    "2026-10-19T09:56:01.368431"
+  ],
+  "static_reserved_count": 563,
+  "session_modeled_reserved_count": 565,
+  "session_overlay_differences": [
+    {
+      "name": "card_unit_1st_london_brigade",
+      "static_default": false,
+      "session_model": true
+    },
+    {
+      "name": "card_unit_22nd_guards_brigade",
+      "static_default": false,
+      "session_model": true
+    }
+  ],
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "After the user loaded a match, all2019 actual static object fields can be read. Each object pointer is present in GUObjectArray with matching internal index/class/name and without CDO or selected garbage flags. Reserved bytes match the current CDOs and the prior CDO-only capture across2019 names, including all15 RULE235 variants.",
+    "One actual non-CDO BP_KardsSession was selected from a fresh class bucket, with reflection-backed reserve/blacklist/login-time offsets. Its one reservation record activates2026-06-11T10:00:00 and contains129 move-in names and22 come-back names. Every set key exactly matches the canonical static-map FName key. The129-slot set uses an external allocation bitmap; both sets have no free slots and full stored bucket coverage.",
+    "Using the previously audited graph under stable-session/list and clock/native-comparison premises, two consecutive login+world-real-time observations both select that record. Its overlay produces565 reserved names rather than the563 static defaults. The two additional names are1st_london_brigade and22nd_guards_brigade, both false in actual static fields and true in the session model.",
+    "The blacklist contains one record; its native/Blueprint filtering semantics were not audited in this phase. No expired/active blacklist or final candidate-pool result is inferred merely from its stored end_date."
+  ],
+  "limits": [
+    "Actual session selection is a current class-bucket witness, not a historical GetDSession or actual card-caller world trace. The login+world time observations and container buffers are separately reread stable, not a joint atomic query. No game function was called.",
+    "The two session-dependent reserved differences are newly quantified remaining gaps. They are not patched as universal CDO constants; a complete session policy, server time, repeated-read behavior and candidate-cache invalidation still need implementation.",
+    "The15-variant CDO compatibility fix remains valid in this captured session, but no claim is made about all future reservation policies. FName hash algorithm, native date/container semantics and blacklist logic remain explicit dependencies.",
+    "No new kernel edit or test rerun; latest full Release583/583 is RULE235. Fully semantically verified card logic remains0; no historical replay authority, injection, process writes or gameplay mutation."
+  ]
+}
