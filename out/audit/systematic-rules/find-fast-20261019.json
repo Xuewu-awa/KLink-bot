@@ -1,0 +1,82 @@
+{
+  "rule": "RULE-226",
+  "status": "current-outer-hash-membership-and-conditional-default-filter-model-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\find-fast-20261019.json": "1faa6f8b35c8e4b1061efa42160aeab7ddcd04d042af46238751aadc86d80b35",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\load-core-20261019.json": "baf671d0a89fbff5f9dcd067db68727816678bd4fcc029350b6391404044ae4f",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-find-fast-20261019.txt": "a6f45ce4ee3aaaba6629b698aaca79239f66537da0e37f741ac2795bb98b2b15",
+    "D:\\Codex Workshop\\kards-install-review\\capture-find-fast-20261019.py": "33ccb1ee62100d78a843a0fed7383a3e3d39ec2458e124f9bfb565a3ab474869",
+    "D:\\Codex Workshop\\kards-install-review\\audit-find-fast-20261019.py": "c24508a322e3eacb618068c09424127979e0e85bc3bbef899c11e0eea8e7a774",
+    "D:\\Codex Workshop\\kards-install-review\\make-find-fast-seeds-20261019.py": "97bba765e1106e96510808d4d512487a37b5e824812777435218cfcabf727e7b",
+    "D:\\Codex Workshop\\kards-install-review\\find-fast-seeds-current-20261019.txt": "3a04516f75b257abee9e84f63492e6e1d628bbf4ca7d69cbc2cd0bbd03b1f100",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reverse-helpers-20261019.json": "107290f4b704d69e4f057893371634965cbb891178e9bbf386ff62fe5fe0346b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-load-20261019.json": "8e80dd91b792771e3de42f5d16b8d3b81af51f6433621ddfc0c819d3ed262135"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 7,
+  "native_code_bytes": 2853,
+  "instruction_checks": 21,
+  "hash_slots": 87347,
+  "hash_allocated": 87341,
+  "hash_free": 6,
+  "hash_buckets": 65536,
+  "card_queries": 2019,
+  "hash_identity_differences": 0,
+  "unique_expected_objects": 2019,
+  "internal_flag_counts": {
+    "0x4000": 2019
+  },
+  "previous_internal_flag_counts": {
+    "0x8000": 2019
+  },
+  "internal_flag_changes_since_RULE222": 2019,
+  "default_filter_model_passes": 2019,
+  "custom_context_filter_verified": false,
+  "queried_chain_nodes": 4625,
+  "old_guide_checks": [
+    {
+      "function": "FindInternalExclusions",
+      "guide_bytes": 88,
+      "current_bytes": 88,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "FindFastDispatch",
+      "guide_bytes": 106,
+      "current_bytes": 106,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "FindFastBody",
+      "guide_bytes": 1932,
+      "current_bytes": 1942,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 10
+    },
+    {
+      "function": "ObjectHashTables",
+      "guide_bytes": 456,
+      "current_bytes": 456,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    }
+  ],
+  "findings": [
+    "The current owner+78 outer-hash uses16-byte rows containing32-bit combined hash, UObject index, next and bucket. The complete captured87347-slot table has6 free slots; bitmap/free-list/key/hash coverage checks independently pass. Query hash is name-index hash plus FName number plus outer-address>>6, wrapping32 bits.",
+    "For all2019 current card class queries, independently walking the captured bucket chains, reading index-bound UObject items and matching full FName/outer yields one unique expected class. This is reconstructed membership, not a record of finder execution.",
+    "FindFastBody distinguishes object-header exclusion flags from UObject-item internal flags, checks type ancestry and always adds10020000 to internal exclusions. Under explicitly zero caller object exclusions, non-exact CoreUObject.Object class matching and the default8400000 internal mask, all2019 reconstructed candidates pass. Internal item flags are a separate field from prior object flags280009.",
+    "Fresh item flag counts are{'0x4000': 2019}, versus{'0x8000': 2019} in RULE-222;2019 entries changed while identity remained the same. Both snapshots pass the stated default-mask checks. Cause of the transition is not established; never freeze these runtime flags as constants.",
+    "The exclusion function returns8400000 when its callback isfalse,0 on one alternate branch, or a thread-context+50 mask when custom filtering applies. Current custom filtering is enabled; callback dispatch, virtual target and predicate state are captured but its full calling-context result is not certified. Do not treat the conditional default model as universal actual lookup success.",
+    "Full fast-search interval includes its tail through15d7b26. A preliminary end at15d7af9 was only a pdata boundary, not the function end. Old available1932-byte body omits10 current tail bytes; other selected guide spans match after masking relative operands."
+  ],
+  "limits": [
+    "Reads are stable on reread but not atomic; no game locks acquired and no functions invoked. Actual execution, initialization history and concurrent GC/serialization behavior remain unrecorded.",
+    "Custom async-context masks and callback thread classification are not fully evaluated. Default-filter passes are conditional, not a claim that every thread admits the classes.",
+    "Null-outer/global searches, exact-class mode, aliases, path resolution/package loading and uncommon failure modes remain pending.",
+    "No kernel change or test rerun. Last full Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
