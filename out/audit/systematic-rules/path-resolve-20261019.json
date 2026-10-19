@@ -1,0 +1,68 @@
+{
+  "rule": "RULE-223",
+  "status": "direct-resolve-versus-explicit-try-load-and-current-simple-path-inputs-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\path-resolve-20261019.json": "7ab322f85072c66f16742b5c1e1343037bf04695301d1742e1d7d47a6d38f910",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-load-20261019.json": "8e80dd91b792771e3de42f5d16b8d3b81af51f6433621ddfc0c819d3ed262135",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-path-resolve-20261019.txt": "535703cfc7a8a8b81b07106f704eaebdfef41cda2c3e919b47d6873459e466cb",
+    "D:\\Codex Workshop\\kards-install-review\\capture-path-resolve-20261019.py": "eaaff375528d6ee4023ac27ac48084fcf5880fa3ca946f8c2de11f8acdbfdfc0",
+    "D:\\Codex Workshop\\kards-install-review\\audit-path-resolve-20261019.py": "24ecdb4f0ff7e1f3ae779b690ef419d0d384da23c8989dec199b18acda881a0e",
+    "D:\\Codex Workshop\\kards-install-review\\make-path-resolve-seeds-20261019.py": "3dc291b2b1d6a96a4e27a89096a464986b7266d62d26a2d9dbb1a3e826f14da7",
+    "D:\\Codex Workshop\\kards-install-review\\path-resolve-seeds-current-20261019.txt": "6f30808a921009d21e9871b2248de8d4437657d574ad3ef5efeac80c66a61673"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 5,
+  "native_code_bytes": 2683,
+  "instruction_checks": 30,
+  "card_paths": 2019,
+  "nonempty_subobject_paths": 0,
+  "path_identity_differences": 0,
+  "primary_order_differences": 0,
+  "redirect_fixup_enabled": true,
+  "redirector_class": "ObjectRedirector",
+  "old_guide_checks": [
+    {
+      "function": "ResolvePathBody",
+      "guide_bytes": 952,
+      "current_bytes": 962,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 10
+    },
+    {
+      "function": "LoadSoftObject",
+      "guide_bytes": 383,
+      "current_bytes": 383,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "TryLoadPath",
+      "guide_bytes": 658,
+      "current_bytes": 658,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 0
+    },
+    {
+      "function": "FindObjectByPath",
+      "guide_bytes": 486,
+      "current_bytes": 513,
+      "nonrelative_match": true,
+      "current_extra_tail_bytes": 27
+    }
+  ],
+  "findings": [
+    "LoadSoftObject first checks weak/cached resolution. Only when the resulting object remains null and the path is nonempty does it call TryLoadPath15a1460, followed by another weak lookup and resolution. The converter path from RULE-222 does not contain this explicit TryLoad call.",
+    "ResolvePathBody constructs package.object[:subobject] text, calls15c88a0, optionally resolves subobjects through a virtual+88 call with flagfalse, optionally fixes redirects and retries lookup, then follows ObjectRedirector +28 pointers while type matches. There is no direct call to the captured TryLoad/load targets; descendant behavior is not thereby proved I/O-free.",
+    "The current redirect-fixup flag8f28158 is1; the redirector class getter cached branch reads91e6328, whose UObject name is ObjectRedirector. These are current state observations, not universal settings. Cycles or exceptional redirect chains are not certified.",
+    "TryLoadPath uses a different root-path target15c9370 and has its own retry/fixup and subobject virtual branch. All2019 current primary generated paths have nonempty package and empty subobject, and match prior loaded class package/name identities. Their class-load history is not inferred.",
+    "Four older guides match2479 available nonrelative bytes. Current capture adds10 and27 epilogue bytes for resolve body and lookup helper. All full current intervals match live bytes and pinned installed EXE; the cached redirector getter adds167 bytes."
+  ],
+  "limits": [
+    "Core lookup15c88a0 descendants, explicit loader15c9370, redirect fixup1598e30 and conversion cache/GC helpers remain pending. Do not claim the entire lookup/load graph or all I/O behavior is restored.",
+    "No lookup/load functions were called, no game state modified, and no historical callbacks observed. Loaded identity matches are evidence from snapshots, not executed lookup results.",
+    "Current card inputs do not exercise subobjects, malformed paths or redirect chains/cycles. Nonempty subobject semantics and encodings remain separate.",
+    "No kernel change or test rerun. Last full Release582/582 RULE-205; fully semantically verified cards0; no replay authority."
+  ]
+}
