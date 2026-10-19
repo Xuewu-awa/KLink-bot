@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-219",
+  "status": "observed-blueprint-branch-and-stored-generated-paths-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registration-class-20261019.json": "7c6cf021661854ce2a3bb481dd943c448473a7a17de96cacecc7ed33dc8d0e49",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\tag-values-20261019.json": "87df0d3d497e9bbf4c9d42717011baf9cd2187435c77298ba00908abeda46afc",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\registry-enum-20261019.json": "95aadbdd6261ada4c0465fc4814c6b478c797c9c3d74292fc728d46d0d275eb4",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-registration-class-20261019.txt": "a0d2b89218821551e34153ec4a068a9bcf9b13f1883de72e6baba7bc2b13ad66",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registration-class-20261019.py": "895e3f0bc53c84f5c2a7237c54d5082592a827b23d95fe58f538ca3d52605203",
+    "D:\\Codex Workshop\\kards-install-review\\audit-registration-class-20261019.py": "93dd624b3e7cc1fa6c6a3cb175fd7681c7a657ab1bdbcc3e504e56e015a4064a",
+    "D:\\Codex Workshop\\kards-install-review\\ExportRegistrationClassVerified.java": "402978de00ad88d03883436c5ca21dae25e93851489bee6ca634a2d0979a7e78"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 6,
+  "native_code_bytes": 2188,
+  "instruction_checks": 14,
+  "class_records": 2043,
+  "blueprint_class_records": 2043,
+  "primary_path_pairs": 2019,
+  "path_pair_differences": 0,
+  "old_guide_nonrelative_bytes": 236,
+  "findings": [
+    "Secondary predicatec7bc80 is exactly b001c3: unconditional true with no pdata. It does not reject any input in this build; its previous tentative validity-predicate label is superseded.",
+    "Predicate3984fc0 extracts the class object-name FName, converts to text, selects the suffix and compares against live Blueprint literal. All2043 reread records have exact Engine.Blueprint class path. The observed branch builds the asset object path and appends live _C literal; success jumps directly to true return.",
+    "All2019 current primary map entries contain original package/asset FNames equal in raw identity to their tagged source asset and a generated path in the same package whose decoded object name equals source asset name plus _C. Both stored subobject strings are empty. No matching used replay data.",
+    "Fresh map sparse/hash invariants and source buffers were reread stable. These are current stored outcomes, not a historical callback trace."
+  ],
+  "limits": [
+    "General FName-to-string, suffix comparator non-ASCII/case behavior, soft-path parsing and allocation paths have not been fully certified; exact current Blueprint inputs and stored path pairs are the validated scope.",
+    "No historical duplicate or registration trace; reverse-index removal/insertion and later class loading remain pending.",
+    "Old Ghidra guide masks relative operands and omits epilogue. Current complete predicate253 bytes controls branch interpretation. No old RVA inferred by a fixed executable delta.",
+    "No kernel change or selftest rerun. Last full Release582/582 in RULE-205; fully semantically verified cards0."
+  ]
+}
