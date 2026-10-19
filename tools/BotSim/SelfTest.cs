@@ -434,6 +434,9 @@ internal static class SelfTest
         // 下面四条直接断言**池子的张数与成员**，以及"同一流下标 → 同一张卡"。
         new("候选池口径：Special/OnlySpawnable/Placeholder/Expansion1/Wildcards 不得进池",
             StaticPoolCardSetFilter),
+        new("黑名单名称身份：原生离线夹具全部键对", BlacklistNativeNamePairs),
+        new("黑名单名称身份：全部卡名大小写和 NUL 别名", BlacklistAllCardNameAliases),
+        new("黑名单名称身份：别名合并后候选缓存与末项过期", BlacklistAliasCandidateCaches),
         new("会话黑名单导入：有效/连接门、保留旧键与同名末项覆盖", SessionBlacklistImportOrder),
         new("会话黑名单导入：重复截止值及空数组不清空开发候选限制", SessionBlacklistImportCaches),
         new("会话黑名单：缺失键、截止时刻包含及有符号时间边界", SessionBlacklistBoundary),
@@ -4004,6 +4007,66 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? BlacklistNativeNamePairs(CardDatabase db)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            AppContext.BaseDirectory, "Fixtures", "blacklist-fname-20261019.json")));
+        var cases = document.RootElement.GetProperty("cases").EnumerateArray()
+            .Select(c => (Text: c.GetProperty("text").GetString()!,
+                Identity: c.GetProperty("identity").GetString()!)).ToArray();
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var policy = new CardBlacklistPolicy(new Dictionary<string, long>
+                { [cases[i].Text] = 20 }, 10);
+            for (int j = 0; j < cases.Length; j++)
+                if (policy.IsBlacklisted(cases[j].Text) != (cases[i].Identity == cases[j].Identity))
+                    return $"原生名称身份不一致：夹具 {i}/{j}";
+        }
+        return null;
+    }
+
+    private static string? BlacklistAllCardNameAliases(CardDatabase db)
+    {
+        foreach (var card in db.All)
+        {
+            var original = new CardBlacklistPolicy(new Dictionary<string, long>
+                { [card.Name.ToUpperInvariant()] = 20 }, 10);
+            if (!original.IsBlacklisted(card.Name) || !original.IsBlacklisted(card.Name + "\0ignored"))
+                return $"卡名别名漏拦截：{card.Name}";
+            var changed = original.WithSessionEntries(new[]
+            {
+                new KeyValuePair<string, long>(card.Name.ToUpperInvariant(), 30),
+                new KeyValuePair<string, long>(card.Name, 9)
+            }, true, true);
+            if (changed.IsBlacklisted(card.Name) || !original.IsBlacklisted(card.Name))
+                return $"卡名别名末项覆盖或不可变性错误：{card.Name}";
+        }
+        return null;
+    }
+
+    private static string? BlacklistAliasCandidateCaches(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var selecting = state.Create("card_event_pams", Side.Left, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left, Self = selecting };
+        var baseline = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (baseline.Count == 0) return "PAMS 基线为空";
+        string name = baseline[0].Name;
+        state.CardBlacklist = new CardBlacklistPolicy(new Dictionary<string, long>(), 10)
+            .WithSessionEntries(new[] { new KeyValuePair<string, long>(name.ToUpperInvariant(), 20) }, true, true);
+        if (engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == name))
+            return "大小写别名未拦截已缓存候选";
+        state.CardBlacklist = state.CardBlacklist.WithSessionEntries(new[]
+        {
+            new KeyValuePair<string, long>(name.ToUpperInvariant(), 30),
+            new KeyValuePair<string, long>(name + "\0ignored", 9)
+        }, true, true);
+        if (!engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _)
+            .Select(c => c.Name).SequenceEqual(baseline.Select(c => c.Name)))
+            return "别名过期末项未恢复完整候选顺序";
         return null;
     }
 
