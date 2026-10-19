@@ -1,0 +1,36 @@
+{
+  "rule": "RULE-241",
+  "status": "ascii-only-name-comparison-and-hash-preimage-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-fname-pool-native-complete-v2-20261019.json": "012c8a5208fa6f008ec5b1f1ffb81cdfbe5fa00fe73abea49e3ea384ed631eff",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-fname-pool-20261019.py": "3046643a90004ce90709fa9a8da8482a6158c05207bb4b18dadedfbad1ec4057",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-fname-pool-20261019.py": "56876d7c60e38c9506386627e76d8bc1081b452b4f169de195c5b729475ce439"
+  },
+  "kernel_changed": false,
+  "native_ranges": 7,
+  "native_bytes": 2592,
+  "offline_native_comparison_cases": 100304,
+  "offline_hash_preparation_cases": 586,
+  "unicode_distinction_examples": 4,
+  "offline_length_gate_cases": 10,
+  "hash_backend_executed": false,
+  "release_selftests": {
+    "total": 591,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Backend mode1 follows shard find-or-add138b0e0. Candidate entry header and probe metadata precede EntryEqual1377740; narrow/wide comparators fold only ASCII differing pairs. Differing code units outside ASCII retain their numeric difference.",
+    "Hash preparation lowercases ASCII A-Z only; all other narrow bytes and UTF16 units are retained. Scalar and SIMD selector branches were emulated against independent byte/unit models, including zero and1023 lengths.",
+    "At the backend length gate, length>=1024 with mode0 returns zero, while mode1 recursively substitutes the24-byte diagnostic name before pool access. Ten offline length/mode cases stop before pool initialization; final diagnostic-name interning is not certified.",
+    "Sixteen ASCII case variants of none set a special hash-metadata bit0x20000000 in narrow preparation. This is not yet proof that every spelling maps to FName zero.",
+    "Captured code and RIP inputs were read from the live client and code matched the current executable; isolated Unicorn2.1.4 executes comparisons and preparation only. Hash result is synthetic and cookie check skipped offline; no client functions were invoked."
+  ],
+  "limits": [
+    "Actual hash1230db0, collision/probe termination, None insertion/lookup result, cross-width identity, allocation/rehash/failure, concurrency and startup remain open.",
+    "ASCII comparison/preimage agreement alone cannot authorize raw FString imports or a universal canonical-name resolver. Nonempty final FName identity and full end-to-end wrapper stepping remain unverified.",
+    "No kernel behavior changed. Existing canonical blacklist keys remain Ordinal; no replacement with general Unicode case-insensitive comparison. Snapshot rereads are not atomic; no complete card semantics certified."
+  ]
+}
