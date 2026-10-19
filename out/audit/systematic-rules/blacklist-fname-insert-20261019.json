@@ -1,0 +1,39 @@
+{
+  "rule": "RULE-243",
+  "status": "native-name-insertion-growth-and-block-rollover-verified-under-synthetic-primitive-contracts",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-fname-insert-20261019.json": "a71ed9a08dc97a2102d769f85b40cc03ca5a837cf435156e293a43350f28afc0",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-fname-insert-20261019.py": "7839eb10ffec3649226e343b7450b7e3fe3a967ace27e940962040abea14ecdd",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-fname-insert-20261019.py": "075506a45a7c902a0015439d279a4b8cf5bc3634c1dd0f0b4cff2cca81dfebad"
+  },
+  "kernel_changed": false,
+  "native_ranges": 16,
+  "native_bytes": 5916,
+  "synthetic_input_names": 376,
+  "distinct_new_names": 374,
+  "post_growth_relookup_cases": 752,
+  "synthetic_shard_growth_events": 4,
+  "synthetic_name_block_rollovers": 3,
+  "synthetic_slot_count": 375,
+  "primitive_copy_calls": 374,
+  "live_functions_invoked": false,
+  "native_allocator_executed": false,
+  "release_selftests": {
+    "total": 591,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Captured NextNameBlock137e900, GrowShard1385450 and ReinsertSlot138a040 and verified all16 code spans against the current live executable. Conditional insertion preserves original name bytes while lookup folds ASCII only, writes encoded block/offset and Number separately, and reuses an existing identity on repeat/case-alias lookup.",
+    "Isolated synthetic pool starts with a None entry and256 eight-slot shards. Real native construction/hash/lookup/insertion/growth/rehash instructions execute; only generic allocation/free/copy/fill, imported locks and cookie checks are substituted. Heap/table frees unmap pages; emulated writes are restricted to explicitly modeled storage.",
+    "Actual growth entries satisfy10*new_count>9*old_capacity and request twice the old slot capacity. Native rehash redistributes existing full slot values through real hash preparation; all prior identities and count/slot population survive.",
+    "Long narrow and wide names trigger actual native name-block rollover. All fresh input entries preserve header width, original bytes and suffix Number. ASCII aliases reuse identity, while selected non-ASCII letter pairs remain distinct."
+  ],
+  "limits": [
+    "Results are conditional on successful, correctly aligned allocation and correct copy/fill/free primitives. Client allocator, memory failure, lock implementation, concurrency, initialization and fatal-limit behavior are not certified.",
+    "Synthetic fixtures do not demonstrate real client insertion history or live callbacks. No live process writes/functions/locks are used. Rehash batching is exercised by fixtures, not exhaustively proved for every valid table.",
+    "This is FName infrastructure evidence, not a full card-effect audit or a general production name resolver. Canonical blacklist input contract and simulator kernel behavior remain unchanged."
+  ]
+}
