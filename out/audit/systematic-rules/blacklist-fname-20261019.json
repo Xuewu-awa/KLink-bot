@@ -1,0 +1,33 @@
+{
+  "rule": "RULE-240",
+  "status": "native-name-conversion-front-end-verified-pool-backend-open",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-fname-native-20261019.json": "d25523bf1d54ec389f9c1769b13668ee55158566cd86d14afe06eb96c2075da2",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-fname-20261019.py": "9bcf1b1f5d98f626055d358012ed69ee6658ff13dadcd937345743fdfe093637",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-fname-20261019.py": "645bb29867a2ade243380ebaa952c6b8d0573fb35f893ab0b3f51d374c5ef3e0"
+  },
+  "kernel_changed": false,
+  "native_ranges": 4,
+  "native_bytes": 788,
+  "offline_x64_suffix_cases": 6002,
+  "offline_constructor_cases": 17,
+  "offline_zero_length_view_cases": 1,
+  "fully_semantically_verified_cards": 0,
+  "release_selftests": {
+    "total": 591,
+    "failed": 0,
+    "rerun": false
+  },
+  "findings": [
+    "Live reflected Conv_StringToName exec at RVA3da6580 calls UTF16 constructor137a7b0 with mode1; the constructor scans until UTF16 NUL, returns zero for empty input, and computes ASCII/wide flag before suffix parsing.",
+    "Native suffix splitter1378bb0 accepts only an underscore followed by1..10 ASCII digits, rejects multi-digit leading zero and values>=2147483647, stores suffix+1 as Number and shortens length to before underscore. Failed parses retain full length and Number0.",
+    "Native NameFromView1388950 returns all-zero name on zero remaining length, ignoring Number. Thus _0 has parser Number1 but the full observed constructor path returns zero rather than an empty-base numbered name.",
+    "All bounded suffix cases run the captured x64 instructions in isolated Unicorn2.1.4 and match an independent UTF16 specification. Selected constructor cases stop before the pool backend. No target function is invoked."
+  ],
+  "limits": [
+    "Name interning1380830, case-insensitive comparison/hash, None spelling aliases, wide and non-ASCII normalization, overflow/too-long name policy and pool allocation/failure remain open.",
+    "Numeric suffix parser verification does not establish final FName identity for nonempty bases. Do not strip suffixes from canonical card names or change blacklist key equality based on this result.",
+    "Frame operand stepping, full Blueprint lifecycle, current caller world and concurrent mutations remain unaudited. Current captures are reread stable, not atomic. No complete card semantics is certified."
+  ]
+}
