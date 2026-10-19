@@ -61,6 +61,9 @@ public sealed class GameState
 
     public CardDatabase Database { get; }
 
+    /// <summary>Explicit session reservation snapshot; null keeps the CDO-only compatibility default.</summary>
+    public CardReservationPolicy? CardReservations { get; set; }
+
     /// <summary>
     /// 本局的确定性随机流 —— **客户端那条 `cardsRandomStream` 的复刻**。
     /// 播种值就是 `match_id`（见 <see cref="UeRandomStream"/>）。

@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\KLink.Bot\KLink.Bot.csproj" />
+    <None Include="..\..\klink bot\docs\card-reservation-session-20261019.json"
+          Link="Data\card-reservation-session-20261019.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

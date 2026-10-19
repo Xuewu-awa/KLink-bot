@@ -1,0 +1,57 @@
+{
+  "rule": "RULE-237",
+  "status": "explicit-session-reservation-policy-and-cache-invalidation-implemented",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-session-20261019.json": "2e34507696d14639074dab27696fff2eb9962e96939ed2231d10542a9f77bb6b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-exact-20261019.json": "07438af0d3b6c9ed1988ef84c13a45cfd6b09ba56cda2cfdff42f899ab471b8b",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-reserve-20261019.json": "8afb171a050f804dce6ef52a2d7f50d61784c01af6e85bd839cf7c7ad3782351",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-reservation-session-20261019.json": "1c44051b04414ecd22f24217c62c07fde5974811d40c51238e68606bed7d2e09",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardReservationPolicy.cs": "78ae8b55e4b1c721923f3a0c2a3a91441ae7ec5000e7d61b122f3ad7a8cbd2eb",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs": "b9eef68ff42d9682a5a74abd7c175a8662b68b308c063a986f776fa6e4691989",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs": "94384ffe21b4de1aa841d381b0e4e1564aece3eb6d8a9e8d1391f0da3e583323",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardPoolTable.cs": "9b9eb4b46d5503cad5daa54c861070ba7cdc61e1cbc13bc2667b3b4fe1de372f",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-card-pool-table.py": "d79f9e0292c97796a81fd59711a420ea52fe3d630e06a81fba3b25872dc495ce",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "1c5dc202080f65e7dfd623852ed6af6c5b5376b4b97b6c4f2b717c036a9ca5bf",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\BotSim.csproj": "9eb6f8d25401e661e5b9c295608b2883eb5cff57ad340e802471dd952db23731",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reservation-policy-before-20261019.txt": "01e61db76838326742ef7945389823f56c097e414d46f5ede17f8ef00da15f70",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-reservation-policy-after-20261019.txt": "46f4ea9d2ddf93fd193e79dce96f8f5b70695496cf2050c01563c929dd5a6d97",
+    "D:\\Codex Workshop\\kards-install-review\\audit-reservation-policy-20261019.py": "9a95866b3b2db2faa82ec02bbbacd19ed0f88d79ed5a716bbb8915b2fcaba636"
+  },
+  "kernel_changed": true,
+  "optional_policy_fixture": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-reservation-session-20261019.json",
+  "fixture_move_in": 129,
+  "fixture_come_back": 22,
+  "fixture_is_automatically_installed": false,
+  "modeled_cards": 2019,
+  "static_default_reserved": 563,
+  "configured_snapshot_reserved": 565,
+  "configured_snapshot_resolved_differences": [
+    "card_unit_1st_london_brigade",
+    "card_unit_22nd_guards_brigade"
+  ],
+  "default_mode_remains_cdo_only": true,
+  "bounded_priority_cases": 546,
+  "release_selftests_before": {
+    "total": 586,
+    "failed": 2
+  },
+  "release_selftests_after": {
+    "total": 586,
+    "failed": 0
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Added immutable copied reservation records and a per-GameState optional CardReservationPolicy. Policy evaluates latest active relevant date with later equal-date overrides and move-in priority. Its server UTC is explicit signed ticks; WithServerUtcTicks replaces the policy, without host clock access. Null retains the preexisting compatibility mode.",
+    "Exported the exact151 canonical names and activation/server ticks from RULE236 into a separately named optional JSON snapshot. No pointers, accounts or unrelated session data are exported. Loading is explicit and does not install a global default.",
+    "All four reservation call paths now use the session overlay: IsCardReserved dispatch, static-pool filter, GetRandomBritishAir self gate and CheckHasUnitToSpawn self gate. With this captured policy, the two RULE236 differences resolve and2019 modeled names yield565 reserved. No claim is made that absent policy automatically resolves them.",
+    "Static-pool variants and GetChooseSpawnCards result/purity caches are now per CardApi instance. A policy/reference or explicit time update invalidates both result layers before any outer cache lookup. Independent variant definition names no longer share result keys merely because their program resolved to a base.",
+    "Three new C# cases cover546 bounded priority combinations and source collection copying, explicit JSON loading/current565-count dispatch and pool integration, plus warm-cache activation/clear/cross-match isolation. Two integration cases fail before dispatch/cache wiring, while complete Release586/586 passes after the fix."
+  ],
+  "limits": [
+    "This implements a deterministic stable-session snapshot contract for canonical names. It does not reproduce repeated GetDSession/clock reads under concurrent changes, FName case/number behavior, native missing-static-name construction, or arbitrary mutable native static objects.",
+    "Session collection/refresh and clock advancement are caller responsibilities. The dated snapshot is opt-in and version-labeled; other sessions/configurations are not inferred from it. No automatic live memory reading is added to the simulator.",
+    "Blacklist filtering, card-set activation/config input, registry/card-pool order and full native query/clock semantics remain pending. Canonical shared template identity is unchanged; per-instance filtered caches do not certify all object alias or parallel engine semantics.",
+    "No new process writes, injection, native function execution or gameplay changes. No historical replay authority or full-card semantic certification; semantically verified cards remains0."
+  ]
+}

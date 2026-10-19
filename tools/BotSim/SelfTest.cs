@@ -434,6 +434,9 @@ internal static class SelfTest
         // 下面四条直接断言**池子的张数与成员**，以及"同一流下标 → 同一张卡"。
         new("候选池口径：Special/OnlySpawnable/Placeholder/Expansion1/Wildcards 不得进池",
             StaticPoolCardSetFilter),
+        new("会话预备：最新生效日期、同日期后项与双集合优先级", SessionReservationPriority),
+        new("会话预备：读取当前权威快照，覆盖直接查询与候选过滤", SessionReservationCapturedPolicy),
+        new("会话预备：策略/时间更新清理静态池与开发候选缓存，跨局隔离", SessionReservationCacheUpdates),
         new("预备判定：独立老兵变体保留非预备默认值，不继承基础卡预备状态", ReservedVariantOwnDefault),
         new("候选池口径：预备卡默认不进池，includeReserved=true 时必须在池里",
             StaticPoolReservedFilter),
@@ -3996,6 +3999,102 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? SessionReservationPriority(CardDatabase db)
+    {
+        var states = (from date in Enumerable.Range(0, 4)
+                      from membership in Enumerable.Range(0, 4)
+                      select (Date: (long)date, Move: (membership & 1) != 0,
+                          Back: (membership & 2) != 0)).ToArray();
+        var sequences = new List<(long Date, bool Move, bool Back)[]> { Array.Empty<(long, bool, bool)>() };
+        sequences.AddRange(states.Select(x => new[] { x }));
+        sequences.AddRange(from a in states from b in states select new[] { a, b });
+        foreach (var sequence in sequences)
+        foreach (bool fallback in new[] { false, true })
+        {
+            var policy = new CardReservationPolicy(sequence.Select(x => new CardReservationChange(x.Date,
+                x.Move ? new[] { "x" } : Array.Empty<string>(),
+                x.Back ? new[] { "x" } : Array.Empty<string>())), 2);
+            var accepted = sequence.Select((x, i) => (Record: x, Index: i))
+                .Where(x => (x.Record.Move || x.Record.Back) && x.Record.Date <= 2 && x.Record.Date >= 0)
+                .OrderBy(x => x.Record.Date).ThenBy(x => x.Index).ToList();
+            bool expected = accepted.Count == 0 ? fallback : accepted[^1].Record.Move;
+            if (policy.IsReserved("x", fallback) != expected) return "最新日期/覆盖判据不符";
+        }
+        var input = new List<string> { "x" };
+        var immutable = new CardReservationPolicy(new[] { new CardReservationChange(1, input, Array.Empty<string>()) }, 1);
+        input.Clear();
+        if (!immutable.IsReserved("x", false)) return "策略未复制调用者集合";
+        if (immutable.WithServerUtcTicks(0).IsReserved("x", false)) return "激活前不应生效";
+        return null;
+    }
+
+    private static string? SessionReservationCapturedPolicy(CardDatabase db)
+    {
+        var policy = CardReservationPolicy.Load(Path.Combine(AppContext.BaseDirectory,
+            "Data", "card-reservation-session-20261019.json"));
+        var (engine, state) = EmptyBoard(db);
+        state.CardReservations = policy;
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        foreach (string name in new[] { "card_unit_1st_london_brigade", "card_unit_22nd_guards_brigade" })
+        {
+            object? value = engine.Api.InvokeByName("IsCardReserved", null,
+                new object?[] { name }, ctx, out bool handled);
+            if (!handled || value is not true) return $"会话调档没有使 {name} 进入预备";
+        }
+        int reservedCount = 0;
+        foreach (var definition in db.All)
+        {
+            object? answer = engine.Api.InvokeByName("IsCardReserved", null,
+                new object?[] { definition.Name }, ctx, out bool handled);
+            if (!handled || answer is not bool) return $"未处理预备查询 {definition.Name}";
+            if (answer is true) reservedCount++;
+        }
+        if (reservedCount != 565) return $"当前会话应有565张预备卡，实际{reservedCount}";
+        string? error = TryStaticPool(engine, state, true, false, out var pool);
+        if (error is not null) return error;
+        foreach (string name in new[] { "card_unit_1st_london_brigade", "card_unit_22nd_guards_brigade" })
+            if (pool.Any(c => c.Name == name)) return $"会话预备卡 {name} 错误进入候选池";
+        error = TryStaticPool(engine, state, true, true, out pool);
+        if (error is not null) return error;
+        if (!pool.Any(c => c.Name == "card_unit_1st_london_brigade")) return "includeReserved 未保留会话预备卡";
+        return null;
+    }
+
+    private static string? SessionReservationCacheUpdates(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var selecting = state.Create("card_event_pams", Side.Left, CardLocation.HandLeft, 0);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left, Self = selecting };
+        var original = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (original.Count == 0) return "PAMS 基线候选为空";
+        string changed = original[0].Name;
+        // Warm both cache layers before replacing the policy.
+        engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        string? error = TryStaticPool(engine, state, true, false, out _);
+        if (error is not null) return error;
+        state.CardReservations = new CardReservationPolicy(new[]
+        {
+            new CardReservationChange(10, new[] { changed }, Array.Empty<string>())
+        }, 9);
+        if (!engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "激活前候选被错误移除";
+        state.CardReservations = state.CardReservations.WithServerUtcTicks(10);
+        if (engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _).Any(c => c.Name == changed))
+            return "开发候选缓存未随激活更新";
+        error = TryStaticPool(engine, state, true, false, out var pool);
+        if (error is not null) return error;
+        if (pool.Any(c => c.Name == changed)) return "静态候选缓存未随激活更新";
+        var (otherEngine, otherState) = EmptyBoard(db);
+        error = TryStaticPool(otherEngine, otherState, true, false, out var otherPool);
+        if (error is not null) return error;
+        if (!otherPool.Any(c => c.Name == changed)) return "会话调档泄漏到另一局";
+        state.CardReservations = null;
+        var restored = engine.Api.GetChooseSpawnCards(ctx, selecting, out _, out _);
+        if (!restored.Select(c => c.Name).SequenceEqual(original.Select(c => c.Name)))
+            return "清除策略后候选顺序没有恢复";
         return null;
     }
 

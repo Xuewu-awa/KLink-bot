@@ -77,7 +77,7 @@ public sealed partial class CardApi
             // 真正的判据在 `BP_Logic.HandleCheckCardReserved` → `UtilityFunctions.isCardReserved`：
             // 先扫服务端下发的 `DSession.cards_reserve_changes` 调档表，**没命中就回退到
             // 卡自己的 CDO `isReserved` 字段**（`_deps/UtilityFunctions.g.cs:6651-6672`）。
-            // 本内核没有 DSession ⇒ 整表按 CDO 字段算，出处与偏差面见 `CardPoolTable.Reserved`。
+            // 显式会话策略覆盖 CDO 默认；未配置时保留兼容默认，见 CardReservationPolicy。
             //
             // ⚠️ 这个值有**两个**用途，别只看第一个：
             //   ① 卡自己的效果问"我这张卡被预备了吗"；
@@ -85,7 +85,7 @@ public sealed partial class CardApi
             //      —— 它的返回值就是候选池的 `includeReserved` 开关
             //      （例：`card_event_atlantic_convoy.g.cs:182-184`）。
             //      原来恒 false ⇒ 预备卡永远进候选池（见 `StaticCardPool`）。
-            ["IsCardReserved"] = (c, r, a) => CardPoolTable.IsReserved(StrArgOrNull(a, 0)),
+            ["IsCardReserved"] = (c, r, a) => IsReservedForSession(c, StrArgOrNull(a, 0)),
             // `IsForecastCard` is the weather-card predicate, not the
             // `ability.forecast` keyword carried by cards that trigger Forecast.
             // The Blueprint `GetAllForecastCards` implementation uses these same
@@ -462,7 +462,7 @@ public sealed partial class CardApi
             ["GetRandomBritishAir"] = (c, r, a) =>
             {
                 int kredit = IntArg(a, 0);
-                bool includeReserved = c.Self is not null && CardPoolTable.IsReserved(c.Self.Name);
+                bool includeReserved = c.Self is not null && IsReservedForSession(c, c.Self.Name);
                 var pool = StaticCardPool(c, includeNotAttainable: false, includeReserved)
                     .Where(x => x.Definition.FactionId == 2
                         && IsAirUnit(x)
@@ -2773,44 +2773,54 @@ public sealed partial class CardApi
         return null;
     }
 
-    private List<CardInstance> StaticCardPool(
-        EffectContext c, bool includeNotAttainable, bool includeReserved)
+    private static bool IsReservedForSession(EffectContext c, string? name)
+    {
+        bool fallback = CardPoolTable.IsReserved(name);
+        return c.State.CardReservations?.IsReserved(name, fallback) ?? fallback;
+    }
+
+    private List<CardInstance> EnsureStaticPool(EffectContext c)
     {
         var db = c.State.Database;
-        if (!ReferenceEquals(_staticPoolDb, db) || _staticPool is null)
+        bool rebuilt = !ReferenceEquals(_staticPoolDb, db) || _staticPool is null;
+        if (rebuilt)
         {
             var pool = new List<CardInstance>(db.Count);
-            // Retain the existing headless order pending the separate native
-            // SortCardsByName/copy/lifecycle audit (RULE-205).
+            // Registry/card-pool ordering remains a separate audit boundary.
             foreach (var def in db.All.OrderBy(d => d.Name, StringComparer.Ordinal))
-            {
                 pool.Add(NativeStaticCardInstance(def));
-            }
-
             _staticPool = pool;
             _staticPoolDb = db;
-
-            // ⚠️ 卡池一换，按卡名缓存的候选表就全部失效（候选表里的元素就是这些模板实例）。
+        }
+        // Policies are immutable; changing records or simulated time replaces the reference.
+        if (rebuilt || !ReferenceEquals(_staticPoolReservationPolicy, c.State.CardReservations))
+        {
+            _staticPoolReservationPolicy = c.State.CardReservations;
             _staticPoolGeneration++;
             _staticPoolVariants.Clear();
             _gcsCache.Clear();
             _gcsPurityCache.Clear();
         }
+        return _staticPool!;
+    }
 
-        // 两个开关的组合只有 4 种，且**整局都是常量**（调用点的实参是字面量 +
-        // `IsCardReserved(这张卡的名字)`）⇒ 变体表全局缓存，元素仍与不缓存时同一批实例。
+    private List<CardInstance> StaticCardPool(
+        EffectContext c, bool includeNotAttainable, bool includeReserved)
+    {
+        var staticPool = EnsureStaticPool(c);
+        // Cache only within an unchanged explicit session policy/time snapshot.
         var key = (includeNotAttainable, includeReserved);
         if (!_staticPoolVariants.TryGetValue(key, out var filtered))
         {
-            filtered = new List<CardInstance>(_staticPool.Count);
-            foreach (var card in _staticPool)
+            filtered = new List<CardInstance>(staticPool.Count);
+            foreach (var card in staticPool)
             {
                 if (!CardPoolTable.IsSetInPool(card.Definition.CardSet, includeNotAttainable))
                 {
                     continue;
                 }
 
-                if (!includeReserved && CardPoolTable.IsReserved(card.Name))
+                if (!includeReserved && IsReservedForSession(c, card.Name))
                 {
                     continue;
                 }
@@ -2876,23 +2886,24 @@ public sealed partial class CardApi
                 return false;
         }
 
-        bool includeReserved = CardPoolTable.IsReserved(c.Self.Name);
+        bool includeReserved = IsReservedForSession(c, c.Self.Name);
         return StaticCardPool(c, includeNotAttainable: false, includeReserved)
             .Any(card => card.Definition.FactionId == expectedFaction
                 && card.KreditCost == expectedCost
                 && (requireTank ? IsTank(card) : IsUnit(card)));
     }
 
-    private static CardDatabase? _staticPoolDb;
-    private static List<CardInstance>? _staticPool;
+    private CardDatabase? _staticPoolDb;
+    private List<CardInstance>? _staticPool;
+    private CardReservationPolicy? _staticPoolReservationPolicy;
 
     /// <summary>
     /// `(includeNotAttainable, includeReserved)` → 过滤后的卡池（元素是 <see cref="_staticPool"/> 的模板实例）。
     /// </summary>
-    private static readonly Dictionary<(bool, bool), List<CardInstance>> _staticPoolVariants = new();
+    private readonly Dictionary<(bool, bool), List<CardInstance>> _staticPoolVariants = new();
 
     /// <summary>卡池代数 —— 每次重建 <see cref="_staticPool"/> 时 +1，用来判定缓存条目是否过期。</summary>
-    private static int _staticPoolGeneration;
+    private int _staticPoolGeneration;
 
     // ==================== `GetChooseSpawnCards` 候选表缓存 ====================
     //
@@ -2902,9 +2913,9 @@ public sealed partial class CardApi
     // 一次调用 ≈ 2019 × 8 ≈ 16k 步；实测 `BotSim play` 每局 34,631 步里绝大部分是它。
     //
     // 为什么**能**缓存：对下面 <see cref="PoolPureOps"/> 白名单里的那些卡，
-    // 这个过滤条件在**整局、甚至跨局**都是静态的 —— 判据只有
+    // 这个过滤条件在同一会话策略/时间快照下稳定 —— 判据包括
     // 「卡池模板自己的定义（faction / 类型 / 费用 / tag / 私有 JSON）」+ 程序里的字面量。
-    // 卡池模板本身已经是全局缓存的（<see cref="_staticPool"/>），所以候选表也是常量。
+    // 本实例的候选缓存随会话策略/时间替换清空，不能跨会话复用。
     //
     // ⚠️ **哪些卡不能缓存，为什么**（判据是自动的，见 <see cref="IsPoolPureProgram"/>）：
     //   · 读对局状态的：`GetAllCards` / `GetCardsInHandBySide` / `IsLocatedInDeck` /
@@ -2935,7 +2946,7 @@ public sealed partial class CardApi
     {
         // 卡池本身
         "GetAllActiveStaticCards",
-        // 恒 false 的桩（`IsCardReserved` 见上面派发表），不读任何东西
+        // Session reservation reads are cacheable only while the immutable policy is unchanged.
         "IsCardReserved",
         // 只读「接收者那张卡自己的定义」的谓词 / 取值 —— 接收者一律来自卡池数组
         "IsUnit", "IsOrder", "IsTank", "IsAirUnit", "IsInfantry", "IsArtillery", "IsLocation",
@@ -2968,10 +2979,10 @@ public sealed partial class CardApi
     };
 
     /// <summary>卡名（已解析变体）→ 这个程序的 `GetChooseSpawnCards` 是否可缓存。只算一次。</summary>
-    private static readonly Dictionary<string, bool> _gcsPurityCache = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, bool> _gcsPurityCache = new(StringComparer.Ordinal);
 
     /// <summary>卡名 → 候选表（元素是 <see cref="_staticPool"/> 里的模板实例，全程只读）。</summary>
-    private static readonly Dictionary<string, GcsCacheEntry> _gcsCache = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, GcsCacheEntry> _gcsCache = new(StringComparer.Ordinal);
 
     private sealed record GcsCacheEntry(
         int Generation, List<CardInstance> Cards, bool MarkAsSeen, bool KeepOrder);
@@ -3158,8 +3169,8 @@ public sealed partial class CardApi
     /// （见 `klink bot/tools/gen-kismet-ir.py` 的 `LOCAL_FUNCTIONS`）。
     ///
     /// ⚠️ **带候选表缓存**（见 <see cref="PoolPureOps"/> 那一段注释）。
-    /// 对「卡池纯函数」的卡，结果只取决于卡池模板自己，而卡池模板本身是全局常量
-    /// （<see cref="_staticPool"/>）—— 所以候选表也是常量，直接按卡名存下来。
+    /// 对「卡池纯函数」的卡，结果取决于模板定义及当前显式会话策略
+    /// （<see cref="_staticPool"/>）；策略/时间更新后清空缓存，按独立卡名保存。
     /// 每次仍然返回**一份新的 List**（调用方会 `Array_Clear` / `Array_Add` 原地改它），
     /// 元素引用与不缓存时**完全相同**（不缓存时也是从同一个 <see cref="_staticPool"/> 里取）。
     /// </summary>
@@ -3168,6 +3179,7 @@ public sealed partial class CardApi
     {
         markAsSeen = false;
         keepOrder = false;
+        EnsureStaticPool(c); // Invalidate before testing the outer candidate cache.
 
         var library = Blueprint.KismetLibrary.Default;
         if (library is null)
@@ -3183,9 +3195,9 @@ public sealed partial class CardApi
             return new List<CardInstance>();
         }
 
-        // 缓存键用**解析过变体回退的卡名**：`xxx_bal` / `xxx_vet` 的蓝图逻辑挂在基础卡上，
-        // 走的是同一份程序，自然也共享同一条缓存。
-        string cacheKey = library.ResolveCardName(selecting.Definition.Name) ?? selecting.Definition.Name;
+        // Independent variants can have different IsCardReserved(self.name) results.
+        // Program fallback does not imply identical candidate output.
+        string cacheKey = selecting.Definition.Name;
 
         if (!_gcsPurityCache.TryGetValue(cacheKey, out bool cacheable))
         {

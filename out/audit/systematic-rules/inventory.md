@@ -1,6 +1,6 @@
 # 系统规则审计：结构基线
 
-代码基线：`6a1dcc6b10f5a2df95d8c16c026169eef85ef02b`
+代码基线：`05589325eb863fe4dedf6e4b079dd7c0a9e0d071`
 
 本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。
 
@@ -19,8 +19,8 @@
 | data_only_assets_without_own_function_exports | 310 |
 | cards_with_structural_issues | 20 |
 | missing_static_function_files | 0 |
-| kernel_cs_files | 34 |
-| kernel_cs_lines | 29805 |
+| kernel_cs_files | 35 |
+| kernel_cs_lines | 29894 |
 | comment_leads | 43 |
 | semantically_verified_cards | 0 |
 | runtime_scalar_cards | 2019 |
