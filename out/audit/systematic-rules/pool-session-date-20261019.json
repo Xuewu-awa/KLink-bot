@@ -1,0 +1,97 @@
+{
+  "rule": "RULE-230",
+  "status": "session-selector-graph-and-date-parser-validation-failure-paths-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-session-date-20261019.json": "43fcf674f57844bc0e78b242729e2a11a64fcc1d58e83796f1bf99b32a8aec17",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\pool-clock-config-20261019.json": "20a694f91377293dbe99a129f9e5c05bfbda29d1a7bbc28b1a6daab343e23a21",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\UtilityFunctions.functions.json": "40076098d9f768074de0987445bce4c6027ae7ac8109b0e82d214a35ee0c6528",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\DeckAndCollectionUtilityFunctions.functions.json": "10bf52261beae6a1ef6d5f1d1bc257050ff9db1a64277d627f648adf5b3167b7",
+    "D:\\Codex Workshop\\kards-install-review\\ghidra-pool-date-20261019.txt": "8a807de8a8f89598c38aa4a773e4e9c849d6902ae9898ec25bcffa0f3155e1f5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-pool-session-date-20261019.py": "612f5c5d13ae1df0af9c614170c18299c05ee6706c2a4cd091e93021a822b225",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-230.py": "7cff1ff4190fb1d4008b8f2b3d07862b29899c62509e7415c1b9db8f400ba42b",
+    "D:\\Codex Workshop\\kards-install-review\\audit-pool-session-date-20261019.py": "1ee4dcbe14a7605be4061c6430ef75e5e1b5668e33621cb57a400117566484ff",
+    "D:\\Codex Workshop\\kards-install-review\\make-pool-date-seeds-20261019.py": "95bf5b1f48e9eebfe9aa543a8ed99c9a634b0c7e89a103c419476fbdaec0d2d5",
+    "D:\\Codex Workshop\\kards-install-review\\pool-date-seeds-current-20261019.txt": "f488694223bf7f4bda365d3d6a80f05c95fb946f2cc6beff74a9070a4d3d6e48"
+  },
+  "kernel_changed": false,
+  "decoded_graphs": [
+    {
+      "name": "GetDSession",
+      "bytes": 549,
+      "statements": 20,
+      "operand_control_flow_match": true
+    },
+    {
+      "name": "getAntiCheatServerUTC",
+      "bytes": 204,
+      "statements": 7,
+      "operand_control_flow_match": true
+    },
+    {
+      "name": "isCardSetConfigActive",
+      "bytes": 522,
+      "statements": 17,
+      "operand_control_flow_match": true
+    }
+  ],
+  "new_decoded_function_bytes": 549,
+  "new_decoded_statements": 20,
+  "revalidated_other_script_bytes": 726,
+  "abstract_session_control_flow_cases": 16,
+  "native_code_ranges": 8,
+  "native_code_bytes": 1985,
+  "instruction_checks": 37,
+  "old_guide_checks": [
+    {
+      "function": "DateParser",
+      "bytes": 609,
+      "nonrelative_match": true
+    },
+    {
+      "function": "WorldFromContext",
+      "bytes": 259,
+      "nonrelative_match": true
+    }
+  ],
+  "numeric_import": "_wtoi",
+  "configured_date_component_model": {
+    "value": "2026.06.11-08.00.00",
+    "components": [
+      2026,
+      6,
+      11,
+      8,
+      0,
+      0
+    ],
+    "ticks": 639167616000000000,
+    "all_numeric_validation_gates_pass": true
+  },
+  "session_world_models": [
+    {
+      "session": "0x1cb1b339070",
+      "actor_getworld_slot": "0x180",
+      "target_rva": "0x3837450",
+      "reconstructed_world": "0x1ca80f048a0",
+      "guards_pass": true,
+      "mode1_backend_returns_actor_virtual_result": true
+    }
+  ],
+  "full_activation_result_certified": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Current GetDSession549-byte script has20 top-level statements and matches authority asset operands/control flow. It clears the temporary actor array, calls world-scoped GetAllActorsOfClass, reports multiple actors and exits without assigning its output; exactly one actor uses index0; zero actors in editor also skips assignment, while zero outside editor reports and explicitly assigns null.",
+    "The actual graph is evaluated in16 bounded actor-count/editor/prior-output states with abstract actor enumeration. This distinguishes preserving a prior output from assigning null and does not claim the native actor enumerator or real call stack has been executed.",
+    "DateParser1334ea0..1335101 is609 bytes, not the first15-byte pdata fragment. It accepts6 or7 numeric fields, validates year1..9999, month1..12, day against DaysInMonth, hours0..23, minutes/seconds0..59 and milliseconds0..999. Its own direct failure branches returnfalse without writing the date output; only the validated constructor result writes the output.",
+    "Captured punctuation literals are hyphen/colon/dot/space; the parser numeric calls resolve through the pinned PE import_wtoi. Month tables, leap-year path and tick-constructor arithmetic are inspected. Under the explicitly bounded replacement/splitting model, the observed2026.06.11-08.00.00 produces accepted components and ticks matching an independent calendar computation; generic string helper semantics and arbitrary input parsing are not certified.",
+    "World backend mode1 uses the context object virtual+180. The current session actor uses3837450; its CDO/outer/internal-flag guards pass. The nonempty Level class caches, typed-outer ancestry slot and+ c0 owning-world field reconstruct its world without calls. This closes the selected actor accessor model, not world-scoped actor enumeration or which context a card caller supplies."
+  ],
+  "limits": [
+    "GetAllActorsOfClass implementation, caller-world identity, subclass/streaming-level enumeration and full zero/multiple-actor runtime history remain pending. Abstract actor lists are model inputs, not authoritative actual enumeration results.",
+    "String replacement/splitting, malformed/nonnumeric/overflow input conversion, complete date parsing/cleanup side effects, enum-to-snake-case and config subsystem selection remain pending. Do not treat numeric-gate proof as full parser equivalence or approval of constant true.",
+    "UI diagnostic payloads are outside headless scope; their branch placement is retained. No game calls/writes/injection/suspension, and stable rereads are not atomic.",
+    "No kernel edit or kernel test rerun. Last complete Release582/582 RULE205; fully semantically verified cards0; no historical replay authority."
+  ]
+}
