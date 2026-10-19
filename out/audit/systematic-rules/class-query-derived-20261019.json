@@ -1,0 +1,128 @@
+{
+  "rule": "RULE-233",
+  "status": "nonempty-derived-sets-and-one-heap-object-bucket-current-snapshot-verified",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "live_pid": 24220,
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-query-derived-heap-20261019.json": "027ce6245ca0d24cf5fd51294d21dc1cc9813e3ca3bebbac6c3b0742eabbfea5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-class-query-derived-20261019.py": "ad2187c9bd47046a3a6efa4782b69d38a67b9046802ac43f5b6b51848e025887",
+    "D:\\Codex Workshop\\kards-install-review\\audit-class-query-derived-20261019.py": "b549c0b5940aa46a3079114326a3c0262d13dbe10fe921f0d2f17f533603ab8d",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-query-20261019.json": "5dae534aea219671bea7e4db76e4447cbc6b3f2d59ae158c364cce6711e963b5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-class-query-20261019.py": "d8ea8e70df336dbffba6096c3334718d34659d4b7c5adc8ce203d03554e5cfee",
+    "D:\\Codex Workshop\\kards-install-review\\capture-registry-enum-20261019.py": "95a52c3a603e72923edb0a762a5317d2cba0bce2399e2c3cae0a43eea1ee8462"
+  },
+  "kernel_changed": false,
+  "native_code_ranges": 3,
+  "native_code_bytes": 2472,
+  "instruction_checks": 30,
+  "child_sets": [
+    {
+      "parent": "DataTable",
+      "slots": 3,
+      "allocated": 3,
+      "free": 0
+    },
+    {
+      "parent": "KardsSession",
+      "slots": 1,
+      "allocated": 1,
+      "free": 0
+    },
+    {
+      "parent": "BaseCardObject",
+      "slots": 2019,
+      "allocated": 2019,
+      "free": 0
+    }
+  ],
+  "graphs": [
+    {
+      "root": "DataTable",
+      "classes": 4,
+      "direct_edges": 3,
+      "order_sha256": "81e8339ceb7d03a4e0ec0b0848fdff37dbca41fdd06e29f1ddf1300fbaa4ae88",
+      "equals_ordinal_name_order": false
+    },
+    {
+      "root": "KardsSession",
+      "classes": 2,
+      "direct_edges": 1,
+      "order_sha256": "8e46d290acbf9eecbea4cdb21588ea4fe8cd62f2a7d88d729cc57ad89b2e732e",
+      "equals_ordinal_name_order": false
+    },
+    {
+      "root": "BaseCardObject",
+      "classes": 2020,
+      "direct_edges": 2019,
+      "order_sha256": "4f090566cc5bb72c097267bc723613f10c0a2d62b654a2becb8e474443531f4d",
+      "equals_ordinal_name_order": false
+    }
+  ],
+  "heap_buckets": [
+    {
+      "class_name": "DataTable",
+      "slots": 97,
+      "allocated": 97,
+      "free": 0,
+      "bitmap_storage": "inline"
+    }
+  ],
+  "captured_objects": 2122,
+  "bounded_bit_iterator_vectors": 7,
+  "conditional_query_models": {
+    "DataTable": {
+      "candidates": 100,
+      "conditional_mask_outputs": {
+        "0x10220000": {
+          "count": 96,
+          "pointer_order_sha256": "dafcf8f612d6074186509ffe54dbd8a83c3fb6f054e635c1af38fddb9d00209c"
+        },
+        "0x18620000": {
+          "count": 96,
+          "pointer_order_sha256": "dafcf8f612d6074186509ffe54dbd8a83c3fb6f054e635c1af38fddb9d00209c"
+        }
+      }
+    },
+    "KardsSession": {
+      "candidates": 2,
+      "conditional_mask_outputs": {
+        "0x10220000": {
+          "count": 0,
+          "pointer_order_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "0x18620000": {
+          "count": 0,
+          "pointer_order_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    "BaseCardObject": {
+      "candidates": 2020,
+      "conditional_mask_outputs": {
+        "0x10220000": {
+          "count": 0,
+          "pointer_order_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "0x18620000": {
+          "count": 0,
+          "pointer_order_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    }
+  },
+  "actual_game_functions_called": false,
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Current derived-class expansion appends each direct child set in ascending occupied sparse-slot order, then advances a growing worklist index. With the backend one-root seed this gives breadth-first expansion, not a name sort. All captured class graphs are one-level stars; multilevel behavior is supported by code rather than a live multilevel trace.",
+    "Three selected child sets contain2019 BaseCardObject subclasses,1 KardsSession subclass and3 DataTable subclasses. Every child superclass pointer matches its map parent; graph and bucket keys are unique in this snapshot.",
+    "DataTable provides a real97-object heap sparse bucket; its97 allocated slots, inline allocation bitmap, key hashes, full bucket chains and free list validate. It is a generic iterator witness, not proof that data tables are PvP rule inputs.",
+    "2026 selected class buckets contain2122 objects. All object headers identify the queried exact class and UObject item pointers agree. Card classes currently contribute2020 CDOs and no modeled non-CDO output under either previously observed mask; this snapshot cannot certify active battle card behavior.",
+    "Three native intervals totaling2472 bytes match the frozen current executable, including the149-byte sparse bit advance helper through its return. Thirty instruction checks and seven bounded word-boundary vectors validate the modeled order."
+  ],
+  "limits": [
+    "Read-only buffers are reread stable, not atomic. No query, lock, callback or game function was invoked. Mask results are conditional reuse of RULE232 masks, not a fresh thread census.",
+    "Captured child sets and heap bucket have no freed slots. Synthetic bit vectors do not establish deletion/reuse history; no live heap-backed allocation bitmap, multilevel class graph, mutation/GC/locking or dynamic actor arrival history is certified.",
+    "This object-class enumeration is distinct from registry asset/card-pool ordering and single-card effect semantics. Actual caller world, delegate lifecycle, generic date/config selection and full activation remain pending. No simulator order/default change follows from this sample.",
+    "No kernel edit or kernel test rerun; last full Release582/582 RULE205. Fully semantically verified card logic remains0. Historical replays are not authority."
+  ]
+}
