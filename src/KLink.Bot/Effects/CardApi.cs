@@ -2136,18 +2136,38 @@ public sealed partial class CardApi
         return ids;
     }
 
-    /// <summary>Blueprint ExecuteBeforeReceiveDamage: self first, before any defense subtraction.</summary>
+    /// <summary>Action-path receive hooks: direct self, then saved query-time filtered T52.</summary>
     internal void ExecuteBeforeReceiveDamage(CardInstance target, CardInstance? source, int amount, bool combat)
     {
+        const string own = "OnReceiveDamage", other = "OnOtherCardReceiveDamage";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
         var named = new Dictionary<string, object?>
         {
             ["fromCard"] = source, ["toCard"] = target, ["fromAttack"] = combat, ["Damage"] = amount,
         };
-        if (!target.IsSuppressed)
-            FireTrigger("OnReceiveDamage", target, target.Owner,
+        // i=38/687: own hook checks suppression only, without a location gate.
+        // The headless simulator models IsActionProcess=true. The achievement
+        // notification at i=284 does not alter PvP state and is omitted.
+        if (!target.IsSuppressed && library.FindProgram(target.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {target.Name}#{target.CardId}"
+                + $"（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, target, target.Name, own, target,
                 eventArgs: new object?[] { source, amount }, namedArgs: named);
-        FireTrigger("OnOtherCardReceiveDamage", target, target.Owner,
-            eventArgs: new object?[] { source, target, combat, amount }, eventSubject: target, namedArgs: named);
+        }
+        // i=321 queries after the own hook. i=590 excludes the victim by ID;
+        // i=879 calls saved objects without repeated suppression/location checks.
+        // This Blueprint has no GetStopFurtherActions gate at either stage.
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == target.CardId || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}"
+                + $"（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, target,
+                eventArgs: new object?[] { source, target, combat, amount }, namedArgs: named);
+        }
     }
 
     /// <summary>Direct damage callbacks: saved active gotchas, dealer, then query-time filtered T36.</summary>

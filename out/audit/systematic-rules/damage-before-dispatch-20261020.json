@@ -1,0 +1,111 @@
+{
+  "rule": "RULE-264",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-before-dispatch-native-20261020.json",
+      "sha256": "c991a451b38827a28427b3b83596dd5eef93b5bb2a3f1ce5ca6d929a04a3cff0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-after-dispatch-native-20261020.json",
+      "sha256": "56b7d082eeba650413333815a684da49496d9900b1e83f63385ed0bd46461cce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-damage-before-dispatch-20261020.py",
+      "sha256": "03f69695df042414b263878d089c4191f3459b55c9e345ee51120bc1b5a0bc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule264-dispatch-test-20261020.py",
+      "sha256": "31add2dbe49a5340997701470a8f8cfd8313693432daf5533d367b70de5b2e05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule264-damage-before-dispatch-20261020.py",
+      "sha256": "bd713a2fa93ce80da4b9048aebe746e360a9062fd153948aa6d76b3b61db3b98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule264-damage-before-dispatch-20261020.py",
+      "sha256": "02b9e3072fe70f35c0225984d8e1fc5411537116ebb862f49ef9d8f1e2243c7e"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "6852f30701e38c5e4ef6cddcd3f99cb08a58a9407586e72f3a4a683ab1eba3f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "391114068c7339fd20db6285e6482355f32646e81b73a0830a3029892ede5194"
+    }
+  ],
+  "current_runtime_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ExecuteBeforeReceiveDamage",
+      "script_bytes": 955,
+      "script_sha256": "ec6c9da2357553d63123127dc729cfd077a01ce198a8e29db3a8bb8a3dfdc594",
+      "statements": 33
+    }
+  ],
+  "fix": [
+    "Unsuppressed victim receives direct OnReceiveDamage without a registration or location gate. Suppression exceptions do not bypass the own suppression gate.",
+    "After own callback, query T52 using existing suppression/exception filtering and capture recipients; exclude victim by ID; directly invoke saved observers without repeating registration, suppression, or location checks.",
+    "No stop-further-actions gate exists in this helper. Preserve own two-argument and observer four-argument payloads."
+  ],
+  "tests": {
+    "total": 597,
+    "synthetic_cases": 32,
+    "sides": 2,
+    "modes": 16,
+    "before_failed_tests": 1,
+    "before_failed_scenes": 10,
+    "after_failed_tests": 0,
+    "after_failed_scenes": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule264-before-20261020.txt",
+        "sha256": "c2986cf108c8d5d739ad8e85def481b09d67aa9ee2e0ef2d7291fcd79d202106"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule264-after-20261020.txt",
+        "sha256": "ec06e0b3c3c7af79308723d2de9ca98a874b3084826abe8dc072082d2a355ef6"
+      }
+    ],
+    "coverage": [
+      "own callback independent of registration",
+      "own and observer NotAvailable",
+      "query-time suppression and exception",
+      "late suppression/location/registration change",
+      "initial excluded observer stays excluded after unsuppression",
+      "stop initially/own/first observer does not interrupt this helper",
+      "own suppression including exceptions",
+      "own-added observer included; observer-added observer excluded from saved array",
+      "target excluded by ID even if suppression exception includes target in query",
+      "null source, signed/zero/intMax damage, both combat flag values"
+    ]
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "ActionProcess=true follows existing headless gameplay-path scope; playback routing is not modeled.",
+    "Achievement notification is omitted as outside headless PvP state.",
+    "Underlying UE TSet order and dynamic trigger registration lifecycle remain uncertified.",
+    "GC/pending-kill UObject states, reentrant removal/replacement, mutable card IDs and depth-limit behavior remain unverified.",
+    "Synthetic callback tests certify only common dispatch boundaries, not the probe cards or all card semantics.",
+    "No historical replay authority, process write, injection or game function invocation."
+  ]
+}
