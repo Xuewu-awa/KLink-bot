@@ -560,6 +560,7 @@ internal static class SelfTest
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
         new("事件层：OnOtherCardReset 传递 cardReset/resetCardID（真实 Coastwatchers 订阅）",
             ResetEventCarriesPayload),
+        new("效果伤害落地：入口正值分支跨回调保留，溢出截断后仍执行事件与销毁", EffectDamagePositiveBranch),
         new("受伤前事件：自身→T52保存接收者，直接回调不重筛且不检查停止标志", DamageBeforeDispatchSnapshot),
         new("伤害后事件：反制→来源→T36保存接收者，查询时筛抑制且直接回调不设位置门", DamageAfterDispatchSnapshot),
         new("事件层：OnOtherCardDealDamage 传递来源/目标/伤害载荷（真实 15th RECCE 订阅）",
@@ -7549,6 +7550,131 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Synthetic receive/deal hooks exercise the common ApplyDamageToCard path only.
+    private static string? EffectDamagePositiveBranch(CardDatabase db)
+    {
+        const string name = "card_event_honorifics";
+        string[] hooks = { "OnReceiveDamage", "OnCardDealDamage" };
+        var library = KismetLibrary.Default!;
+        if (library.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || hooks.Any(h => library.FindProgram(name, h) is not null)) return "无法安全安装效果伤害落地探针";
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(library)!;
+        cache.TryGetValue(name, out var oldCache);
+        var saved = hooks.ToDictionary(h => h, h => oldCache?.GetValueOrDefault(h));
+        foreach (string hook in hooks) oldCache?.Remove(hook);
+        try
+        {
+            for (int kind = 1; kind <= 2; kind++)
+            {
+                var steps = new List<KismetStep>();
+                void Set(string key, KismetExpr value) => steps.Add(new KismetStep(steps.Count, "set", null,
+                    Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null) { DestinationScope = "instance" });
+                Set("_auditEffectSerial", new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = "_auditEffectSerial", Scope = "instance" }, new KismetExpr { Int = 1 } } });
+                Set("_auditEffectKind", new KismetExpr { Int = kind });
+                foreach (string key in new[] { "toCard", "Damage", "isCombatDamage", "CounterDamage" })
+                    Set("_auditEffect_" + key, new KismetExpr { Var = key, Scope = "local" });
+                steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null));
+                steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+                locals.Add(hooks[kind - 1], steps);
+            }
+            var cases = new List<(Side Side, int Incoming, int ReceiveDefense, bool Unit, bool Heal)>();
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int incoming in new[] { -3, 0, 4 })
+            foreach (int defense in new[] { -2, 0, 2, 7 })
+            foreach (bool unit in new[] { false, true }) cases.Add((side, incoming, defense, unit, false));
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int defense in new[] { -2, 0, 2 }) cases.Add((side, 4, defense, false, true));
+            var dispatch = typeof(CardApi).GetMethod("ApplyCalculatedDamage",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var failures = new List<string>();
+            foreach (var row in cases)
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, row.Side, 50, CardLocation.Discard, 0);
+                source.Definition = new CardDefinition { Name = name, Type = row.Unit ? "infantry" : "order" };
+                source.Keywords.Clear(); source.CustomAbility = "excess";
+                var victim = state.CreateWithId(name, row.Side.Opposite(), 60, row.Side.Opposite().HqOf(), 1);
+                victim.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                victim.Keywords.Clear(); victim.Keywords.Add(Keyword.Mobilize); victim.Defense = 9;
+                var hq = state.Hq(victim.Owner); hq.Defense = 20;
+                bool positive = row.Incoming > 0;
+                int spilled = positive && !row.Unit && row.Incoming > row.ReceiveDefense ? row.Incoming - row.ReceiveDefense : 0;
+                int finalDamage = spilled > 0 ? row.ReceiveDefense : positive ? row.Incoming : 0;
+                int rawDefense = positive ? row.ReceiveDefense - finalDamage : 9;
+                bool destroyed = positive && rawDefense <= 0;
+                int finalDefense = row.Heal && spilled > 0 ? 9 : rawDefense;
+                var events = new List<string>(); var serial = new Dictionary<int, int>(); string? payloadError = null;
+                var prior = state.CardCreated;
+                state.CardCreated = made => {
+                    prior?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = new[] { source, victim }.Single(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_auditEffectSerial")) > serial.GetValueOrDefault(c.CardId));
+                    serial[current.CardId] = Convert.ToInt32(current.BlueprintVariables["_auditEffectSerial"]);
+                    if (current == victim)
+                    {
+                        events.Add("receive"); victim.Defense = row.ReceiveDefense;
+                    }
+                    else
+                    {
+                        var target = current.BlueprintVariables.GetValueOrDefault("_auditEffect_toCard") as CardInstance;
+                        int damage = Convert.ToInt32(current.BlueprintVariables.GetValueOrDefault("_auditEffect_Damage"));
+                        events.Add($"deal:{target?.CardId}:{damage}");
+                        if (Convert.ToBoolean(current.BlueprintVariables.GetValueOrDefault("_auditEffect_CounterDamage"))
+                            || Convert.ToBoolean(current.BlueprintVariables.GetValueOrDefault("_auditEffect_isCombatDamage"))) payloadError = "效果伤害标志错误";
+                        if (target == hq && row.Heal) victim.Defense = 9;
+                    }
+                };
+                dispatch.Invoke(engine.Api, [victim, row.Incoming, source, false, false, false, null, false, null, false]);
+                var expected = new List<string>();
+                if (positive)
+                {
+                    expected.Add("receive");
+                    if (spilled > 0) expected.Add($"deal:{hq.CardId}:{spilled}");
+                    expected.Add($"deal:60:{finalDamage}");
+                }
+                var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionDamageCard").ToArray();
+                bool noticesOk = notices.Length == (spilled > 0 ? 2 : 1);
+                if (noticesOk)
+                {
+                    var notice = notices[0].Values.ToDictionary(v => v.Name);
+                    noticesOk = notice["cardID"].Value == 60 && notice["damage"].Value == finalDamage
+                        && notice["oldDefense"].Value == (positive ? row.ReceiveDefense : 9)
+                        && notice["destroyed"].Value == (destroyed ? 1 : 0) && notice["attackerCardID"].Value == 50;
+                    if (spilled > 0)
+                    {
+                        var spill = notices[1].Values.ToDictionary(v => v.Name);
+                        noticesOk &= spill["cardID"].Value == hq.CardId && spill["damage"].Value == spilled;
+                    }
+                }
+                if (!events.SequenceEqual(expected) || !noticesOk || victim.Defense != finalDefense
+                    || (victim.Location == CardLocation.Discard) != destroyed || hq.Defense != 20 - spilled
+                    || state.GetHQDamagedAmountThisTurn(victim.Owner) != spilled || payloadError is not null
+                    || !destroyed && victim.Keywords.Contains(Keyword.Mobilize) != !positive)
+                    failures.Add($"{row}: 事件 {string.Join(',', events)} 期望 {string.Join(',', expected)}; 防御={victim.Defense}/{finalDefense},位置={victim.Location},通知={notices.Length}; {payloadError}");
+            }
+            return failures.Count == 0 ? null : $"{failures.Count}/54 场景失败：" + string.Join(" | ", failures.Take(8));
+        }
+        finally
+        {
+            foreach (string hook in hooks)
+            {
+                locals.Remove(hook);
+                if (cache.TryGetValue(name, out var perCard))
+                {
+                    perCard.Remove(hook);
+                    if (saved[hook] is { } old) perCard[hook] = old;
+                }
+            }
+            if (oldCache is null && cache.TryGetValue(name, out var added) && added.Count == 0) cache.Remove(name);
+        }
     }
 
     // Synthetic callbacks validate common dispatch boundaries only.

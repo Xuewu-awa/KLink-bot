@@ -1962,42 +1962,11 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 「伤害值**已经**算好了，直接落地」—— 给双向互斗与普通攻击的批量结算共用。
-    ///
-    /// ## 为什么必须把它从 <see cref="DealDamage"/> 里拆出来（2026-10-02）
-    ///
-    /// 蓝图 `BP_CardFunctions::MakeCardsFight`（`ref/kards-sim/KardsSim/Generated/
-    /// BP_CardFunctions.g.cs:25907-26040`）的执行序是**先算完两个方向、再依次落地**：
-    /// <code>
-    /// si=6A   _damage_to_enemy_unit = getTotalAttack(unitThisSide)      ← 攻击值快照
-    /// si=AE   _damage_to_my_unit    = getTotalAttack(unitOppositeSide)  ← 也在落地前
-    /// si=12F  ExecuteOnDealDamageAddDamage(a→b, …, False, True, False)  ← 方向 1 的修正链
-    /// si=164  ExecuteOnDealDamageAddDamageAfterCalc(…)
-    /// si=1E8  ExecuteOnDealDamageAddDamage(b→a, …, False, True, False)  ← 方向 2 的修正链
-    /// si=21D  ExecuteOnDealDamageAddDamageAfterCalc(…)
-    /// si=26E  ApplyDamageToCard(b ← a, _final_damage_to_enemy_unit, False, False)   ← 才开始扣血
-    /// si=299  ApplyDamageToCard(a ← b, _final_damage_to_my_unit,    False, True)
-    /// </code>
-    /// 也就是说：**方向 2 的伤害修正链看到的是"两笔伤害都没落地"的场面**。
-    /// 内核的 <see cref="DealDamage"/> 把「修正链 + 落地」焊在一起，连调两次会让
-    /// 方向 2 的修正者（例如 `OnOtherCardDealDamageAddDamage` 里数友方单位的那种）
-    /// 看见方向 1 已经打死的尸体 ⇒ 数值可能与客户端不同。
-    ///
-    /// 互斗使用本方法保持蓝图的先算双向、后落地顺序；普通攻击由
-    /// <see cref="DealCombatDamagePair"/> 采用同样的分阶段方式。
-    /// 修正链仍走
-    /// <see cref="ExecuteOnDealDamageAddDamage"/>（同一个漏斗，重甲（仅战斗伤害）/ 免疫 /
-    /// `OnCardDealDamage_ModifyDamageDealt` / `OnOtherCardDealDamageAddDamage` /
-    /// `ZActionDamageCard` / `OnReceiveDamage` / `OnCardDealDamage` 一条不少），
-    /// **没有第二套伤害结算**。
-    ///
-    /// ⚠️ `GetPassiveDefenseBuff`（被动防 buff）内核**没有实现**，也不打算在这里顶替：
-    ///    它在蓝图里与重甲同块，但判据是另一个标志 `applyBeforeAttackBuffs`，
-    ///    而真实攻击结算的两个调用点都传 False（证据见 `MatchEngine.ApplyDamage`）。
-    ///
-    /// ⚠️ 本方法**故意不加** `amount &gt; 0` 门 —— <see cref="DealDamage"/> 原先就没有
-    /// 在修正链之后再判一次，加门会改变既有调用方的行为（修正链夹到 0 时那笔
-    /// `ZActionDamageCard` 现在会发、加门后就不发了）。是否跳过零伤害由调用方决定。
+    /// ApplyDamageToCard's action path. Only the entry damage selects the positive
+    /// branch; receive callbacks and excess may later change defense or damage.
+    /// Once entered, raw signed subtraction, destroyed snapshot and deal callbacks
+    /// still run when excess caps the victim's damage to zero or a negative value.
+    /// Initial nonpositive damage only emits the zero-damage notification.
     /// </summary>
     internal void ApplyCalculatedDamage(CardInstance target, int amount, CardInstance? source,
                                         bool isCombatDamage, bool counterDamage, bool isRedirected,
@@ -2005,58 +1974,43 @@ public sealed partial class CardApi
                                         int? oldDefense = null, bool beforeReceiveExecuted = false)
     {
         int initialDefense = target.Defense;
-        if (amount > 0 && !beforeReceiveExecuted)
+        bool resolvesDamage = amount > 0; // ApplyDamageToCard i=264/298, before any callbacks.
+        if (resolvesDamage && !beforeReceiveExecuted)
             ExecuteBeforeReceiveDamage(target, source, amount, isCombatDamage);
         int excess = 0;
-        // i=578 excludes a unit dealer from effect excess; i=985 refreshes oldDefense.
-        if (appliedDamage is null && amount > 0 && source is not null
+        // i=519..957: a non-unit dealer may cap damage to the current unit defense.
+        if (appliedDamage is null && resolvesDamage && source is not null
             && HasCustomAbility(source, "excess") && !IsUnit(source) && IsUnit(target)
             && amount > target.Defense)
         {
             excess = amount - target.Defense;
             amount = target.Defense;
         }
-        oldDefense ??= amount > 0 ? target.Defense : initialDefense;
-        // ⚠️ `isCombatDamage` 必须传下去：重甲减伤**只对战斗伤害生效**，
-        //    判据与证据链见 `MatchEngine.ApplyDamage` 里那段长注释
-        //    （全库 `getTotalHeavyArmor` 的减伤只长在 `CalculateDamageDealt` 里，
-        //      而它只被攻击链调用；效果伤害走的是裸减的 `ApplyDamageToCard`）。
-        //    `Attack` 传 true（`MatchEngine.cs:1569` 主伤害 / `:1572` 反击），
-        //    `DamageCard` / `DamageMultipleCards` / `MakeCardsFight` 都传 false。
-        int applied = appliedDamage
-            ?? _engine.ApplyDamage(target, amount, source, isCombatDamage: isCombatDamage,
-                damageAlreadyCalculated: true);
-
-        // ⚠️ 2026-09-30：`damage` 填的是**修正后**的值、`oldDefense` 填的是**结算前**的防御。
-        //    证据（`out/bp-cardfn.json` → `ApplyDamageToCard`，123 条语句）：
-        //      si=62   oldDefense = card.getTotalDefense()        ; 扣血**之前**取
-        //      si=1431 NotifyDamageCard(toCardID, finalDamage, damageDealerID, _isDestroyed,
-        //                               oldLocation, oldDefense, isRedirected, isFightDefenderDamage)
-        //    两个字段在 si=1431 的实参名就是 `finalDamage`（= `ExecuteOnDealDamageAddDamageAfterCalc`
-        //    的出参）与 `oldDefense`。旧实现两个都填**请求值**（P1 重甲那轮记的「没证据」现在有证据了）。
-        //    `target.Defense + applied` 而不是 `+ amount`：重甲减伤之后 `applied < amount`，
-        //    用 amount 会把 oldDefense 算高（那是重甲那轮留下的偏差，这里一并修正）。
-        bool destroyed = amount > 0 && target.Defense <= 0;
+        // i=985 refreshes this even if excess changed finalDamage to nonpositive.
+        oldDefense ??= resolvesDamage ? target.Defense : initialDefense;
+        int applied = appliedDamage ?? 0;
+        if (resolvesDamage && appliedDamage is null)
+        {
+            // i=1094..1181 subtracts the signed finalDamage without another gate.
+            // Mitigation was already calculated; no immunity/location recheck here.
+            target.Defense -= amount;
+            applied = amount;
+            if (target.IsHq) State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
+        }
+        // i=1304..1379 snapshots destruction before spill and deal callbacks.
+        bool destroyed = resolvesDamage && target.Defense <= 0;
         _engine.FireSubAction("ZActionDamageCard", new[]
         {
             ActionValue2.Int("cardID", target.CardId),
-            ActionValue2.Int("damage", amount),
+            ActionValue2.Int("damage", resolvesDamage ? amount : 0),
             ActionValue2.Int("oldDefense", oldDefense ?? target.Defense + applied),
             ActionValue2.Bool("destroyed", destroyed),
             ActionValue2.Int("attackerCardID", source?.CardId ?? 0),
         });
 
-        // ---- 「造成伤害」事件 ----
-        //
-        // 出处（`out/bp-cardfn.json`，函数 `ExecuteOnCardDealDamageEffects`，
-        // 调用方 i=1808 / i=4933 / i=3363 / i=3451）：
-        //   i=541  FetchAllCardsWithEventTrigger(36)      ; 36 = OnOtherCardDealDamage
-        //   i=1582 item.OnOtherCardDealDamage(damageDealer, toCard, damage, isCombatDamage, CounterDamage, isRedirected)
-        //   i=1198 damageDealer.OnCardDealDamage(toCard, damage, isCombatDamage, CounterDamage, isRedirected, out qqq)
-        // 触发号 36 的依据：`ERegisteredCardFunction.h` 逐项数下来
-        //   0=NotAvailable … 36=OnOtherCardDealDamage（第 37 项）。
         if (excess > 0 && source is not null) DealDamage(State.Hq(source.Owner.Opposite()), excess, source);
-        if (amount > 0) ExecuteOnCardDealDamageEffects(target, source, amount, isCombatDamage, counterDamage, isRedirected);
+        // i=1775..1808 has no second finalDamage>0 check inside the positive branch.
+        if (resolvesDamage) ExecuteOnCardDealDamageEffects(target, source, amount, isCombatDamage, counterDamage, isRedirected);
 
         if (!deferDestruction && destroyed && target.IsHq)
             State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
@@ -2064,7 +2018,8 @@ public sealed partial class CardApi
         {
             _engine.Destroy(target, source);
         }
-        else if (!deferDestruction && applied > 0 && target.Keywords.Contains(Keyword.Mobilize))
+        // i=2225 checks the final damage only for surviving Mobilize removal.
+        else if (!deferDestruction && resolvesDamage && amount > 0 && target.Keywords.Contains(Keyword.Mobilize))
             RemoveMobilize(target);
     }
 

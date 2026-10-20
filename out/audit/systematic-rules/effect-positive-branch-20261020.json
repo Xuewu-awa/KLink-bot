@@ -1,0 +1,122 @@
+{
+  "rule": "RULE-266",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\effect-positive-branch-native-20261020.json",
+      "sha256": "65a232152ee87cf8db8e906f30f3448c3837150224396c9408892e8ae08952b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule266\\matrix.json",
+      "sha256": "c703384b04851c37c0ed0ea4f045bea528da36cb6bef0557ffea17e8277de9b8"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-effect-positive-branch-20261020.py",
+      "sha256": "6d8ac3127615970188400dea48367aee9af68b3f64e40f6e21ccc6ce68c2147f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule266-positive-branch-test-20261020.py",
+      "sha256": "5e06142e6717d54feae9f8bb05afef761dc4bf2314cc48822686a97d7ca321a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule266-positive-branch-20261020.py",
+      "sha256": "d4eb2460e90bd8c0a59ec95e0d7e8025e1d92f56cf09269612c6c364fc329a21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule266-positive-branch-20261020.py",
+      "sha256": "1f720c4f196cc7ee548a614a1982e1f4068e6f7cda46699545c27a29dc65de5d"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "def237b145f0b21d174d40b4b8d443b1f387a6fbaa0b894ff94057a335020666"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1494fc2a3f11240d0918c8035596e80c407d8ab9ab2bd9e59e44fea82a532b2e"
+    }
+  ],
+  "runtime_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ApplyDamageToCard",
+      "script_bytes": 2312,
+      "script_sha256": "06c1ed45b22cf8c969caba991d41bb831db73860a446da0982fa0c23206b1fa1",
+      "statements": 91
+    }
+  ],
+  "fix": [
+    "Capture entry positive-branch membership before receive callbacks; reuse it for subtraction, destruction snapshot and deal callbacks after excess can cap finalDamage to zero/negative defense.",
+    "Refresh oldDefense after receive/excess on every entered positive branch, including nonpositive finalDamage.",
+    "Perform signed raw defense subtraction without rechecking amount/immunity/location; HQ damage counters remain updated.",
+    "Initial nonpositive input emits zero notification with no receive/deal/destruction phase.",
+    "Preserve pre-spill destroyed snapshot even when spill callbacks heal victim; only surviving Mobilize removal checks finalDamage>0."
+  ],
+  "tests": {
+    "total": 599,
+    "synthetic_cases": 54,
+    "before_failed_tests": 1,
+    "before_failed_scenes": 24,
+    "after_failed_tests": 0,
+    "after_failed_scenes": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule266-before-20261020.txt",
+        "sha256": "37ce29ff1964bd111a7213a559acbd41effe2ba2c673897a94d6962c79ad9c31"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule266-after-20261020.txt",
+        "sha256": "89c6faa096b55e34d7bad7de5e359bfa5e8af01b99ab189019de2f01e329258d"
+      }
+    ],
+    "coverage": [
+      "both sides",
+      "initial -3/0/4 damage",
+      "receive callback sets defense -2/0/2/7",
+      "order-source excess compared with unit-source exclusion",
+      "signed/zero excess-capped victim damage still delivers callbacks and captured destruction",
+      "zero notification for initially nonpositive input",
+      "spill before victim deal hook",
+      "six spill-healing cases retain captured destruction",
+      "notification payload, oldDefense, actual defense, discard state, HQ defense/counter, Mobilize for survivors",
+      "probe programs and touched shared local cache entries restored"
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261020-214159-rule266-test-matrix-d8763783",
+    "elapsed_seconds": 40.85,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule266\\task.txt",
+      "sha256": "17cc02eacf431668e08c82935dd520d8b34aab17393688e5813ea327e40463c9"
+    },
+    "mechanical_rows": 54,
+    "independently_recomputed_exact_match": true,
+    "authority": "Primary supplies formulas from decoded common control flow; worker is mechanical enumeration only, not an independent rule oracle."
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Synthetic callback states establish common control-flow behavior, not reachability of each state in a legal current card combination. Initial negative input is an internal helper boundary, not permission for legal negative damage actions.",
+    "Legacy optional appliedDamage/deferDestruction/oldDefense/beforeReceiveExecuted variants retain their interface but are not newly certified; current production calls use their defaults.",
+    "Full native stat setter/getter implementation, int32 overflow, pending-kill/GC, ID changes/object replacement and all reentrant destruction cases remain uncertified.",
+    "Ordinary combat and multi-target damage helpers are unchanged; their signed arithmetic and native predicates are not fully certified by these tests.",
+    "Raw Blueprint/asset/runtime syntax agreement does not establish complete card semantics or complete native equivalence.",
+    "No historical replay authority, process write, injection or game function invocation."
+  ]
+}
