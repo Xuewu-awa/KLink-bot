@@ -1,0 +1,73 @@
+{
+  "rule": "RULE-253",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-composed-native-20261020.json",
+  "source_sha256": "f8af2c6b23339c3415df19d74be3921b8601a5bc1fdb264e890bfc4f0322b583",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 4445,
+  "sequences": 28,
+  "addaction_calls": 3368,
+  "reuse_sequences": 16,
+  "reuse_addaction_calls": 32,
+  "null_callback_sequences": 4,
+  "null_callback_addaction_calls": 8,
+  "primary_created_shared_lists": 684,
+  "total_created_shared_lists": 720,
+  "total_addaction_calls": 3408,
+  "weak_backend_stubbed": false,
+  "passed": true,
+  "executed_functions": [
+    "AddActionShell",
+    "AdvanceSparseIterator",
+    "AllocateObjectSerial",
+    "AppendAllocationBit",
+    "AppendSparseRow",
+    "ConstructWeakReference",
+    "FindOrAddWeakKey",
+    "InsertUUIDAction",
+    "InsertWeakKey",
+    "MoveControllerReference",
+    "RehashUUID",
+    "RehashWeakKey",
+    "ResizeAlignedHeap",
+    "ResizeBitStorage",
+    "ResizeBits",
+    "ResizeHashStorage",
+    "ResizeHeap",
+    "ResolveWeakReference"
+  ],
+  "backend_calls": {
+    "quantize": 878,
+    "realloc": 1142,
+    "memcpy": 228
+  },
+  "contracts": [
+    "Allocation quantization, realloc/free, direct successful allocation and memcpy as RULE251",
+    "GC barriers and notification listeners only recorded",
+    "Object-array fixtures and controlled slot replacement; not live object destruction"
+  ],
+  "limits": [
+    "No weak constructor or resolver stubs used in this phase",
+    "Registration retains the stale outer entry in these fixtures; manager cleanup not executed",
+    "No allocator failure/overflow/concurrency, actual GC or manager tick source verified",
+    "No automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-composed-20261020.py",
+      "sha256": "75e95f6de639d9620f54514eaffbc9c1c55e3596b69aa035881d135d03cffbbe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-composed-20261020.py",
+      "sha256": "96dc92913782b07f9e3472401687cf471c19932dee4d37c40c6aedbfa0261c09"
+    }
+  ],
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "AddAction now executes captured weak construction and serial allocation, without a weak-key mapping stub",
+    "Controlled index reuse with changed serial creates separate outer entries/shared lists and blocks resolution of the old weak key",
+    "Registration alone leaves stale entries present; manager cleanup is outside this validation",
+    "Null callback yields (0,0) key and registration body retains actions, but resolution returns null; listener behavior remains opaque"
+  ]
+}
