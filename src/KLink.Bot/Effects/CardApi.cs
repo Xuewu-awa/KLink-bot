@@ -4997,7 +4997,8 @@ public sealed partial class CardApi
     /// </summary>
     public bool IsSameSideUnit(CardInstance card, Side side) => IsUnit(card) && card.Owner == side;
 
-    public bool IsSideActive(Side s) => State.ActiveSide == s;
+    /// <summary>The native predicate requires a nonzero active side, then compares the explicit input.</summary>
+    public bool IsSideActive(Side s) => State.ActiveSide != Side.NotAvailable && State.ActiveSide == s;
     public Side GetOppositeSide(Side s) => s.Opposite();
     public int GetTurnNumber() => State.Turn;
     public bool DoesSideControlTheFrontline(Side s) => State.FrontlineOwner == s;

@@ -1,0 +1,169 @@
+{
+  "rule": "RULE-273",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-active-native-20261021.json",
+      "sha256": "7cf5f7db6205c0bc6a90e4b076e68dca020face7510c1e0ed2d893a119e0f0c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-active-parameters-20261021.json",
+      "sha256": "a1f666273ac537be707a19bc6b0da0e5b9bab6b09c5bc5beeec5cf0f4f25fbc3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-active-offline-20261021.json",
+      "sha256": "c3d26d6f26802ea2a5cd81ed60f39ff2ac4ae13d5d78c7dbd840787fcf2e8a92"
+    }
+  ],
+  "native": {
+    "total_bytes": 418,
+    "functions": [
+      {
+        "name": "IsSideActive",
+        "owner": "/Script/kards/BaseCardObject",
+        "rva": "0x4a82b70"
+      },
+      {
+        "name": "GetActiveSide",
+        "owner": "/Script/kards/kardsGameMode",
+        "rva": "0x4a63d80"
+      }
+    ],
+    "card_mode_pointer_offset": 1360,
+    "mode_active_side_offset": 904,
+    "semantics": "With a non-null receiver mode pointer, query active side and write active!=0 && active==explicit SideToCheck. Null mode writes false. Mode getter event bridge invokes ProcessEvent; default native thunk reads mode+0x388."
+  },
+  "offline": {
+    "vectors": 2560,
+    "active_values": [
+      0,
+      1,
+      2,
+      3,
+      255
+    ],
+    "side_values": "all 256 bytes",
+    "mode_pointer": [
+      "null",
+      "synthetic non-null"
+    ],
+    "controlled_provider": {
+      "address": "0x7ff70ec9dea0",
+      "hex": "0fb681880300008802c3",
+      "semantics": "Read synthetic mode byte +0x388 and write its out byte; substitutes reflection lookup and ProcessEvent, not their validation."
+    },
+    "scope": "The 96-byte IsSideActive body is copied unchanged; GetActiveSide reflection/event backend is replaced by an explicit deterministic provider. This is not execution/certification of ProcessEvent or dynamic overrides."
+  },
+  "fix": [
+    "Public predicate requires nonzero State.ActiveSide before equality.",
+    "Dispatcher reads only explicit argument0, retaining int/Side byte representations and never substituting receiver.Owner. Shared SideArg and all other callers unchanged."
+  ],
+  "tests": {
+    "total": 606,
+    "direct_byte_pairs": 65536,
+    "dispatch_cases": 393216,
+    "vm_cases": 1350,
+    "direct_matrix": "All 256 active bytes x all 256 input bytes.",
+    "dispatch_dimensions": [
+      "all direct byte pairs",
+      "int/Side input",
+      "receiver null/Left/Right"
+    ],
+    "vm_dimensions": [
+      "active and input each 0/1/2/3/255",
+      "int/Side input",
+      "receiver null/Left/Right",
+      "controller Left/Right/NotAvailable",
+      "self null/Left/Right"
+    ],
+    "before_failed_tests": 1,
+    "before_failed_direct": 1,
+    "before_failed_dispatch": 1524,
+    "before_failed_vm": 162,
+    "after_failed_tests": 0,
+    "existing_tests_unchanged": true,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule273-before-20261021.txt",
+        "sha256": "5531a8d8b0319b504685a8711255429f695875c2caaaea1758943925fbf1c7d0"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule273-after-20261021.txt",
+        "sha256": "d60bca33872009cdc2472a342ab76d2a0a895bf67f4beb2d5dead8b0fcf4d68a"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-021146-rule273-active-uses-a70a12da",
+    "elapsed_seconds": 80.97,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule273\\task.txt",
+      "sha256": "f819a34e67e6f8c594cad548a2368ec13d4e404dffb8a0932208eac9667a4684"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule273\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule273\\uses.json",
+      "sha256": "ab8ec915b4f71d6c64108d04efc522d47da53a7ef310d0d3b90bccf3ae800358"
+    },
+    "implementation_cards": 1709,
+    "calls": 260,
+    "using_cards": 209,
+    "signature": "All 260 nodes have 2 args and output index1; argument0 is explicit input.",
+    "independent_exact_reenumeration": true,
+    "scope": "Existing simulator IR only; not all current client cards or semantic completion."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-side-active-native-20261021.py",
+      "sha256": "e8a514329f19ade58ee16500a291a117cdc3a986ebc26b5460982ff6a79a0f2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-side-active-parameters-20261021.py",
+      "sha256": "722eb04d3eeda49e054aff83a18f3ec502421511ce86d012aaca3bc51e874c62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-side-active-native-20261021.py",
+      "sha256": "7192116ce0920cb459d7a6489e8dd399374dea2fe81a060eec9c3beb516fae6f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule273-side-active-tests-20261021.py",
+      "sha256": "2f612c2ea32838851de526b76cce8472f9b14a2fd2ff21bee4c2e4d09ea753df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule273-side-active-20261021.py",
+      "sha256": "8bdc1f5bb3087fc5d944ea3b92bba0c944235aa75194643c063f8507152f67ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule273-side-active-20261021.py",
+      "sha256": "8612295bf220cda61486edb21751fbfda831723659a9d9f6fe49bb5f9692e013"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "6e86e99374fdfbdd3ed916767130edcb266e3b089f8cb8a43e7eeb272806cf3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "002bcd783e86b0e838462b1d5a93b29bd9086e7464cdd613108c296af1dc8bdb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "c09c08e5670228c800bae817b2213ebac88f1070fec1df0db0c1de687671e855"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Managed initialized PvP model continues using its existing shared ActiveSide. Distinct native GameMode activeSide and GameState playingSide fields are not proven identical through every initialization/network/phase transition.",
+    "Missing per-card GameModeRef and dynamic event overrides are not represented or newly restored; native null-mode branch is captured/emulated but no new mode-reference lifecycle is introduced.",
+    "Generic name lookup, ProcessEvent backend, dynamic overrides and all actual execution histories remain uncertified.",
+    "Byte-range equality only; malformed arguments and out-of-byte enum coercion not fully certified.",
+    "260 IR calls do not establish 209 complete card implementations or exact real-match impact counts.",
+    "No replay authority, process writes, injection or client function invocation."
+  ]
+}

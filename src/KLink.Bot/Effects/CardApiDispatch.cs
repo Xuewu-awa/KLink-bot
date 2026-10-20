@@ -60,7 +60,13 @@ public sealed partial class CardApi
             ["IsLocatedOnBoard"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsLocatedOnBoard(x),
             ["IsLocatedInHand"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsLocatedInHand(x),
             ["IsLocatedInDeck"] = (c, r, a) => SelfArg(c, r, a) is { } x && IsLocatedInDeck(x),
-            ["IsSideActive"] = (c, r, a) => IsSideActive(SideArg(r, a, 0)),
+            // Native SideToCheck is an explicit byte, not the receiver's owner.
+            ["IsSideActive"] = (c, r, a) => a.ElementAtOrDefault(0) switch
+            {
+                Side side => IsSideActive(side),
+                int side => IsSideActive((Side)side),
+                _ => false,
+            },
             // `IsTopDeckNavy(side, out isNavy)`：蓝图先取指定阵营牌库的第 0 张，
             // 再用 `getHasGameplayTag(subtype.navy)` 判定。空牌库必须返回 false，
             // 且 side 是显式参数，不能用 receiver 的阵营替代。

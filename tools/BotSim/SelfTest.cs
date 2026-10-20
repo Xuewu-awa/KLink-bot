@@ -305,6 +305,7 @@ internal static class SelfTest
         new("HQ 查询：全部字节阵营、不回退接收者，非在场 HQ 引用及 VM 输出覆盖", LocationLookupSideBoundary),
         new("GetOppositeSide：接收者阵营及无效字节保留输出", OppositeSideReceiverBoundary),
         new("GetPlayingSide：保存的行动方独立于效果控制方和卡对象", PlayingSideStoredState),
+        new("IsSideActive：非零活动方、显式字节参数及 VM 派发", SideActiveExplicitByteBoundary),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2307,6 +2308,59 @@ internal static class SelfTest
     }
 
     // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    /// <summary>Native predicate requires nonzero active side and compares the explicit byte.</summary>
+    private static string? SideActiveExplicitByteBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var left = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.DeckLeft, 0);
+        var right = state.CreateWithId(PlainUnit, Side.Right, 91, CardLocation.DeckRight, 0);
+        int directFailures = 0, dispatchFailures = 0, vmFailures = 0;
+        var examples = new List<string>();
+        void Fail(string message) { if (examples.Count < 8) examples.Add(message); }
+        var ctx = new EffectContext { Engine = engine, State = state, Self = right, Controller = Side.Right };
+        foreach (int active in Enumerable.Range(0, 256))
+        foreach (int side in Enumerable.Range(0, 256))
+        {
+            state.ActiveSide = (Side)active;
+            bool expected = active != 0 && side == active;
+            if (engine.Api.IsSideActive((Side)side) != expected)
+            { directFailures++; Fail($"direct active={active}/side={side}"); }
+            foreach (bool enumArgument in new[] { false, true })
+            foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+            {
+                object argument = enumArgument ? (object)(Side)side : side;
+                var result = engine.Api.InvokeByName("IsSideActive", receiver, new object?[] { argument, true }, ctx, out bool handled);
+                if (!handled || !Equals(result, expected))
+                { dispatchFailures++; Fail($"dispatch active={active}/side={side}/enum={enumArgument}/recv={receiver?.Owner}: {result}"); }
+            }
+        }
+        foreach (int active in new[] { 0, 1, 2, 3, 255 })
+        foreach (int side in new[] { 0, 1, 2, 3, 255 })
+        foreach (bool enumArgument in new[] { false, true })
+        foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+        foreach (Side controller in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (CardInstance? self in new CardInstance?[] { null, left, right })
+        {
+            state.ActiveSide = (Side)active;
+            var vmContext = new EffectContext { Engine = engine, State = state, Self = self, Controller = controller };
+            object argument = enumArgument ? (object)(Side)side : side;
+            var call = new KismetStep(0, "call", "IsSideActive", new[] {
+                new KismetExpr { Var = "__side", Scope = "local" },
+                new KismetExpr { Var = "__active", Scope = "local" }
+            }, new[] { 1 }, null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+            var program = new KismetProgram(new[] { call, new KismetStep(1, "return", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, vmContext,
+                new Dictionary<string, object?> { ["__side"] = argument, ["__receiver"] = receiver, ["__active"] = true }, "__active");
+            bool expected = active != 0 && side == active;
+            if (!Equals(result.GetValueOrDefault("__active"), expected))
+            { vmFailures++; Fail($"VM active={active}/side={side}/enum={enumArgument}/recv={receiver?.Owner}/controller={controller}/self={self?.Owner}"); }
+        }
+        return directFailures + dispatchFailures + vmFailures == 0 ? null
+            : $"direct={directFailures}/65536, dispatch={dispatchFailures}/393216, VM={vmFailures}/1350 场景失败：" + string.Join(" | ", examples);
+    }
+
     /// <summary>GameState.GetPlayingSide reads its stored byte, never EffectContext.Controller.</summary>
     private static string? PlayingSideStoredState(CardDatabase db)
     {
