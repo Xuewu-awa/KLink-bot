@@ -307,6 +307,7 @@ internal static class SelfTest
         new("GetPlayingSide：保存的行动方独立于效果控制方和卡对象", PlayingSideStoredState),
         new("IsSideActive：非零活动方、显式字节参数及 VM 派发", SideActiveExplicitByteBoundary),
         new("手牌/牌库查询：显式字节阵营、不同无效值契约及输出覆盖", HandDeckExplicitSideBoundary),
+        new("场上阵营查询：显式字节、HQ/单位/隐蔽筛选及登记顺序", BoardQueryExplicitByteBoundary),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2309,6 +2310,72 @@ internal static class SelfTest
     }
 
     // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    /// <summary>Board query compares the explicit raw side byte without a receiver/controller fallback.</summary>
+    private static string? BoardQueryExplicitByteBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        CardInstance Make(int id, Side owner, CardLocation location, string type = "infantry", int defense = 5)
+        {
+            var card = state.CreateWithId(PlainUnit, owner, id, location, 150 - id);
+            card.Definition = new CardDefinition { Name = PlainUnit, Type = type, Defense = defense, Attack = 2 };
+            card.Keywords.Clear(); card.Defense = card.MaxDefense = defense;
+            return card;
+        }
+        var left = Make(90, Side.Left, CardLocation.BoardFrontline);
+        var right = Make(70, Side.Right, CardLocation.BoardHqLeft);
+        var a = Make(100, Side.Left, CardLocation.BoardHqLeft);
+        var b = Make(10, Side.Left, CardLocation.BoardFrontline);
+        var c = Make(80, Side.Left, CardLocation.BoardHqRight);
+        var zero = Make(20, Side.Left, CardLocation.BoardFrontline, defense: 0);
+        var negative = Make(30, Side.Left, CardLocation.BoardFrontline, defense: -1);
+        var covert = Make(40, Side.Left, CardLocation.BoardFrontline); covert.Keywords.Add(Keyword.Covert);
+        var revealed = Make(50, Side.Left, CardLocation.BoardFrontline); revealed.Keywords.Add(Keyword.Covert); revealed.IsRevealed = true;
+        var order = Make(60, Side.Left, CardLocation.BoardFrontline, "order");
+        var offboard = Make(110, Side.Left, CardLocation.HandRight);
+        var probes = new[] { a, b, c, zero, negative, covert, revealed, order, offboard };
+        int failed = 0; var examples = new List<string>();
+        foreach (int value in Enumerable.Range(0, 256))
+        foreach (bool enumArgument in new[] { false, true })
+        foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+        foreach (Side controller in new[] { Side.Left, Side.Right })
+        foreach (bool unitsOnly in new[] { false, true })
+        foreach (bool includeCovert in new[] { false, true })
+        {
+            foreach (var probe in probes) probe.Owner = (Side)value;
+            state.ActiveSide = controller.Opposite();
+            var ctx = new EffectContext { Engine = engine, State = state,
+                Self = controller == Side.Left ? right : left, Controller = controller };
+            var expected = new List<CardInstance>();
+            if (!unitsOnly && value is 1 or 2) expected.Add(state.Hq((Side)value));
+            if (value == 1) expected.Add(left);
+            if (value == 2) expected.Add(right);
+            expected.AddRange(new[] { a, b, c });
+            if (includeCovert) expected.Add(covert);
+            expected.Add(revealed);
+            if (!unitsOnly) expected.Add(order);
+            object side = enumArgument ? (object)(Side)value : value;
+            var raw = engine.Api.InvokeByName("GetCardsOnBoardBySide", receiver,
+                new object?[] { side, unitsOnly, includeCovert, new List<CardInstance> { offboard } }, ctx, out bool handled);
+            KismetStep Call(int index, KismetExpr input) => new KismetStep(index, "call", "GetCardsOnBoardBySide",
+                new[] { input, new KismetExpr { Bool = unitsOnly }, new KismetExpr { Bool = includeCovert },
+                    new KismetExpr { Var = "__cards", Scope = "local" } }, new[] { 3 }, null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+            var program = new KismetProgram(new[] { Call(0, new KismetExpr { Int = 1 }),
+                Call(1, new KismetExpr { Var = "__side", Scope = "local" }), new KismetStep(2, "return", null,
+                    Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                new Dictionary<string, object?> { ["__side"] = side, ["__receiver"] = receiver }, "__cards");
+            if (!handled || raw is not List<CardInstance> cards || !cards.SequenceEqual(expected)
+                || output.GetValueOrDefault("__cards") is not List<CardInstance> vmCards || !vmCards.SequenceEqual(expected)
+                || state.Random.ConsumedCount != 0 || state.UnimplementedCalls.Count != 0)
+            {
+                failed++;
+                if (examples.Count < 8) examples.Add($"side={value}/enum={enumArgument}/recv={receiver?.Owner}/controller={controller}/units={unitsOnly}/covert={includeCovert}");
+            }
+        }
+        return failed == 0 ? null : $"{failed}/12288 场景失败：" + string.Join(" | ", examples);
+    }
+
     /// <summary>Hand query compares raw owner bytes; the fresh deck wrapper handles only sides 1/2.</summary>
     private static string? HandDeckExplicitSideBoundary(CardDatabase db)
     {

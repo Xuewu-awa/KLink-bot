@@ -1,0 +1,139 @@
+{
+  "rule": "RULE-275",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\board-side-blueprint-native-20261021.json",
+      "sha256": "e4d6945f866d916f0e6e8c6539f5984ffbec145b957b0bb1fa4078cea20efe8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetCardsOnBoardBySide",
+      "script_bytes": 1013,
+      "statements": 35,
+      "script_sha256": "c0fe624cfc9b8cd92bd69c7b70c69b589575894ddc8977ad0038ca4746425940"
+    }
+  ],
+  "semantics": "GetCardsOnBoardBySide compares raw side byte with each card.Owner; requires total defense>0 and on-board location, includeCovert or not unrevealed, and optionally IsUnit. Appends in global battle registration order, including HQ for unitsOnly=false. No side1/2-only guard or receiver/controller fallback.",
+  "fix": "Only the side extraction in this dispatcher changes: explicit int/Side argument0, preserving every byte value, no receiver or controller fallback. All other filters, global ordering, State helpers, shared SideArg, card IR and card data unchanged.",
+  "tests": {
+    "total": 608,
+    "cases": 12288,
+    "dimensions": [
+      "all 256 input side bytes",
+      "int/Side representation",
+      "receiver null/Left/Right",
+      "controller Left/Right with opposite self/active side",
+      "unitsOnly false/true",
+      "includeCovert false/true"
+    ],
+    "entrypoints": [
+      "raw dispatch with prior output",
+      "VM valid side1 lookup followed by requested byte lookup reusing output slot"
+    ],
+    "fixture_controls": [
+      "Registered synthetic probe owners equal input byte even outside1/2; this is a comparison boundary test, not legal PvP reachability.",
+      "All three board locations, different ID/slot/registration ordering, actual HQ controls.",
+      "Defense0/negative and offboard probes excluded, unrevealed/revealed Covert probes distinguished.",
+      "Synthetic order on board included only if unitsOnly=false; no claim this state is ordinarily reachable.",
+      "No random stream consumption or unimplemented-call faults."
+    ],
+    "before_failed_tests": 1,
+    "before_failed_cases": 6120,
+    "after_failed_tests": 0,
+    "existing_tests_unchanged": true,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule275-before-20261021.txt",
+        "sha256": "af3d314ebf3aeff0deb4c7b06be5cd1897ece4c905b9b6d75e57c8e44df8d4fc"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule275-after-20261021.txt",
+        "sha256": "8707f8b9a5b4a9b516ca3f624c63c1c57853959112a9089335a9bdfdd27ad474"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-022915-rule275-board-side-uses-46909de5",
+    "elapsed_seconds": 53.89,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule275\\task.txt",
+      "sha256": "cfedc0b37690ac77321a8a5e10f68b10f1b8e530cc19abc921ab0046d57bf06b"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule275\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule275\\uses.json",
+      "sha256": "20482c297500f8c7db6a3f13e79161cc1aeb9dbeb702c669d9c40a7d3a3e3c19"
+    },
+    "implementation_cards": 1709,
+    "calls": 273,
+    "using_cards": 246,
+    "all_signatures": "4 args, out index3, explicit side at0",
+    "independent_exact_reenumeration": true,
+    "scope": "Exact literal name in existing simulator IR; not all current client cards or semantic completion."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-board-side-blueprint-20261021.py",
+      "sha256": "348cb549f3f34f2c89f03359c36548178f87940934c6ecf5c670d9a9b26b396d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-272.py",
+      "sha256": "32d3d7a72d492e5edc770d8da56378cb6bd21d33821d4040356bd63d4e5f95ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-267.py",
+      "sha256": "44ba9257488afa5d6571b7730b6f5ce474b2bc28079d80a99568a3b21a642819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule275-board-side-tests-20261021.py",
+      "sha256": "11196eec590877282bd20e60bc030e188e60d530123bc32b851d29b60fc77182"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule275-board-side-20261021.py",
+      "sha256": "7c6a2f7e507a8456585d16ecf1db3cb400b4a9a7fd8be309b4514530426d0835"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule275-board-side-20261021.py",
+      "sha256": "eb83cb0a9649a0e7d2194ee66310046c46a48aadc9f4adbe547b7c748f68c546"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "3d44096a36e2ac9109464506e7eeb0dca474c3b2274ccee53b10fb320527364e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "5ac7f8296f5be6730a7743523cd1c4faccc93ffc62c2b2bee99c97de608971c8"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Complete native getTotalDefense/Covert/IsUnit dependency implementations, global collection producer, Map iteration and concurrent/GC lifecycle are not newly certified by this input repair.",
+    "Synthetic invalid owner bytes and order-on-board states test predicates, not legal-match reachability or impact counts.",
+    "Persistent output frames and all engine local initialization/Context-null variants remain uncertified.",
+    "Out-of-byte-range enum coercion and malformed arguments are not certified; other SideArg callers remain separate work.",
+    "273 call sites do not establish 246 complete card implementations.",
+    "No historical replay authority, process writes, injection or client function invocation."
+  ]
+}

@@ -309,7 +309,13 @@ public sealed partial class CardApi
             // 最后才应用 unitsOnly。HQ 仍按 BattleCardsInOrder 的插入顺序处理。
             ["GetCardsOnBoardBySide"] = (c, r, a) =>
             {
-                var side = SideArg(r, a, 0, c.Controller);
+                // Blueprint compares the explicit byte with each card's side.
+                var side = a.ElementAtOrDefault(0) switch
+                {
+                    Side value => value,
+                    int value => (Side)value,
+                    _ => Side.NotAvailable,
+                };
                 bool includeCovert = TruthyArg(a, 2);
                 var cards = c.State.BattleCardsInOrder(side)
                     .Where(card => card.Defense > 0
