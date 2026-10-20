@@ -1,0 +1,68 @@
+{
+  "rule": "RULE-252",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-weak-complete-native-20261020.json",
+  "source_sha256": "9beba49ed166ec6619ee6a4509d0375ff17776169c54935b89242475933cd7cc",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 260,
+  "construction_cases": 91,
+  "resolution_cases": 864,
+  "bounds_cases": 6,
+  "index_reuse_cases": 6,
+  "live_snapshot_resolution_cases": 64,
+  "live_object_count": 140290,
+  "live_nonnull_slots": 42,
+  "live_nonzero_serials": 10,
+  "live_resolvable_nonnull_slots": 10,
+  "passed": true,
+  "executed_functions": [
+    "ConstructWeakReference",
+    "AllocateObjectSerial",
+    "ResolveWeakReference"
+  ],
+  "diagnostic_calls": 12,
+  "contracts": [
+    "Diagnostic logger 0x12dc910 records arguments only",
+    "Controlled compare-exchange intervention models a different serial winning; not real concurrent execution",
+    "Object array fixtures are coherent; malformed chunk arrays not covered"
+  ],
+  "limits": [
+    "No real allocation, release, GC timing, counter overflow or actual concurrent races verified",
+    "Live sample is 64 slots, not exhaustive lifetime verification",
+    "No automatic manager scheduling implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Non-null construction copies UObject index at +0xc and obtains per-slot serial; null construction writes (0,0)",
+    "Zero slot serial assigned via global counter increment and compare-exchange; existing/winning serial retained",
+    "Resolution checks nonzero serial, nonnegative in-range index, exact slot serial and clear 0x10200000 flags",
+    "Changed serial prevents an old weak reference resolving a reused object index"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-155351-rule252-inventory-c8e86175",
+    "input_sha256": "3de9f2eacb5ab01e05040b75dc35dc0c5ea248c48f4a4e1948b35630a64aafe1",
+    "output_sha256": "5449f3a0f5564fed80a217846cb30fb1eb565fb88a2fff3fa2d874af82b8d0a1",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 2,
+      "branches": 11,
+      "returns": 5
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-weak-20261020.py",
+      "sha256": "81819bf440713221929f07293b1311cf4992bee272ce4431af544fb95fbb0449"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-weak-20261020.py",
+      "sha256": "e277dc8de3b6eb7cead62cf67228c802e301457ff97cf5bced8053123261dfc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-weak-worker-20261020.py",
+      "sha256": "3f464b6905bbed35127524981f7199a5881117fdbc11a41d42e9b58d2b6e840b"
+    }
+  ]
+}
