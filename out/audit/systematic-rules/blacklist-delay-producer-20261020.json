@@ -1,0 +1,74 @@
+{
+  "rule": "RULE-257",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-producer-native-20261020.json",
+  "source_sha256": "cc633cdeb9129e9e1a8b4b59b0b17148afbf578c16539cf4f15c16f791ef659c",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 5586,
+  "producer_consumer_cases": 288,
+  "primary_producer_calls": 624,
+  "primary_removed_slots": 512,
+  "post_snapshot_mutation_cases": 32,
+  "shared_work_entry_cases": 8,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AllocateObjectSerial",
+    "ConstructWeakReference",
+    "FindWeakActionList",
+    "GrowArray",
+    "MoveControllerReference",
+    "ProcessManagerActions",
+    "QueueTargetActions",
+    "ReleaseWorkArrayReferences",
+    "RemoveUUIDAction",
+    "ReserveArray",
+    "ResizeAlignedHeap",
+    "ResolveWeakReference"
+  ],
+  "contracts": [
+    "Successful allocation/reallocation with poisoned new bytes and preserved prefix; quantization1/64",
+    "Notification listener array empty; virtual notification/destruction requests recorded only",
+    "Controlled action insertion and copied shared work entry are synthetic, not producer output claims"
+  ],
+  "limits": [
+    "Producer has no mapped official native symbol or complete caller classification yet",
+    "Live callback reentry, OOM/overflow, actual destructors and complete frame time source unverified",
+    "No automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "primary_manager_calls": 288,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Producer takes full weak key by value, finds existing action list, coalesces work entries by full key and appends an allocated-slot snapshot",
+    "Repeated submissions append duplicate UUID/pointer pairs; exact consumer removal remains idempotent",
+    "Action added after snapshot survives unless submitted again; controlled mutation only",
+    "Aliased work entries with two owning references release their shared controller once; controlled copied entry only"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-163743-rule257-inventory-e65870bd",
+    "input_sha256": "9414cd09018f508a128b7978174b93f5a17045137d0ddba50aec769c5d3324b2",
+    "output_sha256": "5f864b8574f3c49bba47684c877d05a73ceb6e5a5e154620090fc56b949cb004",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 18,
+      "branches": 42,
+      "returns": 5
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-producer-20261020.py",
+      "sha256": "e8c9c80643122ebd89607c39ff46a9ba2686ded01056ff2a1ed706e98aa1386d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-producer-20261020.py",
+      "sha256": "e6671ea888ac4483dabbdde4280687777c9f51011f2262cd6dcebeb5a36467b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-producer-worker-20261020.py",
+      "sha256": "37f181a7bcdb5212a6ebfced6ba8d548d819017f679e3acbda034f9d238b3681"
+    }
+  ]
+}
