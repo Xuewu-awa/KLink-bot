@@ -321,7 +321,7 @@ internal static class SelfTest
         // ★ 这条才是 773639「HQ 追踪漂开」的**根因断言**（修复前必红）。
         new("回放发号：连续同侧 StartOfTurn（中间无 EndOfTurn）只能算一个客户端回合",
             ReplayClientTurnDedup),
-        new("回放动态卡别名：未知动作 ID 复用唯一已生成卡且后续攻击仍命中",
+        new("合成动态卡别名：唯一候选复用对象与目标缓存，歧义候选不误认",
             ReplayGeneratedCardAlias),
         new("服务端弃牌位置：discard_left/right 保留阵营，裸 discard 拒绝",
             ServerDiscardLocationAliases),
@@ -2815,44 +2815,62 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// 508065 的 PAMS 生成卡在创建时是 #14001，但后续动作引用为 #83。
-    /// 回放器应把 #83 解析为同一张已生成卡，而不是造一张裸占位卡；后续
-    /// #107/#119 的攻击也必须继续命中这张卡。
+    /// 用合成对象直接验证回放适配器的别名身份与缓存，不依赖历史对局的卡牌数值、
+    /// 随机选择或战斗结果。这里测试适配器行为，不把回放作为当前游戏规则的权威。
     /// </summary>
     private static string? ReplayGeneratedCardAlias(CardDatabase db)
     {
-        string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
-            "..", "..", "..", "..", "..", "out", "_server-replays"));
-        string snapshot = Path.Combine(root, "replay-508065.json");
-        string actions = Path.Combine(root, "replay-508065.actions.json");
-        if (!File.Exists(snapshot) || !File.Exists(actions))
+        const string name = "card_unit_no43_commando";
+        string? code = db.DeckCodeIds.FirstOrDefault(x => x.Value == name).Key;
+        if (code is null) return $"卡组码表缺少 {name}";
+        var replay = new KLink.Bot.Replay.ReplayData
         {
-            return $"缺少动态卡别名回归语料：{snapshot} / {actions}";
+            MatchId = 1, Turns = 1, LeftPlayerId = 1, RightPlayerId = 2,
+            WinnerSide = "", ClientSide = Side.Left, Cards = [], Actions = [],
+        };
+        var play = new WireAction
+        {
+            ActionType = "PC", PlayerId = 1,
+            ActionData = new Dictionary<string, string> { ["0"] = "83", ["4"] = code },
+        };
+        var attack = new WireAction
+        {
+            ActionType = "AC", PlayerId = 2,
+            ActionData = new Dictionary<string, string> { ["0"] = "84", ["1"] = "83" },
+        };
+        const System.Reflection.BindingFlags flags =
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        var resolveCard = typeof(KLink.Bot.Replay.ReplayRunner).GetMethod("ResolveCard", flags)!;
+        var resolveTarget = typeof(KLink.Bot.Replay.ReplayRunner).GetMethod("ResolveTarget", flags)!;
+        var (_, state) = EmptyBoard(db);
+        var generated = state.CreateWithId(name, Side.Left, 14001, CardLocation.HandLeft, 0);
+        state.GeneratedCardIds.Add(generated.CardId);
+        int before = state.Cards(Side.Left).Count();
+        var runner = new KLink.Bot.Replay.ReplayRunner(db);
+        object? first = resolveCard.Invoke(runner, [play, replay, Side.Left, Side.Right, state]);
+        object? again = resolveCard.Invoke(runner, [play, replay, Side.Left, Side.Right, state]);
+        object? target = resolveTarget.Invoke(runner, [attack, replay, Side.Right, Side.Left, state]);
+        if (!ReferenceEquals(first, generated) || !ReferenceEquals(again, generated)
+            || !ReferenceEquals(target, generated) || state.ById(83) is not null
+            || state.Cards(Side.Left).Count() != before || state.UnimplementedCalls.Count != 0)
+        {
+            return "唯一生成卡必须复用同一对象，后续行动和攻击目标必须复用缓存，不能创建占位卡";
         }
 
-        var report = new KLink.Bot.Replay.ReplayRunner(db)
+        var (_, ambiguous) = EmptyBoard(db);
+        foreach (int id in new[] { 14001, 14002 })
         {
-            IdentityCorrection = true,
-            KreditSlotOnDuplicateStart = true,
-        }.Run(KLink.Bot.Replay.ReplayData.Load(snapshot, actions), verbose: false);
-
-        // This test isolates generated-card identity. Overall replay parity is
-        // reported by the replay audit; it also depends on rules/version/RNG.
-
-        if (report.Unimplemented.Any(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal)))
-        {
-            return "动态卡别名仍产生 unresolved-cardid 占位记录："
-                + string.Join(", ", report.Unimplemented
-                    .Where(x => x.Key.StartsWith("<unresolved-cardid:", StringComparison.Ordinal))
-                    .Select(x => $"{x.Key}×{x.Value}"));
+            var card = ambiguous.CreateWithId(name, Side.Left, id, CardLocation.HandLeft, 0);
+            ambiguous.GeneratedCardIds.Add(card.CardId);
         }
-
-        var commando = report.Steps.FirstOrDefault(s => s.ActionId == 119);
-        if (commando is null || !commando.Applied)
+        var otherRunner = new KLink.Bot.Replay.ReplayRunner(db);
+        var unresolved = resolveCard.Invoke(otherRunner,
+            [play, replay, Side.Left, Side.Right, ambiguous]) as CardInstance;
+        if (unresolved?.CardId != 83 || !ambiguous.UnimplementedCalls.Keys.Any(
+                x => x.StartsWith("<unresolved-cardid:83=", StringComparison.Ordinal)))
         {
-            return "#119 对动态生成的 No.43 Commando 攻击未成功应用";
+            return "两个同名生成卡时不能擅自认定别名，必须保留未解析记录";
         }
-
         return null;
     }
 

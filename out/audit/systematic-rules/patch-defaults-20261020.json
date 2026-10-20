@@ -1,0 +1,673 @@
+{
+  "rule": "RULE-261",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\patch-current-card-defaults-native-20261020.json",
+      "sha256": "ba2567b91a90a7c49c2f753f2378617536182feadf7db5780be6dc7dd9e766a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule261\\parsed.json",
+      "sha256": "195f8e6ec5f050248c0c1540cddf0bf6cd7376c8f677bd35266dd93dc3ae8229"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule261\\manifest.json",
+      "sha256": "00d76fa84c78348ec348c9e0e5cc716fa500177496474a2924c69731522db791"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule261-default-patch-manifest.json",
+      "sha256": "9eda282fa21c073539e034438d22eb9489945e2a1ee8ce4f9726971612b2877c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-card-version-drift-native-20261020.json",
+      "sha256": "e4f14678ef96a1c1f0acc10adef2c1643a595b479ada667131ea365277af2a6e"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-patch-current-card-defaults-20261020.py",
+      "sha256": "4f9ff26b15815168a2d29c11bd1a052fa3e7e7b9e79b65abcf372c2aad525586"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule261-defaults-20261020.py",
+      "sha256": "33173561a94b7dd627cf61cc7e5631b4560938aba06b369551203dc7bafcfaf3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule261-packaged-defaults-20261020.py",
+      "sha256": "20c792772c14fa67eb2b123ba4035e71692d7aca86cde4eb0f7e49a7272f6069"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule261-defaults-20261020.py",
+      "sha256": "ca14b714604b5dfdcf8669ac108473c8c918ef349cd1b8a2753d95af168765c7"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json",
+      "sha256": "0a9aeafd17f3348f65c73322dfaf4f8715e42d4704bc2322158a924db66b68cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.live.json",
+      "sha256": "7acfaee8bccb4a8c9b538064f98b1a18cd91c3cedec62346becec6d0e37dfd5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardInnateTable.cs",
+      "sha256": "9d4e25a3271a523c460cb50ece359ae7bb98379d7ccdff9412a3bdf48c2610d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7098defed92037b25451b3887f7e76cb0ad4ad6185acc6ec6a341a0f682592fb"
+    }
+  ],
+  "packaging_project": {
+    "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\KLink.Bot.csproj",
+    "sha256": "c14ed21e7f91f5b1897912e86dfb3f093803c94fdf33aecd71ee0c74e4ec7efe"
+  },
+  "patch": {
+    "rule": "RULE-261",
+    "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\patch-current-card-defaults-native-20261020.json",
+    "source_sha256": "ba2567b91a90a7c49c2f753f2378617536182feadf7db5780be6dc7dd9e766a7",
+    "numeric_changes": [
+      {
+        "card": "card_unit_2nd_west_africa",
+        "field": "kredits",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "card": "card_unit_2nd_west_africa",
+        "field": "defense",
+        "before": 2,
+        "after": 3
+      },
+      {
+        "card": "card_unit_238th_regiment",
+        "field": "defense",
+        "before": 3,
+        "after": 2
+      },
+      {
+        "card": "card_event_special_attack",
+        "field": "kredits",
+        "before": 2,
+        "after": 3
+      },
+      {
+        "card": "card_unit_tupolev_tu_2",
+        "field": "kredits",
+        "before": 4,
+        "after": 3
+      },
+      {
+        "card": "card_unit_tupolev_tu_2",
+        "field": "defense",
+        "before": 4,
+        "after": 3
+      },
+      {
+        "card": "card_unit_p38_lightning_raf",
+        "field": "defense",
+        "before": 4,
+        "after": 5
+      }
+    ],
+    "keyword_change": {
+      "card": "card_unit_16th_rifles",
+      "before": [
+        "Smokescreen"
+      ],
+      "after": [
+        "Smokescreen",
+        "Shock"
+      ]
+    },
+    "changed_cards": 6,
+    "before_files": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\rule261-before\\CardInnateTable.cs",
+        "sha256": "fbb9b4f7487319781d0921375778183410a4b4c50cad1d51560065c35ef37c91"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\rule261-before\\cards.json",
+        "sha256": "a369dfbfb30abc2a39460c9bd11d69b62c259e059e61c77cc2da146b8a5dd7c9"
+      }
+    ]
+  },
+  "verification": {
+    "current_cdos": 2019,
+    "current_scalar_fields": 12,
+    "current_trigger_arrays": 4038,
+    "current_trigger_enum_entries": 71,
+    "exact_numeric_edits": 7,
+    "numeric_data_files_updated": 2,
+    "exact_keyword_edits": 1,
+    "changed_cards": 6,
+    "changed_card_function_schemas_unchanged_vs_old": 6,
+    "all_other_database_fields_unchanged": true,
+    "output_data_copy_matches": true,
+    "packaged_data_source": "klink bot/docs/cards.live.json",
+    "production_rule_code_changed": false
+  },
+  "deepseek": {
+    "job_id": "20261020-203730-rule261-parse-d5752268",
+    "elapsed_seconds": 40.61,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule261\\task.txt",
+      "sha256": "837d8f05a39c220663b0758f25425f6e51ec06cd5b849baa07745ca15fe6c561"
+    },
+    "assets": 15,
+    "functions": 71,
+    "parser_errors": 0,
+    "independent_runtime_ast_matches": 42,
+    "runtime_function_matches": [
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "ExecuteUbergraph_card_unit_511th_regiment",
+        "runtime_script_sha256": "e254be7eea775789cc05d18f1d9958ad74d804d7578b98d4ad0dcccb802098a3"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "GetPassiveDefenseBuff",
+        "runtime_script_sha256": "ba73f1ee309de5b27feff7ee91cbf279c6d5abf81d8193d3b6745e89134429b1"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnCardDealDamage",
+        "runtime_script_sha256": "c5dc63ab08c74b2ea75f8aeebbffe8215792f1781554f6c3bff91306f7784285"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnDealDamageAddDamageAfterCalc",
+        "runtime_script_sha256": "8b2ede9962f3af683fba6b3c24d254de8992c92c576029873605320c01b07d8d"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "checkAndUpdateBuffOnAllCards",
+        "runtime_script_sha256": "25fd052b3e206ee8662d1603571be4dabe77fd9314e2c928030b9c85f54f5aff"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "checkAndUpdateBuffOnCard",
+        "runtime_script_sha256": "0a7cf26f5b1de3e287a11880b6e07008928767402ed84f33461564bc8f9bfb72"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnOtherCardDealDamageAddDamageAfterCalc",
+        "runtime_script_sha256": "e0a5940a4e53abeecbfd1fad3275ed7a028696b299d29263b29a3536eade3ef4"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnOtherCardEnterPlay",
+        "runtime_script_sha256": "42ba7e2a1cd22bb5ed9eae6195987fe26bcd071c26844cb55ea172bf6732a834"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnEnterPlay",
+        "runtime_script_sha256": "79e649b81195b8419e443075b0412c68aacc5cd938a3c5f039486bf6ce0a1d8e"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnBecomingVeteran",
+        "runtime_script_sha256": "46a7741484c1844d0fe425f6807d99e107dc15cbc05e461162519e8f454f17da"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterLeaveBoard",
+        "runtime_script_sha256": "8029ba2bd2dba125507aa641f5a45ff8bbb66268ebacbd9cec3b4e9fb35eca80"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterOtherCardDefenseIsSet",
+        "runtime_script_sha256": "83a61b010ed758842ad715864086fd82bc6863f3c50a895159c79ae04ee05a67"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterOtherCardGainDefense",
+        "runtime_script_sha256": "1bb88812bd8d44929cd9b170da2a13a8d02652ca57c4910a5067fcdc419e095b"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterGainDefense",
+        "runtime_script_sha256": "c1a3adf2b11de07c45750ab44e5c5b5b76fb7707e0428e0be4586389f87c2be4"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterDefenseIsSet",
+        "runtime_script_sha256": "2a26166b2dd4b653a2bd07452e4a3b1d592d69d9d4db2f8ccd4b66c621f6c09b"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnOtherCardFullyRepaired",
+        "runtime_script_sha256": "c188a553a26da1d9aa5211d2af9bcaec8145e94ad39f92c30e220820c87ddbf1"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnFullyRepaired",
+        "runtime_script_sha256": "3bc9491844a33ebc565e77ae914923f7f241467a3dc34376af48701e3c9372ab"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnOtherCardDealDamage",
+        "runtime_script_sha256": "7b22a48a10cec8fbd812de80936f067c8087309235048bbaf56175ed3aaa0644"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnAfterOtherCardSuppressed",
+        "runtime_script_sha256": "7f2aa4f27fa07fb67704bfb35cec770875ef32f46c48971d6aeac4d7413d9dcd"
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "function": "OnOtherCardBecomingVeteran",
+        "runtime_script_sha256": "2767c02bcffc8e816a8cc47dce69fbf5b81cebe29de1a9a082845d1e32aec2b3"
+      },
+      {
+        "card": "card_unit_3_panzergrenadier",
+        "function": "ExecuteUbergraph_card_unit_3_panzergrenadier",
+        "runtime_script_sha256": "9633f38706fa2de5940d07524b62e9c5d365343bfa4d786ca857afbbcbe88d8a"
+      },
+      {
+        "card": "card_unit_3_panzergrenadier",
+        "function": "OnAfterOtherCardAttacks",
+        "runtime_script_sha256": "e1d26d6b975cecea372274ff970bbdf20834cb937b282171aac25229c1c52ac7"
+      },
+      {
+        "card": "card_unit_3_panzergrenadier",
+        "function": "OnOtherCardMoveToFrontline",
+        "runtime_script_sha256": "79341daa82e429c6f58f31e3d6dd32be102da072fd6bdafef591dcc150997516"
+      },
+      {
+        "card": "card_event_tactical_retreat",
+        "function": "ExecuteUbergraph_card_event_tactical_retreat",
+        "runtime_script_sha256": "cedf0ab0ced863fe25cfa7265010631bd9769a45d4b986b92b21f04f21dad451"
+      },
+      {
+        "card": "card_event_tactical_retreat",
+        "function": "CanPlayFromHand",
+        "runtime_script_sha256": "277a6ef1b697eff31460d1a85bc6d482143e1cdcdd025f58505a7648868b31a2"
+      },
+      {
+        "card": "card_event_tactical_retreat",
+        "function": "OnPlayedFromHand",
+        "runtime_script_sha256": "c849f64caaed1a66b6aea93a4debeaee44dbd82acad25726f4d0ab235ba0585a"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "ExecuteUbergraph_card_unit_panzer_iii_f",
+        "runtime_script_sha256": "72c82759dfe6e0033c628ca0dcdeedffc1e4088efc84300f35816884d2bc060d"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "OnPlayedFromHand",
+        "runtime_script_sha256": "8182d0d2f27f1a78f94cf5ecd584c9854d2c8e6fd641f6a917695cd04d03d87e"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "OnOtherCardEnterPlay",
+        "runtime_script_sha256": "57747806bb31aeaf849d8173b74e5c7df2356ab1289e8cca000ee0eb2daa3c7b"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "OnEnterPlay",
+        "runtime_script_sha256": "9ba41122eba93e5bb73a160145e11eb9ca051a5a766112ce1c5ab0e246c533f4"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "OnLeaveBoardOrOwner",
+        "runtime_script_sha256": "08b74c8beb9fad70a36ad703c3b7260ce5a7fb1cbd79e5be8495bc894c67ddef"
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "function": "OnAfterOtherCardSuppressed",
+        "runtime_script_sha256": "5cb986675641f2214f3247d91a88769d171ca17474c8062fbbd396dffcb3f702"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "ExecuteUbergraph_card_unit_l4_grasshopper",
+        "runtime_script_sha256": "6d428c1ce4ea76184f7de29b7d056355c9a0cc8755268036749feac79d66f3e7"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "Remove the Buff",
+        "runtime_script_sha256": "a7b248ca2def38cd5f614ff653f634de9a7c7dac83c2f2d3dcc329de54c0bc0f"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "ApplyTheBuff",
+        "runtime_script_sha256": "ebf30cb27d91d854c73b3a25755f5521767555acd7c94f4ddd847e32680b7437"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnEnterPlay",
+        "runtime_script_sha256": "248732fec50a8ed27539d9d347db5ae3f51d377bd26c6a90deab2e6be71e0137"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnLeaveBoardOrOwner",
+        "runtime_script_sha256": "badf9239d1314a8e129287085f84355ad391fc9b6fa6dc94d522dff37c3eb423"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnOtherCardEnterPlay",
+        "runtime_script_sha256": "c579bee0d43af6e0bbb19278cc4beed4ec83bae77c9e54de7333db1d68a89145"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnOtherCardReset",
+        "runtime_script_sha256": "845a2a5eb1b42b4d7465ae210e2006d27d3e9c53b4df22b9f6510b95b82c12ed"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnOtherCardDrawnFromDeck",
+        "runtime_script_sha256": "cdb2618b8413c96fc0817265fa7f938b230a0d067c8c092a769eac8116215e80"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnOtherCardSpawnedInHand",
+        "runtime_script_sha256": "8831b08c1a16c152f4ef3d0f16fc3cebbab577342eda5248cc20912768df268f"
+      },
+      {
+        "card": "card_unit_l4_grasshopper",
+        "function": "OnAfterOtherCardSuppressed",
+        "runtime_script_sha256": "64c2157ace0a3b61adf9dc9f3ad75d8f4b8a9192c23ecea57589d53537548f32"
+      }
+    ],
+    "parser_binary": {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetCLI\\bin\\Debug\\net10.0\\UAssetCLI.dll",
+      "sha256": "72c8194c5007601363265a95063c12da2b800a7e78f575b28f6db7d19558f685"
+    },
+    "mapping": {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\mappings\\kards-5.6.1-0+++UE5+Release-5.6-Fork-unknown.jmap",
+      "sha256": "38d4b1fa8449ef8007bc71996ce24fcea710e818834b0e42fbf41f3613aced63"
+    }
+  },
+  "function_differences": [
+    {
+      "name": "card_unit_p38_lightning_raf",
+      "functions": 3,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_2nd_west_africa",
+      "functions": 3,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_panzer_iii_f",
+      "functions": 6,
+      "added": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "removed": [
+        "OnOtherCardAbilitiesChanged"
+      ],
+      "changed": [
+        "ExecuteUbergraph_card_unit_panzer_iii_f",
+        "OnEnterPlay",
+        "OnLeaveBoardOrOwner",
+        "OnOtherCardEnterPlay",
+        "OnPlayedFromHand"
+      ]
+    },
+    {
+      "name": "card_event_tactical_retreat",
+      "functions": 3,
+      "added": [
+        "CanPlayFromHand",
+        "ExecuteUbergraph_card_event_tactical_retreat",
+        "OnPlayedFromHand"
+      ],
+      "removed": [
+        "OnOtherCardAttacks"
+      ],
+      "changed": []
+    },
+    {
+      "name": "card_unit_3_panzergrenadier",
+      "functions": 3,
+      "added": [],
+      "removed": [
+        "OnAfterAttack",
+        "OnMoveToFrontline"
+      ],
+      "changed": [
+        "ExecuteUbergraph_card_unit_3_panzergrenadier",
+        "OnAfterOtherCardAttacks",
+        "OnOtherCardMoveToFrontline"
+      ]
+    },
+    {
+      "name": "card_event_cruiser_scouts",
+      "functions": 4,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_event_cruiser_scouts",
+        "OnPlayedFromHand",
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "name": "card_event_special_attack",
+      "functions": 3,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_238th_regiment",
+      "functions": 1,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_yokosuka_e14y",
+      "functions": 3,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_unit_yokosuka_e14y",
+        "OnPlayedFromHand",
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "name": "card_unit_3rd_carpathian",
+      "functions": 3,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_unit_3rd_carpathian"
+      ]
+    },
+    {
+      "name": "card_unit_16th_rifles",
+      "functions": 2,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_511th_regiment",
+      "functions": 20,
+      "added": [
+        "OnOtherCardBecomingVeteran"
+      ],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_unit_511th_regiment",
+        "OnAfterOtherCardSuppressed"
+      ]
+    },
+    {
+      "name": "card_unit_tupolev_tu_2",
+      "functions": 2,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    {
+      "name": "card_unit_l4_grasshopper",
+      "functions": 10,
+      "added": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_unit_l4_grasshopper",
+        "OnEnterPlay",
+        "OnLeaveBoardOrOwner",
+        "OnOtherCardDrawnFromDeck",
+        "OnOtherCardEnterPlay",
+        "OnOtherCardReset",
+        "OnOtherCardSpawnedInHand"
+      ]
+    },
+    {
+      "name": "card_event_surprise_engagement",
+      "functions": 5,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "ExecuteUbergraph_card_event_surprise_engagement"
+      ]
+    }
+  ],
+  "remaining_current_cdo_differences": [
+    {
+      "name": "card_unit_l4_grasshopper",
+      "differences": [
+        {
+          "field": "usedTriggers",
+          "simulator": [
+            "OnOtherCardEnterPlay",
+            "OnOtherCardReset",
+            "OnOtherCardSpawnedInHand",
+            "OnOtherCardDrawnFromDeck"
+          ],
+          "runtime": [
+            "OnOtherCardEnterPlay",
+            "OnOtherCardReset",
+            "OnOtherCardSpawnedInHand",
+            "OnOtherCardDrawnFromDeck",
+            "OnAfterOtherCardSuppressed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "card_unit_511th_regiment",
+      "differences": [
+        {
+          "field": "usedTriggers",
+          "simulator": [
+            "OnOtherCardDealDamageAddDamageAfterCalc",
+            "OnOtherCardEnterPlay",
+            "OnAfterOtherCardDefenseIsSet",
+            "OnAfterOtherCardGainDefense",
+            "OnOtherCardFullyRepaired",
+            "OnOtherCardDealDamage",
+            "OnAfterOtherCardSuppressed"
+          ],
+          "runtime": [
+            "OnOtherCardDealDamageAddDamageAfterCalc",
+            "OnOtherCardEnterPlay",
+            "OnAfterOtherCardDefenseIsSet",
+            "OnAfterOtherCardGainDefense",
+            "OnOtherCardFullyRepaired",
+            "OnOtherCardDealDamage",
+            "OnAfterOtherCardSuppressed",
+            "OnOtherCardBecomingVeteran"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "card_unit_panzer_iii_f",
+      "differences": [
+        {
+          "field": "usedTriggers",
+          "simulator": [
+            "OnOtherCardEnterPlay",
+            "OnOtherCardAbilitiesChanged"
+          ],
+          "runtime": [
+            "OnOtherCardEnterPlay",
+            "OnAfterOtherCardSuppressed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "card_event_tactical_retreat",
+      "differences": [
+        {
+          "field": "Type",
+          "simulator": 11,
+          "runtime": 2
+        }
+      ]
+    },
+    {
+      "name": "card_unit_3rd_carpathian",
+      "differences": [
+        {
+          "field": "attack",
+          "simulator": 4,
+          "runtime": 2
+        }
+      ]
+    },
+    {
+      "name": "card_event_cruiser_scouts",
+      "differences": [
+        {
+          "field": "kredits",
+          "simulator": 2,
+          "runtime": 3
+        },
+        {
+          "field": "cipher",
+          "simulator": 0,
+          "runtime": 3
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "total": 594,
+    "failed": 0,
+    "rerun": true,
+    "log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule261-packaged-defaults-final-20261020.txt",
+      "sha256": "af1b5bcd5c49b0e3df1b3bc6c18d306a8147fb86a3e2ea7b1a8f03b6be83ceb2"
+    },
+    "previous_failure_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule261-packaged-defaults-after-20261020.txt",
+      "sha256": "5cebb8f95286f355331b1cc06a0656f8b47cb5d729341dc7628d5dc7dedeaabd"
+    },
+    "fixture_change": "Replaced historical whole-replay battle dependency with a synthetic generated-card identity/cache test, including ambiguous-candidate rejection. No replay production code changed."
+  },
+  "kernel_changed": true,
+  "card_ir_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "This patch updates six cards, not every change in the update report. Nine of the 15 focused cards have function/schema differences still awaiting semantic migration.",
+    "42 AST comparisons ignore parser bo annotations and exporter type-context metadata; syntax equality is not full rule semantic validation.",
+    "Parser CDO ToString loses structured containers and yields an invalid enum label for 16th Rifles EffectType; do not import those fields wholesale. The fixed scalar/keyword values are independently confirmed in current memory.",
+    "The current capture checks only 12 scalar fields and two trigger arrays. Do not infer other card fields or same-named functions are unchanged.",
+    "Tactical Retreat current CDO retains OnOtherCardAttacks while type is order; the default trigger was deliberately preserved until mechanism migration is verified.",
+    "The first intermediate 594/594 run used old packaged numeric data and is not validation of the numeric patch. Final test run verifies the corrected packaged source.",
+    "Legacy inventory uses older snapshots; its post-patch differences include intentional updates and must not be treated as current-client regressions.",
+    "Raw assets, mapping and game bytecode stay local; no replay is used as rule authority."
+  ]
+}

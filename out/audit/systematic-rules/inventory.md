@@ -1,6 +1,6 @@
 # 系统规则审计：结构基线
 
-代码基线：`8969f5c988f7278ccaa6fa5c7654885e72d58404`
+代码基线：`1325c3db980ea748927f4d2f9bc12595c272cf95`
 
 本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。
 
@@ -25,7 +25,7 @@
 | semantically_verified_cards | 0 |
 | runtime_scalar_cards | 2019 |
 | runtime_scalar_comparisons | 20190 |
-| runtime_scalar_differences | 0 |
+| runtime_scalar_differences | 7 |
 | runtime_trigger_array_cards | 2019 |
 | runtime_trigger_arrays | 4038 |
 | runtime_trigger_array_read_errors | 0 |

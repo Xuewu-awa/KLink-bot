@@ -496,7 +496,7 @@ internal static class CardInnateTable
         ["card_unit_t_80"] = (["Destruction"], 0),
         ["card_unit_11th_signal_battalion"] = (["Smokescreen"], 0),
         ["card_unit_13th_rifle_regiment"] = (["Destruction"], 0),
-        ["card_unit_16th_rifles"] = (["Smokescreen"], 0),
+        ["card_unit_16th_rifles"] = (["Smokescreen", "Shock"], 0),
         ["card_unit_2nd_motor"] = (["Guard"], 0),
         ["card_unit_321st_rifles"] = (["Blitz", "Destruction"], 0),
         ["card_unit_3rd_guards"] = (["Ambush"], 0),
