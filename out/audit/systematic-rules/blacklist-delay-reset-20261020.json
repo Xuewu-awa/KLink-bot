@@ -1,0 +1,69 @@
+{
+  "rule": "RULE-255",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-reset-native-20261020.json",
+  "source_sha256": "7be627344c716e729f3ba784dbb3ba465407fbbf9f0a742750f89fcc972e7f30",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 7311,
+  "standalone_reset_cases": 27,
+  "composed_cases": 48,
+  "reset_invocations": 150,
+  "manager_invocations": 240,
+  "tick_requests": 204,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AllocateObjectSerial",
+    "ConstructWeakReference",
+    "ProcessManagerActions",
+    "ResetProcessedFlags",
+    "ResolveWeakReference"
+  ],
+  "static_reset_calls": [
+    "0x3e429eb",
+    "0x3e42a20"
+  ],
+  "static_whole_map_process_call": "0x3e43058",
+  "contracts": [
+    "Manager+0x50 work array empty; action-list consumer records requests only",
+    "Virtual destruction, GC and inner compaction remain unexecuted contracts from RULE254"
+  ],
+  "limits": [
+    "WorldProcessingFragment statically captured and checked, not executed as a complete world tick",
+    "No full frame order, pause/dilation/time-source or other actor/component caller lifecycle verified",
+    "No automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Reset helper clears only processed flag bytes of allocated outer rows, including sparse multiword bitmaps",
+    "Repeated manager requests skip processed lists; native reset re-enables later consumer requests in controlled sequences",
+    "Caller fragment contains two reset sites and later conditional whole-map processing site; full world/frame execution remains uncertified"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-161846-rule255-inventory-4555b8d4",
+    "input_sha256": "33e7c53ebc220b0f956d48aba0b46d8579533698b4c20bf4f151789fae0b5472",
+    "output_sha256": "185c05d42e08c3a99a6b7ed23048e368bebfbeced8e69fad1c9e8f5c07013da6",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 97,
+      "branches": 117,
+      "returns": 1
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-reset-20261020.py",
+      "sha256": "6e7f511ff85a4361eda20266e838f34a3f3391899f5a9ba82a649372ba882b37"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-reset-20261020.py",
+      "sha256": "931b3cd345bbc0946dc7f2a06b1ef070f4f5d875b424ca49895c85c81d18ae1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-reset-worker-20261020.py",
+      "sha256": "a1ae0f62148b65bfc9c24f013c2633d1c2b440d2d4316282d5fe8d79045155fc"
+    }
+  ]
+}
