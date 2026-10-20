@@ -561,6 +561,7 @@ internal static class SelfTest
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
         new("事件层：OnOtherCardReset 传递 cardReset/resetCardID（真实 Coastwatchers 订阅）",
             ResetEventCarriesPayload),
+        new("批量 HQ 销毁：移位后按客户端优先判胜并提前返回，跳过后续死亡阶段", BatchHqVictoryBoundary),
         new("多目标伤害边界：全零早退、弃牌销毁条目移除、保存区域与前线更新门", MultiDamagePhaseBoundaries),
         new("效果伤害落地：入口正值分支跨回调保留，溢出截断后仍执行事件与销毁", EffectDamagePositiveBranch),
         new("受伤前事件：自身→T52保存接收者，直接回调不重筛且不检查停止标志", DamageBeforeDispatchSnapshot),
@@ -7588,6 +7589,93 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Synthetic own callbacks detect execution past the Blueprint victory return.
+    private static string? BatchHqVictoryBoundary(CardDatabase db)
+    {
+        const string name = "card_unit_51e_regiment";
+        string[] hooks = { "OnAfterLeaveBoard", "OnDestroyed" };
+        var library = KismetLibrary.Default!;
+        if (library.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || hooks.Any(h => library.FindProgram(name, h) is not null)) return "无法安全安装 HQ 胜负边界探针";
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(library)!;
+        cache.TryGetValue(name, out var oldCache);
+        var saved = hooks.ToDictionary(h => h, h => oldCache?.GetValueOrDefault(h));
+        foreach (string hook in hooks) oldCache?.Remove(hook);
+        try
+        {
+            for (int i = 0; i < hooks.Length; i++)
+                locals.Add(hooks[i], new[] {
+                    new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1,
+                        i == 0 ? "_auditHqAfter" : "_auditHqDeath", null) { DestinationScope = "instance" },
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                });
+            var dispatch = typeof(CardApi).GetMethod("DealDamageMultiple",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var failures = new List<string>();
+            foreach (Side client in new[] { Side.Left, Side.Right })
+            foreach (Side active in new[] { Side.Left, Side.Right })
+            foreach (bool reverse in new[] { false, true })
+            foreach (bool finishedBefore in new[] { false, true })
+            foreach (int mode in Enumerable.Range(0, 6))
+            {
+                var (engine, state) = EmptyBoard(db); state.SetupSidesInBattle(client); state.ActiveSide = active;
+                var clientHq = state.Hq(client); var opponentHq = state.Hq(client.Opposite());
+                clientHq.Keywords.Clear(); opponentHq.Keywords.Clear();
+                clientHq.Defense = mode is 1 or 3 ? 1 : 8;
+                opponentHq.Defense = mode is 2 or 3 ? 1 : 8;
+                if (mode == 4) clientHq.Location = CardLocation.Discard;
+                if (mode == 5) opponentHq.Location = CardLocation.Discard;
+                var unit = state.CreateWithId(name, client, 60, client.HqOf(), 10);
+                unit.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                unit.Keywords.Clear(); unit.Keywords.Add(Keyword.Destruction); unit.Defense = 1;
+                var survivor = state.CreateWithId(name, client, 70, client.HqOf(), 20);
+                survivor.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                survivor.Keywords.Clear(); survivor.Keywords.Add(Keyword.Mobilize); survivor.IsBeingGuarded = true; survivor.Defense = 9;
+                var source = state.CreateWithId("card_event_honorifics", client.Opposite(), 90, CardLocation.Discard, 0);
+                source.Definition = new CardDefinition { Name = source.Name, Type = "order" }; source.Keywords.Clear();
+                var targets = new List<CardInstance>();
+                if (mode < 4) { targets.Add(state.Hq(Side.Left)); targets.Add(state.Hq(Side.Right)); }
+                targets.Add(unit); targets.Add(survivor); if (reverse) targets.Reverse();
+                if (finishedBefore) state.Finish(client, "preexisting");
+                var ids = (IReadOnlyList<int>)dispatch.Invoke(engine.Api, [targets, 1, source])!;
+                bool victory = mode != 0;
+                Side winner = finishedBefore ? client : !victory ? Side.NotAvailable
+                    : mode is 1 or 3 or 4 ? client.Opposite() : client;
+                string reason = finishedBefore ? "preexisting" : victory ? "Victory_DestroyHQ" : "";
+                int[] expectedIds = victory ? Array.Empty<int>() : new[] { 60 };
+                CardLocation clientPlace = mode is 1 or 3 or 4 ? CardLocation.Discard : client.HqOf();
+                CardLocation opponentPlace = mode is 2 or 3 or 5 ? CardLocation.Discard : client.Opposite().HqOf();
+                if (!ids.SequenceEqual(expectedIds) || !state.DestroyedCardIdsAll.SequenceEqual(expectedIds)
+                    || state.IsFinished != (finishedBefore || victory) || state.Winner != winner || state.WinnerReason != reason
+                    || clientHq.Location != clientPlace || opponentHq.Location != opponentPlace || unit.Location != CardLocation.Discard
+                    || unit.BlueprintVariables.ContainsKey("_auditHqAfter") != !victory
+                    || unit.BlueprintVariables.ContainsKey("_auditHqDeath") != !victory
+                    || survivor.LocationNumber != (victory ? 20 : 1) || survivor.IsBeingGuarded != victory
+                    || survivor.Keywords.Contains(Keyword.Mobilize) != victory || survivor.Defense != 8
+                    || clientHq.Defense != (mode is 1 or 3 ? 0 : mode < 4 ? 7 : 8)
+                    || opponentHq.Defense != (mode is 2 or 3 ? 0 : mode < 4 ? 7 : 8)
+                    || state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionDamageMultipleCards") != 1)
+                    failures.Add($"{client}/{active}/{reverse}/{finishedBefore}/{mode}: winner={state.Winner}/{state.WinnerReason}, hq={clientHq.Location}/{opponentHq.Location}, ids={string.Join(',', ids)}, history={string.Join(',', state.DestroyedCardIdsAll)}, after={unit.BlueprintVariables.ContainsKey("_auditHqAfter")}, death={unit.BlueprintVariables.ContainsKey("_auditHqDeath")}, survivor={survivor.LocationNumber}/{survivor.IsBeingGuarded}/{survivor.Keywords.Contains(Keyword.Mobilize)}");
+            }
+            return failures.Count == 0 ? null : $"{failures.Count}/96 场景失败：" + string.Join(" | ", failures.Take(8));
+        }
+        finally
+        {
+            foreach (string hook in hooks)
+            {
+                locals.Remove(hook);
+                if (cache.TryGetValue(name, out var perCard))
+                {
+                    perCard.Remove(hook);
+                    if (saved[hook] is { } old) perCard[hook] = old;
+                }
+            }
+            if (oldCache is null && cache.TryGetValue(name, out var added) && added.Count == 0) cache.Remove(name);
+        }
     }
 
     // Test common batch phases with controlled callbacks, without real card semantics.

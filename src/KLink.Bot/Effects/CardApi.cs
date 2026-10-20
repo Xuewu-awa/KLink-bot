@@ -2081,10 +2081,26 @@ public sealed partial class CardApi
             // i=6627/6680 -> i=10092/10151: a callback already discarded it.
             // Remove it from the later movement/after-leave/death/output phases.
             if (hit.Card.Location == CardLocation.Discard) { destroyed.Remove(id); continue; }
-            if (hit.Card.IsHq) { State.Finish(hit.Card.Owner.Opposite(), "Victory_DestroyHQ"); continue; }
             // Native SetCardLocationAndLocNumber skips the number write for Discard.
             State.Move(hit.Card, CardLocation.Discard, hit.Card.LocationNumber,
                 notifyMoved: false, normalizeLocation: false);
+        }
+        // i=6789..7013: inspect the saved client-side HQ before the opponent,
+        // after every destruction entry has been moved. Both absent means the
+        // opponent wins, independent of target order or whose turn it is.
+        var clientHq = State.ClientSide is Side.Left or Side.Right
+            ? GetLocationCardBySide(State.ClientSide) : null;
+        if (clientHq is null || !IsLocatedOnBoard(clientHq))
+        {
+            State.Finish(State.OpponentSide, "Victory_DestroyHQ");
+            return Array.Empty<int>(); // i=10285/10317 skips all remaining phases.
+        }
+        var opponentHq = State.OpponentSide is Side.Left or Side.Right
+            ? GetLocationCardBySide(State.OpponentSide) : null;
+        if (opponentHq is null || !IsLocatedOnBoard(opponentHq))
+        {
+            State.Finish(State.ClientSide, "Victory_DestroyHQ");
+            return Array.Empty<int>();
         }
         // ApplyDamageToMultipleCards i=4422 records old locations;
         // i=7136 refreshes them after all moves, before i=7538 callbacks.

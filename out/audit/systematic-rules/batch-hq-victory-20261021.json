@@ -1,0 +1,191 @@
+{
+  "rule": "RULE-269",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\batch-hq-victory-native-20261021.json",
+      "sha256": "5e34fc8c07f95a2216b127574471a80973f50abf9e76272cd7c0103e26c71566"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\batch-hq-sides-native-20261021.json",
+      "sha256": "a4bb8cf27ac748c96c6ffb27b1bceb35d99053f0ab8ed9dd3167dd3c4432f927"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\batch-hq-side-getters-native-20261021.json",
+      "sha256": "558389be1043a4f62802d37b720b2ab5e2c99846d8ffde2bbea947f3db10753f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\board-location-native-20261021.json",
+      "sha256": "7ac1ae3d33ea360f02c97866be16f5375782301cc7eed977c7a59807f3d42ce7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule269\\matrix.json",
+      "sha256": "865021f25722ce3ac9ff0935c69837e310468ce1003097fec0ca5a0ae66a6add"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-batch-hq-victory-20261021.py",
+      "sha256": "954da4e987d981d084f655541ac44a460f5b3180f5f9cbf3ee9e026a18fcd22c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-batch-hq-sides-20261021.py",
+      "sha256": "3836a1a398b28c0ab44c20cc087d8247ec728f005332e9ded84097463a7f6e8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-batch-hq-side-getters-20261021.py",
+      "sha256": "6be77b081574dd5b7e5e1cd68965fd7fd07952680dc53d16edbcc8fb0db5f17b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule269-batch-hq-test-20261021.py",
+      "sha256": "ed39451ba121ad8b590dff8595d23fd4689d7a0b585b198525bf91a06190f686"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule269-batch-hq-victory-20261021.py",
+      "sha256": "7102ec68fda3c363658938124d36821f660a3059854e944faab24b48e6946eb3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule269-batch-hq-victory-20261021.py",
+      "sha256": "56594c1994b9dd856de6bd7e66517b2c64455392e1546c1ad89cb2d0298c5ac0"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "e4b3faf8c397894b4d4a69bdd4d15cfc475609c7738d74c28b0f621c94336146"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "d5de87cd76a06628b7ac912760e8e4c77ad1f16d9b1b8af6621ecbff5d1d9ea0"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "name": "GetLocationCardBySide",
+      "script_bytes": 195,
+      "script_sha256": "c4b0d2afc45dd0b48667e9f1032f215a52ffe5ae6c6f4964f7b81786f64a0dfe",
+      "statements": 12
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "HQ_DestroyedEndMatch",
+      "script_bytes": 335,
+      "script_sha256": "746f720ea4a853d0fc665f1fb95a98a73668360a1f8a69ce22ec69b5c8b21958",
+      "statements": 13
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ApplyDamageToMultipleCards",
+      "script_bytes": 10676,
+      "script_sha256": "17f10e7684126f3f779ab5913e44a27d211ef6c48d7817cac1172714d6d61e38",
+      "statements": 347
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetLocationCardBySide",
+      "script_bytes": 112,
+      "script_sha256": "c0ae9da96801a187f5e6faabaf955b163a9a4df4dd64667c2655dd7d4502e32a",
+      "statements": 5
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetOpponentSide",
+      "script_bytes": 71,
+      "script_sha256": "c1e334a4710f9866705de053b3cb927865d2ee320b61e9ea3d73d33ade53874a",
+      "statements": 4
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetClientSide",
+      "script_bytes": 71,
+      "script_sha256": "344ee03cdefc78fc6f9f5d0f09a9e0c176cf552c1f7ba6d732da633925116def",
+      "statements": 4
+    }
+  ],
+  "complete_blueprint_bytes": 11460,
+  "native_side_getters": {
+    "wrapper_bytes": 294,
+    "leaf_bytes": 20,
+    "stored_fields": [
+      908,
+      909
+    ],
+    "boundary": "Wrapper .pdata and first-ret straight-line leaves; disk/live match"
+  },
+  "fix": [
+    "Move every destruction entry including HQ before victory checks; do not finish while enumerating the map.",
+    "Resolve saved HQ references and check location-only predicate in client-then-opponent order, independent of active side, source controller and target order.",
+    "On either absent-HQ branch, finish using its chosen winning side, return empty IDs and skip board refresh, after-leave/death/history, Mobilize removal and final frontline updates.",
+    "Existing match-finished state preserves its winner/reason via existing Finish idempotence, while branch still returns early."
+  ],
+  "tests": {
+    "total": 602,
+    "synthetic_cases": 96,
+    "before_failed_tests": 1,
+    "before_failed_cases": 80,
+    "after_failed_tests": 0,
+    "after_failed_cases": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule269-before-20261021.txt",
+        "sha256": "bec7e41af2600f9567ee2fb38b33996432760586da8a40188364c2cc22d11a3d"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule269-after-20261021.txt",
+        "sha256": "6e6f546564ea271730f2c35409810537a1279f55df568cabdf47a739dc6d5e6c"
+      }
+    ],
+    "dimensions": [
+      "client Left/Right",
+      "active Left/Right",
+      "target forward/reverse order",
+      "initially finished false/true",
+      "six modes: no HQ destroyed/client/opponent/both destroyed/client or opponent already offboard and untargeted"
+    ],
+    "coverage": [
+      "both HQ defenses/locations and all batch damage still applied before finish",
+      "simultaneous HQ losses use client-first check",
+      "target order and active side do not select winner",
+      "preexisting winner/reason preserved",
+      "early branches return empty IDs with no unit destruction history or synthetic after-leave/death callback",
+      "skip renumber/guard-cache refresh and Mobilize removal on victory",
+      "normal no-HQ-loss path still runs all unit phases"
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-013338-rule269-hq-matrix-6ea00b9f",
+    "elapsed_seconds": 20.06,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule269\\task.txt",
+      "sha256": "63da053fb79792586dd575ce2b1f0f153dbeb858da7a7c22fc1b2b5958970cb5"
+    },
+    "mechanical_rows": 96,
+    "independently_recomputed_exact_match": true,
+    "scope": "Primary-supplied formulas from the captured control flow; mechanical matrix is not independent game authority."
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "This certifies the selected client Blueprint path, not all server/network simultaneous-loss adjudication.",
+    "UI/network notifier internals, replay/receive-action consequences and every action-routing variant are not newly restored here.",
+    "Tests assume the valid two-sided setup and present stable HQ references; missing refs, inconsistent native ClientSide/OpponentSide fields, GC/object replacement and invalid enums are not fully certified.",
+    "Global GetLocationCardBySide invalid-side behavior and other generic side-query dispatch contexts are unchanged and not certified by this local repair.",
+    "Native map/set iteration order and all callbacks that move/replace HQ references remain unverified.",
+    "Empty-script native stub rows are excluded from Blueprint body counts; the actual two GameState native getters are captured separately.",
+    "Raw evidence remains local. No historical replay authority, client write, injection or client function invocation."
+  ]
+}
