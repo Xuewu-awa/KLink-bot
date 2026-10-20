@@ -4707,8 +4707,8 @@ public sealed partial class CardApi
     ///
     /// The second apply's isFightDefenderDamage flag is only used by the client
     /// notifier; the headless ZActionDamageCard does not model that display flag.
-    /// This audit retains the existing IsLocatedOnBoard and UObject validity
-    /// models; it does not certify HQ operands, GC or the entire native predicate.
+    /// RULE-268 verifies the shared board predicate for all one-byte locations,
+    /// including HQ. Legal HQ operands and UObject validity/GC remain uncertified.
     /// Evidence: current 712-byte MakeCardsFight and 2312-byte ApplyDamageToCard
     /// scripts, independently decoded and matched against the current pak assets.
     /// </summary>
@@ -6767,7 +6767,7 @@ public sealed partial class CardApi
     /// <item>`IsValid(Targeted)` 假 → 早退（`can` 保持 false）</item>
     /// <item>`IsLocatedOnBoard(Targeted)` 假 → 早退。
     ///   ⚠️ 这里必须是**蓝图语义**（`Loc is Board or Frontline`，**含 HQ**），
-    ///   不是内核 `CardApi.IsLocatedOnBoard`（那个排除 HQ，见 `MakeCardsFight` 的注释）。
+    ///   RULE-268 已将公共 CardApi.IsLocatedOnBoard 统一为该原生位置谓词。
     ///   用错会把「指定 HQ」全部拒掉（`card_event_the_commonwealth` 这类牌直接废掉）。</item>
     /// <item>未揭示隐蔽卡 + 从手牌打出 + 施法方没有 `canTargetCovert`
     ///   → 拒，`cant_target_unrevealed`。（按 `IsUnrevealedCovertCard` 的当前状态判定）</item>

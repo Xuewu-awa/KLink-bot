@@ -1,0 +1,121 @@
+{
+  "rule": "RULE-268",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\board-location-native-20261021.json",
+      "sha256": "7ac1ae3d33ea360f02c97866be16f5375782301cc7eed977c7a59807f3d42ce7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule268\\uses.json",
+      "sha256": "055db0c9aa8b8c003e69a88376d2f5efacb1a6232ca8e0cbf6aec58343309f28"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-board-location-native-20261021.py",
+      "sha256": "f9907609e422c0dd1381b532107a70f72135a9e2b7b0932e169100649c3bd4d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule268-board-location-test-20261021.py",
+      "sha256": "bf8379983668d7eaa04bd2e89bb343d4db3a4c2a2df512ecc95fdf5ae75032b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule268-board-location-20261021.py",
+      "sha256": "1676c61a20bfc65fdb12138cf1e9654f5d8a470575f63b0530a51bda71989df9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule268-board-location-20261021.py",
+      "sha256": "648b63c2a60c6eebb751a62441042628164a8b76f09378b092c502bc526a2646"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "e4e46393ded0bb10fbfa4b7839c1d00e54e819321fbd6293e13b4be2877d1c9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "82b6ba1350af13acd343d75ec9b40c64e23e8183c4262922e85d13d518829916"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "bce19ea9223576f642362ab30ad4d8110d0750928821eb57d6c52873d83673a4"
+    }
+  ],
+  "native": {
+    "wrapper_rva": "0x4a82770",
+    "wrapper_pdata_bytes": 147,
+    "target_rva": "0x4afb250",
+    "target_terminal_ret_bytes": 17,
+    "target_sha256": "c1612a2641d2d5950400c311086cfb0ec6a73bc0dc56a7af37d3238352928c91",
+    "location_property_offset": 629,
+    "location_property_size": 1,
+    "semantics": "movzx eax,[rcx+0x275]; sub al,5; cmp al,2; setbe al; [rdx]=al; ret. Unsigned byte membership in 5..7; no type/HQ/suppression/defense gate.",
+    "offline_emulation_vectors": 512
+  },
+  "fix": "Remove extra !IsHq filter from shared CardApi.IsLocatedOnBoard. Dispatcher inherits exact location-only predicate; no card-specific exceptions. Correct affected explanatory comments only.",
+  "tests": {
+    "total": 601,
+    "synthetic_cases": 2048,
+    "comparisons_per_case": 4,
+    "sides": 2,
+    "object_kinds": [
+      "HQ",
+      "unit"
+    ],
+    "location_bytes": 256,
+    "statuses": [
+      "unsuppressed with defense20",
+      "suppressed with defense-3"
+    ],
+    "entrypoints": [
+      "direct helper",
+      "explicit receiver",
+      "card argument",
+      "implicit self"
+    ],
+    "before_failed_tests": 1,
+    "before_failed_cases": 12,
+    "after_failed_tests": 0,
+    "after_failed_cases": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule268-before-20261021.txt",
+        "sha256": "22a9bbd5b35c6a8b89cfbb8379a6673343c51b43fb22679b36a48df67df13f6b"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule268-after-20261021.txt",
+        "sha256": "7cbbee570c4391977fbc6ffbdafb8e46ccb0f1ae7227d657d5ebce9aecc95cb2"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-011916-rule268-predicate-uses-afa01a81",
+    "elapsed_seconds": 38.1,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule268\\task.txt",
+      "sha256": "7878d6386b48205fa4a1ebafb83f0d8104497847010a10f480cd8ebec44327dd"
+    },
+    "files": 4,
+    "literal_matching_lines": 46,
+    "includes_comments_and_declarations": true,
+    "independent_exact_inventory_match": true,
+    "scope": "C# token inventory only, not a card-effect or native-call-graph census."
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "HQ destruction/victory early-return flow in DealDamageMultiple is still pending; this repair certifies the shared location predicate only.",
+    "Native truth table assumes valid object/output pointers; UObject validity/GC, aliasing or corrupt pointers are not modeled.",
+    "Location values outside one-byte range, every gameplay caller and all possible card effects are not certified by the finite behavioral regression.",
+    "Many synthetic HQ/position/status combinations need not be reachable in legal matches; tests isolate the native predicate contract.",
+    "17-byte leaf boundary is from first terminal ret with full straight-line decode, not an asserted .pdata entry. The 147-byte wrapper has exact .pdata boundaries.",
+    "Offline Unicorn executes captured bytes only against synthetic memory; no game function is invoked. No historical replay authority, client writes or injection."
+  ]
+}

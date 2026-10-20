@@ -4949,7 +4949,8 @@ public sealed partial class CardApi
     //  查询层（只读，实现成本低但被调用最频繁）
     // ==================================================================
 
-    public bool IsLocatedOnBoard(CardInstance c) => c.Location.IsBoard() && !c.IsHq;
+    /// <summary>Native BaseCardObject predicate: Location byte is 5, 6 or 7, including HQ.</summary>
+    public bool IsLocatedOnBoard(CardInstance c) => c.Location.IsBoard();
     public bool IsLocatedInHand(CardInstance c) => c.Location is CardLocation.HandLeft or CardLocation.HandRight;
     public bool IsLocatedInDeck(CardInstance c) => c.Location is CardLocation.DeckLeft or CardLocation.DeckRight;
     public bool IsUnit(CardInstance c) => c.Definition.IsUnit;
@@ -5081,7 +5082,7 @@ public sealed partial class CardApi
     /// `Get_X_AndMoreAttackCardsOnBoard(side, out cardsIDs, attack, includeCovert)`。
     ///
     /// 蓝图遍历 `GetAllCardInBattle()`，但 side 过滤后只需要保留该方在场卡的
-    /// 入场顺序。输出是卡 ID，不是卡实例；HQ 会被 `IsLocatedOnBoard` 排除。
+    /// 入场顺序。输出是卡 ID，不是卡实例；这里由独立的 IsUnit 条件排除 HQ。
     /// </summary>
     public List<int> GetXAndMoreAttackCardsOnBoard(Side side, int attack, bool includeCovert)
         => State.BattleCardsInOrder(side)

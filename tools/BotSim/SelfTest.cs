@@ -23,6 +23,7 @@ internal static class SelfTest
         new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
         new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
+        new("原生在场谓词：全部字节位置、HQ/单位、抑制及非正防御与派发绑定", NativeBoardLocationPredicate),
         new("GetAllCards 与同位置编号重排保持 AllCardsInBattle 入表顺序", BattleMapAndLocationOrder),
         new("额外指挥点槽事件按全局入表顺序派发，直接抑制门不接受例外", ExtraKreditSlotDispatch),
         new("创建 T35 包含新卡自身，144 步兵团继承创建前已损失槽位", CreatedCardReceivesOwnT35),
@@ -1136,6 +1137,42 @@ internal static class SelfTest
     private static string? SmokeDeterminism(CardDatabase db) => SmokeAllCards.SelfTestDeterminism(db);
 
     private static string? SmokeNoCrash(CardDatabase db) => SmokeAllCards.SelfTestNoCrash(db);
+
+    // The native leaf reads only its one-byte Location field, including for HQ.
+    private static string? NativeBoardLocationPredicate(CardDatabase db)
+    {
+        int failed = 0; var details = new List<string>();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hq = state.Hq(side);
+            var unit = state.CreateWithId(PlainUnit, side, 90, side.HqOf(), 1);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 91, CardLocation.Discard, 0);
+            foreach (var card in new[] { hq, unit })
+            foreach (int value in Enumerable.Range(0, 256))
+            foreach (bool suppressed in new[] { false, true })
+            {
+                card.Location = (CardLocation)value;
+                card.Defense = suppressed ? -3 : 20;
+                card.Keywords.Clear(); if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                bool expected = value is 5 or 6 or 7;
+                var otherContext = new EffectContext { Engine = engine, State = state, Self = decoy,
+                    Target = decoy, Controller = side };
+                var selfContext = new EffectContext { Engine = engine, State = state, Self = card,
+                    Target = decoy, Controller = side };
+                var explicitResult = engine.Api.InvokeByName("IsLocatedOnBoard", card, Array.Empty<object?>(), otherContext, out bool explicitHandled);
+                var argumentResult = engine.Api.InvokeByName("IsLocatedOnBoard", null, new object?[] { card }, otherContext, out bool argumentHandled);
+                var selfResult = engine.Api.InvokeByName("IsLocatedOnBoard", null, Array.Empty<object?>(), selfContext, out bool selfHandled);
+                if (engine.Api.IsLocatedOnBoard(card) != expected || !explicitHandled || !argumentHandled || !selfHandled
+                    || !Equals(explicitResult, expected) || !Equals(argumentResult, expected) || !Equals(selfResult, expected))
+                {
+                    failed++;
+                    if (details.Count < 8) details.Add($"{side}/HQ={card.IsHq}/loc={value}/suppressed={suppressed}: direct={engine.Api.IsLocatedOnBoard(card)},recv={explicitResult},arg={argumentResult},self={selfResult},want={expected}");
+                }
+            }
+        }
+        return failed == 0 ? null : $"{failed}/2048 场景失败：" + string.Join(" | ", details);
+    }
 
     /// <summary>建一个只有 HQ 的空局面，双方各 20 点。</summary>
     private static (MatchEngine Engine, GameState State) EmptyBoard(CardDatabase db)    {
@@ -32199,8 +32236,8 @@ internal static class SelfTest
     ///
     /// ⚠️ 这条同时守规则库门的一处**极易写错**的地方：
     /// `CanSelectAsTarget` 的第 2 步是 `IsLocatedOnBoard(Targeted)`，而**蓝图语义含 HQ**
-    /// （`Loc is Board or Frontline`）。内核里另有一个 `CardApi.IsLocatedOnBoard`
-    /// **排除 HQ**（见 `MakeCardsFight` 的注释）—— 用它就会把"指定 HQ"全部拒掉。
+    /// （`Loc is Board or Frontline`）。RULE-268 已修正公共 CardApi.IsLocatedOnBoard
+    /// 曾额外排除 HQ 的差异；此例仍验证指定 HQ 的完整选择路径。
     /// </summary>
     private static string? TargetGateHqOnly(CardDatabase db)
     {
