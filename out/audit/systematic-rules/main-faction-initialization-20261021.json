@@ -1,0 +1,223 @@
+{
+  "rule": "RULE-277",
+  "kind": "Evidence acquisition and verified initialization data flow; no kernel repair this round",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\faction-init-blueprint-native-20261021.json",
+      "sha256": "aa9e93f1e40903e54442185865299bc8b2c201dee6de9f61b1343587b43a5a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\utility-faction-raw-20261021.json",
+      "sha256": "60258c34460e817665f42d321e47cfabb1210cf278f80158dfa5f308484087dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parsed.json",
+      "sha256": "01a2e0009f20fda5e05e73e050ce7b744af44cbe55fda0e6a58eca42cfb8af1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-parsed.json",
+      "sha256": "c0822b45e5df6ad58beffe9fae968c3685c440af15137524afd7e8e5d4755c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\manifest.json",
+      "sha256": "53b83ad5867d6b1c0d25e276c3c612822c5155687282bb231c5635ad6cd3ba9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-manifest.json",
+      "sha256": "98847664934b2680421af1ea4e7c8df33fcf4a0d34a44848d059110f4dea97e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "complete_function_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "SetMainFactionBySide",
+      "script_bytes": 157,
+      "statements": 10,
+      "script_sha256": "622ed096d9269abcd8da1f45345f42b9feeae5b00169efbcff6b69b819394ae0"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetMainFactionBySide",
+      "script_bytes": 227,
+      "statements": 14,
+      "script_sha256": "f1d9695b03ce79fd13edfdfc033f7754765f5357875d7603cc0b3b481a0b56be"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ClearGameStateVariables",
+      "script_bytes": 1363,
+      "statements": 78,
+      "script_sha256": "728fee7494450ff1927a3405781910e9c1f2463b3ff0c830b9506acab073dc8d"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetMainNationForSide",
+      "script_bytes": 84,
+      "statements": 4,
+      "script_sha256": "9a5f420d13aa649721435d0b264e4cfd79293089d60a31d7ea7d35133efb8a7a"
+    },
+    {
+      "owner": "UtilityFunctions",
+      "function": "FactionStringToEnum",
+      "script_bytes": 1015,
+      "statements": 54,
+      "script_sha256": "071ff8aff56ab73bef02ec1958a23f52639fcfd365b98f90e7164ca408a053e8"
+    }
+  ],
+  "partial_ubergraph_ast_matches": [
+    {
+      "start": 23297,
+      "end": 23634,
+      "bytes": 337,
+      "statements": 4
+    },
+    {
+      "start": 24080,
+      "end": 24417,
+      "bytes": 337,
+      "statements": 4
+    }
+  ],
+  "coverage": {
+    "complete_functions": 5,
+    "complete_bytes": 2846,
+    "complete_statements": 160,
+    "partial_initializer_bytes": 674,
+    "partial_initializer_statements": 8,
+    "whole_online_ubergraph_bytes": 29897,
+    "whole_online_ubergraph_runtime_decoded": false,
+    "online_raw_functions": 412,
+    "utility_raw_functions": 149
+  },
+  "findings": [
+    "Online initialization creates each HQ from startingMatchData.location_card_left/right, converts that starting-data record faction name via FactionStringToEnum, then writes SetMainFactionBySide(side,converted byte).",
+    "GameState getter reads saved LeftMainFaction/RightMainFaction, setter only writes side1/2, ClearGameStateVariables resets both to0.",
+    "Current CDO fields are bytes at0x66b/0x66c, both0; CDO observations are defaults, not live match values.",
+    "Current managed getter derives faction from current HQ.Definition; importer currently ignores SnapshotCard.Faction. The native source is starting data, so an independent saved-field model and explicit import/setup are needed."
+  ],
+  "faction_string_mapping": {
+    "Germany": 1,
+    "Britain": 2,
+    "Japan": 3,
+    "Soviet": 4,
+    "USA": 5,
+    "France": 6,
+    "Italy": 7,
+    "Poland": 8,
+    "Finland": 9,
+    "Anzac": 10,
+    "Neutral": 12
+  },
+  "string_conversion_limits": "Empty string jumps to return without assigning its output; unknown nonempty string routes through ReportError when skipErrorCheck=false before assignment0. Native IsEmpty/NotEqual_StriStri/FName conversion and error side effects are not fully recertified.",
+  "deepseek": {
+    "job_id": "20261021-024732-rule277-online-faction-init-0618b59a",
+    "elapsed_seconds": 80.47,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\task.txt",
+      "sha256": "f7c70b41a27cea40357c971822f22ed1d8df72ab6f7457792d08e62dfc743248"
+    },
+    "parser_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parser.log",
+      "sha256": "2eae75ad568fec51f993772f0a0a085dccc4fba39e064081064e510afc3d2d91"
+    },
+    "worker_inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\calls.json",
+      "sha256": "96294bb03275591387b9e2f0594b7b525f2db964962fd2f1bd81a9a0f34204d9"
+    },
+    "verified_inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\calls.verified.json",
+      "sha256": "e2af974b05b9fa1abe2814bebd1466b6a93dd62cbafc97d58bc2d62374dcd7ab"
+    },
+    "scanned_functions": 412,
+    "matching_functions": 1,
+    "calls": 2,
+    "worker_reported_function_count": 1,
+    "count_discrepancy": "Worker function_count reflected matching functions; independently scanned all412, preserved original and wrote corrected count to a separate verified file.",
+    "matched_nodes_independently_exact": true
+  },
+  "managed_sources": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "a7ad8fcaeb7080e2e7f791b17527b63c15e7b11176c618e7361d14fbc803a963"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "830fdcfe3d7e71f04c2a0241fa995090aa2e957a80d3b2f4a92a3245a1f227fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "64e5fdeac338ca6759b5cb0566ce87340ba8c4884d40587d5f3e931b04dfd41e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayData.cs",
+      "sha256": "1fc868341c9e1ec0aed9870dd54ac9e6776a4891b4ac9df5ebf24663206532dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerMatchSnapshot.cs",
+      "sha256": "5cb91fb495add820c3db01b1257e790fc6e99488e4a1322e310a9256e29c0cf8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerReplayBridge.cs",
+      "sha256": "919483a3b97e07f299ba11c02e6621c5267dca1c1573f6d865a910162528f251"
+    }
+  ],
+  "implementation_plan": [
+    "Add independent saved main-faction bytes with explicit setter/reset/getter; preserve direct GameState out-alias contract separately from fresh CardFunctions wrapper.",
+    "Initialize from explicit starting-data faction metadata, not current mutable HQ definition. Audit synthetic self-play setup defaults separately.",
+    "Carry metadata through replay-named/live transport adapters; historical replay content is not authority. Missing metadata must be explicit and must not silently imply a native faction.",
+    "Include fields in decision-state snapshot/fingerprint and verify export/import and HQ-definition/ownership changes with synthetic tests before integration."
+  ],
+  "tests": {
+    "new_tests_run": false,
+    "kernel_changed": false,
+    "latest_full_release_total": 609,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule276-after-20261021.txt",
+      "sha256": "949627b92ae557b1e726db98f50c4c04e3b624607ff4211b34ae2b90730de1ff"
+    }
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-online-match-faction-raw-20261021.py",
+      "sha256": "3f6b135b9a07de74848efd3f7e22f090735138d750c2ff5d2cba0bf17415126a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-utility-faction-raw-20261021.py",
+      "sha256": "ce63b85611f12e1067de478fde9325052c52ecf000b8430db0575f076864f873"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-faction-init-blueprint-20261021.py",
+      "sha256": "8aab52462c29b3f5166a46cb9038d6d1a56d1a71b8dae3b24487f6b55df4de4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule277-faction-init-20261021.py",
+      "sha256": "8f63a9aaf7bc5c7f8df68416a3dfa890099a023e994b3621a8429d81dcd9a8aa"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Only two initializer spans were runtime decoded from OnlineMatch Ubergraph; not its full UI/network/error/event lifecycle or all caller entry paths.",
+    "Raw asset-name search matched GameState, OnlineMatch and Tutorial01; tutorial excluded by task scope. String presence is not exhaustive proof of every dynamic/native writer.",
+    "No live startingMatchData values, all reconnect/reinitialization histories or generic native comparison/error backends newly certified.",
+    "Stored-field integration, adapter metadata contract and snapshot changes are not implemented in this round.",
+    "No historical replay authority, process writes, injection or client function calls."
+  ]
+}
