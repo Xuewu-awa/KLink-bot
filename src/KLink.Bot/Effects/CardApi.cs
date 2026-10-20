@@ -5095,7 +5095,9 @@ public sealed partial class CardApi
     /// 回归用例：`tools/BotSim/SelfTest.cs` 的 <c>GetDeckBySideReturnsCardIds</c> /
     /// <c>PamsDevelopedCardCostZero</c>。
     /// </summary>
-    public List<int> GetDeckBySide(Side s) => State.Deck(s).Select(c => c.CardId).ToList();
+    // Fresh CardFunctions wrapper output is empty outside sides 1 and 2.
+    public List<int> GetDeckBySide(Side s) => s is Side.Left or Side.Right
+        ? State.Deck(s).Select(c => c.CardId).ToList() : new List<int>();
 
     /// <summary>
     /// `Get_X_AndMoreAttackCardsOnBoard(side, out cardsIDs, attack, includeCovert)`。

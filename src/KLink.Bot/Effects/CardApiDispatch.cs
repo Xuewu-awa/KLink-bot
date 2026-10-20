@@ -329,10 +329,22 @@ public sealed partial class CardApi
             // used by Precision Bombing's cost update.  Its implicit side is the
             // effect controller; it scans live board attack values, not templates.
             ["GetHighestBomberAttack"] = (c, r, a) => GetHighestBomberAttack(c.Controller),
-            ["GetCardsInHandBySide"] = (c, r, a) => GetCardsInHandBySide(SideArg(r, a, 0)).ToList(),
+            // Both queries take an explicit side byte. The hand query compares
+            // it with Owner even outside 1/2; the deck wrapper handles only 1/2.
+            ["GetCardsInHandBySide"] = (c, r, a) => GetCardsInHandBySide(a.ElementAtOrDefault(0) switch
+            {
+                Side side => side,
+                int side => (Side)side,
+                _ => Side.NotAvailable,
+            }).ToList(),
             // ⚠️ 出参是 `TArray<int> deckCardIDs`（卡 **ID**），不是卡实例 ——
             //    46 张调用它的卡的用法清单见 `CardApi.GetDeckBySide` 的注释。
-            ["GetDeckByside"] = (c, r, a) => GetDeckBySide(SideArg(r, a, 0)),
+            ["GetDeckByside"] = (c, r, a) => GetDeckBySide(a.ElementAtOrDefault(0) switch
+            {
+                Side side => side,
+                int side => (Side)side,
+                _ => Side.NotAvailable,
+            }),
 
             // 权威签名（`CardFunctionsStub.h:455/464`）：
             //   `GetAllUnitsOnBoard(bool includeCovertCards, TArray& Cards)`

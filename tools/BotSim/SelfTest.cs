@@ -306,6 +306,7 @@ internal static class SelfTest
         new("GetOppositeSide：接收者阵营及无效字节保留输出", OppositeSideReceiverBoundary),
         new("GetPlayingSide：保存的行动方独立于效果控制方和卡对象", PlayingSideStoredState),
         new("IsSideActive：非零活动方、显式字节参数及 VM 派发", SideActiveExplicitByteBoundary),
+        new("手牌/牌库查询：显式字节阵营、不同无效值契约及输出覆盖", HandDeckExplicitSideBoundary),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2308,6 +2309,69 @@ internal static class SelfTest
     }
 
     // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    /// <summary>Hand query compares raw owner bytes; the fresh deck wrapper handles only sides 1/2.</summary>
+    private static string? HandDeckExplicitSideBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var first = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.HandRight, 8);
+        var enemy = state.CreateWithId(PlainUnit, Side.Right, 70, CardLocation.HandLeft, 4);
+        var second = state.CreateWithId(PlainUnit, Side.Left, 10, CardLocation.HandLeft, 0);
+        state.CreateWithId("card_event_rain2_deluge", Side.Right, 20, CardLocation.HandLeft, 0);
+        state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.DeckLeft, 2);
+        state.CreateWithId(PlainUnit, Side.Left, 30, CardLocation.DeckLeft, 0);
+        state.CreateWithId(PlainUnit, Side.Right, 50, CardLocation.DeckRight, 1);
+        state.CreateWithId(PlainUnit, Side.Right, 40, CardLocation.DeckRight, 0);
+        var probe = state.CreateWithId(PlainUnit, Side.Left, 100, CardLocation.HandLeft, 3);
+        var dynamicWeather = state.CreateWithId(PlainUnit, Side.Left, 101, CardLocation.HandRight, 1);
+        dynamicWeather.CustomJson["__customGameplayTags"] = "subtype.rain";
+        var failures = new List<string>();
+        KismetStep Call(int index, string fn, KismetExpr side, CardInstance? receiver, string output) =>
+            new KismetStep(index, "call", fn, new[] { side, new KismetExpr { Var = output, Scope = "local" } },
+                new[] { 1 }, null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+        foreach (int value in Enumerable.Range(0, 256))
+        foreach (bool enumArgument in new[] { false, true })
+        foreach (CardInstance? receiver in new CardInstance?[] { null, first, enemy })
+        foreach (Side controller in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { CardLocation.HandLeft, CardLocation.HandRight })
+        {
+            probe.Owner = (Side)value; probe.Location = location;
+            state.ActiveSide = controller.Opposite();
+            var ctx = new EffectContext { Engine = engine, State = state,
+                Self = controller == Side.Left ? enemy : first, Controller = controller };
+            object side = enumArgument ? (object)(Side)value : value;
+            var expectedHand = value == 1 ? new[] { first, second, probe }
+                : value == 2 ? new[] { enemy, probe } : new[] { probe };
+            int[] expectedDeck = value == 1 ? new[] { 30, 60 } : value == 2 ? new[] { 40, 50 } : Array.Empty<int>();
+            var directHand = engine.Api.GetCardsInHandBySide((Side)value).ToArray();
+            List<int>? directDeck = null; string? error = null;
+            try { directDeck = engine.Api.GetDeckBySide((Side)value); }
+            catch (Exception ex) { error = ex.GetType().Name; }
+            var rawHand = engine.Api.InvokeByName("GetCardsInHandBySide", receiver,
+                new object?[] { side, new List<CardInstance> { enemy } }, ctx, out bool handHandled);
+            var rawDeck = engine.Api.InvokeByName("GetDeckByside", receiver,
+                new object?[] { side, new List<int> { 173 } }, ctx, out bool deckHandled);
+            var steps = new[] {
+                Call(0, "GetCardsInHandBySide", new KismetExpr { Int = 1 }, receiver, "__hand"),
+                Call(1, "GetDeckByside", new KismetExpr { Int = 1 }, receiver, "__deck"),
+                Call(2, "GetCardsInHandBySide", new KismetExpr { Var = "__side", Scope = "local" }, receiver, "__hand"),
+                Call(3, "GetDeckByside", new KismetExpr { Var = "__side", Scope = "local" }, receiver, "__deck"),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["__side"] = side, ["__receiver"] = receiver }, "__hand", "__deck");
+            bool ok = error is null && directHand.SequenceEqual(expectedHand)
+                && directDeck is not null && directDeck.SequenceEqual(expectedDeck)
+                && handHandled && rawHand is List<CardInstance> h && h.SequenceEqual(expectedHand)
+                && deckHandled && rawDeck is List<int> d && d.SequenceEqual(expectedDeck)
+                && output.GetValueOrDefault("__hand") is List<CardInstance> vh && vh.SequenceEqual(expectedHand)
+                && output.GetValueOrDefault("__deck") is List<int> vd && vd.SequenceEqual(expectedDeck)
+                && state.Random.ConsumedCount == 0;
+            if (!ok) failures.Add($"side={value}/enum={enumArgument}/recv={receiver?.Owner}/controller={controller}/loc={location}: error={error}, hand={(rawHand as List<CardInstance>)?.Count}, deck={(rawDeck as List<int>)?.Count}");
+        }
+        return failures.Count == 0 ? null : $"{failures.Count}/6144 场景失败：" + string.Join(" | ", failures.Take(8));
+    }
+
     /// <summary>Native predicate requires nonzero active side and compares the explicit byte.</summary>
     private static string? SideActiveExplicitByteBoundary(CardDatabase db)
     {

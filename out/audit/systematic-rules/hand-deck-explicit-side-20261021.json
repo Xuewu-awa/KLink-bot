@@ -1,0 +1,169 @@
+{
+  "rule": "RULE-274",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\hand-deck-side-blueprint-native-20261021.json",
+      "sha256": "c6e9301e4f4b781a45843b178b4b00af0482666020b4d72f5b14e22ba0e40697"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetDeckByside",
+      "script_bytes": 157,
+      "statements": 10,
+      "script_sha256": "60a5f65da8910f35c7b02420e5947c52d89c71a2f7b45aa97465e037f5bbfe93"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetCardsInHandBySide",
+      "script_bytes": 797,
+      "statements": 28,
+      "script_sha256": "864411b4cec13d42f0e2244880de98d3b4bd441bdb23964b2e13cb49a4c6612e"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetDeckByside",
+      "script_bytes": 84,
+      "statements": 4,
+      "script_sha256": "6a112f2bb83219c74c2af1606c412bce493787042422491041c6f6e13f58c853"
+    }
+  ],
+  "semantics": [
+    "Hand query compares explicit side byte to card.Owner, accepts either physical hand location, excludes forecast cards, preserves global battle registration order. No side 1/2 guard is present.",
+    "GameState deck query assigns stored ID arrays only for side1/2; invalid byte leaves its out parameter untouched. CardFunctions fresh wrapper copies a local array output, empty for invalid side under ordinary fresh-local initialization."
+  ],
+  "fix": [
+    "Both dispatchers read only explicit argument0 int/Side, preserving all byte values without receiver fallback.",
+    "Public deck helper implements fresh CardFunctions-wrapper empty output for sides outside1/2; hand public helper and global SideArg unchanged."
+  ],
+  "tests": {
+    "total": 607,
+    "cases": 6144,
+    "dimensions": [
+      "all 256 explicit side bytes",
+      "int/Side argument",
+      "receiver null/Left/Right",
+      "controller Left/Right with opposite self/active context",
+      "probe in HandLeft/HandRight"
+    ],
+    "entrypoints": [
+      "public hand and deck APIs",
+      "raw dispatcher with prior card/ID list outputs",
+      "VM valid-side queries then requested-side queries reusing output slots"
+    ],
+    "controls": [
+      "Synthetic probe Owner equals input byte even outside1/2, so hand query must retain it while deck query remains empty. Not asserted reachable legal-match state.",
+      "Hand registration order differs from ID/location order; physical hand location can differ from Owner. Real and dynamic weather cards excluded.",
+      "Deck outputs are int IDs in existing valid-side order; no random stream consumption."
+    ],
+    "before_failed_tests": 1,
+    "before_failed_cases": 6088,
+    "after_failed_tests": 0,
+    "existing_tests_unchanged": true,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule274-before-20261021.txt",
+        "sha256": "9939d15e832b4ee01193f662a392aa7638d44523fcf113640a12ab8a3b336c39"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule274-after-20261021.txt",
+        "sha256": "6e7f340f8dd78735c121b908bbc43797043a22ea6b88b399d49d16f66b61f254"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-022003-rule274-hand-deck-uses-fe764c50",
+    "elapsed_seconds": 68.69,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule274\\task.txt",
+      "sha256": "7a861ac44f5c185e4ca31b6946a4127623758f9fed0fe5b7313ecc9c9485078e"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule274\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule274\\uses.json",
+      "sha256": "56178a275685699ab3bee96d9d21577c0d2842035e52eac7a4663b0e90c4470a"
+    },
+    "implementation_cards": 1709,
+    "counts": {
+      "GetCardsInHandBySide": {
+        "calls": 96,
+        "cards": 78
+      },
+      "GetDeckByside": {
+        "calls": 144,
+        "cards": 48
+      }
+    },
+    "all_signatures": "2 args, output index1, explicit side at0",
+    "independent_exact_reenumeration": true,
+    "scope": "Exact literal spellings in current simulator IR only; not current-client all-card logic or semantic completion."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-hand-deck-side-blueprint-20261021.py",
+      "sha256": "4f129d7ec4beb8e1700c9afa285d4ed64aed9c5eac7815b7a8ce39928e253fb6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-272.py",
+      "sha256": "32d3d7a72d492e5edc770d8da56378cb6bd21d33821d4040356bd63d4e5f95ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-267.py",
+      "sha256": "44ba9257488afa5d6571b7730b6f5ce474b2bc28079d80a99568a3b21a642819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule274-hand-deck-tests-20261021.py",
+      "sha256": "be266f1471a4aa60add0a5bb74bfecc88a5cc5a58b9dd3ba193b6aa3dc0f6928"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule274-hand-deck-20261021.py",
+      "sha256": "e7f49256d71ffb4a110132f14bff4bc4327edbce8bbefb436392db0083963699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule274-hand-deck-20261021.py",
+      "sha256": "117398f6b456a193621ae73472a86ba9c582fcc4c71410d7945d8ae6ed7e3c3d"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "e2db17773eb5cd66f8fd2138a1d31c405442e4cc7a223a582ed5f2235e1f2f81"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "f3c0c8a1fbf16b30d2b72448fee2d508d778e7763e8b344806ec9556b002b7fc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "269eb6487a53d6f43a102a13d32f2932ef8969ac72066c55f449c85550cbd26b"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Empty invalid-side deck output is the fresh CardFunctions wrapper contract, not direct GameState out-alias/reuse behavior. Persistent frames and all current native local-initialization variants are not newly certified.",
+    "Managed valid-side deck view still derives from State.Deck with existing scoped pending-removal handling; all independent native ID-array inconsistencies, duplicates, stale IDs and concurrent lifecycle are not restored by this guard.",
+    "Native forecast/hand predicate dependency chains and global collection/provider behavior are not fully recertified by this parameter repair.",
+    "Synthetic invalid Owner values test byte comparison, not legal PvP state reachability. Out-of-byte enum coercions/malformed arguments not certified.",
+    "Other SideArg users, all card effects and ordinary real-match impact counts remain unresolved.",
+    "No historical replay authority, process writes, injection or client function invocation."
+  ]
+}
