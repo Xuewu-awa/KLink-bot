@@ -1,0 +1,56 @@
+{
+  "rule": "RULE-256",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-work-native-20261020.json",
+  "source_sha256": "5099dd4845b3a1761df4ce1a0aeca54cb30e7ffbf53d170613c9779174cd55eb",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 4000,
+  "work_array_cases": 528,
+  "removed_action_slots": 288,
+  "work_controller_slot0_requests": 352,
+  "consumer_requests": 258,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AllocateObjectSerial",
+    "ConstructWeakReference",
+    "ProcessManagerActions",
+    "ReleaseSparseSlots",
+    "ReleaseWorkArrayReferences",
+    "RemoveOuterEntry",
+    "RemoveUUIDAction",
+    "ResolveWeakReference"
+  ],
+  "contracts": [
+    "Global notification listener array set empty; no listener execution",
+    "Action slots0/0x18 and controller slots0/8 record requests only",
+    "Consumer records remaining action count and delta only",
+    "Work array capacity positive; negative-capacity reallocation branch not exercised"
+  ],
+  "limits": [
+    "Multiple work entries/shared control blocks not tested",
+    "Producer of work array and callback reentry not yet certified",
+    "Actual queued-action notification/destruction and controller release implementations remain opaque",
+    "No complete world tick/time source or automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "work_entries_per_case": 1,
+  "request_patterns": 11,
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-work-20261020.py",
+      "sha256": "981573ef577a2f04d0bdbb6a3dff1499dbae1d60baaf37c918a04dce7c115173"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-work-20261020.py",
+      "sha256": "6566190377caccbd0955aaa033036bd8942f9d498dcaddbcf7927a169a325b33"
+    }
+  ],
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Nonempty work-array prelude searches full weak key then UUID and exact action pointer before native removal",
+    "Queued path requests action virtual slot0x18 then destructor; distinct from invalid-target slot0x10",
+    "Work reference counts are temporarily incremented then restored and finally released when work array is cleared",
+    "Later consumer observes only remaining actions; producer/listeners and actual destruction remain unverified"
+  ]
+}
