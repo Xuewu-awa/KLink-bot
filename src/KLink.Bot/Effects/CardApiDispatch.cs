@@ -4696,93 +4696,21 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `BP_CardFunctions.MakeCardsFight`（**互斗**）—— 让两个单位互相打一次。
+    /// Blueprint MakeCardsFight (RULE-265): read both attacks before callbacks,
+    /// calculate both directions, then apply them in order. This is effect damage:
+    /// fromFight=true in the first modifier, but combat/counter flags remain false.
+    /// Each receiver's board predicate is checked once before its full calculation.
+    /// Both ApplyDamageToCard calls execute even for zero; zero produces only its
+    /// notification. Positive damage runs receive/deal hooks and destruction in
+    /// that call before the other direction is applied, without an extra death sweep.
+    /// No CanAttack, operation-cost, side-equality or attack-state gate is added.
     ///
-    /// ## 1. 签名：**4 个实参**，不是 6 个
-    ///
-    /// ⚠️ 任务书里那句「`CardApi.cs:850` 的签名形状 `(a, b, dmg, False, True, False)` ——
-    /// **6 个参数**」说的是 `MakeCardsFight` **内部**那两次
-    /// `ExecuteOnDealDamageAddDamage` 调用（6 个入参 + 1 个出参），**不是**
-    /// `MakeCardsFight` 自己的签名。证据：
-    /// <list type="bullet">
-    /// <item><c>ref/kards-sim/KardsSim/Generated/_index.g.cs:3994</c> ——
-    /// <c>["MakeCardsFight"] = new[] { "unitThisSide", "unitOppositeSide", "instigatorID", "qqq" }</c>
-    /// （参数名来自资产 `FunctionExport.LoadedProperties` 的 `CPF_Parm` 声明序）；</item>
-    /// <item><c>BP_CardFunctions.g.cs:25913-25916</c> ——
-    /// <c>args[0]=unitThisSide, args[1]=unitOppositeSide, args[2]=instigatorID, args[3]=out qqq</c>；</item>
-    /// <item>IR 里 12/12 个调用点都是 4 个实参（`args[3]` 是 out 槽
-    /// <c>CallFunc_MakeCardsFight_qqq</c>，且出参**从不被读**）。</item>
-    /// </list>
-    /// 六个参数的形状是蓝图内部（`g.cs:25977` / `26006`）：
-    /// <c>ExecuteOnDealDamageAddDamage(_damageDealerCard, _damageRecieverCard, damage,
-    /// _fromAttack, fromFight, _isDefenderDamage)</c>
-    /// —— `dmg` 是"这一方向、修正前的伤害"，后三个 bool 是
-    /// `_fromAttack=False` / `fromFight=True` / `_isDefenderDamage=False`。
-    ///
-    /// ## 2. 和 `Attack`（定向攻击）的区别
-    ///
-    /// | | `MatchEngine.Attack`（`ExecuteAttackCard`） | `MakeCardsFight` |
-    /// |---|---|---|
-    /// | 攻防对称性 | 攻击方 → 防御方，防御方**反击** | **双向**，两边各用自己的 `getTotalAttack` |
-    /// | 伤害算的时机 | 打一下、算一下 | **两个方向都算完**，再依次落地（`si=12F/1E8` 在 `si=26E/299` 之前） |
-    /// | `fromAttack` | `True`（战斗伤害） | **`False`** —— 互斗是**效果伤害**，不是战斗伤害 |
-    /// | `isDefenderDamage` | 反击那笔是 `True` | **两个方向都是 `False`** |
-    /// | 反击门 | 防御方**死了就不反击**（`MatchEngine.cs:1570` 的 `defender.IsAlive`） | **没有这道门** ⇒ 3/3 打 3/3 **双方都死** |
-    /// | 行动资源 | 扣油费、`HasAttackedThisTurn`、`AttacksThisTurn++`、`OnBeforeAttack`、`OnAfterAttack` | **一样都不碰**（谁都不是"攻击方"） |
-    /// | 烟幕 | 攻击后自己消失 | **不消失** |
-    /// | 召唤失调 / 压制 / 守护 / 射程 | 全都要过 `CanAttack` 那一族门 | **一道门都不过** |
-    ///
-    /// ## 3. 门：只有 `IsValid` + `IsLocatedOnBoard`
-    ///
-    /// `cardsCheckFunctions` 里**没有**对应的门。那份规则库只有 `CanAttack` /
-    /// `CanSelectAsTarget`（`ref/kards-sim/KardsSim/Generated/_deps/cardsCheckFunctions.g.cs`），
-    /// 而 `MakeCardsFight` **两个都不调**。它自己只有两道：
-    /// <list type="number">
-    /// <item>`si=1C/43` `IsValid(unitThisSide)` / `IsValid(unitOppositeSide)` —— 任一无效直接返回；</item>
-    /// <item>`si=FC/1B5` `IsLocatedOnBoard(...)` —— **只决定"那一方向的伤害算不算"**，
-    /// 不算就保持 `si=5` 的初值 0；两个 `ApplyDamageToCard`（`si=26E/299`）
-    /// **在控制流上无条件执行**（两条 PopExecutionFlow 分支都汇到 `L_026E`）。</item>
-    /// </list>
-    /// ⇒ **召唤失调的单位照样能被强制互斗**，被压制的、有烟幕的、够不着的、有守护保护的
-    /// 也全都照样。这和"能不能主动攻击"是两码事。
-    ///
-    /// ## 4. 互斗双方**可以是同一方**——蓝图对此**没有任何处理**
-    ///
-    /// 参数名虽然叫 `unitThisSide` / `unitOppositeSide`，但函数体里**一次阵营判定都没有**
-    /// （`g.cs:25918-26034` 全文没有 `side` / `IsSameSide` / `GetPlayingSide` 之类的调用）。
-    /// 传两个友方单位进去，它们就真的互相打。内核**照抄这个行为，不自己加门**。
-    /// 实测 12 个调用点里 `card_unit_57th_rifles`（`i=624`）的 `enemyUnit` 也是
-    /// 蓝图自己选出来的，不是 `MakeCardsFight` 校验的。
-    ///
-    /// ## 5. 已知偏差（如实记，不修）
-    ///
-    /// <list type="bullet">
-    /// <item>`isFightDefenderDamage`（第 5 个实参：`si=26E` 传 `False`、`si=299` 传 `True`）
-    /// 在蓝图里**只流向 `NotifyDamageCard`**（`g.cs:1104`），是纯客户端表现标记，
-    /// 不进任何规则判定 —— 内核的 `ZActionDamageCard` 没有这个字段，故不建模。</item>
-    /// <item>内核的 <see cref="CardApi.IsLocatedOnBoard"/> 是
-    /// `Location.IsBoard() &amp;&amp; !IsHq`（**排除 HQ**），而反编译参考里原生
-    /// `IsLocatedOnBoard` 是 `Loc is Loc.Board or Loc.Frontline`（**含 HQ**，
-    /// `ref/kards-sim/KardsSim/Bridge/EngineHost.cs:995-999`）。
-    /// 这里**复用内核那一个**（与 `IsLocatedOnBoard` 派发键同源，不另立第二套判据）；
-    /// 12 个调用点传的都是"单位"（`unitThisSide` / `unitOppositeSide`），HQ 不在其中，
-    /// 所以实际无差。若以后真出现"互斗 HQ"，要改的是内核那一个判据，不是这里。</item>
-    /// <item>`ExecuteOnDealDamageAddDamageAfterCalc` 内核没有单独一层
-    /// （它只改 `finalDamage`，见 `g.cs:15949`），所以这里与 `DealDamage` 一致地省略。
-    /// ⚠️ 免疫那一半不会因此漏：蓝图在那层里做 `getHasImmune(toCard) ⇒ finalDamage = 0`
-    /// （`g.cs:15979-15985`），内核等价地做在 `MatchEngine.ApplyDamage`
-    /// （`MatchEngine.cs:1801-1804`），净效果相同。</item>
-    /// <item>**"先算完两笔、再落地"只做到了伤害值那一半。**
-    /// 蓝图 `ApplyDamageToCard` **自己不摧毁**（只 `_isDestroyed = getTotalDefense() &lt;= 0`
-    /// 再 `NotifyDamageCard`，`g.cs:1076-1104`），收尸在外面统一做 ⇒
-    /// 方向 1 打死人**不会**插在方向 2 的扣血之前。
-    /// 内核的 `DealDamage` 尾段是**立即** `Destroy(target)`（`CardApi.cs:1046-1049`），
-    /// 所以这里方向 1 的死亡触发会先于方向 2 的扣血。
-    /// **不为此另开旁路**：那是 `DealDamage` 这个唯一漏斗的既有形状，
-    /// `DamageCard` / `DamageMultipleCards` 全都一样；要改就该在漏斗里改。
-    /// 实际影响面很窄 —— 两笔伤害的**数值**已经先算好了（`si=6A/AE`），
-    /// 只有"方向 1 的死亡触发去改方向 2 的**防御**（治疗/加护甲/给免疫）"才看得出差别。</item>
-    /// </list>
+    /// The second apply's isFightDefenderDamage flag is only used by the client
+    /// notifier; the headless ZActionDamageCard does not model that display flag.
+    /// This audit retains the existing IsLocatedOnBoard and UObject validity
+    /// models; it does not certify HQ operands, GC or the entire native predicate.
+    /// Evidence: current 712-byte MakeCardsFight and 2312-byte ApplyDamageToCard
+    /// scripts, independently decoded and matched against the current pak assets.
     /// </summary>
     private object? DoMakeCardsFight(EffectContext c, object?[] a)
     {
@@ -4808,39 +4736,34 @@ public sealed partial class CardApi
         //   ExecuteOnDealDamageAddDamage(dealer, receiver, damage, _fromAttack=False,
         //                                fromFight=True, _isDefenderDamage=False)
         // ⚠️ `fromFight=True` 是**互斗伤害的身份标记**，不是战斗伤害 —— `isCombatDamage` 保持 False。
-        int finalToOpposite = IsLocatedOnBoard(opposite)
-            ? ExecuteOnDealDamageAddDamage(thisSide, opposite, damageToOpposite,
-                                           fromAttack: false, fromFight: true, isDefenderDamage: false)
-            : 0;
+        // i=252/293 and i=437/478 test each receiver once, before its
+        // entire modification chain. A callback may move it during that chain.
+        int finalToOpposite = 0;
         if (IsLocatedOnBoard(opposite))
-            finalToOpposite = ExecuteOnDealDamageAddDamageAfterCalc(thisSide, opposite, finalToOpposite, false, false, false);
-
-        int finalToThis = IsLocatedOnBoard(thisSide)
-            ? ExecuteOnDealDamageAddDamage(opposite, thisSide, damageToThis,
-                                           fromAttack: false, fromFight: true, isDefenderDamage: false)
-            : 0;
+        {
+            int damage = ExecuteOnDealDamageAddDamage(thisSide, opposite, damageToOpposite,
+                fromAttack: false, fromFight: true, isDefenderDamage: false);
+            finalToOpposite = ExecuteOnDealDamageAddDamageAfterCalc(thisSide, opposite, damage, false, false, false);
+        }
+        int finalToThis = 0;
         if (IsLocatedOnBoard(thisSide))
-            finalToThis = ExecuteOnDealDamageAddDamageAfterCalc(opposite, thisSide, finalToThis, false, false, false);
-
-        // si=26E / si=299：两笔伤害**依次**落地，数值都已算好。
-        // 蓝图 `ApplyDamageToCard`（`g.cs:893-896`，标签 `L_0108`）：
-        // `if (!(finalDamage > 0)) goto L_0181` ⇒ 0 伤害整段跳过，
-        // 这里照抄那道门（也因此不会发出多余的 `ZActionDamageCard`）。
-        if (finalToOpposite > 0)
         {
-            ApplyCalculatedDamage(opposite, finalToOpposite, thisSide,
-                                  isCombatDamage: false, counterDamage: false, isRedirected: false);
+            int damage = ExecuteOnDealDamageAddDamage(opposite, thisSide, damageToThis,
+                fromAttack: false, fromFight: true, isDefenderDamage: false);
+            finalToThis = ExecuteOnDealDamageAddDamageAfterCalc(opposite, thisSide, damage, false, false, false);
         }
 
-        if (finalToThis > 0)
-        {
-            ApplyCalculatedDamage(thisSide, finalToThis, opposite,
-                                  isCombatDamage: false, counterDamage: true, isRedirected: false);
-        }
+        // i=622/665 always call ApplyDamageToCard, including zero. Its zero
+        // branch emits a notification but skips receive/deal/destruction hooks.
+        // The second call's isFightDefenderDamage=true is a notifier flag;
+        // ApplyDamageToCard i=1808 still passes CounterDamage=false in both directions.
+        ApplyCalculatedDamage(opposite, finalToOpposite, thisSide,
+            isCombatDamage: false, counterDamage: false, isRedirected: false);
+        ApplyCalculatedDamage(thisSide, finalToThis, opposite,
+            isCombatDamage: false, counterDamage: false, isRedirected: false);
 
-        // ⚠️ **不在这里判"谁死了"**：`Defense <= 0` 只是"待销毁"，
-        // 真死在 `CheckDeaths()` 里（由动作层收尾调用）。蓝图同理 ——
-        // `MakeCardsFight` 自己不做任何摧毁，两个方向都打完之后才由外层收尸。
+        // Each ApplyDamageToCard handles its own destruction before the next
+        // direction is applied; MakeCardsFight adds no extra death sweep.
         return null;
     }
 

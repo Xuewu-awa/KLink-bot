@@ -1,0 +1,151 @@
+{
+  "rule": "RULE-265",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-receive-callers-native-20261020.json",
+      "sha256": "937d49c8711c12e9523b0fd6c7c46eb663b0dfde3fe03d8b142b6409a7e18d2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\fight-damage-phases-native-20261020.json",
+      "sha256": "d44efc43518e1f0c84bba60dc59bfea1185b6013dde34c3e937187a96a34f1a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule265\\calls.json",
+      "sha256": "3db211143e4e2de4b445850dd036683ec071fc8f45dac7a59e25f91f60861d8a"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-damage-receive-callers-20261020.py",
+      "sha256": "37626057174266b705654977ce2b2b8073ec79c544445eff7151e67f2c9e66da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-fight-damage-phases-20261020.py",
+      "sha256": "4dcb4e1ead1929fd16471ed9a5f0f1b932926b930ccc67ae73e41ea9ff83e147"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule265-fight-test-20261020.py",
+      "sha256": "5131b2fd2f0b83a432edc3eaccd49979bee87b481d73d46214a2b37554544c7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule265-fight-phases-20261020.py",
+      "sha256": "1ecedb1afda1b0942508b4a00a670a3d916b05bf8bed822301fb92d5b408908f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule265-fight-phases-20261020.py",
+      "sha256": "aedcfdf57274e7f9913401e518ff309cc0a8f15d11f9891520ee652287c0c5ae"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "249e37d18cf801f13e4894a36d3d3e31976008bb9eaeadb7e662b5a7dba091aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "bb8160aefa9ffd621aeea1b944360bcbdff55db609b2af964d7e066fbb8b850c"
+    }
+  ],
+  "runtime_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ExecuteAttackCard",
+      "script_bytes": 4794,
+      "script_sha256": "b01e0699b0f46951f2d3faaa90261439bfc84577bbba40cc3460b7e176483bae",
+      "statements": 175
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ApplyDamageToCard",
+      "script_bytes": 2312,
+      "script_sha256": "06c1ed45b22cf8c969caba991d41bb831db73860a446da0982fa0c23206b1fa1",
+      "statements": 91
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "MakeCardsFight",
+      "script_bytes": 712,
+      "script_sha256": "e944764689bbd408c52ece3151fed9b022986daea6169aa20d3524de656b98e7",
+      "statements": 29
+    }
+  ],
+  "complete_verified_script_bytes": 7818,
+  "fix": [
+    "Check each receiver board location once before the entire modifier chain, not again after the first callback.",
+    "Always run both ApplyDamageToCard paths; zero damage emits a notification without receive/deal/destruction hooks.",
+    "Both directions are effect damage with CounterDamage=false. The second isFightDefenderDamage notifier flag is not a counterattack flag.",
+    "Correct outdated comments: ApplyDamageToCard performs destruction before the next direction, and an explicit after-calc layer exists."
+  ],
+  "tests": {
+    "total": 598,
+    "synthetic_cases": 20,
+    "sides": 2,
+    "modes": 10,
+    "before_failed_tests": 1,
+    "before_failed_scenes": 20,
+    "after_failed_tests": 0,
+    "after_failed_scenes": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule265-before-20261020.txt",
+        "sha256": "599cab0e47379a6ec71556ac266126678cc76624df7bb6943a24950d389abc81"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule265-after-20261020.txt",
+        "sha256": "15afb440bd8c41e12f59163ca75f92f957eb2bbf13a8cc3c9f3c294698bc75fd"
+      }
+    ],
+    "coverage": [
+      "nonzero baseline both directions",
+      "move first/second receiver off board during modifier; still execute after-calc modifier",
+      "zero damage in one/both directions still emits ordered notices",
+      "initial receiver off board skips calculation but not zero notice",
+      "attack snapshot precedes callbacks",
+      "immune receiver zeroes damage",
+      "both positive directions carry correct recipient, damage, combat=false,counter=false",
+      "temporary local-program cache entries saved and restored"
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261020-213116-rule265-call-inventory-8bc36d1b",
+    "elapsed_seconds": 74.71,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule265\\task.txt",
+      "sha256": "deb68465dffeb6f5132f634f0b2f40ed105516f1f068234f4f53d52bd7f27d65"
+    },
+    "core_assets": 2,
+    "core_functions": 389,
+    "calls": 11,
+    "counts": {
+      "ApplyDamageToCard": 3,
+      "ExecuteBeforeReceiveDamage": 4,
+      "ExecuteOnCardDealDamageEffects": 4,
+      "MakeCardsFight": 0
+    },
+    "independently_reenumerated_exact_match": true
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Inventory scope is only the two supplied core assets, not all single cards or the complete native call graph. Zero MakeCardsFight core calls does not imply no card callers.",
+    "ApplyDamageToMultipleCards capture is not fully decoded by the bounded decoder (unsupported opcode 0x1b at byte 1521); it is not included in the three-function AST certification. Empty native stub rows are not Blueprint bodies.",
+    "UObject validity/pending-kill/GC, native board-predicate parity including HQ operands, dynamic subscription ordering/lifecycle and all reentrant death/removal cases remain uncertified.",
+    "Effect-damage clamping after a receive hook changes defense to nonpositive, native defaults and notifier-only isFightDefenderDamage presentation are outside this repair.",
+    "Synthetic probes test common dispatch boundaries, not real probe-card semantics or all possible card combinations.",
+    "No historical replay authority, game process write, injection or game function invocation."
+  ]
+}

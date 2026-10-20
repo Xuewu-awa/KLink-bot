@@ -921,6 +921,7 @@ internal static class SelfTest
         // 静默什么都不做 ⇒「让两个单位互斗」整段效果不发生 ⇒ 本该战死的单位没死
         // ⇒ 玩家看到「对面出现虚空单位」。
         // 语义出处：`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:25907-26040`。
+        new("互斗阶段：位置门只检查一次、零值通知、两向伤害均非反击", MakeCardsFightPhaseBoundaries),
         new("★★ 互斗 MakeCardsFight：双向同时结算（都活 / 一方死 / **双方都死** / 重甲 / 免疫）",
             MakeCardsFightMutualStrike),
         new("★ 互斗 MakeCardsFight **不是攻击**：不扣油费 / 不置已攻击 / 召唤失调也能斗 / 不发战斗存活事件",
@@ -31183,6 +31184,124 @@ internal static class SelfTest
         state.SetKredits(Side.Left, 20);
         state.SetMaxKredits(Side.Left, 20);
         return (engine, mine, foe);
+    }
+
+    // Temporary programs are isolated from the shared local-program cache.
+    private static string? MakeCardsFightPhaseBoundaries(CardDatabase db)
+    {
+        const string name = "card_event_honorifics";
+        string[] hooks = { "OnCardDealDamage_ModifyDamageDealt", "OnDealDamageAddDamageAfterCalc", "OnCardDealDamage" };
+        var library = KismetLibrary.Default!;
+        if (library.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || hooks.Any(h => library.FindProgram(name, h) is not null)) return "无法安全安装互斗阶段探针";
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(library)!;
+        cache.TryGetValue(name, out var oldCache);
+        var saved = hooks.ToDictionary(h => h, h => oldCache?.GetValueOrDefault(h));
+        foreach (string hook in hooks) oldCache?.Remove(hook);
+        try
+        {
+            for (int kind = 1; kind <= 3; kind++)
+            {
+                var steps = new List<KismetStep>();
+                void Set(string key, KismetExpr value, string scope = "instance") => steps.Add(new KismetStep(
+                    steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null)
+                    { DestinationScope = scope });
+                Set("_auditFightSerial", new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = "_auditFightSerial", Scope = "instance" }, new KismetExpr { Int = 1 } } });
+                Set("_auditFightStage", new KismetExpr { Int = kind });
+                foreach (string key in new[] { "toCard", "Damage", "CounterDamage", "isCombatDamage" })
+                    Set("_auditFight_" + key, new KismetExpr { Var = key, Scope = "local" });
+                if (kind == 1) Set("newDamage", new KismetExpr { Var = "damage", Scope = "local" }, "local");
+                if (kind == 2) Set("damageToAdd", new KismetExpr { Var = "_auditFightBonus", Scope = "instance" }, "local");
+                steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null));
+                steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+                locals.Add(hooks[kind - 1], steps);
+            }
+            var failures = new List<string>();
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 10))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var mine = state.CreateWithId(name, side, 50, side.HqOf(), 0);
+                var foe = state.CreateWithId(name, side.Opposite(), 60, side.Opposite().HqOf(), 0);
+                foreach (var card in new[] { mine, foe })
+                {
+                    card.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                    card.Keywords.Clear(); card.Defense = 20;
+                    card.BlueprintVariables["_auditFightBonus"] = mode is 1 or 2 ? 1 : 0;
+                }
+                mine.Attack = mode == 3 ? 0 : 3;
+                foe.Attack = mode is 3 or 4 ? 0 : 2;
+                if (mode == 5) foe.Location = CardLocation.NotAvailable;
+                if (mode == 6) mine.Location = CardLocation.NotAvailable;
+                if (mode == 8) mine.Keywords.Add(Keyword.Immune);
+                if (mode == 9) foe.Keywords.Add(Keyword.Immune);
+                int toFoe = mode is 3 or 5 or 9 ? 0 : mode is 1 or 2 ? 4 : 3;
+                int toMine = mode is 3 or 4 or 6 or 8 ? 0 : mode is 1 or 2 ? 3 : 2;
+                var calls = new List<(int Id, int Stage)>(); var serial = new Dictionary<int, int>();
+                string? payloadError = null;
+                var prior = state.CardCreated;
+                state.CardCreated = made => {
+                    prior?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = new[] { mine, foe }.Single(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_auditFightSerial")) > serial.GetValueOrDefault(c.CardId));
+                    serial[current.CardId] = Convert.ToInt32(current.BlueprintVariables["_auditFightSerial"]);
+                    int stage = Convert.ToInt32(current.BlueprintVariables["_auditFightStage"]);
+                    calls.Add((current.CardId, stage));
+                    if (stage == 1 && current == mine)
+                    {
+                        if (mode == 1) foe.Location = CardLocation.NotAvailable;
+                        if (mode == 7) foe.Attack = 9;
+                    }
+                    if (stage == 1 && current == foe && mode == 2) mine.Location = CardLocation.NotAvailable;
+                    if (stage == 3)
+                    {
+                        var expectedTarget = current == mine ? foe : mine;
+                        if (!ReferenceEquals(current.BlueprintVariables.GetValueOrDefault("_auditFight_toCard"), expectedTarget)
+                            || Convert.ToInt32(current.BlueprintVariables.GetValueOrDefault("_auditFight_Damage")) != (current == mine ? toFoe : toMine)
+                            || Convert.ToBoolean(current.BlueprintVariables.GetValueOrDefault("_auditFight_CounterDamage"))
+                            || Convert.ToBoolean(current.BlueprintVariables.GetValueOrDefault("_auditFight_isCombatDamage")))
+                            payloadError = $"{current.CardId} 的互斗伤害后载荷错误";
+                    }
+                };
+                bool handled = InvokeMakeCardsFight(engine, mine, mine, foe);
+                var expected = new List<(int Id, int Stage)>();
+                if (mode != 5) { expected.Add((50, 1)); if (mode != 9) expected.Add((50, 2)); }
+                if (mode != 6) { expected.Add((60, 1)); if (mode != 8) expected.Add((60, 2)); }
+                if (toFoe > 0) expected.Add((50, 3));
+                if (toMine > 0) expected.Add((60, 3));
+                var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionDamageCard").ToArray();
+                bool noticesOk = notices.Length == 2;
+                if (noticesOk)
+                {
+                    var a = notices[0].Values.ToDictionary(v => v.Name); var b = notices[1].Values.ToDictionary(v => v.Name);
+                    noticesOk = a["cardID"].Value == 60 && a["damage"].Value == toFoe && a["attackerCardID"].Value == 50
+                        && b["cardID"].Value == 50 && b["damage"].Value == toMine && b["attackerCardID"].Value == 60;
+                }
+                if (!handled || FightFault(state) is not null || !calls.SequenceEqual(expected) || !noticesOk
+                    || mine.Defense != 20 - toMine || foe.Defense != 20 - toFoe || payloadError is not null)
+                    failures.Add($"{side}/{mode}: 实际 {string.Join(',', calls)} 期望 {string.Join(',', expected)}; 防御={mine.Defense}/{foe.Defense},通知={notices.Length}; {payloadError}");
+            }
+            return failures.Count == 0 ? null : $"{failures.Count}/20 场景失败：" + string.Join(" | ", failures.Take(10));
+        }
+        finally
+        {
+            foreach (string hook in hooks)
+            {
+                locals.Remove(hook);
+                if (cache.TryGetValue(name, out var perCard))
+                {
+                    perCard.Remove(hook);
+                    if (saved[hook] is { } old) perCard[hook] = old;
+                }
+            }
+            if (oldCache is null && cache.TryGetValue(name, out var added) && added.Count == 0) cache.Remove(name);
+        }
     }
 
     /// <summary>
