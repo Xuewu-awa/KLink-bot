@@ -72,8 +72,15 @@ public sealed partial class CardApi
             // 且 side 是显式参数，不能用 receiver 的阵营替代。
             ["IsTopDeckNavy"] = (c, r, a) =>
             {
-                var side = SideArg(r, a, 0, c.Controller);
-                var top = c.State.Deck(side).FirstOrDefault();
+                var side = a.ElementAtOrDefault(0) switch
+                {
+                    Side value => value,
+                    int value => (Side)value,
+                    _ => Side.NotAvailable,
+                };
+                // Blueprint first checks deckCardIDs[0] > 0, then resolves it.
+                int topId = GetDeckBySide(side).FirstOrDefault();
+                var top = topId > 0 ? c.State.ById(topId) : null;
                 return top is not null && HasGameplayTag(top, "subtype.navy");
             },
             ["IsValid"] = (c, r, a) => AsCard(a.FirstOrDefault()) is not null || SelfArg(c, r, a) is not null,

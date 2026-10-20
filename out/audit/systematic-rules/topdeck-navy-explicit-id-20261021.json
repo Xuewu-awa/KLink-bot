@@ -1,0 +1,201 @@
+{
+  "rule": "RULE-276",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\nation-topdeck-blueprint-native-20261021.json",
+      "sha256": "6dea83478975129895917e466890382040d065f4ddf0ce1edb5efeead01777d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetMainFactionBySide",
+      "script_bytes": 227,
+      "statements": 14,
+      "script_sha256": "f1d9695b03ce79fd13edfdfc033f7754765f5357875d7603cc0b3b481a0b56be"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetDeckByside",
+      "script_bytes": 157,
+      "statements": 10,
+      "script_sha256": "60a5f65da8910f35c7b02420e5947c52d89c71a2f7b45aa97465e037f5bbfe93"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetMainNationForSide",
+      "script_bytes": 84,
+      "statements": 4,
+      "script_sha256": "9a5f420d13aa649721435d0b264e4cfd79293089d60a31d7ea7d35133efb8a7a"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "IsTopDeckNavy",
+      "script_bytes": 286,
+      "statements": 13,
+      "script_sha256": "05c6473312e3fca84d7290b53d234efc5e227443f1c4456bc26a0513dcc7ce1d"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetDeckByside",
+      "script_bytes": 84,
+      "statements": 4,
+      "script_sha256": "6a112f2bb83219c74c2af1606c412bce493787042422491041c6f6e13f58c853"
+    }
+  ],
+  "decoder_extension": "ArrayGetByRef 0x6b reads array expression then index expression; checked against independent current raw-pak AST. Initial unsupported capture retained separately.",
+  "semantics": "IsTopDeckNavy calls explicit-side deck query, requires top ID>0, repeats deck query and resolves top ID, then checks subtype.navy. Empty/non-positive top IDs return false; it does not scan lower cards.",
+  "fix": "Only this dispatcher changes: explicit int/Side byte without receiver/controller fallback; query through existing GetDeckBySide ID helper, require positive ID, resolve via ById before unchanged gameplay-tag predicate.",
+  "tests": {
+    "total": 609,
+    "cases": 24576,
+    "dimensions": [
+      "8 deck layouts",
+      "all 256 explicit side bytes",
+      "int/Side argument",
+      "receiver null/Left/Right",
+      "controller Left/Right with opposite self/active context"
+    ],
+    "layouts": [
+      "Left navy/right ordinary",
+      "Left ordinary/right navy",
+      "Both empty",
+      "Left navy ID0/right navy ID-7",
+      "Left navy ID-9/right navy ID0",
+      "Ordinary tops ID0/-5",
+      "Positive navy tops but Left pending-removal exposes ordinary next card",
+      "Both positive navy tops"
+    ],
+    "entrypoints": [
+      "raw dispatcher with prior true output",
+      "VM valid-side query then requested-side query in reused caller output slot"
+    ],
+    "controls": [
+      "Positive lower navy card cannot bypass non-positive or ordinary top.",
+      "Scoped pending-deck removal view still applies.",
+      "No random stream consumption or additional unimplemented faults per query.",
+      "Non-positive IDs are synthetic branch-boundary inputs, not claimed legal match state."
+    ],
+    "before_failed_tests": 1,
+    "before_failed_cases": 19077,
+    "after_failed_tests": 0,
+    "existing_tests_unchanged": true,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule276-before-20261021.txt",
+        "sha256": "eacbb20dbfc7db1e9026a6ac204cd38b61fdda9a038cbaa41730fffed71c65fb"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule276-after-20261021.txt",
+        "sha256": "949627b92ae557b1e726db98f50c4c04e3b624607ff4211b34ae2b90730de1ff"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-023753-rule276-topdeck-nation-uses-96768013",
+    "elapsed_seconds": 37.6,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule276\\task.txt",
+      "sha256": "4faff631a118af5b00b87ac1cd3a57c29f7e843eaaa8c270d1a8080265b830e0"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule276\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule276\\uses.json",
+      "sha256": "e600f13d5979a9729ea15b12cbf9042e4cc4776a1e27e5316bd0c5b83b1fdbe3"
+    },
+    "implementation_cards": 1709,
+    "counts": {
+      "IsTopDeckNavy": {
+        "calls": 7,
+        "cards": 6
+      },
+      "GetMainNationForSide": {
+        "calls": 1,
+        "cards": 1
+      }
+    },
+    "all_signatures": "2 args, out index1, explicit side at0",
+    "independent_exact_reenumeration": true,
+    "scope": "Exact literal simulator IR inventory only; no all-client or full-card semantic claim."
+  },
+  "pending_findings": [
+    {
+      "query": "GetMainNationForSide -> GetMainFactionBySide",
+      "client": "Reads separately stored LeftMainFaction/RightMainFaction fields.",
+      "managed": "Derives current faction from current HQ definition.",
+      "managed_source": {
+        "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+        "sha256": "a7ad8fcaeb7080e2e7f791b17527b63c15e7b11176c618e7361d14fbc803a963"
+      },
+      "status": "Implementation data-source difference confirmed; initialization, mutation and reachable-result divergence not yet audited. No faction behavior changed this round.",
+      "implementation_ir_call_card": "card_event_pilot_escape"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-nation-topdeck-blueprint-20261021.py",
+      "sha256": "08ba5fbf1ba56b60e42b596e73e47d84e5b63eea34c950b8b1579cc10313e6e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-276.py",
+      "sha256": "630a66f04ec88fab5426862204a50e9f78f59657a1073bb8fdbd1f004963f026"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-272.py",
+      "sha256": "32d3d7a72d492e5edc770d8da56378cb6bd21d33821d4040356bd63d4e5f95ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-267.py",
+      "sha256": "44ba9257488afa5d6571b7730b6f5ce474b2bc28079d80a99568a3b21a642819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule276-topdeck-tests-20261021.py",
+      "sha256": "b75367cb531e1e4b4c9216463ee758cb680ef805c29caf8ac9e9cc7f7e8d5d10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule276-topdeck-20261021.py",
+      "sha256": "0768898c8561ee326c506795c18cb4aeadd69c110f3d879fc3a9511747556f89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule276-topdeck-20261021.py",
+      "sha256": "dc312d821e85d716c3e9e2c887d58df9ba8825df7b8510e87a43db70e4223705"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "d7593925de4362cc18a2ec65ea488aaad10fe387a9c154f4aa11b20cf5d30526"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "37ec7146bf48215e70c98f0ee061cb3b688e94cc618ea53c54aab0f467ef1f83"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Independent native deck ID arrays, missing/stale/duplicate IDs and all object lifetime states are not modeled fully by State.Deck.",
+    "Client queries deck twice in the positive branch. Complete dynamic override/concurrent changes between queries, Context-null and output-local lifetime behavior are not certified by the managed stable-view query.",
+    "Complete native gameplay-tag dependency and ArrayGetByRef error/default backend not newly certified.",
+    "GetMainFactionBySide source mismatch remains unresolved; not counted as restored.",
+    "Malformed arguments and out-of-byte enum coercion are not certified; synthetic non-positive IDs do not establish real-match frequency.",
+    "No historical replay authority, process writes, injection or client invocation."
+  ]
+}

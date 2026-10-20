@@ -308,6 +308,7 @@ internal static class SelfTest
         new("IsSideActive：非零活动方、显式字节参数及 VM 派发", SideActiveExplicitByteBoundary),
         new("手牌/牌库查询：显式字节阵营、不同无效值契约及输出覆盖", HandDeckExplicitSideBoundary),
         new("场上阵营查询：显式字节、HQ/单位/隐蔽筛选及登记顺序", BoardQueryExplicitByteBoundary),
+        new("IsTopDeckNavy：显式阵营、严格正ID及牌库输出视图", TopDeckNavyExplicitIdBoundary),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2310,6 +2311,66 @@ internal static class SelfTest
     }
 
     // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    /// <summary>Current Blueprint requires a positive top ID before resolving the navy tag.</summary>
+    private static string? TopDeckNavyExplicitIdBoundary(CardDatabase db)
+    {
+        const string navyName = "card_event_hms_belfast";
+        const string ordinaryName = "card_unit_2nd_parachute";
+        int failed = 0; var examples = new List<string>();
+        foreach (int mode in Enumerable.Range(0, 8))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var left = state.Hq(Side.Left); var right = state.Hq(Side.Right);
+            CardInstance? leftTop = null;
+            if (mode != 2)
+            {
+                int leftId = mode switch { 3 => 0, 4 => -9, 5 => 0, _ => 90 };
+                int rightId = mode switch { 3 => -7, 4 => 0, 5 => -5, _ => 70 };
+                bool leftNavy = mode is 0 or 3 or 4 or 6 or 7;
+                bool rightNavy = mode is 1 or 3 or 4 or 6 or 7;
+                leftTop = state.CreateWithId(leftNavy ? navyName : ordinaryName, Side.Left, leftId, CardLocation.DeckLeft, 0);
+                state.CreateWithId(rightNavy ? navyName : ordinaryName, Side.Right, rightId, CardLocation.DeckRight, 0);
+                state.CreateWithId(leftNavy ? ordinaryName : navyName, Side.Left, 111, CardLocation.DeckLeft, 1);
+                state.CreateWithId(rightNavy ? ordinaryName : navyName, Side.Right, 211, CardLocation.DeckRight, 1);
+            }
+            void CheckQueries()
+            {
+                foreach (int value in Enumerable.Range(0, 256))
+                foreach (bool enumArgument in new[] { false, true })
+                foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+                foreach (Side controller in new[] { Side.Left, Side.Right })
+                {
+                    state.ActiveSide = controller.Opposite();
+                    var ctx = new EffectContext { Engine = engine, State = state,
+                        Self = controller == Side.Left ? right : left, Controller = controller };
+                    bool expected = value == 1 ? mode is 0 or 7 : value == 2 && mode is 1 or 6 or 7;
+                    object side = enumArgument ? (object)(Side)value : value;
+                    int faults = state.UnimplementedCalls.Values.Sum();
+                    var raw = engine.Api.InvokeByName("IsTopDeckNavy", receiver,
+                        new object?[] { side, true }, ctx, out bool handled);
+                    KismetStep Call(int index, KismetExpr input) => new KismetStep(index, "call", "IsTopDeckNavy",
+                        new[] { input, new KismetExpr { Var = "__navy", Scope = "local" } }, new[] { 1 },
+                        null, null, -1, null, null)
+                        { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+                    var program = new KismetProgram(new[] { Call(0, new KismetExpr { Int = 1 }),
+                        Call(1, new KismetExpr { Var = "__side", Scope = "local" }), new KismetStep(2, "return", null,
+                            Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                    var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                        new Dictionary<string, object?> { ["__side"] = side, ["__receiver"] = receiver, ["__navy"] = true }, "__navy");
+                    if (!handled || !Equals(raw, expected) || !Equals(output.GetValueOrDefault("__navy"), expected)
+                        || state.Random.ConsumedCount != 0 || state.UnimplementedCalls.Values.Sum() != faults)
+                    {
+                        failed++;
+                        if (examples.Count < 8) examples.Add($"mode={mode}/side={value}/enum={enumArgument}/recv={receiver?.Owner}/controller={controller}: raw={raw}, expected={expected}");
+                    }
+                }
+            }
+            if (mode == 6) state.WithDeckCardRemoved(Side.Left, leftTop!.CardId, CheckQueries);
+            else CheckQueries();
+        }
+        return failed == 0 ? null : $"{failed}/24576 场景失败：" + string.Join(" | ", examples);
+    }
+
     /// <summary>Board query compares the explicit raw side byte without a receiver/controller fallback.</summary>
     private static string? BoardQueryExplicitByteBoundary(CardDatabase db)
     {
