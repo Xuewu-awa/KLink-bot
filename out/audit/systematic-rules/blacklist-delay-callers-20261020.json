@@ -1,0 +1,133 @@
+{
+  "rule": "RULE-258",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-callers-native-20261020.json",
+  "source_sha256": "34183b4542bcd76accbbf4dfe718aa2bf13c81c748263f3f58e1a52e22fdc8b7",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 2257,
+  "captured_ranges": 9,
+  "direct_e8_calls": [
+    {
+      "rva": "0x3662097",
+      "body": "UICancelBody",
+      "current_owners": [
+        "/Script/UMG/UserWidget"
+      ]
+    },
+    {
+      "rva": "0x4cf8b3f",
+      "body": "BTTaskCallerPrefix",
+      "current_owners": [
+        "/Script/AIModule/BTTask_BlueprintBase"
+      ]
+    },
+    {
+      "rva": "0x4d097ac",
+      "body": "BTServiceCallerPrefix",
+      "current_owners": [
+        "/Script/AIModule/BTService_BlueprintBase"
+      ]
+    },
+    {
+      "rva": "0x4d0a2f0",
+      "body": "BTSharedCallerPrefix",
+      "current_owners": [
+        "/Script/AIModule/BTTask_BlueprintBase",
+        "/Script/AIModule/BTService_BlueprintBase",
+        "/Script/AIModule/BTDecorator_BlueprintBase"
+      ]
+    },
+    {
+      "rva": "0x4d0b798",
+      "body": "BTTaskOtherCallerPrefix",
+      "current_owners": [
+        "/Script/AIModule/BTTask_BlueprintBase"
+      ]
+    },
+    {
+      "rva": "0x58d1fd5",
+      "body": "StateTreeCallerPrefix",
+      "current_owners": [
+        "/Script/StateTreeModule/StateTreeTaskBlueprintBase"
+      ]
+    }
+  ],
+  "reflected_ui_functions": 2,
+  "cdo_classes": 4,
+  "cdo_slot_bindings": 7,
+  "sdk_sources": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\UMG.hpp",
+      "sha256": "5e9e46478f6c6c6852c8714b23ca228b721f780793dca0c59d50acf758dea05b",
+      "declarations": [
+        {
+          "text": "class UUserWidget : public UWidget",
+          "line": 1808
+        },
+        {
+          "text": "void CancelLatentActions();",
+          "line": 1934
+        },
+        {
+          "text": "void StopAnimationsAndLatentActions();",
+          "line": 1845
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\AIModule.hpp",
+      "sha256": "15fa377bd7d54d7c280fa5ea66e707f8c715b1146d06e6a7f5e0267daeee516c",
+      "declarations": [
+        {
+          "text": "class UBTTask_BlueprintBase : public UBTTaskNode",
+          "line": 1159
+        },
+        {
+          "text": "class UBTService_BlueprintBase : public UBTService",
+          "line": 1115
+        },
+        {
+          "text": "class UBTDecorator_BlueprintBase : public UBTDecorator",
+          "line": 918
+        }
+      ]
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\StateTreeModule.hpp",
+      "sha256": "fc1d4c9fdf1420f82d0cf73d4808e590d491d5e7b5a7193c5414b781b566a637",
+      "declarations": [
+        {
+          "text": "class UStateTreeTaskBlueprintBase : public UStateTreeNodeBlueprintBase",
+          "line": 975
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "limits": [
+    "Only direct E8 calls in current EXE enumerated; no exhaustive indirect/tail/other-module caller proof",
+    "CDO binding identifies current virtual target, not official method names or complete class call graph",
+    "UI functions excluded per user scope; AI/StateTree PvP dependency still unverified",
+    "No client functions executed, no new simulator semantic or C# regression tests required"
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\discover-latent-callers-20261020.py",
+      "sha256": "094ddd7951f45cad09c982db203af0e6d6fd0342ce4f65527b8097ddf567accf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\discover-latent-cdo-vtables-20261020.py",
+      "sha256": "0a3a27165def9c340ec1527388127e401f65c842925a1733e1ee7a9c48322fa5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-callers-20261020.py",
+      "sha256": "e968fa45715756d6eef9dc9e9277f8fa7575ec7bcc2d23f68dbfc77b0e05cd14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-callers-20261020.py",
+      "sha256": "ea081cb70ae2bf59ed0ce0152f0b1117ba1eaaf3cdd1cd74f35e8dc390fc595d"
+    }
+  ],
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)"
+}
