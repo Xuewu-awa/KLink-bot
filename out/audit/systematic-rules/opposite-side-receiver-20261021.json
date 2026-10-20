@@ -1,0 +1,308 @@
+{
+  "rule": "RULE-271",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "authority": {
+    "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\opposite-side-native-20261021.json",
+    "sha256": "a55187b11aab2fb2f2b892591a873cebeb3e5ef6dc781213bef8effc68bdfcdf"
+  },
+  "native": {
+    "wrapper_bytes": 147,
+    "leaf_bytes": 28,
+    "side_offset": 630,
+    "ufunction_rva": "0x4a81000",
+    "leaf_rva": "0x4af6080",
+    "leaf_boundary": "28-byte complete conditional leaf; two returns, disk/live byte match; not asserting a separate pdata entry",
+    "semantics": "Receiver side 1 writes 2, side 2 writes 1; all other byte values leave output untouched."
+  },
+  "offline_emulation": {
+    "vectors": 2048,
+    "artifact": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\opposite-side-native-20261021.json",
+      "sha256": "a55187b11aab2fb2f2b892591a873cebeb3e5ef6dc781213bef8effc68bdfcdf"
+    },
+    "scope": "Copied leaf code in Unicorn with synthetic buffers; no client function invocation"
+  },
+  "fix": "Dispatcher uses explicit CardInstance receiver, otherwise implicit Self. No effect-controller fallback. Invalid side returns existing raw output; VM passes null for out arguments and its existing null-result rule preserves the caller slot.",
+  "tests": {
+    "total": 604,
+    "receiver_matrix_cases": 4096,
+    "dimensions": [
+      "controller Left/Right, active opposite controller",
+      "explicit receiver (Self opposite subject) or implicit Self",
+      "all 256 receiver side bytes",
+      "previous output 0/1/2/173"
+    ],
+    "entrypoints": [
+      "direct dispatch with prior output",
+      "VM call with seeded caller output slot"
+    ],
+    "before_failed_tests": 2,
+    "before_failed_receiver_cases": 3064,
+    "before_failed_existing_control_cases": 27,
+    "after_failed_tests": 0,
+    "existing_test_adjustment": "RULE270 GetOpponentSide matrix no longer expects a card-less GetOppositeSide to fabricate a receiver from controller. Other prior assertions unchanged.",
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule271-before-20261021.txt",
+        "sha256": "751b5dca95a8a0da700d7abc1862b6f1e7db2eb9e3e320712e1f1af036429386"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule271-after-20261021.txt",
+        "sha256": "0f8439c32bb7bf8d48e564c98eadd6a53cc344a9f27a6110e1e93feeefc1ab98"
+      }
+    ],
+    "initial_existing_only_run": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule271-initial-existing-20261021.txt",
+      "sha256": "daf57397b23114c51ce9de26635d006cada979a37be2710d62cbfae65e914640"
+    }
+  },
+  "deepseek": {
+    "job_id": "20261021-015606-rule271-opposite-uses-584c4ceb",
+    "elapsed_seconds": 62.66,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule271\\task.txt",
+      "sha256": "c01e58013af50939e523bf07a103e0639efb23e8cf492f208737d90561c270c7"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule271\\uses.json",
+      "sha256": "8784e90655d336cb4f6449b2bc2387896213b01611886fe9d1b524f80c23e411"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule271\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "cards": 1709,
+    "calls": 742,
+    "using_cards": 459,
+    "implicit_calls": 736,
+    "explicit_calls": 6,
+    "explicit_nodes": [
+      {
+        "card": "card_event_decoy_tactics",
+        "path": [
+          "steps",
+          12
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide"
+            }
+          ],
+          "recv": {
+            "var": "currentTarget",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          "i": 349,
+          "bo": 349
+        }
+      },
+      {
+        "card": "card_event_decoy_tactics",
+        "path": [
+          "steps",
+          31
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide_1",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide_1"
+            }
+          ],
+          "recv": {
+            "var": "K2Node_Event_defenderCard",
+            "scope": "local"
+          },
+          "i": 1070,
+          "bo": 1070
+        }
+      },
+      {
+        "card": "card_event_yamato",
+        "path": [
+          "steps",
+          44
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide"
+            }
+          ],
+          "recv": {
+            "var": "K2Node_Event_cardDestroyed",
+            "scope": "local"
+          },
+          "i": 1341,
+          "bo": 1341
+        }
+      },
+      {
+        "card": "card_unit_kokuras_sword",
+        "path": [
+          "steps",
+          44
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide"
+            }
+          ],
+          "recv": {
+            "var": "K2Node_Event_cardDestroyed",
+            "scope": "local"
+          },
+          "i": 1450,
+          "bo": 1450
+        }
+      },
+      {
+        "card": "card_event_engage_range",
+        "path": [
+          "locals",
+          "CanPlayFromHand",
+          2
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide"
+            }
+          ],
+          "recv": {
+            "var": "CallFunc_GetTargetedCard_card",
+            "scope": "local"
+          },
+          "i": 69,
+          "bo": 69
+        }
+      },
+      {
+        "card": "card_event_special_attack",
+        "path": [
+          "steps",
+          23
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetOppositeSide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetOppositeSide_oppositeSide"
+            }
+          ],
+          "recv": {
+            "var": "K2Node_Event_cardDestroyed",
+            "scope": "local"
+          },
+          "i": 738,
+          "bo": 738
+        }
+      }
+    ],
+    "independent_exact_reenumeration": true,
+    "scope": "Simulator IR inventory only; not all current-client cards or an authority for game semantics"
+  },
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "f05264a3befb0424c4a5c0374c7c95b8c944b8543548ca7900df0fd6bab5c44f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "0bbd318056390f128d999808e15ed8b5918a4613263a8f0d95bd7a1b01afed59"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-opposite-side-native-20261021.py",
+      "sha256": "68d5694cc3998f3fb30c611db6195b1286ca2ab8ecbddb3a2bbbf915f3a15506"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule271-opposite-side-tests-20261021.py",
+      "sha256": "cbad4f669fdd398deb18c73a67b9466ac024e7e70bdbc5d5102f505560d1c3f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule271-opposite-side-20261021.py",
+      "sha256": "ad614774873782cc0d92c5d121b58104c077d8c3617c270ada3d231b1f7b1882"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule271-opposite-side-20261021.py",
+      "sha256": "734b59fece93b9e877e624fa45fb383ac92db5c0e5ae5158cfb4fcc95e3081bd"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Explicit null-object Context skipping/lifetime and GC are not certified by this member dispatcher test.",
+    "Fresh native output scratch versus aliased caller outputs must be distinguished; no claim to all interpreter argument initialization paths.",
+    "Valid object receiver side is represented as managed int/Side. Out-of-byte-range enums and malformed output coercions are not covered.",
+    "Public pure GetOppositeSide(Side) and global Side.Opposite are unchanged; they are not the native receiver/out-parameter ABI.",
+    "No claim that all six explicit call cards or all other side-context rules are fully restored.",
+    "No old replay authority, client write, injection or client function invocation."
+  ]
+}

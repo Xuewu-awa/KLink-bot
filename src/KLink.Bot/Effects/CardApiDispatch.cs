@@ -233,19 +233,16 @@ public sealed partial class CardApi
             ["getFrontlineLimit"] = (c, r, a) => c.State.IsFrontlineLimited,
 
             // ---------------- 取值 / 选择器 ----------------
-            // ⚠️ `GetOppositeSide` **没有入参** —— 它的"我方"取自卡本身。
-            //    证据：扫描全部 2019 张卡的 Kismet 字节码，
-            //    `GetOppositeSide` 出现 756 次，**每一次的参数列表都只有 1 项**，
-            //    而且那一项是 out 槽 `CallFunc_GetOppositeSide_oppositeSide`
-            //    （对比 `GetLocationCardBySide` 3 项、`GetCardsOnBoardBySide` 4 项，
-            //    入参都老老实实列在参数表里）。见 tools/analyze-call-arity.py。
-            //
-            //    原先实现读 `a[0]`，拿到的是**尚未赋值的 out 槽** → `Side.NotAvailable`
-            //    → 后续 `GetLocationCardBySide(NotAvailable)` 返回 null →
-            //    `DamageCard(null)` 静默无操作。影响面很大（463 张卡用到它，
-            //    是第 3 常用的外部调用）。实测症状：card_unit_10_5_cm_lefh 的
-            //    「Deployment: 对敌方 HQ 造成 2 点伤害」完全不生效。
-            ["GetOppositeSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
+            // Native BaseCardObject.GetOppositeSide reads the receiver's side
+            // byte (+0x276), not the effect controller. Implicit calls use Self.
+            // Its sole parameter is an out byte: invalid side leaves it intact.
+            // VM out arguments arrive as null; returning null preserves the slot.
+            ["GetOppositeSide"] = (c, r, a) => (r as CardInstance ?? c.Self)?.Owner switch
+            {
+                Side.Left => 2,
+                Side.Right => 1,
+                _ => a.ElementAtOrDefault(0),
+            },
             // GameState.GetOpponentSide reads the stored opponent field. It is
             // distinct from the card-relative GetOppositeSide above (RULE-270).
             ["GetOpponentSide"] = (c, r, a) => (int)c.State.OpponentSide,
@@ -2935,7 +2932,7 @@ public sealed partial class CardApi
     //
     // ⚠️ **哪些卡不能缓存，为什么**（判据是自动的，见 <see cref="IsPoolPureProgram"/>）：
     //   · 读对局状态的：`GetAllCards` / `GetCardsInHandBySide` / `IsLocatedInDeck` /
-    //     `GetOppositeSide`（`SelfSide(c)` = 效果控制方）——
+    //     `GetOppositeSide`（读取接收者或隐式 self 的阵营）——
     //     `air_land_sea` / `happy_time` / `sabotage` / `the_rock_of_gibraltar`；
     //   · 带随机的：`RandomIntFromRangeWithStream` —— `rain1_mist` / `storm1_gale` / `sunny1_blue_sky`；
     //   · 读**这张卡自己的**私有 JSON（`{self:true}` 实参）：`baker_street_irregulars`
@@ -6697,7 +6694,7 @@ public sealed partial class CardApi
 
     /// <summary>
     /// 「我方」阵营 —— 给那些**没有入参、隐含以卡自己为上下文**的原语用
-    /// （目前已知只有 <c>GetOppositeSide</c>）。
+    /// 原生成员 GetOppositeSide 单独解析接收者，不使用这里的控制方兜底。
     /// 优先取卡自己的 owner，退回效果控制方。
     /// </summary>
     internal static Side SelfSide(EffectContext c)
