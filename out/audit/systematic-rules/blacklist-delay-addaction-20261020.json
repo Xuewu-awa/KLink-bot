@@ -1,0 +1,80 @@
+{
+  "rule": "RULE-251",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-addaction-native-20261020.json",
+  "source_sha256": "9e7ff00474402963e27a6fd153cd71563075936cca9400c4012e80de00846856",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 4185,
+  "sequences": 28,
+  "addaction_calls": 3368,
+  "created_shared_lists": 684,
+  "reference_move_cases": 18,
+  "passed": true,
+  "executed_functions": [
+    "AddActionShell",
+    "AdvanceSparseIterator",
+    "AppendAllocationBit",
+    "AppendSparseRow",
+    "FindOrAddWeakKey",
+    "InsertUUIDAction",
+    "InsertWeakKey",
+    "MoveControllerReference",
+    "RehashUUID",
+    "RehashWeakKey",
+    "ResizeAlignedHeap",
+    "ResizeBitStorage",
+    "ResizeBits",
+    "ResizeHashStorage",
+    "ResizeHeap"
+  ],
+  "backend_calls": {
+    "quantize": 822,
+    "realloc": 1086,
+    "memcpy": 228
+  },
+  "contracts": [
+    "Allocation quantization, realloc/free and memcpy as RULE249",
+    "Direct allocation returns successful poisoned memory",
+    "Weak-pointer construction returns explicit fixture mapping; GC barrier and registration notification only recorded",
+    "Shared controller virtual destruction only records requests"
+  ],
+  "limits": [
+    "No real weak-pointer construction, GC barrier, notification listeners or actual destruction verified",
+    "No allocator failure/overflow/concurrency or manager tick source verified",
+    "No automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "AddAction creates a zero-initialized action list and controller only when the outer pair has no list",
+    "Existing callback targets reuse the same shared list/controller; UUID insertion preserves duplicate actions",
+    "Notification call boundary sees newly inserted UUID/action; listeners remain opaque",
+    "Controller reference movement preserves new reference count, conditionally releases old controller, and handles equal/self alias"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-154507-rule251-inventory-49d00659",
+    "input_sha256": "a12524371324118122c07bd04fca61ec16c680aef200fcd4bbfa3a77ce52ad9f",
+    "output_sha256": "d101fa5da3a3069497fbddcc39a0d79c596bb2ec3095b1ab19004db85eb2912b",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 13,
+      "branches": 17,
+      "returns": 3
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-addaction-20261020.py",
+      "sha256": "966e24015dde9ff36c5af3611179137e2b09386d1148882ce0ba7b1445b86b04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-addaction-20261020.py",
+      "sha256": "274d9869348ddea581f5a0ed7478d3b3f7bdd2aef6b29356febd27ab36aa75cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-addaction-worker-20261020.py",
+      "sha256": "505a55ee6ba2d39995a67872814b6a858688b96446a1b727930d37405478058c"
+    }
+  ]
+}
