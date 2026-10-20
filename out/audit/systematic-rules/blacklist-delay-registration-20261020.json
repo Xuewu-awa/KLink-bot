@@ -1,0 +1,53 @@
+{
+  "rule": "RULE-248",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-registration-native-20261020.json",
+  "source_sha256": "51474c40208c302f5e7dfb2716e1325e251d53dc58a141a246371e7b3b01a835",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 593,
+  "outer_lookup_cases": 180,
+  "inner_free_slot_insert_cases": 168,
+  "total_cases": 348,
+  "passed": true,
+  "contracts": [
+    "Outer miss backend 0x3df7cc0 returns index 9; its mutation and allocation not executed"
+  ],
+  "limits": [
+    "No growth/rehash path execution",
+    "No weak pointer construction or lifetime proof",
+    "Fixtures are synthetic; no game function invoked",
+    "No automatic startup scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "worker_verification": {
+    "job_id": "20261020-152851-rule248-inventory-cffc6019",
+    "input_sha256": "bd29946529a359a7cda85687a7b29259b59b0b71b0ad543a2a9403ce1b731815",
+    "output_sha256": "df4c179dcafa611c3ca806627bb7e3f90d2b6a299318e551e4f9f8c9b2780dae",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 4,
+      "branches": 16,
+      "returns": 3
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-registration-20261020.py",
+      "sha256": "85ab90278624ec8b8cb24a3baf9a0bb142c76e9cd532218fa59c9c42fa0dbf9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-registration-20261020.py",
+      "sha256": "647c65cb5c47b3410759c8aba8d3146ef97be8949557d64a6ad01e3bc5f28401"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-registration-worker-20261020.py",
+      "sha256": "b48771190d3f01b76c40cd21b77df65ce39550f1b9db7ab2888ca45a88c660a4"
+    }
+  ],
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Outer lookup uses both halves of weak key and returns shared-pair at row+8; misses request insertion backend",
+    "Inner insertion preserves existing duplicate UUID rows, reuses first free sparse slot, sets allocation bit, prepends to hash chain on tested no-rehash path"
+  ]
+}
