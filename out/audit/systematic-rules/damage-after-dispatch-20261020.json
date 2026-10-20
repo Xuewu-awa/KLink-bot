@@ -1,0 +1,146 @@
+{
+  "rule": "RULE-263",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-after-dispatch-native-20261020.json",
+      "sha256": "56b7d082eeba650413333815a684da49496d9900b1e83f63385ed0bd46461cce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-damage-after-dispatch-20261020.py",
+      "sha256": "db82b7b09ce108dc5a655c5670ee1e64eebb44559de0623336a9181eef4273bf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule263-dispatch-test-20261020.py",
+      "sha256": "54d64c57ae6ae41e43224166a3b476d637c3eb91b8d28ede8ef305c4e6691e48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule263-damage-after-dispatch-20261020.py",
+      "sha256": "7a43e01ab940626b82558f21679e996c1efbcfb3498fe4ffadb0eccc7b090df2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule263-damage-after-dispatch-20261020.py",
+      "sha256": "51631f45f867cf40ebd978c12a25ee8951ff213bf6e883e14289d823c8bc0db2"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "81eb634d6aeea285baaf00b972f7f7bf1d99a769eea75e69fa008147cb93bc63"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "fa574c2d9f0ce4f8b5106170fa87d31c2069a7b30688cd2c8a8582abc0d13375"
+    }
+  ],
+  "current_runtime_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "name": "FetchAllCardsWithEventTrigger",
+      "script_bytes": 1174,
+      "script_sha256": "cbc442f32842f229de18e86389bd54053582b3533c07518e22547cfed20a41e9",
+      "statements": 34
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetActiveGotchasOrdered",
+      "script_bytes": 3626,
+      "script_sha256": "9e12961b9ac72f102718bf4992b43ad2e7f485a7b63770ac04f3228be88ba1c1",
+      "statements": 90
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ExecuteOnCardDealDamageEffects",
+      "script_bytes": 1825,
+      "script_sha256": "6082ee0d9fa49b06e655e3e515c65a7e7f2f6d2f92efa84a2e2df5c72fc79240",
+      "statements": 56
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "FetchAllCardsWithEventTrigger",
+      "script_bytes": 84,
+      "script_sha256": "6d81cb2f7271ddfecaadf792cec7f08a1bf96b0239546214d6c20220257dd724",
+      "statements": 4
+    }
+  ],
+  "current_script_bytes": 6709,
+  "normalization": "Drop exporter metadata/bo, fold selected identifiers as in RULE260, round FloatConst to IEEE float32. The only additional float differences were two printed 0.66 literals versus their exact runtime float32 value.",
+  "fix": [
+    "Active-countermeasure IDs captured once; direct callback has no location/registration/suppression gate and records original ID even if resolution fails.",
+    "Valid source receives its own callback only if not suppressed, regardless of location; source ID then enters cardsDone.",
+    "Fetch T36 after own callback using existing query-time suppression/exception filtering; invoke saved references directly without repeated location/registration/suppression checks.",
+    "Check stop before each countermeasure, before source phase, and before each saved observer; maintain six/five argument payloads and ID-based cardsDone."
+  ],
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "synthetic_cases": 34,
+    "sides": 2,
+    "modes": 17,
+    "before": {
+      "total": 596,
+      "failed": 1,
+      "synthetic_failed": 14,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule263-before-20261020.txt",
+        "sha256": "7b0a0358a514a2acd6f6fce771834d1cac249a791d64fb0e369a8d65b3806925"
+      }
+    },
+    "after": {
+      "total": 596,
+      "failed": 0,
+      "synthetic_failed": 0,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule263-after-20261020.txt",
+        "sha256": "0a734e18da802b0d49e281caf6aef0cb78f9d7330f61d1200099af5be4a2b80a"
+      }
+    },
+    "coverage": [
+      "initial suppressed observer excluded",
+      "suppression exception included",
+      "NotAvailable observers/source/active countermeasure",
+      "later suppression/location/registration mutation retains saved membership",
+      "initially excluded observer remains excluded after unsuppression",
+      "initial/active/source/first-observer stop boundaries",
+      "null source",
+      "source is also active countermeasure receives both direct stages but no duplicate T36",
+      "own callback creates newly registered observer before T36 query",
+      "signed damage including zero/negative/intMax and all boolean payload bit combinations"
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261020-210220-rule263-core-parse-93247abe",
+    "elapsed_seconds": 68.93,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\task.txt",
+      "sha256": "acfc0fad8e37cdb18b97e9b5c5d455077f5b761814b3ce33301ea099252dbe49"
+    },
+    "parsed_assets": 2,
+    "parsed_functions": 389,
+    "parser_errors": 0,
+    "independent_runtime_ast_matches": 4
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Synthetic callbacks and subscriptions validate common dispatch behavior, not the named probe cards or all card semantics.",
+    "Underlying UE TSet registration order and active-countermeasure collision/special-key ordering are not newly certified; tests assume supplied/current modeled query order.",
+    "Actual pending-kill/GC invalid UObject states, mutation of card ID, reentrant removal/replacement and all native callback implementations remain unverified.",
+    "Current mapped registration uses existing managed definitions; this change does not certify dynamic registration/removal lifecycle parity.",
+    "No historical replay authority, process write, injection or client function invocation. Raw assets remain local."
+  ]
+}

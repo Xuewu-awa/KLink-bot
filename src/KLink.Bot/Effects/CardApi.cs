@@ -2150,10 +2150,13 @@ public sealed partial class CardApi
             eventArgs: new object?[] { source, target, combat, amount }, eventSubject: target, namedArgs: named);
     }
 
-    /// <summary>Blueprint damage effects: active countermeasures, unsuppressed dealer, then remaining T36.</summary>
+    /// <summary>Direct damage callbacks: saved active gotchas, dealer, then query-time filtered T36.</summary>
     internal void ExecuteOnCardDealDamageEffects(CardInstance target, CardInstance? source, int amount,
         bool combat, bool counterDamage, bool redirected)
     {
+        const string own = "OnCardDealDamage", other = "OnOtherCardDealDamage";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
         var named = new Dictionary<string, object?>
         {
             ["cardDealingDamage"] = source, ["toCard"] = target, ["Damage"] = amount,
@@ -2161,26 +2164,42 @@ public sealed partial class CardApi
         };
         var args = new object?[] { source, target, amount, combat, counterDamage, redirected };
         var done = new HashSet<int>();
-        void Observer(CardInstance observer) => FireTrigger("OnOtherCardDealDamage", observer, observer.Owner,
-            selfProgramName: "OnOtherCardDealDamage", eventSubject: source, eventArgs: args, namedArgs: named);
+        void Observer(CardInstance observer)
+        {
+            if (library.FindProgram(observer.Name, other) is null) return;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}"
+                + $"（eventCard={source?.Name ?? "null"}#{source?.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, source,
+                eventArgs: args, namedArgs: named);
+        }
+        // The active-ID array is captured before any callback. This direct stage
+        // has no registration, suppression or location gate; cardsDone stores the ID.
         foreach (int id in GetActiveGotchasOrdered())
         {
             if (State.StopFurtherActions) return;
-            if (State.ById(id) is { } gotcha) { Observer(gotcha); done.Add(id); }
+            if (State.ById(id) is { } gotcha) Observer(gotcha);
+            done.Add(id);
         }
         if (State.StopFurtherActions) return;
         if (source is not null)
         {
-            if (!source.IsSuppressed)
-                FireTrigger("OnCardDealDamage", source, source.Owner,
+            if (!source.IsSuppressed && library.FindProgram(source.Name, own) is not null)
+            {
+                TriggerTrace?.Add($"{own} → {source.Name}#{source.CardId}（eventCard={source.Name}#{source.CardId}）");
+                RunTriggerProgram(library, source, source.Name, own, source,
                     eventArgs: new object?[] { target, amount, combat, counterDamage, redirected }, namedArgs: named);
+            }
             done.Add(source.CardId);
         }
-        var snapshot = CaptureTriggerSnapshot().Where(x => x.Definition.IsRegisteredFor("OnOtherCardDealDamage")).ToArray();
+        // i=541 queries after the own hook; i=1582 invokes saved references
+        // without repeating the query's suppression/exception or location checks.
+        var snapshot = CaptureRegisteredTriggerSnapshot(other);
         foreach (var observer in snapshot)
         {
             if (State.StopFurtherActions) return;
-            if (done.Add(observer.CardId)) Observer(observer);
+            if (done.Contains(observer.CardId)) continue;
+            Observer(observer);
+            done.Add(observer.CardId);
         }
     }
 

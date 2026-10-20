@@ -560,6 +560,7 @@ internal static class SelfTest
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
         new("事件层：OnOtherCardReset 传递 cardReset/resetCardID（真实 Coastwatchers 订阅）",
             ResetEventCarriesPayload),
+        new("伤害后事件：反制→来源→T36保存接收者，查询时筛抑制且直接回调不设位置门", DamageAfterDispatchSnapshot),
         new("事件层：OnOtherCardDealDamage 传递来源/目标/伤害载荷（真实 15th RECCE 订阅）",
             DealDamageEventCarriesPayload),
         new("卡内伤害自定义事件入口：220th / Kyushu / SU-100 真实执行",
@@ -7546,6 +7547,127 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Synthetic programs probe only the common dispatcher, not these live cards' rules.
+    private static string? DamageAfterDispatchSnapshot(CardDatabase db)
+    {
+        const string own = "OnCardDealDamage", other = "OnOtherCardDealDamage";
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, string Trigger)>();
+        foreach (string name in new[] { "card_unit_typhoon_mk_ib", "card_event_honorifics", "card_unit_51e_regiment" })
+        foreach (string trigger in new[] { own, other })
+        {
+            if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+                || KismetLibrary.Default.FindProgram(name, trigger) is not null)
+            {
+                foreach (var item in installed) item.Locals.Remove(item.Trigger);
+                return "无法安全安装伤害后派发探针";
+            }
+            var steps = new List<KismetStep>();
+            void Save(string key, KismetExpr value) => steps.Add(new KismetStep(steps.Count, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null)
+                { DestinationScope = "instance" });
+            Save("_auditDamageKind", new KismetExpr { Int = trigger == own ? 1 : 2 });
+            foreach (string key in new[] { "cardDealingDamage", "toCard", "Damage", "isCombatDamage", "CounterDamage", "isRedirected" })
+                Save("_auditDamage_" + key, new KismetExpr { Var = key, Scope = "local" });
+            steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(),
+                Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(trigger, steps); installed.Add((locals, trigger));
+        }
+        try
+        {
+            var failures = new List<string>();
+            var dispatch = typeof(CardApi).GetMethod("ExecuteOnCardDealDamageEffects",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 17))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var gotcha = state.CreateWithId("card_event_honorifics", side, 10, side.DeckOf(), 0);
+                gotcha.Definition = new CardDefinition { Name = gotcha.Name, Type = "gotcha", UsedTriggers = new[] { other } };
+                gotcha.GotchaActivated = 1;
+                CardInstance? source = mode == 13 ? null : mode == 15 ? gotcha
+                    : state.CreateWithId("card_unit_typhoon_mk_ib", side, 50, side.HqOf(), 0);
+                if (source is not null && source != gotcha)
+                    source.Definition = new CardDefinition { Name = source.Name, UsedTriggers = new[] { other } };
+                var first = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+                var last = state.CreateWithId("card_unit_51e_regiment", side, 21, side.HqOf(), 2);
+                foreach (var card in new[] { first, last })
+                    card.Definition = new CardDefinition { Name = card.Name, UsedTriggers = new[] { other } };
+                var target = state.CreateWithId(PlainUnit, side.Opposite(), 60, side.Opposite().HqOf(), 0);
+                if (mode is 1 or 2 or 6) last.Keywords.Add(Keyword.Suppressed);
+                if (mode == 2) last.SuppressionExceptionTriggers.Add(other);
+                if (mode == 3) last.Location = CardLocation.NotAvailable;
+                if (mode == 7) state.StopFurtherActions = true;
+                if (mode == 11) { source!.Keywords.Add(Keyword.Suppressed); source.SuppressionExceptionTriggers.Add(other); }
+                if (mode == 12) source!.Location = CardLocation.NotAvailable;
+                if (mode == 14) { gotcha.Keywords.Add(Keyword.Suppressed); gotcha.Location = CardLocation.NotAvailable; }
+                var cards = new[] { gotcha, source, first, last }.Where(x => x is not null).Cast<CardInstance>().Distinct().ToList();
+                var called = new List<(int Id, int Kind)>(); string? payloadError = null;
+                bool combat = (mode & 1) != 0, counter = (mode & 2) != 0, redirected = (mode & 4) != 0;
+                int amount = new[] { -4, 0, 7, int.MaxValue }[mode % 4];
+                int Value(object? v) => v is CardInstance card ? card.CardId : Convert.ToInt32(v);
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = cards.Single(x => x.BlueprintVariables.TryGetValue("_auditDamageKind", out var kind)
+                        && !called.Contains((x.CardId, Convert.ToInt32(kind))));
+                    int tag = Convert.ToInt32(current.BlueprintVariables["_auditDamageKind"]);
+                    called.Add((current.CardId, tag));
+                    var want = new Dictionary<string, int> {
+                        ["cardDealingDamage"] = source?.CardId ?? 0, ["toCard"] = target.CardId,
+                        ["Damage"] = amount, ["isCombatDamage"] = combat ? 1 : 0,
+                        ["CounterDamage"] = counter ? 1 : 0, ["isRedirected"] = redirected ? 1 : 0,
+                    };
+                    foreach (var pair in want)
+                        if (!current.BlueprintVariables.TryGetValue("_auditDamage_" + pair.Key, out var value)
+                            || Value(value) != pair.Value) payloadError = $"{current.CardId}/{pair.Key} 载荷错误";
+                    if (current == first)
+                    {
+                        if (mode == 4) { last.Keywords.Add(Keyword.Suppressed); last.Location = CardLocation.NotAvailable; }
+                        if (mode == 5) last.Definition = new CardDefinition { Name = last.Name };
+                        if (mode == 6) last.Keywords.Remove(Keyword.Suppressed);
+                        if (mode == 10) state.StopFurtherActions = true;
+                    }
+                    if (current == gotcha && tag == 2 && mode == 8) state.StopFurtherActions = true;
+                    if (current == source && tag == 1)
+                    {
+                        if (mode == 9) state.StopFurtherActions = true;
+                        if (mode == 16)
+                        {
+                            var late = state.CreateWithId("card_unit_51e_regiment", side, 9004, CardLocation.NotAvailable, 0);
+                            late.Definition = new CardDefinition { Name = late.Name, UsedTriggers = new[] { other } };
+                            cards.Add(late);
+                        }
+                    }
+                };
+                dispatch.Invoke(engine.Api, [target, source, amount, combat, counter, redirected]);
+                var expected = new List<(int Id, int Kind)>();
+                if (mode != 7)
+                {
+                    expected.Add((10, 2));
+                    if (mode != 8)
+                    {
+                        if (source is not null && mode != 11) expected.Add((source.CardId, 1));
+                        if (mode != 9)
+                        {
+                            expected.Add((20, 2));
+                            if (mode is not (1 or 6 or 10)) expected.Add((21, 2));
+                            if (mode == 16) expected.Add((9004, 2));
+                        }
+                    }
+                }
+                if (!called.SequenceEqual(expected) || payloadError is not null)
+                    failures.Add($"{side}/mode={mode}: 实际 {string.Join(",", called)}，期望 {string.Join(",", expected)} {payloadError}");
+            }
+            return failures.Count == 0 ? null : $"{failures.Count}/34 场景失败：" + string.Join(" | ", failures.Take(10));
+        }
+        finally { foreach (var item in installed) item.Locals.Remove(item.Trigger); }
     }
 
     /// <summary>
