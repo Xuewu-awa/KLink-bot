@@ -689,12 +689,9 @@ public sealed partial class CardApi
             //     而它的事件主体是"刚被打出的那张牌"，那张牌自己显然不是订阅者。
             //   · 其余 `OnXxx` 是「**自己**发生了 X」—— 只给主体。
             //
-            // ⚠️ 旧实现把 `programName` 无条件发给**场上每一张卡**，这个错误非常隐蔽：
-            //    `card_unit_3_panzergrenadier` 的 `OnAfterAttack` 程序体是
-            //    **无条件** `ChangeAttack(+1)+ChangeDefense(+1)`（"我攻击了就 +1+1"），
-            //    于是别人攻击时它也跟着涨 —— 实测一个美国 M2A4 操作也能让它 +1+1，
-            //    表现成"累计涨超"（T5 6/6、T7 11/12，比实际德国单位操作次数多）。
-            //    它的 `OnOtherCardAttacks` 才是那条带阵营判定的分支。
+            // 主体事件只发给主体，广播事件排除主体。若将一个无条件属性增益的
+            // 主体回调发给旁观者，无关单位的行动也会错误触发该增益。
+            // 具体卡牌是否还实现自身事件由当前 IR 决定，不在这里硬编码。
             bool broadcast = selfProgramName is null
                              && (broadcastName
                                  || programName.StartsWith("OnOther", StringComparison.Ordinal));

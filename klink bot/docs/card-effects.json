@@ -39698,7 +39698,7 @@
  "card_unit_3_panzergrenadier": {
   "asset": "kards/Content/Blueprints/Cards/Germany/OceaniaStorm/units/card_unit_3_panzergrenadier.uasset",
   "title": "3. PANZERGRENADIER",
-  "text": "Gets +1+1 after you operate a German unit.",
+  "text": "Gets +1+1 after you operate another German unit.",
   "type": "infantry",
   "faction": "Germany",
   "kredits": 3,
@@ -39714,13 +39714,7 @@
     "IsLocatedOnBoard",
     "NotEqual_ByteByte"
    ],
-   "OnAfterAttack": [
-    "ExecuteUbergraph_card_unit_3_panzergrenadier"
-   ],
    "OnAfterOtherCardAttacks": [
-    "ExecuteUbergraph_card_unit_3_panzergrenadier"
-   ],
-   "OnMoveToFrontline": [
     "ExecuteUbergraph_card_unit_3_panzergrenadier"
    ],
    "OnOtherCardMoveToFrontline": [
@@ -39747,9 +39741,7 @@
    0,
    1,
    10,
-   141,
-   481,
-   690
+   350
   ]
  },
  "card_unit_blue_legion": {

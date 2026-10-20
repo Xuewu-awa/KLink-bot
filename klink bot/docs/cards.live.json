@@ -18242,7 +18242,7 @@ false
 "OnOtherCardMoveToFrontline"
 ],
 "title": "3. PANZERGRENADIER",
-"text": "Gets +1+1 after you operate a German unit.",
+"text": "Gets +1+1 after you operate another German unit.",
 "flavorText": "Panzer Grenadier Regiment 3 was part of the 3rd Panzer Division, serving alongside Panzer Grenadier Regiment 394 in the division’s 1943 Eastern Front organization. The 3rd Panzer Division was one of Germany’s first three tank divisions, formed in 1935 and headquartered in Berlin. It fought in Poland in 1939, where it was the strongest German panzer division by tank numbers, with 391 tanks. In 1940 it advanced through Belgium toward Brussels and into France. Afterward, one of its two tank regiments was removed to help form new panzer divisions, and the division gained more infantry. Panzer Grenadier Regiments were formed to fill the motorized infantry role that German panzer divisions needed after losing some armored strength and reorganizing for a longer war. In 1941 the 3rd Panzer division joined Operation Barbarossa. It fought first in the central sector, then in Ukraine during the Battle of Kiev, and later drove toward Tula during the Battle of Moscow. In 1942 it advanced toward the Caucasus during Case Blue, but suffered heavy losses near Mozdok. It later fought at Kursk and remained on the Eastern Front until 1945, ending the war in Styria where it surrendered to US forces.",
 "source_pak": "kards/Content/Blueprints/Cards/Germany/OceaniaStorm/units/card_unit_3_panzergrenadier.uasset"
 },

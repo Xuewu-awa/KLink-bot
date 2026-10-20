@@ -489,7 +489,8 @@ internal static class SelfTest
             Type89ConvertsHqDefenseGainToDamage),
 
         // ---- 三个规则 bug 的回归断言（2026-09-27）----
-        new("3 掷弹兵：只有**德国**单位操作才 +1+1（别的阵营不算）", PanzergrenadierFactionGate),
+        new("3 掷弹兵：自身攻击不成长，其他友方德国单位攻击才 +1+1", PanzergrenadierFactionGate),
+        new("3 掷弹兵：普通/效果移动排除自身、敌方、异阵营、抑制与离场接收者", PanzergrenadierMoveGate),
         new("Attack 必须拒绝已经进弃牌堆的目标", AttackRejectsDeadTarget),
         new("T30 OnOtherCardAttackSwitchTarget：Cold Trap 把攻击改到 SISSI", OtherCardAttackSwitchesTarget),
         new("T31 OnOtherCardAttacks：Merchant Navy 能中止敌方攻击并撤回攻击者", OtherCardAttacksStopsAttack),
@@ -5252,23 +5253,8 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// `card_unit_3_panzergrenadier` —— "Gets +1+1 after you operate a German unit."
-    ///
-    /// 它的 IR 判据是（`OnAfterOtherCardAttacks`）：
-    /// <code>
-    /// IsLocatedOnBoard()                        ← 隐式 self（自己还在场）
-    /// EqualEqual_ByteByte(attackerCard.side, side)
-    /// EnumCompareFaction(attackerCard.faction, 1, out Branches)   ← 1 = EFactionEnum::Germany
-    /// CmpSuccess = NotEqual_ByteByte(Branches, 0)
-    /// if (!CmpSuccess) ChangeAttack(+1); ChangeDefense(+1)
-    /// </code>
-    ///
-    /// 这里守两件事，它们**各自都能单独让效果失效**：
-    /// 1. 带 `ctx` 的成员访问（`attackerCard.faction` / `attackerCard.side`）——
-    ///    丢掉 ctx 会让 faction 读成 null
-    /// 2. `CallMath` 的输出槽（`CallFunc_EnumCompareFaction_Branches`）——
-    ///    生成器不给 math 步算 outs 的话它永远是 null，
-    ///    `NotEqual_ByteByte(null, 0)` = false → `JumpIfNot` 恒成立 → **无条件 +1+1**
+    /// 当前客户端已移除自身 OnAfterAttack/OnMoveToFrontline，只保留其他卡攻击/移动。
+    /// 此处通过真实攻击验证排除自身，同时保留友方德国与异阵营的对照。
     /// </summary>
     private static string? PanzergrenadierFactionGate(CardDatabase db)
     {
@@ -5313,11 +5299,12 @@ internal static class SelfTest
             var foe = state.Create($"{victim}", Side.Right, CardLocation.BoardFrontline,
                                    state.NextLocationNumber(Side.Right, CardLocation.BoardFrontline));
             foe.Defense = 99;
+            foe.Attack = 0; // 隔离成长规则，不让反击伤害污染防御增量断言。
             engine.Api.RemoveKeyword(foe, Keyword.Smokescreen);   // 见上面关于烟幕的注释
 
-            // 「自己攻击」那一路**无条件** +1+1（它自己也是德国单位）；
-            // 「别人攻击」那一路才带阵营判定 —— 所以只有德国单位出手才该再涨。
-            bool counts = attacker.Definition.FactionId == 1;
+            // 当前版本只响应其他友方德国单位，自身行动不再提供加成。
+            bool counts = !ReferenceEquals(attacker, grenadier)
+                          && attacker.Definition.FactionId == 1;
             int before = grenadier.Attack;
             if (!engine.Attack(attacker, foe))
             {
@@ -5330,7 +5317,7 @@ internal static class SelfTest
             {
                 return $"{attacker.Name}（faction={attacker.Definition.FactionId}）出手后，"
                      + $"掷弹兵攻击力应为 {baseAttack + expected}，实际 {grenadier.Attack}"
-                     + $"（本次{'应' : '不'}计入）"
+                     + $"（本次{(counts ? "应" : "不应")}计入）"
                      + Dump(state, ("未实现", Unimpl(state)));
             }
 
@@ -5347,6 +5334,41 @@ internal static class SelfTest
                  + $"防 +{grenadier.Defense - baseDefense}（应都是 +{expected}）";
         }
 
+        return null;
+    }
+
+    private static string? PanzergrenadierMoveGate(CardDatabase db)
+    {
+        const string name = "card_unit_3_panzergrenadier";
+        foreach (bool effectMove in new[] { false, true })
+        foreach (string scenario in new[] { "self", "friendlyGerman", "friendlyAmerican",
+                                           "enemyGerman", "suppressed", "offBoard" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var watcher = state.CreateWithId(name, Side.Left, 2,
+                scenario == "offBoard" ? CardLocation.HandLeft : CardLocation.BoardHqLeft, 0);
+            Side owner = scenario == "enemyGerman" ? Side.Right : Side.Left;
+            var actor = scenario == "self" ? watcher : state.CreateWithId(
+                scenario == "friendlyAmerican" ? "card_unit_m2a4" : "card_unit_arado_ar_196",
+                owner, 3, owner == Side.Left ? CardLocation.BoardHqLeft : CardLocation.BoardHqRight, 1);
+            if (scenario == "suppressed") watcher.Keywords.Add(Keyword.Suppressed);
+            actor.EnteredPlayOnTurn = state.Turn - 1;
+            state.ActiveSide = owner;
+            state.SetMaxKredits(owner, 20);
+            state.SetKredits(owner, 20);
+            int attack = watcher.Attack, defense = watcher.Defense;
+            bool moved = effectMove
+                ? engine.MoveUnitFromSupportToFrontLine(actor, actor.CardId, out string reason)
+                : engine.MoveUnit(actor, 0, out reason);
+            if (!moved) return $"{scenario}/effect={effectMove} 移动失败：{reason}";
+            int gain = scenario == "friendlyGerman" ? 1 : 0;
+            if (watcher.Attack != attack + gain || watcher.Defense != defense + gain)
+            {
+                return $"{scenario}/effect={effectMove} 成长应为 +{gain}+{gain}，"
+                     + $"实际 +{watcher.Attack - attack}+{watcher.Defense - defense}"
+                     + Dump(state, ("未实现", Unimpl(state)));
+            }
+        }
         return null;
     }
 

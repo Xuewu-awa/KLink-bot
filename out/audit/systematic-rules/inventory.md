@@ -1,6 +1,6 @@
 # 系统规则审计：结构基线
 
-代码基线：`1325c3db980ea748927f4d2f9bc12595c272cf95`
+代码基线：`4a4a0e9a6f72271a6fdc3c70b5f1239bcfcc432d`
 
 本报告不是穷尽缺陷清单，所有卡牌的语义状态保留为未验证。
 
@@ -14,13 +14,13 @@
 | card_assets_with_own_ir | 1709 |
 | static_card_functions | 5585 |
 | functions_with_runtime_match | 5585 |
-| functions_without_direct_ir | 0 |
+| functions_without_direct_ir | 2 |
 | excluded_display_or_delegate_functions | 61 |
 | data_only_assets_without_own_function_exports | 310 |
 | cards_with_structural_issues | 20 |
 | missing_static_function_files | 0 |
 | kernel_cs_files | 36 |
-| kernel_cs_lines | 30004 |
+| kernel_cs_lines | 30001 |
 | comment_leads | 43 |
 | semantically_verified_cards | 0 |
 | runtime_scalar_cards | 2019 |
@@ -35,6 +35,7 @@
 
 必须检查继承、原生默认实现和 PvP 适用范围后才能认定缺陷。
 
+- `card_unit_3_panzergrenadier`：`OnAfterAttack`, `OnMoveToFrontline`
 
 ## 结构异常
 

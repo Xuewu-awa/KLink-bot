@@ -1,0 +1,143 @@
+{
+  "rule": "RULE-262",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "card": "card_unit_3_panzergrenadier",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule262\\source.json",
+      "sha256": "667fb24e3abcf7acc4d60219908b81c0ae40f45b772ffc82705567a0f89e4482"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule262\\candidate-ir.json",
+      "sha256": "46e1d53856d6ebe40c2ce22552705e87ace318f839d44b9653fe21c2944a2fd5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule261\\parsed.json",
+      "sha256": "195f8e6ec5f050248c0c1540cddf0bf6cd7376c8f677bd35266dd93dc3ae8229"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-card-version-drift-native-20261020.json",
+      "sha256": "e4f14678ef96a1c1f0acc10adef2c1643a595b479ada667131ea365277af2a6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\patch-current-card-defaults-native-20261020.json",
+      "sha256": "ba2567b91a90a7c49c2f753f2378617536182feadf7db5780be6dc7dd9e766a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule262-panzergrenadier-20261020.py",
+      "sha256": "1395d3088d69026f593bc9e9f1d59404ce7d391614c6c6f048e9ec4ee187f6e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule262-panzergrenadier-20261020.py",
+      "sha256": "089c64d7bf70fc8dd589b464dbe2e9557787a27918d0f7179aaf52316c17932d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\tools\\gen-kismet-ir.py",
+      "sha256": "1469fd694c7d3ae013a5fe4aa7fb72eaf0263360bf4d0598722b41ad9b506f70"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-effects.json",
+      "sha256": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json",
+      "sha256": "835ec5d6f8aa267e2324e0eb3bb78a38280994e064485b2a31a95cc296939451"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.live.json",
+      "sha256": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "ad9dd855e7c51d2720b62aea4dd3806871ff206837e182dbc63522eb7bc790ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "c8f2f1d06ddcf825221049043b2ba713f4b68159ceb608ca155222bdf40af681"
+    }
+  ],
+  "current_function_count": 3,
+  "current_runtime_ast_matches": 3,
+  "entrypoints": {
+    "OnAfterOtherCardAttacks": 10,
+    "OnOtherCardMoveToFrontline": 350
+  },
+  "ir_steps": 23,
+  "unknown_ir_ops": 0,
+  "removed_entrypoints": [
+    "OnAfterAttack",
+    "OnMoveToFrontline"
+  ],
+  "registration_changed": false,
+  "instance_defaults_changed": false,
+  "other_card_ir_or_data_changed": false,
+  "common_dispatch_code_changed": false,
+  "card_rule_text": "Gets +1+1 after you operate another German unit.",
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "before": {
+      "total": 595,
+      "failed": 2,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule262-before-20261020.txt",
+        "sha256": "a2afef52d3f221e548aa68be2d30d8d8998c3a6b36c118e1200c5b572eb98df1"
+      }
+    },
+    "after": {
+      "total": 595,
+      "failed": 0,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule262-after-20261020.txt",
+        "sha256": "819d123e3b3882c9a36d70a4ddacc14c50b9b98a44a57e67991456fa0455c428"
+      }
+    },
+    "attack_actors": [
+      "self",
+      "other friendly Germany",
+      "other friendly USA"
+    ],
+    "movement_scenarios": [
+      "self",
+      "friendlyGerman",
+      "friendlyAmerican",
+      "enemyGerman",
+      "suppressed",
+      "offBoard"
+    ],
+    "movement_paths": [
+      "ordinary action",
+      "effect movement"
+    ],
+    "scoped_operation_scenarios": 15
+  },
+  "pending_focused_cards": [
+    "card_unit_yokosuka_e14y",
+    "card_event_cruiser_scouts",
+    "card_event_tactical_retreat",
+    "card_event_surprise_engagement",
+    "card_unit_3rd_carpathian",
+    "card_unit_511th_regiment",
+    "card_unit_l4_grasshopper",
+    "card_unit_panzer_iii_f"
+  ],
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "This migration verifies the observed self-exclusion/growth behavior, not every inherited/native primitive or possible game state for the card.",
+    "Positive AST matching is after documented exporter metadata normalization. The bo annotations are discarded and IR bo is assigned runtime StatementIndex.",
+    "The two existing current trigger IDs were preserved; no global trigger/dispatch behavior was altered.",
+    "No new DeepSeek task was needed for this narrow migration; source batch was produced in RULE261 and independently matched to runtime.",
+    "Current raw game assets and memory data remain local. No replay was used as rule authority."
+  ]
+}
