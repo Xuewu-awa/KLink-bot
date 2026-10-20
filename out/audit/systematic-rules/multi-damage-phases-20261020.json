@@ -1,0 +1,127 @@
+{
+  "rule": "RULE-267",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\multi-damage-phases-native-complete-20261020.json",
+      "sha256": "8fd919f18fc720f19dbb4e009ea8d0753994f9d18ad71f56dceea1cf7b61f0cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\EExprToken.cs",
+      "sha256": "f60ec8c9b4c36aa702c723cbcff3686645cbd8865c8c3d2547c0047d4ce9a174"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_VirtualFunction.cs",
+      "sha256": "b0358ec6ee3de90d6ed9651c17dddf871a34f5486821e8890b3ad4bd7456eae5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_ArrayConst.cs",
+      "sha256": "01637c7223a14ca5e5455a3947ec1ce1ac00f6eb14e165d6a566000b3556eb2d"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-267.py",
+      "sha256": "44ba9257488afa5d6571b7730b6f5ce474b2bc28079d80a99568a3b21a642819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-multi-damage-phases-20261020.py",
+      "sha256": "6ded316d931544dd18f1ff6f8adff00f920dd9456b382ad5c5a8770a62698257"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule267-multi-damage-test-20261020.py",
+      "sha256": "0a570de0f7a87a80265d07b72790fe8f150d55fb173395e883a973141e7180bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule267-multi-damage-phases-20261020.py",
+      "sha256": "19818b163365f449e92c897d3d08d6faa287f6e61573bec9a8a0c55aa598962a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule267-multi-damage-phases-20261020.py",
+      "sha256": "37dc45d0cb18333ff9fa32612caab2ef26dc2d7f53d7c58779e6b0b67b8a4a6e"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "e005c6dcdbd50e38d61452c78ee195912ae0550e117a78d11c91f278f36dca8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "ce56a30869c53b8263d961f6b9333c9e6b78cde68971c4bcf9dc03b85992a9a3"
+    }
+  ],
+  "runtime_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "name": "ApplyDamageToMultipleCards",
+      "script_bytes": 10676,
+      "script_sha256": "17f10e7684126f3f779ab5913e44a27d211ef6c48d7817cac1172714d6d61e38",
+      "statements": 347
+    }
+  ],
+  "decoder_extension": [
+    "0x1b VirtualFunction with validated numberless 12-byte name and parameter terminator.",
+    "0x65 ArrayConst with property reference retained in references, exact element count and required 0x66 terminator; AST type metadata normalized as for other properties."
+  ],
+  "fix": [
+    "Return before notification/receive/deal/death/refresh phases when no nonzero recipients remain.",
+    "At movement phase, remove destruction-map entries whose object is already Discard after deal/before-death/before-leave callbacks; surviving map alone feeds move, after-leave, death history and output IDs.",
+    "Save affectedLocations while forming initial destruction map; retain that set across map removals. Refresh those saved physical locations only if pruned map remains nonempty.",
+    "Only request final frontline-owner refresh when saved affectedLocations contains Frontline."
+  ],
+  "tests": {
+    "total": 600,
+    "synthetic_cases": 42,
+    "before_failed_tests": 1,
+    "before_failed_scenes": 38,
+    "after_failed_tests": 0,
+    "after_failed_scenes": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule267-before-20261020.txt",
+        "sha256": "622be9be9d59234eefb1f9cdc0b7366324aa860597db79393afae4c014505efd"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule267-after-20261020.txt",
+        "sha256": "62414e3fd9fdf3a210b8d14d6762d5201df1df854e6085c0fd77df37b868b6a7"
+      }
+    ],
+    "coverage": [
+      "both sides",
+      "empty/zero/all-immune early return",
+      "nonlethal and mixed immune batches do not request unrelated frontline refresh",
+      "32 destruction cases: side x frontline/support x deal/leave callback mutation x none/first/last/both discard masks",
+      "returned IDs and destruction history exclude already-discarded entries",
+      "before-leave and after-leave event sequences",
+      "original affected-location set retained when one map entry removed",
+      "all map entries removed skips board renumber/cache refresh",
+      "shared frontline starts at0; support includes HQ and surviving unit starts at1",
+      "temporary programs and touched local-program cache entries restored"
+    ],
+    "initial_test_note": "First synthetic expectation incorrectly used support index1 for frontline too; retained initial logs, corrected expectation from existing physical-location rearrangement semantics, reran complete red and green comparisons."
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Complete AST match certifies syntax acquisition, not every execution path or all PvP card semantics.",
+    "HQ destruction/victory branches, native map/set iteration order, receiver/source ID re-resolution and object replacement/GC remain uncertified in this repair.",
+    "Tests use controlled direct location mutation to isolate branch boundaries; no claim that all synthetic combinations are reachable by current legal card interactions.",
+    "The unrelated-frontline-refresh tests intentionally retain a controlled stale ownership field; they certify conditional requests, not legal-match reachability.",
+    "Input array reference mutation, duplicate IDs, signed overflow and all dynamic subscription/death-reentrancy histories remain unverified.",
+    "Raw assets/runtime stay local; no historical replay authority, process write, injection or client function invocation."
+  ]
+}

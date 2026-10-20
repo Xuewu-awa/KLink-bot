@@ -560,6 +560,7 @@ internal static class SelfTest
         new("事件层：'别的卡'那一族能广播到旁观的订阅者", EventLayerOtherEvents),
         new("事件层：OnOtherCardReset 传递 cardReset/resetCardID（真实 Coastwatchers 订阅）",
             ResetEventCarriesPayload),
+        new("多目标伤害边界：全零早退、弃牌销毁条目移除、保存区域与前线更新门", MultiDamagePhaseBoundaries),
         new("效果伤害落地：入口正值分支跨回调保留，溢出截断后仍执行事件与销毁", EffectDamagePositiveBranch),
         new("受伤前事件：自身→T52保存接收者，直接回调不重筛且不检查停止标志", DamageBeforeDispatchSnapshot),
         new("伤害后事件：反制→来源→T36保存接收者，查询时筛抑制且直接回调不设位置门", DamageAfterDispatchSnapshot),
@@ -7550,6 +7551,133 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Test common batch phases with controlled callbacks, without real card semantics.
+    private static string? MultiDamagePhaseBoundaries(CardDatabase db)
+    {
+        const string name = "card_event_honorifics";
+        string[] hooks = { "OnCardDealDamage", "OnLeaveBoardOrOwner", "OnAfterLeaveBoard" };
+        var library = KismetLibrary.Default!;
+        if (library.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || hooks.Any(h => library.FindProgram(name, h) is not null)) return "无法安全安装多目标伤害边界探针";
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(library)!;
+        cache.TryGetValue(name, out var oldCache);
+        var saved = hooks.ToDictionary(h => h, h => oldCache?.GetValueOrDefault(h));
+        foreach (string hook in hooks) oldCache?.Remove(hook);
+        try
+        {
+            for (int kind = 1; kind <= 3; kind++)
+            {
+                var steps = new List<KismetStep>();
+                void Set(string key, KismetExpr value) => steps.Add(new KismetStep(steps.Count, "set", null,
+                    Array.Empty<KismetExpr>(), Array.Empty<int>(), value, null, -1, key, null) { DestinationScope = "instance" });
+                Set("_auditMultiSerial", new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = "_auditMultiSerial", Scope = "instance" }, new KismetExpr { Int = 1 } } });
+                Set("_auditMultiStage", new KismetExpr { Int = kind });
+                Set("_auditMultiTarget", new KismetExpr { Var = "toCard", Scope = "local" });
+                steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                    new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                    new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+                }, Array.Empty<int>(), null, null, -1, null, null));
+                steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+                locals.Add(hooks[kind - 1], steps);
+            }
+            var failures = new List<string>();
+            var dispatch = typeof(CardApi).GetMethod("DealDamageMultiple",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            IReadOnlyList<int> Run(MatchEngine engine, IReadOnlyList<CardInstance> cards, int amount, CardInstance source)
+                => (IReadOnlyList<int>)dispatch.Invoke(engine.Api, [cards, amount, source])!;
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 5))
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(name, side, 50, CardLocation.Discard, 0);
+                source.Definition = new CardDefinition { Name = name, Type = "order" }; source.Keywords.Clear();
+                var cards = new List<CardInstance>();
+                if (mode != 0)
+                    foreach (int id in new[] { 60, 61 })
+                    {
+                        var card = state.CreateWithId(name, side.Opposite(), id, side.Opposite().HqOf(), id);
+                        card.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                        card.Keywords.Clear(); card.Defense = 9;
+                        if (mode == 2 || mode == 4 && id == 60) card.Keywords.Add(Keyword.Immune);
+                        cards.Add(card);
+                    }
+                state.FrontlineOwner = side; // Isolate whether this helper requests an unrelated refresh.
+                var ids = Run(engine, cards, mode == 1 ? 0 : 1, source);
+                int notices = state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionDamageMultipleCards");
+                if (ids.Count != 0 || notices != (mode >= 3 ? 1 : 0) || state.FrontlineOwner != side
+                    || state.DestroyedCardIdsAll.Count != 0 || cards.Any(c => c.Defense != (mode >= 3 && !c.Keywords.Contains(Keyword.Immune) ? 8 : 9)))
+                    failures.Add($"{side}/zero-mode={mode}: 通知={notices}, 前线={state.FrontlineOwner}, 销毁={string.Join(',', ids)}");
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool frontline in new[] { false, true })
+            foreach (int phase in new[] { 1, 2 }) // first deal callback / first leave callback
+            foreach (int mask in Enumerable.Range(0, 4))
+            {
+                var (engine, state) = EmptyBoard(db);
+                CardLocation zone = frontline ? CardLocation.BoardFrontline : side.HqOf();
+                var source = state.CreateWithId(name, side, 50, CardLocation.Discard, 0);
+                source.Definition = new CardDefinition { Name = name, Type = "order" }; source.Keywords.Clear();
+                var first = state.CreateWithId(name, side, 60, zone, 10);
+                var last = state.CreateWithId(name, side.Opposite(), 61, side.Opposite().HqOf(), 10);
+                foreach (var card in new[] { first, last })
+                {
+                    card.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                    card.Keywords.Clear(); card.Defense = 1;
+                }
+                var survivor = state.CreateWithId(PlainUnit, side, 70, zone, 20);
+                survivor.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry" };
+                survivor.Keywords.Clear(); survivor.IsBeingGuarded = true;
+                state.FrontlineOwner = side;
+                var events = new List<string>(); var serial = new Dictionary<int, int>(); bool mutated = false;
+                var prior = state.CardCreated;
+                state.CardCreated = made => {
+                    prior?.Invoke(made);
+                    if (made.Name != "card_unit_routed_troops") return;
+                    var current = new[] { source, first, last }.Single(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_auditMultiSerial")) > serial.GetValueOrDefault(c.CardId));
+                    serial[current.CardId] = Convert.ToInt32(current.BlueprintVariables["_auditMultiSerial"]);
+                    int stage = Convert.ToInt32(current.BlueprintVariables["_auditMultiStage"]);
+                    var target = current.BlueprintVariables.GetValueOrDefault("_auditMultiTarget") as CardInstance;
+                    events.Add($"{stage}:{(stage == 1 ? target?.CardId : current.CardId)}");
+                    if (!mutated && stage == phase)
+                    {
+                        mutated = true;
+                        if ((mask & 1) != 0) first.Location = CardLocation.Discard;
+                        if ((mask & 2) != 0) last.Location = CardLocation.Discard;
+                    }
+                };
+                var ids = Run(engine, new[] { first, last }, 1, source);
+                var wantedIds = new[] { 60, 61 }.Where(id => (mask & (id == 60 ? 1 : 2)) == 0).ToArray();
+                var wantedEvents = new List<string> { "1:60", "1:61" };
+                if (phase == 2 || (mask & 1) == 0) wantedEvents.Add("2:60");
+                if ((mask & 2) == 0) wantedEvents.Add("2:61");
+                wantedEvents.AddRange(wantedIds.Select(id => $"3:{id}"));
+                bool refreshed = wantedIds.Length > 0;
+                if (!ids.SequenceEqual(wantedIds) || !state.DestroyedCardIdsAll.SequenceEqual(wantedIds)
+                    || !events.SequenceEqual(wantedEvents) || first.Location != CardLocation.Discard || last.Location != CardLocation.Discard
+                    || survivor.LocationNumber != (refreshed ? frontline ? 0 : 1 : 20) || survivor.IsBeingGuarded != !refreshed
+                    || state.FrontlineOwner != side)
+                    failures.Add($"{side}/{frontline}/{phase}/{mask}: ids={string.Join(',', ids)}, history={string.Join(',', state.DestroyedCardIdsAll)}, events={string.Join(',', events)}, survivor={survivor.LocationNumber}/{survivor.IsBeingGuarded}, frontline={state.FrontlineOwner}");
+            }
+            return failures.Count == 0 ? null : $"{failures.Count}/42 场景失败：" + string.Join(" | ", failures.Take(8));
+        }
+        finally
+        {
+            foreach (string hook in hooks)
+            {
+                locals.Remove(hook);
+                if (cache.TryGetValue(name, out var perCard))
+                {
+                    perCard.Remove(hook);
+                    if (saved[hook] is { } old) perCard[hook] = old;
+                }
+            }
+            if (oldCache is null && cache.TryGetValue(name, out var added) && added.Count == 0) cache.Remove(name);
+        }
     }
 
     // Synthetic receive/deal hooks exercise the common ApplyDamageToCard path only.

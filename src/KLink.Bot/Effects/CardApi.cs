@@ -2051,14 +2051,21 @@ public sealed partial class CardApi
         }
         var receivers = targets.Select((card, i) => (Card: card, Damage: damage[i]))
             .Where(hit => hit.Damage > 0).ToArray();
+        // i=2159..2361: no nonzero recipients means no notification or later phases.
+        if (receivers.Length == 0) return Array.Empty<int>();
         foreach (var hit in receivers) ExecuteBeforeReceiveDamage(hit.Card, source, hit.Damage, false);
         var destroyed = new Dictionary<int, (CardInstance Card, CardLocation Location)>();
+        var affectedLocations = new HashSet<CardLocation>();
         foreach (var hit in receivers)
         {
             // Do not recheck immunity or board location after the pre-damage events.
             hit.Card.Defense -= hit.Damage;
             if (hit.Card.IsHq) State.UpdateHQDamagedAmountThisTurn(hit.Card.Owner, hit.Damage);
-            if (hit.Card.Defense <= 0) destroyed[hit.Card.CardId] = (hit.Card, hit.Card.Location);
+            if (hit.Card.Defense <= 0)
+            {
+                destroyed[hit.Card.CardId] = (hit.Card, hit.Card.Location);
+                affectedLocations.Add(hit.Card.Location); // i=4422 saves this before callbacks.
+            }
         }
         _engine.FireSubAction("ZActionDamageMultipleCards", new[]
         {
@@ -2068,8 +2075,12 @@ public sealed partial class CardApi
         foreach (var hit in destroyed.Values) _engine.BeforeDestroyed(hit.Card, source, false);
         foreach (var hit in destroyed.Values)
             if (hit.Card.Location != CardLocation.Discard) _engine.FireLeaveTrigger(hit.Card, CardLocation.Discard, 1);
-        foreach (var hit in destroyed.Values)
+        foreach (int id in destroyed.Keys.ToArray())
         {
+            var hit = destroyed[id];
+            // i=6627/6680 -> i=10092/10151: a callback already discarded it.
+            // Remove it from the later movement/after-leave/death/output phases.
+            if (hit.Card.Location == CardLocation.Discard) { destroyed.Remove(id); continue; }
             if (hit.Card.IsHq) { State.Finish(hit.Card.Owner.Opposite(), "Victory_DestroyHQ"); continue; }
             // Native SetCardLocationAndLocNumber skips the number write for Discard.
             State.Move(hit.Card, CardLocation.Discard, hit.Card.LocationNumber,
@@ -2077,7 +2088,9 @@ public sealed partial class CardApi
         }
         // ApplyDamageToMultipleCards i=4422 records old locations;
         // i=7136 refreshes them after all moves, before i=7538 callbacks.
-        RefreshLocationStatus(destroyed.Values.Select(hit => hit.Location));
+        // The saved affected-location set survives removals, but i=7126 skips
+        // the refresh when the pruned destruction map is empty.
+        if (destroyed.Count > 0) RefreshLocationStatus(affectedLocations);
         var ids = destroyed.Keys.ToArray();
         foreach (var hit in destroyed.Values)
             if (!hit.Card.IsHq) _engine.ExecuteOnCardLocationMoved(hit.Card, hit.Location, CardLocation.Discard, false, CardMoveReason.Destroyed);
@@ -2087,7 +2100,8 @@ public sealed partial class CardApi
             if (!hit.Card.IsHq) _engine.ExecuteDestroyed(hit.Card, source, hit.Location, ids, false);
         foreach (var hit in receivers)
             if (IsLocatedOnBoard(hit.Card) && hit.Card.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(hit.Card);
-        _engine.RefreshFrontlineOwner(null);
+        // i=9021/9081: only a saved frontline death requests this update.
+        if (affectedLocations.Contains(CardLocation.BoardFrontline)) _engine.RefreshFrontlineOwner(null);
         return ids;
     }
 
