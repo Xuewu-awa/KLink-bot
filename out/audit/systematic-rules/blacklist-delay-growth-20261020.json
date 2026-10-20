@@ -1,0 +1,195 @@
+{
+  "rule": "RULE-249",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-growth-native-20261020.json",
+  "source_sha256": "77c03a16bfd0cf7ae75a25d0f7d45a0e01548ef874226bdea6957fa6608c5d24",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 2128,
+  "sequences": 24,
+  "insertions": 2538,
+  "standalone_sparse_rehash_cases": 192,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AppendAllocationBit",
+    "AppendSparseRow",
+    "InsertUUIDAction",
+    "RehashUUID",
+    "ResizeAlignedHeap",
+    "ResizeBitStorage",
+    "ResizeBits",
+    "ResizeHashStorage",
+    "ResizeHeap"
+  ],
+  "backend_calls": {
+    "quantize": 111,
+    "realloc": 447,
+    "memcpy": 228
+  },
+  "capacity_transitions": [
+    [
+      "bits",
+      0,
+      128
+    ],
+    [
+      "bits",
+      128,
+      160
+    ],
+    [
+      "bits",
+      128,
+      512
+    ],
+    [
+      "bits",
+      160,
+      768
+    ],
+    [
+      "hash",
+      0,
+      1
+    ],
+    [
+      "hash",
+      1,
+      16
+    ],
+    [
+      "hash",
+      16,
+      32
+    ],
+    [
+      "hash",
+      32,
+      64
+    ],
+    [
+      "hash",
+      64,
+      128
+    ],
+    [
+      "hash",
+      128,
+      256
+    ],
+    [
+      "rows",
+      0,
+      4
+    ],
+    [
+      "rows",
+      0,
+      5
+    ],
+    [
+      "rows",
+      4,
+      22
+    ],
+    [
+      "rows",
+      5,
+      24
+    ],
+    [
+      "rows",
+      22,
+      47
+    ],
+    [
+      "rows",
+      24,
+      50
+    ],
+    [
+      "rows",
+      47,
+      82
+    ],
+    [
+      "rows",
+      50,
+      88
+    ],
+    [
+      "rows",
+      82,
+      130
+    ],
+    [
+      "rows",
+      88,
+      138
+    ],
+    [
+      "rows",
+      130,
+      196
+    ],
+    [
+      "rows",
+      138,
+      208
+    ],
+    [
+      "rows",
+      196,
+      286
+    ],
+    [
+      "rows",
+      208,
+      304
+    ]
+  ],
+  "contracts": [
+    "Allocator quantization modeled as rounding to 1 or 64 bytes",
+    "Heap realloc/free modeled with relocation, prefix preservation, and poisoned new memory",
+    "memcpy modeled by bounded exact copy"
+  ],
+  "limits": [
+    "No native allocator implementation or OOM/overflow paths verified",
+    "Sparse holes exercised during rehash; free-slot reuse remains covered separately by RULE248",
+    "Outer weak-key miss insertion backend and shared reference lifetime remain pending",
+    "No game process invocation or automatic scheduler implementation"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Sequential insertion retains duplicate UUID entries through row/bitmap/hash growth",
+    "Rehash traverses allocated sparse slots in ascending index and prepends each, leaving same-bucket chain in descending sparse index",
+    "Hash rebuild does not change UUID, action pointer, or sparse slot in tested cases"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-153411-rule249-inventory-07022d17",
+    "input_sha256": "67f9df608a0c6951e61c007656efb5b53cca2b1942d055c9d673bb40c089d064",
+    "output_sha256": "78cd7f1b17ffc108e9098347ce1410fc95b407b35f61916cea3abcbeddbec9c2",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 24,
+      "branches": 58,
+      "returns": 10
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-growth-20261020.py",
+      "sha256": "bda061570185f671a4486353743f52527eb6c41cf9b8db5d59c1adab3da55fa2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-growth-20261020.py",
+      "sha256": "fdb78547a98edfe2e37593e93542233aa8461250523785b93379f7efc49cb315"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-growth-worker-20261020.py",
+      "sha256": "95527523bd88f4354a468008446760d12b00b6d2e316fde390ff1aa7c828fb7b"
+    }
+  ]
+}
