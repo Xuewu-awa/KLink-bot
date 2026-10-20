@@ -1,0 +1,75 @@
+{
+  "rule": "RULE-250",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-outer-native-20261020.json",
+  "source_sha256": "94cfdfbe433f95189659b47b2f0d23f836697b6818775dcb1b4f6a8abb68c096",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 2768,
+  "sequences": 16,
+  "wrapper_insertions": 1692,
+  "wrapper_preserving_hits": 1692,
+  "duplicate_backend_cases": 36,
+  "free_slot_wrapper_misses": 12,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AppendAllocationBit",
+    "AppendSparseRow",
+    "FindOrAddWeakKey",
+    "InsertWeakKey",
+    "RehashWeakKey",
+    "ReleaseSparseSlots",
+    "ResizeAlignedHeap",
+    "ResizeBitStorage",
+    "ResizeBits",
+    "ResizeHashStorage",
+    "ResizeHeap"
+  ],
+  "backend_calls": {
+    "quantize": 74,
+    "realloc": 154,
+    "memcpy": 92
+  },
+  "contracts": [
+    "Allocation quantization, realloc/free and memcpy as RULE249",
+    "Shared controller virtual destruction requests recorded; actual destruction/free not executed"
+  ],
+  "limits": [
+    "Forced duplicate backend tests bypass wrapper pre-check; not proof that normal registration reaches replacement",
+    "No weak reference construction or actual target lifetime verified",
+    "No real allocator, OOM, overflow, concurrency or manager scheduling verified"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Wrapper hits preserve the existing shared pair; misses initialize a new zero pair, including reused free slots",
+    "Direct diagnostic duplicate backend replaces the old pair, decrements controller counts, returns the existing slot and releases the temporary slot",
+    "Duplicate backend scenarios bypass wrapper hit guard; normal single-thread wrapper registration does not thereby replace existing pairs"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-153948-rule250-inventory-6ea2cb51",
+    "input_sha256": "1567f11e508668c82a13fce458c6fcf14feb747d578b01cee557714c6df0f0d5",
+    "output_sha256": "d638804dba89ff0335809df03213f895e7015848a2cc1cc38cd6a1e1750c293b",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 11,
+      "branches": 47,
+      "returns": 5
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-outer-20261020.py",
+      "sha256": "a6436bdfb6aaf6a40da01dda8778db38ef98fbfb91730f6bad88db8bbf4fcc08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-outer-20261020.py",
+      "sha256": "f4561226cd4e3c66d4381643f3d0a1a2db1a580753fa9457d19ca3ef3f795670"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-outer-worker-20261020.py",
+      "sha256": "c81235ef8c90deda77a1809013ffc8b6cf61a2a0ef1d7defc985d93fe35413c3"
+    }
+  ]
+}
