@@ -299,9 +299,10 @@ internal static class SelfTest
         new("被夺取单位回手恢复原主并公开，ID 入口和满手分支可用", LiveReturnToOriginalHand),
         new("10.5cm lefh 战吼：对敌方 HQ 造成 2 点伤害", LehfDeployment),
         new("GetOppositeSide 的零入参语义", OppositeSideSemantics),
-        new("GetOpponentSide 按当前对局方返回对手阵营", OpponentSideSemantics),
+        new("GetOpponentSide 返回保存的对手，独立于行动方/控制方/卡牌归属", OpponentSideSemantics),
         new("GetClientSide 返回 GameState 保存的客户端阵营，而不是行动方", ClientSideSemantics),
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
+        new("HQ 查询：全部字节阵营、不回退接收者，非在场 HQ 引用及 VM 输出覆盖", LocationLookupSideBoundary),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2187,47 +2188,30 @@ internal static class SelfTest
         return null;
     }
 
-    /// <summary>
-    /// <c>GetOpponentSide()</c> 是对局状态的零入参查询；验证它在两侧及
-    /// <c>NotAvailable</c> 下都遵循统一的 <c>Side.Opposite()</c> 映射。
-    /// </summary>
+    /// <summary>GameState opponent is separate from the card-relative GetOppositeSide.</summary>
     private static string? OpponentSideSemantics(CardDatabase db)
     {
         var (engine, state) = EmptyBoard(db);
-        foreach (var (controller, expected) in new[]
+        var left = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.DeckLeft, 0);
+        var right = state.CreateWithId(PlainUnit, Side.Right, 91, CardLocation.DeckRight, 0);
+        var failures = new List<string>();
+        foreach (Side client in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (Side active in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (Side controller in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (CardInstance? self in new CardInstance?[] { null, left, right })
         {
-            (Side.Left, Side.Right),
-            (Side.Right, Side.Left),
-            (Side.NotAvailable, Side.NotAvailable),
-        })
-        {
-            var ctx = new EffectContext
-            {
-                Engine = engine,
-                State = state,
-                Controller = controller,
-            };
-
-            object? result = engine.Api.InvokeByName(
-                "GetOpponentSide", null, Array.Empty<object?>(), ctx, out bool handled);
-            if (!handled)
-            {
-                return "GetOpponentSide 没有注册到派发表里";
-            }
-
-            if (result is not int raw)
-            {
-                return $"{controller} 返回类型不是 int，而是 {result?.GetType().Name ?? "null"}";
-            }
-
-            var actual = (Side)raw;
-            if (actual != expected)
-            {
-                return $"{controller} 的对手应为 {expected}({(int)expected})，实际 {actual}({raw})";
-            }
+            state.SetupSidesInBattle(client); state.ActiveSide = active;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = controller };
+            var opponent = engine.Api.InvokeByName("GetOpponentSide", null, Array.Empty<object?>(), ctx, out bool handled);
+            var clientResult = engine.Api.InvokeByName("GetClientSide", null, Array.Empty<object?>(), ctx, out bool clientHandled);
+            var opposite = engine.Api.InvokeByName("GetOppositeSide", null, Array.Empty<object?>(), ctx, out bool oppositeHandled);
+            var playing = engine.Api.InvokeByName("GetPlayingSide", null, Array.Empty<object?>(), ctx, out bool playingHandled);
+            if (!handled || !clientHandled || !oppositeHandled || !playingHandled
+                || !Equals(opponent, (int)client.Opposite()) || !Equals(clientResult, (int)client)
+                || !Equals(opposite, (int)(self?.Owner ?? controller).Opposite()) || !Equals(playing, (int)controller))
+                failures.Add($"{client}/{active}/{controller}/self={self?.Owner}: opponent={opponent}, client={clientResult}, opposite={opposite}, playing={playing}");
         }
-
-        return null;
+        return failures.Count == 0 ? null : $"{failures.Count}/81 场景失败：" + string.Join(" | ", failures.Take(8));
     }
 
     /// <summary>
@@ -2318,6 +2302,50 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    private static string? LocationLookupSideBoundary(CardDatabase db)
+    {
+        var failures = new List<string>();
+        foreach (Side controller in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var left = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.DeckLeft, 0);
+            var right = state.CreateWithId(PlainUnit, Side.Right, 91, CardLocation.DeckRight, 0);
+            foreach (bool discarded in new[] { false, true })
+            foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+            foreach (bool enumArgument in new[] { false, true })
+            foreach (int value in Enumerable.Range(0, 256))
+            {
+                state.Hq(Side.Left).Location = discarded ? CardLocation.Discard : CardLocation.BoardHqLeft;
+                state.Hq(Side.Right).Location = discarded ? CardLocation.Discard : CardLocation.BoardHqRight;
+                var ctx = new EffectContext { Engine = engine, State = state, Self = controller == Side.Left ? right : left, Controller = controller };
+                CardInstance? expected = value == 1 ? state.Hq(Side.Left) : value == 2 ? state.Hq(Side.Right) : null;
+                CardInstance? direct = null; string? directError = null;
+                try { direct = engine.Api.GetLocationCardBySide((Side)value); }
+                catch (Exception ex) { directError = ex.GetType().Name; }
+                object argument = enumArgument ? (object)(Side)value : value;
+                var output = engine.Api.InvokeByName("GetLocationCardBySide", receiver,
+                    new object?[] { state.Hq(Side.Left), state.Hq(Side.Left).CardId, argument }, ctx, out bool handled);
+                bool outputOk = output is object?[] outs && outs.Length == 2
+                    && ReferenceEquals(outs[0], expected) && Equals(outs[1], expected?.CardId ?? 0);
+                KismetStep Call(int index, int side) => new(index, "call", "GetLocationCardBySide", new[] {
+                    new KismetExpr { Var = "__lookupCard", Scope = "local" },
+                    new KismetExpr { Var = "__lookupId", Scope = "local" }, new KismetExpr { Int = side }
+                }, new[] { 0, 1 }, null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+                var steps = new[] { Call(0, 1), Call(1, value), new KismetStep(2, "return", null,
+                    Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+                var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                    new Dictionary<string, object?> { ["__receiver"] = receiver }, "__lookupCard", "__lookupId");
+                bool vmOk = ReferenceEquals(result.GetValueOrDefault("__lookupCard"), expected)
+                    && Equals(result.GetValueOrDefault("__lookupId"), expected?.CardId ?? 0);
+                if (directError is not null || !ReferenceEquals(direct, expected) || !handled || !outputOk || !vmOk)
+                    failures.Add($"{controller}/{discarded}/recv={receiver?.Owner}/enum={enumArgument}/side={value}: direct={direct?.CardId}/{directError}, output={outputOk}, VM={vmOk}");
+            }
+        }
+        return failures.Count == 0 ? null : $"{failures.Count}/6144 场景失败：" + string.Join(" | ", failures.Take(8));
     }
 
     /// <summary>

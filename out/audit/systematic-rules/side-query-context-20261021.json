@@ -1,0 +1,184 @@
+{
+  "rule": "RULE-270",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-queries-blueprint-native-20261021.json",
+      "sha256": "db1671d3ee3bbf758a0b8c1d170779dd2d9f15981a0ef1a16d3fb288d2c8f6c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-query-getters-native-20261021.json",
+      "sha256": "32bd0017a30a45f8f1adfbacb77a4005370229686060cde2f0ab33381fee54b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule270\\uses.json",
+      "sha256": "1330fd95e6fac61b977e1b41f2c83ca37795e1a6562dd4e7eeb27d7d897114c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-side-queries-blueprint-20261021.py",
+      "sha256": "437647ed657f479412dc4e373db0df484fafcb99c771ca604f68236ec1da2b36"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-side-query-getters-20261021.py",
+      "sha256": "04b0be8286bed2971a869824e2f527e58839e98a29bd1c93de05a2f19d06e1a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule270-side-query-tests-20261021.py",
+      "sha256": "49b1e2f08761aeafef1ceb7a30e9e9a8924b8718d3b973c7eed9c70d53d9f38c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule270-side-queries-20261021.py",
+      "sha256": "5a056829d19e968c1cc785ab6b9b42aa0d7cbcc95de3ff743c7a3ab02a3585f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule270-side-queries-20261021.py",
+      "sha256": "fc0730d2094f7f4efdeb28764854491f06aba63fd35ff4ddbe30550dc480539e"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "299eca43f21e03348afc6de5a0c4141578bf3d9cbca2873bf4f0923f81b03734"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "a34afb6d11d8f0cc01497c72d9c7d24f35298fbb6c0a6bc4fef5e8acf7df275f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "172178c73a7703bd237f580a24be83320a11dbb06ca48fbf8605cfae8284b589"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "name": "GetLocationCardBySide",
+      "script_bytes": 195,
+      "script_sha256": "c4b0d2afc45dd0b48667e9f1032f215a52ffe5ae6c6f4964f7b81786f64a0dfe",
+      "statements": 12
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetOpponentSide",
+      "script_bytes": 71,
+      "script_sha256": "c1e334a4710f9866705de053b3cb927865d2ee320b61e9ea3d73d33ade53874a",
+      "statements": 4
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetClientSide",
+      "script_bytes": 71,
+      "script_sha256": "344ee03cdefc78fc6f9f5d0f09a9e0c176cf552c1f7ba6d732da633925116def",
+      "statements": 4
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "name": "GetLocationCardBySide",
+      "script_bytes": 112,
+      "script_sha256": "c0ae9da96801a187f5e6faabaf955b163a9a4df4dd64667c2655dd7d4502e32a",
+      "statements": 5
+    }
+  ],
+  "complete_blueprint_bytes": 449,
+  "native_getters": {
+    "wrapper_bytes": 294,
+    "leaf_bytes": 20,
+    "stored_fields": [
+      908,
+      909
+    ],
+    "boundary": "Wrapper .pdata and first-ret straight-line leaves; disk/live match"
+  },
+  "fix": [
+    "GetOpponentSide reads State.OpponentSide; it must not use effect self/controller or active turn. GetOppositeSide remains unchanged.",
+    "CardFunctions HQ lookup accepts explicit third parameter only, preserving int/Side representations without receiver/controller fallback.",
+    "Public lookup returns null outside Left/Right. Dispatcher returns [null,0] for fresh-wrapper invalid-side outputs, preserving saved HQ references even when offboard."
+  ],
+  "tests": {
+    "total": 603,
+    "side_context_cases": 81,
+    "hq_query_cases": 6144,
+    "before_failed_tests": 2,
+    "before_failed_side_cases": 54,
+    "before_failed_hq_cases": 6096,
+    "after_failed_tests": 0,
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule270-before-20261021.txt",
+        "sha256": "7262a42dee9c187dadeacfaf5a1f09e5c14d1089600bc743fd1dc6410ae1046a"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule270-after-20261021.txt",
+        "sha256": "daf57397b23114c51ce9de26635d006cada979a37be2710d62cbfae65e914640"
+      }
+    ],
+    "side_dimensions": [
+      "client Left/Right/NotAvailable",
+      "active Left/Right/NotAvailable",
+      "controller Left/Right/NotAvailable",
+      "self null/Left/Right"
+    ],
+    "hq_dimensions": [
+      "controller Left/Right",
+      "HQ on board/discarded",
+      "receiver null/Left/Right",
+      "explicit int/Side arg",
+      "all 256 side bytes"
+    ],
+    "hq_entrypoints": [
+      "direct public lookup",
+      "raw dispatcher two-output array with prior values",
+      "VM call with output slots seeded by a preceding valid lookup"
+    ],
+    "existing_test_change": "Replace the old OpponentSideSemantics controller-derived oracle with a stored-state/independent-context matrix from current native evidence. All other existing test content is unchanged."
+  },
+  "deepseek": {
+    "job_id": "20261021-014606-rule270-query-uses-046cbc2f",
+    "elapsed_seconds": 36.85,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule270\\task.txt",
+      "sha256": "492ecef537a8b6dc190a1b9e406e4b5d844afdfe9ae566c33904409ca2d9a066"
+    },
+    "implementation_ir_cards": 1709,
+    "calls": 1027,
+    "counts": {
+      "GetClientSide": 2,
+      "GetLocationCardBySide": 283,
+      "GetOpponentSide": 0,
+      "GetOppositeSide": 742
+    },
+    "hq_signature": "283/283 fn calls: 3 args, out params 0 and 1, explicit side at2",
+    "independently_reenumerated_exact_match": true,
+    "scope": "Current packaged simulator IR only; not game authority or a complete current-client card inventory."
+  },
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Native ClientSide and OpponentSide are independent stored bytes; current managed model represents consistent two-sided setup and normalizes invalid setup, not arbitrary inconsistent native states.",
+    "Null/zero invalid-side result is the fresh CardFunctions wrapper-local output contract. Direct GameState output alias/reuse, persistent frames and all native local initialization variants are not newly certified.",
+    "Valid side with missing/replaced HQ, owner changes or multiple HQ-like objects and GC are not covered by this repair.",
+    "All other SideArg callers, explicit receiver variants of GetOppositeSide and complete side-context semantics of every card remain unaudited.",
+    "Literal IR counts do not prove no current card overrides or no native/common-helper use; the GetOpponentSide zero count is limited to this implementation snapshot.",
+    "Malformed non-int/non-Side argument coercion and enum values outside the byte range are not fully certified.",
+    "No historical replay authority, client writes, injection or client function invocation."
+  ]
+}

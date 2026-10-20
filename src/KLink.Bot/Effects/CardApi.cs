@@ -5003,7 +5003,9 @@ public sealed partial class CardApi
     public bool DoesSideControlTheFrontline(Side s) => State.FrontlineOwner == s;
 
     public CardInstance? GetCardFromID(int cardId) => State.ById(cardId);
-    public CardInstance? GetLocationCardBySide(Side s) => State.Hq(s);
+    /// <summary>Fresh CardFunctions wrapper outputs are null/zero outside sides 1 and 2.</summary>
+    public CardInstance? GetLocationCardBySide(Side s)
+        => s is Side.Left or Side.Right ? State.Hq(s) : null;
 
     /// <summary>
     /// 客户端 `GetCardsOnBoardBySide(side, unitsOnly, includeCovertCards)` 的候选集。

@@ -246,11 +246,9 @@ public sealed partial class CardApi
             //    是第 3 常用的外部调用）。实测症状：card_unit_10_5_cm_lefh 的
             //    「Deployment: 对敌方 HQ 造成 2 点伤害」完全不生效。
             ["GetOppositeSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
-            // BP_GameState_Battle.GetOpponentSide is the zero-argument side
-            // query used by card-function helpers. Effects execute in the
-            // current playing side's context, so mirror the native result
-            // with the established Side.Opposite mapping.
-            ["GetOpponentSide"] = (c, r, a) => (int)SelfSide(c).Opposite(),
+            // GameState.GetOpponentSide reads the stored opponent field. It is
+            // distinct from the card-relative GetOppositeSide above (RULE-270).
+            ["GetOpponentSide"] = (c, r, a) => (int)c.State.OpponentSide,
             // The Blueprint signature takes an integer card ID, but a few local
             // event paths receive the freshly spawned CardInstance directly from
             // a simplified spawn primitive.  Accept both representations here;
@@ -270,7 +268,15 @@ public sealed partial class CardApi
 
             ["GetLocationCardBySide"] = (c, r, a) =>
             {
-                var card = GetLocationCardBySide(SideArg(r, a, 2));
+                // side is the explicit third parameter; invalid input must not
+                // fall back to the receiver's owner or the effect controller.
+                var side = a.ElementAtOrDefault(2) switch
+                {
+                    Side value => value,
+                    int value => (Side)value,
+                    _ => Side.NotAvailable,
+                };
+                var card = GetLocationCardBySide(side);
                 return new object?[] { card, card?.CardId ?? 0 };
             },
             // `GetMainNationForSide` forwards to BP_GameState_Battle's
