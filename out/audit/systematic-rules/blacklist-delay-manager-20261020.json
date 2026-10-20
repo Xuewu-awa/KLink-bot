@@ -1,0 +1,69 @@
+{
+  "rule": "RULE-254",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-manager-native-20261020.json",
+  "source_sha256": "b6e66a23d0f806fedd67884d5c292d5a4e82a028d93f6b1a887cfe30949ec869",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "captured_bytes": 3683,
+  "manager_cases": 1080,
+  "tick_requests": 132,
+  "invalid_target_notification_requests": 720,
+  "action_destructor_requests": 720,
+  "outer_entries_removed": 600,
+  "passed": true,
+  "executed_functions": [
+    "AdvanceSparseIterator",
+    "AllocateObjectSerial",
+    "ConstructWeakReference",
+    "ProcessManagerActions",
+    "ReleaseSparseSlots",
+    "RemoveOuterEntry",
+    "ResolveWeakReference"
+  ],
+  "contracts": [
+    "Manager+0x50 work array is empty; prelude skipped",
+    "TickActionListAndConsume only records delta/list/owner; does not execute actions",
+    "Inner compaction helper1253910 records request only",
+    "Invalid-target virtual callback/destruction records requests only; outer native removal and counter decrements execute"
+  ],
+  "limits": [
+    "No nonempty work-array prelude, actual destruction/invalid-target callback, notifications or end-to-end tick execution verified",
+    "No BeginFrame processed-flag reset or real time source established",
+    "No automatic scheduler implemented"
+  ],
+  "kernel_changed": false,
+  "semantically_verified_cards": 0,
+  "last_full_release_selftest": "594/594 (RULE-244; not rerun for evidence-only phase)",
+  "findings": [
+    "Located complete manager caller with targeted and whole-map branches; empty work-array precondition only",
+    "Whole-map branch resolves weak keys; invalid targets request action vslot0x10 then destructor and remove emptied outer entries",
+    "Targeted branch directly looks up constructed weak key and gates on processed flag; does not share whole-map weak validity/nonempty checks",
+    "Processed flag set after consumer return; reset and timing source remain unverified",
+    "Native removal executed with hash-chain and sparse free-chain integrity checks"
+  ],
+  "worker_verification": {
+    "job_id": "20261020-161132-rule254-inventory-22bab259",
+    "input_sha256": "e60a872b0a91730e65c890e0d8124be2f1b3811308d83dc6e3351ed478c00938",
+    "output_sha256": "57e0cb76051d7b5881f6bff4e600e1a9bf8837341d0ed39705a42617f72c3570",
+    "exact_inventory_match": true,
+    "counts": {
+      "calls": 29,
+      "branches": 98,
+      "returns": 1
+    },
+    "scope": "mechanical inventory only; primary independently verified all entries"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-manager-20261020.py",
+      "sha256": "76f56a87fe27ffcc8b444ec8cfbd0bb02a116145159284524d180a163d5c21e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-manager-20261020.py",
+      "sha256": "a47b363edcacbe1c41af3f501e192d201af8c176ee3914aef27e835b22a05776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-blacklist-delay-manager-worker-20261020.py",
+      "sha256": "927601e29286154f98c3d8dbbec73dc53fc8250bda9ee1e75c5d65122075ca3f"
+    }
+  ]
+}
