@@ -1,0 +1,1112 @@
+{
+  "rule": "RULE-260",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-card-version-drift-native-20261020.json",
+      "sha256": "e4f14678ef96a1c1f0acc10adef2c1643a595b479ada667131ea365277af2a6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-persistent-frame-opcode-native-20261020.json",
+      "sha256": "806f16e7dcbe15993cea14f6b76821c02a9336f44635584968af43434e078736"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule-ai-serialized-references-20261020.json",
+      "sha256": "58ebf3bbf33821e50c434b3e4f1ba62e75fa4b5ea739be3c598adea7c3589c5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json",
+      "sha256": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "95b223d680cfd073d752e70ba12dc3edf931a0b7c4b7ba986bbdb73b6c060bbb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\cards.json",
+      "sha256": "a369dfbfb30abc2a39460c9bd11d69b62c259e059e61c77cc2da146b8a5dd7c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Homefront\\events\\card_event_tactical_retreat.functions.json",
+      "sha256": "857b55a4fbc081421f4ca6dc0a0cd7a252e976ade0428d3501acb7a522038395"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\OceaniaStorm\\units\\card_unit_3_panzergrenadier.functions.json",
+      "sha256": "4334ee51d2ca170ad796fab7f82f752682641d640590f2408b5d5f16d204c130"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\OceaniaStorm\\units\\card_unit_511th_regiment.functions.json",
+      "sha256": "f6ee8d5668a46026b1a67c5d1e58a7f19c237fb4bd24b69294e85b6e256c00ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\units\\card_unit_l4_grasshopper.functions.json",
+      "sha256": "02ed74ad1f3700cb546ada59894ed1c249a8eb71611158744ba7962720fa96cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Breakthrough\\units\\card_unit_panzer_iii_f.functions.json",
+      "sha256": "5d1c21b2a29c019daa5d50a0b050ee0f5a4443343d9e0688c71dfa41d68ecd52"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule-delay-scope-20261020.py",
+      "sha256": "ba54e92c8b26599206d2459286bcdcb56999244729089e5619a91682fe0e38ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule-card-version-drift-20261020.py",
+      "sha256": "d2a9075090fcab4baca56d80ead3846d5cd3f552f0729c876212630b44c9ff58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule-persistent-frame-opcode-20261020.py",
+      "sha256": "5721cda659bf08ca9015a89c0dd8a1f386cd1e1d3f649040e2aa92da042e72f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-260.py",
+      "sha256": "7760a7e7560d0a06f22a59ad52bc35834ec98bca1eb2921b56e6ff1f70b813af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule-delay-scope-20261020.py",
+      "sha256": "8ea7642301ece97f6f42dbb0b5f4e33c23ebe56299df979128e00ccb78fe91e0"
+    }
+  ],
+  "runtime_census": {
+    "pid": 24220,
+    "object_slots": 140290,
+    "function_objects": 30583,
+    "selected_owner_classes": 2035,
+    "selected_functions": 6828,
+    "selected_scripted_functions": 6157,
+    "selected_script_bytes": 2461762,
+    "card_classes": 2019,
+    "card_classes_with_own_functions": 1709,
+    "card_own_functions": 5587,
+    "card_own_scripted_functions": 5587,
+    "card_direct_literal_candidates": 0,
+    "read_errors": 0
+  },
+  "delay_symbols": [
+    {
+      "name": "Delay",
+      "native_rva": "0x3daa430",
+      "path": "/Script/Engine/KismetSystemLibrary/Delay"
+    },
+    {
+      "name": "DelayUntilNextTick",
+      "native_rva": "0x3daa5f0",
+      "path": "/Script/Engine/KismetSystemLibrary/DelayUntilNextTick"
+    },
+    {
+      "name": "RetriggerableDelay",
+      "native_rva": "0x3de16a0",
+      "path": "/Script/Engine/KismetSystemLibrary/RetriggerableDelay"
+    }
+  ],
+  "reference_policy": "Exhaustive byte search within selected scripts for exact current UFunction pointers and UObject FName pairs; only positive call-site nodes are structurally decoded. No full bytecode call-graph or indirect native absence proof.",
+  "logic_delays": [
+    {
+      "at": 1035,
+      "end": 1089,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 10.0
+      },
+      "linkage": 1090,
+      "uuid": 1686683353,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 1223,
+      "end": 1277,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.10000000149011612
+      },
+      "linkage": 1278,
+      "uuid": -67496264,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 1901,
+      "end": 1955,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.10000000149011612
+      },
+      "linkage": 15,
+      "uuid": -1952077066,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 1966,
+      "end": 2020,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 10.0
+      },
+      "linkage": 2021,
+      "uuid": -248085114,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 5009,
+      "end": 5063,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.10000000149011612
+      },
+      "linkage": 4795,
+      "uuid": -1709410482,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 6395,
+      "end": 6449,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 1.659999966621399
+      },
+      "linkage": 5839,
+      "uuid": 1841310051,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 11764,
+      "end": 11818,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 5.0
+      },
+      "linkage": 3855,
+      "uuid": -575596496,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 20653,
+      "end": 20707,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.25
+      },
+      "linkage": 3825,
+      "uuid": -831614406,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 22134,
+      "end": 22192,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Delay_Duration_ImplicitCast"
+      },
+      "linkage": 3063,
+      "uuid": -1164447097,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 23785,
+      "end": 23843,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Delay_Duration_ImplicitCast_1"
+      },
+      "linkage": 3282,
+      "uuid": -1678909141,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 23844,
+      "end": 23898,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 1.5
+      },
+      "linkage": 3840,
+      "uuid": -869391313,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 28273,
+      "end": 28327,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.20000000298023224
+      },
+      "linkage": 5064,
+      "uuid": 1595230070,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 28328,
+      "end": 28382,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.20000000298023224
+      },
+      "linkage": -1,
+      "uuid": 1956842148,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 29414,
+      "end": 29472,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Delay_Duration_ImplicitCast_3"
+      },
+      "linkage": 4766,
+      "uuid": -688385189,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 31489,
+      "end": 31547,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Delay_Duration_ImplicitCast_2"
+      },
+      "linkage": 3895,
+      "uuid": -749133288,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 38788,
+      "end": 38842,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 1.0
+      },
+      "linkage": 3878,
+      "uuid": -148184286,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 39146,
+      "end": 39200,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 6.0
+      },
+      "linkage": 4696,
+      "uuid": -154526088,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 40535,
+      "end": 40589,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 0.5
+      },
+      "linkage": 5344,
+      "uuid": -719223566,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 40768,
+      "end": 40822,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "FloatConst",
+        "Value": 1.0
+      },
+      "linkage": 5824,
+      "uuid": 187240721,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    },
+    {
+      "at": 45534,
+      "end": 45592,
+      "context": {
+        "Inst": "Self"
+      },
+      "duration": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Delay_Duration_ImplicitCast_4"
+      },
+      "linkage": 6450,
+      "uuid": 1192241309,
+      "execution_function": "ExecuteUbergraph_BP_Logic",
+      "callback_target": {
+        "Inst": "Self"
+      }
+    }
+  ],
+  "logic_delay_counts": {
+    "total": 20,
+    "constant_duration": 15,
+    "local_duration": 5,
+    "distinct_uuids": 20,
+    "linkage_minus_one": 1,
+    "positive_linkages": 19,
+    "normalized_same_as_offline_parsed": 20
+  },
+  "function_name_census_card_classes": 2019,
+  "function_name_census_differences": [
+    {
+      "card": "card_event_tactical_retreat",
+      "live_only": [
+        "CanPlayFromHand",
+        "ExecuteUbergraph_card_event_tactical_retreat",
+        "OnPlayedFromHand"
+      ],
+      "parsed_only": [
+        "OnOtherCardAttacks"
+      ]
+    },
+    {
+      "card": "card_unit_3_panzergrenadier",
+      "live_only": [],
+      "parsed_only": [
+        "OnAfterAttack",
+        "OnMoveToFrontline"
+      ]
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "live_only": [
+        "OnOtherCardBecomingVeteran"
+      ],
+      "parsed_only": []
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "live_only": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "parsed_only": []
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "live_only": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "parsed_only": [
+        "OnOtherCardAbilitiesChanged"
+      ]
+    }
+  ],
+  "card_version_drift": [
+    {
+      "card": "card_event_tactical_retreat",
+      "live_only": [
+        "CanPlayFromHand",
+        "ExecuteUbergraph_card_event_tactical_retreat",
+        "OnPlayedFromHand"
+      ],
+      "parsed_only": [
+        "OnOtherCardAttacks"
+      ],
+      "current_functions": 3,
+      "parsed_functions": 1,
+      "functions": [
+        {
+          "name": "ExecuteUbergraph_card_event_tactical_retreat",
+          "script_size": 224,
+          "script_sha256": "cedf0ab0ced863fe25cfa7265010631bd9769a45d4b986b92b21f04f21dad451",
+          "same_as_parsed_after_metadata_normalization": null
+        },
+        {
+          "name": "CanPlayFromHand",
+          "script_size": 804,
+          "script_sha256": "277a6ef1b697eff31460d1a85bc6d482143e1cdcdd025f58505a7648868b31a2",
+          "same_as_parsed_after_metadata_normalization": null
+        },
+        {
+          "name": "OnPlayedFromHand",
+          "script_size": 36,
+          "script_sha256": "c849f64caaed1a66b6aea93a4debeaee44dbd82acad25726f4d0ab235ba0585a",
+          "same_as_parsed_after_metadata_normalization": null
+        }
+      ],
+      "simulator_entrypoints": {},
+      "simulator_locals": [
+        "OnOtherCardAttacks"
+      ],
+      "simulator_used_triggers": [
+        "OnOtherCardAttacks"
+      ],
+      "new_functions_absent_from_simulator_entrypoints_and_locals": [
+        "CanPlayFromHand",
+        "ExecuteUbergraph_card_event_tactical_retreat",
+        "OnPlayedFromHand"
+      ],
+      "status": "current client version drift confirmed; simulator effect and trigger migration pending per-card semantic/default/parameter checks"
+    },
+    {
+      "card": "card_unit_3_panzergrenadier",
+      "live_only": [],
+      "parsed_only": [
+        "OnAfterAttack",
+        "OnMoveToFrontline"
+      ],
+      "current_functions": 3,
+      "parsed_functions": 5,
+      "functions": [
+        {
+          "name": "ExecuteUbergraph_card_unit_3_panzergrenadier",
+          "script_size": 688,
+          "script_sha256": "9633f38706fa2de5940d07524b62e9c5d365343bfa4d786ca857afbbcbe88d8a",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnAfterOtherCardAttacks",
+          "script_size": 90,
+          "script_sha256": "e1d26d6b975cecea372274ff970bbdf20834cb937b282171aac25229c1c52ac7",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardMoveToFrontline",
+          "script_size": 72,
+          "script_sha256": "79341daa82e429c6f58f31e3d6dd32be102da072fd6bdafef591dcc150997516",
+          "same_as_parsed_after_metadata_normalization": false
+        }
+      ],
+      "simulator_entrypoints": {
+        "OnAfterAttack": 690,
+        "OnAfterOtherCardAttacks": 141,
+        "OnMoveToFrontline": 10,
+        "OnOtherCardMoveToFrontline": 481
+      },
+      "simulator_locals": [],
+      "simulator_used_triggers": [
+        "OnAfterOtherCardAttacks",
+        "OnOtherCardMoveToFrontline"
+      ],
+      "new_functions_absent_from_simulator_entrypoints_and_locals": [],
+      "status": "current client version drift confirmed; simulator effect and trigger migration pending per-card semantic/default/parameter checks"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "live_only": [
+        "OnOtherCardBecomingVeteran"
+      ],
+      "parsed_only": [],
+      "current_functions": 20,
+      "parsed_functions": 19,
+      "functions": [
+        {
+          "name": "ExecuteUbergraph_card_unit_511th_regiment",
+          "script_size": 599,
+          "script_sha256": "e254be7eea775789cc05d18f1d9958ad74d804d7578b98d4ad0dcccb802098a3",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "GetPassiveDefenseBuff",
+          "script_size": 264,
+          "script_sha256": "ba73f1ee309de5b27feff7ee91cbf279c6d5abf81d8193d3b6745e89134429b1",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnCardDealDamage",
+          "script_size": 373,
+          "script_sha256": "c5dc63ab08c74b2ea75f8aeebbffe8215792f1781554f6c3bff91306f7784285",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnDealDamageAddDamageAfterCalc",
+          "script_size": 474,
+          "script_sha256": "8b2ede9962f3af683fba6b3c24d254de8992c92c576029873605320c01b07d8d",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "checkAndUpdateBuffOnAllCards",
+          "script_size": 396,
+          "script_sha256": "25fd052b3e206ee8662d1603571be4dabe77fd9314e2c928030b9c85f54f5aff",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "checkAndUpdateBuffOnCard",
+          "script_size": 721,
+          "script_sha256": "0a7cf26f5b1de3e287a11880b6e07008928767402ed84f33461564bc8f9bfb72",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnOtherCardDealDamageAddDamageAfterCalc",
+          "script_size": 496,
+          "script_sha256": "e0a5940a4e53abeecbfd1fad3275ed7a028696b299d29263b29a3536eade3ef4",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnOtherCardEnterPlay",
+          "script_size": 54,
+          "script_sha256": "42ba7e2a1cd22bb5ed9eae6195987fe26bcd071c26844cb55ea172bf6732a834",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnEnterPlay",
+          "script_size": 36,
+          "script_sha256": "79e649b81195b8419e443075b0412c68aacc5cd938a3c5f039486bf6ce0a1d8e",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnBecomingVeteran",
+          "script_size": 18,
+          "script_sha256": "46a7741484c1844d0fe425f6807d99e107dc15cbc05e461162519e8f454f17da",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterLeaveBoard",
+          "script_size": 36,
+          "script_sha256": "8029ba2bd2dba125507aa641f5a45ff8bbb66268ebacbd9cec3b4e9fb35eca80",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterOtherCardDefenseIsSet",
+          "script_size": 36,
+          "script_sha256": "83a61b010ed758842ad715864086fd82bc6863f3c50a895159c79ae04ee05a67",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterOtherCardGainDefense",
+          "script_size": 54,
+          "script_sha256": "1bb88812bd8d44929cd9b170da2a13a8d02652ca57c4910a5067fcdc419e095b",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterGainDefense",
+          "script_size": 36,
+          "script_sha256": "c1a3adf2b11de07c45750ab44e5c5b5b76fb7707e0428e0be4586389f87c2be4",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterDefenseIsSet",
+          "script_size": 18,
+          "script_sha256": "2a26166b2dd4b653a2bd07452e4a3b1d592d69d9d4db2f8ccd4b66c621f6c09b",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnOtherCardFullyRepaired",
+          "script_size": 54,
+          "script_sha256": "c188a553a26da1d9aa5211d2af9bcaec8145e94ad39f92c30e220820c87ddbf1",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnFullyRepaired",
+          "script_size": 36,
+          "script_sha256": "3bc9491844a33ebc565e77ae914923f7f241467a3dc34376af48701e3c9372ab",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnOtherCardDealDamage",
+          "script_size": 126,
+          "script_sha256": "7b22a48a10cec8fbd812de80936f067c8087309235048bbaf56175ed3aaa0644",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnAfterOtherCardSuppressed",
+          "script_size": 36,
+          "script_sha256": "7f2aa4f27fa07fb67704bfb35cec770875ef32f46c48971d6aeac4d7413d9dcd",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardBecomingVeteran",
+          "script_size": 36,
+          "script_sha256": "2767c02bcffc8e816a8cc47dce69fbf5b81cebe29de1a9a082845d1e32aec2b3",
+          "same_as_parsed_after_metadata_normalization": null
+        }
+      ],
+      "simulator_entrypoints": {
+        "OnAfterDefenseIsSet": 86,
+        "OnAfterGainDefense": 66,
+        "OnAfterLeaveBoard": 516,
+        "OnAfterOtherCardDefenseIsSet": 488,
+        "OnAfterOtherCardGainDefense": 38,
+        "OnAfterOtherCardSuppressed": 10,
+        "OnBecomingVeteran": 535,
+        "OnEnterPlay": 540,
+        "OnFullyRepaired": 119,
+        "OnOtherCardDealDamage": 124,
+        "OnOtherCardEnterPlay": 545,
+        "OnOtherCardFullyRepaired": 91
+      },
+      "simulator_locals": [
+        "checkAndUpdateBuffOnAllCards",
+        "checkAndUpdateBuffOnCard",
+        "GetPassiveDefenseBuff",
+        "OnCardDealDamage",
+        "OnDealDamageAddDamageAfterCalc",
+        "OnOtherCardDealDamageAddDamageAfterCalc"
+      ],
+      "simulator_used_triggers": [
+        "OnOtherCardDealDamageAddDamageAfterCalc",
+        "OnOtherCardEnterPlay",
+        "OnAfterOtherCardDefenseIsSet",
+        "OnAfterOtherCardGainDefense",
+        "OnOtherCardFullyRepaired",
+        "OnOtherCardDealDamage",
+        "OnAfterOtherCardSuppressed"
+      ],
+      "new_functions_absent_from_simulator_entrypoints_and_locals": [
+        "OnOtherCardBecomingVeteran"
+      ],
+      "status": "current client version drift confirmed; simulator effect and trigger migration pending per-card semantic/default/parameter checks"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "live_only": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "parsed_only": [],
+      "current_functions": 10,
+      "parsed_functions": 9,
+      "functions": [
+        {
+          "name": "ExecuteUbergraph_card_unit_l4_grasshopper",
+          "script_size": 1815,
+          "script_sha256": "6d428c1ce4ea76184f7de29b7d056355c9a0cc8755268036749feac79d66f3e7",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "Remove the Buff",
+          "script_size": 495,
+          "script_sha256": "a7b248ca2def38cd5f614ff653f634de9a7c7dac83c2f2d3dcc329de54c0bc0f",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "ApplyTheBuff",
+          "script_size": 421,
+          "script_sha256": "ebf30cb27d91d854c73b3a25755f5521767555acd7c94f4ddd847e32680b7437",
+          "same_as_parsed_after_metadata_normalization": true
+        },
+        {
+          "name": "OnEnterPlay",
+          "script_size": 36,
+          "script_sha256": "248732fec50a8ed27539d9d347db5ae3f51d377bd26c6a90deab2e6be71e0137",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnLeaveBoardOrOwner",
+          "script_size": 54,
+          "script_sha256": "badf9239d1314a8e129287085f84355ad391fc9b6fa6dc94d522dff37c3eb423",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardEnterPlay",
+          "script_size": 54,
+          "script_sha256": "c579bee0d43af6e0bbb19278cc4beed4ec83bae77c9e54de7333db1d68a89145",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardReset",
+          "script_size": 54,
+          "script_sha256": "845a2a5eb1b42b4d7465ae210e2006d27d3e9c53b4df22b9f6510b95b82c12ed",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardDrawnFromDeck",
+          "script_size": 72,
+          "script_sha256": "cdb2618b8413c96fc0817265fa7f938b230a0d067c8c092a769eac8116215e80",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardSpawnedInHand",
+          "script_size": 54,
+          "script_sha256": "8831b08c1a16c152f4ef3d0f16fc3cebbab577342eda5248cc20912768df268f",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnAfterOtherCardSuppressed",
+          "script_size": 36,
+          "script_sha256": "64c2157ace0a3b61adf9dc9f3ad75d8f4b8a9192c23ecea57589d53537548f32",
+          "same_as_parsed_after_metadata_normalization": null
+        }
+      ],
+      "simulator_entrypoints": {
+        "OnEnterPlay": 838,
+        "OnLeaveBoardOrOwner": 911,
+        "OnOtherCardDrawnFromDeck": 1368,
+        "OnOtherCardEnterPlay": 961,
+        "OnOtherCardReset": 1234,
+        "OnOtherCardSpawnedInHand": 1400
+      },
+      "simulator_locals": [
+        "ApplyTheBuff",
+        "Remove the Buff"
+      ],
+      "simulator_used_triggers": [
+        "OnOtherCardEnterPlay",
+        "OnOtherCardReset",
+        "OnOtherCardSpawnedInHand",
+        "OnOtherCardDrawnFromDeck"
+      ],
+      "new_functions_absent_from_simulator_entrypoints_and_locals": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "status": "current client version drift confirmed; simulator effect and trigger migration pending per-card semantic/default/parameter checks"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "live_only": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "parsed_only": [
+        "OnOtherCardAbilitiesChanged"
+      ],
+      "current_functions": 6,
+      "parsed_functions": 6,
+      "functions": [
+        {
+          "name": "ExecuteUbergraph_card_unit_panzer_iii_f",
+          "script_size": 3444,
+          "script_sha256": "72c82759dfe6e0033c628ca0dcdeedffc1e4088efc84300f35816884d2bc060d",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnPlayedFromHand",
+          "script_size": 36,
+          "script_sha256": "8182d0d2f27f1a78f94cf5ecd584c9854d2c8e6fd641f6a917695cd04d03d87e",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnOtherCardEnterPlay",
+          "script_size": 54,
+          "script_sha256": "57747806bb31aeaf849d8173b74e5c7df2356ab1289e8cca000ee0eb2daa3c7b",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnEnterPlay",
+          "script_size": 36,
+          "script_sha256": "9ba41122eba93e5bb73a160145e11eb9ca051a5a766112ce1c5ab0e246c533f4",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnLeaveBoardOrOwner",
+          "script_size": 54,
+          "script_sha256": "08b74c8beb9fad70a36ad703c3b7260ce5a7fb1cbd79e5be8495bc894c67ddef",
+          "same_as_parsed_after_metadata_normalization": false
+        },
+        {
+          "name": "OnAfterOtherCardSuppressed",
+          "script_size": 36,
+          "script_sha256": "5cb986675641f2214f3247d91a88769d171ca17474c8062fbbd396dffcb3f702",
+          "same_as_parsed_after_metadata_normalization": null
+        }
+      ],
+      "simulator_entrypoints": {
+        "OnEnterPlay": 2857,
+        "OnLeaveBoardOrOwner": 2941,
+        "OnOtherCardAbilitiesChanged": 3441,
+        "OnOtherCardEnterPlay": 2337,
+        "OnPlayedFromHand": 2253
+      },
+      "simulator_locals": [],
+      "simulator_used_triggers": [
+        "OnOtherCardEnterPlay",
+        "OnOtherCardAbilitiesChanged"
+      ],
+      "new_functions_absent_from_simulator_entrypoints_and_locals": [
+        "OnAfterOtherCardSuppressed"
+      ],
+      "status": "current client version drift confirmed; simulator effect and trigger migration pending per-card semantic/default/parameter checks"
+    }
+  ],
+  "common_card_functions_changed_after_normalization": [
+    {
+      "card": "card_unit_3_panzergrenadier",
+      "function": "ExecuteUbergraph_card_unit_3_panzergrenadier"
+    },
+    {
+      "card": "card_unit_3_panzergrenadier",
+      "function": "OnAfterOtherCardAttacks"
+    },
+    {
+      "card": "card_unit_3_panzergrenadier",
+      "function": "OnOtherCardMoveToFrontline"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "ExecuteUbergraph_card_unit_511th_regiment"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterOtherCardSuppressed"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "ExecuteUbergraph_card_unit_l4_grasshopper"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnEnterPlay"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnLeaveBoardOrOwner"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnOtherCardEnterPlay"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnOtherCardReset"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnOtherCardDrawnFromDeck"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "OnOtherCardSpawnedInHand"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "function": "ExecuteUbergraph_card_unit_panzer_iii_f"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "function": "OnPlayedFromHand"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "function": "OnOtherCardEnterPlay"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "function": "OnEnterPlay"
+    },
+    {
+      "card": "card_unit_panzer_iii_f",
+      "function": "OnLeaveBoardOrOwner"
+    }
+  ],
+  "common_card_functions_same_after_normalization": [
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "GetPassiveDefenseBuff"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnCardDealDamage"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnDealDamageAddDamageAfterCalc"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "checkAndUpdateBuffOnAllCards"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "checkAndUpdateBuffOnCard"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnOtherCardDealDamageAddDamageAfterCalc"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnOtherCardEnterPlay"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnEnterPlay"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnBecomingVeteran"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterLeaveBoard"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterOtherCardDefenseIsSet"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterOtherCardGainDefense"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterGainDefense"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnAfterDefenseIsSet"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnOtherCardFullyRepaired"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnFullyRepaired"
+    },
+    {
+      "card": "card_unit_511th_regiment",
+      "function": "OnOtherCardDealDamage"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "Remove the Buff"
+    },
+    {
+      "card": "card_unit_l4_grasshopper",
+      "function": "ApplyTheBuff"
+    }
+  ],
+  "version_drift_counts": {
+    "cards": 5,
+    "current_functions": 42,
+    "decoded_functions": 42,
+    "current_only_function_names": 6,
+    "parsed_only_function_names": 4,
+    "common_changed": 17,
+    "common_same": 19
+  },
+  "opcode64": {
+    "native_bytes": 129,
+    "dispatch_target_rva": "0x15a4c30",
+    "decoder": "Explicit property pointer followed by expression, backed by native operand read and existing exported-schema cross-check; syntax decode only, persistent frame semantics/lifetime not fully verified."
+  },
+  "deepseek": {
+    "job_id": "20261020-200305-rule260-delay-fields-048ccad1",
+    "elapsed_seconds": 43.61,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule260\\delays.json",
+      "sha256": "2167780d7a62797455ec55ae98ff40c1f3a1b85a5b9bfa58e372afc6f55a4903"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule260\\task.txt",
+      "sha256": "2f868538111ea70dab38ef924a03bca6040a0bb84e1fa6619bff90dfe4c1c55e"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule260\\inventory.json",
+      "sha256": "956646e06bc5de1d76fa6737e74a9028a63c99dfb5db87a1a20ec27cb7e60cd2"
+    },
+    "independently_verified": true
+  },
+  "kernel_changed": false,
+  "tests": {
+    "last_full_release": "594/594",
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "0 direct literal candidates does not exclude indirect native scheduling, delegate-based dispatch, constructed names or unselected rule components.",
+    "No complete rule-restoration claim. The five changed card schemas are definite client-versus-offline differences; full semantic migration and live defaults/parameters/trigger verification remain pending.",
+    "Normalized comparison deliberately removes exporter metadata and folds selected identifier spelling; equality is syntactic after that normalization, not a semantic execution proof.",
+    "Do not execute stale offline card functions as current authority or silently patch event names without verifying new bodies and inputs.",
+    "Runtime reads are read-only and stable rereads, not atomic snapshots; no historical replay authority."
+  ]
+}
