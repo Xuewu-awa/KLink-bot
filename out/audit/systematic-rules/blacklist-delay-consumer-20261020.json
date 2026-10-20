@@ -1,0 +1,32 @@
+{
+  "rule": "RULE-247",
+  "status": "latent-response-consumer-gates-and-order-verified-conditionally",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\blacklist-delay-consumer-native-20261020.json": "028ed18e4b07c27ea143c28e51e29f86320dafedff76c9804bd65c5ab5247699",
+    "D:\\Codex Workshop\\kards-install-review\\capture-blacklist-delay-consumer-20261020.py": "8cd20e75a48f8a2078ec8e6c4a694abaad5c811d2d9b9f4fde610ab7bf29c3b8",
+    "D:\\Codex Workshop\\kards-install-review\\audit-blacklist-delay-consumer-20261020.py": "62647d0f6008ef8b13ed83c6fc7c0e425b37af22f7d0b466a4692e4bd25b81b8"
+  },
+  "kernel_changed": false,
+  "native_ranges": 5,
+  "native_bytes": 1810,
+  "offline_tick_consumer_cases": 600,
+  "offline_reentrant_tick_cases": 2,
+  "release_selftests": {
+    "total": 594,
+    "failed": 0,
+    "rerun": false
+  },
+  "fully_semantically_verified_cards": 0,
+  "findings": [
+    "Located complete3e178f0..3e17d0a across pdata fragments. It initializes response elapsed time from XMM1 input, walks allocated sparse action slots, performs virtual Update at slot8, collects completed UUID/action-pointer pairs, removes matching pointer entries and destroys completed actions before consuming callback records.",
+    "Consumer skips linkage-1, resolves the queued weak target, finds function by full8-byte FName, and only then calls object virtual slot0x260 with function and pointer to linkage as parameters. Actual weak resolution, function lookup and virtual-dispatch backend are substituted; it is not certified as full Blueprint execution.",
+    "600 controlled cases cover sparse holes, duplicate UUID/different-pointer actions, elapsed boundaries, invalid weak targets, missing functions and disabled linkage. All allocated actions update before removal; selected records survive/skip as expected. Two further ticks show a callback-added action is not updated in the same native pass and is eligible next pass, under the explicit insertion contract.",
+    "Captured AddAction shell3dff0e0..3dff285: it requests outer weak-key pair3df91a0, creates shared action list when absent, forwards UUID/action to1f43970 and issues a notification. This shell is captured/annotated but not executed or certified as complete registration."
+  ],
+  "limits": [
+    "Sparse removal, destruction, notifications, weak resolution, FindFunction and object virtual invocation are explicit emulator substitutions. Tests use at most4 active actions, inline response storage and single-bucket lookup; response growth, full native deletion and weak validity remain open.",
+    "Callback reentry uses a synthetic insertion contract; actual AddAction map/shared-reference helpers and lifetime are not verified. No same-frame manager rescan or actual game callback execution is claimed.",
+    "Manager caller, tick frequency/dilation/pause, UObject virtual-slot backend, UberGraphFrame persistence, world selection and concurrency remain open. No automatic scheduler added and no full card semantics certified. All acquisition read-only; last complete Release594/594 was not rerun."
+  ]
+}
