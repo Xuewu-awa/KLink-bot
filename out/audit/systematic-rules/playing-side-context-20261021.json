@@ -1,0 +1,205 @@
+{
+  "rule": "RULE-272",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\playing-side-blueprint-native-20261021.json",
+      "sha256": "385d3fb8a4056a514a9e1fc07b78f118eb82db46f8ef8868857bcbb635a511c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\playing-side-getter-native-20261021.json",
+      "sha256": "88055239d5ad03b4fcc03175dcb8b758fb22c3a3a94d9786dbd2de5af8b5cdfe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\playing-side-setter-native-20261021.json",
+      "sha256": "1712d3cc961be4153fc1c7573ea4f0eacd30f45328f93e1a8108e2dc60d4c604"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\playing-side-offline-20261021.json",
+      "sha256": "cca5524289d67e703e8b39ce0e40e94e214cbd31b8cd110bd0e3c6015ec02ba1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\parsed.json",
+      "sha256": "5b4e40f37dc89f9a39364a1caba3ca7cab4af1cf88ec65686940702d20e44006"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\manifest.json",
+      "sha256": "db372973ef26fb74bf563c10d280cfe04c86e0f5a3b3c7edc1651d4c42489d9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "blueprint_ast_matches": [
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetPlayingSide",
+      "script_bytes": 71,
+      "statements": 4,
+      "script_sha256": "63ad59481c82a7e5e93ecebe1e7fd92ec1a9382a3ff69088f2c5beee11fb9329"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "SwitchPlayingSide",
+      "script_bytes": 486,
+      "statements": 24,
+      "script_sha256": "deffa4f95cdc45febcc4b85f4d66be53eb8aca4cf3ffc0a34306da90b227f190"
+    }
+  ],
+  "native": {
+    "wrapper_bytes": 270,
+    "leaf_bytes": 17,
+    "offset": 910,
+    "semantics": "GameState stored byte at +0x38e is read/written by GetPlayingSide/SetPlayingSide; no effect-controller input.",
+    "field_reflection": "No matching FField in captured native class chain; offset identified by complete getter/setter code, not invented reflected metadata."
+  },
+  "offline_emulation": {
+    "vectors": 1024,
+    "scope": "Copied getter/setter leaves in synthetic Unicorn memory; setter changes only +0x38e, getter returns it without modifying object."
+  },
+  "fix": "GetPlayingSide dispatcher returns State.ActiveSide rather than EffectContext.Controller; all card data, IR, VM and turn transition code unchanged.",
+  "tests": {
+    "total": 605,
+    "cases": 6912,
+    "dimensions": [
+      "all 256 stored side byte values",
+      "controller Left/Right/NotAvailable",
+      "self null/Left/Right",
+      "receiver null/Left/Right"
+    ],
+    "entrypoints": [
+      "direct dispatcher with old output 173",
+      "VM with caller output seeded 173"
+    ],
+    "before_failed_tests": 2,
+    "before_failed_new_cases": 6885,
+    "before_failed_existing_control_cases": 54,
+    "after_failed_tests": 0,
+    "existing_test_adjustment": "RULE270 stored-opponent matrix retains all other assertions; GetPlayingSide control now expects active rather than controller.",
+    "logs": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule272-before-20261021.txt",
+        "sha256": "20877a65d3e3478d77ac9b0a013164fb86b21cbfad4985949d488ab83f0cb3cc"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule272-after-20261021.txt",
+        "sha256": "e6b4c23eec08d9753294f512081b054884b114874bf930a72a1b223e010639ac"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-020313-rule272-playing-uses-9d891418",
+    "elapsed_seconds": 60.9,
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\task.txt",
+      "sha256": "16709a7abee8b60bb658d75c22807db08d18d9cf8765d5bcc283bd6c5c2d5869"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\uses.json",
+      "sha256": "01c35a673b18e5c5afe3a86726a1e8da7237ab1646d94911dc5355720539ce16"
+    },
+    "implementation_cards": 1709,
+    "calls": [
+      {
+        "card": "card_brawl_test1",
+        "path": [
+          "steps",
+          0
+        ],
+        "field": "fn",
+        "node": {
+          "op": "call",
+          "fn": "GetPlayingSide",
+          "args": [
+            {
+              "var": "CallFunc_GetPlayingSide_OutPlayingSide",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetPlayingSide_OutPlayingSide"
+            }
+          ],
+          "recv": {
+            "var": "cardFunction",
+            "scope": "instance"
+          },
+          "i": 10,
+          "bo": 10
+        }
+      }
+    ],
+    "independent_exact_reenumeration": true,
+    "scope": "Only one literal use in simulator IR, card_brawl_test1; no demonstrated ordinary PvP card impact or full current-client coverage."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-playing-side-blueprint-20261021.py",
+      "sha256": "758653ebb47ed67f6610538c08541ef16c5231abb9aca2618657fe5b2bf707bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-playing-side-getter-20261021.py",
+      "sha256": "aac24dd84bc236a6060c8fc91ccd0d31abadd774f56312183f075e393c306ed1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-playing-side-setter-20261021.py",
+      "sha256": "2d3a7eba69488b84f48cb02b92810add5c7a2d00a83db4232795f54b7f08dc6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-272.py",
+      "sha256": "32d3d7a72d492e5edc770d8da56378cb6bd21d33821d4040356bd63d4e5f95ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-playing-side-native-20261021.py",
+      "sha256": "4f7281f7573568e1ceab5d50e9589e70b72baf4b357121b81c9672c621612e62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule272-playing-side-tests-20261021.py",
+      "sha256": "e00f0b4a03ed4b7fcc8e03478f2140511ddd4cb72a77716c70e01dd0f77c394c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule272-playing-side-20261021.py",
+      "sha256": "145c5472b5dbb1b2bf322170f3f63d8005292a901c5b57d87076a45bcce9b9ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule272-playing-side-20261021.py",
+      "sha256": "18fb78f639b0c6c56f94564428d7c69a35f746533752cbe60d0ac7c6bace7be3"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "ac2063359db9a04198bed8de0c7c19f392002da9738ca31bbcc509c99e768a32"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "f9169d09744161b9508ddda109f296faf6afdbaca2c78c6fcc4c6df56b302f93"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "card_ir_or_data_changed": false,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Complete world-context lookup used by SwitchPlayingSide CallMath, server adjudication and all initialization/network lifecycle are not certified.",
+    "Full SwitchPlayingSide AST match establishes current syntax/control flow; it is not a full simulated/executed certification of every turn transition.",
+    "ActiveSide model denotes the stored playing side; no new separate controller or turn-phase semantics are introduced.",
+    "IsSideActive receiver GameMode dependency and all remaining SideArg fallbacks are separate unresolved audits.",
+    "Malformed argument coercions and enum values outside byte range are not covered.",
+    "No historical replay authority, process writes, injection or client invocation."
+  ]
+}

@@ -304,6 +304,7 @@ internal static class SelfTest
         new("GetLocationCardBySide 能取到指定阵营的 HQ", LocationCardLookup),
         new("HQ 查询：全部字节阵营、不回退接收者，非在场 HQ 引用及 VM 输出覆盖", LocationLookupSideBoundary),
         new("GetOppositeSide：接收者阵营及无效字节保留输出", OppositeSideReceiverBoundary),
+        new("GetPlayingSide：保存的行动方独立于效果控制方和卡对象", PlayingSideStoredState),
         new("IsGroundUnit：隐式 self 识别地面单位并排除空军", IsGroundUnitImplicitSelf),
         new("DamageCard 能打掉 HQ 的防御", DamageHqDirectly),
         new("本回合 HQ 伤害与行动费计数按蓝图查询并在回合开始清零", TurnScopedGameplayCounters),
@@ -2209,7 +2210,7 @@ internal static class SelfTest
             var playing = engine.Api.InvokeByName("GetPlayingSide", null, Array.Empty<object?>(), ctx, out bool playingHandled);
             if (!handled || !clientHandled || !oppositeHandled || !playingHandled
                 || !Equals(opponent, (int)client.Opposite()) || !Equals(clientResult, (int)client)
-                || !Equals(opposite, self is null ? null : (object)(int)self.Owner.Opposite()) || !Equals(playing, (int)controller))
+                || !Equals(opposite, self is null ? null : (object)(int)self.Owner.Opposite()) || !Equals(playing, (int)active))
                 failures.Add($"{client}/{active}/{controller}/self={self?.Owner}: opponent={opponent}, client={clientResult}, opposite={opposite}, playing={playing}");
         }
         return failures.Count == 0 ? null : $"{failures.Count}/81 场景失败：" + string.Join(" | ", failures.Take(8));
@@ -2306,6 +2307,36 @@ internal static class SelfTest
     }
 
     // Query the CardFunctions wrapper, whose fresh local output slots default to null/zero.
+    /// <summary>GameState.GetPlayingSide reads its stored byte, never EffectContext.Controller.</summary>
+    private static string? PlayingSideStoredState(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var left = state.CreateWithId(PlainUnit, Side.Left, 90, CardLocation.DeckLeft, 0);
+        var right = state.CreateWithId(PlainUnit, Side.Right, 91, CardLocation.DeckRight, 0);
+        var failures = new List<string>();
+        foreach (int value in Enumerable.Range(0, 256))
+        foreach (Side controller in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (CardInstance? self in new CardInstance?[] { null, left, right })
+        foreach (CardInstance? receiver in new CardInstance?[] { null, left, right })
+        {
+            state.SetupSidesInBattle(controller == Side.Left ? Side.Right : Side.Left);
+            state.ActiveSide = (Side)value;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = controller };
+            var direct = engine.Api.InvokeByName("GetPlayingSide", receiver, new object?[] { 173 }, ctx, out bool handled);
+            var call = new KismetStep(0, "call", "GetPlayingSide",
+                new[] { new KismetExpr { Var = "__playing", Scope = "local" } }, new[] { 0 },
+                null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "__receiver", Scope = "local" } };
+            var program = new KismetProgram(new[] { call, new KismetStep(1, "return", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                new Dictionary<string, object?> { ["__receiver"] = receiver, ["__playing"] = 173 }, "__playing");
+            if (!handled || !Equals(direct, value) || !Equals(result.GetValueOrDefault("__playing"), value))
+                failures.Add($"stored={value}/controller={controller}/self={self?.Owner}/recv={receiver?.Owner}: direct={direct}, VM={result.GetValueOrDefault("__playing")}");
+        }
+        return failures.Count == 0 ? null : $"{failures.Count}/6912 场景失败：" + string.Join(" | ", failures.Take(8));
+    }
+
     /// <summary>Native BaseCardObject reads receiver.side and leaves an invalid-side out byte untouched.</summary>
     private static string? OppositeSideReceiverBoundary(CardDatabase db)
     {
