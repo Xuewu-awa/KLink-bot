@@ -828,6 +828,9 @@ public sealed class MatchEngine
 
         // OpponentActionsEndTurn i=673 precedes SwitchPlayingSide/IncrementTurnNumber.
         ExecuteAutoPlayCards();
+        // ZActionEndTurn is appended after generation/auto-play. Its receiver
+        // clears all cards not owned by the ending side before the next start.
+        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.EndTurn, 0, false, side));
         ApplyPendingLocalRuleReceipts();
 
         RecordAction("XActionEndOfTurn", side, new Dictionary<string, object?>
@@ -1098,8 +1101,8 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
-    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter }
-    private readonly Queue<(LocalReceiptKind Kind, int CardId, bool Flag)> _pendingLocalRuleReceipts = new();
+    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter, EndTurn }
+    private readonly Queue<(LocalReceiptKind Kind, int CardId, bool Flag, Side EndingSide)> _pendingLocalRuleReceipts = new();
 
     /// <summary>Compatibility entry for callers of the original Gotcha-only receiver.</summary>
     public void ApplyPendingGotchaPlayReceipts()
@@ -1107,8 +1110,8 @@ public sealed class MatchEngine
 
     /// <summary>
     /// Apply the currently modeled rule-bearing local receipts in production order.
-    /// These are the Gotcha play and frontline-limiter receivers, not a complete
-    /// implementation of BP_OnlineMatch.ResolveSubAction. Normal actions call
+    /// The modeled receipts are Gotcha play, frontline-limiter and end-turn
+    /// activation cleanup, not all of BP_OnlineMatch.ResolveSubAction. Normal actions call
     /// this after autoplay and before deferred selection replies; standalone API
     /// callers must explicitly finish their local receipt batch.
     /// </summary>
@@ -1116,6 +1119,15 @@ public sealed class MatchEngine
     {
         while (_pendingLocalRuleReceipts.TryDequeue(out var receipt))
         {
+            if (receipt.Kind == LocalReceiptKind.EndTurn)
+            {
+                // ReceiveActionEndTurn i=854/914/1028 has no location, type or
+                // suppression filter: side != parsed ending side is sufficient.
+                foreach (var current in State.AllCards)
+                    if (current.Owner != receipt.EndingSide)
+                        current.GotchaActivated = 0;
+                continue;
+            }
             if (receipt.Kind == LocalReceiptKind.FrontlineLimiter)
             {
                 // ReceiveSubActionUpdateFrontlineLimiter i=451 -> GameState:
@@ -1150,7 +1162,7 @@ public sealed class MatchEngine
             ActionValue2.Int("instigatorID", limiterId),
             ActionValue2.Bool("remove", remove),
         });
-        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.FrontlineLimiter, limiterId, remove));
+        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.FrontlineLimiter, limiterId, remove, Side.NotAvailable));
     }
 
     private void NotifyPlayFromHand(CardInstance card, int instigatorId,
@@ -1178,7 +1190,7 @@ public sealed class MatchEngine
         else if (chooseOneIndex is >= 0)
             values.Add(ActionValue2.Int("chooseOneIndex", chooseOneIndex.Value));
         FireSubAction("ZActionPlayCardFromHand", values);
-        if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly));
+        if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly, Side.NotAvailable));
     }
 
     private bool _processingAutoPlayCards;

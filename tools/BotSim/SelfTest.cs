@@ -830,6 +830,7 @@ internal static class SelfTest
         new("★ GameplayRestriction：禁抽牌/加槽/指令/部署/地面攻击/手牌弃牌，并按来源与回合解除", GameplayRestrictions),
         new("全局限制：零回合仍生效、重复来源保留，并在开始回合结算后递减", GameplayRestrictionLifetime),
         new("回合反制序号：行动方全局清零，不筛选位置/类型/抑制，对方保持", StartTurnClearsCurrentSideGotchaOrdinals),
+        new("结束回合接收：下一方反制序号在开始回合抽牌前清零，结束方保持", EndTurnClearsActivationBeforeNextDraw),
         new("★ GameplaySideEffect：按阵营/标签/来源维护 blockgotcha，并真实阻止反制触发", GameplaySideEffects),
         new("撤回：AA Barrage 半场回手、前线退半场；M16 无目标不撤自己", RetreatEndToEnd),
         new("508065：Fifth Ohio 无目标部署不得摧毁自身；显式目标仍执行摧毁", FifthOhioNullableTarget),
@@ -1476,6 +1477,34 @@ internal static class SelfTest
         foreach (var card in cards)
             if (card.GotchaActivated != (card.Owner == Side.Right ? 0 : card.CardId + 1000))
                 return $"右回合序号清理错误：{card.Owner}/{card.Location}";
+        return null;
+    }
+
+    private static string? EndTurnClearsActivationBeforeNextDraw(CardDatabase db)
+    {
+        foreach (var ending in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = ending;
+            state.Turn = 2;
+            var next = ending.Opposite();
+            var nextCard = state.CreateWithId("card_unit_j2m_raiden", next, 101,
+                next == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight, 0);
+            var endingCard = state.CreateWithId("card_unit_j2m_raiden", ending, 102,
+                ending == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight, 0);
+            state.CreateWithId("card_unit_51e_regiment", next, 103,
+                next == Side.Left ? CardLocation.DeckLeft : CardLocation.DeckRight, 0);
+            nextCard.GotchaActivated = 17;
+            endingCard.GotchaActivated = 19;
+            (int Next, int Ending)? atDraw = null;
+            // Drawing writes location without CardMoved notifications. Observe
+            // through the existing temporary OnCardDrawnFromDeck probe instead.
+            using var probe = InstallDrawReentryProbe(state,
+                () => atDraw = (nextCard.GotchaActivated, endingCard.GotchaActivated));
+            engine.EndTurn(ending);
+            if (atDraw != (0, 19))
+                return $"{ending}结束后抽牌时序号应为0/19，实际{atDraw}";
+        }
         return null;
     }
 

@@ -1,0 +1,149 @@
+{
+  "rule": "RULE-296",
+  "kind": "Fix end-turn receipt activation cleanup before next start effects",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\end-turn-receipt-native-20261021.json",
+      "sha256": "f435fd7830f455be87294d8f41de6f135fdd241c38e731686e7886446cc68a47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\end-receipt-side-parser-native-20261021.json",
+      "sha256": "3f5c28725adcaa2de8ba7ee5f440032d4513ae802f0b5df73b710dc5bbb19ff6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\end-receipt-model-checks-20261021.json",
+      "sha256": "cbc980f92b02d072d26404ed47a5ed890f92cbea87c1c26d395f8574d1bdd6a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\inherited-turn-handlers-native-20261021.json",
+      "sha256": "a70ba2c61f4fef4183668b6a6837bb9ecdd199412ae486a979a766f36fe0b4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-subaction-dispatch-native-20261021.json",
+      "sha256": "85183d61137aa286d805d74e9947b39afe7161f5c941761c19a4bfe78fab1608"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule296-end-receipt-verified-20261021.json",
+      "sha256": "74a16a754ccfa425c54ef9e5f5a72fda7fe94aaeb89a4d9634e8fb8f34fe6b7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule296-selftest-release.log",
+      "sha256": "b472b07af72e0b2ca5c46cd3bb765854b3dc4a68446b5ce7aea5d450860ea6bb"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-296",
+    "worker_exact_match": true,
+    "functions": [
+      {
+        "name": "ReceiveActionEndTurn",
+        "bytes": 1548,
+        "statements": 48
+      },
+      {
+        "name": "SideStringToEnum",
+        "bytes": 220,
+        "statements": 14
+      },
+      {
+        "name": "OpponentActionsEndTurn",
+        "bytes": 3902,
+        "statements": 134
+      }
+    ],
+    "full_script_bytes": 5670,
+    "full_script_statements": 196,
+    "receiver_model_cases": 1548,
+    "full_release_selftest": {
+      "passed": 623,
+      "total": 623
+    },
+    "kernel_runtime_changed": true,
+    "limit": "Receiver/parser model with explicit initial output slot, ASCII and immutable map; no complete UI/client flag model or callback/reconnect scheduling certification."
+  },
+  "authority": {
+    "parser": "SideStringToEnum220B: IsEmpty returns without writing output; ASCII left/right case-insensitive ->1/2; other nonempty ->0. Receiver reads Text under case-insensitive side keys, later entries can replace earlier result. Empty does not necessarily reset prior parser slot.",
+    "receiver": "ReceiveActionEndTurn: clear all card.gotchaActivated where card.side != parsed _side; then SetIsLocalClientTurn(enemySide == _side), myTurnHasStarted=false and bEndTurnQueued=false. No location/type/suppression gate.",
+    "phase": "OpponentActionsEndTurn flow668 pushes1255 around auto-play;1255 pushes3322 and1260 pushes1415; ZActionEndTurn receipt via DoSubActions1729 occurs before SwitchPlayingSide1882 and IncrementTurnNumber2246."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+    "description": "Append EndTurn activation receipt after end-turn generation/autoplay to existing ordered local receipt queue; apply before next turn increment/start. Clear Owner != EndingSide across all cards.",
+    "reason": "RULE-293 start-of-turn cleanup occurred after start effects and draw; alone it was too late for end-turn receipt side effects.",
+    "scope": "Activation cleanup component only; no claim that all ReceiveActionEndTurn state or local-turn mirror flag is modeled. Existing start-phase cleanup remains."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 623,
+    "total": 623,
+    "integration_case": "Both ending sides; a temporary OnCardDrawnFromDeck probe observes next-side activation already0 and ending-side activation19 during next start draw. Synthetic probe does not claim a real card effect.",
+    "receiver_parser_AST_cases": 1548,
+    "model_limit": "Explicit initialized local slots, immutable pointer array and ASCII comparisons, mocked getter/setter/logging; no complete Kismet or reentrant lifecycle execution."
+  },
+  "deepseek": {
+    "job": "20261021-203004-rule296-end-receipt-inventory-4d876ad1",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule296\\functions.json",
+      "sha256": "2ca8480fac0485c64690934b82e9c9f74d3779bcc2b1ebefce97b0568215b874"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule296\\inventory.json",
+      "sha256": "e4aa9d40350afd0a18012fda956cb5cf304b0865d484970741eed123727bd3d0"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule296\\task.txt",
+      "sha256": "a7079aaa132438a76cc3deb1300e71602907b5639f0d4abe6ce95c8b17746f98"
+    },
+    "primary_exact_match": true,
+    "scope": "Three function call/Context-write inventory only"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule296-side-parser.py",
+      "sha256": "eb008880c97513c2df4d7966bde0a416688483ddc8823a3eb57ba0b062223ef1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule296-end-receiver.py",
+      "sha256": "099e57fae214732dcf8e2a56468aae442df1d62b7a28a40b42827aaad33600c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule296-packet.py",
+      "sha256": "487dfa7038b2e36080176b7e2300c2e0001a2aa41558280dc5e62436d148e20c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule296-end-receipt-model.py",
+      "sha256": "697e7b66956b6a1ab93f2d3f00be7009add5f6d01eefb306384e47c9e350d556"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule296-end-receipt.py",
+      "sha256": "296f9089036b819f39e12a8527c544ec84fbe08cbf107ee8f77c0dc349a1df9a"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "df91580a028977b7a012f867c0f21d828ef275d6a6a862a70e98d85e9b53fde2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "81ad310c0d7482a707455ad47eba765ab5a7952bc9789f9da8668c94242bfcd9"
+    }
+  ],
+  "remaining": [
+    "Full local-turn flag and myTurnHasStarted/bEndTurnQueued representation",
+    "Per-card attack/hit/quota reset ownership",
+    "Full queued receipt snapshot/serialization and reentrant scheduling beyond currently modeled receivers"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
