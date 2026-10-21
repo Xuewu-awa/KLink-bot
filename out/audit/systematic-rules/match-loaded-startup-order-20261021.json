@@ -1,0 +1,242 @@
+{
+  "rule": "RULE-288",
+  "kind": "MatchLoaded/StartMatch routes and presentation-completion startup; no kernel repair",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-loaded-native-20261021.json",
+      "sha256": "057814bd8a47c5e37223bdb0a4d741f7146e1637eb235253246241a36f6f7ee2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-loaded-callback-bindings-20261021.json",
+      "sha256": "b73e09a174dc70d2f8b409150c88c3d549f8067e54e53a0179f03f02fd96318f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-loaded-completion-native-20261021.json",
+      "sha256": "4b65af777a51e87cae74b1e207056f2222535304785753b9812b9d546a26add8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-start-match-path-20261021.json",
+      "sha256": "be4e4ad3f4e74021e8ea05d776d72f0aa3bf3e1b978389ae87923c6569a9f262"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-start-match-path-v2-20261021.json",
+      "sha256": "a781fc282d35f4277b2fe699a19414af9db3631612e7a89ed309aa78dcb729c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-start-match-path-v3-20261021.json",
+      "sha256": "05d1c8690012d509e0a3e6dfebb342a08d7ee82b41c08aaf0544c1f3d05e0050"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-start-match-path-v4-20261021.json",
+      "sha256": "c3b5f61434f5d1e2b93982e92dcdaa09bedc920f02df6495318793d32e651cde"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-loaded-gates-offline-20261021.json",
+      "sha256": "d3206cd7c1f033945144537cbf9b2bf1307fe975c536d1dfbab948a75820678f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-binding-paths-20261021.json",
+      "sha256": "5b588bc1417f8d0eebd31dcde8aea6ee8af0d2f07e5d2987d15cc780dcc25d25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule288-loading-startup-verified-20261021.json",
+      "sha256": "b0976eb907e09f65099870bac2e48c882853cbf31afb257ba77b66cefe5cba0c"
+    }
+  ],
+  "native_capture": {
+    "functions": 6,
+    "chained_parts": 28,
+    "bytes": 3064,
+    "code_matches_pe": true,
+    "stable_rereads": true
+  },
+  "MatchLoaded": {
+    "root": "0x4b00290",
+    "mode0_status_not_running": "Constructs request with exact body { \"action\": \"lvl-loaded\" }",
+    "other_path": "StartMatch wrapper0x4a94180; mode2 tailjumps, other modes then inspect debug byte before calling0x4b03b00",
+    "status_literal": "running",
+    "limit": "Submission path observed, not HTTP success or completion timing."
+  },
+  "wait_callbacks": {
+    "Loading": {
+      "root": "0x4b11b00",
+      "entry_guard": "c09==3",
+      "response": "0x4acdf70",
+      "running_path": [
+        "StartMatch at4ace088",
+        "tail helper4b03b00 at4ace091"
+      ],
+      "orphaned_quit": "Branches into termination path, implementation not emulated"
+    },
+    "Ready": {
+      "root": "0x4b11ce0",
+      "entry_guard": "c09==2",
+      "response": "0x4ace220",
+      "loading_path": "Calls4b11ab0, which sets c09=3 and tails to WaitLoading (previously captured)",
+      "limit": "Other errors, timeout/backend/dispatch semantics not certified."
+    }
+  },
+  "callback_tables": {
+    "verified_live_relocation": true,
+    "WaitLoading_slot58": "add rcx,20; jmp4acdf70",
+    "WaitReady_slot58": "add rcx,20; jmp4ace220",
+    "MatchLoaded_slot58": "ret0 stub, not analogous response bridge",
+    "MatchLoaded_slot50": "Captured105B allocation/copy body; not promoted to response execution merely from slot offset",
+    "limit": "Generic request/delegate dispatcher and all virtual slot roles remain open."
+  },
+  "blueprint": {
+    "paths": [
+      {
+        "name": "StartMatch",
+        "entry": 22457,
+        "nodes": 56
+      },
+      {
+        "name": "CallOnStartMatch",
+        "entry": 22028,
+        "nodes": 9
+      },
+      {
+        "name": "Delay6180Resume",
+        "entry": 6235,
+        "nodes": 6
+      }
+    ],
+    "node_visits": 71,
+    "unique_nodes": 58,
+    "StartMatch_entry": 22457,
+    "CallOnStartMatch_entry": 22028,
+    "direct_branch": "isReplayMatch OR match_type==campaign leads to StartOnlineMatch at5579",
+    "ordinary_widget_path": "If widget valid and faction unlocking complete: clear OnShowMatchupDone, BindDelegate Self.CallOnStartMatch at5956, add at5979, ShowMatchup at6143",
+    "delayed_path": "Delay5seconds at6180 resumes6235, then establishes same callback and shows matchup",
+    "no_widget_path": "IsReconnectMatch branch and logger branch both eventually jump5533; not an unconditional abort",
+    "callback_route": "22028 jumps5533 ->GetOnlineMatch ->StartOnlineMatch at5579 ->startOnlineMatchCalled=true",
+    "active_match_id_note": "Different ActiveMatchID path clears three flags and records match_id. Same-ID path logs; log text is not proof of early return or whole initialization idempotence."
+  },
+  "onload_connection": {
+    "prior_source": "Battle OnLoad entry1807; non-replay path goes1020/GetMatchController then1041/MatchLoaded",
+    "disconnected_delay": "Battle965 Delay0.15seconds resumes110, not next statement1020",
+    "limit": "These are current bytecode routes, not past replay execution evidence or an atomic startup trace."
+  },
+  "text_syntax": {
+    "supported": "EX_TextConst Empty subtype0, LocalizedText subtype1 with three observed StringConst operands only",
+    "observed_nodes": [
+      {
+        "Inst": "TextConst",
+        "TextLiteralType": "Empty"
+      },
+      {
+        "Inst": "TextConst",
+        "TextLiteralType": "LocalizedText",
+        "SourceString": "StartMatch() was called again for the same match ({match_id}). Don't reset match state.",
+        "LocalizationKey": "788AD0ED4B368BBF0D213BA3E5150E2C",
+        "LocalizationNamespace": ""
+      }
+    ],
+    "framing_sources": [
+      {
+        "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\EBlueprintTextLiteralType.cs",
+        "sha256": "90ba8e188ef83231fdfa84eee7bec63848d595a04f446ba3296f757705529c5b"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\FScriptText.cs",
+        "sha256": "3dee6dab73f1fabd51deaee0eb4cae250d2a12578d921a16dd0ab38ee34ac998"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_TextConst.cs",
+        "sha256": "93f01a026817bdc0093e89abf08aeecc41bf2eb4a71377903bcddb09ab1776d0"
+      }
+    ],
+    "checks": "Independent redecode of current script bytes and local syntactic framing/fail-closed cases. Parser source supplies syntax, not KARDS rule authority. Other subtypes rejected."
+  },
+  "offline": {
+    "counts": {
+      "MatchLoaded_mode_status_gate": 400,
+      "WaitLoadingResponse_status_window": 40
+    },
+    "total_vectors": 440,
+    "scope": "MatchLoaded400 mode/status/debug/background cases and WaitLoadingResponse40 status/background cases. Real copied comparator; submission,event,poll,termination and clock paths intercepted. Not full native execution."
+  },
+  "deepseek": {
+    "job_id": "20261021-163552-rule288-loading-flow-02cbeccf",
+    "elapsed_seconds": 27.84,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule288\\instructions.json",
+      "sha256": "f2fb11905401e9479ec0f9c2048a98db2e11c551d1f8776787a0fb57aa79a86f"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule288\\inventory.json",
+      "sha256": "fa6d75dde054fe4d05f88b864b5c387c31595d23bd487e9f5c645f74b4de2872"
+    },
+    "primary_exact_match": true,
+    "scope": "Six native-body instruction/branch/call counts and exact input SHA256; no semantic judgment."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule288-match-loaded.py",
+      "sha256": "2ea5b344119d6d357cb51288a39289f7b03f6132937abfd864ed99b65733bfcc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule288-loading-callbacks.py",
+      "sha256": "965e87b0083c8d1dc2aabcb21b603d45a47512b3376ce2e338c29753804f65b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule288-completions.py",
+      "sha256": "b9ae30fd80f8409062c9ff90a6f39c8de4a4f431d6019e9488f17704e43a6625"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule288-start-match-path.py",
+      "sha256": "e46d8a100e603fa0e1055ae01735a5c612251f41d3583a4fff9442d2015c79b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-288.py",
+      "sha256": "4cfab2c9a0a588cb700d7f568668498ee300cdab3d862d1ac773293d03a08ce1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule288-load-gates.py",
+      "sha256": "b680b2d1c51fcc9d0ebffba6b5acf2ddac4d3118f02b928b2b5515d207ca53be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule288-loading-startup.py",
+      "sha256": "0ad7fda6610eb91d99131aeedaabeb7b42bd1c29ad60900cdfe6c888d9bf4ac6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule286-action-phase.py",
+      "sha256": "adbc5ea1a225d728b9109e4c2f01a7ea9beea40d02b1f45cdc09d5aa0b96eacb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-paths.py",
+      "sha256": "292dfcd6eb2f75b7e3e8f5e11bcd88390ce94b7eedfcf3531226c721639ed8e1"
+    }
+  ],
+  "validation": {
+    "native_thunks_event_names_tables_and_capstone": true,
+    "blueprint_node_and_flow_stack_checks": true,
+    "offline_vectors_passed": 440,
+    "kernel_changed": false,
+    "new_full_release_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "StartMatch can return to native polling while widget completion remains deferred. Polling is not necessarily rule action evaluation; queue gating still requires verification.",
+    "Presentation native/sequence callbacks and event lifetime remain opaque; no complete initialization idempotence proof.",
+    "No StartingSide import/default change or arbitrary-ActiveSide-as-original-side assumption.",
+    "No historical replay authority, UI/campaign implementation, process write, injection or live game function invocation."
+  ],
+  "next_audit": "Verify controller action-evaluation gate at6413 and startup flags that prevent queued actions entering rules before StartOnlineMatch completes; compare normal startup with resync order."
+}
