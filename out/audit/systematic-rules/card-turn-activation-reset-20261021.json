@@ -1,0 +1,207 @@
+{
+  "rule": "RULE-293",
+  "kind": "Fix current-side global Gotcha activation reset, separate local-turn-dependent attack resets",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-reset-native-20261021.json",
+      "sha256": "5e455113c17494e98b58f522cd622fd52c6c63b24b2717b57d745b69db899269"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-reset-queries-native-20261021.json",
+      "sha256": "4f459dc7ad99181dfab47d9e44cb89127a99a5dc2f1104cdf26dd8430e11c0e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-flag-references-20261021.json",
+      "sha256": "22559cadaf83cd3358f8a46c68583e0de01ce55d14d68f40c7fdc8e0c1900482"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-reset-prefix-model-20261021.json",
+      "sha256": "f01fdeb59a8ff0d832bcb35dd8d9fbbc1adc7e01294185b05e22e01d0c9ff648"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-reset-playing-side-native-20261021.json",
+      "sha256": "813ef16db7c42509899b694b2b7220b305fa149a27110672365f9074dc207008"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-reset-playing-side-checks-20261021.json",
+      "sha256": "9cc91ae666f6a2574c052e1f8170a013e8ef394ee1ab0d75668d6f3c1017a0ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\inherited-turn-handlers-native-20261021.json",
+      "sha256": "a70ba2c61f4fef4183668b6a6837bb9ecdd199412ae486a979a766f36fe0b4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule293-reset-verified-20261021.json",
+      "sha256": "36eb7d8cde2ca764e46a9659aa2f8b75c529e4e97dd2ad1c623ede29c0603920"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule293-selftest-release.log",
+      "sha256": "07347151bf23582558db6faac1cfa36324f7d72a921cf2bea78a088846baa77f"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-293",
+    "worker_exact_match": true,
+    "full_functions": [
+      {
+        "name": "IsLocalClientTurn",
+        "bytes": 67,
+        "statements": 4
+      },
+      {
+        "name": "SwitchPlayingSide",
+        "bytes": 486,
+        "statements": 24
+      },
+      {
+        "name": "DoOnStartOfTurn",
+        "bytes": 4723,
+        "statements": 137
+      },
+      {
+        "name": "SetIsLocalClientTurn",
+        "bytes": 22,
+        "statements": 3
+      },
+      {
+        "name": "GetIsLocalClientTurn",
+        "bytes": 22,
+        "statements": 3
+      },
+      {
+        "name": "GetAllCardInBattle",
+        "bytes": 91,
+        "statements": 5
+      }
+    ],
+    "full_script_bytes": 5411,
+    "full_script_statements": 176,
+    "prefix_model_cases": 10240,
+    "native_leaf_cases": 512,
+    "literal_pointer_census": {
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes_scanned": 7922413
+    },
+    "literal_positive_functions": 3,
+    "full_release_selftest": {
+      "passed": 622,
+      "total": 622
+    },
+    "limit": "Gotcha ordinal path only fixed. Stored local-turn flag writers, per-card attack/reset ownership and later quota/UI path semantics remain open."
+  },
+  "authoritative_rules": {
+    "card_source": "GetAllCardInBattle ->Map_Values(AllCardsInBattle), no board/location/unit filter",
+    "prefix": "363 IsLocalClientTurn; if true clear hasBeenAttackedThisTurn400,hasAttackedThisTurn433,attackCountThisTurn466 across visited cards; then independent526 GetPlayingSide,567 card.side equality,641 gotchaActivated=0",
+    "local_flag": "Logic.IsLocalClientTurn forwards GameState.GetIsLocalClientTurn, which returns stored IsLocalClientTurn bool; setter directly copies input. Do not assume equality with active/client Side without writers proof.",
+    "native_side": "kardsGameState.GetPlayingSide exec0x4a64420 147B ->0x4b2dc50 10B copies native object+0x38e into output; PE-equal bytes",
+    "later_path": "Movement and attack quota writes4528/4628/4674 have additional location/ownership/local-flag/Fury control flow; full semantics not patched"
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+    "behavior": "After StartTurnCore and ExecuteAutoPlayCards, clear GotchaActivated for all State.AllCards with Owner==State.ActiveSide, before global restriction decrement and pending local receipts",
+    "removed_gap": "Old StartTurnCore only reset action state on State.Board(side), and never cleared activation ordinals for all current-side cards",
+    "scope": "No change to attack counters, has-been-attacked flag, movement/quota reset ownership or client flag semantics"
+  },
+  "test": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 622,
+    "total": 622,
+    "added_case": "StartTurnClearsCurrentSideGotchaOrdinals: both side starts, nine location values including mismatched side/zone and255, suppressed non-Gotcha units; opponent ordinals preserved",
+    "build_note": "Initial test setup attempted readonly IsSuppressed assignment; corrected to Keywords.Add(Suppressed) before successful full run",
+    "prefix_AST_cases": 10240,
+    "copied_native_leaf_cases": 512,
+    "limits": "AST mocks explicit local flag and playing side; no full VM scheduling or flag writer execution"
+  },
+  "local_flag_census": {
+    "functions": 30583,
+    "scripted": 18111,
+    "script_bytes": 7922413,
+    "positive_functions": 3,
+    "hits": 3,
+    "names": [
+      "SetIsLocalClientTurn",
+      "GetIsLocalClientTurn",
+      "ClearGameStateVariables"
+    ],
+    "limit": "Current loaded literal FField pointer references only; includes reads, not all setters/native/aliases/unloaded assets. Loaded set differs from previous battle capture; no absence proof."
+  },
+  "deepseek": {
+    "job": "20261021-173611-rule293-reset-writes-b8b5d0ef",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule293\\statements.json",
+      "sha256": "20208f3690868405952931d4010226f28efb7d511405d78a0421860f06cb4e44"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule293\\writes.json",
+      "sha256": "e94f97ff9f12a99f1108f6d696dd4d559860d79b5fe3776f6f2b6c34093c00cb"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule293\\task.txt",
+      "sha256": "03318bea24cd0cd372ebdd0a2946bc468b8c38cd7ad7a80ada38d6f3bf788a16"
+    },
+    "primary_exact_match": true,
+    "scope": "Seven top-level Context write records, no conditional or semantic judgments"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule293-turn-reset.py",
+      "sha256": "976ca028001e705dcee23dee9d2dc73b6200b40b53c16bb101d7c404324b202a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule293-reset-queries.py",
+      "sha256": "4a82f937f930f28e99b8c7c9e765b3c4fd3bd4c3da7a2da295b7f62499f22862"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule293-local-turn-references.py",
+      "sha256": "87378b533aac4320c5341638e16a9d37db70c1307b10316045ab587319f4a513"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule293-packet.py",
+      "sha256": "d32713b6d3a36e48521ef02fc112a1cb002d7f9b836c0cad26c1df5c10384248"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule293-reset-prefix.py",
+      "sha256": "c3c95e851ec00bbd4f8a3fb3851366c5e30f860507f81b66206a3b7392d1f4d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule293-playing-side-native.py",
+      "sha256": "7050e15b657d2f118540af2d623ef79a178b0c86ab68932727915808c0dd2d7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule293-playing-side.py",
+      "sha256": "380ec28706eaa22cca0dbd898a3b06724d7236d934e4327e42416de2ebc9a7b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule293-reset.py",
+      "sha256": "b1b6c995830561dffb279a7d913b855528a055656fd5c1498d05aa081f536114"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "d756d4b3ff0b70687f45dfc1a7996b9e78c0bc8fbb17e8359b9c224d7656e3a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "dcfe6c8dfd0f2d43e5f3c9d9fa5e20c27a8d28bb9dbaa9085891d778ea20102c"
+    }
+  ],
+  "fully_semantically_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "next": [
+    "Trace stored local-turn flag callers/writers and their relationship to headless turn authority",
+    "Verify per-card attack/hit resets across zones and both sides",
+    "Verify movementLeft/attackLeft/Fury refresh and reset phase"
+  ]
+}

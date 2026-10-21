@@ -829,6 +829,7 @@ internal static class SelfTest
         new("★ BP_CardFunctions::ChangeFrontlineLimiter：Black Prince 将前线容量限制为 2，离场后恢复", ChangeFrontlineLimiter),
         new("★ GameplayRestriction：禁抽牌/加槽/指令/部署/地面攻击/手牌弃牌，并按来源与回合解除", GameplayRestrictions),
         new("全局限制：零回合仍生效、重复来源保留，并在开始回合结算后递减", GameplayRestrictionLifetime),
+        new("回合反制序号：行动方全局清零，不筛选位置/类型/抑制，对方保持", StartTurnClearsCurrentSideGotchaOrdinals),
         new("★ GameplaySideEffect：按阵营/标签/来源维护 blockgotcha，并真实阻止反制触发", GameplaySideEffects),
         new("撤回：AA Barrage 半场回手、前线退半场；M16 无目标不撤自己", RetreatEndToEnd),
         new("508065：Fifth Ohio 无目标部署不得摧毁自身；显式目标仍执行摧毁", FifthOhioNullableTarget),
@@ -1441,6 +1442,40 @@ internal static class SelfTest
         engine.StartTurn(Side.Left);
         if (deckCard.Location != CardLocation.HandLeft || state.MaxKredits(Side.Left) != 4)
             return "限制移除后下一次开始回合没有恢复抽牌/槽位增长";
+        return null;
+    }
+
+    private static string? StartTurnClearsCurrentSideGotchaOrdinals(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var cards = new List<CardInstance>();
+        var locations = new[] { CardLocation.DeckLeft, CardLocation.DeckRight,
+            CardLocation.HandLeft, CardLocation.HandRight, CardLocation.BoardHqLeft,
+            CardLocation.BoardHqRight, CardLocation.BoardFrontline, CardLocation.Discard,
+            (CardLocation)255 };
+        int id = 200;
+        foreach (var owner in new[] { Side.Left, Side.Right })
+        foreach (var location in locations)
+        {
+            // The blueprint writes the field even for non-Gotcha cards and
+            // side/location mismatches; include them to detect added filters.
+            var card = state.CreateWithId("card_unit_j2m_raiden", owner, id++, location, 0);
+            card.GotchaActivated = card.CardId;
+            card.Keywords.Add(Keyword.Suppressed);
+            cards.Add(card);
+        }
+        engine.StartTurn(Side.Left, draw: false);
+        foreach (var card in cards)
+            if (card.GotchaActivated != (card.Owner == Side.Left ? 0 : card.CardId))
+                return $"左回合序号清理错误：{card.Owner}/{card.Location}";
+        // The opposite side must be cleared on its own start as well.
+        foreach (var card in cards.Where(c => c.Owner == Side.Left))
+            card.GotchaActivated = card.CardId + 1000;
+        state.Turn++;
+        engine.StartTurn(Side.Right, draw: false);
+        foreach (var card in cards)
+            if (card.GotchaActivated != (card.Owner == Side.Right ? 0 : card.CardId + 1000))
+                return $"右回合序号清理错误：{card.Owner}/{card.Location}";
         return null;
     }
 

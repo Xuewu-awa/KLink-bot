@@ -575,6 +575,11 @@ public sealed class MatchEngine
             StartTurnCore(side, draw);
             // OpponentActionsStartTurn: StartTurnBySide then ExecuteAutoPlayCards.
             ExecuteAutoPlayCards();
+            // DoOnStartOfTurn i=641 clears every current-side card's activation
+            // ordinal, independently of location, card type or suppression.
+            foreach (var card in State.AllCards)
+                if (card.Owner == State.ActiveSide)
+                    card.GotchaActivated = 0;
             // OpponentActionsStartTurn calls DoOnStartOfTurn after generation
             // and auto-play; that function decrements global restrictions once.
             State.DecrementGameplayRestrictions();
