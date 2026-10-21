@@ -1,0 +1,237 @@
+{
+  "rule": "RULE-283",
+  "kind": "Overlapping stores and native callback registration identity; no kernel repair",
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "read_only": true,
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-overlap-native-20261021.json",
+      "sha256": "457ae68088265431e2aaab676364a2cf913ca83f77d7d00283651ee9367d6e5d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-overlap-identity-20261021.json",
+      "sha256": "773c6c8979d4d599a1018eaaa78714298a66e0b1ec3108a4e238927b51507381"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-overlap-identity-v2-20261021.json",
+      "sha256": "dad72e90644c072730634923fa79b5d657cd04ea1c7842019d3f43f72f5b02b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\cf8-wide-store-native-class-identity-20261021.json",
+      "sha256": "4bf8286e4abafe9459a0d268ac22a0a619c355cd18df3b1c551cf473b39af57d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-callback-bindings-20261021.json",
+      "sha256": "e0dbccfefc781da97142c8dc79e4639efff4d6bd3527ebe42028e24eb1c89955"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-owner-prefixes-20261021.json",
+      "sha256": "c2a8d1b153ef0b92a05f7f30cd24c5ce94e7f7fac7df49307b2943f1d6761f69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule283-overlap-bindings-verified-20261021.json",
+      "sha256": "6146a7abfdf4239d6c9376c565586cce3b6272faeed8deb7e156117b9017cebb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule283-callback-pointer-references.json",
+      "sha256": "cd04401b1dc95af553dd80552df51f69b9d2a8c5b0efbc46f31bc039c12f74d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule283-callback-code-references.json",
+      "sha256": "ce5566b5d5de5ec080aeed9f7266ce18334433c9950139b0493b3ed1d6291c3d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule283-callback-bridge-pointer-references.json",
+      "sha256": "c308156952f8e83c223a09b955aae3492a03baab421211674849b2494d5e1a50"
+    }
+  ],
+  "overlap_scan": {
+    "search": "Literal disp32 values cf9-63..cf9, then positive memory-write operands spanning cf9; byte widths up to64",
+    "pattern_occurrences": 3672,
+    "candidate_pdata_ranges": 1594,
+    "positive_ranges": 61,
+    "positive_operands": 71,
+    "width_counts": {
+      "16": 36,
+      "8": 15,
+      "4": 12,
+      "2": 2,
+      "1": 6
+    },
+    "base_counts": {
+      "rsp": 8,
+      "rbp": 41,
+      "rbx": 10,
+      "rdi": 5,
+      "r14": 2,
+      "rcx": 1,
+      "rax": 3,
+      "r15": 1
+    },
+    "unbounded_pattern_count": 217,
+    "scope_limit": "Only decoded pdata-contained positives. No complete text decoding/alias/bulk coverage, no object identity from displacement alone."
+  },
+  "class_identity": {
+    "numeric_nearby_region_matches": 9,
+    "confirmed_new_controller_width2": {
+      "rva": "0x4b085cb",
+      "width": 2,
+      "offset": "0xcf8",
+      "method": "ResetVariables",
+      "root_rva": "0x4b084d0"
+    },
+    "two_width4_stores": {
+      "rvas": [
+        "0x4a7116e",
+        "0x4ab87f2"
+      ],
+      "assigned_vtable_rva": "0x7df28e0",
+      "actual_controller_cdo_vtable_rva": "0x7e24cd0",
+      "native_classes_scanned": 67,
+      "matching_cdo_class": "/Script/kards/KardsSession",
+      "result": "Excluded from confirmed MatchControllerV2 writers; same offset is not same class. Constructor/destructor role not claimed solely from shape."
+    },
+    "controller_cdo_cf8_cfB": "00000000",
+    "cdo_limit": "Defaults only, not real match state or proof of every instance initializer."
+  },
+  "new_reset_binding": {
+    "method": "MatchControllerV2.ResetVariables",
+    "root_rva": "0x4b084d0",
+    "store_rva": "0x4b085cb",
+    "store_width": 2,
+    "destination_offset": "0xcf8",
+    "value_source": "r14w, with root prefix xor r14d,r14d and rdi=this",
+    "relation": "Different native method from RULE-282 ResetVariablesForResync; overlapping word clears both cf8 and cf9 at this statement. Full helper effects/ordering still open."
+  },
+  "callback_registration_routes": [
+    {
+      "method": "FindMatchInternal",
+      "registration_rva": "0x4aed5f4",
+      "table_rva": "0x7e45730",
+      "callback_root": "0x4ac2ce0"
+    },
+    {
+      "method": "Reconnect",
+      "registration_rva": "0x4b0520c",
+      "table_rva": "0x7e45388",
+      "callback_root": "0x4ac9fc0"
+    },
+    {
+      "method": "ResyncMatch",
+      "registration_rva": "0x4b08aac",
+      "table_rva": "0x7e453f0",
+      "callback_root": "0x4acbf70"
+    }
+  ],
+  "binding_details": {
+    "table_live_vs_disk": "Native callback tables verified after preferred-base to loaded-base relocation",
+    "slot_offset": "0x58",
+    "bridges": [
+      {
+        "rva": "0x4ae7a10",
+        "bytes": 9,
+        "adjust": "rcx +=0x20",
+        "target": "0x4ac2ce0"
+      },
+      {
+        "rva": "0x4ae7c30",
+        "bytes": 9,
+        "adjust": "rcx +=0x20",
+        "target": "0x4ac9fc0"
+      },
+      {
+        "rva": "0x4ae7ca0",
+        "bytes": 9,
+        "adjust": "rcx +=0x20",
+        "target": "0x4acbf70"
+      }
+    ],
+    "owner_capture": "FindMatchInternal saves this in rbx then stack+38, Reconnect in rdi then stack+38, both copy stack+30..3f into delegate+20..2f. ResyncMatch stores this from rdi directly into delegate+20. Prefixes/callback loads show differing closure layouts.",
+    "limits": "Registration/table/core-body correspondence, not proof the asynchronous request or dispatcher executed successfully, nor all native helper semantics."
+  },
+  "deepseek": {
+    "job_id": "20261021-142226-rule283-overlap-writes-559e1f22",
+    "elapsed_seconds": 42.12,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule283\\matches.json",
+      "sha256": "c1376f1d1687c45ea7444f3670639138ae16f2db4e27fedc664a55ab8b360429"
+    },
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule283\\inventory.json",
+      "sha256": "c1b3500dd913b7bfd434c6b69b08cc3743695746b1467cd0d6e18349731cf5eb"
+    },
+    "primary_exact_match": true,
+    "ranges": 61,
+    "operands": 71,
+    "numeric_region_rows": 9,
+    "scope": "Mechanical width/base counts and numeric region selection only. Primary independently decoded original machine bytes and owns class/entry judgments.",
+    "representation_note": "Hex-string RVAs parsed numerically for range comparison; not interpreted as a JSON integer-type filter."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-cf9-overlap-20261021.py",
+      "sha256": "fb9e54cd65fc369aa31bc857895089bdb43778c7c8d1e4df4e6fe3f6095171a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scan-rule283-callback-pointers.py",
+      "sha256": "ed2e12c559b574d5f9efc7cb243da781fcd1811bc54bec79e8d0cb481a9d8f76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scan-rule283-callback-code-references.py",
+      "sha256": "d88c37d68e7eaeec2388af2dd91c6f035a12c94446af95a828a9bb523a8b549f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scan-rule283-callback-bridge-pointers.py",
+      "sha256": "532ca0576928e958b0126ec54185bb9eaef20dfe9dc6dcef7d2ce430a6180115"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule283-identity-20261021.py",
+      "sha256": "dced345609fe59fffe08062c74c8d055a41a719267a32f9b56fa0c60b8dc6d5e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule283-wide-store-class.py",
+      "sha256": "a082459890f65898b078c816550866e4e0686910757a7df4b9d4821ed4e8f4c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule283-callback-bindings.py",
+      "sha256": "f76f616b0deebec1809454e016cd2b9e1ade492014fad64b84b80aa72912636b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule283-owner-prefixes.py",
+      "sha256": "48ead043d8fa873325ccdf74f28336672299f4602b6e24a7d37c484625665fb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule283-overlap-bindings.py",
+      "sha256": "2828bd0d01739031dca61d5bd5b704c3b3c9a98e6785e7fef904779f8159e48d"
+    }
+  ],
+  "tests": {
+    "kernel_changed": false,
+    "new_kernel_tests_run": false,
+    "new_unicorn_vectors": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    },
+    "new_checks": "Independent Capstone overlap reconstruction, exact worker JSON, current CDO identity, relocated table slots, decoded bridges, unwind roots, native UFunction target and capture-prefix checks."
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "The 71 overlaps belong to many classes and stack frames. Numeric code-region membership is not a class classifier, and counts are not all MatchController writes.",
+    "Bulk memset/whole-object initialization, no-literal/indexed/address-alias writes and uncovered pdata gaps remain outside the scan.",
+    "Three callback routes are now identified, but HTTP/JSON success/failure backend, dispatcher/weak-binding behavior and action-recovery/event timing remain uncertified.",
+    "Other stack-string writer0x4ad765a and all indirect writer/caller relationships still need phase analysis.",
+    "The actual initial/recovered controller byte supplied to StartingSide at startup still requires full ordering verification; no transport/import/default patch made.",
+    "No current-match mutation, injection, live function invocation, historical replay authority or UI/campaign implementation."
+  ],
+  "next_audit": "Trace the three success callbacks after their cf9 writes, identify completion notifications and recovered-action evaluation ordering, then define explicit starting-side import phase."
+}
