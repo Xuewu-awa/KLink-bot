@@ -788,6 +788,9 @@ internal static class SelfTest
         new("攻击通知在受伤前回调后取防御，位置仍保留回调前快照", AttackSubActionSnapshotTiming),
         new("战斗单方或双方阵亡由攻击动作携带结果，不额外发送摧毁/移除动作", CombatDeathActionRouting),
         new("效果摧毁记录目标/来源和回调前旧位置，并先于离场动作", DestroyActionPayloadAndTiming),
+        new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
+        new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
+        new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
         new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
         // ---- P1：伤害修正链（2026-09-30）----
@@ -27458,6 +27461,110 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? DamageDeathActionRouting(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourcePresent in new[] { false, true })
+        foreach (bool redirected in new[] { false, true })
+        foreach (bool fightNotice in new[] { false, true })
+        foreach (int amount in new[] { 0, 2, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_arado_ar_196", side.Opposite(), 20, side.Opposite().HqOf(), 1);
+            var victim = state.CreateWithId("card_unit_arado_ar_196", side, 30, side.HqOf(), 1);
+            source.Keywords.Clear(); victim.Keywords.Clear();
+            source.Keywords.Add(Keyword.Suppressed); victim.Keywords.Add(Keyword.Suppressed);
+            victim.Defense = victim.MaxDefense = 3;
+            engine.Api.DealDamage(victim, amount, sourcePresent ? source : null, isRedirected: redirected,
+                isFightDefenderDamage: fightNotice);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var damage = actions.Where(x => x.Name == "ZActionDamageCard").ToArray();
+            bool killed = amount == 7;
+            if (damage.Length != (amount > 0 ? 1 : 0)
+                || actions.Any(x => x.Name is "ZActionDestroyUnit" or "ZActionRemoveCardFromBoard"))
+                return "单体伤害不应额外生成直接摧毁或移除动作";
+            if (amount == 0)
+            {
+                if (victim.Defense != 3 || victim.Location != side.HqOf() || state.DestroyedCardIdsAll.Count != 0)
+                    return "零输入伤害不应改变目标或产生死亡历史";
+                continue;
+            }
+            var values = damage[0].Values.ToDictionary(x => x.Name);
+            var expected = new List<ActionValue2> {
+                ActionValue2.Int("cardID", 30), ActionValue2.Int("damage", amount),
+                ActionValue2.Int("attackerCardID", sourcePresent ? 20 : 0), ActionValue2.Bool("destroyed", killed),
+                ActionValue2.Str("location", side == Side.Left ? "Board_HQLeft" : "Board_HQRight"),
+                ActionValue2.Int("oldDefense", 3), ActionValue2.Bool("isRedirected", redirected),
+            };
+            if (fightNotice) expected.Add(ActionValue2.Bool("isFightDefenderDamage", true));
+            if (values["cardID"].Value != 30 || values["damage"].Value != amount
+                || values["destroyed"].Value != (killed ? 1 : 0)
+                || values["attackerCardID"].Value != (sourcePresent ? 20 : 0)
+                || victim.Defense != 3 - amount || (victim.Location == CardLocation.Discard) != killed
+                || !state.DestroyedCardIdsAll.SequenceEqual(killed ? new[] { 30 } : Array.Empty<int>())
+                || !damage[0].Values.SequenceEqual(expected))
+                return "关闭重复摧毁动作后，伤害结果、来源、实际死亡及历史必须保持";
+        }
+        return null;
+    }
+
+    private static string? DamageDeathKeepsNestedDestroyAction(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var effectProbe = InstallSelectionDrawProbe(name, "OnCardDealDamage");
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(name, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var victim = state.CreateWithId(name, Side.Right, 30, CardLocation.BoardHqRight, 1);
+        var secondary = state.CreateWithId(name, Side.Right, 40, CardLocation.BoardHqRight, 2);
+        source.Keywords.Clear(); victim.Keywords.Clear(); secondary.Keywords.Clear();
+        victim.Defense = 1;
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 50, CardLocation.DeckLeft, 0);
+        bool called = false;
+        using var drawProbe = InstallDrawReentryProbe(state, () => {
+            called = true;
+            engine.Api.DestroyCard(secondary, source);
+        });
+        engine.Api.DealDamage(victim, 7, source);
+        var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+        var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+        if (!called || destroys.Length != 1 || destroys[0].Values.Single(x => x.Name == "cardID").Value != 40
+            || actions.Count(x => x.Name == "ZActionDamageCard") != 1
+            || victim.Location != CardLocation.Discard || secondary.Location != CardLocation.Discard
+            || !state.DestroyedCardIdsAll.OrderBy(x => x).SequenceEqual(new[] { 30, 40 }))
+            return "伤害致死不得屏蔽连锁效果针对另一个目标的独立摧毁动作";
+        return null;
+    }
+
+    private static string? DamageActionSnapshotTiming(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var receiveProbe = InstallSelectionDrawProbe(name, "OnReceiveDamage");
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId(name, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var victim = state.CreateWithId(name, Side.Right, 30, CardLocation.BoardHqRight, 1);
+        source.Keywords.Clear(); victim.Keywords.Clear();
+        source.Keywords.Add(Keyword.Suppressed);
+        victim.Defense = 3;
+        state.CreateWithId("card_unit_51e_regiment", Side.Right, 50, CardLocation.DeckRight, 0);
+        bool called = false;
+        using var probe = InstallDrawReentryProbe(state, () => {
+            called = true;
+            victim.Defense = 9;
+            state.Move(victim, CardLocation.BoardFrontline, 0, notifyMoved: false);
+        });
+        engine.Api.InvokeByName("DamageCard", victim,
+            new object?[] { victim, 7, source.CardId, true, false, true, null },
+            new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left }, out bool handled);
+        var action = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionDamageCard");
+        var values = action.Values.ToDictionary(x => x.Name);
+        if (!handled || !called || values["location"].Text != "Board_HQRight" || values["location"].Value != -1
+            || values["oldDefense"].Value != 9 || values["isRedirected"].Value != 1
+            || values["isFightDefenderDamage"].Value != 1
+            || values["destroyed"].Value != 0 || victim.Defense != 2 || victim.Location != CardLocation.BoardFrontline)
+            return "伤害通知须保留回调前位置、回调后扣血前防御及重定向标志";
+        return null;
+    }
+
     private static string? CounterAttackRules(CardDatabase db)
     {
         const string infantry = "card_unit_10th_para_battalion";
@@ -32702,7 +32809,8 @@ internal static class SelfTest
                 {
                     var a = notices[0].Values.ToDictionary(v => v.Name); var b = notices[1].Values.ToDictionary(v => v.Name);
                     noticesOk = a["cardID"].Value == 60 && a["damage"].Value == toFoe && a["attackerCardID"].Value == 50
-                        && b["cardID"].Value == 50 && b["damage"].Value == toMine && b["attackerCardID"].Value == 60;
+                        && b["cardID"].Value == 50 && b["damage"].Value == toMine && b["attackerCardID"].Value == 60
+                        && !a.ContainsKey("isFightDefenderDamage") && b["isFightDefenderDamage"].Value == 1;
                 }
                 if (!handled || FightFault(state) is not null || !calls.SequenceEqual(expected) || !noticesOk
                     || mine.Defense != 20 - toMine || foe.Defense != 20 - toFoe || payloadError is not null)

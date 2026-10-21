@@ -1852,7 +1852,7 @@ public sealed partial class CardApi
     /// </param>
     public void DealDamage(CardInstance target, int amount, CardInstance? source,
                            bool isCombatDamage = false, bool counterDamage = false, bool isRedirected = false,
-                           bool fromFight = false)
+                           bool fromFight = false, bool isFightDefenderDamage = false)
     {
         if (amount <= 0 || !target.IsAlive)
         {
@@ -1879,7 +1879,8 @@ public sealed partial class CardApi
                                                            isRedirected);
         }
 
-        ApplyCalculatedDamage(target, amount, source, isCombatDamage, counterDamage, isRedirected);
+        ApplyCalculatedDamageCore(target, amount, source, isCombatDamage, counterDamage, isRedirected,
+            isFightDefenderDamage: isFightDefenderDamage);
     }
 
     /// <summary>AttackCard calculates both directions, then ExecuteAttackCard resolves them in phases.</summary>
@@ -1995,8 +1996,18 @@ public sealed partial class CardApi
                                         bool isCombatDamage, bool counterDamage, bool isRedirected,
                                         int? appliedDamage = null, bool deferDestruction = false,
                                         int? oldDefense = null, bool beforeReceiveExecuted = false)
+        => ApplyCalculatedDamageCore(target, amount, source, isCombatDamage, counterDamage, isRedirected,
+            appliedDamage, deferDestruction, oldDefense, beforeReceiveExecuted);
+
+    // Keep the raw-apply contract while routing the independent fight-notifier flag.
+    private void ApplyCalculatedDamageCore(CardInstance target, int amount, CardInstance? source,
+                                        bool isCombatDamage, bool counterDamage, bool isRedirected,
+                                        int? appliedDamage = null, bool deferDestruction = false,
+                                        int? oldDefense = null, bool beforeReceiveExecuted = false,
+                                        bool isFightDefenderDamage = false)
     {
         int initialDefense = target.Defense;
+        var oldLocation = target.Location; // ApplyDamageToCard i=89, before receive hooks.
         bool resolvesDamage = amount > 0; // ApplyDamageToCard i=264/298, before any callbacks.
         if (resolvesDamage && !beforeReceiveExecuted)
             ExecuteBeforeReceiveDamage(target, source, amount, isCombatDamage);
@@ -2022,14 +2033,20 @@ public sealed partial class CardApi
         }
         // i=1304..1379 snapshots destruction before spill and deal callbacks.
         bool destroyed = resolvesDamage && target.Defense <= 0;
-        _engine.FireSubAction("ZActionDamageCard", new[]
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string locationName);
+        var damageValues = new List<ActionValue2>
         {
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("damage", resolvesDamage ? amount : 0),
-            ActionValue2.Int("oldDefense", oldDefense ?? target.Defense + applied),
-            ActionValue2.Bool("destroyed", destroyed),
             ActionValue2.Int("attackerCardID", source?.CardId ?? 0),
-        });
+            ActionValue2.Bool("destroyed", destroyed),
+            ActionValue2.Str("location", locationName),
+            ActionValue2.Int("oldDefense", oldDefense ?? target.Defense + applied),
+            ActionValue2.Bool("isRedirected", isRedirected),
+        };
+        if (isFightDefenderDamage)
+            damageValues.Add(ActionValue2.Bool("isFightDefenderDamage", true));
+        _engine.FireSubAction("ZActionDamageCard", damageValues);
 
         if (excess > 0 && source is not null) DealDamage(State.Hq(source.Owner.Opposite()), excess, source);
         // i=1775..1808 has no second finalDamage>0 check inside the positive branch.
@@ -2039,7 +2056,9 @@ public sealed partial class CardApi
             State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
         else if (!deferDestruction && destroyed)
         {
-            _engine.Destroy(target, source);
+            // ApplyDamageToCard i=2049 removes the victim after its damage
+            // notification; it does not generate another explicit destroy action.
+            _engine.Destroy(target, source, recordDestroyAction: false);
         }
         // i=2225 checks the final damage only for surviving Mobilize removal.
         else if (!deferDestruction && resolvesDamage && amount > 0 && target.Keywords.Contains(Keyword.Mobilize))

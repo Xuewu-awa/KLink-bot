@@ -3148,7 +3148,8 @@ public sealed class MatchEngine
     }
 
     /// <summary>ApplyRemoveCardFromBoard + ExecuteOnCardDestroyedFunction.</summary>
-    public void Destroy(CardInstance card, CardInstance? destroyer = null, bool destroyedInCombat = false)
+    public void Destroy(CardInstance card, CardInstance? destroyer = null, bool destroyedInCombat = false,
+                        bool recordDestroyAction = true)
     {
         if (!card.IsAlive || card.IsHq) return;
         var batch = new[] { card.CardId };
@@ -3157,7 +3158,7 @@ public sealed class MatchEngine
         var destroyedLocation = card.Location;
         BeforeDestroyed(card, destroyer, destroyedInCombat);
         var oldLocation = card.Location;
-        if (!destroyedInCombat)
+        if (!destroyedInCombat && recordDestroyAction)
         {
             Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
                 (int)destroyedLocation, out string locationName);

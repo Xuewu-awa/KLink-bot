@@ -1,0 +1,194 @@
+{
+  "rule": "RULE-303",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "Single damage death action routing, complete damage payload and independent fight-notifier flag",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-303",
+    "completed_on_client_date": "2026-10-22",
+    "worker_exact_match": true,
+    "worker_functions": 5,
+    "unique_functions_verified": 7,
+    "script_bytes": 5986,
+    "script_statements": 222,
+    "fresh_damage_capture_matches_previous": true,
+    "models": {
+      "helper_cases": 192,
+      "payload_cases": 648,
+      "total": 840
+    },
+    "full_release_selftest": {
+      "passed": 632,
+      "total": 632,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "limits": "Single damage-death action and notification fields under ordinary headless action mode; no complete death-ledger phase, all other shared Destroy callers, full replay/reconnect or nested ID-replacement certification."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-death-removal-native-20261021.json",
+      "sha256": "f4fc711b7607d42f0af526ef62b6f5366146e8880642117b8c27b1dc93ddd7cc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-death-removal-native-20261022.json",
+      "sha256": "f4fc711b7607d42f0af526ef62b6f5366146e8880642117b8c27b1dc93ddd7cc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-notification-action-native-20261021.json",
+      "sha256": "df97a4638beb00ae467211f337d198202ca669fe2e3c91afe122a68c182c07d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-generation-native-20261021.json",
+      "sha256": "103f933a98e2521252af520567ab1bb3ad2126df0cd4ff80b09f722b90954f01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-fight-notify-flag-native-20261022.json",
+      "sha256": "fc625dccd718792b8fedda0bb8b4c76c191774c4280e0c01011340ef8a1e6f42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\damage-death-routing-model-checks-20261022.json",
+      "sha256": "0470bc9b9abd4c5c60db830b9f020c72d9d822ccba017dc65661d8c079c21102"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-handler-helpers-native-20261021.json",
+      "sha256": "ea34f60e5ad9f8d4048a412940e828756d951a83c4e0a0c91b08085f93eb91f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-payload-string-helper-native-20261021.json",
+      "sha256": "3cd9b0a5846f9476f76a21f9ec040024f8b596c9171bc2780f9b77a5c1c3693c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-notifier-payload-native-20261021.json",
+      "sha256": "a09294e318730fd2e875f5802d5c16793b90c954e64a4a7ed8462eee40b7254d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule303-damage-routing-verified-20261022.json",
+      "sha256": "21079181d2defe9caf6f15d6b5a21a9b6819cf8cb43e8ed8c0fbac5755119a56"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule303-selftest-release.log",
+      "sha256": "94b878fc16d18ccc5caa8d6847f7b3a29191772a60f6b6751a1a222c9e8f6c9c"
+    }
+  ],
+  "authority": {
+    "damage_death": "ApplyDamageToCard2312B: after damage notification and deal effects,2015 before-destroy and2049 ApplyRemoveCardFromBoard(Destroyed=true,combat=false,converting=false,skip=false); no direct NotifyDestroyUnit. Destroyed snapshot is captured before late effects.",
+    "payload": "AddSubActionDamageCard616B builds cardID,damage,attackerCardID,destroyed,location,oldDefense,isRedirected. Branch442 appends isFightDefenderDamage=true only when input flag is true, then571 CreateAction_AddSubAction.",
+    "snapshots": "OldLocation captured89 before receive hooks; oldDefense refreshed before subtraction. Damage notifier passes location, oldDefense, redirect and fight-notifier flag.",
+    "callers": "DamageCard786B passes its isFightDefenderDamage at251. MakeCardsFight712B passes false in first apply622 and true in second665; this flag does not turn damage effect CounterDamage into true."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Engine/MatchEngine.cs",
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    ],
+    "change": "Add per-call recordDestroyAction gate to shared Destroy; only single damage-death completion suppresses explicit destroy record. Restore seven ordered damage fields and optional fight flag, preserve pre-receive location. Propagate DamageCard arg5 and MakeCardsFight second direction independently of event counter-damage semantics.",
+    "scope": "Other shared Destroy callers retain defaults. Existing raw ApplyCalculatedDamage signature retained via wrapper; no new death-ledger receipt or timing change."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 632,
+      "total": 632,
+      "exit_code": 0,
+      "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest"
+    },
+    "new_regressions": [
+      "48 source/side/redirect/fight-flag/zero-nonlethal-lethal combinations; zero public input remains early no-op, positive calls carry exact ordered payload and correct death state without extra destroy/remove action.",
+      "Synthetic damage-after draw callback explicitly destroys a second target; its own destroy record survives while parent damage death has no duplicate.",
+      "Synthetic before-receive draw callback moves victim to frontline and changes defense; dispatched DamageCard arg5 produces optional flag, old HQ location and new pre-subtraction defense remain correct."
+    ],
+    "updated_regression": "Existing20 MakeCardsFight phase cases now check first direction omits optional field, second includes it even for zero notifications, while CounterDamage/isCombatDamage event checks remain false.",
+    "models": {
+      "helper": 192,
+      "payload": 648,
+      "total": 840,
+      "limits": "Full helper AST under excess=false/non-HQ branch; mocked crypto/getters/receive/deal/removal; initialized stable source/target. Full constructor control flow with mocked enum text and action collector. Not full spill/HQ/reconnect/callback certification."
+    }
+  },
+  "deepseek": {
+    "job": "20261021-220611-rule303-damage-death-inventory-d9914952",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule303\\functions.json",
+      "sha256": "bc32108d7e384c299923b26b34767160341e67d6b70d7fb39431423223016573"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule303\\inventory.json",
+      "sha256": "f20715cb96cc043b828cbda57a4350bb88ab602e2a91939e191d6012f82181a3"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule303\\task.txt",
+      "sha256": "53dbeeae84ab930391e33a43b0b09f41c512ee254320292754cd7a8fdfd99895"
+    },
+    "primary_exact_match": true,
+    "scope": "Five initially captured functions mechanical call/Context-write inventory. Later fresh helper and two flag callers independently verified."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule303-damage-death.py",
+      "sha256": "6e0346a7ba990ffded2e17dbe5b0916b8c33b33fbbed97cdc319f9d9eebdfd16"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\recapture-rule303-damage-death-20261022.py",
+      "sha256": "38dc4e0f9f02d5ce62082a76130d2ba0e5e8923f520a97127c08b296eafb880c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule303-damage-notification.py",
+      "sha256": "dab3adb5003924bd8cf61d05c307b13f52a4e8e20a46d9ad52368c359031af9f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule303-damage-flag-callers.py",
+      "sha256": "bc4301384c5db0ad8243ae3391b7ba3ef6ec0891aaf1a22bc9db7380f6268d5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule303-packet.py",
+      "sha256": "a8505077d20f258bcfe2349a4f52b24b575f11e961e09805ca13d4509f838cc0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule303-damage-routing.py",
+      "sha256": "f9fb1040e7eaa8a6ec4fa90b934b586582a6147778e66e58f47ffc2d1e394d9d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule303-damage-routing.py",
+      "sha256": "1726c78b27c921faafe9afd71af8127cb7ad9fec2d012cd5b628a53d4e650c63"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule300-attack-payload.py",
+      "sha256": "740e1e6c2fc273036e3ba56d10c47323fc82ddfa0155ac730c06cb0321eb93f9"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "caee9f54b60a7b765e5d1bc8ad274006ddacd6f234add0ec3ec4df6f3f3c23a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "167895a9975f1b4fabe41fd658509468d7fab8f9390616f859f18d2c78b63be3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "88795dfae044bf1b51ca2e01a5f3f69f71cee91f086e6ef094e4ffcc8dfdc37f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "587ffdbad125fdc84e075d3e5fd6762fee8e6f2489f5712cc33f0dc68706be6d"
+    }
+  ],
+  "remaining": [
+    "Shared death-history generation/receipt phase and callback-visible ledgers",
+    "Other death-producing callers: defense changes, death sweep and batch paths",
+    "Full grouped actions, reconnect and actual callback/interface lifecycle",
+    "Negative movement quota and ordinary-turn attack-history reset"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

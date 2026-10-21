@@ -4670,7 +4670,8 @@ public sealed partial class CardApi
         bool isRedirected = a.Length > 3 && Blueprint.KismetVm.Truthy(a[3]);
         bool fromFight = a.Length > 4 && Blueprint.KismetVm.Truthy(a[4]);
 
-        DealDamage(target, amount, source, isRedirected: isRedirected, fromFight: fromFight);
+        DealDamage(target, amount, source, isRedirected: isRedirected, fromFight: fromFight,
+            isFightDefenderDamage: TruthyArg(a, 5));
         return null;
     }
 
@@ -4798,8 +4799,9 @@ public sealed partial class CardApi
         // ApplyDamageToCard i=1808 still passes CounterDamage=false in both directions.
         ApplyCalculatedDamage(opposite, finalToOpposite, thisSide,
             isCombatDamage: false, counterDamage: false, isRedirected: false);
-        ApplyCalculatedDamage(thisSide, finalToThis, opposite,
-            isCombatDamage: false, counterDamage: false, isRedirected: false);
+        ApplyCalculatedDamageCore(thisSide, finalToThis, opposite,
+            isCombatDamage: false, counterDamage: false, isRedirected: false,
+            isFightDefenderDamage: true);
 
         // Each ApplyDamageToCard handles its own destruction before the next
         // direction is applied; MakeCardsFight adds no extra death sweep.
