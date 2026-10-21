@@ -1077,6 +1077,7 @@ public sealed class GameState
         IsFrontlineLimited,
         AllCards.Select(c => c.Snapshot()).ToArray())
         {
+            StartingSide = StartingSide,
             LeftAllyFaction = LeftAllyFaction,
             RightAllyFaction = RightAllyFaction,
             LeftMainFaction = LeftMainFaction,
@@ -1145,6 +1146,8 @@ public sealed record MatchSnapshot(
     bool IsFrontlineLimited,
     CardSnapshot[] Cards)
 {
+    /// <summary>Saved opening side, independent of current turn/client side.</summary>
+    public Side StartingSide { get; init; }
     public byte LeftAllyFaction { get; init; }
     public byte RightAllyFaction { get; init; }
     public byte LeftMainFaction { get; init; }

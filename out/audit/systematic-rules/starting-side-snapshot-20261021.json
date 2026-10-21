@@ -1,0 +1,315 @@
+{
+  "rule": "RULE-281",
+  "kind": "Starting-side getter/initializer evidence and missing snapshot/fingerprint repair",
+  "read_only_capture": true,
+  "pid": 24220,
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "stable_reread_buffers": 111,
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\starting-side-blueprint-native-v2-20261021.json",
+      "sha256": "30f64cdd0c3a5cc479f3b066aaadfd087078021907af83740f3fad9046abf481"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule281-starting-side-verified-20261021.json",
+      "sha256": "1bde5106f57fcc55aca74fc1de4388a5d88b0b3e3f894749d9bd9b421e28cfa9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-lifecycle-blueprint-native-complete-v3-20261021.json",
+      "sha256": "791db78c19c972dff45b3093b2a922a1e133364304c4bbcecf329c0e5f7f738c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\parsed.json",
+      "sha256": "5b4e40f37dc89f9a39364a1caba3ca7cab4af1cf88ec65686940702d20e44006"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\manifest.json",
+      "sha256": "db372973ef26fb74bf563c10d280cfe04c86e0f5a3b3c7edc1651d4c42489d9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule280-lifecycle-verified-20261021.json",
+      "sha256": "7aa52a8a778a3d4f71236d01bb8ec6675c9e3dc59d6feaa6289c70ebcacf5bed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule280-calls-and-control-verified-20261021.json",
+      "sha256": "a6b7c50fd32f7b9708ade318a133053d39efafd6fd0bb3944fe741ef2d75d641"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\faction-init-blueprint-native-20261021.json",
+      "sha256": "aa9e93f1e40903e54442185865299bc8b2c201dee6de9f61b1343587b43a5a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\utility-faction-raw-20261021.json",
+      "sha256": "60258c34460e817665f42d321e47cfabb1210cf278f80158dfa5f308484087dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parsed.json",
+      "sha256": "01a2e0009f20fda5e05e73e050ce7b744af44cbe55fda0e6a58eca42cfb8af1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-parsed.json",
+      "sha256": "c0822b45e5df6ad58beffe9fae968c3685c440af15137524afd7e8e5d4755c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\manifest.json",
+      "sha256": "53b83ad5867d6b1c0d25e276c3c612822c5155687282bb231c5635ad6cd3ba9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-manifest.json",
+      "sha256": "98847664934b2680421af1ea4e7c8df33fcf4a0d34a44848d059110f4dea97e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "full_function_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "SetStartingSide",
+      "bytes": 30,
+      "statements": 3,
+      "script_sha256": "8a6893431f7188cf6be7ea899f7911ca146248833f79f18af156acebba251f55"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetStartingSide",
+      "bytes": 30,
+      "statements": 3,
+      "script_sha256": "f7675d57a6bae523ca55d4cd0d33a6edee87bc02fdce477e598ef39af95426a7"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ClearGameStateVariables",
+      "bytes": 1363,
+      "statements": 78,
+      "script_sha256": "728fee7494450ff1927a3405781910e9c1f2463b3ff0c830b9506acab073dc8d"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetStartingSide",
+      "bytes": 75,
+      "statements": 4,
+      "script_sha256": "9bfe9403af7342708b736fb37bca4411f1116b16f26c5866c52d6f4ffb563fa9"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "isFirstPlayerToAct",
+      "bytes": 113,
+      "statements": 5,
+      "script_sha256": "89181bd3eeeff618d2d251d6c12b3d02be8300e99f4b247143a1aa1e2a9b6bbb"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "StartMultiPlayerGame",
+      "bytes": 54,
+      "statements": 5,
+      "script_sha256": "47bf4975c726270468e56f7822e63020eb4724fcb58041b97ed5fb1ebb66b540"
+    }
+  ],
+  "initializer_span_matches": [
+    {
+      "owner": "BP_Logic",
+      "start": 40823,
+      "end": 40895,
+      "bytes": 72,
+      "statements": 2
+    },
+    {
+      "owner": "BP_OnlineMatch",
+      "start": 17047,
+      "end": 17213,
+      "bytes": 166,
+      "statements": 4
+    }
+  ],
+  "coverage": {
+    "full_functions": 6,
+    "full_bytes": 1665,
+    "full_statements": 98,
+    "partial_initializer_bytes": 238,
+    "partial_initializer_statements": 6,
+    "whole_logic_or_online_ubergraph_decoded": false
+  },
+  "default": {
+    "field": "startingSide",
+    "offset": 1640,
+    "size": 1,
+    "cdo_value": 0,
+    "scope": "Class default only, not actual launch/session value"
+  },
+  "findings": [
+    "GameState.SetStartingSide copies the supplied byte without a side validity gate; GameState.GetStartingSide copies the saved byte to output; CardFunctions wrapper forwards it.",
+    "OnlineMatch Ubergraph i17047..17213 obtains MatchControllerV2, client-side info and GetActiveSide; passes client info side plus that launch-time active-side result into BP_Logic.StartMultiPlayerGame.",
+    "StartMultiPlayerGame copies both event inputs to persistent frame and calls Logic Ubergraph entry40823; span40823..40895 saves LocalPlayerSide and calls GameState.SetStartingSide.",
+    "The saved field is read by GetStartingSide rather than recomputing it from EffectContext.Controller, Self, receiver or ongoing GameState.ActiveSide.",
+    "Managed query already reads saved StartingSide. However MatchSnapshot omitted it, so ActionJournal.Fingerprint could not distinguish otherwise equal states with different saved starting side.",
+    "Current managed constructor/import path still uses Left default while native clear/CDO is0 and launch writes its explicit event value; phase and producer integration remain pending."
+  ],
+  "repair": {
+    "files": [
+      "src/KLink.Bot/Engine/GameState.cs"
+    ],
+    "behavior": "Add StartingSide to MatchSnapshot and Snapshot() initialization, thereby to SnapshotJson and ActionJournal.Fingerprint. No runtime getter/default/import/HTTP/wire behavior changed.",
+    "compatibility": "Additive init property; old snapshot JSON missing it deserializes to NotAvailable0. This is not a full engine-state restore API."
+  },
+  "deepseek": {
+    "job_id": "20261021-133110-rule281-starting-side-b45c7507",
+    "elapsed_seconds": 85.73,
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule281\\inventory.json",
+      "sha256": "2b97141766e0620da7da10d7476d65213b00e90c1981b5a611cf9abc91f22489"
+    },
+    "primary_independent_exact_match": true,
+    "assets": 5,
+    "functions": 1131,
+    "top_level_matching_rows": 10,
+    "scope": "Mechanical starting-side/event-name row inventory, not all native/dynamic producers. Matches use casefold for both predicates."
+  },
+  "packaged_ir_call_inventory": {
+    "calls": [
+      {
+        "card": "card_brawl_test1",
+        "statement_index": 127,
+        "node": {
+          "op": "call",
+          "fn": "GetStartingSide",
+          "args": [
+            {
+              "var": "CallFunc_GetStartingSide_side",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetStartingSide_side"
+            }
+          ],
+          "recv": {
+            "var": "cardFunction",
+            "scope": "instance"
+          },
+          "i": 127,
+          "bo": 127
+        }
+      },
+      {
+        "card": "card_unit_185th_folgore_cov",
+        "statement_index": 10,
+        "node": {
+          "op": "call",
+          "fn": "GetStartingSide",
+          "args": [
+            {
+              "var": "CallFunc_GetStartingSide_side",
+              "scope": "local"
+            }
+          ],
+          "outs": [
+            {
+              "param": 0,
+              "slot": "CallFunc_GetStartingSide_side"
+            }
+          ],
+          "recv": {
+            "var": "cardFunction",
+            "scope": "instance"
+          },
+          "i": 10,
+          "bo": 10
+        }
+      }
+    ],
+    "count": 2,
+    "scope": "Existing packaged IR references only; card_brawl_test1 and card_unit_185th_folgore_cov. No full current-card semantic certification or migration."
+  },
+  "native_producer_symbol": {
+    "kind": "function",
+    "address": "0x7ff49597c4a0",
+    "name": "GetActiveSide",
+    "header_hex": "90e12e11f77f0000410000009e510000403a2895f47f0000198203000000000040d23d95f47f0000c0c39795f47f000010a0b001cb01000000000000000000000000000000000000000000000000000000e2c501cb01000001000000010001000000000000000000000000000000000000e2c501cb01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000104421401000100ffff0000000000000000000000000000000000000000000000000000000000005056cb0ef77f0000",
+    "outer_header_hex": "70c32f11f77f0000430000002f0b000040362895f47f00006c95030000000000402f4a95f47f0000",
+    "outer_name": "MatchControllerV2"
+  },
+  "tests": {
+    "red": {
+      "total": 619,
+      "failed": 1,
+      "reason": "Changing saved StartingSide Left->Right left fingerprint identical",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-before-20261021.txt",
+        "sha256": "00420097eabce7399673a30cfff7ceb9fb7ac7c84de3861ed17541dd082a5e43"
+      }
+    },
+    "green": {
+      "total": 620,
+      "failed": 0,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+        "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+      }
+    },
+    "query_context_vectors": 6912,
+    "snapshot_json_byte_values": 256,
+    "distinct_snapshot_fingerprints": 256,
+    "old_snapshot_missing_field": "Deserializes to NotAvailable0",
+    "vector_limit": "Full byte domain is an ABI boundary test, not proof that every value is a legal match side.",
+    "tests_not_repeated": "HTTP/AOT probes not rerun because no transport/producer/default or serialization-resolver implementation changed."
+  },
+  "managed_sources": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "c72373fd81596536807c908ff83b7062a28b4fd267dbb8725b574c6fccf463ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "6b640f79a907a7fd3661a6741c6193c55b3e25bcb66ec8a2ea2bdca621f20892"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\AtomicAction.cs",
+      "sha256": "05fc444f94c6697a2f695f5960e5aca58532bd7de3c449a22b063566142bb786"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-starting-side-blueprint-20261021.py",
+      "sha256": "dbe0c1c752c9fa2aa6bb6b73cc8305337ef6330d9699c522f33edcb29f423a8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule281-starting-side-20261021.py",
+      "sha256": "4f0184ea68fc7150848903fd0d87af82ae8442e3391ed64d571e4e20f452ea91"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\implement-rule281.py",
+      "sha256": "6f2d6d6c47de7a5573be5b759a1da1b18553da143218dfd1c42c592957aabab9"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Native MatchControllerV2.GetActiveSide backend, its writers and reset/reconnect value lifecycle have not been certified. The observed sample is at the Blueprint multiplayer-launch call site.",
+    "No guessed start_side/starting_side JSON mapping, action-stream inference, constructor default change or actual opening-side importer added this round.",
+    "Complete online/logic Ubergraphs, caller event scheduling, Context null skips and real-session start-side snapshots remain open.",
+    "Snapshot repair does not make an incorrectly initialized starting-side value correct; it preserves and distinguishes whichever value the engine currently holds.",
+    "No historical replay authority, game process write, injection, client function invocation or single-card migration.",
+    "Legacy structural inventory counts and old scalar comparisons are baselines, not current defect totals."
+  ],
+  "next_audit": "Resolve native MatchControllerV2.GetActiveSide implementation and input writers, establish launch/reconnect source contract, then connect explicit starting-side import without guessing wire names."
+}

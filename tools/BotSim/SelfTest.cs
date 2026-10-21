@@ -351,6 +351,8 @@ internal static class SelfTest
 
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
+        new("先手：不同保存值必须产生不同状态指纹", StartingSideFingerprint),
+        new("先手：保存字节查询独立于行动方及效果上下文", StartingSideQueryBoundary),
         new("盟军阵营：已打包 ASW PATROL IR 的盟军条件分支接线", AllyNationPackagedIrBranch),
         new("盟军阵营：新鲜查询返回数值 0", AllyNationDefaultType),
         new("盟军阵营：独立字节、相同主阵营归零及显式 VM 输入", AllyFactionStoredBoundary),
@@ -3832,6 +3834,59 @@ internal static class SelfTest
             return $"{britUnit.Name} 是单位，不该在候选表里";
         }
 
+        return null;
+    }
+
+    private static string? StartingSideFingerprint(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        state.StartingSide = Side.Left;
+        string left = ActionJournal.Fingerprint(engine);
+        state.StartingSide = Side.Right;
+        string right = ActionJournal.Fingerprint(engine);
+        if (left == right) return "only StartingSide changed, but fingerprints are identical";
+        var fingerprints = new HashSet<string>(StringComparer.Ordinal);
+        foreach (int value in Enumerable.Range(0, 256))
+        {
+            state.StartingSide = (Side)value;
+            if (!fingerprints.Add(ActionJournal.Fingerprint(engine)))
+                return $"starting-side byte {value} collides with a different saved value";
+            var restored = System.Text.Json.JsonSerializer.Deserialize<MatchSnapshot>(state.SnapshotJson(), GameState.SnapshotJsonOptions);
+            if (restored?.StartingSide != (Side)value)
+                return $"snapshot JSON lost starting-side byte {value}";
+        }
+        // Additive snapshot compatibility only; this is not full MatchSnapshot restoration.
+        var oldJson = JsonNode.Parse(state.SnapshotJson())!.AsObject();
+        oldJson.Remove("StartingSide");
+        var old = System.Text.Json.JsonSerializer.Deserialize<MatchSnapshot>(oldJson.ToJsonString(), GameState.SnapshotJsonOptions);
+        return old?.StartingSide == Side.NotAvailable ? null : "missing snapshot field must remain unknown";
+    }
+
+    private static string? StartingSideQueryBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        foreach (int value in Enumerable.Range(0, 256))
+        foreach (Side controller in new[] { Side.NotAvailable, Side.Left, Side.Right })
+        foreach (CardInstance? self in new CardInstance?[] { null, state.Hq(Side.Left), state.Hq(Side.Right) })
+        foreach (CardInstance? receiver in new CardInstance?[] { null, state.Hq(Side.Left), state.Hq(Side.Right) })
+        {
+            state.StartingSide = (Side)value;
+            state.ActiveSide = controller == Side.Left ? Side.Right : Side.Left;
+            state.SetupSidesInBattle(state.ActiveSide);
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = controller, Self = self };
+            var direct = engine.Api.InvokeByName("GetStartingSide", receiver,
+                new object?[] { 173 }, ctx, out bool handled);
+            var call = new KismetStep(0, "call", "GetStartingSide",
+                new[] { new KismetExpr { Var = "output", Scope = "local" } }, new[] { 0 },
+                null, null, -1, null, null)
+                { Receiver = receiver is null ? null : new KismetExpr { Var = "receiver", Scope = "local" } };
+            var program = new KismetProgram(new[] { call, new KismetStep(1, "return", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                new Dictionary<string, object?> { ["output"] = 173, ["receiver"] = receiver }, "output");
+            if (!handled || !Equals(direct, value) || !Equals(result.GetValueOrDefault("output"), value))
+                return $"saved={value}/controller={controller}/self={self?.Owner}/receiver={receiver?.Owner}: direct={direct}, VM={result.GetValueOrDefault("output")}";
+        }
         return null;
     }
 
