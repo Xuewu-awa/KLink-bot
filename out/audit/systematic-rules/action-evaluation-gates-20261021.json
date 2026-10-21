@@ -1,0 +1,376 @@
+{
+  "rule": "RULE-289",
+  "kind": "Two-stage action-evaluation gates and mulligan flag lifecycle; source authority-comment correction",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-evaluation-gate-references-20261021.json",
+      "sha256": "ef983df19da76b430ffba514ed21c0e2b7c331f8d05665ba36c9ee357bcbef1f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\evaluation-gate-lifecycle-native-20261021.json",
+      "sha256": "11e93dd6535414dca08f891bdac3ac75d493fdec97df34b61be206bffebabd92"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\logic-evaluation-gate-paths-20261021.json",
+      "sha256": "b46b23657adf69faf7cc50d6441f026d871552c4f57e3293767f48bb793ce410"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\logic-evaluation-gate-paths-v2-20261021.json",
+      "sha256": "cdbba3c476fae2898d8c3e4a30d7aeaa4cb84d4b80108df19ddc9627f98ed444"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-action-entry-path-20261021.json",
+      "sha256": "3c56e0aafb8a38d42ddb868dd22ea2490d886d924424dee58f2ffb376e39c789"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-action-entry-path-v2-20261021.json",
+      "sha256": "59c4c63595731714994fcca4446966ee475b96d78a2c1ae1afd4b98f457463b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\evaluation-gate-live-state-20261021.json",
+      "sha256": "4f8ef2602c1dc989c4dcbe69b41b00e6385ca5a8a4f67c5e0bdb9bb21ad6b7b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\enum-compare-side-native-20261021.json",
+      "sha256": "67e91fb660dedae8cd79207c6292be34568dd6d0a11a4732de735f60989b016d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\evaluation-gates-offline-checks-20261021.json",
+      "sha256": "329f5ca8c7825e7d9c8b675d90e0a060d49812d76b9d17f3befe9b9852b841e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-delay-resume-paths-20261021.json",
+      "sha256": "6b3062bf560538707a5d3b707986afcd5df334681cd65a15cc64bc95351686a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule289-evaluation-gates-verified-20261021.json",
+      "sha256": "6a61ad87b0e218786af9840edf70558f52bcaa2c68515dbba37eb4386800b3af"
+    }
+  ],
+  "loaded_reference_census": {
+    "function_objects": 30879,
+    "scripted_functions": 18407,
+    "script_bytes": 8127514,
+    "positive_functions": 8,
+    "literal_hits": 31,
+    "by_property": {
+      "bUseActionsForMulligan": 24,
+      "preStateDone_DoMulligan": 5,
+      "isResyncingMatch": 2
+    },
+    "limit": "Current literal property pointers only; not exhaustive setter, native/alias or unloaded-asset analysis."
+  },
+  "controller_gate": {
+    "entry": 6413,
+    "wait_expression": "isResyncingMatch || (bUseActionsForMulligan && !Logic.preStateDone_DoMulligan)",
+    "wait_delay": {
+      "at": 6600,
+      "seconds": 0.1,
+      "resume": 6413
+    },
+    "pass": "6655 GetNextAction; if success,6743 OnlineMatch.OnKardsActionEvent then loop6413",
+    "note": "No direct startOnlineMatchCalled check in this selected gate. When useActions=false, preDone alone does not block fetch."
+  },
+  "online_gate": {
+    "entry": 18098,
+    "first": "Array_Add incoming action to actionsQueue",
+    "then": "EnumCompareSide(Logic.LocalPlayerSide,0)",
+    "side_zero": "Print and Delay0.2seconds at267, resume15",
+    "side_nonzero": "If isResolvingAction true, pop; otherwise337 DoOnKardsActionEvent",
+    "native_compare": {
+      "ufunction_exec_rva": "0x4a89260",
+      "backend_rva": "0x4b24ec0",
+      "backend_bytes": 9,
+      "result": "raw byte equality ->0, inequality ->1",
+      "limit": "Nonzero check only, not side-range validation."
+    },
+    "note": "Buffers/defers rule dispatch, but does not roll back any GetNextAction native state mutation."
+  },
+  "lifecycle": {
+    "reset_flag": {
+      "function": "Logic.ResetGameVariables",
+      "statement": 1815,
+      "value": false
+    },
+    "set_flag": {
+      "ubergraph_statement": 28508,
+      "value": true,
+      "next_call": {
+        "statement": 28519,
+        "function": "DoApplyMulligan"
+      }
+    },
+    "starting_side_order": [
+      "40823 save LocalPlayerSide",
+      "40850 SetStartingSide",
+      "41011 DoPreGameState(0)"
+    ],
+    "note": "Flag opens before apply-mulligan call, not proof selection and all effects finished."
+  },
+  "full_methods": [
+    {
+      "name": "ResetGameVariables",
+      "bytes": 1985,
+      "statements": 92
+    },
+    {
+      "name": "DoPreGameState",
+      "bytes": 36,
+      "statements": 4
+    },
+    {
+      "name": "DoApplyMulligan",
+      "bytes": 18,
+      "statements": 3
+    },
+    {
+      "name": "StartMultiPlayerGame",
+      "bytes": 54,
+      "statements": 5
+    },
+    {
+      "name": "OnKardsActionEvent",
+      "bytes": 36,
+      "statements": 4
+    }
+  ],
+  "full_method_bytes": 2129,
+  "full_method_statements": 108,
+  "path_node_visits": 431,
+  "paths": [
+    {
+      "source": "logic-evaluation-gate-paths-v2-20261021.json",
+      "name": "StartMultiPlayerGame",
+      "entry": 40823,
+      "nodes": 10,
+      "errors": []
+    },
+    {
+      "source": "logic-evaluation-gate-paths-v2-20261021.json",
+      "name": "DoMulliganGuard",
+      "entry": 28402,
+      "nodes": 11,
+      "errors": []
+    },
+    {
+      "source": "logic-evaluation-gate-paths-v2-20261021.json",
+      "name": "DoPreGameState",
+      "entry": 27559,
+      "nodes": 116,
+      "errors": [
+        {
+          "at": 29385,
+          "decoder_offset": 29405,
+          "error": "('unsupported primitive cast', 3)"
+        }
+      ]
+    },
+    {
+      "source": "logic-evaluation-gate-paths-v2-20261021.json",
+      "name": "DoApplyMulligan",
+      "entry": 31563,
+      "nodes": 104,
+      "errors": [
+        {
+          "at": 32218,
+          "decoder_offset": 32238,
+          "error": "('unsupported primitive cast', 4)"
+        }
+      ]
+    },
+    {
+      "source": "online-action-entry-path-v2-20261021.json",
+      "name": "OnKardsActionEvent",
+      "entry": 18098,
+      "nodes": 15,
+      "errors": []
+    },
+    {
+      "source": "online-action-entry-path-v2-20261021.json",
+      "name": "DoOnKardsActionEvent",
+      "entry": 18171,
+      "nodes": 59,
+      "errors": [
+        {
+          "at": 15793,
+          "decoder_offset": 15813,
+          "error": "('unsupported primitive cast', 3)"
+        },
+        {
+          "at": 2354,
+          "decoder_offset": 2382,
+          "error": "unsupported opcode 35 at 2381"
+        }
+      ]
+    },
+    {
+      "source": "controller-delay-resume-paths-20261021.json",
+      "name": "Delay6600",
+      "entry": 6413,
+      "nodes": 116,
+      "errors": []
+    }
+  ],
+  "live_state": {
+    "rule": "RULE-289",
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "instances": [
+      {
+        "class": "OnlineMatch",
+        "address": "0x1cb16594600",
+        "name": "BP_OnlineMatch_C_2147457373",
+        "header_hex": "b0fab011f77f000008000000f2950100e0146022cb01000086b907005e99ff7fd08db61dcb010000",
+        "values": {
+          "isResolvingAction": {
+            "offset": 785,
+            "raw_byte": 0
+          }
+        },
+        "actionsQueue": {
+          "offset": 792,
+          "header_hex": "00000000000000000000000000000000",
+          "count": 0,
+          "capacity": 0
+        }
+      },
+      {
+        "class": "Logic",
+        "address": "0x1cb19f5a300",
+        "name": "BP_Logic_C_2147461902",
+        "header_hex": "48cbff11f77f0000480000006222020060a3c10ccb01000071620b000fabff7fd08db61dcb010000",
+        "values": {
+          "preStateDone_DoMulligan": {
+            "offset": 1812,
+            "raw_byte": 1
+          },
+          "LocalPlayerSide": {
+            "offset": 1489,
+            "raw_byte": 1
+          }
+        }
+      },
+      {
+        "class": "Controller",
+        "address": "0x1ca8148aab0",
+        "name": "MatchController_C_2147461857",
+        "header_hex": "d04c0412f77f00000800000089220200c07f6022cb010000ab0e0c00e2aaff7fd08db61dcb010000",
+        "values": {
+          "bUseActionsForMulligan": {
+            "offset": 1961,
+            "raw_byte": 0
+          },
+          "isResyncingMatch": {
+            "offset": 1963,
+            "raw_byte": 0
+          },
+          "startOnlineMatchCalled": {
+            "offset": 4000,
+            "raw_byte": 1
+          }
+        }
+      }
+    ],
+    "limits": "Non-atomic stable-reread mid-match values, not initialization-time trace or proof of flag defaults/unchanged lifetime."
+  },
+  "defaults": {
+    "Logic.preStateDone_DoMulligan": 0,
+    "Controller.bUseActionsForMulligan": 0,
+    "Controller.isResyncingMatch": 0,
+    "checks": "Current CDO class/flag, property offset, bool field metadata1/0/1/ff and raw bytes. Defaults do not prove runtime initialization history."
+  },
+  "verification": {
+    "native_copied_leaf_vectors": 512,
+    "decoded_ast_model_cases": 128,
+    "distinction": "512 actual9byte native comparison executions;128 decoded-Boolean-AST/model checks with non-null contexts and mocked getter success. Not640 full native or VM executions.",
+    "source_comment_only": {
+      "file": "src/KLink.Bot/Replay/ReplayData.cs",
+      "only_xml_doc_lines_changed": true,
+      "non_xml_text_sha256": "0470fa13d9be845d42b74b1993609e61c09150566a9409b173c85280a3abe747"
+    },
+    "kernel_runtime_changed": false,
+    "new_full_release_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "deepseek": {
+    "job_id": "20261021-165526-rule289-gate-references-65b8222c",
+    "elapsed_seconds": 19.06,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule289\\references.json",
+      "sha256": "743c2676dbf94c10ae404428d35be73af6d52631c9b3e212ecbc96c8b1f36ecc"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule289\\inventory.json",
+      "sha256": "13356b7258f1a0ecb704669b0fea92572cd5ff0acc3059b99ad38bb3ea1ffc9b"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical eight-function/31-pointer-reference census only; no inferred setters or semantics."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-gate-references.py",
+      "sha256": "78327a21cec9e19a89873529cabf12ee495906cadb722814c0180206bcd93293"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-logic-gate-paths.py",
+      "sha256": "9595e7ff6408a6ebc769c10aaa58b191ae27b4b3e74ccda4d29bfae5009ea482"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-online-action-path.py",
+      "sha256": "67af109ab966450d90b8a4184d215f5a2a1e2630d82813edc110b5158851312d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-gate-lifecycle.py",
+      "sha256": "10771a7e441354a97092c7e65c233a53b42dc264eb2eb8181f0d73a6fe49e239"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-live-gates.py",
+      "sha256": "bb6660a8444da0064fb7ce372b2b654da547f9ec213ee9bc20364c93713d3ede"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule289-side-compare.py",
+      "sha256": "53309343e4a5247b5db22fdb346aa6b5a6a04f6f1b9c73214df0da22993e80e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule289-gates.py",
+      "sha256": "da45b8dbf365d46a93aae022dccafda1ff549c747c53c268c5ef5a885cee933e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule289-evaluation-gates.py",
+      "sha256": "ff09fe0d15f5d2488731e6819c90283bf9b8cf57250f380f2ec224bbd0a67f1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-288.py",
+      "sha256": "4cfab2c9a0a588cb700d7f568668498ee300cdab3d862d1ac773293d03a08ce1"
+    }
+  ],
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "DoPreGameState path still stops at primitive cast3 at29385; DoApplyMulligan at cast4 at32218.",
+    "Downstream DoOnKardsActionEvent path stops at cast3 at15793 and opcode35 within statement2354; queue application not wholly certified.",
+    "Live mid-match samples are non-atomic stable rereads, not startup-time scheduling proof.",
+    "Both current CDO and match have useActionsForMulligan=0; no universal first-gate initialization guarantee claimed.",
+    "Rule dispatch gating does not establish original StartingSide correctness after native fetch; import/default unchanged.",
+    "No historical replay authority, process writes, injection, live function invocation or UI/campaign implementation."
+  ],
+  "next_audit": "Audit remaining queue application guards and initialization inputs; distinguish buffered rule execution from native fetch side effects before connecting original starting-side transport."
+}

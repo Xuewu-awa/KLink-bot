@@ -10,9 +10,9 @@ namespace KLink.Bot.Replay;
 /// GET /replays/{id}/actions?limit=1000     全部动作（服务端已解密）
 /// </code>
 ///
-/// 这是**目前唯一能证伪规则内核的东西**：它给了完全确定的初始状态
-/// 和一条真实的动作流，而动作流里还带着一个关键状态量
-/// （<c>action_data["84"]</c> = 行动方自己的 HQ 当前防御力）。
+/// 历史记录仅作为调试或回归输入，不能作为当前 KARDS 规则的权威依据。
+/// 初始化状态、动作字段与客户端状态的对应关系需要独立核对；规则结论应以
+/// 匹配版本的客户端、pak、用户提供的 SDK/反编译资料及只读内存证据为依据。
 /// </summary>
 public sealed class ReplayData
 {
@@ -60,9 +60,8 @@ public sealed class ReplayData
     /// <summary>
     /// 开局快照里 id → 卡。
     ///
-    /// 这个映射是**可信的**：5 局回放里，动作流自带的卡组码与快照里的卡名
-    /// **零冲突**（见 tools/check-id-semantics.py）。也就是说 `action_data["0"]`
-    /// 的编号空间和快照的 `card_id` 是同一个。
+    /// 这里仅建立输入数据中的 card_id 索引，不验证输入是否完整、动作字段的
+    /// 编号语义或其与当前客户端的一致性。历史样本没有冲突不能证明规则正确。
     ///
     /// ⚠️ 但**手牌/牌库的归属不可信**：fyserver 用 `Random.Shared` 洗牌后
     /// `Take(4/5)` 当手牌（MatchManagerService.GetCardsFromDeck），而真实客户端
