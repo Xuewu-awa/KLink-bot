@@ -2741,16 +2741,7 @@ public sealed class MatchEngine
 
         bool shockAttack = !defender.IsHq && attacker.Keywords.Contains(Keyword.Shock);
         Say($"⚔ {attacker} → {defender} 攻击，行动费 {attackCost}");
-        var damage = Api.DealCombatDamagePair(attacker, defender, (toDefender, toAttacker) =>
-            FireSubAction("ZActionAttackCard", new[]
-            {
-                ActionValue2.Int("attackerCardID", attacker.CardId),
-                ActionValue2.Int("defenderCardID", defender.CardId),
-                ActionValue2.Int("damageDefender", toDefender),
-                ActionValue2.Int("damageAttacker", toAttacker),
-                ActionValue2.Int("attackerAttackLeft", attacker.Attack),
-                ActionValue2.Int("defenderDefense", defender.Defense),
-            }));
+        var damage = Api.DealCombatDamagePair(attacker, defender);
 
         // Own after-attack event precedes the T4 query, including lethal HQ attacks.
         Api.ExecuteAfterAttackEvents(attacker, defender, damage.ToDefender, shockAttack, attackCost);

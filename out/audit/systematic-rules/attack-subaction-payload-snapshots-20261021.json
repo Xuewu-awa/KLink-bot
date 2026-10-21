@@ -1,0 +1,172 @@
+{
+  "rule": "RULE-300",
+  "kind": "Fix attack subaction remaining quota and complete ordered payload snapshots",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-300",
+    "worker_exact_match": true,
+    "worker_functions": 7,
+    "full_functions_verified": 8,
+    "script_bytes": 6576,
+    "script_statements": 231,
+    "execution_path_nodes": 174,
+    "handler_path_nodes": 2,
+    "payload_model_cases": 576,
+    "full_release_selftest": {
+      "passed": 627,
+      "total": 627,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "limits": "Ordinary stable-attacker main-action payload and snapshot timing; not full attack receiver, reconnect, replacement-by-ID reentry or negative movement state representation."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-notifier-payload-native-20261021.json",
+      "sha256": "a09294e318730fd2e875f5802d5c16793b90c954e64a4a7ed8462eee40b7254d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-execution-notification-native-20261021.json",
+      "sha256": "0960be1d7d9b8dd0e72150abb4e0729c1774986eafae076c0bdc0c2482fbfe99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-payload-string-helper-native-20261021.json",
+      "sha256": "3cd9b0a5846f9476f76a21f9ec040024f8b596c9171bc2780f9b77a5c1c3693c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-online-handler-paths-20261021.json",
+      "sha256": "82d473dcd355a880b44ff923866a53ad5c05927b726b0fa5138ccf2897cef49f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-execution-notification-paths-20261021.json",
+      "sha256": "4c36d16dcab65c902b6f015833c4eaca9ce8023c0c9734d5feaef1efd833a6d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-payload-and-snapshot-model-checks-20261021.json",
+      "sha256": "88b2503c9f9f252bcf3f99a3b5c4a1f0c7c95876294f52d96469e3aef495583d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-handler-helpers-native-20261021.json",
+      "sha256": "ea34f60e5ad9f8d4048a412940e828756d951a83c4e0a0c91b08085f93eb91f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule300-attack-payload-verified-20261021.json",
+      "sha256": "831e34f5f8c664ccb1a21dfef80387c6ba5195e4178ae3a2274bdf7f9970c066"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule300-selftest-release.log",
+      "sha256": "4103f75b1bed1fb82f008011697210e9cb0790754cb5fdd4a713b197fae66b6c"
+    }
+  ],
+  "authority": {
+    "notify": "ExecuteAttackCard2745 passes old locations, old defense snapshots, destruction snapshots, damageToAttacker/finalDamageToDefender and wasShockAttack. Notification occurs after damage and before excess/survived/deal effects.",
+    "snapshots": "Locations104/202 before flags279; old defense1145/1213 after before-receive callbacks886/1061. wasShockAttack704 is set only in non-location Shock branch excluding CantLoseShock, after RemoveShock617.",
+    "builder": "BP_OnlineMatch.AddSubActionAttackCard1005B builds14 ordered fields. Reads live attackLeft/movementLeft/hasEverAttacked via attacker lookup; attackLeft is remaining attack quota, not attack strength.",
+    "handler": "NotifyAttackCard139B forwards interface call; HandleAttackCard216B stores11 persistent-frame parameters then enters13771; two-node path calls AddSubActionAttackCard.",
+    "types": "Bool helper uses0/1 with emptyText; int helper keeps signed Value with emptyText; location helper converts enum to friendly string via ActionValueString, numeric Value=-1."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Engine/MatchEngine.cs"
+    ],
+    "previous": "Six fields only; attackerAttackLeft incorrectly attacker.Attack and defenderDefense was post-damage state.",
+    "change": "Emit complete14-field ordered subaction at existing combat notification phase inside DealCombatDamagePair. Snapshot old locations before flags/hooks, old defenses after receive hooks, preserve destruction snapshots and Shock-consumption condition. Remove single-caller six-field callback.",
+    "scope": "Headless ordinary main-action convention with existing0/1 movement representation; no damage formula change or full receiver/reconnect certification."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 627,
+      "total": 627,
+      "exit_code": 0,
+      "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest"
+    },
+    "integration_matrix": 64,
+    "integration_dimensions": "Both sides × Fury × Shock × CantLoseShock × move/attack allowance × lethal/nonlethal; compare all14 ordered typed values and one action only.",
+    "snapshot_probe": "Temporary OnReceiveDamage draws a card; temporary draw callback changes both defenses to14/17 and defender location to frontline. Assert old HQ location but new pre-damage defenses in payload; final defender defense10. All temporary programs cleaned up; not claimed as live card effect.",
+    "payload_AST_cases": 576,
+    "flow_states_with_snapshot_history": 178,
+    "model_limits": "Stable valid attacker lookup; initialized structs; enum name result and append collector mocked, native callees opaque. Negative movement preserved by client builder model but not newly representable in C# movement bool."
+  },
+  "deepseek": {
+    "job": "20261021-212535-rule300-attack-payload-inventory-c6656d4e",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule300\\functions.json",
+      "sha256": "256324c5e6f2fc5083db8831e4991ed26789d344618daa8023b485ac23cef8b6"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule300\\inventory.json",
+      "sha256": "47990d3008989e7b197c4c3df2334f57998bc7a086d87f5b7468e106acebcc7a"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule300\\task.txt",
+      "sha256": "dddecbb0c632d9866b10fc7bdabfb171ab5b2673f3041d911f68a5525bd54f73"
+    },
+    "primary_exact_match": true,
+    "scope": "Seven initially captured functions mechanical call/Context-write inventory only; later string helper independently verified"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule300-attack-payload.py",
+      "sha256": "c65a2c333109ae9800a85b85bf4e67544d94a20865f60376b28dabf2bcca9bfe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule300-attack-execution.py",
+      "sha256": "bf2cd8fc11c9c39da273f925ff50d7b41c334b41718fbdf3b291cc0ddf46d525"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule300-attack-handler-paths.py",
+      "sha256": "3d2eec0620d8cd30b42c686f05c6d9c9fed0e79b69cb6b96c01319dba25c2b1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule300-string-helper.py",
+      "sha256": "008e44a2f07c85b4c773e7484f81830557897f7bb50ace0ed46142723e11889d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule300-execution-paths.py",
+      "sha256": "c0ba31169a179465d46b29055a9f5508f4c6c137a72e4be2a2aada7538e2af1a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule300-packet.py",
+      "sha256": "f2bd477c5e77aff29a6bacf1206080d11ec28c1bc5391991e8fef690ec4d6771"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule300-attack-payload.py",
+      "sha256": "740e1e6c2fc273036e3ba56d10c47323fc82ddfa0155ac730c06cb0321eb93f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule300-attack-payload.py",
+      "sha256": "639f34b67b08663195ff60065d61d50a72b94c21e0f5ecb559f1986d1e3a9086"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "33d34f227bd7805591748483a6b9657a051421035f68e5d4fbf63c5ab9328ae2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "0c62f3efe99018c12f5ba6c857d4fd687cd0de69cd009ee0d590eaa41d28c137"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "0822cc99e8fd6da18181f71ad4f858c9c891dd36f9d0f435e71895386ca5fbcd"
+    }
+  ],
+  "remaining": [
+    "Full attack receiver and visual receiver semantics plus grouped action serialization/reconnect gates",
+    "Native negative movement quota representation",
+    "Attacker map replacement/removal under reentry, and all concrete live interface bindings",
+    "RULE-297 ordinary-turn attack history reset timing across both client views"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

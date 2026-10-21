@@ -1884,7 +1884,7 @@ public sealed partial class CardApi
 
     /// <summary>AttackCard calculates both directions, then ExecuteAttackCard resolves them in phases.</summary>
     internal (int ToDefender, int ToAttacker) DealCombatDamagePair(
-        CardInstance attacker, CardInstance defender, Action<int, int> afterBothApplied)
+        CardInstance attacker, CardInstance defender)
     {
         int toDefender = CalculateCombatDamage(attacker, defender, true);
         int toAttacker = CalculateCombatDamage(defender, attacker, false);
@@ -1896,10 +1896,16 @@ public sealed partial class CardApi
         _engine.SetAttackerHasAttacked(attacker); // ExecuteAttackCard i=279.
         defender.HasBeenAttackedThisTurn = true;
         // i=335..617: attacks against Locations preserve Shock.
-        if (!IsLocationCard(defender) && attacker.Keywords.Contains(Keyword.Shock) && !HasCustomAbility(attacker, "CantLoseShock"))
+        bool wasShockAttack = !IsLocationCard(defender) && attacker.Keywords.Contains(Keyword.Shock)
+            && !HasCustomAbility(attacker, "CantLoseShock");
+        if (wasShockAttack)
             RemoveKeyword(attacker, Keyword.Shock);
         if (toDefender > 0 && !defender.IsSuppressed) ExecuteBeforeReceiveDamage(defender, attacker, toDefender, true);
         if (toAttacker > 0 && !attacker.IsSuppressed) ExecuteBeforeReceiveDamage(attacker, defender, toAttacker, true);
+        // ExecuteAttackCard i=1104..1213 snapshots defense after receive hooks,
+        // while locations were captured before flags and those hooks.
+        int attackerOldDefense = attacker.Defense;
+        int defenderOldDefense = defender.Defense;
         int excess = 0;
         if (HasCustomAbility(attacker, "excess") && IsUnit(defender) && toDefender > defender.Defense)
         {
@@ -1913,7 +1919,24 @@ public sealed partial class CardApi
         bool attackerDestroyed = attacker.Defense <= 0
             || toAttacker > 0 && HasCustomAbility(defender, "lethal");
         // i=2745 notify, i=3021 excess, i=3201/3249 survivors, then deal effects.
-        afterBothApplied(toDefender, toAttacker);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)attackerOldLocation, out string attackerLocationName);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)defenderOldLocation, out string defenderLocationName);
+        _engine.FireSubAction("ZActionAttackCard", new[] {
+            ActionValue2.Int("attackerCardID", attacker.CardId),
+            ActionValue2.Int("defenderCardID", defender.CardId),
+            ActionValue2.Int("damageAttacker", toAttacker),
+            ActionValue2.Int("damageDefender", toDefender),
+            ActionValue2.Int("attackerMovementLeft", attacker.HasMovedThisTurn ? 0 : 1),
+            ActionValue2.Int("attackerAttackLeft", attacker.RemainingAttacks),
+            ActionValue2.Bool("attackerHasEverAttacked", attacker.HasEverAttacked),
+            ActionValue2.Bool("attackerDestroyed", attackerDestroyed),
+            ActionValue2.Bool("defenderDestroyed", defenderDestroyed),
+            ActionValue2.Str("attackerLocation", attackerLocationName),
+            ActionValue2.Str("defenderLocation", defenderLocationName),
+            ActionValue2.Int("attackerDefense", attackerOldDefense),
+            ActionValue2.Int("defenderDefense", defenderOldDefense),
+            ActionValue2.Bool("wasShockAttack", wasShockAttack),
+        });
         if (excess > 0) DealDamage(State.Hq(defender.Owner), excess, attacker);
         if (IsUnit(defender))
         {

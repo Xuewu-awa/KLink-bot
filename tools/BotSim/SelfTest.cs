@@ -784,6 +784,8 @@ internal static class SelfTest
         new("烟幕：不能被攻击 / 自己攻击后消失（被压制也会移除）/ 移到前线消失", SmokescreenRules),
         new("战斗伤害：Shock 取消反击并在攻击后消耗，Ambush 首次被攻击先反击", AmbushAndShockCombat),
         new("战斗伤害：普通互杀、炮兵/轰炸机/战斗机/防空反击与 Ambush 例外", CounterAttackRules),
+        new("攻击子动作包含14字段、剩余额度、旧防御及冲击消耗标志", AttackSubActionPayload),
+        new("攻击通知在受伤前回调后取防御，位置仍保留回调前快照", AttackSubActionSnapshotTiming),
         new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
         // ---- P1：伤害修正链（2026-09-30）----
@@ -27299,6 +27301,89 @@ internal static class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? AttackSubActionPayload(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool fury in new[] { false, true })
+        foreach (bool shock in new[] { false, true })
+        foreach (bool keepShock in new[] { false, true })
+        foreach (bool canMove in new[] { false, true })
+        foreach (bool lethal in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;
+            state.Turn = 4;
+            state.SetKredits(side, 20);
+            var attacker = state.CreateWithId("card_unit_arado_ar_196", side, 20, side.HqOf(), 1);
+            var defender = state.CreateWithId("card_unit_arado_ar_196", side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            foreach (var card in new[] { attacker, defender })
+            {
+                card.Keywords.Clear();
+                card.ReceivedAbilitiesFromCards.Clear();
+                card.Keywords.Add(Keyword.Suppressed);
+                card.EnteredPlayOnTurn = -1;
+            }
+            attacker.Attack = 7;
+            defender.Attack = 3;
+            attacker.Defense = attacker.MaxDefense = lethal ? 1 : 11;
+            defender.Defense = defender.MaxDefense = lethal ? 1 : 13;
+            if (fury) attacker.Keywords.Add(Keyword.Fury);
+            if (shock) attacker.Keywords.Add(Keyword.Shock);
+            if (keepShock) attacker.ReceivedAbilitiesFromCards["CantLoseShock"] = new List<int> { 9004 };
+            if (canMove) engine.Api.JsonSetString(attacker, "customName1", "CanMoveAndAttackInTheSameTurn");
+            if (!engine.Attack(attacker, defender, out string reason)) return $"攻击通知测试被拒：{reason}";
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionAttackCard").ToArray();
+            if (actions.Length != 1) return "一次战斗必须生成且仅生成一个攻击子动作";
+            var expected = new[] {
+                ActionValue2.Int("attackerCardID", 20), ActionValue2.Int("defenderCardID", 30),
+                ActionValue2.Int("damageAttacker", shock ? 0 : 3), ActionValue2.Int("damageDefender", 7),
+                ActionValue2.Int("attackerMovementLeft", canMove ? 1 : 0), ActionValue2.Int("attackerAttackLeft", fury ? 1 : 0),
+                ActionValue2.Bool("attackerHasEverAttacked", true), ActionValue2.Bool("attackerDestroyed", lethal && !shock),
+                ActionValue2.Bool("defenderDestroyed", lethal),
+                ActionValue2.Str("attackerLocation", side == Side.Left ? "Board_HQLeft" : "Board_HQRight"),
+                ActionValue2.Str("defenderLocation", side == Side.Left ? "Board_HQRight" : "Board_HQLeft"),
+                ActionValue2.Int("attackerDefense", lethal ? 1 : 11), ActionValue2.Int("defenderDefense", lethal ? 1 : 13),
+                ActionValue2.Bool("wasShockAttack", shock && !keepShock),
+            };
+            if (!actions[0].Values.SequenceEqual(expected))
+                return $"攻击通知字段错误：{side}, fury={fury}, shock={shock}, keep={keepShock}, move={canMove}, lethal={lethal}";
+        }
+        return null;
+    }
+
+    private static string? AttackSubActionSnapshotTiming(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var receiveProbe = InstallSelectionDrawProbe(name, "OnReceiveDamage");
+        var (engine, state) = EmptyBoard(db);
+        state.ActiveSide = Side.Left;
+        state.Turn = 4;
+        state.SetKredits(Side.Left, 20);
+        var attacker = state.CreateWithId(name, Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var defender = state.CreateWithId(name, Side.Right, 30, CardLocation.BoardHqRight, 1);
+        attacker.Keywords.Clear(); defender.Keywords.Clear();
+        attacker.Keywords.Add(Keyword.Shock);
+        attacker.Attack = 7; defender.Attack = 3;
+        attacker.Defense = attacker.MaxDefense = 11;
+        defender.Defense = defender.MaxDefense = 13;
+        attacker.EnteredPlayOnTurn = -1;
+        state.CreateWithId("card_unit_51e_regiment", Side.Right, 50, CardLocation.DeckRight, 0);
+        bool called = false;
+        using var drawProbe = InstallDrawReentryProbe(state, () => {
+            called = true;
+            attacker.Defense = 14; defender.Defense = 17;
+            state.Move(defender, CardLocation.BoardFrontline, 0, notifyMoved: false);
+        });
+        if (!engine.Attack(attacker, defender, out string reason)) return $"快照测试攻击被拒：{reason}";
+        var action = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionAttackCard");
+        var values = action.Values.ToDictionary(x => x.Name);
+        if (!called || values["attackerDefense"].Value != 14 || values["defenderDefense"].Value != 17
+            || values["defenderLocation"].Text != "Board_HQRight" || defender.Location != CardLocation.BoardFrontline
+            || defender.Defense != 10)
+            return "攻击子动作必须保留回调前位置和回调后、扣血前防御";
         return null;
     }
 
