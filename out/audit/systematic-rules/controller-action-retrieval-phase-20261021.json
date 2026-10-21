@@ -1,0 +1,223 @@
+{
+  "rule": "RULE-286",
+  "kind": "Native action retrieval side effects, reconnect state leaves and latent resume links; no kernel repair",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-phase-native-20261021.json",
+      "sha256": "8d2a1fd63576775fa39ec61b40994c1376f89e7461ba7f0385082dde247b83b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-phase-constants-20261021.json",
+      "sha256": "d0316592dbfcd9f29d1a4e6893be62303c54393284afec953872d7f28dc61039"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-phase-offline-20261021.json",
+      "sha256": "afbac407278fcd98a06d650a57b0ff6d83323661d9c4b65f78cbaa7c4d5b4e01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-delay-resume-paths-20261021.json",
+      "sha256": "6b3062bf560538707a5d3b707986afcd5df334681cd65a15cc64bc95351686a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-blueprint-native-20261021.json",
+      "sha256": "21e3f7069256c5062f2256f41156c287227578744e3ee129469304d1bb79d125"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-unwind-and-leaves-20261021.json",
+      "sha256": "6ba273db9a79b917c70b7603eb1fcf4a08bfff91b0bcb4b76c01be1b10536d3e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule286-action-phase-verified-20261021.json",
+      "sha256": "e9676a8a3b4d5db3e7a8a52a93dde7752ffa4fd884c7006fb1577c209566ee82"
+    }
+  ],
+  "native_capture": {
+    "functions": 7,
+    "parts": 9,
+    "bytes": 3167,
+    "live_equals_pe": true,
+    "stable_second_read": true,
+    "bounded_leaves": {
+      "IsReconnectMatch": 30,
+      "FinishedEvaluatingActionsForReconnect": 22,
+      "StartEvaluatingActionsForReconnect": 5
+    },
+    "boundary_correction": "Three requested entries have no containing pdata. Initial predecessor selection was rejected; final capture uses actual entry and bounded local CFG, including conditional target4aed8c5. Neighboring prior functions are not attributed to these names."
+  },
+  "GetNextAction": {
+    "root_rva": "0x4af4a00",
+    "bytes": 2235,
+    "parts": 3,
+    "tail_window": {
+      "start_rva": "0x4af5241",
+      "end_rva": "0x4af526b",
+      "literal": "XActionEndOfTurn",
+      "comparison_call_rva": "0x4af5256",
+      "nonmatch_jump_rva": "0x4af525d",
+      "switch_call_rva": "0x4af5266",
+      "switch_target_rva": "0x4af8e70",
+      "argument": "edx receives selected action+0x18 player_id; switch derives new side from saved byte, not directly from this player_id"
+    },
+    "other_observed_behavior": [
+      "writes/advances c98 in selected branches",
+      "recursive GetNextAction paths",
+      "queue/container reads and copies"
+    ],
+    "limit": "Not a pure accessor. Full filtering/recursion/container invariants and callees not certified; not every returned action triggers switch."
+  },
+  "side_switch": {
+    "root_rva": "0x4af8e70",
+    "bytes": 185,
+    "counter_increment": "controller+ca0",
+    "side_rule": "cf9==1 ->2, otherwise ->1 at4af8ee0",
+    "time_write": "controller+c88",
+    "GetSideInfo_call_rva": "0x4af8ef6",
+    "GetSideInfo_target_rva": "0x4af7cc0",
+    "subsequent_write": "controller+7b4 from returned PlayerMatchData; SDK identifies FMatch2.action_player_id",
+    "limit": "Local switch stores/call identity inspected; clock import, GetSideInfo implementation and full helper effects not emulated this round. Side-byte window was tested in RULE282."
+  },
+  "reconnect_leaves": {
+    "IsReconnectMatch": {
+      "rva": "0x4afb6c0",
+      "bytes": 30,
+      "outputs": [
+        "controller+2a8 ->rdx byte (isReconnecting)",
+        "controller+2f0 ->r8 byte (clientMulliganDone)",
+        "controller+ca4 ->r9 byte (otherMulliganDone)"
+      ],
+      "no_normalization": "Raw bytes copied, no 0/1 conversion in this leaf."
+    },
+    "FinishedEvaluatingActionsForReconnect": {
+      "rva": "0x4aed8b0",
+      "bytes": 22,
+      "zero": "ret at4aed8c5",
+      "nonzero": "clear controller+2a8 then tailjump4b03b00",
+      "tail_observed": "4b03b00 sets c09=4 and constructs timer/delegate machinery; transitive effects remain open"
+    },
+    "StartEvaluatingActionsForReconnect": {
+      "rva": "0x4b0d5f0",
+      "bytes": 5,
+      "tail_target": "0x4a93630",
+      "runtime_fname": "ActionsReceived",
+      "blueprint_entry": 22033,
+      "limit": "Does not directly clear/set reconnect fields in the5byte bridge; event/body effects separate."
+    }
+  },
+  "offline": {
+    "total_vectors": 2326,
+    "counts": {
+      "IsReconnectMatch": 1536,
+      "FinishedEvaluatingActionsForReconnect": 512,
+      "GetNextAction_EndOfTurn_tail": 278
+    },
+    "scope": "Copied machine code in offline Unicorn with synthetic memory. Full getter/finish leaves; finish tail intercepted. GetNextAction final42byte window uses real comparator/fold table and intercepts side-switch entry. No whole GetNextAction or live client execution."
+  },
+  "latent": {
+    "links": [
+      {
+        "at": 318,
+        "duration": 0.20000000298023224,
+        "linkage": 27,
+        "uuid": 1799749697
+      },
+      {
+        "at": 1603,
+        "duration": 1.0,
+        "linkage": 3560,
+        "uuid": -5657938
+      },
+      {
+        "at": 6600,
+        "duration": 0.10000000149011612,
+        "linkage": 6413,
+        "uuid": -949063956
+      }
+    ],
+    "resume_node_visits": 226,
+    "unique_nodes": 132,
+    "syntax_errors": 0,
+    "resume3560": "UI cleanup/audio/widgets/animation path; excluded from simulator implementation",
+    "limit": "Declared resume targets and bounded syntax paths only. Delay scheduler timing, latent object lifetime and all effects not certified; links are not synchronous fallthrough."
+  },
+  "deepseek": {
+    "job_id": "20261021-160028-rule286-phase-operands-e2e185a8",
+    "elapsed_seconds": 19.3,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule286\\operands.json",
+      "sha256": "4c0b56a4e92c380211393bd57ffdb924c3ababbcc558e7c947ea3a7efa03a06e"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule286\\inventory.json",
+      "sha256": "427d547eb625437c62ac1880ab89d27a354ef521f032dfc827d2d6f2ab274d3b"
+    },
+    "primary_exact_match": true,
+    "matching_instructions": 21,
+    "scope": "Mechanical read/write counts for selected literal displacement operands only. Zero direct cf9 writes in GetNextAction inventory does not exclude the proven callee switch or other aliases."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule286-action-phase.py",
+      "sha256": "adbc5ea1a225d728b9109e4c2f01a7ea9beea40d02b1f45cdc09d5aa0b96eacb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule286-constants.py",
+      "sha256": "86602405063a295c6c1c5d033d71add2bb0e892d740cadb304554275d7390275"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule286-packet.py",
+      "sha256": "c8036ddb17daaa9c928c26c5a23d8593c482ac02c6cacde199c7ad837bc61bae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule286-phase-leaves.py",
+      "sha256": "bbba9f730825c664fdca59730cfb7340f03db58b2123ef0ede3b088f71b93fe4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule286-delay-resumes.py",
+      "sha256": "4e4f584f9b463a1784740291c9eea8ae3dd2a058baeb59bdea5a7a774790a459"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule286-action-phase.py",
+      "sha256": "4c545fb55759f345f5e527aa129146e0b61aeef4b8552c49fb0c2292a16a7d2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-paths.py",
+      "sha256": "292dfcd6eb2f75b7e3e8f5e11bcd88390ce94b7eedfcf3531226c721639ed8e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-285.py",
+      "sha256": "57573318879e36bf860961fa68ffd4e1c211a2d7a5ce10fe857e1ae14f4b88b1"
+    }
+  ],
+  "validation": {
+    "native_thunks_and_flags": true,
+    "capstone_redecode": true,
+    "worker_exact_json": true,
+    "offline_vectors_passed": 2326,
+    "delay_reference_redecode": true,
+    "kernel_changed": false,
+    "new_full_release_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "No StartingSide import/default patch; taking arbitrary current ActiveSide after action retrieval may capture later turn state.",
+    "Full action queue/order semantics, helper side effects and pre-startup callback reentrancy remain open.",
+    "MatchReconnected primitive-cast tag3 and NoMatchToReconnect text parse gaps from RULE285 remain unresolved.",
+    "No historical replay authority, UI/campaign implementation, process write, injection or client function invocation."
+  ],
+  "next_audit": "Inspect the pre-startup multicast recipients and full GetNextAction filtering semantics, then distinguish transport original start_side from replayed current action side when defining initialization."
+}
