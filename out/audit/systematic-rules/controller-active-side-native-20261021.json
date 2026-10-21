@@ -1,0 +1,218 @@
+{
+  "rule": "RULE-282",
+  "kind": "Native MatchControllerV2 active-side leaf, candidate writers and conditional offline evidence; no kernel repair",
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "read_only_client_access": true,
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-active-side-native-20261021.json",
+      "sha256": "a4144263dcc916b09a29e98439d844b222f2ebaaca4823b0afbfddb60f55f813"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-candidates-native-20261021.json",
+      "sha256": "b84fd33d726378553224d77d3d63e955d658935b978e302d55c036f1d547638d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-active-side-symbols-20261021.json",
+      "sha256": "d4e3b4f9fdc58cda62dc9f3f44ffb720ecc58093baeb429125e370adf5f14e94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-unwind-and-leaves-20261021.json",
+      "sha256": "6ba273db9a79b917c70b7603eb1fcf4a08bfff91b0bcb4b76c01be1b10536d3e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-entry-bodies-20261021.json",
+      "sha256": "8adeda0e09063e1b16e2cace69ad4f6a4f60cc503c8b0cd4f409a7eb5345925d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-start-side-layout-20261021.json",
+      "sha256": "689e6d9e4d3bcb8d937593fa6e2835d536ba418e4eef4c7b3cba12086a02e694"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-offline-20261021.json",
+      "sha256": "b877bdb247ed879ed2ee1e1e23bfe2a55c5d7b382fa1f0b550f27f92f87184cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule281-starting-side-verified-20261021.json",
+      "sha256": "1bde5106f57fcc55aca74fc1de4388a5d88b0b3e3f894749d9bd9b421e28cfa9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule282-active-side-verified-20261021.json",
+      "sha256": "8558880c1dc59cd500c9ac5333db96f38defd306553931987895e8b10b6e85ab"
+    }
+  ],
+  "getter": {
+    "exec_rva": "0x4a95650",
+    "exec_pdata_bytes": 147,
+    "leaf_rva": "0x4aedc60",
+    "leaf_bytes": 10,
+    "member_offset": "0xcf9",
+    "behavior": "Read controller byte and overwrite the output byte; no side-string parsing in this getter.",
+    "boundary": "Leaf ends ret, independently decoded; exploratory128-byte probes are not counted as complete functions."
+  },
+  "live_layout": {
+    "controller_match_offset": "0x7b0",
+    "match_type": "Match2",
+    "start_side_offset": "0x50",
+    "fstring_combined_offset": "0x800",
+    "fstring_size": 16,
+    "scope": "Current runtime FField/UScriptStruct headers, offsets and widths cross-checked with stable rereads."
+  },
+  "candidate_scan": {
+    "search": "Literal disp32 cf9 in executable .text, then decode containing pdata ranges; no claim of alias/bulk coverage",
+    "literal_pattern_occurrences": 26,
+    "candidate_pdata_ranges": 23,
+    "matched_ranges": 11,
+    "matched_instructions": 12,
+    "direct_byte_write_candidates": 6,
+    "byte_reads": 5,
+    "rejected_rip_relative_lea": 1,
+    "write_rvas": [
+      "0x4ac306b",
+      "0x4aca7db",
+      "0x4acc1be",
+      "0x4ad765a",
+      "0x4af8ee0",
+      "0x4b0886c"
+    ],
+    "unbounded_literal_rvas": [
+      "0x4aedc63",
+      "0x4afb4b3"
+    ],
+    "limits": "Some pdata entries are chained code fragments rather than independent complete functions. Wider overlapping stores, memset/bulk initialization, aliases and computed addresses remain outside this scan."
+  },
+  "writer_observations": [
+    {
+      "rva": "0x4ac306b",
+      "kind": "Candidate callback writes compare-result+1",
+      "input": "Object+0x800 FString data / +0x808 Num; ASCII literal left. Object identity/callback route still pending."
+    },
+    {
+      "rva": "0x4aca7db",
+      "kind": "Candidate callback writes compare-result+1",
+      "input": "Same +0x800 FString pattern; callback route still pending."
+    },
+    {
+      "rva": "0x4acc1be",
+      "kind": "Candidate callback writes compare-result+1",
+      "input": "Same +0x800 FString pattern; chained parent root0x4acbf70, not a standalone function entry."
+    },
+    {
+      "rva": "0x4ad765a",
+      "kind": "Candidate writes compare-result+1 from stack string",
+      "input": "Upstream stack-string producer unresolved; chained parent root0x4ad7350."
+    },
+    {
+      "rva": "0x4af8ee0",
+      "kind": "Selected switch fragment",
+      "behavior": "Old byte1 ->2; all other byte values ->1. No assertion every byte is reachable in actual match."
+    },
+    {
+      "rva": "0x4b0886c",
+      "kind": "ResetVariablesForResync clearing fragment",
+      "behavior": "Native thunk tail-jumps0x4b08780; chained range root matches, prefix binds rdi=rcx and zeros ebp, selected store writes bpl to cf9. Full helper and call lifecycle not certified."
+    }
+  ],
+  "comparison": {
+    "rva": "0x12157e0",
+    "captured_reachable_bytes": 75,
+    "ascii_fold_table_bytes": 128,
+    "literal_encoding": "ASCII left, compared with UTF-16 input; literal also adjacent ASCII right",
+    "behavior": "ASCII comparisons fold A..Z to a..z. Selected write fragment returns1 when compared input matches left,2 otherwise. Zero Num uses controlled empty fallback and returns2.",
+    "limits": "Selected FString view/window only, not JSON decoding, all Unicode handling, input validation or full callback execution."
+  },
+  "offline": {
+    "artifact": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-cf9-offline-20261021.json",
+      "sha256": "b877bdb247ed879ed2ee1e1e23bfe2a55c5d7b382fa1f0b550f27f92f87184cd"
+    },
+    "engine": "Unicorn, copied code with synthetic object/closure/FString/stack; no game function invocation",
+    "counts": {
+      "getter": 1024,
+      "distinct_parse_inputs": 154,
+      "parse_window": 616,
+      "switch_window": 512
+    },
+    "total_vectors": 2152,
+    "memory_checks": "Getter leaves object bytes unchanged; selected parse/switch windows change only cf9 in the synthetic object.",
+    "runtime_data": "Switch SSE multiplier is stable-read mutable runtime data; not falsely asserted byte-identical to disk. It does not determine the side predicate."
+  },
+  "deepseek": {
+    "job_id": "20261021-134808-rule282-native-writes-66508904",
+    "elapsed_seconds": 32.59,
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule282\\writes.json",
+      "sha256": "627b9796600642a2b14e783d97786ee0013e5f43ed73652bfe11c6b2c75192db"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule282\\task.txt",
+      "sha256": "f833a7ef78d66079e65c50e2dbddaeb351e0bf8e9eaba870d59dd826c0df175d"
+    },
+    "scope": "Six byte-write matches plus up to15 preceding/following instructions; no semantics/repository edits/publishing",
+    "primary_exact_artifact_match": true,
+    "narrative_correction": "Worker described rejected matches as four reads plus one RIP and one size8. Independent decoding shows five byte reads and one RIP-relative size8 LEA; RIP/size8 are the same instruction. Artifact six writes and contexts match exactly."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-active-side-20261021.py",
+      "sha256": "9621c534da5a7677ecc90840e2af1ac112df5a913651c01647233b3dd8d2d052"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-cf9-candidates-20261021.py",
+      "sha256": "323846d4c1086d2c65c3476eb850a41fd6cd7dfc7f3589acb2420cf345369c5e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-active-side-symbols-20261021.py",
+      "sha256": "c5ed1192b0f7bbf00f80e36bd6521adbaa8a5c5b32e9a4b7c6251385eb1dfa25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-cf9-unwind-20261021.py",
+      "sha256": "8577c84ed9a945caccef4f13380ea65a893359548cc3740a1902ea80e43f30c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-cf9-entry-bodies-20261021.py",
+      "sha256": "2e68cae92ef7b2bd4652c5a9714efad44a0730db9c001907131cd0220e16749e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-match-controller-start-side-layout-20261021.py",
+      "sha256": "9023d47c8f75fd90305a69ad9a7b01796b1be3f564000df79f673d19c8d7f9a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-match-controller-cf9-20261021.py",
+      "sha256": "7360fff0539969b44d5401d8cc7d06944c0ab02a80182ae75425b4dae4e61d8a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule282-active-side-20261021.py",
+      "sha256": "9ee4bacb6b1d3b5171ea210cc56f82a09726d75dd74a4734d1960f9a8c37a609"
+    }
+  ],
+  "tests": {
+    "kernel_changed": false,
+    "new_kernel_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    },
+    "new_tests": "2152 offline native leaf/window vectors; independent Capstone inventory, unwind chain and live layout checks."
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "Six direct byte stores are candidates, not all class-bound writers. Some closure owner types and callback routes are unresolved; an equal displacement alone does not prove receiver identity.",
+    "Wider stores overlapping cf9, bulk zeroing/constructors, computed-address writes, aliases and native caller scheduling still require inspection.",
+    "ResetVariablesForResync scalar-clear identity is verified, but its complete container/helper semantics and all actual invokers/order are not.",
+    "Full reset/resync machine-code functions, allocator/session/actor callback effects and actual post-reset object state are not certified by selected windows.",
+    "MatchController active byte is distinct from GameMode active byte and GameState playingSide; do not dynamically substitute one for the saved StartingSide field.",
+    "No starting-side transport/import/default change. The controller byte might reflect initial source or progressed/recovered state at different phases; loader identity and action-recovery order must be established.",
+    "No historical replay authority, client writes, injection, code execution in the client or UI/campaign implementation."
+  ],
+  "next_audit": "Broaden overlap/bulk-writer coverage and map the three match.start_side callback routes and reconstruction order, then integrate explicit starting-side metadata only with a verified phase contract."
+}
