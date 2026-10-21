@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("防御buff归零：仅删空来源，保留其他效果/临时槽及反向关系", DefenseBuffZeroCleanup),
+        new("混合防御类型：普通项归零保留设值存在性及克隆", DefenseBuffMixedPresence),
         new("防御来源：使用显式ID并拒绝非正来源及非正旧防御", DefenseSourceIdentityAndEntry),
         new("设值事件：致死后仍先调用自身，再调用注册旁观者", DefenseSetOwnAndObserverOrder),
         new("设值事件：自身后查询，旁观者循环保持查询快照", DefenseSetObserverSnapshot),
@@ -5945,6 +5947,74 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseBuffZeroCleanup(CardDatabase db)
+    {
+        Action<CardBuff>[] payloads = {
+            b => { }, b => b.Attack = 3, b => b.KreditCost = -1, b => b.OperationCost = -1,
+            b => b.HeavyArmor = 1, b => b.Fury = 1, b => b.Blitz = 1, b => b.Smokescreen = 1,
+            b => b.Guard = 1, b => b.Destruction = 1, b => b.Pinned = 1,
+            b => b.CustomAbilityDetails.Add("audit-presence"), b => b.KreditCostSetsAbsoluteValue = true,
+            b => b.OperationCostSetsAbsoluteValue = true, b => b.HasNonOrdinaryDefenseEntry = true,
+        };
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (bool otherSlot in new[] { false, true })
+        foreach (int reverseCase in new[] { 0, 1, 2 })
+        foreach (int payload in Enumerable.Range(0, payloads.Length))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 2);
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = target.MaxDefense = 10;
+            int id = sourceExists ? 20 : 9999;
+            void Change(int amount) => engine.Api.InvokeByName("ChangeDefense", target,
+                new object?[] { target, id, amount, 1, false, null },
+                new EffectContext { Engine = engine, State = state, Self = self, Controller = side }, out _);
+            Change(2);
+            var buff = target.BuffsBySource[(id, false)]; payloads[payload](buff); buff.Duration = 5;
+            if (otherSlot) target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Defense = 1 };
+            var unrelated = new CardBuff { SourceCardId = 99, Defense = 7 };
+            target.BuffsBySource[(99, false)] = unrelated;
+            self.CardsBuffedByThisCard.Clear();
+            var before = reverseCase switch { 0 => Array.Empty<int>(), 1 => new[] { 888 }, _ => new[] { 60, 60, 888 } };
+            self.CardsBuffedByThisCard.AddRange(before);
+            int actionsBefore = state.ActionLog.SelectMany(x => x.SubActions).Count();
+            Change(-2);
+            bool retainSlot = payload != 0, retainSource = retainSlot || otherSlot;
+            var expectedReverse = !sourceExists ? before
+                : retainSource ? (before.Contains(60) ? before : before.Append(60).ToArray())
+                : before.Where(x => x != 60).ToArray();
+            if (target.Defense != 10 || target.MaxDefense != 10
+                || target.BuffsBySource.ContainsKey((id, false)) != retainSlot
+                || (retainSlot && (buff.Defense != 0 || !ReferenceEquals(target.BuffsBySource[(id, false)], buff)))
+                || target.BuffsBySource.ContainsKey((id, true)) != otherSlot
+                || !ReferenceEquals(target.BuffsBySource[(99, false)], unrelated)
+                || !self.CardsBuffedByThisCard.SequenceEqual(expectedReverse)
+                || state.ActionLog.SelectMany(x => x.SubActions).Count() != actionsBefore + 1)
+                return $"防御buff归零清理错误 side={side}, source={sourceExists}, otherSlot={otherSlot}, reverse={reverseCase}, payload={payload}";
+        }
+        return null;
+    }
+
+    private static string? DefenseBuffMixedPresence(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 2);
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); target.Defense = target.MaxDefense = 3;
+            engine.Api.SetDefenseValue(target, 5, source);
+            engine.Api.ChangeDefense(target, -2, source);
+            if (!target.BuffsBySource.TryGetValue((20, false), out var buff) || buff.Defense != 0
+                || !buff.HasNonOrdinaryDefenseEntry || buff.IsEmpty || !buff.Clone().HasNonOrdinaryDefenseEntry
+                || buff.Clone().IsEmpty || !source.CardsBuffedByThisCard.Contains(60) || target.Defense != 3)
+                return "紧凑防御量归零不能抹掉独立设值项的存在性；克隆也必须保留此位";
+        }
         return null;
     }
 

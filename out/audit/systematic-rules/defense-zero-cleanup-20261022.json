@@ -1,0 +1,140 @@
+{
+  "rule": "RULE-308",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "Ordinary defense zero-item cleanup and mixed-key presence protection",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-308",
+    "worker_property_inventory_exact": true,
+    "before_properties": 17,
+    "before_empty_references": 14,
+    "new_properties": 18,
+    "blueprint_functions_verified": 2,
+    "script_bytes": 12010,
+    "script_statements": 412,
+    "models": 360,
+    "full_release_selftest": {
+      "passed": 641,
+      "total": 641,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Ordinary permanent defense zero cleanup in compact ledger, preserving other represented entries and reverse membership. Added nonordinary defense presence flag/clone/IsEmpty guard; no full per-mode ledger or callback timing certification."
+  },
+  "authority": {
+    "ledger": "ChangeBuffsFromCards ordinary accumulation3025..3500: old amount plus delta;3268 equal-zero then3316 Map_Remove selected key.1528..1842 removes outer source only if local BuffMap keys empty.2471..3024 conditionally maintains valid source reverse list; existing relation keeps entries, removed relation uses Array_RemoveItem.",
+    "presence": "Different native mode/buff keys remain independent, including a zero-valued key from SetValue5552/5620. Compact C# Defense cannot prove absence of those keys merely from aggregate zero."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Engine/CardInstance.cs"
+    ],
+    "changes": [
+      "Ordinary type1 update removes its compact source slot only when defense reaches zero and CardBuff.IsEmpty; unrelated represented fields/temporary slot/other sources remain. Existing RemoveBuffEntry synchronizes reverse membership across all source slots.",
+      "Add HasNonOrdinaryDefenseEntry presence flag when defense changeType!=1, include in IsEmpty and Clone. Prevent pruning an aggregate-zero record containing a nonordinary defense key."
+    ],
+    "scope": "Zero cleanup for ordinary defense records representable in the compact ledger; new presence flag protects mixed entries but does not implement complete native per-mode amounts/removal or reset semantics."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 641,
+    "total": 641,
+    "new_regressions": [
+      "360 ordinary +2/-2 combinations: sides2 x source valid/missing2 x another same-source temporary slot2 x reverse arrays3 x residual payload15. Exact defense/max, record identity/preservation, unrelated source, reverse duplicates and one ordinary gain action checked. Residual payload covers every represented numeric/keyword/custom/zero absolute-set flag plus new defense presence. Duration metadata alone does not keep an empty record.",
+      "2 mixed SetValue5 then ordinary-2 cases preserve aggregate-zero source and reverse relation; presence flag survives Clone and IsEmpty remains false. These guard key presence, not full native SetValue ledger amounts."
+    ],
+    "models": {
+      "rule": "RULE-308",
+      "ordinary_ledger_and_reverse_cases": 360,
+      "zero_sum_cases": 36,
+      "case_digest_sha256": "f302feb73f2a22a06cdd6f1e16707225fbf95a2c983e0f38a74b5b8e8472a685",
+      "scope": "Exact ChangeBuffsFromCards branch3025 through return6264 including outer-record empty removal1528..1842 and reverse-source branch2471..3024. Pre-resolved selected key/localCardBuffData, original flow stack, controlled map/array operations. Nonzero/zero residual key presence, missing/valid source, duplicate reverse entries and unrelated source preserved.",
+      "limits": "isBuffedByCard modeled as outer source-key membership, not a newly certified native implementation; map copy/array primitives mocked. C# compact Defense does not separate every native key. New nonordinary presence bit prevents unsafe pruning; full per-mode ledger/reset/removal and callback order still pending."
+    }
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-zero-buff-native-20261022.json",
+      "sha256": "5f2c1e4d94fc082b71835ef014013c862c275d0a5b5e19440163a4ce1a9febf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-source-buff-native-20261022.json",
+      "sha256": "b19547539a3a8942f199b062ae5beffc12ea182866d50e94e3be3b505987c64d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-zero-cleanup-model-checks-20261022.json",
+      "sha256": "824e65b7a02f1e467861221a0763d4057efc143f1e659fa8f7e8c26076f72855"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule308-zero-cleanup-verified-20261022.json",
+      "sha256": "dba3fa3bfa4389f12215cdc2b4f7a72f3182ebf7319d8e64b8fcb46d3e08f9e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule308-selftest-release.log",
+      "sha256": "46e4e222a59c32a95d875789c722b249fc6c3687de0e7bf8390268bd4552c249"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule308-zero-buff.py",
+      "sha256": "737c939d40f919869d3572fa36083a27036954a99a223903a4087c9453139a50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule308-zero-cleanup.py",
+      "sha256": "12f8e3ce4bcf425de0619e914b131156d9a60f0147145891ce0efd667b32c0a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule308-zero-cleanup.py",
+      "sha256": "3e2a2cfc4e41c2482de838ab09c71d54ead31ff6be1d1ade125555f4b6c16e2b"
+    }
+  ],
+  "deepseek": {
+    "job": "20261022-021541-rule308-buff-empty-fields-7547b1bd",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule308\\CardBuff.txt",
+      "sha256": "d3ebe46a91882b4b9a7b56abc52a6735e5230be781ba1725f8073a8f35573c48"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule308\\task.txt",
+      "sha256": "1bef37c97e245b4657132d6faffaf4966f43205e792bccb9c074ee3b91873b1d"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule308\\properties.json",
+      "sha256": "495a9db97660bbb565586a093e706c9d72501d3068a4db4ffe849b705a84cb8e"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical pre-change CardBuff property/IsEmpty reference inventory:17 declared properties,14 referenced,SourceCardId/Duration/Temporary excluded. New18th presence flag independently checked in final IsEmpty/Clone and regression."
+  },
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "8fe55adbb8064ccbeb50b8e579dcb0bc985e514314ee762b21c48f7322861fc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "30c00c0323a0cf8e60e7935c575bcc4fba1691c21cb809973d0e936b717c6b31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "29f5ff9c1f60da09278db61e8645dcdb89804622080510405ddc1d021ebb685d"
+    }
+  ],
+  "remaining": [
+    "C# compact Defense still merges native per-mode amounts; HasNonOrdinaryDefenseEntry is presence protection, not a complete typed ledger. SetValue/reset/suppress/veteran/custom/revoke clearing of this presence must be aligned with full native key mapping.",
+    "Client ledger update precedes gain callbacks, current C# update still occurs later; reentrant ledger visibility and source relation lifecycle remain pending.",
+    "isBuffedByCard was a controlled source-map-membership predicate in the new model, not newly certified native code. Fixed-order map/array primitives and source validity mocked.",
+    "All modes/skipAction, target validity/location, native TSet order, generic death sweep and death-history receipt/reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

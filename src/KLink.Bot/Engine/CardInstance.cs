@@ -955,6 +955,9 @@ public sealed class CardBuff
     public int SourceCardId { get; init; }
     public int Attack { get; set; }
     public int Defense { get; set; }
+    // The compact Defense amount merges native change-mode keys. Preserve the
+    // presence of a nonordinary key until those modes are fully separated.
+    public bool HasNonOrdinaryDefenseEntry { get; set; }
 
     /// <summary>
     /// 费用相对**卡面费用**的偏移量。
@@ -1019,7 +1022,7 @@ public sealed class CardBuff
     /// </summary>
     public bool Temporary { get; set; }
 
-    public bool IsEmpty => Attack == 0 && Defense == 0 && KreditCost == 0
+    public bool IsEmpty => Attack == 0 && Defense == 0 && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
@@ -1034,6 +1037,7 @@ public sealed class CardBuff
         SourceCardId = SourceCardId,
         Attack = Attack,
         Defense = Defense,
+        HasNonOrdinaryDefenseEntry = HasNonOrdinaryDefenseEntry,
         KreditCost = KreditCost,
         OperationCost = OperationCost,
         HeavyArmor = HeavyArmor,

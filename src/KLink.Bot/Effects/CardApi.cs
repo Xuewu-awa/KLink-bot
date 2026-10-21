@@ -2662,7 +2662,14 @@ public sealed partial class CardApi
         // even when lookup has no object. Public callers retain their old fallback.
         if (source is not null || instigatorId is > 0)
         {
-            GetOrCreateBuff(target, sourceId, temporary).Defense += delta;
+            var buff = GetOrCreateBuff(target, sourceId, temporary);
+            buff.Defense += delta;
+            if (changeType != 1) buff.HasNonOrdinaryDefenseEntry = true;
+            // RULE-308: ordinary accumulation removes a zero-valued defense key.
+            // Drop the source slot only when no other represented entry remains;
+            // RemoveBuffEntry keeps the reverse relation while another slot exists.
+            if (changeType == 1 && defenseSetValue is null && buff.Defense == 0 && buff.IsEmpty)
+                RemoveBuffEntry(target, (sourceId, temporary));
         }
 
         if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
