@@ -414,6 +414,7 @@ internal static class SelfTest
         new("ResetUnitOperations：只恢复棋盘单位的移动/攻击额度，Fury 恢复两次攻击",
             ResetUnitOperations),
         new("恢复行动保留攻击历史，随后给予/移除奋战仍按已攻击次数处理", ResetOperationsKeepsAttackHistory),
+        new("恢复行动记录一次目标/来源子动作，非战场或非单位不记录", ResetOperationsRecordsSubAction),
         new("GiveRandomCombatKeyword：双出参、已有关键字排除与 Smokescreen 特殊过滤",
             GiveRandomCombatKeyword),
         new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
@@ -31327,6 +31328,53 @@ internal static class SelfTest
             if (unit.HasFury || unit.RemainingAttacks != 0 || unit.AttacksThisTurn != 1
                 || !unit.HasAttackedThisTurn)
                 return "恢复后移除奋战仍须按已攻击一次清零额度，不能按未攻击处理";
+        }
+        return null;
+    }
+
+    private static string? ResetOperationsRecordsSubAction(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourceFury in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId("card_unit_arado_ar_196", side, 100,
+                side == Side.Left ? CardLocation.BoardHqLeft : CardLocation.BoardHqRight, 1);
+            unit.Keywords.Remove(Keyword.Fury);
+            unit.ReceivedAbilitiesFromCards.Remove("fury");
+            if (sourceFury) unit.ReceivedAbilitiesFromCards["fury"] = new List<int> { 9004 };
+            unit.AttacksThisTurn = 1;
+            unit.HasAttackedThisTurn = true;
+            unit.HasMovedThisTurn = true;
+            unit.SetRemainingAttacks(-3);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = side };
+            int start = state.ActionLog.Count;
+            foreach (int giver in new[] { -7, 0, 9004 })
+                engine.Api.InvokeByName("ResetUnitOperations", unit,
+                    new object?[] { unit.CardId, giver, null }, ctx, out _);
+            var actions = state.ActionLog.Skip(start).SelectMany(x => x.SubActions).ToArray();
+            if (actions.Length != 3 || unit.RemainingAttacks != (sourceFury ? 2 : 1)
+                || unit.HasMovedThisTurn || !unit.HasAttackedThisTurn || unit.AttacksThisTurn != 1)
+                return "每次有效恢复都应记录一次动作，并保留攻击历史及准确额度";
+            for (int i = 0; i < actions.Length; i++)
+            {
+                var values = actions[i].Values.ToArray();
+                if (actions[i].Name != "ZActionResetUnitOperations" || values.Length != 2
+                    || values[0].Name != "cardID" || values[0].Value != 100 || values[0].Text != ""
+                    || values[1].Name != "instigatorID" || values[1].Value != new[] { -7, 0, 9004 }[i]
+                    || values[1].Text != "")
+                    return "恢复行动的子动作名称、参数顺序或整数来源ID错误";
+            }
+
+            var hand = state.CreateWithId("card_unit_arado_ar_196", side, 101,
+                side == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight, 0);
+            var order = state.CreateWithId("card_event_rain2_deluge", side, 102, unit.Location, 2);
+            start = state.ActionLog.Count;
+            foreach (int cardId in new[] { hand.CardId, order.CardId, 99999 })
+                engine.Api.InvokeByName("ResetUnitOperations", unit,
+                    new object?[] { cardId, 9004, null }, ctx, out _);
+            if (state.ActionLog.Count != start)
+                return "无有效战场单位目标时不得记录恢复行动子动作";
         }
         return null;
     }

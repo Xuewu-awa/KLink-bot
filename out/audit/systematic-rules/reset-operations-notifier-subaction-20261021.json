@@ -1,0 +1,159 @@
+{
+  "rule": "RULE-299",
+  "kind": "Restore main-action ResetUnitOperations subaction generation",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-299",
+    "worker_exact_match": true,
+    "full_functions": 10,
+    "script_bytes": 1495,
+    "script_statements": 65,
+    "handler_path_nodes": 2,
+    "model_cases": 384,
+    "full_release_selftest": {
+      "passed": 625,
+      "total": 625,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "live_nondefault_online_matches": 0,
+    "limits": "Static BP_OnlineMatch interface branch and modeled main-action generation; current live notifier receiver is null and no actual OnlineMatch instance is present. No claim of live initialized binding, full reconnect or non-action mode."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-notifier-chain-native-20261021.json",
+      "sha256": "c7b5a932741a68047abaa6966b973fdd617b2f831020acc7086395689efca84e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-handler-helpers-native-20261021.json",
+      "sha256": "ea34f60e5ad9f8d4048a412940e828756d951a83c4e0a0c91b08085f93eb91f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-online-handler-paths-20261021.json",
+      "sha256": "d31a1c7b35dea30c8988b672c1c3369e5992c7549d5c97a1e27ba73ef1be9719"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-notifier-live-bindings-20261021.json",
+      "sha256": "12035194c7e0d6dd30f473de6c7188f9e9fdbdfbb881b15738a4a656d523b4d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-notifier-chain-model-checks-20261021.json",
+      "sha256": "b7fe169f2a39f48498ff6efc38a7a38638661f2bcfedf1ec4f847dfd05a8b5de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operation-generator-native-20261021.json",
+      "sha256": "8b218778145a090b3bb4bb090b1f98f3d45f19d1463c2a3d842d79cd5c463288"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-and-operations-receivers-native-20261021.json",
+      "sha256": "6cd0319fdb2a708d776715a1549db6f0a6d237fbc726d21a4c36a03885d952b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule299-notifier-chain-verified-20261021.json",
+      "sha256": "a22e64a73b6a385c0bac420262e244bd3870f3f0d69cbc669e8e02c6eb8f51fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule299-selftest-release.log",
+      "sha256": "d9fd1d1d67378b93f0d685b4a82ecebf58efc7f6474719d5473f5aacb82986b3"
+    }
+  ],
+  "authority": {
+    "notifier": "NotifyResetUnitOperations58B forwards CardID and instigatorID through OnlineMatchReceiver interface context.",
+    "handler": "BP_OnlineMatch HandleResetUnitOperations54B stores both persistent event parameters and enters ubergraph12847, which calls AddSubActionResetUnitOperations and pops.",
+    "payload": "AddSubActionResetUnitOperations161B builds ActionValueCardID and ActionValueInt(instigatorID), in that order, then CreateAction_AddSubAction(ZActionResetUnitOperations, values). Integer helpers write Text=empty string.",
+    "queue": "CreateAction_AddSubAction847B: normal path requires nonempty currentActionName; otherwise reports error and does not append. Reconnect path appends only if ExecuteXActionsWithLocalSubActions is true. These mode gates are modeled as evidence, not fully added to the headless runtime.",
+    "receiver": "RULE-298 receiver skips ResetUnitOperations when ResolveSubActionsFromLocal is true; no extra pending local reset receipt added."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "change": "After restoring quotas, emit one ZActionResetUnitOperations with cardID and the explicit giver argument as instigatorID, following the existing headless primary-action convention.",
+    "scope": "Main-action generation and flat headless action log; no complete networking/queue serialization or mode lifecycle implementation."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 625,
+      "total": 625,
+      "exit_code": 0,
+      "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest"
+    },
+    "regression": "Both sides, plain and sourced Fury, repeated refreshes, givers -7/0/9004: exactly one ordered two-field subaction per valid call, empty Text, correct quota/history. Hand/order/unknown target emits no action.",
+    "model_cases": 384,
+    "model_limit": "Full selected decoded wrappers/helpers and two-node handler span; nonnull synthetic interface explicitly assigned BP_OnlineMatch, initialized struct locals, mocked predicates/controller/format/error and stable card."
+  },
+  "live_binding": {
+    "observed": "Current CardFunctions instance points to current notifier and battle GameState; packed ActionProcess bit is true using FBoolProperty metadata. Notifier OnlineMatchReceiver object pointer is null; only BP_OnlineMatch CDO found.",
+    "limit": "Does not prove initialized battle interface dispatch, all live receivers or reconnect lifecycle. CDO is not an actual match."
+  },
+  "deepseek": {
+    "job": "20261021-211516-rule299-reset-notifier-inventory-dc94602e",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule299\\functions.json",
+      "sha256": "ef36f06cb82021bab30ade7c78ba2e3620d7bca5edf80f4e9c4090718c704780"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule299\\inventory.json",
+      "sha256": "100ee3330a306905bd9800396a3daffec13c471a3adf75f4e4a41181c279c9b1"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule299\\task.txt",
+      "sha256": "6cc60ee41c3951cbc0465d50ae2a4fa1a7fbaa549c3cffa1507a1e228c482199"
+    },
+    "primary_exact_match": true,
+    "scope": "Ten-function call/Context-write inventory, duplicate names retained in order; interface stub included as syntax only"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-notifier-chain.py",
+      "sha256": "3a930e7254e1b5adb3ea2f36868618f374b7e0002a3723ca7962b760798edc65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-handler-helpers.py",
+      "sha256": "4c5beda1f216163a37d78f6464a9b4e38ef475ce2374e6a1dffad4bea82fd78d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-online-handler-paths.py",
+      "sha256": "7c602573cd096626233a39af8a224b2201adc5b43e9434d99ce482cf89d54a4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-notifier-bindings.py",
+      "sha256": "c25f7e0eefa8a2bda21f5d213912deba8faa41a60ad69d91e68661a52aba31f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule299-packet.py",
+      "sha256": "7ea6e04b0bffdb976dcaf6b55a25255c75a7988aa7c4716effebe953f5941617"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule299-notifier-model.py",
+      "sha256": "50c4a30798f0d3ce33174b2f71fa1f1c1930c21b62f6ba6b631ac739bdbf7064"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule299-notifier-chain.py",
+      "sha256": "f68c54aed14e62ce45f651700b1ef4d379d4ec65d82fe1cd6637cf09f5dcb677"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "2c8e51d029a3846c113197ece55c236f2cc1d2427f342c860e9ebbc8eb18d300"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "b1045d3cdb1e83f7e5ac1556346e1a19b80f1887a32da365338e2ea04b0f60d5"
+    }
+  ],
+  "remaining": [
+    "Initialized live OnlineMatchReceiver binding and other interface implementers",
+    "Full action/reconnect/non-action state lifecycle and grouped subaction queue serialization",
+    "RULE-297 ordinary-turn attack history reset timing across both client views"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
