@@ -1,0 +1,171 @@
+{
+  "rule": "RULE-295",
+  "kind": "Notify-turn syntax closure and correction of end-turn subaction receiver classification",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\notify-player-turn-native-20261021.json",
+      "sha256": "175c61db253b070f426885762f114ae76d230f5d52673d1793d2e319bb968989"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-subaction-dispatch-native-20261021.json",
+      "sha256": "85183d61137aa286d805d74e9947b39afe7161f5c941761c19a4bfe78fab1608"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\notify-subaction-model-checks-20261021.json",
+      "sha256": "5e785ef8733caa3d1db8deb199cdb2107ad5af6c944511b90ffd3f29aaba2017"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\legacy-receive-end-native-20261021.json",
+      "sha256": "a30e8262601959e8e7c81d0c5bb6c78184adef22158d42d6de405633743f5385"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\inherited-turn-handlers-native-20261021.json",
+      "sha256": "a70ba2c61f4fef4183668b6a6837bb9ecdd199412ae486a979a766f36fe0b4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-receivers-native-20261021.json",
+      "sha256": "1aa24419531148b7319d5efaa2126fa9b4209d4fd05c94280c89d2df328b30c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule295-notify-dispatch-verified-20261021.json",
+      "sha256": "9300fd332b5413a65f2dd25b6dc15ec9c162d98251b2e5c6c40ba579797cf936"
+    }
+  ],
+  "syntax_reference_only": [
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_InterfaceContext.cs",
+      "sha256": "6333477d69873c396cff79a7cecedf7b921155d69b7469cd7cb21312a9375054"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\EExprToken.cs",
+      "sha256": "f60ec8c9b4c36aa702c723cbcff3686645cbd8865c8c3d2547c0047d4ce9a174"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-295",
+    "worker_exact_match_for_86_jump_branches": true,
+    "pop_guard_exceptions_independently_checked": [
+      1226,
+      2101,
+      2157,
+      2211,
+      2911,
+      2971,
+      5893,
+      6072
+    ],
+    "functions": [
+      {
+        "name": "NotifyPlayerAsYourTurn",
+        "bytes": 339,
+        "statements": 12
+      },
+      {
+        "name": "ResolveSubAction",
+        "bytes": 9812,
+        "statements": 385
+      },
+      {
+        "name": "DoSubActions",
+        "bytes": 2682,
+        "statements": 85
+      }
+    ],
+    "full_script_bytes": 12833,
+    "full_script_statements": 482,
+    "parser_positive_cases": 6,
+    "parser_negative_cases": 4,
+    "pipeline_model_cases": 24,
+    "resolver_model_cases": 27,
+    "kernel_runtime_changed": false,
+    "correction": "ReceiveActionEndTurn is a live subaction receiver, not established obsolete protocol code.",
+    "limits": "Tag2 is syntax-only opaque; HUD callee effects and complete postprocessing/scheduling not certified. ASCII string model, native case folding not reexecuted."
+  },
+  "notify": {
+    "function": "NotifyPlayerAsYourTurn",
+    "bytes": 339,
+    "statements": 12,
+    "path": "GetBoard ->GetBattleHUD ->cast BP_Widget_Battle_HUD_PC ->cast I_HUD_Receiver ->MakeLiteralText YOUR TURN ->InterfaceContext.HandleBigNotify",
+    "limit": "No direct gameplay-state writes in wrapper. HUD callee effects not fully followed; tag2 numeric meaning remains opaque."
+  },
+  "current_dispatch": {
+    "do_subactions": "Copy receiveFromLocal to ResolveSubActionsFromLocal, clear effectBarSnapshot; false mode CreateSnapshot then1070 Jump84; both modes loop to273 ResolveSubAction",
+    "resolve": "RightChop(SubAction.Name,1), case-insensitive string comparisons; ActionEndTurn branch6486 ReceiveActionEndTurn(SubAction.Values)",
+    "receipt_flag_write": "ReceiveActionEndTurn1074 compares Logic.enemySide with parsed_side;1134 SetIsLocalClientTurn(result)",
+    "correction": "RULE-294 incorrectly described this as an old protocol receiver based on its name. It is called by current subaction dispatch. Historical artifact filename retained as provenance only.",
+    "remaining": "DoSubActions postprocessing, end/start ordering, actual parsed side, reentrancy and full local-turn transition model remain open"
+  },
+  "model_checks": {
+    "do_subactions_entry": 24,
+    "resolve_route": 27,
+    "domain": "ASCII names and mocked snapshot/call effects; stop before receiver body/common postprocessing",
+    "syntax_positive": 6,
+    "syntax_rejection": 4,
+    "limit": "Not full VM/native string semantics or complete nested receiver execution"
+  },
+  "deepseek": {
+    "job": "20261021-201447-rule295-subaction-branches-a5493dcc",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule295\\functions.json",
+      "sha256": "9dbd3b9720c311092346da9d7840ecc2a16dc7a004631da0579fc290faeaea51"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule295\\branches.json",
+      "sha256": "a69358acbe5abcd214ff55d4c45d41314b00bb688c3f80d66ab668097be9d6c2"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule295\\task.txt",
+      "sha256": "69675da214d59e227ba8a5b55376d713146068c50ff853bc5d716052409c0c77"
+    },
+    "primary_exact_match_for_86_jump_branches": true,
+    "reported_exceptions": "Eight comparison guards use PopExecutionFlowIfNot instead of JumpIfNot; worker flagged them, primary independently recorded and modeled their stack behavior",
+    "scope": "Mechanical branch mapping only, no protocol classification or rule judgments"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-295.py",
+      "sha256": "f99f6db808600192c1806ea71ac3e68f75657b1ee5922c930c294cd75df5d75e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule295-notify-turn.py",
+      "sha256": "4450bce55a3557770c77bf4d19bc6fb49ec36cffa6bdfb243ceddbd54f9e14b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule295-subaction-dispatch.py",
+      "sha256": "13c60635ec8585a314cbe1521149ddfc0ae6072de2eb40783a435730efb9cb42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule295-packet.py",
+      "sha256": "ecd650bb990451aed67293d0bc67be724545a74964d3895fefe86b638a807895"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule295-dispatch-model.py",
+      "sha256": "6b23930ee073276e5fb9d56bc178de4818730cb1e0d3301a18f18d64490b7397"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule295-notify-dispatch.py",
+      "sha256": "e5a91e067228e42064667e58f45a431713188b880555b8cd0acc6089f35571df"
+    }
+  ],
+  "kernel_runtime_changed": false,
+  "full_release_tests": {
+    "rerun": false,
+    "latest": "RULE-293 622/622"
+  },
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0,
+  "next": [
+    "Connect ReceiveActionEndTurn side parsing and end-turn receipt timing to next start",
+    "Reconcile local-turn flag and both-side headless attack/hit/quota reset state",
+    "Keep HUD-only presentation outside simulator while verifying any rule-bearing callees"
+  ]
+}
