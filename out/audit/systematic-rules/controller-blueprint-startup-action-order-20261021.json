@@ -1,0 +1,280 @@
+{
+  "rule": "RULE-285",
+  "kind": "Blueprint completion-event routing and startup-before-action-dispatch local ordering; no kernel repair",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-blueprint-native-20261021.json",
+      "sha256": "21e3f7069256c5062f2256f41156c287227578744e3ee129469304d1bb79d125"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-blueprint-event-paths-20261021.json",
+      "sha256": "99e3e090bad1876ef53392bda6155d269bde7edd9831c919abdd101a27fc19ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-blueprint-event-paths-v2-20261021.json",
+      "sha256": "84d10abd966a27158366637a8ae806bd8b04182857031081e1856287d0c66e43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-blueprint-event-paths-v3-20261021.json",
+      "sha256": "90144bbe2350cb1e0744f14475ca19da22e554e7bbf2575371e8b4bbf5fc6f8a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-start-before-first-action-native-20261021.json",
+      "sha256": "b935d18408b7fadd43a071ef1a8fc2560df57a6447e3b62fcaeceb06c3caf9b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-active-side-symbols-20261021.json",
+      "sha256": "d4e3b4f9fdc58cda62dc9f3f44ffb720ecc58093baeb429125e370adf5f14e94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule285-event-order-verified-20261021.json",
+      "sha256": "a20f7565a4cd94f0964ce558f8a408db44e4a3090daf5b15a3044b1b57b7b8dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json",
+      "sha256": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\MatchController.functions.json",
+      "sha256": "d89807bdafcc16f63a7fe6b2d2ffca955f8e1fe613adc27dc85f967a2afcae83"
+    }
+  ],
+  "controller_class": {
+    "path": "/Game/Blueprints/Logic/MatchController/MatchController_C",
+    "superclass_header_matches": "/Script/kards/MatchControllerV2",
+    "event_override_fname_matches_native_parent": true,
+    "own_functions": 77,
+    "script_bytes": 41183,
+    "initial_whole_body_syntax_decodes": 73,
+    "initial_decode_failures": [
+      "SetKnockoutStatus",
+      "SetKnockoutTimer",
+      "handleKnockoutResponse",
+      "ExecuteUbergraph_MatchController"
+    ],
+    "limit": "Initial full decode used prior syntax subset; bounded event paths then used syntax-only285 extension. No all-function semantic certification."
+  },
+  "entry_thunks": [
+    {
+      "event": "MatchReconnected",
+      "bytes": 72
+    },
+    {
+      "event": "NoMatchToReconnect",
+      "bytes": 18
+    },
+    {
+      "event": "LoadMatch",
+      "bytes": 18
+    },
+    {
+      "event": "DataFetchedForRestartingMatch",
+      "bytes": 18
+    }
+  ],
+  "bounded_event_graphs": [
+    {
+      "event": "LoadMatch",
+      "entry": 23423,
+      "nodes": 12,
+      "states": 12,
+      "errors": []
+    },
+    {
+      "event": "DataFetchedForRestartingMatch",
+      "entry": 23428,
+      "nodes": 126,
+      "states": 126,
+      "errors": []
+    },
+    {
+      "event": "MatchReconnected",
+      "entry": 11103,
+      "nodes": 42,
+      "states": 43,
+      "errors": [
+        {
+          "at": 10410,
+          "decoder_offset": 10430,
+          "error": "('unsupported primitive cast', 3)"
+        }
+      ]
+    },
+    {
+      "event": "NoMatchToReconnect",
+      "entry": 11366,
+      "nodes": 5,
+      "states": 6,
+      "errors": [
+        {
+          "at": 11503,
+          "decoder_offset": 11522,
+          "error": "unsupported opcode 29 at 11521"
+        }
+      ]
+    }
+  ],
+  "independently_redecoded_nodes": 185,
+  "startup_route": {
+    "event": "DataFetchedForRestartingMatch",
+    "entry": 23428,
+    "calls": [
+      {
+        "at": 23474,
+        "function": "Logic.onlineMatch.StartOnlineMatch"
+      },
+      {
+        "at": 23532,
+        "operation": "isResyncingMatch=false"
+      },
+      {
+        "at": 23543,
+        "jump": 22033
+      },
+      {
+        "at": 22033,
+        "flow_push": 6413
+      }
+    ],
+    "continuation": "MonitorPlayState broadcast then PopExecutionFlow to6413; both conditional outcomes explored, calls opaque",
+    "action_path": [
+      {
+        "at": 6655,
+        "function": "GetNextAction"
+      },
+      {
+        "at": 6743,
+        "function": "OnlineMatch.OnKardsActionEvent"
+      }
+    ],
+    "conditions": "Object contexts non-null and selected branches. Syntax traversal is not a runtime execution trace or proof all branches run."
+  },
+  "online_start": {
+    "thunk_bytes": 18,
+    "entry": 15881,
+    "span": {
+      "start": 15881,
+      "end": 17213,
+      "bytes": 1332,
+      "statements": 33
+    },
+    "initial_cleanup": [
+      "ClearReloadGameOnLoadingFailureTimer",
+      "reset lastAIAction",
+      "Array_Clear endOfTurnCleanupActions",
+      "Map_Clear lastTimeCardMovedToNewLine",
+      "Array_Clear AllMatchActions",
+      "Array_Clear mulliganResponseSideLog",
+      "copy MatchController.StartingData"
+    ],
+    "pre_sampling_callbacks": [
+      "OnShouldSetTableMaterial",
+      "OnShouldAnimateBoard"
+    ],
+    "flow": {
+      "push_at": 16915,
+      "target": 17047,
+      "pop_at": 17046
+    },
+    "sample_at": 17109,
+    "sample": "MatchControllerV2.GetActiveSide",
+    "consumer_at": 17150,
+    "consumer": "Logic.StartMultiPlayerGame(client side, sampled active side)",
+    "normalized_static_comparison": "33 nodes,1332bytes plus18byte entry thunk match exported OnlineMatch syntax after existing identifier/metadata normalization and delegate signature-name projection",
+    "limit": "Delegate recipients/reentrancy and all helper side effects unverified. This is a local order, not proof cf9 retains original start_side throughout every startup."
+  },
+  "load_match_route": {
+    "entry": 23423,
+    "jump_target": 23408,
+    "clear_delegate": "OnMatchCancelled",
+    "subsequent_path": [
+      "matchCancelled binding",
+      "name/card conversions",
+      "GetOrSpawnActor",
+      "LoadBattle"
+    ],
+    "syntax_nodes": 12,
+    "limit": "LoadBattle implementation/completion not certified; do not substitute LoadMatch for DataFetchedForRestartingMatch."
+  },
+  "syntax_extension": {
+    "script": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-285.py",
+      "sha256": "57573318879e36bf860961fa68ffd4e1c211a2d7a5ce10fe857e1ae14f4b88b1"
+    },
+    "changes": [
+      "Let supports StructMemberContext root property without incorrectly requiring nested struct container to be last reference",
+      "0x5d ClearMulticastDelegate one-expression syntax",
+      "0x63 CallMulticastDelegate signature pointer,delegate expression,parameter terminator syntax"
+    ],
+    "checks": "Online start entire1332byte span matches static syntax; current LoadMatch clear node matches exported OnMatchCancelled clear shape after excluding different statement index; current reference headers re-read and stable. No native VM opcode execution certification."
+  },
+  "deepseek": {
+    "job_id": "20261021-154921-rule285-event-paths-71f6a778",
+    "elapsed_seconds": 47.38,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule285\\paths.json",
+      "sha256": "3c1ad0799263132e09deda57b28e37527776ee42fc95ed84f259468e223c2d5b"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule285\\inventory.json",
+      "sha256": "1500b3f0a8e269b9c5d9a2b988d61ddba296079483ae26d39ba32c30c5431cbc"
+    },
+    "primary_exact_match": true,
+    "scope": "v2 syntax-path call-name inventory only. v3 expanded LoadMatch independently verified by primary.",
+    "input_provenance_note": "During local v3 generation the initial packet filename was overwritten; restored exact v2 bytes including Windows CRLF from preserved v2 capture. Restored input SHA256 matches worker-reported SHA256, and all output fields match independent reconstruction. Final generator now writes paths-v3.json separately."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-paths.py",
+      "sha256": "292dfcd6eb2f75b7e3e8f5e11bcd88390ce94b7eedfcf3531226c721639ed8e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-online-start.py",
+      "sha256": "7ddae0a5cfb8636c04959ec0fd5977c8a68adb70102412840507b8c4d20f17b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-285.py",
+      "sha256": "57573318879e36bf860961fa68ffd4e1c211a2d7a5ce10fe857e1ae14f4b88b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule285-event-order.py",
+      "sha256": "c0377522a3463f1dd4bc6996f000de6cceccf94025b51515903780a4acc5d33b"
+    }
+  ],
+  "validation": {
+    "native_memory_stable_reads": true,
+    "event_parent_and_fname_checks": true,
+    "flow_stack_edge_checks": true,
+    "node_redecode_and_static_comparison": true,
+    "kernel_changed": false,
+    "new_full_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "MatchReconnected stops at primitive-cast tag3 at10410; NoMatchToReconnect at text token0x29 within11503. No guessed output added.",
+    "Delay resume linkages are recorded in nodes, not treated as synchronous edges; native queues and latent event scheduler remain open.",
+    "Multicast delegates and MonitorPlayState subscribers may reenter; callback effects and all startup cf9 aliases not exhaustively excluded.",
+    "No StartingSide import/default patch or claim arbitrary ActiveSide equals original starting side.",
+    "No historical replay authority, UI/campaign implementation, process write, injection or client function invocation."
+  ],
+  "next_audit": "Verify native GetNextAction/IsReconnectMatch and action dispatch phase changes, latent resumes, and callbacks before first starting-side sample; then choose a justified import contract."
+}
