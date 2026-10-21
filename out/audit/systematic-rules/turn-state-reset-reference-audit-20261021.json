@@ -1,0 +1,193 @@
+{
+  "rule": "RULE-297",
+  "kind": "Attack history and operation-quota reference audit; visual-layer state mutation retained",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-297",
+    "worker_exact_match": true,
+    "scan": {
+      "object_slots": 140290,
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes_scanned": 7922413
+    },
+    "positive_functions": 21,
+    "validated_pointer_occurrences": 134,
+    "full_script_bytes": 67890,
+    "full_script_statements": 2117,
+    "excluded_scope_functions": [
+      "Get_CardDebugInfo_Text_0",
+      "ExecuteUbergraph_BP_BaseTutorial"
+    ],
+    "field_AST_references": {
+      "attackLeft": 20,
+      "movementLeft": 15,
+      "hasAttackedThisTurn": 4,
+      "attackCountThisTurn": 11,
+      "hasBeenAttackedThisTurn": 5
+    },
+    "small_wrappers_verified": 128,
+    "visual_path_nodes": 34,
+    "deactivate_model_cases": 48,
+    "visual_branch_cases": 32,
+    "syntax_tests": {
+      "positive": 2,
+      "negative": 5
+    },
+    "kernel_runtime_changed": false,
+    "full_release_selftest": {
+      "passed": 623,
+      "total": 623,
+      "new_run": false,
+      "source": "RULE-296 unchanged runtime baseline"
+    },
+    "limits": [
+      "Loaded functions only; no all-assets/native/indirect property access completeness",
+      "Syntax count includes excluded HUD and tutorial, no semantic certification count",
+      "Stable mocked local-turn flag does not certify bootstrap/reconnect or both client views",
+      "Do not collapse late global history resets and owned board operation quota reset into one early loop"
+    ]
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-property-references-20261021.json",
+      "sha256": "bbcd3690f9e4ca5cf1e1f339be20e8fbe416085fec4ea94c8cb631cb5dd82968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-functions-native-20261021.json",
+      "sha256": "b8c5809fdc397d1f13d088bba3709647de13a4f2a4dcba1f7fd9c5f97b4348ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-functions-complete-native-20261021.json",
+      "sha256": "85248fbcc4e8461e7279de890cfb5e8c3e3e9700f8adee7d92fd6600c930bd7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\deactivate-turn-state-call-references-20261021.json",
+      "sha256": "29011ecdac165db3de5b6f150eee98a40e179afaeec2df346719c6c250cd8610"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\deactivate-owner-small-functions-20261021.json",
+      "sha256": "958ea375ebb240057a94800c00ecff8cc5656cb7379db3a439a28553bdd02cda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\deactivate-endturn-visual-paths-20261021.json",
+      "sha256": "8f97037c9cba5d82520357d85320601ae95b3924f9a2b369a84d60f82e941966"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\deactivate-turn-state-model-checks-20261021.json",
+      "sha256": "4dbf97e5aeece364051f419db4910559d796b5141bac21d38e1abf8da0ef763e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-visual-branch-and-set-syntax-checks-20261021.json",
+      "sha256": "0282937f47331cbc0de3ceb290c2bf9710e09915b42ca5c9f2b056e1b3828d79"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule297-turn-state-verified-20261021.json",
+      "sha256": "c45b2f5908c05f801eeaf29fb9f9223116035aa9c72cbaff096ad6331cab9f78"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-state-references.py",
+      "sha256": "7c5e10c1638cd7f9c31fa94b5ade4b4ea52e595a739d8dcc9752edcaa18c0461"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-state-functions.py",
+      "sha256": "5d208c08dda576f26d5cbbc219a524996877ba56d4d5f4a6a33cc5ff2a96d8bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-state-functions-complete.py",
+      "sha256": "e84ddf7782c6fe796a3baa4f2fa9bf2b7be619c655ce485743a79a0d980a3665"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-deactivate-callers.py",
+      "sha256": "b3e9307c9aebf0f88242bf3c1030bf686d1a4dec53b80099d1509a438dd25b65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-visual-wrappers.py",
+      "sha256": "45e7cd71c78a59a212c4b3e449a46b091dbab99c7d19a88f4e3a3bfcf4f947c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule297-endturn-visual-paths.py",
+      "sha256": "a575245f5318f79254321b761ebeffe44c35a24a9720723385d7b57ebd106335"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule297-deactivate-model.py",
+      "sha256": "ea76ee36c2dba0cb1955199220836e377d462cfac67f3c4ded3437ae6316d74c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule297-visual-and-syntax.py",
+      "sha256": "27488a7659de2678d9c201f89ec287149abbe0ed2bf9fd54e98f2c1d74c6498a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule297-turn-state.py",
+      "sha256": "5b9e31b44fdebafa6d0d323bacf3bf7bb11fbbf41f040df775f26af9859480bd"
+    }
+  ],
+  "deepseek": {
+    "job": "20261021-204905-rule297-state-field-inventory-72546f9d",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule297\\functions.json",
+      "sha256": "15bc65f527e9b8328dd3cb9a4af213adeef2cb413fd0997c411b9dab639d5764"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule297\\inventory.json",
+      "sha256": "f69ae15fe13b3e367e4e44a13c13c36127f07a6991f04df00d3b3f4377b44850"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule297\\task.txt",
+      "sha256": "eae9888cc696e58e0ae774e04ed7b6e904d12408fa8a8ffb18145265abc5d15c"
+    },
+    "primary_exact_match": true,
+    "scope": "21-row mechanical AST-field path inventory; original incomplete receiver remains flagged false in worker packet, independently recaptured and fully decoded afterwards"
+  },
+  "findings": {
+    "deactivate": "1003B/32 statements. GetAllCardInBattle loop writes hasBeenAttackedThisTurn=false at358, hasAttackedThisTurn=false at391, attackCountThisTurn=0 at424 before IsOwnedByClientSide469 and IsGotcha520. Only owned gotchas gotchaActivated=0 at571. Quotas unchanged.",
+    "caller": "Current ExecuteSubActionEndTurn wrapper enters VisualController ubergraph22436. Intra-function 34 nodes. With stable mocked flag, Deactivate called iff IsLocalClientTurn=true: replay branch22673, normal branch23180; normal path may enqueue startTurn via AddMoveToPlayerMoveQueue23484 before jumping23574->23180. Delay23194 is a separate latent boundary; resume1048 not executed by model.",
+    "readers": "Direct loaded hasBeenAttackedThisTurn readers include CalculateDamageDealt and target_acquired.CanPlayFromHand. Direct loaded hasAttackedThisTurn reader includes comrades ubergraph. Do not dismiss as UI-only fields.",
+    "start": "DoOnStartOfTurn history resets400/433/466 depend on local flag, without side/location/type filter; movementLeft4528 and attackLeft4628/4674 require local flag, owned client side and board location5/6/7.",
+    "syntax": "EX_SetSet0x39 syntax adds target expression, declared count, exactly count elements and EndSet0x3a. This closes ReceiveActionMoveCardToNewLocation syntax failure1162; no native set semantics certification."
+  },
+  "comparison": {
+    "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+    "existing": "Early StartTurnCore loop resets only State.Board(side), before before-start event/draw/mobilize/start events; three history fields and operation quotas currently bundled.",
+    "decision": "Record remaining reset scope/phase differences. No runtime patch until local-client state and both views are reconciled; neither per-global-turn all-card reset nor copying one view flag is proven.",
+    "source": {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "df91580a028977b7a012f867c0f21d828ef275d6a6a862a70e98d85e9b53fde2"
+    }
+  },
+  "tests": {
+    "deactivate_AST_cases": 48,
+    "cards_per_case": 96,
+    "visual_branch_AST_cases": 32,
+    "syntax_positive": 2,
+    "syntax_negative": 5,
+    "full_release_selftest": {
+      "passed": 623,
+      "total": 623,
+      "new_run": false,
+      "source": "RULE-296 unchanged runtime baseline"
+    }
+  },
+  "remaining": [
+    "Dual-side headless interpretation and phase of attack/hit/count reset across ordinary turns and ownership/zone changes",
+    "Full caller and IsLocalClientTurn lifecycle including bootstrap/reconnect and actual delayed visual scheduling",
+    "Native/indirect property access and unloaded card assets; pointer scan is only a loaded-script inventory",
+    "Move receipt whole-body syntax now available; full receiver semantics not yet certified"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
