@@ -1,0 +1,194 @@
+{
+  "rule": "RULE-301",
+  "kind": "Attack receiver control flow and destruction-bookkeeping phase audit",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-301",
+    "worker_exact_match": true,
+    "worker_functions": 9,
+    "full_functions_verified": 16,
+    "script_bytes": 7937,
+    "script_statements": 275,
+    "receiver_matches_RULE298": true,
+    "ledger_call_functions": 5,
+    "ledger_call_sites": 6,
+    "model_cases": 864,
+    "kernel_runtime_changed": false,
+    "full_release_selftest": {
+      "passed": 627,
+      "total": 627,
+      "new_run": false,
+      "source": "RULE-300 unchanged runtime baseline"
+    },
+    "remaining": "Unified destruction generation/receipt ledger phase; destruction/removal action sequence; full native/callback/daily-mission effects and actual receiver bindings."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-receiver-current-native-20261021.json",
+      "sha256": "261c52bb45fdc10067f1ac97afac155285d10b7ce7cd916bc6cd16467c9ef88a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-receipt-observer-notifiers-native-20261021.json",
+      "sha256": "139888ec89a7e737236da5cfb1e826cef1081abedff919f6a34360e0e1ab89ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-receipt-bookkeeping-helpers-native-20261021.json",
+      "sha256": "78907ab2fd1ef42596140d35a2184c25a0b922ef8d88a87ad47dbd33c209ebe1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroyed-ledger-updater-call-references-20261021.json",
+      "sha256": "f0933c99cc4694283ab6b9982dce948b81b20e4bd80bd791b4fee387a1a404a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroyed-ledger-updater-call-sites-20261021.json",
+      "sha256": "a6e18944b998482f9eb40aeb0d3b0c5fef36a33188a370a74c9861a14f6beb6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-receiver-control-model-checks-20261021.json",
+      "sha256": "24fc563cbcfb1a6dffbc7e11fd6243c737bdbec65d80829e7ec16054adacba15"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-helper-native-20261021.json",
+      "sha256": "49af56ddc20073bdb97e3b172d75a119274485f872c2300248bcaa4db10efaed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-notifiers-native-20261021.json",
+      "sha256": "262f0bf18eb0f70b265dfa50c387a6753e653e8314dd86fd8fc5d307b879c833"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-handlers-native-20261021.json",
+      "sha256": "bb67efe228b51c91bb40668105b73cbb310bb29f450824142c90fc311b84c015"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-online-handler-paths-20261021.json",
+      "sha256": "e9c901a7c863674f8dfc70eece0d72756151942efc397abbcbf2579fc1424c5e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-builders-native-20261021.json",
+      "sha256": "a36a163a35da0de6c783db6123950a08e36e5648f2c086dba89a5c105230bea7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule301-receiver-control-verified-20261021.json",
+      "sha256": "24faa2ce032b61197abb3842cefbb32ab39b77414076c5e47bfa2b941310dedc"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-attack-receiver.py",
+      "sha256": "f95d06b1dfcdeb9ba5eb38cc3c560c83c84272deb68c1453e7a422cda4db15e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-observer-notifiers.py",
+      "sha256": "33bb8129a2420f23f29ac0ad8e1e0acfae250307e1e6ad47d67a4269378c1c94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-bookkeeping-helpers.py",
+      "sha256": "4873b87f203fcaa464b9bae7e3929a2e69c0590487dd7d1f8df58091aad9bb51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-ledger-calls.py",
+      "sha256": "a6fdf61e667f4cbac727096191ec861038637e2627bc4d27950f609a9eeee27c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-ledger-call-sites.py",
+      "sha256": "4b39a99187a8afc201d31959ad50b3c9d1500b195250947641c89380f543fd36"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-combat-removal.py",
+      "sha256": "9783bbf628c314fc8af9b900b826b601362daad62c6696acde7e787ffa4db8c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-removal-notifiers.py",
+      "sha256": "b87cb1fc224557374aa6cd21578e5c6e569ed9c31eea588d6bd2d1bdd2ec6960"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-removal-handlers.py",
+      "sha256": "33fdbb7c2622147823c77163e4db2f8569a9b17d4ee4cb8eaa0c70939f41f96e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-removal-handler-paths.py",
+      "sha256": "60a3214e32a6fff81583a1ab04171c9df330ce8c69e38b652760c758d5a146c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule301-removal-builders.py",
+      "sha256": "5b41bc2cc351b05f5666f89079207e028d9eaa7054375770d04d83e1cb349f19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule301-packet.py",
+      "sha256": "17765d01efb2130021bac77447bdf7a7182ea6b0f41b8b9c4a99e6f3e5c2779f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule301-attack-receiver.py",
+      "sha256": "d238cf32be99ffb7499d4399a45dfe1a5e8fb3539d6729185357228ee1e0192f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule301-receiver-control.py",
+      "sha256": "07d81aeb6eea464e7fcae211ade5024bd51a070f1cef2e1bea5b0239653f8b4c"
+    }
+  ],
+  "findings": {
+    "local_gate": "ReceiveActionAttackCard1569 true(local) skips ExecuteAttackCard; false(remote)2326 executes helper once,2398 rejoins1583. This does not skip later bookkeeping.",
+    "fields": "MovementLeft,AttackLeft,HasEverAttacked are parsed into locals but not directly written to card state. Location/defense/Shock keys recognized and ignored here. Remote helper can still change state; model does not claim cards unchanged under real helper.",
+    "notifiers": "Owned-side damage notices include signed/zero amount without positive gate. NotifyOnCardDealDamage/Destroyed wrappers forward to DailyMissionsReceiver. Full daily-mission receiver effects not certified.",
+    "ledger": "Payload attackerDestroyed/defenderDestroyed control global/per-side appends and per-turn unique list. Attack buff!=0 removes saved end-of-turn actions first; each destruction invokes notifier and DestroyedCountChanged multicast. No numeric damage/death reconciliation gate in this receiver.",
+    "scope": "Campaign-only OnOtherCardDestroyed branch is guarded by exact match_type campaign and not-local-turn. Excluded from PvP model; no campaign restoration performed.",
+    "removal": "ApplyRemoveCardFromBoard1009B has its own notifier. NotifyRemoveCardFromBoard and NotifyDestroyUnit use distinct interface methods; actual Remove handler enters13987 -> AddSubActionRemoveCardFromBoard. Builders generate distinct ZActionRemoveCardFromBoard vs ZActionDestroyUnit."
+  },
+  "comparison": {
+    "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+    "current": "ExecuteDestroyed records ledger before destruction callbacks. Attack receiver bookkeeping occurs after attack generation/remote helper at its boundary; shared paths and nested callbacks need full phase reconciliation.",
+    "change": "Correct misleading source comment only; no new runtime behavior or extra ledger receipt. Directly adding receipt bookkeeping would double append global/per-side history under current implementation.",
+    "remaining": "Audit all destruction/removal generation/receipt paths and effect readers before changing shared ledger timing or action sequence.",
+    "source": {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "f8cb587e948ccdda651d1a8475f9ae438d6f62fbf80d7c77b4591c77b31cc864"
+    }
+  },
+  "models": {
+    "cases": 864,
+    "scope": "Complete receiver and UpdateDestroyedCardsIDs decoded AST. Rank/PvP match; local/remote, own-side flags, death flags, signed buffs, ASCII case and duplicate/unknown keys.",
+    "limits": "Explicit valid IDs and initialized complete fields, stable objects/maps. Combat execution, end-turn removal, daily receiver callbacks, buff getter and multicast subscribers mocked. No real damage/callback/lifecycle certification."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 627,
+      "total": 627,
+      "new_run": false,
+      "source": "RULE-300 unchanged runtime baseline"
+    },
+    "new_runtime_tests_run": false
+  },
+  "deepseek": {
+    "job": "20261021-214008-rule301-attack-receiver-inventory-0806cc75",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule301\\functions.json",
+      "sha256": "cafeb0a515ce1652b0083dfa795eb00f7b2769ebb86fee5870452874f736bbc4"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule301\\inventory.json",
+      "sha256": "8571af0f459cf67c1d497468bee7e607c012fee164926992536f6f17b7e64e14"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule301\\task.txt",
+      "sha256": "569fc2169bc86963bcbabe3d78a5f333947361f74c8def6d7db801a25930b5eb"
+    },
+    "primary_exact_match": true,
+    "scope": "Nine initial functions call/Context-write inventory; seven later functions independently verified"
+  },
+  "remaining": [
+    "Unified destruction ledger generation/receipt phase and callback-visible history",
+    "Complete combat/noncombat removal versus destruction subaction sequence",
+    "Daily-mission receiver and multicast side effects, actual interface bindings",
+    "RULE-297 ordinary-turn attack-history resets; negative movement quota representation"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

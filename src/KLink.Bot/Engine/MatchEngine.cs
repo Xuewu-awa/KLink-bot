@@ -3261,8 +3261,10 @@ public sealed class MatchEngine
     internal void ExecuteDestroyed(CardInstance card, CardInstance? killer, CardLocation location,
                                   IReadOnlyList<int> batch, bool combat)
     {
-        // ReceiveActionDestroy*: history is updated after movement and before
-        // destruction callbacks; explicit off-board destruction also counts.
+        // The headless engine currently records history here before destruction
+        // callbacks. RULE-301: combat receipt bookkeeping occurs later in the
+        // client; aligning generation/receipt phases remains pending. Do not
+        // also append the same death when adding receipt processing.
         State.RecordDestroyedCard(card.CardId, card.Owner, Api.IsUnit(card));
         // Capture T24 before OnDestroyed can create/remove subscribers (i=225).
         var destructionRecipients = Api.CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered");
