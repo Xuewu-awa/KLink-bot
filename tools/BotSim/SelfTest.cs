@@ -351,6 +351,11 @@ internal static class SelfTest
 
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
+        new("盟军阵营：已打包 ASW PATROL IR 的盟军条件分支接线", AllyNationPackagedIrBranch),
+        new("盟军阵营：新鲜查询返回数值 0", AllyNationDefaultType),
+        new("盟军阵营：独立字节、相同主阵营归零及显式 VM 输入", AllyFactionStoredBoundary),
+        new("盟军阵营：显式开局字段、解析与服务端桥保留", AllyFactionOpeningMetadata),
+        new("盟军阵营：快照指纹及自对弈默认隔离", AllyFactionSnapshotAndSelfPlay),
         new("主阵营：未初始化时不从 HQ 猜测", MainFactionUninitialized),
         new("主阵营：字节边界、显式输入与 VM 输出", MainFactionStoredBoundary),
         new("主阵营：开局元数据及服务端桥保留独立阵营", MainFactionOpeningMetadata),
@@ -3828,6 +3833,170 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // Integration of the existing packaged IR; not certification of this card's full current-client semantics.
+    private static string? AllyNationPackagedIrBranch(CardDatabase db)
+    {
+        foreach (Side owner in new[] { Side.Left, Side.Right })
+        foreach (var pair in new[] { (Main: 1, Ally: 5), (Main: 5, Ally: 5), (Main: 1, Ally: 3), (Main: 1, Ally: 0) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.SetMainFactionBySide(owner, (byte)pair.Main);
+            state.SetAllyFactionBySide(owner, (byte)pair.Ally);
+            // Opposite metadata deliberately differs; it must not select the source's branch.
+            state.SetMainFactionBySide(owner.Opposite(), 1);
+            state.SetAllyFactionBySide(owner.Opposite(), 5);
+            var enemy = state.CreateWithId(PlainUnit, owner.Opposite(), 90, owner.Opposite().HqOf(), 1);
+            var source = state.CreateWithId("card_event_asw_patrol", owner, 91, CardLocation.Discard, 0);
+            engine.Api.RunCardEffect(source, null);
+            bool shouldDestroy = pair.Ally == 5 && pair.Main != 5;
+            if ((enemy.Location == CardLocation.Discard) != shouldDestroy || engine.Api.Vm.FaultedPrograms != 0)
+                return $"packaged ASW IR owner={owner}/main={pair.Main}/ally={pair.Ally}: enemy={enemy.Location}, expected destroy={shouldDestroy}";
+        }
+        return null;
+    }
+
+    private static string? AllyNationDefaultType(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Right };
+        var value = engine.Api.InvokeByName("GetAllyNationForSide", null,
+            new object?[] { (int)Side.Left, 173 }, ctx, out bool handled);
+        return handled && Equals(value, 0) ? null : $"fresh ally query must return numeric 0, got {value?.GetType().Name}:{value}";
+    }
+
+    private static string? AllyFactionStoredBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        for (int value = 0; value < 256; value++)
+        for (int side = 0; side < 256; side++)
+        {
+            state.SetAllyFactionBySide(Side.Left, 37);
+            state.SetAllyFactionBySide(Side.Right, 83);
+            state.SetAllyFactionBySide((Side)side, (byte)value);
+            if (state.LeftAllyFaction != (side == 1 ? value : 37)
+                || state.RightAllyFaction != (side == 2 ? value : 83))
+                return $"ally setter side={side}/value={value} changed wrong byte";
+        }
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Right };
+        // Byte-domain vectors establish equality/output behavior, not legal faction reachability.
+        for (int main = 0; main < 256; main++)
+        for (int ally = 0; ally < 256; ally++)
+        {
+            state.SetMainFactionBySide(Side.Left, (byte)main);
+            state.SetAllyFactionBySide(Side.Left, (byte)ally);
+            int expected = main == ally ? 0 : ally;
+            var value = engine.Api.InvokeByName("GetAllyNationForSide", null,
+                new object?[] { Side.Left, 173 }, ctx, out bool handled);
+            if (!handled || !Equals(value, expected) || state.GetAllyFactionBySide(Side.Left) != ally)
+                return $"main={main}/ally={ally}: query={value}, expected={expected}; raw ally must stay saved";
+        }
+        state.SetMainFactionBySide(Side.Left, 1);
+        state.SetMainFactionBySide(Side.Right, 2);
+        state.SetAllyFactionBySide(Side.Left, 3);
+        state.SetAllyFactionBySide(Side.Right, 4);
+        foreach (int side in Enumerable.Range(0, 256))
+        foreach (Side controller in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (bool boxed in new[] { false, true })
+        {
+            int expected = side == 1 ? 3 : side == 2 ? 4 : 0;
+            object input = boxed ? (object)(Side)side : side;
+            var context = new EffectContext { Engine = engine, State = state,
+                Controller = controller, Self = state.Hq(Side.Right) };
+            var direct = engine.Api.InvokeByName("GetAllyNationForSide", state.Hq(Side.Left),
+                new object?[] { input, 173 }, context, out bool handled);
+            var call = new KismetStep(0, "call", "GetAllyNationForSide",
+                new[] { new KismetExpr { Var = "input", Scope = "local" },
+                    new KismetExpr { Var = "output", Scope = "local" } }, new[] { 1 },
+                null, null, -1, null, null);
+            var program = new KismetProgram(new[] { call, new KismetStep(1, "return", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, context,
+                new Dictionary<string, object?> { ["input"] = input, ["output"] = 173 }, "output");
+            if (!handled || !Equals(direct, expected) || !Equals(result.GetValueOrDefault("output"), expected))
+                return $"ally explicit side={side}/controller={controller}/boxed={boxed}: direct={direct}, VM={result.GetValueOrDefault("output")}";
+        }
+        state.ClearAllyFactions();
+        if (state.LeftAllyFaction != 0 || state.RightAllyFaction != 0
+            || state.LeftMainFaction != 1 || state.RightMainFaction != 2)
+            return "ally-only clear must preserve main factions";
+        state.SetAllyFactionBySide(Side.Left, 7);
+        state.SetAllyFactionBySide(Side.Right, 8);
+        state.ClearMainFactions();
+        return state.LeftAllyFaction == 7 && state.RightAllyFaction == 8 ? null : "main-only clear changed ally fields";
+    }
+
+    private static string? AllyFactionOpeningMetadata(CardDatabase db)
+    {
+        var labels = new (string? Label, int Value)[] { (null, 0), ("", 0), ("Germany", 1),
+            ("bRiTaIn", 2), ("JAPAN", 3), ("Soviet", 4), ("USA", 5), ("France", 6),
+            ("Italy", 7), ("Poland", 8), ("Finland", 9), ("Anzac", 10), ("Neutral", 12),
+            ("Allies", 0), ("unknown", 0), (" Germany ", 0) };
+        foreach (var (label, expected) in labels)
+        {
+            var snapshot = new ServerMatchSnapshot(279, 0, 11, 22,
+                new[] { new ServerCard(1, false, "board_hqleft", 0, "card_location_london") { Faction = "Japan" },
+                    new ServerCard(41, false, "board_hqright", 0, "card_location_berlin") { Faction = "Italy" } },
+                Array.Empty<ServerAction>()) { AllyFactionLeft = label, AllyFactionRight = "Italy" };
+            var replay = ServerReplayBridge.ToReplayData(snapshot);
+            if (replay.AllyFactionLeft != label || replay.AllyFactionRight != "Italy")
+                return "bridge dropped independent ally fields";
+            var state = new KLink.Bot.Replay.ReplayRunner(db).Run(replay, false).Engine!.State;
+            int queryExpected = expected == 3 ? 0 : expected;
+            if (state.LeftAllyFaction != expected || state.RightAllyFaction != 7
+                || state.LeftMainFaction != 3 || state.RightMainFaction != 7
+                || state.GetAllyNationForSide(Side.Left) != queryExpected
+                || state.GetAllyNationForSide(Side.Right) != 0)
+                return $"ally opening {label ?? "<null>"}: saved={state.LeftAllyFaction}/{state.RightAllyFaction}, query={state.GetAllyNationForSide(Side.Left)}";
+        }
+        // Exercise the JSON parser with freshly authored input, not a historical replay.
+        string snapshotPath = Path.GetTempFileName(), actionsPath = Path.GetTempFileName();
+        try
+        {
+            var starting = new JsonObject { ["ally_faction_left"] = "France", ["ally_faction_right"] = "Japan" };
+            var input = new JsonObject {
+                ["summary"] = new JsonObject { ["match_id"] = 279 },
+                ["starting_info"] = new JsonObject { ["match_and_starting_data"] = new JsonObject { ["starting_data"] = starting } } };
+            File.WriteAllText(snapshotPath, input.ToJsonString());
+            File.WriteAllText(actionsPath, "{\"actions\":[]}");
+            var parsed = KLink.Bot.Replay.ReplayData.Load(snapshotPath, actionsPath);
+            if (parsed.AllyFactionLeft != "France" || parsed.AllyFactionRight != "Japan")
+                return "starting_data parser lost ally strings";
+            starting.Remove("ally_faction_left"); starting["ally_faction_right"] = "";
+            File.WriteAllText(snapshotPath, input.ToJsonString());
+            parsed = KLink.Bot.Replay.ReplayData.Load(snapshotPath, actionsPath);
+            if (parsed.AllyFactionLeft is not null || parsed.AllyFactionRight != "")
+                return "starting_data parser collapsed missing/empty metadata";
+        }
+        finally { File.Delete(snapshotPath); File.Delete(actionsPath); }
+        return null;
+    }
+
+    private static string? AllyFactionSnapshotAndSelfPlay(CardDatabase db)
+    {
+        var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
+        engine.State.SetAllyFactionBySide(Side.Left, 7);
+        engine.State.SetAllyFactionBySide(Side.Right, 8);
+        engine.Start();
+        var state = engine.State;
+        if (state.LeftAllyFaction != 0 || state.RightAllyFaction != 0
+            || state.LeftMainFaction != 2 || state.RightMainFaction != 2)
+            return "self-play configured no-ally initialization not applied independently";
+        string before = ActionJournal.Fingerprint(engine);
+        state.SetAllyFactionBySide(Side.Left, 173);
+        state.SetAllyFactionBySide(Side.Right, 255);
+        string after = ActionJournal.Fingerprint(engine);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<MatchSnapshot>(state.SnapshotJson(), GameState.SnapshotJsonOptions);
+        if (before == after || restored?.LeftAllyFaction != 173 || restored.RightAllyFaction != 255)
+            return "ally bytes missing from snapshot JSON/fingerprint";
+        var hq = state.Hq(Side.Left);
+        hq.Definition = db.Find("card_location_berlin")!;
+        hq.Owner = Side.Right;
+        hq.Location = CardLocation.Discard;
+        state.CreateWithId("card_location_london", Side.Left, 900, CardLocation.BoardHqLeft, 0);
+        return state.LeftAllyFaction == 173 && state.RightAllyFaction == 255
+            && state.GetAllyNationForSide(Side.Left) == 173 ? null : "HQ mutation overwrote ally metadata";
     }
 
     private static string? MainFactionUninitialized(CardDatabase db)

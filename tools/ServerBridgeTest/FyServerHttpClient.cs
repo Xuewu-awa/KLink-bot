@@ -112,6 +112,8 @@ internal sealed class FyServerHttpClient : IDisposable
             NextActionId = Int(match, "current_action_id") + 1,
             SendActionId = Int(match, "current_action_id"),
             ActionSessionId = sessionId,
+            AllyFactionLeft = startingData["ally_faction_left"]?.GetValue<string>(),
+            AllyFactionRight = startingData["ally_faction_right"]?.GetValue<string>(),
         };
 
         string actionSide = String(match, "action_side", String(root, "action_side"));

@@ -49,6 +49,10 @@ public sealed class ReplayData
     /// <summary>开局快照里的全部卡（含 HQ）。</summary>
     public required IReadOnlyList<SnapshotCard> Cards { get; init; }
 
+    /// <summary>Explicit startingMatchData ally faction strings; independent of HQ metadata.</summary>
+    public string? AllyFactionLeft { get; init; }
+    public string? AllyFactionRight { get; init; }
+
     public required IReadOnlyList<WireAction> Actions { get; init; }
 
     private Dictionary<int, SnapshotCard>? _byId;
@@ -200,6 +204,8 @@ public sealed class ReplayData
 
         return new ReplayData
         {
+            AllyFactionLeft = startingData["ally_faction_left"]?.GetValue<string>(),
+            AllyFactionRight = startingData["ally_faction_right"]?.GetValue<string>(),
             MatchId = summary["match_id"]?.GetValue<int>() ?? 0,
             Turns = summary["turns"]?.GetValue<int>() ?? 0,
             LeftPlayerId = leftId,

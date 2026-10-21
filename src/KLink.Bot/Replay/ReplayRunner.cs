@@ -335,6 +335,8 @@ public sealed class ReplayRunner
         // for the match.  ReplayData carries that side so GetClientSide and
         // any client-only card branches see the same stored game-state value.
         state.SetupSidesInBattle(replay.ClientSide);
+        state.SetAllyFactionBySide(Side.Left, GameState.FactionFromStartingData(replay.AllyFactionLeft));
+        state.SetAllyFactionBySide(Side.Right, GameState.FactionFromStartingData(replay.AllyFactionRight));
 
         // ★ 效果生成的卡按**客户端规则**发号（`回合号 × 1000 + 本回合第几张`）。
         //

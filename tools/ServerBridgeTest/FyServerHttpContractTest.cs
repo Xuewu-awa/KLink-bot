@@ -35,7 +35,12 @@ internal static class FyServerHttpContractTest
         Check(polled.Snapshot.Cards.Single(card => card.CardId == 1).Faction == "Japan"
               && polled.Snapshot.Cards.Single(card => card.CardId == 2).Faction is null,
               "poll should preserve explicit and missing opening faction metadata");
-        var replayCards = ServerReplayBridge.ToReplayData(polled.Snapshot).Cards;
+        Check(polled.Snapshot.AllyFactionLeft == "France" && polled.Snapshot.AllyFactionRight is null,
+              "poll should preserve explicit/missing ally metadata separately from HQ faction");
+        var replay = ServerReplayBridge.ToReplayData(polled.Snapshot);
+        Check(replay.AllyFactionLeft == "France" && replay.AllyFactionRight is null,
+              "bridge should preserve independent ally metadata");
+        var replayCards = replay.Cards;
         Check(replayCards.Single(card => card.CardId == 1).Faction == "Japan"
               && replayCards.Single(card => card.CardId == 2).Faction is null,
               "HTTP-to-replay bridge should retain opening faction metadata");
@@ -57,6 +62,8 @@ internal static class FyServerHttpContractTest
         Check(commitHandler.ReconnectCount == 1 && commitHandler.PollCount == 0,
               "commit snapshot should use reconnect without polling");
         Check(reconnected.HasMulliganState, "reconnect should expose both mulligan states");
+        Check(reconnected.Snapshot.AllyFactionLeft == "France" && reconnected.Snapshot.AllyFactionRight is null,
+              "reconnect should preserve independent ally metadata");
         Check(reconnected.Snapshot.Cards.Single(card => card.CardId == 1).Faction == "Japan"
               && reconnected.Snapshot.Cards.Single(card => card.CardId == 2).Faction is null,
               "reconnect should preserve explicit and missing opening faction metadata");
@@ -70,7 +77,7 @@ internal static class FyServerHttpContractTest
             return 1;
         }
 
-        Console.WriteLine("fyserver HTTP contract: polling refresh, encrypted actions, ActionSessionId, POST payload, reconnect mulligan dedupe, opening faction metadata passed");
+        Console.WriteLine("fyserver HTTP contract: polling refresh, encrypted actions, ActionSessionId, POST payload, reconnect mulligan dedupe, opening main/ally faction metadata passed");
         return 0;
     }
 
@@ -179,6 +186,7 @@ internal static class FyServerHttpContractTest
             {
                 ["player_id_left"] = 10,
                 ["player_id_right"] = 20,
+                ["ally_faction_left"] = "France",
                 ["location_card_left"] = OpeningLeftCard(),
                 ["location_card_right"] = Card(2, "board_hqright", 0),
                 ["starting_hand_left"] = new JsonArray(Card(3, "hand_left", 0)),

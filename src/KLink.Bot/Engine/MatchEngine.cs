@@ -469,6 +469,9 @@ public sealed class MatchEngine
         rightHq.Defense = InitialHqDefense;
         rightHq.MaxDefense = InitialHqDefense;
 
+        // Self-play opening configuration has no configured ally faction.
+        State.SetAllyFactionBySide(Side.Left, 0);
+        State.SetAllyFactionBySide(Side.Right, 0);
         // Self-play opening configuration: both sides use London. Save it once.
         State.SetMainFactionBySide(Side.Left, (byte)leftHq.Definition.FactionId);
         State.SetMainFactionBySide(Side.Right, (byte)rightHq.Definition.FactionId);

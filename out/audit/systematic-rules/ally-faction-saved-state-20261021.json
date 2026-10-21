@@ -1,0 +1,300 @@
+{
+  "rule": "RULE-279",
+  "kind": "Saved ally faction and numeric CardFunctions query integration",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "read_only_capture": true,
+  "stable_reread_buffers": 110,
+  "authority_sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\ally-faction-blueprint-native-20261021.json",
+      "sha256": "5b2b883a9d1a0232144b0716ca8991b6d9a58fdaffcc6dc348584e86014fc042"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\faction-init-blueprint-native-20261021.json",
+      "sha256": "aa9e93f1e40903e54442185865299bc8b2c201dee6de9f61b1343587b43a5a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\utility-faction-raw-20261021.json",
+      "sha256": "60258c34460e817665f42d321e47cfabb1210cf278f80158dfa5f308484087dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parsed.json",
+      "sha256": "01a2e0009f20fda5e05e73e050ce7b744af44cbe55fda0e6a58eca42cfb8af1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-parsed.json",
+      "sha256": "c0822b45e5df6ad58beffe9fae968c3685c440af15137524afd7e8e5d4755c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\manifest.json",
+      "sha256": "53b83ad5867d6b1c0d25e276c3c612822c5155687282bb231c5635ad6cd3ba9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-manifest.json",
+      "sha256": "98847664934b2680421af1ea4e7c8df33fcf4a0d34a44848d059110f4dea97e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "complete_function_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetMainFactionBySide",
+      "bytes": 227,
+      "statements": 14,
+      "script_sha256": "f1d9695b03ce79fd13edfdfc033f7754765f5357875d7603cc0b3b481a0b56be"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "SetAllyFactionBySide",
+      "bytes": 157,
+      "statements": 10,
+      "script_sha256": "b81169510d4bee498ba5bd260b200cb23bf6bfc358dfe65ac7f0998ff1c29453"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "GetAllyFactionBySide",
+      "bytes": 227,
+      "statements": 14,
+      "script_sha256": "aa09fdb695f8444cbcbbf43fc4d7ec7c118764db867fecf6288b53ec505915d8"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ClearGameStateVariables",
+      "bytes": 1363,
+      "statements": 78,
+      "script_sha256": "728fee7494450ff1927a3405781910e9c1f2463b3ff0c830b9506acab073dc8d"
+    },
+    {
+      "owner": "BP_CardFunctions",
+      "function": "GetAllyNationForSide",
+      "bytes": 259,
+      "statements": 8,
+      "script_sha256": "d04dcbe4972afcae5dbdc9a2c596f84d47243d142665c0969f5874216725375d"
+    }
+  ],
+  "partial_initializer_ast_matches": [
+    {
+      "start": 23634,
+      "end": 23746,
+      "bytes": 112,
+      "statements": 2
+    },
+    {
+      "start": 24417,
+      "end": 24529,
+      "bytes": 112,
+      "statements": 2
+    }
+  ],
+  "coverage": {
+    "complete_functions": 5,
+    "complete_bytes": 2233,
+    "complete_statements": 124,
+    "partial_initializer_bytes": 224,
+    "partial_initializer_statements": 4,
+    "whole_online_ubergraph_decoded": false
+  },
+  "defaults": [
+    {
+      "field": "LeftAllyFaction",
+      "offset": 1641,
+      "value": 0
+    },
+    {
+      "field": "RightAllyFaction",
+      "offset": 1642,
+      "value": 0
+    }
+  ],
+  "findings": [
+    "GetAllyFactionBySide reads saved ally bytes; SetAllyFactionBySide writes only side1/2; ClearGameStateVariables zeroes both.",
+    "GetAllyNationForSide compares saved ally and main; equality returns byte0, inequality returns saved ally. Invalid side uses fresh outputs0.",
+    "OnlineMatch converts startingMatchData.ally_faction_right at i23634 and left at i24417 using UtilityFunctions.FactionStringToEnum(skipErrorCheck=false), then writes sides2/1 at i23699/24482.",
+    "These are separate FString starting-data fields, not the HQ faction, the deck card factions, or faction inferred from current ownership.",
+    "Managed dispatch previously returned the empty string for every input; all ally metadata and saved-state pathways were absent."
+  ],
+  "changes": [
+    "Independent LeftAllyFaction/RightAllyFaction bytes, explicit setter and narrow clear helper; fresh-output getter and equality-filtered numeric CardFunctions result.",
+    "Explicit int/Side dispatch input; controller, receiver and self do not select the faction.",
+    "ReplayData and ServerMatchSnapshot optional raw ally strings; starting-data JSON parser, replay importer, server bridge, HTTP adapter and validation-tool adapters preserve them.",
+    "Common opening-label converter shared with main metadata; prior MainFactionFromStartingData API retained; unknown/missing/empty use0 with previously documented limits.",
+    "Self-play explicitly configures no ally faction0/0, separately from London main2/2; no automatic deck inference.",
+    "Ally bytes included in MatchSnapshot JSON and ActionJournal fingerprint."
+  ],
+  "deepseek": {
+    "job_id": "20261021-100120-rule279-ally-faction-cfd85f20",
+    "elapsed_seconds": 95.98,
+    "write_scope": "Private packet only; mechanical inventory; primary owns semantics/source edits/publishing",
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule279\\inventory.json",
+      "sha256": "20562617a14e9c3947051d3e951833763d09404793abbf1602e19c0714d91c8c"
+    },
+    "verification": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule279-worker-verified-20261021.json",
+      "sha256": "de2140421d38f27ac2b107d95bf9d36cf5883676634bd9f94325eb636e00914e"
+    },
+    "exact_independent_match": true,
+    "assets": 4,
+    "functions": 950,
+    "writes": 4,
+    "calls": 3,
+    "scope_limit": "Not an exhaustive list of all native/dynamic writers."
+  },
+  "packaged_ir_scope": {
+    "calls": 1,
+    "cards": 1,
+    "sole_literal_card": "card_event_asw_patrol",
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule279-worker-verified-20261021.json",
+      "sha256": "de2140421d38f27ac2b107d95bf9d36cf5883676634bd9f94325eb636e00914e"
+    },
+    "meaning": "Existing packaged IR call inventory and integration regression, not full current-card semantic certification."
+  },
+  "tests": {
+    "red": {
+      "total": 614,
+      "failed": 1,
+      "reason": "Fresh numeric ally query returned String empty instead of Int32 zero",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule279-before-20261021.txt",
+        "sha256": "6a8a3acb20a5291535f83fb31b0fda4040fb85770a4cbc3c1acd5d72c7639876"
+      }
+    },
+    "green": {
+      "total": 618,
+      "failed": 0,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule279-after-20261021.txt",
+        "sha256": "8b409c45a96a8d78d4590845fd620b109f97ddcd78869a2ee587dac90f08ec5b"
+      }
+    },
+    "ally_setter_byte_vectors": 65536,
+    "main_ally_equality_byte_pairs": 65536,
+    "explicit_direct_and_vm_scenarios": 1536,
+    "synthetic_opening_labels": 16,
+    "packaged_asw_ir_integration_scenarios": 8,
+    "metadata_parser": "Fresh synthetic JSON tests preserve explicit strings, absence and empty string; no historical replay contents used.",
+    "http_contract": {
+      "result": "Passed via local stub handler only",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\http-contract-rule279-20261021.txt",
+        "sha256": "0734582028a92e5583cddbca516adee64eda3238268e3b6816fc2b79f1d765b4"
+      }
+    },
+    "aot_probe_build": {
+      "result": "Release build passed with 0 warnings/errors; runtime probe not executed",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\build-aot-rule279-20261021.txt",
+        "sha256": "585e417b01b358dcf4ad1c16f199b9dc254a8e6c46c5a7d1d16d5e99ecef005e"
+      }
+    },
+    "test_fixture_repair": "First expanded run failed because synthetic actions were supplied as an array instead of the parser object envelope; corrected to an actions object before passing runs."
+  },
+  "managed_sources": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "e88adbf6687e7b52f557c6a9f98897a38821e03501f06c2710d7a36a0f6c4d88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "5e904ab24be83726c0ccb3bc589cc61bb1c33f9d9aa9f2f1d21caa98ff731090"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "b3868c76b160b344767ad28f8a0d3f8639be07caad75b284810fe4b4b150d725"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayData.cs",
+      "sha256": "72bd8addb9c0720561935c9f68f7799331db4955224a45f25c787620b42a01cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerMatchSnapshot.cs",
+      "sha256": "a2259e96dcb62377b19bd9bef2c3b119fd128332c54fd9fd9959d1d12272cf3d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerReplayBridge.cs",
+      "sha256": "982400df6df6a396122d053ac2f9a2992bc605166a0f65d7d412a8f8802ac433"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "88e1b72d134ef554bc9c3c69620c76b1496ee332212f795a8f76720c83a3d51a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\FyServerHttpClient.cs",
+      "sha256": "89f0d436f5dc0bb1f8a6dfee207e0673b75e24e92970fa26fa135f8ee1404fd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\FyServerHttpContractTest.cs",
+      "sha256": "2cfd199bee8928c04338eb74d755587f44f1d935fbcbf46e7f12d2e0fd2b7f7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\Program.cs",
+      "sha256": "59a6ed8f3994005d9d7f38ee4177cdef48adb8762231a6932eaa6c222f347a0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\AotProbe\\Program.cs",
+      "sha256": "19558da055f2d9e0bc5ec3d8e6a9d3eef42b437b0d2ef56ed7b8dd10ae795803"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-ally-faction-blueprint-20261021.py",
+      "sha256": "2dd442a84ecf44c3d4f6b56ce70da388a69894063f8f2526f093b41c85353666"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule279-ally-faction-20261021.py",
+      "sha256": "87c19511d1ea2944fef210fb396bee70715d9f8c3f4eb40147090031602a0114"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule279-worker-20261021.py",
+      "sha256": "6b0b4fcedb309505b7c9ef856ee2e8c9df2128605b81e9e6a410121c3f7dd012"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\implement-rule279.py",
+      "sha256": "3b154ae39e4451ade510cfd06c03e0d97e6596d8566bcc392c36fd8f44d1a78f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\test-rule279.py",
+      "sha256": "a8c7783996c336b8f0231213993dce7d4c2d5fb2bf6dff9bb9657b58bb754bf9"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "CDO values are class defaults, not sampled real-match ally values. The capture verifies syntax/data flow and default bytes, not all online lifecycle behavior.",
+    "Missing external-producer ally metadata remains0; it cannot certify actual faction. Full reconnect/reset/reused conversion-local behavior still requires audit.",
+    "Fresh-output managed getters do not implement the raw Blueprint invalid-side caller-owned out alias ABI.",
+    "ReportError, native string/FName Unicode behavior and complete generic FactionStringToEnum side effects remain uncertified.",
+    "ClearAllyFactions and ClearMainFactions are scoped helpers, not complete ClearGameStateVariables implementations or dispatch bindings.",
+    "Four-asset inventory excludes all unscanned assets/native/dynamic writers; packaged ASW integration does not certify all current card logic.",
+    "No historical replay authority, game process writes, injection, client calls or actual remote HTTP submission in this audit.",
+    "Legacy inventory 5585 functions,2 without direct IR,20 structural issue cards and7 scalar differences are dated baselines, not current defect totals."
+  ],
+  "next_audit": "Trace callers and state lifecycle of ClearGameStateVariables and faction initialization on reset/reconnect."
+}

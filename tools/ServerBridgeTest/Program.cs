@@ -369,6 +369,8 @@ internal static class Program
             cards,
             acts)
         {
+            AllyFactionLeft = sd["ally_faction_left"]?.GetValue<string>(),
+            AllyFactionRight = sd["ally_faction_right"]?.GetValue<string>(),
             NextActionId = maxId + 1,
             SendActionId = maxId,
         };

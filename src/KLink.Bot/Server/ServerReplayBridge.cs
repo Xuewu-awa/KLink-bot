@@ -96,6 +96,8 @@ public static class ServerReplayBridge
 
         return new ReplayData
         {
+            AllyFactionLeft = snapshot.AllyFactionLeft,
+            AllyFactionRight = snapshot.AllyFactionRight,
             MatchId = snapshot.MatchId,
             Turns = snapshot.Turns,
             LeftPlayerId = snapshot.LeftPlayerId,

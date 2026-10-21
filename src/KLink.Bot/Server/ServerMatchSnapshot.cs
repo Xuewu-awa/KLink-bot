@@ -57,6 +57,10 @@ public sealed record ServerMatchSnapshot(
     /// <summary>下一条该分配的动作号（服务端 `MatchInfo.currentActionId`）。</summary>
     public int NextActionId { get; init; }
 
+    /// <summary>Raw opening ally faction strings, independent of location-card faction.</summary>
+    public string? AllyFactionLeft { get; init; }
+    public string? AllyFactionRight { get; init; }
+
     /// <summary>
     /// 客户端最后确认收到的动作号（服务端 `MatchInfo.SendActionId`）。
     /// bot 生成的动作要带这个值，客户端才认。

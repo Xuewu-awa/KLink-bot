@@ -645,6 +645,36 @@ public sealed class GameState
     public int HqDefense(Side s) => Hq(s).Defense;
 
     // RULE-278: saved match metadata, independently of mutable HQ objects.
+    public byte LeftAllyFaction { get; private set; }
+    public byte RightAllyFaction { get; private set; }
+
+    public void SetAllyFactionBySide(Side side, byte faction)
+    {
+        if (side == Side.Left) LeftAllyFaction = faction;
+        else if (side == Side.Right) RightAllyFaction = faction;
+    }
+
+    public void ClearAllyFactions()
+    {
+        LeftAllyFaction = 0;
+        RightAllyFaction = 0;
+    }
+
+    /// <summary>Fresh-output view of the saved ally byte; not the raw caller-owned out ABI.</summary>
+    public int GetAllyFactionBySide(Side side) => side switch
+    {
+        Side.Left => LeftAllyFaction,
+        Side.Right => RightAllyFaction,
+        _ => 0,
+    };
+
+    /// <summary>CardFunctions returns no ally when the saved ally equals the saved main faction.</summary>
+    public int GetAllyNationForSide(Side side)
+    {
+        int ally = GetAllyFactionBySide(side);
+        return ally == GetMainFactionBySide(side) ? 0 : ally;
+    }
+
     public byte LeftMainFaction { get; private set; }
     public byte RightMainFaction { get; private set; }
 
@@ -671,7 +701,10 @@ public sealed class GameState
 
     /// <summary>Opening metadata conversion for ordinary faction labels. Missing/unknown
     /// input keeps the fresh output at 0. Does not emulate ReportError or out aliases.</summary>
-    public static byte MainFactionFromStartingData(string? faction) => faction?.ToLowerInvariant() switch
+    public static byte MainFactionFromStartingData(string? faction) => FactionFromStartingData(faction);
+
+    // Both opening fields use the same UtilityFunctions conversion in the client.
+    public static byte FactionFromStartingData(string? faction) => faction?.ToLowerInvariant() switch
     {
         "germany" => 1, "britain" => 2, "japan" => 3, "soviet" => 4,
         "usa" => 5, "france" => 6, "italy" => 7, "poland" => 8,
@@ -1044,6 +1077,8 @@ public sealed class GameState
         IsFrontlineLimited,
         AllCards.Select(c => c.Snapshot()).ToArray())
         {
+            LeftAllyFaction = LeftAllyFaction,
+            RightAllyFaction = RightAllyFaction,
             LeftMainFaction = LeftMainFaction,
             RightMainFaction = RightMainFaction,
             DestroyedCardIdsAll = DestroyedCardIdsAll.ToArray(),
@@ -1110,6 +1145,8 @@ public sealed record MatchSnapshot(
     bool IsFrontlineLimited,
     CardSnapshot[] Cards)
 {
+    public byte LeftAllyFaction { get; init; }
+    public byte RightAllyFaction { get; init; }
     public byte LeftMainFaction { get; init; }
     public byte RightMainFaction { get; init; }
     public int[] DestroyedCardIdsAll { get; init; } = [];

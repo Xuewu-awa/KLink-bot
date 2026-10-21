@@ -580,7 +580,9 @@ public sealed partial class CardApi
             // `GetClientSide` is AkardsGameState's stored client-side field.
             // It is not the active turn, the effect controller, or the card's owner.
             ["GetClientSide"] = (c, r, a) => (int)c.State.ClientSide,
-            ["GetAllyNationForSide"] = (c, r, a) => "",
+            ["GetAllyNationForSide"] = (c, r, a) =>
+                c.State.GetAllyNationForSide(a.Length > 0 && a[0] is Side side
+                    ? side : (Side)IntArg(a, 0)),
             ["GetEmptyText"] = (c, r, a) => "",
 
             // ---------------- 效果 / 状态修改 ----------------

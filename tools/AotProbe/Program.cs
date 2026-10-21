@@ -202,6 +202,8 @@ internal static class Program
 
         return new ServerMatchSnapshot(r.MatchId, r.Turns, r.LeftPlayerId, r.RightPlayerId, cards, acts)
         {
+            AllyFactionLeft = r.AllyFactionLeft,
+            AllyFactionRight = r.AllyFactionRight,
             NextActionId = acts.Count + 1,
         };
     }
