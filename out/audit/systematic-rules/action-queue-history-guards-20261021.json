@@ -1,0 +1,241 @@
+{
+  "rule": "RULE-290",
+  "kind": "Action queue selected-path syntax, turn-boundary history guards and remaining semantic gaps",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-application-online-paths-20261021.json",
+      "sha256": "9cb0d4ce208bd2705cc3723d5e8fce04ab70be4f7312d5f42e8642ba95450823"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-application-logic-paths-20261021.json",
+      "sha256": "bc6e095fc2ddd3716f146786f6169c3bc22832d893b1aa42fb9e55ad25f674e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-application-helpers-native-20261021.json",
+      "sha256": "0d7135690c1918a185b847e4370a456e6db9a62ad43f661815809322c02af1f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-history-model-checks-20261021.json",
+      "sha256": "fcc4659297f30ec4977c0ca1c3bdd071c7057f3307d23c521706ab7fd64d9cb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule290-action-paths-verified-20261021.json",
+      "sha256": "2e347681b2c76e8f4bf3e69e1a33f7a0192b3651bd5a4d4784f39551c9bba060"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-evaluation-gate-references-20261021.json",
+      "sha256": "ef983df19da76b430ffba514ed21c0e2b7c331f8d05665ba36c9ee357bcbef1f"
+    }
+  ],
+  "syntax_references_only": [
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\EExprToken.cs",
+      "sha256": "f60ec8c9b4c36aa702c723cbcff3686645cbd8865c8c3d2547c0047d4ce9a174"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\FScriptText.cs",
+      "sha256": "3dee6dab73f1fabd51deaee0eb4cae250d2a12578d921a16dd0ab38ee34ac998"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\EBlueprintTextLiteralType.cs",
+      "sha256": "90ba8e188ef83231fdfa84eee7bec63848d595a04f446ba3296f757705529c5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_Int64Const.cs",
+      "sha256": "0e9fcfc2f3393da2d3650d990cd3d7263f77312ea1898fdb0a414de557ad5974"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-unpack-kit-20261005\\kards-unpack-kit\\tools\\UAssetAPI\\Kismet\\Bytecode\\Expressions\\EX_PrimitiveCast.cs",
+      "sha256": "7e1cfd1e8bc4fae82c593b3d319cd147451f81b0cba9984ac924c24b6e038512"
+    }
+  ],
+  "syntax_limit": "UAssetAPI is syntax reference, not KARDS rule authority. Runtime primitive cast3/4 retained as opaque numeric tag; modern enum is not assumed.",
+  "verified": {
+    "rule": "RULE-290",
+    "worker_exact_match": true,
+    "worker_input_sha256": "7475d50264e7d62a304344aed2097c8ed8e6d04a3c6cc72b80e2ece3004d10ba",
+    "path_node_visits": 447,
+    "paths": [
+      {
+        "event": "OnKardsActionEvent",
+        "nodes": 15,
+        "states": 15,
+        "errors": 0
+      },
+      {
+        "event": "DoOnKardsActionEvent",
+        "nodes": 201,
+        "states": 201,
+        "errors": 0
+      },
+      {
+        "event": "DoPreGameState",
+        "nodes": 119,
+        "states": 119,
+        "errors": 0
+      },
+      {
+        "event": "DoApplyMulligan",
+        "nodes": 112,
+        "states": 129,
+        "errors": 0
+      }
+    ],
+    "full_helpers": [
+      {
+        "name": "ValidateHQDefenseMatched",
+        "bytes": 1674,
+        "statements": 61
+      },
+      {
+        "name": "SetRandomStreamWithActionID",
+        "bytes": 3,
+        "statements": 2
+      },
+      {
+        "name": "ExecuteXActionsWithLocalSubActions",
+        "bytes": 175,
+        "statements": 7
+      },
+      {
+        "name": "GetAIDelayBetweenActions",
+        "bytes": 1164,
+        "statements": 41
+      },
+      {
+        "name": "isValidEndOfTurn",
+        "bytes": 837,
+        "statements": 29
+      },
+      {
+        "name": "isValidStartOfTurn",
+        "bytes": 873,
+        "statements": 30
+      },
+      {
+        "name": "DoOnKardsActionEvent",
+        "bytes": 18,
+        "statements": 3
+      }
+    ],
+    "full_helper_bytes": 4744,
+    "full_helper_statements": 173,
+    "syntax_positive_cases": 18,
+    "syntax_negative_cases": 11,
+    "models": {
+      "rule": "RULE-290",
+      "kind": "decoded AST model, not native or Kismet execution",
+      "history_model_cases": 2186,
+      "history_lengths": [
+        0,
+        6
+      ],
+      "alphabet": [
+        "XActionStartOfTurn",
+        "XActionEndOfTurn",
+        "OtherAction"
+      ],
+      "empty_history": {
+        "isValidStartOfTurn": true,
+        "isValidEndOfTurn": true
+      },
+      "tutorial_bypass_cases": 81,
+      "result": "Both allow when no turn boundary exists; otherwise reject when nearest prior exact action_type equals the candidate boundary. No player or side test in these helper bodies.",
+      "limits": "Exact strings only; mapping compact actions, full dispatch, native call semantics, object lifetime and scheduling are outside this model."
+    },
+    "kernel_runtime_changed": false,
+    "limits": "Selected syntax paths and opaque numeric casts are not semantic certification. No complete Kismet VM or native scheduling test. No historical replay authority."
+  },
+  "queue_flow": {
+    "entry": 18171,
+    "validating_sent": "true ->18185 isResolvingAction=false then pop; queue untouched on selected path",
+    "paused": "18208 true ->18222 ResetTurnTimer ->18185 false flag then pop",
+    "accepted": "15108 get queue[0],15163 save receivedAction,15190 remove[0],15236 append AllMatchActions",
+    "bob": "15305 GetBob; bobExists true ->15374 GotNewAction ->15419 PopExecutionFlow; call internals opaque",
+    "normal": "otherwise15420; AI-delay condition enemyPlayerID<0 && !bIsStartingDebugGame && !isReconnecting;15822 Delay declared resume2211",
+    "turn_rejection": "End/Start invalid ->18487 remove queue[0] ->4699 next-queue check; not appended to AllMatchActions",
+    "post": "4699 length>0 ->4806 DoOnKardsActionEvent else4821 isResolvingAction=false",
+    "limit": "No proof every caller has a nonempty queue, or callbacks preserve state; syntax graph excludes latent scheduling and call bodies."
+  },
+  "turn_guards": {
+    "comparison": "exact stored action_type strings, reverse AllMatchActions",
+    "start": "nearest boundary Start ->false; End or none ->true; tutorial bypass true excluded from PvP",
+    "end": "nearest boundary End ->false; Start or none ->true",
+    "no_player_or_side_test_in_helpers": true
+  },
+  "local_subactions": "GetUseLocalSubActions OR (receivedAction.player_id == Logic.GetMyPlayerID); native/upstream flags not globally certified",
+  "rng": "SetRandomStreamWithActionID current body3B Return/Nothing + EndOfScript; call name does not prove action-id reseeding",
+  "replay_comparison": {
+    "path": "src/KLink.Bot/Replay/ReplayRunner.cs",
+    "source_sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de",
+    "observed": "duplicateStart uses same side and absence of same-side end; endedTurnSide uses side; client helpers use nearest boundary without side",
+    "status": "Different local predicates; full client native filtering, raw/accepted history projection and fused EndTurn/StartTurn remain to reconcile. No premature replacement."
+  },
+  "deepseek": {
+    "job": "20261021-171011-rule290-node-inventory-b244baf3",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule290\\nodes.json",
+      "sha256": "7475d50264e7d62a304344aed2097c8ed8e6d04a3c6cc72b80e2ece3004d10ba"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule290\\inventory.json",
+      "sha256": "3362624628d2b224b15f2eb084855704f1319c2224fb37ebb6413ddd985337ae"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule290\\task.txt",
+      "sha256": "ada3c504b9867b1338f471bc31f8ba7594ad25b12b7e2b64af86a7297c5b26cd"
+    },
+    "primary_exact_match": true
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-290.py",
+      "sha256": "2a59fdb1f4b7ef30143f45d2e6a59fa4f34153001fdfec7e7c8b29f9b8dd3951"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule290-action-paths.py",
+      "sha256": "69d23dafaacafb222647ad4cc585ad0f6e54d1219f26bf8274ed274f08406e21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule290-action-helpers.py",
+      "sha256": "f2c7142728b8fb780bca10be6aa117a784b3231451cbb6db5d7c508a50d0b7b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule290-packet.py",
+      "sha256": "757f316e9b0cf04d1b8408de3c1b16eeb68a9d95d05fbaad303e201b0b27dd46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule290-action-history.py",
+      "sha256": "029b0d9340611714e4d09a06a30feb2af69c5a68b16b01c6d57dac1d45c7b29a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule290-action-paths.py",
+      "sha256": "818c448c97def0404c0e3f71908a6d1b6eaca3c0ae05daf4780ec85c8b5a3fda"
+    }
+  ],
+  "kernel_runtime_changed": false,
+  "full_release_tests": {
+    "rerun": false,
+    "latest": "RULE-281 620/620"
+  },
+  "fully_semantically_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "next": [
+    "Resolve runtime cast tags from matching executable VM handlers",
+    "Reconcile native GetNextAction filters and blueprint accepted history with replay normalization",
+    "Follow actual ReceiveActionStart/End handlers, initialization and callback order; no complete-card claim"
+  ]
+}
