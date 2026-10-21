@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("防御来源：使用显式ID并拒绝非正来源及非正旧防御", DefenseSourceIdentityAndEntry),
         new("设值事件：致死后仍先调用自身，再调用注册旁观者", DefenseSetOwnAndObserverOrder),
         new("设值事件：自身后查询，旁观者循环保持查询快照", DefenseSetObserverSnapshot),
         new("防御设值：零差值仍覆盖最大值，夹取0..99且通知保留原始请求", DefenseSetAbsoluteValues),
@@ -5944,6 +5945,53 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseSourceIdentityAndEntry(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool selfPresent in new[] { false, true })
+        foreach (int instigator in new[] { -7, 0, 20, 40, 9999 })
+        foreach (int oldDefense in new[] { -3, 0, 3 })
+        foreach (var operation in new[] { (Type: 1, Value: 2), (Type: 1, Value: -5), (Type: 2, Value: 4), (Type: 2, Value: 0) })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var realSource = state.CreateWithId("card_unit_51e_regiment", side.Opposite(), 40, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 2);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "fighter" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = oldDefense; target.MaxDefense = 8;
+            engine.Api.InvokeByName("ChangeDefense", target,
+                new object?[] { target, instigator, operation.Value, operation.Type, false, null },
+                new EffectContext { Engine = engine, State = state, Self = selfPresent ? self : null, Controller = side }, out bool handled);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            bool allowed = instigator > 0 && oldDefense > 0;
+            if (!handled) return "显式防御来源派发未处理";
+            if (!allowed)
+            {
+                if (target.Defense != oldDefense || target.MaxDefense != 8 || target.Location == CardLocation.Discard
+                    || target.BuffsBySource.Count != 0 || actions.Length != 0)
+                    return $"非法入口不应变化 self={selfPresent}, source={instigator}, defense={oldDefense}";
+                continue;
+            }
+            int expected = operation.Type == 2 ? operation.Value : oldDefense + operation.Value;
+            bool dies = expected <= 0;
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            int destroyer = instigator is 20 or 40 ? instigator : 0;
+            if (target.Defense != expected || (target.Location == CardLocation.Discard) != dies
+                || gains.Length != 1 || gains[0].Values.Single(x => x.Name == "instigatorID").Value != instigator
+                || destroys.Length != (dies ? 1 : 0)
+                || (dies && destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != destroyer))
+                return $"防御变化或致死来源错误 self={selfPresent}, source={instigator}, type={operation.Type}, value={operation.Value}";
+            // The simple ordinary increment must use the raw source key even when
+            // lookup is absent. SetValue ledger cleanup is audited separately.
+            if (!dies && operation.Type == 1 && (target.BuffsBySource.Count != 1
+                || !target.BuffsBySource.TryGetValue((instigator, false), out var buff) || buff.Defense != operation.Value))
+                return "普通增量buff必须记在显式来源ID上，不能回退到执行卡或目标";
+        }
         return null;
     }
 

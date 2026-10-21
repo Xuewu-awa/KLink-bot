@@ -2596,9 +2596,10 @@ public sealed partial class CardApi
     }
 
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
-                              int changeType = 1)
+                              int changeType = 1, int? instigatorId = null)
         => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
-                             changeType: temporary && changeType == 1 ? 0 : changeType);
+                             changeType: temporary && changeType == 1 ? 0 : changeType,
+                             instigatorId: instigatorId);
 
     /// <summary>
     /// 防御力增减的**共同实现**。
@@ -2614,8 +2615,9 @@ public sealed partial class CardApi
     /// </summary>
     private void ApplyDefenseDelta(CardInstance target, int delta, CardInstance? source,
                                    bool temporary, bool fireGainDefenseEvent, int changeType = 1,
-                                   int? defenseSetValue = null)
+                                   int? defenseSetValue = null, int? instigatorId = null)
     {
+        int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
         if (!target.IsAlive || (delta == 0 && defenseSetValue is null) || !CanCardBeBuffed(target))
         {
             return;
@@ -2656,14 +2658,16 @@ public sealed partial class CardApi
             target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
         }
 
-        if (source is not null)
+        // RULE-307: an explicit positive ID remains the ledger/notification key
+        // even when lookup has no object. Public callers retain their old fallback.
+        if (source is not null || instigatorId is > 0)
         {
-            GetOrCreateBuff(target, source.CardId, temporary).Defense += delta;
+            GetOrCreateBuff(target, sourceId, temporary).Defense += delta;
         }
 
         if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
-            _engine.Destroy(target, source);
+            _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
         }
 
         _engine.FireSubAction("ZActionGainDefense", new[]
@@ -2671,7 +2675,7 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("gained", defenseSetValue ?? delta),
             ActionValue2.Int("newDefenseValue", target.Defense),
-            ActionValue2.Int("instigatorID", source?.CardId ?? target.CardId),
+            ActionValue2.Int("instigatorID", sourceId),
             ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
 
@@ -2695,7 +2699,7 @@ public sealed partial class CardApi
 
         if (!additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
-            _engine.Destroy(target, source);
+            _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
         }
     }
 
@@ -2764,7 +2768,7 @@ public sealed partial class CardApi
     /// 蓝图里 T6 与 T7 在**互斥分支**（见 `ApplyDefenseDelta` 的注释）。旧实现走
     /// `ChangeDefense` 转发 ⇒ 每次「设为某值」多发一次 T7（8 张订阅）。
     /// </summary>
-    public void SetDefenseValue(CardInstance target, int value, CardInstance? source)
+    public void SetDefenseValue(CardInstance target, int value, CardInstance? source, int? instigatorId = null)
     {
         if (!target.IsAlive || !CanCardBeBuffed(target))
         {
@@ -2773,7 +2777,7 @@ public sealed partial class CardApi
 
         ApplyDefenseDelta(target, Math.Clamp(value, 0, 99) - target.Defense, source,
                           temporary: false, fireGainDefenseEvent: false,
-                          changeType: 2, defenseSetValue: value);
+                          changeType: 2, defenseSetValue: value, instigatorId: instigatorId);
 
         // RULE-306: i=1589 directly invokes the held target even after DestroyCard.
         // Only then i=1625 materializes T6; a self callback can change its membership.

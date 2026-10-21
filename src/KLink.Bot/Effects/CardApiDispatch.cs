@@ -4222,6 +4222,13 @@ public sealed partial class CardApi
             return null;
         }
 
+        // RULE-307: the native entry checks the supplied ID and old defense,
+        // not the identity of the card executing this Blueprint. Do not use the
+        // permissive SourceCardIdArg fallback here: zero/negative IDs must stop.
+        int instigatorId = IntArg(a, 1);
+        if (instigatorId <= 0 || target.Defense <= 0) return null;
+        var source = State.ById(instigatorId);
+
         // 与 `DoChangeAttack` 相同，`ChangeDefense` 的共享实现会执行
         // `CanCardBeBuffed` 守位。
         //
@@ -4252,11 +4259,11 @@ public sealed partial class CardApi
 
         if (IntArg(a, 3) == ChangeTypeSetValueReal)
         {
-            SetDefenseValue(target, value, c.Self);
+            SetDefenseValue(target, value, source, instigatorId: instigatorId);
             return null;
         }
 
-        ChangeDefense(target, value, c.Self, changeType: IntArg(a, 3));
+        ChangeDefense(target, value, source, changeType: IntArg(a, 3), instigatorId: instigatorId);
         return null;
     }
 

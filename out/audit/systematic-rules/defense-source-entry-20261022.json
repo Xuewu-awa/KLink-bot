@@ -1,0 +1,144 @@
+{
+  "rule": "RULE-307",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "ChangeDefense explicit source identity and dispatch entry gates",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-307",
+    "worker_exact_match": true,
+    "worker_functions": 2,
+    "blueprint_functions_verified": 2,
+    "script_bytes": 12010,
+    "script_statements": 412,
+    "models": 160,
+    "full_release_selftest": {
+      "passed": 639,
+      "total": 639,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Blueprint ChangeDefense dispatch positive raw source and positive old-defense gates; explicit source identity used by ledger/notification and death-time source lookup. Public fallback retained; whole buff ledger, zero-sum removal, pre-callback timing, entry validity/location, numeric modes and reconnect remain pending."
+  },
+  "authority": {
+    "entry": "ChangeDefense5743B207stmt: target validity/buffability,94 instigatorID>0 gate128,207 totalDefense>0 gate241.331 copies raw input tolocalInstigatorID;487 ChangeBuffsFromCards receives raw source before numeric branch. No source-object existence gate at this entry.",
+    "ledger": "ChangeBuffsFromCards6267B205stmt: raw instigatorID keys buffsFromCards at878/983 lookup and1761 update.2471 source validity check guards reverse CardsBuffedByThisCard maintenance after ledger update, not permission to apply the whole change. Ordinary accumulation3025..3500 adds amount,3268 checks zero,3316removes zero key; empty local map1678removes outer source entry.",
+    "death": "Negative and SetValue death paths resolve instigatorID with GetCardFromID when entering DestroyCard. GainDefense notification retains raw ID; missing source object means direct destroyer0, not c.Self or victim fallback."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "src/KLink.Bot/Effects/CardApi.cs"
+    ],
+    "changes": [
+      "DoChangeDefense reads raw a[1] without SourceCardIdArg fallback, rejects nonpositive ID or old defense, resolves source independently of c.Self.",
+      "Thread optional explicit instigator ID through additive/set numeric helper; use raw positive source key for ledger and notification even if object lookup absent.",
+      "Resolve explicit source by ID again at death completion; unknown source retains raw notification ID but direct-destroy source remains null/0."
+    ],
+    "scope": "Blueprint dispatcher only gains native entry gates; public null-source convenience fallback preserved. Full buff semantics and timing not changed."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 639,
+    "total": 639,
+    "new_regression": "240 combinations: sides2 x execution Self present/absent2 x explicit sources(-7,0,20self,40other-discarded,9999missing) x old defense(-3,0,3) x ordinary+2/-5 and SetValue4/0. Invalid entry causes no actions/numeric/ledger/death changes. Allowed entry preserves raw notify ID and actual resolved destroyer ID, ordinary surviving increment uses correct raw buff key.",
+    "models": {
+      "rule": "RULE-307",
+      "entry_cases": 120,
+      "ordinary_ledger_cases": 40,
+      "zero_sum_removal_cases": 4,
+      "total": 160,
+      "case_digest_sha256": "da8ff941d6ff93f1bfdeb6fb202d389a09c290f6dadddc6c3be70a97f0138e6e",
+      "scope": "ChangeDefense exact AST entry until first ChangeBuffsFromCards at487; mock IsValid/CanBeBuffed/getter/logger. Checks valid/buffable/source>0/oldDefense>0 gates and raw ID passed before numeric rules. Separate ordinary ct1 existing/new ledger branch starts3025, initialized resolved key/struct and original flow stack to6264, mock map/array copies and invalid source relation branch. Positive unknown source still retained as raw map key.",
+      "limits": "Not complete ChangeBuffsFromCards entry/string formatting/null Context/title/reverse source relation/SetValue or revoke semantics. Source lookup missing-object continuation modeled at resolved-key branch, not full native object VM. Zero-sum removal is authoritative reference behavior and still an implementation gap, not newly fixed. No native execution."
+    }
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-source-buff-native-20261022.json",
+      "sha256": "b19547539a3a8942f199b062ae5beffc12ea182866d50e94e3be3b505987c64d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-callback-native-20261022.json",
+      "sha256": "de703cbcc41f91b282532a011e6e810a25b4e0be536ceb440a3fdfa8d805851e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-source-entry-model-checks-20261022.json",
+      "sha256": "85949171778bf786219ada97744b03db70c137091b61fa7da0cdb928ec244fa2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule307-defense-source-verified-20261022.json",
+      "sha256": "47e2642f22c0fdcc5eb94f85a6ac6784300fdf977afe71717cf8cecfbe2897fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule307-selftest-release.log",
+      "sha256": "161d6cbbe256fe36b5af6a3ef933be560cc210e473403b267f3d05f889f02de5"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule307-defense-source.py",
+      "sha256": "0611819df182d71a34ccf2a7cbbffbc45cfa32382f49f3fbec422e1d39202a3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule307-packet.py",
+      "sha256": "438a660dc24f958b82836ecfaafc6358e963661eb08c0a87a88271399134fd9e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule307-defense-source.py",
+      "sha256": "c5ece63ca34f71654757ec0ef7c879adcca990e68de6937f0eb3a0c38a557815"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule307-defense-source.py",
+      "sha256": "4f2e13304e0399374af7e31367cc0b3ba282b1babe0b3fb03c5e867eded62997"
+    }
+  ],
+  "deepseek": {
+    "job": "20261022-020655-rule307-defense-source-a1635ecb",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule307\\functions.json",
+      "sha256": "49b53b7e49119046f2386772767f25e8b5c3aff10e213eca711fd027093ec05d"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule307\\task.txt",
+      "sha256": "5e204d47bcd9c87bf1dec1a3663fceb906cca8fdc3d9c09f8a95974876d79904"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule307\\inventory.json",
+      "sha256": "c63bacd599d54f125f3a91baff546f75b7b8934949514ee9bbbb20135eb3af56"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical call/Context-write inventory for two full functions only."
+  },
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "4ad81aac6e627281df579d1fbb76555d611b1d3fc0c5233bb96f4e14f2c55abe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "b27bbe281a346950c6a01a93dc7494974d68117a33901ffbbc11fc1a5c008b2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "ee57050e680dfdf4cfdccd09a9966b6b2ba104d0ad4d6b7e4af62579daef3053"
+    }
+  ],
+  "remaining": [
+    "Ordinary buff sum reaching zero must remove the selected map key and empty source entry. Current C# compact ledger retains zero entries; model captures reference, not a completed fix.",
+    "SetValue clearing old buff type/source records, suppression/veteran/custom/revoke modes and skipAction need complete ledger mapping.",
+    "ChangeBuffsFromCards runs before gain callbacks in client; C# ledger update still occurs later. Source lookup/title/null-Context and reverse relation lifecycle not fully certified.",
+    "Blueprint target validity vs C# IsAlive/location gate, public convenience fallback and reentrant ID replacement remain pending.",
+    "Native registration/TSet order, generic death sweep, death-history receive phase and reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
