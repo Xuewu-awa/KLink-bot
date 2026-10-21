@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("防御增益前回调：读取原始请求账本，中止/改量不回滚", DefenseBuffBeforeGainTiming),
+        new("防御增益重入：原始请求只记一次，嵌套变化保留", DefenseBuffBeforeGainReentry),
         new("防御buff归零：仅删空来源，保留其他效果/临时槽及反向关系", DefenseBuffZeroCleanup),
         new("混合防御类型：普通项归零保留设值存在性及克隆", DefenseBuffMixedPresence),
         new("防御来源：使用显式ID并拒绝非正来源及非正旧防御", DefenseSourceIdentityAndEntry),
@@ -5947,6 +5949,104 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static IDisposable InstallDefenseBeforeLedgerProbe(string hook)
+    {
+        const string name = "card_unit_arado_ar_196";
+        var cleanup = InstallSelectionDrawProbe(name, hook);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        var draw = locals[hook][0];
+        locals[hook] = new[] {
+            draw,
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "_auditRewriteDefense", Scope = "instance" }, null, -1, "newDefenseToAdd", null),
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "_auditStopDefense", Scope = "instance" }, null, -1, "stopAction", null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        return cleanup;
+    }
+
+    private static string? DefenseBuffBeforeGainTiming(CardDatabase db)
+    {
+        foreach (string hook in new[] { "OnBeforeOtherCardGainDefense", "OnBeforeOtherCardGainDefenseAfterAdd" })
+        {
+            using var hookProbe = InstallDefenseBeforeLedgerProbe(hook);
+            foreach (var side in new[] { Side.Left, Side.Right })
+            foreach (bool sourceExists in new[] { false, true })
+            foreach (int previous in new[] { -2, 0, 3 })
+            foreach (bool stop in new[] { false, true })
+            foreach (int rewrite in new[] { -2, 0, 4 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+                var observer = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 30, CardLocation.HandLeft, 0);
+                observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { hook } };
+                observer.Keywords.Clear(); observer.BlueprintVariables["_auditRewriteDefense"] = rewrite;
+                observer.BlueprintVariables["_auditStopDefense"] = stop;
+                var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+                target.Definition = new CardDefinition { Name = target.Name, Type = "fighter" };
+                target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+                target.Defense = target.MaxDefense = 10;
+                int id = sourceExists ? 20 : 9999;
+                target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Defense = previous };
+                if (sourceExists) source.CardsBuffedByThisCard.Add(60);
+                state.CreateWithId("card_unit_51e_regiment", Side.Left, 100, CardLocation.DeckLeft, 0);
+                int calls = 0; bool observed = true;
+                using var draw = InstallDrawReentryProbe(state, () => {
+                    calls++;
+                    bool exists = target.BuffsBySource.TryGetValue((id, false), out var ledger);
+                    observed &= target.Defense == 10 && target.MaxDefense == 10
+                        && exists == (previous + 2 != 0) && (!exists || ledger!.Defense == previous + 2)
+                        && source.CardsBuffedByThisCard.Contains(60) == (sourceExists && exists);
+                });
+                engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, id, 2, 1, false, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+                int modified = hook == "OnBeforeOtherCardGainDefense" ? rewrite : 2;
+                int applied = stop || modified <= 0 ? 0 : modified;
+                var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+                bool remains = target.BuffsBySource.TryGetValue((id, false), out var final);
+                if (calls != 1 || !observed || target.Defense != 10 + applied || target.MaxDefense != 10 + applied
+                    || remains != (previous + 2 != 0) || (remains && final!.Defense != previous + 2)
+                    || gains.Length != (applied > 0 ? 1 : 0)
+                    || (applied > 0 && gains[0].Values.Single(x => x.Name == "gained").Value != applied))
+                    return $"增益前账本时序错误 hook={hook}, side={side}, source={sourceExists}, previous={previous}, stop={stop}, rewrite={rewrite}";
+            }
+        }
+        return null;
+    }
+
+    private static string? DefenseBuffBeforeGainReentry(CardDatabase db)
+    {
+        const string hook = "OnBeforeOtherCardGainDefense";
+        using var hookProbe = InstallDefenseBeforeLedgerProbe(hook);
+        foreach (bool stop in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 30, CardLocation.HandLeft, 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { hook } };
+            observer.Keywords.Clear(); observer.BlueprintVariables["_auditRewriteDefense"] = 4;
+            observer.BlueprintVariables["_auditStopDefense"] = stop;
+            var target = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 60, CardLocation.BoardHqLeft, 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "fighter" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); target.Defense = target.MaxDefense = 10;
+            state.CreateWithId("card_unit_51e_regiment", Side.Left, 100, CardLocation.DeckLeft, 0);
+            bool sawOriginal = false; int calls = 0;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                calls++; sawOriginal = target.BuffsBySource[(20, false)].Defense == 2;
+                engine.Api.ChangeDefense(target, -1, source, instigatorId: 20);
+            });
+            engine.Api.ChangeDefense(target, 2, source, instigatorId: 20);
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (calls != 1 || !sawOriginal || target.BuffsBySource[(20, false)].Defense != 1
+                || target.Defense != (stop ? 9 : 13) || target.MaxDefense != (stop ? 9 : 13)
+                || gains.Length != (stop ? 1 : 2) || gains[0].Values.Single(x => x.Name == "gained").Value != -1
+                || (!stop && gains[1].Values.Single(x => x.Name == "gained").Value != 4))
+                return "嵌套减防须叠加在原始请求账本上，外层改量或中止后不得重复记账/回滚";
+        }
         return null;
     }
 

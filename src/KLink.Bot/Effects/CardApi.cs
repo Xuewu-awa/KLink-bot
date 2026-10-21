@@ -2623,14 +2623,21 @@ public sealed partial class CardApi
             return;
         }
 
-        if (fireGainDefenseEvent && delta > 0 && target.Defense > 0
+        bool canRecord = source is not null || instigatorId is > 0;
+        bool recordBeforeCallbacks = changeType == 1 && defenseSetValue is null && canRecord;
+        // RULE-309: native i=487 records the original request before any gain
+        // callback. Cancellation/rewrite does not roll it back or record it twice.
+        if (recordBeforeCallbacks)
+            RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, isSet: false);
+        bool positiveGain = fireGainDefenseEvent && delta > 0 && target.Defense > 0;
+        if (positiveGain
             && (!ApplyBeforeOtherCardGainDefenseAfterAdd(target, delta)
                 || !ApplyBeforeOtherCardGainDefense(target, ref delta)))
         {
             return;
         }
 
-        if (delta == 0 && defenseSetValue is null)
+        if ((positiveGain && delta <= 0) || (delta == 0 && defenseSetValue is null))
         {
             return;
         }
@@ -2658,19 +2665,8 @@ public sealed partial class CardApi
             target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
         }
 
-        // RULE-307: an explicit positive ID remains the ledger/notification key
-        // even when lookup has no object. Public callers retain their old fallback.
-        if (source is not null || instigatorId is > 0)
-        {
-            var buff = GetOrCreateBuff(target, sourceId, temporary);
-            buff.Defense += delta;
-            if (changeType != 1) buff.HasNonOrdinaryDefenseEntry = true;
-            // RULE-308: ordinary accumulation removes a zero-valued defense key.
-            // Drop the source slot only when no other represented entry remains;
-            // RemoveBuffEntry keeps the reverse relation while another slot exists.
-            if (changeType == 1 && defenseSetValue is null && buff.Defense == 0 && buff.IsEmpty)
-                RemoveBuffEntry(target, (sourceId, temporary));
-        }
+        if (!recordBeforeCallbacks && canRecord)
+            RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, defenseSetValue.HasValue);
 
         if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
@@ -2708,6 +2704,17 @@ public sealed partial class CardApi
         {
             _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
         }
+    }
+
+    private void RecordDefenseBuffChange(CardInstance target, int sourceId, int amount,
+                                         bool temporary, int changeType, bool isSet)
+    {
+        var buff = GetOrCreateBuff(target, sourceId, temporary);
+        buff.Defense += amount;
+        if (changeType != 1) buff.HasNonOrdinaryDefenseEntry = true;
+        // RULE-308: keep other represented native keys and source slots.
+        if (changeType == 1 && !isSet && buff.Defense == 0 && buff.IsEmpty)
+            RemoveBuffEntry(target, (sourceId, temporary));
     }
 
     // RULE-305: live UEnum entries + native non-flags/name-index path strip "EChangeType::".
