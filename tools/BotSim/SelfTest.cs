@@ -828,6 +828,7 @@ internal static class SelfTest
         new("IsLocationFull：半场 5 格（**含 HQ**）判满，前线另算", LocationFullCapacity),
         new("★ BP_CardFunctions::ChangeFrontlineLimiter：Black Prince 将前线容量限制为 2，离场后恢复", ChangeFrontlineLimiter),
         new("★ GameplayRestriction：禁抽牌/加槽/指令/部署/地面攻击/手牌弃牌，并按来源与回合解除", GameplayRestrictions),
+        new("全局限制：零回合仍生效、重复来源保留，并在开始回合结算后递减", GameplayRestrictionLifetime),
         new("★ GameplaySideEffect：按阵营/标签/来源维护 blockgotcha，并真实阻止反制触发", GameplaySideEffects),
         new("撤回：AA Barrage 半场回手、前线退半场；M16 无目标不撤自己", RetreatEndToEnd),
         new("508065：Fifth Ohio 无目标部署不得摧毁自身；显式目标仍执行摧毁", FifthOhioNullableTarget),
@@ -1389,11 +1390,57 @@ internal static class SelfTest
         }
 
         state.DecrementGameplayRestrictions();
+        if (!state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotDrawCardAtTurnStart))
+        {
+            return "剩余回合数 1→0 时不应提前删除限制";
+        }
+
+        state.DecrementGameplayRestrictions();
         if (state.HasGameplayRestriction(Side.Left, GameplayRestrictionType.CannotDrawCardAtTurnStart))
         {
             return "剩余回合数到期后限制仍存在";
         }
 
+        return null;
+    }
+
+    private static string? GameplayRestrictionLifetime(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var type = GameplayRestrictionType.CannotPlayOrders;
+        state.AddGameplayRestriction(Side.Left, type, 901, 1);
+        state.AddGameplayRestriction(Side.Left, type, 901, 3);
+        state.AddGameplayRestriction(Side.Right, type, 902, -1);
+        if (state.GameplayRestrictions.Count != 3
+            || !state.HasGameplayRestriction(Side.Right, type))
+            return "重复来源被合并，或查询错误地过滤了负回合记录";
+        state.DecrementGameplayRestrictions();
+        if (state.GameplayRestrictions.Count != 2
+            || state.GameplayRestrictions[0].TurnsRemaining != 0
+            || state.GameplayRestrictions[1].TurnsRemaining != 2
+            || state.HasGameplayRestriction(Side.Right, type))
+            return "递减未保留零值/插入顺序，或未移除负回合记录";
+        state.RemoveGameplayRestriction(Side.Left, type, 901, false);
+        if (state.GameplayRestrictions.Count != 0)
+            return "按来源移除未清除该来源的全部重复记录";
+
+        state.Turn = 2;
+        state.SetMaxKredits(Side.Left, 3);
+        var deckCard = state.CreateWithId("card_unit_j2m_raiden", Side.Left, 42,
+            CardLocation.DeckLeft, 0);
+        state.AddGameplayRestriction(Side.Left,
+            GameplayRestrictionType.CannotDrawCardAtTurnStart, 903, 0);
+        state.AddGameplayRestriction(Side.Left,
+            GameplayRestrictionType.CannotKreditSlotAtTurnStart, 903, 0);
+        engine.StartTurn(Side.Left);
+        if (deckCard.Location != CardLocation.DeckLeft || state.MaxKredits(Side.Left) != 3)
+            return "零回合限制未覆盖本次开始回合抽牌/槽位增长";
+        if (state.GameplayRestrictions.Count != 0)
+            return "完成开始回合后未执行限制递减";
+        state.Turn++;
+        engine.StartTurn(Side.Left);
+        if (deckCard.Location != CardLocation.HandLeft || state.MaxKredits(Side.Left) != 4)
+            return "限制移除后下一次开始回合没有恢复抽牌/槽位增长";
         return null;
     }
 

@@ -575,6 +575,9 @@ public sealed class MatchEngine
             StartTurnCore(side, draw);
             // OpponentActionsStartTurn: StartTurnBySide then ExecuteAutoPlayCards.
             ExecuteAutoPlayCards();
+            // OpponentActionsStartTurn calls DoOnStartOfTurn after generation
+            // and auto-play; that function decrements global restrictions once.
+            State.DecrementGameplayRestrictions();
             ApplyPendingLocalRuleReceipts();
         }
         finally
@@ -700,7 +703,6 @@ public sealed class MatchEngine
         // same new slot value for both kredit and slot.  A temporary kredit
         // bonus therefore does not survive the next start-of-turn refill.
         State.SetKredits(side, State.MaxKredits(side));
-        State.DecrementGameplayRestrictions();
 
         // 「本回合打出过哪些牌」按回合清空（客户端 GetCardsPlayedThisTurn 的语义）。
         // ⚠️ 必须在这里清、而不是在 EndTurn 里清：回放路径上 XActionStartOfTurn 与

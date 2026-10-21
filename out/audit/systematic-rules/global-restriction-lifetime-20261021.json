@@ -1,0 +1,190 @@
+{
+  "rule": "RULE-292",
+  "kind": "Fix global gameplay restriction membership, duplicates, lifetime and decrement phase",
+  "read_only_game_acquisition": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-gameplay-restrictions-native-20261021.json",
+      "sha256": "975fa44965e0e91f9c0a592970cd8048e1df3c3b66bbc7e44a02f220b45c621f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\restriction-lifetime-model-checks-20261021.json",
+      "sha256": "e2cc2fa4e87be5fdc9e0b6efa7e1f4f531c25b2ceb59bb77a46763c1909f52eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\logic-turn-boundaries-native-20261021.json",
+      "sha256": "b962877c1a4c6d6a9bfc71a4d4d4e58728b96f7aef81e9154d1980e312a15bb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\inherited-turn-handlers-native-20261021.json",
+      "sha256": "a70ba2c61f4fef4183668b6a6837bb9ecdd199412ae486a979a766f36fe0b4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule292-restrictions-verified-20261021.json",
+      "sha256": "e76828495f8b11498290ef8aec9596051cfe57b7b35cb24ce20cb6bcebc34496"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule292-selftest-release.log",
+      "sha256": "25dcad36966e65073f2ae7ccf1177671ad9e1a892cc6b54872faaf86583a21eb"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-292",
+    "worker_exact_match": true,
+    "full_script_bytes": 2889,
+    "full_script_statements": 116,
+    "functions": [
+      {
+        "name": "IsCheatGameplayRestrictionActive",
+        "bytes": 693,
+        "statements": 29
+      },
+      {
+        "name": "RemoveGameplayRestrictionEffect",
+        "bytes": 746,
+        "statements": 30
+      },
+      {
+        "name": "DecrementTurnGameplayRestrictions",
+        "bytes": 771,
+        "statements": 27
+      },
+      {
+        "name": "AddGameplayRestrictionEffect",
+        "bytes": 71,
+        "statements": 3
+      },
+      {
+        "name": "IsThereGameplayRestriction",
+        "bytes": 608,
+        "statements": 27
+      }
+    ],
+    "model": {
+      "rule": "RULE-292",
+      "kind": "Decoded AST model, not client VM/native execution",
+      "counts": {
+        "decrement": 400,
+        "query": 2400,
+        "append": 7,
+        "remove": 24,
+        "cheat_query": 24
+      },
+      "total": 2855,
+      "duration_values": [
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        20
+      ],
+      "limits": "Synthetic valid structs, int32 normal-range arithmetic; wrapping implementation included but native signed-overflow boundary not certified. No caller scheduling or callback execution."
+    },
+    "full_release_selftest": {
+      "passed": 621,
+      "total": 621,
+      "log_sha256": "25dcad36966e65073f2ae7ccf1177671ad9e1a892cc6b54872faaf86583a21eb"
+    },
+    "limit": "Normal-range arithmetic model and selected global scheduling path, not complete client VM or all turn callbacks. Raw negative records query as active before decrement; negative values are not treated as permanent."
+  },
+  "authority_findings": {
+    "query": "IsThereGameplayRestriction tests AffectedSide/RestrictionType only; IsCheat... also tests CardID. Neither tests TurnsRemaining.",
+    "add": "71-byte AddGameplayRestrictionEffect is Array_Add, Return/Nothing, EndOfScript; no merge",
+    "decrement": "771-byte body rebuilds newEffects preserving entries where old TurnsRemaining-1 >=0, writes decremented value, preserves other fields and order",
+    "global_call": "DoOnStartOfTurn stmt5 pushes976;976 Context GameStateRef.DecrementTurnGameplayRestrictions after card loop, not per-card decrement",
+    "phase": "OpponentActionsStartTurn415 StartTurnBySide,460 ExecuteAutoPlayCards,1252 DoOnStartOfTurn,1383 DoSubActions; selected ordinary completion path"
+  },
+  "fixes": [
+    {
+      "file": "src/KLink.Bot/Engine/GameState.cs",
+      "changes": [
+        "Membership query no longer excludes zero turns",
+        "Append duplicate source/side/type entries instead of max-merge",
+        "Decrement keeps zero result and removes negative result; stable surviving order"
+      ]
+    },
+    {
+      "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+      "changes": [
+        "Move global decrement from before draw/start events to after StartTurnCore and auto-play, before pending local receipts"
+      ]
+    }
+  ],
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 621,
+    "total": 621,
+    "added_case": "GameplayRestrictionLifetime: duplicate preservation, negative input membership/removal, removal of all matching source entries, zero-duration draw/slot restriction through current start followed by expiry",
+    "corrected_case": "GameplayRestrictions now expects 2->1->0 active and removal on the third decrement",
+    "decoded_AST_model_cases": 2855,
+    "model_limit": "Not native or actual Kismet VM execution; normal signed arithmetic domain only"
+  },
+  "deepseek": {
+    "job": "20261021-172658-rule292-restriction-inventory-2c49372a",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule292\\functions.json",
+      "sha256": "d3ea245a491cd978eec18b7744a07dbf4ea65a41b4a335c97016491f8330a6a0"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule292\\inventory.json",
+      "sha256": "77f4b911c228c5d75addd041c64a96208b017faeec1a2c3a3c4e48b4b48c3981"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule292\\task.txt",
+      "sha256": "017f89458d8603bcb9728ff019feedd73a77b16d3db76d314a779287165a6fc0"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical member/call inventory only"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule292-restrictions.py",
+      "sha256": "232ef59526067133cd95998f9cce8517b1cee39c81dbd8d39164a8d7a98423cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule292-packet.py",
+      "sha256": "53a8072a3623024107a1e03b47f6c7b4c2a517c538568ef397dacfa6f1b42d75"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule292-restriction-model.py",
+      "sha256": "ef1d8b01fc460f0d943fca8432e68f61535d47b663e7980ddfb38ee75f5d7d88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule292-restrictions.py",
+      "sha256": "ef2f85999ec473df9fd4cbe991068e6e53f2ab2fae56f1621b533de91298c828"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "fe4545804adafabb01ee01cead77d5fad63e8fd7afc3631ffc1e5272a1c48305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "a4528c27a9858b065cadefe95dba1437c01095ac6f8ccadde94c08475ef21149"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "743daa6df37f7f74a191c91d1a019d63fac3067115e2f4d51f25db78e6980074"
+    }
+  ],
+  "kernel_runtime_changed": true,
+  "limits": [
+    "Selected normal local-start phase; full reconnect/receipt scheduling still open",
+    "Per-card restriction/reset ownership still open; this fix concerns global GameplayRestrictionEffects",
+    "Native signed-overflow edge not independently executed",
+    "Complete card semantics not certified; version migration paused"
+  ],
+  "fully_semantically_certified_cards": 0
+}

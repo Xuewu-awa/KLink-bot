@@ -81,8 +81,8 @@ public sealed class GameState
 
     /// <summary>
     /// Active global restrictions from `FGameplayRestrictionEffect`.
-    /// A restriction is keyed by affected side, type, and source card ID;
-    /// multiple sources of the same type may coexist.
+    /// Entries preserve insertion order, including repeated side/type/source tuples.
+    /// Queries use membership; the decrement pass removes expired entries.
     /// </summary>
     public List<GameplayRestriction> GameplayRestrictions { get; } = new();
 
@@ -129,18 +129,12 @@ public sealed class GameState
     public List<CardInstance> TriggerQueue { get; } = new();
 
     public bool HasGameplayRestriction(Side side, GameplayRestrictionType type)
-        => GameplayRestrictions.Any(x => x.Side == side && x.Type == type && x.TurnsRemaining != 0);
+        // IsThereGameplayRestriction tests membership, not TurnsRemaining.
+        => GameplayRestrictions.Any(x => x.Side == side && x.Type == type);
 
     public void AddGameplayRestriction(Side side, GameplayRestrictionType type, int sourceCardId, int turns)
     {
-        var existing = GameplayRestrictions.FirstOrDefault(x =>
-            x.Side == side && x.Type == type && x.SourceCardId == sourceCardId);
-        if (existing is not null)
-        {
-            existing.TurnsRemaining = Math.Max(existing.TurnsRemaining, turns);
-            return;
-        }
-
+        // AddGameplayRestrictionEffect uses Array_Add, including repeated sources.
         GameplayRestrictions.Add(new GameplayRestriction
         {
             Side = side,
@@ -157,18 +151,20 @@ public sealed class GameState
             && (removeAll || x.SourceCardId == sourceCardId));
     }
 
-    /// <summary>Called at the start of a global turn, matching DecrementTurnGameplayRestrictions.</summary>
+    /// <summary>Called after start-of-turn generation, matching DoOnStartOfTurn.</summary>
     public void DecrementGameplayRestrictions()
     {
-        foreach (var restriction in GameplayRestrictions)
+        for (int i = GameplayRestrictions.Count - 1; i >= 0; i--)
         {
-            if (restriction.TurnsRemaining > 0)
-            {
-                restriction.TurnsRemaining--;
-            }
+            var restriction = GameplayRestrictions[i];
+            int remaining = unchecked(restriction.TurnsRemaining - 1);
+            // The blueprint rebuilds the array with (old - 1) >= 0, so zero
+            // remains active until the following decrement.
+            if (remaining >= 0)
+                restriction.TurnsRemaining = remaining;
+            else
+                GameplayRestrictions.RemoveAt(i);
         }
-
-        GameplayRestrictions.RemoveAll(x => x.TurnsRemaining == 0);
     }
 
     public int Turn { get; set; } = 1;
