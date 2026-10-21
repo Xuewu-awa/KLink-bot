@@ -1,0 +1,215 @@
+{
+  "rule": "RULE-291",
+  "kind": "Turn boundary generation versus receipt, complete selected function syntax and history-projection limits",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-receivers-native-20261021.json",
+      "sha256": "1aa24419531148b7319d5efaa2126fa9b4209d4fd05c94280c89d2df328b30c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\inherited-turn-handlers-native-20261021.json",
+      "sha256": "a70ba2c61f4fef4183668b6a6837bb9ecdd199412ae486a979a766f36fe0b4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\logic-turn-boundaries-native-20261021.json",
+      "sha256": "b962877c1a4c6d6a9bfc71a4d4d4e58728b96f7aef81e9154d1980e312a15bb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-dispatch-model-checks-20261021.json",
+      "sha256": "12f5f9abe2acb4b324882f8f58ccba5782ed22be579af3d6054f7d9475c98bb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-application-online-paths-20261021.json",
+      "sha256": "9cb0d4ce208bd2705cc3723d5e8fce04ab70be4f7312d5f42e8642ba95450823"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\action-application-helpers-native-20261021.json",
+      "sha256": "0d7135690c1918a185b847e4370a456e6db9a62ad43f661815809322c02af1f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-phase-native-20261021.json",
+      "sha256": "8d2a1fd63576775fa39ec61b40994c1376f89e7461ba7f0385082dde247b83b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-filter-support-20261021.json",
+      "sha256": "639929d91e2c7f60b9bc89180ced1447ed0cd92c4944911de9ec9ed7456f08d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-filter-offline-20261021.json",
+      "sha256": "882b00bd45f2f5a43b3e2d1d56298a28b6b01bc79678f05a908a4b80c980bdc3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule291-turn-receivers-verified-20261021.json",
+      "sha256": "76cb9894fbaf7bc37366f486169783a6dce54181d31aaf0d549cdf69fd1d8b1a"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-291",
+    "worker_exact_match": true,
+    "worker_input_sha256": "fd268cce2ef7820d427b928a6645e07eb024fb6f720df86a7c51a99092a7e53d",
+    "functions": [
+      {
+        "name": "XActionNameCompactToFull",
+        "bytes": 480,
+        "statements": 15
+      },
+      {
+        "name": "GetUseLocalSubActions",
+        "bytes": 65,
+        "statements": 4
+      },
+      {
+        "name": "ReceiveActionXActionEndOfTurn",
+        "bytes": 2432,
+        "statements": 80
+      },
+      {
+        "name": "ReceiveActionXActionStartOfTurn",
+        "bytes": 1733,
+        "statements": 57
+      },
+      {
+        "name": "OpponentActionsStartTurn",
+        "bytes": 3127,
+        "statements": 108
+      },
+      {
+        "name": "OpponentActionsEndTurn",
+        "bytes": 3902,
+        "statements": 134
+      },
+      {
+        "name": "StartTurnBySide",
+        "bytes": 1525,
+        "statements": 49
+      },
+      {
+        "name": "DoOnStartOfTurn",
+        "bytes": 4723,
+        "statements": 137
+      }
+    ],
+    "full_script_bytes": 17987,
+    "full_script_statements": 584,
+    "decoded_dispatch_model_cases": 144,
+    "source_comparison_hashes": [
+      {
+        "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+        "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+      },
+      {
+        "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+        "sha256": "b3868c76b160b344767ad28f8a0d3f8639be07caad75b284810fe4b4b150d725"
+      }
+    ],
+    "limits": "Eight whole functions decoded syntactically, calls opaque. Local/received outer branches modeled, not complete receiver execution. Does not certify all inherited overrides, compact maps, init state, network or native histories."
+  },
+  "outer_dispatch": {
+    "choice": "Controller.bUseLocalSubActions OR receivedAction.player_id == Logic.GetMyPlayerID",
+    "start": {
+      "choice_call": 4886,
+      "branch": 4909,
+      "local_generate": 4964,
+      "local_pop": 5005,
+      "receive": 5006,
+      "receive_pop": 5057
+    },
+    "end": {
+      "choice_call": 5058,
+      "branch": 5081,
+      "local_generate": 5136,
+      "receive": 5300,
+      "receive_jump_after": 5177,
+      "shared_controller_notify": 5263,
+      "shared_pop": 5299
+    },
+    "limit": "Generation and receipt are alternatives. Synthetic valid controller assumed; cast/call internals not executed."
+  },
+  "generation": {
+    "start": "OpponentActionsStartTurn:415 Logic.StartTurnBySide,460 ExecuteAutoPlayCards",
+    "end": "OpponentActionsEndTurn:475 ExecuteEndOfTurnEvents,673 ExecuteAutoPlayCards; contains conditional switch/turn update; not straight-line global guarantee",
+    "start_by_side": "Includes kredit slot/refill, before-start events, conditional draw, mobilize bonus, start events and kredit check. Full syntax only, called methods opaque."
+  },
+  "receipt": {
+    "end": "Copies input subactions; parses reason/side, DoSubActions1248, SwitchPlayingSide1377, IncrementTurnNumber1499 then resets; conditional paths and side parsing not fully executed",
+    "start": "Parses side; guarded play-state branches; Logic.DoOnStartOfTurn546; reconnect branches and DoSubActions717; not assumed same as local regeneration",
+    "mixed_scope": "Logic.DoOnStartOfTurn contains visual operations AND DecrementTurnGameplayRestrictions976. Must not discard whole function as UI."
+  },
+  "name_conversion": {
+    "function": "XActionNameCompactToFull",
+    "behavior": "First Map_Find full-to-compact map: found returns original input. Otherwise compact-to-full lookup, found returns mapped value; unknown falls back to original input with conditional ReportError.",
+    "limit": "Current map entries and all writers not captured; cannot certify every compact/raw boundary normalization."
+  },
+  "source_comparison": {
+    "status": "Pending evidence, no runtime patch",
+    "observations": [
+      "ReplayRunner duplicateStart and endedTurnSide are side-dependent",
+      "MatchEngine.EndTurnCore increments turn and invokes StartTurn(otherSide), whereas client local start and end are separately dispatched",
+      "Native GetNextAction filters before Blueprint queue; local regeneration/receipt select different paths, so raw replay history is not automatically equal to one client AllMatchActions"
+    ],
+    "remaining": [
+      "Map raw input to both local sends and received actions, including native filtering and flags",
+      "Validate initial turn and first Start input, and adjacency of End/Start before replacing de-duplication",
+      "Trace gameplay restriction decrement ownership separately from visuals"
+    ]
+  },
+  "deepseek": {
+    "job": "20261021-171718-rule291-receiver-inventory-96685af0",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule291\\functions.json",
+      "sha256": "fd268cce2ef7820d427b928a6645e07eb024fb6f720df86a7c51a99092a7e53d"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule291\\inventory.json",
+      "sha256": "cffb08b1b20cd567a2c224a82e567fec32b8356364ce9dc11af7de1492fada59"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule291\\task.txt",
+      "sha256": "a1968928ea47bd4c14297f67777c9555fd45851090b231b95b3eb4a002815b6a"
+    },
+    "primary_exact_match": true,
+    "scope": "Four receiver/conversion helpers only; eight function syntax checked by primary agent"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule291-turn-receivers.py",
+      "sha256": "459cbbcc88f0a772c460448fbaf5b6c2b1d662ebd5b73bbf10ed8e4259d2c1d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule291-inherited-turns.py",
+      "sha256": "24433e1d66ebf318a990961a69c85b2b6fd4969e207f5bffcc67289b11fd2504"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule291-logic-turns.py",
+      "sha256": "3acc74162d886967d49406da7bbe1124fb218dcedfbfff281567042d63fa62c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule291-packet.py",
+      "sha256": "82f9b111c49179a4fa03815b79b88a6210e11c7025f4c4e50a2605adc5757005"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule291-turn-dispatch.py",
+      "sha256": "1fb7957e09df27959dba04913698516f4915a0348bb0fead2d478941b88467dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule291-turn-receivers.py",
+      "sha256": "c18e5e6ca3d8ab0846f0982db4d687d37f54a575a100e14f9889229a5efc9870"
+    }
+  ],
+  "kernel_runtime_changed": false,
+  "full_release_tests": {
+    "rerun": false,
+    "latest": "RULE-281 620/620"
+  },
+  "fully_semantically_certified_cards": 0,
+  "single_card_version_migration": "paused"
+}
