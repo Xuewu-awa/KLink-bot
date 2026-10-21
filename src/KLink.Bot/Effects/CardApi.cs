@@ -2595,8 +2595,10 @@ public sealed partial class CardApi
             });
     }
 
-    public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false)
-        => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true);
+    public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
+                              int changeType = 1)
+        => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
+                             changeType: temporary && changeType == 1 ? 0 : changeType);
 
     /// <summary>
     /// 防御力增减的**共同实现**。
@@ -2611,9 +2613,10 @@ public sealed partial class CardApi
     /// ⇒ `SetValue` 路径必须把 T7 关掉。
     /// </summary>
     private void ApplyDefenseDelta(CardInstance target, int delta, CardInstance? source,
-                                   bool temporary, bool fireGainDefenseEvent)
+                                   bool temporary, bool fireGainDefenseEvent, int changeType = 1,
+                                   int? defenseSetValue = null)
     {
-        if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
+        if (!target.IsAlive || (delta == 0 && defenseSetValue is null) || !CanCardBeBuffed(target))
         {
             return;
         }
@@ -2625,7 +2628,7 @@ public sealed partial class CardApi
             return;
         }
 
-        if (delta == 0)
+        if (delta == 0 && defenseSetValue is null)
         {
             return;
         }
@@ -2635,7 +2638,15 @@ public sealed partial class CardApi
         // completes DestroyCard before NotifyGainDefense (i=2507 -> i=4083).
         // SetDefenseValue uses a different native branch and is audited separately.
         bool additiveDecrease = fireGainDefenseEvent && delta < 0;
-        target.Defense += delta;
+        if (defenseSetValue is { } absolute)
+        {
+            // RULE-305: native SetValue overwrites both values even at zero delta.
+            target.Defense = target.MaxDefense = Math.Clamp(absolute, 0, 99);
+        }
+        else
+        {
+            target.Defense += delta;
+        }
         if (additiveDecrease)
         {
             if (target.Defense > 0) target.MaxDefense += delta;
@@ -2657,9 +2668,11 @@ public sealed partial class CardApi
 
         _engine.FireSubAction("ZActionGainDefense", new[]
         {
-            ActionValue2.Int("instigatorID", source?.CardId ?? target.CardId),
-            ActionValue2.Int("gained", delta),
+            ActionValue2.Int("cardID", target.CardId),
+            ActionValue2.Int("gained", defenseSetValue ?? delta),
             ActionValue2.Int("newDefenseValue", target.Defense),
+            ActionValue2.Int("instigatorID", source?.CardId ?? target.CardId),
+            ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
 
         // 「防御力变了」事件 —— 出处 `out/bp-cardfn.json` 函数 `ChangeDefense`
@@ -2685,6 +2698,15 @@ public sealed partial class CardApi
             _engine.Destroy(target, source);
         }
     }
+
+    // RULE-305: live UEnum entries + native non-flags/name-index path strip "EChangeType::".
+    // This is wire text; it does not implement the numeric semantics of every enum mode.
+    private static string DefenseChangeTypeName(int value) => value switch
+    {
+        0 => "tempBuffGive", 1 => "permBuff", 2 => "SetValue", 3 => "Suppress",
+        4 => "tempBuffRemove", 5 => "veteranSet", 6 => "customAdd", 7 => "customRemove",
+        8 => "combatModify", 9 => "notUsed", 10 => "EChangeType_MAX", _ => "",
+    };
 
     /// <summary>
     /// `ChangeDefense` runs each observer's local function in sequence; its output becomes
@@ -2749,8 +2771,9 @@ public sealed partial class CardApi
             return;
         }
 
-        ApplyDefenseDelta(target, value - target.Defense, source,
-                          temporary: false, fireGainDefenseEvent: false);
+        ApplyDefenseDelta(target, Math.Clamp(value, 0, 99) - target.Defense, source,
+                          temporary: false, fireGainDefenseEvent: false,
+                          changeType: 2, defenseSetValue: value);
 
         if (!target.IsAlive)
         {

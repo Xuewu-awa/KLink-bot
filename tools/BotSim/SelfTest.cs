@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("防御设值：零差值仍覆盖最大值，夹取0..99且通知保留原始请求", DefenseSetAbsoluteValues),
+        new("防御通知：普通增量与设值均发送五项有序字段", DefenseNotificationFields),
         new("普通减防：存活才降低最大防御，致死先摧毁后通知", DefenseDecreaseDeathOrder),
         new("减防致死：摧毁前回调看不到提前通知，通知读取回调后防御", DefenseDecreaseCallbackTiming),
         new("ChangeDefense：旁观卡可增加防御或中止 HQ 获得防御",
@@ -5940,6 +5942,71 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseSetAbsoluteValues(CardDatabase db)
+    {
+        using var setProbe = InstallSelectionDrawProbe("card_unit_arado_ar_196", "OnAfterDefenseIsSet");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int maximum in new[] { 3, 8 })
+        foreach (int requested in new[] { -4, 0, 3, 4, 100, 115 })
+        foreach (bool dispatch in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 30, side.HqOf(), 2);
+            source.Keywords.Clear(); target.Keywords.Clear(); source.Keywords.Add(Keyword.Suppressed);
+            target.Defense = 3; target.MaxDefense = maximum;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            if (dispatch)
+            {
+                engine.Api.InvokeByName("ChangeDefense", target,
+                    new object?[] { target, source.CardId, requested, 2, false, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                if (!handled) return "ChangeDefense设值派发未处理";
+            }
+            else engine.Api.SetDefenseValue(target, requested, source);
+            int value = Math.Clamp(requested, 0, 99);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            var expected = new[] { ActionValue2.Int("cardID", 30), ActionValue2.Int("gained", requested),
+                ActionValue2.Int("newDefenseValue", value), ActionValue2.Int("instigatorID", 20),
+                ActionValue2.Str("changeType", "SetValue") };
+            if (target.Defense != value || target.MaxDefense != value
+                || gain.Length != 1 || !gain[0].Values.SequenceEqual(expected)
+                || (target.Location == CardLocation.Discard) != (value == 0)
+                || actions.Count(x => x.Name == "ZActionDestroyUnit") != (value == 0 ? 1 : 0)
+                || trace.Any(x => x.Contains("OnAfterGainDefense", StringComparison.Ordinal)))
+                return $"设值错误 side={side}, max={maximum}, requested={requested}, dispatch={dispatch}";
+            if (value == 0 && Array.FindIndex(actions, x => x.Name == "ZActionGainDefense")
+                >= Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit"))
+                return "设值致死应先通知设值，后进行摧毁（与普通减防分支不同）";
+            if (value > 0 && !trace.Any(x => x.Contains("OnAfterDefenseIsSet", StringComparison.Ordinal)))
+                return "存活的零差值设值也应触发设值事件";
+        }
+        return null;
+    }
+
+    private static string? DefenseNotificationFields(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int delta in new[] { -1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 30, side.HqOf(), 2);
+            source.Keywords.Clear(); target.Keywords.Clear(); source.Keywords.Add(Keyword.Suppressed);
+            target.Keywords.Add(Keyword.Suppressed); target.Defense = target.MaxDefense = 3;
+            engine.Api.InvokeByName("ChangeDefense", target,
+                new object?[] { target, source.CardId, delta, 1, false, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            var gain = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionGainDefense");
+            var expected = new[] { ActionValue2.Int("cardID", 30), ActionValue2.Int("gained", delta),
+                ActionValue2.Int("newDefenseValue", 3 + delta), ActionValue2.Int("instigatorID", 20),
+                ActionValue2.Str("changeType", "permBuff") };
+            if (!handled || !gain.Values.SequenceEqual(expected)) return "普通增量通知须保留目标、来源、负增量和permBuff文本";
+        }
         return null;
     }
 

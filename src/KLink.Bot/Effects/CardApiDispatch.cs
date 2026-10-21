@@ -4252,11 +4252,11 @@ public sealed partial class CardApi
 
         if (IntArg(a, 3) == ChangeTypeSetValueReal)
         {
-            SetDefenseValue(target, Math.Clamp(value, 0, 99), c.Self);
+            SetDefenseValue(target, value, c.Self);
             return null;
         }
 
-        ChangeDefense(target, value, c.Self);
+        ChangeDefense(target, value, c.Self, changeType: IntArg(a, 3));
         return null;
     }
 

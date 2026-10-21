@@ -1,0 +1,173 @@
+{
+  "rule": "RULE-305",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "Defense notification wire fields and absolute SetValue numerical branch",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-305",
+    "worker_exact_match": true,
+    "worker_functions": 4,
+    "blueprint_functions_verified": 5,
+    "script_bytes": 6298,
+    "script_statements": 230,
+    "native_selected_enum_spans": 6,
+    "native_selected_enum_bytes": 1469,
+    "native_ranges_file_matched": 12,
+    "enum_entries": 11,
+    "models": 642,
+    "full_release_selftest": {
+      "passed": 636,
+      "total": 636
+    },
+    "kernel_runtime_changed": true,
+    "limits": "Wire fields and ordinary increment/SetValue representation, current client enum path; source argument resolution, buff ledger, other numeric enum modes, post-destroy set callback, action/reconnect lifecycle and generic death sweep not certified."
+  },
+  "authority": {
+    "blueprint": "Five captured complete Blueprint functions (including interface stub),6298B230stmt. NotifyGainDefense forwards five args; AddSubActionGainDefense359B builds cardID,gained,newDefenseValue,instigatorID,changeType in that order. HandleGainDefense108B stores persistent frame then enters OnlineMatch ubergraph11956; full ubergraph is not certified here.",
+    "enum": "Live UEnum11 entries0..10, enum form byte50 nonzero, flags byte51 bit0 unset, display callback at60 null; actual vtable+2c0 targets RVA14a0e10. Selected native chain3db7440->14a3750->1484640 nonflags fallback148c3e0->virtual14a0e10->14a26f0 yields unqualified names, literal :: captured. Six interpreted spans1469B; ancillary ranges include unwind fragments, not all complete functions or callees.",
+    "set_value": "ChangeDefense984..: clamp requested input0..99, set current and maxDefense even at identical old/current values; notify with raw requested amount, then DestroyCard if totalDefense==0, then OnAfterDefenseIsSet and observers. ActionProcess false pops flow after writes before notifications/destruction/events."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    ],
+    "changes": [
+      "Restore five ordered GainDefense fields; use string sentinel-1 and preserve valid enum names. Thread incoming ChangeType through ordinary dispatcher; SetValue marks type2. Existing public temporary flag metadata maps tempBuffGive without certifying that native numeric mode.",
+      "SetDefenseValue clamps current and maxDefense to0..99, bypasses additive zero-delta guard, sends original requested amount as gained rather than difference. Dispatcher passes unclamped input so raw request survives notification.",
+      "Retain ordinary negative-death-before-notification phase from RULE304. SetValue still notifies before death. No death-ledger phase changes."
+    ],
+    "scope": "Initialized alive/buffable target with positive preexisting defense, ordinary headless action mode; source/entry/buff and post-destroy callback limitations remain explicit."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 636,
+    "total": 636,
+    "new_cases": [
+      "48 absolute setter combinations: sides2 x old maximum3/8 x requested -4,0,3,4,100,115 x public/dispatch entry; check exact defense/max, all five ordered fields preserving raw request, zero-delta notification/set event, no gain event, direct destroy ordering for zero.",
+      "4 ordinary increment dispatch cases: sides2 x delta-1/+2, exact target/source/signed delta/new value/permBuff text."
+    ],
+    "fixture": "Temporary synthetic OnAfterDefenseIsSet probe installed and disposed. Initial test incorrectly expected trace from a card lacking a set-event program; added probe and reran full suite. No real-card effect certification.",
+    "models": {
+      "rule": "RULE-305",
+      "payload_cases": 594,
+      "set_branch_cases": 48,
+      "total": 642,
+      "case_digest_sha256": "0ac9cb301ee4261d535311fd317976e2698c569a9d0017f8568d10f28740cce0",
+      "limits": "Whole constructor and int/cardID/string helper AST with mocked action collector. Enum valid entries derived from live UEnum and selected native path, string/FText primitive copies modeled. Set branch starts984 with initialized valid card, after entry/buff guards, original flow stack/jumps, empty observer arrays and mocked crypto/getters/destroy/notifier. Explicitly observes post-destroy OnAfterDefenseIsSet native call; C# post-destroy callback path remains pending. ActionProcess false branch modeled only in reference, not a new headless runtime mode."
+    }
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-handler-action-native-20261022.json",
+      "sha256": "68e9ef0465e9c72a5ba494bfdae2de74d9962050ad269664452c70e7f8a9b959"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-type-friendly-native-20261022.json",
+      "sha256": "4fc68b3dd104df532a92e776c69645a85eaf035f6ff748c64d2b05cb7730784f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-payload-set-model-checks-20261022.json",
+      "sha256": "aa7d232d5eafc4269e0b46f4b35d0c90aaef81160bf32b3af526faef1e6bd2be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-notifier-payload-native-20261021.json",
+      "sha256": "a09294e318730fd2e875f5802d5c16793b90c954e64a4a7ed8462eee40b7254d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-payload-string-helper-native-20261021.json",
+      "sha256": "3cd9b0a5846f9476f76a21f9ec040024f8b596c9171bc2780f9b77a5c1c3693c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-handler-helpers-native-20261021.json",
+      "sha256": "ea34f60e5ad9f8d4048a412940e828756d951a83c4e0a0c91b08085f93eb91f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule305-defense-payload-set-verified-20261022.json",
+      "sha256": "b1c09425888e80131dabd0b33b499b068c9afbae09c9ef22659ef23f9031920d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule305-selftest-release.log",
+      "sha256": "7c3c9d9e1ad24792a467c476d12a2b96ac8e210c36bfbd98346c4d14113eab1e"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule305-defense-handler.py",
+      "sha256": "21089533b4b87366fb6d8494ea5ebe404288e0c5b4d65d49b5bef562cf70b7fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule305-change-type-native.py",
+      "sha256": "0fdcee8b9a4cafd56f748750ad132c43727bc6a443f7dcff571e7acaf1662903"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule305-packet.py",
+      "sha256": "37338042fc4cd610f120679c11b3f088442b1aa9f1fa571417de0330593d473b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule305-defense-payload-set.py",
+      "sha256": "496e783ce2726eb4231926ecd263393ce67c0944b695f9b137a0ccfd1b3f2154"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule305-defense-payload-set.py",
+      "sha256": "b0fd1cf254d4827a96448bcfc4f6ec4f80000bffec21cf644aba537c84b8c58e"
+    }
+  ],
+  "deepseek": {
+    "job": "20261022-014732-rule305-defense-handler-550ed26f",
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule305\\task.txt",
+      "sha256": "56239646eec6ffaf9bfc3c7f29c7abe8326482f650bfb11c85441597a730d84b"
+    },
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule305\\functions.json",
+      "sha256": "c3a6d246d9dda363677d7b697278c86951a8e11db3d828c1d8e8f3fea02ab237"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule305\\inventory.json",
+      "sha256": "4b07aef772a219fb04921e8d6c5a6d27f892d02533fcb66bdcbd2d96fa8d88a0"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical calls/top-level Context writes for four functions, duplicate HandleGainDefense names retained. Semantic judgments and native chain by primary."
+  },
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "7bb51b4f0a854b3b06f0a557af1ee8cf92eda2629986be3cb98d2a55d75694ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "93242f71e9b17095a7edd015772ca2845b4cfa54deb5922e8cdd76bf66dcd092"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "656a60cd7549f7637b5f6f8ae280b029be562e23f21de39bfcbb2700ec816705"
+    }
+  ],
+  "remaining": [
+    "SetValue invokes OnAfterDefenseIsSet and observer loop even after DestroyCard in client; current headless early return for dead target still skips that branch. Need event eligibility and callback lifecycle audit before integration.",
+    "ChangeDefense dispatcher still uses c.Self rather than resolving supplied instigatorID; null-source fallback to target ID, positive-ID and positive-old-defense gates remain unaligned.",
+    "ChangeBuffsFromCards precedes numeric branches; source-specific ledger, all change modes and skipAction must be audited together. Wire enum labels are not numeric mode certification.",
+    "Current headless positive branch and nonstandard enum modes remain incomplete; zero additive input and ActionProcess/reconnect lifecycle not certified.",
+    "Generic CheckDeaths and death-history generation/receipt timing remain pending; no historical replay used as authority."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
