@@ -2630,12 +2630,29 @@ public sealed partial class CardApi
             return;
         }
 
+        // RULE-304: ChangeDefense's additive decrease branch (i=1995) lowers
+        // maxDefense only if the new defense is positive. A lethal decrease
+        // completes DestroyCard before NotifyGainDefense (i=2507 -> i=4083).
+        // SetDefenseValue uses a different native branch and is audited separately.
+        bool additiveDecrease = fireGainDefenseEvent && delta < 0;
         target.Defense += delta;
-        target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
+        if (additiveDecrease)
+        {
+            if (target.Defense > 0) target.MaxDefense += delta;
+        }
+        else
+        {
+            target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
+        }
 
         if (source is not null)
         {
             GetOrCreateBuff(target, source.CardId, temporary).Defense += delta;
+        }
+
+        if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
+        {
+            _engine.Destroy(target, source);
         }
 
         _engine.FireSubAction("ZActionGainDefense", new[]
@@ -2663,7 +2680,7 @@ public sealed partial class CardApi
                 });
         }
 
-        if (target.Defense <= 0 && !target.IsHq)
+        if (!additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
             _engine.Destroy(target, source);
         }

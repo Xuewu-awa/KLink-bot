@@ -1,0 +1,148 @@
+{
+  "rule": "RULE-304",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "Ordinary negative defense max-value and death notification ordering",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-304",
+    "completed_on_client_date": "2026-10-22",
+    "worker_exact_match": true,
+    "worker_functions": 1,
+    "functions_verified": 3,
+    "script_bytes": 6187,
+    "script_statements": 220,
+    "models": 192,
+    "full_release_selftest": {
+      "passed": 634,
+      "total": 634,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "limits": "Only additive negative defense max-value and direct-death-before-notification phase. Not complete defense change, all payload fields, SetValue, callback ledger phases or generic CheckDeaths equivalence."
+  },
+  "authority": {
+    "additive": "ChangeDefense5743B207stmt.1995 amount<0 ->2043 crypto keys,2084 oldDefense,2125add,2171write.2239reread;2280/2314 positive gate. Survives:2328/2396 maxDefense+=amount. Nonpositive:2475source lookup and2507DestroyCard.2539->2445 skipAction gate.4042rereads defense and4083NotifyGainDefense.",
+    "routing": "Defense-death intentionally uses DestroyCard, unlike damage-death RULE-303 ApplyRemove. Preserve direct destroy action. A callback changing defense during destruction does not cancel a call already entered; later notification reads final getter result.",
+    "notification": "NotifyGainDefense85B forwards five arguments to HandleGainDefense. AddSubActionGainDefense359B constructs five ordered fields; this round captures the mismatch but does not patch incomplete dispatch/ChangeType representation."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "scope": "ApplyDefenseDelta only when fireGainDefenseEvent && delta<0. Survivors lower maxDefense by delta; lethal non-HQ targets complete ordinary Destroy before gain notification, while SetDefenseValue branch remains unchanged.",
+    "not_certified": "Not a certification of whole ChangeDefense or generic death sweep; source/buff assignment and entry modes unchanged."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 634,
+    "total": 634,
+    "new_regressions": [
+      "24 combinations: sides2 x sourcePresent2 x maximum3or8 x delta(-1,-3,-5); starting defense3, check exact defense/max, discard/death-history count, one gain and appropriate explicit destroy ordered first, no positive-gain callback.",
+      "Synthetic OnBeforeDestroyed draw callback: no early gain, old maximum8; sets defense9, destruction still completes and later notification reads9. Temporary probes disposed; not real-card semantic authority."
+    ],
+    "models": {
+      "rule": "RULE-304",
+      "cases": 192,
+      "result": "pass",
+      "case_digest_sha256": "fd694864c2f98b2546bdfe600b1007e889b87f8ee8f32761eb5d978970be6783",
+      "scope": "Exact decoded ChangeDefense AST starts at1995 additive branch with initialized positive defense, localChangeType=1 and resolved buff processing; follows original jumps through5740 return. Mocks only getters/crypto, source lookup, DestroyCard and notifier. Tests skipAction gate, death-before-notify, post-callback defense and maxDefense writes.",
+      "limits": "Not whole ChangeDefense entry/pre-buff processing/positive/set-value path. Mock destruction includes configurable defense mutation, no full native callbacks, HQ, source resolver or real notifier/queue certification."
+    }
+  },
+  "deepseek": {
+    "job": "20261022-013558-rule304-defense-death-inventory-a877566b",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule304\\functions.json",
+      "sha256": "6dc411d7a600fbe450e5e58a804a17b9d34324b184bf49df4357cd1187ddf7c9"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule304\\task.txt",
+      "sha256": "60965ae27ca6a39de0c9fbb8a0067e38086b8eada610109d07a486b286cb973f"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule304\\inventory.json",
+      "sha256": "b7d8ceb814960c20319af6bfe53b9dc4879d820597199338a62646bb51708d7e"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical one-function call and top-level Context write inventory only."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-notification-action-native-20261022.json",
+      "sha256": "b740928971c1f0d859b3fb8245118eaeaa82e12512ee49b69df1cc99972f5bec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-decrease-branch-model-checks-20261022.json",
+      "sha256": "8a4801ce8b2fdeeaa1c7c35cc221f691bf520b6aab4e5579890871ba92f964d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-generation-native-20261021.json",
+      "sha256": "103f933a98e2521252af520567ab1bb3ad2126df0cd4ff80b09f722b90954f01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule304-defense-decrease-verified-20261022.json",
+      "sha256": "1fc0e01c56806da0fa5838186c68f7b7af8d1d2961877f1553fab1836d9b6300"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule304-selftest-release.log",
+      "sha256": "64be6f86766eeeac7521335c21ccc84d9f0895ddfd8417585595f4e6b961b626"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule304-defense-death.py",
+      "sha256": "a33f0a570c135b3c519f64b68f368a561482b8a85b733225b5d943862c5575d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule304-defense-notification.py",
+      "sha256": "ce3fbb1674296e5666ca20e809685b720bb28107b1f25e6dfaa1d6403f9710f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule304-packet.py",
+      "sha256": "381a22e8843320ccf14aa044f5560ce193b8c8eb972ca1ae557c0ac188eaa9bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule304-defense-decrease.py",
+      "sha256": "fc13d1c27938da9b7f9791b787525b5174d0adaf5e60ad0444c0dd155a3c7f79"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule304-defense-decrease.py",
+      "sha256": "aa2bd54a82e42257d880f6a7d32d45d9f8a421ce17282517526921f57d462d80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\edit-rule304-defense.py",
+      "sha256": "5e66481fd0db4d0f1535fe751839f83ba2df46819fd8ae0dcb51d90ab429c2ad"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "bb32b84e339a2d420964a9dc3febd6a830bb5444eefb77da22e4ceeb5fabcec2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "e9d1bd61f6f6d3b64a09de91e037522fabf9401d3912eb885fb9c5d460032c32"
+    }
+  ],
+  "remaining": [
+    "GainDefense action has five ordered client fields cardID,gained,newDefenseValue,instigatorID,changeType; current shared action only has instigatorID,gained,newDefenseValue. Preserve ChangeType and its runtime friendly text before fixing across additive/SetValue paths.",
+    "ChangeDefense entry checks valid/buffable target, positive instigator ID and positive preexisting total defense; shared API null-source fallback and nonpositive entry not certified.",
+    "ChangeBuffsFromCards runs before numeric branches. Source/buff removal, enum modes, skipAction and gain observers still require joint audit; ordinary negative path fixes do not certify them.",
+    "SetValue branch directly clamps defense and maxDefense to0..99, not a delta conversion; zero-delta, maxDefense decrease and post-destroy set-event behavior remain to align.",
+    "Generic CheckDeaths board sweep and three invocation sites have not been linked to authoritative client control flow; existing implementation retained, historical replay comments are not authority.",
+    "Shared destruction-history generation/receipt timing, callback-visible ledgers, grouped deaths and reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

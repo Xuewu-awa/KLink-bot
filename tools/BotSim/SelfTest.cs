@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("普通减防：存活才降低最大防御，致死先摧毁后通知", DefenseDecreaseDeathOrder),
+        new("减防致死：摧毁前回调看不到提前通知，通知读取回调后防御", DefenseDecreaseCallbackTiming),
         new("ChangeDefense：旁观卡可增加防御或中止 HQ 获得防御",
             ChangeDefenseBeforeOtherCardGainDefense),
         new("Type 89：HQ 获得防御时改为承受等量效果伤害",
@@ -5938,6 +5940,65 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    // Synthetic fixtures test the shared additive branch, not a real card effect.
+    private static string? DefenseDecreaseDeathOrder(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourcePresent in new[] { false, true })
+        foreach (int maximum in new[] { 3, 8 })
+        foreach (int delta in new[] { -1, -3, -5 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var victim = state.CreateWithId("card_unit_arado_ar_196", side, 30, side.HqOf(), 2);
+            source.Keywords.Clear(); victim.Keywords.Clear();
+            source.Keywords.Add(Keyword.Suppressed);
+            victim.Keywords.Add(Keyword.Suppressed);
+            victim.Defense = 3; victim.MaxDefense = maximum;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(victim, delta, sourcePresent ? source : null);
+            bool dies = 3 + delta <= 0;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            int destroy = Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit");
+            int gain = Array.FindIndex(actions, x => x.Name == "ZActionGainDefense");
+            if (victim.Defense != 3 + delta || victim.MaxDefense != (dies ? maximum : maximum + delta)
+                || (victim.Location == CardLocation.Discard) != dies
+                || actions.Count(x => x.Name == "ZActionDestroyUnit") != (dies ? 1 : 0)
+                || actions.Count(x => x.Name == "ZActionGainDefense") != 1
+                || (dies && (destroy < 0 || gain <= destroy))
+                || state.DestroyedCardIdsAll.Count != (dies ? 1 : 0)
+                || trace.Any(x => x.Contains("OnAfterGainDefense", StringComparison.Ordinal)))
+                return $"减防分支不一致 side={side}, source={sourcePresent}, max={maximum}, delta={delta}";
+        }
+        return null;
+    }
+
+    private static string? DefenseDecreaseCallbackTiming(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var beforeProbe = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+        var victim = state.CreateWithId(name, Side.Left, 30, CardLocation.BoardHqLeft, 2);
+        victim.Keywords.Clear(); victim.Defense = 3; victim.MaxDefense = 8;
+        state.CreateWithId("card_unit_51e_regiment", Side.Left, 50, CardLocation.DeckLeft, 0);
+        bool called = false, earlyGain = false; int observedMax = -1;
+        using var drawProbe = InstallDrawReentryProbe(state, () => {
+            called = true; observedMax = victim.MaxDefense;
+            earlyGain = state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionGainDefense");
+            victim.Defense = 9;
+        });
+        engine.Api.ChangeDefense(victim, -5, source);
+        var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+        var gain = actions.Single(x => x.Name == "ZActionGainDefense");
+        if (!called || earlyGain || observedMax != 8 || victim.Location != CardLocation.Discard
+            || gain.Values.Single(x => x.Name == "newDefenseValue").Value != 9
+            || actions.Count(x => x.Name == "ZActionDestroyUnit") != 1
+            || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }))
+            return "减防致死须先完成摧毁回调/移除，通知再读取最新防御；回调恢复不取消已开始摧毁";
         return null;
     }
 
