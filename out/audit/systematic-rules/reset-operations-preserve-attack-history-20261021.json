@@ -1,0 +1,158 @@
+{
+  "rule": "RULE-298",
+  "kind": "Fix ResetUnitOperations incorrectly erasing attack history",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-298",
+    "worker_exact_match": true,
+    "functions": [
+      {
+        "name": "ReceiveActionResetUnitOperations",
+        "bytes": 751,
+        "statements": 30
+      },
+      {
+        "name": "ReceiveActionChangeUnitOwnership",
+        "bytes": 1807,
+        "statements": 60
+      },
+      {
+        "name": "ReceiveActionAttackCard",
+        "bytes": 4160,
+        "statements": 126
+      },
+      {
+        "name": "ResetUnitOperations",
+        "bytes": 588,
+        "statements": 21
+      }
+    ],
+    "full_script_bytes": 7306,
+    "full_script_statements": 237,
+    "generator_matches_previous_capture": true,
+    "model_cases": 384,
+    "full_release_selftest": {
+      "passed": 624,
+      "total": 624,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "limit": "Reset generator and reset receiver modeled with explicit mock dependencies; attack/ownership receivers fully decoded and inventoried only. Full turn-view history reset timing remains unresolved."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-and-operations-receivers-native-20261021.json",
+      "sha256": "6cd0319fdb2a708d776715a1549db6f0a6d237fbc726d21a4c36a03885d952b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operation-generator-native-20261021.json",
+      "sha256": "8b218778145a090b3bb4bb090b1f98f3d45f19d1463c2a3d842d79cd5c463288"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operation-history-model-checks-20261021.json",
+      "sha256": "edbf547e9e7578d9fec5b64160fa0e60ca996ecbaff9853a4f218d1cd6d67fa0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-functions-complete-native-20261021.json",
+      "sha256": "85248fbcc4e8461e7279de890cfb5e8c3e3e9700f8adee7d92fd6600c930bd7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule298-reset-history-verified-20261021.json",
+      "sha256": "02858849d98fb1e5e13df4397dac9674c85bbf99c3fbc02cb94134c10250f429"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule298-selftest-release.log",
+      "sha256": "4b1134a3a4bb1f7c0eeab66c4ce2312438e842a8b7444ad09ddbba082c0e5dc5"
+    }
+  ],
+  "authority": {
+    "generator": "Full588B/21 statements: board AND unit gate; movementLeft=1 at198; getHasFury selects attackLeft=2 at362 or1 at535; IsActionProcess430 controls notifier444 only. No hasAttackedThisTurn or attackCountThisTurn write.",
+    "receiver": "Full751B/30 statements: parse cardID/instigatorID from Value, ASCII case-insensitive keys, later duplicate replaces earlier; ResolveSubActionsFromLocal true pops without ResetUnitOperations, false calls helper at418.",
+    "scope": "Attack/ownership receivers are whole-body decoded and mechanically inventoried, not wholly semantically certified in this round."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "change": "Restore HasMovedThisTurn=false and SetRemainingAttacks(HasFury?2:1), preserving HasAttackedThisTurn and AttacksThisTurn; quota offset represents independent native attackLeft.",
+    "previous": "Cleared hasAttackedThisTurn and attackCountThisTurn along with quota, losing history read by other effects."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 624,
+      "total": 624,
+      "exit_code": 0,
+      "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest"
+    },
+    "new_regression": "Both sides and raw/source Fury: after one historical attack and repeated reset, gaining then losing Fury must still clear attack quota according to the retained count=1. Hit/ever flags and operation count remain unchanged.",
+    "updated_regressions": "Correct two existing refresh tests that previously required historical count/flag to clear; preserve board/unit gate and Fury quota checks.",
+    "decoded_AST_model": {
+      "generator_cases": 192,
+      "receiver_cases": 192,
+      "total": 384,
+      "limits": "Explicit initialized locals, valid stable card map, mocked board/unit/Fury/action predicates and notifier; no null/unknown ID, native callback or reentrant lookup certification."
+    }
+  },
+  "deepseek": {
+    "job": "20261021-210428-rule298-operations-receipts-3753968e",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule298\\functions.json",
+      "sha256": "8d71d61868d45e035385da3c134c8bb86171891a4b16a0c6a9f8ea284ac09197"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule298\\inventory.json",
+      "sha256": "f41f27f55423e170b2d2c7cd79cff050a3df4b641fc3827d8675ffa46a874184"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule298\\task.txt",
+      "sha256": "c9677dcf00fc53c657d424732494a12195e3e689159e79dfd4609b7c2a7cf535"
+    },
+    "primary_exact_match": true,
+    "scope": "Four-function call and top-level Context-write inventory only"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule298-operation-receivers.py",
+      "sha256": "eeaf6009ea779ef0eb7794178c0aa9ba2bac604f37bc7a9a3e6921cdc9f31e64"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule298-reset-generator.py",
+      "sha256": "438259182b64d3470a67d6f91db07c24a715f82df1ec21d72d6343cd90681ab3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule298-packet.py",
+      "sha256": "54c0f75874662a7381a48a8d806909cd0aa9c4ee144575e0480d170ac5136c16"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule298-reset-history-model.py",
+      "sha256": "c635354d901abd887eaaf0ad7971b0841a2cc480dc6fb2a7f897bbbd38d70d7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule298-reset-history.py",
+      "sha256": "2217d93e8b491b6d7f97f3331b812b2e50e3158e257ca74446aedbecf1437eaa"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "ab78d5f502ea89e90c8c402966c7553583b998a98f10a0a21298b896c21138b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "9ec018558e54340733a1effbe8a9ea34bc583a4d45c24d005b7299cdfb1e857f"
+    }
+  ],
+  "remaining": [
+    "Full ordinary-turn attack history reset timing and both client perspectives from RULE-297",
+    "NotifyResetUnitOperations generation/queue representation and all related callbacks",
+    "Full semantics of attack and ownership receivers, only inventoried here"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

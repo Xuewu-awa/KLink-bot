@@ -5102,9 +5102,9 @@ public sealed partial class CardApi
     /// `ResetUnitOperations(cardID, giverID, out qqq)`.
     ///
     /// 蓝图先要求目标是棋盘上的单位，然后把 movementLeft 设为 1，
-    /// 把 attackLeft 设为 Fury ? 2 : 1。内核用本回合移动/攻击状态和
-    /// 攻击次数表示这两个额度；`NotifyResetUnitOperations` 只是动作流程
-    /// 下的客户端通知，本无头内核没有 notifier，故不产生表现层状态。
+    /// 把 attackLeft 设为 Fury ? 2 : 1，不清攻击历史。攻击次数与剩余额度
+    /// 独立：使用 SetRemainingAttacks 保留已有 attackCountThisTurn。
+    /// NotifyResetUnitOperations 的完整通知及接收时序另行审计。
     /// </summary>
     private object? DoResetUnitOperations(EffectContext c, object?[] a)
     {
@@ -5115,9 +5115,7 @@ public sealed partial class CardApi
         }
 
         card.HasMovedThisTurn = false;
-        card.HasAttackedThisTurn = false;
-        card.AttacksThisTurn = 0;
-        card.AttackQuotaOffset = 0;
+        card.SetRemainingAttacks(card.HasFury ? 2 : 1);
         return null;
     }
 

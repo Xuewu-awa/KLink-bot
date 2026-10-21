@@ -413,6 +413,7 @@ internal static class SelfTest
             SpawnNextToCard),
         new("ResetUnitOperations：只恢复棋盘单位的移动/攻击额度，Fury 恢复两次攻击",
             ResetUnitOperations),
+        new("恢复行动保留攻击历史，随后给予/移除奋战仍按已攻击次数处理", ResetOperationsKeepsAttackHistory),
         new("GiveRandomCombatKeyword：双出参、已有关键字排除与 Smokescreen 特殊过滤",
             GiveRandomCombatKeyword),
         new("Blueprint Set 原语：Add 去重、Contains/Length、ToArray 与 Clear",
@@ -14409,10 +14410,13 @@ internal static class SelfTest
                 if (!engine.Attack(unit, state.Hq(side.Opposite())))
                     return "撤销同回合行动能力不追溯清除已保留额度";
             }
+            int previousAttackCount = unit.AttacksThisTurn;
+            bool previouslyAttacked = unit.HasAttackedThisTurn;
             engine.Api.InvokeByName("ResetUnitOperations", unit, new object?[] { 60, 9004, null },
                 new EffectContext { Engine = engine, State = state, Self = unit, Controller = side }, out _);
-            if (unit.AttackQuotaOffset != 0 || unit.AttacksThisTurn != 0 || unit.HasMovedThisTurn
-                || unit.RemainingAttacks != (mode == 0 ? 2 : 1)) return "重置行动应同时恢复独立攻击额度";
+            if (unit.AttacksThisTurn != previousAttackCount || unit.HasAttackedThisTurn != previouslyAttacked
+                || unit.HasMovedThisTurn || unit.RemainingAttacks != (mode == 0 ? 2 : 1))
+                return "重置行动应恢复独立攻击额度并保留攻击历史";
         }
         return null;
     }
@@ -31257,18 +31261,18 @@ internal static class SelfTest
             return $"ResetUnitOperations 未正确进入派发表：handled={handled}, result={result ?? "null"}";
         }
 
-        if (fury.HasMovedThisTurn || fury.HasAttackedThisTurn || fury.AttacksThisTurn != 0
-            || fury.OperationsUsedThisTurn != 7 || !fury.HasAttackLeft)
+        if (fury.HasMovedThisTurn || !fury.HasAttackedThisTurn || fury.AttacksThisTurn != 2
+            || fury.OperationsUsedThisTurn != 7 || fury.RemainingAttacks != 2)
         {
-            return $"Fury 单位应恢复移动/攻击额度但保留操作计数：move={fury.HasMovedThisTurn}, "
+            return $"Fury 单位应恢复额度并保留攻击历史和操作计数：move={fury.HasMovedThisTurn}, "
                  + $"attack={fury.HasAttackedThisTurn}, attacks={fury.AttacksThisTurn}, "
                  + $"ops={fury.OperationsUsedThisTurn}, left={fury.HasAttackLeft}";
         }
 
         engine.Api.InvokeByName("ResetUnitOperations", plain,
             new object?[] { plain.CardId, fury.CardId, null }, ctx, out bool plainHandled);
-        if (!plainHandled || plain.HasMovedThisTurn || plain.HasAttackedThisTurn
-            || plain.AttacksThisTurn != 0 || !plain.HasAttackLeft)
+        if (!plainHandled || plain.HasMovedThisTurn || !plain.HasAttackedThisTurn
+            || plain.AttacksThisTurn != 1 || plain.RemainingAttacks != 1)
         {
             return "普通棋盘单位应恢复为一次可攻击且可移动";
         }
@@ -31284,6 +31288,46 @@ internal static class SelfTest
             return "非棋盘单位或非单位目标不应被 ResetUnitOperations 改写";
         }
 
+        return null;
+    }
+
+    private static string? ResetOperationsKeepsAttackHistory(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool furyFromSource in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var unit = state.CreateWithId("card_unit_arado_ar_196", side, 100,
+                side == Side.Left ? CardLocation.BoardHqLeft : CardLocation.BoardHqRight, 1);
+            unit.Keywords.Remove(Keyword.Fury);
+            unit.ReceivedAbilitiesFromCards.Remove("fury");
+            unit.HasAttackedThisTurn = true;
+            unit.HasEverAttacked = true;
+            unit.HasBeenAttackedThisTurn = true;
+            unit.AttacksThisTurn = 1;
+            unit.OperationsUsedThisTurn = 7;
+            unit.HasMovedThisTurn = true;
+            unit.SetRemainingAttacks(-3);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = unit, Controller = side };
+
+            // Repeating a refresh must not erase the attack that preceded it.
+            for (int i = 0; i < 2; i++)
+                engine.Api.InvokeByName("ResetUnitOperations", unit,
+                    new object?[] { unit.CardId, 9004, null }, ctx, out _);
+            if (unit.HasMovedThisTurn || unit.RemainingAttacks != 1
+                || !unit.HasAttackedThisTurn || unit.AttacksThisTurn != 1
+                || !unit.HasEverAttacked || !unit.HasBeenAttackedThisTurn || unit.OperationsUsedThisTurn != 7)
+                return $"恢复行动丢失攻击/受击历史或额度错误：{side}, source={furyFromSource}";
+
+            int giver = furyFromSource ? 9004 : 0;
+            engine.Api.GiveFury(unit, giver);
+            if (!unit.HasFury || unit.RemainingAttacks != 2 || unit.AttacksThisTurn != 1)
+                return "恢复后给予奋战应保留一次攻击历史并增加一次额度";
+            engine.Api.RemoveFury(unit, giver);
+            if (unit.HasFury || unit.RemainingAttacks != 0 || unit.AttacksThisTurn != 1
+                || !unit.HasAttackedThisTurn)
+                return "恢复后移除奋战仍须按已攻击一次清零额度，不能按未攻击处理";
+        }
         return null;
     }
 
