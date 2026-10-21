@@ -1,0 +1,167 @@
+{
+  "rule": "RULE-284",
+  "kind": "Native callback completion event identity and bounded local ordering; no kernel repair",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-callback-flow-native-20261021.json",
+      "sha256": "7cbd5cb02af9c08d6a9c42270c152958e4c59c475f28ba3197f8f6976070acb4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-callback-event-names-20261021.json",
+      "sha256": "a02cb3b3efc6b93fa1d0ab83c883a896a8fb4d9652c3e763bd3b0c49d20e995e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\match-controller-active-side-symbols-20261021.json",
+      "sha256": "d4e3b4f9fdc58cda62dc9f3f44ffb720ecc58093baeb429125e370adf5f14e94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule284-callback-flow-verified-20261021.json",
+      "sha256": "14e5c5863ca064513fe64aa3e2e9e82213b02c866b555bfa51e6930a2ef6914f"
+    }
+  ],
+  "capture": {
+    "functions": 8,
+    "chained_unwind_parts": 22,
+    "bytes": 8548,
+    "code_live_equals_pe": true,
+    "stable_second_read": true,
+    "fully_decoded_captured_parts": true,
+    "scope": "Three callbacks plus five post-store helper roots, not transitive dependency closure. Additional DataFetchedForRestartingMatch event wrapper captured separately."
+  },
+  "events": [
+    {
+      "helper_rva": "0x4a93bc0",
+      "name": "LoadMatch",
+      "name_global_rva": "0x93aa890",
+      "fname_matches_current_ufunction_header": true,
+      "dispatch": "FindFunction helper then virtual slot+0x260; override/receiver execution not certified"
+    },
+    {
+      "helper_rva": "0x4a93e20",
+      "name": "MatchReconnected",
+      "name_global_rva": "0x93aa8b8",
+      "fname_matches_current_ufunction_header": true,
+      "dispatch": "FindFunction helper then virtual slot+0x260; override/receiver execution not certified"
+    },
+    {
+      "helper_rva": "0x4a93eb0",
+      "name": "NoMatchToReconnect",
+      "name_global_rva": "0x93aa8c8",
+      "fname_matches_current_ufunction_header": true,
+      "dispatch": "FindFunction helper then virtual slot+0x260; override/receiver execution not certified"
+    },
+    {
+      "helper_rva": "0x4a93750",
+      "name": "DataFetchedForRestartingMatch",
+      "name_global_rva": "0x93aa868",
+      "fname_matches_current_ufunction_header": true,
+      "dispatch": "FindFunction helper then virtual slot+0x260; override/receiver execution not certified"
+    }
+  ],
+  "find_match_local_order": {
+    "start_side_store": "0x4ac306b",
+    "status_comparison": "controller+0x7f0 FString versus narrow ASCII loading; existing comparison helper",
+    "status_equal_path": [
+      "c09=3",
+      "helper0x4b11ab0 (clock update and tail jump to0x4b11b00)"
+    ],
+    "status_not_equal_path": [
+      "c09=2",
+      "clock write c10",
+      "helper0x4b11ce0 (additional asynchronous request construction)"
+    ],
+    "join": "0x4ac30f2 calls LoadMatch wrapper0x4a93bc0",
+    "limit": "Local join/call order, not successful asynchronous completion or Blueprint startup timing."
+  },
+  "reconnect_local_order": {
+    "start_side_store": "0x4aca7db",
+    "success_event_call": "0x4acaf72",
+    "event": "MatchReconnected",
+    "parameter_packing": {
+      "rsp+20": "dl byte (unranked)",
+      "rsp+24": "r8d (knockoutRound)",
+      "rsp+28": "r9d (current_tourney_id)"
+    },
+    "failure_event": "NoMatchToReconnect appears on multiple alternative branches, including before cf9 assignment",
+    "limit": "Not every invocation reaches success assignment or notification; no full action recovery semantics."
+  },
+  "resync_local_order": {
+    "start_side_store": "0x4acc1be",
+    "previous_truncation": "Selected fragment0x4acc025 did not contain successor0x4acc411; now all five chained ranges captured",
+    "array_stride": 64,
+    "loop_back_edge": {
+      "rva": "0x4acc403",
+      "target_rva": "0x4acc292"
+    },
+    "container_helper_call": {
+      "rva": "0x4acc3b1",
+      "this_plus": "0xca8",
+      "target_rva": "0x4aa3a40"
+    },
+    "tail_state_write": "0x4acc54a writes r13b to controller+c08",
+    "notification_call": "0x4acc554",
+    "notification": "DataFetchedForRestartingMatch",
+    "limit": "Array conversion/container work precedes notification on this code path. Container insertion and later Blueprint evaluation are not equated to completed action replay."
+  },
+  "deepseek": {
+    "job_id": "20261021-145527-rule284-callback-calls-277b9c4a",
+    "elapsed_seconds": 32.09,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule284\\calls.json",
+      "sha256": "7ba673e5f1c5ceb3c437b2d4d8e82f1dcbdf884686dd407dd67f3fd33d6a8a0c"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule284\\inventory.json",
+      "sha256": "1547434e92e47391d84b2688a4c0d59385bbbb3298d5234b83194866c5ffed55"
+    },
+    "primary_exact_match": true,
+    "calls": 322,
+    "direct": 256,
+    "indirect": 66,
+    "scope": "Mechanical call counts and repeated direct-target inventory only; no semantic decisions."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule284-callback-flow.py",
+      "sha256": "92e7cd87578eed589ffa5e0c66c4b0f4118492d8a70713d644bfb3e0a8140255"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule284-event-names.py",
+      "sha256": "45fa83de48ce8ef2f2601e99c9027f39e5ceda215b2441227c0e1a6445ad3fdc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule284-callback-flow.py",
+      "sha256": "8ba62b5c4dcf592474e43d354c314beb33085747f7a2138bb63f027bf1fdef0f"
+    }
+  ],
+  "validation": {
+    "new_native_independent_capstone_checks": true,
+    "worker_exact_json_check": true,
+    "event_fname_ufunction_match": true,
+    "kernel_changed": false,
+    "new_full_tests_run": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "No Blueprint event receiver/override or full initialization/action replay ordering certified.",
+    "No all-writer/alias/bulk clear proof; other stack-string producer remains open.",
+    "No StartingSide transport/import/default change. Current controller ActiveSide is not automatically original starting side at arbitrary phases.",
+    "No historical replay authority, process write, injection or client function invocation."
+  ],
+  "next_audit": "Trace concrete MatchController Blueprint event overrides and their calls to OnlineMatch/Logic startup versus action replay, then resolve initial StartingSide import contract."
+}
