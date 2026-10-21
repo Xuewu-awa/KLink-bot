@@ -3152,15 +3152,23 @@ public sealed class MatchEngine
     {
         if (!card.IsAlive || card.IsHq) return;
         var batch = new[] { card.CardId };
+        // DestroyCard i=184 captures the action location before before-destroy
+        // callbacks. ApplyRemoveCardFromBoard later reads the removal location.
+        var destroyedLocation = card.Location;
         BeforeDestroyed(card, destroyer, destroyedInCombat);
         var oldLocation = card.Location;
+        if (!destroyedInCombat)
+        {
+            Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
+                (int)destroyedLocation, out string locationName);
+            FireSubAction("ZActionDestroyUnit", new[] {
+                ActionValue2.Int("cardID", card.CardId),
+                ActionValue2.Int("destroyerCardID", destroyer?.CardId ?? 0),
+                ActionValue2.Str("destroyedLocation", locationName),
+            });
+        }
         FireLeaveTrigger(card, CardLocation.Discard, method: 1);
         Say($"{card} 被摧毁");
-        FireSubAction("ZActionDestroyUnit", new[]
-        {
-            ActionValue2.Int("destroyerCardID", destroyer?.CardId ?? 0),
-            ActionValue2.Int("destroyedLocation", (int)oldLocation),
-        });
         // ApplyRemoveCardFromBoard -> CardLocationMoved: Discard retains its old number,
         // then RefreshLocationStatus runs before ExecuteOnCardLocationMoved.
         State.Move(card, CardLocation.Discard, locationNumber: card.LocationNumber,

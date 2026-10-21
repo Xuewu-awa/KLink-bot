@@ -786,6 +786,8 @@ internal static class SelfTest
         new("战斗伤害：普通互杀、炮兵/轰炸机/战斗机/防空反击与 Ambush 例外", CounterAttackRules),
         new("攻击子动作包含14字段、剩余额度、旧防御及冲击消耗标志", AttackSubActionPayload),
         new("攻击通知在受伤前回调后取防御，位置仍保留回调前快照", AttackSubActionSnapshotTiming),
+        new("战斗单方或双方阵亡由攻击动作携带结果，不额外发送摧毁/移除动作", CombatDeathActionRouting),
+        new("效果摧毁记录目标/来源和回调前旧位置，并先于离场动作", DestroyActionPayloadAndTiming),
         new("战斗伤害：lethal 只把正值战斗伤害变成致命，效果伤害不触发", LethalCombatDamage),
 
         // ---- P1：伤害修正链（2026-09-30）----
@@ -27384,6 +27386,75 @@ internal static class SelfTest
             || values["defenderLocation"].Text != "Board_HQRight" || defender.Location != CardLocation.BoardFrontline
             || defender.Defense != 10)
             return "攻击子动作必须保留回调前位置和回调后、扣血前防御";
+        return null;
+    }
+
+    private static string? CombatDeathActionRouting(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool attackerDies in new[] { false, true })
+        foreach (bool defenderDies in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;
+            state.Turn = 4;
+            state.SetKredits(side, 20);
+            var attacker = state.CreateWithId("card_unit_arado_ar_196", side, 20, side.HqOf(), 1);
+            var defender = state.CreateWithId("card_unit_arado_ar_196", side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            foreach (var card in new[] { attacker, defender })
+            {
+                card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed);
+                card.ReceivedAbilitiesFromCards.Clear(); card.EnteredPlayOnTurn = -1;
+            }
+            attacker.Attack = 7; defender.Attack = 3;
+            attacker.Defense = attacker.MaxDefense = attackerDies ? 1 : 11;
+            defender.Defense = defender.MaxDefense = defenderDies ? 1 : 13;
+            if (!engine.Attack(attacker, defender, out string reason)) return $"战斗摧毁测试攻击被拒：{reason}";
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (actions.Count(x => x.Name == "ZActionAttackCard") != 1
+                || actions.Any(x => x.Name is "ZActionDestroyUnit" or "ZActionRemoveCardFromBoard"))
+                return "无衍生摧毁的战斗不得再生成独立摧毁/移除动作";
+            if ((attacker.Location == CardLocation.Discard) != attackerDies
+                || (defender.Location == CardLocation.Discard) != defenderDies
+                || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
+                return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static string? DestroyActionPayloadAndTiming(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var beforeProbe = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourcePresent in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = side;
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var victim = state.CreateWithId(name, side, 30, side.HqOf(), 2);
+            victim.Keywords.Clear();
+            state.CreateWithId("card_unit_51e_regiment", side, 50, side.DeckOf(), 0);
+            bool called = false, actionTooEarly = false;
+            using var drawProbe = InstallDrawReentryProbe(state, () => {
+                called = true;
+                actionTooEarly = state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionDestroyUnit");
+                state.Move(victim, CardLocation.BoardFrontline, 0, notifyMoved: false);
+            });
+            engine.Destroy(victim, sourcePresent ? source : null);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var destroy = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            var expected = new[] {
+                ActionValue2.Int("cardID", 30), ActionValue2.Int("destroyerCardID", sourcePresent ? 20 : 0),
+                ActionValue2.Str("destroyedLocation", side == Side.Left ? "Board_HQLeft" : "Board_HQRight"),
+            };
+            int destroyIndex = Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit");
+            int leaveIndex = Array.FindIndex(actions, x => x.Name == "ZActionLeaveBoardOrOwner");
+            if (!called || actionTooEarly || destroy.Length != 1 || !destroy[0].Values.SequenceEqual(expected)
+                || leaveIndex <= destroyIndex || victim.Location != CardLocation.Discard
+                || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }))
+                return "效果摧毁动作须在摧毁前回调后、离场前生成，并保存回调前位置和正确来源";
+        }
         return null;
     }
 

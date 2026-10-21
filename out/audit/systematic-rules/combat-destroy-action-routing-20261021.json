@@ -1,0 +1,178 @@
+{
+  "rule": "RULE-302",
+  "kind": "Correct combat destruction action routing and explicit destroy payload/timing",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-302",
+    "worker_exact_match": true,
+    "functions": [
+      {
+        "name": "ApplyRemoveCardFromBoard",
+        "bytes": 1009,
+        "statements": 40
+      },
+      {
+        "name": "DestroyCard",
+        "bytes": 439,
+        "statements": 17
+      },
+      {
+        "name": "AddSubActionRemoveCardFromBoard",
+        "bytes": 261,
+        "statements": 8
+      },
+      {
+        "name": "AddSubActionDestroyUnit",
+        "bytes": 216,
+        "statements": 7
+      },
+      {
+        "name": "NotifyDestroyUnit",
+        "bytes": 67,
+        "statements": 3
+      },
+      {
+        "name": "NotifyRemoveCardFromBoard",
+        "bytes": 67,
+        "statements": 3
+      }
+    ],
+    "full_functions": 6,
+    "script_bytes": 2059,
+    "script_statements": 78,
+    "previous_attack_body_reverified": true,
+    "model_cases": 258,
+    "full_release_selftest": {
+      "passed": 629,
+      "total": 629,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "limits": "Valid non-HQ headless main-action targets and isolated combat deaths. No full callback-generated chain, non-action/reconnect lifecycle or death-ledger phase certification."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-generation-native-20261021.json",
+      "sha256": "103f933a98e2521252af520567ab1bb3ad2126df0cd4ff80b09f722b90954f01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-builders-native-20261021.json",
+      "sha256": "a36a163a35da0de6c783db6123950a08e36e5648f2c086dba89a5c105230bea7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\combat-removal-notifiers-native-20261021.json",
+      "sha256": "262f0bf18eb0f70b265dfa50c387a6753e653e8314dd86fd8fc5d307b879c833"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-execution-notification-native-20261021.json",
+      "sha256": "0960be1d7d9b8dd0e72150abb4e0729c1774986eafae076c0bdc0c2482fbfe99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-action-routing-model-checks-20261021.json",
+      "sha256": "c52d09e48eb9a3dc28fb6d526cd980390d146b5c6d92709ed4144bb6307e8c49"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule302-removal-routing-verified-20261021.json",
+      "sha256": "0547e08b44caed8c65ece7985a010de8119f054b64e5d89ec803d8bcfe07fc03"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule302-selftest-release.log",
+      "sha256": "d080f325fae8f4e1cef735a27dd6ad73fbbdf6071e94099e43190eafdeb94b3e"
+    }
+  ],
+  "authority": {
+    "destroy": "DestroyCard439B/17 statements: capture _location184 before before-destroy callback270; main-action NotifyDestroyUnit304 before ApplyRemove367. Missing source object maps to sourceID0.",
+    "remove": "ApplyRemoveCardFromBoard1009B: Destroyed=true executes destruction callback766 then Pop825 to function return1006, bypassing removal notifier841. Destroyed=false can notify removal only if skipAddAction=false. Flow stack, not byte-offset order, determines this.",
+    "combat": "Current ExecuteAttackCard single-death branches4542/4623 call ApplyRemoveCardFromBoard with Destroyed=true, destroyedInCombat=true. No direct NotifyDestroyUnit in full attack function. Nested card effects may still legitimately generate separate destruction actions.",
+    "payload": "AddSubActionDestroyUnit216B ordered cardID, destroyerCardID, destroyedLocation string with Value=-1. Distinct AddSubActionRemoveCardFromBoard261B uses cardID, instigatorID, oldLocation."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+    "previous": "Single combat death called shared Destroy that emitted extra ZActionDestroyUnit; explicit destroy omitted targetID, encoded location as int and emitted after leave callbacks.",
+    "change": "Emit ZActionDestroyUnit only for noncombat Destroy; include ordered cardID/sourceID/location string. Capture action location before BeforeDestroyed, emit after before-destroy callbacks and before leave; preserve separately re-read removal location after callback.",
+    "scope": "No changes to actual removal/destruction event order beyond action emission; no new death-ledger receipt or history timing fix."
+  },
+  "tests": {
+    "full_release_selftest": {
+      "passed": 629,
+      "total": 629,
+      "exit_code": 0,
+      "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest"
+    },
+    "combat_regression": "Both sides and all four none/single-attacker/single-defender/both death outcomes: one attack record and no extra destroy/removal action; actual deaths and ledger counts still correct.",
+    "explicit_regression": "Both sides, null/non-null source. Temporary before-destroy draw callback moves victim to frontline, sees no destroy action yet. Final payload retains original HQ location; destroy action precedes leave action; removal and one death record still happen.",
+    "probe_limit": "Temporary cleaned-up programs exercise callback stages only, not real card effects.",
+    "AST_model": {
+      "apply_cases": 144,
+      "destroy_cases": 96,
+      "wire_cases": 18,
+      "total": 258,
+      "limits": "Initialized valid/stable object lookup, mocked lifecycle callbacks/notifier/UI/location mover and enum text; helper nonpositive-ID boundary tested, not all headless import behavior or full reconnect."
+    }
+  },
+  "deepseek": {
+    "job": "20261021-215204-rule302-destroy-removal-inventory-83f6c05b",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule302\\functions.json",
+      "sha256": "0db21632b1188464363173826959897c39cd9f116d0c6012381a413fb44fa032"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule302\\inventory.json",
+      "sha256": "ecda0a39428bb633ad3ea1f073139c36420b2c64ebd9de1cb8e05793dfc2133f"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule302\\task.txt",
+      "sha256": "0671af85c479cf5bc1634724a2b95a22955aabf7f051380ab192455d99a557cc"
+    },
+    "primary_exact_match": true,
+    "scope": "Six-function mechanical call/Context-write inventory only"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule302-destroy-generation.py",
+      "sha256": "47454ea4fb020fdcb3d9c9838fbe85b640cbba8cb53fd279db518cc0abb07b74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule302-packet.py",
+      "sha256": "f94f33a9b81ef40ad9995efc570090e94b39f81ca28cea6519f3d9876cddd00e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule302-removal-routing.py",
+      "sha256": "9256acce90c7eb441ff61668bda1ccaf0540c498a57d4638c84ccf5063caab6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule302-removal-routing.py",
+      "sha256": "888487142fe6024b62a96d926a7c04e14357e8fb275d051306e683e7ed3c7144"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule300-attack-payload.py",
+      "sha256": "740e1e6c2fc273036e3ba56d10c47323fc82ddfa0155ac730c06cb0321eb93f9"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "3dd55a1b1c04d49d9018c9bed2bac3e83c27a824fb03b9d50e84a4846e11f51c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "145a287c03f61c1b6e1e0f9973cc0a4d8590e7eb6021bc88d676fd8486561e46"
+    }
+  ],
+  "remaining": [
+    "RULE-301 shared destruction ledger phase and callback-visible history",
+    "Full grouped action queue and non-action/reconnect handling",
+    "Other callers of shared Destroy and removal helpers, including reentrant ID replacement and nested generated effects",
+    "RULE-297 turn history reset and native negative movement quota"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
