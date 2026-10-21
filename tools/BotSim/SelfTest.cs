@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("设值事件：致死后仍先调用自身，再调用注册旁观者", DefenseSetOwnAndObserverOrder),
+        new("设值事件：自身后查询，旁观者循环保持查询快照", DefenseSetObserverSnapshot),
         new("防御设值：零差值仍覆盖最大值，夹取0..99且通知保留原始请求", DefenseSetAbsoluteValues),
         new("防御通知：普通增量与设值均发送五项有序字段", DefenseNotificationFields),
         new("普通减防：存活才降低最大防御，致死先摧毁后通知", DefenseDecreaseDeathOrder),
@@ -5942,6 +5944,103 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static IDisposable InstallDefenseSetEventProbes()
+    {
+        const string probe = "card_unit_arado_ar_196", trigger = "OnAfterOtherCardDefenseIsSet";
+        var own = InstallSelectionDrawProbe(probe, "OnAfterDefenseIsSet");
+        try
+        {
+            var other = InstallSelectionDrawProbe(probe, trigger);
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(probe)!.Locals;
+            var marker = new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardDefenseSet", Scope = "local" }, null, -1, "_auditDefenseSetSubject", null)
+                { DestinationScope = "instance" };
+            locals[trigger] = new[] { marker }.Concat(locals[trigger].Select(x => x with { Index = x.Index + 1 })).ToArray();
+            return new AuditProbeCleanup(() => { other.Dispose(); own.Dispose(); });
+        }
+        catch { own.Dispose(); throw; }
+    }
+
+    private static string? DefenseSetOwnAndObserverOrder(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterDefenseIsSet", other = "OnAfterOtherCardDefenseIsSet";
+        using var programs = InstallDefenseSetEventProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool lethal in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (var where in new[] { side.HandOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, side.HqOf(), 1);
+            var observer = state.CreateWithId(probe, side.Opposite(), 30, where, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 2);
+            foreach (var card in new[] { observer, target })
+            {
+                card.Keywords.Clear();
+                card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = target.MaxDefense = 3;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.SetDefenseValue(target, lethal ? 0 : 4, source);
+            var calls = trace.Where(x => x.StartsWith(own + " → ", StringComparison.Ordinal)
+                || x.StartsWith(other + " → ", StringComparison.Ordinal)).ToArray();
+            if (calls.Length != 2 || !calls[0].StartsWith($"{own} → {probe}#60", StringComparison.Ordinal)
+                || !calls[1].StartsWith($"{other} → {probe}#30", StringComparison.Ordinal)
+                || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditDefenseSetSubject"), target)
+                || (target.Location == CardLocation.Discard) != lethal)
+                return $"设值事件自身/旁观顺序或致死主体丢失 side={side}, lethal={lethal}, suppressed={suppressed}, observer={where}";
+        }
+        return null;
+    }
+
+    private static string? DefenseSetObserverSnapshot(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterDefenseIsSet", other = "OnAfterOtherCardDefenseIsSet";
+        using var programs = InstallDefenseSetEventProbes();
+        foreach (bool lethal in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            CardDefinition Definition(bool registered) => new() { Name = probe, Type = "fighter",
+                UsedTriggers = registered ? new[] { other } : Array.Empty<string>() };
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.BoardHqLeft, 1);
+            var first = state.CreateWithId(probe, Side.Left, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, Side.Left, 60, CardLocation.BoardHqLeft, 2);
+            var later = state.CreateWithId(probe, Side.Left, 70, CardLocation.HandLeft, 0);
+            foreach (var card in new[] { first, target, later }) { card.Keywords.Clear(); card.Definition = Definition(card != first); }
+            target.Defense = target.MaxDefense = 3;
+            for (int i = 0; i < 4; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            int stage = 0; CardInstance? beforeQuery = null, afterQuery = null;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                stage++;
+                if (stage == 1)
+                {
+                    first.Definition = Definition(true);
+                    beforeQuery = state.CreateWithId(probe, Side.Left, 65, CardLocation.Discard, 1);
+                    beforeQuery.Keywords.Clear(); beforeQuery.Definition = Definition(true);
+                }
+                else if (stage == 2)
+                {
+                    later.Keywords.Add(Keyword.Suppressed); later.Definition = Definition(false);
+                    state.Move(later, CardLocation.NotAvailable, 0, notifyMoved: false);
+                    afterQuery = state.CreateWithId(probe, Side.Left, 90, CardLocation.Discard, 2);
+                    afterQuery.Keywords.Clear(); afterQuery.Definition = Definition(true);
+                }
+            });
+            engine.Api.SetDefenseValue(target, lethal ? 0 : 4, source);
+            var calls = trace.Where(x => x.StartsWith(own + " → ", StringComparison.Ordinal)
+                || x.StartsWith(other + " → ", StringComparison.Ordinal)).ToArray();
+            var expected = new[] { $"{own} → {probe}#60", $"{other} → {probe}#30", $"{other} → {probe}#65", $"{other} → {probe}#70" };
+            if (calls.Length != expected.Length || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second, StringComparison.Ordinal))
+                || stage != 4 || beforeQuery is null || afterQuery is null
+                || !ReferenceEquals(later.BlueprintVariables.GetValueOrDefault("_auditDefenseSetSubject"), target)
+                || afterQuery.BlueprintVariables.ContainsKey("_auditDefenseSetSubject"))
+                return "设值事件须在自身回调后取快照：查询前新注册/新建接收，查询后变化不重筛也不补新卡";
+        }
         return null;
     }
 

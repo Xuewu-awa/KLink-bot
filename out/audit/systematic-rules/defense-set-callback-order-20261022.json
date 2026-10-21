@@ -1,0 +1,147 @@
+{
+  "rule": "RULE-306",
+  "completed_on_client_date": "2026-10-22",
+  "kind": "SetDefenseValue callback phase and observer snapshot",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-306",
+    "worker_exact_match": true,
+    "worker_functions": 1,
+    "blueprint_functions_verified": 3,
+    "script_bytes": 7001,
+    "script_statements": 245,
+    "fresh_change_defense_matches_previous": true,
+    "models": 260,
+    "full_release_selftest": {
+      "passed": 638,
+      "total": 638,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Post-set own callback including dead target, query-after-self and frozen observer loop with CardID exclusion. Uses existing definition-based registration abstraction; not native TSet order, runtime map maintenance, ID replacement/null lifetime, entry/source/buff or reconnect certification."
+  },
+  "authority": {
+    "set_events": "ChangeDefense1589 directly invokes held target.OnAfterDefenseIsSet, no alive/location/suppression gate in this branch, even after1512DestroyCard.1625queriesT6.1898 compares CardID and skips own ID;3996calls observer(cardToChangeRef),3932 loops to1696. No new suppression/registration/location guard in event loop.",
+    "query": "BP_GameState_Battle.FetchAllCardsWithEventTrigger1174B and BP_CardFunctions wrapper84B. Map trigger IDs->Set_ToArray, resolve AllCardsInBattle IDs, skip missing, suppress only if isSuppressed&&!suppressionExceptionTriggers.Contains(trigger), append held objects to output array. No location/alive gate."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Remove post-destroy IsAlive early return before set events.",
+      "Invoke own event alone, including held unavailable/suppressed target, with no event parameters.",
+      "Query registered observers after own callback. Iterate frozen objects directly, exclude matching CardID, pass target argument and cardDefenseSet named value; do not recheck changed suppression/registration/location during loop."
+    ],
+    "scope": "Existing definition-based registration abstraction retained; source ID/entry/buff or numeric mechanisms unchanged."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "exit_code": 0,
+    "passed": 638,
+    "total": 638,
+    "new_regressions": [
+      "24 combinations of sides, lethal/surviving set, suppressed own target and observer hand/discard/notavailable. Low-ID observer must follow own callback; correct subject object and single own/other call.",
+      "2 lethal/surviving reentry scenarios: own callback registers old observer and creates new registered observer before query. First observer then suppresses/unregisters/moves a later observer and creates another registered card. Frozen later observer still called, post-query new card excluded; target excluded even if registered."
+    ],
+    "fixture": "Temporary own/other draw probes and instance subject marker, cleaned up deterministically; controlled DrawReentry callback, not real card effect authority.",
+    "models": {
+      "rule": "RULE-306",
+      "event_loop_cases": 180,
+      "full_query_cases": 80,
+      "total": 260,
+      "case_digest_sha256": "aaaed5d1e04e271d3e894d88a18cfd53534d574501dbb50c7005c895f48b64be",
+      "scope": "Decoded ChangeDefense event branch starts1589 through original jumps/flow-stack to5740; full BP_GameState_Battle FetchAllCardsWithEventTrigger AST called at1625. Uses mocked own/other callbacks, map/array/set-to-array primitives and initialized valid objects. Tests unavailable/discarded/suppressed own target, mutations before/after query, same-ID alias exclusion, missing map IDs and suppression exceptions.",
+      "limits": "Does not certify native TSet storage order or real registration-map maintenance. Controlled set order supplied; live callbacks, object replacement/destruction validity, entry/buff/numeric branches and reconnect outside model."
+    }
+  },
+  "deepseek": {
+    "job": "20261022-015724-rule306-set-events-9b25cfcd",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule306\\functions.json",
+      "sha256": "6dc411d7a600fbe450e5e58a804a17b9d34324b184bf49df4357cd1187ddf7c9"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule306\\task.txt",
+      "sha256": "bf5c45e389de3ebae6bb53669913c63225df54d285d78e613d555ec41dc62cfe"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule306\\inventory.json",
+      "sha256": "b7d8ceb814960c20319af6bfe53b9dc4879d820597199338a62646bb51708d7e"
+    },
+    "primary_exact_match": true,
+    "scope": "One complete ChangeDefense mechanical calls/Context writes; primary verifies bytecode and semantic branches independently."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-callback-native-20261022.json",
+      "sha256": "de703cbcc41f91b282532a011e6e810a25b4e0be536ceb440a3fdfa8d805851e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-event-model-checks-20261022.json",
+      "sha256": "e0f25e4285c6eb5a24a630f69936b9a0f6fe10a2fd57d262984e428f67746fce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule306-defense-events-verified-20261022.json",
+      "sha256": "ca3931123a1af5b43ff1a59e302a75961aff5d846671c866008c15197fbd8c69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule306-selftest-release.log",
+      "sha256": "0de056ba4b8739c3ab80441b8944f0f08b2c459ab521d513bc52b910fca296c3"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule306-defense-set.py",
+      "sha256": "347d6e4b8e3eeb192252f26e40473a17bb7719c0ce68548059aef2bdfa4fcdc8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule306-trigger-query-all.py",
+      "sha256": "3ac8be7fbfac192a082a1d5237c61b66d481dbf72218074e67e95685453af00f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule306-packet.py",
+      "sha256": "a81c88d0f1821f2bcb27accdc62a178cd6ac71077f1c5fd31964fe841fe65f22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule306-defense-events.py",
+      "sha256": "7677c5344af55feae0e8cf5302e11d4a699c10f315fe468bad4ab8d68f8cd01b"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "fb73d8b56617da9c488cce88fd9dd789a22a65a7715d2f421475764a231fba59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "e898dac1b314b51e5a0f57660b48b0433cae079ee92307674fcbaa307c640e6d"
+    }
+  ],
+  "remaining": [
+    "ChangeDefense source ID is still c.Self rather than supplied instigator ID; raw unknown positive ID/entry gate and buff ledger require joint audit.",
+    "Initial positive-defense/source gates, ChangeBuffsFromCards, all numeric modes and skipAction remain pending.",
+    "Native registration map maintenance and TSet iteration order not certified; object invalidation/ID replacement during callbacks outside scope.",
+    "Generic death sweep, death-history generation/receipt phase and reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

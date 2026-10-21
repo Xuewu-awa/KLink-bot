@@ -2775,17 +2775,24 @@ public sealed partial class CardApi
                           temporary: false, fireGainDefenseEvent: false,
                           changeType: 2, defenseSetValue: value);
 
-        if (!target.IsAlive)
+        // RULE-306: i=1589 directly invokes the held target even after DestroyCard.
+        // Only then i=1625 materializes T6; a self callback can change its membership.
+        FireTrigger("OnAfterDefenseIsSet", target, target.Owner,
+            recipientSnapshot: new[] { target }, includeUnavailableRecipients: true);
+        const string trigger = "OnAfterOtherCardDefenseIsSet";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { target };
+        var named = new Dictionary<string, object?> { ["cardDefenseSet"] = target };
+        foreach (var observer in recipients)
         {
-            return;
+            // The client compares CardID, and invokes the frozen query result without
+            // rechecking location, suppression or registration inside the loop.
+            if (observer.CardId == target.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, target, eventArgs: args, namedArgs: named);
         }
-
-        FireTrigger("OnAfterDefenseIsSet", target, target.Owner, "OnAfterOtherCardDefenseIsSet",
-            eventArgs: new object?[] { target },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardDefenseSet"] = target,
-            });
     }
 
     public void ChangeKreditCost(CardInstance target, int delta)
