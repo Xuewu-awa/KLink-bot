@@ -1,0 +1,191 @@
+{
+  "rule": "RULE-278",
+  "kind": "Saved main-faction state and explicit opening metadata integration",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "authority_sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\faction-init-blueprint-native-20261021.json",
+      "sha256": "aa9e93f1e40903e54442185865299bc8b2c201dee6de9f61b1343587b43a5a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\utility-faction-raw-20261021.json",
+      "sha256": "60258c34460e817665f42d321e47cfabb1210cf278f80158dfa5f308484087dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parsed.json",
+      "sha256": "01a2e0009f20fda5e05e73e050ce7b744af44cbe55fda0e6a58eca42cfb8af1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-parsed.json",
+      "sha256": "c0822b45e5df6ad58beffe9fae968c3685c440af15137524afd7e8e5d4755c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\manifest.json",
+      "sha256": "53b83ad5867d6b1c0d25e276c3c612822c5155687282bb231c5635ad6cd3ba9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-manifest.json",
+      "sha256": "98847664934b2680421af1ea4e7c8df33fcf4a0d34a44848d059110f4dea97e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "prior_evidence_summary": {
+    "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\systematic-rules\\main-faction-initialization-20261021.json",
+    "sha256": "2b3d27e0469574748c050c727abfbe39cd4dbbd00d62f859186a0cfc53ef29a9"
+  },
+  "authority_recheck": "All RULE-277 source hashes unchanged; this round did not recapture live process state",
+  "deepseek": {
+    "job_id": "20261021-030219-rule278-faction-writers-6b7feb91",
+    "scope": "Mechanical scan only; private packet; no production edits/publishing",
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule278\\inventory.json",
+      "sha256": "734a871c20a5773529a0be78659ce35bda8bb82b8b6cd3443020e7ea9a04e6de"
+    },
+    "independent_verification": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule278-worker-independent-verification.json",
+      "sha256": "d371ad2c79fe2b75dfc793d32cc0b32909543005297c22f3aadc478ac008788f"
+    },
+    "assets": 4,
+    "functions": 950,
+    "writes": 4,
+    "setter_calls": 2,
+    "limits": "Four named assets only; not proof of all native/dynamic writers"
+  },
+  "changes": [
+    "Independent LeftMainFaction/RightMainFaction bytes, default 0, side 1/2 setter, separate clear helper; no implicit HQ-derived query",
+    "Fresh CardFunctions wrapper query returns 0 for invalid side; accepts explicit int or Side arguments, no controller fallback",
+    "Opening importer reads explicit HQ record Faction; ordinary support-line units do not write saved main faction",
+    "Narrow ordinary-label conversion matches the 11 Blueprint branches; Allies/unknown/missing -> 0; no global faction database parser change",
+    "ServerCard additive Faction property, server replay bridge, HTTP starting-data adapter and two validation-tool adapters preserve input metadata",
+    "Self-play London configuration saves Britain once per side at Start; later HQ mutation/creation cannot overwrite saved fields",
+    "Saved fields included in MatchSnapshot JSON and therefore ActionJournal decision fingerprint"
+  ],
+  "tests": {
+    "red": {
+      "total": 610,
+      "failed": 1,
+      "reason": "Uninitialized HQ-derived main faction incorrectly returned Britain/Germany",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule278-before-20261021.txt",
+        "sha256": "6c1db3357f893bbb9a95c49bfc203816b407fffafd15c8738667b3c6d1967dcd"
+      }
+    },
+    "green": {
+      "total": 613,
+      "failed": 0,
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule278-after-20261021.txt",
+        "sha256": "f93ec6b2978641e9a0a4143f8865a48aa9e8e47447d9949971a7ad16322cbdb7"
+      }
+    },
+    "setter_byte_vectors": 65536,
+    "direct_and_vm_query_scenarios": 1536,
+    "synthetic_metadata_labels": 16,
+    "pilot_escape": "Existing packaged IR candidate type/faction/nonempty/output-flag assertions preserved; explicit saved factions deliberately differ from HQ definitions",
+    "http_contract": {
+      "result": "Passed with local stub handler; no actual remote HTTP request",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\http-contract-rule278-20261021.txt",
+        "sha256": "9067b1145bfc4d43ce2ea61aa9eca87363154fb4ca3187f91edc6a1904e79f20"
+      }
+    },
+    "aot_probe_build": {
+      "result": "Release build passed, 0 warnings/errors; runtime AOT probe not executed",
+      "log": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\build-aot-rule278-20261021.txt",
+        "sha256": "3c887ede74336ba7dc9d2dd7003570be557da2a89d69301332b4c089807cd5b2"
+      }
+    },
+    "compilation_note": "Initial new-test namespace reference was corrected before successful full run"
+  },
+  "managed_sources": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "c1b0abcf9367612ba5b751b0a36c83a31f2b3398fbc8cfef808a03fc717845b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "37e99b9670084e8347e98d1f3c259c0362e6d4d637cafa15387b92b4cc1018f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "b911b311b533da387438678386bf71733a1106faadaeeb111ec3cee9a8cd8fee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "18f8981ff4958b69059580e4a230f2674f738b040e81047149eeef98e75c3acd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerMatchSnapshot.cs",
+      "sha256": "7ff2563e0d0e68ef874548a6f93967d1cc40adcad77db0e75ddcced00f6a4668"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\ServerReplayBridge.cs",
+      "sha256": "0446f0b748d8dd96d2bdee1746e424b1257718fe9d08042df7e3bc2642b216ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "3fb13134edde87e5aacb6c657788bb3ee07eb9ccf5cf553c600dd3c42abaea71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\FyServerHttpClient.cs",
+      "sha256": "90b1606631d24bed3afc05c63d12fcb2da3fb3ee48784e1bf5b76c1c260a0dbd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\FyServerHttpContractTest.cs",
+      "sha256": "63997231cbfa7b67a4f63bb81fc0de00011c6b6a525fb6b3ec984f2a11fb188d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\ServerBridgeTest\\Program.cs",
+      "sha256": "1ba34cf34cb467eba2596d142ee24ad6913b4e721c8170e21190aeb0245eb58f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\AotProbe\\Program.cs",
+      "sha256": "2a789afd62eacc3215059b934f33663b57d28a4d614fd64f22cf5be4bb7b844b"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\implement-rule278.py",
+      "sha256": "d1b9785c4ccbc0f27dd155ed4ffe5281b3ecbc16f0b4dc03d9ca75aa2466bb17"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\test-rule278.py",
+      "sha256": "b33fa12a3dc5ba8509f169e1341268fa40a492ead15a20b14cf4fa06b32fbd58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\adapters-rule278.py",
+      "sha256": "e7914ce28d31533f9e210da15ee2beb5ca7ca546f56e8153bbf95481986b17fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule278-inventory-20261021.py",
+      "sha256": "f1004f0fa16340cd25943f47c65692f4c748fba794464df27a4d4f9fbf45fb4a"
+    }
+  ],
+  "single_card_update_migrations_paused": true,
+  "fully_semantically_verified_cards": 0,
+  "limitations": [
+    "Callers lacking opening faction metadata retain 0; this is absence of evidence, not certification of actual match faction. External server producers must supply metadata.",
+    "Raw Blueprint caller-owned out alias, unknown-string ReportError side effects, FName/Unicode conversion backend and generic FactionStringToEnum ABI are not fully emulated.",
+    "ClearMainFactions only zeros two bytes; it is not an implementation or dispatch binding for complete ClearGameStateVariables.",
+    "Full online Ubergraph, real-session sampling, reconnection/reset lifecycle and all native/dynamic writers remain uncertified.",
+    "Synthetic tests use no historical replay contents as authority; no process writes, injection or client function calls.",
+    "Legacy inventory counts 5585 functions / 7 scalar differences refer to prior baselines, not current defect totals."
+  ],
+  "next_audit": "Trace ally-faction saved state and opening metadata separately, then reset/reconnect producers without assuming HQ equivalence."
+}

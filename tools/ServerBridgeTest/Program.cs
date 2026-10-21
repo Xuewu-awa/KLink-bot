@@ -24,6 +24,8 @@ internal static class Program
     private static int Main(string[] args)
     {
         var opts = ParseArgs(args);
+        if (opts.ContainsKey("http-contract"))
+            return FyServerHttpContractTest.RunAsync().GetAwaiter().GetResult();
 
         // `--verify-load`：只验服务端数据目录能否加载（不跑对局）
         if (opts.TryGetValue("verify-load", out string? dataDirArg))
@@ -314,7 +316,7 @@ internal static class Program
                 c["is_gold"]?.GetValue<bool>() ?? false,
                 loc,
                 c["location_number"]?.GetValue<int>() ?? 0,
-                c["name"]?.GetValue<string>() ?? ""));
+                c["name"]?.GetValue<string>() ?? "") { Faction = c["faction"]?.GetValue<string>() });
         }
 
         AddCard(sd["location_card_left"], "board_hqleft");

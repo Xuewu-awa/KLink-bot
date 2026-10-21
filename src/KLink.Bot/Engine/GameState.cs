@@ -644,20 +644,40 @@ public sealed class GameState
 
     public int HqDefense(Side s) => Hq(s).Defense;
 
-    /// <summary>
-    /// Blueprint `GetMainFactionBySide`: the match HQ definition carries the
-    /// side's main faction. Invalid sides map to EFactionEnum::NotAvailable.
-    /// </summary>
-    public int GetMainFactionBySide(Side side)
-    {
-        if (side is not (Side.Left or Side.Right))
-        {
-            return 0;
-        }
+    // RULE-278: saved match metadata, independently of mutable HQ objects.
+    public byte LeftMainFaction { get; private set; }
+    public byte RightMainFaction { get; private set; }
 
-        CardInstance hq = Hq(side);
-        return hq.Definition.IsLocationCard ? hq.Definition.FactionId : 0;
+    public void SetMainFactionBySide(Side side, byte faction)
+    {
+        if (side == Side.Left) LeftMainFaction = faction;
+        else if (side == Side.Right) RightMainFaction = faction;
     }
+
+    public void ClearMainFactions()
+    {
+        LeftMainFaction = 0;
+        RightMainFaction = 0;
+    }
+
+    /// <summary>Fresh CardFunctions wrapper result; invalid sides start with output 0.
+    /// This is not the raw GameState Blueprint's caller-owned out-parameter ABI.</summary>
+    public int GetMainFactionBySide(Side side) => side switch
+    {
+        Side.Left => LeftMainFaction,
+        Side.Right => RightMainFaction,
+        _ => 0,
+    };
+
+    /// <summary>Opening metadata conversion for ordinary faction labels. Missing/unknown
+    /// input keeps the fresh output at 0. Does not emulate ReportError or out aliases.</summary>
+    public static byte MainFactionFromStartingData(string? faction) => faction?.ToLowerInvariant() switch
+    {
+        "germany" => 1, "britain" => 2, "japan" => 3, "soviet" => 4,
+        "usa" => 5, "france" => 6, "italy" => 7, "poland" => 8,
+        "finland" => 9, "anzac" => 10, "neutral" => 12,
+        _ => 0,
+    };
 
     /// <summary>创建一张卡并加入牌库。用于开局发牌与效果生成的卡（SpawnCard 等）。</summary>
     /// <param name="sequentialId">
@@ -1024,6 +1044,8 @@ public sealed class GameState
         IsFrontlineLimited,
         AllCards.Select(c => c.Snapshot()).ToArray())
         {
+            LeftMainFaction = LeftMainFaction,
+            RightMainFaction = RightMainFaction,
             DestroyedCardIdsAll = DestroyedCardIdsAll.ToArray(),
             DestroyedCardIdsLeft = DestroyedCardsIdsBySide(Side.Left).ToArray(),
             DestroyedCardIdsRight = DestroyedCardsIdsBySide(Side.Right).ToArray(),
@@ -1088,6 +1110,8 @@ public sealed record MatchSnapshot(
     bool IsFrontlineLimited,
     CardSnapshot[] Cards)
 {
+    public byte LeftMainFaction { get; init; }
+    public byte RightMainFaction { get; init; }
     public int[] DestroyedCardIdsAll { get; init; } = [];
     public int[] DestroyedCardIdsLeft { get; init; } = [];
     public int[] DestroyedCardIdsRight { get; init; } = [];

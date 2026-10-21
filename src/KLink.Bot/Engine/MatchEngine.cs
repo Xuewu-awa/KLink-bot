@@ -469,6 +469,10 @@ public sealed class MatchEngine
         rightHq.Defense = InitialHqDefense;
         rightHq.MaxDefense = InitialHqDefense;
 
+        // Self-play opening configuration: both sides use London. Save it once.
+        State.SetMainFactionBySide(Side.Left, (byte)leftHq.Definition.FactionId);
+        State.SetMainFactionBySide(Side.Right, (byte)rightHq.Definition.FactionId);
+
         BuildDeck(Side.Left, LeftDeckList);
         BuildDeck(Side.Right, RightDeckList);
 

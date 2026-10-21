@@ -373,7 +373,11 @@ public sealed class ReplayRunner
         //    而客户端那一刻打的是 **HQ** ⇒ 两边下标语义不一致。
         foreach (var c in replay.Cards.Where(c => c.Location.IsBoard()))
         {
-            state.CreateWithId(c.Name, c.Owner, c.CardId, c.Location, c.LocationNumber, c.IsGold);
+            var openingCard = state.CreateWithId(c.Name, c.Owner, c.CardId, c.Location, c.LocationNumber, c.IsGold);
+            // Current OnlineMatch initializes this from location_card_*.faction,
+            // independently of the HQ definition. Ordinary support-line units do not write it.
+            if (openingCard.IsHq)
+                state.SetMainFactionBySide(c.Owner, GameState.MainFactionFromStartingData(c.Faction));
         }
 
         int known = 0, skipped = 0;

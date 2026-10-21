@@ -235,7 +235,7 @@ internal sealed class FyServerHttpClient : IDisposable
                 Bool(card, "is_gold"),
                 forceLocation ? fallbackLocation : String(card, "location", fallbackLocation),
                 Int(card, "location_number"),
-                String(card, "name"));
+                String(card, "name")) { Faction = card["faction"]?.GetValue<string>() };
         }
     }
 

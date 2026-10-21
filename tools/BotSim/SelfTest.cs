@@ -351,7 +351,11 @@ internal static class SelfTest
 
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
         new("PAMS：候选表 = 英国 + 指令 + 总费<5（读的是卡自己的 GetChooseSpawnCards）", PamsDevelopCandidates),
-        new("GetMainNationForSide：从两侧 HQ 读取主阵营并过滤 Pilot Escape 空军候选", MainNationForSide),
+        new("主阵营：未初始化时不从 HQ 猜测", MainFactionUninitialized),
+        new("主阵营：字节边界、显式输入与 VM 输出", MainFactionStoredBoundary),
+        new("主阵营：开局元数据及服务端桥保留独立阵营", MainFactionOpeningMetadata),
+        new("主阵营：快照指纹、自对弈初始化与 HQ 变更隔离", MainFactionSnapshotAndSelfPlay),
+        new("GetMainNationForSide：读取保存的主阵营并过滤 Pilot Escape 空军候选", MainNationForSide),
         new("PAMS：选中一张后被生成成新卡并塞进牌库（走完 CS 答复的整条链）", PamsDevelopEndToEnd),
         new("Develop：OnHandTargetSelected 之后广播 OnOtherCardDeveloped，并传递 instigatorID", OtherCardDevelopedAfterHandTargetSelected),
         new("触发队列：AddToTriggerQueue 按 FIFO 延迟执行并保留 CurrentTarget", TriggerQueueFifoAndTarget),
@@ -3826,6 +3830,119 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? MainFactionUninitialized(CardDatabase db)
+    {
+        var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
+        engine.State.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0);
+        engine.State.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        int left = engine.State.GetMainFactionBySide(Side.Left);
+        int right = engine.State.GetMainFactionBySide(Side.Right);
+        return left == 0 && right == 0 ? null : $"未初始化主阵营必须保持 0，实际 {left}/{right}";
+    }
+
+    private static string? MainFactionStoredBoundary(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        // Exercise the ABI byte domain; these values are not all legal match factions.
+        for (int faction = 0; faction < 256; faction++)
+        for (int side = 0; side < 256; side++)
+        {
+            state.ClearMainFactions();
+            state.SetMainFactionBySide(Side.Left, 37);
+            state.SetMainFactionBySide(Side.Right, 83);
+            state.SetMainFactionBySide((Side)side, (byte)faction);
+            if (state.LeftMainFaction != (side == 1 ? faction : 37)
+                || state.RightMainFaction != (side == 2 ? faction : 83))
+                return $"setter side={side}/faction={faction} changed the wrong saved byte";
+        }
+        state.SetMainFactionBySide(Side.Left, 1);
+        state.SetMainFactionBySide(Side.Right, 2);
+        foreach (int side in Enumerable.Range(0, 256))
+        foreach (Side controller in new[] { Side.Left, Side.Right, Side.NotAvailable })
+        foreach (bool boxedSide in new[] { false, true })
+        {
+            int expected = side is 1 or 2 ? side : 0;
+            var ctx = new EffectContext { Engine = engine, State = state,
+                Self = state.Hq(Side.Right), Controller = controller };
+            object input = boxedSide ? (object)(Side)side : side;
+            object? direct = engine.Api.InvokeByName("GetMainNationForSide", state.Hq(Side.Left),
+                new object?[] { input, 173 }, ctx, out bool handled);
+            var call = new KismetStep(0, "call", "GetMainNationForSide",
+                new[] { new KismetExpr { Var = "input", Scope = "local" },
+                    new KismetExpr { Var = "output", Scope = "local" } }, new[] { 1 },
+                null, null, -1, null, null);
+            var program = new KismetProgram(new[] { call, new KismetStep(1, "return", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                new Dictionary<string, object?> { ["input"] = input, ["output"] = 173 }, "output");
+            if (!handled || !Equals(direct, expected) || !Equals(result.GetValueOrDefault("output"), expected)
+                || state.GetMainFactionBySide((Side)side) != expected)
+                return $"query side={side}/controller={controller}/boxed={boxedSide}: direct={direct}, VM={result.GetValueOrDefault("output")}";
+        }
+        state.ClearMainFactions();
+        return state.LeftMainFaction == 0 && state.RightMainFaction == 0 ? null : "clear did not zero both bytes";
+    }
+
+    private static string? MainFactionOpeningMetadata(CardDatabase db)
+    {
+        // Synthetic starting records only: historical replay contents are not rule authority.
+        var labels = new (string? Label, int Value)[] { (null, 0), ("", 0), ("Germany", 1),
+            ("bRiTaIn", 2), ("JAPAN", 3), ("Soviet", 4), ("USA", 5), ("France", 6),
+            ("Italy", 7), ("Poland", 8), ("Finland", 9), ("Anzac", 10), ("Neutral", 12),
+            ("Allies", 0), ("unknown", 0), (" Germany ", 0) };
+        foreach (var (label, value) in labels)
+        {
+            var data = new KLink.Bot.Replay.ReplayData
+            {
+                MatchId = 278, Turns = 0, LeftPlayerId = 11, RightPlayerId = 22,
+                WinnerSide = "", ClientSide = Side.Left,
+                Cards = new[] {
+                    new KLink.Bot.Replay.ReplayData.SnapshotCard(1, "card_location_london", CardLocation.BoardHqLeft, 0, Side.Left, false, label),
+                    new KLink.Bot.Replay.ReplayData.SnapshotCard(41, "card_location_berlin", CardLocation.BoardHqRight, 0, Side.Right, false, "Japan"),
+                    new KLink.Bot.Replay.ReplayData.SnapshotCard(90, PlainUnit, CardLocation.BoardHqLeft, 1, Side.Left, false, "USA") },
+                Actions = Array.Empty<WireAction>(),
+            };
+            var state = new KLink.Bot.Replay.ReplayRunner(db).Run(data, false).Engine!.State;
+            if (GameState.MainFactionFromStartingData(label) != value
+                || state.GetMainFactionBySide(Side.Left) != value || state.GetMainFactionBySide(Side.Right) != 3)
+                return $"opening faction {label ?? "<null>"}: {state.LeftMainFaction}/{state.RightMainFaction}, want {value}/3";
+            var server = new ServerMatchSnapshot(278, 0, 11, 22,
+                new[] { new ServerCard(1, false, "board_hqleft", 0, "card_location_london") { Faction = label },
+                    new ServerCard(41, false, "board_hqright", 0, "card_location_berlin") },
+                Array.Empty<ServerAction>());
+            var converted = ServerReplayBridge.ToReplayData(server);
+            if (converted.Cards[0].Faction != label || converted.Cards[1].Faction != null)
+                return "server bridge lost explicit/missing faction metadata";
+            var serverState = new KLink.Bot.Replay.ReplayRunner(db).Run(converted, false).Engine!.State;
+            if (serverState.LeftMainFaction != value || serverState.RightMainFaction != 0)
+                return "server initialization inferred missing metadata from HQ or lost explicit input";
+        }
+        return null;
+    }
+
+    private static string? MainFactionSnapshotAndSelfPlay(CardDatabase db)
+    {
+        var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
+        engine.Start();
+        var state = engine.State;
+        if (state.LeftMainFaction != 2 || state.RightMainFaction != 2)
+            return "London self-play opening must save Britain once on both sides";
+        var before = ActionJournal.Fingerprint(engine);
+        state.SetMainFactionBySide(Side.Left, 173);
+        state.SetMainFactionBySide(Side.Right, 255);
+        var after = ActionJournal.Fingerprint(engine);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<MatchSnapshot>(state.SnapshotJson(), GameState.SnapshotJsonOptions);
+        if (before == after || restored?.LeftMainFaction != 173 || restored.RightMainFaction != 255)
+            return "saved factions missing from snapshot JSON/fingerprint";
+        var hq = state.Hq(Side.Left);
+        hq.Definition = db.Find("card_location_berlin")!;
+        hq.Location = CardLocation.Discard;
+        hq.Owner = Side.Right;
+        state.CreateWithId("card_location_london", Side.Left, 900, CardLocation.BoardHqLeft, 0);
+        return state.GetMainFactionBySide(Side.Left) == 173 && state.GetMainFactionBySide(Side.Right) == 255
+            ? null : "HQ definition/ownership/location or later creation overwrote saved factions";
+    }
+
     private static string? MainNationForSide(CardDatabase db)
     {
         const string selectingName = "card_event_pilot_escape";
@@ -3839,6 +3956,8 @@ internal static class SelfTest
         var state = engine.State;
         state.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0);
         state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetMainFactionBySide(Side.Left, 1); // Deliberately differs from London.
+        state.SetMainFactionBySide(Side.Right, 2); // Deliberately differs from Berlin.
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
         state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
 
@@ -3859,7 +3978,7 @@ internal static class SelfTest
             new object?[] { (int)Side.NotAvailable, null }, ctx, out bool invalidHandled);
         if (!leftHandled || !rightHandled || !invalidHandled
             || left is not int leftFaction || right is not int rightFaction
-            || leftFaction != 2 || rightFaction != 1 || !Equals(invalid, 0))
+            || leftFaction != 1 || rightFaction != 2 || !Equals(invalid, 0))
         {
             return $"主阵营读取错误：left={left ?? "null"}, right={right ?? "null"}, "
                  + $"invalid={invalid ?? "null"}, handled={leftHandled}/{rightHandled}/{invalidHandled}";

@@ -17,7 +17,11 @@ public sealed record ServerCard(
     bool IsGold,
     string Location,
     int LocationNumber,
-    string Name);
+    string Name)
+{
+    /// <summary>Opening location-card faction metadata; never inferred from the current card definition.</summary>
+    public string? Faction { get; init; }
+}
 
 /// <summary>
 /// 服务端对局里的一条动作（中立 DTO）。

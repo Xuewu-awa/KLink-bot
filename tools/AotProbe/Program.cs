@@ -194,7 +194,7 @@ internal static class Program
                 _ => "",
             };
             if (loc.Length == 0) continue;
-            cards.Add(new ServerCard(c.CardId, c.IsGold, loc, c.LocationNumber, c.Name));
+            cards.Add(new ServerCard(c.CardId, c.IsGold, loc, c.LocationNumber, c.Name) { Faction = c.Faction });
         }
 
         var acts = r.Actions.Select(a => new ServerAction(

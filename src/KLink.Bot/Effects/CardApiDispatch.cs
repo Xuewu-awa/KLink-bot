@@ -290,9 +290,10 @@ public sealed partial class CardApi
                 return new object?[] { card, card?.CardId ?? 0 };
             },
             // `GetMainNationForSide` forwards to BP_GameState_Battle's
-            // `GetMainFactionBySide`; its HQ card definition supplies the faction.
+            // `GetMainFactionBySide`; read saved opening metadata, not the current HQ.
             ["GetMainNationForSide"] = (c, r, a) =>
-                c.State.GetMainFactionBySide((Side)IntArg(a, 0)),
+                c.State.GetMainFactionBySide(a.Length > 0 && a[0] is Side side
+                    ? side : (Side)IntArg(a, 0)),
 
             // ⚠️ **可选参数必须读**。权威签名（`CardFunctionsStub.h:437`）：
             //     `GetCardsOnBoardBySide(ESideEnum side, bool unitsOnly, bool includeCovertCards, TArray& Cards)`

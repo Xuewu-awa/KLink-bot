@@ -71,7 +71,7 @@ public static class ServerReplayBridge
             }
 
             cards.Add(new ReplayData.SnapshotCard(c.CardId, c.Name, loc, c.LocationNumber, owner, c.IsGold,
-                                       Faction: null));
+                                       Faction: c.Faction));
         }
 
         var actions = new List<WireAction>(snapshot.Actions.Count);
