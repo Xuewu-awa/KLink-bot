@@ -1,0 +1,918 @@
+{
+  "rule": "RULE-280",
+  "kind": "Verified clear/reset lifecycle evidence; no kernel source repair this round",
+  "read_only_capture": true,
+  "pid": 24220,
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "stable_reread_buffers": 251,
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-lifecycle-blueprint-native-complete-v3-20261021.json",
+      "sha256": "791db78c19c972dff45b3093b2a922a1e133364304c4bbcecf329c0e5f7f738c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\parsed.json",
+      "sha256": "5b4e40f37dc89f9a39364a1caba3ca7cab4af1cf88ec65686940702d20e44006"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule272\\manifest.json",
+      "sha256": "db372973ef26fb74bf563c10d280cfe04c86e0f5a3b3c7edc1651d4c42489d9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule280-lifecycle-verified-20261021.json",
+      "sha256": "7aa52a8a778a3d4f71236d01bb8ec6675c9e3dc59d6feaa6289c70ebcacf5bed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule280-calls-and-control-verified-20261021.json",
+      "sha256": "a6b7c50fd32f7b9708ade318a133053d39efafd6fd0bb3944fe741ef2d75d641"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\faction-init-blueprint-native-20261021.json",
+      "sha256": "aa9e93f1e40903e54442185865299bc8b2c201dee6de9f61b1343587b43a5a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\utility-faction-raw-20261021.json",
+      "sha256": "60258c34460e817665f42d321e47cfabb1210cf278f80158dfa5f308484087dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\parsed.json",
+      "sha256": "01a2e0009f20fda5e05e73e050ce7b744af44cbe55fda0e6a58eca42cfb8af1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-parsed.json",
+      "sha256": "c0822b45e5df6ad58beffe9fae968c3685c440af15137524afd7e8e5d4755c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\manifest.json",
+      "sha256": "53b83ad5867d6b1c0d25e276c3c612822c5155687282bb231c5635ad6cd3ba9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule277\\utility-manifest.json",
+      "sha256": "98847664934b2680421af1ea4e7c8df33fcf4a0d34a44848d059110f4dea97e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\parsed.json",
+      "sha256": "e617f87ff6b06a317657e63e89bb76fc0fe73aba1cb680024c1497171a18223b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule263\\manifest.json",
+      "sha256": "c0fe81e00a1f5c0b5c17598edb0a73ceedc8f9fd60095e7fabd856b5b3896142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\new-output-verification-20261020-verified\\verification.json",
+      "sha256": "39bb6c0bd14c430da7642de5f2e4e1703b7cdb1c9f6bc5e23ccb6e43b92a4e0c"
+    }
+  ],
+  "complete_function_ast_matches": [
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ExecuteUbergraph_BP_GameState_Battle",
+      "bytes": 256,
+      "statements": 10,
+      "script_sha256": "df27cb72bb7af8024cd181bf4b3e8646f6492685763fa23233c8dd8093bf4235"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "SetStartingSide",
+      "bytes": 30,
+      "statements": 3,
+      "script_sha256": "8a6893431f7188cf6be7ea899f7911ca146248833f79f18af156acebba251f55"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ClearGameStateVariables",
+      "bytes": 1363,
+      "statements": 78,
+      "script_sha256": "728fee7494450ff1927a3405781910e9c1f2463b3ff0c830b9506acab073dc8d"
+    },
+    {
+      "owner": "BP_GameState_Battle",
+      "function": "ReceiveBeginPlay",
+      "bytes": 18,
+      "statements": 3,
+      "script_sha256": "b9e48445e3dc01f3d1cc4b176db1e39a2c86e99b2e57688c0b35e78d105f05a5"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "ResyncMatch",
+      "bytes": 2451,
+      "statements": 59,
+      "script_sha256": "f03c3e2a239dd6172cc55b84e532f603e93cbfb77be7389b3abc2772e73e98e8"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "ResetGameVariables",
+      "bytes": 1985,
+      "statements": 92,
+      "script_sha256": "1907645a66c52aae0926a2626c5a548aea7083cddc65e7df7b97eb0caaa4c053"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "Initialize Multiplayer Variables",
+      "bytes": 367,
+      "statements": 22,
+      "script_sha256": "200c35d0bef1c9c92e89064209402b6c672414c152d2d99aff360736cfe3b532"
+    },
+    {
+      "owner": "BP_Logic",
+      "function": "ReceiveBeginPlay",
+      "bytes": 18,
+      "statements": 3,
+      "script_sha256": "d82d76a25d5606d983e80052ebf0ac0f58588204bdb739450c95bc67e02fbf04"
+    }
+  ],
+  "coverage": {
+    "complete_functions": 8,
+    "complete_bytes": 6488,
+    "complete_statements": 270,
+    "assets_in_complete_matches": 2,
+    "complete_logic_ubergraph_decoded": false,
+    "backend_reset_semantics_certified": false
+  },
+  "findings": [
+    "GameState ReceiveBeginPlay calls its Ubergraph entry10. That graph obtains/initializes GameStateAccessSubsystem, configures the encryption key, then invokes ClearGameStateVariables at i239.",
+    "BP_Logic.ResyncMatch invokes ResetGameVariables(true) at i95. ResetGameVariables invokes GameStateRef.ClearGameStateVariables at i1945 under a Context null-skip gate.",
+    "ResetGameVariables isResyncingMatch=true skips the GetDSession/ResetMatchVariable/tagged-actor destruction segment. Both flag branches reach the state-clear call site in the controlled stack model.",
+    "ClearGameStateVariables has 54 top-level assignment/call steps. It resets sides and playing side, destruction/deck/turn tables, trigger map, fatigue-next-damage1, HQ ids/references, stop/wait flags, starting side, four faction bytes, bond set, turn number, match flags and side-effect-holder refs.",
+    "The native ResyncMatch call at BP_Logic.ResyncMatch i2379 resolves to MatchControllerV2; it is not recursive BP_Logic.ResyncMatch. Its function header carries Native flag. Backend implementation was not executed/certified here.",
+    "Managed ReplayRunner.Run constructs a fresh MatchEngine; BotTurnService.RebuildEngine uses a new runner; Replayer uses Prelude or a new self-play engine. These are managed isolation/data-flow observations, not proof of full native reset equivalence.",
+    "Managed new GameState defaults Turn=1, ActiveSide=Left, StartingSide=Left and ClientSide=Left, while native clear assigns corresponding zero states. Existing self-play Start writes its selected opening side; imported starting-side producer/order still requires audit.",
+    "Native clear SetupSidesInBattle(0,0) also requires separate verification of the managed derived opponent-side/invalid-side representation; no unverified patch made."
+  ],
+  "clear_actions": [
+    {
+      "statement_index": 10,
+      "kind": "call",
+      "function": "SetupSidesInBattle",
+      "parameters": [
+        {
+          "Inst": "ByteConst",
+          "Value": 0
+        },
+        {
+          "Inst": "ByteConst",
+          "Value": 0
+        }
+      ]
+    },
+    {
+      "statement_index": 24,
+      "kind": "call",
+      "function": "SetPlayingSide",
+      "parameters": [
+        {
+          "Inst": "ByteConst",
+          "Value": 0
+        }
+      ]
+    },
+    {
+      "statement_index": 36,
+      "kind": "assignment",
+      "field": "FrontlineOwner",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 62,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "DestroyedCardsIDs_All"
+        }
+      ]
+    },
+    {
+      "statement_index": 103,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "PinValueType": {
+              "TerminalCategory": "Struct",
+              "TerminalSubCategory": "None",
+              "TerminalSubCategoryObject": "/Game/Structs/intList.intList",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "DestroyedCardIDsByTurnNumber"
+        }
+      ]
+    },
+    {
+      "statement_index": 144,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "DestroyedCardsIDs_Left"
+        }
+      ]
+    },
+    {
+      "statement_index": 185,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "DestroyedCardsIDs_Right"
+        }
+      ]
+    },
+    {
+      "statement_index": 226,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "DeckCardIDs_Left"
+        }
+      ]
+    },
+    {
+      "statement_index": 267,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "DeckCardIDs_Right"
+        }
+      ]
+    },
+    {
+      "statement_index": 308,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "PinValueType": {
+              "TerminalCategory": "Struct",
+              "TerminalSubCategory": "None",
+              "TerminalSubCategoryObject": "/Script/kards.CardIDs",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "cardsPlayedTurnMapped"
+        }
+      ]
+    },
+    {
+      "statement_index": 349,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "AutoPlayerCardIDs"
+        }
+      ]
+    },
+    {
+      "statement_index": 396,
+      "kind": "assignment",
+      "field": "KreditSlotsLost_Left",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 419,
+      "kind": "assignment",
+      "field": "KreditSlotsLost_Right",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 448,
+      "kind": "call",
+      "function": "Set_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 2
+          },
+          "Variable Name": "FrontlineLimiters"
+        }
+      ]
+    },
+    {
+      "statement_index": 489,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Struct",
+            "PinSubCategory": "Struct",
+            "PinSubCategoryObject": "/Script/kards.GameplayRestrictionEffect",
+            "ContainerType": 1
+          },
+          "Variable Name": "GameplayRestrictionEffects"
+        }
+      ]
+    },
+    {
+      "statement_index": 536,
+      "kind": "assignment",
+      "field": "cardsCreatedCountThisTurn",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 559,
+      "kind": "assignment",
+      "field": "HQ_DamagedThisTurn_Left",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 582,
+      "kind": "assignment",
+      "field": "HQ_DamagedThisTurn_Right",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 605,
+      "kind": "assignment",
+      "field": "OperationKreditsSpentThisTurn",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 634,
+      "kind": "assignment",
+      "field": "hasCapturedFrontline",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 645,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "unitsPlayedInFirstTurn"
+        }
+      ]
+    },
+    {
+      "statement_index": 686,
+      "kind": "assignment",
+      "field": "hasDealtMoreThanOneToHQ",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 697,
+      "kind": "assignment",
+      "field": "leopoldMovingLeopold",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 708,
+      "kind": "assignment",
+      "field": "LastManKilled10",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 719,
+      "kind": "assignment",
+      "field": "envelopKilled5",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 730,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "String",
+            "PinSubCategory": "String",
+            "PinValueType": {
+              "TerminalCategory": "String",
+              "TerminalSubCategory": "None",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "elitesPlayed"
+        }
+      ]
+    },
+    {
+      "statement_index": 771,
+      "kind": "assignment",
+      "field": "navalEngagementFull",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 788,
+      "kind": "assignment",
+      "field": "ActionProcess",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 799,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "PinValueType": {
+              "TerminalCategory": "Object",
+              "TerminalSubCategory": "None",
+              "TerminalSubCategoryObject": "/Script/kards.BaseCardObject",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "AllCardsInBattle"
+        }
+      ]
+    },
+    {
+      "statement_index": 840,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Byte",
+            "PinSubCategory": "Byte",
+            "PinSubCategoryObject": "/Script/kards.ERegisteredCardFunction",
+            "PinValueType": {
+              "TerminalCategory": "Struct",
+              "TerminalSubCategory": "None",
+              "TerminalSubCategoryObject": "/Game/Structs/integerSetStruct.integerSetStruct",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "CardFunctionTriggers"
+        }
+      ]
+    },
+    {
+      "statement_index": 887,
+      "kind": "assignment",
+      "field": "FatigueDamageLeft",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 1
+      }
+    },
+    {
+      "statement_index": 910,
+      "kind": "assignment",
+      "field": "FatigueDamageRight",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 1
+      }
+    },
+    {
+      "statement_index": 933,
+      "kind": "assignment",
+      "field": "Left_HQ_CardID",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 956,
+      "kind": "assignment",
+      "field": "Rgith_HQ_CardID",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 979,
+      "kind": "assignment",
+      "field": "Left_HQ_Card_Ref",
+      "expression": {
+        "Inst": "NoObject"
+      }
+    },
+    {
+      "statement_index": 990,
+      "kind": "assignment",
+      "field": "Right_HQ_Card_Ref",
+      "expression": {
+        "Inst": "NoObject"
+      }
+    },
+    {
+      "statement_index": 1007,
+      "kind": "assignment",
+      "field": "stopFurtherActions",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1018,
+      "kind": "assignment",
+      "field": "stopAttack",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1029,
+      "kind": "assignment",
+      "field": "ShouldExecuteWaitPlayFromHand",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1040,
+      "kind": "call",
+      "function": "Array_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int",
+            "ContainerType": 1
+          },
+          "Variable Name": "WaitPlayFromHandCards"
+        }
+      ]
+    },
+    {
+      "statement_index": 1087,
+      "kind": "call",
+      "function": "Map_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Byte",
+            "PinSubCategory": "Byte",
+            "PinSubCategoryObject": "/Script/kards.ECardBuffTypes",
+            "PinValueType": {
+              "TerminalCategory": "Struct",
+              "TerminalSubCategory": "None",
+              "TerminalSubCategoryObject": "/Script/kards.CardIDs",
+              "TerminalIsConst": false,
+              "TerminalIsWeakPointer": false
+            },
+            "ContainerType": 3
+          },
+          "Variable Name": "BuffsToRemoveEndOfTurn"
+        }
+      ]
+    },
+    {
+      "statement_index": 1128,
+      "kind": "assignment",
+      "field": "StartingSide",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1148,
+      "kind": "assignment",
+      "field": "LeftAllyFaction",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1168,
+      "kind": "assignment",
+      "field": "RightAllyFaction",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1188,
+      "kind": "assignment",
+      "field": "LeftMainFaction",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1208,
+      "kind": "assignment",
+      "field": "RightMainFaction",
+      "expression": {
+        "Inst": "ByteConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1228,
+      "kind": "call",
+      "function": "Set_Clear",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Byte",
+            "PinSubCategory": "Byte",
+            "PinSubCategoryObject": "/Script/KardsCore.EFactionEnum",
+            "ContainerType": 2
+          },
+          "Variable Name": "activeBondFactions"
+        }
+      ]
+    },
+    {
+      "statement_index": 1270,
+      "kind": "assignment",
+      "field": "CurrentTurnNumberInBattle",
+      "expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      }
+    },
+    {
+      "statement_index": 1293,
+      "kind": "assignment",
+      "field": "IsLocalClientTurn",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1304,
+      "kind": "assignment",
+      "field": "MatchFinished",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1315,
+      "kind": "assignment",
+      "field": "UnitDestroyedThisTurn",
+      "expression": {
+        "Inst": "False"
+      }
+    },
+    {
+      "statement_index": 1326,
+      "kind": "assignment",
+      "field": "SideEffectHolderLeft",
+      "expression": {
+        "Inst": "NoObject"
+      }
+    },
+    {
+      "statement_index": 1337,
+      "kind": "assignment",
+      "field": "SidEffectHolderRight",
+      "expression": {
+        "Inst": "NoObject"
+      }
+    },
+    {
+      "statement_index": 1348,
+      "kind": "assignment",
+      "field": "hasPlayedWeatherCardThisTurn",
+      "expression": {
+        "Inst": "False"
+      }
+    }
+  ],
+  "control_models": {
+    "count": 8,
+    "artifact": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule280-calls-and-control-verified-20261021.json",
+      "sha256": "a6b7c50fd32f7b9708ade318a133053d39efafd6fd0bb3944fe741ef2d75d641"
+    },
+    "scope": "Only execution-stack and branch traversal with controlled cast success and actor-array sizes0/2; helpers are not executed. Context null-skip conditions remain.",
+    "results": "Each model visits state-clear site once. Non-resync visits session reset once and actor destruction per controlled count; resync visits neither."
+  },
+  "decoder_extension": {
+    "artifact": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-280.py",
+      "sha256": "87b49b220439e3041182c54a6850448ad1aeeb62f36785d5ca5d68e5d1d7b75d"
+    },
+    "support": "Syntax only: DynamicCast0x2e, observed PrimitiveCast tag0x01, Context-target Let, DoubleConst0x37",
+    "limits": "Not a certification of cast backend behavior or a generalized cast-token mapping. Static parser omits primitive conversion token details. Alternate tag/truncated operands reject.",
+    "initial_capture_attempts": [
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-lifecycle-blueprint-native-20261021.json",
+        "sha256": "3a1513d6a72fe8fe8580278cceb02fcc0c87a1950d7df05e9a9599beafb752fa"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-lifecycle-blueprint-native-complete-20261021.json",
+        "sha256": "016838bee0936da246e59ab11f963939ab06464f2457ab5453a085f68602ffcb"
+      },
+      {
+        "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-lifecycle-blueprint-native-complete-v2-20261021.json",
+        "sha256": "7e9adb842e5be796c508600fca060c028964b706f45476f76a20365ade3238bf"
+      }
+    ]
+  },
+  "deepseek": {
+    "job_id": "20261021-130632-rule280-reset-lifecycle-8b7f5f45",
+    "elapsed_seconds": 52.39,
+    "inventory": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule280\\inventory.json",
+      "sha256": "9d1a11762757619387618cb76edd95dfc7f745b46b884563679e4411413158f4"
+    },
+    "primary_exact_match": true,
+    "assets": 5,
+    "functions": 1131,
+    "target_calls": 6,
+    "primary_supplement_calls": [
+      {
+        "asset": "kards/Content/Blueprints/Logic/BP_Logic.uasset",
+        "owner_function": "ResyncMatch",
+        "statement_index": 95,
+        "node": {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "ResetGameVariables",
+          "Parameters": [
+            {
+              "Inst": "True"
+            }
+          ],
+          "StatementIndex": 95,
+          "bo": 103
+        }
+      },
+      {
+        "asset": "kards/Content/Blueprints/Logic/BP_Logic.uasset",
+        "owner_function": "ResyncMatch",
+        "statement_index": 2379,
+        "node": {
+          "Inst": "FinalFunction",
+          "Function": "ResyncMatch",
+          "Parameters": []
+        }
+      }
+    ],
+    "scope_limit": "Literal references in five named assets only. Does not exhaust native/dynamic/interface callers or all reconnect entry points."
+  },
+  "managed_source_review": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "5e904ab24be83726c0ccb3bc589cc61bb1c33f9d9aa9f2f1d21caa98ff731090"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "b3868c76b160b344767ad28f8a0d3f8639be07caad75b284810fe4b4b150d725"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\BotTurnService.cs",
+      "sha256": "27f186f15422993847f505b4dce026628a0e9d888768b6d76367c956528c70bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\AtomicAction.cs",
+      "sha256": "05fc444f94c6697a2f695f5960e5aca58532bd7de3c449a22b063566142bb786"
+    }
+  ],
+  "tests": {
+    "kernel_changed": false,
+    "new_kernel_tests_run": false,
+    "latest_full_release_total": 618,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule279-after-20261021.txt",
+      "sha256": "8b409c45a96a8d78d4590845fd620b109f97ddcd78869a2ee587dac90f08ec5b"
+    },
+    "new_offline_checks": "Eight complete runtime/static AST matches; exact DSH inventory; eight controlled reset traces; three malformed/unsupported decoder inputs rejected."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-reset-lifecycle-blueprint-20261021.py",
+      "sha256": "cf229289e4854f2210b6c478eb9b9f71d809347adbe76dfd94ccbbc5c1c90d29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule280-reset-lifecycle-20261021.py",
+      "sha256": "f952aa1bf46a8c70324830a8ae6a805470c7e2c00c2203286f513fde3867581e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule280-calls-and-control-20261021.py",
+      "sha256": "57685752d455f42fcb3e48de8b01b0d04f499d2b17818cd2c50f410a99d2b297"
+    }
+  ],
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "No complete ClearGameStateVariables/ResetGameVariables API added to the managed engine. The existing four-faction clear helpers do not substitute for full reset.",
+    "Native array/map/set operations, object subsystem initialization, actor destruction, session reset, MatchControllerV2.ResyncMatch and callbacks are not all semantically certified by AST matching.",
+    "No live repeated-resync experiment or post-reset object-state sample; no complete BP_Logic Ubergraph/event/interface/delegate lifecycle certification.",
+    "UI/campaign nodes are included only as necessary context for lifecycle syntax matching; no UI/campaign implementation undertaken.",
+    "Bytecode primitive cast tag01 and model cast success do not certify actual native cast semantics.",
+    "Fresh managed object construction is not claimed equivalent to native clear; opening/cleared-phase differences require subsequent initializer audit.",
+    "No historical replay authority, process writes, injection or game function calls. Latest618 full tests are from RULE-279 and were not rerun."
+  ],
+  "next_audit": "Trace StartingSide event input/producer and imported opening state, then SetupSidesInBattle zero/opponent representation; only patch after confirming phase and source."
+}
