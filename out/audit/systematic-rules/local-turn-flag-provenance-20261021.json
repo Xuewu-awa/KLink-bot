@@ -1,0 +1,238 @@
+{
+  "rule": "RULE-294",
+  "kind": "Stored local-turn flag caller provenance and independence from native playing side",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-setter-name-references-20261021.json",
+      "sha256": "6495d2230818d6f5f4fdb176e43752f76911d534c60e00e1afb1005c7a1d6551"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-setter-call-sites-20261021.json",
+      "sha256": "a5cfbc6e1f221ae03e97bbee0518805aa975f490e7cdee35d662d5f6a6fe5664"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-owner-small-functions-20261021.json",
+      "sha256": "113edd5fdbdec357018c67a45a19f5372f3a589c7bf2a18316ac4eb5687b4834"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\legacy-receive-end-native-20261021.json",
+      "sha256": "a30e8262601959e8e7c81d0c5bb6c78184adef22158d42d6de405633743f5385"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-setter-logic-paths-20261021.json",
+      "sha256": "de86bfd96f406ad3d5127fbf14b3e43c3c3eb5bae4dff7dc70490d8665039bd6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\local-turn-setter-controller-paths-20261021.json",
+      "sha256": "9664687dd580bc9b5f1310bda3809fa2b3e4b2e95db8d8d7e12f378470400146"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\set-playing-side-native-20261021.json",
+      "sha256": "d8726f06ee1fc2dbcedf736adf9d89d69bfcd15eb692c66042f2f69849db32af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\side-write-local-flag-checks-20261021.json",
+      "sha256": "c3e06de5fb4bae3be724ce39d87c62adf17f9a1e995b16e92c0c930851a3c7ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-reset-native-20261021.json",
+      "sha256": "5e455113c17494e98b58f522cd622fd52c6c63b24b2717b57d745b69db899269"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-reset-queries-native-20261021.json",
+      "sha256": "4f459dc7ad99181dfab47d9e44cb89127a99a5dc2f1104cdf26dd8430e11c0e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-reset-playing-side-native-20261021.json",
+      "sha256": "813ef16db7c42509899b694b2b7220b305fa149a27110672365f9074dc207008"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule294-local-flag-verified-20261021.json",
+      "sha256": "2cc45834d36d656fe0b7eb2c88fa9f0468e6bb32281b32d5cbcbf05cca843807"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-294",
+    "worker_exact_match": true,
+    "small_functions": 213,
+    "small_function_bytes": 16825,
+    "small_function_statements": 1029,
+    "wrappers": 108,
+    "small_function_failures": [
+      {
+        "owner": "BP_Logic_C",
+        "name": "NotifyPlayerAsYourTurn",
+        "bytes": 339,
+        "error": "('unsupported primitive cast', 2)",
+        "at": 226
+      }
+    ],
+    "legacy_receiver": {
+      "bytes": 1548,
+      "statements": 48
+    },
+    "path_node_visits": 203,
+    "paths": [
+      {
+        "event": "BothPlayersDoneWithMulligan",
+        "entry": 38881,
+        "nodes": 13,
+        "errors": 0
+      },
+      {
+        "event": "DoPlayerReady",
+        "entry": 35654,
+        "nodes": 96,
+        "errors": 0
+      },
+      {
+        "event": "startTurnForOpponent",
+        "entry": 45044,
+        "nodes": 9,
+        "errors": 0
+      },
+      {
+        "event": "setterContinuation",
+        "entry": 3895,
+        "nodes": 28,
+        "errors": 0
+      },
+      {
+        "event": "DoShowStartingHand",
+        "entry": 30976,
+        "nodes": 44,
+        "errors": 0
+      },
+      {
+        "event": "loadDebugGameState",
+        "entry": 19964,
+        "nodes": 13,
+        "errors": 0
+      }
+    ],
+    "name_reference_positive_functions": 4,
+    "name_reference_hits": 5,
+    "non_tutorial_sites": 3,
+    "copied_native_pair_cases": 1024,
+    "kernel_runtime_changed": false,
+    "limits": "Loaded literal name calls and selected paths only. Not all native/indirect/unloaded callers; no complete local-turn flag transition model or full reset semantics."
+  },
+  "name_census": {
+    "object_slots": 140290,
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes_scanned": 7922413
+  },
+  "census_limit": "Eight-byte current FName literal candidates, structurally decoded at call sites. Not all function names/native/indirect/unloaded callers; not complete writer enumeration.",
+  "non_tutorial_sites": [
+    {
+      "function": "Logic.ExecuteUbergraph_BP_Logic",
+      "at": 3933,
+      "value": "true only after isFirstPlayerToAct at3895; false branch3919 skips to3970",
+      "origin": "DoShowStartingHand entry30976; direct jump or Delay31489 declared resume3895"
+    },
+    {
+      "function": "OnlineMatch.ReceiveActionEndTurn",
+      "at": 1134,
+      "value": "Logic.enemySide == parsed _side from1074",
+      "limit": "Legacy receiver, distinct from ReceiveActionXActionEndOfTurn; not assumed equivalent/reachable on every modern PvP input"
+    },
+    {
+      "function": "MatchController.ExecuteUbergraph_MatchController",
+      "at": 20266,
+      "value": "true",
+      "origin": "loadDebugGameState wrapper entry19964",
+      "scope": "Debug path, not ordinary PvP startup proof"
+    }
+  ],
+  "excluded_tutorial_sites": [
+    280,
+    3872
+  ],
+  "native_independence": {
+    "set_exec": "0x4a64950",
+    "set_exec_bytes": 123,
+    "set_body": "0x4b36b80",
+    "set_body_bytes": 7,
+    "body": "mov byte ptr [rcx+0x38e],dl; ret",
+    "result": "Only native playing side byte changes, BP flag at+0x680 preserved",
+    "offline_set_get_pair_cases": 1024,
+    "limit": "Copied leaf bodies, synthetic memory; no live execution or UFunction/other event certification"
+  },
+  "kernel_runtime_changed": false,
+  "full_release_tests": {
+    "rerun": false,
+    "latest": "RULE-293 622/622"
+  },
+  "deepseek": {
+    "job": "20261021-200347-rule294-wrapper-inventory-b5459043",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule294\\functions.json",
+      "sha256": "7351a63a9e5fa58b87125ddb57cc5b11d692a219e52a8fe7684672c19175ccdd"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule294\\wrappers.json",
+      "sha256": "7790883c90a2e9291099143d5c095215e7852a1e24132ad8fa255e13540e6a19"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule294\\task.txt",
+      "sha256": "f6d0444fb5290352b534a6a7b1ef431d072c12ee1dd15ad4750e6342084e3eea"
+    },
+    "primary_exact_match": true,
+    "scope": "108 top-level wrappers from213 complete small functions; no semantics"
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-local-flag-callers.py",
+      "sha256": "6c6b4e3ca874f308c9d98799dc607f4dafe2e42037d10b6743c459a03c7d390b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-local-flag-sites.py",
+      "sha256": "cd95129330688c9a192d098505753766870e7c529f97fdce61237c021161d57c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-legacy-end.py",
+      "sha256": "9cf011dc4c66036849edc3eef7d30eeab664e2b24442503b824c1f6095ca6161"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-wrappers.py",
+      "sha256": "96cff75ab2c3ba8768f1af80339028018ddd1588f33ba7e796c2538328f5e267"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-setter-paths.py",
+      "sha256": "08e9863b61503de4345f8037c3e85c1b9189dc0db1e96b603fd75f6f057f5da1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule294-packet.py",
+      "sha256": "5c098fc1691828d43b02617267fc37788071540d459a3434069dbc2fc0f045f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule294-native-side-write.py",
+      "sha256": "19bd0cc676114b7d1cb248ab47fa660e927f5850aef9f36140eebdeb64cac559"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule294-side-and-flag.py",
+      "sha256": "744bcd5d1f4c66ce4f752ade80d85178a8fe55980801f90d759a53f4fd8d98dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule294-local-flag.py",
+      "sha256": "49c500783bf540ad4ef4511015aef5dbffd3821735c80762c3ca27285aef5548"
+    }
+  ],
+  "remaining": [
+    "NotifyPlayerAsYourTurn339B fails syntax at226 on primitive cast tag2",
+    "Trace native/indirect callers and protocol-specific paths before defining complete flag transition model",
+    "Reconcile stored local-turn state and dual-side headless simulation before changing attack/hit/quota resets"
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
