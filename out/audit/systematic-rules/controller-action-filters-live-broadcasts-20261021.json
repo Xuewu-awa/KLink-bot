@@ -1,0 +1,281 @@
+{
+  "rule": "RULE-287",
+  "kind": "GetNextAction duplicate/local-player filters and actual startup broadcast bindings; no kernel repair",
+  "read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-property-references-20261021.json",
+      "sha256": "e44ba4e00a3d4d4e168253bc5cc83d3ddc20835fe9e78f9858d364e1ec2e4419"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-live-delegates-20261021.json",
+      "sha256": "61e874bef7fbec9b1d0e0d018ba88a172af3ceb58b342882098d1da7886b9f42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-filter-support-20261021.json",
+      "sha256": "639929d91e2c7f60b9bc89180ced1447ed0cd92c4944911de9ec9ed7456f08d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-filter-offline-20261021.json",
+      "sha256": "882b00bd45f2f5a43b3e2d1d56298a28b6b01bc79678f05a908a4b80c980bdc3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-live-delegates-battle-20261021.json",
+      "sha256": "88d9eb6108e3e4b83738badee9953636b0b2d933649bcaa84ad502e36d3471e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-receiver-functions-20261021.json",
+      "sha256": "3c2ba934e631e94b13b453a0a8be4f7cd06007b2e7653ffe01d39925563cb8e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-receiver-paths-20261021.json",
+      "sha256": "b8bad1a8c26d5ad8b2be3bbfb47f2d4c8f5874c285108414174825cc873da3f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-property-references-battle-20261021.json",
+      "sha256": "05d2d629eefff2c78bb11d88e9a37c51b717e9da22f27856946d1e7b5ecbbcd5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\startup-broadcast-binding-paths-20261021.json",
+      "sha256": "5b588bc1417f8d0eebd31dcde8aea6ee8af0d2f07e5d2987d15cc780dcc25d25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\controller-action-phase-native-20261021.json",
+      "sha256": "8d2a1fd63576775fa39ec61b40994c1376f89e7461ba7f0385082dde247b83b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule287-action-filters-verified-20261021.json",
+      "sha256": "9b5f16e6e72810a4de8c1798a1c5f3bdb36125807632b4b67b6ce6913bfab9a5"
+    }
+  ],
+  "duplicate_filter": {
+    "window_start": "0x4af4eef",
+    "prior_lookup_key": "controller+c98 minus1 in inspected surrounding code",
+    "predicate": "FString Num-compatible equality (Num equal, or empty0/1 special case), ASCII-insensitive comparison for differing ASCII code units; current type must match XActionStartOfTurn or XActionEndOfTurn",
+    "skip_path": "sil=1 at4af4f78; surrounding branch increments c98 and calls GetNextAction at4af4e29",
+    "limit": "Selected register-fed window, not full map lookup/queue behavior. Not blanket duplicate action-id elimination."
+  },
+  "local_player_filter": {
+    "window_start": "0x4af5071",
+    "recursive_call": "0x4af514d",
+    "tested_skip_predicate": "reconnect==0 && c0a!=2 && debug==0 && turnValidation==0 && !(useActionsForMulligan && typeIsMulligan) && action.player_id==session.player_id",
+    "literal": "XActionMulligan",
+    "array": "myReceivedActions atcontroller+d80, stride64; increment Num then call recursive getter",
+    "limit": "Capacity preallocated in tests; copy helper and recursive target intercepted. Native local-player reception filtering is not a simulator rule to skip all own actions."
+  },
+  "offline": {
+    "counts": {
+      "duplicate_turn_filter": 169,
+      "local_echo_gate": 2048
+    },
+    "total_vectors": 2217,
+    "scope": "169 duplicate-type/Num combinations;2048 mode/local-player/mulligan/count combinations. Real71byte wide comparator plus existing narrow comparator/fold table; copied machine code and synthetic objects, no game function invocation."
+  },
+  "reference_census": {
+    "before_battle": {
+      "object_slots": 140290,
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes_scanned": 7922413
+    },
+    "before_positive_functions": 1,
+    "before_hits": 2,
+    "after_battle": {
+      "function_objects": 30879,
+      "scripted_functions": 18407,
+      "script_bytes_scanned": 8127514
+    },
+    "after_positive_functions": 6,
+    "battle_pointer_hits": 10,
+    "tutorial_candidate_functions_excluded": 4,
+    "limit": "Loaded UFunction script literal current FField pointers only. Counts change with loaded assets; not universal binding census or absence proof."
+  },
+  "live_binding_capture": {
+    "baseline": "Only CDO found; zero default delegates not used to prove no receivers",
+    "battle_non_cdo_instances": 1,
+    "bindings": [
+      {
+        "delegate": "OnShouldSetTableMaterial",
+        "function": "setTableMaterial",
+        "receiver": "0x1cb144adc60",
+        "receiver_path": "/Game/Maps/Battle/Battle/PersistentLevel/Battle_C_0"
+      },
+      {
+        "delegate": "OnShouldAnimateBoard",
+        "function": "AnimateIn",
+        "receiver": "0x1cb144adc60",
+        "receiver_path": "/Game/Maps/Battle/Battle/PersistentLevel/Battle_C_0"
+      }
+    ],
+    "checks": [
+      "TArray count/capacity bounds",
+      "16byte delegate entries",
+      "weak index equals receiver InternalIndex",
+      "weak serial equals current FUObjectItem serial",
+      "current object pointer matches receiver",
+      "delegate FName bytes equal actual receiver UFunction FName",
+      "stable rereads"
+    ],
+    "metadata_note": "Pre-battle2833 generated classes had no matching ComponentDelegateBinding metadata. After loading, one old class entry was released; stale-metadata sweep failed and was not counted as a negative. Successful battle capture skips old class list and resolves current object array."
+  },
+  "binding_path": {
+    "owner": "/Game/Maps/Battle/Battle_C",
+    "graphs": [
+      {
+        "name": "OnLoad",
+        "entry": 1807,
+        "nodes": 77
+      },
+      {
+        "name": "OnUnload",
+        "entry": 3254,
+        "nodes": 44
+      }
+    ],
+    "node_visits": 121,
+    "pairs": [
+      {
+        "clear": 430,
+        "bind": 508,
+        "add": 531,
+        "event": "OnShouldAnimateBoard",
+        "receiver": "AnimateIn"
+      },
+      {
+        "clear": 618,
+        "bind": 696,
+        "add": 719,
+        "event": "OnShouldSetTableMaterial",
+        "receiver": "setTableMaterial"
+      }
+    ],
+    "note": "BindDelegate nodes construct bindings, not calls to AnimateIn/setTableMaterial. OnLoad locally clears then adds self delegates; asynchronous lifetime and reentrancy still separate."
+  },
+  "receiver_paths": {
+    "node_visits": 107,
+    "paths": [
+      {
+        "name": "AnimateIn",
+        "entry": 10864,
+        "nodes": 47,
+        "errors": []
+      },
+      {
+        "name": "setTableMaterial",
+        "entry": 12324,
+        "nodes": 42,
+        "errors": [
+          {
+            "at": 12585,
+            "decoder_offset": 12651,
+            "error": "unsupported opcode 29 at 12650"
+          }
+        ]
+      },
+      {
+        "name": "OnFinishedCameraEntrance",
+        "entry": 10161,
+        "nodes": 18,
+        "errors": []
+      }
+    ],
+    "AnimateIn": "Actor/camera/sequence operations and IsReconnectMatch query; selected branch calls OnFinishedCameraEntrance",
+    "OnFinishedCameraEntrance": "PrintString, sequence playback positioning, AllowRecalculate, GetBoard, OnViewportSizeChanged",
+    "setTableMaterial": "Theme/table/visibility operations in decoded branches; text opcode0x29 gap at12650 in statement12585 remains",
+    "limit": "Do not infer purity from function names or UI labels. Sequence/native callbacks remain opaque; battle snapshot is not a pre-startup execution trace."
+  },
+  "deepseek": {
+    "job_id": "20261021-161309-rule287-action-flow-e78d66ba",
+    "elapsed_seconds": 60.67,
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule287\\flow.json",
+      "sha256": "d3fdc9d7fd9b52469aa0c5ef4c0c7b45e50501f9b22d11241c77b5911bd2e558"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule287\\inventory.json",
+      "sha256": "55eb641b7c04e84f58ae21b8c8c839baed79725c44047038b7030b81a54e36c7"
+    },
+    "counts_independently_exact": true,
+    "hash_field_completed_by_worker": false,
+    "primary_input_sha256": "d3fdc9d7fd9b52469aa0c5ef4c0c7b45e50501f9b22d11241c77b5911bd2e558",
+    "scope": "127 native flow rows:41 calls,74 conditional jumps,11 unconditional jumps,1 ret; two recursive call sites. Worker left hash null due overly broad no-process wording. Primary computed input hash and reconstructed every output count; partial delivery recorded, no retry. Worker reported one private-directory read-only listing before applying its no-process interpretation; no expanded write authorization."
+  },
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-broadcast-references.py",
+      "sha256": "be5e12e24831c1c4b1a93063e4af59ca527a749b85142bfa401d7a8dbbeb70e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-live-delegates.py",
+      "sha256": "6904f23c4e8cd5fdf9f8145d00e3eaa65fe1c830bf61b34d4c81c83f901184fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-filter-support.py",
+      "sha256": "32a8480e62b663f75569fc1bd6d91801b5d2491cb56a321237c66fe54e642e02"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule287-action-filters.py",
+      "sha256": "4786c73a0670bc0cb332dec8fea903678011b494ee9dfdc2dda8270431f63045"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-battle-delegates.py",
+      "sha256": "e095d37ceedcc827c9c19a98e3be984863add56ff9ebee9937ea2705d954f0c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-broadcast-receivers.py",
+      "sha256": "6f055d41e207032d95bfde743bd9ba22df69ad476015217a5dbbc5693081e91c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-receiver-paths.py",
+      "sha256": "d248fa3aa8729dccb0e7783158963770ca1dc1183f784529a2da131e94a398b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-battle-broadcast-references.py",
+      "sha256": "ebbdbf34505688c89529150a7d228bb6a937bac90a4666054beb000bfca60a1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule287-battle-binding-paths.py",
+      "sha256": "2e4bbdf17cea913e21035711cfe2ea99a189150b6f330954e53ac7f821bb2930"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule287-action-filters.py",
+      "sha256": "71386996c0c2a308289fb5fa18e9250362d0855dd079d3805ea70176c20795b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-paths.py",
+      "sha256": "292dfcd6eb2f75b7e3e8f5e11bcd88390ce94b7eedfcf3531226c721639ed8e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-285.py",
+      "sha256": "57573318879e36bf860961fa68ffd4e1c211a2d7a5ce10fe857e1ae14f4b88b1"
+    }
+  ],
+  "validation": {
+    "new_offline_vectors_passed": 2217,
+    "binding_and_receiver_nodes_redecoded": 228,
+    "new_kernel_tests_run": false,
+    "kernel_changed": false,
+    "latest_full_release_total": 620,
+    "latest_full_release_log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule281-after-20261021.txt",
+      "sha256": "a283295765235dcec526efe42c40590c2891c03b495b4ea90bbc887896b1c3b0"
+    }
+  },
+  "fully_semantically_verified_cards": 0,
+  "single_card_update_migrations_paused": true,
+  "limitations": [
+    "StartingSide transport/import/default remains unchanged; full callback reentrancy/queue semantics still open.",
+    "Current active bindings and OnLoad construction do not certify lifetime or every startup mode.",
+    "setTableMaterial text node and previous MatchReconnected/NoMatchToReconnect parsing gaps remain explicit.",
+    "No historical replay authority, UI/campaign implementation, process writes, injection or live function calls."
+  ],
+  "next_audit": "Resolve MatchLoaded and OnLoad/OnlineMatch startup ordering with latent resumes, separate presentation callbacks from rules initialization, and define original start_side import independently of current action-side mutations."
+}
