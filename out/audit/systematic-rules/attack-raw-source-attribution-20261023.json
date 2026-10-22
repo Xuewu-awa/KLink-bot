@@ -1,0 +1,139 @@
+{
+  "rule": "RULE-323",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-323",
+    "worker_exact_match": true,
+    "worker_functions": 2,
+    "blueprint_functions_verified": 7,
+    "script_bytes": 15481,
+    "script_statements": 546,
+    "model_cases": 96,
+    "regression_cases": 176,
+    "release_selftest": {
+      "passed": 664,
+      "total": 664,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Raw source ID gate/lookup, key attribution and notification/after payload across ordinary/SetValue; positive unresolved IDs retained. Explicit withdrawal forwards raw source only; typed slot/notification restoration still pending. Full entry ledger reference model not equivalent to compact C# ledger."
+  },
+  "kernel_runtime_changed": true,
+  "authority": {
+    "entry": "ChangeAttack117 tests supplied instigatorID>0;151 false->393 logger/return before493 ledger call. 270 stores original ID,493 forwards it to ChangeBuffsFromCards,2323 forwards it to notification,2240 to after helper.",
+    "ledger": "ChangeBuffsFromCards135 GetCardFromID and167 tempInstigatorCard assignment do not introduce source-validity gate for core record update. Object validity only affects reverse source association in the relevant continuation."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    ],
+    "changes": [
+      "Native dispatcher rejects raw ID<=0, resolves State.ById(raw) rather than c.Self.",
+      "Public helper accepts optional raw instigator ID; positive missing object still gets raw-ID record/notification/after payload; no object-existence gate. Existing no-explicit-ID convenience fallback retained.",
+      "Ordinary/default and SetValue paths forward resolved optional source plus raw ID. Explicit withdrawal selects raw supplied source ID instead of execution card.",
+      "Correct contrary old comment requiring c.Self as source."
+    ],
+    "excluded": "Explicit withdrawal slot selection/typed ledger/payload/after flow remain pending; this patch changes only source forwarding there."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 664,
+    "total": 664,
+    "exit_code": 0,
+    "new_cases": 176,
+    "details": [
+      "128 cases: sides2 x execution Self present/absent2 x raw ID(self/different/target/missing)4 x ordinary/SetValue2 x skip2 x suppression2. Check raw record source, correct reverse associations, notification/own/observer ID payload, observer subject. Quantity of native typed SetValue ledger not asserted as equal to compact delta.",
+      "48 invalid cases: sides2 x Self present/absent2 x IDs(intMin,-1,0)3 x modes0/1/2/4. Preserve numeric/temporary+permanent slots/reverse relationship, no action or callback."
+    ],
+    "model": {
+      "rule": "RULE-323",
+      "cases": 96,
+      "case_digest_sha256": "753c3f905f00616b164706f6d77f6199ff24a57aaf98f3bc86cdcbf651b2f2fb",
+      "capture_dates": [
+        "2026-10-22",
+        "2026-10-23"
+      ],
+      "completed_date": "2026-10-23",
+      "scope": "Full ChangeAttack and full ChangeBuffsFromCards function entries through returns for modes1/2. Nonpositive source IDs stop before ledger; positive missing source still records raw-ID key and notifies/callbacks raw ID. Map/array/value-copy/enums, native source membership, getter/crypto and null title default controlled. Not actual title/native UObject null behavior or typed C# ledger equality; SetValue model raw amount differs from legacy compact delta."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-024557-rule323-attack-source-753a7f28",
+    "scope": "Mechanical source-ID variable-reference statements for two full functions; primary exact reconstruction plus whole script re-decode and semantic full-entry model.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-raw-source-model-checks-20261023.json",
+      "sha256": "9e8b3c03395b562d0e102de9c7dd0aa5476cdc5e6e1f16c963ac92c70c46ce48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule323-attack-source.py",
+      "sha256": "7ede8c28b846a7169b4380ce3e9f0068f4192ec46010005f0b170cae594ddd72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule323-attack-source.py",
+      "sha256": "1667527cd5215ae202272f6cfe19ce184c7eeffe6a803eb4060579b320e7ba91"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule323-attack-source-verified-20261023.json",
+      "sha256": "8e31d05214d38e6551f2ce1e2a25c88d65231b19bdb9f13f81a756a1481267fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule323-selftest-release.log",
+      "sha256": "aaff2c40a37af29290bdb123a02eec368a7b6ee488653e83d8e2fe7354412cb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule323-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule323\\functions.json",
+      "sha256": "f6272b59cf07068a4b7390b7f342cf9e741af1ee981873512e40beda545d175b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule323\\task.txt",
+      "sha256": "4c16adb6d215b63bbb14bc0d345f1716deb61f360b72792def341f721f94676c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule323\\source-statements.json",
+      "sha256": "2a82ab6950fea535321f40e08e5a4535421817ba45c37309a81c74b318513eab"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1bc27aa4416847f3d1acb469bc30e95fa05f9dc68d1bb94c4bf1896b910119e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "038635a741aa103b47ed4821e8d1eadb0788ed421d6dee57f949c1df69acd0c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "356c27676ba65ad6322379c368dfc988626f4b2535dbd13d075a1e390b69f897"
+    }
+  ],
+  "remaining": [
+    "Explicit RemoveAttackBuff permanent/temporary slot selection and complete notification/after path still not native-equivalent.",
+    "Native split base/temp attack arithmetic and base clamp0..99, typed ledger all modes/zero presence and SetValue raw-amount storage remain pending.",
+    "Native expiry queue/source order/clear, defense0, full suppression/global death/lifetime/receipt/reconnect remain pending.",
+    "Model null title defaults/value-copy/native membership and source lookup supplied as controlled primitives; not live UObject-title/null/lifetime certification."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

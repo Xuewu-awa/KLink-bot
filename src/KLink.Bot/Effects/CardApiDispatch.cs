@@ -4119,6 +4119,12 @@ public sealed partial class CardApi
             return null;
         }
 
+        // RULE-323: native i=117/151 validates the supplied ID; the lookup in
+        // ChangeBuffsFromCards is not an additional source-existence gate.
+        int instigatorId = IntArg(a, 1);
+        if (instigatorId <= 0) return null;
+        var source = State.ById(instigatorId);
+
         // ---- 蓝图的第一道守位：`CanCardBeBuffed` ----
         // 出处 `out/bp-cardfn.json` 的 `ChangeAttack`：
         //   si=28  IsValid(card)      → si=57  JumpIfNot → si=393（log "error in [Change Attack]" + return）
@@ -4161,7 +4167,7 @@ public sealed partial class CardApi
         //    所以这只是防御性写法。
         if (!invert && changeType == ChangeTypeSetValueReal)
         {
-            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, c.Self, changeType: changeType, skipAction: TruthyArg(a, 4));
+            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, source, changeType: changeType, skipAction: TruthyArg(a, 4), instigatorId: instigatorId);
             return null;
         }
 
@@ -4198,19 +4204,15 @@ public sealed partial class CardApi
         // ⚠️ 这里**故意不碰** ct=0 / ct=1 的语义（它们仍然走下面那条 `ChangeAttack(target, delta)`）。
         //    项目自己的日志里记过这条教训：把两件事混在一个改动里，A/B 结论就没法归因了。
         //
-        // ⚠️ 来源必须取 `c.Self`，**不能**取 `SourceCardIdArg(a, 1, c.Self)`：
-        //    施加路径（下面的默认分支）用的就是 `c.Self`，撤销必须落在同一个槽上才对得起来。
+        // The raw supplied source ID also selects the withdrawal source.
+        // The withdrawal helper's typed-slot/notification migration is separate.
         if (!invert && changeType == ChangeTypeTempBuffRemove)
         {
-            if (c.Self is { } remover)
-            {
-                RemoveAttackBuff(target, remover.CardId);
-            }
-
+            RemoveAttackBuff(target, instigatorId);
             return null;
         }
 
-        ChangeAttack(target, invert ? -delta : delta, c.Self, changeType: changeType, skipAction: TruthyArg(a, 4));
+        ChangeAttack(target, invert ? -delta : delta, source, changeType: changeType, skipAction: TruthyArg(a, 4), instigatorId: instigatorId);
         return null;
     }
 

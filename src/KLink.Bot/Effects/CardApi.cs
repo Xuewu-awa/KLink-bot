@@ -2559,24 +2559,26 @@ public sealed partial class CardApi
     }
 
     public void ChangeAttack(CardInstance target, int delta, CardInstance? source, int duration = -1,
-                             bool temporary = false, int changeType = 1, bool skipAction = false)
+                             bool temporary = false, int changeType = 1, bool skipAction = false, int? instigatorId = null)
     {
         if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
         }
 
+        // RULE-323: preserve a supplied raw source ID, even without an object.
+        if (instigatorId is <= 0) return;
+        int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
         int previousAttack = target.Attack;
         target.Attack = Math.Max(0, target.Attack + delta);
-        if (source is not null)
+        if (source is not null || instigatorId is > 0)
         {
-            var buff = GetOrCreateBuff(target, source.CardId, temporary);
+            var buff = GetOrCreateBuff(target, sourceId, temporary);
             buff.Attack += delta;
             buff.Duration = duration;
         }
 
         int changed = target.Attack - previousAttack;
-        int sourceId = source?.CardId ?? target.CardId;
         int nativeType = temporary && changeType == 1 ? 0 : changeType;
         // RULE-322: deck/skip suppress notification, not the after-event chain.
         if (!skipAction && !IsLocatedInDeck(target))

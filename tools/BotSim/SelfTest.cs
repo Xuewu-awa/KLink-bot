@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("攻击来源：实参ID归因，不以执行卡替代，缺失来源仍处理", AttackRawSourceAttribution),
+        new("攻击来源：非正ID在所有变化分支之前拒绝", AttackInvalidSourceGate),
         new("攻击变化入口：保留变化类型与skip参数", AttackNotificationModeForwarding),
         new("普通攻击变化：七字段、skip/牌库通知门与事后回调", OrdinaryAttackPayloadAndEvents),
         new("普通攻击变化：自身后查询T5并保存接收快照", OrdinaryAttackEventSnapshot),
@@ -5990,6 +5992,76 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? AttackRawSourceAttribution(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        using var programs = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (string hook in new[] { own, other })
+            locals[hook] = locals[hook].Where(step => step.Function != "DrawCardsFromDeckBySide").Select((step, i) => step with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 30, 60, 9999 })
+        foreach (int mode in new[] { 1, 2 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Right, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            var watcher = state.CreateWithId(name, Side.Left, 70, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) {
+                card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { other } };
+                card.Keywords.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Attack = 10;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, sourceId, mode == 2 ? 12 : 3, mode, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = hasSelf ? self : null, Controller = side }, out _);
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            if (target.Attack != (mode == 2 ? 12 : 13) || target.BuffsBySource.Count != 1
+                || !target.BuffsBySource.Keys.All(x => x.SourceCardId == sourceId)
+                || self.CardsBuffedByThisCard.Contains(60) != (sourceId == 20)
+                || source.CardsBuffedByThisCard.Contains(60) != (sourceId == 30)
+                || target.CardsBuffedByThisCard.Contains(60) != (sourceId == 60)
+                || gains.Length != (skip ? 0 : 1)
+                || (!skip && gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId)
+                || !Equals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), sourceId)
+                || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target)
+                || (!suppressed && !Equals(target.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), sourceId))
+                || (suppressed && target.BlueprintVariables.ContainsKey("_auditAttack_instigatorID")))
+                return $"攻击来源归因错误 side={side}, self={hasSelf}, id={sourceId}, mode={mode}, skip={skip}, suppressed={suppressed}";
+        }
+        return null;
+    }
+
+    private static string? AttackInvalidSourceGate(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (int sourceId in new[] { int.MinValue, -1, 0 })
+        foreach (int mode in new[] { 0, 1, 2, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            target.Attack = 10;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Attack = 2 };
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = 3 };
+            self.CardsBuffedByThisCard.Add(60);
+            string before = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, Buffs = target.BuffsBySource.Values.ToArray(), Reverse = self.CardsBuffedByThisCard });
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, sourceId, 3, mode, false, null },
+                new EffectContext { Engine = engine, State = state, Self = hasSelf ? self : null, Controller = side }, out _);
+            string after = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, Buffs = target.BuffsBySource.Values.ToArray(), Reverse = self.CardsBuffedByThisCard });
+            if (before != after || state.ActionLog.SelectMany(x => x.SubActions).Any() || trace.Any())
+                return $"非正来源须在攻击变化前停止 side={side}, self={hasSelf}, id={sourceId}, mode={mode}";
+        }
+        return null;
     }
 
     private static string? AttackNotificationModeForwarding(CardDatabase db)
