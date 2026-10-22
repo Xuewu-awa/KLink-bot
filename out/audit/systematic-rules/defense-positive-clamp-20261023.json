@@ -1,0 +1,118 @@
+{
+  "rule": "RULE-311",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-311",
+    "worker_exact_match": true,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 315,
+    "regression_combinations": 630,
+    "release_selftest": {
+      "passed": 646,
+      "total": 646,
+      "exit_code": 0
+    },
+    "scope": "Positive defense sum after callbacks clamped 1..99; maximum only increases; gain payload remains rewritten request, ledger original request. Captured 2026-10-22; verified 2026-10-23. After-gain dispatch and other modes not certified."
+  },
+  "authority": {
+    "numeric": "ChangeDefense2643 reads current defense after before callbacks;2684 adds localInputAmount;2730 clamps1..99;2777 writes;2886/2946/3001 increases maxDefense only if result exceeds existing maximum.",
+    "payload": "4232 NotifyGainDefense passes localInputAmount then reread totalDefense, so requested gain differs from actual gain at bounds. Original ordinary ledger remains before callbacks under RULE309."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Positive additive gain uses current defense after callbacks and clamps sum to1..99.",
+      "Keep existing max update, gain payload and original request ledger unchanged."
+    ],
+    "excluded": "No after-gain dispatch fix, no other numeric mode or single-card version migration."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 646,
+    "total": 646,
+    "exit_code": 0,
+    "regression_combinations": 630,
+    "axes": "sides2 x old defense5 x rewritten request3 x callback current defense7 x previous maximum3. Original request2, suppressed target, one T16 observer, no T17/T7 recipients. Checks pre-callback original ledger, post-callback clamp/max and gain payload.",
+    "model": {
+      "rule": "RULE-311",
+      "cases": 315,
+      "case_digest_sha256": "ea21e86a370c7778712d6d1bc58ddbea138b6813140ea9082bee6a8a801fade5",
+      "scope": "Full ChangeDefense AST entry to return, positive ordinary gain with suppressed target, one T16 rewrite/current-defense mutation, no T17/T7 recipients; action process true, skip false, nondeck. Ledger/getter/encryption/notify/callback and query controlled. Bounded integers only; overflow and native arithmetic implementation not certified.",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23"
+    },
+    "model_fixture_correction": "Initial model used NotifyGainDefense parameter3 for totalDefense; AST inspection showed parameter2 is totalDefense,3 is instigator. Corrected model before verification; production signature unchanged."
+  },
+  "deepseek": {
+    "job": "20261023-012208-rule311-positive-defense-ca7e402d",
+    "scope": "Mechanical call/write inventory only; primary independently reconstructed entire inventory and redecoded authority.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-positive-clamp-model-checks-20261023.json",
+      "sha256": "663ef0e6632b85f08da31c29b9c7ab905c099793b3698b6d685f3540a6faf11c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule311-positive-clamp.py",
+      "sha256": "12bda937d1b800ee337a079866e252e263ae36bec31ef21c4863da41eec63980"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule311-positive-clamp.py",
+      "sha256": "7d9d2e9b1c03d21d5b6db2b3ad35d505701d5a33806a155d5c75f2e8cb5d76f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule311-positive-clamp-verified-20261023.json",
+      "sha256": "58bc08bf1d8ddfb3bade8d153872853fd2aa097f666eb53d9a1a24c55296ce77"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule311-selftest-release.log",
+      "sha256": "5c4ff322663486ca3a3b92e0624ee0cb4de7c4f65d7754b0af84c434318552b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule311-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule311\\functions.json",
+      "sha256": "49b53b7e49119046f2386772767f25e8b5c3aff10e213eca711fd027093ec05d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule311\\task.txt",
+      "sha256": "176b6182becc1a9b092f1df61f95a0b1f5ba306546ea9c561e5ecfd31db4bbcb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule311\\inventory.json",
+      "sha256": "a9e2f85db3ffae0288678be5f1cc5700f6598b073215b1c1c40685b5168ffdf1"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "4012a7e6ad77a5b5322fd5f4b8ac42644daafe808490b3717f982e664ed56602"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1883c7ac69673a01196154d3b4b459342b5d5ad1ffbd1ae4b084f617ae7efd29"
+    }
+  ],
+  "remaining": [
+    "Confirmed mismatch: suppressed target should skip only own OnAfterGainDefense but still query T7 observers. Fix not included here.",
+    "Own after-gain signature, query timing, frozen observer dispatch and late death check still require correction/review.",
+    "Full typed defense ledger/presence clearing, other modes/skipAction/deck paths, int overflow, TSet order, object lifetime and receipt/reconnect remain uncertified."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

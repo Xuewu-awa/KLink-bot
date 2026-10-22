@@ -2653,6 +2653,13 @@ public sealed partial class CardApi
             // RULE-305: native SetValue overwrites both values even at zero delta.
             target.Defense = target.MaxDefense = Math.Clamp(absolute, 0, 99);
         }
+        else if (positiveGain)
+        {
+            // RULE-311: read current defense after all before-gain callbacks.
+            // Native i=2643..2777 clamps the sum to 1..99; requested gain and
+            // original-request ledger remain independent of the actual gain.
+            target.Defense = Math.Clamp(target.Defense + delta, 1, 99);
+        }
         else
         {
             target.Defense += delta;

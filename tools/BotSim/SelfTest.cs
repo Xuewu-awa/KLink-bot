@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("正增防：回调后当前值夹取1..99，最大值与请求独立", DefenseGainClampAfterCallbacks),
         new("防御增益前链：自身门、T16串联、T17后处理及立即中止", DefenseBeforeChainOrder),
         new("防御增益前链：分组查询时点与固定接收快照", DefenseBeforeChainSnapshots),
         new("防御增益前回调：读取原始请求账本，中止/改量不回滚", DefenseBuffBeforeGainTiming),
@@ -5951,6 +5952,44 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseGainClampAfterCallbacks(CardDatabase db)
+    {
+        const string hook = "OnBeforeOtherCardGainDefense";
+        using var program = InstallDefenseBeforeLedgerProbe(hook);
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int old in new[] { 1, 10, 98, 99, 105 })
+        foreach (int rewritten in new[] { 1, 5, 100 })
+        foreach (int? current in new int?[] { null, -20, 0, 1, 98, 99, 150 })
+        foreach (int maximum in new[] { 1, 99, 150 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 30, CardLocation.Discard, 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { hook } };
+            observer.Keywords.Clear(); observer.BlueprintVariables["_auditRewriteDefense"] = rewritten;
+            observer.BlueprintVariables["_auditStopDefense"] = false;
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "fighter" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = old; target.MaxDefense = maximum;
+            state.CreateWithId("card_unit_51e_regiment", Side.Left, 100, CardLocation.DeckLeft, 0);
+            int calls = 0; bool original = true;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                calls++; original &= target.Defense == old && target.BuffsBySource[(20, false)].Defense == 2;
+                if (current.HasValue) target.Defense = current.Value;
+            });
+            engine.Api.ChangeDefense(target, 2, source, instigatorId: 20);
+            int expected = Math.Clamp((current ?? old) + rewritten, 1, 99);
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (calls != 1 || !original || target.Defense != expected || target.MaxDefense != Math.Max(maximum, expected)
+                || target.BuffsBySource[(20, false)].Defense != 2 || gains.Length != 1
+                || gains[0].Values.Single(x => x.Name == "gained").Value != rewritten
+                || gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != expected)
+                return $"正增防夹取错误 side={side}, old={old}, rewrite={rewritten}, current={current}, max={maximum}, actual={target.Defense}/{target.MaxDefense}, calls={calls}";
+        }
         return null;
     }
 
