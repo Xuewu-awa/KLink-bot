@@ -1003,22 +1003,9 @@ public sealed class CardBuff
     public int Duration { get; set; } = -1;   // -1 = 永久
 
     /// <summary>
-    /// 这个来源的修正是「到回合结束为止」（<c>EChangeType::tempBuffGive = 0</c>），
-    /// 会在该方回合结束时被 <see cref="CardApi.RemoveTemporaryBuffs"/> 撤掉。
-    ///
-    /// 出处（两处独立互证）：
-    /// 1. `BP_CardFunctions.AddAttackUntilEndOfTurn` si=4 调
-    ///    `ChangeAttack(card, instigatorID, attackToAdd, **changeType=0**, silent=False, out)`
-    ///    —— 枚举值 0 逐字来自 `EChangeType.h`（见
-    ///    <c>CardApiDispatch.ChangeTypeTempBuffGive</c>）
-    /// 2. 同函数 si=5 紧接着调
-    ///    `GameStateRef.AddBuffsToRemoveEndOfTurn(0 /*buffType*/, instigatorID)`
-    ///    —— 把「这个来源的临时 buff」登记进待清理表，回合结束时由
-    ///    `BP_CardFunctions.RemoveBuffsEndOfTurn`（71 条语句，遍历 buffType →
-    ///    instigatorArray → `GetCardFromID` → `RemoveTheBuff`）清掉
-    ///
-    /// 旧实现里 `Attack`/`Defense` 的修正**没有这个位**，所以「+N 直到回合结束」
-    /// 全部变成了永久 +N（`glossary` 里那一类卡的数值会越滚越高）。
+    /// Selects the temporary typed-buff slot; does not itself register expiry.
+    /// RULE-325: AddAttackUntilEndOfTurn separately registers type/source IDs;
+    /// cleanup follows that queue and source target lists, not all temporary slots.
     /// </summary>
     public bool Temporary { get; set; }
 

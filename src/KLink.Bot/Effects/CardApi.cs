@@ -2927,83 +2927,42 @@ public sealed partial class CardApi
             broadcastName: true);
     }
 
-    /// <summary>
-    /// 「+N 攻击，直到回合结束」（`BP_CardFunctions.AddAttackUntilEndOfTurn`，8 条语句）。
-    ///
-    /// 蓝图逐字：
-    /// <code>
-    /// si=0  IsValid(card)                    ; si=1 JumpIfNot → 191 return
-    /// si=2  NotEqual_IntInt(attackToAdd, 0)  ; si=3 JumpIfNot → 191 return
-    /// si=4  ChangeAttack(card, instigatorID, attackToAdd, changeType=0, silent=False, out)
-    /// si=5  GameStateRef.AddBuffsToRemoveEndOfTurn(0 /*buffType*/, instigatorID)
-    /// </code>
-    ///
-    /// 实参形状（6 个独立调用点互证：`defiant_mk_i` / `plan_d` / `blitzkrieg` /
-    /// `rally` / `armored_car_home` / `old_hares`，全部是
-    /// `(卡, this.cardID, IntConst:N)`）⇒ `[0]` 目标卡、`[1]` 来源、`[2]` 加多少。
-    ///
-    /// `changeType=0` 是 `EChangeType::tempBuffGive` ⇒ 登记为临时 buff，
-    /// 在本方回合结束时由 <see cref="RemoveTemporaryBuffs"/> 撤掉。
-    /// </summary>
-    public void AddAttackUntilEndOfTurn(CardInstance? target, CardInstance? source, int attackToAdd)
+    /// <summary>Apply temporary attack, then register its source for end-of-turn cleanup.</summary>
+    public void AddAttackUntilEndOfTurn(CardInstance? target, CardInstance? source, int attackToAdd,
+                                       int? instigatorId = null)
     {
-        if (target is null || !target.IsAlive || attackToAdd == 0)
-        {
-            return;
-        }
-
-        // 没有来源就不再登记 buff —— 否则加的值没有任何东西能撤回来。
-        // 蓝图的 instigatorID 永远是调用者自己，所以这一支只在异常数据下才走。
-        var instigator = source ?? target;
-        ChangeAttack(target, attackToAdd, instigator, temporary: true);
+        // Native valid-object/nonzero-amount gate is separate from ChangeAttack's
+        // source/buffability gates. Registration happens even if no value changed.
+        if (target is null || attackToAdd == 0) return;
+        int rawId = instigatorId ?? source?.CardId ?? target.CardId;
+        ChangeAttack(target, attackToAdd, source, temporary: true, changeType: 0, instigatorId: rawId);
+        State.AddBuffsToRemoveEndOfTurn(0, rawId);
     }
 
-    /// <summary>
-    /// Legacy temporary-slot cleanup; not a faithful client expiry implementation.
-    /// RULE-318 fresh bytecode: RemoveBuffsEndOfTurn reads the state's pending
-    /// buff-type/source queue, follows each source's saved target list, requires
-    /// a currently valid board target, and only routes attack type 0 to
-    /// ChangeAttack(..., changeType: 4). Defense/cost/armor are not dispatched.
-    /// The all-slot scan below remains a known gap until queue registration and
-    /// attack withdrawal are integrated; do not infer expiry from Temporary alone.
-    /// </summary>
+    /// <summary>Native queue routing; temporary-slot membership alone is not an expiry registration.</summary>
     public void RemoveTemporaryBuffs()
     {
-        // AllCards 是物化列表（`_byCardId.Values.OrderBy(...).ToList()`），循环里删 buff 安全。
-        foreach (var card in State.AllCards)
+        var types = State.GetBuffsToRemoveEndOfTurn().Keys.ToArray();
+        if (types.Length == 0) return;
+        foreach (int type in types)
         {
-            // 键里已经带了 `Temporary`，所以这里只挑临时那一半 ——
-            // 同一来源的**永久** buff 是另一个槽位，不会被误删。
-            var doomed = card.BuffsBySource
-                .Where(kv => kv.Key.Temporary)
-                .Select(kv => (Key: kv.Key, Buff: kv.Value))
-                .ToList();
-
-            if (doomed.Count == 0)
+            // The native helper reads the live map for each saved type key.
+            if (!State.GetBuffsToRemoveEndOfTurn().TryGetValue(type, out var sourceIds)) continue;
+            foreach (int sourceId in sourceIds)
             {
-                continue;
-            }
-
-            foreach (var (key, buff) in doomed)
-            {
-                // RULE-319: native i=1544/1585 checks the target's current
-                // board location for each withdrawal. Keep off-board entries.
-                if (!card.Location.IsBoard()) continue;
-                // RULE-320: expiry dispatches attack only. Other fields in
-                // the same compact source slot must remain, including presence.
-                int attackRemoved = buff.Attack;
-                if (attackRemoved == 0) continue;
-                buff.Attack = 0;
-                if (buff.IsEmpty) RemoveBuffEntry(card, key);
-                else SynchronizeBuffTarget(card, key.SourceCardId);
-
-                int previousAttack = card.Attack;
-                card.Attack = Math.Max(0, previousAttack - attackRemoved);
-                int changed = card.Attack - previousAttack;
-                NotifyAttackChanged(card, changed, key.SourceCardId, 4);
-                ExecuteAfterChangeAttackEvents(card, changed, key.SourceCardId);
+                var source = State.ById(sourceId);
+                if (source is null) continue;
+                var targetIds = source.CardsBuffedByThisCard.ToArray();
+                foreach (int targetId in targetIds)
+                {
+                    var target = State.ById(targetId);
+                    if (target is null || !target.Location.IsBoard() || type != 0) continue;
+                    RemoveAttackBuffWithEvents(target, sourceId, skipAction: false);
+                }
             }
         }
+        // Registrations made by callbacks are cleared too, as in the native tail.
+        State.ClearBuffsToRemoveEndOfTurn();
     }
 
     private void NotifyAttackChanged(CardInstance target, int changed, int instigatorId, int changeType)

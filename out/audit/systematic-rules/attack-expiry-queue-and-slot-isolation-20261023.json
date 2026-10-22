@@ -1,0 +1,216 @@
+{
+  "rule": "RULE-325",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "kernel_runtime_changed": true,
+  "verified": {
+    "rule": "RULE-325",
+    "worker_status": "failed_without_deliverable",
+    "primary_extraction_calls": 15,
+    "blueprint_functions_verified": 10,
+    "script_bytes": 25604,
+    "script_statements": 852,
+    "model_cases": {
+      "registration": 288,
+      "routing": 1400,
+      "attack": 384,
+      "add-until": 48
+    },
+    "model_total": 2120,
+    "new_regression_cases": 282,
+    "release_selftest": {
+      "passed": 670,
+      "total": 670,
+      "exit_code": 0
+    },
+    "scope": "Native pending-type/source queue + mode0/4 slot isolation; AddUntil raw-ID gates/registration; staged source/target snapshots/current lookup/board gate/final clear. Numeric split/typed zero keys/native TMap physical ordering/511th shortcut remain pending."
+  },
+  "authority": {
+    "registration": "Whole GameState Add490B/Get30B/Clear44B: no source/type validation, append only if absent, preserve existing duplicates, return detached map.",
+    "add_until": "Whole194B AddAttackUntilEndOfTurn: valid card and amount!=0, ChangeAttack mode0 then register type0/raw source unconditionally with respect to changed output.",
+    "routing": "Whole1958B RemoveBuffsEndOfTurn: saved type keys; live map read per key -> source ID snapshot; current source lookup -> saved reverse target IDs; current target lookup and board gate; type0 ChangeAttack(...amount0,mode4,skipFalse); clear at tail if initially nonempty.",
+    "withdrawal": "ChangeBuffsFromCards mode4 removes attack_tempBuffGive only. ChangeAttack mode0 writes temporary component; permanent attack must survive."
+  },
+  "fix": [
+    "GameState owns pending-type/source queue with deduplicating append, detached getter and clear. Queue enters match snapshots/state fingerprints; Kismet dispatch Add/Get/Clear/Remove are wired.",
+    "Replace all-card temporary scan by staged queue/source/target snapshots and current object/board gates. Missing sources/targets and nonattack types skip withdrawal; final clear also drops registrations made during callbacks.",
+    "Mode0 writes true temporary slot and explicit mode4 removes only that attack field. Mode1 false slot is preserved; applying temporary attack alone does not register expiry.",
+    "AddUntil native dispatch forwards raw source instead of Self fallback. Registration follows nonnull/nonzero gates even if ChangeAttack source/buffability gate rejects change. Existing public helper no-explicit-ID convenience fallback remains."
+  ],
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 670,
+    "total": 670,
+    "exit_code": 0,
+    "new_cases": 282,
+    "details": [
+      "144 registration cases: types0/1/7 x source IDs(-1,0,20,9999) x four preexisting arrays including duplicates x three repeated/mixed tails. Detached nested getter, Kismet struct-shaped result, clear and detached snapshot/fingerprint checks.",
+      "96 queue eligibility cases: sides2 x registered2 x validSource2 x reverseMembership2 x currentLocation3 x permanentSlot2. Type1 does not dispatch; skipped offboard targets do not expire later after reentry with cleared queue.",
+      "34 registration/apply cases: sides2 x rawID4 x amount0/3 x covertGate2 =32, plus two same-source mode0+permanent pairs. Nonpositive/missing sources preserved in queue; denied buff still registers; plain mode0 never auto-expires; explicit removal preserves permanent attack.",
+      "8 reentry cases: clear queue, clear source reverse list, remove source object, remove target object, move target offboard, append late target, append late source, replace later source reverse targets. Check ordered withdrawals and final clear.",
+      "Existing cleanup fixtures now explicitly register type/source; existing mode4 tests now seed native temporary slot and preserve permanent slot. This updates preconditions to authoritative queue/key semantics, not weakens assertions."
+    ],
+    "models": [
+      {
+        "rule": "RULE-325",
+        "registration_get_clear_cases": 288,
+        "case_digest_sha256": "f2ff6cd6b2a20fced73d994b40e7b05b5dab00a3d617af28c317fea11b703c39",
+        "capture_date": "2026-10-23",
+        "completed_date": "2026-10-23",
+        "scope": "Whole BP_GameState_Battle Add/Get/Clear AST. Type keys0/1/7, absent/present lists including existing duplicate IDs, negative/zero/positive IDs and repeated/mixed additions. No validation in Add; append only if absent; existing duplicates preserved. Struct/map/array assignments use controlled UE-style value copy, getter detached map and clear verified. Reference AST/container model only; simulator integration checked separately. Does not certify native VM/library implementation/order/lifetime."
+      },
+      {
+        "rule": "RULE-325",
+        "cases": 1400,
+        "case_digest_sha256": "e5885841452825d6ebfc134a82ab52f2da166c5c85e04777a7526a4bb0be2cb5",
+        "capture_date": "2026-10-23",
+        "completed_date": "2026-10-23",
+        "scope": "Full1958B RemoveBuffsEndOfTurn AST with controlled queue getter/clear, object lookup, board predicate, reverse-list getter and ChangeAttack callback. Type0 only, valid source/target and live board check; queue-key snapshot, per-key source-ID snapshot, per-source reverse snapshot; duplicates and mutations of queue/source/target preserved. Does not execute ChangeAttack internals or prove native queue registration, lookup/lifetime/Map order. Suppression helpers syntax decoded, semantics not modeled here."
+      },
+      {
+        "rule": "RULE-325",
+        "cases": 384,
+        "case_digest_sha256": "eeded94969e8ec7363de1b878a83389a91d9f09e7510d7f21dc24ba52ec914d3",
+        "scope": "Full ChangeAttack + full ChangeBuffsFromCards entries modes0/4. Controlled enum/maps/getter/crypto/source-membership/null-title. Zero-valued native keys are modeled and removed, while compact simulator cannot distinguish presence. Numeric base/temporary storage is still not equivalent to flat simulator."
+      },
+      {
+        "rule": "RULE-325",
+        "cases": 48,
+        "sha256": "7ffdb429e4a63ba06fcd47dd4715e72be2492e7768d54bd2e25738d8c5c18486",
+        "scope": "Full AddAttackUntilEndOfTurn AST; ChangeAttack result is controlled. Valid object/nonzero gate only; raw source registration follows ChangeAttack even when changed output false, including nonpositive source IDs."
+      }
+    ]
+  },
+  "deepseek": {
+    "job": "20261023-030401-rule325-expiry-queue-b8ffd28a",
+    "status": "failed",
+    "exit_code": 1,
+    "delivered_artifact": false,
+    "used_output": false,
+    "primary_fallback": "Primary mechanically extracted 15 call nodes from five functions and independently verified original complete scripts. No worker output accepted."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule325-registration-model-20261023.json",
+      "sha256": "4d3a8fd453b2389696a007c258d45a9c8357fad648bb15cfc7a53ccb67c298ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule325-routing-model-20261023.json",
+      "sha256": "9010fac067751eaba645628ea238fe71951b63adc9992eaca3dc794daa35c5ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule325-attack-model-20261023.json",
+      "sha256": "980b1ef2e33e46445f21024b651b618999a2bc4dc5e3b5c09dfa8a8c4cdeb9be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule325-add-until-model-20261023.json",
+      "sha256": "94932c1498959a5f6a3b50839970dfc74a0007c9919d031330375a1b7694c59c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule325-registration.py",
+      "sha256": "1e19078d6b9db78e9615106e79b65930374f2740e3c2c693a001b62b72c4d39f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule325-routing.py",
+      "sha256": "5cf0b2b90bac1438f984976bc1a2ea7ccab7ae6affa71d2251da773a3803ea48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule325-attack.py",
+      "sha256": "339ba6d6bae13305f2af16091c24ea6dbcd6bb0ab781eb521482845939456cda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule325-add-until.py",
+      "sha256": "4108f9f6d3fb4dafae46880e8dc3ec0d862ccb3cb78517739169c893c6bf94cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule325-expiry-queue.py",
+      "sha256": "6c0b0fbc0be0352fcd6f45d3a4cfed34b00962750a51ebc61e60deb2dad3d732"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule325-expiry-queue-verified-20261023.json",
+      "sha256": "7a627652ad1e94ff8055efe86bab07be547814bef057b5c2640d089414ae46bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule325-selftest-release.log",
+      "sha256": "2e4bcbad2d37187fad37c3d5f585b4f8f2375c168ea7f2a9079900fe98eedf8a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule325-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule325\\functions.json",
+      "sha256": "8328fa425836707810ba0b4550112f5267128264632b0a0370c111b7399614e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule325\\task.txt",
+      "sha256": "22dad47f87b986a702f13cac7ae0736d94455a3fac1242852445a05e646724c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule325\\primary-calls.json",
+      "sha256": "31a49657cb48452f123350acbdf206d8ca80e13956ef4a9a5866de115a475fff"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-030401-rule325-expiry-queue-b8ffd28a\\job.json",
+      "sha256": "23cf904872173ef65464a847142c4ddf76bf9d3e976c5329232eb25a103f212c"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "baf2eea5154f4ae714df16bd22cf52a53ef9f7008a89a25557ae7f97d9f6f4b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "0eaeb4c871331d628ebdebc195859e40ce6ac8063f8b4458150665f7e5f66821"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "ac1f2b122b0d6f024cf2738e3106621cdfe410657d7a222d54edcb068502091b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "7d31c2cf40fd79714b3e9a89e916174a655be28683b3ead616f31fc48a4a7d46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "cc5442a63fbe182f801bae60da5333d8e62a01fc1be97543759a2e4cd602ee7f"
+    }
+  ],
+  "remaining": [
+    "Native base/temporary attack arithmetic, clamp0..99, SetValue and all typed-key modes remain pending. Current visible Attack is flat; zero-valued key presence/removal cannot be faithfully represented.",
+    "Native TMap physical enumeration order and UObject lifetime not universally certified. .NET queue uses insertion order, model map/arrays and native getter/crypto primitives controlled.",
+    "511th Regiment shortcut uses legacy permanent apply/removal and needs separate card audit; suppression/global lifecycle/death/receipt/reconnect, defense mode0 still pending."
+  ],
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "fully_semantically_certified_cards": 0
+}

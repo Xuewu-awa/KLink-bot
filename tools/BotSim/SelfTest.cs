@@ -504,7 +504,11 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
-        new("攻击显式撤销：既有槽下保留其他字段，完整通知回调", ExplicitAttackRemovalEvents),
+        new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
+        new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
+        new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
+        new("到期登记：临时施加不自动到期，专用入口即使被拒仍登记原ID", ExpiryRegistrationGates),
+        new("攻击显式撤销：临时与永久槽分离，保留其他字段，完整通知回调", ExplicitAttackRemovalEvents),
         new("攻击显式撤销：忽略传入数值，重复撤销不产生事件", ExplicitAttackRemovalRoundTrip),
         new("攻击来源：实参ID归因，不以执行卡替代，缺失来源仍处理", AttackRawSourceAttribution),
         new("攻击来源：非正ID在所有变化分支之前拒绝", AttackInvalidSourceGate),
@@ -5996,6 +6000,152 @@ internal static class SelfTest
         catch { first.Dispose(); throw; }
     }
 
+    private static string? ExpiryQueueSnapshotMutation(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var programs = InstallAttackChangeProbes();
+        for (int mutation = 0; mutation < 8; mutation++)
+        {
+            var (engine, state) = EmptyBoard(db);
+            var firstSource = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var secondSource = state.CreateWithId("card_unit_51e_regiment", Side.Left, 21, CardLocation.Discard, 0);
+            var lateSource = state.CreateWithId("card_unit_51e_regiment", Side.Left, 22, CardLocation.Discard, 0);
+            var cards = new Dictionary<int, CardInstance>();
+            foreach (int id in new[] { 60, 70, 80, 90 }) {
+                var card = state.CreateWithId(name, Side.Left, id, CardLocation.BoardHqLeft, (id - 60) / 10 + 1);
+                card.Definition = new CardDefinition { Name = name, Type = "fighter" }; card.Keywords.Clear(); card.Attack = 13;
+                int source = id < 80 ? 20 : id == 80 ? 21 : mutation == 5 ? 20 : mutation == 7 ? 21 : 22;
+                card.BuffsBySource[(source, true)] = new CardBuff { SourceCardId = source, Temporary = true, Attack = 3 };
+                cards[id] = card;
+            }
+            firstSource.CardsBuffedByThisCard.AddRange(new[] { 60, 70 }); secondSource.CardsBuffedByThisCard.Add(80); lateSource.CardsBuffedByThisCard.Add(90);
+            state.AddBuffsToRemoveEndOfTurn(0, 20); state.AddBuffsToRemoveEndOfTurn(0, 21);
+            for (int i = 0; i < 6; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            int stage = 0;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                if (++stage != 1) return;
+                if (mutation == 0) state.ClearBuffsToRemoveEndOfTurn();
+                if (mutation == 1) firstSource.CardsBuffedByThisCard.Clear();
+                if (mutation == 2) state.Remove(firstSource);
+                if (mutation == 3) state.Remove(cards[70]);
+                if (mutation == 4) state.Move(cards[70], CardLocation.Discard, 0, notifyMoved: false);
+                if (mutation == 5) firstSource.CardsBuffedByThisCard.Add(90);
+                if (mutation == 6) state.AddBuffsToRemoveEndOfTurn(0, 22);
+                if (mutation == 7) { secondSource.CardsBuffedByThisCard.Clear(); secondSource.CardsBuffedByThisCard.Add(90); }
+            });
+            engine.Api.RemoveTemporaryBuffs();
+            int[] expected = mutation is 3 or 4 ? new[] { 60, 80 } : mutation == 7 ? new[] { 60, 70, 90 } : new[] { 60, 70, 80 };
+            var actual = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack")
+                .Select(x => x.Values.Single(v => v.Name == "cardID").Value).ToArray();
+            if (!actual.SequenceEqual(expected) || stage != expected.Length || state.GetBuffsToRemoveEndOfTurn().Count != 0)
+                return $"队列分层快照错误 mutation={mutation}: {string.Join(',', actual)}, draws={stage}";
+        }
+        return null;
+    }
+
+    private static string? ExpiryQueueProtocol(CardDatabase db)
+    {
+        foreach (int type in new[] { 0, 1, 7 })
+        foreach (int id in new[] { -1, 0, 20, 9999 })
+        foreach (int[] old in new[] { Array.Empty<int>(), new[] { 20 }, new[] { 20, 20 }, new[] { 999 } })
+        foreach (int[] tail in new[] { new[] { id }, new[] { id, id }, new[] { id, 42, id } })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var raw = (Dictionary<int, List<int>>)typeof(GameState).GetField("_buffsToRemoveEndOfTurn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(state)!;
+            raw[type] = old.ToList(); raw[88] = new() { 777 };
+            var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+            var expected = old.ToList();
+            foreach (int value in tail) {
+                engine.Api.InvokeByName("AddBuffsToRemoveEndOfTurn", null, new object?[] { type, value }, context, out _);
+                if (!expected.Contains(value)) expected.Add(value);
+            }
+            var got = state.GetBuffsToRemoveEndOfTurn();
+            if (!got[type].SequenceEqual(expected) || !got[88].SequenceEqual(new[] { 777 })) return "队列登记未保持原始值、既有重复项或追加去重";
+            var snapshot = state.Snapshot();
+            got[type][0] = 12345; got.Clear();
+            var output = (Dictionary<object, object?>)engine.Api.InvokeByName("GetBuffsToRemoveEndOfTurn", null, new object?[] { null }, context, out _)!;
+            var structValue = (Dictionary<string, object?>)output[type]!;
+            ((int[])structValue["CardIDs"]!)[0] = 88888; output.Clear();
+            if (!state.GetBuffsToRemoveEndOfTurn()[type].SequenceEqual(expected)) return "队列读取泄漏内部数组引用";
+            string before = state.SnapshotJson();
+            engine.Api.InvokeByName("ClearBuffsToRemoveEndOfTurn", null, Array.Empty<object?>(), context, out _);
+            if (state.GetBuffsToRemoveEndOfTurn().Count != 0 || before == state.SnapshotJson()
+                || !snapshot.BuffsToRemoveEndOfTurn[type].SequenceEqual(expected)) return "队列清空、状态指纹或快照副本错误";
+        }
+        return null;
+    }
+
+    private static string? ExpiryQueueEligibility(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (bool reverse in new[] { false, true })
+        foreach (int location in new[] { 0, 1, 2 })
+        foreach (bool permanent in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            int id = sourceExists ? 20 : 9999;
+            var target = state.CreateWithId("card_unit_t_34", side, 60, location == 0 ? side.HqOf() : location == 1 ? side.HandOf() : CardLocation.Discard, 1);
+            target.Keywords.Clear(); target.Attack = 15;
+            target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = 3 };
+            if (permanent) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Attack = 2 };
+            if (reverse) source.CardsBuffedByThisCard.Add(60);
+            if (registered) state.AddBuffsToRemoveEndOfTurn(0, id);
+            state.AddBuffsToRemoveEndOfTurn(1, id); // nonattack type is cleared, not dispatched
+            engine.Api.RemoveTemporaryBuffs();
+            bool removed = registered && sourceExists && reverse && location == 0;
+            if (target.Attack != (removed ? 12 : 15) || target.BuffsBySource.ContainsKey((id, true)) == removed
+                || target.BuffsBySource.ContainsKey((id, false)) != permanent || state.GetBuffsToRemoveEndOfTurn().Count != 0
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainAttack") != (removed ? 1 : 0))
+                return $"队列资格错误 {side}/{registered}/{sourceExists}/{reverse}/{location}/{permanent}";
+            if (!removed) {
+                state.Move(target, side.HqOf(), 1, notifyMoved: false);
+                engine.Api.RemoveTemporaryBuffs();
+                if (target.Attack != 15 || !target.BuffsBySource.ContainsKey((id, true))) return "清空后的旧队列不得在重新进场时延迟撤销";
+            }
+        }
+        return null;
+    }
+
+    private static string? ExpiryRegistrationGates(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { -1, 0, 20, 9999 })
+        foreach (int amount in new[] { 0, 3 })
+        foreach (bool covert in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); target.Attack = 10;
+            if (covert) { target.Keywords.Add(Keyword.Covert); target.IsRevealed = false; }
+            engine.Api.InvokeByName("AddAttackUntilEndOfTurn", null, new object?[] { target, id, amount },
+                new EffectContext { Engine = engine, State = state, Self = self, Controller = side }, out _);
+            bool changed = amount != 0 && id > 0 && !covert;
+            var queue = state.GetBuffsToRemoveEndOfTurn();
+            if (target.Attack != (changed ? 13 : 10) || (amount == 0 ? queue.Count != 0 : !queue[0].SequenceEqual(new[] { id }))
+                || target.BuffsBySource.ContainsKey((id, true)) != changed || target.BuffsBySource.ContainsKey((id, false)))
+                return $"到期入口不得以Self替代原ID，也不得因施加被拒跳过登记 {side}/{id}/{amount}/{covert}";
+        }
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); target.Attack = 10;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            foreach (int mode in new[] { 1, 0 }) engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 20, 2, mode, false }, context, out _);
+            engine.Api.RemoveTemporaryBuffs();
+            if (target.Attack != 14 || state.GetBuffsToRemoveEndOfTurn().Count != 0) return "模式0不得自动登记到期";
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 20, 999, 4, false }, context, out _);
+            if (target.Attack != 12 || target.BuffsBySource.ContainsKey((20, true)) || target.BuffsBySource[(20, false)].Attack != 2)
+                return "显式撤销必须保留同来源永久攻击";
+        }
+        return null;
+    }
+
     private static string? ExplicitAttackRemovalEvents(CardDatabase db)
     {
         const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
@@ -6011,7 +6161,7 @@ internal static class SelfTest
         foreach (bool suppressed in new[] { false, true })
         foreach (bool sourceExists in new[] { false, true })
         foreach (bool residual in new[] { false, true })
-        foreach (bool otherTemporary in new[] { false, true })
+        foreach (bool permanent in new[] { false, true })
         {
             var (engine, state) = EmptyBoard(db);
             var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
@@ -6025,8 +6175,8 @@ internal static class SelfTest
             }
             if (suppressed) target.Keywords.Add(Keyword.Suppressed);
             target.Attack = previous; target.OperationCost = 7;
-            target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Temporary = false, Attack = stored, Defense = residual ? 2 : 0 };
-            if (otherTemporary) target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = 5 };
+            target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = stored, Defense = residual ? 2 : 0 };
+            if (permanent) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Temporary = false, Attack = 5 };
             if (sourceExists) source.CardsBuffedByThisCard.Add(60);
             engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, id, 123, 4, skip, null },
                 new EffectContext { Engine = engine, State = state, Self = null, Controller = side }, out _);
@@ -6039,16 +6189,16 @@ internal static class SelfTest
             bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
                 && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), id);
             if (target.Attack != next || target.OperationCost != 7
-                || target.BuffsBySource.ContainsKey((id, false)) != (!changed || residual)
-                || (residual && (target.BuffsBySource[(id, false)].Defense != 2 || target.BuffsBySource[(id, false)].Attack != 0))
-                || target.BuffsBySource.ContainsKey((id, true)) != otherTemporary
-                || (otherTemporary && target.BuffsBySource[(id, true)].Attack != 5)
-                || (sourceExists && source.CardsBuffedByThisCard.Contains(60) != (!changed || residual || otherTemporary))
+                || target.BuffsBySource.ContainsKey((id, true)) != (!changed || residual)
+                || (residual && (target.BuffsBySource[(id, true)].Defense != 2 || target.BuffsBySource[(id, true)].Attack != 0))
+                || target.BuffsBySource.ContainsKey((id, false)) != permanent
+                || (permanent && target.BuffsBySource[(id, false)].Attack != 5)
+                || (sourceExists && source.CardsBuffedByThisCard.Contains(60) != (!changed || residual || permanent))
                 || actions.Length != (notify ? 1 : 0) || (notify && !actions[0].Values.SequenceEqual(values))
                 || (changed && (!Payload(watcher) || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target))) || (!changed && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
                 || (changed && !suppressed && !Payload(target))
                 || ((!changed || suppressed) && target.BlueprintVariables.ContainsKey("_auditAttack_changedAmount")))
-                return $"显式攻击撤销错误 side={side}, location={location}, before={previous}, stored={stored}, skip={skip}, suppressed={suppressed}, source={sourceExists}, residual={residual}, otherTemporary={otherTemporary}";
+                return $"显式攻击撤销错误 side={side}, location={location}, before={previous}, stored={stored}, skip={skip}, suppressed={suppressed}, source={sourceExists}, residual={residual}, permanent={permanent}";
         }
         return null;
     }
@@ -6314,6 +6464,7 @@ internal static class SelfTest
             target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = buffAmount };
             source.CardsBuffedByThisCard.Add(60);
             var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             int next = Math.Max(0, previous - buffAmount), delta = next - previous;
             var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
@@ -6373,6 +6524,7 @@ internal static class SelfTest
                 }
             });
             var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
             var expected = new List<string>();
@@ -6412,6 +6564,7 @@ internal static class SelfTest
             target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
             if (permanent) target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Defense = 2 };
             var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             bool retained = !expected.IsEmpty;
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
@@ -6439,6 +6592,7 @@ internal static class SelfTest
                 HasNonOrdinaryDefenseEntry = (mask & 16) != 0 };
             target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
             string before = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             string after = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
             if (before != after || !ReferenceEquals(target.BuffsBySource.GetValueOrDefault((20, true)), buff)
@@ -6455,6 +6609,7 @@ internal static class SelfTest
             target.Attack = previous;
             target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount };
             source.CardsBuffedByThisCard.Add(60);
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             int expected = Math.Max(0, previous - amount);
             var gain = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionGainAttack");
@@ -6481,6 +6636,7 @@ internal static class SelfTest
             source.CardsBuffedByThisCard.Add(60);
             // Ordinary source slot must survive temporary-attack withdrawal.
             target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Defense = 2 };
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             bool board = location.IsBoard();
             if (target.Attack != (board ? 10 : 10 + amount) || target.Defense != 10 || target.MaxDefense != 10
@@ -6500,6 +6656,7 @@ internal static class SelfTest
                 KreditCost = -1, OperationCost = 2, HeavyArmor = 1, HasNonOrdinaryDefenseEntry = true };
             target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
             string before = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            state.AddBuffsToRemoveEndOfTurn(0, 20);
             engine.Api.RemoveTemporaryBuffs();
             string after = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
             if (before != after || !ReferenceEquals(target.BuffsBySource.GetValueOrDefault((20, true)), buff)
@@ -22553,7 +22710,7 @@ internal static class SelfTest
             void Apply(CardInstance target)
             {
                 var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
-                if (kind == 0) engine.Api.ChangeAttack(target, 1, source);
+                if (kind == 0) engine.Api.ChangeAttack(target, 1, source, temporary: true);
                 if (kind == 1) engine.Api.ChangeDefense(target, 1, source);
                 if (kind is 2 or 3 or 4) engine.Api.InvokeByName(kind == 2 ? "ChangeKreditCost" : kind == 3 ? "ChangeOperationCost" : "ChangeHeavyArmor",
                     null, new object?[] { target, 60, kind == 4 ? 1 : -1, 1 }, ctx, out _);
@@ -22603,6 +22760,7 @@ internal static class SelfTest
             var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
             var target = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 2);
             engine.Api.ChangeAttack(target, 1, source, temporary: true);
+            state.AddBuffsToRemoveEndOfTurn(0, source.CardId);
             engine.Api.ChangeDefense(target, 1, source);
             engine.Api.RemoveTemporaryBuffs();
             if (!source.CardsBuffedByThisCard.SequenceEqual(new[] { 62 })) return "临时槽移除时错误删除仍有永久槽的目标";

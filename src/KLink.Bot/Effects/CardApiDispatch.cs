@@ -673,6 +673,11 @@ public sealed partial class CardApi
             // `card_unit_heinkel_he_219`、`card_unit_henschel_he_129`、`card_unit_panzer_iv_h`）。
             // 实测 `replay-773639` 的 ⑥ 里就是 `MakeCardsFight ×1`。
             ["MakeCardsFight"] = (c, r, a) => DoMakeCardsFight(c, a),
+            ["AddBuffsToRemoveEndOfTurn"] = (c, r, a) => { c.State.AddBuffsToRemoveEndOfTurn(IntArg(a, 0), IntArg(a, 1)); return null; },
+            ["GetBuffsToRemoveEndOfTurn"] = (c, r, a) => c.State.GetBuffsToRemoveEndOfTurn()
+                .ToDictionary(x => (object)x.Key, x => (object?)new Dictionary<string, object?> { ["CardIDs"] = x.Value }),
+            ["ClearBuffsToRemoveEndOfTurn"] = (c, r, a) => { c.State.ClearBuffsToRemoveEndOfTurn(); return null; },
+            ["RemoveBuffsEndOfTurn"] = (c, r, a) => { RemoveTemporaryBuffs(); return null; },
             ["AddAttackUntilEndOfTurn"] = (c, r, a) => DoAddAttackUntilEndOfTurn(c, a),
             ["HealCard"] = (c, r, a) => DoHealCard(c, r, a),
             ["DestroyCard"] = (c, r, a) => DoDestroyCard(c, r, a),
@@ -4141,21 +4146,17 @@ public sealed partial class CardApi
             RemoveAttackBuffWithEvents(target, instigatorId, skip);
             return null;
         }
-        // Native mode-0 slot isolation is pending together with the expiry
-        // queue; moving it alone would make the legacy scan expire all mode-0 buffs.
-        ChangeAttack(target, invert ? -delta : delta, source,
+        // RULE-325: mode 0 is a temporary attack key, not an expiry registration.
+        ChangeAttack(target, invert ? -delta : delta, source, temporary: changeType == 0,
             changeType: changeType, skipAction: skip, instigatorId: instigatorId);
         return null;
     }
 
     private void RemoveAttackBuffWithEvents(CardInstance target, int sourceId, bool skipAction)
     {
-        if (!CanCardBeBuffed(target)) return;
-        // RULE-324 fixes the event continuation only. The dispatcher still
-        // stores mode 0 in the legacy false slot together with permanent attack.
-        // Native removal selects only attack_tempBuffGive; splitting this slot
-        // requires migration of application and end-of-turn queue handling.
-        var key = (sourceId, false);
+        if (sourceId <= 0 || !CanCardBeBuffed(target)) return;
+        // RULE-325: only attack_tempBuffGive, preserving permanent attack.
+        var key = (sourceId, true);
         if (!target.BuffsBySource.TryGetValue(key, out var buff)) return;
         int removed = buff.Attack;
         // A zero-valued native key is not distinguishable from absence in the
@@ -4399,7 +4400,7 @@ public sealed partial class CardApi
     /// <summary>
     /// Legacy permanent-slot removal used by the 511th Regiment shortcut.
     /// This is separate from the ChangeAttack mode-4 event continuation (RULE-324).
-    /// Both still use the legacy slot; native temporary-key isolation is pending.
+    /// The shortcut still uses the legacy permanent slot; its card-specific pairing is pending.
     /// The shortcut's apply/remove pairing still needs a separate card audit.
     /// </summary>
     private void RemoveAttackBuff(CardInstance target, int sourceId)
@@ -4770,8 +4771,8 @@ public sealed partial class CardApi
     private object? DoAddAttackUntilEndOfTurn(EffectContext c, object?[] a)
     {
         var target = AsCard(a.ElementAtOrDefault(0));
-        var source = AsCard(a.ElementAtOrDefault(1)) ?? c.Self;
-        AddAttackUntilEndOfTurn(target, source, IntArg(a, 2));
+        int rawId = IntArg(a, 1);
+        AddAttackUntilEndOfTurn(target, State.ById(rawId), IntArg(a, 2), rawId);
         return null;
     }
 

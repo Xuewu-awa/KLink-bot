@@ -46,6 +46,19 @@ public sealed class GameState
     public int[] GetAutoPlayCards() => _autoPlayerCardIds.ToArray();
     public void ClearAutoPlayCards() => _autoPlayerCardIds.Clear();
 
+    // RULE-325: type -> source IDs, append-if-absent with detached reads.
+    // No ID/type validation: the native registration helper also accepts raw values.
+    private readonly Dictionary<int, List<int>> _buffsToRemoveEndOfTurn = new();
+    public void AddBuffsToRemoveEndOfTurn(int buffType, int instigatorId)
+    {
+        if (!_buffsToRemoveEndOfTurn.TryGetValue(buffType, out var ids))
+            _buffsToRemoveEndOfTurn[buffType] = ids = new();
+        if (!ids.Contains(instigatorId)) ids.Add(instigatorId);
+    }
+    public Dictionary<int, int[]> GetBuffsToRemoveEndOfTurn()
+        => _buffsToRemoveEndOfTurn.ToDictionary(x => x.Key, x => x.Value.ToArray());
+    public void ClearBuffsToRemoveEndOfTurn() => _buffsToRemoveEndOfTurn.Clear();
+
     public GameState(CardDatabase database, ulong seed)
     {
         Database = database;
@@ -1092,6 +1105,7 @@ public sealed class GameState
             ActiveBondFactions = ActiveBondFactions.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
             BattleCardOrder = _battleCardOrder.Select(c => c.CardId).ToArray(),
             AutoPlayerCardIds = GetAutoPlayCards(),
+            BuffsToRemoveEndOfTurn = GetBuffsToRemoveEndOfTurn(),
             LeftFatigue = Fatigue(Side.Left), RightFatigue = Fatigue(Side.Right),
             FrontlineLimiterIds = FrontlineLimiters.OrderBy(id => id).ToArray(),
             // Preserve list order: future dispatch can depend on insertion order.
@@ -1162,6 +1176,7 @@ public sealed record MatchSnapshot(
     public string[] ActiveBondFactions { get; init; } = Array.Empty<string>();
     public int[] BattleCardOrder { get; init; } = [];
     public int[] AutoPlayerCardIds { get; init; } = [];
+    public Dictionary<int, int[]> BuffsToRemoveEndOfTurn { get; init; } = new();
     public int LeftFatigue { get; init; }
     public int RightFatigue { get; init; }
     public int[] FrontlineLimiterIds { get; init; } = Array.Empty<int>();
