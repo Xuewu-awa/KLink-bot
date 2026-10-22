@@ -2995,6 +2995,9 @@ public sealed partial class CardApi
 
             foreach (var (key, buff) in doomed)
             {
+                // RULE-319: native i=1544/1585 checks the target's current
+                // board location for each withdrawal. Keep off-board entries.
+                if (!card.Location.IsBoard()) continue;
                 RemoveBuffEntry(card, key);
 
                 bool operationCostReset = buff.OperationCost != 0

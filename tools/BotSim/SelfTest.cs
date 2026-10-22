@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("回合末清理：仅在场目标可撤销，离场临时记录保留", TemporaryCleanupBoardGate),
         new("设防skip：通知、销毁、自身及T6派发均不受影响", DefenseSetSkipInvariant),
         new("减防skip：保留致死销毁，仅省略减防通知", DefenseDecreaseSkipNotification),
         new("减防skip：致死前回调照常执行，完成后再判通知", DefenseDecreaseSkipDestroyCallbacks),
@@ -1066,7 +1067,7 @@ internal static class SelfTest
         new("★ `DrawSpecificCardFromDeckBySide` 先置顶再走完整抽牌路径（含满手烧牌）",
             DrawSpecificCardUsesDrawPath),
 
-        new("★ `ChangeKreditCost/ChangeOperationCost` 的 changeType=0 进入临时 buff 槽并可撤销",
+        new("★ 费用临时槽可显式撤销，离场记录不在回合末清理",
             TemporaryResourceCostBuffsExpire),
         new("Light Anti-Air Battery：行动费临时 buff 清理后由 reset 事件重新施加，离场后撤销",
             LightAntiAirBatteryOperationCostReset),
@@ -5961,6 +5962,51 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? TemporaryCleanupBoardGate(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { side.HqOf(), CardLocation.BoardFrontline, side.HandOf(), side.DeckOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int amount in new[] { -2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, location, 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "fighter", Attack = 10, Defense = 10 };
+            target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Attack = 10 + amount; target.Defense = target.MaxDefense = 10;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount };
+            source.CardsBuffedByThisCard.Add(60);
+            // Ordinary source slot must survive temporary-attack withdrawal.
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Defense = 2 };
+            engine.Api.RemoveTemporaryBuffs();
+            bool board = location.IsBoard();
+            if (target.Attack != (board ? 10 : 10 + amount) || target.Defense != 10 || target.MaxDefense != 10
+                || target.Location != location || target.BuffsBySource.ContainsKey((20, true)) == board
+                || target.BuffsBySource[(20, false)].Defense != 2 || !source.CardsBuffedByThisCard.Contains(60)
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainAttack") != (board ? 1 : 0))
+                return $"回合末撤销应检查当前在场位置 side={side}, location={location}, suppressed={suppressed}, amount={amount}";
+        }
+        // Mixed non-attack records must remain entirely untouched off board.
+        foreach (var location in new[] { CardLocation.HandLeft, CardLocation.DeckLeft, CardLocation.Discard, CardLocation.NotAvailable })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 60, location, 1);
+            target.Attack = 12; target.Defense = 13; target.MaxDefense = 15;
+            var buff = new CardBuff { SourceCardId = 20, Temporary = true, Attack = 2, Defense = 3,
+                KreditCost = -1, OperationCost = 2, HeavyArmor = 1, HasNonOrdinaryDefenseEntry = true };
+            target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
+            string before = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            engine.Api.RemoveTemporaryBuffs();
+            string after = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            if (before != after || !ReferenceEquals(target.BuffsBySource.GetValueOrDefault((20, true)), buff)
+                || !source.CardsBuffedByThisCard.Contains(60) || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return "离场混合临时槽不得被回合末扫描移除、逆算或发送通知";
+        }
         return null;
     }
 
@@ -35668,14 +35714,21 @@ internal static class SelfTest
         }
 
         engine.Api.RemoveTemporaryBuffs();
-        if (target.KreditCost != baseKredit || target.OperationCost != 0
-            || target.BuffsBySource.Count != 1
+        if (target.KreditCost != baseKredit || target.OperationCost != 1
+            || target.BuffsBySource.Count != 2
             || !target.BuffsBySource.TryGetValue((source.CardId, false), out var retainedAbsolute)
-            || !retainedAbsolute.OperationCostSetsAbsoluteValue)
+            || !retainedAbsolute.OperationCostSetsAbsoluteValue
+            || target.BuffsBySource[(source.CardId, true)].OperationCost != 1)
         {
-            return $"临时改费清理后未保留绝对设值：费用 {target.KreditCost}/{baseKredit}，"
-                 + $"行动费 {target.OperationCost}/0，buff槽={target.BuffsBySource.Count}";
+            return "手牌目标的临时行动费不得由回合末清理；永久绝对槽也须保留";
         }
+
+        // Withdraw the retained temporary slot explicitly, then the absolute slot.
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeTemporary);
+        if (!removeTemporary || target.OperationCost != 0 || target.BuffsBySource.Count != 1
+            || target.BuffsBySource.ContainsKey((source.CardId, true)))
+            return "显式撤销应先移除临时行动费并保留永久绝对值";
 
         engine.Api.InvokeByName("ChangeOperationCost", target,
             new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeAbsolute);

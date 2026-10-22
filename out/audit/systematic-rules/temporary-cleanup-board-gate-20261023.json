@@ -1,0 +1,139 @@
+{
+  "rule": "RULE-319",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-23",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-319",
+    "worker_exact_match": true,
+    "worker_functions": 5,
+    "blueprint_functions_verified": 8,
+    "script_bytes": 13594,
+    "script_statements": 440,
+    "empty_native_stub_scripts_excluded": 2,
+    "model_cases": 288,
+    "regression_cases": 52,
+    "release_selftest": {
+      "passed": 656,
+      "total": 656,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Fix per-withdrawal current-board gate only. Fresh registration/get/clear models confirm source dedup and value-copy getter. Full expiry queue, attack withdrawal, classification and off-board reentry policy remain pending."
+  },
+  "kernel_runtime_changed": true,
+  "authority": {
+    "board": "RemoveBuffsEndOfTurn1544/1585 checks each current target board location before1905 ChangeAttack4.",
+    "registration": "GameState AddBuffsToRemoveEndOfTurn490B: preserves existing source array, appends only if source not contained. No ID/type eligibility guard. Getter30B returns map value; clear44B clears field. AddAttackUntilEndOfTurn194B calls ChangeAttack0 then registers type0 source regardless changed-value output.",
+    "attack": "ChangeAttack2713B captured/decoded but full semantics/integration not completed. Two CardFunctionsStub entries have empty Blueprint scripts and native implementations not analyzed here."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Inside each pending legacy slot removal, skip target unless its current location is board.",
+      "Preserve off-board ledger slots, numeric stats and reverse source association; no cleanup notification for skipped entry."
+    ],
+    "excluded": "Legacy all-slot scan remains. No native queue state introduced; attack-only routing/withdrawal/source reverse snapshots and future reentry behavior remain pending."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 656,
+    "total": 656,
+    "exit_code": 0,
+    "new_cases": 52,
+    "details": [
+      "48 cases: sides2 x location6(support/frontline/hand/deck/discard/unavailable) x suppression2 x signed attack delta2. Registered source fixture, preserve ordinary defense slot/source relation.",
+      "4 mixed off-board cases retain the same temporary buff object/attack/defense/cost/armor/presence and no actions."
+    ],
+    "old_test_correction": "TemporaryResourceCostBuffsExpire formerly assumed a hand target auto-lost temporary operation cost. New board gate exposed that unsupported assumption. Test now expects hand record retained, explicitly withdraws temporary slot then permanent absolute slot; assertions retained for both withdrawals.",
+    "model": {
+      "rule": "RULE-319",
+      "registration_get_clear_cases": 288,
+      "case_digest_sha256": "f2ff6cd6b2a20fced73d994b40e7b05b5dab00a3d617af28c317fea11b703c39",
+      "capture_date": "2026-10-23",
+      "completed_date": "2026-10-23",
+      "scope": "Whole BP_GameState_Battle Add/Get/Clear AST. Type keys0/1/7, absent/present lists including existing duplicate IDs, negative/zero/positive IDs and repeated/mixed additions. No validation in Add; append only if absent; existing duplicates preserved. Struct/map/array assignments use controlled UE-style value copy, getter detached map and clear verified. Does not implement GameState queue in simulator or certify native VM/library implementation/order/lifetime."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-021936-rule319-expiry-registration-a3c9ce6d",
+    "scope": "Mechanical inventory for five nonempty functions. Primary exact reconstruction and strict decoder/header/name checks; two empty native scripts excluded explicitly.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\expiry-registration-model-checks-20261023.json",
+      "sha256": "742b20c2286dd513d04306e1c36e922dbb09f59b2ba8a85c5c423336e101e889"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule319-expiry-registration.py",
+      "sha256": "51226a14217702b7202912fb012d371b842120196b91781286511f73cfa8aaab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule319-expiry-registration.py",
+      "sha256": "e349d478a6b76aa6ee6b96e61b7b8cd0d7d0d3cdd64bda05a4ced95d44d76e1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule319-expiry-board-gate.py",
+      "sha256": "7253d18ee99b0cfb20632a160069d27fd8b2f78db1b07fb7cc9fdb9d7234929a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule319-expiry-board-gate-verified-20261023.json",
+      "sha256": "2e1b338566c7a3be1061993b63e2f8c3dcc3b4fc8739a45f29ec3d4a9deea985"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule319-selftest-release.log",
+      "sha256": "9f71ab72788a25a3b230ef39a4ba8a812ae06ceba8a87d2aa51d8f04c8ba9289"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule319-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule319\\functions.json",
+      "sha256": "39965950c827879e9390187f319a18b4444b344cb8231264385410628d6938b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule319\\task.txt",
+      "sha256": "cf752c2400da042233c5277006678edd60ae2c0caf3b64517d388be41abd864b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule319\\inventory.json",
+      "sha256": "7f46db7425b5db35f34d99fcf82f81795b344611177fe8371fdd5497ad7a215c"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "4ff1506d7747bfda09d6ee1aee4345586f856882c71b1ef04a1ac5dea3391c00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "a27077529ecbbcf4b1573a89e8521902f73712ba488b6aae4907eadf3f29e145"
+    }
+  ],
+  "remaining": [
+    "Full queue-driven cleanup registration/order/clear not implemented. Legacy scan may still clean unsupported types on board and may wrongly clear a preserved record on a later turn after reentry; this round certifies current board gate only.",
+    "Source/target lookup lifetime, saved reverse-list order, complete ChangeAttack0/4 withdrawal/notifications and typed ledger integration remain pending.",
+    "ChangeDefense0 numeric rejection and complete suppression/classified ledger remain pending.",
+    "Native TSet/map order/global death/receipt/reconnect and full PvP semantic certification remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
