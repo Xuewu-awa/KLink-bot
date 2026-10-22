@@ -1,0 +1,155 @@
+{
+  "rule": "RULE-317",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-317",
+    "worker_exact_match": true,
+    "selected_statements": 64,
+    "selected_calls": 30,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 18432,
+    "kernel_runtime_changed": false,
+    "new_selftest_run": false,
+    "last_release_selftest": {
+      "rule": "RULE-316",
+      "passed": 655,
+      "total": 655
+    },
+    "scope": "Pre-resolved SetValue ledger branch3529 with exact continuation/flow stack, controlled value-copy map primitives, enum strings and source-membership predicate. Confirms other-source cleanup versus current-source snapshot rewrite. Evidence only, full ledger integration not completed."
+  },
+  "kernel_runtime_changed": false,
+  "authority": {
+    "snapshot": "ChangeBuffsFromCards1074 saves current-source Map_Find value in localCardBuffData before3529; loop4623/4714 uses separately copied localCardBuffDataInLoop. 4989 removes generated keys across source records;5268 drops empty records.",
+    "writeback": "5507 checks mode2,5552 adds localBuffTypeString=amount to ORIGINAL localCardBuffData,5620 writes that struct back to current source. Original current-source keys can therefore survive cleanup. 2471 continuation synchronizes only pre-resolved tempInstigatorCard; other-source reverse-link outer lifecycle remains pending."
+  },
+  "findings": [
+    "Native keys separate buff type and change mode, including zero-valued keys. Single compact Defense plus nonordinary-presence bool cannot fully represent the map.",
+    "SetValue removes selected keys from other sources, preserves unrelated/temporary keys, and drops empty foreign records. Current source snapshot is then rewritten with new set key, retaining old current-source keys.",
+    "Do not replace this behavior with blanket clear-all-defense or uniformly prune all sources/reverse links."
+  ],
+  "model": {
+    "rule": "RULE-317",
+    "cases": 18432,
+    "current_source_snapshot_preserved_cases": 13824,
+    "foreign_source_record_pruned_cases": 4032,
+    "case_digest_sha256": "18af2ade9508afdc5c9bbf8083ab0f267ea312e8d6798f1f776a45cacec7ac98",
+    "examples": [
+      {
+        "before_current": {
+          "DEF_CT1": 2
+        },
+        "before_foreign": {
+          "DEF_CT1": 2
+        },
+        "after": {
+          "99": {
+            "BuffMap": {
+              "ATTACK_CT1": 0
+            }
+          },
+          "20": {
+            "BuffMap": {
+              "DEF_CT1": 2,
+              "DEF_CT2": 0
+            }
+          }
+        },
+        "current_reverse": [
+          60
+        ],
+        "foreign_reverse": [
+          60,
+          60,
+          888
+        ]
+      }
+    ],
+    "capture_date": "2026-10-22",
+    "completed_date": "2026-10-23",
+    "scope": "Exact ChangeBuffsFromCards3529 to6264 with original flow stack through reverse sync2471. Pre-resolved current source struct and key, mode2, buffType1, changeTypesToRemove[1,2]. Controlled enum strings/map/array/value-copy primitives and isBuffedByCard outer-key predicate. Confirms other-source cleanup plus current-source old snapshot writeback and zero-valued SetValue key presence. Not full entry/new-record title lookup, enum display names, native isBuffedByCard implementation or complete compact-ledger replacement certification."
+  },
+  "integration_status": "Evidence established for pre-resolved mode2 branch; production migration to typed ledger not completed. Need full entry, enum key contract, readers/reset/revoke/suppression and lifetime integration before replacing compact representation.",
+  "tests": {
+    "new_selftest_run": false,
+    "reason": "Evidence/model/documentation only; production and SelfTest unchanged.",
+    "last_release_selftest": {
+      "rule": "RULE-316",
+      "passed": 655,
+      "total": 655,
+      "exit_code": 0
+    }
+  },
+  "deepseek": {
+    "job": "20261023-020650-rule317-set-ledger-1c8cb5ef",
+    "scope": "Mechanical64-statement/30-call selected ledger extraction. Primary exact inventory reconstruction, full function re-decode and semantic model.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-ledger-model-checks-20261023.json",
+      "sha256": "904e5a9ff2c5c6663fa560de83296cd7d7550fca24809d5f670bc3d80a943f80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule317-set-ledger.py",
+      "sha256": "d3c8700726aae2044eeac04f4f6695f472870823ce8d6fa90f80c50973b981ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule317-set-ledger.py",
+      "sha256": "43524b85bda5f088f62a6b4e235809d862f23bf0c9b537279e24f67d69f5bff5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule317-set-ledger-verified-20261023.json",
+      "sha256": "30f8753eedc3caf6f3a0b5f5fd0aa9facd8be114f0172be9ddca7e4c03c710b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-selftest-release.log",
+      "sha256": "b002449be2abf6c91f68a55d231b9bcbd555e4f454f4abffc056fc3abfb4f67a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule317\\function.json",
+      "sha256": "8b33cc06548c4117657b3b885b7b5a80279868ee8004fc0ef7c3c7b9c2640a10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule317\\task.txt",
+      "sha256": "5499a9734facc985f11321d09fac9b3b19bf855861b4cac990bb2237fa610fe8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule317\\set-ledger-inventory.json",
+      "sha256": "0f05e89b94e69bb2e1d36808be1d81803467180fcabb58134648fa43105e2fde"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1548d0037008dfe57dc0e98275efbd34b529bd1595bdad56a7cb75cb1e57ad58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "30c00c0323a0cf8e60e7935c575bcc4fba1691c21cb809973d0e936b717c6b31"
+    }
+  ],
+  "remaining": [
+    "Typed ledger production implementation/integration and native-friendly enum key mapping are unfinished.",
+    "Full helper entry/new source title lookup and native isBuffedByCard implementation not certified by this pre-resolved model.",
+    "Value-copy map/array primitives controlled, not live memory execution. Other-source reverse synchronization outside this function, revoke/suppress/reset and all remaining modes pending.",
+    "Global death scheduling, TSet order, native lifetime, receipt/reconnect and full semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
