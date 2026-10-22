@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("防御增益前链：自身门、T16串联、T17后处理及立即中止", DefenseBeforeChainOrder),
+        new("防御增益前链：分组查询时点与固定接收快照", DefenseBeforeChainSnapshots),
         new("防御增益前回调：读取原始请求账本，中止/改量不回滚", DefenseBuffBeforeGainTiming),
         new("防御增益重入：原始请求只记一次，嵌套变化保留", DefenseBuffBeforeGainReentry),
         new("防御buff归零：仅删空来源，保留其他效果/临时槽及反向关系", DefenseBuffZeroCleanup),
@@ -5952,6 +5954,139 @@ internal static class SelfTest
         return null;
     }
 
+    private static IDisposable InstallDefenseChainProbes()
+    {
+        const string name = "card_unit_arado_ar_196";
+        var cleanups = new List<IDisposable>();
+        try
+        {
+            foreach (string hook in new[] { "OnBeforeGainDefense", "OnBeforeOtherCardGainDefense", "OnBeforeOtherCardGainDefenseAfterAdd" })
+            {
+                cleanups.Add(InstallSelectionDrawProbe(name, hook));
+                var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+                var steps = new List<KismetStep>();
+                bool own = hook == "OnBeforeGainDefense", rewrite = hook == "OnBeforeOtherCardGainDefense";
+                string input = rewrite ? "defenseToAdd" : "defenseGaining";
+                if (!own) steps.Add(new KismetStep(steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = input, Scope = "local" }, null, -1, "_auditChainInput", null) { DestinationScope = "instance" });
+                steps.Add(locals[hook][0] with { Index = steps.Count });
+                if (rewrite) steps.Add(new KismetStep(steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = input, Scope = "local" },
+                        new KismetExpr { Var = "_auditChainDelta", Scope = "instance" } } }, null, -1, "newDefenseToAdd", null));
+                steps.Add(new KismetStep(steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "_auditChainStop", Scope = "instance" }, null, -1, "stopAction", null));
+                steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+                locals[hook] = steps;
+            }
+            return new AuditProbeCleanup(() => { foreach (var item in cleanups) item.Dispose(); });
+        }
+        catch { foreach (var item in cleanups) item.Dispose(); throw; }
+    }
+
+    private static string? DefenseBeforeChainOrder(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnBeforeGainDefense", t16 = "OnBeforeOtherCardGainDefense", t17 = "OnBeforeOtherCardGainDefenseAfterAdd";
+        using var programs = InstallDefenseChainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool ownStop in new[] { false, true })
+        foreach (int stopAt in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            CardInstance Make(int id, string trigger, int delta, bool stop) {
+                var card = state.CreateWithId(probe, Side.Left, id, CardLocation.Discard, id);
+                card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { trigger } };
+                card.Keywords.Clear(); card.BlueprintVariables["_auditChainDelta"] = delta; card.BlueprintVariables["_auditChainStop"] = stop; return card;
+            }
+            var first = Make(30, t16, 1, stopAt == 1); var second = Make(40, t16, 2, stopAt == 2);
+            var afterFirst = Make(50, t17, 0, stopAt == 3); var afterSecond = Make(70, t17, 0, stopAt == 4);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { t16, t17 } };
+            target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.BlueprintVariables["_auditChainStop"] = ownStop; target.Defense = target.MaxDefense = 10;
+            for (int i = 0; i < 6; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            state.CreateWithId("card_unit_51e_regiment", Side.Right, 110, CardLocation.DeckRight, 0);
+            int count = 0; bool beforeNumeric = true;
+            using var draw = InstallDrawReentryProbe(state, () => { count++; beforeNumeric &= target.Defense == 10
+                && target.MaxDefense == 10 && target.BuffsBySource[(20, false)].Defense == 2; });
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(target, 2, source, instigatorId: 20);
+            bool stoppedOwn = !suppressed && ownStop;
+            var expected = new List<(string Hook, int Id)>();
+            if (!suppressed) expected.Add((own, 60));
+            if (!stoppedOwn) {
+                expected.Add((t16, 30));
+                if (stopAt != 1) {
+                    expected.Add((t16, 40));
+                    if (stopAt != 2) { expected.Add((t17, 50)); if (stopAt != 3) expected.Add((t17, 70)); }
+                }
+            }
+            var calls = trace.Where(x => x.StartsWith(own + "(out", StringComparison.Ordinal)
+                || x.StartsWith(t16 + "(out", StringComparison.Ordinal) || x.StartsWith(t17 + "(out", StringComparison.Ordinal)).ToArray();
+            bool applied = !stoppedOwn && stopAt == 0;
+            if (calls.Length != expected.Count || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second.Hook + "(out", StringComparison.Ordinal)
+                    && x.First.Contains($"{probe}#{x.Second.Id}（", StringComparison.Ordinal))
+                || count != expected.Count || !beforeNumeric || target.Defense != (applied ? 15 : 10)
+                || target.MaxDefense != (applied ? 15 : 10) || target.BuffsBySource[(20, false)].Defense != 2
+                || (!stoppedOwn && Convert.ToInt32(first.BlueprintVariables["_auditChainInput"]) != 2)
+                || (!stoppedOwn && stopAt != 1 && Convert.ToInt32(second.BlueprintVariables["_auditChainInput"]) != 3)
+                || (!stoppedOwn && stopAt != 1 && stopAt != 2 && Convert.ToInt32(afterFirst.BlueprintVariables["_auditChainInput"]) != 5)
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainDefense") != (applied ? 1 : 0))
+                return $"防御回调链错误 side={side}, suppressed={suppressed}, ownStop={ownStop}, stopAt={stopAt}";
+        }
+        return null;
+    }
+
+    private static string? DefenseBeforeChainSnapshots(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnBeforeGainDefense", t16 = "OnBeforeOtherCardGainDefense", t17 = "OnBeforeOtherCardGainDefenseAfterAdd";
+        using var programs = InstallDefenseChainProbes();
+        var (engine, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+        CardInstance Make(int id, string trigger, int delta) {
+            var card = state.CreateWithId(probe, Side.Left, id, CardLocation.Discard, id);
+            card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { trigger } };
+            card.Keywords.Clear(); card.BlueprintVariables["_auditChainDelta"] = delta; card.BlueprintVariables["_auditChainStop"] = false; return card;
+        }
+        var first = Make(30, t16, 1); var second = Make(40, t16, 2);
+        var afterFirst = Make(50, t17, 0); var afterLast = Make(70, t17, 0);
+        var target = state.CreateWithId(probe, Side.Left, 60, CardLocation.BoardHqLeft, 1);
+        target.Definition = new CardDefinition { Name = probe, Type = "fighter" }; target.Keywords.Clear();
+        target.BlueprintVariables["_auditChainStop"] = false; target.Defense = target.MaxDefense = 10;
+        for (int i = 0; i < 8; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+        int stage = 0; CardInstance? late16 = null, late17 = null;
+        using var draw = InstallDrawReentryProbe(state, () => {
+            stage++;
+            if (stage == 1) Make(45, t16, 3); // Own callback precedes T16 query.
+            if (stage == 2) {
+                second.Definition = new CardDefinition { Name = probe }; second.Keywords.Add(Keyword.Suppressed);
+                state.Move(second, CardLocation.NotAvailable, 0, notifyMoved: false);
+                late16 = Make(35, t16, 10); Make(55, t17, 0); // T16 query frozen; T17 not queried yet.
+            }
+            if (stage == 5) {
+                afterLast.Definition = new CardDefinition { Name = probe }; afterLast.Keywords.Add(Keyword.Suppressed);
+                state.Move(afterLast, CardLocation.NotAvailable, 0, notifyMoved: false);
+                late17 = Make(75, t17, 0);
+            }
+        });
+        var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+        engine.Api.ChangeDefense(target, 2, source, instigatorId: 20);
+        var calls = trace.Where(x => x.StartsWith(own + "(out", StringComparison.Ordinal)
+            || x.StartsWith(t16 + "(out", StringComparison.Ordinal) || x.StartsWith(t17 + "(out", StringComparison.Ordinal)).ToArray();
+        var expected = new[] { (own, 60), (t16, 30), (t16, 40), (t16, 45), (t17, 50), (t17, 55), (t17, 70) };
+        if (calls.Length != expected.Length || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second.Item1 + "(out", StringComparison.Ordinal)
+                && x.First.Contains($"{probe}#{x.Second.Item2}（", StringComparison.Ordinal))
+            || stage != 7 || target.Defense != 18 || target.BuffsBySource[(20, false)].Defense != 2
+            || Convert.ToInt32(second.BlueprintVariables["_auditChainInput"]) != 3
+            || Convert.ToInt32(afterLast.BlueprintVariables["_auditChainInput"]) != 8
+            || late16 is null || late17 is null || late16.BlueprintVariables.ContainsKey("_auditChainInput")
+            || late17.BlueprintVariables.ContainsKey("_auditChainInput"))
+            return "各组须在其起点查询；自身/上一组新增可见，组内移除/抑制不重筛，组内新增不补入"
+                + $" stage={stage}, def={target.Defense}, late16={late16?.BlueprintVariables.ContainsKey("_auditChainInput")}, late17={late17?.BlueprintVariables.ContainsKey("_auditChainInput")}; " + string.Join(" | ", calls);
+        return null;
+    }
+
     private static IDisposable InstallDefenseBeforeLedgerProbe(string hook)
     {
         const string name = "card_unit_arado_ar_196";
@@ -11176,13 +11311,27 @@ internal static class SelfTest
         if (KismetLibrary.Default?.Find(name)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
             || KismetLibrary.Default.FindProgram(name, trigger) is not null)
             throw new InvalidOperationException("无法安全安装选择回复探针");
+        // Local programs are cached; scope cache entries as well as IR so
+        // different temporary audit probes cannot execute one another's bodies.
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(KismetLibrary.Default)!;
+        KismetProgram? previous = null;
+        if (cache.TryGetValue(name, out var programs)) programs.Remove(trigger, out previous);
         locals.Add(trigger, new[] {
             new KismetStep(0, "call", "DrawCardsFromDeckBySide", new[] {
                 new KismetExpr { Int = 20 }, new KismetExpr { Var = "side", Scope = "instance" },
                 new KismetExpr { Int = 1 }, new KismetExpr { Bool = false }, new KismetExpr { Bool = false }
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
-        return new AuditProbeCleanup(() => locals.Remove(trigger));
+        return new AuditProbeCleanup(() => {
+            locals.Remove(trigger);
+            if (cache.TryGetValue(name, out var current))
+            {
+                current.Remove(trigger);
+                if (previous is not null) current[trigger] = previous;
+            }
+        });
     }
 
     private static string? FuryGrantQuota(CardDatabase db)

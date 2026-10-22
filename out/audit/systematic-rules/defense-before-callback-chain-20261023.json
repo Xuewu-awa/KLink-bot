@@ -1,0 +1,148 @@
+{
+  "rule": "RULE-310",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "kind": "Before-defense own stop, sequential transforms and group snapshots",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-310",
+    "completed_on_client_date": "2026-10-23",
+    "worker_exact_match": true,
+    "worker_functions": 2,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "models": 200,
+    "full_release_selftest": {
+      "passed": 645,
+      "total": 645,
+      "new_run": true
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Own before-gain stop gate (unless suppressed), T16 transforms chained immediately, T17 queried afterward, both groups stop immediately and hold separate query snapshots. Shared local-program cache test probes scoped/restored. Not native TSet order, other modes, all own/after events or full typed-ledger certification."
+  },
+  "authority": {
+    "own": "ChangeDefense3233/3595 directly calls own OnBeforeGainDefense unless suppressed;3640 stop=false enters query16,3665 stop=true returns5740.",
+    "groups": "3269queries16,5610 invokes each with current localInputAmount,5682 stop=true returns immediately,5712 assigns output for next observer;5546 loops3340. Only after3437 completion4929 queries17;5314 passes final amount,5398 stops immediately. Both use object equality to exclude target, materialized query arrays with no per-iteration location/suppression/registration recheck.",
+    "query": "Full GameState FetchAllCardsWithEventTrigger1174B and84B wrapper redecoded with ChangeDefense/ChangeBuffsFromCards. Four functions13268B450stmt, syntax verification only beyond interpreted paths."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Add direct own stop gate using one already-filtered target; skip it only for target suppression.",
+      "Reorder T16 before T17; snapshot each group when entered.",
+      "Invoke one saved observer at a time, rebuild seed from latest amount, apply each output immediately and stop before any later observer/group.",
+      "Retain saved objects even if later suppression, registration or location changes. Own target excluded by object identity."
+    ],
+    "not_changed": "RULE309 original request ledger stays before callbacks. Generic BroadcastLocalWithOutParams unchanged; native TSet order not implemented."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 645,
+    "total": 645,
+    "log_verified": true,
+    "new_regressions": [
+      "40 chain cases: sides2 x target suppression2 x own stop2 x stop stage0..4. Check own/T16/T17 order, T16 inputs2->3 and T17 final5, immediately skipped later calls, original ledger2 and no early numeric changes.",
+      "One staged mutation scenario: own adds T16 receiver; first T16 suppresses/unregisters/moves later receiver and adds late T16 plus new T17; first T17 likewise changes a later receiver/adds late T17. Group snapshots preserve old receivers and exclude within-group additions, while next group sees prior-group additions."
+    ],
+    "fixture_fixes": [
+      "Shared InstallSelectionDrawProbe now evicts and restores only its temporary local-program cache entry, preventing prior probe bodies from leaking into later tests. Production KismetLibrary cache behavior unchanged.",
+      "Dynamic registration fixture originally filled hand capacity and lost draw reentry markers. Observers moved to discard, a location allowed by native trigger query, to measure callbacks without hand-capacity interference."
+    ],
+    "models": {
+      "rule": "RULE-310",
+      "completed_on_client_date": "2026-10-23",
+      "cases": 200,
+      "case_digest_sha256": "156907479e7d788e00c65ea6a3017e0a413afaa13cb5ddc4fe069e807642c1f8",
+      "scope": "Full ChangeDefense AST entry-to-return and full GameState trigger-query AST. Own suppression/stop, two T16 transforms, two T17 stops, query-time additions and in-loop suppress/unregister/unavailable/add mutations. Initial request2, valid initialized target/nondeck/action=true/skip=false; raw source20/9999.",
+      "limits": "Ledger, getter/crypto/notifier, callback code and map/array/set-to-array primitives controlled. Ordered set slots supplied, not native TSet order. Other numeric modes, null/ID replacement lifetime, unsuppressed after-gain events and full ledger/reconnect not certified. Capture remains dated20261022; model/report completed20261023."
+    }
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-chain-model-checks-20261023.json",
+      "sha256": "9d3349965e1cbfb656a0b64823e682a076d30902464e14a7edbb1ea18ce0d785"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule310-before-chain-verified-20261023.json",
+      "sha256": "f78296dd0a02d053ae766ccc15b594ff03b7ca12488c04bce271b31d4b2ce699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule310-selftest-release.log",
+      "sha256": "027a8f36dac4c23e09da2a63962234744b51c0089ec17b9d78b075e71174f43d"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule310-before-chain.py",
+      "sha256": "5d8649d77475d02f0b03a845da7627845bea08155b9b62d80c06255096e6287b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule310-before-chain.py",
+      "sha256": "64b565268dd1ef3bc534635cec77fe56f7b3d40ede3ec5a69dfab4e51ac82157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule310-before-chain.py",
+      "sha256": "4fce3413912c5d43c5cf8a7c5f7380608a8c8eabe71797fb5dfa9af85f4c5a89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    }
+  ],
+  "deepseek": {
+    "job": "20261022-023231-rule310-before-chain-66af75b9",
+    "input": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule310\\functions.json",
+      "sha256": "49b53b7e49119046f2386772767f25e8b5c3aff10e213eca711fd027093ec05d"
+    },
+    "task": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule310\\task.txt",
+      "sha256": "d427e22d491472da9d2fd032ab28545aa99f78f6fc4a5bf4459157f5dccf894c"
+    },
+    "output": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule310\\inventory.json",
+      "sha256": "a9e2f85db3ffae0288678be5f1cc5700f6598b073215b1c1c40685b5168ffdf1"
+    },
+    "primary_exact_match": true,
+    "scope": "Mechanical calls/Context writes for two full functions; primary independently decodes/judges all branches and extra query bodies."
+  },
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "80f483fb4b62a3885912ee9aab7706026638372586d92d12a356d7caf1d1561b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7f1c73513d1cf7ba5e65a511fd1019bf4b705135f15ee73b181a3f9a741fba94"
+    }
+  ],
+  "remaining": [
+    "After-gain own/observer7 dispatch still needs suppression separation and fresh group snapshot review.",
+    "Positive gain clamp1..99 and callback changing current defense not fully aligned/certified.",
+    "Full per-mode defense ledger and presence clearing, other numeric modes and skipAction remain pending.",
+    "Native trigger-registration map/TSet order, object-null/ID replacement lifetime, generic death sweep and receipt/reconnect still pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

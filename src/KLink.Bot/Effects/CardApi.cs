@@ -2631,8 +2631,9 @@ public sealed partial class CardApi
             RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, isSet: false);
         bool positiveGain = fireGainDefenseEvent && delta > 0 && target.Defense > 0;
         if (positiveGain
-            && (!ApplyBeforeOtherCardGainDefenseAfterAdd(target, delta)
-                || !ApplyBeforeOtherCardGainDefense(target, ref delta)))
+            && (!ApplyBeforeGainDefense(target)
+                || !ApplyBeforeOtherCardGainDefense(target, ref delta)
+                || !ApplyBeforeOtherCardGainDefenseAfterAdd(target, delta)))
         {
             return;
         }
@@ -2726,51 +2727,61 @@ public sealed partial class CardApi
         8 => "combatModify", 9 => "notUsed", 10 => "EChangeType_MAX", _ => "",
     };
 
-    /// <summary>
-    /// `ChangeDefense` runs each observer's local function in sequence; its output becomes
-    /// the next observer's input, and `stopAction` cancels the gain.
-    /// </summary>
+    // RULE-310: direct own stop gate, skipped only when the target is suppressed.
+    private bool ApplyBeforeGainDefense(CardInstance target)
+    {
+        if (target.IsSuppressed) return true;
+        var hits = BroadcastLocalWithOutParams("OnBeforeGainDefense", target,
+            new[] { "stopAction" }, only: new[] { target }, includeSubject: true,
+            recipientsAlreadyFiltered: true);
+        return !hits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")));
+    }
+
+    /// <summary>Each T16 output becomes the next input; stop immediately.</summary>
     private bool ApplyBeforeOtherCardGainDefense(CardInstance target, ref int amount)
     {
-        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        const string trigger = "OnBeforeOtherCardGainDefense";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        foreach (var observer in recipients)
         {
-            ["cardGainingDefense"] = target,
-            ["defenseToAdd"] = amount,
-        };
-
-        var hits = BroadcastLocalWithOutParams(
-            "OnBeforeOtherCardGainDefense", target,
-            new[] { "newDefenseToAdd", "stopAction" }, seed);
-
-        foreach (var hit in hits)
-        {
-            if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")))
+            if (ReferenceEquals(observer, target)) continue;
+            var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
             {
-                return false;
+                ["cardGainingDefense"] = target,
+                ["defenseToAdd"] = amount,
+            };
+            // The query already filtered this object. Later suppression, location
+            // or registration changes do not remove it from the saved array.
+            var hits = BroadcastLocalWithOutParams(trigger, target,
+                new[] { "newDefenseToAdd", "stopAction" }, seed,
+                only: new[] { observer }, recipientsAlreadyFiltered: true);
+            foreach (var hit in hits)
+            {
+                if (Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction"))) return false;
+                amount = AsInt(hit.Outs.GetValueOrDefault("newDefenseToAdd"));
             }
-
-            amount = AsInt(hit.Outs.GetValueOrDefault("newDefenseToAdd"));
         }
-
         return true;
     }
 
-    /// <summary>
-    /// `ChangeDefense` first lets after-add observers apply side effects and stop the gain.
-    /// </summary>
+    /// <summary>T17 is queried after T16 and can stop all remaining callbacks.</summary>
     private bool ApplyBeforeOtherCardGainDefenseAfterAdd(CardInstance target, int amount)
     {
-        var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+        const string trigger = "OnBeforeOtherCardGainDefenseAfterAdd";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        foreach (var observer in recipients)
         {
-            ["cardGainingDefense"] = target,
-            ["defenseGaining"] = amount,
-        };
-
-        var hits = BroadcastLocalWithOutParams(
-            "OnBeforeOtherCardGainDefenseAfterAdd", target,
-            new[] { "stopAction" }, seed);
-
-        return !hits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")));
+            if (ReferenceEquals(observer, target)) continue;
+            var seed = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["cardGainingDefense"] = target,
+                ["defenseGaining"] = amount,
+            };
+            var hits = BroadcastLocalWithOutParams(trigger, target, new[] { "stopAction" }, seed,
+                only: new[] { observer }, recipientsAlreadyFiltered: true);
+            if (hits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")))) return false;
+        }
+        return true;
     }
 
     /// <summary>
