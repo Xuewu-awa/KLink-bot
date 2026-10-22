@@ -425,7 +425,10 @@ public sealed partial class CardApi
             //    `OnStartOfTurn` 是 `ChangeAttack(self, getTotalAttack(), +)`，
             //    旧实现会把**整条己方场面的攻击之和**加到它自己头上。
             //    回归用例见 tools/BotSim/SelfTest.cs 的 RedBullDoublesOwnAttack。
-            ["getTotalAttack"] = (c, r, a) => SelfArg(c, r, a)?.Attack ?? 0,
+            // RULE-326: native backend clamps the decoded base+temporary sum
+            // to 0..99. Attack is still the legacy flat value; split arithmetic
+            // and combat consumers require a separate migration.
+            ["getTotalAttack"] = (c, r, a) => Math.Clamp(SelfArg(c, r, a)?.Attack ?? 0, 0, 99),
             ["getTotalDefense"] = (c, r, a) => SelfArg(c, r, a)?.Defense ?? 0,
             ["getCardsBuffedByThisCard"] = (c, r, a) => GetCardsBuffedByThisCard(c, r, a),
             ["GetTurnNumber"] = (c, r, a) => GetTurnNumber(),

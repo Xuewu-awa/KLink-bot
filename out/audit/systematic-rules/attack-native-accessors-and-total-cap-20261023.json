@@ -1,0 +1,200 @@
+{
+  "rule": "RULE-326",
+  "completed_on_client_date": "2026-10-23",
+  "game_acquisition_read_only": true,
+  "current_live_capture": false,
+  "kernel_runtime_changed": true,
+  "verified": {
+    "rule": "RULE-326",
+    "worker_exact_match": true,
+    "worker_memory_instruction_count": 123,
+    "native_wrappers": 5,
+    "native_backends": 5,
+    "wrapper_bytes": 1108,
+    "backend_bytes": 1040,
+    "native_pdata_fragments": 11,
+    "offline_vectors": 550,
+    "offline_backend_calls": 2750,
+    "corrected_blueprint_model_cases": 192,
+    "blueprint_functions_verified": 3,
+    "blueprint_bytes": 4581,
+    "new_regression_cases": 44,
+    "release_selftest": {
+      "passed": 671,
+      "total": 671,
+      "exit_code": 0
+    },
+    "scope": "Confirmed native separate encrypted base/temp accessors and total0..99 clamp across complete fragmented bodies; simulator fix is getTotalAttack read bounds ONLY. Flat storage/combat, split mutation/SetValue/typed zero ledger remain pending. CRC/cookie helpers controlled; no live acquisition claimed."
+  },
+  "authority": {
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "mapping": "Installed executable hash exactly matches prior readonly UFunction mapping capture; headers/native RVA cross-checked. No current game process or fresh runtime memory claim.",
+    "native_layout": {
+      "shared_xor_mask": "0x55c",
+      "base_divisor": "0x568",
+      "base_offset": "0x56c",
+      "base_noise": "0x570",
+      "base_encrypted": "0x574",
+      "base_crc": "0x578",
+      "temp_divisor": "0x57c",
+      "temp_offset": "0x580",
+      "temp_noise": "0x584",
+      "temp_encrypted": "0x588",
+      "temp_crc": "0x58c"
+    },
+    "formula": "Encrypt writes ((value*divisor + offset) XOR sharedMask); getter XORs, subtracts offset, signed-divides by divisor. Zero divisor returns -100. Total separately obtains base/temp and clamps signed sum0..99 in tested nonoverflow domain.",
+    "fragments": "Each getter spans three adjacent pdata fragments. getTotalAttack first157B omits final clamp; full reachable body280B. Other getters247B each; setters133B each. Five wrappers1108B; five full backends1040B."
+  },
+  "fix": {
+    "scope": "getTotalAttack Blueprint dispatch read bounds only",
+    "file": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "change": "Math.Clamp(current flat Attack,0,99), retaining existing explicit/implicit receiver handling. No mutation or new actions.",
+    "not_fixed": "CardInstance.Attack remains flat, base/temp mutation, combat direct consumers, SetValue and typed ledger are not migrated or declared equivalent."
+  },
+  "verification": {
+    "native_emulation": {
+      "rule": "RULE-326",
+      "offline_only": true,
+      "normal_vectors": 486,
+      "zero_key_vectors": 64,
+      "total_vectors": 550,
+      "native_calls": 2750,
+      "case_digest_sha256": "fc5ab8a0192fc3b8bb7c1f9bee7094feb85be890523fbf00af2ec2f661decfb5",
+      "scope": "Execute all five captured backend bodies in Unicorn, including all three pdata fragments of each getter. Synthetic object/buffers, real set/encrypt and get/decrypt arithmetic, separate base/temp fields and total clamp0..99. CRC import returns0 and stored hash0, security-cookie helper returns; diagnostic/logging paths not certified. No game function invocation, memory writes or injection. Values selected avoid signed multiply/division overflow; not all int32 overflow states certified."
+    },
+    "corrected_blueprint_model": {
+      "rule": "RULE-326",
+      "cases": 192,
+      "case_digest_sha256": "d59547c375238218d3814894e84d8db15c129071a5ce01c065ed457a1de650e3",
+      "capture_dates": [
+        "2026-10-22",
+        "2026-10-23"
+      ],
+      "completed_date": "2026-10-23",
+      "scope": "Full ordinary ChangeAttack1 entry-to-return plus whole after-event helper and whole GameState query AST. Skip/deck omit notify but not events; own suppression only; zero request stops after ledger call; nonzero capped request may emit zero visible gain. Total getter now clamps base+temp0..99, grounded by separately emulated captured native backend. Ledger/encryption/primitive APIs controlled. Supersedes RULE322 max0-only getter assumption for high totals; old artifact retained as history, not full numeric authority. This reference model also includes upper-bound/split cases not yet matched by flat simulator; no claim of all numeric/ledger equality."
+    },
+    "regression": "44 combinations: sides2 x raw flat Attack(intMin,-100,-1,0,1,50,98,99,100,123,intMax)11 x explicit/implicit receiver2. Correct clamp, explicit receiver overrides decoy Self, no snapshot/action mutation.",
+    "release_selftest": {
+      "passed": 671,
+      "total": 671,
+      "exit_code": 0
+    }
+  },
+  "prior_model_correction": "RULE322 reference getter primitive was max(0,base+temp), omitting native99 cap; high-total numeric assertions were not authoritative. Original artifact kept unchanged as history. New192-case model reruns complete ChangeAttack1 + after helper + trigger query with native-backed cap; three full scripts4581B independently redecoded. Other controlled models are not upgraded to full native numeric certification by association.",
+  "deepseek": {
+    "job": "20261023-061733-rule326-accessor-memory-ops-c7e64bfc",
+    "status": "completed",
+    "exact_match": true,
+    "memory_instruction_count": 123,
+    "scope": "Mechanical bracketed-memory-operand inventory only; primary reconstructs all exact rows and validates original PE/disassembly/CFG bounds. No worker semantic judgment adopted."
+  },
+  "sources": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-accessors-emulation-20261023.json",
+      "sha256": "03a7eeabbca3277a74d64d7afa9261f6e8381defc51d867b6eb8004a7a09696a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\ordinary-attack-capped-total-model-checks-20261023.json",
+      "sha256": "d69952a909f2803575f8067eced9bf298799fa14b4b9f0c648b2395a8bf1b7b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule326-pe-accessors.py",
+      "sha256": "b7879337a76045be8a34799bf608f3ad32a76cb7047a885069331d7a27eabc26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-ordinary-capped.py",
+      "sha256": "4a2f75a5d36047d5dcb3536d9d3c84903fa82ece8d2c4e39df08915de0c0c112"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule326-attack-accessors.py",
+      "sha256": "5f86bfae994a1129a6c7db2060ed335dfc6e702ecaee18da922bff43652e7a35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule326-attack-accessors-verified-20261023.json",
+      "sha256": "ffec02aecec3a48c5d191ab3255208a1ef1aa2cb48b785cca4267282d459f9cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule326-selftest-release.log",
+      "sha256": "0ec2351d0206cf82cb4a5e3aff2b19a6c2a5750e60f7e5511197a14aabac5dd8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule326-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule326\\functions.json",
+      "sha256": "2bcc63b6a6e685c991d665a644adc36a4932dd6341eb329a4339dc9de91e9ae6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule326\\task.txt",
+      "sha256": "9db38b9ebd627d64166a7e755581a56d6e52dac15eb46693ef45efd3a6d7f2a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule326\\memory-ops.json",
+      "sha256": "7ec4ed7ce87f4e1656ad9bac5033d59496daae980cf736bda33e727a4097d89b"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "0ed1512ea19ae844347cdcdda30d5a542738787a884f06b0f651c1c394db987b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "ff140d2cadb64cdf7630fdffe1b76f0b667cdc02017b5898a16a2aca78856999"
+    }
+  ],
+  "remaining": [
+    "Base/temporary numeric storage and all mutation/copy/reset/convert/suppression/combat consumers must migrate together. Current getter bound repair does not make hidden base recoverable after a clipped update.",
+    "Complete typed ledger/zero-valued key presence/SetValue source map and 511th shortcut pending.",
+    "Offline CRC import returns0 and security cookie helper returns; checksum failure/diagnostic/logging/UObject lifetime not certified. Selected arithmetic avoids signed overflow; exhaustive int32 overflow/division traps not certified.",
+    "Native TMap physical ordering, defense0, suppression/global death/lifetime/receipt/reconnect pending."
+  ],
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "fully_semantically_certified_cards": 0
+}

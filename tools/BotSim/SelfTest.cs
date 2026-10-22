@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -5998,6 +5999,26 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? TotalAttackReadBounds(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int raw in new[] { int.MinValue, -100, -1, 0, 1, 50, 98, 99, 100, 123, int.MaxValue })
+        foreach (bool explicitReceiver in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, CardLocation.Discard, 0);
+            var decoy = state.CreateWithId("card_unit_t_34", side.Opposite(), 20, CardLocation.Discard, 0);
+            target.Attack = raw; decoy.Attack = 7;
+            string before = state.SnapshotJson();
+            var result = engine.Api.InvokeByName("getTotalAttack", explicitReceiver ? target : null, new object?[] { null },
+                new EffectContext { Engine = engine, State = state, Self = explicitReceiver ? decoy : target, Controller = side }, out bool handled);
+            if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
+                || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
     }
 
     private static string? ExpiryQueueSnapshotMutation(CardDatabase db)
