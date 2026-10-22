@@ -1,0 +1,301 @@
+{
+  "rule": "RULE-327",
+  "completed_on_client_date": "2026-10-23",
+  "kernel_runtime_changed": false,
+  "current_live_capture": false,
+  "read_only_game_access": true,
+  "verified": {
+    "rule": "RULE-327",
+    "kernel_runtime_changed": false,
+    "worker_exact_match": true,
+    "files_with_attack_references": 12,
+    "assignment_candidates": 19,
+    "actual_syntactic_assignments": 17,
+    "excluded_comparison_and_comment": 2,
+    "native_property_offsets": [
+      108,
+      112
+    ],
+    "offline_vectors": 216,
+    "offline_backend_calls": 1728,
+    "scope": "Public registered fields and encrypted backend storage are independent under direct setters/getters; complete public-field writer/refresh semantics not known. Existing aggregate AttackBuff proxy and synthetic test do not certify native correctness. Inventory is bounded syntactic candidates, not all reflective/native/Blueprint writers."
+  },
+  "finding": {
+    "public_fields": "Current PE static property registration confirms attack+0x6c and attackBuff+0x70 in adjacent slots, correlated with SDK declarations and existing runtime attack FProperty header. These are distinct from private encrypted groups+0x568/+0x57c.",
+    "independence": "216 synthetic-object vectors execute actual encrypted setters/getters: setters leave public fields unchanged; modifying public fields leaves decrypted and total outputs unchanged. CRC/cookie helpers controlled; other initialization/CopyData/receipt/Blueprint writers not certified.",
+    "proxy_gap": "CardInstance.AttackBuff currently sums permanent and temporary source ledger entries. KismetVm routes public attackBuff to this proxy; old AttackBuffMemberRead test expects permanent2 + temp(-1) =1. This tests compatibility implementation, not native public-field semantics. No native equivalence is established by passing it."
+  },
+  "integration_inventory": {
+    "rule": "RULE-327",
+    "worker_exact_match": true,
+    "files_scanned": 12,
+    "source_version": "02a4620bf379c6885857a60279205ff9d55298d3",
+    "candidates": 19,
+    "excluded": [
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "line": 4274,
+        "text": "            if (buff.Attack == 0 && buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0)"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "line": 4418,
+        "text": "        // 逆运算：`CardApi.ChangeAttack` 是 `target.Attack += delta` + `buff.Attack += delta`，"
+      }
+    ],
+    "assignments": [
+      {
+        "path": "src/KLink.Bot/Cards/CardDatabase.cs",
+        "category": "static-definition",
+        "line": 336,
+        "text": "                Attack = c.Attack ?? 0,"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "card-copy",
+        "line": 1346,
+        "text": "            Attack = source.Attack,"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "attack-change",
+        "line": 2573,
+        "text": "        target.Attack = Math.Max(0, target.Attack + delta);"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "source-ledger",
+        "line": 2577,
+        "text": "            buff.Attack += delta;"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "source-ledger",
+        "line": 4281,
+        "text": "            buff.Attack = 0;"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "suppression-reset",
+        "line": 4297,
+        "text": "        target.Attack = staticAttack;                    // ChangeAttack(…, _staticAttack, Suppress)"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "source-ledger",
+        "line": 4388,
+        "text": "                live.Attack += saved.Attack;"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApi.cs",
+        "category": "unsuppression-restore",
+        "line": 4398,
+        "text": "                card.Attack = Math.Max(0, card.Attack + saved.Attack);"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "category": "static-template-create",
+        "line": 3185,
+        "text": "            Attack = def.Attack,"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "category": "source-ledger",
+        "line": 4168,
+        "text": "        buff.Attack = 0;"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "category": "temporary-withdrawal",
+        "line": 4176,
+        "text": "        target.Attack = Math.Max(0, previous - removed);"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "category": "legacy-511th-withdrawal",
+        "line": 4422,
+        "text": "            target.Attack = Math.Max(0, target.Attack - buff.Attack);"
+      },
+      {
+        "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "category": "source-ledger",
+        "line": 4425,
+        "text": "        buff.Attack = 0;"
+      },
+      {
+        "path": "src/KLink.Bot/Engine/CardInstance.cs",
+        "category": "reset-to-definition",
+        "line": 712,
+        "text": "        Attack = IsSalvaged ? 1 : Definition.Attack;"
+      },
+      {
+        "path": "src/KLink.Bot/Engine/CardInstance.cs",
+        "category": "source-ledger-copy",
+        "line": 1025,
+        "text": "        Attack = Attack,"
+      },
+      {
+        "path": "src/KLink.Bot/Engine/GameState.cs",
+        "category": "card-create",
+        "line": 770,
+        "text": "            Attack = def.Attack,"
+      },
+      {
+        "path": "src/KLink.Bot/Engine/GameState.cs",
+        "category": "virtual-card-create",
+        "line": 838,
+        "text": "            Attack = def.Attack,"
+      }
+    ],
+    "scope": "Syntactic write candidates for current kernel cs files, not all reflected/property/Blueprint/native/external writers. Read aliases/GetMember and public/private native state must be reconciled separately. 17 includes static definitions and ledger writes, not 17 direct card numeric mutations."
+  },
+  "migration_requirements": [
+    "Separate public reflected raw attack/attackBuff, decrypted base attack, decrypted temporary attack, clamped total attack and typed per-source ledger. They cannot be conflated solely because normal values sometimes agree.",
+    "Trace public-field writers and refresh timing in initialization, CopyData, receipt/application and Blueprint mutations against the same executable version. Then compare live card public fields, crypto groups and source maps across concrete state transitions.",
+    "Migrate numeric mutation, temporary withdrawal, legacy511th shortcut, suppression/restore, reset and creation/copy together. Keep static definition and source-ledger copy assignments distinct from mutable numeric writes.",
+    "Do not substitute a different sum in AttackBuff or rewrite public attack based only on the encrypted getter proof. Guard ordinary same-state assumptions until writer/refresh chain is established."
+  ],
+  "tests": {
+    "offline_native": {
+      "rule": "RULE-327",
+      "vectors": 216,
+      "offline_backend_calls": 1728,
+      "digest_sha256": "3bd9c53fd503b4ae8dc87b723862ac8d6714bffd123a41ded04d1f2e41b09189",
+      "scope": "Synthetic object: seed public offsets0x6c/0x70, execute real setters and getters at exact-SHA installed PE; public fields unchanged by encrypted setters, getters unchanged by public-field writes. CRC/cookie helpers controlled; no conclusion about other CopyData/initialization/network/Blueprint writers. Not permission to derive public fields from ledger or decrypted state."
+    },
+    "new_simulator_tests": 0,
+    "selftest_rerun": false,
+    "reason": "No rule code changed this round; existing671/671 from RULE326 remains prior validation, not new native semantics certification."
+  },
+  "deepseek": {
+    "job": "20261023-062422-rule327-attack-write-inventory-a244e157",
+    "status": "completed",
+    "exact_match": true,
+    "scope": "Mechanical regex extraction only from12 relevant source files. Primary verifies all rows/source SHA, excludes1 comment and1 comparison, classifies17 assignments. Not an exhaustive semantic write graph."
+  },
+  "sources": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-property-params-pe-20261023.json",
+      "sha256": "9468777261b18b6c41c2db1e4e3a03aed07fc8f2d020924c573f6e6e8b16658e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-encrypted-independence-model-20261023.json",
+      "sha256": "23bdc4914d50694cc710fd4c355d8fe0eec46d5645d98e394860bc8007545d55"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-functions-complete-native-20261021.json",
+      "sha256": "85248fbcc4e8461e7279de890cfb5e8c3e3e9700f8adee7d92fd6600c930bd7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule327-public-properties.py",
+      "sha256": "a04102a7f031c49b839cf82adaa4ff4b5a56750ca689cb26621e86d8ec9d8e5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule327-shadow-independence.py",
+      "sha256": "7196c513c9c14cf743685d640031c5805f1ea5c4c7b98a0e3f75f821bc0c4675"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule327-public-attack-fields.py",
+      "sha256": "fe2f4cb22bf77b6a56a6a8d204f7b61470d1d1e5f90daa630fadc6b75c74880c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule327-public-attack-fields-verified-20261023.json",
+      "sha256": "96de33941a2b2491bf7425e07f851667f6d80f715a0995dddc7ab0f0cd7cd2c1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule327-attack-write-inventory-verified-20261023.json",
+      "sha256": "5ee2b5a5b692f72eab31133e7acce3cb4580f78c1ad909ea6d5a2a9ea34f930a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule327\\lines.json",
+      "sha256": "ba607b8e4b01215d64653aaa00521949ef13ed64cbf544925a7596047a991ae7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule327\\task.txt",
+      "sha256": "9b658cc9248cd0c520902fbc1cb7c4fa66ad8101271993bed70d62109c8fc010"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule327\\assignments.json",
+      "sha256": "73f3f9b7dc34dbddc53999e265de566c3eb513a293f05b7f31937ac69a1f74fc"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Bots\\GreedyBot.cs",
+      "sha256": "56438154ba2181fe2e9d3fae3ef3a8d26a77ce08ab116453c6ed59f5b8067dc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardDatabase.cs",
+      "sha256": "e5c10801d366b03b20c8c904f1defdd4dc4e1ea729311e3e0367a87c8cd48b08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "56898779d7e3627d4195cc1169fe5e874ba111ce36720c7acaea1231dff602a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "baf2eea5154f4ae714df16bd22cf52a53ef9f7008a89a25557ae7f97d9f6f4b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "0ed1512ea19ae844347cdcdda30d5a542738787a884f06b0f651c1c394db987b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "7d31c2cf40fd79714b3e9a89e916174a655be28683b3ead616f31fc48a4a7d46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "ac1f2b122b0d6f024cf2738e3106621cdfe410657d7a222d54edcb068502091b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "caee9f54b60a7b765e5d1bc8ad274006ddacd6f234add0ec3ec4df6f3f3c23a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\AtomicAction.cs",
+      "sha256": "05fc444f94c6697a2f695f5960e5aca58532bd7de3c449a22b063566142bb786"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\BotTurnService.cs",
+      "sha256": "27f186f15422993847f505b4dce026628a0e9d888768b6d76367c956528c70bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Server\\NnPolicy.cs",
+      "sha256": "e19ae39efd0660302652f6394cee7afcc1b72bc4e5e6807685efa87d114c0a13"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "ff140d2cadb64cdf7630fdffe1b76f0b667cdc02017b5898a16a2aca78856999"
+    }
+  ],
+  "authority_limits": [
+    "Repository IR points to37mm M1 AA Gun reading attackBuff as a clue; this round does not certify that card or use its historical transpilation as current-version authority.",
+    "Public setter/getter independence demonstrated for captured bodies with controlled helper calls, not a full-game reachability/invariant proof. GameInstance/network/other writers may synchronize fields at other times.",
+    "Syntactic assignment inventory includes static definitions and ledger copies, excludes dynamic/reflection/native/Blueprint writers; no exhaustive all-card missing logic claim."
+  ],
+  "next": "Await a loaded AI match for guarded readonly current-object field comparisons while continuing offline writer-chain tracing.",
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "fully_semantically_certified_cards": 0
+}
