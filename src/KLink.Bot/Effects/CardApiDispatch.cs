@@ -4263,7 +4263,7 @@ public sealed partial class CardApi
             return null;
         }
 
-        ChangeDefense(target, value, source, changeType: IntArg(a, 3), instigatorId: instigatorId);
+        ChangeDefense(target, value, source, changeType: IntArg(a, 3), instigatorId: instigatorId, skipAction: TruthyArg(a, 4));
         return null;
     }
 

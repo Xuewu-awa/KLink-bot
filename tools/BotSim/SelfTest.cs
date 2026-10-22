@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("正增防skip/牌库：回调后位置门与静默数值写入", DefenseGainSkipAndDeck),
+        new("正增防skip：自身及两组增益前链均跳过", DefenseGainSkipBeforeChain),
         new("增防后返回：不追加死亡检查或原来源销毁", DefenseGainNoTrailingDeathCheck),
         new("增防后嵌套减防：保留真正致死调用的来源与单次销毁", DefenseGainNestedLethalDecrease),
         new("增防后派发：主体压制独立于旁观查询，参数与顺序", DefenseAfterGainDispatch),
@@ -5956,6 +5958,92 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseGainSkipAndDeck(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", before = "OnBeforeOtherCardGainDefense", after = "OnAfterOtherCardGainDefense";
+        using var beforeProgram = InstallDefenseBeforeLedgerProbe(before);
+        using var afterPrograms = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool inDeck in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (int move in new[] { 0, 1, 2, 3 })
+        foreach (int amount in new[] { 2, 100 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, inDeck ? side.DeckOf() : side.HqOf(), 99);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); target.Defense = target.MaxDefense = 10;
+            var observer = state.CreateWithId(probe, Side.Left, 30, CardLocation.Discard, 0);
+            observer.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { before, after } };
+            observer.Keywords.Clear(); observer.BlueprintVariables["_auditRewriteDefense"] = 5;
+            observer.BlueprintVariables["_auditStopDefense"] = false;
+            for (int i = 0; i < 3; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            int calls = 0; bool original = true;
+            var initialLocation = target.Location;
+            var requestedLocation = move switch { 1 => side.DeckOf(), 2 => side.HandOf(), 3 => side.HqOf(), _ => initialLocation };
+            using var draw = InstallDrawReentryProbe(state, () => {
+                calls++;
+                if (calls == 1) {
+                    original &= target.Defense == 10 && target.BuffsBySource[(20, false)].Defense == amount;
+                    if (move != 0) state.Move(target, requestedLocation, 99, notifyMoved: false);
+                }
+            });
+            engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, 20, amount, 1, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            var finalLocation = skip ? initialLocation : requestedLocation;
+            bool notified = !skip && finalLocation != CardLocation.DeckLeft && finalLocation != CardLocation.DeckRight;
+            int applied = skip ? amount : 5;
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (!original || calls != (skip ? 0 : notified ? 2 : 1) || target.Location != finalLocation
+                || target.Defense != Math.Clamp(10 + applied, 1, 99) || target.MaxDefense != target.Defense
+                || target.BuffsBySource[(20, false)].Defense != amount || gains.Length != (notified ? 1 : 0)
+                || observer.BlueprintVariables.ContainsKey("_auditGainSubject") != notified
+                || (notified && (gains[0].Values.Single(x => x.Name == "gained").Value != 5
+                    || !Equals(observer.BlueprintVariables.GetValueOrDefault("_auditGainAmount"), 5))))
+                return $"skip/牌库门错误 side={side}, deck={inDeck}, skip={skip}, move={move}, amount={amount}, calls={calls}, def={target.Defense}, gain={gains.Length}";
+        }
+        return null;
+    }
+
+    private static string? DefenseGainSkipBeforeChain(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var beforePrograms = InstallDefenseChainProbes();
+        using var afterPrograms = InstallDefenseAfterGainProbes();
+        // Reentry markers are spawned in the right deck. Draw measurement cards
+        // from the left deck so two right-side own hooks cannot draw a marker.
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(probe)!.Locals;
+        foreach (string hook in new[] { "OnBeforeGainDefense", "OnAfterGainDefense" })
+            locals[hook] = locals[hook].Select(step => step.Op == "call" && step.Function == "DrawCardsFromDeckBySide"
+                ? step with { Args = step.Args.Select((arg, i) => i == 1 ? new KismetExpr { Int = (int)Side.Left } : arg).ToArray() }
+                : step).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool inDeck in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, inDeck ? side.DeckOf() : side.HqOf(), 99);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" };
+            target.Keywords.Clear(); target.Defense = target.MaxDefense = 10;
+            var observer = state.CreateWithId(probe, Side.Left, 30, CardLocation.Discard, 0);
+            observer.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] {
+                "OnBeforeOtherCardGainDefense", "OnBeforeOtherCardGainDefenseAfterAdd", "OnAfterOtherCardGainDefense" } };
+            observer.Keywords.Clear(); observer.BlueprintVariables["_auditChainDelta"] = 3;
+            for (int i = 0; i < 6; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            for (int i = 0; i < 2; i++) state.CreateWithId("card_unit_51e_regiment", Side.Right, 110 + i, CardLocation.DeckRight, i);
+            int calls = 0;
+            using var draw = InstallDrawReentryProbe(state, () => calls++);
+            engine.Api.ChangeDefense(target, 2, source, skipAction: skip);
+            if (calls != (skip ? 0 : inDeck ? 3 : 5) || target.Defense != (skip ? 12 : 15)
+                || target.BuffsBySource[(20, false)].Defense != 2
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainDefense") != (!skip && !inDeck ? 1 : 0))
+                return $"skip须跳过自身和16/17前链 side={side}, deck={inDeck}, skip={skip}, calls={calls}, def={target.Defense}";
+        }
         return null;
     }
 

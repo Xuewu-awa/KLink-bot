@@ -1,0 +1,134 @@
+{
+  "rule": "RULE-314",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-314",
+    "worker_exact_match": true,
+    "selected_statements": 20,
+    "selected_calls": 12,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 128,
+    "regression_combinations": 72,
+    "release_selftest": {
+      "passed": 652,
+      "total": 652,
+      "exit_code": 0
+    },
+    "scope": "Positive-gain skip bypasses before callbacks and notification/after callbacks, retains ledger/numeric update. Deck gate after callbacks. Headless process=true only; set/decrease skip semantics not certified."
+  },
+  "authority": {
+    "skip": "ChangeDefense2588 skipAction=false enters3196 own/T16/T17 chain; true falls through2602 numeric write. 3050 process check,3087 current deck location,3128 OR skipAction,3166 false goes4191 notify; otherwise3180/3191 returns5740.",
+    "deck": "Location checked after all before callbacks and numeric write, so callback entry/exit from deck changes notification/after events. Deck alone does not skip before events."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    ],
+    "changes": [
+      "Forward optional skipAction from Blueprint argument4 and public API into defense helper.",
+      "Positive gain with skip bypasses own/T16/T17 before chain but keeps ledger and clamped numeric update.",
+      "Positive gain returns without gain notification/after callbacks when skip or current post-callback location is a deck."
+    ],
+    "excluded": "Only positive additive gain implemented. Decrease/set-value skip behavior and IsActionProcess=false remain pending."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 652,
+    "total": 652,
+    "exit_code": 0,
+    "regression_combinations": 72,
+    "details": [
+      "64 cases: sides2 x initial deck2 x skip2 x before-callback move(none/deck/hand/board)4 x request2. InvokeByName covers ABI forwarding. Assert original request ledger, rewritten amount5 vs skipped original request, final clamp and notification/after suppression.",
+      "8 cases: sides2 x deck2 x skip2, public API with own/T16/T17/own-after/T7 probes; skip executes none, deck normal still executes three before callbacks."
+    ],
+    "fixture_repairs": [
+      "Initial compile referenced nonexistent BoolArg; replaced with existing TruthyArg.",
+      "First executable suite had one right-side counter mismatch: repeated own draws could draw the right-deck reentry marker. Scoped fixture now uses left-deck measurement draws for own hooks. Production draw behavior unchanged."
+    ],
+    "model": {
+      "rule": "RULE-314",
+      "cases": 128,
+      "case_digest_sha256": "d7547abc0ef6fec9eabc586eeb226b554c06a08fdcef561330706acba57fa3ca",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23",
+      "scope": "Full ChangeDefense and GameState query AST. IsActionProcess controlled true. Positive ordinary gain: skip skips own/T16/T17 and after numeric write returns without notify/T7; without skip deck gate reads location after callbacks, supports entry/exit mutations. Controlled callback/query primitives/getters/encryption/ledger. No certification of set/decrease skip semantics, process=false mode, TSet order or actual lifetime."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-014230-rule314-defense-skip-3e33a139",
+    "scope": "Mechanical20-statement/12-call branch extraction; primary independently exact reconstruction and full bytecode decode.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-positive-skip-deck-model-checks-20261023.json",
+      "sha256": "a830f9a96b8262d13027491521fcc10bae0c6327fb31fcd47696e87ac109aaf8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule314-skip-deck.py",
+      "sha256": "b9dc46066791f3c48d44026d16a7a5f83bd8490210cc9da5dfee852203bc1392"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule314-skip-deck.py",
+      "sha256": "38ebbd6d3e23bcae8ffc3db7b13ff572d17ca353927ea22dbcb92c4f7c7588ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule314-skip-deck-verified-20261023.json",
+      "sha256": "ee4dbbed5366ec7e533e884566655f365cce091876a63227d5c2f420fce4c1af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule314-selftest-release.log",
+      "sha256": "87b6f43eebd9c54eaf6c8c7beadc2c544b116e64334efd89756cc3051835c806"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule314-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule314\\function.json",
+      "sha256": "4808f83faab128d6bfaa5d1f8ad5089074096d4839b6cdf97c9c03bc062a78eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule314\\task.txt",
+      "sha256": "f3c987daafe39ca118443eafdd0da83f0b2a927efe821941acecb44d5d217706"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule314\\branch-inventory.json",
+      "sha256": "d70bfac96c5b0f1cb00d921ff2ad59ec2e88ac102b9ff940ba9bcbc92f5fe54d"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "c297053a33cc0432c4507848731d85c55b1f42a792103b207480529024af3099"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "2c39989a36d499fdc8eb80e071f829925ccf26e5ed927c25017e92ad74727794"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "a78666e28ebdcb47105f5fb5c721c3a732f49c643ecb192cfe0a369b62f245f0"
+    }
+  ],
+  "remaining": [
+    "Negative decrease and SetValue skipAction behavior not aligned or certified in this round.",
+    "Non-action-process mode, full typed defense ledger/marker clearing, integer overflow, native TSet order/object lifetime remain pending.",
+    "Global death scheduling, receipt/reconnect and full global/single-card semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

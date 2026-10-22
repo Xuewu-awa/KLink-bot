@@ -2596,10 +2596,10 @@ public sealed partial class CardApi
     }
 
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
-                              int changeType = 1, int? instigatorId = null)
+                              int changeType = 1, int? instigatorId = null, bool skipAction = false)
         => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
                              changeType: temporary && changeType == 1 ? 0 : changeType,
-                             instigatorId: instigatorId);
+                             instigatorId: instigatorId, skipAction: skipAction);
 
     /// <summary>
     /// 防御力增减的**共同实现**。
@@ -2615,7 +2615,7 @@ public sealed partial class CardApi
     /// </summary>
     private void ApplyDefenseDelta(CardInstance target, int delta, CardInstance? source,
                                    bool temporary, bool fireGainDefenseEvent, int changeType = 1,
-                                   int? defenseSetValue = null, int? instigatorId = null)
+                                   int? defenseSetValue = null, int? instigatorId = null, bool skipAction = false)
     {
         int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
         if (!target.IsAlive || (delta == 0 && defenseSetValue is null) || !CanCardBeBuffed(target))
@@ -2630,7 +2630,7 @@ public sealed partial class CardApi
         if (recordBeforeCallbacks)
             RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, isSet: false);
         bool positiveGain = fireGainDefenseEvent && delta > 0 && target.Defense > 0;
-        if (positiveGain
+        if (positiveGain && !skipAction
             && (!ApplyBeforeGainDefense(target)
                 || !ApplyBeforeOtherCardGainDefense(target, ref delta)
                 || !ApplyBeforeOtherCardGainDefenseAfterAdd(target, delta)))
@@ -2675,6 +2675,11 @@ public sealed partial class CardApi
 
         if (!recordBeforeCallbacks && canRecord)
             RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, defenseSetValue.HasValue);
+
+        // RULE-314: skipAction bypasses before callbacks (i=2588), then
+        // i=3050..3191 returns after the numeric write for skip/deck targets.
+        // Deck location is read after callbacks, not captured on entry.
+        if (positiveGain && (skipAction || IsLocatedInDeck(target))) return;
 
         if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
