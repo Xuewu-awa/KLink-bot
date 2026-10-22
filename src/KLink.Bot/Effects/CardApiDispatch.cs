@@ -4161,7 +4161,7 @@ public sealed partial class CardApi
         //    所以这只是防御性写法。
         if (!invert && changeType == ChangeTypeSetValueReal)
         {
-            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, c.Self);
+            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, c.Self, changeType: changeType, skipAction: TruthyArg(a, 4));
             return null;
         }
 
@@ -4210,7 +4210,7 @@ public sealed partial class CardApi
             return null;
         }
 
-        ChangeAttack(target, invert ? -delta : delta, c.Self);
+        ChangeAttack(target, invert ? -delta : delta, c.Self, changeType: changeType, skipAction: TruthyArg(a, 4));
         return null;
     }
 

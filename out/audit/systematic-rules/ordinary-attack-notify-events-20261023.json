@@ -1,0 +1,157 @@
+{
+  "rule": "RULE-322",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-322",
+    "worker_exact_match": true,
+    "worker_functions": 3,
+    "blueprint_functions_verified": 12,
+    "script_bytes": 6130,
+    "script_statements": 224,
+    "handler_path_nodes": 2,
+    "model_cases": 192,
+    "regression_cases": 1192,
+    "release_selftest": {
+      "passed": 662,
+      "total": 662,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Generic flat ChangeAttack now shares7-field notification and direct-own/frozen-T5 helper with turn cleanup; skip/deck gate notification only; dispatcher forwards mode/skip metadata. Native split arithmetic, upper cap, raw source IDs/typed ledger and explicit withdrawal remain incomplete."
+  },
+  "kernel_runtime_changed": true,
+  "authority": {
+    "notification": "ChangeAttack2033..2120 computes visible total attack delta,2188/2226 gate notification on skipAction OR deck,2323 builds notification,2410 always rejoins2240 after helper. Native duration0/isBufffalse; enum follows actual change mode.",
+    "events": "Same verified ExecuteAfterChangeAttackEvents: direct own unless suppressed, query5 afterward regardless own gate; saved observers, exclude by CardID. Seven-field builder and online handler path retained fromRULE321."
+  },
+  "fix": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    ],
+    "changes": [
+      "Replace generic ChangeAttack legacy3-field action/combined FireTrigger with shared NotifyAttackChanged and direct-own/T5 helper.",
+      "Use visible after-before gain; skip/deck suppress only notification.",
+      "Forward mode/skip from native dispatcher for ordinary/temp/default and SetValue metadata; public temporary convenience maps default mode1 to0.",
+      "Turn cleanup reuses same7-field notifier, preserving its mode4 metadata."
+    ],
+    "excluded": "Existing flat numeric arithmetic and ledger location unchanged. Native base/temporary split, ordinary base clamp0..99, raw source identity and explicit RemoveAttackBuff still pending."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 662,
+    "total": 662,
+    "exit_code": 0,
+    "new_cases": 1192,
+    "details": [
+      "1152 ABI cases: sides2 x skip2 x deck2 x target suppression2 x watcher suppression2 x exception2 x watcher location3 x previous visible attack3 x signed request2. Exact7 fields, visible delta and own/T5 named payload/order; native upper-cap/split mismatch cases intentionally outside simulator equality assertions.",
+      "16 direct API dynamic snapshot cases: side/skip/deck/target suppression; own adds/registers receiver, first observer suppresses/unregisters/moves later and adds late receiver. Notification presence matches gate, saved objects still called.",
+      "24 ABI mode0/1/2 metadata cases: side/skip/deck, check correct mode string and skip forwarding for changed requests. Does not certify full mode-specific ledger/numeric semantics."
+    ],
+    "model": {
+      "rule": "RULE-322",
+      "cases": 192,
+      "case_digest_sha256": "c6d8e9b6b35cab3f6f0bb23ede5c9bc59b7c55ddc6af764d67eaed78791c4f81",
+      "capture_dates": [
+        "2026-10-22",
+        "2026-10-23"
+      ],
+      "completed_date": "2026-10-23",
+      "scope": "Full ordinary ChangeAttack1 entry-to-return plus whole after-event helper and whole GameState query AST. Skip/deck omit notify but not events; own suppression only; zero request stops after ledger call; nonzero capped request may emit zero visible gain. Controlled native split getter formula/base+temp, ledger call/encryption/primitive APIs. This reference model also includes upper-bound/split cases not yet matched by flat simulator; no claim of all numeric/ledger equality."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-023929-rule322-ordinary-attack-5003b3a8",
+    "scope": "Mechanical inventory of ChangeAttack, after-event helper and action builder; primary exact reconstruction plus full reference decode.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-action-builder-native-20261023.json",
+      "sha256": "9579a9eaa14cf6e85853a74a6bf3a9a71d7dbfe3c3badaf2dfb8c2fd08b1252e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-handlers-native-20261023.json",
+      "sha256": "9aaf416ce890543a67238f303248bb3837c1a4bd8577c3453499cbcec78a3702"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-online-handler-paths-20261023.json",
+      "sha256": "7a38d4edf24c343ae78109262ed2802490589cd2c85155a52b56d336e4f02c39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\ordinary-attack-notify-events-model-checks-20261023.json",
+      "sha256": "86d85704f9c82225476314f6ee0a30f844853dfe02f008dacac279a83ab01c60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule322-ordinary-attack.py",
+      "sha256": "a8e7c4ebef6b4f2ef86b9dabdb9226597aa7aa636b471d35f8c2d028a651dc67"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule322-ordinary-attack.py",
+      "sha256": "90186b743597b405bcf1bce57cf85938149f60e1c60985908eebd258a431c09b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule322-ordinary-attack-verified-20261023.json",
+      "sha256": "ffe5d5c687d883a12979c84d052974a41dbf7575d4a0a09e866a378eeeae0801"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule322-selftest-release.log",
+      "sha256": "de22bb7c56aa6710da5409c037de9ec7a825bebbc4b44814eef5571e6e86de88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule322-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule322\\functions.json",
+      "sha256": "0b1f08880cbfeed74a63f2b438591c7e7da5b9bfcfa00718e7b414c1dac3da5d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule322\\task.txt",
+      "sha256": "deb1e82db093946ac938aafc0f4c549bd78b2a4ac49842ec1208e87ba9c837af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule322\\inventory.json",
+      "sha256": "22267156f1950c0dd2342bad7dbd8b1623f4e3ec1268032d3f76becf9aa33c67"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "0b887113bbc90dc161e5b197c0a4eacd0272e45cb7c7f2bd860f91e7f8bc3c3a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "d24da6125e4550ff41712ec3925972f94314d2190a80268e3e3857d311d762e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "d24876f3bddf8db469bfc51f5931988eb1e11fafbe1971fed8d6e476cdd511a5"
+    }
+  ],
+  "remaining": [
+    "Native separate base attack and attack-buff representation and getTotalAttack formula not restored; ordinary native base clamp0..99 differs from flat Math.Max helper at upper bound/with temp attack. Reference model includes these pending cases.",
+    "DoChangeAttack source resolution still uses c.Self and lacks full raw-ID gate/lookup equivalence.",
+    "Explicit RemoveAttackBuff still legacy permanent-slot selection/no equivalent full notification or after flow; mode0 typed/temp slot and full SetValue ledger remain pending.",
+    "Native expiry queue/source order/clear, zero-key presence, defense0, suppression/global death/lifetime/receipt/reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

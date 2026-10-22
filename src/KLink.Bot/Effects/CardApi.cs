@@ -2559,13 +2559,14 @@ public sealed partial class CardApi
     }
 
     public void ChangeAttack(CardInstance target, int delta, CardInstance? source, int duration = -1,
-                             bool temporary = false)
+                             bool temporary = false, int changeType = 1, bool skipAction = false)
     {
         if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
         }
 
+        int previousAttack = target.Attack;
         target.Attack = Math.Max(0, target.Attack + delta);
         if (source is not null)
         {
@@ -2574,25 +2575,13 @@ public sealed partial class CardApi
             buff.Duration = duration;
         }
 
-        _engine.FireSubAction("ZActionGainAttack", new[]
-        {
-            ActionValue2.Int("instigatorID", source?.CardId ?? target.CardId),
-            ActionValue2.Int("gained", delta),
-            ActionValue2.Int("newAttackValue", target.Attack),
-        });
-
-        // 「攻击力变了」事件 —— 出处 `out/bp-cardfn.json` 函数
-        // `ExecuteAfterChangeAttackEvents`（签名 `BaseCardObject.h:829/799`）：
-        //   `OnAfterChangeAttack(int32 changedAmount, int32 instigatorID)`（自己）
-        //   `OnAfterOtherCardChangeAttack(UBaseCardObject* cardChanged, int32 changedAmount, int32 instigatorID)`
-        FireTrigger("OnAfterChangeAttack", target, target.Owner, "OnAfterOtherCardChangeAttack",
-            eventArgs: new object?[] { target, delta, source?.CardId ?? target.CardId },
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["changedAmount"] = delta,
-                ["instigatorID"] = source?.CardId ?? target.CardId,
-                ["cardChanged"] = target,
-            });
+        int changed = target.Attack - previousAttack;
+        int sourceId = source?.CardId ?? target.CardId;
+        int nativeType = temporary && changeType == 1 ? 0 : changeType;
+        // RULE-322: deck/skip suppress notification, not the after-event chain.
+        if (!skipAction && !IsLocatedInDeck(target))
+            NotifyAttackChanged(target, changed, sourceId, nativeType);
+        ExecuteAfterChangeAttackEvents(target, changed, sourceId);
     }
 
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
@@ -3009,20 +2998,24 @@ public sealed partial class CardApi
                 int previousAttack = card.Attack;
                 card.Attack = Math.Max(0, previousAttack - attackRemoved);
                 int changed = card.Attack - previousAttack;
-                // RULE-321: native AddSubActionGainAttack preserves this order.
-                _engine.FireSubAction("ZActionGainAttack", new[]
-                {
-                    ActionValue2.Int("cardID", card.CardId),
-                    ActionValue2.Int("gained", changed),
-                    ActionValue2.Int("newAttackValue", card.Attack),
-                    ActionValue2.Int("duration", 0),
-                    ActionValue2.Int("instigatorID", key.SourceCardId),
-                    ActionValue2.Bool("isBuff", false),
-                    ActionValue2.Str("changeType", DefenseChangeTypeName(4)),
-                });
+                NotifyAttackChanged(card, changed, key.SourceCardId, 4);
                 ExecuteAfterChangeAttackEvents(card, changed, key.SourceCardId);
             }
         }
+    }
+
+    private void NotifyAttackChanged(CardInstance target, int changed, int instigatorId, int changeType)
+    {
+        _engine.FireSubAction("ZActionGainAttack", new[]
+        {
+            ActionValue2.Int("cardID", target.CardId),
+            ActionValue2.Int("gained", changed),
+            ActionValue2.Int("newAttackValue", target.Attack),
+            ActionValue2.Int("duration", 0),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Bool("isBuff", false),
+            ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
+        });
     }
 
     private void ExecuteAfterChangeAttackEvents(CardInstance target, int amount, int instigatorId)
