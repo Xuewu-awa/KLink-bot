@@ -1,0 +1,141 @@
+{
+  "rule": "RULE-320",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-320",
+    "worker_exact_match": true,
+    "worker_functions": 2,
+    "blueprint_functions_verified": 10,
+    "script_bytes": 25604,
+    "script_statements": 852,
+    "model_cases": 1248,
+    "regression_cases": 582,
+    "release_selftest": {
+      "passed": 657,
+      "total": 657,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": true,
+    "scope": "Legacy end-turn cleanup removes only attack field, preserves mixed records/source link, no-op without attack, gain reports visible delta. Queue/source/order/native attack split/payload and callback migration still incomplete."
+  },
+  "kernel_runtime_changed": true,
+  "authority": {
+    "route": "RemoveBuffsEndOfTurn1905 only routes attack type0 to ChangeAttack4.",
+    "ledger": "ChangeBuffsFromCards5862..6170 finds/removes only pre-resolved temporary attack key and returns its negative stored amount; outer empty/reverse handlers keep source if other keys remain. Zero-valued other keys remain present.",
+    "notification": "ChangeAttack2074/2120 computes localInputAmount=getTotalAttack-previousAttack,2323 notifies that actual delta, then2240 executes after events. Full notification fields and callback integration are outside this patch."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Do not remove entire temporary source slot: clear Attack only, remove slot iff IsEmpty, synchronize source otherwise.",
+      "Retain defense/max defense, kredit, operation cost, armor, nonordinary presence and permanent slot. Do not recalculate unrelated stats or emit operation reset callbacks.",
+      "Skip slot when Attack==0; do not emit zero-amount gain notification for a nonattack slot.",
+      "Gain amount uses actual flat attack delta after lower clamp."
+    ],
+    "excluded": "Still scans compact slots, not native queue. Complete native split attack/base, exact notification payload and after-change callbacks remain pending."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 657,
+    "total": 657,
+    "exit_code": 0,
+    "new_cases": 582,
+    "details": [
+      "512 mixed-slot cases: sides2 x nonattack/presence mask32 x signed attack2 x suppression2 x permanent-slot presence2. Verify only Attack cleared, rest of cloned slot retained, source relation determined by remaining slots and no op-cost event.",
+      "62 nonattack-only cases: sides2 x nonempty mask31, all stats and same buff object retained with no actions.",
+      "8 existing flat-arithmetic boundary cases check notification gain equals visible after-before; these do not certify native split getter arithmetic."
+    ],
+    "model": {
+      "rule": "RULE-320",
+      "ledger_cases": 1152,
+      "attack_cases": 96,
+      "total": 1248,
+      "case_digest_sha256": "db4cd2c8512c6a3525ba856c4086995f42a0fb82a03d253337a9b1bead3e624c",
+      "capture_dates": [
+        "2026-10-22",
+        "2026-10-23"
+      ],
+      "completed_date": "2026-10-23",
+      "scope": "Exact pre-resolved temp-key removal branch5862 with outer empty/reverse handling; full ChangeAttack4 AST with controlled ledger removal and split attack/base getters. Preserve all nonselected keys including zero values. Actual gain is after-before; zero removed amount does not notify/callback, nonzero may yield zero visible gain but callbacks still run. Queue registration/order, native getter formula and native split representation not certified. Simulator still flat attack and legacy notification payload/callback gaps remain."
+    },
+    "comments": "Updated obsolete action-cost reset/end-turn explanation and battery test labels only after successful suite; no further behavior edit or repeated suite."
+  },
+  "deepseek": {
+    "job": "20261023-022446-rule320-expiry-attack-only-85ac278b",
+    "scope": "Mechanical inventory of ChangeAttack and ChangeBuffsFromCards. Primary reconstructed whole output exactly and redecoded10 nonempty authority functions.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-attack-only-model-checks-20261023.json",
+      "sha256": "b86fa2c7e2d85aa6f12dd2f9d35e0a69b2b48063707409675ef6b53777a6e8c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule320-attack-only.py",
+      "sha256": "b988f1cd738eb187d2c94e768fb6c14cf97f1eaa7bf6413c7e315313594b18d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule320-attack-only.py",
+      "sha256": "0b14f86c395c39b5e47c579ee8ce763e594863b195da5ab66fec278722d93a58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule320-attack-only-verified-20261023.json",
+      "sha256": "a88a964ad48fb6aa2167cb90e6c97c6fcf6fbf4ac8db45d24942be125cff1235"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule320-selftest-release.log",
+      "sha256": "e66093e167813983600809a4e4e486bf7adfc20ccae9af2971e9fc4554cacdac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule320-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule320\\functions.json",
+      "sha256": "81c38f061567ef417a1f9aa174a64d8c588101859ac792bc0a84f445fce351b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule320\\task.txt",
+      "sha256": "5839187e26336c4402633761f831728352e0f8969416d5679ea33918cffa7488"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule320\\inventory.json",
+      "sha256": "08ad5d544b3e04eca758bf072c5448c16e26cf5f1c83b03311ed09d1021aa32f"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "8a30b93fb25458f8cc7b5675e0963e4449691a0c9ff725e4264a191f97da12ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "c996f121db334e61224be51baa8a4e8337671d513e437ec7fcd68f48d1f9e1f4"
+    }
+  ],
+  "remaining": [
+    "Replace slot scan with native pending queue, source lookup/reverse snapshots and exact iteration/order/clear. Off-board reentry on a later turn still not faithful.",
+    "Native attack split/base and getters, gain notification7-field payload and ExecuteAfterChangeAttackEvents not integrated here.",
+    "Zero-valued temporary attack key presence/removal cannot be represented by flat Attack==0 alone; typed ledger pending.",
+    "ChangeDefense0 ledger-only/rejected numeric path, full SetValue/suppression ledger migration, native lifetime/global death/receipt/reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

@@ -2998,42 +2998,22 @@ public sealed partial class CardApi
                 // RULE-319: native i=1544/1585 checks the target's current
                 // board location for each withdrawal. Keep off-board entries.
                 if (!card.Location.IsBoard()) continue;
-                RemoveBuffEntry(card, key);
+                // RULE-320: expiry dispatches attack only. Other fields in
+                // the same compact source slot must remain, including presence.
+                int attackRemoved = buff.Attack;
+                if (attackRemoved == 0) continue;
+                buff.Attack = 0;
+                if (buff.IsEmpty) RemoveBuffEntry(card, key);
+                else SynchronizeBuffTarget(card, key.SourceCardId);
 
-                bool operationCostReset = buff.OperationCost != 0
-                    || buff.OperationCostSetsAbsoluteValue;
-
-                // ⚠️ 必须显式做**逆运算**，不能靠 `RecalculateStats()` ——
-                //    那个函数只重算费用/行动费/重甲（见它的注释：「落点：KreditCost、
-                //    OperationCost、重甲关键字」），**不动 Attack/Defense**。
-                //    而 `ChangeAttack`/`ChangeDefense` 是直接写 `target.Attack += delta`，
-                //    所以撤销也必须是对称的 `-=`，否则「+N 直到回合结束」会永远留着。
-                if (buff.Attack != 0)
-                {
-                    card.Attack = Math.Max(0, card.Attack - buff.Attack);
-                }
-
-                if (buff.Defense != 0)
-                {
-                    card.Defense -= buff.Defense;
-                    // 临时加的防御撤掉后，MaxDefense 要跟着回落，否则 `IsDamaged`
-                    // （`Defense < MaxDefense`）会永远为真。
-                    card.MaxDefense = Math.Max(card.Defense, card.Definition.Defense);
-                }
-
+                int previousAttack = card.Attack;
+                card.Attack = Math.Max(0, previousAttack - attackRemoved);
                 _engine.FireSubAction("ZActionGainAttack", new[]
                 {
                     ActionValue2.Int("instigatorID", key.SourceCardId),
-                    ActionValue2.Int("gained", -buff.Attack),
+                    ActionValue2.Int("gained", card.Attack - previousAttack),
                     ActionValue2.Int("newAttackValue", card.Attack),
                 });
-
-                card.RecalculateStats();
-                if (operationCostReset)
-                {
-                    FireOperationCostChanged(card, key.SourceCardId,
-                        runResetEvents: true);
-                }
             }
         }
     }
@@ -3045,7 +3025,8 @@ public sealed partial class CardApi
     /// 用 `FetchAllCardsWithEventTrigger(9)` 广播
     /// `OnAfterOtherCardOperactionCostBuffsReset(cardToChange, instigator)`，
     /// 排除被重置的目标卡，并跳过受压制的接收者。这个事件让
-    /// Light Anti-Air Battery 等持续光环在回合末重新挂回临时行动费修正。
+    /// Light Anti-Air Battery 等持续光环在显式撤销后重新挂回行动费修正；
+    /// 回合末攻击清理不派发此行动费重置事件（RULE-320）。
     /// </summary>
     public void FireOperationCostBuffsReset(CardInstance target, int instigatorId)
     {

@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("回合末清理：只撤攻击，混合槽与来源关系保留", TemporaryCleanupAttackOnly),
         new("回合末清理：仅在场目标可撤销，离场临时记录保留", TemporaryCleanupBoardGate),
         new("设防skip：通知、销毁、自身及T6派发均不受影响", DefenseSetSkipInvariant),
         new("减防skip：保留致死销毁，仅省略减防通知", DefenseDecreaseSkipNotification),
@@ -1069,7 +1070,7 @@ internal static class SelfTest
 
         new("★ 费用临时槽可显式撤销，离场记录不在回合末清理",
             TemporaryResourceCostBuffsExpire),
-        new("Light Anti-Air Battery：行动费临时 buff 清理后由 reset 事件重新施加，离场后撤销",
+        new("Light Anti-Air Battery：回合末保留行动费，显式 reset 后重施加，离场后撤销",
             LightAntiAirBatteryOperationCostReset),
         new("行动费变更事件：目标排除、零值不触发、抑制接收者跳过",
             OperationCostChangeEvents),
@@ -5962,6 +5963,80 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? TemporaryCleanupAttackOnly(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mask in Enumerable.Range(0, 32))
+        foreach (int amount in new[] { -3, 4 })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool permanent in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Attack = 10 + amount; target.Defense = 13; target.MaxDefense = 17;
+            int kredit = target.KreditCost, operation = target.OperationCost;
+            var buff = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount,
+                Defense = (mask & 1) != 0 ? 3 : 0, KreditCost = (mask & 2) != 0 ? -1 : 0,
+                OperationCost = (mask & 4) != 0 ? 2 : 0, HeavyArmor = (mask & 8) != 0 ? 1 : 0,
+                HasNonOrdinaryDefenseEntry = (mask & 16) != 0 };
+            var expected = buff.Clone(); expected.Attack = 0;
+            target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
+            if (permanent) target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Defense = 2 };
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.RemoveTemporaryBuffs();
+            bool retained = !expected.IsEmpty;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (target.Attack != 10 || target.Defense != 13 || target.MaxDefense != 17
+                || target.KreditCost != kredit || target.OperationCost != operation
+                || target.BuffsBySource.ContainsKey((20, true)) != retained
+                || source.CardsBuffedByThisCard.Contains(60) != (retained || permanent)
+                || target.BuffsBySource.ContainsKey((20, false)) != permanent
+                || (retained && System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource[(20, true)])
+                    != System.Text.Json.JsonSerializer.Serialize(expected))
+                || actions.Length != 1 || actions[0].Name != "ZActionGainAttack"
+                || actions[0].Values.Single(x => x.Name == "gained").Value != -amount
+                || trace.Any(x => x.StartsWith("OnAfterOtherCardOperactionCost")))
+                return $"只撤攻击应保留混合字段 side={side}, mask={mask}, amount={amount}, suppressed={suppressed}, permanent={permanent}";
+        }
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mask in Enumerable.Range(1, 31))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var buff = new CardBuff { SourceCardId = 20, Temporary = true,
+                Defense = (mask & 1) != 0 ? 3 : 0, KreditCost = (mask & 2) != 0 ? -1 : 0,
+                OperationCost = (mask & 4) != 0 ? 2 : 0, HeavyArmor = (mask & 8) != 0 ? 1 : 0,
+                HasNonOrdinaryDefenseEntry = (mask & 16) != 0 };
+            target.BuffsBySource[(20, true)] = buff; source.CardsBuffedByThisCard.Add(60);
+            string before = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            engine.Api.RemoveTemporaryBuffs();
+            string after = System.Text.Json.JsonSerializer.Serialize(new { target.Attack, target.Defense, target.MaxDefense, Buff = buff });
+            if (before != after || !ReferenceEquals(target.BuffsBySource.GetValueOrDefault((20, true)), buff)
+                || !source.CardsBuffedByThisCard.Contains(60) || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return "无攻击量的临时槽不得被统一清除或产生零量攻击通知";
+        }
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int amount in new[] { -3, 4 })
+        foreach (int previous in new[] { 0, 1 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            target.Attack = previous;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount };
+            source.CardsBuffedByThisCard.Add(60);
+            engine.Api.RemoveTemporaryBuffs();
+            int expected = Math.Max(0, previous - amount);
+            var gain = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionGainAttack");
+            if (target.Attack != expected || gain.Values.Single(x => x.Name == "gained").Value != expected - previous)
+                return "攻击撤销的通知应使用实际变化量，不能直接使用账本逆量";
+        }
         return null;
     }
 
@@ -35777,12 +35852,12 @@ internal static class SelfTest
                  + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
         }
 
-        // 回合末统一清理临时槽；reset 广播应让电池立即挂回同一个临时来源。
+        // 回合末只清攻击；行动费来源应保持，不依赖额外 reset 重施加。
         engine.Api.RemoveTemporaryBuffs();
         if (plane.OperationCost != baseOperation + 2
             || !plane.BuffsBySource.ContainsKey((battery.CardId, true)))
         {
-            return $"临时行动费清理后 reset 事件未重施加：base={baseOperation}, "
+            return $"回合末攻击清理不应移除行动费来源：base={baseOperation}, "
                  + $"actual={plane.OperationCost}, "
                  + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
         }
