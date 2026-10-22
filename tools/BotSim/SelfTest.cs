@@ -504,6 +504,7 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("设防skip：通知、销毁、自身及T6派发均不受影响", DefenseSetSkipInvariant),
         new("减防skip：保留致死销毁，仅省略减防通知", DefenseDecreaseSkipNotification),
         new("减防skip：致死前回调照常执行，完成后再判通知", DefenseDecreaseSkipDestroyCallbacks),
         new("正增防skip/牌库：回调后位置门与静默数值写入", DefenseGainSkipAndDeck),
@@ -5960,6 +5961,66 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseSetSkipInvariant(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterDefenseIsSet", other = "OnAfterOtherCardDefenseIsSet";
+        using var programs = InstallDefenseSetEventProbes();
+        // This fixture measures set callbacks without drawing a deck-resident
+        // target out of the very location whose behavior is under test.
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(probe)!.Locals;
+        foreach (string hook in new[] { own, other })
+            locals[hook] = locals[hook].Where(step => step.Function != "DrawCardsFromDeckBySide")
+                .Select((step, i) => step with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in new[] { 0, 1, 2 })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int requested in new[] { -7, 0, 1, 10, 150 })
+        {
+            string? normal = null;
+            foreach (bool skip in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = sourceExists ? state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0) : null;
+                int sourceId = sourceExists ? 20 : 9999;
+                var initial = location switch { 1 => side.HandOf(), 2 => side.DeckOf(), _ => side.HqOf() };
+                var target = state.CreateWithId(probe, side, 60, initial, 0);
+                var observer = state.CreateWithId(probe, Side.Left, 30, CardLocation.Discard, 0);
+                foreach (var card in new[] { target, observer }) {
+                    card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+                    card.Keywords.Clear();
+                }
+                if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+                target.Defense = 10; target.MaxDefense = 30;
+                var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+                engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, sourceId, requested, 2, skip, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+                int value = Math.Clamp(requested, 0, 99);
+                var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+                var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+                var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+                if (target.Defense != value || target.MaxDefense != value || target.Location != (value == 0 ? CardLocation.Discard : initial)
+                    || gains.Length != 1 || destroys.Length != (value == 0 ? 1 : 0)
+                    || gains[0].Values.Single(x => x.Name == "gained").Value != requested
+                    || gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != value
+                    || gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId
+                    || calls.Length != 2 || !calls[0].StartsWith($"{own} → {probe}#60") || !calls[1].StartsWith($"{other} → {probe}#30")
+                    || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditDefenseSetSubject"), target)
+                    || (value == 0 && (destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceExists ? 20 : 0)
+                        || Array.IndexOf(actions, gains[0]) >= Array.IndexOf(actions, destroys[0]))))
+                    return $"设值skip须无影响 side={side}, location={location}, source={sourceExists}, suppressed={suppressed}, requested={requested}, skip={skip}";
+                string signature = System.Text.Json.JsonSerializer.Serialize(new {
+                    target.Defense, target.MaxDefense, target.Location, Calls = calls,
+                    Actions = actions.Select(x => new { x.Name, x.Values }), Buff = target.BuffsBySource[(sourceId, false)]
+                });
+                if (skip && signature != normal) return "设值skip true/false产生不同状态、通知或回调";
+                normal = signature;
+            }
+        }
         return null;
     }
 

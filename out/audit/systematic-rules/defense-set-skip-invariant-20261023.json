@@ -1,0 +1,126 @@
+{
+  "rule": "RULE-316",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-316",
+    "worker_exact_match": true,
+    "selected_statements": 39,
+    "skip_read_statement_offsets": [
+      2445,
+      2588,
+      3128
+    ],
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 240,
+    "regression_cases": 240,
+    "skip_pairs": 120,
+    "release_selftest": {
+      "passed": 655,
+      "total": 655,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": false,
+    "scope": "SetValue does not read skipAction and existing simulator behavior is equivalent for tested gates/order; test/evidence only. Full ledger/native destruction/process=false/lifetime/order not certified."
+  },
+  "authority": {
+    "skip": "The full ChangeDefense function has skipAction reads only at2445,2588,3128. SetValue984..1994 and continuation3863..4041 have none. IsActionProcess is controlled true for the headless action path.",
+    "order": "1025/1072 clamp/write defense0..99,1140/1187 max overwrite,1310 unconditional gain notification with raw requested amount. 1466/1512 destroys when current defense exactly0. 1589 own set event even if target suppressed/destroyed, then1625 query6 and observers."
+  },
+  "finding": "No runtime difference found for SetValue skipAction. Existing dispatch bypassing skip forwarding for this branch matches authority. Do not apply ordinary positive/negative skip gates here.",
+  "kernel_runtime_changed": false,
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 655,
+    "total": 655,
+    "exit_code": 0,
+    "regression_cases": 240,
+    "skip_pairs": 120,
+    "axes": "sides2 x board/hand/deck3 x source present/missing2 x target suppression2 x raw request(-7,0,1,10,150)5 x skip2. Check clamp/max, notification raw request/new value/source, notify-before-zero-destroy, own/T6 observer order after destruction, and pairwise serialized state/action/buff equality.",
+    "fixture": "Temporary set probes retain marker/return only; remove measuring draw to avoid moving a deck target. Production rules unchanged.",
+    "model": {
+      "rule": "RULE-316",
+      "cases": 240,
+      "skip_pairs": 120,
+      "case_digest_sha256": "6afc6afb42f4f2e6097af565c35f79a111a5bba524b371e77f7a1b4e7c3343d1",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23",
+      "scope": "Full ChangeDefense SetValue and GameState query AST. IsActionProcess=true. skip flags produce identical clamp/max, unconditional notification before zero destruction, direct own event regardless suppression/location and fresh T6 query/observer. Full typed ledger/DestroyCard internals/getters/encryption controlled; not certified. No process=false, native lifetime/TSet order or full rule coverage certification."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-015951-rule316-defense-set-skip-df9f03f5",
+    "scope": "Mechanical39-statement SetValue continuation extraction plus all three skip-read statements. Primary exactly reconstructed output and independently redecoded full authority.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-skip-model-checks-20261023.json",
+      "sha256": "97cef25044a760c6e8a464bdf989cb71d7c3aeebfe4c99841c4e1d19d8fc55f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule316-set-skip.py",
+      "sha256": "63fc93d81567880d6317d2f44d57554cff90bd5c9c5bfafa544416ed755d9ee7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule316-set-skip.py",
+      "sha256": "9d8a3588baf3efff6489110191e7716d5790c4f6a46b86641c4008f7a7e8b26d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-set-skip-verified-20261023.json",
+      "sha256": "037becdf61455c05c216533f274b3be00ffed6c881fc090eb4b75419b2ec8b2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-selftest-release.log",
+      "sha256": "b002449be2abf6c91f68a55d231b9bcbd555e4f454f4abffc056fc3abfb4f67a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule316\\function.json",
+      "sha256": "4808f83faab128d6bfaa5d1f8ad5089074096d4839b6cdf97c9c03bc062a78eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule316\\task.txt",
+      "sha256": "2bdab9648448f01d55c335953c9678efc044e553c2bbeb0dee1f1f37231ba1e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule316\\branch-inventory.json",
+      "sha256": "d571dc52e78ea9c82b5921ae90f4ef88bdb98afd5be6cbe8009c616d7313cf27"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1548d0037008dfe57dc0e98275efbd34b529bd1595bdad56a7cb75cb1e57ad58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "2c39989a36d499fdc8eb80e071f829925ccf26e5ed927c25017e92ad74727794"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "155ede4cce36a23df7ec62d7a814db246d5362faec301692d0ac4aaa1f89e643"
+    }
+  ],
+  "remaining": [
+    "Full typed defense ledger and presence clearing still differ/are uncertified; paired compact-buff equality is not native ledger certification.",
+    "IsActionProcess=false, full DestroyCard and callback internals, native object lifetime/TSet order and overflow remain uncertified.",
+    "Global death scheduling, receipt/reconnect and full global/single-card semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
