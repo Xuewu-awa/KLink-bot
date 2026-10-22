@@ -4125,95 +4125,55 @@ public sealed partial class CardApi
         if (instigatorId <= 0) return null;
         var source = State.ById(instigatorId);
 
-        // ---- 蓝图的第一道守位：`CanCardBeBuffed` ----
-        // 出处 `out/bp-cardfn.json` 的 `ChangeAttack`：
-        //   si=28  IsValid(card)      → si=57  JumpIfNot → si=393（log "error in [Change Attack]" + return）
-        //   si=71  CanCardBeBuffed(card)
-        //   si=103 JumpIfNot → si=472（qqq=False + return）★ **客户端在这里拒绝**
-        //   si=117 instigatorID > 0  → si=151 JumpIfNot → si=393（return）
-        //
-        // `ChangeAttack` 的共享实现会执行这道门；普通卡直接放行，未揭示
-        // Covert 只有在牌库/手牌中可以获得 buff。这样与蓝图的
-        // `CanCardBeBuffed` 分支一致，也覆盖直接调用 CardApi 的路径。
         int delta = IntArg(a, 2);
         int changeType = IntArg(a, 3);
-
-        // ★★ `changeType == 2`（`EChangeType::SetValue`）= **设成绝对值**，不是"加 delta"。
-        //
-        // 判据是蓝图本体（`ref/kards-sim/.../BP_CardFunctions.g.cs` 的 `ChangeAttack`，
-        // 函数起始 `:6491`）：
-        // <code>
-        //   si  localChangeType 分支：0→L_06BA  1→L_04C8  2/3/5/default→L_0357  4→L_096F
-        //   L_0357  getAndDecryptAttack(card) → decryptedAttack
-        //           if (decryptedAttack == localInputAmount) { valueChanged = False; 结束 }
-        //           maxAttack = Clamp(localInputAmount, 0, 99)
-        //           setAndEncryptAttack(card, Clamp(localInputAmount, 0, 99), …)
-        //   L_04C8（ct==1 permBuff）  newVal = Clamp(decryptedAttack + localInputAmount, 0, 99)
-        // </code>
-        // 即：**2 = 总量赋成 amount**、**1 = 加 amount**。
-        // 枚举值逐字来自 `<kards-src>\Source\kards\Public\EChangeType.h`
-        // （`tempBuffGive=0, permBuff=1, SetValue=2, Suppress=3, tempBuffRemove=4, …`）。
-        //
-        // 为什么必须修（对局 389594 任务 A 的另一半）：`card_unit_meteor` 的
-        // `OnAfterAttack` 生成的副本要「攻/防 = 原值 ×2」，
-        // 而它是用 `ChangeAttack(新卡, cardID, attTotal*2, changeType=2, …)` 表达的
-        // （`card_unit_meteor` IR i=202 / i=432）。副本是刚 `CreateCard` 出来的 1/1，
-        // 按"加"算是 1+2=**3**、按"设"算是 **2** —— 客户端是 2。
-        // 全卡池 7 个 `ChangeAttack` + 11 个 `ChangeDefense` 走 changeType=2。
-        //
-        // ⚠️ `!invert`：`invert` 是本内核给 `LoseAttack` 用的取负开关，
-        //    「取负」和「设成绝对值」放一起没有意义（蓝图里 `LoseAttack` 是另一个函数）。
-        //    实测 IR 里 `GainAttack` / `LoseAttack` 作为 `fn` **一个调用点都没有**，
-        //    所以这只是防御性写法。
+        bool skip = TruthyArg(a, 4);
         if (!invert && changeType == ChangeTypeSetValueReal)
         {
-            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, source, changeType: changeType, skipAction: TruthyArg(a, 4), instigatorId: instigatorId);
+            // Base/temporary numeric splitting is still pending; retain the
+            // existing SetValue arithmetic while forwarding its source/metadata.
+            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, source,
+                changeType: changeType, skipAction: skip, instigatorId: instigatorId);
             return null;
         }
-
-        // ★★ `changeType == 4`（`EChangeType::tempBuffRemove`）= **撤销该来源施加的攻击 buff**。
-        //
-        // 判据是蓝图本体（`ref/kards-sim/.../BP_CardFunctions.g.cs` 的 `ChangeAttack`，起始 `:6491`）：
-        // <code>
-        //   :6591 localChangeType 分支：0→L_06BA  1→L_04C8  2/3/5/default→L_0357  4→L_096F
-        //   :6789 L_096F  if (amountRemoved == 0) { valueChanged = False; return }  ← 没撤到东西就什么都不做
-        //   :6805 L_09AB  localInputAmount = amountRemoved     ★ 实参 amount 被覆盖，不参与运算
-        //   :6808 L_09EF  decryptedAttackBuff = getAndDecryptAttackBuff(card)
-        //   :6811 L_0A18  newBuff = decryptedAttackBuff + amountRemoved
-        //   :6813 L_0A46  setAndEncryptAttackBuff(card, newBuff, …)
-        // </code>
-        // `amountRemoved` 是 `ChangeBuffsFromCards` 的出参（:6561 调用 / :6848 出参槽）：
-        //   ct=4 在它的入口分派里走 :6887 → `L_0831`（用 `EChangeType::tempBuffGive`(=0) 与
-        //   `buffType` 拼出键名），再进 `L_0369`（:6936）的通用删除路径，最终 `L_16E6`（:7474）：
-        //   `localAmountRemoved = 已存的量 × -1`（:7481/:7483），然后 `Map_Remove` 掉那个键（:7485）。
-        // ⇒ **撤销量 = 当初存进去的量**，与本次实参 `amount` 无关。
-        //   （对照 ct=0/1 走的 `L_0250`（:6918），那里才有 `if (amount == 0) { amountRemoved = 0; return; }` 的短路。）
-        //
-        // 卡池证据（`docs/card-ir.json` 全 IR 扫描，1707 条）：`ChangeAttack` 的 changeType 分布是
-        // `{0:60, 1:314, 2:6, 4:48}`；其中 ct=4 且 `amount≠0` 的 6 处、5 张卡，**全部是「先给后撤」
-        // 的成对形态**，撤销量恰好等于当初给的量：
-        //   card_unit_su_100                    i=376 `+4, ct=0` / i=206  `4, ct=4`
-        //   card_unit_ki_42_ii_ko               i=100 `+2, ct=0` / i=277  `2, ct=4`
-        //   card_unit_type_97                   i=1306 `+1, ct=0` / i=495 `1, ct=4`（另有 i=2595 一处）
-        //   card_unit_kyushu_j7w3               （给）/ i=155 `2, ct=4`
-        //   card_unit_type_92_105mm_field_gun   （给）/ i=1206 `1, ct=4`
-        // 剩下 42 处 ct=4 传的是 `amount=0` —— 旧实现下它们是**纯空转**
-        // （`ChangeAttack(target, 0)` 在 `CardApi.ChangeAttack` 开头就被 `delta == 0` 挡掉），
-        // 修完之后才会真的撤销。
-        //
-        // ⚠️ 这里**故意不碰** ct=0 / ct=1 的语义（它们仍然走下面那条 `ChangeAttack(target, delta)`）。
-        //    项目自己的日志里记过这条教训：把两件事混在一个改动里，A/B 结论就没法归因了。
-        //
-        // The raw supplied source ID also selects the withdrawal source.
-        // The withdrawal helper's typed-slot/notification migration is separate.
         if (!invert && changeType == ChangeTypeTempBuffRemove)
         {
-            RemoveAttackBuff(target, instigatorId);
+            RemoveAttackBuffWithEvents(target, instigatorId, skip);
             return null;
         }
-
-        ChangeAttack(target, invert ? -delta : delta, source, changeType: changeType, skipAction: TruthyArg(a, 4), instigatorId: instigatorId);
+        // Native mode-0 slot isolation is pending together with the expiry
+        // queue; moving it alone would make the legacy scan expire all mode-0 buffs.
+        ChangeAttack(target, invert ? -delta : delta, source,
+            changeType: changeType, skipAction: skip, instigatorId: instigatorId);
         return null;
+    }
+
+    private void RemoveAttackBuffWithEvents(CardInstance target, int sourceId, bool skipAction)
+    {
+        if (!CanCardBeBuffed(target)) return;
+        // RULE-324 fixes the event continuation only. The dispatcher still
+        // stores mode 0 in the legacy false slot together with permanent attack.
+        // Native removal selects only attack_tempBuffGive; splitting this slot
+        // requires migration of application and end-of-turn queue handling.
+        var key = (sourceId, false);
+        if (!target.BuffsBySource.TryGetValue(key, out var buff)) return;
+        int removed = buff.Attack;
+        // A zero-valued native key is not distinguishable from absence in the
+        // compact ledger. Do not erase unrelated fields or invent events.
+        if (removed == 0) return;
+        buff.Attack = 0;
+        if (buff.IsEmpty) RemoveBuffEntry(target, key);
+        else SynchronizeBuffTarget(target, sourceId);
+
+        // Native mode 4 ignores the caller's amount, adjusts temporary attack,
+        // then reports the actual visible difference. Flat numeric storage is
+        // still an approximation when independent base/buff values are needed.
+        int previous = target.Attack;
+        target.Attack = Math.Max(0, previous - removed);
+        int changed = target.Attack - previous;
+        if (!skipAction && !IsLocatedInDeck(target))
+            NotifyAttackChanged(target, changed, sourceId, 4);
+        ExecuteAfterChangeAttackEvents(target, changed, sourceId);
     }
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
@@ -4437,29 +4397,10 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 撤销某个来源在目标卡上的**攻击** buff（该来源的其余 buff 保留）——
-    /// `ChangeAttack` 的 `changeType = 4`（`EChangeType::tempBuffRemove`）的落地处，
-    /// 形状照 <see cref="RemoveCostBuff"/>（取槽 → 清零 → 空槽删掉 → `RecalculateStats`）。
-    ///
-    /// ⚠️ 与费用那个的关键差别：**攻击力不是派生量**。
-    /// <see cref="CardInstance.RecalculateStats"/> 只重算费用 / 行动费 / 重甲
-    /// （见它自己的注释「落点：KreditCost、OperationCost、重甲关键字」），**不动 Attack**；
-    /// 而 `CardApi.ChangeAttack` 是直接写 `target.Attack += delta` 的 ——
-    /// 所以撤销必须自己做**逆运算** `-=`（同一形状见 `CardApi.RemoveTemporaryBuffs`），
-    /// 光清 buff 槽会让攻击力永久偏高。
-    ///
-    /// ⚠️ 槽位取 `(sourceId, false)`（永久槽）：内核的施加路径
-    /// （`DoChangeAttack` 的默认分支）调的是 `ChangeAttack(target, delta, c.Self)`，
-    /// `temporary` 用默认值 `false` ⇒ ct=0 / ct=1 都落在**永久槽**里。
-    /// 撤销必须落在**同一个槽**上，「给→撤」才闭合。
-    /// （蓝图那边更细：ct=0 存的是 `tempBuffGive` 键、ct=1 存的是 `permBuff` 键，
-    /// ct=4 只删 `tempBuffGive` 那一个键。内核是「一个来源一个槽」的简化模型 ——
-    /// 这属于既有口径，本轮**不动**，只保证给/撤这一对能对消。）
-    ///
-    /// 不发任何事件：这是 <see cref="RemoveCostBuff"/> 的形状（它只清槽 + `RecalculateStats`）。
-    /// 蓝图 ct=4 之后确实还会走到 `NotifyGainAttack` / `ExecuteAfterChangeAttackEvents`
-    /// （:6730 `L_07C6` → `IsActionProcess` → :6771 `L_08C0`），但那是**另一件事**：
-    /// 补事件会往 `ActionLog` 里多插动作，把回放对拍的结论和本次数值修复搅在一起。
+    /// Legacy permanent-slot removal used by the 511th Regiment shortcut.
+    /// This is separate from the ChangeAttack mode-4 event continuation (RULE-324).
+    /// Both still use the legacy slot; native temporary-key isolation is pending.
+    /// The shortcut's apply/remove pairing still needs a separate card audit.
     /// </summary>
     private void RemoveAttackBuff(CardInstance target, int sourceId)
     {

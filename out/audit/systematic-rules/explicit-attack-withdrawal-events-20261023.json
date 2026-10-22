@@ -1,0 +1,122 @@
+{
+  "rule": "RULE-324",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "kernel_runtime_changed": true,
+  "verified": {
+    "rule": "RULE-324",
+    "worker_exact_match": true,
+    "worker_call_nodes": 18,
+    "blueprint_functions_verified": 7,
+    "script_bytes": 15481,
+    "script_statements": 546,
+    "model_cases": 384,
+    "new_regression_cases": 1540,
+    "release_selftest": {
+      "passed": 666,
+      "total": 666,
+      "exit_code": 0
+    },
+    "scope": "Explicit withdrawal notification/after continuation only, with existing legacy slot. Native mode0/4 slot isolation must migrate together with expiry queue. Numeric split, zero keys and 511th shortcut pending."
+  },
+  "authority": [
+    "ChangeAttack493 calls typed ledger before mode4 handling. 2415 zero removed amount returns;2475 overwrites caller amount;2543/2584/2630 adjusts encrypted temporary attack.1990+ computes actual visible delta,2147/2188 suppress notification for deck/skip only;2323 notify then2240 after helper.",
+    "ChangeBuffsFromCards mode4 selects attack_tempBuffGive key. Removal branch5862 reverses stored amount and removes selected key; other keys, empty outer map/reverse associations handled by continuation."
+  ],
+  "fix": [
+    "Explicit withdrawal now checks CanCardBeBuffed, preserves nonattack fields/source associations, avoids unrelated RecalculateStats operation-cost resets.",
+    "For nonzero stored withdrawal, emits seven-field ZActionGainAttack with actual visible delta and raw sourceID unless skip/deck, then always executes shared own/T5 after chain. Actual zero visible delta still dispatches if removed amount nonzero. Missing/zero aggregate does not dispatch.",
+    "Removed obsolete commentary treating past replay comparisons as a reason to omit authoritative notifications."
+  ],
+  "limits": [
+    "This is event-continuation repair, NOT full native withdrawal parity. Existing false slot still conflates mode0 and permanent attack; the new event tests deliberately seed this legacy slot, not claim typed-ledger equality.",
+    "Do NOT move mode0 to Temporary alone: legacy all-temporary-slot expiry would incorrectly expire unregistered mode0 buffs. Application/withdrawal slot migration must be paired with native pending-type/source queue and saved-target traversal.",
+    "Zero-valued native keys may be removed/pruned without events; compact aggregate cannot distinguish key presence. Negative/clipped/SetValue numeric behavior still needs base/temp splitting and exact getter certification.",
+    "511th Regiment shortcut retains separate legacy removal and needs its own card audit."
+  ],
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 666,
+    "total": 666,
+    "exit_code": 0,
+    "new_cases": 1540,
+    "details": [
+      "1536 legacy-slot continuation combinations: sides2 x locations(board/hand/deck/discard)4 x visibleAttack(0,10)2 x stored(-3,0,4)3 x skip2 x suppression2 x sourceExists2 x residualDefense2 x otherTemporarySlot2. Assert actual-delta seven fields, notification gates, own/T5 raw source and subject, residual fields/reverse links, no operation-cost reset.",
+      "4 ordinary mode0 apply/withdraw/repeated-withdraw combinations: sides2 x source present/missing2; caller amount ignored on withdrawal. No native slot-equivalence claim."
+    ],
+    "native_model": {
+      "rule": "RULE-324",
+      "cases": 384,
+      "case_digest_sha256": "eeded94969e8ec7363de1b878a83389a91d9f09e7510d7f21dc24ba52ec914d3",
+      "scope": "Full ChangeAttack + full ChangeBuffsFromCards entries modes0/4. Controlled enum/maps/getter/crypto/source-membership/null-title. Zero-valued native keys are modeled and removed, while compact simulator cannot distinguish presence. Numeric base/temporary storage is still not equivalent to flat simulator."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-025509-rule324-attack-withdrawal-98835a53",
+    "exact_match": true,
+    "scope": "Mechanical recursive call extraction; worker interpreted FunctionName as semantic function label and included decoder Function fields. Primary reconstructs exact normalized output (18 calls), verifies entire original scripts independently."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\explicit-temporary-attack-model-checks-20261023.json",
+      "sha256": "1f2ae78d28a8a13cb3fcf9fde787738bc8242ed9716b9fd5400fd98577238f67"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule324-explicit-attack.py",
+      "sha256": "81a8898b5932ccd8f8d1d728ca89b17d95ffea0584e263e01ccc201dfc4eca72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule324-explicit-attack.py",
+      "sha256": "af3e34d636d1f49468b9259481f1b98d3fdd3f2ac3646724dd347f7e733fb6d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule324-explicit-attack-verified-20261023.json",
+      "sha256": "4c8af3e1368d3c8a4aeb6704396169084df7ea98bc67b2674d0b66fa08129fad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule324-selftest-release.log",
+      "sha256": "e3f5eb89fe80727aed06b47d11bbde8b3753a9258a997609a5646d5fd9e111de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule324-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule324\\functions.json",
+      "sha256": "f6272b59cf07068a4b7390b7f342cf9e741af1ee981873512e40beda545d175b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule324\\task.txt",
+      "sha256": "ae9cb8a921f84afa362a03a0e3bd27b0b3f77f78f65752fe803162aa4a7274cc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule324\\calls.json",
+      "sha256": "eaa96e897dfd2233fe861528cb6732029d0f45d04040ad442b4f569926d9d1b3"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "1fc9c2ea269d442ea58fd9b4db63d141e3644e2920955c1e7b2bb6fda6a77d24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1f785f5ea12b085d7e83c0082b90f11bbed082de434a53e1a9340a6a1a1af490"
+    }
+  ],
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "fully_semantically_certified_cards": 0
+}

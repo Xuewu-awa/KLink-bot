@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("攻击显式撤销：既有槽下保留其他字段，完整通知回调", ExplicitAttackRemovalEvents),
+        new("攻击显式撤销：忽略传入数值，重复撤销不产生事件", ExplicitAttackRemovalRoundTrip),
         new("攻击来源：实参ID归因，不以执行卡替代，缺失来源仍处理", AttackRawSourceAttribution),
         new("攻击来源：非正ID在所有变化分支之前拒绝", AttackInvalidSourceGate),
         new("攻击变化入口：保留变化类型与skip参数", AttackNotificationModeForwarding),
@@ -5992,6 +5994,89 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? ExplicitAttackRemovalEvents(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        using var programs = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (string hook in new[] { own, other })
+            locals[hook] = locals[hook].Where(step => step.Function != "DrawCardsFromDeckBySide").Select((step, i) => step with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in new[] { 0, 1, 2, 3 })
+        foreach (int previous in new[] { 0, 10 })
+        foreach (int stored in new[] { -3, 0, 4 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (bool residual in new[] { false, true })
+        foreach (bool otherTemporary in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            int id = sourceExists ? 20 : 9999;
+            var where = location switch { 0 => side.HqOf(), 1 => side.HandOf(), 2 => side.DeckOf(), _ => CardLocation.Discard };
+            var target = state.CreateWithId(name, side, 60, where, 99);
+            var watcher = state.CreateWithId(name, Side.Left, 70, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) {
+                card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { other } };
+                card.Keywords.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Attack = previous; target.OperationCost = 7;
+            target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Temporary = false, Attack = stored, Defense = residual ? 2 : 0 };
+            if (otherTemporary) target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = 5 };
+            if (sourceExists) source.CardsBuffedByThisCard.Add(60);
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, id, 123, 4, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = null, Controller = side }, out _);
+            bool changed = stored != 0;
+            int next = Math.Max(0, previous - stored), delta = next - previous;
+            bool notify = changed && !skip && location != 2;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            var values = new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", delta), ActionValue2.Int("newAttackValue", next),
+                ActionValue2.Int("duration", 0), ActionValue2.Int("instigatorID", id), ActionValue2.Bool("isBuff", false), ActionValue2.Str("changeType", "tempBuffRemove") };
+            bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
+                && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), id);
+            if (target.Attack != next || target.OperationCost != 7
+                || target.BuffsBySource.ContainsKey((id, false)) != (!changed || residual)
+                || (residual && (target.BuffsBySource[(id, false)].Defense != 2 || target.BuffsBySource[(id, false)].Attack != 0))
+                || target.BuffsBySource.ContainsKey((id, true)) != otherTemporary
+                || (otherTemporary && target.BuffsBySource[(id, true)].Attack != 5)
+                || (sourceExists && source.CardsBuffedByThisCard.Contains(60) != (!changed || residual || otherTemporary))
+                || actions.Length != (notify ? 1 : 0) || (notify && !actions[0].Values.SequenceEqual(values))
+                || (changed && (!Payload(watcher) || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target))) || (!changed && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
+                || (changed && !suppressed && !Payload(target))
+                || ((!changed || suppressed) && target.BlueprintVariables.ContainsKey("_auditAttack_changedAmount")))
+                return $"显式攻击撤销错误 side={side}, location={location}, before={previous}, stored={stored}, skip={skip}, suppressed={suppressed}, source={sourceExists}, residual={residual}, otherTemporary={otherTemporary}";
+        }
+        return null;
+    }
+
+    private static string? ExplicitAttackRemovalRoundTrip(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool sourceExists in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            int id = sourceExists ? 20 : 9999;
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); target.Attack = 10;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            void Change(int amount, int mode) => engine.Api.InvokeByName("ChangeAttack", target,
+                new object?[] { target, id, amount, mode, false, null }, context, out _);
+            Change(3, 0); Change(1, 0);
+            if (target.Attack != 14) return "临时攻击施加数值错误";
+            Change(999, 4);
+            if (target.Attack != 10 || target.BuffsBySource.Count != 0)
+                return "显式撤销数量应取已存量，不得取本次实参";
+            int actions = state.ActionLog.SelectMany(x => x.SubActions).Count();
+            Change(-999, 4);
+            if (target.Attack != 10 || state.ActionLog.SelectMany(x => x.SubActions).Count() != actions)
+                return "重复撤销不存在的临时攻击应无数值或事件变化";
+        }
+        return null;
     }
 
     private static string? AttackRawSourceAttribution(CardDatabase db)
