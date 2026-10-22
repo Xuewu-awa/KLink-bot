@@ -3008,13 +3008,46 @@ public sealed partial class CardApi
 
                 int previousAttack = card.Attack;
                 card.Attack = Math.Max(0, previousAttack - attackRemoved);
+                int changed = card.Attack - previousAttack;
+                // RULE-321: native AddSubActionGainAttack preserves this order.
                 _engine.FireSubAction("ZActionGainAttack", new[]
                 {
-                    ActionValue2.Int("instigatorID", key.SourceCardId),
-                    ActionValue2.Int("gained", card.Attack - previousAttack),
+                    ActionValue2.Int("cardID", card.CardId),
+                    ActionValue2.Int("gained", changed),
                     ActionValue2.Int("newAttackValue", card.Attack),
+                    ActionValue2.Int("duration", 0),
+                    ActionValue2.Int("instigatorID", key.SourceCardId),
+                    ActionValue2.Bool("isBuff", false),
+                    ActionValue2.Str("changeType", DefenseChangeTypeName(4)),
                 });
+                ExecuteAfterChangeAttackEvents(card, changed, key.SourceCardId);
             }
+        }
+    }
+
+    private void ExecuteAfterChangeAttackEvents(CardInstance target, int amount, int instigatorId)
+    {
+        const string own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var ownNamed = new Dictionary<string, object?> { ["changedAmount"] = amount, ["instigatorID"] = instigatorId };
+        // Native i=38 suppresses only the direct own call; i=612 then joins T5.
+        if (!target.IsSuppressed && library.FindProgram(target.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {target.Name}#{target.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, target, target.Name, own, target,
+                eventArgs: new object?[] { amount, instigatorId }, namedArgs: ownNamed);
+        }
+        // i=74 materializes after own; i=343 excludes by CardID. Invoke the
+        // held objects without registration/suppression/location rechecks.
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { target, amount, instigatorId };
+        var named = new Dictionary<string, object?> { ["cardChanged"] = target, ["changedAmount"] = amount, ["instigatorID"] = instigatorId };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == target.CardId || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
     }
 

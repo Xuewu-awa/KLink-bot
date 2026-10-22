@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("攻击撤销：七字段通知、自身压制门与T5参数", TemporaryAttackPayloadAndEvents),
+        new("攻击撤销：自身后查询与旁观固定对象快照", TemporaryAttackEventSnapshot),
         new("回合末清理：只撤攻击，混合槽与来源关系保留", TemporaryCleanupAttackOnly),
         new("回合末清理：仅在场目标可撤销，离场临时记录保留", TemporaryCleanupBoardGate),
         new("设防skip：通知、销毁、自身及T6派发均不受影响", DefenseSetSkipInvariant),
@@ -5963,6 +5965,130 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static IDisposable InstallAttackChangeProbes()
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        var first = InstallSelectionDrawProbe(name, own);
+        try
+        {
+            var second = InstallSelectionDrawProbe(name, other);
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+            foreach (string hook in new[] { own, other })
+            {
+                var names = hook == own ? new[] { "changedAmount", "instigatorID" } : new[] { "changedAmount", "instigatorID", "cardChanged" };
+                var steps = names.Select((variable, i) => new KismetStep(i, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "K2Node_Event_" + variable, Scope = "local" }, null, -1, "_auditAttack_" + variable, null)
+                    { DestinationScope = "instance" }).ToArray();
+                locals[hook] = steps.Concat(locals[hook].Select(x => x with { Index = x.Index + steps.Length })).ToArray();
+            }
+            return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
+        }
+        catch { first.Dispose(); throw; }
+    }
+
+    private static string? TemporaryAttackPayloadAndEvents(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        using var programs = InstallAttackChangeProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool watcherSuppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (var where in new[] { CardLocation.HandLeft, CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (int previous in new[] { 0, 1, 10 })
+        foreach (int buffAmount in new[] { -3, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            var watcher = state.CreateWithId(name, Side.Left, 30, where, 0);
+            foreach (var card in new[] { target, watcher }) {
+                card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { other } };
+                card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (watcherSuppressed) watcher.Keywords.Add(Keyword.Suppressed);
+            if (exception) watcher.SuppressionExceptionTriggers.Add(other);
+            target.Attack = previous;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = buffAmount };
+            source.CardsBuffedByThisCard.Add(60);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.RemoveTemporaryBuffs();
+            int next = Math.Max(0, previous - buffAmount), delta = next - previous;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            var values = new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", delta), ActionValue2.Int("newAttackValue", next),
+                ActionValue2.Int("duration", 0), ActionValue2.Int("instigatorID", 20), ActionValue2.Bool("isBuff", false), ActionValue2.Str("changeType", "tempBuffRemove") };
+            bool receives = !watcherSuppressed || exception;
+            var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+            var expected = new List<string>();
+            if (!suppressed) expected.Add($"{own} → {name}#60");
+            if (receives) expected.Add($"{other} → {name}#30");
+            bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
+                && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), 20);
+            if (actions.Length != 1 || !actions[0].Values.SequenceEqual(values)
+                || calls.Length != expected.Count || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second, StringComparison.Ordinal))
+                || (!suppressed && !Payload(target)) || (suppressed && target.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
+                || (receives && (!Payload(watcher) || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target))))
+                return $"攻击撤销载荷/事件错误 side={side}, suppressed={suppressed}, watcherSuppressed={watcherSuppressed}, exception={exception}, where={where}, previous={previous}, buff={buffAmount}";
+        }
+        return null;
+    }
+
+    private static string? TemporaryAttackEventSnapshot(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        using var programs = InstallAttackChangeProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            CardDefinition Definition(bool registered) => new() { Name = name, Type = "fighter", UsedTriggers = registered ? new[] { other } : Array.Empty<string>() };
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(name, Side.Left, 30, CardLocation.Discard, 0);
+            var later = state.CreateWithId(name, Side.Left, 70, CardLocation.Discard, 1);
+            foreach (var card in new[] { target, first, later }) { card.Keywords.Clear(); card.Definition = Definition(card != first || suppressed); }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Attack = 14;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = 4, Defense = 3 };
+            source.CardsBuffedByThisCard.Add(60);
+            for (int i = 0; i < 5; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            state.CreateWithId("card_unit_51e_regiment", Side.Right, 110, CardLocation.DeckRight, 0);
+            int stage = 0; bool stateAtEvent = true; CardInstance? beforeQuery = null, late = null;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                stage++; stateAtEvent &= target.Attack == 10 && target.BuffsBySource[(20, true)].Attack == 0
+                    && target.BuffsBySource[(20, true)].Defense == 3
+                    && state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionGainAttack" && x.Values.Count == 7);
+                if (!suppressed && stage == 1) {
+                    first.Definition = Definition(true);
+                    beforeQuery = state.CreateWithId(name, Side.Left, 65, CardLocation.Discard, 0);
+                    beforeQuery.Keywords.Clear(); beforeQuery.Definition = Definition(true);
+                }
+                else if (stage == (suppressed ? 1 : 2)) {
+                    later.Keywords.Add(Keyword.Suppressed); later.Definition = Definition(false);
+                    state.Move(later, CardLocation.NotAvailable, 0, notifyMoved: false);
+                    late = state.CreateWithId(name, Side.Left, 90, CardLocation.Discard, 0);
+                    late.Keywords.Clear(); late.Definition = Definition(true);
+                }
+            });
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.RemoveTemporaryBuffs();
+            var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+            var expected = new List<string>();
+            if (!suppressed) expected.Add($"{own} → {name}#60");
+            expected.Add($"{other} → {name}#30");
+            if (!suppressed) expected.Add($"{other} → {name}#65");
+            expected.Add($"{other} → {name}#70");
+            if (!stateAtEvent || stage != expected.Count || calls.Length != expected.Count
+                || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second, StringComparison.Ordinal))
+                || (!suppressed && beforeQuery is null) || late is null
+                || !ReferenceEquals(later.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target)
+                || late.BlueprintVariables.ContainsKey("_auditAttack_cardChanged"))
+                return $"攻击撤销须自身后查询T5并保存接收对象 side={side}, suppressed={suppressed}, stage={stage}";
+        }
         return null;
     }
 

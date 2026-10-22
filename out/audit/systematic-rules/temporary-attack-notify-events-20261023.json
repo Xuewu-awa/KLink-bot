@@ -1,0 +1,164 @@
+{
+  "rule": "RULE-321",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_dates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-321",
+    "worker_exact_match": true,
+    "worker_functions": 3,
+    "blueprint_functions_verified": 12,
+    "script_bytes": 6130,
+    "script_statements": 224,
+    "handler_path_nodes": 2,
+    "model_cases": 732,
+    "regression_cases": 292,
+    "release_selftest": {
+      "passed": 659,
+      "total": 659,
+      "exit_code": 0
+    },
+    "kernel_runtime_changed": true,
+    "scope": "End-turn attack withdrawal now emits ordered7-field action then direct own/unconditional T5 query with frozen observers, subject suppression only skips own. Generic ChangeAttack path, native queue/split arithmetic/other callbacks not migrated."
+  },
+  "kernel_runtime_changed": true,
+  "authority": {
+    "chain": "Fresh NotifyGainAttack103B forwards seven args to HandleGainAttack. Actual online handler144B stores args and enters Ubergraph13108; independently decoded two-node path calls AddSubActionGainAttack457B.",
+    "payload": "Builder338 constructs ordered cardID,gained,newAttackValue,duration,instigatorID,isBuff,changeType. ChangeAttack4 passes duration0,isBufffalse,enum4(tempBuffRemove).",
+    "events": "ExecuteAfterChangeAttackEvents694B: process=true;38 skips own558 only if target suppressed,612 joins74 query5. Own args changedAmount/instigatorID, observers target/changedAmount/instigatorID.343 excludes same CardID. Frozen query result, no repeated eligibility screen."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Temporary attack cleanup emits ordered7-field notification instead of3 fields.",
+      "After notification execute new direct own/T5 dispatch helper; own suppression independent of observer query.",
+      "Own callback precedes fresh query; per-observer held objects are called without repeated registration/location/suppression screening."
+    ],
+    "excluded": "General public ChangeAttack still uses legacy notification/dispatch; no full queue migration or native split attack arithmetic implemented."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 659,
+    "total": 659,
+    "exit_code": 0,
+    "new_cases": 292,
+    "details": [
+      "288 cases: sides2 x target suppression2 x watcher suppression2 x exception2 x watcher locations3 x initial visible attack3 x signed stored attack2. Check exact7 fields/order, signed/zero visible delta, own/observer order, named amount/source/subject.",
+      "4 dynamic cases: sides2 x target suppression2; own registers/adds receivers before query; first observer suppresses/unregisters/moves later and adds late receiver. Held later object still called, late receiver excluded, callbacks observe cleared attack ledger, preserved defense and existing7-field notification."
+    ],
+    "model": {
+      "rule": "RULE-321",
+      "event_cases": 540,
+      "builder_cases": 192,
+      "total": 732,
+      "case_digest_sha256": "39a4fe5d26951aff9afb43a303720537fd169736ecb6d23ed0cebab40a0678f9",
+      "capture_date": "2026-10-23",
+      "completed_date": "2026-10-23",
+      "scope": "Whole ExecuteAfterChangeAttackEvents and full GameState query AST, process=true; direct own suppression, own-before-query membership changes, fixed observer objects, excludes same CardID aliases; signed/zero delta and exact argument shapes. Whole AddSubActionGainAttack builder checks seven ordered fields. Primitive ActionValue structs/enum names/getters/callbacks controlled. Not native queue/attack arithmetic/native TSet ordering/lifetime or generic ChangeAttack integration."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-023215-rule321-attack-events-80f38078",
+    "scope": "Mechanical three-function full inventory; primary full exact reconstruction plus12 nonempty scripts and2-node online path independently decoded.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-handlers-native-20261023.json",
+      "sha256": "9aaf416ce890543a67238f303248bb3837c1a4bd8577c3453499cbcec78a3702"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-action-builder-native-20261023.json",
+      "sha256": "9579a9eaa14cf6e85853a74a6bf3a9a71d7dbfe3c3badaf2dfb8c2fd08b1252e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-gain-online-handler-paths-20261023.json",
+      "sha256": "7a38d4edf24c343ae78109262ed2802490589cd2c85155a52b56d336e4f02c39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-withdrawal-events-model-checks-20261023.json",
+      "sha256": "98a6980d3440bbadc69eb302c7aa0d924cb6790e3031a34a111a32dcaf53d57f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule321-attack-events.py",
+      "sha256": "c137529aab311e8c4c8bafd4d640ef98f0c49083f50df82919f3600c49ecafec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule321-attack-handlers.py",
+      "sha256": "678a583efcad8b18497361383c676eb686a668ec56bc425b87a8cb0f55f92efd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule321-attack-builder.py",
+      "sha256": "c55d92ec4ee62783417346655d715f88a138fb446dd6bd1abb98d2121f452207"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule321-attack-handler-path.py",
+      "sha256": "fda255d9fcd9729aa87a0be479a0579401383b56b3c25a8fb5be1ab7725831dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule321-attack-events.py",
+      "sha256": "344cccf25bc5e7f4c3a4814cc07dc5394fba8102d4574735bc49982e45c2e6af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule321-attack-events.py",
+      "sha256": "bec6fdad969019462835d7935f788729a82303060de41791fb86bc8d928c6358"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule321-attack-events-verified-20261023.json",
+      "sha256": "252ae15d2618608c4a82a4b423e8fd7b1bc92f58aabd8910c8414de8b3747830"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule321-selftest-release.log",
+      "sha256": "ffdaec8f33a3c830f3d4b3a93ffbba9765ade829a01fed92d5eeabae4ec6a6e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule321-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule321\\functions.json",
+      "sha256": "0279ee4e37b255b16f701181acad2dc4886e469431601cb1d11d6e3f4d204450"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule321\\task.txt",
+      "sha256": "5243cf823f38cc938f7d1f179f218f236da69744b8193ffc29b051c993462bf6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule321\\inventory.json",
+      "sha256": "d88dd16764b03aa0f14827b85e8d5b3ce144dde5a79fea64990aa1d918ebe4da"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "850edbf10eeaae178f5b1e59b1ca27560160b305acf4baf3e8598b25c0040a9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "fdcd3544bc524592e763659ae55ad1a08b10d951933ca37dcb1cf75e8c1e45db"
+    }
+  ],
+  "remaining": [
+    "Native pending queue/source lookup/ordered saved reverse targets/queue clear not integrated; later off-board reentry still not faithful.",
+    "General ChangeAttack method and explicit RemoveAttackBuff still have legacy ledger/payload/dispatch gaps; new helper currently integrated only in turn cleanup.",
+    "Native base+temporary attack split and real getter arithmetic, zero-valued key presence, typed ledger all modes and defense0 remain pending.",
+    "Native TSet order/object lifetime, global death/suppression/receipt/reconnect and full semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
