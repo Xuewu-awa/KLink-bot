@@ -1,0 +1,122 @@
+{
+  "rule": "RULE-313",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-313",
+    "worker_exact_match": true,
+    "selected_statements": 27,
+    "tail_calls": 11,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 144,
+    "regression_combinations": 52,
+    "release_selftest": {
+      "passed": 650,
+      "total": 650,
+      "exit_code": 0
+    },
+    "scope": "Positive ChangeDefense returns after callbacks without extra destroy/check. Source guard changed only for positiveGain; set/decrease and global CheckDeaths unchanged. Controlled offline models; no global death scheduling certification."
+  },
+  "authority": {
+    "tail": "ChangeDefense4517 ends T7 loop at4863;4874 jumps5740 Return. Own callback4879 rejoins4349; observer4734 loops4858->4420. No extra death getter or DestroyCard after gain callbacks.",
+    "scope": "Positive ordinary defense branch only. Does not establish global death scheduling, caller behavior or arbitrary callback semantics."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Exclude positiveGain from the shared trailing destruction condition.",
+      "Preserve additive decrease immediate destruction and set-value handling, engine CheckDeaths, ledger and notification behavior."
+    ]
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 650,
+    "total": 650,
+    "exit_code": 0,
+    "regression_combinations": 52,
+    "details": [
+      "48 cases: sides2 x own/first observer mutation2 x defense(-3,0,1)3 x move(board unchanged,hand,discard,NotAvailable)4. Check all saved callbacks, unchanged original request ledger, one gain notification, no appended destroy.",
+      "After those assertions explicitly call existing CheckDeaths: board/nonpositive swept with current destroyer0, others not swept. Compatibility only, not proof that native global death schedule is equivalent.",
+      "4 nested lethal decrease cases: sides2 x own/first observer callback2. Real ChangeDefense(-20,killer30) destroys once with source30, retains original +2 source20 and nested -20 source30 ledger/notifications, later saved observer still receives."
+    ],
+    "model": {
+      "rule": "RULE-313",
+      "cases": 144,
+      "case_digest_sha256": "8960d7c65cc1b0733c79906e079064e4416d5a0cd9922fbca71aef7477b47b51",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23",
+      "scope": "Full ChangeDefense and full GameState query AST entry-to-return; positive ordinary gain, own/first/last callbacks mutate current defense and location. Asserts all saved observers still called, original gain notification precedes mutation, returns without any DestroyCard or additional death getter. Query primitives, getters/encryption/ledger/callbacks controlled. No native TSet/order/object-lifetime/global death scheduling certification. Nested negative behavior tested in simulator, not part of this AST model."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-013712-rule313-gain-return-a5971556",
+    "scope": "Mechanical selected tail statement/call extraction only; primary exact reconstruction plus original full bytecode decode.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-gain-return-model-checks-20261023.json",
+      "sha256": "98b50290b22da7bbc4a7a143f48c429c7facddb244ce0173fb0f058f7b6b5959"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule313-gain-return.py",
+      "sha256": "641c25658ad94555b35e0d28893695004b018d48ddefa4be63c584c7cb682709"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule313-gain-return.py",
+      "sha256": "91905b07b8cf24c792003c5fbecdd1d1b4be5c05c2278d4890a54f7e4a0042b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule313-gain-return-verified-20261023.json",
+      "sha256": "f36c71191312ea4491f97ef201308ce6184a1a0afdc7621d9e2398e2902cb880"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule313-selftest-release.log",
+      "sha256": "0f97350739190b97dda7900b09b339e97c8d1470a0464b376e9ac60f230c2616"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule313-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule313\\function.json",
+      "sha256": "4808f83faab128d6bfaa5d1f8ad5089074096d4839b6cdf97c9c03bc062a78eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule313\\task.txt",
+      "sha256": "831d290fc6e9a9c1333cba1ebb40808430778a6ddd052f2c90a7640bb0f89a43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule313\\tail-inventory.json",
+      "sha256": "4e734dbfd1ef9ce26249526b783fd4f3ef0ef8344453b41bf9a2c5e8b91018dd"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "a940a666404575d1081dbacf853c1e7e202938f94c75405e5bb8f80df3559b94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "82290f184d322b867d806660db1705e19579033bd9ecd1835c9b17d6f1f8f3cf"
+    }
+  ],
+  "remaining": [
+    "Global CheckDeaths scheduling/source attribution and caller death processing are not certified by this local branch fix.",
+    "Full typed defense ledger and marker clearing, other modes/skipAction/deck behavior, arithmetic overflow and native TSet order remain pending.",
+    "Live object lifetime/registration maintenance, receipt/reconnect and full global/single-card semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

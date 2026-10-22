@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("增防后返回：不追加死亡检查或原来源销毁", DefenseGainNoTrailingDeathCheck),
+        new("增防后嵌套减防：保留真正致死调用的来源与单次销毁", DefenseGainNestedLethalDecrease),
         new("增防后派发：主体压制独立于旁观查询，参数与顺序", DefenseAfterGainDispatch),
         new("增防后派发：自身回调后查询及固定对象快照", DefenseAfterGainSnapshot),
         new("正增防：回调后当前值夹取1..99，最大值与请求独立", DefenseGainClampAfterCallbacks),
@@ -5954,6 +5956,94 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseGainNoTrailingDeathCheck(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", other = "OnAfterOtherCardGainDefense";
+        using var programs = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mutationStage in new[] { 1, 2 })
+        foreach (int defense in new[] { -3, 0, 1 })
+        foreach (int move in new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(probe, Side.Left, 30, CardLocation.HandLeft, 0);
+            var later = state.CreateWithId(probe, Side.Left, 70, CardLocation.HandLeft, 1);
+            foreach (var card in new[] { target, first, later }) {
+                card.Keywords.Clear(); card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+            }
+            target.Defense = target.MaxDefense = 10;
+            for (int i = 0; i < 4; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            state.CreateWithId("card_unit_51e_regiment", Side.Right, 110, CardLocation.DeckRight, 0);
+            int stage = 0;
+            var expectedLocation = move switch { 1 => side.HandOf(), 2 => CardLocation.Discard, 3 => CardLocation.NotAvailable, _ => side.HqOf() };
+            using var draw = InstallDrawReentryProbe(state, () => {
+                stage++;
+                if (stage == mutationStage) {
+                    target.Defense = defense;
+                    if (move != 0) state.Move(target, expectedLocation, 0, notifyMoved: false);
+                }
+            });
+            engine.Api.ChangeDefense(target, 2, source);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (stage != 3 || target.Defense != defense || target.Location != expectedLocation
+                || actions.Any(x => x.Name == "ZActionDestroyUnit")
+                || actions.Count(x => x.Name == "ZActionGainDefense") != 1
+                || target.BuffsBySource[(20, false)].Defense != 2
+                || !ReferenceEquals(later.BlueprintVariables.GetValueOrDefault("_auditGainSubject"), target))
+                return $"增防返回不应追加销毁 side={side}, stage={mutationStage}, defense={defense}, move={move}, actual={target.Location}/{target.Defense}, calls={stage}";
+            // Compatibility check for the existing separate sweep, not certification
+            // of the client's global death scheduling or destroyer policy.
+            engine.CheckDeaths();
+            var destroys = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            bool swept = move == 0 && defense <= 0;
+            if (destroys.Length != (swept ? 1 : 0)
+                || (swept && (target.Location != CardLocation.Discard
+                    || destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != 0)))
+                return "独立CheckDeaths的既有行为被增防修复改变";
+        }
+        return null;
+    }
+
+    private static string? DefenseGainNestedLethalDecrease(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", other = "OnAfterOtherCardGainDefense";
+        using var programs = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mutationStage in new[] { 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            var killer = state.CreateWithId(probe, Side.Left, 30, CardLocation.HandLeft, 0);
+            var later = state.CreateWithId(probe, Side.Left, 70, CardLocation.HandLeft, 1);
+            foreach (var card in new[] { target, killer, later }) {
+                card.Keywords.Clear(); card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+            }
+            target.Defense = target.MaxDefense = 10;
+            for (int i = 0; i < 4; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            state.CreateWithId("card_unit_51e_regiment", Side.Right, 110, CardLocation.DeckRight, 0);
+            int stage = 0;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                stage++;
+                if (stage == mutationStage) engine.Api.ChangeDefense(target, -20, killer);
+            });
+            engine.Api.ChangeDefense(target, 2, source);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (stage != 3 || target.Location != CardLocation.Discard || target.Defense != -8
+                || destroys.Length != 1 || destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != 30
+                || gains.Length != 2 || gains[0].Values.Single(x => x.Name == "gained").Value != 2
+                || gains[1].Values.Single(x => x.Name == "gained").Value != -20
+                || target.BuffsBySource[(20, false)].Defense != 2 || target.BuffsBySource[(30, false)].Defense != -20
+                || !ReferenceEquals(later.BlueprintVariables.GetValueOrDefault("_auditGainSubject"), target))
+                return $"嵌套减防致死须保留实际来源及单次销毁 side={side}, stage={mutationStage}, calls={stage}";
+        }
         return null;
     }
 

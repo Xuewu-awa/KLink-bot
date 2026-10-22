@@ -2693,7 +2693,10 @@ public sealed partial class CardApi
         if (fireGainDefenseEvent && delta > 0)
             ExecuteAfterGainDefense(target, delta);
 
-        if (!additiveDecrease && target.Defense <= 0 && !target.IsHq)
+        // RULE-313: the native positive-gain observer loop returns directly
+        // (i=4874 -> 5740), without destroying a target changed by callbacks.
+        // Keep the separately audited set/decrease paths and engine sweep intact.
+        if (!positiveGain && !additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
             _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
         }
