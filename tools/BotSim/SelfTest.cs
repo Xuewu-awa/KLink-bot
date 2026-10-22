@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("增防后派发：主体压制独立于旁观查询，参数与顺序", DefenseAfterGainDispatch),
+        new("增防后派发：自身回调后查询及固定对象快照", DefenseAfterGainSnapshot),
         new("正增防：回调后当前值夹取1..99，最大值与请求独立", DefenseGainClampAfterCallbacks),
         new("防御增益前链：自身门、T16串联、T17后处理及立即中止", DefenseBeforeChainOrder),
         new("防御增益前链：分组查询时点与固定接收快照", DefenseBeforeChainSnapshots),
@@ -5952,6 +5954,123 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static IDisposable InstallDefenseAfterGainProbes()
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterGainDefense", other = "OnAfterOtherCardGainDefense";
+        var first = InstallSelectionDrawProbe(name, own);
+        try
+        {
+            var second = InstallSelectionDrawProbe(name, other);
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+            foreach (string hook in new[] { own, other })
+            {
+                var markers = new List<KismetStep> {
+                    new(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                        new KismetExpr { Var = "K2Node_Event_defenseGained", Scope = "local" }, null, -1, "_auditGainAmount", null) { DestinationScope = "instance" },
+                };
+                if (hook == other) markers.Add(new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "K2Node_Event_cardGainingDefense", Scope = "local" }, null, -1, "_auditGainSubject", null) { DestinationScope = "instance" });
+                locals[hook] = markers.Concat(locals[hook].Select(x => x with { Index = x.Index + markers.Count })).ToArray();
+            }
+            return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
+        }
+        catch { first.Dispose(); throw; }
+    }
+
+    private static string? DefenseAfterGainDispatch(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterGainDefense", other = "OnAfterOtherCardGainDefense";
+        using var programs = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool observerSuppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (var location in new[] { CardLocation.HandLeft, CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (int amount in new[] { 1, 100 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(probe, Side.Left, 30, location, 0);
+            foreach (var card in new[] { target, observer }) {
+                card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+                card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (observerSuppressed) observer.Keywords.Add(Keyword.Suppressed);
+            if (exception) observer.SuppressionExceptionTriggers.Add(other);
+            target.Defense = target.MaxDefense = 98;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(target, amount, source);
+            bool receives = !observerSuppressed || exception;
+            var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+            var expected = new List<string>();
+            if (!suppressed) expected.Add($"{own} → {probe}#60");
+            if (receives) expected.Add($"{other} → {probe}#30");
+            if (calls.Length != expected.Count || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second, StringComparison.Ordinal))
+                || (!suppressed && !Equals(target.BlueprintVariables.GetValueOrDefault("_auditGainAmount"), amount))
+                || (suppressed && target.BlueprintVariables.ContainsKey("_auditGainAmount"))
+                || (receives && (!Equals(observer.BlueprintVariables.GetValueOrDefault("_auditGainAmount"), amount)
+                    || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditGainSubject"), target))))
+                return $"增防后派发错误 side={side}, suppressed={suppressed}, observerSuppressed={observerSuppressed}, exception={exception}, location={location}, amount={amount}";
+        }
+        return null;
+    }
+
+    private static string? DefenseAfterGainSnapshot(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterGainDefense", other = "OnAfterOtherCardGainDefense";
+        using var programs = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            CardDefinition Definition(bool registered) => new() { Name = probe, Type = "fighter", UsedTriggers = registered ? new[] { other } : Array.Empty<string>() };
+            var source = state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(probe, Side.Left, 30, CardLocation.Discard, 0);
+            var later = state.CreateWithId(probe, Side.Left, 70, CardLocation.Discard, 1);
+            foreach (var card in new[] { target, first, later }) { card.Keywords.Clear(); card.Definition = Definition(card != first || suppressed); }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = target.MaxDefense = 98;
+            for (int i = 0; i < 5; i++) state.CreateWithId("card_unit_51e_regiment", Side.Left, 100 + i, CardLocation.DeckLeft, i);
+            state.CreateWithId("card_unit_51e_regiment", Side.Right, 110, CardLocation.DeckRight, 0);
+            int stage = 0; CardInstance? beforeQuery = null, afterQuery = null; bool stateAtEvent = true;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                stage++;
+                stateAtEvent &= target.Defense == 99 && target.MaxDefense == 99 && target.BuffsBySource[(20, false)].Defense == 5
+                    && state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionGainDefense");
+                if (!suppressed && stage == 1) {
+                    first.Definition = Definition(true);
+                    beforeQuery = state.CreateWithId(probe, Side.Left, 65, CardLocation.Discard, 0);
+                    beforeQuery.Keywords.Clear(); beforeQuery.Definition = Definition(true);
+                }
+                else if (stage == (suppressed ? 1 : 2)) {
+                    later.Definition = Definition(false); later.Keywords.Add(Keyword.Suppressed);
+                    state.Move(later, CardLocation.NotAvailable, 0, notifyMoved: false);
+                    afterQuery = state.CreateWithId(probe, Side.Left, 90, CardLocation.Discard, 0);
+                    afterQuery.Keywords.Clear(); afterQuery.Definition = Definition(true);
+                }
+            });
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(target, 5, source);
+            var calls = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+            var expected = new List<string>();
+            if (!suppressed) expected.Add($"{own} → {probe}#60");
+            expected.Add($"{other} → {probe}#30");
+            if (!suppressed) expected.Add($"{other} → {probe}#65");
+            expected.Add($"{other} → {probe}#70");
+            if (!stateAtEvent || stage != expected.Count || calls.Length != expected.Count
+                || !calls.Zip(expected).All(x => x.First.StartsWith(x.Second, StringComparison.Ordinal))
+                || (!suppressed && beforeQuery is null) || afterQuery is null
+                || !ReferenceEquals(later.BlueprintVariables.GetValueOrDefault("_auditGainSubject"), target)
+                || !Equals(later.BlueprintVariables.GetValueOrDefault("_auditGainAmount"), 5)
+                || afterQuery.BlueprintVariables.ContainsKey("_auditGainSubject"))
+                return $"增防后须自身后取快照，组内变化不重筛/补入 side={side}, suppressed={suppressed}, stage={stage}, calls={string.Join(";", calls)}, state={stateAtEvent}";
+        }
         return null;
     }
 

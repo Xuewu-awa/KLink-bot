@@ -2690,27 +2690,39 @@ public sealed partial class CardApi
             ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
 
-        // 「防御力变了」事件 —— 出处 `out/bp-cardfn.json` 函数 `ChangeDefense`
-        // （i=4879 `cardToChangeRef.OnAfterGainDefense`、i=1589 `…OnAfterDefenseIsSet`），
-        // 签名 `BaseCardObject.h:814/793`：
-        //   `OnAfterGainDefense(int32 defenseGained)`（自己）
-        //   `OnAfterOtherCardGainDefense(UBaseCardObject* cardGainingDefense, int32 defenseGained)`
-        //
-        // ⚠️ **只有「增量」那条分支才发**（`SetValue` 分支发 T6，见上）。
-        if (fireGainDefenseEvent && delta > 0 && !target.IsSuppressed)
-        {
-            FireTrigger("OnAfterGainDefense", target, target.Owner, "OnAfterOtherCardGainDefense",
-                eventArgs: new object?[] { target, delta },
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["defenseGained"] = delta,
-                    ["cardGainingDefense"] = target,
-                });
-        }
+        if (fireGainDefenseEvent && delta > 0)
+            ExecuteAfterGainDefense(target, delta);
 
         if (!additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
             _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
+        }
+    }
+
+    private void ExecuteAfterGainDefense(CardInstance target, int amount)
+    {
+        const string own = "OnAfterGainDefense", other = "OnAfterOtherCardGainDefense";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        // RULE-312: i=4313 skips only the own callback when suppressed.
+        // i=4879 supplies one integer, then i=4924 rejoins the T7 query.
+        if (!target.IsSuppressed && library.FindProgram(target.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {target.Name}#{target.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, target, target.Name, own, target,
+                eventArgs: new object?[] { amount },
+                namedArgs: new Dictionary<string, object?> { ["defenseGained"] = amount });
+        }
+        // i=4349 queries after the own callback. Keep the resulting objects;
+        // i=4622 excludes only the same object and i=4734 does no re-screening.
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { target, amount };
+        var named = new Dictionary<string, object?> { ["cardGainingDefense"] = target, ["defenseGained"] = amount };
+        foreach (var observer in recipients)
+        {
+            if (ReferenceEquals(observer, target) || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
     }
 

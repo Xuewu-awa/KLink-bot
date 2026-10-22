@@ -1,0 +1,122 @@
+{
+  "rule": "RULE-312",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-312",
+    "worker_exact_match": true,
+    "worker_functions": 2,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 360,
+    "regression_combinations": 100,
+    "release_selftest": {
+      "passed": 648,
+      "total": 648,
+      "exit_code": 0
+    },
+    "scope": "Own suppression does not gate T7; own signature amount; observers target+amount; snapshot after own callback, object identity skip and no per-iteration rescreen. Controlled receiver order, not native TSet ordering. Late death check unchanged and uncertified."
+  },
+  "authority": {
+    "suppression": "ChangeDefense4313 branches to4879 when not suppressed: own OnAfterGainDefense(localInputAmount), then4924 jumps4349. Suppressed target directly continues4349 query7.",
+    "dispatch": "4349 captures FetchAllCardsWithEventTrigger(7). 4622 object-equality excludes target;4734 calls saved observer(target,localInputAmount);4858 loops without location/suppression/registration recheck.",
+    "query": "Full GameState query1174B filters suppression with exception but has no location filter; array order is materialized from native TSet, not certified here."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "Separate own callback from observer query; target suppression skips only own callback.",
+      "Own positional payload is [amount], named defenseGained. Observer payload is [target,amount], named cardGainingDefense/defenseGained.",
+      "Capture registered observer objects after own callback; exclude only same target object; execute saved objects without per-iteration rescreen."
+    ],
+    "excluded": "Late shared death check not changed or certified. Generic FireTrigger not changed; single-card migration paused."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 648,
+    "total": 648,
+    "exit_code": 0,
+    "regression_combinations": 100,
+    "axes": "96 cases: sides2 x target suppression2 x observer suppression2 x suppression exception2 x observer locations3 x amount2. Four dynamic cases: sides2 x target suppression2, own adds/registers receivers before query, first observer suppresses/unregisters/moves later receiver and adds late receiver after query. Confirm gain state/ledger/notification committed before callbacks, rewritten gain payload retained at clamp.",
+    "model": {
+      "rule": "RULE-312",
+      "cases": 360,
+      "case_digest_sha256": "5b0f1ebc0ba19d0e47ee511320e3792a038b56f99493c90067e6ad618bf89c7b",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23",
+      "scope": "Original ChangeDefense AST4313 through jumps/flow stack to return5740; full GameState trigger query. Own suppression/signature, post-own query mutations, frozen observer objects and object-identity exclusion including distinct same-ID alias. Controlled map/array/set order and callbacks. Does not certify native TSet ordering, registration maintenance, object lifetime, numeric entry or post-callback death handling."
+    },
+    "fixture_repair": "Initial new fixture compilation found a missing closing parenthesis; fixed before successful full suite."
+  },
+  "deepseek": {
+    "job": "20261023-013001-rule312-after-gain-83f11e81",
+    "scope": "Mechanical inventory for ChangeDefense and full GameState query. Primary independently reconstructed entire JSON and redecoded all authority functions.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-after-gain-model-checks-20261023.json",
+      "sha256": "94bf2395d10bc9740defa2414b9c71598ec4a1ab384bd44c5abf3290a3f177eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule312-after-gain.py",
+      "sha256": "de79378fb6168c3d30c6b92ccd85923351e8d515d5780b333f2ecf75d6b1d488"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule312-after-gain.py",
+      "sha256": "652cce58e8ecbbd49518dc2dc7a1551eb9953dfe82c9433622408423f0054be7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule312-after-gain-verified-20261023.json",
+      "sha256": "95d42a30559072a2e0e4626b733023c237f30db7c03d28096b814b5c2989b25f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule312-selftest-release.log",
+      "sha256": "d2c013a04e56ab483cd37b340cbb8fe94e6d8e90d8675faf7583d00488a5b7d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule312-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule312\\functions.json",
+      "sha256": "a2a89bd6da0bd79439d4a9eb1ca230ae0066618d890d2fb170ec35a8057dce67"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule312\\task.txt",
+      "sha256": "2cfb0fa36999691ca101fd5847193c0022d9cb2365fbc2ee70dd48b6874ff72e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule312\\inventory.json",
+      "sha256": "efebeff5a2652fa00d76fd85e9f6a24a5f74cece9e73b33bbcfc26f444be2e91"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "4f549a4c5f3d358d6f73f2eb6f16b73f121cc13bee1fdfcbea21dcf670ffbe25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "04222f2ef429038bde0de0008808bd3801083f6b819825a8bce636d166892271"
+    }
+  ],
+  "remaining": [
+    "Shared post-callback death check may differ from positive native branch; not corrected in this round.",
+    "Full typed defense ledger/presence clearing, other modes/skipAction/deck paths, integer overflow and native TSet order remain uncertified.",
+    "Synthetic same-ID different-object case verified only in AST model; live object lifetime/replacement and registry maintenance not certified.",
+    "Receipt/reconnect and remaining global/single-card semantic coverage continue pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
