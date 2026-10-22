@@ -2686,6 +2686,10 @@ public sealed partial class CardApi
             _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
         }
 
+        // RULE-315: i=2507 destroys lethal decreases before i=2445 checks
+        // skipAction. The flag suppresses only the gain-defense notification.
+        if (additiveDecrease && skipAction) return;
+
         _engine.FireSubAction("ZActionGainDefense", new[]
         {
             ActionValue2.Int("cardID", target.CardId),

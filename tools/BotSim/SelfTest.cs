@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("减防skip：保留致死销毁，仅省略减防通知", DefenseDecreaseSkipNotification),
+        new("减防skip：致死前回调照常执行，完成后再判通知", DefenseDecreaseSkipDestroyCallbacks),
         new("正增防skip/牌库：回调后位置门与静默数值写入", DefenseGainSkipAndDeck),
         new("正增防skip：自身及两组增益前链均跳过", DefenseGainSkipBeforeChain),
         new("增防后返回：不追加死亡检查或原来源销毁", DefenseGainNoTrailingDeathCheck),
@@ -5958,6 +5960,88 @@ internal static class SelfTest
                  + $"防御应停在 {baseDefense + 3}，实际 {target.Defense}";
         }
 
+        return null;
+    }
+
+    private static string? DefenseDecreaseSkipNotification(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var beforePrograms = InstallDefenseChainProbes();
+        using var afterPrograms = InstallDefenseAfterGainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in new[] { 0, 1, 2 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int maximum in new[] { 5, 30 })
+        foreach (int delta in new[] { -1, -10, -20 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = sourceExists ? state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0) : null;
+            int sourceId = sourceExists ? 20 : 9999;
+            var initial = location switch { 1 => side.HandOf(), 2 => side.DeckOf(), _ => side.HqOf() };
+            var target = state.CreateWithId(probe, side, 60, initial, 0);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" };
+            target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = 10; target.MaxDefense = maximum;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, sourceId, delta, 1, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool lethal = 10 + delta <= 0;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            if (target.Defense != 10 + delta || target.MaxDefense != (lethal ? maximum : maximum + delta)
+                || target.Location != (lethal ? CardLocation.Discard : initial)
+                || target.BuffsBySource[(sourceId, false)].Defense != delta
+                || gains.Length != (skip ? 0 : 1) || destroys.Length != (lethal ? 1 : 0)
+                || trace.Any(x => x.StartsWith("OnBeforeGainDefense") || x.StartsWith("OnBeforeOtherCardGainDefense")
+                    || x.StartsWith("OnAfterGainDefense") || x.StartsWith("OnAfterOtherCardGainDefense")))
+                return $"减防skip错误 side={side}, location={location}, skip={skip}, source={sourceExists}, suppressed={suppressed}, max={maximum}, delta={delta}";
+            if (!skip && (gains[0].Values.Single(x => x.Name == "gained").Value != delta
+                || gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != 10 + delta
+                || gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId))
+                return "减防通知须保留负请求、新防御及原始来源ID";
+            if (lethal && (destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceExists ? 20 : 0)
+                || (!skip && Array.IndexOf(actions, destroys[0]) >= Array.IndexOf(actions, gains[0]))))
+                return "减防skip不得省略销毁，未skip时销毁须早于通知";
+        }
+        return null;
+    }
+
+    private static string? DefenseDecreaseSkipDestroyCallbacks(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var beforeDestroyed = InstallSelectionDrawProbe(probe, "OnBeforeDestroyed");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool sourceExists in new[] { false, true })
+        foreach (int rewrittenDefense in new[] { -5, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = sourceExists ? state.CreateWithId("card_unit_51e_regiment", Side.Left, 20, CardLocation.Discard, 0) : null;
+            int sourceId = sourceExists ? 20 : 9999;
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 0);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" };
+            target.Keywords.Clear(); target.Defense = 10; target.MaxDefense = 30;
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            int calls = 0; bool sawLethal = true;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                calls++; sawLethal &= target.Defense == -10 && target.MaxDefense == 30
+                    && target.BuffsBySource[(sourceId, false)].Defense == -20;
+                target.Defense = rewrittenDefense;
+            });
+            engine.Api.ChangeDefense(target, -20, source, instigatorId: sourceId, skipAction: skip);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            if (calls != 1 || !sawLethal || target.Location != CardLocation.Discard || target.Defense != rewrittenDefense
+                || destroys.Length != 1 || gains.Length != (skip ? 0 : 1)
+                || destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceExists ? 20 : 0)
+                || (!skip && (gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != rewrittenDefense
+                    || Array.IndexOf(actions, destroys[0]) >= Array.IndexOf(actions, gains[0]))))
+                return $"致死减防skip须在销毁回调后决定通知 side={side}, skip={skip}, source={sourceExists}, current={rewrittenDefense}, calls={calls}";
+        }
         return null;
     }
 

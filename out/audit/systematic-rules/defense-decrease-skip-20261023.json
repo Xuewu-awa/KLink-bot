@@ -1,0 +1,121 @@
+{
+  "rule": "RULE-315",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-22",
+  "game_acquisition_read_only": true,
+  "verified": {
+    "rule": "RULE-315",
+    "worker_exact_match": true,
+    "selected_statements": 20,
+    "selected_calls": 12,
+    "blueprint_functions_verified": 4,
+    "script_bytes": 13268,
+    "script_statements": 450,
+    "model_cases": 432,
+    "regression_combinations": 304,
+    "release_selftest": {
+      "passed": 654,
+      "total": 654,
+      "exit_code": 0
+    },
+    "scope": "Negative ordinary ChangeDefense skip suppresses notification only after destruction and its callbacks. No deck gate. SetValue skip and complete native destruction/ledger remain pending."
+  },
+  "authority": {
+    "branch": "ChangeDefense2314 lethal->2475 raw source lookup->2507 DestroyCard->2539 jump2445. Nonlethal updates maximum then2445. skipAction=true returns2459/2470; false goes4042 reread defense,4083 NotifyGainDefense,4186 returns. No deck-position or gain callback gate in negative branch."
+  },
+  "fix": {
+    "file": "src/KLink.Bot/Effects/CardApi.cs",
+    "changes": [
+      "After additive decrease destruction completes, return early on skipAction before gain notification.",
+      "Leave ledger/numeric/max updates, source lookup/destruction, callback behavior and deck treatment unchanged."
+    ],
+    "excluded": "SetValue skip remains pending; no general death scheduling or full ledger certification."
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim/BotSim.csproj -c Release -- selftest",
+    "passed": 654,
+    "total": 654,
+    "exit_code": 0,
+    "regression_combinations": 304,
+    "details": [
+      "288 ABI cases: sides2 x board/hand/deck3 x skip2 x source present/missing2 x target suppression2 x previous max2 x deltas3. Check ledger, max/defense, destroy count/source, notify omission/payload and destroy-before-notify. Probe gain hooks remain uncalled.",
+      "16 public API cases: sides2 x skip2 x source present/missing2 x destroy callback defense(-5,7)2. Confirm real before-destroy callback runs with lethal state/ledger even if skip, destruction still completes, non-skipped notification rereads mutated defense."
+    ],
+    "model": {
+      "rule": "RULE-315",
+      "cases": 432,
+      "case_digest_sha256": "8ea3af4348ce1bc732638193023b18a8a81e84b3d5046472c7dd81dbd2aacf60",
+      "capture_date": "2026-10-22",
+      "completed_date": "2026-10-23",
+      "scope": "Full ChangeDefense AST entry-to-return, ordinary negative delta on both sides/board/hand/deck; skip gates notification only after lethal DestroyCard. Controlled destruction mutates current defense before notification; missing source lookup yields null. Getter/encryption/ledger/DestroyCard internals/callback mocked; no full destruction or ledger certification, no SetValue skip, arithmetic overflow, native object lifetime or global scheduling certification."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-015131-rule315-defense-decrease-9f503634",
+    "scope": "Mechanical20-statement/12-call extraction only; primary exact inventory reconstruction plus full authority decode.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-decrease-skip-model-checks-20261023.json",
+      "sha256": "561aca3fcd227a98c73d83d5a82aa44ffc9edf01f97a8e27a81161bd65d678ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule315-decrease-skip.py",
+      "sha256": "e13d8e15eef441120f5e5cc04dbf526cf1ef08d8def950edcbb6105ba560cb80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule315-decrease-skip.py",
+      "sha256": "0a55ab31b32557a539373298ce01d33aa4327792d4d10e697678fffecc857347"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule315-decrease-skip-verified-20261023.json",
+      "sha256": "7917929153938b6a6b03fdfc90d9a879967c1a837201319bfcea59f7175ca07e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule315-selftest-release.log",
+      "sha256": "fd88627fe903eeeef076e6d73cca77a470827db719e3023a1e4465ca31444926"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule315-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule315\\function.json",
+      "sha256": "4808f83faab128d6bfaa5d1f8ad5089074096d4839b6cdf97c9c03bc062a78eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule315\\task.txt",
+      "sha256": "21e12a8d122c3733998821643bca16faaa912267fe8dad02241fc1b284454b30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule315\\branch-inventory.json",
+      "sha256": "ff0dfeb3db529c0241e4ef81f20bc5a296cb215f7b3643fae857748c95327ced"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1548d0037008dfe57dc0e98275efbd34b529bd1595bdad56a7cb75cb1e57ad58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "c65bbf419f3da57e6a34cef7ec086104e40c11c5ad1fff61d6bdd83b271b5ff7"
+    }
+  ],
+  "remaining": [
+    "SetValue skipAction and process=false mode remain pending.",
+    "Full typed defense ledger/marker clearing, native DestroyCard internals/lifetime, overflow and TSet order remain uncertified.",
+    "Global death scheduling, receipt/reconnect and full global/single-card semantic coverage remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}
