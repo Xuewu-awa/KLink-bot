@@ -1,0 +1,153 @@
+{
+  "rule": "RULE-318",
+  "completed_on_client_date": "2026-10-23",
+  "capture_client_date": "2026-10-23",
+  "game_acquisition_read_only": true,
+  "pid": 24220,
+  "game_module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "verified": {
+    "rule": "RULE-318",
+    "worker_exact_match": true,
+    "worker_functions": 3,
+    "blueprint_functions_verified": 5,
+    "script_bytes": 22133,
+    "script_statements": 718,
+    "fresh_capture_functions": 3,
+    "model_cases": 1400,
+    "kernel_runtime_changed": false,
+    "new_selftest_run": false,
+    "last_release_selftest": {
+      "rule": "RULE-316",
+      "passed": 655,
+      "total": 655
+    },
+    "scope": "Fresh readonly expiry/suppression helper capture. Full expiry AST routes only attack type0 on current-board targets through ChangeAttack4. Current legacy cleanup differs; full registration/ChangeAttack/suppression migration pending. Existing ChangeDefense rejects type0 numerically after ledger call, syntax control-flow verified only."
+  },
+  "kernel_runtime_changed": false,
+  "fresh_functions": [
+    {
+      "name": "RemoveBuffsEndOfTurn",
+      "bytes": 1958,
+      "statements": 71,
+      "decode_complete": true
+    },
+    {
+      "name": "SuppressMultipleUnits",
+      "bytes": 8101,
+      "statements": 231,
+      "decode_complete": true
+    },
+    {
+      "name": "SuppressUnit",
+      "bytes": 64,
+      "statements": 4,
+      "decode_complete": true
+    }
+  ],
+  "authority": {
+    "expiry": "RemoveBuffsEndOfTurn reads pending queue, snapshots type keys/per-type source list/per-source reverse target list, resolves current source/target and board status. 1595/1626 only buffType0 ->1905 ChangeAttack(target,source,0,4,false). Other types have no removal dispatcher, queue cleared1646 afterward. SDK ECardBuffTypes0=attack,1=defense.",
+    "defense": "Existing full ChangeDefense calls ChangeBuffsFromCards487 before type dispatch; type0 falls609->3734 unsupported logger/return rather than defense numeric update. This branch is syntax/control-flow verified here, full ledger side effects not modeled.",
+    "suppression": "SuppressMultipleUnits8101B and SuppressUnit64B captured/decode complete. Semantic suppression model not completed."
+  },
+  "findings": [
+    "Current RemoveTemporaryBuffs scans all Temporary slots and reverses defense/cost/armor as well as attack, without pending-queue/source-reverse/current-board gates; this is not equivalent to captured client helper.",
+    "Existing source comment claiming equivalence corrected to mark legacy known gap. Production behavior unchanged pending queue registration and ChangeAttack withdrawal integration.",
+    "Current ChangeDefense type0 still changes numeric defense in compact helper; native updates ledger then rejects numeric type. Not fixed in this evidence round."
+  ],
+  "model": {
+    "rule": "RULE-318",
+    "cases": 1400,
+    "case_digest_sha256": "e5885841452825d6ebfc134a82ab52f2da166c5c85e04777a7526a4bb0be2cb5",
+    "capture_date": "2026-10-23",
+    "completed_date": "2026-10-23",
+    "scope": "Full1958B RemoveBuffsEndOfTurn AST with controlled queue getter/clear, object lookup, board predicate, reverse-list getter and ChangeAttack callback. Type0 only, valid source/target and live board check; queue-key snapshot, per-key source-ID snapshot, per-source reverse snapshot; duplicates and mutations of queue/source/target preserved. Does not execute ChangeAttack internals or prove native queue registration, lookup/lifetime/Map order. Suppression helpers syntax decoded, semantics not modeled here."
+  },
+  "tests": {
+    "new_selftest_run": false,
+    "reason": "Only capture/model/documentation and source comment changed; no production behavior or selftest changes.",
+    "last_release_selftest": {
+      "rule": "RULE-316",
+      "passed": 655,
+      "total": 655,
+      "exit_code": 0
+    }
+  },
+  "deepseek": {
+    "job": "20261023-021329-rule318-expiry-helpers-3f4f9518",
+    "scope": "Mechanical full3-function inventory; primary exact reconstruction plus strict whole-body decode/FName/header checks.",
+    "exact_match": true
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-cleanup-routing-model-checks-20261023.json",
+      "sha256": "b11ee18265d21706bf0f74283f486a67e2df01c0f84863b09ab34708381e4b4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule318-removal-helpers.py",
+      "sha256": "8249d62c31ead9cc069c48ce662396ab092730af4d4f91f3442da432c0d959a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule318-expiry-routing.py",
+      "sha256": "3bf5477534d70b9107c2218bb093081277d7256e899c2495a344f7560f3b24eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule318-expiry-routing.py",
+      "sha256": "3c290f6881018adf39cf52b716ee61c609aff252023a8da4e08949e2d0c68ae5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule318-expiry-routing-verified-20261023.json",
+      "sha256": "ac8eb1f0f7d22dd51f1e2fe95d771bbf65d47a288bfb2d3667abed5412891f49"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule316-selftest-release.log",
+      "sha256": "b002449be2abf6c91f68a55d231b9bcbd555e4f454f4abffc056fc3abfb4f67a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule318\\functions.json",
+      "sha256": "9ddd87da483b66437d9827d7d771060e7f98fc1df0fc96543736af814f2d4228"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule318\\task.txt",
+      "sha256": "d15c7f6423d04529b206af64b2f56a40cc58d9aa5e3f92d23f587cc51da6031a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule318\\inventory.json",
+      "sha256": "c8d3ffc7bab99f56dedc5f355728e71736e61a21ffd39152f5f71b2e8e961c99"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "5efb8783c3c26655c5b8551d462141ccbe629fc68c4336c16efbfc1950f75e8a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "2c39989a36d499fdc8eb80e071f829925ccf26e5ed927c25017e92ad74727794"
+    }
+  ],
+  "remaining": [
+    "Replace legacy all-slot cleanup only after pending-queue registration/getter/clear and ChangeAttack4 semantics are integrated. Existing tests assuming generic cost expiry must be reviewed against authoritative path.",
+    "Implement ChangeDefense0 ledger-only/rejected numeric path with typed ledger, without introducing erroneous end-turn inverse defense subtraction.",
+    "Full suppression semantics, typed ledger all modes and clearing, native object lifetime/map order, global death/receipt/reconnect remain pending."
+  ],
+  "single_card_version_migration": "paused",
+  "fully_semantically_certified_cards": 0
+}

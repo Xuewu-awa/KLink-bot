@@ -2968,18 +2968,13 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 撤掉本回合的临时修正 —— `BP_CardFunctions.RemoveBuffsEndOfTurn` 的等价物
-    /// （71 条语句：遍历 buffType → instigatorArray → `GetCardFromID` → `RemoveTheBuff`）。
-    ///
-    /// 蓝图把「待清理」记在 `GameStateRef` 的一张 map 上
-    /// （key = `ECardBuffTypes`，value = 带 `CardIDs` 数组的结构），
-    /// 内核用 <see cref="CardBuff.Temporary"/> 直接标在 buff 上 —— 两者等价，
-    /// 因为清理的粒度就是「(目标卡, 来源) 这一个 buff」。
-    ///
-    /// 调用点：`ExecuteEndOfTurnEvents` 完成整个延迟队列之后、
-    /// `MatchEngine.EndTurn` 的回合数递增之前。
-    /// 顺序有依据 —— 蓝图 `ExecuteEndOfTurnEvents` 先广播 `OnEndOfTurn`，
-    /// 卡自己的收尾逻辑跑完才轮到统一清理。
+    /// Legacy temporary-slot cleanup; not a faithful client expiry implementation.
+    /// RULE-318 fresh bytecode: RemoveBuffsEndOfTurn reads the state's pending
+    /// buff-type/source queue, follows each source's saved target list, requires
+    /// a currently valid board target, and only routes attack type 0 to
+    /// ChangeAttack(..., changeType: 4). Defense/cost/armor are not dispatched.
+    /// The all-slot scan below remains a known gap until queue registration and
+    /// attack withdrawal are integrated; do not infer expiry from Temporary alone.
     /// </summary>
     public void RemoveTemporaryBuffs()
     {
