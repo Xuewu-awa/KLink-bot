@@ -1,0 +1,272 @@
+{
+  "rule": "RULE-328",
+  "completed_on_client_date": "2026-10-23",
+  "fresh_live_capture": true,
+  "read_only_game_access": true,
+  "kernel_runtime_changed": true,
+  "verified": {
+    "rule": "RULE-328",
+    "kernel_runtime_changed": true,
+    "pid": 24220,
+    "turns": [
+      5,
+      11
+    ],
+    "cards_per_snapshot": 82,
+    "matched_crc_group_checks": 320,
+    "static_defaults_checked": 2019,
+    "nonzero_static_public_attack_buff": 0,
+    "fiat_same_state_address_and_object_header": true,
+    "fiat_public_before_after": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "fiat_decrypted_before_after": [
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        0
+      ]
+    ],
+    "fiat_ledger_added": {
+      "23": {
+        "attack_permBuff": 1
+      }
+    },
+    "copy_wrapper_bytes": 133,
+    "copy_backend_bytes": 2397,
+    "reset_wrapper_bytes": 26,
+    "reset_backend_bytes": 1566,
+    "offline_slice_vectors": 126,
+    "new_regression_cases": 164,
+    "release_selftest": {
+      "passed": 673,
+      "total": 673,
+      "exit_code": 0
+    },
+    "scope": "Repair reflected raw attack/attackBuff state/read/write, initialization/copy/snapshot/reset; direct live permanent-growth counterexample. Flat decrypted/total model and temp-growth/receipt/other lifecycle coverage still pending. Identity-correction compatibility update not native conversion certification."
+  },
+  "authority": {
+    "live": "PID24220/module/executable SHA match pinned mapping. Fresh FProperty headers confirm public offsets6c/70, source map and card/state IDs; integer sparse allocation/free/hash chains validated; FString structural chains checked without reimplementing its hash.",
+    "fiat": "User supplied real AI-match attack-growth sample. Turn5 and turn11 have same battle address and Fiat card23 address/header/name. Public1/0 at both endpoints; decrypted base1->2, temp0->0; own-source attack_permBuff+1 appears. Intermediate events and full GC serial history not captured.",
+    "crc": "For each of80 initialized objects per snapshot, independently compute zlib.crc32 over encrypted/divisor/noise12 bytes;320 group checks match stored CRC across two snapshots. Two sideeffect-holder objects have divisor0 and return-arithmetic sentinel-100, excluded from normal comparison. No native getter called.",
+    "defaults": "Fresh AllStaticCardsSortedByName property offset670 and2019 static asset pointers/public pairs read; all public attackBuff0. They are static asset objects, not assumed CDOs.",
+    "copy": "Fresh native CopyData wrapper133B + backend2397B/5 pdata fragments. Public fields6c/70 copied independently of shared mask and private groups568/57c; local CFG complete, helper/transitive semantics not fully certified.",
+    "reset": "Fresh ResetCardAttributes leaf wrapper26B tail-jumps to4b079a0 backend1566B. Normal path copies template6c and zeroes70; salvaged338 path writes qword1 at6c (raw1/0). Only selected public-field branch semantics certified here."
+  },
+  "fix": [
+    "CardInstance adds independent PublicAttack; normal initialization uses configured definition attack, AttackBuff mutable raw field initialized0. Synthetic uninitialized cards retain definition fallback.",
+    "Kismet raw attack reads PublicAttack; attackBuff no longer sums permanent/temporary ledger. Explicit instance assignments write raw fields and remove stale BlueprintVariables aliases, without changing current Attack.",
+    "Current attack changes retain raw fields; CopyForStealSide copies raw fields alongside its existing flat current Attack; snapshots/fingerprints expose both.",
+    "ResetAttributes restores raw attack to template or salvaged1 and raw attackBuff0, following current native branch. Identity-correction compatibility route refreshes raw template attack without claiming native conversion equivalence.",
+    "Replace old AttackBuffMemberRead expectation (permanent2+temporary(-1)=1) with independent initial raw0 expectation, grounded by live counterexample and catalog defaults."
+  ],
+  "tests": {
+    "release_selftest": {
+      "passed": 673,
+      "total": 673,
+      "exit_code": 0
+    },
+    "new_cases": 164,
+    "details": [
+      "162 combinations sides2 x publicAttack(-3,1,99)3 x publicBuff(-4,0,5)3 x permanentLedger(-3,0,2)3 x tempLedger(-1,0,3)3. VM reads independent raw values; ordinary growth leaves raw unchanged; native-copy-compatible helper and detached snapshot/fingerprint; explicit raw assignments do not change current Attack; normal/salvaged resets and identity compatibility update.",
+      "Two-side Fiat sample regressions: initial1/0, self permanent+1 -> raw1/0, getTotalAttack2, self ledger+1. Scope is this observed permanent-growth state, not full card trigger logic certification."
+    ],
+    "offline_slices": {
+      "rule": "RULE-328",
+      "copy_slice_cases": 72,
+      "reset_slice_cases": 54,
+      "total": 126,
+      "digest_sha256": "0a81ff9b2dbfd02b66384d2f18dd226adf9f0adddee6802c321b5d2411ec344a",
+      "scope": "Offline real-byte slices only: CopyData public pair and independent crypto group copies; ResetCardAttributes public normal/salvaged branch. Caller source/destination and static-template pointer supplied synthetically. No full CopyData/Reset helper/lookup/lifetime certification or game invocation."
+    },
+    "initial_baseline": {
+      "rule": "RULE-328",
+      "kernel_runtime_changed": false,
+      "pid": 24220,
+      "turns": [
+        5
+      ],
+      "cards": 82,
+      "initialized_crypto_cards": 80,
+      "uninitialized_auxiliary_cards": 2,
+      "matched_crc_groups": 160,
+      "attack_ledger_entries": 0,
+      "worker_exact_match": true,
+      "copydata_wrapper_bytes": 133,
+      "copydata_backend_bytes": 2397,
+      "copydata_fragments": 5,
+      "scope": "Fresh same-time field baseline with map/object/field reread checks; CopyData separately copies public and crypto groups. No attack-buff transition yet; current equality is not proof of refresh timing. CRC algorithm independently matched on samples, no native getter invocation."
+    },
+    "post_buff": {
+      "rule": "RULE-328",
+      "kernel_runtime_changed": true,
+      "pid": 24220,
+      "turns": [
+        11
+      ],
+      "cards": 82,
+      "initialized_crypto_cards": 80,
+      "uninitialized_auxiliary_cards": 2,
+      "matched_crc_groups": 160,
+      "attack_ledger_entries": 1,
+      "primary_post_buff_checked": true,
+      "copydata_wrapper_bytes": 133,
+      "copydata_backend_bytes": 2397,
+      "copydata_fragments": 5,
+      "scope": "Fresh same-time field baseline with map/object/field reread checks; CopyData separately copies public and crypto groups. Fiat card23 public1/0, decrypted2/0, ledger own perm+1. Other initialized cards remain equal. Full refresh timing and temp-attack transitions not certified. CRC algorithm independently matched on samples, no native getter invocation."
+    }
+  },
+  "deepseek": {
+    "job": "20261023-083902-rule328-live-attack-crosscheck-ea850546",
+    "status": "completed",
+    "exact_match": true,
+    "scope": "Mechanical82-card initial equality/CRC/attack-ledger checks only. Primary independently replays raw records, computes crypto arithmetic/CRC and checks post-buff state. No worker semantic inference accepted."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-crypto-battle-20261023-initial.json",
+      "sha256": "f69ea66d194d7a47c48cb0487d4b3050fb0d778e01de732cd23ddf6c5e01805e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-crypto-battle-20261023-fiat-buffed.json",
+      "sha256": "f6f0d190337a5c9b02846b003fe369095efc8bcba5a8d05cf4ef43e7629105f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-static-defaults-20261023.json",
+      "sha256": "0052f455fa705d3f26875863fbe81c9e6feae3dfb6656a655b903290682f462a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-static-field-mapping-20261023.json",
+      "sha256": "0b005b93748e31f23a2b0e0ff52e239379ac8ea5365b972bc8070d3a30a3e100"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-public-copy-reset-slice-model-20261023.json",
+      "sha256": "cd17334e47cba9d2abe87dcb27fffe4ae4ab065f8aaf4797b52013a02f95a268"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-live-attack-fields.py",
+      "sha256": "7295b704f391f80901674bbce6c0bd2a4dc5f52b31a5a61e11555462d9506946"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-fiat-buffed.py",
+      "sha256": "f1be302b645a9d3583be67d896a827a4ae6e821f1de4a6b2c43986b87a86c8f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-static-defaults.py",
+      "sha256": "5d114bb9d079562eb8785202ba3e8f212bad051373a2f9ffe22955b3006ca986"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-native-copydata.py",
+      "sha256": "7053ccf34fa27aad747542196da5c7bd736d0fe58e54945fa30e3fa94d349f5d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-native-reset.py",
+      "sha256": "0a57fbd3fd0460e6c3ccbc29a10ff967659e4016afaea31870dd8ddd428ac397"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule328-copy-reset-slices.py",
+      "sha256": "b9c47c33c3c9a89c9045a4a9263dfa779f2d843faf15be81a8459d7a994ecc10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule328-live-attack.py",
+      "sha256": "43b58d943a3cc51953b00e3bd6069e63c288887e805ecace3199d77b63b7e0c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule328-fiat-post-buff.py",
+      "sha256": "a43a797efd3bc07b043969ea7fe832faaad466c5e2c7c1e01818f9689d74d158"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule328-public-repair.py",
+      "sha256": "544a1397d5498792d0dfeed0a6ae4db58a8c658490daf0e11c4dbb2251423e1d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-live-attack-baseline-verified-20261023.json",
+      "sha256": "d047f40fb3ace2485b2484a654fe6a79164d174941170717f7c01002eb8174fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-fiat-post-buff-verified-20261023.json",
+      "sha256": "2da4cc1553c78986169acb1d19627725cd51c2fda4306546a3bf0e3aef7534c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-public-attack-repair-verified-20261023.json",
+      "sha256": "28325c6fc1e1b161cce376e4bf6b5528c4be714ef060c0596916886ef3f183ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-selftest-release.log",
+      "sha256": "4a80847cdd8b0337347eaf9ca608695211627208853b134e9edd0b35f537ee8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-trigger-sets.py",
+      "sha256": "9713ff0b8d53cf76cf915ce496a790c1156b97d86181ce4062a1032445dedf6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule328\\cards.json",
+      "sha256": "b311ca85dad6779a6219a23d8ec73dc882a456f039eeda8997fa8e57bf035f3a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule328\\task.txt",
+      "sha256": "a18ca359fc5b97e1fca48bfe330263aedc1e070b12175ccbae76b1da531e8eb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule328\\checks.json",
+      "sha256": "3d8775f1d8720cffbbcfc2db094daa08572c27622d27ec07e1377b9e10eb46c2"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "08f18fe5033630648d91f8784fb89adbc855d33ff63c4f2b563921dc03f87f76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "0408e60a827355722cd52b69afbea475e6a3c0cdfc9e2e647acee40c6e0e15b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "1d9d4d99700c4ac54f314c112523547ae0d935b65ff5cf9c249372bd6045fb48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "12bdb559021e1f9aeeccd1f77a82332ab300faa2ea310ddbcd43426835dbee57"
+    }
+  ],
+  "remaining": [
+    "Flat current Attack still conflates encrypted base/temp/visible total. getAndDecryptAttack versus getTotalAttack, all numeric changes/clamp/SetValue/capped withdrawal and combat consumers need unified split migration.",
+    "Actual temporary-growth/public-field refresh samples and receipt/initialization/other writer paths still pending; current observations do not establish universal never-write invariants.",
+    "Complete CopyData/Reset transitive helpers, native template lookup/lifetime/GC serial ordering, full typed source ledger and zero-key presence,511th shortcut and other core lifecycle paths remain pending.",
+    "Static catalog raw default0 verified for current version only; per-card version migration still paused. Synthetic unusual raw-field regression values test independent storage, not full-game state reachability."
+  ],
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "fully_semantically_certified_cards": 0
+}

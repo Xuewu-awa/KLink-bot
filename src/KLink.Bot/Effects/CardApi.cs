@@ -1344,6 +1344,8 @@ public sealed partial class CardApi
             Location = source.Location,
             LocationNumber = source.LocationNumber,
             Attack = source.Attack,
+            PublicAttack = source.PublicAttack,
+            AttackBuff = source.AttackBuff,
             Defense = source.Defense,
             MaxDefense = source.MaxDefense,
             KreditCost = source.KreditCost,

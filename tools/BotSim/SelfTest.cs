@@ -504,6 +504,8 @@ internal static class SelfTest
         // 当前卡池 ct=4 有 0 个调用点，属行为中性的预防性对齐。
         new("★ ChangeDefense 的 changeType=4 是蓝图 :7906 的非法值分支（防御一点不动）",
             ChangeDefenseChangeType4IsRejected),
+        new("公开攻击字段：增益不改公开值，复制/快照/重置独立保存", PublicAttackFieldLifecycle),
+        new("菲亚特实际样本：公开1/0，永久增益后总攻击2", FiatPublicAttackSample),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -764,7 +766,7 @@ internal static class SelfTest
         new("关键字：成员读 hasXxx 覆盖 15 个（旧成员表只有 7 个）", KeywordMemberReads),
         new("成员读 cardSeen：已被情报揭示的手牌必须读为 true", CardSeenMemberRead),
         new("Blueprint 运行时状态成员读：攻击/受击/抑制/反制序号", RuntimeStateMemberReads),
-        new("Blueprint attackBuff 成员读：返回来源账本中的攻击修正总和", AttackBuffMemberRead),
+        new("Blueprint attackBuff 成员读：公开字段独立，不从来源账本派生", AttackBuffMemberRead),
         new("Blueprint HasMovementLeft：按本回合移动额度返回正反值", HasMovementLeftDispatch),
         new("isSalvaged 成员读与抑制：打捞复制品必须保留 1/1 静态基准", SalvagedMemberAndSuppressionBaseline),
         new("Blueprint 卡字段成员读：type / rarity / salvageFaction", CardDefinitionAndSalvageMemberReads),
@@ -5999,6 +6001,67 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? PublicAttackFieldLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int rawAttack in new[] { -3, 1, 99 })
+        foreach (int rawBuff in new[] { -4, 0, 5 })
+        foreach (int permanent in new[] { -3, 0, 2 })
+        foreach (int temporary in new[] { -1, 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            card.PublicAttack = rawAttack; card.AttackBuff = rawBuff; card.Attack = 10;
+            card.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Attack = permanent };
+            card.BuffsBySource[(30, true)] = new CardBuff { SourceCardId = 30, Temporary = true, Attack = temporary };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "attack" }, null, -1, "__attack", null),
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "attackBuff" }, null, -1, "__buff", null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__attack", "__buff");
+            if (!Equals(bag.GetValueOrDefault("__attack"), rawAttack) || !Equals(bag.GetValueOrDefault("__buff"), rawBuff)) return "公开成员不得替换成当前攻击或账本派生值";
+            engine.Api.ChangeAttack(card, 3, card);
+            if (card.Attack != 13 || card.PublicAttack != rawAttack || card.AttackBuff != rawBuff) return "攻击增益不得同步覆盖公开字段";
+            var copy = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { card })!;
+            var snapshot = card.Snapshot(); string fingerprint = state.SnapshotJson();
+            if (copy.PublicAttack != rawAttack || copy.AttackBuff != rawBuff || copy.Attack != 13 || snapshot.PublicAttack != rawAttack || snapshot.AttackBuff != rawBuff)
+                return "复制和快照须独立保存公开字段及当前攻击";
+            copy.PublicAttack++; copy.AttackBuff++;
+            if (card.PublicAttack != rawAttack || card.AttackBuff != rawBuff) return "复制不应共享公开字段存储";
+            card.PublicAttack++; card.AttackBuff++;
+            if (state.SnapshotJson() == fingerprint || snapshot.PublicAttack != rawAttack || snapshot.AttackBuff != rawBuff) return "公开字段变化应进入状态指纹，已有快照不变";
+            var writeSteps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = rawAttack + 7 }, null, -1, "attack", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = rawBuff - 2 }, null, -1, "attackBuff", null) { DestinationScope = "instance" },
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(writeSteps, 0), ctx, null);
+            if (card.PublicAttack != rawAttack + 7 || card.AttackBuff != rawBuff - 2 || card.Attack != 13
+                || card.BlueprintVariables.ContainsKey("attack") || card.BlueprintVariables.ContainsKey("attackBuff"))
+                return "公开字段赋值只能写独立字段，不改当前攻击或另存影子变量";
+            card.IsSalvaged = permanent == 2; card.ResetAttributes();
+            if (card.PublicAttack != (card.IsSalvaged ? 1 : card.Definition.Attack) || card.AttackBuff != 0) return "普通/打捞重置须恢复公开攻击及零公开临时值";
+            card.Reidentify(card.Name, new CardDefinition { Name = card.Name, Type = "tank", Attack = 7, Defense = 4 });
+            if (card.PublicAttack != (card.IsSalvaged ? 1 : 7) || card.AttackBuff != 0) return "身份校正兼容路径须同步新卡面的公开字段";
+        }
+        return null;
+    }
+
+    private static string? FiatPublicAttackSample(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_fiat_cr_42", side, 23, side.HqOf(), 1);
+            if (card.PublicAttack != 1 || card.AttackBuff != 0 || card.Attack != 1) return "菲亚特样本的公开初值应为1/0";
+            engine.Api.ChangeAttack(card, 1, card);
+            var total = engine.Api.InvokeByName("getTotalAttack", card, new object?[] { null }, new EffectContext { Engine = engine, State = state, Self = card, Controller = side }, out _);
+            if (card.PublicAttack != 1 || card.AttackBuff != 0 || !Equals(total, 2) || card.BuffsBySource[(23, false)].Attack != 1)
+                return "菲亚特实测永久增益后须公开1/0、当前总攻击2、来源自身+1";
+        }
+        return null;
     }
 
     private static string? TotalAttackReadBounds(CardDatabase db)
@@ -28323,9 +28386,9 @@ internal static class SelfTest
         };
 
         var bag = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__probe");
-        return Equals(bag.GetValueOrDefault("__probe"), 1)
+        return Equals(bag.GetValueOrDefault("__probe"), 0)
             ? null
-            : $"attackBuff 应为永久 +2 与临时 -1 的合计 1，实际 {bag.GetValueOrDefault("__probe") ?? "null"}";
+            : $"公开 attackBuff 不得从永久 +2 与临时 -1 推导，默认应为0，实际 {bag.GetValueOrDefault("__probe") ?? "null"}";
     }
 
     private static string? HasMovementLeftDispatch(CardDatabase db)

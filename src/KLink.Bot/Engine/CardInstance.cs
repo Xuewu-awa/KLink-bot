@@ -68,6 +68,10 @@ public sealed class CardInstance
 
     // ---- 数值（可被效果修改，所以与 Definition 分开）----
     public int Attack { get; set; }
+    // RULE-328: reflected +0x6c is separate from the encrypted/current attack.
+    // The fallback supports synthetic cards that bypass normal initialization.
+    private int? _publicAttack;
+    public int PublicAttack { get => _publicAttack ?? Definition.Attack; set => _publicAttack = value; }
     public int Defense { get; set; }
     public int MaxDefense { get; set; }
     public int KreditCost { get; set; }
@@ -603,12 +607,11 @@ public sealed class CardInstance
     public List<int> CardsBuffedByThisCard { get; } = new();
 
     /// <summary>
-    /// Blueprint's runtime <c>attackBuff</c> member: the aggregate attack
-    /// modifier currently applied to this card. ChangeAttack mutations are
-    /// tracked per source here, so this is a derived view rather than separate
-    /// mutable state.
+    /// Reflected public +0x70 field, independent of encrypted temporary attack
+    /// and source ledger. Current static catalog defaults are all zero.
+    /// RULE-328 live Fiat permanent growth leaves this field unchanged.
     /// </summary>
-    public int AttackBuff => BuffsBySource.Values.Sum(buff => buff.Attack);
+    public int AttackBuff { get; set; }
 
     /// <summary>
     /// 是否为 HQ 卡（`card_location_*`，类型 <c>location</c>）。
@@ -664,6 +667,8 @@ public sealed class CardInstance
     /// </summary>
     public void InitializeFromDefinition()
     {
+        PublicAttack = Definition.Attack;
+        AttackBuff = 0;
         InitializeRuleAttributesFromDefinition();
         SelectTargetOnPlayedFromHand = Definition.SelectTargetOnPlayedFromHand;
         CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
@@ -689,7 +694,8 @@ public sealed class CardInstance
 
     /// <summary>
     /// Rule-visible fields written by the current client's native ResetCardAttributes.
-    /// Evidence: live-reset-native-implementation.txt, implementation RVA 0x4b09020.
+    /// RULE-328 rechecked the current backend at RVA 0x4b079a0 and its public
+    /// attack pair; other reset fields retain their prior audit evidence.
     /// Owner/index restoration is performed by CardApi before reset events.
     /// Blueprint instance variables and unrelated CustomJson keys survive.
     /// </summary>
@@ -710,6 +716,9 @@ public sealed class CardInstance
         // +0x50c is not overwritten by that function.
         CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
         Attack = IsSalvaged ? 1 : Definition.Attack;
+        // Native ResetCardAttributes writes the public pair independently.
+        PublicAttack = IsSalvaged ? 1 : Definition.Attack;
+        AttackBuff = 0;
         Defense = MaxDefense = IsSalvaged ? 1 : Definition.Defense;
         KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
         PinnedTurns = 0;
@@ -764,6 +773,9 @@ public sealed class CardInstance
 
         Name = name;
         Definition = def;
+        // Keep this identity-correction compatibility path's public template
+        // field in sync; this is not certification of native conversion logic.
+        PublicAttack = IsSalvaged ? 1 : def.Attack;
 
         // 基础数值：搬差值（保留 buff 与已受伤害）
         Attack += def.Attack - oldDef.Attack;
@@ -876,6 +888,8 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            PublicAttack = PublicAttack,
+            AttackBuff = AttackBuff,
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
             SelectTargetOnPlayedFromHand = SelectTargetOnPlayedFromHand,
@@ -1065,6 +1079,8 @@ public sealed record CardSnapshot(
     string? CustomAbility,
     Dictionary<string, string> CustomJson)
 {
+    public int PublicAttack { get; init; }
+    public int AttackBuff { get; init; }
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
     public bool SelectTargetOnPlayedFromHand { get; init; }
     public bool HasEverAttacked { get; init; }

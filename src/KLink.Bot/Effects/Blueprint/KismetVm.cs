@@ -1387,7 +1387,7 @@ public sealed class KismetVm
             "cardID" => card.CardId,
             "location" => (int)card.Location,
             "locationNumber" => card.LocationNumber,
-            "attack" => card.Attack,
+            "attack" => card.PublicAttack,
             "attackBuff" => card.AttackBuff,
             "defense" => card.Defense,
             "maxDefense" => card.MaxDefense,
@@ -1743,6 +1743,12 @@ public sealed class KismetVm
                     else if (name == "hasEverAttacked")
                     {
                         self.HasEverAttacked = Truthy(value);
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name is "attack" or "attackBuff")
+                    {
+                        if (name == "attack") self.PublicAttack = ToInt(value);
+                        else self.AttackBuff = ToInt(value);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name == "pinnedTurns") self.PinnedTurns = ToInt(value);
