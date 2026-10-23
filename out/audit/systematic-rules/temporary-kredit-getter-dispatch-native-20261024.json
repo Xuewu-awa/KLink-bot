@@ -1,0 +1,208 @@
+{
+  "rule": "RULE-368",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-368",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_accessors_revalidated": 5,
+    "native_accessor_bytes": 1234,
+    "temp_getter_backend_bytes": 247,
+    "temp_getter_wrapper_bytes": 146,
+    "common_function_redecoded_bytes": 2759,
+    "common_temp_getter_calls_verified": 2,
+    "native_vectors": 84,
+    "worker_raw_exact_rows": 84,
+    "new_regression_combinations": {
+      "raw_dispatch_vm_pure_read": 336,
+      "dynamic_mutation": 108,
+      "total": 444
+    },
+    "regression_before": {
+      "passed": 760,
+      "total": 762,
+      "failed": 2
+    },
+    "release_selftest": {
+      "passed": 762,
+      "total": 762,
+      "exit_code": 0
+    },
+    "scope": "Add missing temporary fee getter bridge for valid logical numeric state, raw signed int and one-out VM writeback. No current direct card IR use observed; common BP internal calls hand-modeled today. Valid receiver/implicit-self projection only; key0sentinel100/crypto metadata/null-context skip/full UObject/frame behavior remains unmodeled."
+  },
+  "finding": "Missing getAndDecryptKreditBuff member dispatch caused unhandled calls and preserved stale VM out slots. Native valid-key backend reads independent current temporary component at +0x5a4, raw signed int32, not total/public field/source-ledger contribution. Added one dispatch entry using existing receiver convention.",
+  "authority": "Revalidated installed PE SHA and 5 accessor wrappers/backends (1234 backend bytes), SDK signature, getter247B/backend146B/wrapper. Re-decoded entire2759B ChangeKreditCost; two Context calls1447/2589 each have one local-variable out argument and matching UFunction header. Reused read-only captures; no new live memory read, game function call, injection or write.",
+  "call_inventory": {
+    "parsed_asset_calls": 8,
+    "pvp_common_helper_calls": 2,
+    "snapshot_interface_calls": 2,
+    "excluded_skirmish_calls": 3,
+    "excluded_ui_calls": 1,
+    "current_card_ir_direct_text_matches": 0,
+    "reused_capture_pointer_candidates": 4,
+    "boundary": "Inventory covers supplied parsed exports and two captures, not exhaustive unloaded-card reachability. Existing ChangeKreditCost is hand-modeled and bypasses these internal getter calls; no claim of observed broken direct single-card IR paths."
+  },
+  "model": {
+    "vectors": 84,
+    "dimensions": "4bases[-3,0,99,105]*7temps[-105,-3,0,3,105,INT_MIN,INT_MAX]*3salts[0,42,-1]",
+    "digest": "0c9a65def71cad8377270001191bdcb5c747e8fb8d0644e59c785fbae06cd224",
+    "execution": "Actual PE base/temp setters and base/temp/total getters in offline Unicorn, synthetic 4096B object. Controlled valid keys1/0 and hash/cookie stubs. Public pair37/-9 independent. Primary checked entire object unchanged across three getter reads; signed32 total clamped0..99. No game-process access.",
+    "boundary": "Valid reconstructed numeric state only. Known native key0 sentinel100 is not represented by plaintext logical fields. Arbitrary keys, integrity hash and corrupt metadata not certified."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "raw_dispatch_vm_pure_read": 336,
+    "dynamic_mutation": 108,
+    "total": 444,
+    "before": "760/762 pass,2 new failures,exit1",
+    "after": "762/762 Release selftests pass,exit0",
+    "coverage": "Both sides, explicit receiver/implicit self, unrelated ledger contribution and public fields, raw extremes/zero, one-out VM writeback, unchanged snapshot/RNG/error counters. Dynamic reads before/after ChangeKreditCost modes0/1/4 without stale frame output."
+  },
+  "worker": {
+    "job": "20261024-034558-rule368-temp-cost-getter-6ed77e54",
+    "status": "completed",
+    "exit_code": 0,
+    "original_rows_exact": 84,
+    "normalization": false,
+    "generator_executed": true,
+    "boundary": "Private bounded projection only, not rule authority. Worker read task.txt as well as requested spec.json; no external writes reported. Its unchanged:true is supplied projection; primary independently measured native 4096B object immutability."
+  },
+  "remaining": [
+    "Null Context/receiver skip semantics, full FFrame/UObject ABI/lifetime, invalid-key sentinel and crypto metadata are not newly restored. Tests certify valid explicit receiver and implicit-self forms only.",
+    "Per-source getKreditTempBuffAmount is a distinct compatibility getter and unchanged. No pure-op whitelist or cache policy extension.",
+    "Whole construction/default-copy, static lookup, suppression tail, aura/identity/nonbyte and remote routing remain open; single-card migration paused and fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-kredit-getter-native-model-20261024.json",
+      "sha256": "bdc845075b114ea13bf1f117072816d1287000cb25020121962792f042eb13a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule368-temp-getter.py",
+      "sha256": "8fdce5ad5aa17edd2ecd8e88d78a97fe804829fb995e5bb4e1502103c3d43aec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\inventory-rule368-temp-getter.py",
+      "sha256": "a1503492a1d534b80c3c3c34722599315098dce7187c5edb350c6843ce1b5cd1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule368.py",
+      "sha256": "52393fbbd4f9ba4a3df242061f38d776329031b21c3e55d784220133602e1860"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-verified-20261024.json",
+      "sha256": "0845681ea57adb7028831d6472454d455cc306d86ca7adc8d1b11b0fa46a36b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-call-inventory.json",
+      "sha256": "ab1a28e3a5e9fa49c7f599bfec922042f21cdfc5d4d2103bc1edfbe9138deeac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-034558-rule368-temp-cost-getter-6ed77e54\\job.json",
+      "sha256": "200e6f200cba0214a7bce4a8b958ad95671aae5e504dd9e9ae4a6aebbb14291b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "0d863de4d5a5ff81484579d787fc94061cd49bb2f1f02bb601d15a0a252eff27"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "2dcf40c8b6addcf4d82186fbd64a7892491a28a17684cc1fa09c91e4abb67127"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule368\\spec.json",
+      "sha256": "7628755d3473a0f0c4371d06523935fd273193800ab6b7840eb68bef7dc9a5f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule368\\task.txt",
+      "sha256": "71ef07708884d1b4405dbd272cc8784830b72576d635178bfd0a033e00504bb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule368\\generator.py",
+      "sha256": "79c4b2f3d79cd2bd2240345284f96ee82051a4c253c36040a9abeacaab9c3433"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule368\\cases.json",
+      "sha256": "47734e6ccb7a0e001d560d388c00617bcc7ef38f568513a5703ea75c995bcf74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule368\\primary-cases.json",
+      "sha256": "ef70591c63cccd8ceaa20b79b99e42ddcc80da577c071b3a29519e4273041fb6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-selftest-before.log",
+      "sha256": "c6154b9cee576ebaf44245268ae832b80a8959d4824315d4b88d62e6e64fbb71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-selftest.log",
+      "sha256": "cd577d8a9a3260b9ebb3ff9aa474d808851b6511da62f0b17bfe2d6baa61782a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule368-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_SkirmishMode.functions.json",
+      "sha256": "3b2fb7404fe631c1d3941ede5b9f09374b171187609d68f7a6be5b6425136e84"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "sha256": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json",
+      "sha256": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\UI\\BP_Widget_Battle_HUD.functions.json",
+      "sha256": "0de92d5a1347a7860e330a584ff9b62835ebaa7462dc26e0a66145ccf9de519f"
+    }
+  ]
+}

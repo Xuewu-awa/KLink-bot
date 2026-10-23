@@ -1554,6 +1554,9 @@ public sealed partial class CardApi
             // </code>
             // 也就是和 `getTotalKreditCost` **完全同形**，主语在接收者，走 `SelfArg`。
             ["getAndDecryptKredit"] = (c, r, a) => SelfArg(c, r, a)?.BaseKreditCost ?? 0,
+            // RULE-368: valid-state native member getter reads the independent
+            // current temporary component, without clamping or ledger lookup.
+            ["getAndDecryptKreditBuff"] = (c, r, a) => SelfArg(c, r, a)?.TemporaryKreditCost ?? 0,
             // `GetCombatKeywords(out Keywords, out numberOfKeywords)` 是
             // `UBaseCardObject` 的成员函数。蓝图出参是 `ECombatKeyword[]`（字节枚举）
             // 加数量，**不是卡实例列表**；VM 用 object[] 按序写回两个 out 槽。

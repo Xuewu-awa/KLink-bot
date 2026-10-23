@@ -594,6 +594,8 @@ internal static class SelfTest
         new("生成候选判据：空池及多个候选的顺序边界", SpawnCheckBaseKreditPoolOrder),
         new("反制接收已付费用：当前总费限幅/溢出及跳过分支", GotchaReceiptStoresTotalKredit),
         new("反制退费：接收记录的总费用不随之后改费漂移", GotchaRefundUsesRecordedTotalKredit),
+        new("临时费用读取入口：原始整数/接收者/输出槽与纯读", TemporaryKreditGetterDispatchAndVm),
+        new("临时费用读取入口：实际改费/撤销后立即读取新值", TemporaryKreditGetterAfterMutation),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7521,6 +7523,67 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? TemporaryKreditGetterDispatchAndVm(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 99, 105 })
+        foreach (int temp in new[] { -105, -3, 0, 3, 105, int.MinValue, int.MaxValue })
+        foreach (int contribution in new[] { -7, 0, 11 })
+        foreach (bool explicitReceiver in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var other = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HandOf(), 0); other.TemporaryKreditCost = 23;
+            var target = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0);
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp; target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, KreditCost = contribution, HasZeroKreditCostEntry = contribution == 0 };
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, KreditCost = 7, KreditCostSetValue = 0 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = explicitReceiver ? other : target, Controller = side.Opposite() };
+            string before = state.SnapshotJson(); int faults = engine.Api.Vm.FaultedPrograms, unsupported = engine.Api.Vm.UnsupportedInstructions;
+            int missing = state.UnimplementedCalls.Values.Sum(); long random = state.Random.ConsumedCount;
+            object? raw = engine.Api.InvokeByName("getAndDecryptKreditBuff", explicitReceiver ? target : null, new object?[] { null }, ctx, out bool handled);
+            var step = new KismetStep(0, "call", "getAndDecryptKreditBuff", new[] { new KismetExpr { Var = "__temp", Scope = "local" } }, new[] { 0 }, null, null, -1, null, null)
+                { Receiver = explicitReceiver ? new KismetExpr { Var = "__receiver", Scope = "local" } : null };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] { step,
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0), ctx,
+                new Dictionary<string, object?> { ["__receiver"] = target, ["__temp"] = 65432 }, "__temp");
+            if (!handled || !Equals(raw, temp) || !Equals(output.GetValueOrDefault("__temp"), temp) || before != state.SnapshotJson()
+                || state.UnimplementedCalls.Values.Sum() != missing || engine.Api.Vm.FaultedPrograms != faults || engine.Api.Vm.UnsupportedInstructions != unsupported
+                || state.Random.ConsumedCount != random)
+                return $"临时费用 getter 必须纯读原始字段并写回输出槽 {side}/{basis}/{temp}/{contribution}/{explicitReceiver}: handled={handled}, raw={raw}, vm={output.GetValueOrDefault("__temp")}";
+        }
+        return null;
+    }
+
+    private static string? TemporaryKreditGetterAfterMutation(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 99 })
+        foreach (int temp in new[] { -4, 0, 5 })
+        foreach (int request in new[] { -2, 0, 2 })
+        foreach (int mode in new[] { 0, 1, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp; target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, KreditCost = 2 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var program = new KismetProgram(new[] { new KismetStep(0, "call", "getAndDecryptKreditBuff",
+                new[] { new KismetExpr { Var = "__temp", Scope = "local" } }, new[] { 0 }, null, null, -1, null, null)
+                { Receiver = new KismetExpr { Var = "__receiver", Scope = "local" } },
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var seed = new Dictionary<string, object?> { ["__receiver"] = target, ["__temp"] = 65432 };
+            var before = engine.Api.Vm.RunLocalProgramMulti(program, ctx, seed, "__temp");
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, 20, request, mode, true, null }, ctx, out _);
+            var after = engine.Api.Vm.RunLocalProgramMulti(program, ctx, seed, "__temp");
+            int expected = mode == 0 ? temp + request : mode == 4 ? temp - 2 : temp;
+            if (!Equals(before.GetValueOrDefault("__temp"), temp) || !Equals(after.GetValueOrDefault("__temp"), expected)
+                || target.TemporaryKreditCost != expected || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9)
+                return $"临时费用 getter 不得缓存旧值/改读基础费或公开字段 {side}/{basis}/{temp}/{request}/{mode}";
         }
         return null;
     }
