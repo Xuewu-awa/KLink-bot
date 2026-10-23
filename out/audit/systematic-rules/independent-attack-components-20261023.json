@@ -1,0 +1,207 @@
+{
+  "rule": "RULE-329",
+  "date": "2026-10-23",
+  "fresh_live_capture": false,
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-329",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_numeric_wrappers": 5,
+    "native_numeric_backends": 5,
+    "wrapper_bytes": 1108,
+    "backend_bytes": 1040,
+    "blueprint_functions_verified": 3,
+    "blueprint_bytes": 4581,
+    "native_model_cases": 3000,
+    "worker_cases_exact": 250,
+    "regression_combinations": {
+      "state": 242,
+      "changes": 6000,
+      "expiry": 160,
+      "set_numeric_only": 120,
+      "total": 6522
+    },
+    "release_selftest": {
+      "passed": 677,
+      "total": 677,
+      "exit_code": 0
+    },
+    "remaining_single_value_writes": [
+      {
+        "file": "src/KLink.Bot/Effects/CardApi.cs",
+        "line": 4301,
+        "text": "target.Attack = staticAttack;                    // ChangeAttack(…, _staticAttack, Suppress)"
+      },
+      {
+        "file": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+        "line": 3183,
+        "text": "Attack = def.Attack,"
+      },
+      {
+        "file": "src/KLink.Bot/Engine/CardInstance.cs",
+        "line": 728,
+        "text": "Attack = IsSalvaged ? 1 : Definition.Attack;"
+      },
+      {
+        "file": "src/KLink.Bot/Engine/CardInstance.cs",
+        "line": 1051,
+        "text": "Attack = Attack,"
+      },
+      {
+        "file": "src/KLink.Bot/Engine/GameState.cs",
+        "line": 770,
+        "text": "Attack = def.Attack,"
+      },
+      {
+        "file": "src/KLink.Bot/Engine/GameState.cs",
+        "line": 838,
+        "text": "Attack = def.Attack,"
+      }
+    ],
+    "limitations": [
+      "No fresh process capture in this round.",
+      "Native ledger helper controlled in 3000 cases; crypto primitives modeled from separately captured/emulated backend.",
+      "SetValue final numeric state only; typed ledger and raw-request equality events pending.",
+      "Mode3/5/default, maxAttack reflected cache, target IsAlive gate, zero-key presence, full suppression/unsuppression and legacy511th remain incomplete.",
+      "Model does not reproduce encryption storage/cookies/CRC diagnostic side effects or divide-by-zero sentinel lifecycle."
+    ]
+  },
+  "authority": "Rechecked exact installed executable SHA and all five captured native accessor wrappers/backends against PE bytes, disassembly and pdata; redecoded three authoritative Blueprint functions, 4581 bytes. Earlier live Fiat/public field and CopyData/Reset evidence reused, not recaptured. No historical replay authority.",
+  "changes": [
+    "BaseAttack and TemporaryAttack independently stored; Attack computes clamp(unchecked(base+temporary),0,99). Compatibility single-value writes initialize/reset base and clear temporary.",
+    "Ordinary permanent deltas clamp base alone0..99; temporary deltas and source withdrawal adjust temporary without clamping. Actual visible difference drives notification and after events.",
+    "Base getter excludes temporary; temporary getter newly dispatched; combat and existing Attack readers obtain capped total. PublicAttack and raw AttackBuff remain independent.",
+    "Copy and snapshot preserve both components; state fingerprint distinguishes equal totals with different components. Reset clears temporary. Reidentify and legacy unsuppression/permanent removal preserve component identity but their complete native semantics are NOT certified.",
+    "SetValue final numeric state retains temporary and derives change from base; typed SetValue ledger and event equality semantics remain incomplete."
+  ],
+  "regressions": {
+    "new_cases": 4,
+    "new_combinations": 6522,
+    "native_ast_model": 3000,
+    "worker_rows_independently_verified": 250,
+    "release_passed": 677,
+    "release_total": 677
+  },
+  "examples": [
+    {
+      "before": {
+        "base": 99,
+        "temporary": 3,
+        "total": 99
+      },
+      "permanent_delta": -4,
+      "after": {
+        "base": 95,
+        "temporary": 3,
+        "total": 98
+      }
+    },
+    {
+      "base": 0,
+      "temporary_delta": -3,
+      "display_after_give": 0,
+      "display_after_withdraw": 0,
+      "temporary_restored": 0
+    }
+  ],
+  "remaining": [
+    "SetValue cached original source struct and typed keys; raw pre-clamp equality event behavior.",
+    "ChangeType3/5/default absolute-value branch and maxAttack reflected member.",
+    "Native IsValid vs simulator IsAlive gate; generic source fallback and source-less helper paths.",
+    "Typed zero-key presence and physical native map ordering.",
+    "Full suppression/unsuppression, special511th source pairing, all copy/reset helper dependencies and receive-side refresh.",
+    "Native encrypted storage/keys/divisor-zero sentinel/CRC diagnostics are not represented in simulator.",
+    "Every Attack reader now gets capped total but each combat/selection caller is not independently recertified this round.",
+    "Single-card version migration paused; complete card semantic certification remains0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule329-components.py",
+      "sha256": "5c76512e586860457ee3d408eea12b0b9b832b0d7b9722ef585a33474dd05084"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule329-components-verified-20261023.json",
+      "sha256": "67947e5657123911fb27105b97a1be9fc9229c3efdebfbe8757e3a02c4a70cb0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule329-components.py",
+      "sha256": "d46d9bc8e5191e76757d9d95d66e9d638261be2cba92fe4cd2817a72a3371469"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-independent-components-native-model-20261023.json",
+      "sha256": "c94c40c7d3da3007c80e67fa550e5688c9cc6f78eb24e49639f7ee415236f35a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-accessors-emulation-20261023.json",
+      "sha256": "03a7eeabbca3277a74d64d7afa9261f6e8381defc51d867b6eb8004a7a09696a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule328-public-attack-repair-verified-20261023.json",
+      "sha256": "28325c6fc1e1b161cce376e4bf6b5528c4be714ef060c0596916886ef3f183ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule329-selftest-release.log",
+      "sha256": "333fe351e8d221662fd13f9ec7a2854b3cb3557732fcf32e15f5ac42854cffe0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule329-selftest-release.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule329\\task.txt",
+      "sha256": "544810f27ec91f42f75c144e1e80e1e19c47ff0307fc493592e839db7e32ed25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule329\\cases.json",
+      "sha256": "907d2a059e994478bb3f042333876abe477316eb19a90797841a2d04535029a9"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-090454-rule329-attack-components-f38a67ee\\job.json",
+      "sha256": "3d5d266dc29815153fa79f928987984821c51d3a05926c94c1438d281e3f555a"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "768212e104048828bca27dbae5e052ad5245391973fb5e4d70fce0712b1f2e74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "5c838a9ae47c248673db16158a291920cdabd212ec91f56d1da5b42fe42cfbc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "f80d11514e64f663cba8a7ed7bc099a661e55ccb06d7d128ebd0aad514d92e30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "874aeeea536a1fde038c81118639f357563892369812fef0b46edce753ebd2b6"
+    }
+  ],
+  "worker_scope": "Private math packet only, no repository writes or publishing. Full250 rows recomputed independently; worker output is not game authority."
+}

@@ -1876,11 +1876,9 @@ public sealed partial class CardApi
             ["hasActivePincerEffect"] = (c, r, a)
                 => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pincer),
 
-            // `getAndDecryptAttack` / `getAndDecryptDefense`：C++ 基类
-            // `UBaseCardObject::getAndDecryptAttack`（`BP_CardFunctions.g.cs:6647` 等 33 个调用点）。
-            // 参考实现 `EngineHost.cs:1098/1361` 直接返回卡的实时攻/防
-            // （"decrypt" 是隐蔽卡的显示解密，本内核没有独立揭示位，故等价于实时值）。
-            ["getAndDecryptAttack"] = (c, r, a) => SelfArg(c, r, a)?.Attack ?? 0,
+            // RULE-329: the native base getter excludes encrypted temporary attack.
+            ["getAndDecryptAttack"] = (c, r, a) => SelfArg(c, r, a)?.BaseAttack ?? 0,
+            ["getAndDecryptAttackBuff"] = (c, r, a) => SelfArg(c, r, a)?.TemporaryAttack ?? 0,
             ["getAndDecryptDefense"] = (c, r, a) => SelfArg(c, r, a)?.Defense ?? 0,
 
             // `HasAttackLeft(out doesIt)` —— 客户端是 `attackLeft > 0`
@@ -4138,9 +4136,9 @@ public sealed partial class CardApi
         bool skip = TruthyArg(a, 4);
         if (!invert && changeType == ChangeTypeSetValueReal)
         {
-            // Base/temporary numeric splitting is still pending; retain the
-            // existing SetValue arithmetic while forwarding its source/metadata.
-            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.Attack, source,
+            // Preserve the independent temporary component. SetValue's typed
+            // ledger and raw-input equality path remain a separate audit item.
+            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.BaseAttack, source,
                 changeType: changeType, skipAction: skip, instigatorId: instigatorId);
             return null;
         }
@@ -4169,11 +4167,10 @@ public sealed partial class CardApi
         if (buff.IsEmpty) RemoveBuffEntry(target, key);
         else SynchronizeBuffTarget(target, sourceId);
 
-        // Native mode 4 ignores the caller's amount, adjusts temporary attack,
-        // then reports the actual visible difference. Flat numeric storage is
-        // still an approximation when independent base/buff values are needed.
+        // Native mode 4 ignores the caller's amount and adjusts only the
+        // independent temporary component, including values hidden by total caps.
         int previous = target.Attack;
-        target.Attack = Math.Max(0, previous - removed);
+        target.TemporaryAttack = unchecked(target.TemporaryAttack - removed);
         int changed = target.Attack - previous;
         if (!skipAction && !IsLocatedInDeck(target))
             NotifyAttackChanged(target, changed, sourceId, 4);
@@ -4415,11 +4412,10 @@ public sealed partial class CardApi
             return;
         }
 
-        // 逆运算：`CardApi.ChangeAttack` 是 `target.Attack += delta` + `buff.Attack += delta`，
-        // 所以撤销是 `-= buff.Attack`；下限 0 与施加侧的 `Math.Max(0, …)` 对称。
+        // Legacy permanent-source shortcut: preserve the independent temporary component.
         if (buff.Attack != 0)
         {
-            target.Attack = Math.Max(0, target.Attack - buff.Attack);
+            target.BaseAttack = Math.Clamp(unchecked(target.BaseAttack - buff.Attack), 0, 99);
         }
 
         buff.Attack = 0;

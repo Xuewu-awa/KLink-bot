@@ -67,7 +67,17 @@ public sealed class CardInstance
     }
 
     // ---- 数值（可被效果修改，所以与 Definition 分开）----
-    public int Attack { get; set; }
+    // RULE-329: encrypted base and temporary groups are independent. The
+    // visible getter clamps their sum; temporary attack may be negative.
+    public int BaseAttack { get; set; }
+    public int TemporaryAttack { get; set; }
+    public int Attack
+    {
+        get => Math.Clamp(unchecked(BaseAttack + TemporaryAttack), 0, 99);
+        // Compatibility initialization/reset: supplying one value starts a new
+        // base with no temporary component. Effects must write components.
+        set { BaseAttack = value; TemporaryAttack = 0; }
+    }
     // RULE-328: reflected +0x6c is separate from the encrypted/current attack.
     // The fallback supports synthetic cards that bypass normal initialization.
     private int? _publicAttack;
@@ -778,7 +788,7 @@ public sealed class CardInstance
         PublicAttack = IsSalvaged ? 1 : def.Attack;
 
         // 基础数值：搬差值（保留 buff 与已受伤害）
-        Attack += def.Attack - oldDef.Attack;
+        BaseAttack += def.Attack - oldDef.Attack;
         Defense += def.Defense - oldDef.Defense;
         MaxDefense += def.Defense - oldDef.Defense;
 
@@ -888,6 +898,8 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            BaseAttack = BaseAttack,
+            TemporaryAttack = TemporaryAttack,
             PublicAttack = PublicAttack,
             AttackBuff = AttackBuff,
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
@@ -1079,6 +1091,8 @@ public sealed record CardSnapshot(
     string? CustomAbility,
     Dictionary<string, string> CustomJson)
 {
+    public int BaseAttack { get; init; }
+    public int TemporaryAttack { get; init; }
     public int PublicAttack { get; init; }
     public int AttackBuff { get; init; }
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);

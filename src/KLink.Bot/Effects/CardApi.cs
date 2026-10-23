@@ -1343,7 +1343,8 @@ public sealed partial class CardApi
             IsGold = source.IsGold,
             Location = source.Location,
             LocationNumber = source.LocationNumber,
-            Attack = source.Attack,
+            BaseAttack = source.BaseAttack,
+            TemporaryAttack = source.TemporaryAttack,
             PublicAttack = source.PublicAttack,
             AttackBuff = source.AttackBuff,
             Defense = source.Defense,
@@ -2572,7 +2573,8 @@ public sealed partial class CardApi
         if (instigatorId is <= 0) return;
         int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
         int previousAttack = target.Attack;
-        target.Attack = Math.Max(0, target.Attack + delta);
+        if (temporary) target.TemporaryAttack = unchecked(target.TemporaryAttack + delta);
+        else target.BaseAttack = Math.Clamp(unchecked(target.BaseAttack + delta), 0, 99);
         if (source is not null || instigatorId is > 0)
         {
             var buff = GetOrCreateBuff(target, sourceId, temporary);
@@ -4397,7 +4399,10 @@ public sealed partial class CardApi
                     live.Duration = saved.Duration;
                 }
 
-                card.Attack = Math.Max(0, card.Attack + saved.Attack);
+                // Preserve the other component while restoring the legacy
+                // suppression ledger. Complete suppression is still audited separately.
+                if (key.Temporary) card.TemporaryAttack = unchecked(card.TemporaryAttack + saved.Attack);
+                else card.BaseAttack = Math.Clamp(unchecked(card.BaseAttack + saved.Attack), 0, 99);
                 card.Defense += saved.Defense;
             }
 

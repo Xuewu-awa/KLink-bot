@@ -506,6 +506,10 @@ internal static class SelfTest
             ChangeDefenseChangeType4IsRejected),
         new("公开攻击字段：增益不改公开值，复制/快照/重置独立保存", PublicAttackFieldLifecycle),
         new("菲亚特实际样本：公开1/0，永久增益后总攻击2", FiatPublicAttackSample),
+        new("攻击独立分量：基础/临时/总值原语、复制、快照与重置", IndependentAttackState),
+        new("攻击独立分量：增减与撤销跨越双边夹取，通知实际差值", IndependentAttackChanges),
+        new("攻击独立分量：回合末撤销还原被上下限遮住的临时值", IndependentAttackExpiry),
+        new("攻击设值：保留临时分量及独立公开字段", AttackSetPreservesTemporary),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -6001,6 +6005,135 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? IndependentAttackState(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { int.MinValue, -100, -1, 0, 1, 50, 98, 99, 100, 123, int.MaxValue })
+        foreach (int temporary in new[] { int.MinValue, -100, -1, 0, 1, 50, 98, 99, 100, 123, int.MaxValue })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            card.BaseAttack = basis; card.TemporaryAttack = temporary;
+            card.PublicAttack = 7; card.AttackBuff = -9;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            int total = Math.Clamp(unchecked(basis + temporary), 0, 99);
+            foreach (bool explicitReceiver in new[] { false, true })
+            foreach (var (fn, expected) in new[] { ("getAndDecryptAttack", basis), ("getAndDecryptAttackBuff", temporary), ("getTotalAttack", total) })
+            {
+                var value = engine.Api.InvokeByName(fn, explicitReceiver ? card : null, new object?[] { null }, ctx, out bool handled);
+                if (!handled || !Equals(value, expected)) return $"攻击读取错误 {fn}, base={basis}, temp={temporary}";
+            }
+            var copy = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { card })!;
+            var snapshot = card.Snapshot(); string before = state.SnapshotJson();
+            if (card.Attack != total || copy.BaseAttack != basis || copy.TemporaryAttack != temporary || copy.Attack != total
+                || snapshot.BaseAttack != basis || snapshot.TemporaryAttack != temporary || snapshot.Attack != total
+                || copy.PublicAttack != 7 || copy.AttackBuff != -9) return "攻击复制/快照丢失独立分量";
+            card.BaseAttack = unchecked(basis + 1); card.TemporaryAttack = unchecked(temporary - 1);
+            if (state.SnapshotJson() == before || card.Attack != total || copy.BaseAttack != basis || snapshot.TemporaryAttack != temporary)
+                return "总值相同的不同分量须产生不同指纹，既有复制/快照不变";
+            card.IsSalvaged = temporary < 0; card.ResetAttributes();
+            if (card.TemporaryAttack != 0 || card.BaseAttack != (card.IsSalvaged ? 1 : card.Definition.Attack)) return "重置未清临时攻击";
+        }
+        return null;
+    }
+
+    private static string? IndependentAttackChanges(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var probes = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (string hook in new[] { "OnAfterChangeAttack", "OnAfterOtherCardChangeAttack" })
+            locals[hook] = locals[hook].Where(x => x.Function != "DrawCardsFromDeckBySide").Select((x, i) => x with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 1, 10, 95, 99 })
+        foreach (int temp in new[] { -105, -3, 0, 3, 105 })
+        foreach (int amount in new[] { -105, -4, 0, 3, 105 })
+        foreach (int mode in new[] { 0, 1, 4 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, deck ? side.DeckOf() : side.HqOf(), 99);
+            var watcher = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) {
+                card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { "OnAfterOtherCardChangeAttack" } };
+                card.Keywords.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.BaseAttack = basis; target.TemporaryAttack = temp; target.PublicAttack = 7; target.AttackBuff = -9;
+            if (mode == 4) {
+                target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount, Defense = 2 };
+                source.CardsBuffedByThisCard.Add(60);
+            }
+            int before = Math.Clamp(basis + temp, 0, 99);
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 20, mode == 4 ? 123 : amount, mode, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            int nextBase = mode == 1 && amount != 0 ? Math.Clamp(basis + amount, 0, 99) : basis;
+            int nextTemp = temp + (mode == 0 ? amount : mode == 4 ? -amount : 0);
+            int after = Math.Clamp(nextBase + nextTemp, 0, 99), delta = after - before;
+            bool changed = amount != 0, notify = changed && !skip && !deck;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            var values = new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", delta), ActionValue2.Int("newAttackValue", after),
+                ActionValue2.Int("duration", 0), ActionValue2.Int("instigatorID", 20), ActionValue2.Bool("isBuff", false),
+                ActionValue2.Str("changeType", mode == 0 ? "tempBuffGive" : mode == 1 ? "permBuff" : "tempBuffRemove") };
+            bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
+                && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), 20);
+            if (target.BaseAttack != nextBase || target.TemporaryAttack != nextTemp || target.Attack != after
+                || target.PublicAttack != 7 || target.AttackBuff != -9 || actions.Length != (notify ? 1 : 0)
+                || (notify && !actions[0].Values.SequenceEqual(values))
+                || (changed && (!Payload(watcher) || (!suppressed && !Payload(target))))
+                || ((!changed || suppressed) && target.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
+                || (!changed && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount")))
+                return $"攻击独立分量错误 base={basis},temp={temp},amount={amount},mode={mode},skip={skip},deck={deck},supp={suppressed}";
+            if (mode == 4 && (target.BuffsBySource[(20, true)].Attack != 0 || target.BuffsBySource[(20, true)].Defense != 2))
+                return "临时攻击撤销不得清除同源防御";
+            if (mode != 4 && changed && target.BuffsBySource[(20, mode == 0)].Attack != amount) return "来源账本应保存原始增量而非可见差值";
+        }
+        return null;
+    }
+
+    private static string? IndependentAttackExpiry(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 10, 95, 99 })
+        foreach (int temp in new[] { -105, -3, 0, 3, 105 })
+        foreach (int amount in new[] { -105, -3, 3, 105 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.BaseAttack = basis; target.TemporaryAttack = temp;
+            engine.Api.AddAttackUntilEndOfTurn(target, source, amount);
+            if (target.BaseAttack != basis || target.TemporaryAttack != temp + amount) return "临时给予丢失分量";
+            engine.Api.RemoveTemporaryBuffs();
+            if (target.BaseAttack != basis || target.TemporaryAttack != temp || target.Attack != Math.Clamp(basis + temp, 0, 99)
+                || target.BuffsBySource.ContainsKey((20, true)) || state.GetBuffsToRemoveEndOfTurn().Count != 0)
+                return $"回合末未还原隐藏临时值 base={basis},temp={temp},amount={amount}";
+        }
+        return null;
+    }
+
+    private static string? AttackSetPreservesTemporary(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 10, 99 })
+        foreach (int temp in new[] { -105, -3, 0, 3, 105 })
+        foreach (int value in new[] { -3, 0, 10, 105 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.BaseAttack = basis; target.TemporaryAttack = temp;
+            int rawAttack = target.PublicAttack;
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 9999, value, 2, true, null },
+                new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out _);
+            if (target.BaseAttack != Math.Clamp(value, 0, 99) || target.TemporaryAttack != temp || target.PublicAttack != rawAttack)
+                return "SetValue 数值分支不得用总攻击作差或清除临时分量（账本另审）";
+        }
+        return null;
     }
 
     private static string? PublicAttackFieldLifecycle(CardDatabase db)
