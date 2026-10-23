@@ -1480,28 +1480,15 @@ public sealed partial class CardApi
             //    于是它会把每张手牌都"设成 4 费"，把已经被别的来源改过的牌也算进去。
             ["getTotalKreditCost"] = (c, r, a) => SelfArg(c, r, a)?.TotalKreditCost ?? 0,
             ["getTotalOperationCost"] = (c, r, a) => SelfArg(c, r, a)?.TotalOperationCost ?? 0,
-            // `getKreditTempBuffAmount(cardID, out amount)` —— 返回指定来源在
-            // 目标卡上的改费偏移。蓝图把它用于 RemoveTheBuff：先确认该来源
-            // 确实改过费用，再以 changeType=4 撤销；没有该来源时必须返回 0。
-            // 当前内核的费用 buff 账本按 (来源, 临时标记) 分槽，但历史上的
-            // changeType=0 改费统一落在永久槽，因此优先查临时槽、再查永久槽，
-            // 同时保留两种已建模调用路径的可观测语义。
+            // RULE-369: native buffsFromCards[source].BuffMap queries only
+            // "kredit_tempBuffGive". Missing temporary keys return zero;
+            // permanent/set/custom keys must never be used as a fallback.
             ["getKreditTempBuffAmount"] = (c, r, a) =>
             {
                 var target = SelfArg(c, r, a);
-                if (target is null)
-                {
-                    return 0;
-                }
-
                 int sourceId = IntArg(a, 0);
-                if (target.BuffsBySource.TryGetValue((sourceId, true), out var temporary))
-                {
-                    return temporary.KreditCost;
-                }
-
-                return target.BuffsBySource.TryGetValue((sourceId, false), out var permanent)
-                    ? permanent.KreditCost
+                return target is not null && target.BuffsBySource.TryGetValue((sourceId, true), out var temporary)
+                    ? temporary.KreditCost
                     : 0;
             },
 
