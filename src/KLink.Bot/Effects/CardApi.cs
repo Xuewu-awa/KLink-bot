@@ -585,7 +585,7 @@ public sealed partial class CardApi
     /// `OnBeforeOtherCardPlayedFromHand`（39 张订阅者）——
     /// 它名字里带 `Other` 但前缀是 `OnBefore`，于是被当成"只发给主体"，
     /// **39 张卡的整条分支静默死掉**。同一个坑还有
-    /// `OnAfterOtherCardSuppressed`（见 `SuppressUnit`，那里用 otherProgramName 绕开）。
+    /// `OnAfterOtherCardSuppressed`（压制现已使用专用查询快照循环，不依赖命名约定）。
     ///
     /// 出处（`out/bp-cardfn.json`，函数 `CardPlayedFromHand`）：
     /// <code>
@@ -4246,16 +4246,8 @@ public sealed partial class CardApi
         //    Only this callback is gated by the saved pre-callback state.
         if (!wasAlreadySuppressed) FireTrigger("OnSuppressed", target, target.Owner);
 
-        // ---- ★触发点B 广播：`OnOtherCardSuppressed`（触发号 58，蓝图 L_0322）----
-        // ⚠️ 它同样在摘除/回落**之前**（58 那轮循环跑完才弹执行流栈到 L_054E 摘东西）。
-        //    名字以 `OnOther` 开头，`FireTrigger` 的广播判据正好认得它。
-        FireTrigger("OnOtherCardSuppressed", target, target.Owner,
-            eventArgs: new object?[] { target },
-            eventSubject: target,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["card"] = target,
-            });
+        // T58 queries after the own callback and before cleanup.
+        ExecuteSuppressionObservers(target, "OnOtherCardSuppressed");
 
         // ---- ①a 摘关键词（可逆）----
         // Native1358 follows the T58 loop for first and repeated suppression.
@@ -4394,21 +4386,27 @@ public sealed partial class CardApi
         // its complete mutation/callback path already ran above.
         target.RecalculateStats();
 
-        // ---- ★触发点C 广播：`OnAfterOtherCardSuppressed`（触发号 11，蓝图 L_15A5）----
-        // 它在**摘除（L_054E）+ 数值回落（L_119E）之后**才发 —— 见上方次序表。
-        // ⚠️ 名字以 `OnAfter` 开头、但语义是**广播**（蓝图 L_15C6 那一遍遍历的是
-        //    `FetchAllCardsWithEventTrigger(11)` 的**全部订阅者**，没有排除自己）。
-        //    `FireTrigger` 的广播判据是「程序名以 `OnOther` 开头」，这个名字不满足，
-        //    所以必须**同时**用 `otherProgramName` 再发一遍 —— 只传 programName 的话
-        //    它只会发给主体，订阅者里除主体外全部收不到。
-        FireTrigger("OnAfterOtherCardSuppressed", target, target.Owner,
-            otherProgramName: "OnAfterOtherCardSuppressed",
-            eventArgs: new object?[] { target },
-            eventSubject: target,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["card"] = target,
-            });
+        // T11 takes a fresh query after cleanup/numeric callbacks.
+        ExecuteSuppressionObservers(target, "OnAfterOtherCardSuppressed");
+    }
+
+    // RULE-348: SuppressMultipleUnits802/5805 materialize query recipients;
+    // 1071/6074 invoke every saved object directly, including the subject when
+    // query-qualified. No per-recipient location/registration/suppression recheck.
+    // Definition-based registration and native TSet order remain separate gaps.
+    private void ExecuteSuppressionObservers(CardInstance target, string trigger)
+    {
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { target };
+        var named = new Dictionary<string, object?> { ["card"] = target };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, target, eventArgs: args, namedArgs: named);
+        }
     }
 
     // RULE-345: SuppressMultipleUnits5558 always invokes the normal operation

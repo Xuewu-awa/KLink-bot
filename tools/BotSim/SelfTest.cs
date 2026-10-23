@@ -553,6 +553,9 @@ internal static class SelfTest
         new("批量压制重入：前项回调替换或移走后项时重新查找", SuppressionBatchLookupMutation),
         new("重复压制：只跳自身首次回调，保留广播和清理阶段", SuppressionRepeatEntryMatrix),
         new("重复压制再增益：新关键词和基础数值仍被重新移除", SuppressionRepeatNewBuffs),
+        new("压制广播查询：主体资格、压制例外及全位置接收者", SuppressionObserverQueryMatrix),
+        new("压制广播快照：后续对象变化不重筛，下一次查询重新计算", SuppressionObserverSnapshotMutation),
+        new("压制广播整合：自身之后查T58，T58与清理之后新查T11", SuppressionObserverPhaseIntegration),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7352,6 +7355,163 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static void SetSuppressionObserverRegistrations(CardInstance card, bool registered)
+        => card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 3,
+            UsedTriggers = registered ? new[] { "OnOtherCardSuppressed", "OnAfterOtherCardSuppressed" } : Array.Empty<string>() };
+
+    private static string? SuppressionObserverQueryMatrix(CardDatabase db)
+    {
+        using var probes = InstallSuppressionEntryProbes();
+        var method = typeof(CardApi).GetMethod("ExecuteSuppressionObservers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (string trigger in new[] { "OnOtherCardSuppressed", "OnAfterOtherCardSuppressed" })
+        foreach (var location in new[] { CardLocation.NotAvailable, side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (bool self in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = self ? target : state.CreateWithId(target.Name, side.Opposite(), 80, location, 2);
+            target.Keywords.Clear(); target.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(target, false);
+            observer.Keywords.Clear(); observer.SuppressionExceptionTriggers.Clear(); observer.Location = location;
+            SetSuppressionObserverRegistrations(observer, registered);
+            if (suppressed) observer.Keywords.Add(Keyword.Suppressed);
+            if (exception) observer.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(trigger));
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            method.Invoke(engine.Api, new object[] { target, trigger });
+            int expected = registered && (!suppressed || exception) ? 1 : 0;
+            if (trace.Count != expected || (expected == 1 && !trace[0].Contains($"#{observer.CardId}（")))
+                return $"压制广播查询错误 {side}/{trigger}/{location}/reg={registered}/sup={suppressed}/ex={exception}/self={self}: {string.Join('|',trace)}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallSuppressionMutationProbes()
+    {
+        var probes = InstallSuppressionEntryProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find("card_unit_arado_ar_196")!.Locals;
+        foreach (var (hook, phase) in new[] { ("OnSuppressed", "own"), ("OnOtherCardSuppressed", "before"), ("OnAfterOtherCardSuppressed", "after") })
+            locals[hook] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = phase }, null, -1, "_auditSuppPhase", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), phase == "own" ? new KismetExpr { Self = true } : new KismetExpr { Var = "card", Scope = "local" }, null, -1, "_auditSuppTarget", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        return probes;
+    }
+
+    private static string? SuppressionObserverSnapshotMutation(CardDatabase db)
+    {
+        using var probes = InstallSuppressionMutationProbes();
+        var method = typeof(CardApi).GetMethod("ExecuteSuppressionObservers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (string trigger in new[] { "OnOtherCardSuppressed", "OnAfterOtherCardSuppressed" })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool subjectException in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 7))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            var later = state.CreateWithId(target.Name, side, 80, side.HqOf(), 3);
+            foreach (var card in new[] { target, first, later }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(card, true); }
+            target.Keywords.Add(Keyword.Suppressed);
+            if (subjectException) target.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(trigger));
+            SetSuppressionObserverRegistrations(later, registered);
+            if (suppressed) later.Keywords.Add(Keyword.Suppressed);
+            if (exception) later.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(trigger));
+            var actors = new List<CardInstance> { target, first, later }; var calls = new List<CardInstance>(); bool mutated = false; string? fault = null;
+            CardInstance? replacement = null, added = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = actors.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditSuppPhase"));
+                if (actor is null) return;
+                actor.BlueprintVariables.Remove("_auditSuppPhase"); calls.Add(actor);
+                if (!ReferenceEquals(actor.BlueprintVariables.GetValueOrDefault("_auditSuppTarget"), target)) fault = "事件参数不是原主体对象";
+                if (!ReferenceEquals(actor, first) || mutated) return; mutated = true;
+                if (mode == 1) { later.Keywords.Add(Keyword.Suppressed); later.SuppressionExceptionTriggers.Clear(); }
+                if (mode == 2) SetSuppressionObserverRegistrations(later, false);
+                if (mode == 3) later.Location = CardLocation.NotAvailable;
+                if (mode == 4) state.Remove(later);
+                if (mode == 5) {
+                    state.Remove(later); replacement = state.CreateWithId(target.Name, side, 80, side.HqOf(), 3);
+                    replacement.Keywords.Clear(); replacement.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(replacement, true); actors.Add(replacement);
+                }
+                if (mode == 6) {
+                    added = state.CreateWithId(target.Name, side, 90, side.HqOf(), 4);
+                    added.Keywords.Clear(); added.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(added, true); actors.Add(added);
+                }
+            };
+            var expected = new List<CardInstance>(); if (subjectException) expected.Add(target); expected.Add(first);
+            bool laterEligible = registered && (!suppressed || exception); if (laterEligible) expected.Add(later);
+            method.Invoke(engine.Api, new object[] { target, trigger });
+            if (fault is not null || !calls.SequenceEqual(expected)) return $"压制广播快照重筛/重绑定 {side}/{trigger}/{mode}/{suppressed}/{exception}/{registered}/{subjectException}: {fault}";
+            calls.Clear();
+            var next = new List<CardInstance>(); if (subjectException) next.Add(target); next.Add(first);
+            if (mode == 5) next.Add(replacement!);
+            else if (mode is not (1 or 2 or 4) && laterEligible) next.Add(later);
+            if (mode == 6) next.Add(added!);
+            method.Invoke(engine.Api, new object[] { target, trigger });
+            if (fault is not null || !calls.SequenceEqual(next)) return $"压制下一次查询未刷新 {side}/{trigger}/{mode}: {fault}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionObserverPhaseIntegration(CardDatabase db)
+    {
+        using var probes = InstallSuppressionMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 4))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            var later = state.CreateWithId(target.Name, side, 80, side.HqOf(), 3);
+            foreach (var card in new[] { target, first, later }) {
+                card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(card, card != target);
+                card.BaseAttack = card.MaxAttack = 2; card.Defense = card.MaxDefense = 4; card.BaseOperationCost = 3; card.TemporaryAttack = card.TemporaryOperationCost = 0;
+            }
+            if (mode == 0) SetSuppressionObserverRegistrations(later, false);
+            var actors = new List<CardInstance> { target, first, later }; var events = new List<string>(); string? fault = null;
+            var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = actors.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditSuppPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditSuppPhase"]!; actor.BlueprintVariables.Remove("_auditSuppPhase"); events.Add($"{phase}:{actor.CardId}");
+                if (!ReferenceEquals(actor.BlueprintVariables.GetValueOrDefault("_auditSuppTarget"), target)) fault = "整合参数非主体";
+                void Add(int id) {
+                    var card = state.CreateWithId(target.Name, side, id, side.HqOf(), id / 10);
+                    card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetSuppressionObserverRegistrations(card, true); actors.Add(card);
+                }
+                if (phase == "own") {
+                    if (mode == 0) SetSuppressionObserverRegistrations(later, true);
+                    if (mode is 1 or 2) later.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 2) later.SuppressionExceptionTriggers.Add("OnOtherCardSuppressed");
+                    if (mode == 3) Add(90);
+                }
+                if (phase == "before" && actor == first) {
+                    if (mode == 0) SetSuppressionObserverRegistrations(later, false);
+                    if (mode == 1) later.Keywords.Remove(Keyword.Suppressed);
+                    if (mode == 2) later.SuppressionExceptionTriggers.Clear();
+                    if (mode == 3) Add(100);
+                }
+            };
+            engine.Api.SuppressUnit(target, 20);
+            string[] expected = mode switch {
+                0 => new[] { "own:60", "before:70", "before:80", "after:70" },
+                1 => new[] { "own:60", "before:70", "after:70", "after:80" },
+                2 => new[] { "own:60", "before:70", "before:80", "after:70" },
+                _ => new[] { "own:60", "before:70", "before:80", "before:90", "after:70", "after:80", "after:90", "after:100" } };
+            if (fault is not null || !events.SequenceEqual(expected)) return $"压制T58/T11查询阶段错误 {side}/{mode}: {fault}, {string.Join(',',events)}";
         }
         return null;
     }

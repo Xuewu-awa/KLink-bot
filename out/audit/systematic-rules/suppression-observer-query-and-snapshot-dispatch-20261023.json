@@ -1,0 +1,178 @@
+{
+  "rule": "RULE-348",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-348",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 10,
+    "supporting_blueprint_bytes": 10722,
+    "direct_scope_blueprint_bytes": 9359,
+    "native_query_cases": 160,
+    "native_mutation_cases": 224,
+    "worker_rows_exact": 384,
+    "regression_combinations": {
+      "query_matrix": 320,
+      "snapshot_mutation": 448,
+      "phase_integration": 8,
+      "total": 776
+    },
+    "release_selftest": {
+      "passed": 722,
+      "total": 722,
+      "exit_code": 0
+    },
+    "scope": "T58/T11 dedicated query-filtered snapshot dispatch, subject only query-qualified, no later location/registration/suppression gates; saved object references, fresh T11 query after prior phases. Actual registration maintenance/TSet order/frame/execution gates and full suppression are not certified."
+  },
+  "authority": "Reused authoritative read-only captures;10scripts10722B redecoded against raw bytes/FName-symbol headers/current PE SHA. Direct scope full SuppressMultipleUnits8101B plus query forwarder84B and battle query1174B,9359B. No fresh game process/battle-state assertion.",
+  "native": {
+    "query": "1174B query resolves registered IDs from CardFunctionTriggers through AllCardsInBattle, skips missing IDs and suppressed without suppressionExceptionTriggers matching requested trigger. No location or subject-exclusion check. Full84B CardFunctions wrapper forwards to GameStateRef.",
+    "loops": "SuppressMultipleUnits802 queries58 after own callback;1071 calls every saved object with _card argument directly.5805 freshly queries11 after cleanup/numeric continuation;6074 directly calls every saved object. Neither loop has later location/registration/suppression/self gate."
+  },
+  "changes": [
+    "Replace generic FireTrigger for both suppression broadcasts with dedicated ExecuteSuppressionObservers. Capture registered/query-time suppression-qualified objects at each phase, then invoke saved objects directly.",
+    "Subject receives T58/T11 only if query-qualified, using same registration/suppression-exception conditions as other objects. Remove previous T58 subject exclusion and unconditional T11 subject delivery.",
+    "No unavailable-location filter or late registration/suppression recheck after snapshot. Earlier callback mutations do not remove later saved recipients; same-ID replacement does not rebind current saved reference. Next query sees the updated state. T58 query follows own callback; T11 query follows preceding cleanup/numeric phases."
+  ],
+  "models": {
+    "query_cases": 160,
+    "mutation_cases": 224,
+    "total": 384,
+    "worker_rows_exact": 384,
+    "scope": "Execute full84B query forwarder and full1174B battle query from actual T58/T11 loops.160queries cover2triggers*5locations*registration/suppression/exception/self booleans.224mutations cover2triggers*later suppression/exception/registration/subject-exception booleans*7modes. Modes none, later suppressed+exception cleared, unregister, unavailable, remove, sameID replace, add90. Current object labels compared plus a new query result; stale registered9999 skipped in query cases.",
+    "controls": "Map/set primitives and iteration order supplied. Query accumulator initialized empty and valid GameStateRef. Callbacks and registration mutations controlled. Does not execute whole suppression or prove native object destruction validity."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "combinations": 776,
+    "query_matrix": 320,
+    "snapshot_mutation": 448,
+    "phase_integration": 8,
+    "release": {
+      "passed": 722,
+      "total": 722,
+      "exit_code": 0
+    },
+    "scope": "Both sides.320query vectors match native160 dimensions;448snapshot vectors match native224, verify actual receiver object identity and original event subject, plus next-query refresh.8public integration cases alter registration/suppression/exception or add recipients in own and T58 callbacks: T58 queries after own, frozen T58 keeps revoked recipients, newly eligible/new recipients appear only at T11 query. Synthetic scoped arado programs, not real-card logic certification."
+  },
+  "worker": {
+    "job": "20261023-180413-rule348-suppression-recipients-eba445f4",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 384,
+    "primary_comparison_exact": 384,
+    "scope": "Private bounded mechanical supplied algorithm only. No source edits, authority judgments or publishing; primary independently redecoded/executed native AST and checked all rows."
+  },
+  "remaining": [
+    "CaptureRegisteredTriggerSnapshot still approximates real CardFunctionTriggers from current definitions; native global TSet registration lifetime/maintenance and storage iteration order remain uncertified. Native model supplies deterministic ordered IDs and controlled primitive containers. Definition changes in regression fixtures are managed registration controls, not proof of real native registration mutation.",
+    "Native saved-object loops may call targets removed/replaced in live state. Managed removed/replaced objects are tested, but native UObject invalidation/destruction, null-context behavior and name/class mutation/Blueprint dispatch remain unproved.",
+    "Full suppression entry/own/cleanup/static lookup/cache, keywords/source flags/ledger, veteran/salvage, heavy armor/kredit, last-card reveal1117 and qqq/invalid contexts remain open. New integration tests use controlled no-op/spawn callbacks, not complete real card semantics.",
+    "ActionProcess gating in real online persistent receiver/frame/delegates and caller-array/persistent-frame alias mutation remain open; regression fixtures use active headless execution. Full84B forwarder/1174B query tested with valid GameStateRef and freshly seeded empty query output accumulator.",
+    "Legacy restore/aura/unknown-mode adapters and full transitive implementations remain; card-version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-notifier-native-20261023.json",
+      "sha256": "cc494050ff552129eac71e4ae1f74586a400c31aa35d8858aa1dc76298804597"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-value-helpers-native-20261023.json",
+      "sha256": "ef1f4406c74c5bf7410b06a3647e58fb03468837386d9ecc021bd3193b180fd7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-observer-query-snapshot-native-model-20261023.json",
+      "sha256": "b811a46b7a0d2292c4b48de6e8cee9d0ac79d5fb5c14e1fb187193619a1c2452"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule348.py",
+      "sha256": "280ea6cd86d9b3481415e55b9ec83882a608c4abdfa7e632418ba4a56c3d4112"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule348-observers.py",
+      "sha256": "1e3286abe1aab2ae56ab6bbc03eeea1be725925c07b4e78d03901c406ac3eb47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule348-tests.py",
+      "sha256": "b3feed3c766230958550e3e65e786bca632537b5317f396a1248230f7d62a5bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule348.py",
+      "sha256": "855a51697a796b0239b03fb63c4122fa27d1fc3d9c0c2133829081d34488eb4e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule346.py",
+      "sha256": "ca8f448b6bfb7fa8a52072979ea52f12efa984f5fd5768aaae46b16df6a100d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule348-verified-20261023.json",
+      "sha256": "4904ef80ab364916905b50a3ae75c330b4f6cac4142ffbb4c4e21607be27e3f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule348-selftest-final.log",
+      "sha256": "02e93675a0e087d688d090e5dbbd3899ad5d6f04b1e650f7f786d000c9388a10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule348-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule348\\spec.json",
+      "sha256": "95d08717a1fead39efa513e3ac74b71fb81824af296086d179b774b126bdf3d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule348\\task.txt",
+      "sha256": "cf2b083fe78b8c6f590ef0d8b66e1a0c7c7ad908a4249a43c0541115f142c4dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule348\\cases.json",
+      "sha256": "98cf3f63eaf5126c941776230443720615225022d67fde8e109f049ab61bd94f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule348\\primary-cases.json",
+      "sha256": "98cf3f63eaf5126c941776230443720615225022d67fde8e109f049ab61bd94f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule348\\generator.py",
+      "sha256": "d27bea98ee76c79022ff466e4468050726e71bdca14bb024e7b70ddf4ed369dd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-180413-rule348-suppression-recipients-eba445f4\\job.json",
+      "sha256": "eb34cf86b5e2bb3214e4755f8d6d8bef391f9b28de248d78e1b76b80a64ac761"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "466a8162e004275a94f46971ade2f62517cb03b74da56d4dd0fa471c1205cab7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "48b632dd3b9584bc0605b261a1c8ea4e9f1a50e712e8024904864e4c6e1644d9"
+    }
+  ]
+}
