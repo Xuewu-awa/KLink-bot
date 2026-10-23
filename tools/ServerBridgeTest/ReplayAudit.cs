@@ -41,7 +41,8 @@ internal static class ReplayAudit
     /// </param>
     public static int Run(string repoRoot, string replayBase, int verboseLimit = 0,
                           bool identityCorrection = false, string? identityOnly = null,
-                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false)
+                          bool rngTrace = false, bool dumpLog = false, bool dupStartKredit = false,
+                          bool boardTrace = false)
     {
         string snapPath = replayBase + ".json";
         string actsPath = replayBase + ".actions.json";
@@ -92,6 +93,32 @@ internal static class ReplayAudit
         var report = runner.Run(replay, verbose: false, onStepped: (act, st) =>
         {
             step++;
+
+            // ★ --board-trace：逐动作导出双方半场/前线构成（2026-10-23 从作者快照树恢复）。
+            // 为什么需要：/replays/inject 能把某一局的**第 N 个动作后的棋盘**画到客户端里，
+            // 于是「客户端那一刻场上有谁、几攻几防、站在哪个槽」第一次可以被逐项对拍 ——
+            // 而内核这边必须同时给出同一时刻的棋盘，否则没法比。
+            // 这也是 README §4.3 说「对拍工具链不在本仓库」的那一环的最小替代。
+            if (boardTrace)
+            {
+                static string Units(GameState state, CardLocation location) =>
+                    string.Join(" ", state.CardsUnordered()
+                        .Where(c => c.Location == location)
+                        .OrderBy(c => c.LocationNumber)
+                        .Select(c => $"{c.Name}#{c.CardId}@{c.LocationNumber}:{c.Attack}/{c.Defense}"));
+
+                int leftSupport = st.Cards(Side.Left, Side.Left.HqOf()).Count();
+                int rightSupport = st.Cards(Side.Right, Side.Right.HqOf()).Count();
+                int frontline = st.CardsUnordered()
+                    .Count(c => c.Location == CardLocation.BoardFrontline);
+                Console.WriteLine($"   [BOARD] #{act.ActionId} 半场 {leftSupport}/{GameState.HalfBoardCapacity} vs " +
+                                  $"{rightSupport}/{GameState.HalfBoardCapacity}；" +
+                                  $"前线 {frontline}/{st.FrontlineCapacity}（归属={st.FrontlineOwner}）" +
+                                  $"  HQ 左={st.HqDefense(Side.Left)} 右={st.HqDefense(Side.Right)}");
+                Console.WriteLine($"   [BOARD]   L半场: {Units(st, Side.Left.HqOf())}");
+                Console.WriteLine($"   [BOARD]   R半场: {Units(st, Side.Right.HqOf())}");
+                Console.WriteLine($"   [BOARD]   前线: {Units(st, CardLocation.BoardFrontline)}");
+            }
 
             // 逐动作分段打印内核日志（见 dumpLog 的说明）
             if (dumpLog)
@@ -586,3 +613,4 @@ internal static class ReplayAudit
                  && step.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true);
     }
 }
+
