@@ -968,6 +968,9 @@ public sealed class CardInstance
             GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Guard),
+            KreditCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.KreditCostSetValue.HasValue)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.KreditCostSetValue!.Value),
             OperationCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.OperationCostSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.OperationCostSetValue!.Value),
@@ -1050,12 +1053,12 @@ public sealed class CardBuff
     public bool HasNonOrdinaryDefenseEntry { get; set; }
 
     /// <summary>
-    /// 费用相对**卡面费用**的偏移量。
-    ///
-    /// ⚠️ 存的是偏移量而不是「改完之后是多少」：光环会反复 Apply/Remove，
-    /// 存绝对值的话第二次 Apply 就没法判断该不该再减一次了。
+    /// Ordinary temporary/permanent source contribution. Handwritten legacy
+    /// adapters may still store template offsets; native SetValue is separate.
     /// </summary>
     public int KreditCost { get; set; }
+    // RULE-358: raw kredit_SetValue key. Null means absent; zero is present.
+    public int? KreditCostSetValue { get; set; }
 
     /// <summary>行动费用相对**卡面行动费用**的偏移量。</summary>
     public int OperationCost { get; set; }
@@ -1085,11 +1088,8 @@ public sealed class CardBuff
     public HashSet<string> CustomAbilityDetails { get; init; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// 这个来源的改费是「显式设成绝对值」而不是「相对减费」。
-    ///
-    /// 判据：设值分支使用线上 `changeType=2/3`；手写 `committed_crew` 光环仍用
-    /// 兼容标记保存其“设为 0”语义，而普通 `changeType=1` 是永久相对修正。
-    /// 它决定 <see cref="CardInstance.EffectiveKreditCost"/> 的下限要不要放开到 0。
+    /// Opaque handwritten absolute-offset compatibility flag. Known native
+    /// modes2/3 no longer create it; kredit_SetValue uses KreditCostSetValue.
     /// </summary>
     public bool KreditCostSetsAbsoluteValue { get; set; }
 
@@ -1105,7 +1105,7 @@ public sealed class CardBuff
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
-                           && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue;
+                           && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue;
 
     /// <summary>
     /// 深拷贝 —— `CardApi.SuppressUnit` 要把这条 buff 整个摘走、并在解除时原样装回，
@@ -1122,6 +1122,7 @@ public sealed class CardBuff
         DefenseSetValue = DefenseSetValue,
         HasNonOrdinaryDefenseEntry = HasNonOrdinaryDefenseEntry,
         KreditCost = KreditCost,
+        KreditCostSetValue = KreditCostSetValue,
         OperationCost = OperationCost,
         OperationCostSetValue = OperationCostSetValue,
         HeavyArmor = HeavyArmor,
@@ -1185,6 +1186,7 @@ public sealed record CardSnapshot(
     public string[] SuppressLedgerSources { get; init; } = [];
     public Dictionary<string, int> AttackSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DefenseSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> KreditCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> OperationCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);

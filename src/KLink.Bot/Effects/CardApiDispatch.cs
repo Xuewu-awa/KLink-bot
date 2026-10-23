@@ -4322,7 +4322,7 @@ public sealed partial class CardApi
         // RULE-349: native71/105 checks the supplied raw positive ID; source
         // object existence is not required.119 bypasses385 CanCardBeBuffed
         // when skipCovertCheck (argument4) is true. RULE-357 migrates current
-        // numeric fields; absolute/unknown ledger representation remains legacy.
+        // numeric fields; RULE-358 adds the known absolute typed ledger.
         int sourceId = IntArg(a, 1);
         if (sourceId <= 0 || (!TruthyArg(a, 4) && !CanCardBeBuffed(target)))
         {
@@ -4344,9 +4344,8 @@ public sealed partial class CardApi
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
-        // RULE-350: preserve the request before the legacy absolute-offset
-        // conversion. Native ordinary zero inputs neither notify nor create
-        // ledger entries. Other numeric/notification gates remain pending.
+        // RULE-350: ordinary zero requests neither notify nor create entries.
+        // Known absolute modes record the raw request separately (RULE-358).
         int rawAmount = amount;
         if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && amount == 0)
             return null;
@@ -4378,33 +4377,27 @@ public sealed partial class CardApi
         }
 
         bool temporary = changeType == ChangeTypeTempBuffGive;
+        int previousBase = target.BaseKreditCost;
         if (changeType is ChangeTypeSetValueReal or ChangeTypeSuppress)
         {
-            // 设值语义：不管卡面多少，最终就是 amount。存成「相对卡面费用的偏移」，
-            // 这样和其它来源叠加时仍然是加法。
-            amount -= target.Definition.Kredits;
-        }
-
-        int previousBase = target.BaseKreditCost;
-        var buff = GetOrCreateBuff(target, sourceId, temporary);
-        if (temporary || changeType == ChangeTypePermBuff)
-        {
-            // Live fields are additive for both temporary and permanent buff modes.
-            buff.KreditCost += amount;
+            // RULE-358: raw typed ledger mutation occurs even when numeric
+            // base equals the request. No template-offset conversion.
+            RecordAbsoluteKreditCostLedger(target, sourceId, rawAmount, changeType);
         }
         else
         {
-            buff.KreditCost = amount;
+            var buff = GetOrCreateBuff(target, sourceId, temporary);
+            if (temporary || changeType == ChangeTypePermBuff)
+                buff.KreditCost = unchecked(buff.KreditCost + amount);
+            else
+                buff.KreditCost = amount; // unknown-mode legacy compatibility
+            buff.KreditCostSetsAbsoluteValue = false;
+            // RULE-356: prune an otherwise empty slot after ordinary zero sum.
+            // A typed SetValue0 is still nonempty and must survive.
+            if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && buff.IsEmpty)
+                RemoveBuffEntry(target, (sourceId, temporary));
         }
-        buff.KreditCostSetsAbsoluteValue =
-            changeType is ChangeTypeSetValueReal or ChangeTypeSuppress;
-        // RULE-356: native ordinary accumulation deletes the selected key
-        // when the sum is zero. Prune only an otherwise empty source slot;
-        // RemoveBuffEntry preserves a relation still owned by another slot.
-        if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && buff.IsEmpty)
-            RemoveBuffEntry(target, (sourceId, temporary));
-        // RULE-357: numeric fields are independent of ledger reconstruction.
-        // Absolute ledger representation remains the legacy offset adapter.
+        // Numeric fields remain independent of ledger mutations (RULE-357).
         bool valueChanged;
         if (changeType == ChangeTypeTempBuffGive)
         {
@@ -4439,6 +4432,30 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    // RULE-358: whole type2 ledger modes2/3. Global cleanup precedes the
+    // cached ORIGINAL current-source writeback, preserving that source's old
+    // permanent/other keys. Foreign reverse arrays are deliberately untouched.
+    private void RecordAbsoluteKreditCostLedger(CardInstance target, int sourceId, int rawValue, int changeType)
+    {
+        var key = (sourceId, false);
+        var original = target.BuffsBySource.TryGetValue(key, out var old)
+            ? old.Clone() : new CardBuff { SourceCardId = sourceId };
+        foreach (var candidate in target.BuffsBySource.Keys.Where(k => !k.Temporary).ToArray())
+        {
+            var buff = target.BuffsBySource[candidate];
+            // Opaque handwritten absolute offsets retain their old adapter data;
+            // native known modes no longer create that legacy flag.
+            if (!buff.KreditCostSetsAbsoluteValue) buff.KreditCost = 0;
+            buff.KreditCostSetValue = null;
+            if (changeType == ChangeTypeSuppress) buff.HasSuppressLedgerEntry = false;
+            if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
+        }
+        if (changeType == ChangeTypeSetValueReal) original.KreditCostSetValue = rawValue;
+        else original.HasSuppressLedgerEntry = true; // unqualified Suppress key
+        target.BuffsBySource[key] = original;
+        SynchronizeBuffTarget(target, sourceId);
     }
 
     /// <summary>

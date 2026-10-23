@@ -1,0 +1,233 @@
+{
+  "rule": "RULE-358",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-358",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_ledger_main_vectors": 2916,
+    "worker_rows_exact": 2916,
+    "new_regression_combinations": {
+      "ledger": 5832,
+      "presence_lifecycle": 12,
+      "total": 5844
+    },
+    "initial_selftest": {
+      "passed": 740,
+      "total": 741,
+      "failed_fixture": "HandTargetSelectWorks used legacy EffectiveKreditCost rather than current total/base/typedSet0"
+    },
+    "release_selftest": {
+      "passed": 741,
+      "total": 741,
+      "exit_code": 0
+    },
+    "scope": "Known fee modes2/3 raw typed ledger cleanup and cached-original current-source rewrite, zero SetValue key, clone/copy/snapshot/presence. Equal raw base still mutates ledger without numeric/events. Opaque handwritten legacy flags, physical container aliases/metadata, Suppress frame payload, present-zero temp keys and remaining lifecycle/suppression paths not certified."
+  },
+  "authority": "Reuse authoritative read-only captured Blueprint bytes,8supporting functions19614B raw/FName/symbol-header redecoded and currentPE SHA checked. Direct whole ChangeKreditCost2759+type2ledger6267+T45forward84/query1174=10284B. No new process/battle capture or client function invocation.",
+  "native": "Type2 modes2/3 at3529 set skip-local-update, generate removal keys and snapshot all sources.4989 removes typed kredit_permBuff/kredit_SetValue (+unqualified Suppress for mode3); empty foreign maps removed.5552/5620 mode2 adds raw request kredit_SetValue to CACHED ORIGINAL current-source record and writes it back, restoring its pre-cleanup permanent/other fields.5789 mode3 similarly writes Suppress presence with controlled frame payload0. Current-source reverse synchronized; global cleanup does not look up/repair foreign source reverse arrays. Equal current raw base/request still performs all ledger work before numeric early return.",
+  "changes": [
+    "Add nullable CardBuff.KreditCostSetValue;0present differs from absent. Include presence in IsEmpty, clone, snapshot dictionary and existing managed copy via clone.",
+    "Known ChangeKreditCost modes2/3 stop converting raw requested cost to template-relative offset and stop creating old KreditCostSetsAbsoluteValue flag. Invoke dedicated typed ledger mutation before independent numeric/equality gate.",
+    "Global permanent-key cleanup prunes otherwise empty slots without foreign reverse repair; preserve temporary contributions and unrelated typed fields. Clone original current permanent slot before cleanup, then write raw SetValue or Suppress presence and restore it; synchronize only current source.",
+    "Keep opaque preexisting handwritten absolute-offset records at explicit legacy compatibility boundary. Models/tests use representable canonical native typed fields, not legacy opaque data.",
+    "Gordon regression used legacy EffectiveKreditCost (template+offsets). Correct test to current TotalKreditCost and strengthen with BaseKreditCost0/raw typedSet0/ordinary amount0/no old absolute flag; historical replay comments not used as authority."
+  ],
+  "models": {
+    "vectors": 2916,
+    "dimensions": "9current masks*9foreign masks*2modes*3rawrequests*3source IDs*2equal-base states",
+    "keys": [
+      "kredit_permBuff:2",
+      "kredit_SetValue:0",
+      "kredit_tempBuffGive:-4",
+      "attack_SetValue:0",
+      "Suppress:0",
+      "operationCost_SetValue:0"
+    ],
+    "masks": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      8,
+      16,
+      32,
+      63
+    ],
+    "scope": "Full native main/type2 ledger/T45. Source20/self60/absent9999, target60, watcher70, foreign30. Check all final maps, current reverse[888,60], untouched foreign[777,60], raw base/temp, equality gate and notification/own/T45. Source object access stub asserts only current source ID, so foreign repair would fail. Frame Suppress value0, enum/container/validity/buffability/crypto controlled, ActionProcess true. Canonical managed split projection only, not physical alias/metadata proof."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 5844,
+    "ledger": 5832,
+    "presence_lifecycle": 12,
+    "release_passed": 741,
+    "release_total": 741,
+    "exit_code": 0,
+    "scope": "2916native dimensions*both sides=5832. Compare actual typed maps/current/foreign reverse lists, preserve temporary/unrelated zero keys, check complete ledger before hooks and notification-before-callback, equal base still updates ledger but no numeric/events, snapshot raw SetValue.12presence cases both sides*temporary-slot bool*raw[-3,0,105] check IsEmpty/clone/deep managed copy/snapshot and old reset compatibility; temporary-slot synthetic placement is managed robustness, not native canonical placement certification."
+  },
+  "initial_regression": {
+    "passed": 740,
+    "total": 741,
+    "failed": 1,
+    "exit_code": 1,
+    "log_preserved": true,
+    "fixture": "HandTargetSelectWorks asserted legacy EffectiveKreditCost instead of independent current total and typed SetValue; production current cost was0, legacy template helper4. Test now checks correct current fields and typedSet0 explicitly. No production regression masked or replay used as authority."
+  },
+  "worker": {
+    "job": "20261023-224353-rule358-absolute-fee-ledger-8441d820",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 2916,
+    "primary_comparison_exact": 2916,
+    "scope": "Private supplied mathematical map/numeric/event projection only. Primary independently executes captured whole functions, integrates and publishes. Worker not authority."
+  },
+  "remaining": [
+    "Opaque preexisting handwritten KreditCostSetsAbsoluteValue data deliberately retained; its semantic relation to canonical native keys is not certified. Legacy aura/unknown/public convenience/identity adapters may still reconstruct or collapse components.",
+    "Physical native source BuffMap versus managed permanent/temporary split: arbitrary cross-slot duplicate keys, metadata(cardName), object aliasing and all zero-presence states not certified. Source original cached values verified only under selected masks; persistent frame Suppress arbitrary integer payload remains presence-only in production.",
+    "Raw present-zero kredit_tempBuffGive independent existence/removal remains unrepresented. This round solves raw kredit_SetValue0, not every zero-valued key. Mode5/other unknown fee modes and complete generic ledger interface still open.",
+    "Native encrypted constructor/reset/force-play lifecycle, suppression5604/static lookup/trailing phases, crypto integrity/diagnostics/TSet/qqq/UObject lifetime and actual ActionProcess routing remain open.",
+    "Version migration paused. Historical replays not authority, fully certified cards0. Earlier absolute-ledger pending statements superseded only for canonical known modes2/3 under this scope."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-absolute-typed-ledger-native-model-20261023.json",
+      "sha256": "157ce6ba00024024748a07a082a09ac61484e2753e567ef990160a3a10e43384"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule358.py",
+      "sha256": "b4e5da6422865a1b25b754c96f3e3aec716045cc894e6cc81d44bca8a2c818da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule358-tests.py",
+      "sha256": "3b0112a1dbec34851105d251bc3cc471214fc763e83cfaa91cacf33a5f26149a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\repair-rule358-fixture.py",
+      "sha256": "bccf93f2d8ae61df8ad0177365ce0510aa7df772919f6b8ea051f94f8eb3cc2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule358-absolute-ledger.py",
+      "sha256": "069d2e78f365ee2a2b351144167a2bacb740a50079072436d369fb2bcf1f3a9e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule358.py",
+      "sha256": "3ec2b9fb8bc654ac4f8bb0b837de92644804d68ac8e16b8ecd9ccd342dca817b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule358-verified-20261023.json",
+      "sha256": "49435c5d4c61cb78679fd194b7a3759b973ba68e5ea18db613afb2a1926ac627"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule358-selftest-initial.log",
+      "sha256": "44fa0879d78556e85361d102ccf0ffbc57188498cab9c216a662427d559a9268"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule358-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule358-selftest-final.log",
+      "sha256": "7456e9af7bdcf1a02cf79e2a12a9a47c7997afb319b7e0db503289533a03b6d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule358-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule358\\spec.json",
+      "sha256": "0a7f1a91d5d9927a61063fd669fd1b326a0d2af512673b1aa2e31e3d8eab9fa2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule358\\task.txt",
+      "sha256": "70609bfc936634df4079976ed036df1a58af0e916e42f29ad9340046ae8ebd22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule358\\cases.json",
+      "sha256": "645974dd1f2e2f9c7526951e68e11aaea1c4c33ca9bad3ab80504e5a07290e95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule358\\primary-cases.json",
+      "sha256": "130c81b74a75d93bfa7a070d2986d1819ae4d2e67a9bc1de184dac764ebbe863"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule358\\generator.py",
+      "sha256": "380a75be962b7bc09771e1cc6dc3e9cd6bea7eccc76a176dec23f849626704d9"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-224353-rule358-absolute-fee-ledger-8441d820\\job.json",
+      "sha256": "c165342a3b26cba28eb6771b4cd74bfa4f0ebe89fce8a4d84d166582d426f8e5"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "30ae6730032a89cb235be939611358bf595319246f81506615660b1099dd102f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "6aed0b795fee4bbe73716f50916fa2de1f802b35f586e024c263c4e77b35d748"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "8790c2ae8d7ce4cf11f36f7f76a83e7032b6be961fc6b2895c785177e1b94063"
+    }
+  ]
+}
