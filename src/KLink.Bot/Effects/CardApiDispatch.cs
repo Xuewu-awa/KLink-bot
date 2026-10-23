@@ -4364,8 +4364,15 @@ public sealed partial class CardApi
                 SynchronizeBuffTarget(target, sourceId);
                 return null;
             }
+            // RULE-355: ledger mode4 returns the negated recorded contribution.
+            // It replaces the caller request and determines valueChanged even
+            // if the clamped total is unchanged. Numeric storage/recalculation
+            // below remains legacy until the independent base/temp migration.
+            int amountRemoved = unchecked(-temporaryBuff.KreditCost);
             RemoveCostBuff(target, sourceId, temporary: true,
                 fallbackToPermanent: false);
+            NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, amountRemoved, changeType);
+            ExecuteKreditCostChangedEvents(target, sourceId);
             return null;
         }
 

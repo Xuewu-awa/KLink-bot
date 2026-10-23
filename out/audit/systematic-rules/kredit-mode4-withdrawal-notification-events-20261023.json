@@ -1,0 +1,169 @@
+{
+  "rule": "RULE-355",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-355",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_model_vectors": 1296,
+    "worker_rows_exact": 1296,
+    "new_regression_combinations": 324,
+    "release_selftest": {
+      "passed": 736,
+      "total": 736,
+      "exit_code": 0
+    },
+    "scope": "Mode4 nonzero temporary contribution notification amountRemoved rather than caller request; notification before own/T45; no total equality gate. Production numerical base/temp migration and zero-present typed key representation remain pending. Headless runtime assumes ActionProcess=true; model covers false too."
+  },
+  "authority": "Reuse authoritative read-only captures;8supporting Blueprint functions19614B redecoded from raw bytes using captured FName/symbol headers and currentPE SHA. Direct whole ChangeKreditCost2759B/type2 ledger6267B/T45 forward84B/query1174B=10284B. No fresh game-state claim or client process calls/writes.",
+  "native": "Ledger removes current-source kredit_tempBuffGive, returns signed negation. Whole main2461..2755: removed0 sets changedfalse and returns; nonzero2521 replaces localInputAmount with amountRemoved,2630 adds to raw temporary cost,2676 setter,2744 changedtrue independent of total difference. Shared continuation1614/1624 requires changed and ActionProcess;1698 notification passes substituted amount, then own/T45 callbacks. Own suppressed/self gates and fresh query per priorRULE351 remain used.",
+  "changes": [
+    "After nonzero temporary contribution removal, emit NotifySetKreditCost with negated recorded contribution, never incoming request, then ExecuteKreditCostChangedEvents. Do not gate on aggregate before/after equality. Retain no-permanent-fallback and missing/zero early guard fromRULE354.",
+    "Numeric removal still uses existing RemoveCostBuff/RecalculateStats adapter. Notification total is current managed total, not a claim of independent native base/temp numeric equivalence. Existing positive control comment updated, separate324-case probe verifies events."
+  ],
+  "models": {
+    "vectors": 1296,
+    "dimensions": "4bases*3temps*3contributions*3requests*3sources*2suppressed*2ActionProcess",
+    "scope": "Whole main+type2ledger+T45 query/forward. Current source map permanent2/temporary contribution/attack_SetValue0. Source20/self60/absent9999; watcher70. Verifies full post-map, temp raw minus contribution, removed negation, changed based on contribution, notice exact five supplied values, own/T45 order and gates. Includes native zero-present temporary key removal without numeric/events, explicitly not implemented by current zero-valued managed record.",
+    "controlled": "Validity/buffability/container/enum/source/frame/crypto controlled; total accessor mathematical signed32 add/clamp previously emulated separately; native notifier captured as payload, hooks mocked. No general UObject/TSet/registration/crypto integrity certification.",
+    "investigation": "First synthetic harness lacked Multiply_IntInt primitive used by ledger removal. Added explicit signed32 arithmetic primitive; no authority or source expectation changed."
+  },
+  "regressions": {
+    "new_tests": 1,
+    "combinations": 324,
+    "release_passed": 736,
+    "release_total": 736,
+    "exit_code": 0,
+    "scope": "Both sides*3template bases*3contributions*3caller requests*3positive sourceIDs*2suppressed. Nonzero: exact ordered five-field notification/removed amount, then own where eligible and T45 observer, hook args/source and changed ID, preserved public fields/permanent/other temp field. Zero managed contribution:no notification/callback. Includes zero cost before and after with nonzero withdrawal. Raw base/temp numeric results not certified."
+  },
+  "worker": {
+    "job": "20261023-221219-rule355-withdraw-events-8f08cab0",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 1296,
+    "primary_comparison_exact": 1296,
+    "scope": "Private supplied mathematical projection only. Primary independently executes captured AST and compares all rows. Worker not authority and does not edit source/publish."
+  },
+  "remaining": [
+    "Independent encrypted current base/temp fee numeric storage and full migration from legacy aggregate/RecalculateStats remain pending; current notification total can still differ from native where legacy numeric state differs.",
+    "Canonical zero-present temporary key existence/removal not represented by CardBuff.KreditCost==0; native model covers it but production guard retains compatibility. Typed absolute ledger, mode2/3/unknown-mode semantics, suppression5604 and downstream chain remain incomplete.",
+    "Headless runtime models ActionProcess=true; false is native-model only. Full expiry/lifecycle/raw UObject invalidation, return qq/frame/TSet registration/aliases and old public/aura adapters not certified. Existing immutable prior reports are historical; this report supersedes their missing-mode4-event statement only for nonzero managed temporary contributions.",
+    "Card version migration remains paused per user; fully certified cards0. Historical replays not authority."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-mode4-present-event-native-model-20261023.json",
+      "sha256": "7a3ee2b40fbd418bc255f03fb750519fbb5ea91f3d856f697badc9eb78228b69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule355-present-events.py",
+      "sha256": "f7d7cf2d9ed36426047be924ddcd04b44d171799eb9608308b04346cf568aa3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule355.py",
+      "sha256": "298446461c227bdc488d4c2e22ec90c5369c717cbf05663e5659dc7764e79a54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule355-verified-20261023.json",
+      "sha256": "274d754fe8109f23e02f2f030f39ccfb2c6b37c068082944a95320134553b17a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule355-selftest.log",
+      "sha256": "54ea0b5fa558e5bc8f1f0262832f385b9b8f02dd733fe0df69fde52bfa2137db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule355-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule355\\spec.json",
+      "sha256": "49402f75d0af95d39f8713d460ef1cfaf2d3e134edc15b637f2226f6d69b3d1a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule355\\task.txt",
+      "sha256": "042ae34871f82032802258f973e28b20b19ab135488bd3298d777316938cc64c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule355\\cases.json",
+      "sha256": "e6e4102ddb45b8593d3d8fd903e3e45963a8be7e3133becc232865f932671189"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule355\\primary-cases.json",
+      "sha256": "ab5170fb83a3cbfb12498e979bc35bb7ca957eb0a02180921acfe6d967a9c92d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule355\\generator.py",
+      "sha256": "693721afae6dfdba1abd0d91fdb634a5c789f89d25e94341b91758a8f33a4ea8"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-221219-rule355-withdraw-events-8f08cab0\\job.json",
+      "sha256": "d4db488c57e8d70ab852e526a71a367644e412c1d8138f9898b96b48bafe1dc9"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "77798837fd89f290dffbce8938a348045b5ed030cce819b7d129e3df6755e5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "84e8fc8af30065deefee8dd6d1dd5a195d0dfc252a8f8794cf77545e286cad01"
+    }
+  ]
+}

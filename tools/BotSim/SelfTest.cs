@@ -569,6 +569,7 @@ internal static class SelfTest
         new("公开费用VM成员：整数原值读写，不污染当前费或影子变量", PublicKreditVmMembers),
         new("临时费用撤销缺项：不回退永久、不重算但同步来源关系", KreditTemporaryMissingNoPermanentFallback),
         new("临时费用撤销存在项：保留永久和其他字段的兼容边界", KreditTemporaryPresentCompatibility),
+        new("临时费用撤销：撤销量通知先于自身/T45且不以最终差值为门", KreditTemporaryWithdrawalEvents),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7412,7 +7413,7 @@ internal static class SelfTest
     private static string? KreditTemporaryPresentCompatibility(CardDatabase db)
     {
         // Positive control for the retained legacy path only: do not certify
-        // its missing mode4 notification or independent native numeric fields.
+        // its independent native numeric fields (mode4 events covered separately).
         foreach (var side in new[] { Side.Left, Side.Right })
         foreach (int amount in new[] { -2, 2 })
         {
@@ -7496,6 +7497,59 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? KreditTemporaryWithdrawalEvents(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 3, 99 })
+        foreach (int contribution in new[] { -5, 0, 2 })
+        foreach (int request in new[] { -77, 0, 123 })
+        foreach (int source in new[] { 20, 60, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = basis };
+            var temporary = new CardBuff { SourceCardId = source, Temporary = true, KreditCost = contribution, Attack = 2 };
+            var permanent = new CardBuff { SourceCardId = source, KreditCost = 0, DefenseSetValue = 0 };
+            target.BuffsBySource[(source, true)] = temporary; target.BuffsBySource[(source, false)] = permanent;
+            target.RecalculateStats(); int previous = target.KreditCost;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var events = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase"); events.Add(phase);
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), phase == "own" ? source : 60)) fault = "回调参数错误";
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+                if (notices.Length != 1 || notices[0].Values.Single(x => x.Name == "costAdded").Value != -contribution) fault = "撤销回调早于撤销量通知";
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, source, request, 4, true, null }, ctx, out _);
+            string[] expected = contribution == 0 ? Array.Empty<string>() : source != 60 && !suppressed ? new[] { "own", "other" } : new[] { "other" };
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            bool noticeOk = contribution == 0 ? actions.Length == 0 : actions.Length == 1
+                && actions[0].Values.Select(x => x.Name).SequenceEqual(new[] { "cardID", "kreditCost", "instigatorID", "costAdded", "changeType" })
+                && actions[0].Values[0].Value == 60 && actions[0].Values[1].Value == target.TotalKreditCost
+                && actions[0].Values[2].Value == source && actions[0].Values[3].Value == -contribution
+                && actions[0].Values[4].Text == "tempBuffRemove";
+            if (fault is not null || !events.SequenceEqual(expected) || !noticeOk
+                || temporary.KreditCost != 0 || temporary.Attack != 2
+                || !ReferenceEquals(target.BuffsBySource[(source, false)], permanent) || permanent.DefenseSetValue != 0
+                || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9)
+                return $"撤销费用通知/回调错误 {side}/{basis}/{contribution}/{request}/{source}/{suppressed}: {fault}";
+            // Demonstrates event dispatch despite unchanged observable cost only;
+            // other raw numeric results remain legacy, not native-certified here.
+            if (basis == 0 && contribution < 0 && (previous != 0 || target.KreditCost != 0))
+                return "应覆盖撤销前后费用都是0的通知/回调";
         }
         return null;
     }
