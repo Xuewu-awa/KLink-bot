@@ -717,9 +717,12 @@ public sealed class CardInstance
 
     private void InitializeRuleAttributesFromDefinition()
     {
-        // Existing initialization/reset compatibility, not certification of
-        // the full native encrypted-cost construction/reset chain.
-        KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
+        // RULE-365: CreateCardObject calls InitializeEncryption before its
+        // own creation hook. Its numeric refresh rebuilds both current fee
+        // components from the restored public pair; full UObject construction
+        // and cryptographic integrity remain outside this logical projection.
+        BaseKreditCost = PublicKreditCost;
+        TemporaryKreditCost = PublicKreditCostBuff;
         foreach (string keyword in Definition.Keywords)
         {
             Keywords.Add(keyword);

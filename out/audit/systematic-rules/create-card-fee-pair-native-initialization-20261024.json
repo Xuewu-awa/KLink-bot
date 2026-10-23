@@ -1,0 +1,226 @@
+{
+  "rule": "RULE-365",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-365",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_accessor_backends_revalidated": 5,
+    "native_accessor_bytes": 1234,
+    "create_card_script_bytes": 2929,
+    "create_call_span_redecoded_bytes": 32,
+    "opaque_local_properties": 0,
+    "initialize_wrapper_executed_bytes": 26,
+    "refresh_numeric_prefix_executed_bytes": 559,
+    "native_vectors": 192,
+    "worker_raw_exact_rows": 192,
+    "new_regression_combinations": {
+      "initialization": 128,
+      "creation_paths_and_callbacks": 128,
+      "total": 256
+    },
+    "regression_before": {
+      "passed": 754,
+      "total": 756,
+      "failed": 2
+    },
+    "release_selftest": {
+      "passed": 756,
+      "total": 756,
+      "exit_code": 0
+    },
+    "scope": "PvP CreateCardObject InitializeEncryption call -> real PE wrapper/refresh numeric prefix -> real fee getters. Current base/temp logically rebuilt from public pair before creation hooks. Public pair and salvage condition controlled; full UObject construction/default-copy, campaign branch, frame/lifetime/crypto integrity and refresh diagnostic tail not certified."
+  },
+  "authority": "Prior extracted asset/parsed bytecode, current-exe-matched reused read-only capture and installedPE. Re-decode CreateCardObject2048..2080=32B: both SpawnObject local property and InitializeEncryption UFunction symbols resolved from captured headers. Native entry26B maps through captured UFunction+0xd8 and jumps0x4af9a30. Revalidate5fee accessors1234B and refresh740B against installedPE SHA. No new live process read/call/injection/write. Older different-SHA Ghidra constructor exports were not used to assert current final fields.",
+  "finding": "Normal PvP CreateCardObject calls ApplySalvageChanges818 when requested, InitializeEncryption2048 before OnCreateCard2610 (campaign branch intentionally outside scope). The native InitializeEncryption wrapper at0x4a81cb0 tail-jumps shared numeric refresh0x4af9a30, rebuilding independent current base/temp costs from public+0x80/+0x84. Existing managed initialization aggregate setter forced temp0 despite public KreditsBuff. Both GameState.Create/CreateWithId invoke InitializeFromDefinition before creation callbacks.",
+  "changes": [
+    "Replace the shared initialization helper fee aggregate assignment with BaseKreditCost=PublicKreditCost and TemporaryKreditCost=PublicKreditCostBuff. Both public fields are restored by InitializeFromDefinition/ResetAttributes before this helper; only2call sites exist. Native reset final pair assignment from RULE363 retained. No unrelated attack/defense construction fields changed.",
+    "Add128direct initialization fixtures: both sides*4bases*4temps*2salvage*2dirty preexisting pairs, raw/public/total and frozen snapshot checks.",
+    "Add128production entry fixtures:4bases*4temps*both sides*2salvage*Create versus CreateWithId. Private reflected test database copies definitions without mutating shared DB. Check fee pair at creation callback before existing handler, before creation-modifier handler, and final return; ensure creation callback precedes modifiers."
+  ],
+  "native_model": {
+    "vectors": 192,
+    "digest": "54f9c4b74b57df3700826ca314a7c33dc22e68bf379368084e2eaeb3b83b0649",
+    "dimensions": "4bases[-3,0,3,105]*4temps[-4,0,5,99]*2salvage*3salts[0,42,-1]*2wrapper-slot values[0,4096]",
+    "executed": "Exact InitializeEncryption native wrapper26B, refresh numeric prefix559B ending0x4af9c5f, then actual get-base/get-temp/get-total bodies. Hash import controlled0 and cookie stubbed. Synthetic objects only. Initial public pair/salvage cap seeded from asset intent; not whole SpawnObject/default-template copy emulation.",
+    "checks": "Raw base and temp rebuilt independently, public pair unchanged, total clamps sum0..99. Salt does not change decoded logical outputs. Wrapper+0x20 slot increments nonzero4096to4097 and preserves0, all other4096frame bytes unchanged. Object writes limited to known numeric-crypto fields/validity. No full execution-frame constructor/lifetime/integrity certification.",
+    "caller_scan": "Offline .text E8/E9 rel32 candidate search found13call sites on pdata-decoded instruction boundaries plus1jmp without pdata. The latter was independently mapped to captured InitializeEncryption entry and26B wrapper. Scan excludes indirect refs and non-.text, so is not an exhaustive constructor/caller proof. Other scalar mutators not semantically audited here. Initial scan assumed pdata for every candidate, failed assertion on wrapper, then corrected to preserve that unresolved candidate instead of dropping it."
+  },
+  "worker": {
+    "job": "20261024-030755-rule365-initial-fees-9103b1c5",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 192,
+    "raw_exact_rows": 192,
+    "id_normalization": false,
+    "generator_executed": true,
+    "scope": "Private supplied projection only. Primary independently emulated installed native wrapper/refresh/accessors and compared all original rows. Worker not authoritative, no source integration/publishing delegated."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "new_combinations": 256,
+    "initialization": 128,
+    "creation_paths_and_callbacks": 128,
+    "before": "754/756pass,2new failures; first Left/-3/-4/False/False, second Create callback/modifier sees wrong fee. Nonzero exit.",
+    "after": "756/756Release selftest,exit0."
+  },
+  "remaining": [
+    "Only logical current-fee rebuilding at known PvP CreateCardObject initialization step is aligned. UObject zero allocation/default property copy/PostInit/class callbacks and full construction order remain uncertified. Do not infer complete native constructor equivalence.",
+    "Initial public pair/salvage selection is a controlled input backed by existing asset path, not whole runtime CreateCardObject or ApplySalvageChanges evaluation. Campaign branch excluded. Reflection test DB is a synthetic fixture, not live-card evidence.",
+    "Raw crypto integrity/hash-failure handling, refresh diagnostics tail, arbitrary frame/return ABI/object lifetime and TSet/metadata/alias/import remain pending. Attack/defense fields also written by refresh are not newly certified by this fee change.",
+    "Static fee lookup, suppression5604/trailing phases, legacy identity/aura/nonbyte adapters and remote execution remain open. Version migration paused and fully certified cards0. Prior construction-cost gap superseded only for known logical fee initialization before creation hooks."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-numeric-refresh-pe-20261024.json",
+      "sha256": "320b08fcdac5b837293f28bfeae0b1cf692b6384e8fa3b7f28cbb3c09c38b443"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\numeric-refresh-direct-callers-pe-20261024.json",
+      "sha256": "d70d4528144eba84b760ccc108f57b107d5989e5bf8fa0131c5c219894d81e63"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\create-card-encryption-entry-native-20261024.json",
+      "sha256": "a4ea8607593640cbd3bf8da6bd93e6b369469a8042760b2fed6e96e1868b9022"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\create-card-kredit-initialization-emulation-20261024.json",
+      "sha256": "65c74cea6ccf23fd61274399dfb85e22c03e8ee0a7fd760937ba26376101abb0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule365-refresh-callers.py",
+      "sha256": "0632b5b304a91ba2772a4a9beca27bcd51beb4ffbaf8c39c750983dbed490af2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule365-create-span.py",
+      "sha256": "af2b735d3674deb05509dc7aeb16ee991bbdadd5db7fc1a927209e192123e9a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-symbol-work.json",
+      "sha256": "a5241aa8d6a937236d7d7f0b2bd61432e882522539f92072bde7859aeb3327dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule365-create-encryption.py",
+      "sha256": "d44e5821cd1870c49727d4d2bf34c7de01582c07696350022c662e1a4b3b9f07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule365-create-kredit.py",
+      "sha256": "46d10dd305b8ec38d495ea9b32ea9628dde22a553973eb4d28bd67c5a4b07de9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule365.py",
+      "sha256": "37bd215d004ef8c9b9de1f526ac12b04eeee38d949728498f9bbafcf45408ca7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-verified-20261024.json",
+      "sha256": "40ef36954fb5ee75d819402d97d1e62ec79d851109991c91d5d1cf0d9cfab4af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule363-reset-refresh.py",
+      "sha256": "04f1cd6fdda5370d4355fd223ad8e088e4c57c66a4928b58184c52e22f28b85d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule365\\task.txt",
+      "sha256": "1a32cd8447960f7bca39261f413ca7b5efae0a17fac4c72da7196199a4850ffd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule365\\spec.json",
+      "sha256": "496a889716370388b104d91095891d057d23333e8629dc9ca3f5017f5581017b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule365\\generator.py",
+      "sha256": "a5fb280853b5a171265993cbc4a1e9f796470a2f712494afdbceeb9cc0d25874"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule365\\cases.json",
+      "sha256": "0b24e6b075b9ec537541af47ea4bfae93e12200e45193ebfd7f5275ff3e7df4e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule365\\primary-cases.json",
+      "sha256": "f8b12a9d37309a4ea26ec5ac54ba8d8e9f84176aa09afd9e15e95afa6ad6fa74"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-030755-rule365-initial-fees-9103b1c5\\job.json",
+      "sha256": "5d52f347c2eb8257c1ef8c739a621c53ea67b00e42a349c73fb5ed1f74111d5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-selftest-before.log",
+      "sha256": "394e312fe9ac6144583ad4769fd71fddf4aa29596982c797f3a47f1beeaae7a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-selftest.log",
+      "sha256": "54c42a74b2f076702e07826af0379e9b0779467b79ea943a39cea5b24e92e5cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule365-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "sha256": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.metadata.json",
+      "sha256": "fc9ab29ff2961086f3c9b9d1fe6bb086fb78a65d767fc023eedcac46d0238cd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset",
+      "sha256": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp",
+      "sha256": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "d2c4e29eab6de91849f2f6e7f470b1219f90d1f9ea314262180e1355fad85a3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "e41b659311be6f1ad800c3d107e2448d4bf0cc7e5291648d0713600d4ae99ba0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\card-turn-state-functions-native-20261021.json",
+      "sha256": "b8c5809fdc397d1f13d088bba3709647de13a4f2a4dcba1f7fd9c5f97b4348ed"
+    }
+  ]
+}

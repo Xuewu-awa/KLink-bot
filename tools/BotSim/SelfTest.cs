@@ -588,6 +588,8 @@ internal static class SelfTest
         new("重置费用：模板临时值/打捞与后续临时改费独立", KreditResetNumericRefresh),
         new("直接出牌费用：只恢复基础值，保留临时值和移动回调变更", DirectPlayPreservesTemporaryKredit),
         new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
+        new("建卡初始化费用：内部基础/临时费重建自公开模板字段", InitializeKreditPairFromDefinition),
+        new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7515,6 +7517,59 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? InitializeKreditPairFromDefinition(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 3, 105 })
+        foreach (int temp in new[] { -4, 0, 5, 99 })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (bool dirty in new[] { false, true })
+        {
+            var card = new CardInstance { CardId = 60, Name = PlainUnit, Owner = side, IsSalvaged = salvaged,
+                Definition = new CardDefinition { Name = PlainUnit, Type = "infantry", Kredits = basis, KreditsBuff = temp, Attack = 1, Defense = 5 } };
+            card.BaseKreditCost = dirty ? 99 : 17; card.TemporaryKreditCost = dirty ? -9 : 2;
+            card.PublicKreditCost = 37; card.PublicKreditCostBuff = -11;
+            var frozen = card.Snapshot();
+            card.InitializeFromDefinition();
+            int expected = salvaged ? Math.Min(3, basis) : basis;
+            if (card.BaseKreditCost != expected || card.TemporaryKreditCost != temp || card.TotalKreditCost != Math.Clamp(expected + temp, 0, 99)
+                || card.PublicKreditCost != expected || card.PublicKreditCostBuff != temp || frozen.BaseKreditCost != (dirty ? 99 : 17)
+                || frozen.TemporaryKreditCost != (dirty ? -9 : 2))
+                return $"初始化费用必须从模板公开两字段重建 {side}/{basis}/{temp}/{salvaged}/{dirty}";
+        }
+        return null;
+    }
+
+    private static string? CreationCallbacksSeeKreditPair(CardDatabase db)
+    {
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        foreach (int basis in new[] { -3, 0, 3, 105 })
+        foreach (int temp in new[] { -4, 0, 5, 99 })
+        {
+            // Private fixture database; never mutate shared production definitions.
+            var definitions = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            definitions[PlainUnit] = new CardDefinition { Name = PlainUnit, Type = "infantry", Kredits = basis, KreditsBuff = temp, Attack = 1, Defense = 5 };
+            var fixtureDb = (CardDatabase)ctor.Invoke(new object[] { definitions, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (var side in new[] { Side.Left, Side.Right })
+            foreach (bool salvaged in new[] { false, true })
+            foreach (bool explicitId in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixtureDb); int created = 0, modifiers = 0; string? fault = null;
+                int expected = salvaged ? Math.Min(3, basis) : basis;
+                bool Correct(CardInstance card) => card.BaseKreditCost == expected && card.TemporaryKreditCost == temp
+                    && card.PublicKreditCost == expected && card.PublicKreditCostBuff == temp && card.TotalKreditCost == Math.Clamp(expected + temp, 0, 99);
+                var priorCreated = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+                state.CardCreated = card => { if (card.Name == PlainUnit) { created++; if (!Correct(card)) fault = "创建回调前费用尚未初始化"; } priorCreated?.Invoke(card); };
+                state.CardCreationModifiers = card => { if (card.Name == PlainUnit) { modifiers++; if (!Correct(card) || created != 1) fault = "创建修正前应已初始化且先经历创建回调"; } priorModifiers?.Invoke(card); };
+                var card = explicitId ? state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0, isSalvaged: salvaged)
+                    : state.Create(PlainUnit, side, side.HandOf(), 0, isSalvaged: salvaged);
+                if (fault is not null || created != 1 || modifiers != 1 || !Correct(card))
+                    return $"建卡入口费用观察时序错误 {basis}/{temp}/{side}/{salvaged}/{explicitId}: {fault}";
+            }
         }
         return null;
     }
