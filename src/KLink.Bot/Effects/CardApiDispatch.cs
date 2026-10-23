@@ -4374,7 +4374,7 @@ public sealed partial class CardApi
             // temporary kredit contribution; never fall back to a permanent
             // slot or recalculate an unrelated/absent contribution.
             if (!target.BuffsBySource.TryGetValue((sourceId, true), out var temporaryBuff)
-                || temporaryBuff.KreditCost == 0)
+                || (temporaryBuff.KreditCost == 0 && !temporaryBuff.HasZeroKreditCostEntry))
             {
                 // The native ledger still synchronizes the source relation
                 // before the main function observes amountRemoved==0.
@@ -4388,6 +4388,9 @@ public sealed partial class CardApi
             int amountRemoved = unchecked(-temporaryBuff.KreditCost);
             RemoveCostBuff(target, sourceId, temporary: true,
                 fallbackToPermanent: false);
+            // RULE-361: a present zero key is removed from the ledger, then
+            // amountRemoved0 returns without numeric writes/notice/hooks.
+            if (amountRemoved == 0) return null;
             target.TemporaryKreditCost = unchecked(target.TemporaryKreditCost + amountRemoved);
             NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, amountRemoved, changeType);
             ExecuteKreditCostChangedEvents(target, sourceId);
@@ -4406,7 +4409,12 @@ public sealed partial class CardApi
         {
             var buff = GetOrCreateBuff(target, sourceId, temporary);
             if (temporary || changeType == ChangeTypePermBuff)
+            {
                 buff.KreditCost = unchecked(buff.KreditCost + amount);
+                // Native nonzero accumulation deletes a sum0 key; it never
+                // creates an explicit zero-presence entry (RULE-361).
+                buff.HasZeroKreditCostEntry = false;
+            }
             else
                 buff.KreditCost = amount; // unknown-mode legacy compatibility
             buff.KreditCostSetsAbsoluteValue = false;
@@ -4483,7 +4491,11 @@ public sealed partial class CardApi
             var buff = target.BuffsBySource[candidate];
             // Opaque handwritten absolute offsets retain their old adapter data;
             // native known modes no longer create that legacy flag.
-            if (!buff.KreditCostSetsAbsoluteValue) buff.KreditCost = 0;
+            if (!buff.KreditCostSetsAbsoluteValue)
+            {
+                buff.KreditCost = 0;
+                buff.HasZeroKreditCostEntry = false;
+            }
             buff.KreditCostSetValue = null;
             if (changeType == ChangeTypeSuppress) buff.HasSuppressLedgerEntry = false;
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
@@ -4564,6 +4576,7 @@ public sealed partial class CardApi
         }
 
         buff.KreditCost = 0;
+        buff.HasZeroKreditCostEntry = false;
         buff.KreditCostSetsAbsoluteValue = false;
         if (buff.IsEmpty)
         {
