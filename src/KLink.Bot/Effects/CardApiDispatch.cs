@@ -4523,7 +4523,11 @@ public sealed partial class CardApi
         //    `target.OperationCost += delta`，于是 `card_unit_214th_amur` 的
         //    「T-34 行动费 -1」每触发一次就再减一次，而 `RemoveTheBuff`
         //    传的 0 又什么都没撤销 —— 行动费一路掉到 0 再也回不来。
-        int sourceId = SourceCardIdArg(a, 1, c.Self);
+        // RULE-337: native i71/105 uses the supplied positive ID, without
+        // a source-object existence gate. i119/160 rejects unrevealed Covert
+        // at every location, unlike CanCardBeBuffed's location-specific table.
+        int sourceId = IntArg(a, 1);
+        if (sourceId <= 0 || IsUnrevealedCovertCard(target)) return null;
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 

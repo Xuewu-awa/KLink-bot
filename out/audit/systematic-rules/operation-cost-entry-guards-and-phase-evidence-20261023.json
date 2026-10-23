@@ -1,0 +1,258 @@
+{
+  "rule": "RULE-337",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_readonly_function_capture": true,
+  "pid": 24220,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-337",
+    "fresh_readonly_function_capture": true,
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 8,
+    "blueprint_bytes": 3848,
+    "native_total_getter_bytes": 23,
+    "native_getter_vectors": 64,
+    "entry_guard_model_cases": 1920,
+    "whole_function_reference_cases": 4608,
+    "worker_exact_match": true,
+    "worker_guard_statements": 11,
+    "worker_selected_calls": 8,
+    "regression_combinations": 7680,
+    "release_selftest": {
+      "passed": 698,
+      "total": 698,
+      "exit_code": 0
+    },
+    "scope": "Fix native ChangeOperationCost entry guards only. Whole function later branches and notifier builder newly evidenced but not integrated; flat base/temp/ledger/numeric/notification/callback semantics remain pending. No fresh battle-state/whole-game semantic claim."
+  },
+  "authority": "Fresh readonly loaded function/name/header/script capture, stable-read buffers and pinned module/PID/PE hash. Eight nonempty Blueprint bodies3848B independently redecoded; empty native stub not treated as Blueprint. ChangeOperationCost3171B hash still matches prior same-version mapping. Current installed PE getter reverified separately; old09df-version RULE140 bytes not used as current authority. No current battle/card-state claim.",
+  "fix": [
+    "DoChangeOperationCost now uses the supplied raw instigatorID and rejects <=0 before ledger/numeric/notification/callback effects. It no longer substitutes c.Self.",
+    "Reject IsUnrevealedCovertCard at ALL locations, including hand/deck. This is not CanCardBeBuffed location logic. Revealed Covert passes the entry gate.",
+    "Positive nonexistent source IDs remain eligible; native entry does not require resolving a source object. Existing later mode behavior retained, not newly certified."
+  ],
+  "verification": {
+    "entry_model": {
+      "rule": "RULE-337",
+      "cases": 1920,
+      "accepted": 360,
+      "rejected": 1560,
+      "logged": 1440,
+      "case_digest_sha256": "3441628804579b69bb5aea644979b0a2a3a3ee1b1e22416f0b9f5580c4b5397c",
+      "scope": "Exact current ChangeOperationCost0..263 entry guard; stop before local assignments/ledger. Validity and covert predicate controlled; input mode0..5 and locations0..9 varied, positive nonexistent source supported by no lookup. No claim for later numeric/ledger/notification/events. Native IsValid is not modeled as location IsAlive."
+    },
+    "whole_function_reference": {
+      "rule": "RULE-337",
+      "cases": 4608,
+      "case_digest_sha256": "1d4c57e861871d89641b66414b9e4d4b8c9be2cd462c82f42896bb5e11e30521",
+      "scope": "Whole current ChangeOperationCost modes0..5 AST. Ledger is a CONTROLLED call returning amountRemoved0/-2, not full typed ledger. Query returns controlled target/live/suppressed recipients, not native query. Raw base/temp independent; isBuff unused; skipAction and skipAddToBattlelog named inputs per SDK. Confirms numeric/request-based changed flags, own->T10->optionalT9 ordering, suppressed recipient hard filter and skip affects notify only. This reference does not certify existing flat simulator numeric/event implementation or full native helper/body lifetimes."
+    },
+    "current_native_total": {
+      "rule": "RULE-337",
+      "offline_only": true,
+      "vectors": 64,
+      "native_backend_calls": 64,
+      "case_digest_sha256": "4e30d31514e46b1150cba4a9c83c5d8945affb65727737a8217a7f6f7ad92c8c",
+      "scope": "Current23B getTotalOperationCost leaf, no pdata entry, complete CFG to ret. Native reads+0xb4 and+0xb0, ADD wraps signed32 then negative floor0, NO99 cap.64 extreme/boundary vector pairs and full4096B source-object readonly check. Synthetic buffers only; no live function invocation/process writes/injection. Does not implement split storage or certify payment consumers."
+    },
+    "new_test_cases": 1,
+    "new_regression_combinations": 7680,
+    "release_passed": 698,
+    "release_total": 698,
+    "exit_code": 0,
+    "initial_test_failure": "New valid-entry assertion incorrectly required nonzero compact absolute offset. T-34 template operation cost2 set to2 legitimately has offset0. Removed that unrelated assumption, retaining snapshot/raw source/slot/no-Self and zero-side-effect rejection checks. Initial1/698 log preserved; verified698/698 is authoritative."
+  },
+  "confirmed_unfixed": [
+    "Current native operationCost at+b0 and operationCostBuff at+b4 are independent. Whole3171B script adds/clamps permanent base0..99 in mode1, accumulates temp without clipping in mode0, and mode4 adds ledger-returned amountRemoved to temp. Existing flat value plus EffectiveOperationCost ledger recomputation does not reproduce this.",
+    "Current23B native getTotalOperationCost leaf computes signed32 ADD(temp,base), then floors negative results0 with NO99 cap.64 synthetic vector pairs include signed overflow wraps. No own pdata entry; full reachable code endsret. Model does not certify current flat proxy as two-field storage.",
+    "Absolute modes2/3/5 compare RAW requested amount with BASE operationCost. Equal request stops numeric/event chain after ledger; unequal request clamps base0..99, preserves temp and sets runResetEvents. Existing flat comparison/clamped-request comparison and per-source absolute offset remain incomplete.",
+    "Changed flag depends on nonzero request for modes0/1, raw base inequality for2/3/5, nonzero ledger amountRemoved for4. Native changed branch requires ActionProcess before notification/events; skipAction suppresses only notification.",
+    "Native event chain own(unless suppressed), then T10 changed query/loop, then optional fresh T9 reset query/loop. Each loop excludes CardID subject and hard-skips currently suppressed recipients. T9 is enabled by changed absolute2/3/5, not mode4. Existing helper orders/reset routing differ.",
+    "SDK signature: card,instigatorID,amount,ChangeType,isBuff,skipAction,skipAddToBattlelog. isBuff is not read by captured3171B body. Do not mistake argument4 for skipAction.",
+    "Captured AddSubActionChangeOperationCost builds five values in order cardID,instigatorID,amount,changeType,skipAddToBattlelog. Existing two-field subaction/converted absolute offset/skip handling is incomplete. Handle stub enters Ubergraph12628; full persistent-frame receiver/delegate path not certified by this capture."
+  ],
+  "worker": {
+    "job": "20261023-121819-rule337-operation-guards-902e7fbe",
+    "status": "completed",
+    "exit_code": 0,
+    "guard_statements": 11,
+    "selected_calls": 8,
+    "exact_primary_reconstruction": true,
+    "role": "Mechanical AST inventory only, not semantic authority."
+  },
+  "remaining": [
+    "Split base/temp operation storage, initialization/copy/reset/receive/VM member consumers and payment paths together; remove inappropriate ledger-derived scalar recomputation only when connected consumers are migrated.",
+    "Typed operation ledger mode2/3/5/current-source rewrite, zero-key presence and temp removal remain pending. Whole-function reference uses a controlled ledger return, not complete ledger semantics.",
+    "Integrate native5-field notification/skip flags and correct own->T10->T9 snapshots and live suppression checks.",
+    "SuppressMultipleUnits5558 operation and5604 kredit phase still legacy. Heavy armor, full batch/reentry/T58/T11/lifetime and full restore chains remain incomplete.",
+    "Native IsValid vs managed object lifetimes, real covert predicate implementation, physical maps/query ordering and current frame defaults are not proven by controlled model. No full-card semantic certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-pe-20261023.json",
+      "sha256": "4d6ddc9f329ff1d83808cfbb7644bc943835976763c96f726b47247f9becbc4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-emulation-20261023.json",
+      "sha256": "c4789304d75a1f15121b594e86866ca174302683daf4ef472a335215ef07f38c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-entry-model-20261023.json",
+      "sha256": "2d56d2b5f7b4a0f866c05cf303b4e471ef2979dc6d654f8b1365853f4b6f86e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-modes-reference-20261023.json",
+      "sha256": "f8f373122f59e975cdd9fb86cce73cfb4dfe3b1452bd640a62949d101ce359c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule337-operation.py",
+      "sha256": "50e45fea7414a0a4ab934652b36c07b466d2404f89e80345d589dfe7b82863a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule337-operation-notifier.py",
+      "sha256": "13a05f8337044f7656fc335cddded98577d6def8381e57e73ef55d59c26ff938"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule337-total-operation.py",
+      "sha256": "515afc1975cde6cfc8d8234f984170b30ad04d3acbfff3d00e303cdac3a74101"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule337-total-operation.py",
+      "sha256": "af3263b5990be28a0967825fbfb947468816715008d41db49ab8f2b6a3f58d05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule337.py",
+      "sha256": "119543dc8b3a0fc2321e6a5798c0bfd282e173916fcc2f6cb30fbfb8391d48c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule337-entry.py",
+      "sha256": "8c9deebaf9f690197aa7f2a6fb9e15944f2d6667b4bc320f5fb2ad07f4645d12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule337-tests.py",
+      "sha256": "b97bca7fec67b8d0f33a8ea35903bc406186948084327ecd80513560e5d91b5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule337-operation-modes.py",
+      "sha256": "07615147210f0be22995ccf52f61fec9cdbbfca0d91fa9931560ba6f013a602d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule337-operation-entry.py",
+      "sha256": "175ecf29c6e83d918048ea2438dac29e6a9d4bd53d5557cb63f99114bbc17340"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule337-operation-entry-verified-20261023.json",
+      "sha256": "1d1ec5b5d48618fd9e8afe30b06c86537c2ed2c622a354d46ef5f31a2998d9fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule337-selftest-release.log",
+      "sha256": "bbe4508a49876c2f2706f63943be21559f794c6300f8c471fbb2dfe2d566b179"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule337-selftest-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule337-selftest-verified.log",
+      "sha256": "138b0914987d0c2b60bfd06747cea8cee2b953b717987e78dcf7a09734178603"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule337-selftest-verified-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-notifier-chain.py",
+      "sha256": "3a930e7254e1b5adb3ea2f36868618f374b7e0002a3723ca7962b760798edc65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule326-pe-accessors.py",
+      "sha256": "b7879337a76045be8a34799bf608f3ad32a76cb7047a885069331d7a27eabc26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule337\\function.json",
+      "sha256": "2f84830905cb21b08643b292edbb2da5281b8321cd7314270f1768c9387ccb74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule337\\task.txt",
+      "sha256": "b9646ec955e6a2ac8eda2c8ff431686690dc342623e8450f47f1662a1596f6e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule337\\inventory.json",
+      "sha256": "11e3fec2b766b27c3d2b80a920ec80135c40b442e44d1e3e377a101df8d498e3"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+      "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_OnlineMatch.hpp",
+      "sha256": "05bad928b7c03d99d5c769edd437948a032bcb1b3032247df85f8640607aefee"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\U_CardFunctionsNotifier.hpp",
+      "sha256": "6baccae157278c851305bbbc36228a7ec40272f7f13662d7b56d13be901ef3eb"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-121819-rule337-operation-guards-902e7fbe\\job.json",
+      "sha256": "845f0e7d90b7608fb4d577ae663ba58fff8cb40198dc390b243718e0b67f69b7"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "4f0a649c14aeee64030a0c37bb81a0023ae75cfee1be756012385fdc9213bf40"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "d883d3527cc6e82a4a0af3dab951c907c457fd3e7b8b43a0f6631e5077d948dd"
+    }
+  ]
+}

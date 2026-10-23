@@ -531,6 +531,7 @@ internal static class SelfTest
         new("压制防御整合：三个入口、来源、临时账本及攻击防御阶段衔接", SuppressionDefenseIntegration),
         new("压制防御账本矩阵：零值键、空源裁剪及非正来源旧结构", SuppressionDefenseLedgerMatrix),
         new("ChangeDefense3出参：数值/拒绝分支均覆盖旧true为false", SuppressionDefenseOutput),
+        new("行动费入口：原始正来源、缺失源对象及全位置未揭示掩护拒绝", OperationCostEntryGuards),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6675,6 +6676,41 @@ internal static class SelfTest
             if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
                 || state.ActionLog.SelectMany(x => x.SubActions).Any())
                 return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostEntryGuards(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (bool covert in new[] { false, true })
+        foreach (bool revealed in new[] { false, true })
+        foreach (int sourceId in new[] { -7, 0, 20, 9999 })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (bool hasSelf in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var self = state.CreateWithId("card_unit_t_34", side, 40, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, (CardLocation)location, 1);
+            target.Keywords.Clear(); if (covert) target.Keywords.Add(Keyword.Covert); target.IsRevealed = revealed;
+            target.OperationCost = 7;
+            if (mode == 4) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, OperationCost = 1, Attack = 1 };
+            string before = state.SnapshotJson();
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, sourceId, 2, mode, false, false, false },
+                new EffectContext { Engine = engine, State = state, Self = hasSelf ? self : null, Controller = side }, out bool handled);
+            bool allowed = sourceId > 0 && (!covert || revealed);
+            if (!handled || (!allowed && (before != state.SnapshotJson() || state.ActionLog.SelectMany(x => x.SubActions).Any())))
+                return $"行动费入口拒绝须无副作用 location={location},covert={covert},revealed={revealed},source={sourceId},mode={mode},self={hasSelf}";
+            if (allowed) {
+                bool temporary = mode is 0 or 4;
+                if (before == state.SnapshotJson() || !target.BuffsBySource.TryGetValue((sourceId, temporary), out var buff)
+                    || (mode == 4 && buff.OperationCost != 0)
+                    || target.BuffsBySource.Keys.Any(k => k.SourceCardId == 40)
+                    || (sourceId == 9999 && source.CardsBuffedByThisCard.Contains(60)))
+                    return $"行动费正来源不得用Self替代或要求来源对象存在 source={sourceId},mode={mode},location={location}";
+            }
         }
         return null;
     }
