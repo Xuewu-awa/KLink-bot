@@ -1,0 +1,202 @@
+{
+  "rule": "RULE-359",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-359",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_sample_vectors": 2916,
+    "all_default_byte_vectors": 4446,
+    "worker_raw_exact_rows": 171,
+    "worker_id_normalized_exact_rows": 2916,
+    "new_regression_combinations": {
+      "mode5": 1458,
+      "all_default_byte_modes": 8892,
+      "total": 10350
+    },
+    "release_selftest": {
+      "passed": 743,
+      "total": 743,
+      "exit_code": 0
+    },
+    "scope": "Fee5 cleanup only with current-source synchronization/no writeback; byte9..255 no ledger/numeric effects. Fresh local valueChangedFalse and amountRemoved0 explicitly controlled; no numeric accessor/ActionProcess calls in model. Suppress payload/physical alias/arbitrary unrepresented keys/out params/frame allocation initialization not certified.6/7/8 and nonbyte inputs remain old compatibility."
+  },
+  "authority": "Reuse authoritative read-only captures.8supporting Blueprint functions19614B raw/FName/symbol-header redecoded with currentPE SHA check. Direct whole fee main2759B+type2 ledger6267B=9026B, plus existing T45 functions captured but not called in these default-mode models. No new client process/battle snapshot or function calls.",
+  "native": "Whole fee main532..757 numeric switch only handles0..4. Ledger mode5 enters3529 global typed cleanup but5507/5702 permit current-original record writeback only2/3, so5 has no writeback/no added veteranSet key. Tail still synchronizes current source relation. Byte9..255 take ledger default with no external mutation; fee main has no numeric arm. With normal fresh false local valueChanged,1614 exits before ActionProcess, numeric accessor or notifier/hooks.",
+  "changes": [
+    "Dispatch admitted mode5 through shared typed cleanup helper then return without numeric rebuild/notification/hooks. Helper current original writeback now explicitly only2/3;5 only cleans/prunes and synchronizes current source.",
+    "Admitted native byte9..255 return without ledger/source synchronization/numeric or events. Includes notUsed9,MAX10 and remaining byte defaults. Existing raw positive source/covert guards retained.",
+    "Modes6/7/8 and non-byte integer arguments retain old compatibility behavior pending separate audit. No new zero-temp-key representation introduced."
+  ],
+  "models": {
+    "sample_vectors": 2916,
+    "sample_dimensions": "9current masks*9foreign masks*4modes[5,9,10,255]*3requests*3sources",
+    "all_default_byte_vectors": 4446,
+    "default_dimensions": "247byte values9..255*2current map cases*3requests*3sources,foreign full map",
+    "scope": "Whole main and full type2 ledger. Fields include fee permanent2/Set0/temp-4, attackSet0,Suppress0,operationSet0. Current20/self60/absent9999; source starts[888],foreign[777,60].5cleans canonical permanent/set keys and current source reverse if needed, foreign reverse unchanged; defaults preserve all maps/reverse. Raw base105/temp-4 unchanged; calls to any numeric accessor or ActionProcess raise, none reached. No notices/hooks.",
+    "initialization": "Explicitly seed fresh main valueChanged=false and ledger out amountRemoved=0. First harness failed KeyError because default ledger leaves amountRemoved unassigned; added explicit seed rather than claiming script writes it. Main captured raw UFunction flags0x0cc20800; physical frame allocation/zeroing, stale/persistent frames, qqq/out marshaling not certified. Models prove bytecode effects under stated fresh-local condition, not all frame states."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 10350,
+    "mode5": 1458,
+    "all_default_byte": 8892,
+    "release_passed": 743,
+    "release_total": 743,
+    "exit_code": 0,
+    "scope": "1458both-side mode5 cases canonical current/foreign masks,3requests,3sources: full typed maps/source query/reverse and snapshot, no original rewrite or numeric/public/event changes.8892both-side tests every9..255byte*3sources*2current-map states*3requests: preserve ledger references/values/base105/temp-4/public37/-9 and un-synchronized reverse arrays; no actions/trace."
+  },
+  "worker": {
+    "job": "20261023-225608-rule359-fee-default-modes-5320d0bd",
+    "status": "completed",
+    "exit_code": 0,
+    "raw_rows": 2916,
+    "raw_exact_rows": 171,
+    "raw_mismatch_rows": 2745,
+    "id_normalized_exact_rows": 2916,
+    "normalization": {
+      "888": "row.inputs[4] current source",
+      "777": "foreign30"
+    },
+    "scope": "Task failed to explicitly name foreign source30 and worker conflated map source IDs with reverse-array placeholder values888/777. Original cases/generator preserved. Primary only renames source-role record keys, changes no map values/masks/reverse/arithmetic/event fields, verifies schema and every normalized row against independent native AST. No automatic retry, no claim raw worker output exact. Worker not authority."
+  },
+  "remaining": [
+    "Fresh-local initialization/out frame details not native-certified; altered/stale true valueChanged can enter common event continuation even for modes without numeric arm. Headless models normal fresh locals; arbitrary frame corruption/persistence not represented.",
+    "Modes6/7/8 custom/combat ledger paths, non-byte legacy inputs, raw zero-present temporary fee key existence/removal, arbitrary unrepresented keys including legacy veteranSet-like keys remain open.",
+    "Managed permanent/temporary projection versus physical source BuffMap duplicates/metadata/cardName/aliasing, arbitrary Suppress frame integer payload and opaque handwritten absolute-offset data not certified.",
+    "Native constructor/reset/force-play fee chains, suppression5604/static lookup/trailing phases, legacy public/aura/identity convenience adapters, crypto integrity/TSet/qqq/UObject and actual execution routing remain open.",
+    "Version migration paused. Historical replays not authority; fully certified cards0. This closes selected fee5/default numeric fallback discrepancies, not full fee engine certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-mode5-and-default-native-model-20261023.json",
+      "sha256": "002e7f146ca21a3b48ea160c39e4f38c180b8d626d6d6c601a49bf98b7d3b817"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule359.py",
+      "sha256": "981831a06f22042dd999ac661cd980e1c19a40609422e4866e0255c8b3e5778f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule359-tests.py",
+      "sha256": "1018545f3b0b2c59adcdd242bb4f85f08240a1f1eb20a083a3d6e34563b5f327"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule359-default-modes.py",
+      "sha256": "adca9e328b759dd021b09ad3046a3e049d1d5c1ffafa6c55fdd9ce106bb5f859"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule359.py",
+      "sha256": "db58fdffcbb695256293c78b1e9cbf86bc32bc2946fa24d9d0b5bef59a2e9f40"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule359-verified-20261023.json",
+      "sha256": "4b17de6d975f50117c34e42949aeb33ca08876cf5a3f2c10912b3bdd10548cdb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule359-selftest.log",
+      "sha256": "fe032b51917cd030d2d75b362e2cd3fe5f02bfda7f9c6d01ca23c6d9c2169f35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule359-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\spec.json",
+      "sha256": "4be8c51d8e4c97653a346f12b06fa5e98679599f7bb0ff28bd51a37f07712fbf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\task.txt",
+      "sha256": "8350bf417a111e405cdbdda54ad0a3fa39324d13a77d286442161a4c3cd6790d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\cases.json",
+      "sha256": "af0bb8df65fbc608594787fdad3ebb005d3f5e792b34a88620d5be78ac27119e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\primary-cases.json",
+      "sha256": "8078c80e9fe16ef0f0945c8cf78de04eaada1dbbfa732d8e2d2b7e3e40c77819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\generator.py",
+      "sha256": "03a71f327c8628bd63ec7ddb6080eaaf5d5c9ba2521731882c1f94fcb5b84945"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\worker-id-normalized-cases.json",
+      "sha256": "8078c80e9fe16ef0f0945c8cf78de04eaada1dbbfa732d8e2d2b7e3e40c77819"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule359\\normalization-note.json",
+      "sha256": "5fc07d407108ee71332d66520ac52afadfcc8205809bc7422eb318e7cd9d8284"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-225608-rule359-fee-default-modes-5320d0bd\\job.json",
+      "sha256": "3ca91ecb3d971c31a33b45e81cc524eded8528887b7e002856d5dfcb86be2ebf"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "fdf1603f6a4ae89fbf61856a927a5cba71273df9bb0519f5c48aee3da6cd41c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "8fc77a8b7c91d63249a902108b80a5ca8595690deab8a0b7de90079eb607030b"
+    }
+  ]
+}

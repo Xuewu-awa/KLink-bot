@@ -575,6 +575,8 @@ internal static class SelfTest
         new("费用独立字段：重算/移动不覆盖，复制与快照保留两分量", KreditIndependentFieldLifecycle),
         new("绝对费用账本：全来源清理、原来源缓存写回和零值键", KreditAbsoluteTypedLedgerMatrix),
         new("费用设值零键：非空判据、克隆、复制和快照保留", KreditSetValuePresenceLifecycle),
+        new("费用模式5：仅全源账本清理，不写回/改数值/通知回调", KreditVeteranLedgerOnly),
+        new("费用字节默认分支：9至255不改账本/关联/费用或事件", KreditDefaultByteModesNoOp),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7502,6 +7504,128 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? KreditVeteranLedgerOnly(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        int[] masks = { 0, 1, 2, 3, 4, 8, 16, 32, 63 };
+        string[] keys = { "kredit_permBuff", "kredit_SetValue", "kredit_tempBuffGive", "attack_SetValue", "Suppress", "operationCost_SetValue" };
+        int[] values = { 2, 0, -4, 0, 0, 0 };
+        Dictionary<string, int> Payload(int mask) => Enumerable.Range(0, keys.Length).Where(i => (mask & (1 << i)) != 0).ToDictionary(i => keys[i], i => values[i]);
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int cm in masks)
+        foreach (int om in masks)
+        foreach (int mode in new[] { 5 })
+        foreach (int request in new[] { -3, 0, 105 })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 1);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            void Add(int id, int mask)
+            {
+                if ((mask & ~4) != 0) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id,
+                    KreditCost = (mask & 1) != 0 ? 2 : 0, KreditCostSetValue = (mask & 2) != 0 ? 0 : null,
+                    AttackSetValue = (mask & 8) != 0 ? 0 : null, HasSuppressLedgerEntry = (mask & 16) != 0,
+                    OperationCostSetValue = (mask & 32) != 0 ? 0 : null };
+                if ((mask & 4) != 0) target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, KreditCost = -4 };
+            }
+            Add(sourceId, cm); Add(30, om);
+            target.BaseKreditCost = 105; target.TemporaryKreditCost = -4;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            source.CardsBuffedByThisCard.Add(888); target.CardsBuffedByThisCard.Add(888);
+            foreign.CardsBuffedByThisCard.AddRange(new[] { 777, 60 });
+            var expected = new Dictionary<int, Dictionary<string, int>>();
+            foreach (var (id, mask) in new[] { (sourceId, cm), (30, om) })
+            {
+                var map = Payload(mask); map.Remove("kredit_permBuff"); map.Remove("kredit_SetValue"); if (mode == 3) map.Remove("Suppress");
+                if (map.Count != 0) expected[id] = map;
+            }
+            // No cached current-source writeback and no veteranSet key.
+            string? CheckLedger()
+            {
+                var actual = new Dictionary<int, Dictionary<string, int>>();
+                foreach (var (key, buff) in target.BuffsBySource)
+                {
+                    if (!actual.TryGetValue(key.SourceCardId, out var map)) actual[key.SourceCardId] = map = new();
+                    if (buff.KreditCost != 0) map[key.Temporary ? "kredit_tempBuffGive" : "kredit_permBuff"] = buff.KreditCost;
+                    if (buff.KreditCostSetValue.HasValue) map["kredit_SetValue"] = buff.KreditCostSetValue.Value;
+                    if (buff.AttackSetValue.HasValue) map["attack_SetValue"] = buff.AttackSetValue.Value;
+                    if (buff.HasSuppressLedgerEntry) map["Suppress"] = 0;
+                    if (buff.OperationCostSetValue.HasValue) map["operationCost_SetValue"] = buff.OperationCostSetValue.Value;
+                    if (buff.KreditCostSetsAbsoluteValue) return "原生模式不应新建旧绝对偏移标记";
+                }
+                if (actual.Count != expected.Count || expected.Any(pair => !actual.TryGetValue(pair.Key, out var map)
+                    || !map.OrderBy(x => x.Key).SequenceEqual(pair.Value.OrderBy(x => x.Key)))) return "模式5应清理所有来源且不写回当前原记录";
+                if (state.ById(sourceId) is { } current && !current.CardsBuffedByThisCard.SequenceEqual(expected.ContainsKey(sourceId) ? new[] { 888, 60 } : new[] { 888 })) return "当前来源关联未修复";
+                if (!foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 777, 60 })) return "全局清理不应修复外来反向名单";
+                return null;
+            }
+            var phases = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                phases.Add((string)actor.BlueprintVariables["_auditKreditPhase"]!); actor.BlueprintVariables.Remove("_auditKreditPhase");
+                fault ??= CheckLedger();
+                if (state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSetKreditCost") != 1) fault = "账本/通知必须早于回调";
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, request, mode, true, null }, ctx, out _);
+            fault ??= CheckLedger();
+            var snap = target.Snapshot(); var expectedSets = target.BuffsBySource.Where(kv => kv.Value.KreditCostSetValue.HasValue)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.KreditCostSetValue!.Value);
+            string[] expectedPhases = Array.Empty<string>();
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            if (fault is not null || target.BaseKreditCost != 105 || target.TemporaryKreditCost != -4
+                || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9 || !phases.SequenceEqual(expectedPhases)
+                || notices.Length != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any()
+                || !Equals(engine.Api.InvokeByName("isBuffedByCard", target, new object?[] { sourceId }, ctx, out _), expected.ContainsKey(sourceId))
+                || !snap.KreditCostSetValuesBySource.OrderBy(x => x.Key).SequenceEqual(expectedSets.OrderBy(x => x.Key)))
+                return $"费用模式5账本错误 {side}/{cm}/{om}/{mode}/{request}/{sourceId}: {fault}";
+        }
+        return null;
+    }
+
+    private static string? KreditDefaultByteModesNoOp(CardDatabase db)
+    {
+        static (int Cost, int? Set, int? AttackSet, bool Suppress, int? OperationSet) Payload(CardBuff b)
+            => (b.KreditCost, b.KreditCostSetValue, b.AttackSetValue, b.HasSuppressLedgerEntry, b.OperationCostSetValue);
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(9, 247))
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool currentMap in new[] { false, true })
+        foreach (int request in new[] { -3, 0, 105 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 1);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); target.BaseKreditCost = 105; target.TemporaryKreditCost = -4;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            foreach (int id in currentMap ? new[] { sourceId, 30 } : new[] { 30 })
+            {
+                target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, KreditCost = 2,
+                    KreditCostSetValue = 0, AttackSetValue = 0, HasSuppressLedgerEntry = true, OperationCostSetValue = 0 };
+                target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, KreditCost = -4 };
+            }
+            var old = target.BuffsBySource.ToDictionary(x => x.Key, x => (Reference: x.Value, Data: Payload(x.Value)));
+            source.CardsBuffedByThisCard.Add(888); target.CardsBuffedByThisCard.Add(888); foreign.CardsBuffedByThisCard.AddRange(new[] { 777, 60 });
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, request, mode, true, null }, ctx, out bool handled);
+            if (!handled || target.BaseKreditCost != 105 || target.TemporaryKreditCost != -4
+                || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9 || target.BuffsBySource.Count != old.Count
+                || old.Any(x => !target.BuffsBySource.TryGetValue(x.Key, out var b) || !ReferenceEquals(b, x.Value.Reference) || Payload(b) != x.Value.Data)
+                || (state.ById(sourceId) is { } actualSource && !actualSource.CardsBuffedByThisCard.SequenceEqual(new[] { 888 }))
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 777, 60 }) || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"费用默认字节模式不应改动状态 {side}/{mode}/{sourceId}/{currentMap}/{request}";
         }
         return null;
     }

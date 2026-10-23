@@ -4350,6 +4350,17 @@ public sealed partial class CardApi
         if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && amount == 0)
             return null;
 
+        // RULE-359: ledger-only veteranSet cleans permanent/set keys without
+        // a cached-current rewrite. The fee main switch has no numeric arm5.
+        if (changeType == ChangeTypeKreditCostVeteranSet)
+        {
+            RecordAbsoluteKreditCostLedger(target, sourceId, rawAmount, changeType);
+            return null;
+        }
+        // Native byte defaults9..255 have no ledger or numeric arm. Preserve
+        // maps and reverse lists, and return under fresh local-frame semantics.
+        if (changeType is >= 9 and <= byte.MaxValue) return null;
+
         if (changeType == ChangeTypeTempBuffRemove)
         {
             // RULE-354: native type2/mode4 withdraws only the source's
@@ -4434,9 +4445,9 @@ public sealed partial class CardApi
         return null;
     }
 
-    // RULE-358: whole type2 ledger modes2/3. Global cleanup precedes the
-    // cached ORIGINAL current-source writeback, preserving that source's old
-    // permanent/other keys. Foreign reverse arrays are deliberately untouched.
+    // RULE-358/359: type2 ledger2/3/5. Only2/3 rewrite the cached ORIGINAL
+    // current source after global cleanup;5 performs cleanup only. Foreign
+    // reverse arrays are deliberately untouched.
     private void RecordAbsoluteKreditCostLedger(CardInstance target, int sourceId, int rawValue, int changeType)
     {
         var key = (sourceId, false);
@@ -4452,9 +4463,18 @@ public sealed partial class CardApi
             if (changeType == ChangeTypeSuppress) buff.HasSuppressLedgerEntry = false;
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
         }
-        if (changeType == ChangeTypeSetValueReal) original.KreditCostSetValue = rawValue;
-        else original.HasSuppressLedgerEntry = true; // unqualified Suppress key
-        target.BuffsBySource[key] = original;
+        if (changeType == ChangeTypeSetValueReal)
+        {
+            original.KreditCostSetValue = rawValue;
+            target.BuffsBySource[key] = original;
+        }
+        else if (changeType == ChangeTypeSuppress)
+        {
+            original.HasSuppressLedgerEntry = true; // unqualified Suppress key
+            target.BuffsBySource[key] = original;
+        }
+        // Mode5 deliberately has neither original-record writeback nor a
+        // veteranSet key. Only current-source reverse synchronization follows.
         SynchronizeBuffTarget(target, sourceId);
     }
 
@@ -4474,6 +4494,7 @@ public sealed partial class CardApi
     private const int ChangeTypeOperationCostSetValue = 2;
     private const int ChangeTypeOperationCostSuppress = 3;
     private const int ChangeTypeOperationCostVeteranSet = 5;
+    private const int ChangeTypeKreditCostVeteranSet = 5;
 
     /// <summary>
     /// ⚠️ `EChangeType::SetValue` 的**真实枚举值**是 <b>2</b>，不是手写光环兼容常量 1。
