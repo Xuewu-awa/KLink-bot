@@ -86,7 +86,15 @@ public sealed class CardInstance
     public int PublicAttack { get => _publicAttack ?? Definition.Attack; set => _publicAttack = value; }
     public int Defense { get; set; }
     public int MaxDefense { get; set; }
-    public int KreditCost { get; set; }
+    // RULE-357: independent current base/temp, separate from public fields
+    // and the source ledger. Legacy C# aggregate; native readers use Base/Total.
+    public int BaseKreditCost { get; set; }
+    public int TemporaryKreditCost { get; set; }
+    public int KreditCost
+    {
+        get => unchecked(BaseKreditCost + TemporaryKreditCost);
+        set { BaseKreditCost = value; TemporaryKreditCost = 0; }
+    }
     // RULE-353: reflected +0x80/+0x84 are independent of encrypted current
     // costs. Fallbacks also support synthetic/static wrappers without init.
     private int? _publicKreditCost, _publicKreditCostBuff;
@@ -709,6 +717,9 @@ public sealed class CardInstance
 
     private void InitializeRuleAttributesFromDefinition()
     {
+        // Existing initialization/reset compatibility, not certification of
+        // the full native encrypted-cost construction/reset chain.
+        KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
         foreach (string keyword in Definition.Keywords)
         {
             Keywords.Add(keyword);
@@ -834,22 +845,18 @@ public sealed class CardInstance
             Keywords.Add(kw);
         }
 
-        // 费用 / 重甲关键字按新卡面重算（纯函数：只看 Definition + BuffsBySource）
+        // Identity correction remains an explicit legacy ledger adapter.
+        KreditCost = EffectiveKreditCost;
         RecalculateStats();
     }
 
     /// <summary>
-    /// 把所有「基础值 + 各来源 buff」的派生数值重算一遍。
-    ///
-    /// ⚠️ **必须在每次改 buff 之后调用**，而且**必须是纯函数**（只看
-    /// <see cref="Definition"/> 与 <see cref="BuffsBySource"/>，不累加当前值）。
-    /// 光环类效果（`ApplyTheBuff`/`RemoveTheBuff`）会反复施加/撤销同一来源，
-    /// 增量式写法第二次就会翻倍；绝对值重算天然幂等。
-    /// 落点：<see cref="KreditCost"/>、重甲关键字；行动费分量不由账本重算。
+    /// Refresh derived armor keywords. Attack and cost numeric components
+    /// belong to mutation paths, independently of the source ledger.
     /// </summary>
     public void RecalculateStats()
     {
-        KreditCost = EffectiveKreditCost;
+        // RULE-357: fee components survive unrelated stat/movement updates.
         // Operation fields are updated by their mutation paths. Recomputing
         // from the source ledger loses clamping history and temporary values.
 
@@ -864,11 +871,9 @@ public sealed class CardInstance
     }
 
     /// <summary>
-    /// 有效费用 = 卡面费用 + 各来源的改费之和，最低为 0。
-    ///
-    /// 费用下限是通用规则，不区分单位、指令或反制卡；普通减费也可以
-    /// 把一张 1 费卡降到 0。卡面明确写「minimum of 1」的效果仍应由该
-    /// 效果自己的蓝图逻辑施加额外限制，而不是由全局费用模型假定。
+    /// Legacy handwritten aura/identity adapter: template plus ledger offsets,
+    /// with a zero floor. This does not compute native current cost; use
+    /// TotalKreditCost for that. Ordinary native updates preserve clamp history.
     /// </summary>
     public int EffectiveKreditCost
     {
@@ -930,6 +935,8 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            BaseKreditCost = BaseKreditCost,
+            TemporaryKreditCost = TemporaryKreditCost,
             BaseOperationCost = BaseOperationCost,
             TemporaryOperationCost = TemporaryOperationCost,
             BaseAttack = BaseAttack,
@@ -1155,6 +1162,8 @@ public sealed record CardSnapshot(
     string? CustomAbility,
     Dictionary<string, string> CustomJson)
 {
+    public int BaseKreditCost { get; init; }
+    public int TemporaryKreditCost { get; init; }
     public int BaseOperationCost { get; init; }
     public int PublicKreditCost { get; init; }
     public int PublicKreditCostBuff { get; init; }

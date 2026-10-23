@@ -990,10 +990,8 @@ public sealed class GameState
         card.LocationNumber = locationNumber ?? NextLocationNumber(card.Owner, location);
         if (normalizeLocation) NormalizeLocationNumbers(card.Owner, location);
 
-        // 换区之后派生数值可能变（最典型的是「手牌里才 -1 费」的光环：
-        // card_unit_85_pioneer_company 只给**手牌里**的指令减费，
-        // 指令结算完进弃牌堆时那个 -1 就不该再算了）。
-        // 重算是绝对值式的、幂等的，所以在热路径上重复调用也安全。
+        // Refresh ledger-derived keywords only. Current cost/attack fields
+        // belong to their mutation paths and survive movement (RULE-357).
         card.RecalculateStats();
 
         // 「某张卡换区了」事件 —— 挂在**这个唯一入口**上，见 MatchEngine.FireLocationMoved 的出处。

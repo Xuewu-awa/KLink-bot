@@ -571,6 +571,8 @@ internal static class SelfTest
         new("临时费用撤销存在项：保留永久和其他字段的兼容边界", KreditTemporaryPresentCompatibility),
         new("临时费用撤销：撤销量通知先于自身/T45且不以最终差值为门", KreditTemporaryWithdrawalEvents),
         new("普通费用相抵：清空来源账本及反向关系但保留其他键", KreditOrdinaryZeroLedgerCleanup),
+        new("费用独立字段：模式0至4数值、通知与回调的原生矩阵", KreditIndependentNumericMatrix),
+        new("费用独立字段：重算/移动不覆盖，复制与快照保留两分量", KreditIndependentFieldLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7502,6 +7504,96 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? KreditIndependentNumericMatrix(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 7, 99, 105 })
+        foreach (int temp in new[] { -4, 0, 5 })
+        foreach (int request in new[] { -5, 0, 7, 99, 105 })
+        foreach (int mode in Enumerable.Range(0, 5))
+        foreach (int contribution in new[] { -3, 0, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, KreditCost = 2, AttackSetValue = 0 };
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, KreditCost = contribution };
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            int expectedBase = basis, expectedTemp = temp;
+            bool changed = mode <= 1 ? request != 0 : mode <= 3 ? basis != request : contribution != 0;
+            if (mode == 0) expectedTemp = unchecked(temp + request);
+            if (mode == 1 && request != 0) expectedBase = Math.Clamp(unchecked(basis + request), 0, 99);
+            if (mode is 2 or 3 && changed) expectedBase = Math.Clamp(request, 0, 99);
+            if (mode == 4) expectedTemp = unchecked(temp - contribution);
+            int expectedTotal = Math.Clamp(unchecked(expectedBase + expectedTemp), 0, 99);
+            int expectedAmount = mode == 4 ? unchecked(-contribution) : request;
+            var phases = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                phases.Add((string)actor.BlueprintVariables["_auditKreditPhase"]!); actor.BlueprintVariables.Remove("_auditKreditPhase");
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+                if (target.BaseKreditCost != expectedBase || target.TemporaryKreditCost != expectedTemp || notices.Length != 1
+                    || notices[0].Values.Single(x => x.Name == "kreditCost").Value != expectedTotal
+                    || notices[0].Values.Single(x => x.Name == "costAdded").Value != expectedAmount)
+                    fault = "回调前数值/通知未完成";
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, 20, request, mode, true, null }, ctx, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            var decrypted = engine.Api.InvokeByName("getAndDecryptKredit", target, new object?[] { null }, ctx, out _);
+            if (fault is not null || target.BaseKreditCost != expectedBase || target.TemporaryKreditCost != expectedTemp
+                || target.TotalKreditCost != expectedTotal || !Equals(decrypted, expectedBase)
+                || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9
+                || !phases.SequenceEqual(changed ? new[] { "own", "other" } : Array.Empty<string>())
+                || actions.Length != (changed ? 1 : 0)
+                || (changed && (actions[0].Values.Single(x => x.Name == "costAdded").Value != expectedAmount
+                    || actions[0].Values.Single(x => x.Name == "kreditCost").Value != expectedTotal)))
+                return $"独立费用数值错误 {side}/{basis}/{temp}/{request}/{mode}/{contribution}: {fault}";
+            target.RecalculateStats();
+            if (target.BaseKreditCost != expectedBase || target.TemporaryKreditCost != expectedTemp)
+                return "通用重算不应重建刚完成的原生数值";
+        }
+        return null;
+    }
+
+    private static string? KreditIndependentFieldLifecycle(CardDatabase db)
+    {
+        var copyMethod = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 7, 105, int.MinValue, int.MaxValue })
+        foreach (int temp in new[] { -4, 0, 5, int.MaxValue })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, KreditCost = 12345 };
+            target.RecalculateStats();
+            state.Move(target, side.DeckOf(), notifyMoved: false);
+            var snap = target.Snapshot(); var copy = (CardInstance)copyMethod.Invoke(null, new object[] { target })!;
+            if (target.BaseKreditCost != basis || target.TemporaryKreditCost != temp
+                || snap.BaseKreditCost != basis || snap.TemporaryKreditCost != temp
+                || copy.BaseKreditCost != basis || copy.TemporaryKreditCost != temp
+                || target.KreditCost != unchecked(basis + temp) || target.TotalKreditCost != Math.Clamp(unchecked(basis + temp), 0, 99)
+                || copy.PublicKreditCost != 37 || copy.PublicKreditCostBuff != -9)
+                return $"移动/复制/快照丢失费用分量 {side}/{basis}/{temp}";
+            target.KreditCost = 17;
+            if (target.BaseKreditCost != 17 || target.TemporaryKreditCost != 0 || snap.BaseKreditCost != basis || copy.BaseKreditCost != basis)
+                return "单值兼容赋值应重置临时分量，且快照/复制独立";
+            // Existing synthetic initialization/reset compatibility only; the
+            // complete native encrypted initialization/reset chain is still open.
+            target.ResetAttributes();
+            if (target.BaseKreditCost != target.Definition.Kredits || target.TemporaryKreditCost != 0)
+                return "现有重置兼容语义不应留下旧临时费用";
+        }
+        return null;
+    }
+
     private static string? KreditOrdinaryZeroLedgerCleanup(CardDatabase db)
     {
         using var probes = InstallKreditCallbackProbes();
@@ -7583,7 +7675,8 @@ internal static class SelfTest
             var temporary = new CardBuff { SourceCardId = source, Temporary = true, KreditCost = contribution, Attack = 2 };
             var permanent = new CardBuff { SourceCardId = source, KreditCost = 0, DefenseSetValue = 0 };
             target.BuffsBySource[(source, true)] = temporary; target.BuffsBySource[(source, false)] = permanent;
-            target.RecalculateStats(); int previous = target.KreditCost;
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = contribution;
+            target.RecalculateStats(); int previous = target.TotalKreditCost;
             target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
             if (suppressed) target.Keywords.Add(Keyword.Suppressed);
             var events = new List<string>(); string? fault = null; var created = state.CardCreated;
@@ -7612,7 +7705,7 @@ internal static class SelfTest
                 return $"撤销费用通知/回调错误 {side}/{basis}/{contribution}/{request}/{source}/{suppressed}: {fault}";
             // Demonstrates event dispatch despite unchanged observable cost only;
             // other raw numeric results remain legacy, not native-certified here.
-            if (basis == 0 && contribution < 0 && (previous != 0 || target.KreditCost != 0))
+            if (basis == 0 && contribution < 0 && (previous != 0 || target.TotalKreditCost != 0))
                 return "应覆盖撤销前后费用都是0的通知/回调";
         }
         return null;
@@ -7650,7 +7743,7 @@ internal static class SelfTest
             if (fault is not null || !events.SequenceEqual(expected)) return $"普通改费不应按聚合差值决定回调 {side}/{basis}/{request}/{mode}/{source}/{suppressed}: {fault}";
             // The unchanged-zero scenario is the repaired regression. Raw upper
             // saturation and base/temp storage remain separate native migration work.
-            if (basis == 0 && request < 0 && target.KreditCost != 0) return "测试应覆盖费用仍0但已通知/回调的边界";
+            if (basis == 0 && request < 0 && target.TotalKreditCost != 0) return "测试应覆盖费用仍0但已通知/回调的边界";
         }
         return null;
     }
@@ -7828,9 +7921,9 @@ internal static class SelfTest
             var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
             engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, source, request, mode, true, null }, ctx, out _);
             var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
-            if (mode <= 1 && request == 0) { if (actions.Length != 0) return "普通零请求不应通知"; continue; }
-            // This fixture witnesses payload integration only. Absolute equal-value
-            // sending and the legacy numeric result are not native-equivalence claims.
+            bool changed = mode <= 1 ? request != 0 : basis != request;
+            if (!changed) { if (actions.Length != 0) return "普通零请求或基础等于绝对请求不应通知"; continue; }
+            // RULE-357: absolute equality compares raw base/request, not total.
             if (actions.Length != 1 || !actions[0].Values.SequenceEqual(new[] {
                 ActionValue2.Int("cardID", 60), ActionValue2.Int("kreditCost", target.TotalKreditCost), ActionValue2.Int("instigatorID", source),
                 ActionValue2.Int("costAdded", request), ActionValue2.Str("changeType", names[mode]) }))
@@ -24826,13 +24919,17 @@ internal static class SelfTest
             var (engine, state) = EmptyBoard(db);
             var source = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.HandLeft, 1);
             source.BuffsBySource[(90, false)] = new CardBuff { KreditCost = 200 };
+            source.BaseKreditCost = 200; source.TemporaryKreditCost = 0;
             source.RecalculateStats();
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
             object? Total() => engine.Api.InvokeByName("getTotalKreditCost", source, new object?[] { null }, ctx, out _);
             if (!Equals(Total(), 99) || source.BuffsBySource[(90, false)].KreditCost != 200)
                 return "总费用上限破坏了原始来源账本";
-            source.BuffsBySource[(90, false)].KreditCost = 10;source.RecalculateStats();
-            if (!Equals(Total(), source.Definition.Kredits + 10)) return "撤销超额来源后总费用未恢复正确值";
+            source.BuffsBySource[(90, false)].KreditCost = 10; source.RecalculateStats();
+            if (!Equals(Total(), 99) || source.BaseKreditCost != 200)
+                return "修改来源账本或通用重算不应重建当前费用";
+            source.BaseKreditCost = source.Definition.Kredits + 10;
+            if (!Equals(Total(), source.Definition.Kredits + 10)) return "显式更新数值后总费用未恢复正确值";
         }
         return null;
     }
@@ -39082,6 +39179,11 @@ internal static class SelfTest
             new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out _);
         if (target.BaseOperationCost != baseOperation || target.TemporaryOperationCost != 0)
             return "临时行动费必须先通过mode4显式撤销";
+        // RULE-357: ledger surgery cannot erase independent temporary fee.
+        engine.Api.InvokeByName("ChangeKreditCost", target,
+            new object?[] { target, source.CardId, 0, 4, false, null }, ctx, out _);
+        if (target.BaseKreditCost != baseKredit || target.TemporaryKreditCost != 0)
+            return "临时费用须先显式撤销，不能由替换账本槽重建";
         target.BuffsBySource[(source.CardId, true)] = new CardBuff
         {
             SourceCardId = source.CardId,

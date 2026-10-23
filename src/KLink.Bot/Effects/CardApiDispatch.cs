@@ -1527,7 +1527,7 @@ public sealed partial class CardApi
                     : 0;
             },
 
-            // `getAndDecryptKredit` 当前读取模型原始费用代理；原生基础/增益解密语义仍待核实。
+            // `getAndDecryptKredit` reads the independent current base (RULE-357).
             // `getTotalKreditCost` 另有 0..99 输出边界，两者不可视为同义。
             //
             // ## 为什么必须有它（2026-10-01，对局 508065 #36）
@@ -1553,7 +1553,7 @@ public sealed partial class CardApi
             // a[0] = 出参槽（`CallFunc_getAndDecryptKredit_decryptedKredit`）—— 不是实参
             // </code>
             // 也就是和 `getTotalKreditCost` **完全同形**，主语在接收者，走 `SelfArg`。
-            ["getAndDecryptKredit"] = (c, r, a) => SelfArg(c, r, a)?.KreditCost ?? 0,
+            ["getAndDecryptKredit"] = (c, r, a) => SelfArg(c, r, a)?.BaseKreditCost ?? 0,
             // `GetCombatKeywords(out Keywords, out numberOfKeywords)` 是
             // `UBaseCardObject` 的成员函数。蓝图出参是 `ECombatKeyword[]`（字节枚举）
             // 加数量，**不是卡实例列表**；VM 用 object[] 按序写回两个 out 槽。
@@ -4321,8 +4321,8 @@ public sealed partial class CardApi
 
         // RULE-349: native71/105 checks the supplied raw positive ID; source
         // object existence is not required.119 bypasses385 CanCardBeBuffed
-        // when skipCovertCheck (argument4) is true. Numeric/ledger body below
-        // remains a legacy adapter, pending independent native reconciliation.
+        // when skipCovertCheck (argument4) is true. RULE-357 migrates current
+        // numeric fields; absolute/unknown ledger representation remains legacy.
         int sourceId = IntArg(a, 1);
         if (sourceId <= 0 || (!TruthyArg(a, 4) && !CanCardBeBuffed(target)))
         {
@@ -4340,7 +4340,7 @@ public sealed partial class CardApi
         //    (1) 光环每 Apply 一次就累减一次、`RemoveTheBuff` 撤不掉（它传的是 0）；
         //    (2) `card_unit_big_red_one` 每次抽牌都会重算一遍「设成 4 费」的偏移，
         //        累加语义下每抽一张牌费用就再掉一截。
-        //    现在改成：**buff 字典是唯一真源**，改完调 `RecalculateStats()` 用绝对值重算。
+        //    旧偏移账本只保留为兼容记录；RULE-357按独立基础/临时字段更新费用。
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
@@ -4367,10 +4367,11 @@ public sealed partial class CardApi
             // RULE-355: ledger mode4 returns the negated recorded contribution.
             // It replaces the caller request and determines valueChanged even
             // if the clamped total is unchanged. Numeric storage/recalculation
-            // below remains legacy until the independent base/temp migration.
+            // below is updated independently of the ledger (RULE-357).
             int amountRemoved = unchecked(-temporaryBuff.KreditCost);
             RemoveCostBuff(target, sourceId, temporary: true,
                 fallbackToPermanent: false);
+            target.TemporaryKreditCost = unchecked(target.TemporaryKreditCost + amountRemoved);
             NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, amountRemoved, changeType);
             ExecuteKreditCostChangedEvents(target, sourceId);
             return null;
@@ -4384,7 +4385,7 @@ public sealed partial class CardApi
             amount -= target.Definition.Kredits;
         }
 
-        int previousCost = target.KreditCost;
+        int previousBase = target.BaseKreditCost;
         var buff = GetOrCreateBuff(target, sourceId, temporary);
         if (temporary || changeType == ChangeTypePermBuff)
         {
@@ -4402,16 +4403,38 @@ public sealed partial class CardApi
         // RemoveBuffEntry preserves a relation still owned by another slot.
         if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && buff.IsEmpty)
             RemoveBuffEntry(target, (sourceId, temporary));
-        target.RecalculateStats();
-
-        NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);
-
-        // RULE-352: native modes0/1 set valueChanged from nonzero request,
-        // even when clamping leaves the observable cost unchanged. Absolute
-        // modes still use the legacy aggregate gate pending split-field migration.
-        if ((changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && rawAmount != 0)
-            || target.KreditCost != previousCost)
+        // RULE-357: numeric fields are independent of ledger reconstruction.
+        // Absolute ledger representation remains the legacy offset adapter.
+        bool valueChanged;
+        if (changeType == ChangeTypeTempBuffGive)
         {
+            target.TemporaryKreditCost = unchecked(target.TemporaryKreditCost + rawAmount);
+            valueChanged = rawAmount != 0;
+        }
+        else if (changeType == ChangeTypePermBuff)
+        {
+            target.BaseKreditCost = Math.Clamp(unchecked(target.BaseKreditCost + rawAmount), 0, 99);
+            valueChanged = rawAmount != 0;
+        }
+        else if (changeType is ChangeTypeSetValueReal or ChangeTypeSuppress)
+        {
+            valueChanged = previousBase != rawAmount;
+            if (valueChanged) target.BaseKreditCost = Math.Clamp(rawAmount, 0, 99);
+        }
+        else
+        {
+            // Unknown modes retain the explicit legacy adapter, uncertified.
+            int previous = target.KreditCost;
+            target.KreditCost = target.EffectiveKreditCost;
+            // Preserve the old unknown-mode notification/callback behavior;
+            // the native numerical migration above covers only modes0..4.
+            NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);
+            if (target.KreditCost != previous) ExecuteKreditCostChangedEvents(target, sourceId);
+            return null;
+        }
+        if (valueChanged)
+        {
+            NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);
             ExecuteKreditCostChangedEvents(target, sourceId);
         }
 
@@ -4484,8 +4507,7 @@ public sealed partial class CardApi
             RemoveBuffEntry(target, key);
         }
         else SynchronizeBuffTarget(target, sourceId);
-
-        target.RecalculateStats();
+        // Numeric withdrawal belongs to the caller, independently of the ledger.
     }
 
     /// <summary>撤销某个来源在目标卡上的**全部永久** buff（`RemoveTheBuff` 的通用形态）。</summary>
@@ -4493,6 +4515,7 @@ public sealed partial class CardApi
     {
         if (RemoveBuffEntry(target, (sourceId, false)))
         {
+            target.KreditCost = target.EffectiveKreditCost; // legacy whole-source adapter
             target.RecalculateStats();
         }
     }
@@ -5752,6 +5775,8 @@ public sealed partial class CardApi
             {
                 RemoveCostBuff(target, source.CardId, temporary: true,
                     fallbackToPermanent: true);
+                // Explicit legacy L4 private-function adapter, not native mode4.
+                target.KreditCost = target.EffectiveKreditCost;
             }
             else if (IsLocatedOnBoard(target)
                      && !target.Definition.Keywords.Contains(Keyword.Blitz))
@@ -5855,6 +5880,7 @@ public sealed partial class CardApi
         var buff = GetOrCreateBuff(target, aura.CardId);
         buff.KreditCost = amount;
         buff.KreditCostSetsAbsoluteValue = changeType == ChangeTypeSetValue;
+        target.KreditCost = target.EffectiveKreditCost; // handwritten aura compatibility
         target.RecalculateStats();
         RememberBuffedCard(aura, target);
         MarkBuffActive(aura, true);
@@ -5966,7 +5992,8 @@ public sealed partial class CardApi
         //    但如果将来某张卡的 RemoveTheBuff 只想撤费用、保留攻防，
         //    就必须改成按字段撤销 —— 客户端的 ChangeKreditCost(…, changeType=4)
         //    只清 KreditCost，不清 Attack/Defense。
-        // Legacy whole-aura removal still derives its aggregate from the ledger.
+        // Legacy whole-aura removal still derives its aggregates from the ledger.
+        target.KreditCost = target.EffectiveKreditCost;
         target.OperationCost = target.EffectiveOperationCost;
         target.RecalculateStats();
     }

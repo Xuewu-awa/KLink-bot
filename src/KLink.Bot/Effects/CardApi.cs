@@ -1350,7 +1350,8 @@ public sealed partial class CardApi
             AttackBuff = source.AttackBuff,
             Defense = source.Defense,
             MaxDefense = source.MaxDefense,
-            KreditCost = source.KreditCost,
+            BaseKreditCost = source.BaseKreditCost,
+            TemporaryKreditCost = source.TemporaryKreditCost,
             PublicKreditCost = source.PublicKreditCost,
             PublicKreditCostBuff = source.PublicKreditCostBuff,
             BaseOperationCost = source.BaseOperationCost,
@@ -4535,7 +4536,8 @@ public sealed partial class CardApi
         }
 
         card.HeavyArmorZeroedBySuppress = false;
-        // Legacy manual restore adapter, not the native operation-cost path.
+        // Legacy manual restore adapter, not the native cost mutation paths.
+        // Restoring non-fee legacy payloads must preserve current fee components.
         card.OperationCost = card.EffectiveOperationCost;
         card.RecalculateStats();
 

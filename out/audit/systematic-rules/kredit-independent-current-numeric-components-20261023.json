@@ -1,0 +1,284 @@
+{
+  "rule": "RULE-357",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-357",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_numeric_vectors": 1125,
+    "worker_rows_exact": 1125,
+    "native_accessor_vectors": 128,
+    "native_accessor_calls": 640,
+    "native_copy_slice_vectors": 32,
+    "new_regression_combinations": {
+      "numeric": 2250,
+      "lifecycle": 48,
+      "total": 2298
+    },
+    "initial_selftest": {
+      "passed": 730,
+      "total": 737,
+      "failed": 7
+    },
+    "release_selftest": {
+      "passed": 739,
+      "total": 739,
+      "exit_code": 0
+    },
+    "scope": "Independent current base/temp fee numerical modes0..4, total clamp, base getter, generic recalc/move preservation, managed copy/snapshot. Constructor/reset/identity/aura/public convenience/force-play compatibility boundaries and full absolute typed ledger remain not certified."
+  },
+  "authority": "Reuse authoritative read-only captures and current installed PE.8supporting scripts19614B redecoded from raw bytes/FName/symbol headers. Direct whole main2759B+ledger6267B+query1174B/forward84B=10284B; five accessor backends1234B and exact CopyData52B slice additionally executed offline. No current-process game calls/writes or new battle snapshot.",
+  "native": "Main0: add signed request to temporary field without per-component clamp;1: clamp signed base+request0..99;2/3: compare raw current base against raw request, only if unequal set clamped base, keep temporary;4: add ledger amountRemoved to temporary. Ordinary0/1zero early return; absolute equality suppresses notice/hooks even if raw base outside range. Total getter signed base+temp clamp0..99; reflected public+0x80/+0x84 independent.",
+  "changes": [
+    "Add BaseKreditCost/TemporaryKreditCost. Keep KreditCost as signed aggregate compatibility view and single-value setter resetting temporary0; TotalKreditCost clamps signed sum. Existing Initialize/Reset logical defaults retained explicitly, not new native lifecycle certification.",
+    "Known dispatcher modes0..4 update components directly; mode4 removal helper no longer recalculates from ledger. Absolute valueChanged compares raw base/request and notification only on actual native gate. getAndDecryptKredit reads current base.",
+    "RecalculateStats no longer rewrites fees, including movement and unrelated armor/stat calls. CopyForStealSide and CardSnapshot retain both components. Legacy handwritten aura application/whole removal/L4 private withdrawal, identity correction and unknown modes explicitly retain aggregate-from-ledger compatibility. Manual suppression restore leaves fee components intact.",
+    "Old absolute ledger still records offsets in legacy CardBuff fields. This report certifies selected numeric state transitions, not complete typed ledger, full nested card effects or all lifecycle/consumers."
+  ],
+  "models": {
+    "numeric_vectors": 1125,
+    "dimensions": "5bases*3temps*5requests*5modes*3recorded temporary contributions",
+    "scope": "Whole captured main/ledger/T45, fixed valid buffable target60/source20/observer70, ActionProcess=true. Controlled crypto/container/enum/source/frame; numeric accessors represented as independent raw fields. All raw base/temp,total,changed and notification amount match worker projection.",
+    "accessors": {
+      "vectors": 128,
+      "native_calls": 640,
+      "scope": "All5current-PE backend functions in Unicorn including getter pdata fragments;64normal and64zero-key sentinel vectors. Real multiply/divide/XOR arithmetic, public fields remain unchanged. CRC import returns0/stored hash0 and cookie helper returns; diagnostics not certified. Values avoid arithmetic divide/multiply overflow, not all int32 crypto states."
+    },
+    "copy_slice": {
+      "vectors": 32,
+      "bytes": 52,
+      "instructions": 8,
+      "scope": "Current PE CopyData RVA4adca3a..4adca6e: opaque20B base group+20B temporary group copied. Synthetic4096B source unchanged; destination only40B changes. Not full CopyData encryption salt/key context, UObject lifetime or constructor/reset proof."
+    }
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 2298,
+    "numeric": 2250,
+    "lifecycle": 48,
+    "release_passed": 739,
+    "release_total": 739,
+    "exit_code": 0,
+    "scope": "Both sides*1125numeric vectors with exact base/temp/total, public37/-9 retained, base getter, notice amount/total before own/T45 and no equal-absolute notice; following RecalculateStats preserves fields.48lifecycle cases include signed sum overflow, unrelated ledger12345, movement, copy/snapshot, single-value setter and old synthetic reset compatibility."
+  },
+  "initial_regression": {
+    "passed": 730,
+    "total": 737,
+    "failed": 7,
+    "exit_code": 1,
+    "log_preserved": true,
+    "fixes": [
+      "Total-cost bounds fixture formerly assumed editing ledger recalculates numeric state: now explicitly supplies base200 and verifies ledger edits do not change it, then explicitly updates base for new total.",
+      "L4 private handwritten withdrawal lost generic recalc: explicit legacy reconstruction boundary retained; not native L4 card equivalence proof.",
+      "Payload dispatcher test previously expected equal absolute request notification; now asserts none per raw native equality.",
+      "Ordinary callback unchanged-zero witness now checks clamped TotalKreditCost instead of signed legacy aggregate.",
+      "Withdrawal witness now initializes independent base/temp consistently with its ledger contribution and compares clamped totals.",
+      "Legacy manual suppression restore must not reconstruct unrelated fee from incomplete ledger; leaves existing components unchanged.",
+      "TemporaryResourceCostBuffsExpire previously replaced a temporary ledger slot and relied on generic recalc erasing fee state. Now explicitly withdraws actual temporary fee by mode4 before unrelated attack fixture, analogous to prior operation migration."
+    ]
+  },
+  "worker": {
+    "job": "20261023-222722-rule357-fee-components-d783862a",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 1125,
+    "primary_comparison_exact": 1125,
+    "scope": "Private supplied numeric projection only. Primary independent AST/native-body execution and source integration. Worker not authority or publisher."
+  },
+  "remaining": [
+    "Full native constructor/encrypted reset initialization and current numeric reset/force-play chains remain open. Existing init/reset/force-play single-value assignments retain old compatibility and clear temporary component; reflected public buff does not imply encrypted temporary default.",
+    "Absolute fee typed ledger cleanup/SetValue-zero/source aliasing still uses old offset representation, and raw present-zero temporary key semantics remain unrepresented. Numerically matching probes do not certify callbacks whose card logic reads those inaccurate ledger states.",
+    "Legacy public ChangeKreditCost convenience path, unknown modes, handwritten aura/L4/whole-source removal and identity correction remain compatibility adapters that may collapse base/temp. Other consumers of signed legacy KreditCost require separate per-call review.",
+    "Suppression5604/current static fee lookup and trailing chain, expiry/registration/TSet, qqq/persistent frame, invalid UObject/alias/lifetime and actual ActionProcess routing remain incomplete. No full copy/reset or all encryption integrity paths certified.",
+    "Version migration paused per user. Historical replays not authority; fully certified cards0. Prior reports independent-fields pending statement superseded only within this selected native dispatcher/getter/generic-recalc/copy-snapshot scope."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-independent-numeric-native-model-20261023.json",
+      "sha256": "e8a42f61b9536ee89337f5a19f1235c2eaad88274782015ceb57793240e12e23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-independent-accessors-emulation-20261023.json",
+      "sha256": "e943e0843b8f42b08d1edc636c5188b9a413764015ba0c05bfdfb616ad576738"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-independent-copy-slice-emulation-20261023.json",
+      "sha256": "c95b478f9acc9d63ad49c76c2a79d9ceeb0691b80d578a08f5c371c7dc23ea55"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule357.py",
+      "sha256": "c58ea5f3c4ddd1f704d35c5ba7db23b6083ebfef913811a6578631cf3de7271b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\repair-rule357-fixtures.py",
+      "sha256": "d42ce10588bfda177c520d0c2a2b3a15d37e186b1a380a58b586d48f5eaf7dd5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule357-tests.py",
+      "sha256": "e830bf95548e323b4dd011700a838f0c956f2aa0f69e62bee1def89fa4ebe499"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule357-components.py",
+      "sha256": "7eae067681cda181b161458f4ae2b2ae26e5d1bf8e76561827284f2d645f762d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule357-accessors.py",
+      "sha256": "da8c8b221bfc74feffe1afcebc67a1219cee399f818cb44e39dcc023c51a50fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule357-copy-slice.py",
+      "sha256": "71369e0699019eb7c17c43a401844288142cd2c54ab36056b6c9a1bc2efbae47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule357.py",
+      "sha256": "b9be19bd71b4cc50b2a367046e5c6ff5a3168e2f6ad0d229662095b7433a043f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-verified-20261023.json",
+      "sha256": "62eff8000bbebef4f6b34da40f1f6f675160bdb8e7600ff4ce48222e8aeea54e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-initial.log",
+      "sha256": "ea3f5437b20bf26514f6cdc2bd4c5faa08ed293f729b33e5a8cdc818b2e77155"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-final.log",
+      "sha256": "23a71e8c749a9758ae3aaaaaac4f5c309296a991cb2f2754feb5ee7b1a54a811"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule357\\spec.json",
+      "sha256": "f3a8787e9c935080b2e81b9feaf9ee1aefbcf2b2cf5587b287527e67649286d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule357\\task.txt",
+      "sha256": "f0578cf493190fafa3b82d0b5a38b091ce0002cd3cb03263c35de45f793c7c16"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule357\\cases.json",
+      "sha256": "2a0c5e9e93faabcc753027d5aee51b2327c2106c5b58224ef4ddf5157f74b8f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule357\\primary-cases.json",
+      "sha256": "71ff6465b3a3dadab0737a458b2bd06c81912afac2ee7cd12abe3a71734ce0da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule357\\generator.py",
+      "sha256": "ed74f26da7372aa3b952a0f8a71f796451c5b1e97a361ee3ccb61229d5f51a68"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-222722-rule357-fee-components-d783862a\\job.json",
+      "sha256": "2cd82534136bf5630d513410e5a8d0cc2f4ec520f713a7d8c34ebd23e3898539"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-intermediate.log",
+      "sha256": "23a71e8c749a9758ae3aaaaaac4f5c309296a991cb2f2754feb5ee7b1a54a811"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule357-selftest-intermediate-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "a65f788a45d717a4547b7e549bdf588cf64e1f55eed1369292aba7e156872d6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "35938742e17d7aa811a763f75fd52d707205b6df0190d670d4ed7eeda136f65c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "2b4ec1951d7f1dcd8865a3182623bc0997f8065bf12132e8db5c965aafd387eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "5ed3845065f6e2d10c726a65048d044a2b892ad1c41ed1ca11b21cc95fc47ffa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "f441e49983b04fdd6f14b86192487d56158c32d372e1b43f587b3387f4812131"
+    }
+  ],
+  "final_review": "Preserve preexisting unknown-mode unconditional notification and conditional callback behavior; independent migration covers only known0..4. Complete Release rerun739/739 after final code adjustment; prior successful intermediate log retained."
+}
