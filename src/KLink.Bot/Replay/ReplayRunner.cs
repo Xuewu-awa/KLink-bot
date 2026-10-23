@@ -705,6 +705,18 @@ public sealed class ReplayRunner
             int injected = 0;
             string? failure = null;
 
+            // ★ 逐动作资源快照（`KLINK_TRACE_COST=1` 才打开，不改行为）。
+            // 目的：定位「内核的可用 kredits 比客户端少」到底花在了哪里 ——
+            // 例如移动/攻击是不是误扣了 kredits（客户端扣的是行动费 `operationCost`）。
+            if (Environment.GetEnvironmentVariable("KLINK_TRACE_COST") == "1")
+            {
+                Console.Error.WriteLine(
+                    $"[RES] #{a.ActionId} t{turn} {sideStr} {a.ActionType} " +
+                    $"kredits={state.Kredits(side)}/{state.MaxKredits(side)} " +
+                    $"kL={state.Kredits(Side.Left)}/{state.MaxKredits(Side.Left)} " +
+                    $"kR={state.Kredits(Side.Right)}/{state.MaxKredits(Side.Right)}");
+            }
+
             // RNG 游标探针：给流水账打一条动作分隔线，才能把"第几次消费"归到哪条动作上。
             if (CollectRandomTrace && state.RandomTrace.Count < 20000)
             {
@@ -891,6 +903,30 @@ public sealed class ReplayRunner
                             }
 
                             var target = a.TargetId > 0 ? state.ById(a.TargetId) : null;
+                            // ★ 费用取证探针（`KLINK_TRACE_COST=1` 才打开，不改行为）。
+                            // 为什么需要：10-16→10-23 的 186 个提交里，15 局语料的应用数
+                            // 从 1070/1118 掉到 1049/1118，而**每一局的首个可归因失败都是
+                            // 「kredit 不足」**。要把「可用 kredits 算少了」与「这张卡的费用
+                            // 算高了」分开，必须同时看到三方数字：
+                            //   · 内核此刻的可用 kredits / 上限；
+                            //   · 内核认为这张牌要多少费（KreditCost，含 buff 后的值）；
+                            //   · 动作流自带的卡组码所对应的卡（客户端眼里的那张）及其表内费用。
+                            // 后面那个尤其重要：随机/复制生成的卡（如 9001/3001）身份容易被
+                            // 内核解析成另一张牌 ⇒ 费用可能整整差一个档。
+                            if (Environment.GetEnvironmentVariable("KLINK_TRACE_COST") == "1")
+                            {
+                                string code = a.Get("4") ?? "";
+                                string byCode = _db.DeckCodeIds.TryGetValue(code, out var mapped)
+                                    ? mapped : "?";
+                                var codeDef = _db.Find(byCode);
+                                Console.Error.WriteLine(
+                                    $"[COST] #{a.ActionId} t{a.TurnNumber} {sideStr} " +
+                                    $"card={card.Name}#{card.CardId} cost={card.KreditCost} " +
+                                    $"kredits={state.Kredits(side)}/{state.MaxKredits(side)} " +
+                                    $"code={code}({byCode}) codeCost={(codeDef is null ? "-" : codeDef.Kredits.ToString())} " +
+                                    $"target={target?.Name}#{target?.CardId}");
+                            }
+
                             if (!engine.CanPlay(card, out string why))
                             {
                                 failure = $"打不出：{why}（kredits={state.Kredits(side)}，费用={card.KreditCost}）";
@@ -929,7 +965,26 @@ public sealed class ReplayRunner
                                 }
                             }
 
-                            engine.PlayCard(card, target);
+                            // ★ **部署槽位**：客户端在 `PC` 的 `1` 号槽里显式给了落点
+                            // （`PlayCardFromHand(CardID, instigatorID, newLocationNumber, …)`，
+                            //  见 WireAction 的字段表与 KARDS_API `commands.lua:46`）。
+                            // 以前这里只调 `PlayCard(card, target)`，落点由内核自己追加 ⇒
+                            // 站位可能与客户端不同，进而影响位置号/半场容量/查询顺序。
+                            //
+                            // 只对**会占半场位置**的卡（单位 / 地点卡）用，并且只认 1..4：
+                            //   · 实测 132 条单位 `PC` 的字段 `1` 全部落在 0..4；
+                            //   · `0` 不能当槽位用 —— 113 条步兵里 79 条是 0，若 0 真是槽位
+                            //     它们会全部撞在 0 号位，不可能；0 =「不指定」⇒ 仍走追加。
+                            //   · 半边容量是 5（含 HQ），单位合法槽位因此是 1..4。
+                            //   · 指令牌也会带 1..4（甚至 9/19/21/26/38），语义不同 ⇒ 不用。
+                            int deploySlot = -1;
+                            if ((card.Definition.IsUnit || card.Definition.IsLocationCard)
+                                && a.SecondId is >= 1 and <= 4)
+                            {
+                                deploySlot = a.SecondId;
+                            }
+
+                            engine.PlayCard(card, target, locationNumber: deploySlot);
                             if (state.ActiveSide != side)
                             {
                                 // ForceEndTurn already resolved the turn inside the card effect.
@@ -1707,3 +1762,5 @@ public sealed class ReplayRunner
         return null;
     }
 }
+
+

@@ -463,6 +463,24 @@ public sealed class GameState
     public Dictionary<string, int> UnimplementedCalls { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// **良性留痕**：执行成功（或本来就不该有逻辑）却会顺带记一笔的调用。
+    ///
+    /// 为什么必须与 <see cref="UnimplementedCalls"/> 分开：审计判据 ⑥（「未实现原语种类」）
+    /// 是四条判据里**第二可靠**的一条，它读的就是 `UnimplementedCalls`。而下面两类
+    /// **不是缺口**，混进去会把判据稀释成噪声：
+    ///
+    /// 1. `<card-vanilla:名字>` —— 卡**根本没有蓝图逻辑**（1 费 1/1 白板：`cards.live.json`
+    ///    的 `text` 为空、`card-effects.json` 的 `calls` 也为空）。「找不到程序」对它是正常的。
+    ///    在有 15 局语料的那棵树上实测：9 局被 `card_unit_5th_parachute_brigade` 占掉一条。
+    /// 2. `<local-ran:名字>` —— 卡内私有函数**跑成功了**（KismetVm 的 locals 兜底），
+    ///    原来走 `NotifyUnimplemented` 留痕。实测 4 局因此虚报 ⑥。
+    ///
+    /// ⇒ 判据 ⑥ 只剩「派发表真缺 + 有调用但缺 IR」；这一类仍然打印（审计 ⑥' 段），
+    /// 只是不参与缺口计数。
+    /// </summary>
+    public Dictionary<string, int> BenignTraces { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// **RNG 游标探针** —— 每一次随机消费的流水账（`消费序号 | 调用点 | 参数 | 结果`）。
     ///
     /// 为什么要有它：随机流是一条**游标**，客户端与内核必须逐次对齐 ——

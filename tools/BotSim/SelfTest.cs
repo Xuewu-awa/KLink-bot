@@ -29934,6 +29934,8 @@ internal static class SelfTest
     ///   · 出现 `<local-ran:名字>` ⇒ 走了 locals 兜底
     ///   · **不再**出现裸 `名字` ⇒ 不会再被记成"未实现的调用"
     /// 两条都要成立，否则等于"看着接上了、其实还是什么都不做"。
+    /// ⚠️ 2026-10-23：留痕位置从 `UnimplementedCalls` 挪到 `BenignTraces` —— 它表示
+    /// **执行成功**，留在 ⑥（未实现原语）里会稀释那条第二可靠的判据。见 GameState.BenignTraces。
     /// </summary>
     private static string? LocalFunctionActuallyRuns(CardDatabase db)
     {
@@ -29951,12 +29953,13 @@ internal static class SelfTest
             var card = state.CreateWithId(order, Side.Left, 20, CardLocation.HandLeft, 1);
             engine.Api.RunCardEffect(card, null);
 
-            bool ran = state.UnimplementedCalls.Keys.Any(k => k == "<local-ran:didPlayBritishInfantryLastTurn>");
+            bool ran = state.BenignTraces.Keys.Any(k => k == "<local-ran:didPlayBritishInfantryLastTurn>");
             bool stillMissing = state.UnimplementedCalls.ContainsKey("didPlayBritishInfantryLastTurn");
             if (!ran || stillMissing)
             {
                 return $"{order} 的 OnPlayedFromHand 调 didPlayBritishInfantryLastTurn："
                      + $"走了 locals 兜底={ran}、仍被记未实现={stillMissing}"
+                     + "；良性留痕: " + Benign(state)
                      + Dump(state, ("未实现", Unimpl(state)));
             }
         }
@@ -29976,11 +29979,12 @@ internal static class SelfTest
             card.EnteredPlayOnTurn = -1;
             engine.Api.FireTrigger("OnEnterPlay", card, Side.Left);
 
-            bool ran = state.UnimplementedCalls.Keys.Any(k => k == "<local-ran:ApplyBuff>");
+            bool ran = state.BenignTraces.Keys.Any(k => k == "<local-ran:ApplyBuff>");
             bool stillMissing = state.UnimplementedCalls.ContainsKey("ApplyBuff");
             if (!ran || stillMissing)
             {
                 return $"{aura} 的 OnEnterPlay 调 ApplyBuff()：走了 locals 兜底={ran}、仍被记未实现={stillMissing}"
+                     + "；良性留痕: " + Benign(state)
                      + Dump(state, ("未实现", Unimpl(state)));
             }
         }
@@ -30044,6 +30048,12 @@ internal static class SelfTest
     private static string Unimpl(GameState state)        => state.UnimplementedCalls.Count == 0
             ? "无"
             : string.Join(", ", state.UnimplementedCalls.OrderByDescending(kv => kv.Value)
+                .Take(8).Select(kv => $"{kv.Key}×{kv.Value}"));
+
+    /// <summary>良性留痕的展示形态（不算缺口，见 <see cref="GameState.BenignTraces"/>）。</summary>
+    private static string Benign(GameState state)        => state.BenignTraces.Count == 0
+            ? "无"
+            : string.Join(", ", state.BenignTraces.OrderByDescending(kv => kv.Value)
                 .Take(8).Select(kv => $"{kv.Key}×{kv.Value}"));
 
     // ==================================================================

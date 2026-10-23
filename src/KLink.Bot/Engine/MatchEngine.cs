@@ -1488,12 +1488,23 @@ public sealed class MatchEngine
     /// 不跳过的话 <c>MoveUnit</c> 里那次 `OnLeaveBoardOrOwner` 和这里的
     /// `OnEnterPlay` 会各触发一次，光环类卡会被撤销再重挂。
     /// </param>
-    public bool PlayCard(CardInstance card, CardInstance? target = null, bool skipLeaveTrigger = false)
+    /// <param name="locationNumber">
+    /// **部署槽位**（半场内的位置号；`-1` = 按内核自己的规则追加到队尾）。
+    ///
+    /// 为什么要这个参数：客户的出牌链显式带槽位 ——
+    /// <c>PlayCardFromHand(CardID, instigatorID, newLocationNumber, targetCardID,
+    /// NewNonVisualLocationNumber, receiveFromLocal)</c>（KARDS_API `commands.lua:46`；
+    /// 线上动作流的 `1` 号槽就是它，见 <c>WireAction.cs</c>）。回放里客户端已经把这个
+    /// 值发过来了，内核以前**没有用它**（<c>ReplayRunner</c> 的 `PC` 分支只调
+    /// <c>PlayCard(card, target)</c>），落点靠内核自己追加 ⇒ 站位可能与客户端不同。
+    /// </param>
+    public bool PlayCard(CardInstance card, CardInstance? target = null, bool skipLeaveTrigger = false,
+                         int locationNumber = -1)
     {
         BeginEffectResolution();
         try
         {
-            bool completed = PlayCardActionCore(card, target, skipLeaveTrigger);
+            bool completed = PlayCardActionCore(card, target, skipLeaveTrigger, locationNumber);
             if (completed)
             {
                 ExecuteAutoPlayCards();
@@ -1504,7 +1515,8 @@ public sealed class MatchEngine
         finally { EndEffectResolution(); }
     }
 
-    private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger)
+    private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger,
+                                    int locationNumber = -1)
     {
         if (!CanPlay(card, out string reason, target))
         {
@@ -1528,7 +1540,7 @@ public sealed class MatchEngine
 
         return PlayCardFromHandCore(card, target, skipLeaveTrigger,
             chargeKredits: true, recordAction: true,
-            toFrontline: false, locationNumber: -1, instigatorID: card.CardId);
+            toFrontline: false, locationNumber: locationNumber, instigatorID: card.CardId);
     }
 
     /// <summary>

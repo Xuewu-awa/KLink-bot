@@ -627,7 +627,9 @@ public sealed class KismetVm
                 ? localOutNames.Select(name => bag.GetValueOrDefault(name)).ToArray()
                 : localOutNames.Count == 1 ? bag.GetValueOrDefault(localOutNames[0]) : null;
             handled = true;
-            _api.NotifyUnimplemented($"<local-ran:{fn}>");
+            // ⚠️ 这是**执行成功**之后的留痕，不是「没实现」；走 NotifyUnimplemented 会把它
+            // 算进判据 ⑥（未实现原语）。见 GameState.BenignTraces 的说明。
+            _api.NotifyBenignTrace($"<local-ran:{fn}>");
         }
 
         // Some card blueprints call a second, same-card event entrypoint from
@@ -900,7 +902,8 @@ public sealed class KismetVm
                 BindLocalInputs(local, callArgs, localSeed);
                 r = RunLocalProgram(local, ctx, localSeed, "ReturnValue");
                 handled = true;
-                _api.NotifyUnimplemented($"<local-ran:{c}>");
+                // 同上：执行成功的留痕，不进判据 ⑥。
+                _api.NotifyBenignTrace($"<local-ran:{c}>");
             }
 
             if (!handled)

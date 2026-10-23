@@ -239,6 +239,61 @@ internal static class ReplayAudit
         Console.WriteLine("       判据：StartOfTurn 差、同回合 EndOfTurn 不差 ⇒ 采样假象，不是漂开。");
         Console.WriteLine();
 
+        // ④a：把「采样点暂时不同」与「差异持续到回合结束」分开。
+        // 每个 StepResult 的 HQ 都是在该动作结算前采样；如果同一侧、同一回合的
+        // 后续 EndOfTurn 已重新对上，则差异只存在于回合开始/动作前采样点。
+        // ★ 2026-10-23 补：`audit-4metrics.ps1` 的三列（④HQ差(人)/④采样假象/④持续差异）
+        //   读的就是下面三行的正则；缺了它这三列恒为 0/0/0，判据 ③ 形同关闭。
+        var humanHqBad = hqBad
+            .Where(s => string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
+            .ToList();
+        var transientHumanHq = new List<ReplayRunner.StepResult>();
+        foreach (var badStep in humanHqBad)
+        {
+            int index = -1;
+            for (int i = 0; i < report.Steps.Count; i++)
+            {
+                if (report.Steps[i].ActionId == badStep.ActionId)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0)
+            {
+                continue;
+            }
+
+            var sameTurnEnd = report.Steps
+                .Skip(index + 1)
+                .TakeWhile(s => s.Turn == badStep.Turn)
+                .FirstOrDefault(s => s.ActionType == "XActionEndOfTurn"
+                    && string.Equals(s.PlayerSide, badStep.PlayerSide, StringComparison.Ordinal));
+            if (sameTurnEnd is not null && sameTurnEnd.HqMatches)
+            {
+                transientHumanHq.Add(badStep);
+            }
+        }
+
+        Console.WriteLine($"=== ④a 人类 HQ 差异分类：{humanHqBad.Count} 条 ===");
+        Console.WriteLine($"    同回合 EndOfTurn 重新对上（采样假象）：{transientHumanHq.Count} 条");
+        Console.WriteLine($"    到同回合 EndOfTurn 仍未对上：{humanHqBad.Count - transientHumanHq.Count} 条");
+        Console.WriteLine("    按动作类型：" +
+            (humanHqBad.Count == 0
+                ? "（没有）"
+                : string.Join("；", humanHqBad
+                    .GroupBy(s => s.ActionType)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => $"{g.Key}={g.Count()}"))));
+        Console.WriteLine("    按差值（实际-期望）：" +
+            (humanHqBad.Count == 0
+                ? "（没有）"
+                : string.Join("；", humanHqBad
+                    .GroupBy(s => s.ActualHq - s.ExpectedHq)
+                    .OrderBy(g => g.Key)
+                    .Select(g => $"{g.Key:+#;-#;0}={g.Count()}"))));
+        Console.WriteLine();
+
         // ⑤ 未应用的动作 + 原因
         var bad = report.Steps.Where(s => !s.Applied).ToList();
         Console.WriteLine($"=== ⑤ 未应用的动作：{bad.Count} 条 ===");
@@ -256,15 +311,28 @@ internal static class ReplayAudit
         // 用新内核重放自然会被拒，那不是保真度信号。
         //
         // ⚠️ 这条以前没有，所以每次都要人工从一长串失败里找"第一条人类的"。
-        var firstHumanFail = report.Steps
+        //
+        // ★ 2026-10-23 补：把「可归因」与「过期弃牌」分开，并**恢复机器可读的两行**。
+        //   为什么必须补：`out/audit/audit-4metrics.ps1` / `audit-all-replays.ps1`
+        //   只认下面这两行的正则；在只有「没有人类动作失败」这版文案的树上，脚本
+        //   读到的是**初始值 0**，于是"可归因人类失败 0 条"永远成立、与实测无关
+        //   （实测同一批语料是 25~46 条）。判据不能是空转的。
+        var rawHumanFailures = report.Steps
             .Where(s => !s.Applied && string.Equals(s.PlayerSide, "left", StringComparison.Ordinal))
             .OrderBy(s => s.ActionId)
-            .FirstOrDefault();
+            .ToList();
+        // 「过期弃牌」：人类那条 ML/AC 引用的单位**在本器里已经离场进弃牌堆** ⇒
+        // 拒绝是正确的（客户端也静默不执行），不算状态漂移。见 README §7.2。
+        var attributableHumanFailures = rawHumanFailures.Where(IsAttributableHumanFailure).ToList();
+        var staleDiscardFailures = rawHumanFailures.Where(s => !IsAttributableHumanFailure(s)).ToList();
+        var firstHumanFail = attributableHumanFailures.FirstOrDefault();
 
+        Console.WriteLine($"⑤b 可归因人类失败：{attributableHumanFailures.Count} 条");
+        Console.WriteLine($"⑤b 过期弃牌动作：{staleDiscardFailures.Count} 条");
         Console.WriteLine("=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===");
         if (firstHumanFail is null)
         {
-            Console.WriteLine("    ✅ **没有人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐");
+            Console.WriteLine("    ✅ **没有可归因的人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐");
         }
         else
         {
@@ -368,6 +436,19 @@ internal static class ReplayAudit
             }
 
             if (unimpl.Count == 0) Console.WriteLine("    （没有）");
+            Console.WriteLine();
+
+            // ⑥' ★ **良性留痕** —— 执行成功 / 本来就没有蓝图，**不参与** ⑥ 计数。
+            // 为什么单列而不丢：这两类是排查「效果为什么没跑」的线索，但留在 ⑥ 里会稀释
+            // 第二可靠的判据（详见 GameState.BenignTraces）。
+            var benign = e6.State.BenignTraces;
+            Console.WriteLine($"=== ⑥' 良性留痕（不计入未实现原语）：{benign.Count} 种 ===");
+            foreach (var kv in benign.OrderByDescending(kv => kv.Value).Take(25))
+            {
+                Console.WriteLine($"    {kv.Key} ×{kv.Value}");
+            }
+
+            if (benign.Count == 0) Console.WriteLine("    （没有）");
             Console.WriteLine();
 
             Console.WriteLine($"=== ⑥a ★ RNG 游标失同步信号：{desync.Count} 条 ===");
@@ -485,5 +566,23 @@ internal static class ReplayAudit
         }
 
         return 0;
+    }
+
+    /// <summary>
+    /// 这条人类失败**能不能归因到状态漂开**。
+    ///
+    /// 判据（与作者 2026-10-04 的口径一致）：ML / AC 引用的单位在**本器里已经离场进弃牌堆**
+    /// ⇒ 拒绝是**正确**的（客户端也会静默不执行），属于"过期弃牌动作"，不算漂开。
+    /// 其余的人类失败一律算「可归因」，那才是保真度信号。
+    /// </summary>
+    private static bool IsAttributableHumanFailure(ReplayRunner.StepResult step)
+    {
+        if (step.Applied || !string.Equals(step.PlayerSide, "left", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return !((step.ActionType is "ML" or "AC")
+                 && step.Failure?.Contains("位置=Discard", StringComparison.Ordinal) == true);
     }
 }

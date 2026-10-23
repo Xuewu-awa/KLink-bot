@@ -537,8 +537,21 @@ public sealed partial class CardApi
             return;   // 触发式卡：效果挂在它自己的事件程序上，等事件派发
         }
 
-        // 4) 连蓝图逻辑都没有 → 才算真的缺口
-        NotifyUnimplemented($"<card:{card.Definition.Name}>");
+        // 4) 连蓝图逻辑都没有。
+        //    ⚠️ 这里要分两种（判据 ⑥ 的口径，见 GameState.BenignTraces）：
+        //    · 卡在反编译产物里**本来就没有任何函数**（1 费 1/1 白板）⇒ 找不到程序是正常的，
+        //      记进 BenignTraces，不算缺口。
+        //    · 卡**有**蓝图调用却没有 IR ⇒ 那是真缺口（静默失效），必须继续计入 ⑥，
+        //      并用 `<card-no-ir:…>` 与白板区分开。
+        bool hasBlueprintLogic = card.Definition.FunctionCalls.Count > 0
+                                 || card.Definition.ExternalCalls.Count > 0;
+        if (!hasBlueprintLogic)
+        {
+            NotifyBenignTrace($"<card-vanilla:{card.Definition.Name}>");
+            return;
+        }
+
+        NotifyUnimplemented($"<card-no-ir:{card.Definition.Name}>");
     }
 
     /// <summary>
@@ -5958,6 +5971,18 @@ public sealed partial class CardApi
     public void NotifyUnimplemented(string name)
     {
         State.UnimplementedCalls[name] = State.UnimplementedCalls.GetValueOrDefault(name) + 1;
+    }
+
+    /// <summary>
+    /// 记录一次**良性留痕**：不是缺口，但值得让审计看见（见 <see cref="GameState.BenignTraces"/>）。
+    ///
+    /// 为什么单开一个桶而不是不记：这些痕迹是排查「效果为什么没跑」的第一手线索
+    /// （这张卡到底有没有蓝图、私有函数有没有被执行到），丢掉会让人重复踩坑；
+    /// 但留在 ⑥ 里会稀释第二可靠的判据。所以**记而不用它计数**。
+    /// </summary>
+    public void NotifyBenignTrace(string name)
+    {
+        State.BenignTraces[name] = State.BenignTraces.GetValueOrDefault(name) + 1;
     }
 
     /// <summary>
