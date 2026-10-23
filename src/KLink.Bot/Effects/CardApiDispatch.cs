@@ -4554,7 +4554,7 @@ public sealed partial class CardApi
                 if (operationCostReset)
                 {
                     c.Engine.Api.FireOperationCostChanged(target, sourceId,
-                        runResetEvents: true);
+                        runResetEvents: false);
                 }
             }
 
@@ -4597,7 +4597,7 @@ public sealed partial class CardApi
 
         if (valueChanged)
         {
-            c.Engine.Api.FireOperationCostChanged(target, sourceId);
+            c.Engine.Api.FireOperationCostChanged(target, sourceId, runResetEvents: setsAbsolute);
         }
 
         return null;

@@ -2980,37 +2980,43 @@ public sealed partial class CardApi
         });
     }
 
-    /// <summary>行动费变更后的主体/其它卡事件链。</summary>
+    /// <summary>Native action-process sequence: own, T10 snapshot, optional fresh T9.</summary>
     public void FireOperationCostChanged(CardInstance card, int instigatorId,
                                          bool runResetEvents = false)
     {
-        if (!card.IsSuppressed)
+        const string own = "OnAfterOperationCostChanged";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        // Native1762 directly invokes the held object, without registration or
+        // location gating. Suppression skips only this own callback.
+        if (!card.IsSuppressed && library.FindProgram(card.Name, own) is not null)
         {
-            FireTrigger("OnAfterOperationCostChanged", card, card.Owner,
+            TriggerTrace?.Add($"{own} → {card.Name}#{card.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, card, card.Name, own, card,
                 eventArgs: new object?[] { instigatorId },
-                eventSubject: card,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["instigator"] = instigatorId,
-                    ["instigatorID"] = instigatorId,
-                });
+                namedArgs: new Dictionary<string, object?> { ["Instigator"] = instigatorId, ["instigator"] = instigatorId, ["instigatorID"] = instigatorId });
         }
+        FireOperationCostObservers(card, instigatorId, "OnAfterOtherCardOperactionCostChanged");
+        if (runResetEvents) FireOperationCostBuffsReset(card, instigatorId);
+    }
 
-        if (runResetEvents)
+    private void FireOperationCostObservers(CardInstance card, int instigatorId, string trigger)
+    {
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { card.CardId, instigatorId };
+        var named = new Dictionary<string, object?> { ["cardToChange"] = card.CardId,
+            ["Instigator"] = instigatorId, ["instigator"] = instigatorId, ["instigatorID"] = instigatorId };
+        foreach (var observer in recipients)
         {
-            FireOperationCostBuffsReset(card, instigatorId);
+            // Native864/2159 exclude by CardID;2596/2233 HARD-check current
+            // suppression even for query exceptions. No registration/location
+            // re-screen after the query; invoke the saved object.
+            if (observer.CardId == card.CardId || observer.IsSuppressed || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, card, eventArgs: args, namedArgs: named);
         }
-
-        FireTrigger("OnAfterOtherCardOperactionCostChanged", card, card.Owner,
-            eventArgs: new object?[] { card.CardId, instigatorId },
-            eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardToChange"] = card.CardId,
-                ["instigator"] = instigatorId,
-                ["instigatorID"] = instigatorId,
-            },
-            broadcastName: true);
     }
 
     /// <summary>Apply temporary attack, then register its source for end-of-turn cleanup.</summary>
@@ -3091,27 +3097,9 @@ public sealed partial class CardApi
         }
     }
 
-    /// <summary>
-    /// 广播行动费临时 buff 被重置后的事件。
-    ///
-    /// Legacy compatibility broadcaster. RULE-337's current native script enables
-    /// T9 after changed absolute modes2/3/5, following T10; mode4 does not enable
-    /// it. Existing callers and snapshot/live suppression checks still need that
-    /// migration. End-of-turn attack cleanup does not dispatch T9 (RULE-320).
-    /// </summary>
+    /// <summary>T9 snapshot, called after T10 for changed absolute modes2/3/5.</summary>
     public void FireOperationCostBuffsReset(CardInstance target, int instigatorId)
-    {
-        FireTrigger("OnAfterOtherCardOperactionCostBuffsReset", target, target.Owner,
-            eventArgs: new object?[] { target.CardId, instigatorId },
-            eventSubject: target,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardToChange"] = target.CardId,
-                ["instigator"] = instigatorId,
-                ["instigatorID"] = instigatorId,
-            },
-            broadcastName: true);
-    }
+        => FireOperationCostObservers(target, instigatorId, "OnAfterOtherCardOperactionCostBuffsReset");
 
     /// <summary>
     /// 增加 kredit 槽位上限，但不改变当前 kredit。

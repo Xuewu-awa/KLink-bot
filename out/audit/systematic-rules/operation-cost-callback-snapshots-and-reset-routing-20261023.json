@@ -1,0 +1,201 @@
+{
+  "rule": "RULE-339",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-339",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 9,
+    "blueprint_bytes": 5022,
+    "native_callback_query_model_cases": 1152,
+    "worker_raw_rows": 1152,
+    "worker_primary_corrections": 318,
+    "primary_reference_rows_exact": 1152,
+    "regression_combinations": {
+      "mutations": 2304,
+      "caller_reset_flags": 432,
+      "total": 2736
+    },
+    "release_selftest": {
+      "passed": 703,
+      "total": 703,
+      "exit_code": 0
+    },
+    "scope": "Own->T10->fresh optionalT9 dispatch, held-object snapshots with live hard suppression, and known-mode reset flag routing. Model uses correct UObject identity vs struct copy, controlled subscription order and mutation callbacks. Caller flat operation proxy/typed ledger/mode4 numeric notification and true native object/container lifetime remain pending."
+  },
+  "authority": "Previously captured authoritative ChangeOperationCost post-change tail plus complete GameState GetCardsWithTrigger, redecoded with current-version symbols/PE SHA.9 Blueprint functions5022B including query1174B verified. No new live process/card-state claim.",
+  "changes": [
+    "Replace generic FireTrigger event delivery by direct held-object own callback (no registration/location gate), then one T10 frozen query result, then optional fresh T9 query after all T10 callbacks.",
+    "Observer loops exclude by CardID and hard-check current isSuppressed, regardless of suppression exceptions. Do not re-screen registration/location after query; frozen objects remain eligible if unregistered or moved later.",
+    "Both observer hooks receive integer cardToChange and Instigator; own receives integer Instigator. Preserve source IDs and current actor owner through direct RunTriggerProgram.",
+    "Known-mode caller reset flag: changed absolute2/3/5 passes runResetEvents=true; mode4 passesfalse. Existing flat-proxy changed eligibility remains unchanged and not generally equivalent to native base comparison.",
+    "Correct legacy Light Anti-Air Battery test: mode4 does not enable its T9-only aura reapplication. Assert temporary removal/no automatic reapplication; explicitly establish a fresh temporary fixture for separate removal after source leaves."
+  ],
+  "model": {
+    "cases": 1152,
+    "entry": "ChangeOperationCost434",
+    "stop": "return3168",
+    "query": "Complete captured GameState query used at both T10 and T9.",
+    "controlled": "valueChanged=true,skipAction=true,ActionProcess=true,runResetEvents supplied; registration insertion order and callback mutations controlled. Real UObject lifetimes/physical containers not modeled.",
+    "identity": "Map<int,UBaseCardObject*> AllCardsInBattle preserves object references; struct map values copy by value per SDK types. Replace older blanket deepcopy primitive only for this model. Prior nonreentrant models are not retroactively promoted to object-identity/reentry proof."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "mutation_combinations": 2304,
+    "caller_reset_flag_combinations": 432,
+    "total": 2736,
+    "release_passed": 703,
+    "release_total": 703,
+    "exit_code": 0,
+    "description": "Both sides, subject board/hand/discard/notavailable, own registration/suppression mutations, T10 suppress/unregister/register/move mutations, fresh T9 query and in-T9 unregister/suppress, current hard suppression even query exception, exact integer ABI. Flags tested across modes0..5/raw proxy values/request/skip/existing-missing positive source."
+  },
+  "worker": {
+    "job": "20261023-161208-rule339-cost-callback-snapshots-6ac11c47",
+    "status": "completed",
+    "exit_code": 0,
+    "raw_rows": 1152,
+    "primary_corrected_rows": 318,
+    "primary_reference_rows_exact": 1152,
+    "explanation": "Packet own-mutation condition was not clear enough to prevent worker treating mutations outside the suppressed-own gate. Native script skips the own callback; primary independently gates those mutations, reconstructs1152 rows and matches all native tail/query executions. Raw output and indexed differences retained; no worker semantic authority or silent acceptance."
+  },
+  "remaining": [
+    "Caller base/temp operation storage and typed ledger still legacy; actual native changed eligibility can differ from flat proxy. This flag-routing repair does not fix numeric/ledger behavior or absolute equality mutations.",
+    "Mode4 still has wrong permanent fallback/typed removal amount and missing notification/skip handling; zero-key and amountRemoved semantics pending. T9 routing is fixed independently.",
+    "Physical UE TSet/TMap subscription order and true UObject pointer validity/lifetime remain unproven; controlled ordered registry fixtures do not certify arbitrary native iteration.",
+    "Full reentrant numerical operations, persistent frame/online receiver/delegates, public convenience eligibility, unknown enums and full copy/reset/restore/convert paths remain incomplete.",
+    "SuppressMultipleUnits operation/kredit/heavy armor and complete batch/T58/T11 lifecycle still pending. No full-card or whole-PvP certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-pe-20261023.json",
+      "sha256": "4d6ddc9f329ff1d83808cfbb7644bc943835976763c96f726b47247f9becbc4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-callback-mutation-model-20261023.json",
+      "sha256": "c391a08ff79a3049b9424cfdbb58a30bc8e40f097b20040282bd763b3f268575"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule339.py",
+      "sha256": "7a0e56ffbc4a334d5640a50d12bedd54b00e81ac148508f429566bdb742d23d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule339-callbacks.py",
+      "sha256": "baca8e3dcb3151780c8966cf27821088cc3c766c22d2816234b56957bea0c658"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule339-tests.py",
+      "sha256": "d0fa3bf54c623d1ee79063c096c4b47d0a5059be77fbbda1e083968b6498e50d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule339-operation-callbacks.py",
+      "sha256": "fc9f8892b9621450d6061253a5a76f8febfaaccb83c66dcff73059649a02e303"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule339-operation-callbacks-verified-20261023.json",
+      "sha256": "563fb7c564bd049b7af80cca3088d56ea682368eb2c447727a7f384731f64cd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule339-selftest-initial.log",
+      "sha256": "c9622395ce4410e4273a3d75305051264aa711d58f49bc5c15886b6bfa1166c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule339-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule339\\spec.json",
+      "sha256": "61a24afd1a94371ac2a53c724f131dda2b3295dac97021657bf2d82fd691b3cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule339\\task.txt",
+      "sha256": "498bdae981361e0906b522d4d98ad0308ca00f47d2fc6523970dc54e6ae55508"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule339\\cases.json",
+      "sha256": "da5362b31b9bcf47ffd0d975cb8d11ff2feeb49268eb61afaf964ee87569a7f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule339\\primary-cases.json",
+      "sha256": "a314160edb45aeb9c32c0ea66be2c6bd624841250b7b1521d9df67fc2b1499b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule339\\worker-differences.json",
+      "sha256": "234835079b8f74aab327f7a5fde7230dbf8467e3e0bfa98b5f2a5a9271535261"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_GameState_Battle.hpp",
+      "sha256": "1cadb726530c7dc01ab2b25f06c3224357007ee05fbae39f5db3b16a37d4ad4d"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+      "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-161208-rule339-cost-callback-snapshots-6ac11c47\\job.json",
+      "sha256": "8f6f84bfce5c5f88a273cbf95e28c191265d14d5ae15ab10d74d3b11fcb3caec"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "7e272954dab4aaa715b69efff7ec524cfb1f93c7610ee18793edec449936c8dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "d76d241334337d08c47a26d2c1818b7b06f0b67c6dffd906249017156a31f6a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "06749e5397506fba80a96b6d8a3f32567d6663fc6e70f000b257c69f7de58d62"
+    }
+  ]
+}

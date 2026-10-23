@@ -535,6 +535,8 @@ internal static class SelfTest
         new("行动费通知：原生五字段顺序、原始整数及布尔编码", OperationCostNotificationPayload),
         new("行动费通知路由：原始请求、正确skip索引与零请求通知门", OperationCostNotificationRouting),
         new("行动费skip：仅跳通知，保留已有主体/观察者回调", OperationCostSkipKeepsCallbacks),
+        new("行动费回调：自身后查T10、T10后查T9，快照与实时压制边界", OperationCostCallbackMutationMatrix),
+        new("行动费重置路由：变化的绝对模式触发T9，mode4不触发", OperationCostResetFlagRouting),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -1114,7 +1116,7 @@ internal static class SelfTest
 
         new("★ 费用临时槽可显式撤销，离场记录不在回合末清理",
             TemporaryResourceCostBuffsExpire),
-        new("Light Anti-Air Battery：回合末保留行动费，显式 reset 后重施加，离场后撤销",
+        new("Light Anti-Air Battery：回合末保留，mode4只撤销且不发T9，离场后仍可清除",
             LightAntiAirBatteryOperationCostReset),
         new("行动费变更事件：目标排除、零值不触发、抑制接收者跳过",
             OperationCostChangeEvents),
@@ -6679,6 +6681,150 @@ internal static class SelfTest
             if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
                 || state.ActionLog.SelectMany(x => x.SubActions).Any())
                 return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallOperationCostMutationProbes()
+    {
+        const string name = "card_unit_arado_ar_196";
+        var own = InstallSelectionDrawProbe(name, "OnAfterOperationCostChanged");
+        var changed = InstallSelectionDrawProbe(name, "OnAfterOtherCardOperactionCostChanged");
+        var reset = InstallSelectionDrawProbe(name, "OnAfterOtherCardOperactionCostBuffsReset");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (var (hook, phase) in new[] { ("OnAfterOperationCostChanged", "own"), ("OnAfterOtherCardOperactionCostChanged", "changed"), ("OnAfterOtherCardOperactionCostBuffsReset", "reset") })
+            locals[hook] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = phase }, null, -1, "_auditCostActive", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "Instigator", Scope = "local" }, null, -1, "_auditCostSource", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), phase == "own" ? new KismetExpr { Int = 60 } : new KismetExpr { Var = "cardToChange", Scope = "local" }, null, -1, "_auditCostTarget", null) { DestinationScope = "instance" },
+                new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        return new AuditProbeCleanup(() => { reset.Dispose(); changed.Dispose(); own.Dispose(); });
+    }
+
+    private static void SetOperationCostRegistrations(CardInstance card, bool changed, bool reset)
+        => card.Definition = new CardDefinition { Name = card.Name, Type = "fighter", UsedTriggers =
+            (changed ? new[] { "OnAfterOtherCardOperactionCostChanged" } : Array.Empty<string>())
+            .Concat(reset ? new[] { "OnAfterOtherCardOperactionCostBuffsReset" } : Array.Empty<string>()).ToArray() };
+
+    private static string[] ExpectedOperationCostCallbacks(int ownMode, int changeMode, int resetMode, bool runReset, bool subjectSuppressed, bool laterSuppressed, bool exception)
+    {
+        var regs = new Dictionary<int, HashSet<int>> { [10] = new() { 60, 70, 80 }, [9] = new() { 60, 70, 80 } };
+        var sup = new Dictionary<int, bool> { [60] = subjectSuppressed, [70] = false, [80] = laterSuppressed, [90] = false };
+        var callbacks = new List<string>();
+        if (!subjectSuppressed) {
+            callbacks.Add("own:60");
+            if (ownMode == 1) { regs[10].Add(90); regs[9].Add(90); }
+            if (ownMode == 2) regs[10].Remove(80);
+            if (ownMode == 3) sup[80] = true;
+        }
+        foreach (int trigger in runReset ? new[] { 10, 9 } : new[] { 10 }) {
+            var frozen = new[] { 60, 70, 80, 90 }.Where(i => regs[trigger].Contains(i) && (!sup[i] || i == 80 && exception)).ToArray();
+            foreach (int id in frozen) {
+                if (id == 60 || sup[id]) continue;
+                callbacks.Add((trigger == 10 ? "changed:" : "reset:") + id);
+                if (id != 70) continue;
+                if (trigger == 10) {
+                    if (changeMode == 1) sup[80] = true;
+                    if (changeMode == 2) { regs[10].Remove(80); regs[9].Remove(80); }
+                    if (changeMode == 3) { regs[10].Add(90); regs[9].Add(90); }
+                    if (changeMode == 5) regs[10].Remove(80);
+                } else {
+                    if (resetMode == 1) sup[80] = true;
+                    if (resetMode == 2) regs[9].Remove(90);
+                }
+            }
+        }
+        return callbacks.ToArray();
+    }
+
+    private static string? OperationCostCallbackMutationMatrix(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int ownMode in Enumerable.Range(0, 4))
+        foreach (int changeMode in Enumerable.Range(0, 6))
+        foreach (int resetMode in Enumerable.Range(0, 3))
+        foreach (bool runReset in new[] { false, true })
+        foreach (bool subjectSuppressed in new[] { false, true })
+        foreach (bool laterSuppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var cards = new Dictionary<int, CardInstance>();
+            foreach (int id in new[] { 60, 70, 80, 90 }) {
+                var card = state.CreateWithId("card_unit_arado_ar_196", side, id, side.HqOf(), (id - 60) / 10 + 1);
+                card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetOperationCostRegistrations(card, id != 90, id != 90); cards[id] = card;
+            }
+            var target = cards[60]; var later = cards[80];
+            target.Location = ownMode switch { 1 => side.HandOf(), 2 => CardLocation.Discard, 3 => CardLocation.NotAvailable, _ => side.HqOf() };
+            if (subjectSuppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (laterSuppressed) later.Keywords.Add(Keyword.Suppressed);
+            if (exception) { later.SuppressionExceptionTriggers.Add("OnAfterOtherCardOperactionCostChanged"); later.SuppressionExceptionTriggers.Add("OnAfterOtherCardOperactionCostBuffsReset"); }
+            var callbacks = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = cards.Values.Single(c => c.BlueprintVariables.GetValueOrDefault("_auditCostActive") is string);
+                string phase = (string)actor.BlueprintVariables["_auditCostActive"]!; actor.BlueprintVariables.Remove("_auditCostActive");
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditCostSource"), 20) || !Equals(actor.BlueprintVariables.GetValueOrDefault("_auditCostTarget"), 60)) fault = "行动费回调参数须为int cardToChange/Instigator";
+                callbacks.Add(phase + ":" + actor.CardId);
+                if (phase == "own") {
+                    if (ownMode == 1) SetOperationCostRegistrations(cards[90], true, true);
+                    if (ownMode == 2) SetOperationCostRegistrations(later, false, true);
+                    if (ownMode == 3) later.Keywords.Add(Keyword.Suppressed);
+                }
+                if (actor.CardId != 70) return;
+                if (phase == "changed") {
+                    if (changeMode == 1) later.Keywords.Add(Keyword.Suppressed);
+                    if (changeMode == 2) SetOperationCostRegistrations(later, false, false);
+                    if (changeMode == 3) SetOperationCostRegistrations(cards[90], true, true);
+                    if (changeMode == 4) state.Move(later, CardLocation.NotAvailable, 0, notifyMoved: false);
+                    if (changeMode == 5) SetOperationCostRegistrations(later, false, true);
+                } else if (phase == "reset") {
+                    if (resetMode == 1) later.Keywords.Add(Keyword.Suppressed);
+                    if (resetMode == 2) SetOperationCostRegistrations(cards[90], true, false);
+                }
+            };
+            engine.Api.FireOperationCostChanged(target, 20, runReset);
+            var expected = ExpectedOperationCostCallbacks(ownMode, changeMode, resetMode, runReset, subjectSuppressed, laterSuppressed, exception);
+            if (fault is not null || !callbacks.SequenceEqual(expected))
+                return $"行动费回调快照错误 own={ownMode},changed={changeMode},reset={resetMode},runReset={runReset},subjectSupp={subjectSuppressed},laterSupp={laterSuppressed},exception={exception}: {fault} actual={string.Join(',', callbacks)} expected={string.Join(',', expected)}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostResetFlagRouting(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (int requested in new[] { 0, 2, 105 })
+        foreach (int before in new[] { 0, 2, 99 })
+        foreach (bool skip in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); SetOperationCostRegistrations(card, true, true); }
+            target.OperationCost = before;
+            if (mode == 4) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, OperationCost = 1, Attack = 1 };
+            var callbacks = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.Single(c => c.BlueprintVariables.GetValueOrDefault("_auditCostActive") is string);
+                string phase = (string)actor.BlueprintVariables["_auditCostActive"]!; actor.BlueprintVariables.Remove("_auditCostActive");
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditCostSource"), sourceId)) fault = "来源ID参数丢失";
+                callbacks.Add(phase + ":" + actor.CardId);
+            };
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, sourceId, requested, mode, false, skip, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool changed = mode is 2 or 3 or 5 ? before != requested : mode == 4 || requested != 0;
+            var expected = changed ? new List<string> { "own:60", "changed:70" } : new List<string>();
+            if (changed && mode is 2 or 3 or 5) expected.Add("reset:70");
+            if (fault is not null || !callbacks.SequenceEqual(expected)) return $"行动费reset标记路由错误 mode={mode},before={before},request={requested},skip={skip},source={sourceId}: {fault} actual={string.Join(',', callbacks)}";
         }
         return null;
     }
@@ -37508,9 +37654,9 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// Legacy aura regression, not native equivalence authority. RULE-337 found
-    /// that current ChangeOperationCost4 does not enable T9. The explicit reset
-    /// expectations here must migrate with the pending cost/ledger/event rewrite.
+    /// RULE-339: current ChangeOperationCost4 sends changed callbacks but no T9.
+    /// Explicit temporary withdrawal therefore does not automatically reapply
+    /// this battery's T9-only aura; numeric/ledger migration is still separate.
     /// </summary>
     private static string? LightAntiAirBatteryOperationCostReset(CardDatabase db)
     {
@@ -37554,7 +37700,7 @@ internal static class SelfTest
                  + $"temp={plane.BuffsBySource.ContainsKey((battery.CardId, true))}";
         }
 
-        // 显式 ct=4 也必须走同一条 reset 事件链。
+        // mode4只撤销临时项，不自动广播T9重新挂回光环。
         var ctx = new EffectContext
         {
             Engine = engine,
@@ -37565,14 +37711,17 @@ internal static class SelfTest
         engine.Api.InvokeByName("ChangeOperationCost", plane,
             new object?[] { plane, battery.CardId, -2, 4, true, false, false },
             ctx, out bool handled);
-        if (!handled || plane.OperationCost != baseOperation + 2
-            || !plane.BuffsBySource.ContainsKey((battery.CardId, true)))
+        if (!handled || plane.OperationCost != baseOperation
+            || plane.BuffsBySource.ContainsKey((battery.CardId, true)))
         {
-            return $"显式 ct=4 后 reset 事件未重施加：handled={handled}, "
+            return $"显式 ct=4 不应通过T9自动重施加：handled={handled}, "
                  + $"actual={plane.OperationCost}";
         }
 
-        // 来源离开棋盘后不在接收快照里，清理不能把光环重新挂回来。
+        // 为独立的离场后撤销场景重新建立临时修正，不依赖不存在的T9。
+        engine.Api.InvokeByName("ChangeOperationCost", plane,
+            new object?[] { plane, battery.CardId, 2, 0, false, false, false }, ctx, out _);
+        if (plane.OperationCost != baseOperation + 2) return "重新建立临时行动费测试前提失败";
         state.Move(battery, CardLocation.HandLeft);
         engine.Api.InvokeByName("ChangeOperationCost", plane,
             new object?[] { plane, battery.CardId, -2, 4, true, false, false },
