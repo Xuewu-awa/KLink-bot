@@ -585,6 +585,7 @@ internal static class SelfTest
         new("公共费用入口：原生来源门/非存活额外门/账本及五字段通知", KreditPublicPermanentEntryMatrix),
         new("公共费用来源形式：对象/整数等价，缺失来源拒绝", KreditPublicSourceForms),
         new("公共费用事件入口：来源参数、主体ID及自身/T45顺序", KreditPublicEventContinuation),
+        new("重置费用：模板临时值/打捞与后续临时改费独立", KreditResetNumericRefresh),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7512,6 +7513,41 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? KreditResetNumericRefresh(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 3, 105 })
+        foreach (int temp in new[] { -4, 0, 5, 99 })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (bool dirty in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Kredits = basis, KreditsBuff = temp };
+            card.IsSalvaged = salvaged;
+            card.BaseKreditCost = dirty ? 99 : 7; card.TemporaryKreditCost = dirty ? -4 : 4;
+            card.PublicKreditCost = 37; card.PublicKreditCostBuff = -9;
+            card.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, KreditCostSetValue = 0 };
+            card.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, HasZeroKreditCostEntry = true };
+            int expectedBase = salvaged ? Math.Min(3, basis) : basis;
+            card.ResetAttributes();
+            var frozen = card.Snapshot();
+            if (card.BaseKreditCost != expectedBase || card.TemporaryKreditCost != temp || card.TotalKreditCost != Math.Clamp(expectedBase + temp, 0, 99)
+                || card.PublicKreditCost != expectedBase || card.PublicKreditCostBuff != temp || card.BuffsBySource.Count != 0
+                || frozen.BaseKreditCost != expectedBase || frozen.TemporaryKreditCost != temp)
+                return $"重置必须从恢复后的公开费用两字段重建当前数值 {side}/{basis}/{temp}/{salvaged}/{dirty}";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { card, 9999, 2, 0, true, null }, ctx, out _);
+            if (card.BaseKreditCost != expectedBase || card.TemporaryKreditCost != temp + 2 || card.TotalKreditCost != Math.Clamp(expectedBase + temp + 2, 0, 99)
+                || card.PublicKreditCost != expectedBase || card.PublicKreditCostBuff != temp || frozen.TemporaryKreditCost != temp)
+                return "重置后的临时改费应累加到模板临时值，不写公开字段或旧快照";
+            card.ResetAttributes();
+            if (card.BaseKreditCost != expectedBase || card.TemporaryKreditCost != temp || card.BuffsBySource.Count != 0)
+                return "再次重置应丢弃新增来源并重建模板费用两分量";
         }
         return null;
     }

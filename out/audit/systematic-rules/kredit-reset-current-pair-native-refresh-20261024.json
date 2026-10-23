@@ -1,0 +1,174 @@
+{
+  "rule": "RULE-363",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-363",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "offline_only": true,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "accessors_revalidated": 5,
+    "accessor_backend_bytes": 1234,
+    "refresh_local_cfg_bytes": 740,
+    "refresh_prefix_executed_bytes": 559,
+    "native_vectors": 96,
+    "worker_raw_exact_rows": 96,
+    "managed_fixtures": 128,
+    "reset_calls_in_fixtures": 256,
+    "regression_before": {
+      "passed": 751,
+      "total": 752,
+      "failed": 1
+    },
+    "release_selftest": {
+      "passed": 752,
+      "total": 752,
+      "exit_code": 0
+    },
+    "scope": "Reset final current-cost pair reconstructed from restored public pair, including template temporary cost. Installed-PE public reset slices plus exact refresh numeric prefix + actual native fee getters emulated, hash import controlled. Full refresh diagnostics tail/full reset transitive helpers, constructor/force-play/identity still uncertified."
+  },
+  "authority": "Installed PE SHA matched prior read-only UFunction mapping/ResetCardAttributes captures; revalidated five fee accessor wrappers/backends1234B and SDK public field offsets. New offline local CFG extraction for reset numeric refresh helper740B. No live memory sampling, game function invocation, injection or process write.",
+  "finding": "ResetCardAttributes restores public kredits(+0x80, salvaged min(template,3)) and kreditsBuff(+0x84, template value), then at RVA0x4b07ea2 calls0x4af9a30. Refresh reads public base at0x4af9b90 and temp at0x4af9bf6, encodes independent current fields+0x590/+0x5a4. Simulator reset aggregate setter forced temporary current cost0, losing nonzero template kreditsBuff.",
+  "changes": [
+    "At final fee restoration inside CardInstance.ResetAttributes, assign BaseKreditCost=PublicKreditCost and TemporaryKreditCost=PublicKreditCostBuff instead of legacy aggregate setter. Earlier initialization compatibility remains untouched; final fee pair is restored before return/reset events.",
+    "Add128managed fixtures covering both sides*4templatebases*4templatetemps*2salvage*2dirty initial pairs; check raw/public/total/snapshot and ledger clear, apply native temporary+2 preserving raw base/public pair and old snapshot, reset again to template pair.256reset calls total; no constructor/force-play migration."
+  ],
+  "native_model": {
+    "vectors": 96,
+    "dimensions": "4bases[-3,0,3,105]*4temps[-4,0,5,99]*2salvaged*3salts[0,42,-1]",
+    "digest": "bca69819eb361e86b6a2e7971b9ad35d950107d706677a0d6fbcf0832383940b",
+    "executed": "Exact installed-PE reset public-pair slices0x4b07a7e..0x4b07a9c and0x4b07ac4..0x4b07ad0; CL salvage flag seeded from previously validated+0x338 read, R13zero from reset. Exact numeric refresh prefix0x4af9a30..0x4af9c5f=559B, then whole actual get-base/get-temp/get-total native accessor bodies.",
+    "checks": "Raw restored base remains negative or above99 if template says so, salvage caps only base at3 with no lower clamp. Temporary copies template verbatim. Total clamps sum0..99. Salt changes ciphertext but not logical results. Template4096B unchanged and target writes restricted to public fee pair and known shared numeric crypto fields. Prefix also initializes attack/defense crypto storage but this rule makes no new semantic claim about those fields.",
+    "limitations": "Synthetic buffers only. Hash import returns controlled0 and security cookie stubbed as in earlier accessor harness. Refresh full local CFG740B is captured; diagnostics tail after numeric writes is not executed. Whole reset/transitive collection helpers, runtime object lifetime, crypto-integrity mismatch handling, arbitrary overflow and constructor/force-play/copy chains not certified."
+  },
+  "worker": {
+    "job": "20261024-024832-rule363-reset-fee-81b41ab1",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 96,
+    "raw_exact_rows": 96,
+    "id_normalization": false,
+    "scope": "Private supplied projection only; primary independently executes real installed-PE numeric slices/refresh prefix/accessors and compares every original row. Not authority or source editor/publisher."
+  },
+  "regression": {
+    "new_tests": 1,
+    "fixtures": 128,
+    "reset_calls": 256,
+    "before": "New test fails on original reset: Left/-3/-4/False/False, temporary expected-4 but0.751/752pass,1failure,nonzero exit.",
+    "after": "752/752Release selftest,exit0. Prior751tests remain passing."
+  },
+  "remaining": [
+    "Only final current fee pair of reset is aligned here. Earlier InitializeRuleAttributesFromDefinition still uses aggregate compatibility before final overwrite; no demonstrated callback observes that intermediate state in this method. Full native constructor/reset helper/state/diagnostic/copy lifecycle still not certified.",
+    "Construction, force-play, legacy identity/aura and nonbyte adapters may still collapse components. Suppression5604/static lookup/trailing phases and arbitrary physical BuffMap import/alias/frame/out ABI remain open.",
+    "Extreme signed32 encryption overflow and nonfresh frames/hash failures not covered by this96vector model. Do not infer full crypto integrity implementation from controlled hash import.",
+    "Single-card version migration remains paused, historical replay not authority, fully certified cards0. Earlier reset cost-pair pending statement superseded only for logical final fees under tested/native verified reset path."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-numeric-refresh-pe-20261024.json",
+      "sha256": "320b08fcdac5b837293f28bfeae0b1cf692b6384e8fa3b7f28cbb3c09c38b443"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-kredit-refresh-prefix-emulation-20261024.json",
+      "sha256": "11b6b0579286d5f4ddb87dbcd30160bf3d3bcbc1a8d2b44545720e8263079769"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule363-reset-refresh.py",
+      "sha256": "04f1cd6fdda5370d4355fd223ad8e088e4c57c66a4928b58184c52e22f28b85d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule363-reset-kredit.py",
+      "sha256": "a0c056c21f4a5d5a88c4850d20eea5fad2fcf8dcb3e8c6a9a4b39566bf4a4373"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule363.py",
+      "sha256": "0c0c889251876331827dd62a1b905eb7fa2e0f009af5285805641ea524e9a9d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule363-verified-20261024.json",
+      "sha256": "2e018d3b966dc6ecb44fb4b7e153f489d96ce7429ee15603f435bf9d2fd5a588"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule363\\task.txt",
+      "sha256": "f1d44c9ad6d2b0c42fa25a6f11144817d2176f876a55f1f27e0278fa2f4ebc07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule363\\spec.json",
+      "sha256": "502f3d350307dcb86f721e803a3ffb31f622c1fee081fb2f4d0d990f9bb7b734"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule363\\generator.py",
+      "sha256": "7b4551854913aad6c1fb859e4c3a1bdb98363f559117c101428ab6960aeb15da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule363\\cases.json",
+      "sha256": "542e256ebc9160d5a4c9654d186b91278e3436ba9f432d427e9d75805354214b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule363\\primary-cases.json",
+      "sha256": "d9b7b44c2b7378d05aaca907aea6e5d9e4169c4339d9bcb59377cc01abdf3698"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-024832-rule363-reset-fee-81b41ab1\\job.json",
+      "sha256": "b81e245196d6f4eba35302787c719331883c6f6604ff396f4516c3166c72ef5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule363-selftest-before.log",
+      "sha256": "718beab4f6b950a6d74e2b6d76b0a780e36f422f7f0bccd919c9934b19cfbcb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule363-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule363-selftest.log",
+      "sha256": "89280a97953814d1d028e8e39c6bf3af30e1dbb2f44c4f5737bd7ac6bd0b190d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule363-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "e20b2c08f60f6083627337f6aee99a3655df6c287c988d5c04e06d4a14724486"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "90599a63956927dc2a29fa5307f0a4cb0f0578bb2a16e18adbb4fea3770b36b2"
+    }
+  ]
+}

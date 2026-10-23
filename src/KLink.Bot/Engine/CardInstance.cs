@@ -767,7 +767,11 @@ public sealed class CardInstance
         PublicAttack = IsSalvaged ? 1 : Definition.Attack;
         AttackBuff = 0;
         Defense = MaxDefense = IsSalvaged ? 1 : Definition.Defense;
-        KreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
+        // RULE-363: ResetCardAttributes -> native refresh at RVA 0x4af9a30
+        // reconstructs both current encrypted fee components from the restored
+        // public pair (+0x80/+0x84), including nonzero template temporary cost.
+        BaseKreditCost = PublicKreditCost;
+        TemporaryKreditCost = PublicKreditCostBuff;
         PinnedTurns = 0;
         GotchaActivated = 0;
         CardSeen = false;
