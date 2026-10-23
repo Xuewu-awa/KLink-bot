@@ -1,0 +1,223 @@
+{
+  "rule": "RULE-350",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_read_only_capture_pid": 24220,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-350",
+    "fresh_read_only_capture_pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 11,
+    "blueprint_bytes": 18880,
+    "fresh_blueprint_functions": 5,
+    "fresh_blueprint_bytes": 524,
+    "notification_vectors": 2376,
+    "worker_rows_exact": 2376,
+    "original_packet_count_typo": 7128,
+    "zero_request_full_main_ledger_vectors": 2304,
+    "regression_combinations": {
+      "payload": 1188,
+      "dispatcher": 192,
+      "zero": 96,
+      "total": 1476
+    },
+    "release_selftest": {
+      "passed": 727,
+      "total": 727,
+      "exit_code": 0
+    },
+    "scope": "Five-field dispatcher payload/raw request/total getter adapter; ordinary0/1 zero is no-op. Notification fragment conditions seeded, real persistent handler not executed. Native base/temp numeric, absolute-equal/unknown/mode4 gates, T45/public adapter and suppression phase remain unconverted."
+  },
+  "authority": "Fresh read-only5scripts524B:ActionValueCardID130,Int131,String134;interface HandleSetKreditCost3 and online handler126. Reused native main/notifier/builder/CanCardBeBuffed/full ledger/full suppression.11scripts18880B redecoded against raw bytes/FName-symbol headers/current PE SHA. No process writes/injection/game-function calls/gameplay changes.",
+  "changes": [
+    "Add NotifySetKreditCost builder with ordered cardID,kreditCost,instigatorID,costAdded,changeType. Preserve raw request before legacy absolute-offset conversion. Dispatcher supplies current TotalKreditCost proxy as total, supplied raw source and raw amount; mode encoded by verified enum names.",
+    "Ordinary modes0/1 request0 return after entry gates, before creating/modifying ledger or recalculating numeric proxy. This matches native whole-main/full-type2-ledger zero proof; no notifications/callbacks or source relation repairs.",
+    "Leave absolute/mode4/unknown gates, base/temp storage, T45 and old public/adapters explicitly pending; do not claim full ChangeKreditCost conversion."
+  ],
+  "models": {
+    "notification_vectors": 2376,
+    "zero_main_ledger_vectors": 2304,
+    "scope": "Actual ChangeKreditCost1614..1780 notification fragment or false-condition return calls full94B notifier, controlled active receiver adapter, full359B builder and full130/131/134B value helpers. Enum names supplied from SDK; full online126B persistent receiver NOT executed. valueChanged/action/total getter supplied. Zero proof executes whole2759B ChangeKreditCost modes0/1 plus whole type2 ledger:3base*3temp*2modes*2sources*32currentMasks*2foreignMasks=2304. Controlled validity/buffability/source/enum/map/frame primitives; target/source/typed maps unchanged, no notify/callback."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "combinations": 1476,
+    "payload_builder": 1188,
+    "dispatcher_payload": 192,
+    "ordinary_zero": 96,
+    "release": {
+      "passed": 727,
+      "total": 727,
+      "exit_code": 0
+    },
+    "scope": "1188 literal builder vectors both sides, signed/raw extremes and11enum names;192dispatcher witnesses raw requests preserved across0/1/2/3 and total proxy used, including >99result clipping and parameter4not mistaken for skipAction. These retain existing legacy absolute send decisions, not native equal-value gate claims.96ordinaryzero vectors preserve raw-3/0/105, existing/absent ledger reference, unrelated SetValue0, source reverse array, no trace/actions."
+  },
+  "worker": {
+    "job": "20261023-182233-rule350-kredit-notification-44927be4",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 2376,
+    "primary_comparison_exact": 2376,
+    "original_packet_expected_count": 7128,
+    "packet_correction": "Primary packet arithmetic typo:2*3*3*3*11*2*2=2376, not7128. Worker flagged mismatch and emitted all2376distinct rows without padding. Original task/spec and generator flag retained; primary did not enable duplicate-amount dimension or retry. Every actual row independently matches native fragment.",
+    "scope": "Private mechanical supplied notification projection only, no source edits/authority judgment/publishing."
+  },
+  "remaining": [
+    "BaseKredit/temporaryKreditBuff numeric independence, initialization/copy/reset/snapshot lifecycle and typed kredit SetValue/Suppress ledger remain unconverted. TotalKreditCost still clamps a legacy aggregate proxy; new integration test certifies adapter payload, not full native cost derivation.",
+    "Notification fragment model seeds valueChanged and total getter output. Native absolute-equal comparison/gates, unsupported modes, mode4 withdrawal/notification and full execution-state gates are not fixed. Current dispatcher may still notify for equal absolute or unknown modes. Mode4/public two-argument/legacy aura paths do not use the new five-field builder.",
+    "Actual126B online HandleSetKreditCost/persistent ubergraph was captured but not traversed; model uses controlled active receiver builder adapter. isBuff=true is passed by native body and does not appear in five-field builder output. Full frame/delegate/receiver transitive behavior remains unproved.",
+    "T45 still receives new cost through legacy FireKreditCostChanged instead of native changed-card ID; own callback and query/snapshot semantics unconverted. Suppression5604 kredit phase still not wired pending numeric/ledger migration.",
+    "Native validity/target resolution, qqq output/persistent frame, real registration/TSet order/UObject lifetime, full cleanup/armor/static-card lookup, last-card reveal and caller-array alias mutation remain open. Version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-notification-value-helpers-native-20261023.json",
+      "sha256": "eac46fc4b905511674c10ab570bc3924532d320cb4fd92b7c7392087d381e6d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-notification-payload-native-model-20261023.json",
+      "sha256": "86238f68ede03d160b7d7543d40c0c583a7343353b2b3503d4bb28a890580ac3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-zero-main-ledger-model-20261023.json",
+      "sha256": "c5c2e41eabdec0734d475ab97b3c69670850090ddfb2746a37f57bdc765491ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule350-kredit-notifier-helpers.py",
+      "sha256": "ec6f37f6902a05cc4e627c1413bc61dbdd1a509cd5cb4c348ff7258d6c9f4374"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-notifier-chain.py",
+      "sha256": "3a930e7254e1b5adb3ea2f36868618f374b7e0002a3723ca7962b760798edc65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule350.py",
+      "sha256": "11608113b358ce8517e6d7e1e06c9fd6cfd50e9b40c8df0fe3521cda4f0b0d2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule350-notify.py",
+      "sha256": "50305637dccbbcfaef33db977433d3c7966c5541a176b18b926f59952716f2ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule350-zero.py",
+      "sha256": "a9a1a4f1da02ee5a4b91324d7f55ab8666125e6e6da75cc3c405192d49a4ddbc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule341-zero-main.py",
+      "sha256": "48611990ba6d297e755b0bf37995d2653e8f9468b7bf7b0b14ed310bf9b74a96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule350-tests.py",
+      "sha256": "d6d9fa376143aae85e0e191bc9867e530de409fd8bb8a719c8920466cf010a9f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule350.py",
+      "sha256": "fa284957a739c18d597aed360110ef6c40954d4b5254966605ae4e43c3ddd23a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule350-verified-20261023.json",
+      "sha256": "452814a88a15fa3d63950a20b2cfba2ae42a437fa907fcd94ccfa61672610ebe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule350-selftest-final.log",
+      "sha256": "ff2c78878d4c43c98a6f8af512b7d977f9cd55ff6efdec52aced5b5a7de55f18"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule350-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule350\\spec.json",
+      "sha256": "166fdb2cba8ffb8baad048585aa66484402b2c5aee573e78c544261e7018b941"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule350\\task.txt",
+      "sha256": "12625331e86f61a7b2eed46d6090aa741d4ac5dea08ce22d4e1e195f871e9ae6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule350\\cases.json",
+      "sha256": "e95a1d72a9a5739e0d69a0729e610558658cd21e0674ece6d322d5c66b179f83"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule350\\primary-cases.json",
+      "sha256": "eaac361388079744982e39a5f4d1edd9c95446999b46d3879a8216872a875b65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule350\\generator.py",
+      "sha256": "6cb0d3a6eca555054ac752df5119a148b323d4f1c290d28b9e8d269b73ff720a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\spec.json",
+      "sha256": "0830386fc87fae2c3468c32b124424e3f020ec7ab54b64e18572e5e4b5431e3b"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-182233-rule350-kredit-notification-44927be4\\job.json",
+      "sha256": "80bd457b7b34fc5256981fb3df11fb4831537b0233fda9f145b238c921de557e"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "3cca28daa0d67cd5f4db54fa1fbf9275f7719276ea7de2ba6b65a12a39e58fc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "13b3c12dab588e7855942d05d49d8746e68f92268a861775185ce08ff7723a3c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "9e6c1c110aa1788e6a0e6a402c3bf0510f290aaf887bd30818eabe52ca021230"
+    }
+  ]
+}

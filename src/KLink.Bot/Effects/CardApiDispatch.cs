@@ -4344,6 +4344,13 @@ public sealed partial class CardApi
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
+        // RULE-350: preserve the request before the legacy absolute-offset
+        // conversion. Native ordinary zero inputs neither notify nor create
+        // ledger entries. Other numeric/notification gates remain pending.
+        int rawAmount = amount;
+        if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && amount == 0)
+            return null;
+
         if (changeType == ChangeTypeTempBuffRemove)
         {
             // 蓝图按 buff 字段撤销；既有手写光环使用永久来源槽，
@@ -4376,12 +4383,7 @@ public sealed partial class CardApi
             changeType is ChangeTypeSetValueReal or ChangeTypeSuppress;
         target.RecalculateStats();
 
-        _engine.FireSubAction("ZActionSetKreditCost", new[]
-        {
-            ActionValue2.Int("cardID", target.CardId),
-            ActionValue2.Int("kreditCost", target.KreditCost),
-            ActionValue2.Int("instigatorID", sourceId),
-        });
+        NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);
 
         if (target.KreditCost != previousCost)
         {

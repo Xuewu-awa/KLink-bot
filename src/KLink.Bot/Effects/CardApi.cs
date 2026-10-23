@@ -2966,6 +2966,17 @@ public sealed partial class CardApi
             target, new object?[] { target, instigatorId, delta, ChangeTypePermBuff, false, false, false });
     }
 
+    // RULE-350: AddSubActionSetKreditCost359B serializes five ordered values.
+    // Raw IDs/costAdded are not clamped here; caller supplies the total cost.
+    private void NotifySetKreditCost(int cardId, int totalCost, int instigatorId, int costAdded, int changeType)
+        => _engine.FireSubAction("ZActionSetKreditCost", new[] {
+            ActionValue2.Int("cardID", cardId),
+            ActionValue2.Int("kreditCost", totalCost),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Int("costAdded", costAdded),
+            ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
+        });
+
     // RULE-338: exact AddSubActionChangeOperationCost ordered wire values.
     // This builder has no eligibility gates; callers decide whether to notify.
     private void NotifyOperationCostChanged(int cardId, int instigatorId, int amount, int changeType, bool skipAddToBattlelog)

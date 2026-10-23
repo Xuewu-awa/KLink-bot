@@ -558,6 +558,9 @@ internal static class SelfTest
         new("压制广播整合：自身之后查T58，T58与清理之后新查T11", SuppressionObserverPhaseIntegration),
         new("指挥点费用入口：原始正来源、缺失源、跳过门及全位置", KreditCostEntryRawSourceMatrix),
         new("指挥点费用入口拒绝：各模式账本不动，揭示掩护正常放行", KreditCostEntryRejectionAndRevealed),
+        new("指挥点改费通知：五字段顺序及原始整数编码", KreditNotificationFiveFields),
+        new("指挥点改费通知整合：保留原请求、总费代理与参数4", KreditNotificationDispatcherPayload),
+        new("指挥点改费普通零：不建账不改数值不发通知回调", KreditOrdinaryZeroNoOp),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7357,6 +7360,82 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static string? KreditNotificationFiveFields(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("NotifySetKreditCost", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        string[] names = { "tempBuffGive", "permBuff", "SetValue", "Suppress", "tempBuffRemove", "veteranSet", "customAdd", "customRemove", "combatModify", "notUsed", "EChangeType_MAX" };
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int card in new[] { -1, 60 })
+        foreach (int total in new[] { -3, 0, 105 })
+        foreach (int source in new[] { -7, 20, 9999 })
+        foreach (int amount in new[] { -3, 0, int.MaxValue })
+        foreach (int mode in Enumerable.Range(0, 11))
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            method.Invoke(engine.Api, new object[] { card, total, source, amount, mode });
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (actions.Length != 1 || actions[0].Name != "ZActionSetKreditCost" || !actions[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("cardID", card), ActionValue2.Int("kreditCost", total), ActionValue2.Int("instigatorID", source),
+                ActionValue2.Int("costAdded", amount), ActionValue2.Str("changeType", names[mode]) }))
+                return $"指挥点五字段错误 {side}/{card}/{total}/{source}/{amount}/{mode}";
+        }
+        return null;
+    }
+
+    private static string? KreditNotificationDispatcherPayload(CardDatabase db)
+    {
+        string[] names = { "tempBuffGive", "permBuff", "SetValue", "Suppress" };
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 3, 7 })
+        foreach (int request in new[] { -5, 0, 1, 105 })
+        foreach (int mode in Enumerable.Range(0, 4))
+        foreach (int source in new[] { 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = basis };
+            target.Keywords.Clear(); target.KreditCost = basis;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, source, request, mode, true, null }, ctx, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            if (mode <= 1 && request == 0) { if (actions.Length != 0) return "普通零请求不应通知"; continue; }
+            // This fixture witnesses payload integration only. Absolute equal-value
+            // sending and the legacy numeric result are not native-equivalence claims.
+            if (actions.Length != 1 || !actions[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("cardID", 60), ActionValue2.Int("kreditCost", target.TotalKreditCost), ActionValue2.Int("instigatorID", source),
+                ActionValue2.Int("costAdded", request), ActionValue2.Str("changeType", names[mode]) }))
+                return $"派发通知丢失原始请求 {side}/template={basis}/request={request}/mode={mode}/source={source}";
+        }
+        return null;
+    }
+
+    private static string? KreditOrdinaryZeroNoOp(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int raw in new[] { -3, 0, 105 })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (bool ledger in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 }; target.Keywords.Clear(); target.KreditCost = raw;
+            var saved = new CardBuff { SourceCardId = sourceId, Temporary = mode == 0, KreditCost = 2, AttackSetValue = 0 };
+            if (ledger) target.BuffsBySource[(sourceId, mode == 0)] = saved;
+            source.CardsBuffedByThisCard.Add(888);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, 0, mode, skip, null }, ctx, out _);
+            if (target.KreditCost != raw || target.BuffsBySource.Count != (ledger ? 1 : 0)
+                || (ledger && (!ReferenceEquals(target.BuffsBySource[(sourceId, mode == 0)], saved) || saved.KreditCost != 2 || saved.AttackSetValue != 0))
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 888 }) || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"普通零费用请求改动状态 {side}/{raw}/{mode}/{sourceId}/{ledger}/{skip}";
         }
         return null;
     }
