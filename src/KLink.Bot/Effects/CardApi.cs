@@ -4275,7 +4275,7 @@ public sealed partial class CardApi
         foreach (var key in target.BuffsBySource.Keys.ToList())
         {
             CardBuff buff = target.BuffsBySource[key];
-            if (buff.Attack == 0 && buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0)
+            if (buff.Attack == 0 && !buff.AttackSetValue.HasValue && buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0)
             {
                 continue;
             }
@@ -4283,6 +4283,7 @@ public sealed partial class CardApi
             target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, buff.Clone()));
 
             buff.Attack = 0;
+            buff.AttackSetValue = null;
             buff.Defense = 0;
             buff.HeavyArmor = 0;
             buff.OperationCost = 0;
@@ -4390,6 +4391,7 @@ public sealed partial class CardApi
             {
                 CardBuff live = GetOrCreateBuff(card, key.SourceCardId, key.Temporary);
                 live.Attack += saved.Attack;
+                if (saved.AttackSetValue.HasValue) live.AttackSetValue = saved.AttackSetValue;
                 live.Defense += saved.Defense;
                 live.HeavyArmor += saved.HeavyArmor;
                 live.OperationCost += saved.OperationCost;

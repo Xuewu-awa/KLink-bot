@@ -4136,10 +4136,7 @@ public sealed partial class CardApi
         bool skip = TruthyArg(a, 4);
         if (!invert && changeType == ChangeTypeSetValueReal)
         {
-            // Preserve the independent temporary component. SetValue's typed
-            // ledger and raw-input equality path remain a separate audit item.
-            ChangeAttack(target, Math.Clamp(delta, 0, 99) - target.BaseAttack, source,
-                changeType: changeType, skipAction: skip, instigatorId: instigatorId);
+            SetAttackValue(target, delta, instigatorId, skip);
             return null;
         }
         if (!invert && changeType == ChangeTypeTempBuffRemove)
@@ -4151,6 +4148,40 @@ public sealed partial class CardApi
         ChangeAttack(target, invert ? -delta : delta, source, temporary: changeType == 0,
             changeType: changeType, skipAction: skip, instigatorId: instigatorId);
         return null;
+    }
+
+    private void SetAttackValue(CardInstance target, int value, int sourceId, bool skipAction)
+    {
+        if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)) return;
+        int previous = target.Attack;
+
+        // Native ChangeBuffsFromCards caches the current-source value struct
+        // BEFORE globally removing attack_permBuff / attack_SetValue. It then
+        // writes the requested raw SetValue into that ORIGINAL struct.
+        var key = (sourceId, false);
+        var original = target.BuffsBySource.TryGetValue(key, out var old)
+            ? old.Clone() : new CardBuff { SourceCardId = sourceId };
+        foreach (var candidate in target.BuffsBySource.Keys.Where(k => !k.Temporary).ToArray())
+        {
+            var buff = target.BuffsBySource[candidate];
+            buff.Attack = 0;
+            buff.AttackSetValue = null;
+            // The native loop does not synchronize foreign source arrays.
+            // Only the current source is synchronized at the function tail.
+            if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
+        }
+        original.AttackSetValue = value;
+        target.BuffsBySource[key] = original;
+        SynchronizeBuffTarget(target, sourceId);
+
+        // Compare the RAW requested value, after ledger processing. A request
+        // of105 at base99 continues even though the final visible delta is0.
+        if (target.BaseAttack == value) return;
+        target.BaseAttack = Math.Clamp(value, 0, 99);
+        int changed = target.Attack - previous;
+        if (!skipAction && !IsLocatedInDeck(target))
+            NotifyAttackChanged(target, changed, sourceId, ChangeTypeSetValueReal);
+        ExecuteAfterChangeAttackEvents(target, changed, sourceId);
     }
 
     private void RemoveAttackBuffWithEvents(CardInstance target, int sourceId, bool skipAction)

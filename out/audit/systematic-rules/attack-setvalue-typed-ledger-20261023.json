@@ -1,0 +1,200 @@
+{
+  "rule": "RULE-330",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-330",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_wrappers_verified": 5,
+    "native_backends_verified": 5,
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 10848,
+    "native_models": {
+      "attack-set-raw-equality-native-model-20261023.json": 960,
+      "attack-set-full-ledger-native-model-20261023.json": 4608,
+      "attack-set-integrated-native-model-20261023.json": 1024
+    },
+    "native_model_cases": 6592,
+    "worker_exact_rows": 120,
+    "regression_combinations": {
+      "raw_equality_events": 1920,
+      "typed_ledger": 9216,
+      "zero_key_lifecycle": 16,
+      "total": 11152
+    },
+    "release_selftest": {
+      "passed": 680,
+      "total": 680,
+      "exit_code": 0
+    },
+    "scope": "Mode2 SetValue raw equality and representable typed attack ledger; current-source original struct and foreign cleanup. Copy/snapshot/zero-presence supported. Other mode keys, ordinary zero entries, all native hash ordering, native validity and complete suppression lifecycle remain pending."
+  },
+  "authority": "Existing authoritative client-memory Blueprint captures, independently redecoded four functions10848B. Five captured native accessor wrappers/backends rechecked against installed exact-SHA PE; no new process sample or historical replay authority. Enum display strings/map/source lookup/crypto interfaces controlled in offline models, not all native helpers certified.",
+  "findings": [
+    "ChangeAttack mode2 calls ChangeBuffsFromCards at493, reads decrypted base at855, compares base to RAW localInputAmount at896/934, sets valueChanged=false at948 for equality, otherwise clamps only at960.",
+    "The ledger full entry caches the original current-source struct; globally strips attack_permBuff and attack_SetValue, then overwrites current source with its ORIGINAL struct plus raw SetValue. Current old permanent data can survive; foreign temporary and unrelated fields survive.",
+    "Only current source reverse array is synchronized; foreign reverse arrays are not visited. Zero SetValue is a present typed key."
+  ],
+  "changes": [
+    "Mode2 dispatch now uses separate SetAttackValue helper; ledger is processed even if raw input equals base and numeric/event continuation stops.",
+    "CardBuff.AttackSetValue nullable value separates absent vs zero SetValue from ordinary permanent attack; IsEmpty, Clone and card snapshots retain that distinction.",
+    "Representable foreign permanent/SetValue fields cleared; current original struct restored plus raw requested SetValue; temporary entries retained; foreign reverse arrays not eagerly repaired.",
+    "Base updated only after raw equality check, temporary and public fields retained. Notify/own/T5 continuation still uses actual total difference, including0; skip/deck omit notification only.",
+    "Legacy suppression storage carries/clears/restores newly typed field as compatibility plumbing; complete native suppression/unsuppression numeric/event semantics remain unfinished."
+  ],
+  "regressions": {
+    "new_cases": 3,
+    "new_combinations": 11152,
+    "release_passed": 680,
+    "release_total": 680,
+    "exit_code": 0,
+    "native_numeric_model": 960,
+    "native_ledger_model": 4608,
+    "native_integrated_model": 1024,
+    "native_total": 6592,
+    "worker_exact_rows": 120
+  },
+  "examples": [
+    {
+      "base": 99,
+      "temporary": 3,
+      "request": 105,
+      "after_base": 99,
+      "after_total": 99,
+      "continued": true,
+      "visible_delta": 0,
+      "raw_ledger_value": 105
+    },
+    {
+      "base": 10,
+      "request": 10,
+      "continued": false,
+      "ledger_still_updated": true
+    },
+    {
+      "request": 0,
+      "zero_SetValue_present": true,
+      "source_relation_retained": true
+    }
+  ],
+  "remaining": [
+    "maxAttack reflected cache is not yet independently represented.",
+    "Mode3/5/default absolute-value and typed mode keys remain pending; direct public ChangeAttack changeType2/inverted LoseAttack aliases are not certified by this dispatcher-specific change.",
+    "Ordinary attack_permBuff/tempBuffGive zero-key presence, unqualified/other enum keys and physical native TMap/TSet ordering remain incomplete.",
+    "Full suppression/unsuppression, 511th shortcut, all receipt/refresh/copy/reset transitive helpers remain pending.",
+    "Target native IsValid vs simulator IsAlive, complete validity/source fallback behavior and encrypted storage/CRC/divisor-zero diagnostics remain incomplete.",
+    "Other buff types remain compactly modeled; no all-card completeness claim. Single-card version migration paused; complete semantic certification0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule330-set-attack.py",
+      "sha256": "c63ab8561299512820d66045ba29dee8a6159898565741b40193e60d442af029"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule330-set-attack-verified-20261023.json",
+      "sha256": "0060e29b65e7205611e339c14bb26f927d8bf1a27dd3a8b56c9056dd8f1625ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule330-set-numeric.py",
+      "sha256": "b5530839dd9e2dd45718ffae882078e030f15cf59f857387a4cab72bc53574c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule330-set-ledger.py",
+      "sha256": "188c5448d43965c03735846ebd1c1ca92117a123ceeb8188b1c1cbeb39ee2f30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule330-set-integrated.py",
+      "sha256": "c5f096cee975d2535daae68ccbb1f727d624ee82025faf4b59c0dbb09af72315"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-set-raw-equality-native-model-20261023.json",
+      "sha256": "c0d9a09b83790eb731861e7e340c4adc5a9bbc42bd802baa3cbaffc898af4574"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-set-full-ledger-native-model-20261023.json",
+      "sha256": "4857a00d2eec1e61721976aa6e15ed127ab832a9a74e99ef47deefcd48eb1f24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-set-integrated-native-model-20261023.json",
+      "sha256": "48cfd665a703bedf351645a29bf35b85a8aad2e7fbd6858b634b11262bef54b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule330-selftest-release.log",
+      "sha256": "b2504cdc1fb98e2404876cbc5248c6021d55868b5ebd3fac29b438d27b45b802"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule330-selftest-release.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule330\\task.txt",
+      "sha256": "eb58c72bfbe7eae92697ed6551701536bcceac94ed33fde5196f7a5706adffaa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule330\\cases.json",
+      "sha256": "b4208bfd67138c139ea85303fb158881fe2be8b4c5ccd806842085b279847d39"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-091422-rule330-absolute-attack-76896b8d\\job.json",
+      "sha256": "47067cc0e91057506ab6e0f7bba6c6ed6687aaa7d08e195c78b80fe588995c92"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "a61b6af873a0e31e5748f0031ab128d48c16adf6e35e26386e15f3ea27d6c356"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "92a68fef3a600aa6653dbff25dbbbbeb27cdb785efcd553d67324a3b38014f93"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "0da421efc656b3c0efa9172b7c7f578ad9013ae0000c2c54c7a5cd0687d736a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "4e6ba833dd337ac5f334300bf738124bc3f256abf82a0c62bbbcf8295da8f278"
+    }
+  ],
+  "worker": "Private120-row math packet, exact independent comparison. No repository write or publishing delegated; output is not new game authority."
+}

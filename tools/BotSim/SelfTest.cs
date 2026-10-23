@@ -510,6 +510,9 @@ internal static class SelfTest
         new("攻击独立分量：增减与撤销跨越双边夹取，通知实际差值", IndependentAttackChanges),
         new("攻击独立分量：回合末撤销还原被上下限遮住的临时值", IndependentAttackExpiry),
         new("攻击设值：保留临时分量及独立公开字段", AttackSetPreservesTemporary),
+        new("攻击SetValue：原始输入相等门与零差值通知，账本先处理", AttackSetRawEqualityEvents),
+        new("攻击SetValue账本：当前旧结构回写、其他来源分类清理与反向名单", AttackSetTypedLedger),
+        new("攻击SetValue零键：复制、快照、重置和临时撤销保持独立", AttackSetZeroKeyLifecycle),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -6005,6 +6008,132 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? AttackSetRawEqualityEvents(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var probes = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (string hook in new[] { "OnAfterChangeAttack", "OnAfterOtherCardChangeAttack" })
+            locals[hook] = locals[hook].Where(x => x.Function != "DrawCardsFromDeckBySide").Select((x, i) => x with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 1, 10, 99 })
+        foreach (int temp in new[] { -105, -3, 0, 3, 105 })
+        foreach (int value in new[] { -3, 0, 1, 10, 99, 105 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, deck ? side.DeckOf() : side.HqOf(), 99);
+            var watcher = state.CreateWithId(name, side, 30, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) {
+                card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { "OnAfterOtherCardChangeAttack" } };
+                card.Keywords.Clear();
+            }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.BaseAttack = basis; target.TemporaryAttack = temp; target.PublicAttack = 7; target.AttackBuff = -9;
+            int before = target.Attack;
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 20, value, 2, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool continued = basis != value, notify = continued && !skip && !deck;
+            int nextBase = continued ? Math.Clamp(value, 0, 99) : basis;
+            int after = Math.Clamp(nextBase + temp, 0, 99), delta = after - before;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            var values = new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", delta), ActionValue2.Int("newAttackValue", after),
+                ActionValue2.Int("duration", 0), ActionValue2.Int("instigatorID", 20), ActionValue2.Bool("isBuff", false), ActionValue2.Str("changeType", "SetValue") };
+            bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
+                && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), 20);
+            if (target.BaseAttack != nextBase || target.TemporaryAttack != temp || target.Attack != after
+                || target.PublicAttack != 7 || target.AttackBuff != -9 || target.BuffsBySource[(20, false)].Attack != 0
+                || target.BuffsBySource[(20, false)].AttackSetValue != value || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 60 })
+                || actions.Length != (notify ? 1 : 0) || (notify && !actions[0].Values.SequenceEqual(values))
+                || (continued && (!Payload(watcher) || (!suppressed && !Payload(target))))
+                || ((!continued || suppressed) && target.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
+                || (!continued && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount")))
+                return $"SetValue原始相等门错误 base={basis},temp={temp},request={value},skip={skip},deck={deck},supp={suppressed}";
+        }
+        return null;
+    }
+
+    private static string? AttackSetTypedLedger(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int currentMask in Enumerable.Range(0, 16))
+        foreach (int otherMask in Enumerable.Range(0, 16))
+        foreach (int value in new[] { -3, 0, 105 })
+        foreach (bool exists in new[] { false, true })
+        foreach (int[] reverse in new[] { Array.Empty<int>(), new[] { 60 }, new[] { 60, 60, 999 } })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_51e_regiment", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            int id = exists ? 20 : 9999;
+            source.CardsBuffedByThisCard.AddRange(reverse); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            void Seed(int sourceId, int mask) {
+                if ((mask & 11) != 0) target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId,
+                    Attack = (mask & 1) != 0 ? 2 : 0, AttackSetValue = (mask & 2) != 0 ? 0 : null, Defense = (mask & 8) != 0 ? 2 : 0 };
+                if ((mask & 4) != 0) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, Attack = 3 };
+            }
+            Seed(id, currentMask); Seed(30, otherMask);
+            target.BuffsBySource[(99, false)] = new CardBuff { SourceCardId = 99, Defense = 2 };
+            target.BaseAttack = 10; target.TemporaryAttack = 3;
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, id, value, 2, true, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            var current = target.BuffsBySource[(id, false)];
+            bool otherPermanent = (otherMask & 8) != 0;
+            int expectedCount = 2 + ((currentMask & 4) != 0 ? 1 : 0) + ((otherMask & 4) != 0 ? 1 : 0) + (otherPermanent ? 1 : 0);
+            if (current.Attack != ((currentMask & 1) != 0 ? 2 : 0) || current.AttackSetValue != value
+                || current.Defense != ((currentMask & 8) != 0 ? 2 : 0) || current.IsEmpty
+                || target.BuffsBySource.Count != expectedCount
+                || target.BuffsBySource.ContainsKey((30, false)) != otherPermanent
+                || (otherPermanent && (target.BuffsBySource[(30, false)].Attack != 0 || target.BuffsBySource[(30, false)].AttackSetValue.HasValue || target.BuffsBySource[(30, false)].Defense != 2))
+                || (((currentMask & 4) != 0) && target.BuffsBySource[(id, true)].Attack != 3)
+                || (((otherMask & 4) != 0) && target.BuffsBySource[(30, true)].Attack != 3)
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 })
+                || !source.CardsBuffedByThisCard.SequenceEqual(exists && !reverse.Contains(60) ? reverse.Append(60) : reverse)
+                || target.BaseAttack != Math.Clamp(value, 0, 99) || target.TemporaryAttack != 3)
+                return $"SetValue分类清理/原结构回写错误 current={currentMask},other={otherMask},request={value},exists={exists}";
+        }
+        return null;
+    }
+
+    private static string? AttackSetZeroKeyLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int value in new[] { -3, 0, 7, 105 })
+        foreach (bool temp in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.BaseAttack = 0;
+            string before = state.SnapshotJson();
+            engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, 20, value, 2, true, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (before == state.SnapshotJson() || target.BuffsBySource[(20, false)].IsEmpty) return "零SetValue键须进入状态和非空判据";
+            var copy = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { target })!;
+            var snapshot = target.Snapshot();
+            if (copy.BuffsBySource[(20, false)].AttackSetValue != value || snapshot.AttackSetValuesBySource["20/False"] != value)
+                return "复制/快照未保留原始SetValue及零值存在性";
+            copy.BuffsBySource[(20, false)].AttackSetValue = null;
+            if (target.BuffsBySource[(20, false)].AttackSetValue != value) return "SetValue复制共享账本";
+            if (temp) {
+                engine.Api.AddAttackUntilEndOfTurn(target, source, 3); engine.Api.RemoveTemporaryBuffs();
+                if (target.BuffsBySource.ContainsKey((20, true))) return "临时撤销未清临时攻击";
+            }
+            bool relation = (bool)engine.Api.InvokeByName("isBuffedByCard", target, new object?[] { 20, null },
+                new EffectContext { Engine = engine, State = state, Self = target, Controller = side }, out _)!;
+            if (!relation || target.BuffsBySource[(20, false)].AttackSetValue != value || !source.CardsBuffedByThisCard.Contains(60))
+                return "SetValue零键不得被临时撤销当成空关系清掉";
+            target.ResetAttributes();
+            if (target.BuffsBySource.Count != 0 || target.Snapshot().AttackSetValuesBySource.Count != 0 || snapshot.AttackSetValuesBySource["20/False"] != value)
+                return "重置须清SetValue，已有快照保持不变";
+        }
+        return null;
     }
 
     private static string? IndependentAttackState(CardDatabase db)
