@@ -1,0 +1,217 @@
+{
+  "rule": "RULE-345",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-345",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 5,
+    "blueprint_bytes": 17994,
+    "operation_phase_model_cases": 960,
+    "worker_rows_exact": 960,
+    "worker_packet_expected_count_typo": 1920,
+    "regression_combinations": {
+      "phase_boundary": 1920,
+      "public_integration": 2,
+      "total": 1922
+    },
+    "release_selftest": {
+      "passed": 714,
+      "total": 714,
+      "exit_code": 0
+    },
+    "scope": "Suppression operation boundary5558..5604 invokes full operation3 and full typed ledger; preserves temp/retained ledger and own notification->T10->T9 changes without subsequent blanket clear/recalc. Cache arg captured earlier, upstream CDO lookup not certified. Native batch notification135 precedes unit phase; legacy single-unit tail action position is NOT certified by new test. Whole suppression/kredit/batch/T58/T11/frame/payload/lifetime remain open."
+  },
+  "authority": "Five captured Blueprint functions17994B redecoded against their raw scripts/symbol headers/current PE SHA, including full SuppressMultipleUnits8101B. No new game process/state observation. Model enters5558 and stops before5604, invoking whole operation3 and full typed ledger.",
+  "changes": [
+    "SuppressUnit caches raw template operation cost before attack/defense callbacks and then unconditionally invokes the shared operation mode3 after those phases, with the supplied source and all three bool flags false.",
+    "Phase uses normal operation eligibility: supplied positive ID without requiring source object, unrevealed covert rejection, raw-base request comparison, typed ledger cleanup even equal, notify then T10/T9 when changed. No new board/IsAlive/CanCardBeBuffed recheck after defense; uses held card object.",
+    "Remove subsequent blanket zeroing of operation contributions and removal of the entire operation aggregate reconstruction from native suppression path. Keep temporary values/ledger and current cached source keys as mode3 leaves them; callback raw field changes survive later armor recalculation.",
+    "Compatibility-only manual restore snapshot records only actually removed ordinary contributions, with temporary contribution0 to avoid re-adding retained data. Legacy manual restore implementation remains unconverted and is not a native unsuppression feature.",
+    "Leave heavy-armor compatibility cleanup separate. Kredit and full batch/notification/T58/T11 work are not folded into this repair."
+  ],
+  "models": {
+    "cases": 960,
+    "scope": "Exact5558..5604 outer operation call, whole ChangeOperationCost3, whole type3 ChangeBuffsFromCards. Bases-3/0/5/99/105, temp-4/0/6, templates-3/0/5/105, source-1/0/20/9999, covert/action bool. Raw numeric fields, full initial source20/foreign30 typed maps and notify/query order checked.",
+    "controlled": "Upstream cached template seeded rather than whole static-card lookup; enum/map/source/title/frame Suppress0/covert/action primitives controlled, subject already suppressed, observer query empty. Does not prove entire suppression or real UObject validity after destruction."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "phase_combinations": 1920,
+    "integration_combinations": 2,
+    "total": 1922,
+    "initial": {
+      "passed": 712,
+      "total": 712,
+      "exit_code": 0
+    },
+    "final": {
+      "passed": 714,
+      "total": 714,
+      "exit_code": 0
+    },
+    "coverage": "Phase helper on both sides, live-board/discarded held objects, positive/missing/nonpositive IDs, covert, raw base/temp/template extremes, typed retained/cleared records and five-field raw Suppress action. Public integration sees attack then defense then operation notification, own operation action before T10/T9, current source/raw SetValue/temp ledger preserved; controlled T10 writes temp7 and changes template, T9 writes base8, final8/7 survives later processing.",
+    "test_scope_correction": "Initial new integration fixture also asserted the existing tail ZActionSuppressUnit position. Full native script shows batch NotifySuppressMultipleUnits135 before per-card phases. Removed that unsupported position assertion, reran complete suite714/714; final test certifies only operation action-before-cost-callback and attack/defense/cost ordering, not batch notification semantics."
+  },
+  "worker": {
+    "job": "20261023-172452-rule345-suppression-operation-boundary-42c6e2d4",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 960,
+    "primary_comparison_exact": 960,
+    "packet_typo": "Task text mistakenly requested1920 rows, but supplied dimensions5*3*4*4*2*2 yield960. Worker flagged conflict and emitted960 exact algorithm rows, with no duplicates or invented values. Primary independently confirmed960 against native boundary. Original packet/raw output retained; no retry or silent count inflation.",
+    "scope": "Mechanical numeric/event projection only, no source edits or authority."
+  },
+  "confirmed_remaining_gap": {
+    "native": "SuppressMultipleUnits135 calls NotifySuppressMultipleUnits(cardsToSuppress,instigatorID) at the batch front, before individual unit phases.",
+    "simulator": "Current single-unit compatibility path emits ZActionSuppressUnit at its tail. This is not the native batch notification contract/order; builder, batch entry and full orchestration still need audit/refactor.",
+    "status": "Known structural mismatch, not fixed or certified by this operation-phase patch."
+  },
+  "remaining": [
+    "Kredit phase5604 and armor compatibility processing; full suppression batch/static lookup/cache lifecycle, notification135/T58/T11 and already-suppressed/entry snapshot semantics not complete.",
+    "Native static template identity/default reconciliation and real object validity/lifetime after defense destruction/replacement remain unproven. Seeded cache parameter and managed discarded-object test are not complete native lifecycle proof.",
+    "Legacy handwritten aura/manual restore/unknown-mode flattening adapters remain. Suppress integer payload/frame default and ambiguous old offsets remain from RULE344.",
+    "Full ActionProcess execution gate outside active simulator fixtures, persistent frames/delegates, collection iteration order and complete numeric reentry/transitive implementations remain uncertified. Full certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-operation-phase-native-model-20261023.json",
+      "sha256": "e780eb55dd74ae836bfaeaab0559e2bbb421684751457e88585846acd46bb5ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule345.py",
+      "sha256": "2b80f0a2da9caf3846bddddddb9c4ab632dd69baf515cc8dc44b5c5a0667366c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule345-phase.py",
+      "sha256": "630b2bcc0441171abb9157d8d08b3819c1c32c510f9d0a53a9ecfd4067ce7400"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule345-tests.py",
+      "sha256": "6d0e33d24b8559972504ac88b5c0cf3332fb1243f4d952f80cadb1518bcc5234"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule345-verifier.py",
+      "sha256": "f866ffbe81ce50cf61a0ac44eb0720d33fd42aa0c1a28edeee54e7913706d575"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule345.py",
+      "sha256": "b6a4c684c23d4459659044414b55b7aab381735510b89e523acbe0a2e959db95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-verified-20261023.json",
+      "sha256": "d9c02f0088cd1f4efedf8eabab90491c1a1b9c8aa306341d42bc1791b8aeaf92"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-initial.log",
+      "sha256": "be60b22aa273b8104c3f4e39cba5b04a53302f59db812c5e0591c5433a85d911"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-final.log",
+      "sha256": "07c01c4e3dd10074f54042228328949442070a586b9eb0712514631e5bb856fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-verified.log",
+      "sha256": "07c01c4e3dd10074f54042228328949442070a586b9eb0712514631e5bb856fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule345-selftest-verified-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule345\\spec.json",
+      "sha256": "c5b13d7329dfbbc1640b8a5e9171d2ebdc2f3d56c676c487dae6c8763e0f85df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule345\\task.txt",
+      "sha256": "dcce0d00583c8741440eaf85585f6ac72e6ed8dffd81bbbe58fcd35e2a318268"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule345\\cases.json",
+      "sha256": "892f32e5c85892f0c0987076a07c6308fe5b0687880a48c6402a91606bd20fe8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule345\\primary-cases.json",
+      "sha256": "e53310173e98ab673179a7cb397bbe553d8f49de16bedd8f5ddcbf2087632cac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule345\\generator.py",
+      "sha256": "8f3b3e4de35e4fc60c1f556e8a07f3418e7ac9362615dc011a0d1d12a02737a1"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-172452-rule345-suppression-operation-boundary-42c6e2d4\\job.json",
+      "sha256": "493df4393e3a067a5c816dfb3b35e19ff92b52c453c4f1e73d8835ca73dac991"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1f1df3246ff4fe412d705c8bcbfc8ab09d2ea5b4997a6a6179684d03718c4c81"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "bf5fd9016e1e6aabd8148cd7b922455a02c2abc7216953003664d7da92168c42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "37de997e3cdb8389ca255d9274f6e96258d82b1dc2585d18c940ca6ba2a52275"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "2782e830eca49fc3a3e327b0b5e8a39f838a0ba7194105730b740d29e017ef64"
+    }
+  ]
+}

@@ -546,6 +546,8 @@ internal static class SelfTest
         new("行动费独立数值：初始化、重置、复制和快照保留分量", OperationCostSplitLifecycle),
         new("行动费绝对账本：全局清理、原始记录回写及mode5无新键", OperationCostAbsoluteLedgerMatrix),
         new("行动费共存：SetValue零键、普通抵消、临时撤销和mode5清理", OperationCostTypedCoexistence),
+        new("压制行动费：直接mode3、临时保留、来源与隐蔽门", SuppressionOperationPhaseBoundary),
+        new("压制行动费整合：攻防之后、通知后T10/T9、不再后置压平", SuppressionOperationIntegration),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7251,6 +7253,100 @@ internal static class SelfTest
                     || target.BuffsBySource[(id, false)].OperationCostSetsAbsoluteValue || target.BuffsBySource[(id, false)].AttackSetValue != 0))
                 || (id == 20 && source.CardsBuffedByThisCard.Contains(60) != otherField))
                 return "mode5必须只清理账本、不创建老兵设值键";
+        }
+        return null;
+    }
+
+    private static string? SuppressionOperationPhaseBoundary(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("ApplySuppressionOperationCostPhase", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 5, 99, 105 })
+        foreach (int temp in new[] { -4, 0, 6 })
+        foreach (int template in new[] { -3, 0, 5, 105 })
+        foreach (int id in new[] { -1, 0, 20, 9999 })
+        foreach (bool covert in new[] { false, true })
+        foreach (bool discarded in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, discarded ? CardLocation.Discard : side.HqOf(), 1);
+            foreach (var card in new[] { source, foreign, target }) card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", OperationCost = 99 };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); if (covert) target.Keywords.Add(Keyword.Covert);
+            target.IsRevealed = false; target.BaseOperationCost = basis; target.TemporaryOperationCost = temp;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, OperationCost = 2, OperationCostSetValue = 0, AttackSetValue = 0, HasSuppressLedgerEntry = true };
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, OperationCost = 3 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, OperationCost = 4, OperationCostSetValue = 7, AttackSetValue = 0, HasSuppressLedgerEntry = true };
+            target.BuffsBySource[(30, true)] = new CardBuff { SourceCardId = 30, Temporary = true, OperationCost = 6 };
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 }); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            string before = state.SnapshotJson(); method.Invoke(engine.Api, new object[] { target, template, id });
+            bool eligible = id > 0 && !covert, changed = eligible && basis != template;
+            var own = target.BuffsBySource[(20, false)]; var other = target.BuffsBySource[(30, false)];
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (target.BaseOperationCost != (changed ? Math.Clamp(template, 0, 99) : basis) || target.TemporaryOperationCost != temp
+                || own.OperationCost != (eligible && id != 20 ? 0 : 2) || own.OperationCostSetValue != (eligible && id != 20 ? null : 0)
+                || own.HasSuppressLedgerEntry != (!eligible || id == 20) || own.AttackSetValue != 0
+                || other.OperationCost != (eligible ? 0 : 4) || other.OperationCostSetValue != (eligible ? null : 7)
+                || other.HasSuppressLedgerEntry == eligible || other.AttackSetValue != 0
+                || target.BuffsBySource[(20, true)].OperationCost != 3 || target.BuffsBySource[(30, true)].OperationCost != 6
+                || target.BuffsBySource.ContainsKey((9999, false)) != (eligible && id == 9999)
+                || (eligible && id == 9999 && !target.BuffsBySource[(9999, false)].HasSuppressLedgerEntry)
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 888, 60 }) || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 })
+                || (!eligible && before != state.SnapshotJson()) || actions.Length != (changed ? 1 : 0)
+                || (changed && !actions[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", id),
+                    ActionValue2.Int("amount", template), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) })))
+                return $"压制行动费阶段错误 side={side},base={basis},temp={temp},template={template},source={id},covert={covert},discard={discarded}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionOperationIntegration(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", side, 70, side.HqOf(), 2);
+            source.Definition = new CardDefinition { Name = source.Name, Type = "infantry" };
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 4 };
+            target.Keywords.Clear(); observer.Keywords.Clear(); SetOperationCostRegistrations(observer, true, true);
+            target.BaseAttack = target.MaxAttack = 3; target.TemporaryAttack = 0; target.Defense = target.MaxDefense = 6;
+            target.BaseOperationCost = 7; target.TemporaryOperationCost = 3;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, OperationCost = 2, OperationCostSetValue = 0 };
+            target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, OperationCost = 3 };
+            var phases = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                if (observer.BlueprintVariables.GetValueOrDefault("_auditCostActive") is not string phase) return;
+                observer.BlueprintVariables.Remove("_auditCostActive"); phases.Add(phase);
+                if (!Equals(observer.BlueprintVariables.GetValueOrDefault("_auditCostSource"), 20)) fault = "压制来源被改写";
+                var log = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                if (log.Count(x => x.Name == "ZActionChangeOperationCost") != 1) fault = "行动费通知没有先于自身回调链";
+                if (phase == "changed") {
+                    if (target.BaseOperationCost != 4 || target.TemporaryOperationCost != 3) fault = "T10未看到基础复位及保留临时值";
+                    target.TemporaryOperationCost = 7;
+                    target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 99 };
+                } else if (phase == "reset") {
+                    if (target.BaseOperationCost != 4 || target.TemporaryOperationCost != 7) fault = "T9未看到T10数值修改";
+                    target.BaseOperationCost = 8;
+                }
+            };
+            engine.Api.SuppressUnit(target, 20);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            int attack = Array.FindIndex(actions, x => x.Name == "ZActionGainAttack"), defense = Array.FindIndex(actions, x => x.Name == "ZActionGainDefense");
+            int cost = Array.FindIndex(actions, x => x.Name == "ZActionChangeOperationCost");
+            if (fault is not null || !phases.SequenceEqual(new[] { "changed", "reset" })
+                || attack < 0 || defense <= attack || cost <= defense
+                || target.BaseOperationCost != 8 || target.TemporaryOperationCost != 7 || target.TotalOperationCost != 15
+                || target.BuffsBySource[(20, false)].OperationCost != 2 || target.BuffsBySource[(20, false)].OperationCostSetValue != 0
+                || target.BuffsBySource[(20, true)].OperationCost != 3 || !target.IsSuppressed
+                || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
+                    ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
+                return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
         }
         return null;
     }

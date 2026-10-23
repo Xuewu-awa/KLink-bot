@@ -4160,7 +4160,7 @@ public sealed partial class CardApi
     ///                 其余类别（guard/fury/… 那些关键字）→ 把"自己给自己的那条"从 giver 表里剔掉
     /// </code>
     ///
-    /// ## ②③ 数值回落 —— **"所有增益失效"的真正落点**
+    /// ## ②③ 数值阶段 —— 各自处理基础/临时分量，不整体重算
     /// <code>
     /// L_11A3  StaticCardRef = GetStaticCard(card, card.name)      ; 卡面静态卡
     /// L_11E9  if (card.isSalvaged) { _staticAttack = 1; _staticDefense = 1 }
@@ -4182,6 +4182,7 @@ public sealed partial class CardApi
     /// 1 permBuff / 2 SetValue / **3 Suppress** / 4 tempBuffRemove / 5 veteranSet / …），
     /// 而 `ChangeAttack` 的 `2/3/5` 走**同一个** `setAndEncryptAttack` 分支
     /// RULE-333: 攻击只设基础分量，不清临时分量；等基础分支仅处理账本。
+    /// RULE-345: 行动费调用mode3，保留临时分量；不得在后面再次压平。
     /// 注意"**防御只在更高时压下来**"这一条：低了**不补**（否则抑制会变成治疗）。
     ///
     /// ## 内核的取舍（如实记录）
@@ -4338,11 +4339,15 @@ public sealed partial class CardApi
         var beforeAttack = target.BuffsBySource.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
         int staticAttack = target.IsSalvaged ? 1 : target.Definition.Attack;
         int staticDefense = target.IsSalvaged ? 1 : target.Definition.Defense;
+        // RULE-345: native4777 caches this before attack/defense callbacks;
+        // the operation phase5558 uses that saved raw template value.
+        int staticOperationCost = target.Definition.OperationCost;
         ApplySuppressionAttackPhase(target, staticAttack, instigatorId ?? target.CardId);
         ApplySuppressionDefensePhase(target, staticDefense, instigatorId ?? target.CardId);
+        ApplySuppressionOperationCostPhase(target, staticOperationCost, instigatorId ?? target.CardId);
 
-        // Attack events complete before the defense phase. Only armor/cost
-        // compatibility cleanup below remains pending its separate audit.
+        // Attack, defense, then operation events have completed. Armor and
+        // kredit/batch suppression remain separately pending.
         target.SuppressStrippedBuffs ??= new List<KeyValuePair<(int, bool), CardBuff>>();
         foreach (var (key, saved) in beforeAttack)
         {
@@ -4353,24 +4358,23 @@ public sealed partial class CardApi
             if (live?.AttackSetValue == saved.AttackSetValue) saved.AttackSetValue = null;
             saved.Defense = key.Temporary ? 0 : saved.Defense - (live?.Defense ?? 0);
             if (live?.DefenseSetValue == saved.DefenseSetValue) saved.DefenseSetValue = null;
+            // Manual legacy restore must not double-add a contribution that
+            // native operation mode3 left in place (especially temporary).
+            saved.OperationCost = key.Temporary ? 0 : saved.OperationCost - (live?.OperationCost ?? 0);
             if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.DefenseSetValue.HasValue || saved.HeavyArmor != 0 || saved.OperationCost != 0)
                 target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, saved));
         }
         foreach (var key in target.BuffsBySource.Keys.ToArray())
         {
             var buff = target.BuffsBySource[key];
-            if (buff.HeavyArmor == 0 && buff.OperationCost == 0) continue;
+            if (buff.HeavyArmor == 0) continue;
             buff.HeavyArmor = 0;
-            buff.OperationCost = 0;
             if (buff.IsEmpty) RemoveBuffEntry(target, key);
             else SynchronizeBuffTarget(target, key.SourceCardId);
         }
 
-        // Explicit legacy suppression boundary. The operation-cost phase of
-        // SuppressMultipleUnits and its typed ledger remain unaudited here;
-        // preserve this adapter's prior flattening rather than silently making
-        // generic RecalculateStats overwrite every split operation state.
-        target.OperationCost = target.EffectiveOperationCost;
+        // Do not flatten operation fields or strip its typed ledger here:
+        // its complete mutation/callback path already ran above.
         target.RecalculateStats();
 
         _engine.FireSubAction("ZActionSuppressUnit", new[]
@@ -4394,6 +4398,14 @@ public sealed partial class CardApi
                 ["card"] = target,
             });
     }
+
+    // RULE-345: SuppressMultipleUnits5558 always invokes the normal operation
+    // mode3 path, before5604's kredit phase, even after defense destroys/moves
+    // the held object. No location/buffability gate beyond ChangeOperationCost.
+    private void ApplySuppressionOperationCostPhase(CardInstance target, int staticCost, int sourceId)
+        => DoChangeOperationCost(new EffectContext {
+            Engine = _engine, State = State, Self = State.ById(sourceId), Controller = target.Owner },
+            target, new object?[] { target, sourceId, staticCost, ChangeTypeOperationCostSuppress, false, false, false });
 
     /// <summary>
     /// 抑制还原 —— 把 <see cref="SuppressUnit"/> 摘掉的东西**原样装回去**。
