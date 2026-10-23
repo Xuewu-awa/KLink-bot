@@ -4239,6 +4239,15 @@ public sealed partial class CardApi
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
     {
+        // RULE-336: mode3's action-process exits explicitly write qqq=false.
+        // Return the out value even when a guard rejects the numeric change.
+        if (IntArg(a, 3) == 3)
+        {
+            var suppressedTarget = TargetCard(c, r, a);
+            if (suppressedTarget is not null)
+                SetSuppressionDefenseValue(suppressedTarget, IntArg(a, 2), IntArg(a, 1));
+            return false;
+        }
         var target = TargetCard(c, r, a);
         if (target is null)
         {

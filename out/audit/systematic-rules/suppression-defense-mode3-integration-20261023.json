@@ -1,0 +1,239 @@
+{
+  "rule": "RULE-336",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-336",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_defense_functions_verified": 3,
+    "native_backend_bytes": 441,
+    "blueprint_functions_verified": 3,
+    "blueprint_bytes": 20111,
+    "native_model_cases": {
+      "phase": 576,
+      "ledger": 4096,
+      "direct": 512,
+      "total": 5184
+    },
+    "worker_rows_exact": 288,
+    "regression_combinations": {
+      "phase": 576,
+      "direct": 2048,
+      "three_entry_integration": 480,
+      "ledger_matrix": 8192,
+      "output_slot": 144,
+      "total": 11440
+    },
+    "release_selftest": {
+      "passed": 697,
+      "total": 697,
+      "exit_code": 0
+    },
+    "scope": "Headless ActionProcess=true suppression defense3 numeric/represented ledger/notification and qqq false integration. Exact native scripts/models verified; false ActionProcess, real UObject validity/lifetime, opaque keys/payload/container order and complete suppression/cost/delegates remain pending."
+  },
+  "authority": "Installed PE SHA still matches prior readonly UFunction mapping. Three defense native wrapper/backend bodies441B reverified. Three authoritative Blueprint scripts20111B redecoded with symbol header checks; no fresh process/object claim.",
+  "changes": [
+    "ChangeDefense3 now routes to an absolute setter instead of ordinary additive defense. Positive source/buffability/current-total-positive gates apply; raw request clamps to0..99 for defense and maxDefense.",
+    "Headless ActionProcess=true sends ZActionGainDefense with RAW absolute request and Suppress wire text, ignoring skipAction/deck; destroys after notification if total0. No before-gain/own SetValue/T6/ordinary gain/T7 callbacks.",
+    "Mode3 dispatcher returns false for qqq, including rejected calls, so Kismet first-out slot overwrites an old true. This is an output ABI, not an indication that no mutation occurred.",
+    "Generalize defense absolute ledger for modes2/3: mode3 globally removes represented permanent/set defense and unqualified Suppress marker, then writes cached original current source plus Suppress presence. Retains temporary/unrelated keys and synchronizes only current source. No Suppress integer payload certification.",
+    "SuppressUnit now runs defense phase after attack events and before armor/cost compatibility cleanup. Writes maxDefense first; total>template calls guarded ChangeDefense3; otherwise direct ledger bypasses numeric gates, including nonpositive IDs. Damaged/equal cards are not healed.",
+    "Remove blanket defense ledger clearing from upper suppression. Legacy manual restore snapshot excludes retained temporary/current-source defense, saves only removed represented defense amounts/SetValue keys, and copies the saved SetValue back when explicitly restoring. This is compatibility bookkeeping, not native RestoreAfterSuppression certification."
+  ],
+  "native_model": {
+    "phase": 576,
+    "full_ledger": 4096,
+    "direct": 512,
+    "total": 5184,
+    "description": "Phase5363..5558/5658 plus complete ChangeDefense3 and ledger; separate32x32 ledger mask matrix includes preexisting nonpositive source records; direct raw negative/zero/overcap request, skip, buffability, ActionProcess and qqq exits. Crypto/source/containers/enums/Destroy side effects and frame Temp_int_Variable0/tempInstigatorCardNone controlled."
+  },
+  "regressions": {
+    "new_tests": 5,
+    "phase": 576,
+    "direct": 2048,
+    "three_entry_integration": 480,
+    "ledger_matrix": 8192,
+    "kismet_output_slot": 144,
+    "total": 11440,
+    "release_passed": 697,
+    "release_total": 697,
+    "exit_code": 0,
+    "intermediate_passes": [
+      695,
+      696
+    ],
+    "description": "Both sides; raw totals below0/above99, equality, damaged cards, template0/1/5/99; sources-1/0/20/self60/missing9999; buffability, skip/deck/suppression; private phase/public/Blueprint single/multi entry; temporary defense ledger/unrelated zero keys/current old-struct/foreign stale arrays; notifications before death/outer suppression; no T6/T7/before-gain; old qqq true overwritten."
+  },
+  "worker": {
+    "job": "20261023-120045-rule336-suppression-defense-e68504fb",
+    "status": "completed",
+    "exit_code": 0,
+    "exact_rows": 288,
+    "scope": "Mechanical formulas only, independently reconstructed and also matched to actual authoritative phase-model outcomes. Not rule authority."
+  },
+  "remaining": [
+    "Operation/kredit/heavy-armor phases and their ledgers/notifications remain legacy or incomplete. Full batch list/order/reentry/T58/T11/delegate/lifetime certification pending.",
+    "False IsActionProcess is modeled for reference only; managed implementation intentionally supports the headless action process. Real UObject IsValid vs managed IsAlive and pending-kill/offboard handling, HQ destruction and full Destroy callback chains are not certified by controlled unit tests.",
+    "Suppress integer payload/current native frame initialization, nonpositive-source unassigned-pointer tail behavior and real source title metadata remain unknown or unrepresented. Bool marker records presence only.",
+    "Legacy opaque HasNonOrdinaryDefenseEntry, ordinary zero-key presence, unmigrated defense modes0/4/5, generic unrepresented keys and physical native map/set order remain incomplete.",
+    "Manual RestoreAfterSuppression remains a compatibility adapter; full restore/receive/reset/copy/Reidentify chains not proven. Keeping a temporary DEFENSE ledger key does not imply a separate temporary numeric defense component or certify its expiry.",
+    "Whole PvP/card semantic equivalence not established; single-card version migration remains paused."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-defense-phase-integrated-model-20261023.json",
+      "sha256": "760c19cb66df0bbe471b124a305e203bf2a78b006e2f0ff38c7586b0406c7c4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-suppress-full-ledger-model-20261023.json",
+      "sha256": "00476d91b6e712b5482b3cb5721a3b407de45235b9745dae93b8b081fd6a8fa0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-suppress-direct-model-20261023.json",
+      "sha256": "caa8b4360230a4dd0fd38182638503e077accf512ffad6623ca8ae40a9504f46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule336-packet.py",
+      "sha256": "047138e38c157ddac638b61e36d72203415b22d2f2f15ba00d04bd6f169beaca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\implement-rule336.py",
+      "sha256": "5ab42a70b7b22b54a139dd9120663d65dcc45a06b7c04d23eca738ed925b7a6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule336-tests.py",
+      "sha256": "add2f60ebe7e404e67699fbc9e1f0f5f67408f4cd9941dc93579c534121db69a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule336-ledger-matrix.py",
+      "sha256": "0ddf4532bbaa2387cc4c88a9265a244bf1eb1c792cf072d7008da3ca59b3f7f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule336-out-test.py",
+      "sha256": "64b35819b360387d48ccfcaaed86b26ee9d72ea0fbfa3f1233073efe8f79ccfd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule336-suppression-defense.py",
+      "sha256": "48179d0c9a37515e569e488c5485b064482b5dbbdde015117b757c4576b3e9a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule336-defense-suppress-ledger.py",
+      "sha256": "52685242bfb9c1506b6ca0c7da17be36bf2609c3be04c0e107da15ac338dafce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule336-direct-defense.py",
+      "sha256": "dc5f8e75011f9b84fa99a549f182c9de7ec786ca5be6c2ceec58c097a510872f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule336-suppression-defense.py",
+      "sha256": "7ef254fc649b367ebe9caca8bd719930355d55d968d2208cdbbd2a415e2f9c7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-suppression-defense-verified-20261023.json",
+      "sha256": "8022deba5a7738a7648efec21e1e70f2b4df79e73c1470a22ca2186f520e716f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-initial.log",
+      "sha256": "fa8fdcbb31b3e7b13203af5cfdd776163811d8a11ddf83e9fff21c9056022c41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-verified.log",
+      "sha256": "303dd9470eb82c836d72309385da14f4188765f5d9e09e933b144054876ca65b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-verified-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-final.log",
+      "sha256": "471991c94fd095d62458cb45d16773e04ca6b4f490a8e320195e0d771e329b43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule336-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule336\\spec.json",
+      "sha256": "2d1ff47aa3bc1529647b894a16b1639f3f5b266e92f3fda165616bf7f1c48125"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule336\\task.txt",
+      "sha256": "5c53862dd902cf372c69b02f0d5193be9be07402131d49945ea7f78691c34de8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule336\\cases.json",
+      "sha256": "c813497f303dc9f4ed999f4cc2272458eec31c1bf76cd9ea0b46d7c08ac166e1"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-120045-rule336-suppression-defense-e68504fb\\job.json",
+      "sha256": "22d45f9694b569ef3e361e65e9ef77ff3edf4a22b6c91bb7384589f64367fc8c"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "f7ee27e69423e96833327a6b003c733be4498f68e4a4d97ea3c26f56ff33b4da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "3621014bbc8a72a20512eaebaebc00d0b3795ceb6a3a8a4d407bbe2d6b03c437"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "b1ddc7832e17f9cfded1d5a2e6b5c4213fcea85704749fb431ab1021f3321bd7"
+    }
+  ]
+}

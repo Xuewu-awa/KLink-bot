@@ -526,6 +526,11 @@ internal static class SelfTest
         new("总防御读取：原生0到99夹取，解密原值独立且无读取副作用", TotalDefenseReadBounds),
         new("防御设值账本：分类清理、当前旧结构回写、临时项及反向名单", DefenseSetTypedLedger),
         new("防御设值零键：非空、克隆与复制快照独立保留原始值", DefenseSetKeyLifecycle),
+        new("压制防御阶段：先写最大值、严格比较及直清账本守卫差异", SuppressionDefensePhaseBoundary),
+        new("ChangeDefense3：绝对设值、忽略skip/deck、通知先于死亡且无T6/T7", SuppressionDefenseDirectCalls),
+        new("压制防御整合：三个入口、来源、临时账本及攻击防御阶段衔接", SuppressionDefenseIntegration),
+        new("压制防御账本矩阵：零值键、空源裁剪及非正来源旧结构", SuppressionDefenseLedgerMatrix),
+        new("ChangeDefense3出参：数值/拒绝分支均覆盖旧true为false", SuppressionDefenseOutput),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6670,6 +6675,209 @@ internal static class SelfTest
             if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
                 || state.ActionLog.SelectMany(x => x.SubActions).Any())
                 return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionDefenseOutput(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int defense in new[] { -3, 0, 3 })
+        foreach (int requested in new[] { -4, 3, 105 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1); target.Defense = defense;
+            var steps = new[] {
+                new KismetStep(0, "call", "ChangeDefense", new[] {
+                    new KismetExpr { Var = "__target", Scope = "local" }, new KismetExpr { Int = sourceId },
+                    new KismetExpr { Int = requested }, new KismetExpr { Int = 3 }, new KismetExpr { Bool = skip },
+                    new KismetExpr { Var = "__q", Scope = "local" } }, new[] { 5 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0),
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side },
+                new Dictionary<string, object?> { ["__target"] = target, ["__q"] = true }, "__q");
+            if (!Equals(result.GetValueOrDefault("__q"), false))
+                return $"ChangeDefense3未覆盖qqq旧true defense={defense},request={requested},source={sourceId},skip={skip}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionDefenseLedgerMatrix(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("ApplySuppressionDefensePhase", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int cm in Enumerable.Range(0, 32))
+        foreach (int om in Enumerable.Range(0, 32))
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            var reverse = (cm % 2) == 0 ? new[] { 888 } : new[] { 60, 60, 888 };
+            source.CardsBuffedByThisCard.AddRange(reverse); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            void Seed(int id, int mask) {
+                if ((mask & 27) != 0) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id,
+                    Defense = (mask & 1) != 0 ? 2 : 0, DefenseSetValue = (mask & 2) != 0 ? 0 : null,
+                    AttackSetValue = (mask & 8) != 0 ? 0 : null, HasSuppressLedgerEntry = (mask & 16) != 0 };
+                if ((mask & 4) != 0) target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Defense = 3 };
+            }
+            Seed(sourceId, cm); Seed(30, om);
+            var unrelated = new CardBuff { SourceCardId = 99, Attack = 1 };
+            target.BuffsBySource[(99, false)] = unrelated;
+            target.Defense = 1; target.MaxDefense = 123;
+            method.Invoke(engine.Api, new object[] { target, 5, sourceId });
+            var current = target.BuffsBySource[(sourceId, false)]; bool foreignPresent = (om & 8) != 0;
+            if (target.Defense != 1 || target.MaxDefense != 5 || !current.HasSuppressLedgerEntry
+                || current.Defense != ((cm & 1) != 0 ? 2 : 0) || current.DefenseSetValue != ((cm & 2) != 0 ? 0 : null)
+                || current.AttackSetValue != ((cm & 8) != 0 ? 0 : null) || current.IsEmpty
+                || target.BuffsBySource.Count != 2 + ((cm & 4) != 0 ? 1 : 0) + ((om & 4) != 0 ? 1 : 0) + (foreignPresent ? 1 : 0)
+                || target.BuffsBySource.ContainsKey((30, false)) != foreignPresent
+                || (foreignPresent && (target.BuffsBySource[(30, false)].Defense != 0 || target.BuffsBySource[(30, false)].DefenseSetValue.HasValue
+                    || target.BuffsBySource[(30, false)].HasSuppressLedgerEntry || target.BuffsBySource[(30, false)].AttackSetValue != 0))
+                || ((cm & 4) != 0 && target.BuffsBySource[(sourceId, true)].Defense != 3)
+                || ((om & 4) != 0 && target.BuffsBySource[(30, true)].Defense != 3)
+                || !ReferenceEquals(target.BuffsBySource[(99, false)], unrelated)
+                || !source.CardsBuffedByThisCard.SequenceEqual(sourceId == 20 && !reverse.Contains(60) ? reverse.Append(60) : reverse)
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 })
+                || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"压制防御账本矩阵错误 cm={cm},om={om},source={sourceId}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionDefensePhaseBoundary(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("ApplySuppressionDefensePhase", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int defense in new[] { -100, 0, 1, 4, 5, 6, 99, 100, 105 })
+        foreach (int template in new[] { 0, 1, 5, 99 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (bool buffable in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); if (!buffable) target.Keywords.Add(Keyword.Covert);
+            target.Defense = defense; target.MaxDefense = 123;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Defense = 2, DefenseSetValue = 0, Attack = 3, HasSuppressLedgerEntry = true };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Defense = 3, DefenseSetValue = 7, AttackSetValue = 0, HasSuppressLedgerEntry = true };
+            var temporary = new CardBuff { SourceCardId = 40, Temporary = true, Defense = 4 };
+            target.BuffsBySource[(40, true)] = temporary;
+            source.CardsBuffedByThisCard.Add(60); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            method.Invoke(engine.Api, new object[] { target, template, sourceId });
+            bool gate = Math.Clamp(defense, 0, 99) > template, numeric = gate && sourceId > 0 && buffable, ledger = !gate || numeric;
+            int expectedDefense = numeric ? template : defense;
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            var left = target.BuffsBySource[(20, false)]; var right = target.BuffsBySource[(30, false)];
+            if (target.Defense != expectedDefense || target.MaxDefense != template || gains.Length != (numeric ? 1 : 0)
+                || (numeric && !gains[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", template),
+                    ActionValue2.Int("newDefenseValue", template), ActionValue2.Int("instigatorID", sourceId), ActionValue2.Str("changeType", "Suppress") }))
+                || (target.Location == CardLocation.Discard) != (numeric && template == 0)
+                || left.Defense != (ledger && sourceId != 20 ? 0 : 2) || left.DefenseSetValue != (ledger && sourceId != 20 ? null : 0)
+                || left.Attack != 3 || left.HasSuppressLedgerEntry != (!ledger || sourceId == 20)
+                || right.Defense != (ledger ? 0 : 3) || right.DefenseSetValue != (ledger ? null : 7)
+                || right.AttackSetValue != 0 || right.HasSuppressLedgerEntry != !ledger
+                || target.BuffsBySource.Count != (ledger && sourceId != 20 ? 4 : 3)
+                || (ledger && !target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry)
+                || !ReferenceEquals(target.BuffsBySource[(40, true)], temporary) || temporary.Defense != 4
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 60 }) || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 }))
+                return $"压制防御阶段错误 defense={defense},template={template},source={sourceId},buffable={buffable}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionDefenseDirectCalls(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var setProbes = InstallDefenseSetEventProbes();
+        using var ownGain = InstallSelectionDrawProbe(name, "OnAfterGainDefense");
+        using var otherGain = InstallSelectionDrawProbe(name, "OnAfterOtherCardGainDefense");
+        using var beforeGain = InstallSelectionDrawProbe(name, "OnBeforeGainDefense");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int defense in new[] { -3, 0, 3, 105 })
+        foreach (int requested in new[] { -4, 0, 3, 105 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool dispatch in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, deck ? side.DeckOf() : side.HqOf(), 1);
+            var observer = state.CreateWithId(name, side, 70, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { "OnAfterOtherCardDefenseIsSet", "OnAfterOtherCardGainDefense" } }; }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Defense = defense; target.MaxDefense = 123;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            if (dispatch) engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, sourceId, requested, 3, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.Api.ChangeDefense(target, requested, source, changeType: 3, instigatorId: sourceId, skipAction: skip);
+            bool numeric = sourceId > 0 && defense > 0;
+            int value = numeric ? Math.Clamp(requested, 0, 99) : defense;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            bool dead = numeric && value == 0;
+            if (target.Defense != value || target.MaxDefense != (numeric ? value : 123)
+                || gains.Length != (numeric ? 1 : 0) || (numeric && !gains[0].Values.SequenceEqual(new[] {
+                    ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", requested), ActionValue2.Int("newDefenseValue", value),
+                    ActionValue2.Int("instigatorID", sourceId), ActionValue2.Str("changeType", "Suppress") }))
+                || (target.Location == CardLocation.Discard) != dead || actions.Count(x => x.Name == "ZActionDestroyUnit") != (dead ? 1 : 0)
+                || trace.Any(x => x.Contains("GainDefense", StringComparison.Ordinal) || x.Contains("DefenseIsSet", StringComparison.Ordinal))
+                || (numeric && !target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry)
+                || (!numeric && target.BuffsBySource.Count != 0))
+                return $"ChangeDefense3边界错误 defense={defense},request={requested},source={sourceId},skip={skip},deck={deck},suppressed={suppressed},dispatch={dispatch}";
+            if (dead && Array.FindIndex(actions, x => x.Name == "ZActionGainDefense") >= Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit"))
+                return "ChangeDefense3须先发绝对防御通知，再摧毁，且不发设防/增防回调";
+        }
+        return null;
+    }
+
+    private static string? SuppressionDefenseIntegration(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool salvage in new[] { false, true })
+        foreach (bool attackDiffers in new[] { false, true })
+        foreach (int defense in new[] { 1, 3, 7, 105 })
+        foreach (int sourceId in new[] { -1, 0, 20, 60, 9999 })
+        foreach (int entry in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 99);
+            target.IsSalvaged = salvage; target.Keywords.Clear();
+            int basis = salvage ? 1 : target.Definition.Attack, template = salvage ? 1 : target.Definition.Defense;
+            target.BaseAttack = basis + (attackDiffers ? 3 : 0); target.Defense = defense; target.MaxDefense = 123;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Attack = 2, Defense = 2, DefenseSetValue = 0 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Attack = 3, Defense = 3, DefenseSetValue = 7 };
+            var temporary = new CardBuff { SourceCardId = 40, Temporary = true, Defense = 4 };
+            target.BuffsBySource[(40, true)] = temporary;
+            source.CardsBuffedByThisCard.Add(60); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (entry == 0) engine.Api.SuppressUnit(target, sourceId);
+            else if (entry == 1) engine.Api.InvokeByName("SuppressUnit", null, new object?[] { target, sourceId, null }, ctx, out _);
+            else engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { new[] { 60 }, sourceId, null }, ctx, out _);
+            bool numeric = defense > template && sourceId > 0, ledger = defense <= template || numeric;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (!target.IsSuppressed || target.Defense != (numeric ? template : defense) || target.MaxDefense != template
+                || gains.Length != (numeric ? 1 : 0) || (numeric && (gains[0].Values.Single(x => x.Name == "gained").Value != template || gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId))
+                || !ReferenceEquals(target.BuffsBySource[(40, true)], temporary) || temporary.Defense != 4
+                || (ledger && !target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry)
+                || (sourceId == 20 && (target.BuffsBySource[(20, false)].Defense != 2 || target.BuffsBySource[(20, false)].DefenseSetValue != 0))
+                || (ledger && sourceId != 20 && target.BuffsBySource.TryGetValue((20, false), out var old) && (old.Defense != 0 || old.DefenseSetValue.HasValue))
+                || (ledger && target.BuffsBySource.TryGetValue((30, false), out var other) && (other.Defense != 0 || other.DefenseSetValue.HasValue))
+                || (!ledger && (target.BuffsBySource[(20, false)].Defense != 2 || target.BuffsBySource[(30, false)].Defense != 3))
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 }))
+                return $"压制防御入口/账本衔接错误 side={side},salvage={salvage},attackDiffers={attackDiffers},defense={defense},source={sourceId},entry={entry}";
+            if (numeric && Array.FindIndex(actions, x => x.Name == "ZActionGainDefense") >= Array.FindIndex(actions, x => x.Name == "ZActionSuppressUnit"))
+                return "压制防御通知应先于外层压制通知";
         }
         return null;
     }

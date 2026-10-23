@@ -2599,9 +2599,16 @@ public sealed partial class CardApi
 
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
-        => ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
-                             changeType: temporary && changeType == 1 ? 0 : changeType,
-                             instigatorId: instigatorId, skipAction: skipAction);
+    {
+        if (changeType == 3)
+        {
+            SetSuppressionDefenseValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId);
+            return;
+        }
+        ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
+                          changeType: temporary && changeType == 1 ? 0 : changeType,
+                          instigatorId: instigatorId, skipAction: skipAction);
+    }
 
     /// <summary>
     /// 防御力增减的**共同实现**。
@@ -2627,7 +2634,7 @@ public sealed partial class CardApi
 
         bool canRecord = source is not null || instigatorId is > 0;
         bool recordSetLedger = defenseSetValue.HasValue && canRecord;
-        if (recordSetLedger) RecordDefenseSetLedger(target, sourceId, defenseSetValue!.Value);
+        if (recordSetLedger) RecordAbsoluteDefenseLedger(target, sourceId, defenseSetValue!.Value);
         bool recordBeforeCallbacks = changeType == 1 && defenseSetValue is null && canRecord;
         // RULE-309: native i=487 records the original request before any gain
         // callback. Cancellation/rewrite does not roll it back or record it twice.
@@ -2742,10 +2749,10 @@ public sealed partial class CardApi
         }
     }
 
-    // RULE-335: ChangeBuffsFromCards type1/mode2 caches the ORIGINAL source
-    // struct, cleans defense_permBuff/defense_SetValue globally, then writes
-    // the cached source back with the RAW SetValue. Temporary keys survive.
-    private void RecordDefenseSetLedger(CardInstance target, int sourceId, int value)
+    // RULE-335/336: type1 modes2/3 cache the ORIGINAL source struct, clean
+    // defense_permBuff/defense_SetValue globally (also Suppress for mode3),
+    // then rewrite the cached source with RAW SetValue2 or Suppress3 presence.
+    private void RecordAbsoluteDefenseLedger(CardInstance target, int sourceId, int value, int changeType = 2)
     {
         var key = (sourceId, false);
         var original = target.BuffsBySource.TryGetValue(key, out var old)
@@ -2755,14 +2762,47 @@ public sealed partial class CardApi
             var buff = target.BuffsBySource[candidate];
             buff.Defense = 0;
             buff.DefenseSetValue = null;
+            if (changeType == 3) buff.HasSuppressLedgerEntry = false;
             // Opaque legacy nonordinary presence is not a typed SetValue key.
             // Keep it and all represented unrelated keys; do not update foreign
             // reverse arrays during global cleanup.
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
         }
-        original.DefenseSetValue = value;
+        if (changeType == 2) original.DefenseSetValue = value;
+        else original.HasSuppressLedgerEntry = true;
         target.BuffsBySource[key] = original;
         SynchronizeBuffTarget(target, sourceId);
+    }
+
+    // RULE-336: ChangeDefense3 uses the absolute-value path, regardless of
+    // skipAction/deck. In the headless action process it notifies before death,
+    // without SetValue's own/T6 callbacks or ordinary gain T7 callbacks.
+    private void SetSuppressionDefenseValue(CardInstance target, int value, int sourceId)
+    {
+        if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)
+            || Math.Clamp(target.Defense, 0, 99) <= 0) return;
+        RecordAbsoluteDefenseLedger(target, sourceId, value, changeType: 3);
+        target.Defense = target.MaxDefense = Math.Clamp(value, 0, 99);
+        _engine.FireSubAction("ZActionGainDefense", new[]
+        {
+            ActionValue2.Int("cardID", target.CardId),
+            ActionValue2.Int("gained", value),
+            ActionValue2.Int("newDefenseValue", Math.Clamp(target.Defense, 0, 99)),
+            ActionValue2.Int("instigatorID", sourceId),
+            ActionValue2.Str("changeType", "Suppress"),
+        });
+        if (Math.Clamp(target.Defense, 0, 99) == 0) _engine.Destroy(target, State.ById(sourceId));
+    }
+
+    // SuppressMultipleUnits5363..5558/5658: write maxDefense first. The
+    // no-reduction branch invokes the ledger directly, without source/buff gates.
+    private void ApplySuppressionDefensePhase(CardInstance target, int staticDefense, int sourceId)
+    {
+        target.MaxDefense = staticDefense;
+        if (Math.Clamp(target.Defense, 0, 99) > staticDefense)
+            SetSuppressionDefenseValue(target, staticDefense, sourceId);
+        else
+            RecordAbsoluteDefenseLedger(target, sourceId, 0, changeType: 3);
     }
 
     private void RecordDefenseBuffChange(CardInstance target, int sourceId, int amount,
@@ -4303,9 +4343,10 @@ public sealed partial class CardApi
         int staticAttack = target.IsSalvaged ? 1 : target.Definition.Attack;
         int staticDefense = target.IsSalvaged ? 1 : target.Definition.Defense;
         ApplySuppressionAttackPhase(target, staticAttack, instigatorId ?? target.CardId);
+        ApplySuppressionDefensePhase(target, staticDefense, instigatorId ?? target.CardId);
 
-        // Attack events above must observe pre-defense ledger/state. The old
-        // non-attack compatibility cleanup remains pending its separate audit.
+        // Attack events complete before the defense phase. Only armor/cost
+        // compatibility cleanup below remains pending its separate audit.
         target.SuppressStrippedBuffs ??= new List<KeyValuePair<(int, bool), CardBuff>>();
         foreach (var (key, saved) in beforeAttack)
         {
@@ -4314,32 +4355,23 @@ public sealed partial class CardApi
             // attack may also survive native mode3's old-struct writeback.
             saved.Attack = key.Temporary ? 0 : saved.Attack - (live?.Attack ?? 0);
             if (live?.AttackSetValue == saved.AttackSetValue) saved.AttackSetValue = null;
-            if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.HeavyArmor != 0 || saved.OperationCost != 0)
+            saved.Defense = key.Temporary ? 0 : saved.Defense - (live?.Defense ?? 0);
+            if (live?.DefenseSetValue == saved.DefenseSetValue) saved.DefenseSetValue = null;
+            if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.DefenseSetValue.HasValue || saved.HeavyArmor != 0 || saved.OperationCost != 0)
                 target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, saved));
         }
         foreach (var key in target.BuffsBySource.Keys.ToArray())
         {
             var buff = target.BuffsBySource[key];
-            if (buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0) continue;
-            buff.Defense = 0;
+            if (buff.HeavyArmor == 0 && buff.OperationCost == 0) continue;
             buff.HeavyArmor = 0;
             buff.OperationCost = 0;
             if (buff.IsEmpty) RemoveBuffEntry(target, key);
             else SynchronizeBuffTarget(target, key.SourceCardId);
         }
 
-        // 防御：**只在当前更高时压下来**（蓝图 `getTotalDefense > _staticDefense` 才改写）
-        // ⇒ 抑制**不会治疗**一个已经被打残的单位。MaxDefense 按蓝图直接取静态值。
-        if (target.Defense > staticDefense)
-        {
-            target.Defense = staticDefense;
-        }
-
-        target.MaxDefense = staticDefense;
-
-        // 行动费/重甲/关键字由 `RecalculateStats()` 按"卡面 + 剩余 buff"绝对值重算 ——
-        // 上一步已经把攻/防/重甲/行动费的 buff 清干净，所以这里算出来就是卡面值
-        // （即 `_staticOperationCost`），且不会破坏纯改费 buff。
+        // Legacy armor/operation-cost cleanup still feeds this compatibility
+        // recalculation. Attack/defense typed keys are handled by their phases.
         target.RecalculateStats();
 
         _engine.FireSubAction("ZActionSuppressUnit", new[]
@@ -4420,6 +4452,7 @@ public sealed partial class CardApi
                 live.Attack += saved.Attack;
                 if (saved.AttackSetValue.HasValue) live.AttackSetValue = saved.AttackSetValue;
                 live.Defense += saved.Defense;
+                if (saved.DefenseSetValue.HasValue) live.DefenseSetValue = saved.DefenseSetValue;
                 live.HeavyArmor += saved.HeavyArmor;
                 live.OperationCost += saved.OperationCost;
                 live.CustomAbilityDetails.UnionWith(saved.CustomAbilityDetails);
