@@ -556,6 +556,8 @@ internal static class SelfTest
         new("压制广播查询：主体资格、压制例外及全位置接收者", SuppressionObserverQueryMatrix),
         new("压制广播快照：后续对象变化不重筛，下一次查询重新计算", SuppressionObserverSnapshotMutation),
         new("压制广播整合：自身之后查T58，T58与清理之后新查T11", SuppressionObserverPhaseIntegration),
+        new("指挥点费用入口：原始正来源、缺失源、跳过门及全位置", KreditCostEntryRawSourceMatrix),
+        new("指挥点费用入口拒绝：各模式账本不动，揭示掩护正常放行", KreditCostEntryRejectionAndRevealed),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7355,6 +7357,69 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static string? KreditCostEntryRawSourceMatrix(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -7, 0, 20, 60, 9999, int.MinValue, int.MaxValue })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool covert in new[] { false, true })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (bool hasSelf in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, (CardLocation)location, 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 };
+            target.Keywords.Clear(); target.IsRevealed = false; target.KreditCost = 3;
+            if (covert) target.Keywords.Add(Keyword.Covert);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = hasSelf ? source : null, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, 1, 1, skip, null }, ctx, out _);
+            bool accepted = sourceId > 0 && (skip || !covert || location is 1 or 2 or 3 or 4 or 9);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            if (target.KreditCost != (accepted ? 4 : 3) || target.BuffsBySource.Count != (accepted ? 1 : 0)
+                || actions.Length != (accepted ? 1 : 0) || (accepted && (!target.BuffsBySource.TryGetValue((sourceId, false), out var buff)
+                    || buff.KreditCost != 1 || actions[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId)))
+                return $"指挥点入口错误 {side}/source={sourceId}/skip={skip}/covert={covert}/location={location}/self={hasSelf}";
+        }
+        return null;
+    }
+
+    private static string? KreditCostEntryRejectionAndRevealed(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -7, 0, int.MinValue })
+        foreach (bool skip in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 };
+            target.Keywords.Clear(); target.KreditCost = 5;
+            var saved = new CardBuff { SourceCardId = 20, KreditCost = 2, Attack = 1 };
+            target.BuffsBySource[(20, false)] = saved;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, 1, mode, skip, null }, ctx, out _);
+            if (target.KreditCost != 5 || target.BuffsBySource.Count != 1 || !ReferenceEquals(target.BuffsBySource[(20, false)], saved)
+                || saved.KreditCost != 2 || saved.Attack != 1 || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"非正来源不应进入费用/账本模式 {side}/{sourceId}/{skip}/{mode}";
+        }
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, (CardLocation)location, 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Covert); target.IsRevealed = true; target.KreditCost = 3;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, 9999, 1, 1, skip, null }, ctx, out _);
+            if (target.KreditCost != 4 || target.BuffsBySource[(9999, false)].KreditCost != 1)
+                return $"已揭示掩护不应被费用入口拒绝 {side}/{location}/{skip}";
         }
         return null;
     }

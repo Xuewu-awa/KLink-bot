@@ -4319,7 +4319,12 @@ public sealed partial class CardApi
             return null;
         }
 
-        if (!CanCardBeBuffed(target))
+        // RULE-349: native71/105 checks the supplied raw positive ID; source
+        // object existence is not required.119 bypasses385 CanCardBeBuffed
+        // when skipCovertCheck (argument4) is true. Numeric/ledger body below
+        // remains a legacy adapter, pending independent native reconciliation.
+        int sourceId = IntArg(a, 1);
+        if (sourceId <= 0 || (!TruthyArg(a, 4) && !CanCardBeBuffed(target)))
         {
             return null;
         }
@@ -4336,7 +4341,6 @@ public sealed partial class CardApi
         //    (2) `card_unit_big_red_one` 每次抽牌都会重算一遍「设成 4 费」的偏移，
         //        累加语义下每抽一张牌费用就再掉一截。
         //    现在改成：**buff 字典是唯一真源**，改完调 `RecalculateStats()` 用绝对值重算。
-        int sourceId = SourceCardIdArg(a, 1, c.Self);
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 

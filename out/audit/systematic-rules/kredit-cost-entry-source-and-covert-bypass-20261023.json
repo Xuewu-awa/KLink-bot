@@ -1,0 +1,189 @@
+{
+  "rule": "RULE-349",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_read_only_capture_pid": 24220,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-349",
+    "fresh_read_only_capture_pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 5,
+    "blueprint_bytes": 12089,
+    "fresh_blueprint_functions": 4,
+    "fresh_blueprint_bytes": 3988,
+    "native_entry_vectors": 560,
+    "worker_rows_exact": 560,
+    "native_accepted": 140,
+    "buff_query_calls": 80,
+    "regression_combinations": {
+      "valid_target_matrix": 1120,
+      "nonpositive_rejection": 60,
+      "revealed_covert": 40,
+      "total": 1220
+    },
+    "release_selftest": {
+      "passed": 724,
+      "total": 724,
+      "exit_code": 0
+    },
+    "scope": "Only ChangeKreditCost dispatcher entry raw positive source and skipCovertCheck bypass. Full numeric/ledger/notify/T45 and suppression cost phase unconverted; invalid target resolver fallback and output qq marshaling not certified."
+  },
+  "authority": "Fresh read-only capture4positive Blueprint scripts3988B:ChangeKreditCost2759,AddSubActionSetKreditCost359,NotifySetKreditCost94,CanCardBeBuffed776. Native CardFunctionsStub script0 excluded. Add existing full SuppressMultipleUnits8101 gives5scripts12089B raw/FName/header/currentPE verified. No process writes/injection/game-function calls/gameplay changes.",
+  "native": {
+    "entry": "28/57 valid card,71/105 raw instigatorID>0;119 skipCovertCheck true goes133 success setup, false385 calls full CanCardBeBuffed;417 rejects failed predicate,431 returns133. Source object existence is not tested.",
+    "buff_predicate": "776B helper: ordinary/revealed card accepted; unrevealed Covert accepted at locations1/2/3/4/9, denied0/5/6/7/8. True skip bypasses entire predicate, including location table.",
+    "suppression": "5558 operation phase followed by5604 ChangeKreditCost(_card,instigatorID,staticKredit,3,false,out qqq). Managed suppression has no corresponding kredit phase; legacy numeric API cannot safely stand in for it yet."
+  },
+  "changes": [
+    "Only dispatcher entry: use IntArg(a,1) without SourceCardIdArg fallback; reject zero/negative supplied source even with context Self or skipCovertCheck=true. Preserve positive missing source ID.",
+    "Read skipCovertCheck at argument4 and bypass CanCardBeBuffed when true. Keep its existing table when false. Do not add board/IsAlive/source-object checks. Existing numeric/ledger/event body remains explicitly legacy."
+  ],
+  "models": {
+    "cases": 560,
+    "accepted": 140,
+    "buff_query_calls": 80,
+    "scope": "Execute actual2759B function entry until just before133 success continuation or rejection return. Calls full776B CanCardBeBuffed. valid2*7rawsources*skip2*unrevealedCovert2*locations10; source extreme boundaries. IsValid/Covert native predicate/logger controlled. No ledger/numeric/callback/notify execution and no managed invalid-target claim."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 1220,
+    "valid_target_matrix": 1120,
+    "nonpositive_mode_rejection": 60,
+    "revealed_covert": 40,
+    "release": {
+      "passed": 724,
+      "total": 724,
+      "exit_code": 0
+    },
+    "scope": "1120 bothsides*7sources*skip2*covert2*10locations*contextSelf2. Valid managed target explicit, isolated legacy permanent+1 used solely as acceptance witness, raw source preserved in current ledger/notification.60negative/zero-source scenarios leave existing cost+ledger untouched across modes0..4 even skip;40revealedCovert cases accepted. Does not certify legacy numeric/notification contract."
+  },
+  "worker": {
+    "job": "20261023-181418-rule349-kredit-entry-58db972d",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 560,
+    "primary_comparison_exact": 560,
+    "scope": "Private supplied mechanical entry algorithm. Worker emitted metadata wrapper with cases array rather than top-level rows; raw output preserved and actual cases560 validated against native model.",
+    "summary_correction": "Worker row counts420rejected/140accepted and80predicate calls are correct, but its prose decomposition mentioning280hard-fail/280skip/280call is wrong. Primary verified400hard-fail +80skip =480without query,80with query. Prose is not authority; acceptance based on all560actual rows."
+  },
+  "remaining": [
+    "ChangeKreditCost numeric model remains legacy: native reads/writes baseKredit and temporaryKreditBuff independently, ordinary modes0/1 differ, absolute2/3 compare raw base before clamp0..99, mode4 handles temporary withdrawal. Managed KreditCost still reconstructed from source ledger. Need independent fields/lifecycle audit before suppression5604 integration.",
+    "Native441 invokes type2 ChangeBuffsFromCards before numeric switch, including equal-value absolute modes; typed kredit ledger, retained temporal entries, raw SetValue/Suppress keys, cached source writeback and source relations remain unconverted.",
+    "Native notification1698 uses raw request/change mode, total cost and fixed true notifier parameter. Captured359B builder emits ordered cardID,kreditCost,instigatorID,costAdded,changeType; current dispatcher emits only first3 and wrong notification gates. Full notifier/builder/receiver transitive execution still to audit.",
+    "Native T45 receives cardToChange ID (2234), not the new cost currently sent by FireKreditCostChanged. Own OnAfterKreditCostChanged is skipped for same target/source ID and suppressed subject; query and saved-object loop also need conversion. These are confirmed remaining mismatches, not repaired by entry patch.",
+    "Suppression5604 mode3/staticKredit/skipCovertCheck=false after operation5558 and before post-phase T11 is not wired yet. Static cached value, salvage branch, full cleanup/kredit/armor, frame/execution gates, trailing reveal and whole suppression remain open.",
+    "Managed TargetCard resolver fallback for invalid/null arguments and UObject validity differ from modeled native IsValid; target alias/null resolution not certified. qqq output/frame and public two-argument ChangeKreditCost adapter remain unconverted. Native model controls IsValid/IsUnrevealedCovertCard/logger.",
+    "Real registration maintenance/TSet order/UObject lifetime, legacy aura/restore adapters and transitive implementations remain. Card-version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-gate-native-model-20261023.json",
+      "sha256": "8e8ddcd89402174e2a507afa0830feaab1d821e1ccb5cd11bca97ccc3c1543f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule349-kredit.py",
+      "sha256": "6cfb2cfcfe9562b327e922639e5119f0cb366a9346deeed90e787a5cbb03c9e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule349-entry-helpers.py",
+      "sha256": "3dbda057adfd743815ccdb7921bc1689512b117ba5cdb9380fb782e9a889b8a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-notifier-chain.py",
+      "sha256": "3a930e7254e1b5adb3ea2f36868618f374b7e0002a3723ca7962b760798edc65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule349.py",
+      "sha256": "c0fda05cc595b8ddc9ea81a40829988c72cfb63e7183968aed488b25f637ed56"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule349-entry.py",
+      "sha256": "d2baeea69ab20a24745c7e90bd3bad042c60fb7802e1cf8c99d5b1d5d41166ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule349-tests.py",
+      "sha256": "c02227e17e954141829b05741072850191d9755b8c5cf66383264297f2c420d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule349-verified-20261023.json",
+      "sha256": "46e51585d8feceb473c8b055f9d4349d2a0caf70a7c82aad55162e756374bd99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule349-selftest-final.log",
+      "sha256": "1a882c1519e0f49e2fcbf69b98f4c32981a25b57eedf4253ef04ec056f7c3a41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule349-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule349\\spec.json",
+      "sha256": "132d6da649665a45e71106632c625aba4ce8e63f38e1de4d7106139b776fc116"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule349\\task.txt",
+      "sha256": "85f8a01c84b891faf575d0ebc4405f8938f1c02d8f33cd2de37339f923d5e6df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule349\\cases.json",
+      "sha256": "4e257d8cd011dfa7238c3c39af165d371b64262b7bc58270db611ce3e6d02005"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule349\\primary-cases.json",
+      "sha256": "7835fe951962b3533e2831bdcd4373035deca945337e2f794eeb0d5184d0b176"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule349\\generator.py",
+      "sha256": "034ebadc7576cbd0619bbd16e2f77b49a3a5b9e186c26fc2b660bb4697b98b0a"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-181418-rule349-kredit-entry-58db972d\\job.json",
+      "sha256": "ab162f6b2b346eda1502023f35424ec5a8fe138d9b1b391576dffa502d1114c7"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "1576296326def8268aad158c43f3d03c7bec317804f0b848be7d2f1fad5be386"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1a10b0b3a59a715aafb8d8d079c7d07f39fd5945d7f3dc121a8d9916ed469d68"
+    }
+  ]
+}
