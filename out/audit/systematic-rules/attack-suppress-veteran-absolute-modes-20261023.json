@@ -1,0 +1,215 @@
+{
+  "rule": "RULE-332",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-332",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 5,
+    "blueprint_bytes": 18949,
+    "native_models": {
+      "ledger": 27648,
+      "integrated": 3200,
+      "total": 30848
+    },
+    "worker": {
+      "mechanical_rows_exact": 512,
+      "mode3_foreign_maps_corrected_by_primary": 128,
+      "raw_worker_rule_authority": false
+    },
+    "regression_combinations": {
+      "absolute_events_public_and_dispatch": 6912,
+      "special_ledger": 18432,
+      "lifecycle": 32,
+      "total": 25376
+    },
+    "release_selftest": {
+      "passed": 686,
+      "total": 686,
+      "exit_code": 0
+    },
+    "current_suppression_call_confirmed": true,
+    "extracted_asset_callers": [
+      [
+        "MakeVeteran",
+        5
+      ],
+      [
+        "SuppressMultipleUnits",
+        3
+      ]
+    ],
+    "scope": "Shared attack API modes3/5 and public2 absolute routing, representable ledger keys and unqualified Suppress presence. Native Temp_int_Variable payload/frame initialization remains uncertified; models vary explicit frame inputs. Whole suppression/veteran application/removal workflows not certified."
+  },
+  "authority": "Five current captured Blueprint functions18949B redecoded with symbol/header/script hash validation. Current native numeric wrappers/backends match exact installed PE SHA. Current captured SuppressMultipleUnits calls ChangeAttack mode3. Specified extracted asset lists MakeVeteran mode5 and SuppressMultipleUnits mode3; not an all-client/current-version-equivalence caller inventory. No historical replay used.",
+  "findings": [
+    "Modes3/5 share absolute base numeric/cache branch with mode2, with raw request equality tested after ledger.",
+    "Ledger cleanup globally removes attack_permBuff and attack_SetValue plus the unqualified friendly name of the CURRENT mode. For3 that also removes foreign Suppress keys.",
+    "Mode3 writes the original current-source struct back plus Suppress key; mode5 does not restore original struct and keeps only cleaned records. Foreign reverse arrays stay untouched; current source array sync can remove all matching IDs if its record becomes empty.",
+    "Suppress payload reads unassigned Temp_int_Variable. Its actual integer is NOT certified here. Historical frame initializer RVAs from SHA09df do not byte-match current b6f4; old Ghidra frame-zero proof is not reused as current authority."
+  ],
+  "changes": [
+    "Shared dispatcher modes3/5 now set absolute clamped base and MaxAttack, retain temporary/public fields, preserve raw equality continuation and notify actual total delta with correct mode text.",
+    "Public ChangeAttack explicit modes2/3/5 route to same helper before zero-input shortcut.",
+    "Mode2 original-source SetValue behavior retained;3 additionally clears source Suppress flags globally and writes original source plus flag;5 keeps cleaned records without source revival.",
+    "New HasSuppressLedgerEntry tracks unqualified key PRESENCE only, independent of actual suppression keyword. IsEmpty/Clone/snapshot/fingerprint retain marker through zero numeric amounts and temporary withdrawal. No exact raw integer payload representation is claimed."
+  ],
+  "regressions": {
+    "new_cases": 3,
+    "new_combinations": 25376,
+    "absolute_events_both_entrypoints": 6912,
+    "ledger": 18432,
+    "lifecycle": 32,
+    "release_passed": 686,
+    "release_total": 686,
+    "exit_code": 0,
+    "native_full_ledger": 27648,
+    "native_full_integrated": 3200,
+    "native_total": 30848
+  },
+  "worker": {
+    "job": "20261023-093945-rule332-special-ledger-b682b99e",
+    "mechanical_rows_checked": 512,
+    "raw_rule_authority": false,
+    "qualification": "Original packet predated discovery of current-mode unqualified key cleanup. Its stated mathematical transformation is exact, but128 mode3 foreign dictionaries require primary removal of Suppress. Raw rows are not accepted as final game behavior; authoritative models and C# tests independently include this correction."
+  },
+  "remaining": [
+    "Complete SuppressMultipleUnits/RemoveSuppression/MakeVeteran callers and lifecycle remain incomplete; legacy direct numeric paths not automatically equivalent to this shared API fix.",
+    "Suppress ledger integer payload and current local-frame initialization/default/output ABI remain unresolved; only key presence certified.",
+    "Other unqualified keys including SetValue/veteranSet and general compact buff-key representation remain incomplete.",
+    "Default/unrecognized enum behavior, inverse LoseAttack aliases, native IsValid vs IsAlive and optional public source fallback not fully certified.",
+    "Ordinary zero-key presence, map physical order,511th shortcut, Reidentify and receive/reset/copy helper chains remain pending.",
+    "Encrypted storage/CRC diagnostics and divide-by-zero lifetime not simulated. Single-card version migration paused; full semantic card certification remains0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule332-special-attack.py",
+      "sha256": "7e93d86fa0c256acebcb6020fddb4e9c02508f5af1dd7244ad2bb01621cfc647"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule332-special-attack-verified-20261023.json",
+      "sha256": "17375126cbf7c1b0c1450eb4ecb912eb525ae33083bde992973fbb71c73e16d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule332-special-ledger.py",
+      "sha256": "c96912699a1b6aef3fb5c49d2cbd82092f9f9bcb5da69a5634dfb4af29ae57a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule332-special-integrated.py",
+      "sha256": "17c3f010557090684a62c0a1407ab88cce209b9f871a9c4f5c52daeddcd4b453"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-special-full-ledger-native-model-20261023.json",
+      "sha256": "f7d7d85c7447b261d39309a525b0b63e1808b415e8ee4d769d11503fefe0975f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-special-integrated-native-model-20261023.json",
+      "sha256": "28082c5096477aa42a5969073fdf383cbbf9dbafe4934728498420980a737f47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule332-frame-drift.py",
+      "sha256": "9e054fbbc19a4fb6c5ef4edf57f5fa42cdf871b6bb6ae9fa9a2f4ec70de1bb95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule332-frame-evidence-drift-20261023.json",
+      "sha256": "45dce7e9c74eccf3c8d4a906d733ebe87f46c275ad2dd6f7269020d1c46bc95b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\return-local-initialization-evidence-20261014.json",
+      "sha256": "34c7f876446839034a1b8d1553a01342366c18029f89cd76a5b940a206c25282"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\inventory-rule332-special-callers.py",
+      "sha256": "2b8ae8d59279ec64ae883d0708e0991cfc1210c99b3e45d06aba1ac0b3f1eb03"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule332-extracted-special-callers-20261023.json",
+      "sha256": "ff8cf18f0c04478ca0c8bbde841f620fef8880b3cc9690d4805bbebe8a251413"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-live-extract\\BP_CardFunctions.json",
+      "sha256": "3032736e120eea085a12c415c0167a46884ad1cc7e2d51a3e729bc5929a949d7"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule332-selftest-final.log",
+      "sha256": "fb1d2a2e195cb555cf0cdf14b38c30d662ed15ea868fae79d06cd51313372de3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule332-selftest-final.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule332\\task.txt",
+      "sha256": "6f3809f2973dc314d92a48ab299c6f05ef01e309ef6b5b496cc681f41d8c1c48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule332\\cases.json",
+      "sha256": "be5ca6732b31eac3ceb815127bf139368becb66e0af6e2778dd61f74c95b6642"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-093945-rule332-special-ledger-b682b99e\\job.json",
+      "sha256": "5015d2388b716f2349f312dac0ff5177bb99d8a70be2f353f49ba8585b1f670d"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "973ea257b3ebc28260e215a8062c2422680fa40510e3894c941f5afd192e7d2f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "398144e17070dcd2f7583abeb11345b852ee3211a3687285a90cc021ba7e4c6c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "fa65fb9912b1f224936a72e145561c494812df7f29e48213f54e28f912131c0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "d9062801aeecb8a44c9c51f0babeb0286814bdbcf8edb2798a2788abfcb42243"
+    }
+  ]
+}

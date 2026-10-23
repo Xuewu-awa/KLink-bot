@@ -4135,9 +4135,9 @@ public sealed partial class CardApi
         int delta = IntArg(a, 2);
         int changeType = IntArg(a, 3);
         bool skip = TruthyArg(a, 4);
-        if (!invert && changeType == ChangeTypeSetValueReal)
+        if (!invert && (changeType is 2 or 3 or 5))
         {
-            SetAttackValue(target, delta, instigatorId, skip);
+            SetAttackValue(target, delta, instigatorId, skip, changeType);
             return null;
         }
         if (!invert && changeType == ChangeTypeTempBuffRemove)
@@ -4151,14 +4151,15 @@ public sealed partial class CardApi
         return null;
     }
 
-    private void SetAttackValue(CardInstance target, int value, int sourceId, bool skipAction)
+    private void SetAttackValue(CardInstance target, int value, int sourceId, bool skipAction, int changeType = 2)
     {
         if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)) return;
         int previous = target.Attack;
 
-        // Native ChangeBuffsFromCards caches the current-source value struct
-        // BEFORE globally removing attack_permBuff / attack_SetValue. It then
-        // writes the requested raw SetValue into that ORIGINAL struct.
+        // RULE-332: all three absolute modes clean permanent/SetValue keys.
+        // Mode2 restores the original source struct plus SetValue. Mode3 also
+        // removes other Suppress keys and restores the original plus Suppress.
+        // Mode5 leaves the globally cleaned records without old-source writeback.
         var key = (sourceId, false);
         var original = target.BuffsBySource.TryGetValue(key, out var old)
             ? old.Clone() : new CardBuff { SourceCardId = sourceId };
@@ -4167,12 +4168,21 @@ public sealed partial class CardApi
             var buff = target.BuffsBySource[candidate];
             buff.Attack = 0;
             buff.AttackSetValue = null;
+            if (changeType == 3) buff.HasSuppressLedgerEntry = false;
             // The native loop does not synchronize foreign source arrays.
             // Only the current source is synchronized at the function tail.
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
         }
-        original.AttackSetValue = value;
-        target.BuffsBySource[key] = original;
+        if (changeType == 2)
+        {
+            original.AttackSetValue = value;
+            target.BuffsBySource[key] = original;
+        }
+        else if (changeType == 3)
+        {
+            original.HasSuppressLedgerEntry = true;
+            target.BuffsBySource[key] = original;
+        }
         SynchronizeBuffTarget(target, sourceId);
 
         // Compare the RAW requested value, after ledger processing. A request
@@ -4181,7 +4191,7 @@ public sealed partial class CardApi
         target.BaseAttack = target.MaxAttack = Math.Clamp(value, 0, 99);
         int changed = target.Attack - previous;
         if (!skipAction && !IsLocatedInDeck(target))
-            NotifyAttackChanged(target, changed, sourceId, ChangeTypeSetValueReal);
+            NotifyAttackChanged(target, changed, sourceId, changeType);
         ExecuteAfterChangeAttackEvents(target, changed, sourceId);
     }
 

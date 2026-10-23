@@ -916,6 +916,9 @@ public sealed class CardInstance
             IsBeingGuarded = IsBeingGuarded,
             IntrinsicGuard = Keywords.Contains(Keyword.Guard),
             IntrinsicSmokescreen = Keywords.Contains(Keyword.Smokescreen),
+            SuppressLedgerSources = BuffsBySource.Where(kv => kv.Value.HasSuppressLedgerEntry)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
             AttackSetValuesBySource = BuffsBySource.Where(kv => kv.Value.AttackSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.AttackSetValue!.Value),
@@ -990,6 +993,9 @@ public sealed class CardBuff
     // RULE-330: native attack_SetValue is an independent key. Null means
     // absent; zero is a present entry and must retain the source relation.
     public int? AttackSetValue { get; set; }
+    // Unqualified native BuffMap key "Suppress". Presence only: independent of
+    // Keyword.Suppressed and not a certification of its frame-derived payload.
+    public bool HasSuppressLedgerEntry { get; set; }
     public int Defense { get; set; }
     // The compact Defense amount merges native change-mode keys. Preserve the
     // presence of a nonordinary key until those modes are fully separated.
@@ -1045,7 +1051,7 @@ public sealed class CardBuff
     /// </summary>
     public bool Temporary { get; set; }
 
-    public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && Defense == 0 && !HasNonOrdinaryDefenseEntry && KreditCost == 0
+    public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue;
@@ -1060,6 +1066,7 @@ public sealed class CardBuff
         SourceCardId = SourceCardId,
         Attack = Attack,
         AttackSetValue = AttackSetValue,
+        HasSuppressLedgerEntry = HasSuppressLedgerEntry,
         Defense = Defense,
         HasNonOrdinaryDefenseEntry = HasNonOrdinaryDefenseEntry,
         KreditCost = KreditCost,
@@ -1116,6 +1123,7 @@ public sealed record CardSnapshot(
     public bool IsBeingGuarded { get; init; }
     public bool IntrinsicGuard { get; init; }
     public bool IntrinsicSmokescreen { get; init; }
+    public string[] SuppressLedgerSources { get; init; } = [];
     public Dictionary<string, int> AttackSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);

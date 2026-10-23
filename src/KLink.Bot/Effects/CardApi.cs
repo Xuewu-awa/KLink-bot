@@ -2565,6 +2565,12 @@ public sealed partial class CardApi
     public void ChangeAttack(CardInstance target, int delta, CardInstance? source, int duration = -1,
                              bool temporary = false, int changeType = 1, bool skipAction = false, int? instigatorId = null)
     {
+        // Explicit native absolute modes also accept zero as a requested value.
+        if (changeType is 2 or 3 or 5)
+        {
+            SetAttackValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId, skipAction, changeType);
+            return;
+        }
         if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
