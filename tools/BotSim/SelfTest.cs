@@ -567,6 +567,8 @@ internal static class SelfTest
         new("普通指挥点改费：非零请求即使夹取后费用未变仍回调", KreditOrdinaryRequestCallbackGate),
         new("公开费用字段：与当前费用隔离，复制/快照/重置保留", PublicKreditFieldLifecycle),
         new("公开费用VM成员：整数原值读写，不污染当前费或影子变量", PublicKreditVmMembers),
+        new("临时费用撤销缺项：不回退永久、不重算但同步来源关系", KreditTemporaryMissingNoPermanentFallback),
+        new("临时费用撤销存在项：保留永久和其他字段的兼容边界", KreditTemporaryPresentCompatibility),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7366,6 +7368,66 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static string? KreditTemporaryMissingNoPermanentFallback(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int raw in new[] { -3, 0, 7, 105 })
+        foreach (int permanent in new[] { -5, 0, 3 })
+        foreach (bool otherTemp in new[] { false, true })
+        foreach (bool opaqueSet in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 };
+            target.Keywords.Clear(); target.KreditCost = raw; target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            var kept = new CardBuff { SourceCardId = sourceId, KreditCost = permanent, AttackSetValue = 0, KreditCostSetsAbsoluteValue = opaqueSet };
+            var temporaryOther = new CardBuff { SourceCardId = sourceId, Temporary = true, Attack = 2 };
+            var foreign = new CardBuff { SourceCardId = 30, Temporary = true, KreditCost = 5, DefenseSetValue = 0 };
+            target.BuffsBySource[(sourceId, false)] = kept;
+            if (otherTemp) target.BuffsBySource[(sourceId, true)] = temporaryOther;
+            target.BuffsBySource[(30, true)] = foreign;
+            source.CardsBuffedByThisCard.Add(888); target.CardsBuffedByThisCard.Add(888);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, 123, 4, false, null }, ctx, out _);
+            var actualSource = state.ById(sourceId);
+            if (target.KreditCost != raw || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9
+                || target.BuffsBySource.Count != (otherTemp ? 3 : 2) || !ReferenceEquals(target.BuffsBySource[(sourceId, false)], kept)
+                || kept.KreditCost != permanent || kept.AttackSetValue != 0 || kept.KreditCostSetsAbsoluteValue != opaqueSet
+                || !ReferenceEquals(target.BuffsBySource[(30, true)], foreign) || foreign.KreditCost != 5 || foreign.DefenseSetValue != 0
+                || (otherTemp && (!ReferenceEquals(target.BuffsBySource[(sourceId, true)], temporaryOther) || temporaryOther.Attack != 2 || temporaryOther.KreditCost != 0))
+                || (actualSource is not null && !actualSource.CardsBuffedByThisCard.SequenceEqual(new[] { 888, 60 }))
+                || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"临时费用缺项不能撤永久/重算 {side}/{raw}/{permanent}/{otherTemp}/{opaqueSet}/{sourceId}";
+        }
+        return null;
+    }
+
+    private static string? KreditTemporaryPresentCompatibility(CardDatabase db)
+    {
+        // Positive control for the retained legacy path only: do not certify
+        // its missing mode4 notification or independent native numeric fields.
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int amount in new[] { -2, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = 3 };
+            var permanent = new CardBuff { SourceCardId = 20, KreditCost = 2, AttackSetValue = 0 };
+            var temporary = new CardBuff { SourceCardId = 20, Temporary = true, KreditCost = amount, Attack = 1 };
+            target.BuffsBySource[(20, false)] = permanent; target.BuffsBySource[(20, true)] = temporary;
+            target.RecalculateStats();
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, 20, 123, 4, true, null }, ctx, out _);
+            if (!ReferenceEquals(target.BuffsBySource[(20, false)], permanent) || permanent.KreditCost != 2
+                || !ReferenceEquals(target.BuffsBySource[(20, true)], temporary) || temporary.KreditCost != 0 || temporary.Attack != 1)
+                return "新缺项守卫不应屏蔽存在的临时费用或删除永久/其他字段";
         }
         return null;
     }
@@ -25293,7 +25355,13 @@ internal static class SelfTest
                 || !first.BuffsBySource.TryGetValue((60, false), out var retainedOperation)
                 || retainedOperation.OperationCost != -2))
                 return $"mode4必须保留永久行动费关系：{side}/{kind}";
-            if (kind is not (1 or 3) && !Query(source).SequenceEqual(new[] { 10 }))
+            // RULE-354: this fixture likewise applied permanent kredit cost;
+            // a missing temporary contribution must not remove that relation.
+            if (kind == 2 && (!Query(source).SequenceEqual(new[] { 90, 10 })
+                || !first.BuffsBySource.TryGetValue((60, false), out var retainedKredit)
+                || retainedKredit.KreditCost != -2))
+                return $"mode4必须保留永久指挥点费用关系：{side}/{kind}";
+            if (kind is not (1 or 2 or 3) && !Query(source).SequenceEqual(new[] { 10 }))
                 return $"撤销后未移除目标：{side}/{kind}";
             first.Location = location;
             engine.Api.ResetCardInBattle(first);

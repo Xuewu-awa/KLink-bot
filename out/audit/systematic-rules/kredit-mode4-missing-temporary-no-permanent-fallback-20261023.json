@@ -1,0 +1,199 @@
+{
+  "rule": "RULE-354",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-354",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 6,
+    "supporting_blueprint_bytes": 18356,
+    "direct_scope_bytes": 9026,
+    "native_missing_temp_vectors": 864,
+    "source_reverse_repair_cases": 576,
+    "worker_rows_exact": 864,
+    "regression_combinations": {
+      "missing_temp": 288,
+      "present_legacy_control": 4,
+      "total": 292
+    },
+    "release_selftest": {
+      "passed": 735,
+      "total": 735,
+      "exit_code": 0
+    },
+    "initial_selftest": {
+      "passed": 734,
+      "total": 735,
+      "failed_fixture": "IndependentBuffTargetArray kind2 expected permanent removal by mode4; corrected per native evidence"
+    },
+    "scope": "Native mode4 missing temporary kredit contribution no permanent fallback/numeric rewrite/notification/events; source relation still synchronized. Present nonzero withdrawal numeric/notify and canonical zero-present key semantics remain unconverted, as do independent current numeric fields."
+  },
+  "authority": "Reuse authoritative read-only captures;6supporting Blueprint functions18356B redecoded against raw bytes/FName-symbol headers/currentPE SHA. Direct whole ChangeKreditCost2759B and ChangeBuffsFromCards6267B=9026B. No fresh process/battle-state or game-invocation claim.",
+  "native": "441 always executes type2 source ledger before mode switch. mode4 receives amountRemoved;2461/2495 if0 sets valueChanged=false2509 and returns before ActionProcess/numeric/notify/events. Missing current-source kredit_tempBuffGive never consumes kredit_permBuff/SetValue/foreign source. Ledger may still add target to existing source reverse list from retained nonempty map before main observes removed0.",
+  "changes": [
+    "For native-name ChangeKreditCost mode4, refuse permanent fallback. If temporary source slot missing or ordinary kredit contribution0, synchronize source relationship and return without numeric recalculation, notifications or callbacks.",
+    "Keep existing temporary positive path with fallbackToPermanent=false; permanent and other typed fields stay untouched. Actual present-contribution numeric/notification path remains legacy, explicitly not certified.",
+    "Correct old IndependentBuffTargetArray fixture: it applies permanent kredit mode1 twice; later mode4 must retain permanent-2 and relation, like existing permanent operation-cost assertion. Reset below still clears relation; no removal assertion weakened for unrelated kinds."
+  ],
+  "models": {
+    "vectors": 864,
+    "source_reverse_repair_cases": 576,
+    "scope": "Whole main2759B+ledger6267B,4rawbases*3rawtemps*3permanentvalues*other-temp2*SetValue0presence2*source3*ActionProcess2. Current source lacks kredit_tempBuffGive; retains attack_SetValue0 plus optional permanent/attack-temp/kredit_SetValue0. Foreign30 has kredit_tempBuffGive5/defense_SetValue0. Full maps/raw numeric state unchanged and removed0; source20/self60 lists[888] become[888,60], absent9999 no repair. IsActionProcess stub asserts never reached.",
+    "investigation": "Initial model assumed reverse list also unchanged; full execution disproved it for self-source. Revised explicit independent reverse expectation and production guard keeps SynchronizeBuffTarget. Worker projection deliberately contains maps/numeric/removed/events only; reverse repairs are primary-only additional native assertions."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 292,
+    "missing_temp": 288,
+    "present_legacy_control": 4,
+    "initial": {
+      "passed": 734,
+      "total": 735,
+      "exit_code": 1
+    },
+    "final": {
+      "passed": 735,
+      "total": 735,
+      "exit_code": 0
+    },
+    "scope": "288both-side missing-slot/temporary-other-only cases:4raw aggregate costs*3permanent values*other-temp2*opaque legacy set-flag2*3sources. Preserve raw cost/public37/-9/permanent/other/foreign records by value and reference, update source relation, no trace/actions.4present +/-temporary controls preserve permanent and other fields, not a native numeric/notification proof.",
+    "old_fixture_correction": "First full run failed only old IndependentBuffTargetArray kind2 expecting permanent removal; both new tests passed. Original failed log/exit retained; changed assertion to verify retained permanent contribution/relation then existing reset cleanup. Complete Release rerun735/735."
+  },
+  "worker": {
+    "job": "20261023-220106-rule354-missing-temp-kredit-42309b20",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 864,
+    "primary_comparison_exact": 864,
+    "scope": "Private supplied missing-key map/numeric/event projection. Primary independently executed full native main/ledger and compared all864rows plus reverse assertions. No source edits/authority judgment/publishing."
+  },
+  "remaining": [
+    "Present nonzero temporary contribution still follows old RemoveCostBuff/recalculate compatibility path. Native signed temporary withdrawal, independent current base/temp fields, amountRemoved request/notification and callbacks remain unconverted; positive-control test does not certify those semantics.",
+    "Managed CardBuff.KreditCost==0 currently means no ordinary contribution, but canonical native kredit_tempBuffGive key present with value0 is not represented independently. Native key-existence/remove-zero semantics and opaque absolute flags remain pending. Test preserves legacy flag; does not equate it to a typed native SetValue0.",
+    "Source relation synchronization uses managed source-slot nonempty predicates; native model verifies retained nonempty current map with unrelated zero key/other keys, not every empty-map or missing-source lifecycle branch. Native source20/self60 reverse repairs independently asserted, absent9999 unmodified.",
+    "Native model only admitted valid/buffable targets and positive raw source IDs, with controlled map/enum/source/title/frame primitives. Full rejection/qqq/persistent-frame/invalid UObject and actual execution-state behavior not certified.",
+    "Production independent numeric storage still pending; generic RecalculateStats remains legacy aggregate reconstruction. Absolute ledger/equality/mode4/unknown paths, old public/aura adapters, suppression5604/static lookup/armor/trailing reveal and global registration/TSet/UObject/alias semantics remain open. Version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-mode4-missing-temp-native-model-20261023.json",
+      "sha256": "afa16a8b75e0a747255c9e71c0bd0054dffe7a18bb050930b03c20d64a211217"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule354.py",
+      "sha256": "64ad336ebf1684cb0e04db2254de86a25d5ac80ef482c4eb535891ca054049c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule354-missing-temp.py",
+      "sha256": "096c153eb51ba8fef973d9df4234f759a0053fc08b64bd323274c1282889fe8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule354-tests.py",
+      "sha256": "45ca26686e99255347d7b1baef00b7519d0f6c9385b6dc5d2cb9998d7ee28caa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule354-verified-20261023.json",
+      "sha256": "ffd6e2c5c60b6e0f87d5d4bf724a16efc7bf2813af0305b7a40d3a6582078d9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule354-selftest-initial.log",
+      "sha256": "4dddf5d44dc1183e68c8878313f906f629477e2f26b9e49ab83e644275a8aa19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule354-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule354-selftest-final.log",
+      "sha256": "e5ac1861dcd1200ebfca3241f60d4055a66717e2ae94cdeab71fa6e6072fb6cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule354-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule354\\spec.json",
+      "sha256": "a0eb0396f003d47d5e53cc1714eec4a285a1d8d11d7e8a06c4e440ce67463b03"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule354\\task.txt",
+      "sha256": "35a08badde373e44a6eae586cdf19efa92205b33075857ec587e98e3930bd7e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule354\\cases.json",
+      "sha256": "dc9ff69a4d41da1b59b6755224581b896fe91d4447f961ffb18c3056a04f6716"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule354\\primary-cases.json",
+      "sha256": "f713369ac5e8786f87334b6510e0b685ada70798b83fe486b774db854ef3bdb0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule354\\generator.py",
+      "sha256": "548760538e53f1edbe6a1415e9e3462ac60080df2fd63b0530df1a5163f0003c"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-220106-rule354-missing-temp-kredit-42309b20\\job.json",
+      "sha256": "67da6a9d1432d20a9a38c68576bfd5d253a643d6faeed7c615254162866e6fa9"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "a11bd4d0469989445f3e45394330c538de2fd35c64942df609d18e5de95c26de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "6462499924b21085626a5fb0c4b96aab3bb93556a4595b26a27e69679aeff1a0"
+    }
+  ]
+}

@@ -4353,10 +4353,19 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
-            // 蓝图按 buff 字段撤销；既有手写光环使用永久来源槽，
-            // 所以临时槽优先，找不到时兼容回退到永久槽。
+            // RULE-354: native type2/mode4 withdraws only the source's
+            // temporary kredit contribution; never fall back to a permanent
+            // slot or recalculate an unrelated/absent contribution.
+            if (!target.BuffsBySource.TryGetValue((sourceId, true), out var temporaryBuff)
+                || temporaryBuff.KreditCost == 0)
+            {
+                // The native ledger still synchronizes the source relation
+                // before the main function observes amountRemoved==0.
+                SynchronizeBuffTarget(target, sourceId);
+                return null;
+            }
             RemoveCostBuff(target, sourceId, temporary: true,
-                fallbackToPermanent: true);
+                fallbackToPermanent: false);
             return null;
         }
 
@@ -4439,8 +4448,8 @@ public sealed partial class CardApi
     /// <summary>
     /// 撤销某个来源在目标卡上的**费用** buff（其余 buff 保留）。
     ///
-    /// 默认清理永久来源槽；`changeType=4` 会先清临时槽，找不到时回退到永久槽，
-    /// 以兼容已经按来源记账的手写光环。
+    /// 默认清理永久来源槽。原生名ChangeKreditCost的mode4调用只清临时槽，
+    /// 禁止回退永久；fallbackToPermanent仅保留为旧兼容参数。
     /// </summary>
     private void RemoveCostBuff(CardInstance target, int sourceId, bool temporary = false,
                                 bool fallbackToPermanent = false)
