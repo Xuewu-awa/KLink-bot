@@ -87,6 +87,11 @@ public sealed class CardInstance
     public int Defense { get; set; }
     public int MaxDefense { get; set; }
     public int KreditCost { get; set; }
+    // RULE-353: reflected +0x80/+0x84 are independent of encrypted current
+    // costs. Fallbacks also support synthetic/static wrappers without init.
+    private int? _publicKreditCost, _publicKreditCostBuff;
+    public int PublicKreditCost { get => _publicKreditCost ?? Definition.Kredits; set => _publicKreditCost = value; }
+    public int PublicKreditCostBuff { get => _publicKreditCostBuff ?? Definition.KreditsBuff; set => _publicKreditCostBuff = value; }
     /// <summary>Native getTotalKreditCost output clamp; preserve the raw proxy and source ledger.</summary>
     public int TotalKreditCost => Math.Clamp(KreditCost, 0, 99);
     // RULE-343: reflected operationCost/operationCostBuff are independent
@@ -689,6 +694,8 @@ public sealed class CardInstance
     /// </summary>
     public void InitializeFromDefinition()
     {
+        PublicKreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
+        PublicKreditCostBuff = Definition.KreditsBuff;
         BaseOperationCost = Definition.OperationCost;
         TemporaryOperationCost = Definition.OperationCostBuff;
         PublicAttack = Definition.Attack;
@@ -726,6 +733,8 @@ public sealed class CardInstance
     /// </summary>
     public void ResetAttributes()
     {
+        PublicKreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
+        PublicKreditCostBuff = Definition.KreditsBuff;
         BaseOperationCost = Definition.OperationCost;
         TemporaryOperationCost = Definition.OperationCostBuff;
         BuffsBySource.Clear();
@@ -803,6 +812,9 @@ public sealed class CardInstance
         // Keep this identity-correction compatibility path's public template
         // field in sync; this is not certification of native conversion logic.
         PublicAttack = IsSalvaged ? 1 : def.Attack;
+        // Identity-correction compatibility, not native conversion certification.
+        PublicKreditCost = IsSalvaged ? Math.Min(3, def.Kredits) : def.Kredits;
+        PublicKreditCostBuff = def.KreditsBuff;
 
         // 基础数值：搬差值（保留 buff 与已受伤害）
         BaseAttack += def.Attack - oldDef.Attack;
@@ -924,6 +936,8 @@ public sealed class CardInstance
             MaxAttack = MaxAttack,
             TemporaryAttack = TemporaryAttack,
             PublicAttack = PublicAttack,
+            PublicKreditCost = PublicKreditCost,
+            PublicKreditCostBuff = PublicKreditCostBuff,
             AttackBuff = AttackBuff,
             CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
@@ -1142,6 +1156,8 @@ public sealed record CardSnapshot(
     Dictionary<string, string> CustomJson)
 {
     public int BaseOperationCost { get; init; }
+    public int PublicKreditCost { get; init; }
+    public int PublicKreditCostBuff { get; init; }
     public int TemporaryOperationCost { get; init; }
     public int BaseAttack { get; init; }
     public int MaxAttack { get; init; }

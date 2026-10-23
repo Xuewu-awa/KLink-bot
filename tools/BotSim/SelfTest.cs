@@ -565,6 +565,8 @@ internal static class SelfTest
         new("指挥点T45查询：全位置、注册/压制例外与同ID主体排除", KreditCallbackQueryMatrix),
         new("指挥点改费整合：通知先于自身/T45，普通零无回调", KreditCallbackDispatcherIntegration),
         new("普通指挥点改费：非零请求即使夹取后费用未变仍回调", KreditOrdinaryRequestCallbackGate),
+        new("公开费用字段：与当前费用隔离，复制/快照/重置保留", PublicKreditFieldLifecycle),
+        new("公开费用VM成员：整数原值读写，不污染当前费或影子变量", PublicKreditVmMembers),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7364,6 +7366,74 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static string? PublicKreditFieldLifecycle(CardDatabase db)
+    {
+        var copyMethod = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int template in new[] { -3, 0, 7, 105 })
+        foreach (int buff in new[] { -4, 0, 6 })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (int current in new[] { -7, 0, 99, 123 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Kredits = template, KreditsBuff = buff };
+            card.Keywords.Clear(); card.IsSalvaged = salvaged; card.InitializeFromDefinition();
+            int expected = salvaged ? Math.Min(3, template) : template;
+            if (card.PublicKreditCost != expected || card.PublicKreditCostBuff != buff) return "初始化公开费用没有保留模板字段";
+            card.PublicKreditCost = 37; card.PublicKreditCostBuff = -9; card.KreditCost = current;
+            card.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, KreditCost = 2 };
+            card.RecalculateStats();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { card, 9999, 1, 1, true, null }, ctx, out _);
+            if (card.PublicKreditCost != 37 || card.PublicKreditCostBuff != -9) return "普通重算/改费不得覆盖公开字段";
+            var copy = (CardInstance)copyMethod.Invoke(null, new object[] { card })!;
+            var snapshot = card.Snapshot(); string fingerprint = state.SnapshotJson();
+            if (copy.PublicKreditCost != 37 || copy.PublicKreditCostBuff != -9 || copy.KreditCost != card.KreditCost
+                || snapshot.PublicKreditCost != 37 || snapshot.PublicKreditCostBuff != -9) return "复制/快照丢失公开费用";
+            copy.PublicKreditCost++; copy.PublicKreditCostBuff++;
+            if (card.PublicKreditCost != 37 || card.PublicKreditCostBuff != -9) return "公开费用复制不应共享存储";
+            card.PublicKreditCost++; card.PublicKreditCostBuff++;
+            if (state.SnapshotJson() == fingerprint || snapshot.PublicKreditCost != 37 || snapshot.PublicKreditCostBuff != -9) return "公开费用应改变指纹，旧快照保持不变";
+            card.ResetAttributes();
+            if (card.PublicKreditCost != expected || card.PublicKreditCostBuff != buff) return "重置应按模板/打捞恢复公开费用并复制公开buff";
+            var synthetic = new CardInstance { CardId = 9999, Name = card.Name, Owner = side, Definition = card.Definition, KreditCost = 17 };
+            if (synthetic.PublicKreditCost != template || synthetic.PublicKreditCostBuff != buff) return "未初始化静态/合成包装应回退模板而非当前费用";
+        }
+        return null;
+    }
+
+    private static string? PublicKreditVmMembers(CardDatabase db)
+    {
+        var get = typeof(KismetVm).GetMethod("GetMember", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int value in new[] { int.MinValue, -3, 0, 7, int.MaxValue })
+        foreach (int buff in new[] { -4, 0, 9 })
+        foreach (int current in new[] { -7, 0, 123 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            card.PublicKreditCost = value; card.PublicKreditCostBuff = buff; card.KreditCost = current;
+            if (!Equals(get.Invoke(null, new object[] { card, "kredits" }), value)
+                || !Equals(get.Invoke(null, new object[] { card, "kreditsBuff" }), buff)) return "反射成员混入当前费用";
+            int next = unchecked(value + 1), nextBuff = buff - 1;
+            card.BlueprintVariables["kredits"] = 999; card.BlueprintVariables["kreditsBuff"] = 999;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = next }, null, -1, "kredits", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = nextBuff }, null, -1, "kreditsBuff", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "kredits", Scope = "instance" }, null, -1, "cost", null),
+                new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "kreditsBuff", Scope = "instance" }, null, -1, "buff", null),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "cost", "buff");
+            if (card.PublicKreditCost != next || card.PublicKreditCostBuff != nextBuff || card.KreditCost != current
+                || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
+                || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
+                return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
         }
         return null;
     }

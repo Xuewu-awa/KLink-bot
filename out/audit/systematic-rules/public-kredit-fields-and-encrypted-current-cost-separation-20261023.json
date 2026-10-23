@@ -1,0 +1,210 @@
+{
+  "rule": "RULE-353",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "offline_installed_pe": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-353",
+    "fresh_live_capture": false,
+    "offline_installed_pe": true,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_accessors": 5,
+    "native_backend_bytes": 1234,
+    "normal_crypto_vectors": 64,
+    "zero_key_vectors": 64,
+    "native_calls": 640,
+    "kredit_zero_key_sentinel": 100,
+    "public_copy_reset_slice_vectors": 256,
+    "worker_rows_exact": 256,
+    "regression_combinations": {
+      "lifecycle": 192,
+      "vm": 90,
+      "total": 282
+    },
+    "release_selftest": {
+      "passed": 733,
+      "total": 733,
+      "exit_code": 0
+    },
+    "scope": "Reflected kredits/kreditsBuff separate from current cost proxy. VM read/write, template default, public copy/reset/snapshot preserved. Whole encrypted current-cost storage migration and full CopyData/reset/construct remain open; offline synthetic emulation only."
+  },
+  "authority": "Extract5current installed-PE wrappers/backends through prior exact-SHA read-only UFunction native pointers; full local CFG follows getter pdata fragments.1234B backend total. Re-disassemble raw PE independently, verify SDK offsets and current executable SHA. No current process needed, no new battle-state/live capture or game invocation claim.",
+  "native": {
+    "public_fields": "SDK BaseCardObject kredits+0x80,kreditsBuff+0x84. Public CopyData reads/writes them in separate MOV pairs. Reset public base=min(template,3) if isSalvaged else template (no lower clamp); public buff copied raw template. Captured Reset first loads isSalvaged at+0x338 intoECX.",
+    "encrypted_fields": "setAndEncryptKredit stores key/offset/encrypted data at+0x590/+0x594/+0x59c; temp at+0x5a4/+0x5a8/+0x5b0, no public+0x80/+0x84 write. Full get/decrypt and total clamp executed offline. Zero key gives100 in each getter; total starts fallback100 for components, unlike attack -100 sentinel."
+  },
+  "changes": [
+    "Add independent PublicKreditCost/PublicKreditCostBuff with definition fallback for uninitialized synthetic/static wrappers. VM reflected kredits/kreditsBuff read/write these only, never current KreditCost or arbitrary BlueprintVariables shadow after assignment.",
+    "Initialize public template values; reset public base using salvage min3 and copy public buff raw. CopyForStealSide and snapshots preserve both; snapshot fingerprint includes changes. Managed Reidentify compatibility updates public template fields independently.",
+    "Add CardDefinition.KreditsBuff and optional lowercase JSON kreditsbuff default0. This is a public-template metadata field, not independent encrypted temporary cost. No changes to live card dataset/version migration or old numeric ledger reconstruction."
+  ],
+  "models": {
+    "accessor_normal_vectors": 64,
+    "accessor_zero_key_vectors": 64,
+    "native_calls": 640,
+    "public_slice_vectors": 256,
+    "worker_rows_exact": 256,
+    "scope": "Unicorn executes all5captured encrypted accessor backends (64normal+64zero-key vectors;640calls), with real multiply/divide/xor and total clamp.64normal cases also assert reflected public123/-456 unchanged after setters/getters. CRC import returns0/storedhash0, cookie returns; selected values avoid signed multiply/divide overflow, not all int32 states.256public copy/reset tuples use8signed boundary bases*8temps*salvage2*mode2; source4096B unchanged, destination only8public bytes changed. MOV pairs deliberately exclude unrelated CopyData+0x27c copy. Not whole CopyData/reset or real object proof.",
+    "investigation_correction": "Initial offline adaptation reused attack zero-key expected-100 and failed. Primary inspected actual Kredit getter mov[out],0x64 and total fallback0x64, corrected expectation to+100 and reran128vectors successfully. No live function calls; earlier failed output was not treated as evidence."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 282,
+    "lifecycle": 192,
+    "vm_members": 90,
+    "release": {
+      "passed": 733,
+      "total": 733,
+      "exit_code": 0
+    },
+    "scope": "192both-side lifecycle combinations:template4*publicbuff3*salvaged2*legacycurrent4, ordinary recalc/dispatch cannot overwrite public37/-9, copy/snapshot independent, fingerprint changes, reset matches template/salvage, uninitialized fallback definition.90VM vectors include int extrema, preserve signed raw values/current proxy, instance assignment clears shadow keys and subsequent reads agree. Synthetic fixtures, not full constructor/reset or real-card semantics proof."
+  },
+  "worker": {
+    "job": "20261023-214815-rule353-public-kredit-lifecycle-0d6fd073",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 256,
+    "primary_comparison_exact": 256,
+    "scope": "Private supplied two-public-field lifecycle algorithm only. Primary independent installed-PE synthetic emulation compared all256rows. No source edits/authority judgment/publishing."
+  },
+  "remaining": [
+    "Encrypted/current BaseKredit/temporaryKreditBuff storage and VM encrypted read/write APIs remain unconverted. Existing KreditCost aggregate proxy still reconstructed by RecalculateStats, distinct from the newly separated public fields. This patch must not be described as complete base/temp numeric migration.",
+    "Native zero-encryption-key getters return100, unlike attack -100. Synthetic native getter tests prove that behavior, but production does not model encryption-key/error states. CRC/hash/security-cookie/diagnostic imports are controlled and logging/error object paths not certified.",
+    "Only public-field CopyData/Reset slices emulated, not full functions or encrypted current-copy/reset lifecycle. Reset CL flag is seeded; raw captured Reset reads IsSalvaged+0x338 before this branch. Initialization and Reidentify are managed compatibility integration, not complete native constructor/conversion proof.",
+    "New optional JSON kreditsbuff preserves supplied public-template value; missing historical exports retain0. No current full static-table migration or real-card version reconciliation performed. Pure static/synthetic wrappers fallback to definition values until explicit initialization/writes.",
+    "Typed absolute kredit ledger, mode2/3 equal-value gates, mode4 withdrawal, unknown modes, old public/aura adapters, suppression5604/static lookup/armor/trailing reveal, registration/TSet/UObject lifetime/frame/qqq/alias behavior remain open. Version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-accessors-emulation-20261023.json",
+      "sha256": "24aed9b4f20d574eef56974e665e07d3035e6f7bf2c19400f595006feaaa00e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-public-copy-reset-slices-model-20261023.json",
+      "sha256": "021810630614e4a434da4122e01436e775d25a7486486155201769bbbe3885fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule353-kredit-accessors.py",
+      "sha256": "a613447d21b2751a3045bcef8b8fada32cc38d816d1eb584bd91c9319a7cb476"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule326-pe-accessors.py",
+      "sha256": "b7879337a76045be8a34799bf608f3ad32a76cb7047a885069331d7a27eabc26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule353-accessors.py",
+      "sha256": "b7f745ec77c718d0ab7ad337044efd7f868f0e44d2639762652c7642c01ea631"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule353.py",
+      "sha256": "8d073dd03a49ad38cc6ce4cb446f98deab3e4038afa8b78705212c47351f28bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule353-public-slices.py",
+      "sha256": "f7b550687815e1bc598ba3703ebc1e6f368fcc411bccfe1e6445efcf05824a1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule353-tests.py",
+      "sha256": "8ad6a8e05b0a8049a3996ee938301cc58a47120f51200b293703dd519db7e0e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule353.py",
+      "sha256": "6168386a909fe95b595ecc45f77b00aa5232f13f7c552a539e4d83af4c9f42db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule353-verified-20261023.json",
+      "sha256": "48b1af4ffcfe1032992cb731ebe364bfdefe15e18e1bd18dd9374b6be87360e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule353-selftest-final.log",
+      "sha256": "88e27775aca4a6836ce9d6d04a1e99590b122edf843e9c42bcc088da41d915a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule353-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule353\\spec.json",
+      "sha256": "24deb1814a7e8eaedb04325b70aa147c28e2649213caa26620bf76675735210d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule353\\task.txt",
+      "sha256": "ae26dfdcc80a21fde5a53b65fef499336fd038557f5a6d4a216b71b230620b1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule353\\cases.json",
+      "sha256": "97f4c8909ea528bb651b0e7fd1a65e2f255a0d0a6c95133ea350cfbc6cf62e4e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule353\\primary-cases.json",
+      "sha256": "d88408f768b303b90fedafbcb0d912493c3c45bf00903dcfbad0f9e1d5ba1bea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule353\\generator.py",
+      "sha256": "ab7ad1ae18eac8e96407efdee05b416389a9cc449dd7791e1c975f26d373ac49"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-214815-rule353-public-kredit-lifecycle-0d6fd073\\job.json",
+      "sha256": "8a128e6780db4ae715ae79df93077f15892ec295111604cc029593ecd710156c"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardDatabase.cs",
+      "sha256": "d3c5099d54edf2b47bb555d7ee42ea6c19beaf6a4a4c4e3504e8ea5c489aedaf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "10e1ee5afb20562ac4ce31231c8a20b54b34384a9412871aba94dd0f3d7d1d0b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "01b063de108b3aa1265a4d863137a0364494d22a575fceb4079911fe9719a4ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "9d96306dba85ade58941b67d4fe608633ebcdcb2e6863c556e595034cc13c829"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "80e5770c7a6e891dbe25512eaab8d62946923bcc9c15d9a78b460ea4c075407f"
+    }
+  ]
+}

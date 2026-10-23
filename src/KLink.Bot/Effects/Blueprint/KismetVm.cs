@@ -1415,7 +1415,8 @@ public sealed class KismetVm
                 new Dictionary<string, object?> { ["selectTargetOnPlayedFromHand"] = flag }).ToList(),
             "chooseOneIndex" => card.ChooseOne,
             "selectTargetOnPlayedFromHand" => card.SelectTargetOnPlayedFromHand,
-            "kredits" => card.KreditCost,
+            "kredits" => card.PublicKreditCost,
+            "kreditsBuff" => card.PublicKreditCostBuff,
             "operationCost" => card.BaseOperationCost,
             "operationCostBuff" => card.TemporaryOperationCost,
             "isGoldCard" => card.IsGold,
@@ -1745,6 +1746,12 @@ public sealed class KismetVm
                     else if (name == "hasEverAttacked")
                     {
                         self.HasEverAttacked = Truthy(value);
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name is "kredits" or "kreditsBuff")
+                    {
+                        if (name == "kredits") self.PublicKreditCost = ToInt(value);
+                        else self.PublicKreditCostBuff = ToInt(value);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name is "attack" or "attackBuff" or "maxAttack")

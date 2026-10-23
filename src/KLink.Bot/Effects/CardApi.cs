@@ -1351,6 +1351,8 @@ public sealed partial class CardApi
             Defense = source.Defense,
             MaxDefense = source.MaxDefense,
             KreditCost = source.KreditCost,
+            PublicKreditCost = source.PublicKreditCost,
+            PublicKreditCostBuff = source.PublicKreditCostBuff,
             BaseOperationCost = source.BaseOperationCost,
             TemporaryOperationCost = source.TemporaryOperationCost,
             EnteredPlayOnTurn = source.EnteredPlayOnTurn,
