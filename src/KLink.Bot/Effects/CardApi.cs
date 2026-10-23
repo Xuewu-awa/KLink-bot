@@ -2956,14 +2956,13 @@ public sealed partial class CardApi
 
     public void ChangeOperationCost(CardInstance target, int delta, int instigatorId)
     {
-        int before = target.OperationCost;
-        target.OperationCost = Math.Max(0, target.OperationCost + delta);
-        NotifyOperationCostChanged(target.CardId, instigatorId, delta, 1, skipAddToBattlelog: false);
-
-        if (target.OperationCost != before)
-        {
-            FireOperationCostChanged(target, instigatorId);
-        }
+        // RULE-342: the public convenience form is an ordinary permanent
+        // change, subject to the same supplied-ID/covert/zero guards, ledger
+        // and request-based notification/callback rules as Blueprint calls.
+        // The shared dispatcher still has the documented numeric limitations.
+        DoChangeOperationCost(new EffectContext {
+            Engine = _engine, State = State, Self = State.ById(instigatorId), Controller = target.Owner },
+            target, new object?[] { target, instigatorId, delta, ChangeTypePermBuff, false, false, false });
     }
 
     // RULE-338: exact AddSubActionChangeOperationCost ordered wire values.

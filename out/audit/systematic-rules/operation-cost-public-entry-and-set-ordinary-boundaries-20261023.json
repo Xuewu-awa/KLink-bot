@@ -1,0 +1,212 @@
+{
+  "rule": "RULE-342",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-342",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 9893,
+    "set_ordinary_sequences": 12288,
+    "whole_ledger_calls": 36864,
+    "worker_inventory_rows_exact": 93,
+    "inventory_per_file": {
+      "CardInstance.cs": 19,
+      "GameState.cs": 3,
+      "CardApi.cs": 25,
+      "CardApiDispatch.cs": 37,
+      "MatchEngine.cs": 9
+    },
+    "regression_combinations": {
+      "entry": 5376,
+      "lifecycle": 16,
+      "total": 5392
+    },
+    "release_selftest": {
+      "passed": 708,
+      "total": 708,
+      "exit_code": 0
+    },
+    "scope": "Public permanent convenience delegates to audited Blueprint dispatcher; eligibility/ledger/request-notify/own->T10 match that path. Native mode2+ordinary coexistence reference confirmed independently, production migration still open. Numeric base/temp/absolute ledger/ActionProcess limitations remain inherited. Worker inventory is copied pre-edit source, not game authority or a semantic migration plan."
+  },
+  "authority": "Four previously captured Blueprint functions9893B redecoded with symbol headers/script hashes and current PE SHA verified; no new game-process access or live object claim. SDK type3 ordinal verified; enum friendly text and frame payloads controlled in ledger sequence model.",
+  "changes": [
+    "Public ChangeOperationCost(target,delta,int) delegates to the existing audited ordinary permanent Blueprint dispatcher; CardInstance? overload forwards supplied CardID or0 through the same path.",
+    "Remove separate flat floor-only mutation/unconditional action/visible-difference callback behavior. Inherit positive supplied-ID guard without source existence requirement, all-location unrevealed covert guard, zero no-op, permanent source tracking and cancellation, raw-request five-value action before own->T10 without T9.",
+    "No direct public convenience callers were found inside current src product code; Blueprint-dispatched cards already used the shared dispatcher. This fixes the exposed API path and does not claim a new fix to card VM numerical behavior."
+  ],
+  "model": {
+    "sequences": 12288,
+    "whole_ledger_calls": 36864,
+    "findings": [
+      "Mode2 removes operationCost_permBuff and operationCost_SetValue globally, then writes the cached original current-source structure with raw SetValue, including0.",
+      "Subsequent ordinary mode1 updates/removes only permBuff. SetValue remains independent even after cancellation. Same-source old permBuff can survive the mode2 cached-structure rewrite."
+    ],
+    "controlled": "Complete captured ChangeBuffsFromCards AST per step; Map/array/enum/source/title/frame payload primitives controlled. No production numerical/coexistence migration implemented or certified."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "entry_combinations": 5376,
+    "lifecycle_combinations": 16,
+    "total": 5392,
+    "release": {
+      "passed": 708,
+      "total": 708,
+      "exit_code": 0
+    },
+    "coverage": "Both sides, six locations, negative/zero/existing/missing integer IDs, null/tracked/detached object overload, -3/0/+2/105 requests, raw0/99, covert/revealed/suppressed, exact five fields and source IDs, notify-before-own/T10 and noT9, source relation and permanent cancellation retaining AttackSetValue0. No numeric equality claim for active nonzero requests."
+  },
+  "worker": {
+    "job": "20261023-164501-rule342-operation-storage-inventory-9ef1273d",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 93,
+    "primary_comparison_exact": 93,
+    "scope": "Case-sensitive OperationCost physical-line inventory of five pre-edit copied source files only, including comments. Not a full repository call graph or game authority. Primary recomputed exact basename/line/text and ordering. Running a local extractor script was within the optional extractor task, not game-process inspection."
+  },
+  "migration_boundaries": [
+    "CardInstance: initialization/reset, RecalculateStats, EffectiveOperationCost, snapshot raw components and CardBuff typed keys/clone/IsEmpty.",
+    "GameState: both construction paths and initialization interactions.",
+    "CardApi: independent-copy construction, suppression stripping and compatibility restore; public convenience now unified.",
+    "CardApiDispatch: known-mode numeric mutations and ledger, absolute raw comparison, mode4 and legacy aura adapters.",
+    "MatchEngine: consumes TotalOperationCost for move/attack affordability and payment; getter must change together with raw storage, not recompute from the typed ledger."
+  ],
+  "remaining": [
+    "Absolute+ordinary same-source coexistence is independently confirmed but still wrong in production compact field/flag. Next migration must separate raw typed entries and base/temp numeric state without deriving numeric state from surviving ledger entries.",
+    "Production action-cost base/temp values, permanent0..99 clamp/temporary unbounded update, absolute comparison against raw base, overflow sum getter and lifecycle copy/reset/suppression/aura integrations remain incomplete.",
+    "Complete IsActionProcess execution gating, unknown modes, persistent frames/delegates, physical subscription order/object validity and reentrant numeric paths remain open; full certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-set-ordinary-sequences-model-20261023.json",
+      "sha256": "2afdc0135838ef776fc2b9ecbf33fcafcb3603579cb57e384d632ab401b37edf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule342.py",
+      "sha256": "6b1591f955f8c4be3f9c4a80449da4f2f244f2ac27a349a9fe4ff6a8e8bf4a3c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule342-sequences.py",
+      "sha256": "b7168a8668b291e718d3a40bd621cc5ce5c8a2d0bccd948e58c1d5a9ed44f26f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule342-tests.py",
+      "sha256": "529ef8fdbc42645ebb9505b1e1cc258bf54d67575b4c8c8074476f35f67f8f3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule342-verifier.py",
+      "sha256": "e3e35166747b84ba0c01249033b94643af14f932b975d0a228f71df10b20f32e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule342.py",
+      "sha256": "9e9f69a1f610b59b020d9437da866cde56840db3549f64d1e65101bb1d47bbc6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule342-verified-20261023.json",
+      "sha256": "55df714219c1e81e20bf7cd03b192620647474333570460e535fbae68426dd00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule342-selftest.log",
+      "sha256": "bc14551b94e47f88a8a2c5c749a874e243b56e6c737a7bc17125b715d1b7fca9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule342-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\task.txt",
+      "sha256": "977429cef63ff73ce4cd7d54bc89f2baeb6c9cb45df71c986b203749c632d4e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\inventory.json",
+      "sha256": "fd926e70a3b7a3224abcec6c50533c4e56d873cd7c588736c002518ae0884f9d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\primary-inventory.json",
+      "sha256": "e100472a1f8e4b53dda1a8d59eec0aa42710a87f4424ed8e0efe2dc0687f7599"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\extract-inventory.ps1",
+      "sha256": "88cb9c82b47c20885187491900d9e9f4acf33f9da2813838e47911bfdfb1c784"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\CardInstance.cs",
+      "sha256": "ecd618d3008030f8f5af6e2818242ac080189a30075967082b14c87614094c71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\GameState.cs",
+      "sha256": "ac1f2b122b0d6f024cf2738e3106621cdfe410657d7a222d54edcb068502091b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\CardApi.cs",
+      "sha256": "7e272954dab4aaa715b69efff7ec524cfb1f93c7610ee18793edec449936c8dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\CardApiDispatch.cs",
+      "sha256": "1e39eba1a25c17458abd359cc6bb5c63c2c6e5e4604aa340bd806594ba9f133c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule342\\MatchEngine.cs",
+      "sha256": "caee9f54b60a7b765e5d1bc8ad274006ddacd6f234add0ec3ec4df6f3f3c23a7"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-164501-rule342-operation-storage-inventory-9ef1273d\\job.json",
+      "sha256": "9a5f689780cb7f1e63b50833dd8f0c0cc0072f7fa77d1aa7b1c7619cba22048b"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1d10945f56169aadf05796cbe3636d2ff40af22da4491d484827808677aaf34d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "09bea3095f69e85f5460af2ae431a1b18bfec19289ad591e951847d5dfaa3d2f"
+    }
+  ]
+}

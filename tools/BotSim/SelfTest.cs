@@ -540,6 +540,8 @@ internal static class SelfTest
         new("行动费mode4：只撤临时来源、负撤销量通知、skip与回调顺序", OperationCostTemporaryWithdrawal),
         new("行动费普通零请求：不建账、不改现值、不修名单、不通知", OperationCostOrdinaryZeroNoOp),
         new("行动费普通抵消：删本项、保留其他字段和来源", OperationCostOrdinaryCancellation),
+        new("行动费公开入口：来源/隐蔽/零门、请求通知与自身后T10", OperationCostPublicEntry),
+        new("行动费公开入口：累计抵消、零请求与永久来源关系", OperationCostPublicLedgerLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6982,6 +6984,85 @@ internal static class SelfTest
             engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, sourceId, 0, mode, false, false, false }, ctx, out _);
             if (after != state.SnapshotJson() || target.BuffsBySource.Count != count)
                 return "抵消后的零请求不得重建账本";
+        }
+        return null;
+    }
+
+    private static string? OperationCostPublicEntry(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int variant in Enumerable.Range(0, 7))
+        foreach (int zone in Enumerable.Range(0, 6))
+        foreach (int delta in new[] { -3, 0, 2, 105 })
+        foreach (int raw in new[] { 0, 99 })
+        foreach (bool covert in new[] { false, true })
+        foreach (bool revealed in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var detached = state.CreateWithId(PlainUnit, side, 9999, CardLocation.Discard, 0); state.Remove(detached);
+            var locations = new[] { CardLocation.NotAvailable, side.DeckOf(), side.HandOf(), side.HqOf(), CardLocation.BoardFrontline, CardLocation.Discard };
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, locations[zone], 1);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); SetOperationCostRegistrations(card, true, true); }
+            if (covert) target.Keywords.Add(Keyword.Covert); target.IsRevealed = revealed;
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.OperationCost = raw;
+            source.CardsBuffedByThisCard.Add(888); detached.CardsBuffedByThisCard.Add(888);
+            int id = variant switch { 0 => -7, 1 or 4 => 0, 2 or 5 => 20, _ => 9999 };
+            bool changed = id > 0 && (!covert || revealed) && delta != 0;
+            var callbacks = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.Single(c => c.BlueprintVariables.GetValueOrDefault("_auditCostActive") is string);
+                string phase = (string)actor.BlueprintVariables["_auditCostActive"]!; actor.BlueprintVariables.Remove("_auditCostActive");
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditCostSource"), id)) fault = "来源ID丢失";
+                if (state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionChangeOperationCost") != 1) fault = "通知未先于回调";
+                callbacks.Add(phase + ":" + actor.CardId);
+            };
+            string before = state.SnapshotJson();
+            if (variant < 4) engine.Api.ChangeOperationCost(target, delta, id);
+            else engine.Api.ChangeOperationCost(target, delta, variant == 4 ? null : variant == 5 ? source : detached);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            var expected = changed ? (suppressed ? new[] { "changed:70" } : new[] { "own:60", "changed:70" }) : Array.Empty<string>();
+            if (fault is not null || !callbacks.SequenceEqual(expected) || actions.Length != (changed ? 1 : 0)
+                || (!changed && (before != state.SnapshotJson() || target.OperationCost != raw || target.BuffsBySource.Count != 0))
+                || (changed && (!actions[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", id),
+                    ActionValue2.Int("amount", delta), ActionValue2.Str("changeType", "permBuff"), ActionValue2.Bool("skipAddToBattlelog", false) })
+                    || !target.BuffsBySource.TryGetValue((id, false), out var buff) || buff.OperationCost != delta))
+                || !source.CardsBuffedByThisCard.SequenceEqual(changed && id == 20 ? new[] { 888, 60 } : new[] { 888 })
+                || !detached.CardsBuffedByThisCard.SequenceEqual(new[] { 888 }))
+                return $"公开行动费入口错误 variant={variant},side={side},zone={zone},delta={delta},raw={raw},covert={covert},revealed={revealed},suppressed={suppressed}: {fault}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostPublicLedgerLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool objectOverload in new[] { false, true })
+        foreach (int amount in new[] { -3, 2 })
+        foreach (bool otherField in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            source.CardsBuffedByThisCard.Add(888);
+            if (otherField) target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, AttackSetValue = 0 };
+            void Apply(int delta) { if (objectOverload) engine.Api.ChangeOperationCost(target, delta, source); else engine.Api.ChangeOperationCost(target, delta, 20); }
+            Apply(amount); Apply(-amount);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (target.BuffsBySource.ContainsKey((20, false)) != otherField
+                || (otherField && (target.BuffsBySource[(20, false)].AttackSetValue != 0 || target.BuffsBySource[(20, false)].OperationCost != 0))
+                || !source.CardsBuffedByThisCard.SequenceEqual(otherField ? new[] { 888, 60 } : new[] { 888 })
+                || actions.Length != 2 || actions[0].Values[2] != ActionValue2.Int("amount", amount) || actions[1].Values[2] != ActionValue2.Int("amount", -amount))
+                return $"公开行动费累计/抵消错误 side={side},object={objectOverload},amount={amount},other={otherField}";
+            string before = state.SnapshotJson(); target.OperationCost = 105; before = state.SnapshotJson(); Apply(0);
+            if (state.SnapshotJson() != before || target.OperationCost != 105)
+                return "公开行动费抵消后的零请求不得重建来源或重算";
         }
         return null;
     }
