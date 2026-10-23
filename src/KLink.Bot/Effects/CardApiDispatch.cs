@@ -4156,6 +4156,21 @@ public sealed partial class CardApi
         if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)) return;
         int previous = target.Attack;
 
+        RecordAbsoluteAttackLedger(target, value, sourceId, changeType);
+
+        // Compare the RAW requested value, after ledger processing. A request
+        // of105 at base99 continues even though the final visible delta is0.
+        if (target.BaseAttack == value) return;
+        target.BaseAttack = target.MaxAttack = Math.Clamp(value, 0, 99);
+        int changed = target.Attack - previous;
+        if (!skipAction && !IsLocatedInDeck(target))
+            NotifyAttackChanged(target, changed, sourceId, changeType);
+        ExecuteAfterChangeAttackEvents(target, changed, sourceId);
+    }
+
+    private void RecordAbsoluteAttackLedger(CardInstance target, int value, int sourceId, int changeType, bool allowNonPositiveSource = false)
+    {
+        if (sourceId <= 0 && !allowNonPositiveSource) return;
         // RULE-332: all three absolute modes clean permanent/SetValue keys.
         // Mode2 restores the original source struct plus SetValue. Mode3 also
         // removes other Suppress keys and restores the original plus Suppress.
@@ -4184,15 +4199,17 @@ public sealed partial class CardApi
             target.BuffsBySource[key] = original;
         }
         SynchronizeBuffTarget(target, sourceId);
+    }
 
-        // Compare the RAW requested value, after ledger processing. A request
-        // of105 at base99 continues even though the final visible delta is0.
-        if (target.BaseAttack == value) return;
-        target.BaseAttack = target.MaxAttack = Math.Clamp(value, 0, 99);
-        int changed = target.Attack - previous;
-        if (!skipAction && !IsLocatedInDeck(target))
-            NotifyAttackChanged(target, changed, sourceId, changeType);
-        ExecuteAfterChangeAttackEvents(target, changed, sourceId);
+    // SuppressMultipleUnits i5148..5767 compares decrypted BASE attack.
+    // The equal branch directly calls the ledger, bypassing buffability and
+    // ChangeAttack's positive-source gate.
+    private void ApplySuppressionAttackPhase(CardInstance target, int staticAttack, int sourceId)
+    {
+        if (target.BaseAttack != staticAttack)
+            SetAttackValue(target, staticAttack, sourceId, skipAction: false, changeType: 3);
+        else
+            RecordAbsoluteAttackLedger(target, 0, sourceId, 3, allowNonPositiveSource: true);
     }
 
     private void RemoveAttackBuffWithEvents(CardInstance target, int sourceId, bool skipAction)
@@ -6075,7 +6092,7 @@ public sealed partial class CardApi
         var target = AsCardOrId(c, a.FirstOrDefault()) ?? AsCard(r) ?? c.Target;
         if (target is not null)
         {
-            SuppressUnit(target);
+            SuppressUnit(target, IntArg(a, 1));
         }
 
         return null;
@@ -6103,7 +6120,7 @@ public sealed partial class CardApi
 
         foreach (var target in targets)
         {
-            SuppressUnit(target);
+            SuppressUnit(target, IntArg(a, 1));
         }
 
         return null;

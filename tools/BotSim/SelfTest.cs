@@ -519,6 +519,9 @@ internal static class SelfTest
         new("攻击模式2/3/5：绝对赋值、原始相等门和实际事件，公共入口一致", SpecialAttackAbsoluteEvents),
         new("攻击模式3/5账本：Suppress标记清理、原源回写和veteranSet不回写", SpecialAttackLedgerMatrix),
         new("Suppress账本标记：独立于状态，复制/快照/临时撤销/重置", SuppressLedgerLifecycle),
+        new("压制攻击阶段：基础比较、等值账本直调及非正来源边界", SuppressionAttackPhaseBoundary),
+        new("压制攻击整合：单张/批量/公共来源、保留临时攻击及到期撤销", SuppressionAttackIntegration),
+        new("压制攻击观察者：先读旧防御数值，再进入防御处理", SuppressionAttackObserverState),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -6014,6 +6017,114 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? SuppressionAttackPhaseBoundary(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("ApplySuppressionAttackPhase", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        using var probes = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find("card_unit_arado_ar_196")!.Locals;
+        foreach (string hook in new[] { "OnAfterChangeAttack", "OnAfterOtherCardChangeAttack" })
+            locals[hook] = locals[hook].Where(x => x.Function != "DrawCardsFromDeckBySide").Select((x, i) => x with { Index = i }).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 1, 5, 99 })
+        foreach (int temp in new[] { -3, 0, 3 })
+        foreach (int template in new[] { 1, 5 })
+        foreach (int maximum in new[] { -7, 123 })
+        foreach (bool buffable in new[] { false, true })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 99);
+            var watcher = state.CreateWithId("card_unit_arado_ar_196", side, 70, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) { card.Definition = new CardDefinition { Name = card.Name, Type = "fighter", UsedTriggers = new[] { "OnAfterOtherCardChangeAttack" } }; card.Keywords.Clear(); }
+            target.Keywords.Add(Keyword.Suppressed); if (!buffable) target.Keywords.Add(Keyword.Covert);
+            target.BaseAttack = basis; target.TemporaryAttack = temp; target.MaxAttack = maximum;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Attack = 2, AttackSetValue = 0 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Attack = 3, AttackSetValue = 7 };
+            source.CardsBuffedByThisCard.Add(60); foreign.CardsBuffedByThisCard.Add(60);
+            int before = target.Attack;
+            method.Invoke(engine.Api, new object[] { target, template, sourceId });
+            bool numeric = sourceId > 0 && basis != template && buffable;
+            bool ledger = basis == template || sourceId > 0 && buffable;
+            int next = numeric ? template : basis, delta = Math.Clamp(next + temp, 0, 99) - before;
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainAttack").ToArray();
+            if (target.BaseAttack != next || target.TemporaryAttack != temp || target.MaxAttack != (numeric ? template : maximum)
+                || gains.Length != (numeric ? 1 : 0) || (numeric && (!Equals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
+                    || !Equals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), sourceId)))
+                || (!numeric && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
+                || target.BuffsBySource.Count != (ledger ? 1 : 2)
+                || (ledger && (!target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry || target.BuffsBySource[(sourceId, false)].Attack != (sourceId == 20 ? 2 : 0)))
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 60 }) || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60 }))
+                return $"压制攻击阶段错误 base={basis},temp={temp},static={template},max={maximum},buffable={buffable},source={sourceId}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionAttackIntegration(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (int basis in new[] { 0, 1, 5, 99 })
+        foreach (int temp in new[] { -3, 0, 3, 105 })
+        foreach (int sourceId in new[] { -1, 0, 20, 60, 9999 })
+        foreach (int entry in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var giver = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var temporarySource = state.CreateWithId("card_unit_t_34", side, 40, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 99);
+            target.Keywords.Clear(); target.IsSalvaged = salvaged; target.BaseAttack = basis; target.TemporaryAttack = temp; target.MaxAttack = 123;
+            target.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, Attack = 2 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Attack = 3 };
+            if (temp != 0) {
+                target.BuffsBySource[(40, true)] = new CardBuff { SourceCardId = 40, Temporary = true, Attack = temp };
+                temporarySource.CardsBuffedByThisCard.Add(60); state.AddBuffsToRemoveEndOfTurn(0, 40);
+            }
+            var ctx = new EffectContext { Engine = engine, State = state, Self = giver, Controller = side };
+            if (entry == 0) engine.Api.SuppressUnit(target, sourceId);
+            else if (entry == 1) engine.Api.InvokeByName("SuppressUnit", null, new object?[] { target, sourceId, null }, ctx, out _);
+            else engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { new[] { 60 }, sourceId, null }, ctx, out _);
+            int template = salvaged ? 1 : target.Definition.Attack;
+            bool numeric = sourceId > 0 && basis != template, ledger = sourceId > 0 || basis == template;
+            int next = numeric ? template : basis;
+            if (!target.IsSuppressed || target.BaseAttack != next || target.MaxAttack != (numeric ? template : 123) || target.TemporaryAttack != temp
+                || (ledger && (!target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry || target.BuffsBySource[(sourceId, false)].Attack != (sourceId == 20 ? 2 : 0)))
+                || (!ledger && (target.BuffsBySource[(20, false)].Attack != 2 || target.BuffsBySource[(30, false)].Attack != 3))
+                || (temp != 0 && target.BuffsBySource[(40, true)].Attack != temp))
+                return $"压制攻击入口/来源错误 side={side},salvaged={salvaged},base={basis},temp={temp},source={sourceId},entry={entry}";
+            engine.Api.RemoveTemporaryBuffs();
+            if (target.BaseAttack != next || target.TemporaryAttack != 0 || target.BuffsBySource.ContainsKey((40, true)))
+                return "压制不得提前清临时攻击，实际到期仍能按原来源撤销";
+        }
+        return null;
+    }
+
+    private static string? SuppressionAttackObserverState(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", hook = "OnAfterOtherCardChangeAttack";
+        using var probes = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        var step = new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+            new KismetExpr { Call = "getTotalDefense", Context = new KismetExpr { Var = "K2Node_Event_cardChanged", Scope = "local" }, Args = new[] { KismetExpr.Empty } }, null, -1, "_auditAttack_seenDefense", null) { DestinationScope = "instance" };
+        locals[hook] = new[] { step }.Concat(locals[hook].Where(x => x.Function != "DrawCardsFromDeckBySide").Select((x, i) => x with { Index = i + 1 })).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int delta in new[] { -1, 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var watcher = state.CreateWithId(name, side, 70, CardLocation.Discard, 0);
+            watcher.Keywords.Clear(); watcher.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { hook } };
+            target.BaseAttack = target.Definition.Attack + delta; target.Defense = target.Definition.Defense + 5; int beforeDefense = target.Defense;
+            engine.Api.SuppressUnit(target, 20);
+            if (delta == 0 ? watcher.BlueprintVariables.ContainsKey("_auditAttack_seenDefense") : !Equals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_seenDefense"), beforeDefense))
+                return "攻击观察者必须先见防御处理前的数值，基础相等则不发攻击事件";
+        }
+        return null;
     }
 
     private static string? SpecialAttackAbsoluteEvents(CardDatabase db)
@@ -13354,8 +13465,9 @@ internal static class SelfTest
                 engine.Api.InvokeByName("RemoveFury", card, new object?[] { 9999, 71, false }, ctx, out _);
                 if (!card.HasFury || card.RemainingAttacks != 2) return "来源撤销无效目标不得回落Self";
                 engine.Api.SuppressUnit(card);
-                if (card.HasFury || card.ReceivedAbilitiesFromCards.ContainsKey("fury") || card.BuffsBySource.Count != 0
-                    || card.RemainingAttacks != 1) return "抑制必须发现仅由来源给予的Fury并完整摘除";
+                if (card.HasFury || card.ReceivedAbilitiesFromCards.ContainsKey("fury")
+                    || card.BuffsBySource.Count != 1 || !card.BuffsBySource[(card.CardId, false)].HasSuppressLedgerEntry
+                    || card.BuffsBySource.Values.Any(b => b.Fury != 0) || card.RemainingAttacks != 1) return "抑制必须发现仅由来源给予的Fury并完整摘除";
                 card.ResetAttributes();
                 engine.Api.GiveFury(card, 72);
                 card.ResetAttributes();
@@ -13823,8 +13935,10 @@ internal static class SelfTest
                     || !snap.ReceivedAbilitiesFromCards["blitz"].SequenceEqual(new[] { 71, 72 })
                     || snap.BlitzBuffsBySource["71/False"] != 1) return "闪击快照应独立保留有效/原始状态与两类来源记录";
                 engine.Api.SuppressUnit(target);
-                if (target.HasBlitz || target.ReceivedAbilitiesFromCards.ContainsKey("blitz") || target.BuffsBySource.Count != 0)
-                    return "抑制必须完整摘除仅由来源赋予的闪击";
+                if (target.HasBlitz || target.ReceivedAbilitiesFromCards.ContainsKey("blitz")
+                    || target.BuffsBySource.Count != 1 || !target.BuffsBySource[(target.CardId, false)].HasSuppressLedgerEntry
+                    || target.BuffsBySource.Values.Any(b => b.Blitz != 0))
+                    return "抑制必须摘除闪击，同时保留独立Suppress账本标记";
                 target.ResetAttributes(); engine.Api.GiveBlitz(target, 72); target.ResetAttributes();
                 if (target.HasBlitz || target.BuffsBySource.Count != 0) return "重置不得残留动态闪击来源";
             }

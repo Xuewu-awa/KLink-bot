@@ -4108,7 +4108,7 @@ public sealed partial class CardApi
     /// L_123B  _staticOperationCost = StaticCardRef.operationCost
     ///         card.range = StaticCardRef.range
     /// L_12B3  JSON_Clear(card, "veteran")                       ; ★★ 老兵变回原形
-    /// L_136A  attackDifference = card.attack - _staticAttack
+    /// L_136A  attackDifference = getAndDecryptAttack(card) - _staticAttack
     ///         if (≠0) ChangeAttack(card, instigatorID, _staticAttack, changeType=3 /*Suppress*/)
     ///         else    ChangeBuffsFromCards(card, 0, instigatorID, 0 /*Attack*/, 3, "")  ; 清攻击 buff
     /// L_1441  card.maxDefense = _staticDefense
@@ -4120,14 +4120,14 @@ public sealed partial class CardApi
     /// `changeType=3` 就是 `EChangeType::Suppress`（`EChangeType.h`：0 tempBuffGive /
     /// 1 permBuff / 2 SetValue / **3 Suppress** / 4 tempBuffRemove / 5 veteranSet / …），
     /// 而 `ChangeAttack` 的 `2/3/5` 走**同一个** `setAndEncryptAttack` 分支
-    /// （见 `CardApiDispatch.DoChangeAttack` 那段注释）⇒ **3 = 把攻/防/行动费设成卡面值**。
+    /// RULE-333: 攻击只设基础分量，不清临时分量；等基础分支仅处理账本。
     /// 注意"**防御只在更高时压下来**"这一条：低了**不补**（否则抑制会变成治疗）。
     ///
     /// ## 内核的取舍（如实记录）
     /// <list type="bullet">
     /// <item>`exileNation` / `effectType` / `range` 三个字段内核**没有建模** ⇒ 无法清零，
     ///   它们参与的判定本来也不在（记为已知缺口）。</item>
-    /// <item>`isSalvaged`（1/1 收缴复制品）内核没建模 ⇒ 静态值一律取 `Definition` 卡面值。</item>
+    /// <item>`isSalvaged` 的攻击/防御基线取1；完整打捞及其他数值阶段另审。</item>
     /// <item>关于 `cantBeSuppressed` 守卫：蓝图**两条**都查（`IsLocatedOnBoard` +
     ///   `!HasCustomAbility(card,"cantBeSuppressed")`，IR 里 `cantBeSuppressed` 出现 9 次），
     ///   本轮补上（原先只查"在场 + 未被抑制"）⇒ `card_event_maginot_line` /
@@ -4138,7 +4138,7 @@ public sealed partial class CardApi
     ///   仍按蓝图**不摘**，只有关系和由关系产生的卡牌能力进入解除链。</item>
     /// </list>
     /// </summary>
-    public void SuppressUnit(CardInstance target)
+    public void SuppressUnit(CardInstance target, int? instigatorId = null)
     {
         // 守卫：在场 && 尚未被抑制 && 没有 `cantBeSuppressed` 自定义能力
         // （蓝图 L_01E9/L_0224/L_026A；后一条是本轮补的）。
@@ -4272,41 +4272,36 @@ public sealed partial class CardApi
         // 与 `JSON_Clear` 一样**不发**任何子动作。
         target.Keywords.Remove(Keyword.Veteran);
 
-        // ---- ③ 所有增益失效：攻/防/重甲/行动费 buff 逐条摘走（记原文，供解除时装回）----
-        // 玩家原话：「所有的增益效果也全部失效 —— 包括友方贴膜、敌方贴膜、
-        // 友方卡牌给单位添加的额外特效」。
-        // ⚠️ 只摘 **攻/防/重甲/行动费** 四项：蓝图的回落段只处理这四项，
-        //    **碰都没碰改费**（整段没有 ChangeKreditCost）——
-        //    纯改费条目（KreditCost ≠ 0 而其余为 0）保持原样。
+        // Keep a compatibility-only snapshot for the explicit legacy restore
+        // adapter; this is not the native ledger or a PvP expiry queue.
+        var beforeAttack = target.BuffsBySource.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+        int staticAttack = target.IsSalvaged ? 1 : target.Definition.Attack;
+        int staticDefense = target.IsSalvaged ? 1 : target.Definition.Defense;
+        ApplySuppressionAttackPhase(target, staticAttack, instigatorId ?? target.CardId);
+
+        // Attack events above must observe pre-defense ledger/state. The old
+        // non-attack compatibility cleanup remains pending its separate audit.
         target.SuppressStrippedBuffs ??= new List<KeyValuePair<(int, bool), CardBuff>>();
-        foreach (var key in target.BuffsBySource.Keys.ToList())
+        foreach (var (key, saved) in beforeAttack)
         {
-            CardBuff buff = target.BuffsBySource[key];
-            if (buff.Attack == 0 && !buff.AttackSetValue.HasValue && buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0)
-            {
-                continue;
-            }
-
-            target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, buff.Clone()));
-
-            buff.Attack = 0;
-            buff.AttackSetValue = null;
+            target.BuffsBySource.TryGetValue(key, out var live);
+            // Temporary attack was never removed. Current-source permanent
+            // attack may also survive native mode3's old-struct writeback.
+            saved.Attack = key.Temporary ? 0 : saved.Attack - (live?.Attack ?? 0);
+            if (live?.AttackSetValue == saved.AttackSetValue) saved.AttackSetValue = null;
+            if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.HeavyArmor != 0 || saved.OperationCost != 0)
+                target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, saved));
+        }
+        foreach (var key in target.BuffsBySource.Keys.ToArray())
+        {
+            var buff = target.BuffsBySource[key];
+            if (buff.Defense == 0 && buff.HeavyArmor == 0 && buff.OperationCost == 0) continue;
             buff.Defense = 0;
             buff.HeavyArmor = 0;
             buff.OperationCost = 0;
-            if (buff.IsEmpty)
-            {
-                RemoveBuffEntry(target, key);
-            }
+            if (buff.IsEmpty) RemoveBuffEntry(target, key);
             else SynchronizeBuffTarget(target, key.SourceCardId);
         }
-
-        // ---- ④ 数值回落到卡面静态值（L_136A / L_1441 / L_1504）----
-        // BP_CardFunctions::SuppressMultipleUnits uses a 1/1 static baseline for
-        // Salvage copies; ordinary cards return to their card definition values.
-        int staticAttack = target.IsSalvaged ? 1 : target.Definition.Attack;
-        int staticDefense = target.IsSalvaged ? 1 : target.Definition.Defense;
-        target.Attack = staticAttack;                    // ChangeAttack(…, _staticAttack, Suppress)
 
         // 防御：**只在当前更高时压下来**（蓝图 `getTotalDefense > _staticDefense` 才改写）
         // ⇒ 抑制**不会治疗**一个已经被打残的单位。MaxDefense 按蓝图直接取静态值。

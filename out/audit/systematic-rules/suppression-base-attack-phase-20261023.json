@@ -1,0 +1,170 @@
+{
+  "rule": "RULE-333",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-333",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 5,
+    "blueprint_bytes": 18949,
+    "native_phase_model_cases": 384,
+    "worker": {
+      "raw_mechanical_rows_exact": 288,
+      "positive_source_assumption_corrected_rows": 24,
+      "rule_authority": false
+    },
+    "regression_combinations": {
+      "phase": 768,
+      "three_entry_integration": 960,
+      "defense_query_order": 6,
+      "total": 1734
+    },
+    "release_selftest": {
+      "passed": 689,
+      "total": 689,
+      "exit_code": 0
+    },
+    "scope": "Suppression attack phase only, including base-equality direct-ledger branch, positive source guard difference, temporary preservation and attack callback before defense phase. Model stops at5363; native maps/crypto/frame payload and tempInstigatorCard=None controlled. No full suppression/defense/operation/kredit/delegate/reentry certification. Legacy manual restore remains compatibility storage, not native reconstruction."
+  },
+  "authority": "Five previously captured authoritative Blueprint functions18949B redecoded and numeric native wrappers/backends matched current installed PE SHA. Exact SuppressMultipleUnits5148 getter,5296 gate,5310 ChangeAttack3,5715 direct ChangeBuffsFromCards attack3,5767 join5363 checked. No historical replay or new process capture.",
+  "findings": [
+    "Suppression attack difference uses decrypted BASE attack, not total/public attack. Equality still invokes the ledger directly, without numeric update or attack events.",
+    "Neither this phase nor ChangeAttack3 clears temporary numeric attack or temporary attack keys.",
+    "Direct ledger equality branch differs from ChangeAttack source/buffability guards: nonpositive source keys can be written. Payload and tempInstigatorCard defaults are controlled, not a current-frame initialization proof.",
+    "Attack callback runs before maxDefense/defense phase at5363; early blanket ledger/numeric cleanup prevented that intermediate view."
+  ],
+  "changes": [
+    "Suppression attack phase now routes unequal base to ChangeAttack3-equivalent helper and equal base to ledger-only updater. Temporary component/ledger preserved, actual events and maxAttack use shared known semantics.",
+    "Both Blueprint single/multiple suppression dispatchers preserve supplied raw instigatorID. Direct C# optional source omission keeps explicit compatibility self-ID fallback, not a native omitted-argument contract.",
+    "Ledger-only equality path permits nonpositive source keys and bypasses CanCardBeBuffed; general ChangeAttack remains positive-source guarded.",
+    "Move non-attack legacy cleanup after attack callbacks. Attack fields are no longer blanket-cleared before mode3 can read source records.",
+    "Explicit legacy manual restore snapshots retain only removed permanent attack amounts; temporary and surviving current-source amounts are excluded to avoid double addition. This adapter is not certified native RemoveSuppression.",
+    "Two old Fury/Blitz tests now require those ability keys removed while allowing the independent Suppress ledger marker; strict marker/source checks retained instead of expecting globally empty ledger."
+  ],
+  "regressions": {
+    "new_cases": 3,
+    "new_combinations": 1734,
+    "phase": 768,
+    "single_multiple_direct_integration": 960,
+    "defense_query_order": 6,
+    "initial_failures": 2,
+    "initial_total": 686,
+    "release_passed": 689,
+    "release_total": 689,
+    "exit_code": 0,
+    "native_phase_model": 384
+  },
+  "worker": {
+    "mechanical_fixture_rows_exact": 288,
+    "primary_corrections": 24,
+    "rule_authority": false,
+    "explanation": "Packet assumed a common positive-source ledger gate before direct-equality branch discovery. Original math rows all match stated packet; primary corrects24 source0/equal-base ledger booleans using complete native control flow. Negative source cases separately covered in384 native model and code regressions."
+  },
+  "remaining": [
+    "Defense/heavy armor/operation/kredit phases, their original-source cleanup and notification ordering remain partly legacy.",
+    "Whole batch list order/live rereads, repeated suppression, own/T58/T11 callbacks, outer notification and reentry/lifetime behavior are not recertified.",
+    "Source validity IsValid vs IsAlive; concrete native buffability implementations and invalid target/source object handling beyond controlled cases remain pending.",
+    "Suppress integer payload and current frame initialization remain unknown; model explicitly seeds Temp_int_Variable0 and tempInstigatorCardNone. Nonpositive source tail array behavior not claimed generally.",
+    "Manual RestoreAfterSuppression remains compatibility-only; original source snapshot/reentry semantics not native equivalence.",
+    "Default enums, ordinary zero-key presence, physical native containers,511th/Reidentify and receive/reset/copy helper chains remain incomplete. Single-card version migration paused; full semantic certification0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule333-suppression-attack.py",
+      "sha256": "90a51681c750f3e8425411d84b6d41d7e0fe72a7b0a2fa32268d4997983995f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule333-suppression-attack-verified-20261023.json",
+      "sha256": "4a704c348931125b3825445c77d559e8f9fdb5f3b4812941b551fda5aebe61a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-attack-phase-native-model-20261023.json",
+      "sha256": "43564f9a923f7609aa398f5c75babf8be1cdcf1ecd5d1fb70acbd4ecd33aa227"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-change-notify-events-native-20261023.json",
+      "sha256": "0ffc0787a11e00c960277c91ac6a1829fa5e558fccd704b23c4fb75977eb706a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule333-selftest-initial.log",
+      "sha256": "367b43f96752f519b51c476e1821023f1a22e7092cd09c5975aea5aed271e93a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule333-selftest-initial.exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule333-selftest-verified.log",
+      "sha256": "1a44970d8de56b2fcb3f2cd0101766dd2148a3dc76e522a68912373e34d6f6fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule333-selftest-verified.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule333\\task.txt",
+      "sha256": "230e057921ff08357b46703eed7b49cc50ffe41c46ceb5aa416c1be6fc9ab759"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule333\\cases.json",
+      "sha256": "3e22c374c56682a558d7d2dd126aa99027443b565dc56ace2780f63d810fe530"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-100052-rule333-suppression-attack-gate-09f1efdf\\job.json",
+      "sha256": "42fee1de2146c17f1e5ba5a7af710f97a0d4f90f504d3c8d1e45038d363a353c"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "795ef2f7341f70da6dc13a11dc4f82f996c0508a5f7a292e3b7bc32abac9d5f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "5aa7434bfc091fba5108b69b930b12cd06010a7e7cac3148a07d151d18096fde"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "3efdb9b5e73cb1c7d62c2dbbf8c97e8551e2f21e01aefad94625b4508ce5b95c"
+    }
+  ]
+}
