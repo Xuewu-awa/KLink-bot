@@ -4385,7 +4385,11 @@ public sealed partial class CardApi
 
         NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);
 
-        if (target.KreditCost != previousCost)
+        // RULE-352: native modes0/1 set valueChanged from nonzero request,
+        // even when clamping leaves the observable cost unchanged. Absolute
+        // modes still use the legacy aggregate gate pending split-field migration.
+        if ((changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && rawAmount != 0)
+            || target.KreditCost != previousCost)
         {
             ExecuteKreditCostChangedEvents(target, sourceId);
         }

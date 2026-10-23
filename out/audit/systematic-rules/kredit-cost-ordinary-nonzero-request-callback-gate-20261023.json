@@ -1,0 +1,184 @@
+{
+  "rule": "RULE-352",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-352",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "direct_scope_bytes": 10284,
+    "native_ordinary_vectors": 1152,
+    "worker_rows_exact": 1152,
+    "packet_prose_expected_typo": 2304,
+    "regression_combinations": 144,
+    "release_selftest": {
+      "passed": 731,
+      "total": 731,
+      "exit_code": 0
+    },
+    "scope": "Dispatcher ordinary0/1 callback gate now follows nonzero request even when aggregate unchanged. Complete main/ledger/query executed with controlled primitives; raw numeric rows reference only. Production base/temp numeric, total getter, absolute/mode4/unknown gates, public legacy path and suppression5604 remain unconverted."
+  },
+  "authority": "Reused authoritative read-only scripts/current PE;8supporting functions19614B redecoded with raw script hash/FName-symbol headers. Direct full ChangeKreditCost2759+type2 ledger6267+query forwarder84+battle query1174=10284B. No fresh game process/battle-state assertion.",
+  "native": "Mode1 request0 sets valueChanged=false at1079, nonzero performs signed32 base addition then clamp0..99 and unconditionally sets true at1334. Mode0 request0 false1394, nonzero wraps temporary addition and sets true1602.1614 uses valueChanged then1624 ActionProcess; notifications/own/T45 follow even when cost is unchanged by clamp.",
+  "changes": [
+    "Change only dispatcher callback gate for ordinary0/1: supplied raw nonzero request qualifies even if current legacy aggregate equals previousCost. Existing ordinaryzero early return remains, notification still precedes dedicated own/T45 chain.",
+    "Do not use raw numerical model to claim production split-field migration. Absolute/mode4/unknown-mode gates and public legacy adapters remain pending."
+  ],
+  "models": {
+    "vectors": 1152,
+    "scope": "Execute whole2759B ChangeKreditCost ordinary0/1 with whole6267B type2 ledger,84B forwarder and1174B query.4bases*3temps*4requests*2modes*3sources*2suppression*2actions. Includes INT_MAX signed overflow and clamp-floor unchanged branch. Output base/temp/valueChanged/events compared independently against worker.",
+    "controls": "Object-map query VM preserves pointers; ledger struct-map VM copies values. IsValid/CanBuff/source/crypto keys/map/set/enum/frame primitives controlled; total getter output17 supplied and notifier capture stub. T45 observer70 plus subject/missing9999 query controlled, no mutation here. Production numeric fields not migrated or compared; ledger is executed but full map-state semantics not independently exhaustively certified."
+  },
+  "regressions": {
+    "new_tests": 1,
+    "combinations": 144,
+    "release": {
+      "passed": 731,
+      "total": 731,
+      "exit_code": 0
+    },
+    "scope": "Both sides*base0/99*request-5/0/1*mode0/1*source20/60/9999*suppression2. Check nonzero notify->own(if eligible)->T45 with raw source/changedID args, even base0 negative request leaves current cost0. Zero stays silent; same-source/suppressed own gate preserved. Upper-bound fixture asserts callback only, not legacy raw numeric result."
+  },
+  "worker": {
+    "job": "20261023-213540-rule352-ordinary-request-gate-c7734e27",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 1152,
+    "primary_comparison_exact": 1152,
+    "packet_text_expected_typo": 2304,
+    "spec_expected_correct": 1152,
+    "correction": "Task prose incorrectly said2304, but machine-computed spec dimension product and expected_rows are1152. Worker flagged prose conflict and emitted1152distinct rows; original packet/results retained, no invented axis or padding/retry. All numeric base/temp/changed/event rows match native execution.",
+    "scope": "Private mechanical numeric/event projection only, no source edits/authority judgment/publishing."
+  },
+  "remaining": [
+    "Production BaseKredit/temporaryKreditBuff independent fields/lifecycle not migrated. Numeric base/temp results in new model are native reference only, not proof current aggregate ledger reconstruction matches native clamping/overflow history.",
+    "Absolute2/3 still use legacy aggregate comparison for callbacks and legacy send gates; mode4 withdrawal, unknown modes, typed SetValue/Suppress ledger and cached source writeback remain unconverted. Dispatcher ordinary event fix does not alter those paths.",
+    "Native getTotalKreditCost implementation not executed by new model; total output17 supplied, notifier captured by stub. Full five-field serialization independently covered by RULE350; real execution/frame/receiver/delegate gates remain open.",
+    "Model executes whole type2 ledger with one controlled initial current/foreign field mix, but rows validate numeric fields/valueChanged/events, not exhaustive ledger semantics. Source/validity/buffability/encryption-key/frame/container primitives controlled; object-map query preserves references while struct-map ledger lookup copies values.",
+    "Public two-argument ChangeKreditCost/FireKreditCostChanged remain legacy; global registration maintenance/TSet order/UObject lifecycle and persistent qq/target resolution remain unproved.",
+    "Suppression5604 kredit integration, complete static lookup/cache/armor/last-card reveal/caller-array alias behavior and transitive implementation remain open. Version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-ordinary-request-event-gate-native-model-20261023.json",
+      "sha256": "5c4e4c228e35408aeb48705db10584c32a547875ba43755738e332122c0dbb91"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule352.py",
+      "sha256": "068bcb16b087fb7c1a4022fa7ebab6de417f6f01f890063555f124b550f54060"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule352-ordinary.py",
+      "sha256": "e31ebd33f0970dac9f5e70ddccc583ff6069b2c9085ee4621e4c8fd2dc42cc0a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule352-tests.py",
+      "sha256": "651e9ee2066b8f96f7f40e6242f67669fba579c51aaa32489893cf3f5a0714c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule352.py",
+      "sha256": "0544639c2df7647c86877e4257fa31796f3dc53fa5b5194719659efb08aeafb1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule351.py",
+      "sha256": "4309be868d548e82de30bbb4ccdc8a9a3c663f167afd26bc6a9b3ed697c6e5ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule352-verified-20261023.json",
+      "sha256": "7660cb9f93255992596a7268f6d7d6aa250e1fc634497281ef1320029919dbbe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule352-selftest-final.log",
+      "sha256": "4fae76347e9ea99da1effc5c6c42b9fcb08d7a497769080bf2ba6351b61cc588"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule352-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule352\\spec.json",
+      "sha256": "497456a0e21d803728c1bbf2e0bf7d6c0c4320243cf95c252173895eca62782c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule352\\task.txt",
+      "sha256": "10ac90920d873727d9cadecaa95edb4d443d3295e9bff4ba7199f084290097f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule352\\cases.json",
+      "sha256": "9dd4dcedc1ddb219b29864f70be44cf7e3ebfc4daa1792d7d00b7c7be31ac10f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule352\\primary-cases.json",
+      "sha256": "c214e6b1fa694d104d0852b38416e9716c55c4e2c292bf51471d265191ddbc62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule352\\generator.py",
+      "sha256": "86da2298eb6349254f2052856ab7720c409a2768cf3be3e3d2e7deb8392ba2bb"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-213540-rule352-ordinary-request-gate-c7734e27\\job.json",
+      "sha256": "f57dde6762aad7d8b22db90a6f9c27e216ad86e71a4e3f383968f6d51618d434"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "b03c3d16ea29278f3fac6f6bd7a26d8707acf2d165786f1e9feedf1c451568de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "2efb44c4e175d08308bc8d8ac902dd8124b8c1ec81af9e739aeb55caa0452a5a"
+    }
+  ]
+}

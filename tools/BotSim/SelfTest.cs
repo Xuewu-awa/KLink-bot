@@ -564,6 +564,7 @@ internal static class SelfTest
         new("指挥点改费回调：来源门、自身后查询、T45整数ID及对象快照", KreditCallbackMutationMatrix),
         new("指挥点T45查询：全位置、注册/压制例外与同ID主体排除", KreditCallbackQueryMatrix),
         new("指挥点改费整合：通知先于自身/T45，普通零无回调", KreditCallbackDispatcherIntegration),
+        new("普通指挥点改费：非零请求即使夹取后费用未变仍回调", KreditOrdinaryRequestCallbackGate),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7363,6 +7364,43 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static string? KreditOrdinaryRequestCallbackGate(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 99 })
+        foreach (int request in new[] { -5, 0, 1 })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int source in new[] { 20, 60, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Kredits = basis };
+            target.KreditCost = basis; if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var events = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase"); events.Add(phase);
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), phase == "own" ? source : 60)) fault = "回调参数错误";
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+                if (notices.Length != 1 || notices[0].Values.Single(x => x.Name == "costAdded").Value != request) fault = "回调早于原始请求通知";
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, source, request, mode, false, null }, ctx, out _);
+            string[] expected = request == 0 ? Array.Empty<string>() : source != 60 && !suppressed ? new[] { "own", "other" } : new[] { "other" };
+            if (fault is not null || !events.SequenceEqual(expected)) return $"普通改费不应按聚合差值决定回调 {side}/{basis}/{request}/{mode}/{source}/{suppressed}: {fault}";
+            // The unchanged-zero scenario is the repaired regression. Raw upper
+            // saturation and base/temp storage remain separate native migration work.
+            if (basis == 0 && request < 0 && target.KreditCost != 0) return "测试应覆盖费用仍0但已通知/回调的边界";
         }
         return null;
     }
