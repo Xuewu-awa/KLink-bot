@@ -1492,25 +1492,15 @@ public sealed partial class CardApi
                     : 0;
             },
 
-            // `getAttackTempBuffAmount(cardID, out amount)` has the same
-            // receiver/source shape as the kredit query: read the amount
-            // contributed by one source from the target card's buff ledger.
+            // RULE-370: the native source getter reads only attack_tempBuffGive.
+            // Missing temporary keys return zero, even if a permanent attack
+            // contribution or an attack_SetValue key exists for the same source.
             ["getAttackTempBuffAmount"] = (c, r, a) =>
             {
                 var target = SelfArg(c, r, a);
-                if (target is null)
-                {
-                    return 0;
-                }
-
                 int sourceId = IntArg(a, 0);
-                if (target.BuffsBySource.TryGetValue((sourceId, true), out var temporary))
-                {
-                    return temporary.Attack;
-                }
-
-                return target.BuffsBySource.TryGetValue((sourceId, false), out var permanent)
-                    ? permanent.Attack
+                return target is not null && target.BuffsBySource.TryGetValue((sourceId, true), out var temporary)
+                    ? temporary.Attack
                     : 0;
             },
 

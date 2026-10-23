@@ -598,6 +598,8 @@ internal static class SelfTest
         new("临时费用读取入口：实际改费/撤销后立即读取新值", TemporaryKreditGetterAfterMutation),
         new("来源临时费用查询：只读取临时键，永久键不能回退", SourceTemporaryKreditGetterKeys),
         new("来源临时费用查询：改费及撤销后的键生命周期", SourceTemporaryKreditGetterLifecycle),
+        new("来源临时攻击查询：临时键与永久键严格隔离", SourceTemporaryAttackGetterKeys),
+        new("来源临时攻击查询：改攻及撤销后的键生命周期", SourceTemporaryAttackGetterLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7525,6 +7527,68 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? SourceTemporaryAttackGetterKeys(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int presence in new[] { 0, 1, 2, 3 })
+        foreach (int temp in new[] { int.MinValue, -7, 0, 11, int.MaxValue })
+        foreach (int permanent in new[] { -5, 0, 17 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (bool explicitReceiver in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var other = state.CreateWithId(PlainUnit, side.Opposite(), 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            target.BaseAttack = 37; target.TemporaryAttack = -9; target.PublicAttack = 105; target.AttackBuff = 23;
+            target.BuffsBySource[(sourceId + 4, true)] = new CardBuff { SourceCardId = sourceId + 4, Temporary = true, Attack = 65432 };
+            if (presence is 1 or 3) target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, Attack = permanent, AttackSetValue = 0, HasSuppressLedgerEntry = true };
+            if (presence is 2 or 3) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, Attack = temp, KreditCost = 3 };
+            other.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, Attack = 12345 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = explicitReceiver ? other : target, Controller = side.Opposite() };
+            string before = state.SnapshotJson(); long random = state.Random.ConsumedCount;
+            int faults = engine.Api.Vm.FaultedPrograms, unsupported = engine.Api.Vm.UnsupportedInstructions, missing = state.UnimplementedCalls.Values.Sum();
+            int expected = presence is 2 or 3 ? temp : 0;
+            object? actual = engine.Api.InvokeByName("getAttackTempBuffAmount", explicitReceiver ? target : null, new object?[] { sourceId, null }, ctx, out bool handled);
+            var program = new KismetProgram(new[] { new KismetStep(0, "call", "getAttackTempBuffAmount",
+                new[] { new KismetExpr { Var = "__source", Scope = "local" }, new KismetExpr { Var = "__amount", Scope = "local" } }, new[] { 1 }, null, null, -1, null, null)
+                { Receiver = explicitReceiver ? new KismetExpr { Var = "__target", Scope = "local" } : null },
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> { ["__source"] = sourceId, ["__target"] = target, ["__amount"] = 98765 }, "__amount");
+            if (!handled || !Equals(actual, expected) || !Equals(output.GetValueOrDefault("__amount"), expected)
+                || state.SnapshotJson() != before || state.Random.ConsumedCount != random || state.UnimplementedCalls.Values.Sum() != missing
+                || engine.Api.Vm.FaultedPrograms != faults || engine.Api.Vm.UnsupportedInstructions != unsupported)
+                return $"临时来源键不可回退到永久/其他来源/当前攻击 {side}/{presence}/{temp}/{permanent}/{sourceId}/{explicitReceiver}: actual={actual}, out={output.GetValueOrDefault("__amount")}, expected={expected}";
+        }
+        return null;
+    }
+
+    private static string? SourceTemporaryAttackGetterLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int temp in new[] { -3, 0, 4 })
+        foreach (int permanent in new[] { -2, 0, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            target.BaseAttack = 10; target.TemporaryAttack = 0;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? Read() => engine.Api.InvokeByName("getAttackTempBuffAmount", target, new object?[] { 20, null }, ctx, out _);
+            void Change(int value, int mode) => engine.Api.InvokeByName("ChangeAttack", null, new object?[] { target, 20, value, mode, true, null }, ctx, out _);
+            Change(permanent, 1); Change(temp, 0);
+            if (!Equals(Read(), temp)) return $"改攻击后必须读取当前临时贡献 {side}/{temp}/{permanent}";
+            Change(999, 4);
+            if (!Equals(Read(), 0) || target.TemporaryAttack != 0) return $"撤销临时攻击后不可重新暴露永久贡献 {side}/{temp}/{permanent}: {Read()}";
+            Change(2, 0);
+            if (!Equals(Read(), 2)) return "重新添加临时键必须立即可见";
+            Change(0, 5);
+            if (!Equals(Read(), 2) || target.TemporaryAttack != 2) return "模式5只清永久键，必须保留临时贡献及当前临时量";
+            Change(999, 4);
+            if (!Equals(Read(), 0) || target.TemporaryAttack != 0) return "再次撤销必须返回缺键零值";
         }
         return null;
     }

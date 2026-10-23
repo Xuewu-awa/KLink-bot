@@ -1,0 +1,266 @@
+{
+  "rule": "RULE-370",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-370",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "backend_bytes": 353,
+    "wrapper_bytes": 212,
+    "caller_expressions": 9,
+    "caller_expression_bytes": 384,
+    "opaque_caller_properties": 10,
+    "native_vectors": 1920,
+    "numeric_projection_rows": 240,
+    "worker_exact_calls": 9,
+    "parsed_calls": 9,
+    "parsed_cards": 7,
+    "new_regression_combinations": {
+      "key_matrix": 960,
+      "lifecycle": 18,
+      "total": 978
+    },
+    "before": {
+      "passed": 764,
+      "total": 766,
+      "failed": 2
+    },
+    "after": {
+      "passed": 766,
+      "total": 766,
+      "exit_code": 0
+    },
+    "scope": "Strict temporary attack key query in valid ledgers; actual outer native lookup with controlled inner FString/hash/map/free contracts. Explicit zero versus absent key cleanup, null Context/full ABI and whole-card/aura certification remain pending."
+  },
+  "finding": "Native getAttackTempBuffAmount initializes output0, looks up buffsFromCards[instigatorID], then reads ONLY BuffMap key attack_tempBuffGive. Managed dispatch incorrectly fell back to permanent Attack when temporary slot absent. This leaked permanent contributions before/after temporary withdrawal. Removed permanent fallback; retains valid receiver convention and raw signed temporary value.",
+  "authority": "Exact installed PE SHA matched reused UFunction header; recaptured212B wrapper and complete353B backend, backendRVA0x4b127a0. PE literalRVA0x7e42e18 is attack_tempBuffGive. SDK source/out signature and buffsFromCards+0xb8/FCardBuffData.BuffMap+0x10 agree. Nine runtime caller expressions totaling384B re-decoded from matching authoritative snapshot. No live memory capture, game-process call/write or injection.",
+  "callers": {
+    "parsed_calls": 9,
+    "parsed_cards": [
+      "card_unit_sdf",
+      "card_unit_panzer_iii_e",
+      "card_unit_type_4_chi_to",
+      "card_unit_78th_yongsan",
+      "card_unit_kv_1s",
+      "card_unit_220th_rifles",
+      "card_unit_511th_regiment"
+    ],
+    "loaded_pointer_candidates": 9,
+    "redecoded_expressions": 9,
+    "context_expressions": 6,
+    "implicit_self_expressions": 3,
+    "expression_bytes": 384,
+    "opaque_local_properties": 10,
+    "opaque_function_targets": 0,
+    "boundary": "Input parsed exports/current IR and named reused captures only. Complete selected expressions and getter header checked, not entire callers/cards/null Context behavior. Ten local property names remain opaque pointers; their instruction/out positions are visible."
+  },
+  "model": {
+    "vectors": 1920,
+    "numeric_projection_rows": 240,
+    "digest": "d86a07e90fec6f29bfa5702dc650fb6deefd82e7a361f21faeaa9231dcb242a4",
+    "dimensions": "4presence states*5temporary values[INT_MIN,-7,0,11,INT_MAX]*3permanent values[-5,0,17]*4sourceIDs[-1,0,20,9999]*2inline/heap bucket representations*4head/tail/missing/empty outer-map cases",
+    "execution": "Execute complete actual native backend with synthetic object/maps and real compiled outer hash-chain lookup/control flow. Inline1bucket and heap4buckets; temporary at index0 or1 among controlled32B inner entries. Entire4096B object and3ledger buffers unchanged.",
+    "controlled": "FString constructor(19chars+null), string hash, inner string-key lookup and free are controlled contracts checked against authoritative literal, expected pointers, indices and call counts. No native inner hashing/allocation/lifetime/malformed-container certification. Numerical table independently checked against supplied arithmetic by primary; worker did not generate it. Digest equals RULE369 because axes and abstract numerical projection are identical; PE function/key evidence differs."
+  },
+  "changes": [
+    "Only getAttackTempBuffAmount dispatch now returns temporary source-slot Attack or0. No current/base/public stat changes, ledger mutation, source sign/existence gate, cache policy or aura rewrite.",
+    "Add960fixtures: both sides,4presence states,5raw temporary values,3permanent values,4sourceIDs,2receiver forms. Distinct other source/receiver values, unrelated fee key, permanent AttackSetValue0/Suppress data, divergent current/public stats, direct dispatch and actual VM single out index1. Check full snapshot/RNG/missing-call/fault/unsupported invariance.",
+    "Add18lifecycle fixtures through ChangeAttack modes1/0/4/5: temporary amount visible, withdrawal0 despite permanent contribution, re-add2, mode5permanent cleanup retains temp2, final withdrawal0. Mode5 changes base under its existing attack implementation; this slice certifies only resulting source query behavior."
+  ],
+  "regressions": {
+    "new_tests": 2,
+    "key_matrix": 960,
+    "lifecycle": 18,
+    "total": 978,
+    "before": "764/766pass,2new failures,exit1; missing temp reads permanent-5, post-withdrawal reads permanent-2.",
+    "after": "766/766 Release selftest,exit0. No preexisting tests changed."
+  },
+  "worker": {
+    "job": "20261024-041103-rule370-attack-getter-calls-0a88abb7",
+    "status": "completed",
+    "exit_code": 0,
+    "original_call_objects_exact": 9,
+    "normalization": false,
+    "extractor_executed": true,
+    "boundary": "Private7file input packet semantically matches original parsed files; primary independently walked complete packet and compared all9 original output objects including parameters/order. Mechanical extraction only, not rule authority.",
+    "deviations": "Worker reports py_compile briefly created then removed private __pycache__, beyond the two requested output paths; no external writes reported. Primary concurrently created primary-cases.json, which worker explicitly reports not reading. Remaining artifact files inspected; no repository editing or publishing delegated."
+  },
+  "remaining": [
+    "Compact attack ledger cannot distinguish zero-valued attack key from absence for lifecycle cleanup. Both query results are0, which is the scope here; physical zero-key presence/removal/event differences are not solved.",
+    "Native inner FString/map/hash allocation/free, malformed containers, null Context and full FFrame/UObject ABI/lifetime remain pending. Ten caller local property headers unresolved.",
+    "Seven observed cards are not fully certified. Handwritten aura/identity/nonbyte adapters, full construction/default-copy/static lookup, suppression tail, invalid-key crypto metadata and remote routing remain open. Single-card version migration paused; fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\source-temporary-attack-getter-pe-20261024.json",
+      "sha256": "387dae5893c58e8e0b8a69bfdf268565b7ade0cbd882feaff2597e50e4863738"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\source-temporary-attack-getter-calls-native-20261024.json",
+      "sha256": "6282765aba1db705e10779a155be46c4e93d7b9d7dde781bbbdc15463d5da984"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\source-temporary-attack-getter-native-model-20261024.json",
+      "sha256": "a7816ffa397572efeec0768d24fae95e426a2dc445249d3959f37c7090fa5b23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule370-getter.py",
+      "sha256": "f0b524e1e36b5d808aed1ce122e1c208dd2bef08b06721a68690c68447b90146"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule326-pe-accessors.py",
+      "sha256": "b7879337a76045be8a34799bf608f3ad32a76cb7047a885069331d7a27eabc26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule370-callers.py",
+      "sha256": "5a34381ab1136383d3af49ecbb8d8b259d56ecc6eeeb81eb9b075511a0a66bce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\inventory-rule370-getter.py",
+      "sha256": "e948d2d4eee73a3b82e3a5c97bf574fc049679391f93a9dca62200212cc26faa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule370-getter.py",
+      "sha256": "a1429965fc8882db38d384cfc148e7a23e856ba51ebcc002e172d15712e16eb3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule370.py",
+      "sha256": "a6bcbdd256a7e8206f50ef6a1fd961ab0260b83867dc0e80ee5c802ca66c831a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-verified-20261024.json",
+      "sha256": "748bf812781517ec854ac9e6dab0749b9f59a6882cf3e1219767fbe0a3b8f91e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-call-inventory.json",
+      "sha256": "244f769e71034c99b12aa294d2530e5806d3679fb62c57415523dede9ff13227"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-041103-rule370-attack-getter-calls-0a88abb7\\job.json",
+      "sha256": "457c491f934d57c03c07c1f95baa19f62b00db5b355fcf3de8d4a9e3b02f1e3d"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-041103-rule370-attack-getter-calls-0a88abb7\\answer.txt",
+      "sha256": "bf9b17fa66d885ff253e6afd930a17118855b7ec0d0e9183bc82263d5a4176d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "5b8c2f1b26c410f6eef01828db6dfe9110bc7c7f037f905a958150326c20b1bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "31c12b67ff8ab05ad6bb5c502a70cf967242fdddf7a7f5ec23bb8ab4611d095c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\task.txt",
+      "sha256": "67b843c9148750e6272b259ff6242d7b2bc67466f521d9d5f868b8a924ff3f54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\spec.json",
+      "sha256": "eb390724160c7f66c2bf9d3c6bfe6670640cd500f91974807325e819b4159858"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\assets.json",
+      "sha256": "4f588a486221113260aca369e44bcc6a1a86e005c1706298bb18a75e5515dd7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\extract.py",
+      "sha256": "0119f8dd3a49f57f22ea35eeafdeb42d4fe7fd624e3c89886c4af406a37acd70"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\calls.json",
+      "sha256": "047f0789520d33335ad470db77a4f6e30d31f1931252d2ce474aa9013ef8eaf1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\primary-calls.json",
+      "sha256": "047f0789520d33335ad470db77a4f6e30d31f1931252d2ce474aa9013ef8eaf1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule370\\primary-cases.json",
+      "sha256": "d8bc2920054c742a6299043e577318d5f5d68abfd7862c2809463404a9b9d4c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-selftest-before.log",
+      "sha256": "b29ad4c522c51b9c7a24dcc3749055038992aa7adf2ca38c289c2ff1d4505efb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-selftest.log",
+      "sha256": "dd03594d6b5c6918bbee8945e90740f611a23e710edf285db950b569da50728a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule370-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\WinterWar\\units\\card_unit_sdf.functions.json",
+      "sha256": "d5ed15de86279279b6c4c395f827949a2d770ea5a9d40de600902ad24333def2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Base\\units\\card_unit_panzer_iii_e.functions.json",
+      "sha256": "f2c4669bb0ae635756b0a046a757a5c46d23616fe9d8900774e37489953d5417"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\units\\card_unit_220th_rifles.functions.json",
+      "sha256": "28daa861c7baa238bb87750a282181096335c076f422baefb57fbcbe39523412"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\BloodIron\\units\\card_unit_type_4_chi_to.functions.json",
+      "sha256": "904f6c83d17b6879451b003900dace9bc37f11a79aaa21ccb180ca23e998f164"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\OceaniaStorm\\units\\card_unit_78th_yongsan.functions.json",
+      "sha256": "f4db2a730a1f0103bf3d71452a4ec76fb74c331d1e23c05ad388dbfa8620e12a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\OceaniaStorm\\units\\card_unit_511th_regiment.functions.json",
+      "sha256": "f6ee8d5668a46026b1a67c5d1e58a7f19c237fb4bd24b69294e85b6e256c00ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Homefront\\units\\card_unit_kv_1s.functions.json",
+      "sha256": "028ad49645259639ffcf0d078362d147f1e5b8cadeeab44fbb3bc0789f02caff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-subaction-dispatch-native-20261021.json",
+      "sha256": "85183d61137aa286d805d74e9947b39afe7161f5c941761c19a4bfe78fab1608"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-card-version-drift-native-20261020.json",
+      "sha256": "e4f14678ef96a1c1f0acc10adef2c1643a595b479ada667131ea365277af2a6e"
+    }
+  ]
+}
