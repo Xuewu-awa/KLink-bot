@@ -1143,8 +1143,10 @@ public sealed class MatchEngine
             if (card.GotchaActivated > 0) card.GotchaActivated = 0;
             else
             {
-                // i=3602..3762 reads current cost, not the cost at notification time.
-                Api.JsonSetInt(card, "kreditsPayed", card.KreditCost);
+                // RULE-367: i=3602..3762 reads getTotalKreditCost now:
+                // clamp the signed32 base+temporary sum to0..99, rather than
+                // recording the raw aggregate or the notification-time value.
+                Api.JsonSetInt(card, "kreditsPayed", card.TotalKreditCost);
                 int next = 0;
                 foreach (var other in State.AllCards)
                     if (Api.IsGotcha(other) && other.Owner == card.Owner && other.GotchaActivated > next)

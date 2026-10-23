@@ -1,0 +1,215 @@
+{
+  "rule": "RULE-367",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-367",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_accessors_revalidated": 5,
+    "native_accessor_bytes": 1234,
+    "receipt_captured_script_bytes": 5397,
+    "receipt_redecoded_span_bytes": 329,
+    "receipt_span_statements": 8,
+    "opaque_properties": 5,
+    "opaque_json_number_functions": 1,
+    "native_model_vectors": 270,
+    "native_total_pairs": 30,
+    "worker_raw_exact_rows": 270,
+    "new_regression_combinations": {
+      "receipt_matrix": 2160,
+      "refund_roundtrip": 60,
+      "total": 2220
+    },
+    "regression_before": {
+      "passed": 758,
+      "total": 760,
+      "failed": 2
+    },
+    "release_selftest": {
+      "passed": 760,
+      "total": 760,
+      "exit_code": 0
+    },
+    "scope": "Record current getTotalKreditCost clamped signed32 aggregate into Gotcha paid JSON, preserving existing direct/active skip branches. Known total accessor executed for30encoded pairs, opaque JSON-number contract controlled. Prior routing, following activation-max loop and full receive/JSON/crypto/frame lifetime not newly certified."
+  },
+  "authority": "Reused read-only ReceiveActionPlayCardFromHand5397B capture plus authoritative extracted asset/parsed instructions and installedPE. Re-decode329B/8statements3482..3811; known getTotalKreditCost UFunction header exactly matches native accessor mapping.5accessor backends1234B revalidated. No new live memory read/game call/injection/write.",
+  "finding": "At3602 inactive/nonpositive Gotcha activation branch calls current getTotalKreditCost, then3643/3680/3762 constructs numeric JSON and writes kreditsPayed. Engine recorded raw KreditCost aggregate instead. Native total clamps signed32(base+temp)0..99; erroneous record could later be used in refund. Existing timing remains receipt-time rather than notification-time.",
+  "changes": [
+    "Replace only local Gotcha receiver paid-field value with card.TotalKreditCost. Preserve current object lookup, Gotcha/local-direct gates, positive-activation deactivation branch, activation numbering, queue clearing and refund implementation.",
+    "Add2160receipt fixtures: both sides*6bases*5temps*3activation states*3prior-paid states*2hand/discard*2local-direct flags. Queue ordinary autoplay or direct rule first, then replace raw fee pair before receipt, preserving public37/-9. Check receipt-time clamp/overflow, absence versus existing negative/positive paid record, direct/active skip branches, unrelated JSON field17, resources unchanged at receipt, independent fee fields/snapshot, and drained-queue idempotence.",
+    "Add60two-round fixtures: activate/record with changed current raw pair, later change current fees17/-4, deactivate through normal autoplay and check refund uses stored clamped record (existing max-cap24), then receipt preserves record and independent fields."
+  ],
+  "model": {
+    "vectors": 270,
+    "digest": "2c0237df174d551462400a89ad791abf7984be776e575078f1e12d44e6d1837e",
+    "dimensions": "6bases[-3,0,99,105,INT_MAX,INT_MIN]*5temps[-4,0,5,1,-1]*3activation[-2,0,7]*3old-paid[absent,-7,9]",
+    "execution": "Interpret exactly8captured statements, with synthetic exit nodes1322/3811. getTotalKreditCost invokes actual installed-PE getter after controlled setters with key1=1/key2=0,salt fedcba98;30raw pairs. This avoids setter multiplication overflow while verifying compiled signed32sum-wrap and total clamp. Public object fees untouched; unrelated JSON data kept.",
+    "opaque": "5local property headers remain opaque pointer IDs.1JSON number-constructor target0x7ff495921ac0 has no captured header; it is not silently renamed. Its one-argument number contract comes from authoritative asset JsonMakeInt node3643 and is controlled in model. Known JsonMakeField also uses a controlled semantic contract; neither JSON implementation/serialization/aliasing nor crypto-integrity hashes are certified here.",
+    "boundary": "Activation>0 sets0 and exits1322 without changing paid presence/value; activation<=0 stores total then stops3811 before max-activation loop. activation_after_branch is intermediate and may still be negative, not final in-game activation. Earlier local-direct/lookup gates are tested in managed integration under existing implementation, not independently proven by this native span. None old-paid input denotes absent key, not explicit JSON null."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "receipt_matrix": 2160,
+    "refund_roundtrip": 60,
+    "total": 2220,
+    "before": "758/760pass,2new failures; example raw-3+-4 records-7 instead of0 and refund preparation records wrong value. Nonzero exit.",
+    "after": "760/760Release selftest,exit0."
+  },
+  "worker": {
+    "job": "20261024-033615-rule367-gotcha-paid-e8d2e2dc",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 270,
+    "raw_exact_rows": 270,
+    "id_normalization": false,
+    "generator_executed": true,
+    "scope": "Private supplied branch-state projection; primary independently interprets captured span with real PE total getter, validates every original row. Worker not rule authority/source editor/publisher."
+  },
+  "remaining": [
+    "Only fee-record value at known local Gotcha receipt branch is corrected. Full ReceiveActionPlayCardFromHand, remote/local routing, following max activation/UI branches, generic action/subaction receive and persistent frame/out ABI remain uncertified.",
+    "Opaque5property headers and1JSON-number function target not resolved; asset node supports controlled contract only. JSON native body, raw serialization and custom-object alias/lifetime remain open.",
+    "Extreme signed32 total overflow is verified under chosen valid key1=1 encoding; arbitrary encryption keys/multiplication overflow/hash validation and invalid-key sentinel behavior are separate boundaries.",
+    "Static fee lookup, whole UObject construction/default-copy, refresh diagnostic tail, suppression trailing phases and legacy aura/identity/nonbyte adapters remain pending. Single-card migration paused and fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\online-match-faction-raw-20261021.json",
+      "sha256": "39a03faf8987c076237c80c8306e6f19a9e1f15cc03d910d8bf4df1f5815d699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\gotcha-paid-total-cost-receipt-native-20261024.json",
+      "sha256": "df53e994582937d7ac2e8d4667612fa27a97d5126fb3b36cc48846f9891c2915"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\gotcha-paid-total-cost-native-model-20261024.json",
+      "sha256": "31b2d396154344dbe91a81851f7303cf3e3f9e17ee202f44697c7b42ffdd35a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule367-gotcha-paid.py",
+      "sha256": "1eb42cbedac46bcf200b360bbc93352f89e65adff84fb16d818a1e68eb656d79"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule367-gotcha-paid.py",
+      "sha256": "247c35b0b70b79f571362c8d323054b62cc2d634b727214fb2f20b7565a4e188"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule367.py",
+      "sha256": "4c2185aed49bc9f8dc09fc29c63d0a80901af811d1f38d36b4ea10a68426b563"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule367-verified-20261024.json",
+      "sha256": "8186457673949225e3c00edcd0c54c0c8f99dd04dcb4154d67c00062446f2672"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule367\\task.txt",
+      "sha256": "ccd50b89e317ebb21afac9a0722b40cddf7e7d5ba75323ba635d51a37b5389ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule367\\spec.json",
+      "sha256": "dffb81f320baf2ab587980d2ac85d5540df6179b782ffdbd967ab92d5aa42f02"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule367\\generator.py",
+      "sha256": "8ea4c7e397286b93b6ecdbc6f3b775000c19e38266abcfdd1e7263b16fc64ea0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule367\\cases.json",
+      "sha256": "8740285a25b61738e3e3439f4a33f574c81613bb8415d6f720a8c104dd324396"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule367\\primary-cases.json",
+      "sha256": "a00f5d2dd3ffd8b51fa6e592c070f58412b0f218174c561ead19262ec9758fee"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-033615-rule367-gotcha-paid-e8d2e2dc\\job.json",
+      "sha256": "a60c700248a1b2144c71b4348b39b4c3fedb8e8266b5bdd91edd094f2b35bd9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule367-selftest-before.log",
+      "sha256": "493ebb908e39a29d6572beb0e18e7931f1eacfe99f323b15969bd25fa13ec9b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule367-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule367-selftest.log",
+      "sha256": "c03b9fe7466751963f068baa0af5f964c60f882582f427101a3a96cd60a27699"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule367-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json",
+      "sha256": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.metadata.json",
+      "sha256": "35b5fb55478b4b3c5758b6a2e85bedf7c3ec35bcc83da07941635aa81af76f95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.uasset",
+      "sha256": "15d3218e69f1025de38f16430ca05cfed8df8445badeae043ebe681976a730d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.uexp",
+      "sha256": "f283c80509659a01713cf3ff4de8cb4ac74828f90bb1174b3d1fc49aafa90489"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "a81a82f1cb8c9844e968e87a7f7758f6813aeeb0449dbf7a60d4b467a6e9534c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "e7a5b57e711e47478e762ab98cf8e541dee8f91c0c632c15d965494fcd9cc143"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\logic-turn-boundaries-native-20261021.json",
+      "sha256": "b962877c1a4c6d6a9bfc71a4d4d4e58728b96f7aef81e9154d1980e312a15bb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    }
+  ]
+}

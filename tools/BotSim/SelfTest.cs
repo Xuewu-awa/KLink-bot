@@ -592,6 +592,8 @@ internal static class SelfTest
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
         new("生成候选判据：四张卡只比较基础费，忽略双方临时费", SpawnCheckUsesBaseKredit),
         new("生成候选判据：空池及多个候选的顺序边界", SpawnCheckBaseKreditPoolOrder),
+        new("反制接收已付费用：当前总费限幅/溢出及跳过分支", GotchaReceiptStoresTotalKredit),
+        new("反制退费：接收记录的总费用不随之后改费漂移", GotchaRefundUsesRecordedTotalKredit),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7519,6 +7521,68 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? GotchaReceiptStoresTotalKredit(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 99, 105, int.MaxValue, int.MinValue })
+        foreach (int temp in new[] { -4, 0, 5, 1, -1 })
+        foreach (int activation in new[] { -2, 0, 7 })
+        foreach (int? oldPaid in new int?[] { null, -7, 9 })
+        foreach (bool leaveHand in new[] { false, true })
+        foreach (bool directly in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.SetKredits(side, 10);
+            var other = state.CreateWithId("card_event_interception", side, 20, CardLocation.Discard, 0); other.GotchaActivated = 11;
+            var card = state.CreateWithId(other.Name, side, 60, side.HandOf(), 0); card.GotchaActivated = activation;
+            if (oldPaid is int paid) engine.Api.JsonSetInt(card, "kreditsPayed", paid); else card.CustomJson.Remove("kreditsPayed");
+            engine.Api.JsonSetInt(card, "_auditKeep", 17);
+            if (directly) engine.PlayCardDirectlyFromHand(card, false, 9004, -1);
+            else { state.AddAutoPlayCards(card.CardId); engine.ExecuteAutoPlayCards(); }
+            int activationBeforeReceipt = card.GotchaActivated, resources = state.Kredits(side);
+            bool hadPaid = card.CustomJson.ContainsKey("kreditsPayed"); int paidBefore = engine.Api.JsonGetInt(card, "kreditsPayed");
+            if (leaveHand) state.Move(card, CardLocation.Discard, notifyMoved: false);
+            // The receiver must read this pair now, rather than the one at notification time.
+            card.BaseKreditCost = basis; card.TemporaryKreditCost = temp; card.PublicKreditCost = 37; card.PublicKreditCostBuff = -9;
+            var frozen = card.Snapshot();
+            bool writesPaid = !directly && activationBeforeReceipt <= 0;
+            int expectedPaid = writesPaid ? Math.Clamp(unchecked(basis + temp), 0, 99) : paidBefore;
+            int expectedActivation = directly ? activationBeforeReceipt : activationBeforeReceipt > 0 ? 0 : 12;
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (card.CustomJson.ContainsKey("kreditsPayed") != (writesPaid || hadPaid) || engine.Api.JsonGetInt(card, "kreditsPayed") != expectedPaid
+                || engine.Api.JsonGetInt(card, "_auditKeep") != 17 || card.GotchaActivated != expectedActivation || state.Kredits(side) != resources
+                || card.BaseKreditCost != basis || card.TemporaryKreditCost != temp || card.PublicKreditCost != 37 || card.PublicKreditCostBuff != -9
+                || card.Location != (leaveHand ? CardLocation.Discard : side.HandOf()) || frozen.BaseKreditCost != basis || frozen.TemporaryKreditCost != temp)
+                return $"反制接收应记录当前限幅总费且保留跳过门 {side}/{basis}/{temp}/{activation}/{oldPaid}/{leaveHand}/{directly}: {engine.Api.JsonGetInt(card, "kreditsPayed")}/{expectedPaid}";
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (card.GotchaActivated != expectedActivation || engine.Api.JsonGetInt(card, "kreditsPayed") != expectedPaid)
+                return "反制接收队列排空后不得再次切换或重写已付费用";
+        }
+        return null;
+    }
+
+    private static string? GotchaRefundUsesRecordedTotalKredit(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 99, 105, int.MaxValue, int.MinValue })
+        foreach (int temp in new[] { -4, 0, 5, 1, -1 })
+        {
+            var (engine, state) = EmptyBoard(db); state.SetKredits(side, 10);
+            var card = state.CreateWithId("card_event_interception", side, 60, side.HandOf(), 0);
+            state.AddAutoPlayCards(card.CardId); engine.ExecuteAutoPlayCards();
+            card.BaseKreditCost = basis; card.TemporaryKreditCost = temp;
+            engine.ApplyPendingGotchaPlayReceipts();
+            int paid = Math.Clamp(unchecked(basis + temp), 0, 99);
+            if (card.GotchaActivated <= 0 || engine.Api.JsonGetInt(card, "kreditsPayed") != paid) return "反制激活接收没有记录当前总费";
+            state.SetKredits(side, 0); card.BaseKreditCost = 17; card.TemporaryKreditCost = -4;
+            state.AddAutoPlayCards(card.CardId); engine.ExecuteAutoPlayCards();
+            if (state.Kredits(side) != Math.Clamp(paid, 0, MatchEngine.MaxKreditCap)) return "反制撤销应按接收时记录费用退费，而非之后的当前费用";
+            engine.ApplyPendingGotchaPlayReceipts();
+            if (card.GotchaActivated != 0 || engine.Api.JsonGetInt(card, "kreditsPayed") != paid || card.BaseKreditCost != 17 || card.TemporaryKreditCost != -4)
+                return "反制撤销接收不得覆盖记录费用或当前独立费用字段";
         }
         return null;
     }
