@@ -1600,7 +1600,10 @@ public sealed class MatchEngine
             // Follow the execution-flow stack: clear/persist -> fields -> entry -> Alpine.
             if (Api.JsonClear(card, "countdown_timer")) Api.PersistCustomFields(card);
             card.EnteredPlayOnTurn = State.Turn;
-            card.KreditCost = card.IsSalvaged ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits;
+            // RULE-364: PlayCardDirectlyFromHand i=3385 calls only the
+            // current-base setter. Keep temporary cost, including movement-hook
+            // changes; this differs from ResetCardAttributes' two-field refresh.
+            card.BaseKreditCost = card.IsSalvaged ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits;
             card.CardSeen = false;
             ExecuteOnEnterPlayEvents(card, 2);
             if (card.Keywords.Contains(Keyword.Alpine)) Api.GiveAlpineBonus(card);

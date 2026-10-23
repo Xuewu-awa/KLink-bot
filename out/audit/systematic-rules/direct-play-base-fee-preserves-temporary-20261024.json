@@ -1,0 +1,198 @@
+{
+  "rule": "RULE-364",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-364",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "accessors_revalidated": 5,
+    "accessor_backend_bytes": 1234,
+    "direct_play_captured_script_bytes": 3490,
+    "direct_play_redecoded_span_bytes": 68,
+    "opaque_local_property_pointers": 5,
+    "native_vectors": 120,
+    "worker_raw_exact_rows": 120,
+    "new_regression_combinations": {
+      "ordinary_direct": 320,
+      "gotcha_early_return": 16,
+      "total": 336
+    },
+    "regression_before": {
+      "passed": 753,
+      "total": 754,
+      "failed": 1
+    },
+    "release_selftest": {
+      "passed": 754,
+      "total": 754,
+      "exit_code": 0
+    },
+    "scope": "Direct-play final base setter preserves temporary encrypted block/public pair. Runtime setter statement resolved; local names opaque, upstream static selection uses asset evidence and controlled model input. Not whole direct-play/static lookup, construction, physical lifetime/frame/crypto-integrity proof."
+  },
+  "authority": "Prior authoritative extracted asset/parsed bytecode plus existing read-only client script capture3490B and installed PE. Re-decode setter Context statement3385..3453=68B; known setAndEncryptKredit header exactly matches mapped native accessor capture. Five accessor wrapper/backend mappings1234B revalidated against installedPE SHA. No new process memory read, game call, injection or write.",
+  "finding": "PlayCardDirectlyFromHand final fee step invokes current-base setter only. This real native setter leaves current temporary encrypted20B block untouched. Simulator aggregate KreditCost assignment cleared TemporaryKreditCost, including movement callback changes. ResetCardAttributes follows a different verified two-component refresh and must not be generalized to direct play.",
+  "changes": [
+    "Change only MatchEngine.PlayCardDirectlyFromHand final fee assignment from aggregate KreditCost setter to BaseKreditCost. Preserve existing static base selection/salvage handling and timing before Method2entry, preserve current temporary/public pairs and source ledger.",
+    "Add320ordinary fixtures: both sides*4bases*5temps*2salvage*2frontline*2movement mutations. Movement callback can replace base and add2to temp; final step restores selected base but keeps latest temp. Verify foreign template temp-17 is not substituted, public37/-9 unchanged, source record references/ordinary and explicit zero fields unchanged, snapshot unchanged and no fee notification.",
+    "Add16Gotcha early-return fixtures: both sides*2rawbases*2rawtemps*2activation states; no final base restore when toggling countermeasure in hand."
+  ],
+  "evidence_limits": {
+    "runtime_statement": "Local property headers for5pointers were not captured in this reusable dataset. Names remain opaque prop_address labels; only function symbol/header and decoded statement shape are certified. Runtime context has actual null rvalue property; do not use the asset parser rvalue placeholder as authority.",
+    "upstream_input": "Asset bytecode3216 GetStaticKredits,3266 Min3,3308 SelectInt salvage establishes prior selection intent. Native model seeds selected value rather than executing full current runtime lookup; unknown lookup-function header and static lookup/cache implementation are not newly certified. This change does not alter selection logic.",
+    "native_model": "120vectors bases[-3,0,3,105]*temps[-4,0,5,99,123]*salvage2*keys[1,3,1939]. Controlled opaque argument slots dispatch decoded setter name into exact installed-PE setter; real getters decode and total-clamp. Hash import controlled0 and cookie stubbed; synthetic object salt fedcba98, key2-13,frame42. Temporary block20B byte-for-byte unchanged, writes confined to base block and known validity flag; public fields untouched. No real process execution or crypto-integrity/physical lifetime certification."
+  },
+  "worker": {
+    "job": "20261024-025847-rule364-direct-fee-226ce319",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 120,
+    "raw_exact_rows": 120,
+    "id_normalization": false,
+    "generator_executed": false,
+    "generator_note": "Worker interpreted process prohibition broadly and manually wrote120rows plus a generator with hardcoded immutable spec values. Primary accepted only JSON after independent real-PE model/row comparison, not a claim generator was executed or dynamically reads future spec edits.",
+    "scope": "Private projection only, not rule authority/source integration/publishing."
+  },
+  "regression": {
+    "new_tests": 2,
+    "new_combinations": 336,
+    "ordinary_direct": 320,
+    "gotcha_early_return": 16,
+    "before": "753/754pass,1new ordinary-direct failure (Left/-3/-4/False/False/False); nonzero exit.",
+    "after": "754/754Release selftest,exit0."
+  },
+  "remaining": [
+    "Full constructor/initialization encrypted numeric lifecycle still pending. Earlier direct-play temporary clearing gap superseded only for final known base setter step; whole direct-play/entry/input selection/metadata/frame/qqq/remote receiving not certified.",
+    "Current static GetStaticKredits implementation and unavailable5local property headers remain unresolved; opaque runtime pointers are not silently labelled from older asset names.",
+    "Reset refresh diagnostics tail/transitive collection functions, suppression5604/static lookup/trailing phases, arbitrary raw BuffMap import/alias and legacy identity/aura/nonbyte adapters remain open.",
+    "No version migration or historical replay authority; fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\direct-play-base-fee-setter-native-20261024.json",
+      "sha256": "0aeca702762f4971293497d4e4514a5465a67318ecaf95d0242b634993378590"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\direct-play-base-fee-setter-emulation-20261024.json",
+      "sha256": "ca7490bf3f10efdb1acc1d47b812cda4bb2da56b610cc73ebc81355987a6b765"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule364-symbols.py",
+      "sha256": "82fdd64a7728a71fc0efecc9a008bd3bff87785367956028ebab4d1589213bec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule364-fee-setter.py",
+      "sha256": "3aa8fdf706de6826b8b310fbe9056be563a5419bd92956c6b5418527a8b8c9f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-symbol-work.json",
+      "sha256": "bce9780ea49ad2b6c079dd0ef2a7886be2dba9c79acf83a8f5ed8c32d56da666"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule364-direct-fee.py",
+      "sha256": "008072b9947d046021f55e88cdf9553567f1ca752fc2519fc90ae5a1c884c363"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule364.py",
+      "sha256": "a1e4fe217ae5043c87ca30828c123d0f31a683a889900c26029a23c32563ceb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-verified-20261024.json",
+      "sha256": "849a38f651f17a47a9ed7dc324b338e8157afb6f952bc77a4a6733b38c8bbf5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule364\\task.txt",
+      "sha256": "bc1e3bc15759f3752cf24bff3066932eff4dfce0799f75a508c7dc9c50ded375"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule364\\spec.json",
+      "sha256": "0c16dcc7216131bb5e82b7d929b5ca755f9a6c20fff54eeb51284926a71f3efc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule364\\generator.py",
+      "sha256": "2429d45597c090c9d6a4bea2a3009c5ef5d0ec0d6408186fa97453ffca879e17"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule364\\cases.json",
+      "sha256": "2d2affc796c41ffda63fd37bd7f2c0d7fa7e310666254216d2ecd1b5aeded03a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule364\\primary-cases.json",
+      "sha256": "c5128025a4e5a52cd38e9f80fceb7cd524676600d2cc871ad8ad11bf09122706"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-025847-rule364-direct-fee-226ce319\\job.json",
+      "sha256": "0f309d93172588ac4a266b60715706883a8adf7196732a8c1d1d2e229398e6dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-selftest-before.log",
+      "sha256": "c9a45708cefe0bf04a93b7c5ffa982219ee5c40bcf9a1b65b4e88d5c64be3b08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-selftest.log",
+      "sha256": "7ab712c0032fc0ea57392d27b1d645e6ae33400602c9051c5eb269a4a2262bc6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule364-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "sha256": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.metadata.json",
+      "sha256": "fc9ab29ff2961086f3c9b9d1fe6bb086fb78a65d767fc023eedcac46d0238cd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset",
+      "sha256": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp",
+      "sha256": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "9e454af5a95d5cdf39973b34dc67bcb4076733a59b2ea2696d93879ae9945f2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "b049ff400a64166a602c2d922f9991c245934826145b82af0a691203de6b64c5"
+    }
+  ]
+}

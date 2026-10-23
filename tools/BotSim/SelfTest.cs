@@ -586,6 +586,8 @@ internal static class SelfTest
         new("公共费用来源形式：对象/整数等价，缺失来源拒绝", KreditPublicSourceForms),
         new("公共费用事件入口：来源参数、主体ID及自身/T45顺序", KreditPublicEventContinuation),
         new("重置费用：模板临时值/打捞与后续临时改费独立", KreditResetNumericRefresh),
+        new("直接出牌费用：只恢复基础值，保留临时值和移动回调变更", DirectPlayPreservesTemporaryKredit),
+        new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7513,6 +7515,64 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? DirectPlayPreservesTemporaryKredit(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 3, 105 })
+        foreach (int temp in new[] { -4, 0, 5, 99, 123 })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool mutateOnMove in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Kredits = basis, KreditsBuff = -17, Attack = 1, Defense = 5 };
+            card.Keywords.Clear(); card.IsSalvaged = salvaged;
+            card.BaseKreditCost = 17; card.TemporaryKreditCost = temp;
+            card.PublicKreditCost = 37; card.PublicKreditCostBuff = -9;
+            var permanent = new CardBuff { SourceCardId = 20, KreditCost = 2, KreditCostSetValue = 0 };
+            var temporary = new CardBuff { SourceCardId = 20, Temporary = true, KreditCost = -2, KreditCostEmptyDetail = 0 };
+            card.BuffsBySource[(20, false)] = permanent; card.BuffsBySource[(20, true)] = temporary;
+            var frozen = card.Snapshot(); int moved = 0; var priorMove = state.CardMoved;
+            state.CardMoved = (moving, oldLocation, newLocation, skip, reason) => {
+                priorMove?.Invoke(moving, oldLocation, newLocation, skip, reason);
+                if (moving != card || reason != CardMoveReason.PlayCardForce) return;
+                moved++;
+                if (mutateOnMove) { card.BaseKreditCost = 11; card.TemporaryKreditCost = temp + 2; }
+            };
+            bool result = engine.PlayCardDirectlyFromHand(card, frontline, 9004, -1);
+            int expectedBase = salvaged ? Math.Min(3, basis) : basis, expectedTemp = temp + (mutateOnMove ? 2 : 0);
+            if (!result || moved != 1 || card.BaseKreditCost != expectedBase || card.TemporaryKreditCost != expectedTemp
+                || card.TotalKreditCost != Math.Clamp(expectedBase + expectedTemp, 0, 99) || card.PublicKreditCost != 37 || card.PublicKreditCostBuff != -9
+                || !ReferenceEquals(card.BuffsBySource[(20, false)], permanent) || permanent.KreditCost != 2 || permanent.KreditCostSetValue != 0
+                || !ReferenceEquals(card.BuffsBySource[(20, true)], temporary) || temporary.KreditCost != -2 || temporary.KreditCostEmptyDetail != 0
+                || frozen.BaseKreditCost != 17 || frozen.TemporaryKreditCost != temp
+                || card.Location != (frontline ? CardLocation.BoardFrontline : side.HqOf())
+                || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionSetKreditCost"))
+                return $"直接出牌基础费 setter 不得覆盖临时值、公开值或账本 {side}/{basis}/{temp}/{salvaged}/{frontline}/{mutateOnMove}";
+        }
+        return null;
+    }
+
+    private static string? DirectGotchaPreservesKredit(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 105 })
+        foreach (int temp in new[] { -4, 5 })
+        foreach (bool active in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_event_interception", side, 60, side.HandOf(), 0);
+            card.BaseKreditCost = basis; card.TemporaryKreditCost = temp;
+            card.PublicKreditCost = 37; card.PublicKreditCostBuff = -9; card.GotchaActivated = active ? 1 : 0;
+            bool success = engine.PlayCardDirectlyFromHand(card, false, 9004, -1);
+            if (!success || card.Location != side.HandOf() || card.BaseKreditCost != basis || card.TemporaryKreditCost != temp
+                || card.PublicKreditCost != 37 || card.PublicKreditCostBuff != -9)
+                return "反制直接出牌提前返回不得进入普通单位费用恢复步骤";
         }
         return null;
     }
