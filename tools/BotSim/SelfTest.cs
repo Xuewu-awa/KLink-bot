@@ -582,6 +582,9 @@ internal static class SelfTest
         new("临时费用显式零键：删键/来源清理而不改费通知", KreditExplicitZeroWithdrawalMatrix),
         new("费用零键：普通及绝对路径、克隆复制与快照", KreditZeroKeyOrdinaryAndAbsolute),
         new("普通费用相抵：不产生显式零键存在标记", KreditZeroSumDoesNotCreatePresence),
+        new("公共费用入口：原生来源门/非存活额外门/账本及五字段通知", KreditPublicPermanentEntryMatrix),
+        new("公共费用来源形式：对象/整数等价，缺失来源拒绝", KreditPublicSourceForms),
+        new("公共费用事件入口：来源参数、主体ID及自身/T45顺序", KreditPublicEventContinuation),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -5737,7 +5740,7 @@ internal static class SelfTest
                 return $"测试卡 {name} 的卡面费用不是正数：{before}";
             }
 
-            engine.Api.ChangeKreditCost(card, -before - 1);
+            engine.Api.ChangeKreditCost(card, -before - 1, instigatorId: card.CardId);
             if (card.KreditCost != 0)
             {
                 return $"{name} 普通减费后应为 0，实际 {card.KreditCost}";
@@ -7509,6 +7512,116 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? KreditPublicPermanentEntryMatrix(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 99, 105 })
+        foreach (int temp in new[] { -4, 0, 5 })
+        foreach (int request in new[] { -2, 0, 2 })
+        foreach (int sourceId in new[] { -1, 0, 20, 60, 9999 })
+        foreach (bool buffable in new[] { false, true })
+        foreach (bool alive in new[] { false, true })
+        {
+            // IsAlive is location-based. The real buffability predicate only
+            // rejects unrevealed covert cards on board, so skip the impossible
+            // false-buffable/discarded combination in the controlled native model.
+            if (!alive && !buffable) continue;
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, alive ? side.HqOf() : CardLocation.Discard, 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            if (!buffable) { target.Keywords.Add(Keyword.Covert); target.IsRevealed = false; }
+            if (target.IsAlive != alive || CardApi.CanCardBeBuffed(target) != buffable) return "公共入口测试资格构造错误";
+            var current = new CardBuff { SourceCardId = sourceId, KreditCost = 2, KreditCostSetValue = 0 };
+            var temporary = new CardBuff { SourceCardId = sourceId, Temporary = true, HasZeroKreditCostEntry = true };
+            var foreign = new CardBuff { SourceCardId = 30, KreditCost = 5, OperationCostSetValue = 0 };
+            target.BuffsBySource[(sourceId, false)] = current; target.BuffsBySource[(sourceId, true)] = temporary; target.BuffsBySource[(30, false)] = foreign;
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp; target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            source.CardsBuffedByThisCard.Add(888); target.CardsBuffedByThisCard.Add(888);
+            bool changed = sourceId > 0 && buffable && request != 0;
+            int expectedBase = changed ? Math.Clamp(unchecked(basis + request), 0, 99) : basis;
+            var phases = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase"); phases.Add(phase);
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), phase == "own" ? sourceId : 60)) fault = "公共改费回调应携带原始来源/主体ID";
+                if (target.BaseKreditCost != expectedBase || target.TemporaryKreditCost != temp || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSetKreditCost") != 1) fault = "公共回调早于数值/通知";
+            };
+            engine.Api.ChangeKreditCost(target, request, sourceId);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            string[] expectedPhases = !changed ? Array.Empty<string>() : sourceId == 60 ? new[] { "other" } : new[] { "own", "other" };
+            var actualSource = sourceId == 20 ? source : sourceId == 60 ? target : null;
+            if (fault is not null || target.BaseKreditCost != expectedBase || target.TemporaryKreditCost != temp || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9
+                || !ReferenceEquals(target.BuffsBySource[(sourceId, false)], current) || current.KreditCost != (changed ? 2 + request : 2) || current.KreditCostSetValue != 0
+                || !ReferenceEquals(target.BuffsBySource[(sourceId, true)], temporary) || !temporary.HasZeroKreditCostEntry || current.HasZeroKreditCostEntry
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreign) || foreign.KreditCost != 5 || foreign.OperationCostSetValue != 0
+                || (actualSource is not null && !actualSource.CardsBuffedByThisCard.SequenceEqual(changed ? new[] { 888, 60 } : new[] { 888 }))
+                || !phases.SequenceEqual(expectedPhases) || notices.Length != (changed ? 1 : 0)
+                || (changed && !notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("kreditCost", Math.Clamp(unchecked(expectedBase + temp), 0, 99)),
+                    ActionValue2.Int("instigatorID", sourceId), ActionValue2.Int("costAdded", request), ActionValue2.Str("changeType", "permBuff") })))
+                return $"公共改费必须等于原生永久入口 {side}/{basis}/{temp}/{request}/{sourceId}/{buffable}/{alive}: {fault}";
+        }
+        return null;
+    }
+
+    private static string? KreditPublicSourceForms(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int request in new[] { -2, 0, 2 })
+        foreach (int form in Enumerable.Range(0, 4))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1); target.Keywords.Clear();
+            target.BaseKreditCost = 99; target.TemporaryKreditCost = 5;
+            source.CardsBuffedByThisCard.Add(888); target.CardsBuffedByThisCard.Add(888);
+            if (form == 0) engine.Api.ChangeKreditCost(target, request, source);
+            if (form == 1) engine.Api.ChangeKreditCost(target, request, target);
+            if (form == 2) engine.Api.ChangeKreditCost(target, request, (CardInstance?)null);
+            if (form == 3) engine.Api.ChangeKreditCost(target, request);
+            int id = form == 0 ? 20 : form == 1 ? 60 : 0; bool changed = id > 0 && request != 0;
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            if (target.BaseKreditCost != (changed ? Math.Clamp(99 + request, 0, 99) : 99) || target.TemporaryKreditCost != 5
+                || target.BuffsBySource.Count != (changed ? 1 : 0) || notices.Length != (changed ? 1 : 0)
+                || (changed && (target.BuffsBySource[(id, false)].KreditCost != request || notices[0].Values.Single(x => x.Name == "instigatorID").Value != id)))
+                return $"公共费用来源形式错误 {side}/{request}/{form}";
+        }
+        return null;
+    }
+
+    private static string? KreditPublicEventContinuation(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            target.BaseKreditCost = 7; target.TemporaryKreditCost = -4; if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var phases = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase"); phases.Add(phase);
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), phase == "own" ? sourceId : 60)) fault = "事件入口的参数必须是来源ID/变化卡ID";
+            };
+            engine.Api.FireKreditCostChanged(target, sourceId);
+            string[] expected = sourceId != 60 && !suppressed ? new[] { "own", "other" } : new[] { "other" };
+            if (fault is not null || !phases.SequenceEqual(expected) || target.BaseKreditCost != 7 || target.TemporaryKreditCost != -4
+                || target.BuffsBySource.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionSetKreditCost"))
+                return $"公共费用事件入口错误 {side}/{sourceId}/{suppressed}: {fault}";
         }
         return null;
     }
@@ -13373,7 +13486,7 @@ internal static class SelfTest
                     return p;
                 }),
             ("OnOtherCardKreditCostChanged", "card_unit_the_silent_seventh",
-                (e, s, p) => { e.Api.ChangeKreditCost(Plain(s, victim, 66), 1); return p; }),
+                (e, s, p) => { e.Api.ChangeKreditCost(Plain(s, victim, 66), 1, p); return p; }),
             ("OnOtherCardDealDamage", "card_unit_blenheim_mk_i",
                 (e, s, p) =>
                 {
@@ -30906,7 +31019,7 @@ internal static class SelfTest
 
         engine.Api.ChangeAttack(target, 1, source);
         engine.Api.ChangeDefense(target, 1, source);
-        engine.Api.ChangeKreditCost(target, 1);
+        engine.Api.ChangeKreditCost(target, 1, source);
         engine.Api.GiveKeyword(target, Keyword.Guard);
         engine.Api.InvokeByName("ChangeKreditCost", source,
             new object?[] { target, source.CardId, 1, 1, false, null }, ctx,
@@ -30931,7 +31044,7 @@ internal static class SelfTest
 
         engine.Api.ChangeAttack(target, 1, source);
         engine.Api.ChangeDefense(target, 1, source);
-        engine.Api.ChangeKreditCost(target, 1);
+        engine.Api.ChangeKreditCost(target, 1, source);
         engine.Api.GiveKeyword(target, Keyword.Guard);
         return target.Attack == attack + 1 && target.Defense == defense + 1
             && target.KreditCost == cost + 1

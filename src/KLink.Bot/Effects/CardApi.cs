@@ -2926,34 +2926,29 @@ public sealed partial class CardApi
         }
     }
 
+    /// <summary>Source-less legacy form: native positive-source gate rejects ID0.
+    /// Supply an explicit source object or raw ID to perform a permanent change.</summary>
     public void ChangeKreditCost(CardInstance target, int delta)
-    {
-        if (!target.IsAlive || !CanCardBeBuffed(target))
-        {
-            return;
-        }
+        => ChangeKreditCost(target, delta, 0);
 
-        int before = target.KreditCost;
-        target.KreditCost = Math.Max(0, target.KreditCost + delta);
-        _engine.FireSubAction("ZActionSetKreditCost", new[]
-        {
-            ActionValue2.Int("cardID", target.CardId),
-            ActionValue2.Int("kreditCost", target.KreditCost),
-        });
-        if (target.KreditCost != before)
-        {
-            FireKreditCostChanged(target, target.KreditCost);
-        }
+    public void ChangeKreditCost(CardInstance target, int delta, CardInstance? source)
+        => ChangeKreditCost(target, delta, source?.CardId ?? 0);
+
+    public void ChangeKreditCost(CardInstance target, int delta, int instigatorId)
+    {
+        // RULE-362: ordinary permanent native mode1, with the same raw-ID,
+        // buffability/zero gates, independent numeric fields, typed ledger,
+        // five-value notice and own/T45 continuation as Blueprint calls.
+        // Native does not add an IsAlive gate for an otherwise valid object.
+        DoChangeKreditCost(new EffectContext {
+            Engine = _engine, State = State, Self = State.ById(instigatorId), Controller = target.Owner },
+            target, new object?[] { target, instigatorId, delta, ChangeTypePermBuff, false, null });
     }
 
-    /// <summary>Legacy public adapter; native dispatcher uses ExecuteKreditCostChangedEvents instead.</summary>
-    public void FireKreditCostChanged(CardInstance card, int newCost)
-        => FireTrigger("OnOtherCardKreditCostChanged", card, card.Owner,
-            eventArgs: new object?[] { newCost }, eventSubject: card,
-            namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["cardChangingCost"] = newCost,
-            });
+    /// <summary>Event continuation only. Caller controls eligibility; argument
+    /// is the source ID, not resulting cost. No numeric mutation or notification.</summary>
+    public void FireKreditCostChanged(CardInstance card, int instigatorId)
+        => ExecuteKreditCostChangedEvents(card, instigatorId);
 
     // RULE-351: ChangeKreditCost1780..2456. Caller controls valueChanged and
     // ActionProcess. Own hook is skipped for self source or suppressed subject;

@@ -1,0 +1,176 @@
+{
+  "rule": "RULE-362",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-362",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_model_vectors": 720,
+    "worker_raw_exact_rows": 720,
+    "native_physically_realizable_rows": 540,
+    "new_regression_combinations": {
+      "permanent_entry": 1080,
+      "source_forms": 24,
+      "event_continuation": 12,
+      "total": 1116
+    },
+    "release_selftest": {
+      "passed": 751,
+      "total": 751,
+      "exit_code": 0
+    },
+    "scope": "Public explicit-source helper now uses known native permanent mode1 path and event-only helper known own/T45 continuation. Legacy no-source maps to rejected ID0. Controlled valid object/buffability/enum/container/frame/crypto interfaces; not full physical object-lifetime proof or complete constructor/reset/force-play lifecycle."
+  },
+  "authority": "Reused read-only captured Blueprint bytes, independently redecoded8supporting functions19614B with FName/symbol headers and verified installedPE hash. Whole main2759B/type2ledger6267B/T45forward84B/query1174B exercised in controlled interpreter. No new live memory capture, process write, injection or client function execution.",
+  "problem": "Old public ChangeKreditCost flattened base+temporary via aggregate setter, used an extra IsAlive gate, skipped typed source ledger, emitted only2notification fields, gated events on resulting aggregate inequality and passed resulting cost instead of changed cardID to observers. Public FireKreditCostChanged invoked only generic observers with wrong payload.",
+  "changes": [
+    "Add explicit raw source-ID and source-object overloads. Route public ordinary permanent mutation into known DoChangeKreditCost mode1, skipCovertCheck=false, preserving independent raw base/temp, positive source-ID/buffability/input0 gates, typed current/foreign zero keys, reverse relations, five notification fields and own/T45 continuation.",
+    "Remove extra public IsAlive gate for otherwise valid objects; native admission is not physical lifetime certification. Discarded valid objects can pass actual buffability predicate.",
+    "Public event-only helper now delegates ExecuteKreditCostChangedEvents: own(sourceID) unless self-source/suppressed, then fresh T45 observer query with changedCardID. It itself writes no fee fields/ledger and emits no fee notification; caller is responsible for eligibility.",
+    "Migrate four existing SelfTest calls to explicit source. Add3regressions/1116combinations."
+  ],
+  "api_contract": {
+    "breaking_behavior": "Two-argument ChangeKreditCost(target,delta) is retained but now passes ID0 and performs no change. Null source object also maps to ID0. Callers must supply an explicit source object or raw positive ID. FireKreditCostChanged integer argument now means instigatorID, not newCost. No guessed source.",
+    "static_inventory": {
+      "scope": "Static C# direct calls in src/tools only; external/dynamic consumers not certified",
+      "matches": [
+        "src\\KLink.Bot\\Effects\\CardApi.cs:2945:            FireKreditCostChanged(target, target.KreditCost);",
+        "src\\KLink.Bot\\Effects\\CardApi.cs:2950:    public void FireKreditCostChanged(CardInstance card, int newCost)",
+        "tools\\BotSim\\SelfTest.cs:5740:            engine.Api.ChangeKreditCost(card, -before - 1);",
+        "tools\\BotSim\\SelfTest.cs:13376:                (e, s, p) => { e.Api.ChangeKreditCost(Plain(s, victim, 66), 1); return p; }),",
+        "tools\\BotSim\\SelfTest.cs:30909:        engine.Api.ChangeKreditCost(target, 1);",
+        "tools\\BotSim\\SelfTest.cs:30934:        engine.Api.ChangeKreditCost(target, 1);"
+      ]
+    },
+    "production_direct_call_sites_found": 0,
+    "external_or_dynamic_consumers_certified": false
+  },
+  "models": {
+    "rows": 720,
+    "dimensions": "4rawbases*3rawtemps*3requests*5sources*2buffability*2alive",
+    "digest": "d068425191d1ce3de873adb0e0986f3ae235c0f0a92b91b61b367e627af224e9",
+    "scope": "Native mode1/type2ledger/T45; accepted=source>0&&buffable; changed=accepted&&request!=0 independent of total equality. Base clamps0..99 for changed, temporary/public fields independent. Current permanent2/temporary0/SetValue0 and foreign30 permanent5/operationSetValue0; cancellation removes selected permanent key, preserves other explicit zero keys. Existing/missing/self sources and reverse arrays, notify-before-own/T45, raw request/source/changed ID.",
+    "physical_limit": "alive is a supplied object annotation not queried by native function; buffability primitive is controlled independently.180false-buffable/dead combinations cannot be produced by real location-based predicate, hence540realizable native rows mirrored on both sides in1080managed cases. Not null/dangling UObject or process-lifetime proof. Validity/frame/crypto/container/enum interfaces controlled."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "combinations": 1116,
+    "permanent_entry": 1080,
+    "source_forms": 24,
+    "event_only": 12,
+    "release_passed": 751,
+    "release_total": 751,
+    "exit_code": 0,
+    "scope": "Both sides; valid discarded targets/sources, covert rejection, missing/raw nonpositive IDs, nonzero unchanged clamps, source typed ledger/record identity/zero keys/reverse, five notification values before callbacks and source/subject IDs.24object/null/legacy forms;12suppression/self-source event-only continuations. Callback probes can generate unrelated actions; assert absence only of fee notification for event-only helper."
+  },
+  "worker": {
+    "job": "20261024-023635-rule362-public-fee-entry-a25cf256",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 720,
+    "raw_exact_rows": 720,
+    "id_normalization": false,
+    "scope": "Private supplied projection only; primary independently ran captured whole Blueprint functions and verified every original row. Worker not authoritative, no source integration or publishing delegated."
+  },
+  "remaining": [
+    "Full encrypted constructor/reset/force-play current numeric lifecycle, suppression5604/static lookup/trailing phases and arbitrary raw map aliases/metadata/import remain incomplete.",
+    "Legacy handwritten aura/identity and nonbyte adapters retain separately uncertified compatibility behavior; this rule supersedes prior public fee-helper pending statements only for explicit-source permanent contract and known event continuation.",
+    "Persistent execution frames/locals/out qqq, arbitrary native object lifetime/physical TSet/crypto integrity/execution routing and external API consumers not certified. Managed no-source rejection is an intentional API policy based on native positive-ID gate, not proof an equivalent source-less native overload exists.",
+    "Card version migration paused; no historical replay authority and fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule362-public-mode1.py",
+      "sha256": "62748d913846d945fd4e859930bf72e79bace926d53fa634e10ef5bac13c9711"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule362.py",
+      "sha256": "0ab4e8b81dfb6af6aaa2d1c410752daacd53d7130fa25e719e9057e2273aec6f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule362-verified-20261024.json",
+      "sha256": "a35504e06cdceb2ec681b6ed46980862dcbbff25590bec69fd012c8181187049"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule362-callers-before.json",
+      "sha256": "e66e873a215af9b9a531f2fd30a46779be1243196ffcb97237f7cfe22ada86a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-public-mode1-contract-native-model-20261024.json",
+      "sha256": "a6f9e60c310866ea63df753a85e13d5874167081e22e8db2bf7d86c8ed15073b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule362\\spec.json",
+      "sha256": "91667f2a733fc1b068fc3ab3ec3a4b86eca02b5137c38e17c2c0bb6d09f9a9be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule362\\task.txt",
+      "sha256": "d1925913bb2b945c7de6329e7341520d0d329243963397965474a4252112f12d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule362\\cases.json",
+      "sha256": "84819d8651ebbb9e31552fae3f39f39d66e9547e6c7b6ca8b46747dbe6ae4c38"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule362\\generator.py",
+      "sha256": "bed697fa1095a8fa643e5e9c327bbd47eb9934c5d5f43ba17f5a13914a827bdc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule362\\primary-cases.json",
+      "sha256": "f077ee3d4d9726d3c59aa63e5d4466b1dcd4218d4a123176989b167a76f11a9e"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-023635-rule362-public-fee-entry-a25cf256\\job.json",
+      "sha256": "24423035ce11661143f760573008cfc40e3a09ad68340269cdb6d7168cbfff0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule362-selftest.log",
+      "sha256": "8f2cc72b5348b398de32c2261845a159db9782280df8a8fe928d504c9697489e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule362-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "e62e6f39cc55c31d82bdcc82dee43795be0046834bf0f4f96a63dafd9721d6ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1f019d427a9ef511e08b333b10fe8dbb50952ce3984d5775fb64ffa702f6f761"
+    }
+  ]
+}
