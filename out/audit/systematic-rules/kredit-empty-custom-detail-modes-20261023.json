@@ -1,0 +1,216 @@
+{
+  "rule": "RULE-360",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-360",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_custom_detail_vectors": 2916,
+    "worker_raw_exact_rows": 2916,
+    "new_regression_combinations": {
+      "ledger": 5832,
+      "presence_lifecycle": 36,
+      "total": 5868
+    },
+    "release_selftest": {
+      "passed": 745,
+      "total": 745,
+      "exit_code": 0
+    },
+    "scope": "Fee6/7/8 key kredit_ independent of numeric cost. Add0/remove/accumulate with zero-sum deletion, current reverse and foreign preservation. Fresh main local false, customAdd frame0/output0 explicitly controlled. Arbitrary frame payload/nonempty custom details, generic ledger removed out marshaling, physical aliases and zero-present temporary fee keys not certified."
+  },
+  "authority": "Reuse authoritative read-only Blueprint captures.8supporting functions19614B raw/FName/symbol-header redecoded with currentPE SHA. Direct fee main2759B+type2 ledger6267B=9026B. T45 supports available but not called under this fresh-false mode path. No new process/battle capture, game invocation or process memory write.",
+  "native": "Fee main441 explicitly passes customDetail empty. Ledger6/7/8 build type prefix plus customDetail at2307..2439 => kredit_.6195 customAdd stores Temp_int_Variable_1 (fresh0).5862..6171 customRemove deletes key if found and returns negated previous value, including present0 removal.8 uses3025 accumulation and zero-sum key removal. All operate current source only, preserving unrelated/foreign records, pruning empty current map and synchronizing current reverse. Main has no numeric6/7/8 arm; fresh valueChangedfalse returns before numeric accessor/IsActionProcess/notice/hooks.",
+  "changes": [
+    "Add nullable CardBuff.KreditCostEmptyDetail for exact native key kredit_.0present differs from absent; field is not a numerical cost contribution. Extend IsEmpty, Clone and snapshot dictionary; existing deep managed copy uses clone.",
+    "Admitted fee modes6/7/8 invoke dedicated empty-detail ledger adapter and return without numerical aggregate reconstruction, notifications or callbacks.6 writes0 regardless request;7 removes nullable key;8 signed32 accumulation with sum0 deletion. Retain all unrelated typed fields and synchronize current source only.",
+    "Existing absolute fee2/3/5 cleanup preserves new key because it is unrelated and presence participates in IsEmpty. Nonempty-detail generic ChangeBuffsFromCards interface is not implemented by this change."
+  ],
+  "models": {
+    "vectors": 2916,
+    "dimensions": "9current masks*4foreign masks*3modes*3requests*3sources*3initial custom values",
+    "keys": [
+      "kredit_permBuff:2",
+      "kredit_SetValue:0",
+      "kredit_tempBuffGive:-4",
+      "attack_SetValue:0",
+      "Suppress:0",
+      "operationCost_SetValue:0",
+      "kredit_:[-3,0,5]"
+    ],
+    "current_masks": [
+      0,
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      127
+    ],
+    "foreign_masks": [
+      0,
+      1,
+      64,
+      127
+    ],
+    "scope": "Whole captured main/ledger. Target60 source20/self60/absent9999 foreign30. Current reverse starts[888,60] and removes60 only if current map empty; foreign[777,60] unchanged. Assert all maps, removed amount from native ledger, raw base105/temp-4 preserved, no notifications/hooks. Any numeric accessor or IsActionProcess call fails the model.",
+    "controlled": "Fresh main valueChangedfalse, ledger outputs/Temp_int_Variable0 and customAdd Temp_int_Variable_1=0 explicitly seeded. customDetail exactly empty matches main bytecode. Validity/buffability/source/enum/container/frame interfaces controlled. No arbitrary persistent frame or actual frame allocator/out marshaling proof.",
+    "harness": "Initial generated harness had a source-slicing syntax error from matching def scenario text inside a string; fixed extraction boundary before executing model. New model uses real customDetail parameter name (older noncustom models never read it); no authority data or expectations changed."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 5868,
+    "ledger": 5832,
+    "presence_lifecycle": 36,
+    "release_passed": 745,
+    "release_total": 745,
+    "exit_code": 0,
+    "scope": "Native2916dimensions*both sides5832: all typed maps, null vs zero key, isBuffedByCard/current reverse/foreign reverse, independent raw/public values, no actions or callbacks.36managed lifecycle cases both sides*temporary-slot flag*raw[-3,0,5]*absolute mode2/3/5 verify IsEmpty/clone/deep copy/snapshot, preservation under absolute cleanup and reset clearing while old snapshots/copies remain independent. Temporary-slot synthetic key placement is storage robustness, not native canonical projection proof."
+  },
+  "worker": {
+    "job": "20261023-230929-rule360-fee-custom-detail-104c484e",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 2916,
+    "raw_exact_rows": 2916,
+    "id_normalization": false,
+    "scope": "Private supplied map/reverse/removed/numeric/event projection only; source IDs explicitly specified after prior task ambiguity. Primary executes original captured whole functions independently, compares all raw rows, integrates and publishes. Worker not authority."
+  },
+  "remaining": [
+    "Fee raw present-zero kredit_tempBuffGive key presence/removal remains unrepresented. This adds empty-detail custom kredit_0, not every zero-valued key or arbitrary customDetail string.",
+    "Generic type2 ChangeBuffsFromCards nonempty custom details and full removed/out return marshaling remain open; native model verifies removed for7, fee numerical dispatcher does not use it. Out qqq/frame and actual transient/persistent initialization not certified; customAdd arbitrary stale integer payload not represented.",
+    "Managed source permanent/temporary projection, arbitrary duplicate raw keys, metadata/cardName/aliases, Suppress arbitrary frame payload, opaque old handwritten records and nonbyte compatibility paths remain incomplete.",
+    "Full encrypted constructor/reset/force-play fee chains, suppression5604/static lookup/trailing phases, legacy public/aura/identity adapters, crypto integrity/TSet/UObject lifetime and actual execution routing remain open.",
+    "Version migration paused; historical replays not authority; fully certified cards0. Earlier modes6/7/8 pending statements superseded only for this fee empty-detail path under stated fresh frame conditions."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-empty-custom-detail-native-model-20261023.json",
+      "sha256": "f03041a5be4f19a877bc52990c86e7adbec7884fe4296ce5c3b44ec78816434f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule360.py",
+      "sha256": "89adf401f7161b44651823e7ebff3e89ad3ee0ab614ee2672c9e65e4231e03ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule360-tests.py",
+      "sha256": "d68a5c96643c196e0048851dbe921bf031eb05860179af292d2bfb31214897d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule360-custom-detail.py",
+      "sha256": "73d99a3b641634a08dfe69c53f42e58b70f90653cdad31671eb76e5e0df4ef1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule360.py",
+      "sha256": "f8b11933036b32d018eeff307c8c5a2dd50d6f2c49d7ebd6f9b82cd90fb8529f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule360-verified-20261023.json",
+      "sha256": "2bae980a674d571561891408ed42672091ba9f54e9f204e005a4828d091eb43e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule360-selftest.log",
+      "sha256": "b340c80f761e3677aac9f195c0d000b0c79240843eac473800605fa47972b6af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule360-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule360\\spec.json",
+      "sha256": "e5d322840623f750efd9604cb91f81e0390e09ede204e3eb93ccdc0583f71072"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule360\\task.txt",
+      "sha256": "bf71cb1101ac3b94922f0d4cfd988541d4cef135afbd50c57f68353e1ab4eef3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule360\\cases.json",
+      "sha256": "c64e7bf0e99afe92ac1f92e33dab5abd45fb4427662512a4b7046e8b697b0c08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule360\\primary-cases.json",
+      "sha256": "9eb645bcbfe025be41c4b3c9d22cd4c47e85a978e8bae12f73e8bfa65f7b2b2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule360\\generator.py",
+      "sha256": "df99ae6352c69e3dcf6f00e4556dde3dd63d4d022b91e7ee1ea27f99d15ccf4a"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-230929-rule360-fee-custom-detail-104c484e\\job.json",
+      "sha256": "7cb1fbfa27b33216981881aacfc2d128efa611f65253e4a542fcd250e1197321"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "88d11c952b4b58bfa79af34b4c91b77b9020e449e006ef10827306ed6e9de0d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "f6874babf8eb31ade1a1ba0c34194716ea1d42299bbd271db42a40399de64e28"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1a416e2178b9842886c4d5a505b468f33570cefd08967c89bf7e29cc3680b74a"
+    }
+  ]
+}

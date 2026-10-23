@@ -4357,6 +4357,13 @@ public sealed partial class CardApi
             RecordAbsoluteKreditCostLedger(target, sourceId, rawAmount, changeType);
             return null;
         }
+        // RULE-360:6/7/8 use customDetail="", so only key "kredit_" is
+        // changed. The main numeric switch has no arm for these modes.
+        if (changeType is 6 or 7 or 8)
+        {
+            RecordKreditCostEmptyDetail(target, sourceId, rawAmount, changeType);
+            return null;
+        }
         // Native byte defaults9..255 have no ledger or numeric arm. Preserve
         // maps and reverse lists, and return under fresh local-frame semantics.
         if (changeType is >= 9 and <= byte.MaxValue) return null;
@@ -4443,6 +4450,24 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    // Native ledger6195 stores a fresh local0 for customAdd;5862 removes
+    // customRemove;3025 accumulates combatModify and removes zero sums. The
+    // fee wrapper always supplies empty customDetail; this is not a generic
+    // nonempty-detail API or a certification of arbitrary persistent frames.
+    private void RecordKreditCostEmptyDetail(CardInstance target, int sourceId, int amount, int changeType)
+    {
+        var buff = GetOrCreateBuff(target, sourceId);
+        if (changeType == 6) buff.KreditCostEmptyDetail = 0;
+        else if (changeType == 7) buff.KreditCostEmptyDetail = null;
+        else
+        {
+            int sum = unchecked((buff.KreditCostEmptyDetail ?? 0) + amount);
+            buff.KreditCostEmptyDetail = sum == 0 ? null : sum;
+        }
+        if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+        else SynchronizeBuffTarget(target, sourceId);
     }
 
     // RULE-358/359: type2 ledger2/3/5. Only2/3 rewrite the cached ORIGINAL
