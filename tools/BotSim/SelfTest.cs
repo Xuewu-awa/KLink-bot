@@ -513,6 +513,9 @@ internal static class SelfTest
         new("攻击SetValue：原始输入相等门与零差值通知，账本先处理", AttackSetRawEqualityEvents),
         new("攻击SetValue账本：当前旧结构回写、其他来源分类清理与反向名单", AttackSetTypedLedger),
         new("攻击SetValue零键：复制、快照、重置和临时撤销保持独立", AttackSetZeroKeyLifecycle),
+        new("maxAttack独立字段：原始读写、复制、快照、重置与初始化", MaxAttackFieldLifecycle),
+        new("maxAttack写入门：永久增减/绝对设值更新，临时与零输入保持", MaxAttackMutationBoundary),
+        new("maxAttack静态对象：2019资产包装保留原生零默认", StaticMaxAttackDefaults),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -6008,6 +6011,87 @@ internal static class SelfTest
             return new AuditProbeCleanup(() => { second.Dispose(); first.Dispose(); });
         }
         catch { first.Dispose(); throw; }
+    }
+
+    private static string? MaxAttackFieldLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int maximum in new[] { -100, 0, 7, 99 })
+        foreach (int basis in new[] { 0, 10, 99 })
+        foreach (int temp in new[] { -3, 0, 105 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            if (card.MaxAttack != card.Definition.Attack) return "动态初始化maxAttack应取卡面基础攻击";
+            card.MaxAttack = maximum; card.BaseAttack = basis; card.TemporaryAttack = temp; card.PublicAttack = 42; card.AttackBuff = -9;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "maxAttack" }, null, -1, "__max", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "__max");
+            if (!Equals(result["__max"], maximum)) return "maxAttack读取不得代理基础/临时/公开攻击";
+            var copy = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { card })!;
+            var snapshot = card.Snapshot(); string before = state.SnapshotJson();
+            copy.MaxAttack++;
+            if (card.MaxAttack != maximum || copy.BaseAttack != basis || copy.TemporaryAttack != temp || snapshot.MaxAttack != maximum)
+                return "maxAttack复制/快照未独立保存";
+            card.BlueprintVariables["maxAttack"] = 999;
+            var write = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = maximum + 1 }, null, -1, "maxAttack", null) { DestinationScope = "instance" },
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+            engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(write, 0), ctx, null);
+            if (card.MaxAttack != maximum + 1 || card.BlueprintVariables.ContainsKey("maxAttack") || state.SnapshotJson() == before
+                || card.BaseAttack != basis || card.TemporaryAttack != temp || card.PublicAttack != 42 || card.AttackBuff != -9 || snapshot.MaxAttack != maximum)
+                return "maxAttack实例写入须独立、清影子并进入指纹";
+            card.IsSalvaged = temp > 0; card.ResetAttributes();
+            if (card.MaxAttack != (card.IsSalvaged ? 1 : card.Definition.Attack) || card.BaseAttack != card.MaxAttack || card.TemporaryAttack != 0)
+                return "普通/打捞重置maxAttack不一致";
+        }
+        return null;
+    }
+
+    private static string? MaxAttackMutationBoundary(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterChangeAttack";
+        using var probes = InstallAttackChangeProbes();
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        var cacheStep = new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "maxAttack" }, null, -1, "_auditAttack_maxAttack", null) { DestinationScope = "instance" };
+        locals[own] = new[] { cacheStep }.Concat(locals[own].Where(x => x.Function != "DrawCardsFromDeckBySide").Select((x, i) => x with { Index = i + 1 })).ToArray();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { 0, 1, 10, 99 })
+        foreach (int temp in new[] { -3, 0, 105 })
+        foreach (int maximum in new[] { -7, 0, 123 })
+        foreach (int amount in new[] { -3, 0, 1, 10, 99, 105 })
+        foreach (int mode in new[] { 0, 1, 2, 4 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            var card = state.CreateWithId(name, side, 60, side.HqOf(), 99);
+            card.Definition = new CardDefinition { Name = name, Type = "fighter" }; card.Keywords.Clear();
+            card.BaseAttack = basis; card.TemporaryAttack = temp; card.MaxAttack = maximum;
+            if (mode == 4) card.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Attack = amount, Defense = 1 };
+            engine.Api.InvokeByName("ChangeAttack", card, new object?[] { card, 20, amount, mode, true, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool continued = mode == 2 ? basis != amount : amount != 0;
+            int expected = mode == 1 && amount != 0 ? Math.Clamp(basis + amount, 0, 99)
+                : mode == 2 && basis != amount ? Math.Clamp(amount, 0, 99) : maximum;
+            if (card.MaxAttack != expected || (continued && !Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_maxAttack"), expected))
+                || (!continued && card.BlueprintVariables.ContainsKey("_auditAttack_maxAttack")))
+                return $"maxAttack门/回调时序错误 mode={mode},base={basis},temp={temp},request={amount},oldMax={maximum},actual={card.MaxAttack},expected={expected}";
+        }
+        return null;
+    }
+
+    private static string? StaticMaxAttackDefaults(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("NativeStaticCardInstance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        foreach (var definition in db.All)
+        {
+            var card = (CardInstance)method.Invoke(null, new object[] { definition })!;
+            if (card.MaxAttack != 0 || card.PublicAttack != definition.Attack || card.BaseAttack != definition.Attack)
+                return $"静态资产maxAttack应独立为0：{definition.Name}";
+        }
+        return null;
     }
 
     private static string? AttackSetRawEqualityEvents(CardDatabase db)
@@ -16122,7 +16206,7 @@ internal static class SelfTest
             if (result["staticCard"] is not CardInstance card) return $"lookup missing for known {name}";
             if (card.Owner != Side.NotAvailable || card.OriginalOwner != Side.NotAvailable
                 || card.CardId != 0 || card.Location != CardLocation.NotAvailable || card.LocationNumber != 0
-                || card.EnteredPlayOnTurn != 0 || card.MaxDefense != 0)
+                || card.EnteredPlayOnTurn != 0 || card.MaxDefense != 0 || card.MaxAttack != 0)
                 return $"static raw state {side}/{name}: owner={card.Owner}, enter={card.EnteredPlayOnTurn}, maxDefense={card.MaxDefense}";
             if (engine.Api.InvokeByName("HasAttackLeft", card, Array.Empty<object?>(), ctx, out _) is not false
                 || engine.Api.InvokeByName("HasMovementLeft", card, Array.Empty<object?>(), ctx, out _) is not false)

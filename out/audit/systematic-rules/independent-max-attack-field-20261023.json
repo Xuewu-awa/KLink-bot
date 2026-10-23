@@ -1,0 +1,208 @@
+{
+  "rule": "RULE-331",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": true,
+  "read_only_game_access": true,
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-331",
+    "fresh_live_capture": true,
+    "pid": 24220,
+    "turn": 11,
+    "battle_cards": 82,
+    "initialized_cards": 80,
+    "matched_max_base_initialized": 80,
+    "crc_groups_verified": 160,
+    "static_asset_count": 2019,
+    "static_max_nonzero": 0,
+    "fiat": {
+      "public_attack": 1,
+      "max_attack": 2,
+      "decrypted_base": 2
+    },
+    "field_offset": "0x2a4",
+    "native_models": {
+      "relative": 3000,
+      "absolute_modes_2_3_5": 2880
+    },
+    "native_slices": {
+      "copy": 288,
+      "reset": 54,
+      "total": 342
+    },
+    "worker_exact_inventory_nodes": 10,
+    "regression_combinations": {
+      "lifecycle": 72,
+      "mutations": 1728,
+      "static_wrappers": 2019,
+      "total": 3819
+    },
+    "release_selftest": {
+      "passed": 683,
+      "total": 683,
+      "exit_code": 0
+    },
+    "default_enum_correction": "Only2/3/5 jump to855 absolute branch; default854 pops execution flow. Earlier grouping of default with absolute modes is withdrawn; unassigned valueChanged/frame initialization or return ABI is not certified here.",
+    "scope": "Independent raw MaxAttack field, current battle/static sample and known ordinary/SetValue writes, copy/reset/read/write/snapshot paths. Dynamic creation initialization follows observed battle baseline; complete CreateCard helpers, legacy suppression/unsuppression, Reidentify and special-mode production routing remain uncertified."
+  },
+  "authority": "Fresh live field property header confirms BaseCardObject maxAttack+0x2a4; exact PID/module/executable guard, stable per-card rereads and battle integer-map replay.80 initialized cards max matches base and160 crypto CRC groups independently checked;2 zero-divisor holders excluded from this relation.2019 static asset max fields are0, not assumed CDOs. Captured CopyData/Reset bytes rechecked against exact installed PE. No historical replay authority.",
+  "changes": [
+    "Independent MaxAttack field; Blueprint raw get/set, explicit assignment removes duplicate shadow variable.",
+    "Ordinary permanent nonzero delta writes clamped new base to MaxAttack before after-event callbacks. Ordinary zero request and temporary give/remove retain old MaxAttack.",
+    "SetValue writes clamped base/MaxAttack only if raw request differs from base; raw equality retains independent old cache.",
+    "Copy and snapshot store MaxAttack independently. Normal/salvage Reset sets template attack or1. Initialization sets dynamic projection from definition; native static getter projection overrides0 to match2019 live assets. Complete dynamic CreateCard helper chain is not certified."
+  ],
+  "corrected_prior_assumption": "Prior RULE329/RULE330 remaining-work wording grouped default enum branch with2/3/5 absolute setters. Actual SwitchEnum nodes705/750/840 target855 only for2/3/5; default854 PopExecutionFlow. Grouping is withdrawn. Default/unrecognized mode frame-initialization, valueChanged and return/output ABI are NOT inferred or certified here. Historical artifacts retained unchanged for hash integrity.",
+  "regressions": {
+    "new_cases": 3,
+    "new_combinations": 3819,
+    "lifecycle": 72,
+    "known_mode_cache_writes": 1728,
+    "static_wrappers": 2019,
+    "release_passed": 683,
+    "release_total": 683,
+    "exit_code": 0,
+    "native_relative_model": 3000,
+    "native_absolute_modes_2_3_5_model": 2880,
+    "native_total": 5880,
+    "native_copy_reset_slices": 342
+  },
+  "worker": "Private provided-file mechanical inventory10 dictionary nodes, independently recomputed exactly; includes symbol/name dictionaries and nested AST nodes, NOT10 executable writes or a whole-client field inventory. No repository write/publishing delegated.",
+  "remaining": [
+    "Mode3/5 numerical absolute branch confirmed but production dispatch/typed ledger still follows incomplete legacy route.",
+    "Default/unrecognized enum branch and unassigned/frame-default output behavior remain pending; not an absolute setter.",
+    "MaxAttack updates in legacy suppression/unsuppression,511th permanent shortcut and Reidentify compatibility path remain uncertified; this is not all-writer completion.",
+    "Complete dynamic construction/transitive helpers and receive-side refresh remain pending; live snapshot does not prove all transition invariants.",
+    "Native object validity vs IsAlive, ordinary zero-key presence and physical native map order remain incomplete.",
+    "No encrypted memory storage/CRC diagnostics/divisor-zero lifecycle simulation. Single-card version migration paused and full semantic certification remains0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule331-max-attack.py",
+      "sha256": "7fe2b2f51c336e3ec59f9699e12dc8e41029addf7b2fe886f05a73d8806ab242"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule331-static-max-attack.py",
+      "sha256": "8080f57853ce8b63036eada1be7d453bd9da21a70fdb08407b5b656d44daaf31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule331-max-attack.py",
+      "sha256": "ff94be40bbc61c4873bcd3942ae8e95c247fefe0cb4f3d6ce6c0361a3fe13313"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule331-max-attack-verified-20261023.json",
+      "sha256": "8fade72fe694b16432814f98aab4f16a490c2edb9f8935886986d431d85e97b8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-max-public-crypto-battle-20261023.json",
+      "sha256": "11fba11195cd1dbde5de42ba74aaf05f9035de3fa1f2b5c34739fd767b53a2f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-max-static-defaults-20261023.json",
+      "sha256": "0865b375d9f7ade494724c843ef72312c49742fa119e2b17241738ac6b9c3817"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule331-relative-cache.py",
+      "sha256": "9248cb6b76df0f96e78a57bea564de718fd654b6bf0a9762157b6d63ec772ca1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule331-absolute-cache.py",
+      "sha256": "03c2c3909702ac657bbfb12265dbd140af9bb946ca45f34c9c70a57b736c3d5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule331-copy-reset-slices.py",
+      "sha256": "c673e579b7cb9c737346fd1501b02f6e83e12048a30a6f69022532612a6bc85a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-max-relative-native-model-20261023.json",
+      "sha256": "68718948361e5de7cbf1405388ec982236a4f6d2f4d99639876530fdfc38ce35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-max-absolute-native-model-20261023.json",
+      "sha256": "9c65d3cfe1010377879cb345f39c79d23e4430194562e9b998ac4f076c739eca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-max-copy-reset-slice-model-20261023.json",
+      "sha256": "6ed6da3f80e4dbdea32a474e6d342e496c6a7218a0e2e2a10f99f5254f09d284"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\temporary-expiry-registration-native-20261023.json",
+      "sha256": "80e06ba99c5a630df2d8beaf3385b48dbe6fc272a102c87238f9e9c05907f30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-native-numeric-accessors-pe-20261023.json",
+      "sha256": "168d4efbfdeea196cba3daf84835f3fe802762f37d667f2649732cdd08c623c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule330-set-attack.py",
+      "sha256": "c63ab8561299512820d66045ba29dee8a6159898565741b40193e60d442af029"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-trigger-sets.py",
+      "sha256": "9713ff0b8d53cf76cf915ce496a790c1156b97d86181ce4062a1032445dedf6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule331-selftest-release.log",
+      "sha256": "4a97256e348afb9ea68bbd4ed4dc58333b66bca9aacfb268bdf495c68795111b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule331-selftest-release.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule331\\task.txt",
+      "sha256": "99f6766e1f7c5fbe6c08b420519aaa0c5d6aeeff83d3201799d2367686baab85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule331\\inputs.json",
+      "sha256": "386766bd21f34542a6a79b9ca73ba954ba619c24f02c14485fb59033241a4d1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule331\\refs.json",
+      "sha256": "9c08fd248b714c54eeae42e8886edc1b25eaa1e0df34f46c1757cceb00575a10"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-092509-rule331-max-attack-inventory-f9867c31\\job.json",
+      "sha256": "f1a2b035a9bb541cdd759366e5345317fc9c215c2b358cfde51cf7bce7d7e948"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "530723499648c17a57b9ec6a9f365cdcbf4af3c53b7f5e910593c4aa02ae7d40"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "f86e748703bd4c91765a3d074f6c14a09b1274c2fc61bdbd3b9e0d8d17e8171f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "3ddc79863550b769a66b8e533a024bbdeea053e9a1201e061724de3d4c7fd158"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "3f1636cceac571f16e1157cab5f92fc0dfef2fa69d587538b9e232da90eec8ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7c0ad42c7a8a8f81b32c975289e7012fa3627b851ed94b1b003ee96916957d7a"
+    }
+  ]
+}

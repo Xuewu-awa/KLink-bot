@@ -70,6 +70,8 @@ public sealed class CardInstance
     // RULE-329: encrypted base and temporary groups are independent. The
     // visible getter clamps their sum; temporary attack may be negative.
     public int BaseAttack { get; set; }
+    // Reflected native +0x2a4. This cache is not derived from either attack group.
+    public int MaxAttack { get; set; }
     public int TemporaryAttack { get; set; }
     public int Attack
     {
@@ -678,6 +680,7 @@ public sealed class CardInstance
     public void InitializeFromDefinition()
     {
         PublicAttack = Definition.Attack;
+        MaxAttack = Definition.Attack;
         AttackBuff = 0;
         InitializeRuleAttributesFromDefinition();
         SelectTargetOnPlayedFromHand = Definition.SelectTargetOnPlayedFromHand;
@@ -725,7 +728,7 @@ public sealed class CardInstance
         // Native ResetCardAttributes restores +0x504 from the card template;
         // +0x50c is not overwritten by that function.
         CardCustomNames.Assign(this, "customName1", Definition.CustomName1);
-        Attack = IsSalvaged ? 1 : Definition.Attack;
+        Attack = MaxAttack = IsSalvaged ? 1 : Definition.Attack;
         // Native ResetCardAttributes writes the public pair independently.
         PublicAttack = IsSalvaged ? 1 : Definition.Attack;
         AttackBuff = 0;
@@ -899,6 +902,7 @@ public sealed class CardInstance
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
             BaseAttack = BaseAttack,
+            MaxAttack = MaxAttack,
             TemporaryAttack = TemporaryAttack,
             PublicAttack = PublicAttack,
             AttackBuff = AttackBuff,
@@ -1099,6 +1103,7 @@ public sealed record CardSnapshot(
     Dictionary<string, string> CustomJson)
 {
     public int BaseAttack { get; init; }
+    public int MaxAttack { get; init; }
     public int TemporaryAttack { get; init; }
     public int PublicAttack { get; init; }
     public int AttackBuff { get; init; }

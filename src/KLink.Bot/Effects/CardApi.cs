@@ -1344,6 +1344,7 @@ public sealed partial class CardApi
             Location = source.Location,
             LocationNumber = source.LocationNumber,
             BaseAttack = source.BaseAttack,
+            MaxAttack = source.MaxAttack,
             TemporaryAttack = source.TemporaryAttack,
             PublicAttack = source.PublicAttack,
             AttackBuff = source.AttackBuff,
@@ -2574,7 +2575,7 @@ public sealed partial class CardApi
         int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
         int previousAttack = target.Attack;
         if (temporary) target.TemporaryAttack = unchecked(target.TemporaryAttack + delta);
-        else target.BaseAttack = Math.Clamp(unchecked(target.BaseAttack + delta), 0, 99);
+        else target.BaseAttack = target.MaxAttack = Math.Clamp(unchecked(target.BaseAttack + delta), 0, 99);
         if (source is not null || instigatorId is > 0)
         {
             var buff = GetOrCreateBuff(target, sourceId, temporary);

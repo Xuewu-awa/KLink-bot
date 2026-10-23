@@ -3199,6 +3199,7 @@ public sealed partial class CardApi
         var card = TemplateInstance(definition, Side.NotAvailable);
         card.EnteredPlayOnTurn = 0;
         card.MaxDefense = 0;
+        card.MaxAttack = 0;
         card.SetRemainingAttacks(0);
         // This bool is the headless representation of the native0/1 movement
         // quota, not an assertion that the static object actually moved.
@@ -4177,7 +4178,7 @@ public sealed partial class CardApi
         // Compare the RAW requested value, after ledger processing. A request
         // of105 at base99 continues even though the final visible delta is0.
         if (target.BaseAttack == value) return;
-        target.BaseAttack = Math.Clamp(value, 0, 99);
+        target.BaseAttack = target.MaxAttack = Math.Clamp(value, 0, 99);
         int changed = target.Attack - previous;
         if (!skipAction && !IsLocatedInDeck(target))
             NotifyAttackChanged(target, changed, sourceId, ChangeTypeSetValueReal);
