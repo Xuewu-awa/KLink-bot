@@ -544,6 +544,8 @@ internal static class SelfTest
         new("行动费公开入口：累计抵消、零请求与永久来源关系", OperationCostPublicLedgerLifecycle),
         new("行动费独立数值：原生参考表、溢出、原值比较与重算隔离", OperationCostSplitNumericReference),
         new("行动费独立数值：初始化、重置、复制和快照保留分量", OperationCostSplitLifecycle),
+        new("行动费绝对账本：全局清理、原始记录回写及mode5无新键", OperationCostAbsoluteLedgerMatrix),
+        new("行动费共存：SetValue零键、普通抵消、临时撤销和mode5清理", OperationCostTypedCoexistence),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7142,6 +7144,117 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? OperationCostAbsoluteLedgerMatrix(CardDatabase db)
+    {
+        var zero = new CardBuff { SourceCardId = 20, OperationCostSetValue = 0 };
+        if (zero.IsEmpty || zero.Clone().OperationCostSetValue != 0) return "SetValue零键的存在/Clone丢失";
+        zero.OperationCostSetValue = null;
+        if (!zero.IsEmpty) return "SetValue缺失不得伪造键存在";
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int cm in Enumerable.Range(0, 32))
+        foreach (int om in Enumerable.Range(0, 32))
+        foreach (int mode in new[] { 2, 3, 5 })
+        foreach (int request in new[] { -3, 0, 105 })
+        foreach (int id in new[] { 20, 9999 })
+        foreach (bool equal in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId(PlainUnit, side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            foreach (var card in new[] { source, foreign, target }) card.Definition = new CardDefinition { Name = card.Name, Type = "infantry" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            void Seed(int sourceId, int mask) {
+                if ((mask & 27) != 0) target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId,
+                    OperationCost = (mask & 1) != 0 ? 2 : 0, OperationCostSetValue = (mask & 2) != 0 ? 0 : null,
+                    AttackSetValue = (mask & 8) != 0 ? 0 : null, HasSuppressLedgerEntry = (mask & 16) != 0 };
+                if ((mask & 4) != 0) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, OperationCost = 3 };
+            }
+            Seed(id, cm); Seed(30, om);
+            var unrelated = new CardBuff { SourceCardId = 99, DefenseSetValue = 0 };
+            target.BuffsBySource[(99, false)] = unrelated;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 }); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            target.BaseOperationCost = equal ? request : 5; target.TemporaryOperationCost = -4;
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, id, request, mode, false, false, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            bool currentPerm = mode != 5 || (cm & 24) != 0;
+            bool foreignPerm = (om & 8) != 0 || (mode != 3 && (om & 16) != 0);
+            int? currentSet = mode == 2 ? request : mode == 3 && (cm & 2) != 0 ? 0 : null;
+            bool currentSuppress = mode == 3 || (cm & 16) != 0;
+            bool currentRelation = currentPerm || (cm & 4) != 0;
+            int? Field(CardBuff? b) => b?.OperationCostSetValue;
+            target.BuffsBySource.TryGetValue((id, false), out var current);
+            target.BuffsBySource.TryGetValue((30, false), out var other);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            var snap = target.Snapshot();
+            if (!handled || (current is not null) != currentPerm || (other is not null) != foreignPerm
+                || (current is not null && (current.OperationCost != (mode != 5 && (cm & 1) != 0 ? 2 : 0)
+                    || Field(current) != currentSet || current.HasSuppressLedgerEntry != currentSuppress
+                    || current.AttackSetValue != ((cm & 8) != 0 ? 0 : null) || current.OperationCostSetsAbsoluteValue))
+                || (other is not null && (other.OperationCost != 0 || Field(other).HasValue
+                    || other.HasSuppressLedgerEntry != (mode != 3 && (om & 16) != 0) || other.AttackSetValue != ((om & 8) != 0 ? 0 : null)))
+                || target.BuffsBySource.ContainsKey((id, true)) != ((cm & 4) != 0)
+                || ((cm & 4) != 0 && target.BuffsBySource[(id, true)].OperationCost != 3)
+                || target.BuffsBySource.ContainsKey((30, true)) != ((om & 4) != 0)
+                || ((om & 4) != 0 && target.BuffsBySource[(30, true)].OperationCost != 3)
+                || target.BuffsBySource.Count != 1 + (currentPerm ? 1 : 0) + (foreignPerm ? 1 : 0) + ((cm & 4) != 0 ? 1 : 0) + ((om & 4) != 0 ? 1 : 0)
+                || !ReferenceEquals(target.BuffsBySource[(99, false)], unrelated) || unrelated.DefenseSetValue != 0
+                || !source.CardsBuffedByThisCard.SequenceEqual(id != 20 || currentRelation ? new[] { 888, 60 } : new[] { 888 })
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 })
+                || snap.OperationCostSetValuesBySource.Count != (currentSet.HasValue ? 1 : 0)
+                || (currentSet.HasValue && snap.OperationCostSetValuesBySource.GetValueOrDefault($"{id}/False", int.MinValue) != currentSet)
+                || target.BaseOperationCost != (equal ? request : Math.Clamp(request, 0, 99)) || target.TemporaryOperationCost != -4
+                || actions.Length != (equal ? 0 : 1))
+                return $"行动费绝对账本矩阵错误 side={side},cm={cm},om={om},mode={mode},request={request},source={id},equal={equal}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostTypedCoexistence(CardDatabase db)
+    {
+        var copy = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { 20, 9999 })
+        foreach (bool otherField in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            foreach (var card in new[] { source, target }) card.Definition = new CardDefinition { Name = card.Name, Type = "infantry" };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            target.BaseOperationCost = 5; target.TemporaryOperationCost = 3;
+            target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, OperationCost = 2, AttackSetValue = otherField ? 0 : null };
+            target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, OperationCost = 3 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            void Apply(int amount, int mode) => engine.Api.InvokeByName("ChangeOperationCost", target,
+                new object?[] { target, id, amount, mode, false, true, false }, ctx, out _);
+            Apply(0, 2);
+            if (target.BaseOperationCost != 0 || target.TemporaryOperationCost != 3
+                || target.BuffsBySource[(id, false)].OperationCost != 2 || target.BuffsBySource[(id, false)].OperationCostSetValue != 0)
+                return "绝对设值必须保留缓存来源普通键和临时数值";
+            Apply(-2, 1);
+            if (target.BaseOperationCost != 0 || target.BuffsBySource[(id, false)].OperationCost != 0
+                || target.BuffsBySource[(id, false)].OperationCostSetValue != 0 || target.BuffsBySource[(id, false)].IsEmpty)
+                return "普通抵消不得删除SetValue零键";
+            Apply(2, 1); Apply(999, 4);
+            if (target.BaseOperationCost != 2 || target.TemporaryOperationCost != 0 || target.TotalOperationCost != 2
+                || target.BuffsBySource[(id, false)].OperationCost != 2 || target.BuffsBySource[(id, false)].OperationCostSetValue != 0
+                || target.BuffsBySource.ContainsKey((id, true))) return "临时撤销不得重算基础或删独立SetValue";
+            var duplicate = (CardInstance)copy.Invoke(null, new object[] { target })!;
+            if (ReferenceEquals(duplicate.BuffsBySource[(id, false)], target.BuffsBySource[(id, false)])
+                || duplicate.BuffsBySource[(id, false)].OperationCostSetValue != 0) return "复制未隔离SetValue键";
+            duplicate.BuffsBySource[(id, false)].OperationCostSetValue = 7;
+            if (target.BuffsBySource[(id, false)].OperationCostSetValue != 0) return "复制SetValue修改污染原卡";
+            Apply(5, 5);
+            if (target.BaseOperationCost != 5 || target.TemporaryOperationCost != 0 || target.BuffsBySource.ContainsKey((id, false)) != otherField
+                || (otherField && (target.BuffsBySource[(id, false)].OperationCost != 0 || target.BuffsBySource[(id, false)].OperationCostSetValue.HasValue
+                    || target.BuffsBySource[(id, false)].OperationCostSetsAbsoluteValue || target.BuffsBySource[(id, false)].AttackSetValue != 0))
+                || (id == 20 && source.CardsBuffedByThisCard.Contains(60) != otherField))
+                return "mode5必须只清理账本、不创建老兵设值键";
+        }
+        return null;
+    }
+
     private static string? OperationCostNotificationPayload(CardDatabase db)
     {
         var method = typeof(CardApi).GetMethod("NotifyOperationCostChanged", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
@@ -7246,8 +7359,9 @@ internal static class SelfTest
                 return $"行动费入口拒绝须无副作用 location={location},covert={covert},revealed={revealed},source={sourceId},mode={mode},self={hasSelf}";
             if (allowed) {
                 bool temporary = mode is 0 or 4;
-                if (before == state.SnapshotJson() || !target.BuffsBySource.TryGetValue((sourceId, temporary), out var buff)
-                    || (mode == 4 && buff.OperationCost != 0)
+                bool hasBuff = target.BuffsBySource.TryGetValue((sourceId, temporary), out var buff);
+                if (before == state.SnapshotJson() || hasBuff != (mode != 5)
+                    || (mode == 4 && buff!.OperationCost != 0)
                     || target.BuffsBySource.Keys.Any(k => k.SourceCardId == 40)
                     || (sourceId == 9999 && source.CardsBuffedByThisCard.Contains(60)))
                     return $"行动费正来源不得用Self替代或要求来源对象存在 source={sourceId},mode={mode},location={location}";
@@ -37940,8 +38054,8 @@ internal static class SelfTest
             new object?[] { target, source.CardId, 0, 2, false, false, false }, ctx, out bool setAbsolute);
         if (!setAbsolute || target.OperationCost != 0
             || !target.BuffsBySource.TryGetValue((source.CardId, false), out var absoluteOpBuff)
-            || !absoluteOpBuff.OperationCostSetsAbsoluteValue
-            || absoluteOpBuff.OperationCost != -baseOperation)
+            || absoluteOpBuff.OperationCostSetsAbsoluteValue
+            || absoluteOpBuff.OperationCostSetValue != 0 || absoluteOpBuff.OperationCost != 0)
         {
             return $"绝对 operation cost=0 未正确记录：handled={setAbsolute}, actual={target.OperationCost}";
         }
@@ -37957,7 +38071,7 @@ internal static class SelfTest
         if (target.KreditCost != baseKredit || target.OperationCost != 1
             || target.BuffsBySource.Count != 2
             || !target.BuffsBySource.TryGetValue((source.CardId, false), out var retainedAbsolute)
-            || !retainedAbsolute.OperationCostSetsAbsoluteValue
+            || retainedAbsolute.OperationCostSetValue != 0
             || target.BuffsBySource[(source.CardId, true)].OperationCost != 1)
         {
             return "手牌目标的临时行动费不得由回合末清理；永久绝对槽也须保留";
@@ -37973,8 +38087,8 @@ internal static class SelfTest
         engine.Api.InvokeByName("ChangeOperationCost", target,
             new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeAbsolute);
         if (!removeAbsolute || target.OperationCost != 0 || target.BuffsBySource.Count != 1
-            || !target.BuffsBySource[(source.CardId, false)].OperationCostSetsAbsoluteValue
-            || target.BuffsBySource[(source.CardId, false)].OperationCost != -baseOperation)
+            || target.BuffsBySource[(source.CardId, false)].OperationCostSetValue != 0
+            || target.BuffsBySource[(source.CardId, false)].OperationCost != 0)
         {
             return $"重复mode4必须保留永久绝对行动费：handled={removeAbsolute}, actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
         }

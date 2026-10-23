@@ -1,0 +1,213 @@
+{
+  "rule": "RULE-344",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-344",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 9893,
+    "absolute_full_ledger_cases": 18432,
+    "main_with_full_ledger_cases": 36864,
+    "worker_rows_exact": 18432,
+    "regression_combinations": {
+      "matrix": 73728,
+      "coexistence_sequences": 8,
+      "total": 73736
+    },
+    "release_selftest": {
+      "passed": 712,
+      "total": 712,
+      "exit_code": 0
+    },
+    "scope": "Type3 modes2/3/5 typed ledger cleanup/rewrite/no-write distinctions, independent raw SetValue including0, ordinary coexistence and current-only reverse tail. Models controlled enum/source/maps/frame and Suppress payload0, main gates/action true,skip true,subject suppressed,query empty. Production Suppress presence only, old ambiguous offset flags retained opaque; no whole lifecycle/adapter/native payload/lifetime proof."
+  },
+  "authority": "Four previously read-only captured Blueprint functions9893B redecoded, script/symbol-header hashes and current PE SHA verified. Whole type3 ChangeBuffsFromCards6267B and whole ChangeOperationCost3171B used. No new live process/state claim; enum friendly names/maps/source lookup and frame outputs controlled.",
+  "changes": [
+    "Add nullable raw OperationCostSetValue typed key independent of ordinary OperationCost. null means absent, zero/negative/out-of-range values remain present. IsEmpty/Clone/CopyForStealSide and snapshots preserve it. Known native modes no longer create the old absolute-offset flag.",
+    "Before any numeric changed gate, mode2/3/5 globally remove operationCost_permBuff and operationCost_SetValue across canonical source records. Mode3 also removes shared unqualified Suppress presence. Temporary operation contributions and unrelated types remain. Foreign reverse arrays are not synchronized.",
+    "Mode2 writes cached ORIGINAL current permanent source struct with raw SetValue. Mode3 writes cached original with shared Suppress presence. Cached ordinary/SetValue/unrelated fields can survive/reappear on the current source despite global cleanup.",
+    "Mode5 performs cleanup only; no cached-source overwrite and no veteranSet key. Synchronize current valid source reverse relation afterward. Raw numeric base/temp behavior and existing action/callback routing remain from RULE343.",
+    "Ordinary increments/cancellation no longer overwrite SetValue metadata. Present-zero SetValue prevents source loss on ordinary cancellation, and mode4 only removes temporary operation data.",
+    "Legacy EffectiveOperationCost recognizes raw SetValue for explicit old flattening adapters; this remains a compatibility calculation, not reconstruction of native numeric state. Preserve old ambiguous offset records as opaque compatibility data when their flags are already present."
+  ],
+  "models": {
+    "full_ledger_cases": 18432,
+    "main_with_full_ledger_cases": 36864,
+    "details": "Current/foreign5-key masks include ordinary perm2, raw SetValue0, temp3, unrelated AttackSetValue0, shared Suppress8; modes2/3/5, raw -3/0/105, source20/9999. Main doubles all cases with equal/unequal raw base and independently verifies cleanup occurs even when unchanged, unchanged no query, changed T10 thenT9.",
+    "controlled": "Enum/map/array/source/title/frame primitives, Suppress Temp_int_Variable0, action/gates true, skipAction true, subject suppressed, query empty. Production models only Suppress presence, not arbitrary integer payload or native frame default. Physical containers/order/object lifetime and complete callback reentry not certified."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "matrix_combinations": 73728,
+    "coexistence_sequences": 8,
+    "total": 73736,
+    "initial": {
+      "passed": 708,
+      "total": 710,
+      "failed": 2,
+      "explanation": "Legacy entry guard regression assumed every absolute mode made a source slot; mode5 does not. Legacy temporary-resource regression expected absolute offset flag/-template rather than independent raw SetValue0. Updated strict expectations, no production numeric assumptions weakened."
+    },
+    "final": {
+      "passed": 712,
+      "total": 712,
+      "exit_code": 0
+    },
+    "coverage": "Both sides and all18432 ledger rows with equal/unequal numeric base; exact key presence/retention, raw SetValue and snapshot, Suppress shared presence, unaffected temp/unrelated defense/attack keys, source-only reverse synchronization and stale foreign duplicates, raw numeric preservation/action eligibility.8 concrete Set0->perm cancellation/readd->temp withdrawal->mode5 sequences include independent cloned ledger and source object existing/missing."
+  },
+  "worker": {
+    "job": "20261023-170721-rule344-operation-absolute-ledger-d66f7a19",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 18432,
+    "primary_comparison_exact": 18432,
+    "scope": "Supplied mechanical reference only; primary compared every row with full native ledger execution. No source edits or semantic judgment delegated."
+  },
+  "remaining": [
+    "Shared Suppress integer payload is still represented only as bool presence; arbitrary payload8/current native frame initialization has not been certified. Canonical native unqualified keys live in permanent slots; malformed/legacy synthetic temporary-slot unqualified metadata is not exhaustively reconciled.",
+    "Old OperationCostSetsAbsoluteValue records remain ambiguous opaque compatibility data and are not losslessly converted. Known native modes no longer create them; full reconstruction from old external/synthetic records is not claimed.",
+    "Explicit handwritten aura/suppression/restore/unknown-mode flattening adapters remain. Mode3 standalone ledger is fixed, but full SuppressMultipleUnits operation phase/batch ordering and compatibility integration are not.",
+    "Static omitted operationcostbuff reconciliation, complete IsActionProcess execution gate, full native primitive/frame/delegate/object lifetime/collection order/reentry and lifecycle/transitive semantics remain open. Full certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-absolute-full-ledger-model-20261023.json",
+      "sha256": "d9bfcc48a94aef4ed32cbc8c0f7ec78c89d5a7e4b73bef20112106947d9819f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-absolute-main-ledger-model-20261023.json",
+      "sha256": "a9ab169949e92e66f483e043c03f17d3203ec49fdf503d53981afbaf4c44d693"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule344.py",
+      "sha256": "08485e20bcf78849783887d27abe344f5ffbb6f0ddc074b4cd50b71e96330f87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule344-ledger.py",
+      "sha256": "28f45ec419df12115ce05f07ff03d80379e81602a19b9e46da640d631f87acd4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule344-main.py",
+      "sha256": "3b4318ef36381ebd4b217aaf7526e865f65db2976d20a90c3b6ca54407501621"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule344-tests.py",
+      "sha256": "77c4c67a650866d7d33a4a834fbe3eada141cbffe483b6a3eabde630462d7d7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule344-verifier.py",
+      "sha256": "88609f667aa4619374f20d1c59a64195378bdd80886373cf97c6c8db16dbb736"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule344.py",
+      "sha256": "a1de811e0fdeb6034f1f2a80a8c90c666dbd3d2284c7ce610d2c9701574fc228"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule344-verified-20261023.json",
+      "sha256": "18db340217a39ed43ed1c9a31823cff7b9c1822e97bb10710c68f5a5268fd9da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule344-selftest-initial.log",
+      "sha256": "ac861118f02e3e4c95e6d34aa228b4ad574ce649570198632f07f57400b883ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule344-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule344-selftest-final.log",
+      "sha256": "be60b22aa273b8104c3f4e39cba5b04a53302f59db812c5e0591c5433a85d911"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule344-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule344\\spec.json",
+      "sha256": "d8cafa71902fb8ea2b51830f26efd3ad1e963ac0728953d0f2abc55d18a1904f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule344\\task.txt",
+      "sha256": "aeb242f1c8d6624e93b38149a0a5e8f23079fa92a9e06c4d29fbd2246b49cb81"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule344\\cases.json",
+      "sha256": "52bd5d2c9270be949506e355f0a79aabe06bb1dbc670dba61b01740a9eb35f51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule344\\primary-cases.json",
+      "sha256": "18f24bbb3f2498aea5fd5299422050fbf75a987aae65fc39e49b8f59073c496e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule344\\generator.py",
+      "sha256": "3f1522079bf877ea551694233378515fde2db7f78cdfbd145ba7fba9c836421b"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-170721-rule344-operation-absolute-ledger-d66f7a19\\job.json",
+      "sha256": "6846c7d60c4d95d652b3f33e12732e9657e8f7995cc60320c7579954a4fff496"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "bf5fd9016e1e6aabd8148cd7b922455a02c2abc7216953003664d7da92168c42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "37de997e3cdb8389ca255d9274f6e96258d82b1dc2585d18c940ca6ba2a52275"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "bd501a18037faeaee7ee1fc9d48f031ab7ba9cecbbe46f904e6eda6dc3291dba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7ccf369d658f33a053a09b413df1aefa79b9b3a324c4a9a319bc1351cb1a5ada"
+    }
+  ]
+}

@@ -4519,8 +4519,8 @@ public sealed partial class CardApi
         // 签名（实测 140 个调用点）：ChangeOperationCost(卡, instigatorID, 数值, changeType, b, b, b)
         //   a[1] = 来源卡 ID，a[2] = 数值，a[3] = changeType（含义同 ChangeKreditCost）
         //
-        // RULE-343: numeric components are independent of the compact ledger.
-        // Absolute typed ledger semantics remain a separate pending migration.
+        // RULE-343/344: numeric components are independent; known absolute
+        // modes have distinct typed-ledger behavior. Legacy adapters remain.
         // RULE-337: native i71/105 uses the supplied positive ID, without
         // a source-object existence gate. i119/160 rejects unrevealed Covert
         // at every location, unlike CanCardBeBuffed's location-specific table.
@@ -4574,7 +4574,6 @@ public sealed partial class CardApi
         int beforeOperationCost = target.BaseOperationCost;
         bool valueChanged;
         bool temporary = changeType == ChangeTypeTempBuffGive;
-        var buff = GetOrCreateBuff(target, sourceId, temporary);
         bool setsAbsolute = changeType is ChangeTypeOperationCostSetValue
             or ChangeTypeOperationCostSuppress
             or ChangeTypeOperationCostVeteranSet;
@@ -4582,14 +4581,13 @@ public sealed partial class CardApi
         {
             int requestedOperationCost = Math.Clamp(amount, 0, 99);
             valueChanged = beforeOperationCost != rawAmount;
-            amount = requestedOperationCost - target.Definition.OperationCost;
-            buff.OperationCost = amount;
-            buff.OperationCostSetsAbsoluteValue = true;
+            RecordAbsoluteOperationCostLedger(target, sourceId, rawAmount, changeType);
             if (valueChanged) target.BaseOperationCost = requestedOperationCost;
         }
         else if (temporary || changeType == ChangeTypePermBuff)
         {
             valueChanged = amount != 0;
+            var buff = GetOrCreateBuff(target, sourceId, temporary);
             buff.OperationCost += amount;
             buff.OperationCostSetsAbsoluteValue = false;
             // Native ordinary accumulation removes the chosen key when its
@@ -4603,6 +4601,7 @@ public sealed partial class CardApi
         else
         {
             valueChanged = amount != 0;
+            var buff = GetOrCreateBuff(target, sourceId, temporary);
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = false;
             // Unknown modes retain the old compatibility adapter, uncertified.
@@ -4620,6 +4619,38 @@ public sealed partial class CardApi
         }
 
         return null;
+    }
+
+    // RULE-344: whole type3 ledger2/3/5. Cleanup operates on the typed keys,
+    // not numeric fields; only2/3 rewrite the cached ORIGINAL current source.
+    private void RecordAbsoluteOperationCostLedger(CardInstance target, int sourceId, int rawValue, int changeType)
+    {
+        var key = (sourceId, false);
+        var original = target.BuffsBySource.TryGetValue(key, out var old)
+            ? old.Clone() : new CardBuff { SourceCardId = sourceId };
+        foreach (var candidate in target.BuffsBySource.Keys.Where(k => !k.Temporary).ToArray())
+        {
+            var buff = target.BuffsBySource[candidate];
+            // Preserve opaque pre-migration absolute-offset compatibility data.
+            // Known native paths no longer create that ambiguous old flag.
+            if (!buff.OperationCostSetsAbsoluteValue) buff.OperationCost = 0;
+            buff.OperationCostSetValue = null;
+            if (changeType == ChangeTypeOperationCostSuppress) buff.HasSuppressLedgerEntry = false;
+            if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
+            // Native global cleanup does not repair foreign reverse arrays.
+        }
+        if (changeType == ChangeTypeOperationCostSetValue)
+        {
+            original.OperationCostSetValue = rawValue;
+            target.BuffsBySource[key] = original;
+        }
+        else if (changeType == ChangeTypeOperationCostSuppress)
+        {
+            original.HasSuppressLedgerEntry = true;
+            target.BuffsBySource[key] = original;
+        }
+        // mode5 performs cleanup only, with no veteranSet entry/writeback.
+        SynchronizeBuffTarget(target, sourceId);
     }
 
     /// <summary>

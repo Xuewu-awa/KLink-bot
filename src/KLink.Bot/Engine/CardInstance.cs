@@ -883,11 +883,11 @@ public sealed class CardInstance
             // Direct-set buffs replace the card value; relative buffs still
             // compose on top regardless of dictionary insertion order.
             var absolute = BuffsBySource.Values
-                .Where(buff => buff.OperationCostSetsAbsoluteValue)
+                .Where(buff => buff.OperationCostSetValue.HasValue || buff.OperationCostSetsAbsoluteValue)
                 .LastOrDefault();
             int total = absolute is null
                 ? Definition.OperationCost
-                : Definition.OperationCost + absolute.OperationCost;
+                : absolute.OperationCostSetValue ?? unchecked(Definition.OperationCost + absolute.OperationCost);
             foreach (var buff in BuffsBySource.Values)
             {
                 if (!buff.OperationCostSetsAbsoluteValue)
@@ -947,6 +947,9 @@ public sealed class CardInstance
             GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Guard),
+            OperationCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.OperationCostSetValue.HasValue)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.OperationCostSetValue!.Value),
             SmokescreenBuffsBySource = BuffsBySource.Where(kv => kv.Value.Smokescreen != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Smokescreen),
@@ -1036,7 +1039,10 @@ public sealed class CardBuff
     /// <summary>行动费用相对**卡面行动费用**的偏移量。</summary>
     public int OperationCost { get; set; }
 
-    /// <summary>该来源是否把行动费用直接设为某个绝对值。</summary>
+    // RULE-344: independent raw operationCost_SetValue key, including zero.
+    public int? OperationCostSetValue { get; set; }
+
+    /// <summary>旧兼容记录的绝对偏移标志；原生已知模式不再创建此标志。</summary>
     public bool OperationCostSetsAbsoluteValue { get; set; }
 
     /// <summary>重甲点数（可叠加的数值，不是布尔）。</summary>
@@ -1078,7 +1084,7 @@ public sealed class CardBuff
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
-                           && !OperationCostSetsAbsoluteValue;
+                           && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue;
 
     /// <summary>
     /// 深拷贝 —— `CardApi.SuppressUnit` 要把这条 buff 整个摘走、并在解除时原样装回，
@@ -1096,6 +1102,7 @@ public sealed class CardBuff
         HasNonOrdinaryDefenseEntry = HasNonOrdinaryDefenseEntry,
         KreditCost = KreditCost,
         OperationCost = OperationCost,
+        OperationCostSetValue = OperationCostSetValue,
         HeavyArmor = HeavyArmor,
         Fury = Fury,
         Blitz = Blitz,
@@ -1153,6 +1160,7 @@ public sealed record CardSnapshot(
     public string[] SuppressLedgerSources { get; init; } = [];
     public Dictionary<string, int> AttackSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DefenseSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> OperationCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public int[] CardsBuffedByThisCard { get; init; } = [];
