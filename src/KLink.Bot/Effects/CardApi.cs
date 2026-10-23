@@ -2943,7 +2943,7 @@ public sealed partial class CardApi
         }
     }
 
-    /// <summary>广播「其它卡的 Kredit 费用发生变化」(T45)。契约参数是新费用整数。</summary>
+    /// <summary>Legacy public adapter; native dispatcher uses ExecuteKreditCostChangedEvents instead.</summary>
     public void FireKreditCostChanged(CardInstance card, int newCost)
         => FireTrigger("OnOtherCardKreditCostChanged", card, card.Owner,
             eventArgs: new object?[] { newCost }, eventSubject: card,
@@ -2951,6 +2951,34 @@ public sealed partial class CardApi
             {
                 ["cardChangingCost"] = newCost,
             });
+
+    // RULE-351: ChangeKreditCost1780..2456. Caller controls valueChanged and
+    // ActionProcess. Own hook is skipped for self source or suppressed subject;
+    // T45 is queried after own and called with changed CardID, not new cost.
+    private void ExecuteKreditCostChangedEvents(CardInstance card, int instigatorId)
+    {
+        const string own = "OnAfterKreditCostChanged", other = "OnOtherCardKreditCostChanged";
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        if (card.CardId != instigatorId && !card.IsSuppressed && library.FindProgram(card.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {card.Name}#{card.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, card, card.Name, own, card,
+                eventArgs: new object?[] { instigatorId },
+                namedArgs: new Dictionary<string, object?> { ["Instigator"] = instigatorId });
+        }
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { card.CardId };
+        var named = new Dictionary<string, object?> { ["cardChangingCost"] = card.CardId };
+        foreach (var observer in recipients)
+        {
+            // Native2105 compares IDs only; saved recipients are not re-screened
+            // for location/registration/suppression after earlier callbacks.
+            if (observer.CardId == card.CardId || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, card, eventArgs: args, namedArgs: named);
+        }
+    }
 
     public void ChangeOperationCost(CardInstance target, int delta, CardInstance? source)
         => ChangeOperationCost(target, delta, source?.CardId ?? 0);

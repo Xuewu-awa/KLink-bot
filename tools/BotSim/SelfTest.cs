@@ -561,6 +561,9 @@ internal static class SelfTest
         new("指挥点改费通知：五字段顺序及原始整数编码", KreditNotificationFiveFields),
         new("指挥点改费通知整合：保留原请求、总费代理与参数4", KreditNotificationDispatcherPayload),
         new("指挥点改费普通零：不建账不改数值不发通知回调", KreditOrdinaryZeroNoOp),
+        new("指挥点改费回调：来源门、自身后查询、T45整数ID及对象快照", KreditCallbackMutationMatrix),
+        new("指挥点T45查询：全位置、注册/压制例外与同ID主体排除", KreditCallbackQueryMatrix),
+        new("指挥点改费整合：通知先于自身/T45，普通零无回调", KreditCallbackDispatcherIntegration),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7360,6 +7363,141 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallKreditCallbackProbes()
+    {
+        const string name = "card_unit_arado_ar_196";
+        var own = InstallSelectionDrawProbe(name, "OnAfterKreditCostChanged");
+        var other = InstallSelectionDrawProbe(name, "OnOtherCardKreditCostChanged");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (var (hook, phase, argument) in new[] { ("OnAfterKreditCostChanged", "own", "Instigator"), ("OnOtherCardKreditCostChanged", "other", "cardChangingCost") })
+            locals[hook] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = phase }, null, -1, "_auditKreditPhase", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = argument, Scope = "local" }, null, -1, "_auditKreditArg", null) { DestinationScope = "instance" },
+                new KismetStep(2, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        return new AuditProbeCleanup(() => { other.Dispose(); own.Dispose(); });
+    }
+
+    private static void SetKreditRegistration(CardInstance card, bool registered)
+        => card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Kredits = 3,
+            UsedTriggers = registered ? new[] { "OnOtherCardKreditCostChanged" } : Array.Empty<string>() };
+
+    private static string? KreditCallbackMutationMatrix(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        var method = typeof(CardApi).GetMethod("ExecuteKreditCostChangedEvents", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int source in new[] { 20, 60, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool laterSuppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (int ownMode in Enumerable.Range(0, 4))
+        foreach (int otherMode in Enumerable.Range(0, 7))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            var later = state.CreateWithId(target.Name, side, 80, side.HqOf(), 3);
+            var added = state.CreateWithId(target.Name, side, 90, side.HqOf(), 4);
+            var actors = new List<CardInstance> { target, first, later, added };
+            foreach (var card in actors) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card != added); }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (laterSuppressed) later.Keywords.Add(Keyword.Suppressed);
+            if (exception) later.SuppressionExceptionTriggers.Add("OnOtherCardKreditCostChanged");
+            var seen = new List<(string Phase, CardInstance Actor, int Arg)>(); var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = actors.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase");
+                seen.Add((phase, actor, Convert.ToInt32(actor.BlueprintVariables["_auditKreditArg"])));
+                if (phase == "own") {
+                    if (ownMode == 1) SetKreditRegistration(added, true);
+                    if (ownMode == 2) SetKreditRegistration(later, false);
+                    if (ownMode == 3) { later.Keywords.Add(Keyword.Suppressed); later.SuppressionExceptionTriggers.Add("OnOtherCardKreditCostChanged"); }
+                }
+                if (phase != "other" || actor != first) return;
+                if (otherMode == 1) { later.Keywords.Add(Keyword.Suppressed); later.SuppressionExceptionTriggers.Clear(); }
+                if (otherMode == 2) SetKreditRegistration(later, false);
+                if (otherMode == 3) later.Location = CardLocation.NotAvailable;
+                if (otherMode == 4) state.Remove(later);
+                if (otherMode == 5) {
+                    state.Remove(later); var replacement = state.CreateWithId(target.Name, side, 80, side.HqOf(), 3);
+                    replacement.Keywords.Clear(); replacement.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(replacement, true); actors.Add(replacement);
+                }
+                if (otherMode == 6) SetKreditRegistration(added, true);
+            };
+            method.Invoke(engine.Api, new object[] { target, source });
+            bool ownRuns = source != 60 && !suppressed;
+            var expected = new List<(string Phase, CardInstance Actor, int Arg)>();
+            if (ownRuns) expected.Add(("own", target, source));
+            expected.Add(("other", first, 60));
+            if (!(ownRuns && ownMode == 2) && ((ownRuns && ownMode == 3) || !laterSuppressed || exception)) expected.Add(("other", later, 60));
+            if (ownRuns && ownMode == 1) expected.Add(("other", added, 60));
+            if (!seen.SequenceEqual(expected)) return $"指挥点回调快照/参数错误 {side}/{source}/{suppressed}/{laterSuppressed}/{exception}/{ownMode}/{otherMode}";
+        }
+        return null;
+    }
+
+    private static string? KreditCallbackQueryMatrix(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        var method = typeof(CardApi).GetMethod("ExecuteKreditCostChangedEvents", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { CardLocation.NotAvailable, side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (bool alias in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var tracked = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = alias ? tracked : state.CreateWithId(tracked.Name, side, 80, location, 2);
+            tracked.Keywords.Clear(); SetKreditRegistration(tracked, false);
+            observer.Location = location; observer.Keywords.Clear(); observer.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(observer, registered);
+            if (suppressed) observer.Keywords.Add(Keyword.Suppressed);
+            if (exception) observer.SuppressionExceptionTriggers.Add("OnOtherCardKreditCostChanged");
+            // A different managed wrapper with the same native CardID must also be excluded.
+            var target = new CardInstance { CardId = 60, Name = tracked.Name, Owner = side, Definition = tracked.Definition };
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            method.Invoke(engine.Api, new object[] { target, 60 });
+            int expected = !alias && registered && (!suppressed || exception) ? 1 : 0;
+            if (trace.Count != expected || (expected == 1 && !Equals(observer.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), 60)))
+                return $"T45资格/同ID错误 {side}/{location}/{registered}/{suppressed}/{exception}/{alias}";
+        }
+        return null;
+    }
+
+    private static string? KreditCallbackDispatcherIntegration(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int source in new[] { 20, 60, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int amount in new[] { 0, 1, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            target.KreditCost = 3; if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var events = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                string phase = (string)actor.BlueprintVariables["_auditKreditPhase"]!; actor.BlueprintVariables.Remove("_auditKreditPhase"); events.Add(phase);
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditKreditArg"), phase == "own" ? source : 60)) fault = "事件参数错误";
+                if (state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSetKreditCost") != 1) fault = "回调早于改费通知";
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, source, amount, 1, false, null }, ctx, out _);
+            string[] expected = amount == 0 ? Array.Empty<string>() : source != 60 && !suppressed ? new[] { "own", "other" } : new[] { "other" };
+            if (fault is not null || !events.SequenceEqual(expected)) return $"指挥点派发回调错误 {side}/{source}/{suppressed}/{amount}: {fault}";
         }
         return null;
     }

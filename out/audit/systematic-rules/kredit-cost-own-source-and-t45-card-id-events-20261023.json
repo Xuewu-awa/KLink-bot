@@ -1,0 +1,195 @@
+{
+  "rule": "RULE-351",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-351",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 7,
+    "supporting_blueprint_bytes": 13347,
+    "direct_scope_bytes": 4017,
+    "native_callback_vectors": 672,
+    "worker_rows_equal_after_explicit_identity_label_mapping": 672,
+    "worker_raw_rows_identical": false,
+    "regression_combinations": {
+      "callback_mutations": 1344,
+      "query_and_same_id": 160,
+      "dispatcher": 36,
+      "total": 1540
+    },
+    "release_selftest": {
+      "passed": 730,
+      "total": 730,
+      "exit_code": 0
+    },
+    "scope": "Dispatcher dedicated own-source/suppression gate then fresh T45 query with changed CardID and frozen object references; no late recipient gates. Numeric/valueChanged/ActionProcess derivation and public legacy adapter unchanged. Registration/TSet/lifetime/persistent frame and full suppression not certified."
+  },
+  "authority": "Reuse authoritative read-only2759B ChangeKreditCost,84B query forwarder and1174B battle query (direct4017B);7supporting scripts13347B redecoded against raw bytes/FName-symbol headers/current PE SHA. SDK kards.hpp declares own(int32 Instigator) and T45(int32 cardChangingCost). No new game process/battle-state assertion.",
+  "native": {
+    "own": "1780 compares saved cardToChange ID vs localInstigatorID; equal jumps directly1832 T45 query. Otherwise2370 checks current isSuppressed, skips own if true;2411 calls OnAfterKreditCostChanged(localInstigatorID).2456 returns1832.",
+    "other": "1832 queries45 after own;2105 compares each saved object CardID against changed ID and skips equal;2234 calls OnOtherCardKreditCostChanged(cardToChange). No later location/registration/suppression gate; full query applies suppression exceptions at snapshot time."
+  },
+  "changes": [
+    "Add dedicated ExecuteKreditCostChangedEvents, called by native-name dispatcher instead of legacy FireKreditCostChanged(newCost). Own callback gets supplied raw instigator ID and is skipped for same target/source ID or currently suppressed subject.",
+    "After own callback take fresh T45 registration/suppression-qualified snapshot; send changed CardID integer via positional argument and SDK name cardChangingCost. Exclude by CardID, not object identity; directly invoke saved object references without later location/registration/suppression checks.",
+    "Retain old public adapters separately and mark their legacy status; main numeric/valueChanged/notification timing remains explicitly pending rather than silently treated native-equivalent."
+  ],
+  "models": {
+    "callback_vectors": 672,
+    "scope": "Execute actual2759B native event branch1780..return, full84B forwarder and1174B query.3sources*subject suppression2*later suppression2*exception2*own mutations4*other mutations7. Different object same-ID alias60 present and excluded byID. Own can register90/unregister80/add suppressed exception80 before query. First70 can suppress+clear exception/unregister/move unavailable/remove/replace80Awith80B/register90 after snapshot; frozen references unaffected. Own/other effects and primitive ordering controlled. Numeric/notification/valueChanged/ActionProcess derivation not executed."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "combinations": 1540,
+    "callback_mutations": 1344,
+    "query_and_same_id": 160,
+    "dispatcher": 36,
+    "release": {
+      "passed": 730,
+      "total": 730,
+      "exit_code": 0
+    },
+    "scope": "Both sides1344event mutation fixtures mirror native672 and compare actual managed receiver references plus raw argument;160query fixtures cover5locations/registration/suppression/exception and same-ID detached subject exclusion;36dispatcher fixtures prove cost-notification precedes own/T45, same-source/suppression gates, integerID argument60 instead of new4/6 and ordinaryzero no callbacks. Synthetic scoped arado hooks, not real-card semantics proof."
+  },
+  "worker": {
+    "job": "20261023-212553-rule351-kredit-callbacks-662925ce",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 672,
+    "raw_rows_identical": false,
+    "primary_comparison_after_explicit_label_mapping": 672,
+    "label_mapping": {
+      "label70": "70",
+      "label80A": "80A",
+      "label90": "90",
+      "60": "60"
+    },
+    "representation": "Task notation first70(label70) was read literally by worker; primary labels are70/80A/90. Original worker rows preserved. Only identity strings normalized by closed explicit map; inputs/event kinds/receivers/arguments/order untouched, all672rows match. Not called raw byte equality.",
+    "scope": "Private supplied event projection; no source edits/authority judgment/publishing."
+  },
+  "remaining": [
+    "Legacy numerical proxy and dispatcher target.KreditCost!=previousCost trigger condition remain, rather than native base/temp/valueChanged derivation. Native saturated/absolute-equal/mode4/unknown-mode changes may still enter callbacks differently. Whole-main execution gate not certified by branch-start model.",
+    "Public two-argument ChangeKreditCost and public FireKreditCostChanged remain legacy adapters, still passing new-cost argument in that old path. Only native-name dispatcher is switched to dedicated event chain. No claim all project T45 paths converted.",
+    "Definition-based CaptureRegisteredTriggerSnapshot approximates real global CardFunctionTriggers; registration maintenance/lifetime and UE TSet storage order not certified. Primitive map/set order and mutations controlled by test fixture.",
+    "Managed removed/replaced references are callable, but true native UObject destruction/invalid/null/class/name mutation, persistent local frame/qqq output/delegate state and reentry lifetime remain unproved.",
+    "Independent base/temporary kredit fields, typed absolute ledger, mode4 withdrawal/notification, suppression5604 integration, static lookup/cache/armor/last-card reveal and full suppression remain open. Version migration paused, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-callback-source-and-t45-native-model-20261023.json",
+      "sha256": "8030b3c7ec0077a35aac225658dae2e68af613bbb84d8a8e7b6d41a3db77ceb8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule351.py",
+      "sha256": "3b0de10877a09d0858ffb75f0e64538b7ccd4afc5e5a12c3781b875d476250e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule351-events.py",
+      "sha256": "9326f9bbc44bcc2a811ac8556551577d9fc7f054436efe0118280cf8bcda8fe1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule351-tests.py",
+      "sha256": "ccfde7923b28a3a959f0fe27cf29b08eabf740f1d87b5170f5487fa5b1aac061"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule351.py",
+      "sha256": "4309be868d548e82de30bbb4ccdc8a9a3c663f167afd26bc6a9b3ed697c6e5ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule351-verified-20261023.json",
+      "sha256": "547c9dd9b4974e39afa03a9297e445ba7d51b7b87b074d4ce7ce64b17ff9b0d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule351-selftest-final.log",
+      "sha256": "4979a7d1f008fc6db875beaa631b8868f0bf612648b29c93761c4fece1655e7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule351-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule351\\spec.json",
+      "sha256": "034c7a510055d9d06e5656937e68b16b16a28decbc3e004678f4b1764d9bfd27"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule351\\task.txt",
+      "sha256": "09f8f746f543717ff394cd1f7bd6146534483140c0e322f1826b7c82106171ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule351\\cases.json",
+      "sha256": "53b563f0fad8bd222e0b5d8db95dacee1d700731fcc0cb46fb5e3002b05f94f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule351\\primary-cases.json",
+      "sha256": "f6fd4c7d501de118e23cc2afccd21f760c1c4cef1d912613575c7ab5a2f6c56f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule351\\generator.py",
+      "sha256": "cc68549e30767031a0532f2d65cb98253517f50502e319c0ef93b940145e563b"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-212553-rule351-kredit-callbacks-662925ce\\job.json",
+      "sha256": "2311f387151d71d94c455a0c1018ae52c5b831412c9be613bfb88fc41fdec34d"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "b878815715f2190b1ce441ca5540ec13789573ae62e3cfc039f9f372c90de6a7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "447485261811448dc8091c0729d4548563763a9dfa694f1e29703689743d17fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "b25c43dbdb8d6a2f55df3fc9b66f8f401943cab3c5cd2b912f8ae86217fc2738"
+    }
+  ]
+}

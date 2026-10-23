@@ -4387,7 +4387,7 @@ public sealed partial class CardApi
 
         if (target.KreditCost != previousCost)
         {
-            c.Engine.Api.FireKreditCostChanged(target, target.KreditCost);
+            ExecuteKreditCostChangedEvents(target, sourceId);
         }
 
         return null;
