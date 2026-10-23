@@ -6157,14 +6157,10 @@ public sealed partial class CardApi
 
     private object? DoSuppressUnit(EffectContext c, object? r, object?[] a)
     {
-        // `SuppressUnit(卡, instigatorID, bool, bool, out)` —— 目标在 a[0]。
-        // ⚠️ 同样可能是**整数 cardID**（与 `CustomAbilityAdd` 同一族），所以用 `AsCardOrId`。
-        var target = AsCardOrId(c, a.FirstOrDefault()) ?? AsCard(r) ?? c.Target;
-        if (target is not null)
-        {
-            SuppressUnit(target, IntArg(a, 1));
-        }
-
+        // RULE-346: native64B wrapper packs the supplied CardID, without a
+        // lookup/validity gate before calling the batch path. Card objects are
+        // only a C# convenience conversion to that ID, not held target pointers.
+        SuppressUnits(new[] { IdOf(a.FirstOrDefault()) }, IntArg(a, 1));
         return null;
     }
 
@@ -6175,24 +6171,14 @@ public sealed partial class CardApi
     /// 这是「抑制」的**真正实现体**（`SuppressUnit` 只是把单张卡包成数组转发进来，
     /// 见同文件 `:36484`），所以派发表里两个键都必须在。
     ///
-    /// 逐张调 <see cref="CardApi.SuppressUnit"/>：蓝图那一遍循环（`:35728-35738`
-    /// `Array_Length` → `Array_Get` → `GetCardFromID`）对每张卡做的唯一一件事就是
-    /// 走同一段 `SuppressMultipleUnits` 主体，所以"逐张调同一个函数"与蓝图等价。
-    ///
-    /// ⚠️ 队列要**先物化快照**：`SuppressUnit` 会跑触发器，触发器的效果可能
-    /// 反过来改这些卡（例如 `card_unit_cromwell_mk_iv`「When an enemy unit is pinned,
-    /// Suppress it.」那类连锁），在 `foreach` 里读正在被改的集合是错的
-    /// —— 与 `DoDamageMultipleCards`（本文件 `:2726`）同一条理由。
+    /// RULE-346: preserve raw IDs for the front notification; do not pre-resolve
+    /// an object snapshot or emit one notification per surviving target.
     /// </summary>
     private object? DoSuppressMultipleUnits(EffectContext c, object? r, object?[] a)
     {
-        var targets = new List<CardInstance>(EvalArray(r, a));
-
-        foreach (var target in targets)
-        {
-            SuppressUnit(target, IntArg(a, 1));
-        }
-
+        var ids = a.FirstOrDefault() is System.Collections.IEnumerable values and not string
+            ? values.Cast<object?>().Select(IdOf).ToArray() : Array.Empty<int>();
+        SuppressUnits(ids, IntArg(a, 1));
         return null;
     }
 

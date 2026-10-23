@@ -1,0 +1,207 @@
+{
+  "rule": "RULE-346",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_read_only_capture_pid": 24220,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-346",
+    "fresh_read_only_capture_pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 8,
+    "blueprint_bytes": 9464,
+    "native_stub_script_bytes": 0,
+    "front_builder_vectors": 1896,
+    "single_wrapper_vectors": 84,
+    "controlled_selection_vectors": 42,
+    "worker_rows_exact": 1896,
+    "regression_combinations": {
+      "batch_raw_notification": 5688,
+      "single_wrapper": 170,
+      "lookup_mutation": 4,
+      "total": 5862
+    },
+    "release_selftest": {
+      "passed": 717,
+      "total": 717,
+      "exit_code": 0
+    },
+    "scope": "Batch front notification/raw ID payload and per-iteration lookup. Active headless receiver adapter; actual persistent online handler not executed. Per-card body remains compatibility implementation. All cards fully certified0."
+  },
+  "authority": "Fresh read-only game process captures:7 positive Blueprint functions1363B; native CardFunctionsStub SuppressUnit script0 excluded. Reused full SuppressMultipleUnits8101B;8 scripts9464B redecoded against raw bytes/symbol headers, same current PE SHA. No game memory writes, injections, function calls or gameplay changes.",
+  "changes": [
+    "Replace per-card tail ZActionSuppressUnit with one front ZActionSuppressMultipleUnits for raw IDs before lookup/eligibility, including empty/missing/offboard/repeated IDs. Ordered fields cardsToSuppress(Value=-1,Text=semicolon-joined invariant signed decimal IDs without trailing separator),instigatorID(raw Value,empty Text).",
+    "Single dispatcher packs supplied ID directly without target lookup or fallback to receiver/context target. Card object wrapper converts ID; public object API also rebinds ID to current state.",
+    "Batch dispatcher preserves ID order and duplicates, resolves current State.ById at each iteration, then invokes existing private per-card compatibility body. Earlier callback replacement or movement affects later lookup/eligibility. No claim that full body is now native-equivalent."
+  ],
+  "models": {
+    "front_builder_vectors": 1896,
+    "single_wrapper_vectors": 84,
+    "controlled_selection_vectors": 42,
+    "scope": "Full decoded front0..190 calls notifier58B, controlled active receiver adapter, builder180B and full array873B/int131B helpers.158 arrays*6sources*2action gates. Wrapper64B full84 vectors. Valid-ID selection loop42 cases on words length1..3 over60/70, with body replaced at666 and native1284 continuation, stopping1117.",
+    "controls": "Array helper string/struct locals initialized. Actual persistent online handler not traversed. Selection predicates/notifier/per-card callback controlled; no invalid/null target per-card behavior, full suppression, or caller-array alias proof."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "combinations": 5862,
+    "batch_payload": 5688,
+    "single_wrapper": 170,
+    "lookup_mutation": 4,
+    "release": {
+      "passed": 717,
+      "total": 717,
+      "exit_code": 0
+    },
+    "scope": "Both sides;158 raw arrays*6sources*3input shapes=5688 all-offboard notification fixtures.168 single dispatcher cases with integer/object convenience and receiver/context decoys plus2public alias rebind cases.4callback mutation cases verify already emitted batch notification then replacement70 processed or moved-to-hand70 skipped. Existing suppression defense test now asserts native front batch-before-defense ordering."
+  },
+  "worker": {
+    "job": "20261023-174613-rule346-batch-suppression-payload-844345cb",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 1896,
+    "primary_comparison_exact": 1896,
+    "scope": "Private supplied-algorithm packet; no authority judgment/source edits/git publishing. Primary independently redecoded native scripts and compared every generated row."
+  },
+  "remaining": [
+    "Native already-suppressed objects continue into T58 and cleanup while skipping own OnSuppressed only; managed core still has early already-suppressed return. Known discrepancy not fixed in this round.",
+    "Complete T58/T11 query, callback, static-card lookup/cache, kredit and armor phases; final1117..1268 last-card covert reveal/null frame and qqq/out marshaling still unconverted.",
+    "Actual54B BP_OnlineMatch handler/persistent ubergraph receiver was captured but not traversed. Model explicitly uses controlled active headless receiver builder adapter. Full execution gate/frame/delegate state not certified.",
+    "Native caller-array const-reference/persistent-frame alias mutation/reentry is not proved; managed adapter copies IDs. Invalid GetCardFromID null-context output clearing/stale local bool semantics not certified; managed body skips missing ID.",
+    "New per-ID lookup test covers controlled live replacement/move only, not native UObject destruction validity. Public nullable source default and CardInstance arguments remain C# conveniences; native single wrapper accepts explicit int ID/source.",
+    "Card-version migration remains paused. Legacy hand-written aura/manual restore/unknown-mode adapters and transitive implementations remain; fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-notifier-native-20261023.json",
+      "sha256": "cc494050ff552129eac71e4ae1f74586a400c31aa35d8858aa1dc76298804597"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-value-helpers-native-20261023.json",
+      "sha256": "ef1f4406c74c5bf7410b06a3647e58fb03468837386d9ecc021bd3193b180fd7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-front-payload-model-20261023.json",
+      "sha256": "5c1dc3cb8fffd8423a8ea071c71ef8a762121559bcde44b81fab441b3075b17c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-id-resolution-model-20261023.json",
+      "sha256": "30893609644e8d300f3e41082b730fe30f431ec659b4871986140112417ba950"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule346-notifier.py",
+      "sha256": "1ad9b0b0a1928299effaa8b694b3389d67a0f531c078e2a597b2f2d75c694d0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule346-helpers.py",
+      "sha256": "a20411270cbd9b4840890c4d2ccd3777fe1f727c43d3972a77b5555e06593848"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule299-reset-notifier-chain.py",
+      "sha256": "3a930e7254e1b5adb3ea2f36868618f374b7e0002a3723ca7962b760798edc65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule346.py",
+      "sha256": "577c8c507627bcdb992cc078e00c14e9b9fffcf5710b8d98fcd062c779311d98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule346-payload.py",
+      "sha256": "ff9a9fb91a20975c2bd90ee6907277e8f1f6d140e1a389d71079e165b9e6a711"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule346-selection.py",
+      "sha256": "7d05aa49250cbd3a02cca2387952341c404bdc2164f5e8f525bb75568718fbe4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule346-tests.py",
+      "sha256": "2435ecd63f6b16f13bde3887e49ba5e474a1878fb7232a8872fa1c980aa92f8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule346.py",
+      "sha256": "ca8f448b6bfb7fa8a52072979ea52f12efa984f5fd5768aaae46b16df6a100d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule346-verified-20261023.json",
+      "sha256": "84a5cd8d71a5a86a2a076e0ef1decd4a1b229dd626ba289caf684bbd1beb221a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule346-selftest-initial.log",
+      "sha256": "07c01c4e3dd10074f54042228328949442070a586b9eb0712514631e5bb856fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule346-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule346-selftest-final.log",
+      "sha256": "ca9aeeb28052d741445213f20caaf09c9339c63606db7f2df9498421b7cf05ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule346-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule346\\spec.json",
+      "sha256": "7e95b436055fa331cfa69723853d50a14c89ae31f7a52e3f529f5af55b63dbe9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule346\\task.txt",
+      "sha256": "4769a739e537bdb7d0780ca917d20b035351594c0aa29e1eb1871a069d852ae9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule346\\cases.json",
+      "sha256": "7d1e15b26099b4c140993c0652fc177f339bab3e97079b6ab30a2b33f354ef51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule346\\primary-cases.json",
+      "sha256": "70433b71d0623dfc118947387cfee51505305f76ddb675881aac49e0246906da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule346\\generator.py",
+      "sha256": "901d0d7a2dea9bd00d2011d4e26233b11d959654f43812f275fcacdc8711b495"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-174613-rule346-batch-suppression-payload-844345cb\\job.json",
+      "sha256": "0dabdb544ca63d6334ffa8d495f966a59abccefbad4b1a0358f484f89a181082"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "fa30479bd804534019ec4a43faa34bbc586a3b1373acccd5872767b1977a095a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "2194f4646f2b606af3aaeca85bf1c0f8d71e947f2b525e18d92ce45383dcaa6f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "618755e874f7346fc0bd28b3263ffd7f09f232c21765febfb312d81c51bd672e"
+    }
+  ]
+}

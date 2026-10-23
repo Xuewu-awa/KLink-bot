@@ -548,6 +548,9 @@ internal static class SelfTest
         new("行动费共存：SetValue零键、普通抵消、临时撤销和mode5清理", OperationCostTypedCoexistence),
         new("压制行动费：直接mode3、临时保留、来源与隐蔽门", SuppressionOperationPhaseBoundary),
         new("压制行动费整合：攻防之后、通知后T10/T9、不再后置压平", SuppressionOperationIntegration),
+        new("批量压制：原始ID、重复、空数组及两字段前置通知", SuppressionBatchRawNotification),
+        new("单卡压制包装：无效ID不回退、按ID重取当前对象", SuppressionSingleRawWrapper),
+        new("批量压制重入：前项回调替换或移走后项时重新查找", SuppressionBatchLookupMutation),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7351,6 +7354,134 @@ internal static class SelfTest
         return null;
     }
 
+    private static List<int[]> SuppressionBatchIdWords()
+    {
+        var words = new List<int[]> { Array.Empty<int>() };
+        int[] alphabet = { -1, 0, 60, 70, 9999 };
+        for (int length = 1; length <= 3; length++)
+        {
+            void Append(int[] prefix)
+            {
+                if (prefix.Length == length) { words.Add(prefix); return; }
+                foreach (int id in alphabet) Append(prefix.Append(id).ToArray());
+            }
+            Append(Array.Empty<int>());
+        }
+        words.Add(new[] { int.MinValue, int.MaxValue });
+        words.Add(new[] { int.MaxValue, 0, int.MinValue, int.MaxValue });
+        return words;
+    }
+
+    private static bool HasSuppressionBatchPayload(GameState state, int[] ids, int source)
+    {
+        var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+        return actions.Length == 1 && actions[0].Name == "ZActionSuppressMultipleUnits"
+            && actions[0].Values.SequenceEqual(new[] {
+                ActionValue2.Str("cardsToSuppress", string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+                ActionValue2.Int("instigatorID", source) });
+    }
+
+    private static string? SuppressionBatchRawNotification(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var ids in SuppressionBatchIdWords())
+        foreach (int sourceId in new[] { -7, 0, 20, 9999, int.MinValue, int.MaxValue })
+        foreach (int shape in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var first = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            var second = state.CreateWithId(PlainUnit, side, 70, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object input = shape == 0 ? ids : shape == 1 ? ids.ToList()
+                : ids.Select(id => id == 60 ? (object)first : id == 70 ? second : id).ToArray();
+            engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { input, sourceId, null }, ctx, out _);
+            if (!HasSuppressionBatchPayload(state, ids, sourceId) || first.IsSuppressed || second.IsSuppressed)
+                return $"批量原始通知错误 side={side},ids={string.Join(';',ids)},source={sourceId},shape={shape}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionSingleRawWrapper(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { -1, 0, 60, 70, 9999, int.MinValue, int.MaxValue })
+        foreach (int sourceId in new[] { -7, 0, 20, 9999, int.MinValue, int.MaxValue })
+        foreach (bool wrapper in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            state.CreateWithId(PlainUnit, side, 70, CardLocation.Discard, 0);
+            var decoy = state.CreateWithId(PlainUnit, side, 80, side.HqOf(), 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Target = decoy, Controller = side };
+            object input = wrapper ? new CardInstance { CardId = id, Name = PlainUnit, Owner = side, Definition = source.Definition } : id;
+            engine.Api.InvokeByName("SuppressUnit", decoy, new object?[] { input, sourceId, null }, ctx, out _);
+            if (!HasSuppressionBatchPayload(state, new[] { id }, sourceId) || decoy.IsSuppressed)
+                return $"单卡ID被过滤或回退 id={id},source={sourceId},wrapper={wrapper},side={side}";
+        }
+        foreach (var side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 0);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Attack = target.BaseAttack, Defense = target.Defense, OperationCost = target.BaseOperationCost };
+            var alias = new CardInstance { CardId = 60, Name = PlainUnit, Owner = side.Opposite(), Definition = target.Definition };
+            engine.Api.SuppressUnit(alias, 20);
+            var batches = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSuppressMultipleUnits").ToArray();
+            if (!target.IsSuppressed || alias.IsSuppressed || batches.Length != 1 || batches[0].Values[0] != ActionValue2.Str("cardsToSuppress", "60"))
+                return "公共对象包装未按ID查找当前对象";
+        }
+        return null;
+    }
+
+    private static string? SuppressionBatchLookupMutation(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool replace in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var first = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var old = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 2);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", side, 90, side.HqOf(), 3);
+            foreach (var card in new[] { first, old }) {
+                card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 4 };
+                card.BaseAttack = card.MaxAttack = 2; card.Defense = card.MaxDefense = 4;
+                card.BaseOperationCost = 7; card.TemporaryOperationCost = 0; card.Keywords.Clear();
+            }
+            observer.Keywords.Clear(); SetOperationCostRegistrations(observer, true, false);
+            CardInstance? replacement = null; var seen = new List<int>(); string? fault = null;
+            var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight
+                    || !Equals(observer.BlueprintVariables.GetValueOrDefault("_auditCostActive"), "changed")) return;
+                observer.BlueprintVariables.Remove("_auditCostActive");
+                int id = Convert.ToInt32(observer.BlueprintVariables["_auditCostTarget"]); seen.Add(id);
+                var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                if (actions[0].Name != "ZActionSuppressMultipleUnits" || actions.Count(x => x.Name == "ZActionSuppressMultipleUnits") != 1
+                    || actions[0].Values[0] != ActionValue2.Str("cardsToSuppress", "60;70")
+                    || !Equals(observer.BlueprintVariables.GetValueOrDefault("_auditCostSource"), 20)) fault = "批量通知未前置或来源改变";
+                if (id != 60) return;
+                old.Location = side.HandOf();
+                if (replace) {
+                    state.Remove(old);
+                    replacement = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 2);
+                    replacement.Definition = first.Definition;
+                    replacement.BaseAttack = replacement.MaxAttack = 2; replacement.Defense = replacement.MaxDefense = 4;
+                    replacement.BaseOperationCost = 7; replacement.TemporaryOperationCost = 0; replacement.Keywords.Clear();
+                }
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { new[] { 60, 70 }, 20, null }, ctx, out _);
+            if (fault is not null || old.IsSuppressed || !first.IsSuppressed || replacement?.IsSuppressed != (replace ? true : null)
+                || !seen.SequenceEqual(replace ? new[] { 60, 70 } : new[] { 60 }))
+                return $"逐项ID查找错误 side={side},replace={replace},seen={string.Join(',',seen)}: {fault}";
+        }
+        return null;
+    }
+
     private static string? OperationCostNotificationPayload(CardDatabase db)
     {
         var method = typeof(CardApi).GetMethod("NotifyOperationCostChanged", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
@@ -7663,8 +7794,9 @@ internal static class SelfTest
                 || (!ledger && (target.BuffsBySource[(20, false)].Defense != 2 || target.BuffsBySource[(30, false)].Defense != 3))
                 || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 }))
                 return $"压制防御入口/账本衔接错误 side={side},salvage={salvage},attackDiffers={attackDiffers},defense={defense},source={sourceId},entry={entry}";
-            if (numeric && Array.FindIndex(actions, x => x.Name == "ZActionGainDefense") >= Array.FindIndex(actions, x => x.Name == "ZActionSuppressUnit"))
-                return "压制防御通知应先于外层压制通知";
+            if (numeric && (Array.FindIndex(actions, x => x.Name == "ZActionSuppressMultipleUnits") < 0
+                || Array.FindIndex(actions, x => x.Name == "ZActionSuppressMultipleUnits") >= Array.FindIndex(actions, x => x.Name == "ZActionGainDefense")))
+                return "原生批量压制通知应先于压制防御数值通知";
         }
         return null;
     }

@@ -4201,6 +4201,24 @@ public sealed partial class CardApi
     /// </list>
     /// </summary>
     public void SuppressUnit(CardInstance target, int? instigatorId = null)
+        => SuppressUnits(new[] { target.CardId }, instigatorId ?? target.CardId);
+
+    // RULE-346: one raw batch notification precedes every lookup/eligibility
+    // check. Keep ID order/duplicates; resolve each ID when its turn arrives.
+    private void SuppressUnits(IReadOnlyList<int> cardIds, int instigatorId)
+    {
+        var ids = cardIds.ToArray();
+        _engine.FireSubAction("ZActionSuppressMultipleUnits", new[] {
+            ActionValue2.Str("cardsToSuppress", string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            ActionValue2.Int("instigatorID", instigatorId),
+        });
+        foreach (int id in ids)
+            if (State.ById(id) is { } target) SuppressUnitCore(target, instigatorId);
+    }
+
+    // Per-card compatibility body. Its already-suppressed guard, complete
+    // T58/T11 and trailing reveal still require separate native reconciliation.
+    private void SuppressUnitCore(CardInstance target, int? instigatorId)
     {
         // 守卫：在场 && 尚未被抑制 && 没有 `cantBeSuppressed` 自定义能力
         // （蓝图 L_01E9/L_0224/L_026A；后一条是本轮补的）。
@@ -4376,11 +4394,6 @@ public sealed partial class CardApi
         // Do not flatten operation fields or strip its typed ledger here:
         // its complete mutation/callback path already ran above.
         target.RecalculateStats();
-
-        _engine.FireSubAction("ZActionSuppressUnit", new[]
-        {
-            ActionValue2.Int("cardID", target.CardId),
-        });
 
         // ---- ★触发点C 广播：`OnAfterOtherCardSuppressed`（触发号 11，蓝图 L_15A5）----
         // 它在**摘除（L_054E）+ 数值回落（L_119E）之后**才发 —— 见上方次序表。
