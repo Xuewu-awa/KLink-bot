@@ -2909,6 +2909,10 @@ public sealed partial class CardApi
             return false;
         }
 
+        // RULE-366: all four native exports read getAndDecryptKredit for
+        // both the target and candidates. Temporary components and total-cost
+        // clamping do not participate in this predicate. The normal VM local
+        // program has precedence; this keeps its generic adapter consistent.
         string cardName = c.Self.Definition.Name;
         int expectedCost;
         int expectedFaction;
@@ -2917,22 +2921,22 @@ public sealed partial class CardApi
         switch (cardName)
         {
             case "card_event_red_banner":
-                expectedCost = target.KreditCost + 2;
+                expectedCost = unchecked(target.BaseKreditCost + 2);
                 expectedFaction = target.Definition.FactionId;
                 requireTank = false;
                 break;
             case "card_event_ural_factories":
-                expectedCost = target.KreditCost + 1;
+                expectedCost = unchecked(target.BaseKreditCost + 1);
                 expectedFaction = target.Definition.FactionId;
                 requireTank = false;
                 break;
             case "card_event_refit":
-                expectedCost = target.KreditCost + 3;
+                expectedCost = unchecked(target.BaseKreditCost + 3);
                 expectedFaction = target.Definition.FactionId;
                 requireTank = true;
                 break;
             case "card_event_stand_together_brothers":
-                expectedCost = target.KreditCost;
+                expectedCost = target.BaseKreditCost;
                 expectedFaction = 4; // Soviet, as in RandomlyChooseTank.
                 requireTank = true;
                 break;
@@ -2944,7 +2948,7 @@ public sealed partial class CardApi
         bool includeReserved = IsReservedForSession(c, c.Self.Name);
         return StaticCardPool(c, includeNotAttainable: false, includeReserved)
             .Any(card => card.Definition.FactionId == expectedFaction
-                && card.KreditCost == expectedCost
+                && card.BaseKreditCost == expectedCost
                 && (requireTank ? IsTank(card) : IsUnit(card)));
     }
 

@@ -1,0 +1,299 @@
+{
+  "rule": "RULE-366",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-366",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_accessor_backends_revalidated": 5,
+    "native_accessor_bytes": 1234,
+    "blueprint_functions_redecoded": 4,
+    "blueprint_bytes": 4053,
+    "opaque_properties": 91,
+    "native_model_vectors": 1728,
+    "native_getter_unique_pairs": 60,
+    "worker_raw_exact_rows": 1728,
+    "new_regression_combinations": {
+      "two_side_matrix": 3456,
+      "multi_candidate": 24,
+      "total": 3480,
+      "normal_vm_local_comparisons": 3456
+    },
+    "regression_before": {
+      "passed": 756,
+      "total": 758,
+      "failed": 2
+    },
+    "first_after_fix": {
+      "passed": 757,
+      "total": 758,
+      "failed": 1,
+      "cause": "New multi-candidate fixture inherited live reservation defaults; replaced with explicit unreserved policy, production filtering unchanged."
+    },
+    "release_selftest": {
+      "passed": 758,
+      "total": 758,
+      "exit_code": 0
+    },
+    "scope": "Four generic CheckHasUnitToSpawn adapter predicates must use raw current base for target and candidates, not temporary/total. Normal VM local already takes precedence, tested separately. Full cache/memo lifecycle/pool discovery/whole cards and opaque property headers not certified."
+  },
+  "authority": "Reused read-only captured card functions4053B and FName/symbol headers from same process, authoritative extracted card assets and installedPE. Four function byte streams redecoded completely. Five native cost accessor wrapper/backend mappings1234B matched currentPE. No new live capture, game call, injection or process write.",
+  "cards": [
+    "card_event_red_banner",
+    "card_event_ural_factories",
+    "card_event_refit",
+    "card_event_stand_together_brothers"
+  ],
+  "finding": "All four CheckHasUnitToSpawn exports call getAndDecryptKredit for target and each eligible candidate. First3add raw constants2/1/3; fourth compares same raw base. Generic hand adapter used legacy aggregate KreditCost for both, incorporating temporary cost. Replace only these5reads with BaseKreditCost and keep arithmetic signed32. No total-cost clamp participates.",
+  "routing": "All four current card-ir exports already include CheckHasUnitToSpawn in locals, with Card input and HasUnitToSpawn output. KismetVm prioritizes local program over generic dispatch for self calls. This is an adapter consistency fix, not evidence that normal exported local-program execution previously used the broken adapter. Direct API/fallback behavior is repaired; full card semantics not certified.",
+  "model": {
+    "vectors": 1728,
+    "digest": "c94f586a4a88dc678412e237c5ee8720710f80120932fb708de841ff2ba67e23",
+    "dimensions": "4cards*4targetbases[-3,0,5,99]*3targettemps[-4,0,5]*3candidatebase offsets[-1,0,1]*3candidatetemps[-4,0,5]*2faction outcomes*2type outcomes",
+    "execution": "Entire decoded4functions interpreted, controlled one-candidate GetAllActiveStaticCards pool/unreserved policy and type primitives. getAndDecryptKredit delegates to actual installed-PE native base getter after controlled setters;60unique raw base/temp pairs emulated with salt fedcba98 and nonzero keys. Native result/memo Map_Add captured and foreign888false retained. No whole pool/session/card or crypto integrity proof.",
+    "semantic_scope": "Target faction fixed Soviet4, candidate4/5, valid target/objects/fresh local frame. Tests isolate fee interpretation and retain type/faction selection. Original function writes hasUnitToSpawn memo; primary model observes it, but generic adapter is only a bool predicate and does not gain equivalent memo writes in this change. Managed memo invalidation/cache lifecycle not certified.",
+    "opaque_property_headers": 91,
+    "asset_shape": "Runtime AST equals asset AST after alpha-renaming variable IDs with separate local/instance namespaces, object path leaf normalization and excluding type/rvalue/context metadata. This verifies branch/value-flow shape, not missing property headers/names/types. Raw symbol references retained as opaque pointer labels, not silently renamed."
+  },
+  "changes": [
+    "Use target.BaseKreditCost for expected cost in all4switch arms and card.BaseKreditCost for candidate comparison. Existing faction/type/session filtering retained; no new caching or random choices.",
+    "Add3456two-side fixtures and compare adapter result with actual current Kismet local export on every fixture. Inputs include target public37/-9, unrelated definition37/-9, independently varying current base/temp and candidate template temp, faction/type failure. No changes to shared production DB: tiny private fixture DB contains4events,HQ,and candidate.",
+    "Add24empty/multi-candidate cases. Swap candidate identities to make a match follow/precede the wrong candidate under actual sorted-name pool order. Explicit reservation policy marks fixture names unreserved to isolate predicate; no production rotation/filter changes."
+  ],
+  "regressions": {
+    "new_tests": 2,
+    "matrix": 3456,
+    "multi_candidate": 24,
+    "total": 3480,
+    "normal_vm_local_comparisons": 3456,
+    "before": "756/758pass,2new failures: target/candidate temporary costs incorrectly enter predicate, plus multi-candidate fixture.",
+    "initial_after": "757/758pass. Remaining new fixture inherited real reserved defaults for BT7/T34, corrected by explicit controlled coming-back policy. Initial logs retained. Later improved order fixture swaps names because static pool sorts by name rather than insertion order.",
+    "final": "758/758Release selftest,exit0."
+  },
+  "worker": {
+    "job": "20261024-031834-rule366-spawn-base-cost-f6c0a5bb",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 1728,
+    "raw_exact_rows": 1728,
+    "id_normalization": false,
+    "generator_executed": true,
+    "scope": "Private supplied predicate projection only. Primary executes captured whole functions and real base getter independently, validates every original row. Worker did not edit source or publish.",
+    "scope_deviation": "Worker reported creating then deleting2throwaway validation scripts under its TEMP directory, outside allowed packet. Explicitly recorded as deviation; accepted only independently verified JSON, not its scope-compliance claim."
+  },
+  "remaining": [
+    "This does not certify full four-card OnPlayedFromHand/random-spawn/targetability/session/memo lifecycle. Normal VM local program precedence remains in place; adapter memo side effects are a distinct unaligned boundary, not repaired here.",
+    "91runtime property headers/names unavailable. Asset alpha-renaming is structural correspondence only, not authoritative recovery of those headers. Native validity/pool/class/type interfaces controlled; extreme encryption overflow/hash errors not covered.",
+    "Full static GetStaticKredits implementation, arbitrary raw map import/alias/lifetime/frame/out ABI, complete UObject construction/refresh diagnostics and suppression trailing phases remain open. Other legacy aura/identity/nonbyte helpers remain separate.",
+    "Historical replays excluded, single-card version migration paused and fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-native-numeric-accessors-pe-20261023.json",
+      "sha256": "5d62ca964183de8f187a109409bc01c77f4df988575a90d3047fd29174a58cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\spawn-check-base-cost-functions-native-20261024.json",
+      "sha256": "f95bff01c6b4f743f99ea8d52f5680b45c9fe94302eb75dcdc703474c5626181"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\spawn-check-base-cost-native-model-20261024.json",
+      "sha256": "6efa26250eefd44cad0519bf2c12d068e3809bfdf9652edcad2e09fea2df219a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule366-spawn-checks.py",
+      "sha256": "5e2f01c4c9eee6ceeeb8a25e5ce571e4ae9fc4f46f6829d33e5fc2fd1ff6d9f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule366-spawn-base.py",
+      "sha256": "21789d72af4ad35c3cea7de256b8a5282cdb48ca2bc82fa6a0c3bde12e752774"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\compare-rule366-asset-shape.py",
+      "sha256": "8a4efcbede957fe23943271ef57c1acd5ceea00f47435ddce90487020de84170"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule366.py",
+      "sha256": "746c888b92423d883bdd481d3e6433a0365f01eb5219d154b47bacba85602fb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-verified-20261024.json",
+      "sha256": "abf115e1875e4fcbfd00f629f3cb1a6030f3731c326b4d1da5c874070fe9942b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule366\\task.txt",
+      "sha256": "2fc06d544854c19a9798ace96ed00103efbdbd8b213d8d12b96c4496f06486d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule366\\spec.json",
+      "sha256": "8e4a241497eb87017d8c670e167a0753d474fa42c16d0923d2d5c6ca195547ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule366\\generator.py",
+      "sha256": "37f57bc83ba8091ff6ccd36ce014cb39d0020e23ea93e6376f73921158983c5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule366\\cases.json",
+      "sha256": "1f19e0818914f40dc1b70cc55b7280deef76bb9650b00dab7efeebb8d3964d24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule366\\primary-cases.json",
+      "sha256": "f2e6f5a6057654c0c0b3e019be683b412cc30b3e1e850bece8a459349054eb25"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-031834-rule366-spawn-base-cost-f6c0a5bb\\job.json",
+      "sha256": "9cb5289ff03162d1485b0187ac2f66372588636ae3f0e978292968cafb7b1a79"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest-before.log",
+      "sha256": "fd06a07426337baa7f4a33acfe0bb140668fa963d1864e835dc5bad3d68d885a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest-after-initial.log",
+      "sha256": "d496be2d36e754567f0a9394ede8952ed57d7b4aa4591a5f4925c2523df1b48e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest-after-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest.log",
+      "sha256": "14e81a5c3ab58df7389599ea344ebb6ef345ecc73139f6583cb4d2071f68d409"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule366-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "548fa9439fd44540f828147cd938b2cc819779ea212da6cd28f1962114143c0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "e4ccb911d252a2cc8a5e00efa2a84e8a945e21b0723d0f847022bb423c08acc4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "9d96306dba85ade58941b67d4fe608633ebcdcb2e6863c556e595034cc13c829"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+      "sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_red_banner.functions.json",
+      "sha256": "bdaa7a5af3b48d2723439e9dd2d66008601fbc7f01f423a40cd7f6128bafba43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_red_banner.metadata.json",
+      "sha256": "31232efc6946969b5e2c50f97b106332abe515cb84583c1581d0f19493a953e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_red_banner.uasset",
+      "sha256": "f1a9b2431b19ab5c91f3595bc595669a32f4924d250c33683f946ad3aa50a15b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_red_banner.uexp",
+      "sha256": "a1e11af0a8b53c4c1135e01bb0508d3fd8b24957b2202338af964771928c1236"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_ural_factories.functions.json",
+      "sha256": "b1185e655d29711d74fe2795040f6da04e9908439d5a2443d76edf07409aaa97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_ural_factories.metadata.json",
+      "sha256": "7633bc891d8f254dcb56d0804e0be2756fd69084deb4b114e5d46ab3586bbc23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_ural_factories.uasset",
+      "sha256": "88df9199a6182d1282c0a7f0368293d1ff765aa4aa846d063cf323945c561c84"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_ural_factories.uexp",
+      "sha256": "3fffb93a3de137b6917378273e1e099922199a9f7330e234fa70d0092dab46a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Legions\\events\\card_event_refit.functions.json",
+      "sha256": "ee36de792aee1dc363ffc476dc34974e129c3098fcac32afc96d6015c9e80065"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Legions\\events\\card_event_refit.metadata.json",
+      "sha256": "2ebf39f127f6f8b291dc8a76cb55a2790a3a52de76437a6e1c609b5f14c9e7ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Legions\\events\\card_event_refit.uasset",
+      "sha256": "4d9e07b8086526631b3ee6bfeba979be0fec03f11704e010fd309a87d2c9b47f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Legions\\events\\card_event_refit.uexp",
+      "sha256": "4105e10df73e3a1e8780b4c108d46a76cc0f2b7c114bfc00da8170f2de169df2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\BrothersInArms\\events\\card_event_stand_together_brothers.functions.json",
+      "sha256": "b6bb74e4007de5d2a783c7ff3db44352b21d337579087a8a0cf9d94cdcc94069"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\BrothersInArms\\events\\card_event_stand_together_brothers.metadata.json",
+      "sha256": "29ef5e5148b1e38db2384e7cb7c44d3f3c5919d9629c4999b1ff4071530e9108"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\BrothersInArms\\events\\card_event_stand_together_brothers.uasset",
+      "sha256": "814ca03a28c178d315ef032383c9790cb83883c81f7ee4d32f7ba4ae17fad5ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\BrothersInArms\\events\\card_event_stand_together_brothers.uexp",
+      "sha256": "330b6db2a716b0de57e32ef1a35ba343c07ee3705c7324eeb2567f1ab3ab325f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-card-version-drift-native-20261020.json",
+      "sha256": "e4f14678ef96a1c1f0acc10adef2c1643a595b479ada667131ea365277af2a6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-receivers-native-20261021.json",
+      "sha256": "1aa24419531148b7319d5efaa2126fa9b4209d4fd05c94280c89d2df328b30c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-subaction-dispatch-native-20261021.json",
+      "sha256": "85183d61137aa286d805d74e9947b39afe7161f5c941761c19a4bfe78fab1608"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\turn-gameplay-restrictions-native-20261021.json",
+      "sha256": "975fa44965e0e91f9c0a592970cd8048e1df3c3b66bbc7e44a02f220b45c621f"
+    }
+  ]
+}

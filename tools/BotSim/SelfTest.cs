@@ -590,6 +590,8 @@ internal static class SelfTest
         new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
         new("建卡初始化费用：内部基础/临时费重建自公开模板字段", InitializeKreditPairFromDefinition),
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
+        new("生成候选判据：四张卡只比较基础费，忽略双方临时费", SpawnCheckUsesBaseKredit),
+        new("生成候选判据：空池及多个候选的顺序边界", SpawnCheckBaseKreditPoolOrder),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7517,6 +7519,79 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static CardDatabase SpawnCheckFixtureDatabase(CardDatabase db, IEnumerable<CardDefinition> candidates)
+    {
+        string[] names = { "card_location_berlin", "card_event_red_banner", "card_event_ural_factories", "card_event_refit", "card_event_stand_together_brothers" };
+        var definitions = names.ToDictionary(x => x, x => db.Require(x), StringComparer.Ordinal);
+        foreach (var card in candidates) definitions[card.Name] = card;
+        return (CardDatabase)typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single()
+            .Invoke(new object[] { definitions, new Dictionary<string, string>(StringComparer.Ordinal) });
+    }
+
+    private static string? SpawnCheckUsesBaseKredit(CardDatabase db)
+    {
+        foreach (var (name, delta, tank) in new[] { ("card_event_red_banner", 2, false), ("card_event_ural_factories", 1, false),
+                     ("card_event_refit", 3, true), ("card_event_stand_together_brothers", 0, true) })
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { -3, 0, 5, 99 })
+        foreach (int temp in new[] { -4, 0, 5 })
+        foreach (int offset in new[] { -1, 0, 1 })
+        foreach (int candidateTemp in new[] { -4, 0, 5 })
+        foreach (bool factionMatch in new[] { false, true })
+        foreach (bool typeMatch in new[] { false, true })
+        {
+            var candidate = new CardDefinition { Name = PlainUnit, Type = typeMatch ? "tank" : tank ? "infantry" : "order",
+                FactionId = factionMatch ? 4 : 5, CardSet = db.Require(PlainUnit).CardSet, Kredits = basis + delta + offset, KreditsBuff = candidateTemp };
+            var fixtureDb = SpawnCheckFixtureDatabase(db, new[] { candidate });
+            var (engine, state) = EmptyBoard(fixtureDb);
+            // Match the native model's explicitly unreserved candidate pool;
+            // production rotation data is independent of this cost predicate.
+            state.CardReservations = new CardReservationPolicy(new[] { new CardReservationChange(1,
+                Array.Empty<string>(), state.Database.All.Select(x => x.Name)) }, 1);
+            var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = PlainUnit, Type = "tank", FactionId = 4, Kredits = 37, KreditsBuff = -9 };
+            target.BaseKreditCost = basis; target.TemporaryKreditCost = temp;
+            target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? actual = engine.Api.InvokeByName("CheckHasUnitToSpawn", null, new object?[] { target, null }, ctx, out bool handled);
+            bool expected = offset == 0 && factionMatch && typeMatch;
+            var program = KismetLibrary.Default!.FindProgram(name, "CheckHasUnitToSpawn")!;
+            var local = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                new Dictionary<string, object?> { ["Card"] = target }, "HasUnitToSpawn");
+            if (!handled || !Equals(actual, expected) || !Equals(local.GetValueOrDefault("HasUnitToSpawn"), expected) || target.BaseKreditCost != basis || target.TemporaryKreditCost != temp
+                || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9 || fixtureDb.Require(PlainUnit) != candidate)
+                return $"生成候选应比较目标/候选基础费 {name}/{side}/{basis}/{temp}/{offset}/{candidateTemp}/{factionMatch}/{typeMatch}: {actual}";
+        }
+        return null;
+    }
+
+    private static string? SpawnCheckBaseKreditPoolOrder(CardDatabase db)
+    {
+        foreach (var (name, delta) in new[] { ("card_event_red_banner", 2), ("card_event_ural_factories", 1),
+                     ("card_event_refit", 3), ("card_event_stand_together_brothers", 0) })
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int shape in new[] { 0, 1, 2 })
+        {
+            // Static pools sort by name; swap identities so the match is
+            // actually after/before the wrong candidate, not just insertion order.
+            var match = new CardDefinition { Name = shape == 1 ? "card_unit_t_34" : "card_unit_bt_7", Type = "tank", FactionId = 4, CardSet = db.Require(PlainUnit).CardSet, Kredits = 5 + delta, KreditsBuff = -4 };
+            var wrong = new CardDefinition { Name = shape == 1 ? "card_unit_bt_7" : "card_unit_t_34", Type = "tank", FactionId = 4, CardSet = match.CardSet, Kredits = 6 + delta, KreditsBuff = -1 };
+            var candidates = shape == 0 ? Array.Empty<CardDefinition>() : shape == 1 ? new[] { wrong, match } : new[] { match, wrong };
+            var (engine, state) = EmptyBoard(SpawnCheckFixtureDatabase(db, candidates));
+            // Match the native model's explicitly unreserved candidate pool;
+            // production rotation data is independent of this cost predicate.
+            state.CardReservations = new CardReservationPolicy(new[] { new CardReservationChange(1,
+                Array.Empty<string>(), state.Database.All.Select(x => x.Name)) }, 1);
+            var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 0);
+            var target = new CardInstance { CardId = 60, Name = PlainUnit, Owner = side, Definition = new CardDefinition { Name = PlainUnit, Type = "tank", FactionId = 4 }, BaseKreditCost = 5, TemporaryKreditCost = 5 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? actual = engine.Api.InvokeByName("CheckHasUnitToSpawn", null, new object?[] { target, null }, ctx, out bool handled);
+            if (!handled || !Equals(actual, shape != 0)) return $"生成候选空池/顺序错误 {name}/{side}/{shape}: {actual}";
         }
         return null;
     }
