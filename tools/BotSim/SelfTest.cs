@@ -570,6 +570,7 @@ internal static class SelfTest
         new("临时费用撤销缺项：不回退永久、不重算但同步来源关系", KreditTemporaryMissingNoPermanentFallback),
         new("临时费用撤销存在项：保留永久和其他字段的兼容边界", KreditTemporaryPresentCompatibility),
         new("临时费用撤销：撤销量通知先于自身/T45且不以最终差值为门", KreditTemporaryWithdrawalEvents),
+        new("普通费用相抵：清空来源账本及反向关系但保留其他键", KreditOrdinaryZeroLedgerCleanup),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7497,6 +7498,69 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static string? KreditOrdinaryZeroLedgerCleanup(CardDatabase db)
+    {
+        using var probes = InstallKreditCallbackProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int old in new[] { -3, 2 })
+        foreach (int other in new[] { 0, 1, 2 })
+        foreach (bool opposite in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (int withdrawalRequest in new[] { -123, 0, 123 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(target.Name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); SetKreditRegistration(card, card == observer); }
+            var selected = new CardBuff { SourceCardId = sourceId, Temporary = mode == 0, KreditCost = old,
+                AttackSetValue = other == 1 ? 0 : null, Attack = other == 2 ? 2 : 0 };
+            var oppositeBuff = new CardBuff { SourceCardId = sourceId, Temporary = mode != 0, KreditCost = 5 };
+            var foreign = new CardBuff { SourceCardId = 30, DefenseSetValue = 0 };
+            target.BuffsBySource[(sourceId, mode == 0)] = selected;
+            if (opposite) target.BuffsBySource[(sourceId, mode != 0)] = oppositeBuff;
+            target.BuffsBySource[(30, false)] = foreign;
+            target.RecalculateStats(); target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
+            var actualSource = state.ById(sourceId);
+            actualSource?.CardsBuffedByThisCard.AddRange(new[] { 888, 60 });
+            var phases = new List<string>(); var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.SingleOrDefault(x => x.BlueprintVariables.ContainsKey("_auditKreditPhase")); if (actor is null) return;
+                phases.Add((string)actor.BlueprintVariables["_auditKreditPhase"]!); actor.BlueprintVariables.Remove("_auditKreditPhase");
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, -old, mode, true, null }, ctx, out _);
+            bool hasCurrent = other != 0 || opposite;
+            var isBuffed = engine.Api.InvokeByName("isBuffedByCard", target, new object?[] { sourceId }, ctx, out _);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            var expectedPhases = sourceId == 60 ? new[] { "other" } : new[] { "own", "other" };
+            if (selected.KreditCost != 0 || target.BuffsBySource.ContainsKey((sourceId, mode == 0)) != (other != 0)
+                || !Equals(isBuffed, hasCurrent) || target.BuffsBySource.Count != 1 + (other != 0 ? 1 : 0) + (opposite ? 1 : 0)
+                || (actualSource is not null && !actualSource.CardsBuffedByThisCard.SequenceEqual(hasCurrent ? new[] { 888, 60 } : new[] { 888 }))
+                || !phases.SequenceEqual(expectedPhases) || notices.Length != 1 || notices[0].Values.Single(x => x.Name == "costAdded").Value != -old)
+                return $"费用相抵账本/来源/通知错误 {side}/{mode}/{old}/{other}/{opposite}/{sourceId}";
+            state.ActionLog.Clear(); phases.Clear(); int rawBefore = target.KreditCost;
+            engine.Api.InvokeByName("ChangeKreditCost", null, new object?[] { target, sourceId, withdrawalRequest, 4, true, null }, ctx, out _);
+            bool withdrew = mode == 1 && opposite;
+            hasCurrent = other != 0 || (mode == 0 && opposite);
+            notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionSetKreditCost").ToArray();
+            isBuffed = engine.Api.InvokeByName("isBuffedByCard", target, new object?[] { sourceId }, ctx, out _);
+            if (!Equals(isBuffed, hasCurrent)
+                || (actualSource is not null && !actualSource.CardsBuffedByThisCard.SequenceEqual(hasCurrent ? new[] { 888, 60 } : new[] { 888 }))
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreign) || foreign.DefenseSetValue != 0
+                || (other != 0 && (!ReferenceEquals(target.BuffsBySource[(sourceId, mode == 0)], selected)
+                    || selected.AttackSetValue != (other == 1 ? 0 : null) || selected.Attack != (other == 2 ? 2 : 0)))
+                || !phases.SequenceEqual(withdrew ? expectedPhases : Array.Empty<string>())
+                || notices.Length != (withdrew ? 1 : 0) || (withdrew && notices[0].Values.Single(x => x.Name == "costAdded").Value != -5)
+                || (!withdrew && target.KreditCost != rawBefore) || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9)
+                return $"相抵后临时撤销不应复活空来源或丢其他键 {side}/{mode}/{old}/{other}/{opposite}/{sourceId}/{withdrawalRequest}";
         }
         return null;
     }

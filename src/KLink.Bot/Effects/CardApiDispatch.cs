@@ -4397,6 +4397,11 @@ public sealed partial class CardApi
         }
         buff.KreditCostSetsAbsoluteValue =
             changeType is ChangeTypeSetValueReal or ChangeTypeSuppress;
+        // RULE-356: native ordinary accumulation deletes the selected key
+        // when the sum is zero. Prune only an otherwise empty source slot;
+        // RemoveBuffEntry preserves a relation still owned by another slot.
+        if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && buff.IsEmpty)
+            RemoveBuffEntry(target, (sourceId, temporary));
         target.RecalculateStats();
 
         NotifySetKreditCost(target.CardId, target.TotalKreditCost, sourceId, rawAmount, changeType);

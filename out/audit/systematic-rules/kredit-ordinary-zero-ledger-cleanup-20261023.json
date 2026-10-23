@@ -1,0 +1,171 @@
+{
+  "rule": "RULE-356",
+  "date": "2026-10-23",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-356",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 19614,
+    "native_model_vectors": 216,
+    "worker_rows_exact": 216,
+    "new_regression_combinations": 432,
+    "release_selftest": {
+      "passed": 737,
+      "total": 737,
+      "exit_code": 0
+    },
+    "scope": "Ordinary mode0/1 accumulated sum0 removes fee key, otherwise empty source slot and reverse relation; preserve other typed fields/opposite slot/foreign source. Followup mode4 no ghost source. Independent current numeric migration and artificial zero-present fee key representation still pending."
+  },
+  "authority": "Reuse authoritative read-only captured Blueprint bytes.8support functions19614B raw/FName/symbol-header redecoded and currentPE SHA checked. Direct main2759+ledger6267+T45forward84+query1174=10284B. No fresh battle/client execution or memory-write claim.",
+  "native": "ChangeBuffsFromCards modes0/1:3025 finds selected typed key;3222 adds old+request;3268 compares0;3316 removes selected key if zero.1543..1842 removes empty source map or rewrites retained other keys.2471..3024 synchronizes source reverse IDs. Request0 early-return remains unchanged. Whole main still notifies/calls hooks for nonzero request regardless selected sum0.",
+  "changes": [
+    "After ordinary fee accumulation and legacy-absolute flag update, prune only an otherwise empty source slot using existing RemoveBuffEntry. Preserve unrelated typed payloads, opposite temporary/permanent slot and foreign sources; helper removes reverse relation only if neither slot remains.",
+    "No new fee presence field. Native ordinary cancellation deletes its key rather than retaining a present-zero key. Prior pending artificial/raw zero-present key representation remains separate; no independent current numeric storage migration included."
+  ],
+  "models": {
+    "vectors": 216,
+    "dimensions": "2modes*2old amounts*3other-key cases*2opposite-fee states*3source IDs*3withdraw requests",
+    "scope": "Whole main ordinary cancellation(-old) then mode4 withdraw, each executing whole type2 ledger and native T45 query/forward. Current selected key is temp/permanent; other none/attack_SetValue0/attack_tempBuffGive2, optional opposite fee5, foreign30 defense_SetValue0. Checks selected-zero removal/current source map pruning and reverse arrays after cancellation; checks final maps/relationships and withdrawal events. Sources20/self60/absent9999. Post-withdraw selected-mode0 retains optional permanent5; selected-mode1 withdraws optional temp5. Missing temporary no events. Validity/crypto/map/enum/frame/getter interfaces controlled, not full numeric runtime certification."
+  },
+  "regressions": {
+    "new_tests": 1,
+    "combinations": 432,
+    "release_passed": 737,
+    "release_total": 737,
+    "exit_code": 0,
+    "scope": "Native216-case dimensions*both sides. Uses existing own/T45 probes, isBuffedByCard query and reverse arrays after cancellation and followup withdrawal. Nonzero cancellation still notifies with raw -old and runs own/T45; withdrawal notifies -5 only when opposite temporary exists. Zero-valued attack SetValue, other attack field, opposite fee and foreign zero field retained. Public fees37/-9 unchanged; missing temporary does not recalculate legacy raw fee. No claim legacy numeric adapter matches native all states."
+  },
+  "worker": {
+    "job": "20261023-221942-rule356-cost-zero-ledger-a93b517c",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 216,
+    "primary_comparison_exact": 216,
+    "scope": "Private supplied mechanical map/reverse/withdraw-event projection. Primary independently executed full captured functions and compared every row. Worker not authority/source editor/publisher."
+  },
+  "remaining": [
+    "Independent current base/temp fee numeric storage, numerical write/copy/reset chains and generic RecalculateStats migration remain pending. Current notification totals still use legacy aggregate.",
+    "Raw present-zero temporary key semantics remain unrepresented; ordinary cancellation does not create such a key. Absolute typed fee ledger/modes2/3/unknown, suppression5604/downstream and legacy public/aura adapters remain incomplete.",
+    "Managed split slots are a compatibility projection of one native source BuffMap; all aliasing/empty-map representation/zero-key cross-slot lifecycle, TSet registration, qqq/frame and UObject validity not certified. Model admits positive source IDs and valid buffable target, fixed enum/container behavior.",
+    "Headless assumes ActionProcess=true; this round does not migrate execution routing. Version migration paused, historical replays not authority, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-kredit-native-20261023.json",
+      "sha256": "d2633797acc6f6baa703587b4836aba001d0b9a70ba6c72fc6a739301f75dc0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-entry-helpers-native-20261023.json",
+      "sha256": "613853ce4d2ca4426fa39043753bef7efb16a1044edf43267bffbb6cf2066696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-trigger-query-all-native-20261022.json",
+      "sha256": "9e079955424a6564f68aed24eca1b4d63fba614a9bf968c33063a9b65de9105b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\kredit-ordinary-zero-cleanup-native-model-20261023.json",
+      "sha256": "80842eb23f41d72766154397606df7e541d8898f1602c726a1e119850cba9e76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule356-zero-cleanup.py",
+      "sha256": "cdce91d9b19f4ee85e3e56592dc2034155c04d1a892636d8232c8b3771c5f7a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule356.py",
+      "sha256": "bb8d3f985bd6a95cdca812a1849d1dacc86df5b03ac4a432017f696bfc875872"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule356-verified-20261023.json",
+      "sha256": "fe9510120a7e6737ffc5c89b5a2443eac8621ff8ff3fdfbc40df07054c78a2cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule356-selftest.log",
+      "sha256": "bb9faae0a556065962c2cec364acd0e85762006d30504e6c47bdf35d68ef836d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule356-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule356-patch-notes.txt",
+      "sha256": "15aa06c8c001a7abf5728e9856db45e0bf747896d34df8b7744a0cbbca7b8cbd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule349.py",
+      "sha256": "dc8790e6e49fb739d8350f065768fb152bde1d88938ed3cf5bcd3343bf97cb2d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule354.py",
+      "sha256": "d94ff87a1cb804ab36bbd50545870454e83c1f9fba2d6b4e9eb8403aeed524f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule356\\spec.json",
+      "sha256": "06cc41d8252e849553a757cb8c446fa163f491ce45da665ff9b970c66289ad35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule356\\task.txt",
+      "sha256": "d01b4d82ba142e88b679ccd69794d0f94e7986dadd264da4fac921c052446bae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule356\\cases.json",
+      "sha256": "38066b26a6f9041ae4b42c52ad60bc1291eb710126d67b4e9ddd6a9cceee5447"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule356\\primary-cases.json",
+      "sha256": "5de1da607628c644f8267c5e403b50cfc22a5ecdd94676ce0fcfa37f36ec8ee9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule356\\generator.py",
+      "sha256": "510c4dacb2546b8f87c0861bb89204155530fbbbfb1106ef4cd17924bc4da813"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-221942-rule356-cost-zero-ledger-a93b517c\\job.json",
+      "sha256": "98c5e52fc09d5abb67729e178fa77d89f30d9b8002d7451a90c6e8ff8b900863"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "abba2507b306e8ff45b0f2e615dfcc22410a6f079f8c597684d933a0c0155508"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "a2489696ef3b7fe3863c3df3a7bccc98e806aeaab4d495daff4320940ce61a96"
+    }
+  ]
+}
