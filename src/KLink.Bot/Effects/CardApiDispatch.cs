@@ -429,7 +429,8 @@ public sealed partial class CardApi
             // to 0..99. Attack is still the legacy flat value; split arithmetic
             // and combat consumers require a separate migration.
             ["getTotalAttack"] = (c, r, a) => Math.Clamp(SelfArg(c, r, a)?.Attack ?? 0, 0, 99),
-            ["getTotalDefense"] = (c, r, a) => SelfArg(c, r, a)?.Defense ?? 0,
+            // RULE-334: native total getter clamps the independent decrypted value.
+            ["getTotalDefense"] = (c, r, a) => Math.Clamp(SelfArg(c, r, a)?.Defense ?? 0, 0, 99),
             ["getCardsBuffedByThisCard"] = (c, r, a) => GetCardsBuffedByThisCard(c, r, a),
             ["GetTurnNumber"] = (c, r, a) => GetTurnNumber(),
             ["GetRandomCard"] = (c, r, a) => GetRandomCard(AsList(a.FirstOrDefault()), TruthyArg(a, 1)),

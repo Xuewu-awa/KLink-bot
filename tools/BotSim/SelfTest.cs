@@ -523,6 +523,7 @@ internal static class SelfTest
         new("压制攻击整合：单张/批量/公共来源、保留临时攻击及到期撤销", SuppressionAttackIntegration),
         new("压制攻击观察者：先读旧防御数值，再进入防御处理", SuppressionAttackObserverState),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
+        new("总防御读取：原生0到99夹取，解密原值独立且无读取副作用", TotalDefenseReadBounds),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6667,6 +6668,28 @@ internal static class SelfTest
             if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
                 || state.ActionLog.SelectMany(x => x.SubActions).Any())
                 return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
+    }
+
+    private static string? TotalDefenseReadBounds(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int raw in new[] { int.MinValue, -100, -1, 0, 1, 50, 98, 99, 100, 123, int.MaxValue })
+        foreach (bool explicitReceiver in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, CardLocation.Discard, 0);
+            var decoy = state.CreateWithId("card_unit_t_34", side.Opposite(), 20, CardLocation.Discard, 0);
+            target.Defense = raw; decoy.Defense = 7;
+            string before = state.SnapshotJson();
+            var result = engine.Api.InvokeByName("getTotalDefense", explicitReceiver ? target : null, new object?[] { null },
+                new EffectContext { Engine = engine, State = state, Self = explicitReceiver ? decoy : target, Controller = side }, out bool handled);
+            var decrypted = engine.Api.InvokeByName("getAndDecryptDefense", explicitReceiver ? target : null, new object?[] { null },
+                new EffectContext { Engine = engine, State = state, Self = explicitReceiver ? decoy : target, Controller = side }, out bool rawHandled);
+            if (!rawHandled || decrypted is not int rawValue || rawValue != raw || !handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
+                || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"getTotalDefense范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
         }
         return null;
     }

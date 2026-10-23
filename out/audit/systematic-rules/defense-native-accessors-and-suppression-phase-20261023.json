@@ -1,0 +1,209 @@
+{
+  "rule": "RULE-334",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-334",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_wrappers": 3,
+    "native_backends": 3,
+    "wrapper_bytes": 627,
+    "backend_bytes": 441,
+    "native_pdata_fragments": 5,
+    "worker_exact_match": true,
+    "worker_memory_instructions": 52,
+    "native_emulation_vectors": 186,
+    "native_backend_calls": 558,
+    "crc_calls": 506,
+    "blueprint_functions_verified": 3,
+    "blueprint_bytes": 20111,
+    "suppression_defense_model_cases": 576,
+    "new_regression_combinations": 44,
+    "release_selftest": {
+      "passed": 690,
+      "total": 690,
+      "exit_code": 0
+    },
+    "scope": "Fix totalDefense Blueprint read bounds only. Exact native defense backends and576-case upper suppression defense reference model confirmed. Complete simulator defense mode3/typed ledger/notification, physical containers, frame defaults, callbacks/lifetime and whole suppression NOT certified."
+  },
+  "authority": "Current installed executable SHA matches the prior readonly UFunction mapping. Three native wrappers627B/backends441B verified against current PE and complete pdata spans. Three authoritative Blueprint bodies20111B independently redecoded. No current object/memory or game invocation claim.",
+  "native": {
+    "layout": {
+      "shared_xor_mask": "0x55c",
+      "divisor": "0x5b8",
+      "offset": "0x5bc",
+      "noise": "0x5c0",
+      "encrypted": "0x5c4",
+      "crc": "0x5c8",
+      "diagnostic_flag": "0x564"
+    },
+    "formula": "Raw defense decrypts one group, unlike attack total which reads two. Setter uses ((value*divisor+offset) XOR mask), CRC32 over encrypted/divisor/noise. Zero divisor returns POSITIVE100; totalDefense clamps raw to0..99, producing99 for zero divisor.",
+    "bounds": "Raw getter247B across3pdata fragments; total61B/1fragment; setter133B/1fragment. No zero-divisor attack sentinel assumption reused."
+  },
+  "change": "Blueprint getTotalDefense now clamps the existing scalar Defense read to0..99. getAndDecryptDefense remains the independent unbounded raw-value adapter. No scalar migration, encrypted-storage sentinel emulation or direct combat consumers changed.",
+  "native_emulation": {
+    "rule": "RULE-334",
+    "offline_only": true,
+    "normal_vectors": 160,
+    "zero_key_vectors": 26,
+    "total_vectors": 186,
+    "native_calls": 558,
+    "crc_calls": 506,
+    "case_digest_sha256": "bb6f6791be985a6e5c3ecc8666bda23eb7493c0065e7955b78a7b02482a4829b",
+    "scope": "Execute three captured full defense backends in Unicorn with real zlib CRC32 and synthetic object/buffers. Zero divisor returns100 and total clamps99. Normal setter checks entire4096B object against expected writes, getters leave it unchanged. Security cookie helper returns; successful CRC path only; no diagnostic failure/lifetime or arbitrary int32 multiply overflow proof. No game function calls/process writes/injection."
+  },
+  "suppression_defense_findings": [
+    "5363 writes maxDefense BEFORE5412 getTotalDefense and5453 strict comparison. Damaged/equal total never heals.",
+    "Greater branch5505 invokes ChangeDefense3 with absolute staticDefense; ordinary positive-source/buffability/current-total-positive guards apply.",
+    "Otherwise5658 calls complete ledger type1/mode3/amount0 directly, bypassing ChangeDefense source/buffability guards. Current-source original struct writeback and unqualified Suppress marker semantics apply, retaining temporary defense keys.",
+    "ChangeDefense3 records ledger first, then sets clamped absolute raw defense/max. In ActionProcess it notifies with RAW absolute template as gained, then destroys if total0. It does not invoke own/T6 SetValue callbacks nor T7 positive-gain callbacks; false ActionProcess returns after numeric write.",
+    "Source20 original defense_permBuff2/SetValue0 can survive mode3 original-struct writeback, while foreign defense permanent/SetValue keys are removed and foreign unrelated attack keys remain. Foreign reverse arrays are not visited; current source is synchronized at tail.",
+    "Existing SuppressUnit still directly reduces Defense, clears all represented defense amounts including temporary slots, and omits mode3 defense notification/source writeback. Existing DoChangeDefense3 still routes to additive logic. These confirmed gaps are NOT fixed or certified by this getter repair."
+  ],
+  "reference_model": {
+    "cases": 576,
+    "direct_ledger": 304,
+    "numeric": 68,
+    "notify": 34,
+    "destroy": 14,
+    "entry": "SuppressMultipleUnits5363",
+    "stop": "5558 before operation cost",
+    "calls": "Whole ChangeDefense3 and ChangeBuffsFromCards AST, source/buffability/ActionProcess varied, native-backed total read clamp.",
+    "controlled": "IsValid, source resolution, primitive containers/enum, encryption/key acquisition, ActionProcess, Destroy side effects; frame Temp_int_Variable0/tempInstigatorCardNone seeded, not current native frame initialization proof."
+  },
+  "regressions": {
+    "new_test_cases": 1,
+    "new_combinations": 44,
+    "coverage": "Both sides,11 raw values incl intMin/Max and99 boundaries, explicit/implicit receiver with decoy Self; verify capped total and unchanged raw getter, snapshots and action log.",
+    "release_passed": 690,
+    "release_total": 690,
+    "exit_code": 0
+  },
+  "deepseek": {
+    "job": "20261023-113421-rule334-defense-memory-ops-4f26ff95",
+    "status": "completed",
+    "exit_code": 0,
+    "mechanical_memory_instructions": 52,
+    "exact_primary_reconstruction": true,
+    "semantic_authority": false
+  },
+  "remaining": [
+    "Migrate absolute defense3/source typed ledger/temporary key preservation/notification and destruction ordering into simulator together; current compact HasNonOrdinaryDefenseEntry cannot distinguish typed SetValue from other defense keys.",
+    "Upper suppression operation/kredit/heavy armor/custom phases, full batch order/reentry/T58/T11/lifetime still pending.",
+    "Defense raw crypto initialization/zero-divisor and CRC diagnostics are not emulated in managed scalar storage. Direct combat/raw consumers, maximum/public copy/reset/receive paths not generally certified.",
+    "General default modes/zero-valued key presence, native frame defaults, physical TMap/TSet ordering, and full card-by-card semantic reconciliation incomplete."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-accessors-emulation-20261023.json",
+      "sha256": "735d3cfbc4b2470d8f29193f58e348ffb122ec5a0b894dc529f1194598303837"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppression-defense-phase-native-model-20261023.json",
+      "sha256": "64ab5ee758b20b33df4fb09015f7dfbc25023976719fc4184bd447c90f375f5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule334-pe-accessors.py",
+      "sha256": "f2aca91e5654306fc789c5bdbc9fccd21250af7beed2440aede4bd1489f04937"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule334-native-accessors.py",
+      "sha256": "1ac5e3d25b75b09f129e91b37463cd8889d973a41dec7880bebcd0224f64a2cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule334-suppression-defense.py",
+      "sha256": "a8ed5b7502b9bd3e959f86792a8fa799d4ab9e9bf3a105344b560600c60ea9cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule334-defense-accessors-verified-20261023.json",
+      "sha256": "fc3243f845d49450262f8c00799b22a14c3198f91086f5d42be76a2efb2d12bf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule334-selftest-release.log",
+      "sha256": "d74f753ea563de68a5af8f79fb069347f568e5703baa1f19704e4313b25de3e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule334-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule334\\functions.json",
+      "sha256": "2a1f0ea475dde97f45a5c9ae3e55efd165928bc1796834dcf1a4f41c9d5a7028"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule334\\task.txt",
+      "sha256": "4f7fe7133bf3d7c27f0c1c80eb322e06b16f890e7f1bcdcb4bd9d0140bd3bc58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule334\\memory-ops.json",
+      "sha256": "29ff41f40daefc0f952005a053841c88c6d4892eeaea1b8643501b760b144dee"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-113421-rule334-defense-memory-ops-4f26ff95\\job.json",
+      "sha256": "4a5e17eb39c8c7ab22fa5fe98805e6c0c5f11cf631a528dc71e0e76259298ea0"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "ce96057452e4109dab08f4c826af48499cf2cc19b7ae8033d1ec03746d098baf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "b30e63bca3549219e888b1c783388d80ff5c106b5f1773fb6f7274ccd735f7f9"
+    }
+  ]
+}
