@@ -1,0 +1,189 @@
+{
+  "rule": "RULE-341",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-341",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 9893,
+    "full_ordinary_ledger_cases": 12288,
+    "zero_main_with_full_ledger_cases": 2304,
+    "worker_rows_exact": 12288,
+    "regression_combinations": {
+      "zero": 4608,
+      "cancellation": 256,
+      "total": 4864,
+      "zero_after_cancellation": 256
+    },
+    "release_selftest": {
+      "passed": 706,
+      "total": 706,
+      "exit_code": 0
+    },
+    "scope": "Ordinary0/1 request0 complete no-op; accumulated zero removes chosen compact key and source relation only if no other fields/slots remain. Native typed ledger independently preserves SetValue0. Production absolute/ordinary same-source coexistence and raw base/temp numeric storage remain incomplete. Enum friendly string/frame and primitive implementation controlled, no full native lifetime/frame certification."
+  },
+  "authority": "Four previously captured authoritative Blueprint functions9893B redecoded against current PE SHA, including full ChangeOperationCost3171B and ChangeBuffsFromCards6267B. No new process/card-state claim. SDK ordinal3 verified; enum friendly text and frame payloads remain controlled in models.",
+  "changes": [
+    "Ordinary ChangeOperationCost modes0/1 with amount0 returns before GetOrCreateBuff and legacy recalculation. No source record creation, removal, repair of existing reverse arrays, numeric/public-stat changes, notification or callbacks. Guards still apply before the no-op.",
+    "Nonzero ordinary accumulation that results in an empty compact source slot now removes that slot and synchronizes valid source reverse list. Preserve other represented fields, opposite slot and foreign source.",
+    "A canceled sum still has a nonzero request and keeps ordinary action/callback eligibility. Removal of the ledger key is not treated as a zero-request no-op."
+  ],
+  "models": {
+    "full_ordinary_ledger": 12288,
+    "zero_main_with_full_ledger": 2304,
+    "details": "Ledger0/1 current/foreign masks include temporary/permanent2, SetValue0 and unrelated zero keys, requests-2/0/3, source20/9999. Full zero main uses raw base-3/0/105 and temp-4/0/6, calls full ledger and proves it returns before ActionProcess/query/callbacks with unchanged state.",
+    "controlled": "Map/array/enum/source/title/frame primitives. Physical native containers/order/lifetime, full numeric reentry and function frame defaults not certified."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "zero_request_combinations": 4608,
+    "cancellation_combinations": 256,
+    "zero_after_cancellation_calls": 256,
+    "release": {
+      "passed": 706,
+      "total": 706,
+      "exit_code": 0
+    },
+    "coverage": "Zero: both sides, modes0/1, nonpositive/existing/missing source, six compact shapes including absolute and empty record, raw negative/zero/over99 values, stale/present reverse list, all three flag combinations; preserve unrelated public kredit/armor and source object identity. Cancellation: both sides/modes, existing/missing source, old-3/+2, unrelated AttackSetValue0/armor/kredit, opposite slot, foreign source, skip and five-value notification."
+  },
+  "worker": {
+    "job": "20261023-163707-rule341-ordinary-cost-ledger-15150809",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 12288,
+    "primary_comparison_exact": 12288,
+    "scope": "Supplied mechanical algorithm only. Worker output independently compared structurally with every strict native ledger execution. No worker semantic judgment or source edits accepted."
+  },
+  "remaining": [
+    "Production base/temp operation storage and getter remain legacy; ordinary permanent numeric clamping and aggregate reconstruction can diverge. No full numerical equivalence claimed.",
+    "Same-source native SetValue key coexistence with ordinary permanent key is still not represented; existing compact absolute flag can collapse those meanings on nonzero ordinary calls. Native model covers preservation independently, but production cancellation regression excludes that unresolved case.",
+    "Ordinary request0 does not create a native zero key; prior present-zero keys remain untouched. Full typed ledger/set/suppress/veteran/unknown enum and their cleanup still incomplete.",
+    "Complete IsActionProcess execution gating, copy/reset/suppression/batch lifecycle, persistent frame/delegates, physical subscription order/object validity and reentrant numeric paths remain open. Fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-ordinary-ledger-model-20261023.json",
+      "sha256": "ce885f0027265ea4f25a0f64b9ae215e8cf8a86ff23b5c25f96aebadb9dd5a62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-zero-main-ledger-model-20261023.json",
+      "sha256": "92c4e63414d9f6530b3c8442b6681eb47cbef10cefa4c0e446e944785e88b868"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule341.py",
+      "sha256": "73149f3de22dfe45ac3d955e8df65070999db62e4328838ee18dcbb094518d68"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule341-ledger.py",
+      "sha256": "c9c2980d0fe3d329c7b321ac38e058fb083a23a14a421e8011263108e33a044d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule341-zero-main.py",
+      "sha256": "48611990ba6d297e755b0bf37995d2653e8f9468b7bf7b0b14ed310bf9b74a96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule341-tests.py",
+      "sha256": "d148fb5c7adac8610c4e559ca2d1530946cbc29fe4e90e0d7491024182c44cd0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule341-verifier.py",
+      "sha256": "065fc5f03f9179558a3806bbfcc5be83f8fc032d86d44983513add9f36add2bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule341.py",
+      "sha256": "dc8133d0540b9d98ae944ad7da7235e1ec523dda5b64f093c72ff680f7497971"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule341-verified-20261023.json",
+      "sha256": "4eac6feb3922bdefac0084c89d4a1424b8983e219735e1002ede66d3136a491c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule341-selftest.log",
+      "sha256": "ac7f052d1f2f9abae33d526663e580dc9c352e7a95e75799d1c2e6ec283e7bb0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule341-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\spec.json",
+      "sha256": "0830386fc87fae2c3468c32b124424e3f020ec7ab54b64e18572e5e4b5431e3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\task.txt",
+      "sha256": "8ef3a460fd44afc45401959cf80b27d0aed8fdf5121f6a05e9994729c13f57ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\cases.json",
+      "sha256": "a43fb1830f031cf2e4885f5c477eed60e64e57866aff99d3833f2aa258b529d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\primary-cases.json",
+      "sha256": "421b07d0835e73e839a61c47ba1055bf5188ba33ea3f0f9a23979d50d6177e98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule341\\generator.py",
+      "sha256": "12696789569b479ad7de804a365563207443c4a0a93f1199182e876d4b408ae6"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-163707-rule341-ordinary-cost-ledger-15150809\\job.json",
+      "sha256": "e8fb8b51f98d2a7d4c7f282fa619eb68038f8be943ad62d8a748c30ad4b0ba07"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "1e39eba1a25c17458abd359cc6bb5c63c2c6e5e4604aa340bd806594ba9f133c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1a5e17056a4b2fc699480c4e2826e9a0ece0e9c7a3a3d9c6cd12838dc2da8f55"
+    }
+  ]
+}

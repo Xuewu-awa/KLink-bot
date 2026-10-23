@@ -538,6 +538,8 @@ internal static class SelfTest
         new("行动费回调：自身后查T10、T10后查T9，快照与实时压制边界", OperationCostCallbackMutationMatrix),
         new("行动费重置路由：变化的绝对模式触发T9，mode4不触发", OperationCostResetFlagRouting),
         new("行动费mode4：只撤临时来源、负撤销量通知、skip与回调顺序", OperationCostTemporaryWithdrawal),
+        new("行动费普通零请求：不建账、不改现值、不修名单、不通知", OperationCostOrdinaryZeroNoOp),
+        new("行动费普通抵消：删本项、保留其他字段和来源", OperationCostOrdinaryCancellation),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6896,6 +6898,90 @@ internal static class SelfTest
             if (ActionCount() != (notify ? 1 : 0) || !callbacks.SequenceEqual(expectedCallbacks)
                 || (permanentBuff is not null && !ReferenceEquals(target.BuffsBySource[(sourceId, false)], permanentBuff)))
                 return "重复mode4不得删除永久项或再次通知/回调";
+        }
+        return null;
+    }
+
+    private static string? OperationCostOrdinaryZeroNoOp(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (int shape in Enumerable.Range(0, 6))
+        foreach (int raw in new[] { -3, 0, 105 })
+        foreach (bool relation in new[] { false, true })
+        foreach (int flags in Enumerable.Range(0, 8))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            var key = (sourceId, mode == 0);
+            if (shape != 0) {
+                var buff = new CardBuff { SourceCardId = sourceId, Temporary = mode == 0 };
+                if (shape == 1) buff.OperationCost = 2;
+                if (shape == 2) { buff.OperationCost = -5; buff.OperationCostSetsAbsoluteValue = true; }
+                if (shape == 3) buff.AttackSetValue = 0;
+                target.BuffsBySource[shape == 4 ? (sourceId, mode != 0) : key] = buff;
+            }
+            target.OperationCost = raw; target.KreditCost = -9;
+            target.Keywords.Add(Keyword.HeavyArmor); // zero request must not recalc unrelated fields either
+            source.CardsBuffedByThisCard.Add(888); if (relation) source.CardsBuffedByThisCard.Add(60);
+            var original = target.BuffsBySource.ToDictionary(kv => kv.Key, kv => kv.Value);
+            string before = state.SnapshotJson(); var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.InvokeByName("ChangeOperationCost", target,
+                new object?[] { target, sourceId, 0, mode, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0 },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            if (!handled || before != state.SnapshotJson() || target.OperationCost != raw || target.KreditCost != -9
+                || !target.Keywords.Contains(Keyword.HeavyArmor) || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any()
+                || target.BuffsBySource.Count != original.Count || original.Any(kv => !target.BuffsBySource.TryGetValue(kv.Key, out var value) || !ReferenceEquals(value, kv.Value))
+                || (shape == 2 && (original[key].OperationCost != -5 || !original[key].OperationCostSetsAbsoluteValue))
+                || !source.CardsBuffedByThisCard.SequenceEqual(relation ? new[] { 888, 60 } : new[] { 888 }))
+                return $"普通零行动费必须完全不变 side={side},mode={mode},source={sourceId},shape={shape},raw={raw},relation={relation},flags={flags}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostOrdinaryCancellation(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int previous in new[] { -3, 2 })
+        foreach (int otherField in Enumerable.Range(0, 4))
+        foreach (bool oppositeSlot in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            var key = (sourceId, mode == 0);
+            var chosen = new CardBuff { SourceCardId = sourceId, Temporary = mode == 0, OperationCost = previous,
+                AttackSetValue = otherField == 1 ? 0 : null, HeavyArmor = otherField == 2 ? 2 : 0, KreditCost = otherField == 3 ? -2 : 0 };
+            target.BuffsBySource[key] = chosen;
+            var opposite = new CardBuff { SourceCardId = sourceId, Temporary = mode != 0, OperationCost = 4, Attack = 1 };
+            if (oppositeSlot) target.BuffsBySource[(sourceId, mode != 0)] = opposite;
+            var foreign = new CardBuff { SourceCardId = 30, OperationCost = 2 };
+            target.BuffsBySource[(30, false)] = foreign;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 });
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeOperationCost", target,
+                new object?[] { target, sourceId, -previous, mode, false, skip, false }, ctx, out bool handled);
+            bool retained = otherField != 0;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (!handled || target.BuffsBySource.ContainsKey(key) != retained || chosen.OperationCost != 0
+                || (retained && (!ReferenceEquals(target.BuffsBySource[key], chosen)
+                    || chosen.AttackSetValue != (otherField == 1 ? 0 : null) || chosen.HeavyArmor != (otherField == 2 ? 2 : 0) || chosen.KreditCost != (otherField == 3 ? -2 : 0)))
+                || (oppositeSlot && (!ReferenceEquals(target.BuffsBySource[(sourceId, mode != 0)], opposite) || opposite.OperationCost != 4 || opposite.Attack != 1))
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreign) || foreign.OperationCost != 2
+                || (sourceId == 20 && !source.CardsBuffedByThisCard.SequenceEqual(retained || oppositeSlot ? new[] { 888, 60 } : new[] { 888 }))
+                || actions.Length != (skip ? 0 : 1)
+                || (!skip && !actions[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", sourceId),
+                    ActionValue2.Int("amount", -previous), ActionValue2.Str("changeType", mode == 0 ? "tempBuffGive" : "permBuff"), ActionValue2.Bool("skipAddToBattlelog", false) })))
+                return $"普通行动费抵消错误 side={side},mode={mode},source={sourceId},old={previous},other={otherField},opposite={oppositeSlot},skip={skip}";
+            string after = state.SnapshotJson(); int count = target.BuffsBySource.Count;
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, sourceId, 0, mode, false, false, false }, ctx, out _);
+            if (after != state.SnapshotJson() || target.BuffsBySource.Count != count)
+                return "抵消后的零请求不得重建账本";
         }
         return null;
     }

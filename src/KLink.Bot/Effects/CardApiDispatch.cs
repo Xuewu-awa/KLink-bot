@@ -4533,6 +4533,12 @@ public sealed partial class CardApi
         bool skipAction = TruthyArg(a, 5);
         bool skipAddToBattlelog = TruthyArg(a, 6);
 
+        // RULE-341: ChangeBuffsFromCards592..663 exits ordinary modes0/1
+        // on amount0 before writing any source relation. The main function
+        // also leaves numeric fields unchanged and sends no callbacks.
+        if (changeType is ChangeTypeTempBuffGive or ChangeTypePermBuff && amount == 0)
+            return null;
+
         if (changeType == ChangeTypeTempBuffRemove)
         {
             // RULE-340: native type3/mode4 removes only tempBuffGive for this
@@ -4587,6 +4593,9 @@ public sealed partial class CardApi
             valueChanged = amount != 0;
             buff.OperationCost += amount;
             buff.OperationCostSetsAbsoluteValue = false;
+            // Native ordinary accumulation removes the chosen key when its
+            // sum is zero. Keep any other represented fields/source slot.
+            if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, temporary));
         }
         else
         {
