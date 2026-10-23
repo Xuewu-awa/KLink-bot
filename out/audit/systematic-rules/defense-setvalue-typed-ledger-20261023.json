@@ -1,0 +1,178 @@
+{
+  "rule": "RULE-335",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-335",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_defense_functions_verified": 3,
+    "native_backend_bytes": 441,
+    "blueprint_functions_verified": 2,
+    "blueprint_bytes": 12010,
+    "full_ledger_model_cases": 2048,
+    "worker_rows_exact": 2048,
+    "regression_combinations": {
+      "typed_ledger_integration": 6144,
+      "clone_copy_snapshot": 12,
+      "additional_zero_cleanup": 24,
+      "total_new_or_extended": 6180
+    },
+    "release_selftest": {
+      "passed": 692,
+      "total": 692,
+      "exit_code": 0
+    },
+    "scope": "Defense SetValue2 typed ledger and represented-key cleanup/current-source cached writeback integrated. Existing set notification/own/T6 paths retained. Does not certify remaining compact defense modes, unrepresented generic keys/title, physical native maps/frame defaults, whole ChangeDefense or suppression3."
+  },
+  "authority": "Current installed PE exact SHA matches the prior readonly UFunction mapping; three defense native wrapper/backend bounds/bytes/disassembly reverified. Whole ChangeDefense5743B and ChangeBuffsFromCards6267B independently redecoded with symbol headers. No new current process/object claim.",
+  "findings": [
+    "ChangeBuffsFromCards type1/mode2 retains defense_SetValue as an independent raw integer key, including zero. It is not the delta between requested and old numeric defense.",
+    "The helper caches the original current-source struct by value before global cleanup. It removes represented defense permanent and SetValue keys globally while retaining temporary and unrelated keys, then writes original current source plus raw SetValue back. Current-source old permanent defense can consequently survive/reappear.",
+    "Native reverse relation sync occurs only for current source at tail. Foreign arrays remain unchanged even if their represented source record is pruned.",
+    "Previous simulator accumulated clamped numeric delta in compact Defense and merely marked HasNonOrdinaryDefenseEntry. This lost the absolute raw key and failed global cleanup/original-source rewrite."
+  ],
+  "changes": [
+    "Add nullable CardBuff.DefenseSetValue, clone/nonempty handling and deterministic DefenseSetValuesBySource snapshot. Null means absent; zero is present.",
+    "RecordDefenseSetLedger caches current permanent slot, cleans represented permanent/SetValue defense fields from permanent slots, prunes empty records without synchronizing foreign arrays, rewrites cached current slot with RAW SetValue, then synchronizes current source. Temporary slots and other represented fields survive.",
+    "SetDefenseValue path records this ledger before numeric update/notification/callbacks and does not also accumulate delta in ordinary Defense. Existing notification/Destroy/own/T6 scheduling is retained.",
+    "Legacy HasNonOrdinaryDefenseEntry remains opaque for unmigrated modes; it no longer represents new SetValue2 writes. No migration of unknown old opaque state is invented.",
+    "Correct old mixed-presence regression: Set5 followed ordinary-2 stores Defense=-2 and DefenseSetValue5 separately. Ordinary+2 then zeros only ordinary amount and retains SetValue/source relation."
+  ],
+  "verification": {
+    "whole_ledger_model_cases": 2048,
+    "worker_rows_exact": 2048,
+    "typed_ledger_integration_combinations": 6144,
+    "clone_copy_snapshot_combinations": 12,
+    "extended_ordinary_zero_cleanup_combinations": 24,
+    "release_passed": 692,
+    "release_total": 692,
+    "exit_code": 0,
+    "description": "Both sides/current and foreign16 masks/raw requests-3,0,105/existing or missing positive source/direct public and Blueprint entries. Mixed reverse-array seeds include absent/duplicates; verify unrelated zero attack SetValue and Suppress presence, temporary defense, notification raw request, numeric clamp, clone/copy/snapshot independence."
+  },
+  "worker": {
+    "job": "20261023-114505-rule335-defense-set-ledger-20544f06",
+    "status": "completed",
+    "exit_code": 0,
+    "role": "Mechanical2048-row fixture generation from primary-provided formulas only. Independently reconstructed by primary and matched complete authoritative AST model; not semantic authority."
+  },
+  "remaining": [
+    "SuppressMultipleUnits defense phase and DoChangeDefense3 still use legacy numeric/cleanup paths. Next integrate type1/mode3 marker/source writeback, temporary preservation and absolute defense notification/destruction ordering.",
+    "Defense modes0/4/5 and remaining mode keys still partly compact; HasNonOrdinaryDefenseEntry is opaque. Unrepresented generic unqualified SetValue keys and source title/cardName are not added or certified here.",
+    "Zero-valued ordinary permanent/temporary key presence is not fully represented; physical native map order/container behavior and frame default initialization remain controlled-model boundaries.",
+    "Public C# omitted source/invalid-target/source compatibility and IsValid vs IsAlive are not newly certified by positive-source integration. Current source raw ID lookup remains existing dispatch behavior.",
+    "Complete receive/reset/copy/reidentify and manual RestoreAfterSuppression semantics, reentry and real object lifetimes remain incomplete. No whole ChangeDefense/suppression/card semantic certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-set-full-ledger-model-20261023.json",
+      "sha256": "e25303d3c3e2ea107b1a41f741e7af26ff20a6e7c3c73bf73dec2720e18b7157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-death-generation-native-20261022.json",
+      "sha256": "c132d78733a2d9a671b5ea9bf2d183a6284d5ae93fe97e943822de1da35a7056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule335-packet.py",
+      "sha256": "8d373ba1b944c68d06d37ca2cf9fb247c64b1d4a2b1a5937e5d00c0052f22298"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\implement-rule335.py",
+      "sha256": "ca73e870510411a5821b83d420f9f2d9019edd9cfa5ce2ae8746c19194e82efa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule335-tests.py",
+      "sha256": "89de02c855afcd8383fd6085bc5db484d58c3ae67cb8b19671dc28f63d72745d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule335-defense-set-ledger.py",
+      "sha256": "deaaf21a74ac2ca235f61e7833777a8c75772957e084924f575747f3eab664c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule335-defense-set-ledger.py",
+      "sha256": "e84ac9f3fc7dbde3280a4eecb6239739dc336fcd43adf1abfadca448eb36f7c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule335-defense-set-ledger-verified-20261023.json",
+      "sha256": "a5ee1b91f4300b50540655125f0fc1ff0d1efdaf90f121275798d78e46e49d19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule335-selftest-initial.log",
+      "sha256": "f9164b62949240b589b71e5a64212e24dd6856ff2b9e75eef5d741826098914d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule335-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule335\\spec.json",
+      "sha256": "60ae776c04abb374ed8f99dcca86e8850f378fe48f1e0ebe134b091a10baaf72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule335\\task.txt",
+      "sha256": "b23ab1211877224dd1c2344b0c5102a787b90f067d31a0c3b95f30021b46c506"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule335\\cases.json",
+      "sha256": "4bbe64905cc6914d443f16d434524789cdf2ddb6e3aa8ea293c24420d3994e79"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-114505-rule335-defense-set-ledger-20544f06\\job.json",
+      "sha256": "3cb209fb7317add6440d784932450754a26802ccd50201a367920136f59af70e"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "2bd4e3b8868e1488aed6facada9d23c695b2dbe335b6aaba334b28cce7f66c1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "ecd618d3008030f8f5af6e2818242ac080189a30075967082b14c87614094c71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7c70f3738ef5fbb99a8852fbe4890b3f7f4ea1c07228831f8d09e0cf01887cdd"
+    }
+  ]
+}

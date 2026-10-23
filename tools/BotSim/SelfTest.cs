@@ -524,6 +524,8 @@ internal static class SelfTest
         new("压制攻击观察者：先读旧防御数值，再进入防御处理", SuppressionAttackObserverState),
         new("总攻击读取：原生0到99夹取，显式/隐式接收者，读取不改状态", TotalAttackReadBounds),
         new("总防御读取：原生0到99夹取，解密原值独立且无读取副作用", TotalDefenseReadBounds),
+        new("防御设值账本：分类清理、当前旧结构回写、临时项及反向名单", DefenseSetTypedLedger),
+        new("防御设值零键：非空、克隆与复制快照独立保留原始值", DefenseSetKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6672,6 +6674,86 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? DefenseSetTypedLedger(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int cm in Enumerable.Range(0, 16))
+        foreach (int om in Enumerable.Range(0, 16))
+        foreach (int value in new[] { -3, 0, 105 })
+        foreach (bool exists in new[] { false, true })
+        foreach (bool dispatch in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var foreign = state.CreateWithId("card_unit_t_34", side, 30, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            int id = exists ? 20 : 9999;
+            var reverse = ((cm + om) % 3) switch { 0 => Array.Empty<int>(), 1 => new[] { 888 }, _ => new[] { 60, 60, 888 } };
+            source.CardsBuffedByThisCard.AddRange(reverse); foreign.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 888 });
+            void Seed(int sourceId, int mask) {
+                if ((mask & 11) != 0) target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId,
+                    Defense = (mask & 1) != 0 ? 2 : 0, DefenseSetValue = (mask & 2) != 0 ? 0 : null,
+                    AttackSetValue = (mask & 8) != 0 ? 0 : null, HasSuppressLedgerEntry = (mask & 8) != 0 };
+                if ((mask & 4) != 0) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, Defense = 3 };
+            }
+            Seed(id, cm); Seed(30, om);
+            var unrelated = new CardBuff { SourceCardId = 99, Attack = 2, HasNonOrdinaryDefenseEntry = true };
+            target.BuffsBySource[(99, false)] = unrelated;
+            target.Defense = 3; target.MaxDefense = 123;
+            if (dispatch) engine.Api.InvokeByName("ChangeDefense", target, new object?[] { target, id, value, 2, true, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.Api.SetDefenseValue(target, value, exists ? source : null, instigatorId: id);
+            var current = target.BuffsBySource[(id, false)]; bool foreignPresent = (om & 8) != 0;
+            int expectedCount = 2 + ((cm & 4) != 0 ? 1 : 0) + ((om & 4) != 0 ? 1 : 0) + (foreignPresent ? 1 : 0);
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (current.Defense != ((cm & 1) != 0 ? 2 : 0) || current.DefenseSetValue != value
+                || current.AttackSetValue != ((cm & 8) != 0 ? 0 : null) || current.HasSuppressLedgerEntry != ((cm & 8) != 0)
+                || current.HasNonOrdinaryDefenseEntry || current.IsEmpty || target.BuffsBySource.Count != expectedCount
+                || target.BuffsBySource.ContainsKey((30, false)) != foreignPresent
+                || (foreignPresent && (target.BuffsBySource[(30, false)].Defense != 0 || target.BuffsBySource[(30, false)].DefenseSetValue.HasValue
+                    || target.BuffsBySource[(30, false)].AttackSetValue != 0 || !target.BuffsBySource[(30, false)].HasSuppressLedgerEntry))
+                || ((cm & 4) != 0 && target.BuffsBySource[(id, true)].Defense != 3)
+                || ((om & 4) != 0 && target.BuffsBySource[(30, true)].Defense != 3)
+                || !ReferenceEquals(target.BuffsBySource[(99, false)], unrelated)
+                || !foreign.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 888 })
+                || !source.CardsBuffedByThisCard.SequenceEqual(exists && !reverse.Contains(60) ? reverse.Append(60) : reverse)
+                || target.Defense != Math.Clamp(value, 0, 99) || target.MaxDefense != Math.Clamp(value, 0, 99)
+                || gains.Length != 1 || gains[0].Values.Single(x => x.Name == "gained").Value != value
+                || gains[0].Values.Single(x => x.Name == "instigatorID").Value != id)
+                return $"防御SetValue分类清理/旧结构回写错误 side={side},cm={cm},om={om},request={value},exists={exists},dispatch={dispatch}";
+        }
+        return null;
+    }
+
+    private static string? DefenseSetKeyLifecycle(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int value in new[] { 0, 5, 105 })
+        foreach (bool temp in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, side.HqOf(), 1);
+            target.Defense = 3;
+            if (temp) target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, Defense = 3 };
+            engine.Api.SetDefenseValue(target, value, source);
+            var entry = target.BuffsBySource[(20, false)]; var clone = entry.Clone();
+            var copy = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.Invoke(null, new object[] { target })!;
+            var snapshot = target.Snapshot();
+            if (entry.IsEmpty || clone.IsEmpty || clone.DefenseSetValue != value
+                || copy.BuffsBySource[(20, false)].DefenseSetValue != value || snapshot.DefenseSetValuesBySource["20/False"] != value)
+                return "零防御SetValue键须独立存在于账本、克隆、复制与快照";
+            clone.DefenseSetValue = null; copy.BuffsBySource[(20, false)].DefenseSetValue = null;
+            if (target.BuffsBySource[(20, false)].DefenseSetValue != value || snapshot.DefenseSetValuesBySource["20/False"] != value)
+                return "防御SetValue复制/快照共享可变账本";
+            if (!temp) {
+                string before = state.SnapshotJson(); entry.DefenseSetValue = null;
+                if (!entry.IsEmpty || before == state.SnapshotJson()) return "设值键移除后非空判据或状态指纹未反映变化";
+            }
+        }
+        return null;
+    }
+
     private static string? TotalDefenseReadBounds(CardDatabase db)
     {
         foreach (var side in new[] { Side.Left, Side.Right })
@@ -8070,6 +8152,7 @@ internal static class SelfTest
             b => b.Guard = 1, b => b.Destruction = 1, b => b.Pinned = 1,
             b => b.CustomAbilityDetails.Add("audit-presence"), b => b.KreditCostSetsAbsoluteValue = true,
             b => b.OperationCostSetsAbsoluteValue = true, b => b.HasNonOrdinaryDefenseEntry = true,
+            b => b.DefenseSetValue = 0,
         };
         foreach (var side in new[] { Side.Left, Side.Right })
         foreach (bool sourceExists in new[] { false, true })
@@ -8122,10 +8205,14 @@ internal static class SelfTest
             target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed); target.Defense = target.MaxDefense = 3;
             engine.Api.SetDefenseValue(target, 5, source);
             engine.Api.ChangeDefense(target, -2, source);
-            if (!target.BuffsBySource.TryGetValue((20, false), out var buff) || buff.Defense != 0
-                || !buff.HasNonOrdinaryDefenseEntry || buff.IsEmpty || !buff.Clone().HasNonOrdinaryDefenseEntry
+            if (!target.BuffsBySource.TryGetValue((20, false), out var buff) || buff.Defense != -2
+                || buff.DefenseSetValue != 5 || buff.HasNonOrdinaryDefenseEntry || buff.IsEmpty || buff.Clone().DefenseSetValue != 5
                 || buff.Clone().IsEmpty || !source.CardsBuffedByThisCard.Contains(60) || target.Defense != 3)
-                return "紧凑防御量归零不能抹掉独立设值项的存在性；克隆也必须保留此位";
+                return "设防条目须与普通减防分开，克隆保留原始设值";
+            engine.Api.ChangeDefense(target, 2, source);
+            if (!target.BuffsBySource.TryGetValue((20, false), out buff) || buff.Defense != 0 || buff.DefenseSetValue != 5
+                || buff.IsEmpty || !source.CardsBuffedByThisCard.Contains(60) || target.Defense != 5)
+                return "普通防御量归零不能抹掉独立设值项或来源关系";
         }
         return null;
     }

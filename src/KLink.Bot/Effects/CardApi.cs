@@ -2626,6 +2626,8 @@ public sealed partial class CardApi
         }
 
         bool canRecord = source is not null || instigatorId is > 0;
+        bool recordSetLedger = defenseSetValue.HasValue && canRecord;
+        if (recordSetLedger) RecordDefenseSetLedger(target, sourceId, defenseSetValue!.Value);
         bool recordBeforeCallbacks = changeType == 1 && defenseSetValue is null && canRecord;
         // RULE-309: native i=487 records the original request before any gain
         // callback. Cancellation/rewrite does not roll it back or record it twice.
@@ -2675,7 +2677,7 @@ public sealed partial class CardApi
             target.MaxDefense = Math.Max(target.MaxDefense, target.Defense);
         }
 
-        if (!recordBeforeCallbacks && canRecord)
+        if (!recordBeforeCallbacks && !recordSetLedger && canRecord)
             RecordDefenseBuffChange(target, sourceId, delta, temporary, changeType, defenseSetValue.HasValue);
 
         // RULE-314: skipAction bypasses before callbacks (i=2588), then
@@ -2738,6 +2740,29 @@ public sealed partial class CardApi
             TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
             RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
+    }
+
+    // RULE-335: ChangeBuffsFromCards type1/mode2 caches the ORIGINAL source
+    // struct, cleans defense_permBuff/defense_SetValue globally, then writes
+    // the cached source back with the RAW SetValue. Temporary keys survive.
+    private void RecordDefenseSetLedger(CardInstance target, int sourceId, int value)
+    {
+        var key = (sourceId, false);
+        var original = target.BuffsBySource.TryGetValue(key, out var old)
+            ? old.Clone() : new CardBuff { SourceCardId = sourceId };
+        foreach (var candidate in target.BuffsBySource.Keys.Where(k => !k.Temporary).ToArray())
+        {
+            var buff = target.BuffsBySource[candidate];
+            buff.Defense = 0;
+            buff.DefenseSetValue = null;
+            // Opaque legacy nonordinary presence is not a typed SetValue key.
+            // Keep it and all represented unrelated keys; do not update foreign
+            // reverse arrays during global cleanup.
+            if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
+        }
+        original.DefenseSetValue = value;
+        target.BuffsBySource[key] = original;
+        SynchronizeBuffTarget(target, sourceId);
     }
 
     private void RecordDefenseBuffChange(CardInstance target, int sourceId, int amount,
