@@ -4535,13 +4535,13 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
-            var key = target.BuffsBySource.ContainsKey((sourceId, true))
-                ? (sourceId, true)
-                : (sourceId, false);
+            // RULE-340: native type3/mode4 removes only tempBuffGive for this
+            // source, never a permanent/absolute fallback. amountRemoved is
+            // the negated ledger amount, independent of the caller's request.
+            var key = (sourceId, true);
             if (target.BuffsBySource.TryGetValue(key, out var existing))
             {
-                bool operationCostReset = existing.OperationCost != 0
-                    || existing.OperationCostSetsAbsoluteValue;
+                int amountRemoved = unchecked(-existing.OperationCost);
                 existing.OperationCost = 0;
                 existing.OperationCostSetsAbsoluteValue = false;
                 if (existing.IsEmpty)
@@ -4550,13 +4550,19 @@ public sealed partial class CardApi
                 }
                 else SynchronizeBuffTarget(target, sourceId);
 
-                target.RecalculateStats();
-                if (operationCostReset)
+                if (amountRemoved != 0)
                 {
+                    // Numeric storage is still the legacy source-derived
+                    // adapter; this does not certify native base/temp math.
+                    target.RecalculateStats();
+                    if (!skipAction)
+                        NotifyOperationCostChanged(target.CardId, sourceId, amountRemoved,
+                            changeType, skipAddToBattlelog);
                     c.Engine.Api.FireOperationCostChanged(target, sourceId,
                         runResetEvents: false);
                 }
             }
+            else SynchronizeBuffTarget(target, sourceId);
 
             return null;
         }

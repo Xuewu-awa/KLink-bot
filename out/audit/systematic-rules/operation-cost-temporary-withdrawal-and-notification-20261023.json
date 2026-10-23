@@ -1,0 +1,190 @@
+{
+  "rule": "RULE-340",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-340",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 9893,
+    "full_ledger_cases": 12288,
+    "main_with_full_ledger_cases": 6144,
+    "worker_rows_exact": 12288,
+    "regression_combinations": 4608,
+    "release_selftest": {
+      "passed": 704,
+      "total": 704,
+      "exit_code": 0
+    },
+    "scope": "Temporary-only operation withdrawal/source relation, negated removal amount/notify/skip/own->T10 noT9. Native base/temp model demonstrated independently; production numeric storage is still legacy. Enum friendly string and frame payload controlled in models; SDK ordinal3 verified. No full native frame/query/lifetime or whole-card certification."
+  },
+  "authority": "Re-decode4 captured Blueprint functions9893B against current PE SHA. Whole ChangeOperationCost3171B + ChangeBuffsFromCards6267B + notifier85B + builder370B. Previously read-only acquired bytes, no new live process observation. Older ledger capture has no read_only metadata field; this verifier does not invent one. SDK ECardBuffTypes operationCost ordinal3 verified; friendly text remains a controlled primitive in model.",
+  "changes": [
+    "Mode4 removes only current source temporary operation cost, never permanent or absolute fallback. Preserve other temporary fields, permanent source and foreign source entries.",
+    "Negate the accumulated temporary ledger amount for amountRemoved, ignore supplied request; nonzero removal emits the exact five-value action before own->T10 callbacks, noT9. skipAction omits notification only; skipAddToBattlelog is forwarded.",
+    "Zero or absent temporary amount produces no numeric recalculation/action/callback. Update valid source reverse relation even when no temporary slot exists. Repeated removal leaves permanent items and emits nothing.",
+    "Correct two legacy test expectations that assumed mode4 could remove permanent operation cost; retain explicit permanent data and reverse-relation assertions."
+  ],
+  "models": {
+    "full_ledger": 12288,
+    "main_with_full_ledger": 6144,
+    "details": "Ledger masks include temp negative/zero/positive, permanent, SetValue0, unrelated attack and Suppress0, foreign masks, source-1/0/20/9999, source reverse tail. Whole-main model calls whole ledger instead of stub; tests request/skip/log/suppression/ActionProcess with independent native base4/temp-2.",
+    "controlled": "Enum friendly names, frame output payload seeds, source lookup/title, covert/ActionProcess gates and observer query recipients. Not a native interpreter/runtime lifetime, arbitrary registry-order or reentry equivalence proof."
+  },
+  "regressions": {
+    "new_tests": 1,
+    "combinations": 4608,
+    "repeat_calls": 4608,
+    "coverage": "Both sides, existing/missing positive source, absent/-3/0/+2 temporary correction, absent/permanent/absolute permanent slot, other temporary attack, foreign source, request -7/0/105, skip/log/suppression, five-value action, action-before-callback and noT9, reverse relation and second removal.",
+    "initial": {
+      "passed": 702,
+      "total": 704,
+      "failed": 2,
+      "explanation": "New matrix caught missing reverse-tail synchronization with no temporary slot. Existing independent-array test assumed permanent fallback. Fixed actual reverse-tail path and changed legacy assertion to require permanent retention."
+    },
+    "final": {
+      "passed": 704,
+      "total": 704,
+      "exit_code": 0
+    }
+  },
+  "worker": {
+    "job": "20261023-162635-rule340-temp-cost-withdrawal-204421d3",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 12288,
+    "primary_comparison_exact": 12288,
+    "scope": "Mechanical supplied-spec reference only, no semantic evidence or source integration. Raw output independently compared to strict original-script executions."
+  },
+  "remaining": [
+    "Production operation-cost base/temp storage remains legacy source-derived recomputation, not native operationCostBuff += amountRemoved. This round fixes removal scope and notification/dispatch, not all numerical equivalence.",
+    "Ordinary zero-valued operation keys and full native typed source map are not faithfully represented. Cannot certify all source/temporary state or unrelated whole-ledger cleanup.",
+    "Native IsActionProcess gating still has no complete production equivalent; action/event assertions use active execution fixtures.",
+    "Unknown modes, absolute equality cleanup, copy/reset/suppression/batch lifecycle, persistent frame/delegates, real collection order/object validity and reentrant numerics remain open. Fully certified cards remains0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-withdrawal-full-ledger-model-20261023.json",
+      "sha256": "3b109dc778eb3c899eb6e6ff589e178254ed623c56b10ab569c13fad67c10093"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-withdrawal-main-ledger-model-20261023.json",
+      "sha256": "0c4e7dfc7dcb36eeb743edf0026d3e1358e2047102e7e90c92f6dea0ec5c411b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule340.py",
+      "sha256": "912f6e563e93104d8eb21216576099e7b1aee24aa359b12ac8b90211b30193d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule340-ledger.py",
+      "sha256": "12a1e70640d692ce15d9b72e9806d0f75c9d50790c1a16a170c92abb233ec07f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule340-main.py",
+      "sha256": "e6372e9677684a5bfb2af914ddcce7a6891404562cd24589718f1a87afa57c87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule340-tests.py",
+      "sha256": "edb012a0a44eb3bfc631ab03fb27082d16980e176c5e5c46e865548ba393ea88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule340-verified-20261023.json",
+      "sha256": "da3659f2c7fdcf0a5b5a6a16552d73aa64d3f66c9198bc34851678d70f270bdf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule340-selftest-initial.log",
+      "sha256": "b86d82e6cfd5f600f746fb2127c629f77346365e0ee306a638c8f7f32ce46aa4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule340-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule340-selftest-final.log",
+      "sha256": "408b3a75bce1941ee1d5de0cee9af2a615e601cff7b71417fcaf772a87d43368"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule340-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule340\\spec.json",
+      "sha256": "8949a4b3b4d914980b917300aae61d3acca23b70465dcc5b0c939ae9115ff61f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule340\\task.txt",
+      "sha256": "223942bdd605c34374bdb27b3774e9185654784e4b6719dbf20abe7fb68cd7a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule340\\cases.json",
+      "sha256": "f6b4186c50040d01068852ee196848161f8ed74200475405f1698b644c452aab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule340\\primary-cases.json",
+      "sha256": "cb77ff923b4f940c0ac206f9cb10f2d74ca44b6efb8969ae2e438d590422198b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule340\\generator.py",
+      "sha256": "7d34ab964759def1877289db56f50de162b810b6737cb1b83dcf1026f16a42ae"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-162635-rule340-temp-cost-withdrawal-204421d3\\job.json",
+      "sha256": "9157b00c46e7598d7d0ac3109919f24ab3aed30468be8bd00692ee6553065fea"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "435ecc91548eb9b8b5a4863aad934eeea4faa8b1e0cb7b23f4e722d196903075"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "2fbbc9332a07ca548f378c67d404b35a675985c9a375b44414f48ed37d032264"
+    }
+  ]
+}

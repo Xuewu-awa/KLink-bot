@@ -537,6 +537,7 @@ internal static class SelfTest
         new("行动费skip：仅跳通知，保留已有主体/观察者回调", OperationCostSkipKeepsCallbacks),
         new("行动费回调：自身后查T10、T10后查T9，快照与实时压制边界", OperationCostCallbackMutationMatrix),
         new("行动费重置路由：变化的绝对模式触发T9，mode4不触发", OperationCostResetFlagRouting),
+        new("行动费mode4：只撤临时来源、负撤销量通知、skip与回调顺序", OperationCostTemporaryWithdrawal),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6825,6 +6826,76 @@ internal static class SelfTest
             var expected = changed ? new List<string> { "own:60", "changed:70" } : new List<string>();
             if (changed && mode is 2 or 3 or 5) expected.Add("reset:70");
             if (fault is not null || !callbacks.SequenceEqual(expected)) return $"行动费reset标记路由错误 mode={mode},before={before},request={requested},skip={skip},source={sourceId}: {fault} actual={string.Join(',', callbacks)}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostTemporaryWithdrawal(CardDatabase db)
+    {
+        using var probes = InstallOperationCostMutationProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int? temporary in new int?[] { null, -3, 0, 2 })
+        foreach (int permanent in new[] { 0, 1, 2 })
+        foreach (bool otherField in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool skiplog in new[] { false, true })
+        foreach (int request in new[] { -7, 0, 105 })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId("card_unit_arado_ar_196", side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); SetOperationCostRegistrations(card, true, true); }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            CardBuff? permanentBuff = permanent == 0 ? null : new CardBuff {
+                SourceCardId = sourceId, OperationCost = permanent == 1 ? 4 : -1,
+                OperationCostSetsAbsoluteValue = permanent == 2 };
+            if (permanentBuff is not null) target.BuffsBySource[(sourceId, false)] = permanentBuff;
+            if (temporary.HasValue || otherField) target.BuffsBySource[(sourceId, true)] = new CardBuff {
+                SourceCardId = sourceId, Temporary = true, OperationCost = temporary ?? 0, Attack = otherField ? 2 : 0 };
+            var foreign = new CardBuff { SourceCardId = 30, OperationCost = 6, Attack = 1 };
+            target.BuffsBySource[(30, false)] = foreign;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 });
+            int removed = -(temporary ?? 0);
+            bool changed = removed != 0, notify = changed && !skip;
+            int ActionCount() => state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionChangeOperationCost");
+            var callbacks = new List<string>(); string? fault = null; var created = state.CardCreated;
+            state.CardCreated = spawned => {
+                created?.Invoke(spawned);
+                if (spawned.Name != "card_unit_routed_troops" || spawned.Location != CardLocation.DeckRight) return;
+                var actor = new[] { target, observer }.Single(c => c.BlueprintVariables.GetValueOrDefault("_auditCostActive") is string);
+                string phase = (string)actor.BlueprintVariables["_auditCostActive"]!; actor.BlueprintVariables.Remove("_auditCostActive");
+                if (ActionCount() != (notify ? 1 : 0)) fault = "通知未先于回调";
+                if (!Equals(actor.BlueprintVariables.GetValueOrDefault("_auditCostSource"), sourceId)) fault = "来源ID参数丢失";
+                callbacks.Add(phase + ":" + actor.CardId);
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeOperationCost", target,
+                new object?[] { target, sourceId, request, 4, true, skip, skiplog }, ctx, out bool handled);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            var expectedCallbacks = changed ? (suppressed ? new[] { "changed:70" } : new[] { "own:60", "changed:70" }) : Array.Empty<string>();
+            if (!handled || fault is not null || !callbacks.SequenceEqual(expectedCallbacks)
+                || actions.Length != (notify ? 1 : 0)
+                || (notify && !actions[0].Values.SequenceEqual(new[] {
+                    ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", sourceId), ActionValue2.Int("amount", removed),
+                    ActionValue2.Str("changeType", "tempBuffRemove"), ActionValue2.Bool("skipAddToBattlelog", skiplog) })))
+                return $"mode4通知/回调错误 source={sourceId},temp={temporary},perm={permanent},other={otherField},skip={skip},log={skiplog},request={request},suppressed={suppressed}: {fault}";
+            if (target.BuffsBySource.ContainsKey((sourceId, true)) != otherField
+                || (otherField && (target.BuffsBySource[(sourceId, true)].Attack != 2 || target.BuffsBySource[(sourceId, true)].OperationCost != 0))
+                || target.BuffsBySource.ContainsKey((sourceId, false)) != (permanent != 0)
+                || (permanentBuff is not null && (!ReferenceEquals(target.BuffsBySource[(sourceId, false)], permanentBuff)
+                    || permanentBuff.OperationCost != (permanent == 1 ? 4 : -1) || permanentBuff.OperationCostSetsAbsoluteValue != (permanent == 2)))
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreign) || foreign.OperationCost != 6 || foreign.Attack != 1
+                || (sourceId == 20 && !source.CardsBuffedByThisCard.SequenceEqual(permanent != 0 || otherField ? new[] { 888, 60 } : new[] { 888 })))
+                return $"mode4误删其他账本或反向名单 source={sourceId},temp={temporary},perm={permanent},other={otherField}";
+            // A repeated removal cannot fall back to permanent or emit again.
+            engine.Api.InvokeByName("ChangeOperationCost", target,
+                new object?[] { target, sourceId, 999, 4, false, false, false }, ctx, out _);
+            if (ActionCount() != (notify ? 1 : 0) || !callbacks.SequenceEqual(expectedCallbacks)
+                || (permanentBuff is not null && !ReferenceEquals(target.BuffsBySource[(sourceId, false)], permanentBuff)))
+                return "重复mode4不得删除永久项或再次通知/回调";
         }
         return null;
     }
@@ -23991,7 +24062,13 @@ internal static class SelfTest
             if (kind == 6) engine.Api.RemoveFury(first, 60);
             if (kind == 7) engine.Api.RemovePin(first);
             if (kind == 8) engine.Api.CustomAbilityRemove(first, "trigger", 60, false);
-            if (kind != 1 && !Query(source).SequenceEqual(new[] { 10 }))
+            // RULE-340: this fixture applied permanent operation cost; mode4
+            // must keep that relation. Reset below still removes it entirely.
+            if (kind == 3 && (!Query(source).SequenceEqual(new[] { 90, 10 })
+                || !first.BuffsBySource.TryGetValue((60, false), out var retainedOperation)
+                || retainedOperation.OperationCost != -2))
+                return $"mode4必须保留永久行动费关系：{side}/{kind}";
+            if (kind is not (1 or 3) && !Query(source).SequenceEqual(new[] { 10 }))
                 return $"撤销后未移除目标：{side}/{kind}";
             first.Location = location;
             engine.Api.ResetCardInBattle(first);
@@ -37636,7 +37713,7 @@ internal static class SelfTest
             return "手牌目标的临时行动费不得由回合末清理；永久绝对槽也须保留";
         }
 
-        // Withdraw the retained temporary slot explicitly, then the absolute slot.
+        // RULE-340: mode4 withdraws temporary only, even on a repeated call.
         engine.Api.InvokeByName("ChangeOperationCost", target,
             new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeTemporary);
         if (!removeTemporary || target.OperationCost != 0 || target.BuffsBySource.Count != 1
@@ -37645,9 +37722,11 @@ internal static class SelfTest
 
         engine.Api.InvokeByName("ChangeOperationCost", target,
             new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out bool removeAbsolute);
-        if (!removeAbsolute || target.OperationCost != baseOperation || target.BuffsBySource.Count != 0)
+        if (!removeAbsolute || target.OperationCost != 0 || target.BuffsBySource.Count != 1
+            || !target.BuffsBySource[(source.CardId, false)].OperationCostSetsAbsoluteValue
+            || target.BuffsBySource[(source.CardId, false)].OperationCost != -baseOperation)
         {
-            return $"绝对 operation cost 撤销后未恢复：handled={removeAbsolute}, actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
+            return $"重复mode4必须保留永久绝对行动费：handled={removeAbsolute}, actual={target.OperationCost}, buff槽={target.BuffsBySource.Count}";
         }
 
         return null;
