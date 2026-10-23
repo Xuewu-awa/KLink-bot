@@ -27,6 +27,9 @@ public sealed class CardDefinition
 
     public int Kredits { get; init; }           // 费用
     public int OperationCost { get; init; }     // 行动成本（单位）
+    // Native reset copies the template's temporary field too. Existing exports
+    // omit it and retain their legacy zero default; do not force zero if supplied.
+    public int OperationCostBuff { get; init; }
     public int Attack { get; init; }
     public int Defense { get; init; }
     public int Range { get; init; }
@@ -333,6 +336,7 @@ public sealed class CardDatabase
                 CardSet = c.CardSet ?? c.Cardset,
                 Kredits = c.Kredits ?? 0,
                 OperationCost = c.OperationCost ?? 0,
+                OperationCostBuff = c.OperationCostBuff ?? 0,
                 Attack = c.Attack ?? 0,
                 Defense = c.Defense ?? 0,
                 Range = c.Range ?? 0,
@@ -394,6 +398,7 @@ public sealed class CardDatabase
         [JsonPropertyName("cardset")] public string? Cardset { get; set; }
         [JsonPropertyName("kredits")] public int? Kredits { get; set; }
         [JsonPropertyName("operationcost")] public int? OperationCost { get; set; }
+        [JsonPropertyName("operationcostbuff")] public int? OperationCostBuff { get; set; }
         [JsonPropertyName("attack")] public int? Attack { get; set; }
         [JsonPropertyName("defense")] public int? Defense { get; set; }
         [JsonPropertyName("range")] public int? Range { get; set; }

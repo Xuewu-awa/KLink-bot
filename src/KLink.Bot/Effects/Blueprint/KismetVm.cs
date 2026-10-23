@@ -1416,7 +1416,8 @@ public sealed class KismetVm
             "chooseOneIndex" => card.ChooseOne,
             "selectTargetOnPlayedFromHand" => card.SelectTargetOnPlayedFromHand,
             "kredits" => card.KreditCost,
-            "operationCost" => card.OperationCost,
+            "operationCost" => card.BaseOperationCost,
+            "operationCostBuff" => card.TemporaryOperationCost,
             "isGoldCard" => card.IsGold,
             "isSalvaged" => card.IsSalvaged,
             "salvageFaction" => int.TryParse(card.SalvageFaction, out int factionId) ? factionId

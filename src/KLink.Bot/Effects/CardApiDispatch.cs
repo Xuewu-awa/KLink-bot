@@ -4519,8 +4519,8 @@ public sealed partial class CardApi
         // 签名（实测 140 个调用点）：ChangeOperationCost(卡, instigatorID, 数值, changeType, b, b, b)
         //   a[1] = 来源卡 ID，a[2] = 数值，a[3] = changeType（含义同 ChangeKreditCost）
         //
-        // Source-derived recalculation below remains a legacy adapter. Native
-        // base/temporary operation values and their ledger still need migration.
+        // RULE-343: numeric components are independent of the compact ledger.
+        // Absolute typed ledger semantics remain a separate pending migration.
         // RULE-337: native i71/105 uses the supplied positive ID, without
         // a source-object existence gate. i119/160 rejects unrevealed Covert
         // at every location, unlike CanCardBeBuffed's location-specific table.
@@ -4558,9 +4558,7 @@ public sealed partial class CardApi
 
                 if (amountRemoved != 0)
                 {
-                    // Numeric storage is still the legacy source-derived
-                    // adapter; this does not certify native base/temp math.
-                    target.RecalculateStats();
+                    target.TemporaryOperationCost = unchecked(target.TemporaryOperationCost + amountRemoved);
                     if (!skipAction)
                         NotifyOperationCostChanged(target.CardId, sourceId, amountRemoved,
                             changeType, skipAddToBattlelog);
@@ -4573,7 +4571,7 @@ public sealed partial class CardApi
             return null;
         }
 
-        int beforeOperationCost = target.OperationCost;
+        int beforeOperationCost = target.BaseOperationCost;
         bool valueChanged;
         bool temporary = changeType == ChangeTypeTempBuffGive;
         var buff = GetOrCreateBuff(target, sourceId, temporary);
@@ -4587,6 +4585,7 @@ public sealed partial class CardApi
             amount = requestedOperationCost - target.Definition.OperationCost;
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = true;
+            if (valueChanged) target.BaseOperationCost = requestedOperationCost;
         }
         else if (temporary || changeType == ChangeTypePermBuff)
         {
@@ -4596,14 +4595,19 @@ public sealed partial class CardApi
             // Native ordinary accumulation removes the chosen key when its
             // sum is zero. Keep any other represented fields/source slot.
             if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, temporary));
+            if (temporary)
+                target.TemporaryOperationCost = unchecked(target.TemporaryOperationCost + rawAmount);
+            else
+                target.BaseOperationCost = Math.Clamp(unchecked(target.BaseOperationCost + rawAmount), 0, 99);
         }
         else
         {
             valueChanged = amount != 0;
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = false;
+            // Unknown modes retain the old compatibility adapter, uncertified.
+            target.OperationCost = target.EffectiveOperationCost;
         }
-        target.RecalculateStats();
 
         // RULE-338: notification carries the RAW request, even for absolute
         // values; skipAction omits only this action, not the callback chain.
@@ -5811,6 +5815,9 @@ public sealed partial class CardApi
 
         var buff = GetOrCreateBuff(target, aura.CardId);
         buff.OperationCost = amount;
+        // Explicit handwritten aura compatibility boundary; native card calls
+        // use DoChangeOperationCost's independent numeric fields.
+        target.OperationCost = target.EffectiveOperationCost;
         target.RecalculateStats();
         RememberBuffedCard(aura, target);
         MarkBuffActive(aura, true);
@@ -5897,6 +5904,8 @@ public sealed partial class CardApi
         //    但如果将来某张卡的 RemoveTheBuff 只想撤费用、保留攻防，
         //    就必须改成按字段撤销 —— 客户端的 ChangeKreditCost(…, changeType=4)
         //    只清 KreditCost，不清 Attack/Defense。
+        // Legacy whole-aura removal still derives its aggregate from the ledger.
+        target.OperationCost = target.EffectiveOperationCost;
         target.RecalculateStats();
     }
 

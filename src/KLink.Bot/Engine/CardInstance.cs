@@ -89,9 +89,19 @@ public sealed class CardInstance
     public int KreditCost { get; set; }
     /// <summary>Native getTotalKreditCost output clamp; preserve the raw proxy and source ledger.</summary>
     public int TotalKreditCost => Math.Clamp(KreditCost, 0, 99);
-    public int OperationCost { get; set; }
-    /// <summary>Native getTotalOperationCost has a zero floor and no upper clamp.</summary>
-    public int TotalOperationCost => Math.Max(0, OperationCost);
+    // RULE-343: reflected operationCost/operationCostBuff are independent
+    // numeric fields, not a reconstruction from the source ledger.
+    public int BaseOperationCost { get; set; }
+    public int TemporaryOperationCost { get; set; }
+    public int OperationCost
+    {
+        // Legacy C# view preserves the signed aggregate; rules use Total... .
+        get => unchecked(BaseOperationCost + TemporaryOperationCost);
+        // Compatibility initialization: a single value supplies a new base.
+        set { BaseOperationCost = value; TemporaryOperationCost = 0; }
+    }
+    /// <summary>Native signed-int sum, zero floor, no upper clamp.</summary>
+    public int TotalOperationCost => Math.Max(0, unchecked(BaseOperationCost + TemporaryOperationCost));
 
     // ---- 回合内状态 ----
     public int EnteredPlayOnTurn { get; set; } = -1;
@@ -679,6 +689,8 @@ public sealed class CardInstance
     /// </summary>
     public void InitializeFromDefinition()
     {
+        BaseOperationCost = Definition.OperationCost;
+        TemporaryOperationCost = Definition.OperationCostBuff;
         PublicAttack = Definition.Attack;
         MaxAttack = Definition.Attack;
         AttackBuff = 0;
@@ -714,6 +726,8 @@ public sealed class CardInstance
     /// </summary>
     public void ResetAttributes()
     {
+        BaseOperationCost = Definition.OperationCost;
+        TemporaryOperationCost = Definition.OperationCostBuff;
         BuffsBySource.Clear();
         ReceivedAbilitiesFromCards.Clear();
         Keywords.Clear();
@@ -792,6 +806,8 @@ public sealed class CardInstance
 
         // 基础数值：搬差值（保留 buff 与已受伤害）
         BaseAttack += def.Attack - oldDef.Attack;
+        // Identity correction is a compatibility path, not native conversion.
+        BaseOperationCost = unchecked(BaseOperationCost + def.OperationCost - oldDef.OperationCost);
         Defense += def.Defense - oldDef.Defense;
         MaxDefense += def.Defense - oldDef.Defense;
 
@@ -817,12 +833,13 @@ public sealed class CardInstance
     /// <see cref="Definition"/> 与 <see cref="BuffsBySource"/>，不累加当前值）。
     /// 光环类效果（`ApplyTheBuff`/`RemoveTheBuff`）会反复施加/撤销同一来源，
     /// 增量式写法第二次就会翻倍；绝对值重算天然幂等。
-    /// 落点：<see cref="KreditCost"/>、<see cref="OperationCost"/>、重甲关键字。
+    /// 落点：<see cref="KreditCost"/>、重甲关键字；行动费分量不由账本重算。
     /// </summary>
     public void RecalculateStats()
     {
         KreditCost = EffectiveKreditCost;
-        OperationCost = EffectiveOperationCost;
+        // Operation fields are updated by their mutation paths. Recomputing
+        // from the source ledger loses clamping history and temporary values.
 
         if (HeavyArmor > 0)
         {
@@ -858,7 +875,7 @@ public sealed class CardInstance
     /// <summary>所有卡牌的通用费用下限；卡面明确写 minimum of 1 的效果另行处理。</summary>
     public const int MinKreditCost = 0;
 
-    /// <summary>有效行动费用 = 卡面行动费用 + 各来源的加减（下限 0）。</summary>
+    /// <summary>旧手写光环/压制适配器的账本推导值，不是原生总行动费。</summary>
     public int EffectiveOperationCost
     {
         get
@@ -901,6 +918,8 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            BaseOperationCost = BaseOperationCost,
+            TemporaryOperationCost = TemporaryOperationCost,
             BaseAttack = BaseAttack,
             MaxAttack = MaxAttack,
             TemporaryAttack = TemporaryAttack,
@@ -1115,6 +1134,8 @@ public sealed record CardSnapshot(
     string? CustomAbility,
     Dictionary<string, string> CustomJson)
 {
+    public int BaseOperationCost { get; init; }
+    public int TemporaryOperationCost { get; init; }
     public int BaseAttack { get; init; }
     public int MaxAttack { get; init; }
     public int TemporaryAttack { get; init; }

@@ -542,6 +542,8 @@ internal static class SelfTest
         new("行动费普通抵消：删本项、保留其他字段和来源", OperationCostOrdinaryCancellation),
         new("行动费公开入口：来源/隐蔽/零门、请求通知与自身后T10", OperationCostPublicEntry),
         new("行动费公开入口：累计抵消、零请求与永久来源关系", OperationCostPublicLedgerLifecycle),
+        new("行动费独立数值：原生参考表、溢出、原值比较与重算隔离", OperationCostSplitNumericReference),
+        new("行动费独立数值：初始化、重置、复制和快照保留分量", OperationCostSplitLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7063,6 +7065,79 @@ internal static class SelfTest
             string before = state.SnapshotJson(); target.OperationCost = 105; before = state.SnapshotJson(); Apply(0);
             if (state.SnapshotJson() != before || target.OperationCost != 105)
                 return "公开行动费抵消后的零请求不得重建来源或重算";
+        }
+        return null;
+    }
+
+    private static string? OperationCostSplitNumericReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "operation-cost-numeric-reference-20261023.json")));
+        var get = typeof(KismetVm).GetMethod("GetMember", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var row in doc.RootElement.EnumerateArray())
+        {
+            var inputs = row.GetProperty("inputs").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+            int basis = inputs[0], temp = inputs[1], request = inputs[2], mode = inputs[3], removed = inputs[4];
+            int expectedBase = row.GetProperty("base").GetInt32(), expectedTemp = row.GetProperty("temp").GetInt32();
+            int expectedTotal = row.GetProperty("total").GetInt32(); bool changed = row.GetProperty("changed").GetBoolean();
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            source.Definition = new CardDefinition { Name = source.Name, Type = "infantry" };
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", OperationCost = 17 };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            target.BaseOperationCost = basis; target.TemporaryOperationCost = temp;
+            if (mode == 4) target.BuffsBySource[(20, true)] = new CardBuff { SourceCardId = 20, Temporary = true, OperationCost = -removed, Attack = 1 };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, 20, request, mode, false, false, false }, ctx, out bool handled);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (!handled || target.BaseOperationCost != expectedBase || target.TemporaryOperationCost != expectedTemp
+                || target.TotalOperationCost != expectedTotal || actions.Length != (changed ? 1 : 0)
+                || (changed && actions[0].Values[2] != ActionValue2.Int("amount", mode == 4 ? removed : request))
+                || !Equals(get.Invoke(null, new object?[] { target, "operationCost" }), expectedBase)
+                || !Equals(get.Invoke(null, new object?[] { target, "operationCostBuff" }), expectedTemp))
+                return $"行动费原生参考不符 side={side},input={string.Join(',', inputs)} actual={target.BaseOperationCost}/{target.TemporaryOperationCost}/{target.TotalOperationCost}";
+            var snap = target.Snapshot();
+            if (snap.BaseOperationCost != expectedBase || snap.TemporaryOperationCost != expectedTemp)
+                return "行动费快照丢失原始分量";
+            // Native numeric fields cannot be reconstructed from remaining keys.
+            target.BuffsBySource[(888, false)] = new CardBuff { SourceCardId = 888, OperationCost = 77 };
+            target.RecalculateStats();
+            if (target.BaseOperationCost != expectedBase || target.TemporaryOperationCost != expectedTemp || target.TotalOperationCost != expectedTotal)
+                return "无关重算覆盖独立行动费字段";
+        }
+        return null;
+    }
+
+    private static string? OperationCostSplitLifecycle(CardDatabase db)
+    {
+        var copy = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int basis in new[] { int.MinValue, -3, 0, 99, int.MaxValue })
+        foreach (int temp in new[] { int.MinValue, -4, 0, 7, int.MaxValue })
+        foreach (int templateTemp in new[] { -4, 0, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            if (card.BaseOperationCost != card.Definition.OperationCost || card.TemporaryOperationCost != card.Definition.OperationCostBuff)
+                return "建卡行动费分量初始化错误";
+            card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", OperationCost = 17, OperationCostBuff = templateTemp };
+            card.InitializeFromDefinition();
+            if (card.BaseOperationCost != 17 || card.TemporaryOperationCost != templateTemp)
+                return "初始化不得丢失非零模板临时行动费";
+            card.BaseOperationCost = basis; card.TemporaryOperationCost = temp;
+            var duplicate = (CardInstance)copy.Invoke(null, new object[] { card })!;
+            if (duplicate.BaseOperationCost != basis || duplicate.TemporaryOperationCost != temp || duplicate.TotalOperationCost != card.TotalOperationCost)
+                return "复制行动费时压平原始分量";
+            duplicate.RecalculateStats();
+            if (duplicate.BaseOperationCost != basis || duplicate.TemporaryOperationCost != temp)
+                return "复制后重算覆盖行动费分量";
+            duplicate.BaseOperationCost = 12;
+            if (card.BaseOperationCost != basis) return "复制行动费数值并非独立字段";
+            card.ResetAttributes();
+            if (card.BaseOperationCost != card.Definition.OperationCost || card.TemporaryOperationCost != templateTemp)
+                return "重置未分别复制模板基础/临时行动费";
         }
         return null;
     }
@@ -23543,13 +23618,15 @@ internal static class SelfTest
         }
         {
             var (engine, state) = EmptyBoard(db);var source = MakeActionQuotaProbe(state, Side.Left, "infantry");
-            source.BuffsBySource[(90, false)] = new CardBuff { OperationCost = 200 };source.RecalculateStats();
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left };
+            engine.Api.InvokeByName("ChangeOperationCost", source, new object?[] { source, 90, 200, 0, false, false, false }, ctx, out _);
             object? Total() => engine.Api.InvokeByName("getTotalOperationCost", source, new object?[] { null }, ctx, out _);
-            if (!Equals(Total(), 200) || source.BuffsBySource[(90, false)].OperationCost != 200)
+            if (!Equals(Total(), 200) || source.BuffsBySource[(90, true)].OperationCost != 200)
                 return "行动总费用不得套用出牌99上限或裁剪来源账本";
-            source.BuffsBySource[(90, false)].OperationCost = 10;source.RecalculateStats();
-            if (!Equals(Total(), 10)) return "调整行动费来源后总费用恢复错误";
+            source.BuffsBySource[(90, true)].OperationCost = 10;source.RecalculateStats();
+            if (!Equals(Total(), 200)) return "仅改账本不得重算原生行动费数值";
+            source.TemporaryOperationCost = 10;
+            if (!Equals(Total(), 10)) return "总费用未读取独立临时字段";
         }
         return null;
     }
@@ -27218,7 +27295,7 @@ internal static class SelfTest
         engine.Api.ChangeAttack(unit, 2, giverA);       // 攻 +2（记进 BuffsBySource）
         engine.Api.ChangeDefense(unit, 2, giverA);      // 防 +2
         unit.BuffsBySource[(giverA.CardId, false)].HeavyArmor = 1;
-        unit.BuffsBySource[(giverA.CardId, false)].OperationCost = 1;
+        engine.Api.ChangeOperationCost(unit, 1, giverA);
         engine.Api.ChangeAttack(unit, 1, giverB);       // 第二条来源：攻 +1
         unit.RecalculateStats();                       // 重甲 1 / 行动费 +1
 
@@ -37832,6 +37909,12 @@ internal static class SelfTest
             return $"临时 operation cost buff 未正确叠加：base={baseOperation}, actual={target.OperationCost}";
         }
 
+        // RULE-343: ledger surgery/recalculation must not erase numeric state.
+        // Withdraw the actual operation correction before the attack-only fixture.
+        engine.Api.InvokeByName("ChangeOperationCost", target,
+            new object?[] { target, source.CardId, 0, 4, false, false, false }, ctx, out _);
+        if (target.BaseOperationCost != baseOperation || target.TemporaryOperationCost != 0)
+            return "临时行动费必须先通过mode4显式撤销";
         target.BuffsBySource[(source.CardId, true)] = new CardBuff
         {
             SourceCardId = source.CardId,

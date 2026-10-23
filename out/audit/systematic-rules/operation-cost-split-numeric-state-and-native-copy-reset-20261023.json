@@ -1,0 +1,287 @@
+{
+  "rule": "RULE-343",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-343",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 4,
+    "blueprint_bytes": 9893,
+    "split_numeric_vectors": 3780,
+    "worker_rows_exact": 3780,
+    "fixture_sha256": "4d0b0552e4611800e7921475d49d58498201d019b82562456979d7b4c575a063",
+    "offline_machine_vectors": {
+      "total_getter": 64,
+      "copy_reset_slices": 128
+    },
+    "regression_combinations": {
+      "numeric_both_sides": 7560,
+      "split_lifecycle": 150,
+      "total": 7710
+    },
+    "release_selftest": {
+      "passed": 710,
+      "total": 710,
+      "exit_code": 0
+    },
+    "scope": "Independent raw base/temp fields, known-mode numeric writes and raw-base equality, signed sum total, VM reads, copy/snapshot/template-reset component support. Numeric AST uses controlled signed32 Add primitive and ledger amountRemoved. Getter and CopyData/Reset MOV slices executed real bytes offline separately. Compact absolute ledger, handwritten aura/suppress/restore and unknown-mode flattening boundaries explicitly pending; not whole lifecycle/card certification."
+  },
+  "authority": "Current PE SHA verified,4 captured Blueprint functions9893B redecoded. Getter23B and CopyData/ResetCardAttributes field-copy slices verified against PE/earlier read-only captures and executed offline only. No new live process observation, injection or game calls.",
+  "changes": [
+    "Add BaseOperationCost/TemporaryOperationCost independent state. TotalOperationCost floors signed32 wrapped sum at0, no upper99 cap. Legacy C# OperationCost preserves signed aggregate; assigning it initializes a new raw base and clears temporary. Native VM operationCost and operationCostBuff read raw components, not that compatibility aggregate.",
+    "Known-mode0 adds request to raw temporary without clamp; mode1 adds to raw base and clamps0..99 after signed32 addition; modes2/3/5 compare raw base against raw request and only when unequal write clamped base; mode4 adds ledger amountRemoved to raw temporary. Temporary component survives absolute writes, and unchanged/out-of-range equal base is not silently clamped.",
+    "Generic RecalculateStats no longer writes operation fields; numeric history cannot be derived from source ledger after clamping or absolute resets. Existing raw/request notification/reset routing now uses actual base comparison instead of flat aggregate.",
+    "Initialize/reset copy both template components; add optional operationcostbuff static-data input with legacy0 fallback when absent. This supports nonzero templates but does not certify omitted client export values. CopyForStealSide and snapshots preserve raw components separately.",
+    "Reidentify compatibility correction updates base by template delta while retaining temporary; no native conversion certification. Keep explicit legacy flattening only at handwritten aura application/removal, suppression/restore, and unknown-mode fallback; these boundaries remain incomplete."
+  ],
+  "models": {
+    "ast_vectors": 3780,
+    "worker_rows_exact": 3780,
+    "fixture_rows": 3780,
+    "controlled": "Whole ChangeOperationCost AST with ledger return0/-2/+3 controlled (not full ledger), signed32 Add_IntInt primitive substituted in interpreter, subject suppressed, skipAction true, action process true, query empty. Earlier VM unbounded Python built-in Add shadowed external handler; corrected it for this extreme model before accepting any results. Does not retroactively certify earlier overflow models.",
+    "machine": {
+      "getter_vectors": 64,
+      "copy_reset_vectors": 128,
+      "scope": "Exact four-MOV24B slice each from CopyData and ResetCardAttributes copies source/template+0xb0/+0xb4 to destination. Test synthetic full4096B source unchanged/destination only8B changed. Reset copies nonzero temporary template too, not a universal zero. Getter complete23B body wrap/floor measured. Not whole constructor/copy/reset helper execution."
+    }
+  },
+  "regressions": {
+    "new_tests": 2,
+    "numeric_vectors_both_sides": 7560,
+    "lifecycle_vectors": 150,
+    "total": 7710,
+    "release": {
+      "passed": 710,
+      "total": 710,
+      "exit_code": 0
+    },
+    "initial": {
+      "passed": 704,
+      "total": 708,
+      "failed": 4
+    },
+    "intermediate": {
+      "passed": 709,
+      "total": 710,
+      "failed": 1
+    },
+    "fixture_corrections": [
+      "Restore signed C# compatibility aggregate so old raw-negative setup/read expectations remain valid; native total still floors and native property reads base.",
+      "Suppression compatibility regression now establishes permanent operation gain via public API instead of assuming ledger editing/RecalculateStats applies it numerically.",
+      "Temporary-resource regression explicitly withdraws +2 operation correction before replacing its source ledger by an attack-only fixture.",
+      "Total-cost regression establishes +200 via native mode0 (temporary no99 cap), verifies ledger-only edits cannot change numeric state, and explicitly changes temporary field for getter-only test."
+    ],
+    "coverage": "All raw base/temp/request boundaries incl intMin/intMax across0..5, actual action changed eligibility and amount, VM raw field reads, snapshot and unrelated recalculation isolation.150 both-side init/copy/reset vectors include nonzero synthetic template temporary field. Does not validate every constructor/export/schema/reset helper or whole-card interaction."
+  },
+  "worker": {
+    "job": "20261023-165433-rule343-split-operation-numeric-vectors-3888e314",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 3780,
+    "primary_comparison_exact": 3780,
+    "scope": "Mechanical supplied algorithm reference; all rows independently compared to AST numeric execution and repository fixture. Not authority."
+  },
+  "remaining": [
+    "Compact CardBuff absolute/ordinary typed keys still collapse semantics: mode2/3/5 global cleanup, cached-source rewrite, raw SetValue/Suppress/veteran entries and ordinary coexistence not fixed. Therefore full numerical sequences can still diverge indirectly when later operations depend on wrong ledger.",
+    "Explicit legacy handwritten aura/suppression/restore/unknown-mode adapters still derive and flatten operation state. SuppressMultipleUnits operation phase, full lifecycle/batch and those integrations remain pending; this is a staged core numeric repair.",
+    "Static exports missing operationcostbuff still default0; no exhaustive2019-card CDO temporary-default reconciliation or full latest-version data migration claimed.",
+    "Full IsActionProcess execution gating, persistent frames/delegates, native math primitive implementation beyond controlled Add semantics, physical registry order/object validity, full numerical reentry and conversion/copy/reset transitive semantics remain uncertified. Fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-pe-20261023.json",
+      "sha256": "4d6ddc9f329ff1d83808cfbb7644bc943835976763c96f726b47247f9becbc4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-reset-attributes-native-20261023.json",
+      "sha256": "629ca5da4f65342da42b73b8e13ad9a9798c63979e56d8b830e4510fe27d9724"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-copydata-native-20261023.json",
+      "sha256": "da3d18bb0a4911341e3f2fed46c306debf91f660417ba8e2c59d1185eebe0b6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-split-numeric-model-20261023.json",
+      "sha256": "5f0b8e67b3f3258b1a6151cfb880c474ea3f6dde472d432e8d6b5ef660cdc5e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-copy-reset-slices-model-20261023.json",
+      "sha256": "ad2c68e41ee9cbc5fa91ff3ea003718b3c055c73feb0f9b593ed58722dedd6b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-emulation-rule343-20261023.json",
+      "sha256": "6bfa0473af6ea57a97015ad78a22fe347bcf4a3f1d054c01ec728ea44b4d834d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule343.py",
+      "sha256": "644af00c79951bff5bf446d14319d8b0ada4308ccc642e76b8cbd047ee0b7c17"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule343-numerics.py",
+      "sha256": "1894c25823e28d8206fecfae51de9cd328534a9f892d9ba5afb7a4ed54596e91"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule343-native-lifecycle.py",
+      "sha256": "c30ef3bea5ba13d05f0963257797615ea64e40fca586db659466d81b6164c3ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule343-total-operation.py",
+      "sha256": "b41f25846a47e876db9abd253f87dc863af63500ae0e5aabebbc1b8433be6f59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule337-total-operation.py",
+      "sha256": "af3263b5990be28a0967825fbfb947468816715008d41db49ab8f2b6a3f58d05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule326-native-accessors.py",
+      "sha256": "ad10c7860d4e4cd06594224255cf13350748b914a210a85e403ca8b997628776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule343-tests.py",
+      "sha256": "4e8ffae45ae8d62854c5df07598a85a18d847ee7515a378278458ffdbc0d487c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule343-verifier.py",
+      "sha256": "075a67dac3c2f0c22779f0fdc3ab1d104855f9605fc14b7e8fe296f4815bb994"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule343.py",
+      "sha256": "89bc02fdf7a9fd158bbd0e0cab1994a13b4bd7c2b4bbd31d81cb893105c8e01a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule340.py",
+      "sha256": "a42047ea5e23be461a2f6defd0f8093df4233969bd148d302d9ee0921b6cdba6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-verified-20261023.json",
+      "sha256": "d93c7e26b58ecefe10c13bf52e482386cc271b47ba27acbf75745d3dc1ee7e3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-initial.log",
+      "sha256": "03642086618c9b03eea9e9f0b85d4fcabab5d8eee773aee1e6c69b9d33b60a08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-initial-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-final.log",
+      "sha256": "7b959f69d904a2464ba037d5db51b6ceef0e9a44b89ec903991c26a4a5e5112d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-final-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-verified.log",
+      "sha256": "de68a7b662c8cc411c1012366da9aab4dbff9b31e1943bac2a9d3b3b4848c084"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule343-selftest-verified-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule343\\spec.json",
+      "sha256": "e79fd7f496f4a2978d0cab1c24734e1dc38bf1c8f43b845734868ad7d97d1d65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule343\\task.txt",
+      "sha256": "9fe9fe388fe2f6aefe3889960784b0573989339acf92919af849baf2d00a0c23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule343\\cases.json",
+      "sha256": "242353c214fda79fdf7c2a63a127a282233491f580893d804deb7136ef1409e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule343\\primary-cases.json",
+      "sha256": "ae309199654b479f329f6b0b3c97f32a9d895e3d75d422941146fae1c3075b73"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule343\\generator.py",
+      "sha256": "633d88a88ec2fab55053878afc08add794273e49ce1ba27e2a5762759a089aa9"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-165433-rule343-split-operation-numeric-vectors-3888e314\\job.json",
+      "sha256": "721eddce573b952755188122baf5f46198f3225b7b3ef49196cf04a72bfb07e6"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Cards\\CardDatabase.cs",
+      "sha256": "9ac966452d9c73f70e43c2c5534a390473042398ec412c7e67bb24bc53740b94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs",
+      "sha256": "5a81f6fba99468cdf1a08c7aa3d9ee2578dcfd1f13d7d384442364454050ffd7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "bd501a18037faeaee7ee1fc9d48f031ab7ba9cecbbe46f904e6eda6dc3291dba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "e5ce02bbb4546c558bb729083281a961895c7783d6872995d94995e79de14a53"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "9c87f1edb0e2766956824d502c2a805b365473e41869e36a3a414f3faa25228e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\BotSim.csproj",
+      "sha256": "2215b2e15499b9024b18f960d5f7b21294eb4edae3acca9a9ee67e4366e968e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "68d2f4debf1564c0d6c2fb16f8e2a2bccdc03dab2306cdc6b1dfbb812db9d056"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\operation-cost-numeric-reference-20261023.json",
+      "sha256": "4d0b0552e4611800e7921475d49d58498201d019b82562456979d7b4c575a063"
+    }
+  ]
+}

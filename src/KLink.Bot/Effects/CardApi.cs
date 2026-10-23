@@ -1351,7 +1351,8 @@ public sealed partial class CardApi
             Defense = source.Defense,
             MaxDefense = source.MaxDefense,
             KreditCost = source.KreditCost,
-            OperationCost = source.OperationCost,
+            BaseOperationCost = source.BaseOperationCost,
+            TemporaryOperationCost = source.TemporaryOperationCost,
             EnteredPlayOnTurn = source.EnteredPlayOnTurn,
             OperationsUsedThisTurn = source.OperationsUsedThisTurn,
             HasEverAttacked = source.HasEverAttacked,
@@ -4365,8 +4366,11 @@ public sealed partial class CardApi
             else SynchronizeBuffTarget(target, key.SourceCardId);
         }
 
-        // Legacy armor/operation-cost cleanup still feeds this compatibility
-        // recalculation. Attack/defense typed keys are handled by their phases.
+        // Explicit legacy suppression boundary. The operation-cost phase of
+        // SuppressMultipleUnits and its typed ledger remain unaudited here;
+        // preserve this adapter's prior flattening rather than silently making
+        // generic RecalculateStats overwrite every split operation state.
+        target.OperationCost = target.EffectiveOperationCost;
         target.RecalculateStats();
 
         _engine.FireSubAction("ZActionSuppressUnit", new[]
@@ -4468,6 +4472,8 @@ public sealed partial class CardApi
         }
 
         card.HeavyArmorZeroedBySuppress = false;
+        // Legacy manual restore adapter, not the native operation-cost path.
+        card.OperationCost = card.EffectiveOperationCost;
         card.RecalculateStats();
 
         if (card.SuppressStrippedCustomAbility is { Length: > 0 } ability)
