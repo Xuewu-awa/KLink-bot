@@ -2958,16 +2958,26 @@ public sealed partial class CardApi
     {
         int before = target.OperationCost;
         target.OperationCost = Math.Max(0, target.OperationCost + delta);
-        _engine.FireSubAction("ZActionChangeOperationCost", new[]
-        {
-            ActionValue2.Int("instigatorID", instigatorId),
-            ActionValue2.Int("amount", delta),
-        });
+        NotifyOperationCostChanged(target.CardId, instigatorId, delta, 1, skipAddToBattlelog: false);
 
         if (target.OperationCost != before)
         {
             FireOperationCostChanged(target, instigatorId);
         }
+    }
+
+    // RULE-338: exact AddSubActionChangeOperationCost ordered wire values.
+    // This builder has no eligibility gates; callers decide whether to notify.
+    private void NotifyOperationCostChanged(int cardId, int instigatorId, int amount, int changeType, bool skipAddToBattlelog)
+    {
+        _engine.FireSubAction("ZActionChangeOperationCost", new[]
+        {
+            ActionValue2.Int("cardID", cardId),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Int("amount", amount),
+            ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
+            ActionValue2.Bool("skipAddToBattlelog", skipAddToBattlelog),
+        });
     }
 
     /// <summary>行动费变更后的主体/其它卡事件链。</summary>
@@ -3084,12 +3094,10 @@ public sealed partial class CardApi
     /// <summary>
     /// 广播行动费临时 buff 被重置后的事件。
     ///
-    /// `ChangeOperationCost` 的蓝图在 changeType=4 实际移除来源 buff 后，
-    /// 用 `FetchAllCardsWithEventTrigger(9)` 广播
-    /// `OnAfterOtherCardOperactionCostBuffsReset(cardToChange, instigator)`，
-    /// 排除被重置的目标卡，并跳过受压制的接收者。这个事件让
-    /// Light Anti-Air Battery 等持续光环在显式撤销后重新挂回行动费修正；
-    /// 回合末攻击清理不派发此行动费重置事件（RULE-320）。
+    /// Legacy compatibility broadcaster. RULE-337's current native script enables
+    /// T9 after changed absolute modes2/3/5, following T10; mode4 does not enable
+    /// it. Existing callers and snapshot/live suppression checks still need that
+    /// migration. End-of-turn attack cleanup does not dispatch T9 (RULE-320).
     /// </summary>
     public void FireOperationCostBuffsReset(CardInstance target, int instigatorId)
     {

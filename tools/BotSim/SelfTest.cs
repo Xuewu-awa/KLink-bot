@@ -532,6 +532,9 @@ internal static class SelfTest
         new("压制防御账本矩阵：零值键、空源裁剪及非正来源旧结构", SuppressionDefenseLedgerMatrix),
         new("ChangeDefense3出参：数值/拒绝分支均覆盖旧true为false", SuppressionDefenseOutput),
         new("行动费入口：原始正来源、缺失源对象及全位置未揭示掩护拒绝", OperationCostEntryGuards),
+        new("行动费通知：原生五字段顺序、原始整数及布尔编码", OperationCostNotificationPayload),
+        new("行动费通知路由：原始请求、正确skip索引与零请求通知门", OperationCostNotificationRouting),
+        new("行动费skip：仅跳通知，保留已有主体/观察者回调", OperationCostSkipKeepsCallbacks),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -6676,6 +6679,85 @@ internal static class SelfTest
             if (!handled || result is not int value || value != Math.Clamp(raw, 0, 99) || before != state.SnapshotJson()
                 || state.ActionLog.SelectMany(x => x.SubActions).Any())
                 return $"getTotalAttack范围/接收者/读取副作用错误 side={side}, raw={raw}, explicit={explicitReceiver}, actual={result}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostNotificationPayload(CardDatabase db)
+    {
+        var method = typeof(CardApi).GetMethod("NotifyOperationCostChanged", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        string[] names = { "tempBuffGive", "permBuff", "SetValue", "Suppress", "tempBuffRemove", "veteranSet", "customAdd", "customRemove", "combatModify", "notUsed", "EChangeType_MAX" };
+        foreach (int cardId in new[] { -1, 60 })
+        foreach (int source in new[] { -7, 0, 20, 9999 })
+        foreach (int amount in new[] { -3, 0, 2, 105 })
+        foreach (int mode in Enumerable.Range(0, 11))
+        foreach (bool skiplog in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            method.Invoke(engine.Api, new object[] { cardId, source, amount, mode, skiplog });
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (actions.Length != 1 || actions[0].Name != "ZActionChangeOperationCost" || !actions[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("cardID", cardId), ActionValue2.Int("instigatorID", source), ActionValue2.Int("amount", amount),
+                ActionValue2.Str("changeType", names[mode]), ActionValue2.Bool("skipAddToBattlelog", skiplog) }))
+                return $"行动费五字段编码错误 card={cardId},source={source},amount={amount},mode={mode},skiplog={skiplog}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostNotificationRouting(CardDatabase db)
+    {
+        string Name(int mode) => mode switch { 0 => "tempBuffGive", 1 => "permBuff", 2 => "SetValue", 3 => "Suppress", _ => "veteranSet" };
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3, 5 })
+        foreach (int before in new[] { 0, 2, 99, 105 })
+        foreach (int requested in new[] { -3, 0, 2, 105 })
+        foreach (bool isBuff in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool skiplog in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_t_34", side, 60, deck ? side.DeckOf() : side.HqOf(), 1);
+            target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.OperationCost = before;
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, 20, requested, mode, isBuff, skip, skiplog },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            bool changed = mode is 2 or 3 or 5 ? before != requested : requested != 0;
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (!handled || actions.Length != (changed && !skip ? 1 : 0) || (actions.Length == 1 && !actions[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20), ActionValue2.Int("amount", requested),
+                ActionValue2.Str("changeType", Name(mode)), ActionValue2.Bool("skipAddToBattlelog", skiplog) })))
+                return $"行动费通知路由错误 mode={mode},before={before},request={requested},isBuff={isBuff},skip={skip},skiplog={skiplog},deck={deck},suppressed={suppressed}";
+        }
+        return null;
+    }
+
+    private static string? OperationCostSkipKeepsCallbacks(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", own = "OnAfterOperationCostChanged", other = "OnAfterOtherCardOperactionCostChanged";
+        using var ownProbe = InstallSelectionDrawProbe(name, own);
+        using var otherProbe = InstallSelectionDrawProbe(name, other);
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_t_34", side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            var observer = state.CreateWithId(name, side, 70, side.HqOf(), 2);
+            foreach (var card in new[] { target, observer }) { card.Keywords.Clear(); card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { other } }; }
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.InvokeByName("ChangeOperationCost", target, new object?[] { target, sourceId, 1, mode, false, skip, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionChangeOperationCost") != (skip ? 0 : 1)
+                || trace.Count(x => x.StartsWith(own + " →", StringComparison.Ordinal)) != (suppressed ? 0 : 1)
+                || trace.Count(x => x.StartsWith(other + " → " + name + "#70", StringComparison.Ordinal)) != 1)
+                return $"skipAction不得吞已有回调 mode={mode},skip={skip},suppressed={suppressed},source={sourceId}";
         }
         return null;
     }
@@ -37426,9 +37508,9 @@ internal static class SelfTest
     }
 
     /// <summary>
-    /// `card_unit_light_anti_air_battery` 的 +2 行动费是临时来源 buff，
-    /// 但光环本身跨回合持续。正版 `ChangeOperationCost(changeType=4)`
-    /// 清掉目标的临时槽后，会广播 reset 事件，让电池重新施加 +2。
+    /// Legacy aura regression, not native equivalence authority. RULE-337 found
+    /// that current ChangeOperationCost4 does not enable T9. The explicit reset
+    /// expectations here must migrate with the pending cost/ledger/event rewrite.
     /// </summary>
     private static string? LightAntiAirBatteryOperationCostReset(CardDatabase db)
     {

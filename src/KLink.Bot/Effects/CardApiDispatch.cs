@@ -4519,10 +4519,8 @@ public sealed partial class CardApi
         // 签名（实测 140 个调用点）：ChangeOperationCost(卡, instigatorID, 数值, changeType, b, b, b)
         //   a[1] = 来源卡 ID，a[2] = 数值，a[3] = changeType（含义同 ChangeKreditCost）
         //
-        // ⚠️ 和 ChangeKreditCost 一样必须按来源记账、绝对值重算。旧版只做
-        //    `target.OperationCost += delta`，于是 `card_unit_214th_amur` 的
-        //    「T-34 行动费 -1」每触发一次就再减一次，而 `RemoveTheBuff`
-        //    传的 0 又什么都没撤销 —— 行动费一路掉到 0 再也回不来。
+        // Source-derived recalculation below remains a legacy adapter. Native
+        // base/temporary operation values and their ledger still need migration.
         // RULE-337: native i71/105 uses the supplied positive ID, without
         // a source-object existence gate. i119/160 rejects unrevealed Covert
         // at every location, unlike CanCardBeBuffed's location-specific table.
@@ -4530,6 +4528,10 @@ public sealed partial class CardApi
         if (sourceId <= 0 || IsUnrevealedCovertCard(target)) return null;
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
+        int rawAmount = amount;
+        // SDK: argument4 is isBuff (unused by this native body), not skipAction.
+        bool skipAction = TruthyArg(a, 5);
+        bool skipAddToBattlelog = TruthyArg(a, 6);
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
@@ -4569,7 +4571,7 @@ public sealed partial class CardApi
         if (setsAbsolute)
         {
             int requestedOperationCost = Math.Clamp(amount, 0, 99);
-            valueChanged = beforeOperationCost != requestedOperationCost;
+            valueChanged = beforeOperationCost != rawAmount;
             amount = requestedOperationCost - target.Definition.OperationCost;
             buff.OperationCost = amount;
             buff.OperationCostSetsAbsoluteValue = true;
@@ -4588,11 +4590,10 @@ public sealed partial class CardApi
         }
         target.RecalculateStats();
 
-        _engine.FireSubAction("ZActionChangeOperationCost", new[]
-        {
-            ActionValue2.Int("instigatorID", sourceId),
-            ActionValue2.Int("amount", amount),
-        });
+        // RULE-338: notification carries the RAW request, even for absolute
+        // values; skipAction omits only this action, not the callback chain.
+        if (valueChanged && !skipAction)
+            NotifyOperationCostChanged(target.CardId, sourceId, rawAmount, changeType, skipAddToBattlelog);
 
         if (valueChanged)
         {

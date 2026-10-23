@@ -1,0 +1,217 @@
+{
+  "rule": "RULE-338",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-338",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_verified": 12,
+    "blueprint_bytes": 4411,
+    "value_helpers": 4,
+    "payload_model_cases": 704,
+    "whole_function_routing_cases": 4608,
+    "worker_rows_exact": 704,
+    "regression_combinations": {
+      "constructor": 704,
+      "routing": 5120,
+      "skip_callback_invariance": 32,
+      "total": 5856
+    },
+    "release_selftest": {
+      "passed": 701,
+      "total": 701,
+      "exit_code": 0
+    },
+    "scope": "Ordered5-field payload, raw request and skip/zero gating on non-mode4 Blueprint paths with legacy operation proxy. C# convenience wrapper only shares payload shape; no eligibility/numeric recertification. Mode4, actual base/temp and typed ledger, T10/T9 order, complete notify receiver/frame chain remain pending."
+  },
+  "authority": "Reuse prior authoritative readonly function captures, independently redecoded12 Blueprint functions4411B including four value helpers. Current installed PE hash matches capture version and total accessor bytes verified. No fresh game state/process capture claim.",
+  "changes": [
+    "Introduce one exact ordered5-field notification builder: cardID,instigatorID,raw amount,changeType text,skipAddToBattlelog bool0/1. Both native Blueprint main path and public C# convenience wrapper now use that shape.",
+    "Non-mode4 Blueprint main path preserves original requested amount for notification; absolute modes no longer send the template-relative compact offset.",
+    "Read skipAction from argument5 and skipAddToBattlelog from6. Argument4 is isBuff, unused by captured native body. skipAction omits only notification while existing callback invocation remains.",
+    "Gate ordinary0/1 notification on nonzero request. Absolute2/3/5 changed flag compares RAW request with existing operation proxy rather than clamped request. This proxy is still NOT native separate base/temp storage.",
+    "Correct misleading comments that claimed native mode4 necessarily dispatches T9; existing compatibility broadcaster/aura regression behavior remains unchanged and explicitly marked pending migration."
+  ],
+  "models": {
+    "pure_builder": 704,
+    "whole_function_with_builder": 4608,
+    "total": 5312,
+    "description": "Full370B AddSubActionChangeOperationCost and actual CardID/Int/Bool/String helpers, enum names controlled from captured same-version UEnum. Whole3171B ChangeOperationCost invokes this builder on native Notify path, with ledger amountRemoved/query/source/frame primitives controlled. Reference includes mode4 removed amount, but simulator mode4 integration remains pending."
+  },
+  "regressions": {
+    "new_test_cases": 3,
+    "pure_builder": 704,
+    "routing": 5120,
+    "skip_callback_invariance": 32,
+    "total": 5856,
+    "release_passed": 701,
+    "release_total": 701,
+    "exit_code": 0,
+    "description": "Signed/zero card/source IDs only at pure constructor; modes0..10 encoding. Public Blueprint routing modes0/1/2/3/5 across both sides, raw requests/base proxies, isBuff/skipAction/skipAddToBattlelog, deck and suppression; skip leaves existing own/observer callbacks in32 fixtures. No numeric equivalence assertion for legacy proxy."
+  },
+  "worker": {
+    "job": "20261023-123208-rule338-operation-notification-e0cd7ea1",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 704,
+    "exact_primary_reconstruction": true,
+    "role": "Mechanical fixture generation from supplied formulas, matched to complete native action builder. Not semantic authority."
+  },
+  "remaining": [
+    "Mode4 temporary removal is an early legacy path; it still lacks native five-field notify/amountRemoved/skip behavior and has wrong permanent fallback/reset routing. Pure builder mode4 support is not mode4 caller certification.",
+    "Independent base operationCost and temporary operationCostBuff, typed source ledger and raw-base equality need joint migration. When current flat proxy includes temporary/other source contributions, the new absolute changed comparison can still differ from native base comparison.",
+    "Current absolute equality can still rewrite compact ledger/numeric proxy even when native leaves numeric base unchanged; repairing notification changed flag does not certify numeric update behavior.",
+    "T10 then optional T9 snapshots/live suppression/reentry, actual reset flag routing and receiver/Ubergraph persistent frame handling remain incomplete.",
+    "Public C# ChangeOperationCost convenience wrapper only shares correct wire shape; its source/zero-delta/guard/numeric and callback eligibility remain compatibility behavior, not native certification.",
+    "Unknown/default enum eligibility/frame initialization, physical containers, full suppression operation/kredit/heavy armor phases and complete lifetimes/restore/copy/reset remain pending."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-operation-cost-native-20261023.json",
+      "sha256": "d12124887d1717de95e2bdf7e4e56d8316659d66898e9b0862420c76599abc24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notifier-native-20261023.json",
+      "sha256": "4b074e691187a55082986b8eff648913ed49d4e1e45a4a18d3e3cedde8c2bba3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-native-total-accessor-pe-20261023.json",
+      "sha256": "4d6ddc9f329ff1d83808cfbb7644bc943835976763c96f726b47247f9becbc4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\change-type-friendly-native-20261022.json",
+      "sha256": "4fc68b3dd104df532a92e776c69645a85eaf035f6ff748c64d2b05cb7730784f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-notifier-payload-native-20261021.json",
+      "sha256": "a09294e318730fd2e875f5802d5c16793b90c954e64a4a7ed8462eee40b7254d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\attack-payload-string-helper-native-20261021.json",
+      "sha256": "3cd9b0a5846f9476f76a21f9ec040024f8b596c9171bc2780f9b77a5c1c3693c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\reset-operations-handler-helpers-native-20261021.json",
+      "sha256": "ea34f60e5ad9f8d4048a412940e828756d951a83c4e0a0c91b08085f93eb91f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notification-payload-model-20261023.json",
+      "sha256": "f2d6b1af55ab605376509261559e77bb89665c2ddc25a9fe41c21e96792868fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\operation-cost-notification-routing-model-20261023.json",
+      "sha256": "f586afd4dc07914e5072d867d67752aaa9890f540f6f07c32bbec0fa710f0f81"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule338.py",
+      "sha256": "2c8dd82a3f39697ae4b1a0cb5da08497ba957b65f8ce69736f00624fa5efec62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule338-tests.py",
+      "sha256": "3b8132e9f49aecacf87a4fe812274fd46013cd3beb915d8916e6a3f00106e747"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule338-payload.py",
+      "sha256": "e42245368a1f13127544e7bcaff8b3981c4b1c9a5fa9ee2c4e38090519badc52"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule338-main-model.py",
+      "sha256": "839c889fb4995a3684cb23a7be34a0b1467d2651a16000db9e67d0b460e4000d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule338-main-notification.py",
+      "sha256": "16b21e138f735897c97f593349b3620fce448dadd1fc74e4b467087c29019040"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule338-operation-notification.py",
+      "sha256": "b8c42de876ff534d99a54fc79c802289c793428c800b153b1f1cabbb0c8827b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule338-operation-notification-verified-20261023.json",
+      "sha256": "0f5004d9a9e1bb942f066d7fc378af0c8267706c6ff50d5693fdc43d85df68da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule338-selftest-initial.log",
+      "sha256": "f52066d526650f2ab50bcc2af7bf076011f39df4ad365180eaca4e99bee68fce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule338-selftest-initial-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule300-attack-payload.py",
+      "sha256": "740e1e6c2fc273036e3ba56d10c47323fc82ddfa0155ac730c06cb0321eb93f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule337-operation-modes.py",
+      "sha256": "07615147210f0be22995ccf52f61fec9cdbbfca0d91fa9931560ba6f013a602d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule338\\spec.json",
+      "sha256": "d8b702b5d22eae93232915a941e97d85fe5fca097a786f02845f0962da627c52"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule338\\task.txt",
+      "sha256": "2c1e8c9474ab02d86f95d90ffe67455b19ae81da7e778d94952baea163f475da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule338\\actions.json",
+      "sha256": "f33a8c48c6b0944ac4a6bace647e37ce378eb5e4f188f4e4eb8a5f476b39b88e"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-123208-rule338-operation-notification-e0cd7ea1\\job.json",
+      "sha256": "13f64d2116645fca275407247ea2f66b186b7d38f1dd9a64874b72915b7912b9"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+      "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "c43aaff498ffac4fbc0c933c3cc0ebff4c845939d63840797d80761a1d269bbc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "262c41f7c76847f9150a9306f6ab24e9ccb8ae6bec2985f69b95eaf289749687"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "940947734e4e76488eb25e4b592a8b1e8f14dda9792126d2181cc480be68f92c"
+    }
+  ]
+}
