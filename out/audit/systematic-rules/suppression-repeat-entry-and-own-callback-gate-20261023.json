@@ -1,0 +1,177 @@
+{
+  "rule": "RULE-347",
+  "date": "2026-10-23",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-347",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "supporting_blueprint_functions_redecoded": 8,
+    "supporting_blueprint_bytes": 9464,
+    "entry_function_bytes": 8101,
+    "controlled_native_phase_cases": 48,
+    "worker_rows_exact": 48,
+    "regression_combinations": {
+      "entry_matrix": 360,
+      "new_gains_between_calls": 18,
+      "total": 378
+    },
+    "release_selftest": {
+      "passed": 719,
+      "total": 719,
+      "exit_code": 0
+    },
+    "scope": "Remove prior-suppression early return; gate own callback by saved entry state only. Repeats reach existing keyword/customJSON/numeric/T58/T11 compatibility phases.48native projections execute real control flow but mock cleanup/numeric bodies/query. No full broadcast/cleanup or entire-card equivalence claim."
+  },
+  "authority": "Reuse authoritative full SuppressMultipleUnits8101B and seven helper scripts1363B from prior read-only captures.8scripts9464B redecoded from raw bytes with FName/symbol-header checks and current PE SHA. No fresh process or battle-state assertion.",
+  "native": {
+    "entry_guard": "489 HasCustomAbility(cantBeSuppressed);548 IsLocatedOnBoard;589 invert ability;618 AND;656 PopIfNot. No prior-suppression entry rejection.",
+    "state": "681 saves _wasAlreadySuppressed;722 writes isSuppressed=true.755/778 ActionProcess gates own/T58 section.788 branches6194 own iff saved prior state false;6230 returns802 T58.",
+    "continuations": "666 pushes5772;671 pushes4510;676 pushes1358. After own/T58 returns1358 cleanup, then4510 numeric and5772/T11.1358 RemoveGuard has no already-suppressed gate; repeat follows same continuation."
+  },
+  "changes": [
+    "Remove already-suppressed early return from private per-card core. Preserve board/cantBeSuppressed gates. Save target.IsSuppressed before setting true, and gate only own OnSuppressed by that saved value.",
+    "Repeated eligible targets now reach existing T58/keyword/customJSON/numeric/T11 phases, including raw duplicate IDs in one batch and new gains between separate suppress calls. Do not claim existing phase implementations are fully converted.",
+    "Correct old comments claiming keyword removal was first-only and initial ActionProcess gate returned the whole function. No broad broadcast or inactive-headless execution behavior change in this patch."
+  ],
+  "models": {
+    "cases": 48,
+    "scope": "boards2*cant2*initialSuppression2*ActionProcess2*repeatCounts3. Full actual front/entry/saved state/own/T58/T11/ID-loop control flow, stop1117. Cleanup1358..4510 and numeric4510..5772 replaced by phase markers, preserving original flow stack. Single query observer and predicates controlled. Worker48 rows exactly match native projection."
+  },
+  "regressions": {
+    "new_tests": 2,
+    "combinations": 378,
+    "entry_matrix": 360,
+    "new_gains_between_calls": 18,
+    "release": {
+      "passed": 719,
+      "total": 719,
+      "exit_code": 0
+    },
+    "scope": "Synthetic no-op hooks on arado fixture, not a claim real arado has these events.360matrix=both sides*initial state2*5locations*cant2*3entries*counts1/2/3. Check own first-only, observer90 T58/T11 per eligible iteration, raw state/Guard/numeric outcomes and one-per-batch notice.18new-gain scenarios make36calls after controlled keyword/customJSON/base/temp modifications; repeat removes Guard/JSON and restores basic stats, retains temporary attack/operation. No receiver mutations or real registration-set semantics certified."
+  },
+  "worker": {
+    "job": "20261023-175559-rule347-repeated-suppression-7fe5ed4c",
+    "status": "completed",
+    "exit_code": 0,
+    "rows": 48,
+    "primary_comparison_exact": 48,
+    "scope": "Private mechanical supplied algorithm only; no source edits/authority judgments/git.",
+    "boundary_disclosure": "Worker reports briefly writing then deleting a scratch verifier inside packet, outside named cases.json/generator.py write list. Disclosed; final files inspected; outputs accepted only after independent native comparison. No retry or expanded permissions."
+  },
+  "remaining": [
+    "Full T58/T11 recipient query/registration, self inclusion, suppression exceptions, location filtering and callback snapshot/reentry semantics remain unconverted. Current generic FireTrigger may dispatch subject T11 separately without native query qualification; new tests assert only controlled unsuppressed observer90, not complete recipient set.",
+    "Cleanup/keyword-removal implementations, source/skip flags, received-ability maps, static card lookup/cache, heavy armor/kredit and veteran/salvage phases are not fully certified. Native phase projection mocks cleanup/numeric boundaries; new managed tests do not prove whole native cleanup equivalence.",
+    "ActionProcess modeled false/true in native projection only; headless integration tests use active execution. Real online persistent receiver/frame/delegate execution gates remain open.",
+    "1117 trailing last-card covert reveal/null contexts and qqq output; invalid lookup/stale local outputs; caller const-array and persistent-frame alias mutation; true native UObject lifetimes remain open.",
+    "SuppressedOnTurn is a managed diagnostic, not a native field assertion. Legacy restore/aura/unknown-mode adapters remain. Version migration paused; fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-ledger-removal-helpers-native-20261023.json",
+      "sha256": "d61b5c9b08ee10db6ebd1c1b4576092242d8b4dc9df10bf1edbfc8c3ea06298c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-notifier-native-20261023.json",
+      "sha256": "cc494050ff552129eac71e4ae1f74586a400c31aa35d8858aa1dc76298804597"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-batch-value-helpers-native-20261023.json",
+      "sha256": "ef1f4406c74c5bf7410b06a3647e58fb03468837386d9ecc021bd3193b180fd7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\suppress-repeat-entry-native-model-20261023.json",
+      "sha256": "248251e26e656e184731cda8b9c4855192b45b3ca9ccf55de65198e6f3cdf75b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule347.py",
+      "sha256": "61e0cfcec9dd6add26e8c92133884b2719641c966a2def5edb70bee8760b4dca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule347-reentry.py",
+      "sha256": "1d6eb94aa74b8fec5e072ec807289baf07f608d10a6a65852eb72c4f568c9090"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule347-tests.py",
+      "sha256": "d95e54a0f4944d9835a2525498312e12648a6e0635aa8480d849d48dbe96d5df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule347.py",
+      "sha256": "376dd468eb6a1b8107d765cca479c57a81d7d5cc42c6affe951aea52fff16d1f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule346.py",
+      "sha256": "ca8f448b6bfb7fa8a52072979ea52f12efa984f5fd5768aaae46b16df6a100d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule347-verified-20261023.json",
+      "sha256": "5c102499cbefcb419a1011037b3115fa88d668e3a1b65d39aaa5ce32c021882f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule347-selftest-final.log",
+      "sha256": "df9c454f9d7baadc46b65bcbe53a5080011add08091ffff7345349cf933574df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule347-selftest-final-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule347\\spec.json",
+      "sha256": "000c7cb7e7a29b856d0fc473377dadd0961c20ab01bc131ac69e507a5861b2c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule347\\task.txt",
+      "sha256": "0ce2796e17f5a888beaa36c7dcbf52d3ce1983cb2a7e22dd30b6190cf302b28b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule347\\cases.json",
+      "sha256": "02a030cdf2982481e365895c6c8b7463432d98da784148f940d1e5d360ce294c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule347\\primary-cases.json",
+      "sha256": "a315999b72c38b5f8b7dcf5babbbceb8b20acb8a19b6cc5d57c475b572493f77"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule347\\generator.py",
+      "sha256": "1ba4e480a382766d04976af35eecd63026a4c7d40ce1b245276ae6c1a8ccb34d"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261023-175559-rule347-repeated-suppression-7fe5ed4c\\job.json",
+      "sha256": "cdea415b3cd6450e445a20584f1b1fedc370d299aeb33f3f100bf44fb49a376f"
+    }
+  ],
+  "source": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "38bc484765c8023fbf21793db8a1534b6dc614830897fe39a03aa859c6c69baf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "2abd67bb9d4fb17b625b0e626fdb31d14ba6aca6e566171fda2b2a41a2f5a2be"
+    }
+  ]
+}

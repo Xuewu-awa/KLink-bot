@@ -4106,7 +4106,7 @@ public sealed partial class CardApi
     /// ## 函数体在做什么（逐段，`L_xxxx` = 字节偏移）
     ///
     /// <code>
-    /// L_0061 i=97   IsActionProcess → 不是动作流程就整段跳过
+    /// L_0061 i=97   IsActionProcess → 仅控制前置通知；不是整段早退
     /// L_00BE        for each cardID in cardsToSuppress：
     /// L_01B6          GetCardFromID
     /// L_01E9          HasCustomAbility(card, "cantBeSuppressed")   ; ★ 守卫之一
@@ -4216,14 +4216,13 @@ public sealed partial class CardApi
             if (State.ById(id) is { } target) SuppressUnitCore(target, instigatorId);
     }
 
-    // Per-card compatibility body. Its already-suppressed guard, complete
-    // T58/T11 and trailing reveal still require separate native reconciliation.
+    // Per-card compatibility body. Complete T58/T11 and trailing reveal still
+    // require separate native reconciliation.
     private void SuppressUnitCore(CardInstance target, int? instigatorId)
     {
-        // 守卫：在场 && 尚未被抑制 && 没有 `cantBeSuppressed` 自定义能力
-        // （蓝图 L_01E9/L_0224/L_026A；后一条是本轮补的）。
+        // RULE-347: native489..656 checks board && !cantBeSuppressed only.
+        // Prior suppression skips only the own callback, not the remaining body.
         if (!IsLocatedOnBoard(target)
-            || target.Keywords.Contains(Keyword.Suppressed)
             || HasCustomAbility(target, "cantBeSuppressed"))
         {
             return;
@@ -4233,6 +4232,7 @@ public sealed partial class CardApi
         //   顺序有观测意义：摘关键字会走 `RemoveKeyword` → `ZActionRemove*` +
         //   `FireAbilitiesChanged`，而被抑制的卡在这些派发里应当**已经被抑制**
         //   （`CardApi.FireTrigger` si=325/710：`cardTriggered.isSuppressed` ⇒ 整轮不派发）。
+        bool wasAlreadySuppressed = target.IsSuppressed;
         target.Keywords.Add(Keyword.Suppressed);
 
         // 记下被抑制的回合号 —— 仅作诊断留痕，见 `CardInstance.SuppressedOnTurn`。
@@ -4243,9 +4243,8 @@ public sealed partial class CardApi
         // ---- ★触发点A 自己那一路：`OnSuppressed`（蓝图 L_0314 → L_174B → L_176F）----
         // ⚠️ 次序：它在**摘任何东西之前**就发（L_174B 在 L_0322 / L_054E 之前）。
         //    蓝图的门是 `if (!_wasAlreadySuppressed) goto L_174B;`（条件为**假**才跳），
-        //    即"只在**首次**抑制时发自己那一路"；上面那道
-        //    `Keywords.Contains(Keyword.Suppressed)` 早退已经保证了这里就是首次。
-        FireTrigger("OnSuppressed", target, target.Owner);
+        //    Only this callback is gated by the saved pre-callback state.
+        if (!wasAlreadySuppressed) FireTrigger("OnSuppressed", target, target.Owner);
 
         // ---- ★触发点B 广播：`OnOtherCardSuppressed`（触发号 58，蓝图 L_0322）----
         // ⚠️ 它同样在摘除/回落**之前**（58 那轮循环跑完才弹执行流栈到 L_054E 摘东西）。
@@ -4259,8 +4258,8 @@ public sealed partial class CardApi
             });
 
         // ---- ①a 摘关键词（可逆）----
-        // 蓝图用 `_wasAlreadySuppressed`（`:35779-35806`）把这一整段放在"首次"分支里；
-        // 上面那道 `Contains(Suppressed)` 门已经保证了这里就是首次。
+        // Native1358 follows the T58 loop for first and repeated suppression.
+        // Newly acquired keywords must also pass through removal on repeats.
         target.SuppressStrippedKeywords ??= new List<string>();
         foreach (string keyword in SuppressStrips)
         {

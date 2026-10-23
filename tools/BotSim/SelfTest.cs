@@ -551,6 +551,8 @@ internal static class SelfTest
         new("批量压制：原始ID、重复、空数组及两字段前置通知", SuppressionBatchRawNotification),
         new("单卡压制包装：无效ID不回退、按ID重取当前对象", SuppressionSingleRawWrapper),
         new("批量压制重入：前项回调替换或移走后项时重新查找", SuppressionBatchLookupMutation),
+        new("重复压制：只跳自身首次回调，保留广播和清理阶段", SuppressionRepeatEntryMatrix),
+        new("重复压制再增益：新关键词和基础数值仍被重新移除", SuppressionRepeatNewBuffs),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7350,6 +7352,93 @@ internal static class SelfTest
                 || !actions[cost].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("instigatorID", 20),
                     ActionValue2.Int("amount", 4), ActionValue2.Str("changeType", "Suppress"), ActionValue2.Bool("skipAddToBattlelog", false) }))
                 return $"压制行动费整合顺序/数值被后续覆盖 side={side}: {fault},phases={string.Join(',', phases)},idx={attack}/{defense}/{cost},raw={target.BaseOperationCost}/{target.TemporaryOperationCost}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallSuppressionEntryProbes()
+    {
+        const string name = "card_unit_arado_ar_196";
+        var own = InstallSelectionDrawProbe(name, "OnSuppressed");
+        var before = InstallSelectionDrawProbe(name, "OnOtherCardSuppressed");
+        var after = InstallSelectionDrawProbe(name, "OnAfterOtherCardSuppressed");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        foreach (string hook in new[] { "OnSuppressed", "OnOtherCardSuppressed", "OnAfterOtherCardSuppressed" })
+            locals[hook] = new[] { new KismetStep(0, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        return new AuditProbeCleanup(() => { after.Dispose(); before.Dispose(); own.Dispose(); });
+    }
+
+    private static string? SuppressionRepeatEntryMatrix(CardDatabase db)
+    {
+        using var probes = InstallSuppressionEntryProbes();
+        const string name = "card_unit_arado_ar_196";
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool initial in new[] { false, true })
+        foreach (var location in new[] { side.HqOf(), CardLocation.BoardFrontline, side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (bool cant in new[] { false, true })
+        foreach (int entry in Enumerable.Range(0, 3))
+        foreach (int count in new[] { 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, location, 1);
+            var observer = state.CreateWithId(name, side, 90, side.HqOf(), 2);
+            target.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 3 };
+            observer.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { "OnOtherCardSuppressed", "OnAfterOtherCardSuppressed" } };
+            target.Keywords.Clear(); observer.Keywords.Clear(); target.Keywords.Add(Keyword.Guard);
+            if (initial) target.Keywords.Add(Keyword.Suppressed);
+            if (cant) target.CustomAbility = "cantBeSuppressed";
+            target.BaseAttack = target.MaxAttack = 5; target.Defense = target.MaxDefense = 7;
+            target.BaseOperationCost = 8; target.TemporaryAttack = target.TemporaryOperationCost = 0;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (entry == 2) engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { Enumerable.Repeat(60, count).ToArray(), 20, null }, ctx, out _);
+            else for (int i = 0; i < count; i++) {
+                if (entry == 0) engine.Api.SuppressUnit(target, 20);
+                else engine.Api.InvokeByName("SuppressUnit", null, new object?[] { 60, 20, null }, ctx, out _);
+            }
+            bool eligible = location.IsBoard() && !cant;
+            int own = trace.Count(x => x.StartsWith("OnSuppressed → ", StringComparison.Ordinal) && x.Contains("#60（"));
+            int before = trace.Count(x => x.StartsWith("OnOtherCardSuppressed → ", StringComparison.Ordinal) && x.Contains("#90（"));
+            int after = trace.Count(x => x.StartsWith("OnAfterOtherCardSuppressed → ", StringComparison.Ordinal) && x.Contains("#90（"));
+            int notices = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSuppressMultipleUnits");
+            if (own != (eligible && !initial ? 1 : 0) || before != (eligible ? count : 0) || after != (eligible ? count : 0)
+                || target.IsSuppressed != (initial || eligible) || target.HasKeyword(Keyword.Guard) == eligible
+                || target.BaseAttack != (eligible ? 2 : 5) || target.Defense != (eligible ? 4 : 7)
+                || target.BaseOperationCost != (eligible ? 3 : 8) || notices != (entry == 2 ? 1 : count))
+                return $"重复压制入口错误 side={side},initial={initial},loc={location},cant={cant},entry={entry},count={count},events={own}/{before}/{after}";
+        }
+        return null;
+    }
+
+    private static string? SuppressionRepeatNewBuffs(CardDatabase db)
+    {
+        using var probes = InstallSuppressionEntryProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int entry in Enumerable.Range(0, 3))
+        foreach (int count in new[] { 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = target.Name, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 3 };
+            target.Keywords.Clear(); target.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            for (int i = 0; i < count; i++) {
+                // Controlled new gains between calls, not a claim about a live card's ability.
+                target.Keywords.Add(Keyword.Guard); target.CustomJson.Set("repeatMarker", i.ToString(), CardJsonType.String);
+                target.BaseAttack = target.MaxAttack = 5; target.TemporaryAttack = 2;
+                target.Defense = target.MaxDefense = 7; target.BaseOperationCost = 8; target.TemporaryOperationCost = 2;
+                if (entry == 0) engine.Api.SuppressUnit(target, 20);
+                else engine.Api.InvokeByName(entry == 1 ? "SuppressUnit" : "SuppressMultipleUnits", null,
+                    new object?[] { entry == 1 ? (object)60 : new[] { 60 }, 20, null }, ctx, out _);
+                if (target.HasKeyword(Keyword.Guard) || target.CustomJson.ContainsKey("repeatMarker")
+                    || target.BaseAttack != 2 || target.TemporaryAttack != 2 || target.Defense != 4
+                    || target.BaseOperationCost != 3 || target.TemporaryOperationCost != 2 || !target.IsSuppressed)
+                    return $"重复压制未清新增益 side={side},entry={entry},iteration={i}";
+            }
+            if (trace.Any(x => x.StartsWith("OnSuppressed → ", StringComparison.Ordinal))) return "已压制对象不应重发自身回调";
         }
         return null;
     }
