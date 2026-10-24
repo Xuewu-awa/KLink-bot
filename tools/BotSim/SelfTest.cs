@@ -963,6 +963,9 @@ internal static class SelfTest
         new("死亡执行阶段标记不按单位类型过滤", DeathTurnFlagAnyCard),
         new("死亡标记在自身和观察者回调前写入且不覆盖回调重置", DeathTurnFlagCallbackTiming),
         new("原生死亡回合标记setter与getter共享状态", DeathTurnFlagSetter),
+        new("显式销毁总部走移除和死亡通知而非伪造伤害", ExplicitHqDestroyRouting),
+        new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
+        new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -34442,6 +34445,127 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallHqRemovalObserverProbes()
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var saved = new List<(string Trigger, KismetProgram? Previous)>();
+        foreach (string trigger in new[] { "OnOtherCardLeaveBoardOrOwner", "OnAfterOtherCardLeaveBoardOrOwner", "OnOtherCardLocationMoved", "OnOtherCardDestroyed" })
+            if (KismetLibrary.Default.FindProgram(name, trigger) is not null) throw new InvalidOperationException("无法安全安装总部移除观察探针：" + trigger);
+        foreach (var spec in new[] { ("OnOtherCardLeaveBoardOrOwner", "cardLeaving"), ("OnAfterOtherCardLeaveBoardOrOwner", "cardLeaving"),
+            ("OnOtherCardLocationMoved", "cardMoved"), ("OnOtherCardDestroyed", "cardDestroyed") }) {
+            if (KismetLibrary.Default.FindProgram(name, spec.Item1) is not null) throw new InvalidOperationException("无法安全安装总部移除观察探针");
+            KismetProgram? previous = null; if (cache.TryGetValue(name, out var programs)) programs.Remove(spec.Item1, out previous); saved.Add((spec.Item1, previous));
+            string field = "_hq_" + spec.Item1;
+            locals.Add(spec.Item1, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                    new KismetExpr { Var = field, Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, field, null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_" + spec.Item2 },
+                    null, -1, field + "_subject", null) { DestinationScope = "instance" },
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        }
+        return new AuditProbeCleanup(() => { foreach (var item in saved) {
+            locals.Remove(item.Trigger); if (cache.TryGetValue(name, out var current)) { current.Remove(item.Trigger); if (item.Previous is not null) current[item.Trigger] = item.Previous; }
+        } });
+    }
+
+    private static CardInstance MakeHqRemovalObserver(GameState state, Side side)
+    {
+        var card = state.CreateWithId("card_unit_typhoon_mk_ib", side.Opposite(), 80, CardLocation.Discard, 77);
+        card.Definition = new CardDefinition { Name = card.Name, Type = "order", UsedTriggers = new[] {
+            "OnOtherCardLeaveBoardOrOwner", "OnAfterOtherCardLeaveBoardOrOwner", "OnOtherCardLocationMoved", "OnOtherCardDestroyed" } };
+        card.Keywords.Clear(); return card;
+    }
+
+    private static bool HqObserverPayloads(CardInstance observer, CardInstance hq, bool wasBoard)
+    {
+        foreach (string trigger in new[] { "OnOtherCardLeaveBoardOrOwner", "OnAfterOtherCardLeaveBoardOrOwner", "OnOtherCardLocationMoved", "OnOtherCardDestroyed" }) {
+            string key = "_hq_" + trigger; int expected = trigger == "OnOtherCardDestroyed" || wasBoard ? 1 : 0;
+            if (Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault(key)) != expected
+                || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
+        }
+        return true;
+    }
+
+    private static string? ExplicitHqDestroyRouting(CardDatabase db)
+    {
+        using var probes = InstallHqRemovalObserverProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable, side.HandOf() })
+        foreach (int sourceMode in Enumerable.Range(0, 3))
+        foreach (int health in new[] { 0, 7, 35 })
+        foreach (bool native in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hq = state.Hq(side); hq.Location = location; hq.LocationNumber = 27; hq.Defense = hq.MaxDefense = health; hq.Keywords.Clear(); if (suppressed) hq.Keywords.Add(Keyword.Suppressed);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            var observer = MakeHqRemovalObserver(state, side);
+            CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => hq };
+            if (native) engine.Api.InvokeByName("DestroyCard", source, new object?[] { hq, killer }, new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.Api.DestroyCard(hq, killer);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var notice = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            if (hq.Location != CardLocation.Discard || hq.LocationNumber != 27 || hq.Defense != health || hq.MaxDefense != health
+                || !ReferenceEquals(state.Hq(side), hq) || state.IsFinished || state.GetHQDamagedAmountThisTurn(side) != 0
+                || !state.UnitDestroyedThisTurn || !state.DestroyedCardIdsAll.SequenceEqual(new[] { hq.CardId }) || notice.Length != 1
+                || notice[0].Values.Single(x => x.Name == "cardID").Value != hq.CardId
+                || notice[0].Values.Single(x => x.Name == "destroyerCardID").Value != (killer?.CardId ?? 0)
+                || actions.Any(x => x.Name is "ZActionDamageCard" or "ZActionRemoveCardFromBoard")
+                || !HqObserverPayloads(observer, hq, location.IsBoard()))
+                return $"显式HQ销毁必须移入弃牌并执行对应回调，不能伪造扣血/胜负：{side}/{location}/{sourceMode}/{health}/{native}/{suppressed}";
+        }
+        return null;
+    }
+
+    private static string? HqDefenseLethalRouting(CardDatabase db)
+    {
+        using var probes = InstallHqRemovalObserverProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2, 3, 5 })
+        foreach (CardLocation location in new[] { side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (int sourceMode in Enumerable.Range(0, 3))
+        foreach (bool skip in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        foreach (bool below in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); var hq = state.Hq(side);
+            hq.Location = location; hq.LocationNumber = 27; hq.Defense = 7; hq.MaxDefense = 123; hq.Keywords.Clear();
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            var observer = MakeHqRemovalObserver(state, side);
+            int sourceId = sourceMode switch { 0 => 20, 1 => hq.CardId, _ => 9999 };
+            int request = mode == 1 ? below ? -9 : -7 : below ? -4 : 0;
+            InvokeExplicitDefenseMode(engine, state, side, hq, source, sourceId, request, mode, skip, native);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var deaths = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray(); var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            bool notified = mode != 1 || !skip;
+            if (hq.Location != CardLocation.Discard || hq.Defense != (mode == 1 ? 7 + request : 0) || hq.MaxDefense != (mode == 1 ? 123 : 0)
+                || state.IsFinished || state.GetHQDamagedAmountThisTurn(side) != 0 || !state.UnitDestroyedThisTurn
+                || !state.DestroyedCardIdsAll.SequenceEqual(new[] { hq.CardId }) || deaths.Length != 1 || gains.Length != (notified ? 1 : 0)
+                || deaths[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceMode == 2 ? 0 : sourceId)
+                || actions.Any(x => x.Name is "ZActionDamageCard" or "ZActionRemoveCardFromBoard") || !HqObserverPayloads(observer, hq, location.IsBoard()))
+                return $"已知防御致死原生调用不能额外拒绝HQ：{side}/{mode}/{location}/{sourceId}/{skip}/{native}/{request}";
+            if (notified && (Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit") < Array.FindIndex(actions, x => x.Name == "ZActionGainDefense")) != (mode == 1))
+                return "HQ分支仍须保持普通先销毁、绝对先通知的次序";
+        }
+        return null;
+    }
+
+    private static string? HqLegacyDeathDamageBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right }) {
+            var (engine, state) = EmptyBoard(db); var hq = state.Hq(side); hq.Keywords.Clear(); hq.Defense = hq.MaxDefense = 7;
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            engine.Destroy(hq, source);
+            if (state.ActionLog.Count != 0 || state.IsFinished || hq.Defense != 7 || hq.Location != side.HqOf()) return "旧自动死亡适配器的HQ门不应被全局移除";
+            engine.Api.DealDamage(hq, 99, source);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (!state.IsFinished || state.Winner != side.Opposite() || actions.Count(x => x.Name == "ZActionDamageCard") != 1 || actions.Any(x => x.Name == "ZActionDestroyUnit"))
+                return "普通伤害击毁HQ仍走现有伤害和胜负路径";
         }
         return null;
     }

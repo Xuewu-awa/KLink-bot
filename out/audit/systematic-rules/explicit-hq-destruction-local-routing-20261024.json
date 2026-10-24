@@ -1,0 +1,266 @@
+{
+  "rule": "RULE-387",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "84c1cbb74cef61aa81a7eecaa242c597c20d5516",
+  "kernel_changed": true,
+  "fresh_live_capture": true,
+  "read_only": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-387",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_hqs": [
+      {
+        "name": "card_location_berlin",
+        "id": 1,
+        "type": 1,
+        "location": 5,
+        "own_functions": 0
+      },
+      {
+        "name": "card_location_cherbourg",
+        "id": 41,
+        "type": 1,
+        "location": 6,
+        "own_functions": 0
+      }
+    ],
+    "empty_inherited_events": 6,
+    "shared_event_entry_windows_bytes": 256,
+    "shared_event_entry_boundary": "bounded window only, not certified full function boundary",
+    "redecoded_functions": 14,
+    "redecoded_bytes": 21892,
+    "redecoded_statements": 789,
+    "worker_exact_functions": 10,
+    "model": {
+      "rule": "RULE-387",
+      "model_cases": 800,
+      "wrapper_cases": 320,
+      "leave_cases": 480,
+      "modeled_bytes": 5202,
+      "digest": "10374480fc34abf9eaf171859ea8890794eda30540d8a404463d5e8cf6c072e7",
+      "scope": "Full5wrapper/setter/lookup bodies with Type1 retained target; full1944B before/after leave. Queries/events/refresh/pincer and right-left helper controlled. No claim of full server adjudication or all downstream code. Type1 marker is not read by wrappers; current live HQ identity provides separate concrete witness."
+    },
+    "new_tests": 3,
+    "regression_cases": {
+      "explicit_hq": 288,
+      "defense_hq": 576,
+      "legacy_boundary": 2,
+      "total": 866
+    },
+    "selftest_passed": 812,
+    "selftest_total": 812
+  },
+  "findings": [
+    "Public/native-name DestroyCard converted HQ into DamageCard(target.Defense), adding synthetic damage/HP mutation and immediate damage-specific victory behavior absent from the selected explicit removal function.",
+    "Shared explicit destruction still rejected HQ; defense1/2 additionally skipped the call forHQ; before/after leave adapters filteredHQ despite native explicit helper positive-ID/board/action conditions having no Type test."
+  ],
+  "authority": "Fresh current battle turn1: saved HQ refs, positive map keys and GUObject identity agree forBerlinID1/Type1/Location5 andCherbourgID41/Type1/Location6. Runtime class chains show both classes directly inheritBaseCardObject and own0functions; selected6inherited events Script0 with flags0xc020800(noNative0x400/noNet0x40) and shared entry. Entry acquisition is a256B window only, disk-checked, NOT a full native-boundary certification. Fourteen selected Blueprint bodies re-decoded21892B/789statements incl explicit destruction/removal/movement/leave/death, defense and lookup/setter.",
+  "changes": [
+    "Remove public HQ-to-damage adapter; native explicit DestroyCore accepts valid registered HQ just as other objects.",
+    "Known defense1/2 no longer skip HQ before invoking the already scoped1/2/3/5 native destruction helper.",
+    "Allow HQ in before/after leave adapters only when explicitly requested by native destruction; shared legacy automatic-death/damage/batch callers retain their previous defaults and guards.",
+    "Keep explicit destruction notification and conditional movement/leave/death callbacks, without inventing damage counters or immediate Finish inside this helper."
+  ],
+  "validation": [
+    "800offline cases:320full5wrapper/setter/lookup executions with Type1 target and480full before/after leave executions, totaling5202B of modeled bodies. Type1 is an uninspected marker within these bodies; current concrete HQ mapping/class evidence separately establishes applicability. Query/callback/refresh/pincer/right-left primitives remain controlled.",
+    "DeepSeek10function call/field inventories exactly matched primary structural traversal; absence of a direct call is not used as blanket downstream certification.",
+    "288actual headless HQ cases vary2sides,4zones,3sources,3health values,2entries andsuppression; verify physical removal, unchanged defense on explicit destruction, saved HQ ref, flag/history, damage counters, no synthetic damage, and VM T46/T8/T47/T39 subject identity.",
+    "576defense-HQ cases verify1/2/3/5,3zones,positive/self/missing source,skip,entry andzero/negative requests, death/notice order, observer payloads and no synthetic damage counters.",
+    "2boundary cases preserve old engine.Destroy HQ refusal and existing realDamageCard HQ victory behavior. These are compatibility regression checks, not new full damage/victory certification.",
+    "Initial fixture used an existing Honorifics event and failed installation; switched to Typhoon without conflicting events and preflighted all probes. Re-ran final fixtures on original production source:810/812pass with2real rule failures; patched812/812pass. Initial fixture failures are not counted as kernel evidence."
+  ],
+  "unresolved": [
+    "This certifies the selected client-side explicit helper contract under valid retained objects and closed controlled observers. It does NOT certify full end-of-action/server winner adjudication; follow-up priority is the post-action HQ-survival check and receipt lifecycle.",
+    "No extra immediate Finish is inserted into this helper. A closed synthetic test staying unfinished at helper return is not a claim that a complete real match can continue without HQ.",
+    "Live no-override evidence covers currentBerlin/Cherbourg only, not every HQ skin/campaign/tutorial class; those unrelated modes remain outside PvP audit. Generic HQ callbacks with other real subscribers are not exhaustively tested.",
+    "Legacy engine.Destroy and default leave adapters retainHQ guards for other unaudited callers; not claimed to be universally native-correct.",
+    "GC/pendingkill, missing/alias objects, concurrent map changes, all native engine internals, full salvage/external-repeat chains and container order remain open. Snapshot field stability does not prove atomicity or future lifetime.",
+    "Full single-card logic/version migration remain unresolved; fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\hq-identity-native-event-windows-20261024.json",
+      "sha256": "14ead6eb5a552262f386a306cdbcb890e366e4fc044a281bbf5b4f8e65ec1dc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\hq-runtime-class-children-20261024.json",
+      "sha256": "7e1f4f7860ac8cfbae9982f221ae02c2e83cdd4bc6d5cfb264e74abbea291916"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-dependencies-native-20261024.json",
+      "sha256": "d2fe3289d83f20907823ec2c0ca66125be153b2686cbe24a45b98774ee2a49d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-id-lookup-native-20261024.json",
+      "sha256": "701f8c0942fa2d82e79ebe913ba9415da62fd0d7c42079454d2864d2cea0a470"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\death-turn-flag-setter-native-20261024.json",
+      "sha256": "1af7e8ea585cbac92c78ee1a4b94386dbb84593d2de7625a368cb254692ad203"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule387-hq-identity.py",
+      "sha256": "dde8bd1ef473166c8a7e6539e34a62601fd71ad6946508ce5362ff72c35b4c21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule387-hq-classes.py",
+      "sha256": "425d9aa8fa5bd1892b78fd0f2131d45bdeb0aef52a4fe529c062b39661534fb0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-live-attack-fields.py",
+      "sha256": "7295b704f391f80901674bbce6c0bd2a4dc5f52b31a5a61e11555462d9506946"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-trigger-sets.py",
+      "sha256": "9713ff0b8d53cf76cf915ce496a790c1156b97d86181ce4062a1032445dedf6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule387.py",
+      "sha256": "1fe21022608b3346bb333728eeaf3dc9fb4f7c2be54c5023989ba5f3d9db1b08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule387-tests.py",
+      "sha256": "1a8aec9dd31ad9f046e798092b4b503d0a71d07db4ed2592400feef67ab03c7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule387.py",
+      "sha256": "9d75f48d88bd25ac7b22f31de0fd18d96915cb92909f59be7e3a9a9b0b89413b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule383.py",
+      "sha256": "2c311842dffd1c1c5894d746d497cad3ab4aa4b13d3549726c8594e453ce0a85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule386.py",
+      "sha256": "6f056d2aba2b7828aecdc6f46e183766db419b38f1247cf48832850bbd0575d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule385.py",
+      "sha256": "c4322c822366a1f50307995ef65b5a5da56f97473c4308144892cec4ba9ed09b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule387.py",
+      "sha256": "260e5ad57932fc5b1b266734573bea93b698f90933e28cf3995ffcfa104db874"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule387.py",
+      "sha256": "ad664a6a4467c450003a4ca797ce0cfcbebe6dd4be8651e869f2a8dced2d370f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\set-rule387-patch.py",
+      "sha256": "b6953abd5c5bed02c625f1f0fb0625f947b0e97aeee4499b436789c656fff32c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-model-20261024.json",
+      "sha256": "969f79ec6bc7f3e04d7e45d3403773fd76113bce5604f973f55023330b821afa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-verified-20261024.json",
+      "sha256": "7933e1dca1c423ffaeb3649d6a23096a808d6db99e9c4dc63d89d5427eceabdb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-fixture-initial-before.log",
+      "sha256": "4c901212d7d0c049e81f707e6936ea14db86463366ceac2a7a0561f4c06c4ed8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-fixture-initial-after.log",
+      "sha256": "4c901212d7d0c049e81f707e6936ea14db86463366ceac2a7a0561f4c06c4ed8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-selftest-before.log",
+      "sha256": "65183b7b91f5a33f57cce59f8644eba213cff37f05713b43fb26ea132cfc4e7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-selftest.log",
+      "sha256": "1e16a2263deb6d337a680ffe090c376baf6d53e3af496772a6dedb72b0453c56"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule387-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\task.txt",
+      "sha256": "3b664fb7f771d587cf143183a9bee74e58f9479a9e8ec1c22fb36f2d249bb3ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\functions.json",
+      "sha256": "86f71484fa28dc8bb331797e5fa802b2330e100742175a4eccd029c93db82d6f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\extract.py",
+      "sha256": "36d85dbc5f83f422f1e23fe006a3aa890d38efd43463148cd1ad80b472c39037"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\inventory.json",
+      "sha256": "9222e872767ee6adf341e5d8c48bbf1b027ac5fc18143c5fcb12835fb207b128"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\primary-inventory.json",
+      "sha256": "e17015941a7006bdb4a7443a349c338e47b6a92492615bbff81cf77db2e849b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\wrapper-model-branch-nodes.json",
+      "sha256": "8ee056105b618adb4bdbd8cf0ec139837602961c4b6dd1a634c20d834d92606a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule387\\primary-cases.json",
+      "sha256": "62b947bcad7dd2a9d92497af69804bc47a8e8cf9b59043f70a9bc462c09155b5"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-220321-rule387-hq-destroy-dependencies-702df281\\job.json",
+      "sha256": "2814675d2e049bd9b7b84f5f13b9be9ed49f209179bf414260b4c6e401087611"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-220321-rule387-hq-destroy-dependencies-702df281\\answer.txt",
+      "sha256": "e09f28ca9fa55ebd0cca39f91fd81b1fdc25c148b0501b51d26ee493269b1aa0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "47393ebfef35961d66ce32f891c1a35363f48e1479ebbebfb60251b2a2cb7b14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "f43b45658c5437ee4aab54d898ae2a7fa0d7ebdf69e19e57e2a39f63fe79a669"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "bb8c18995f73f72a823fd8cc6495208af712814af5afb3bbe65f2ebc2156b345"
+    }
+  ]
+}

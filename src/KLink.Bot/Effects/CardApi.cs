@@ -2735,7 +2735,7 @@ public sealed partial class CardApi
         // Deck location is read after callbacks, not captured on entry.
         if (positiveGain && (skipAction || IsLocatedInDeck(target))) return;
 
-        if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
+        if (additiveDecrease && target.Defense <= 0)
         {
             DestroyAfterDefenseChange(target, instigatorId.HasValue ? State.ById(sourceId) : source, changeType);
         }
@@ -2761,7 +2761,7 @@ public sealed partial class CardApi
         // RULE-313: the native positive-gain observer loop returns directly
         // (i=4874 -> 5740), without destroying a target changed by callbacks.
         // Keep the separately audited set/decrease paths and engine sweep intact.
-        if (!positiveGain && !additiveDecrease && target.Defense <= 0 && !target.IsHq)
+        if (!positiveGain && !additiveDecrease && target.Defense <= 0)
         {
             DestroyAfterDefenseChange(target, instigatorId.HasValue ? State.ById(sourceId) : source, changeType);
         }
@@ -3514,12 +3514,7 @@ public sealed partial class CardApi
 
     public void DestroyCard(CardInstance target, CardInstance? source)
     {
-        if (target.IsHq)
-        {
-            DealDamage(target, target.Defense, source);
-            return;
-        }
-
+        // RULE-387: the native explicit removal path has no HQ-to-damage adapter.
         _engine.DestroyFromCardFunction(target, source);
     }
 

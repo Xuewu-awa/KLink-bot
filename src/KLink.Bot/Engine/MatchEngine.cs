@@ -2360,11 +2360,11 @@ public sealed class MatchEngine
     /// </summary>
     /// <param name="goingToLocation">卡要去哪（卡牌蓝图的第 1 个入参就是它）。</param>
     public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation, int method = 0,
-                                 CardLocation? oldLocation = null)
+                                 CardLocation? oldLocation = null, bool includeLocationCards = false)
     {
-        if (card.IsHq || !(oldLocation ?? card.Location).IsBoard())
+        if ((!includeLocationCards && card.IsHq) || !(oldLocation ?? card.Location).IsBoard())
         {
-            return;   // HQ 不会「离场」
+            return; // Keep legacy callers' HQ guard; native explicit removal opts in.
         }
 
         FireSubActionWithCard("ZActionLeaveBoardOrOwner", card, (int)goingToLocation);
@@ -2392,9 +2392,10 @@ public sealed class MatchEngine
     }
 
     /// <summary>BP_CardFunctions after helper: observers see OldLocation, self sees destination.</summary>
-    public void FireAfterLeaveTrigger(CardInstance card, CardLocation goingToLocation, CardLocation oldLocation)
+    public void FireAfterLeaveTrigger(CardInstance card, CardLocation goingToLocation, CardLocation oldLocation,
+                                      bool includeLocationCards = false)
     {
-        if (card.IsHq || !oldLocation.IsBoard()) return;
+        if ((!includeLocationCards && card.IsHq) || !oldLocation.IsBoard()) return;
         Api.RemovePincerEffects(card);
         var afterNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
@@ -3155,17 +3156,19 @@ public sealed class MatchEngine
     /// <summary>ApplyRemoveCardFromBoard + ExecuteOnCardDestroyedFunction.</summary>
     public void Destroy(CardInstance card, CardInstance? destroyer = null, bool destroyedInCombat = false,
                         bool recordDestroyAction = true)
-        => DestroyCore(card, destroyer, destroyedInCombat, recordDestroyAction, requireAvailable: true);
+        => DestroyCore(card, destroyer, destroyedInCombat, recordDestroyAction, useLegacyGuards: true);
 
     // RULE-384: native DestroyCard validates the object, not its zone. This
     // entry also permits a retained card already in Discard/NotAvailable.
     internal void DestroyFromCardFunction(CardInstance card, CardInstance? destroyer)
-        => DestroyCore(card, destroyer, false, true, requireAvailable: false);
+        => DestroyCore(card, destroyer, false, true, useLegacyGuards: false);
 
     private void DestroyCore(CardInstance card, CardInstance? destroyer, bool destroyedInCombat,
-                             bool recordDestroyAction, bool requireAvailable)
+                             bool recordDestroyAction, bool useLegacyGuards)
     {
-        if ((requireAvailable && !card.IsAlive) || card.IsHq) return;
+        // RULE-387: explicit native removal accepts HQ objects too. Automatic
+        // death/damage adapters keep their existing zone and HQ guards.
+        if (useLegacyGuards && (!card.IsAlive || card.IsHq)) return;
         var batch = new[] { card.CardId };
         // DestroyCard i=184 captures the action location before before-destroy
         // callbacks. ApplyRemoveCardFromBoard later reads the removal location.
@@ -3182,7 +3185,7 @@ public sealed class MatchEngine
                 ActionValue2.Str("destroyedLocation", locationName),
             });
         }
-        FireLeaveTrigger(card, CardLocation.Discard, method: 1);
+        FireLeaveTrigger(card, CardLocation.Discard, method: 1, includeLocationCards: !useLegacyGuards);
         Say($"{card} 被摧毁");
         // ApplyRemoveCardFromBoard -> CardLocationMoved: Discard retains its old number,
         // then RefreshLocationStatus runs before ExecuteOnCardLocationMoved.
@@ -3194,7 +3197,7 @@ public sealed class MatchEngine
         // later location; the destination here is always Discard.
         if (oldLocation.IsBoard())
             State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Destroyed);
-        FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation);
+        FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation, includeLocationCards: !useLegacyGuards);
         ExecuteDestroyed(card, destroyer, oldLocation, batch, destroyedInCombat);
     }
 
