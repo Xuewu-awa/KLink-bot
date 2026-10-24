@@ -625,6 +625,10 @@ internal static class SelfTest
         new("防御数值：原生总值限幅、unchecked相加和独立通知值", DefenseNativeArithmeticBoundary),
         new("正增防：自身/T16/T17改值后重新限幅读取", DefenseBeforeMutationNativeRead),
         new("致死减防：保留回调原值，销毁后通知限幅重读", DefenseDestroyNotificationNativeRead),
+        new("防御有效对象：10区域/来源/公开与原生入口一致", DefenseValidObjectLocations),
+        new("防御公开入口：显式来源/旧生命/可增益门", DefensePublicExplicitSourceHealthGuards),
+        new("防御设值：有效弃牌/不可用对象仍执行自身和T6", DefenseSetRetainedObjectEvents),
+        new("公开防御mode2：必须走设值而非加法，三入口完整状态对照", DefensePublicMode2Routing),
         new("防御零键：普通/绝对账本与克隆复制快照", DefenseZeroKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -8142,6 +8146,122 @@ internal static class SelfTest
                 || (!skip && (gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != Math.Clamp(restored, 0, 99)
                     || Array.IndexOf(actions, gain[0]) <= Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit"))))
                 return $"致死通知应在完整销毁后限幅重读，但不得改写回调留下的原始防御 {side}/{health}/{amount}/{restored}/{sourceId}/{skip}: calls={calls},def={target.Defense}";
+        }
+        return null;
+    }
+
+    private static void InvokeExplicitDefenseMode(MatchEngine engine, GameState state, Side side, CardInstance target, CardInstance source, int sourceId, int value, int mode, bool skip, bool native)
+    {
+        if (native) engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, value, mode, skip, null }, new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+        else if (mode == 2) engine.Api.SetDefenseValue(target, value, source, instigatorId: sourceId);
+        else engine.Api.ChangeDefense(target, value, source, changeType: mode, instigatorId: sourceId, skipAction: skip);
+    }
+
+    private static string? DefenseValidObjectLocations(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2, 3, 5 })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (int value in new[] { 3, 105 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, (CardLocation)location, 0); target.Keywords.Clear(); target.Defense = 7; target.MaxDefense = 123;
+            InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, value, mode, skip, native);
+            int expected = mode == 1 ? Math.Clamp(7 + value, 1, 99) : Math.Clamp(value, 0, 99);
+            bool notified = mode != 1 || (!skip && target.Location is not (CardLocation.DeckLeft or CardLocation.DeckRight));
+            var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (target.Defense != expected || target.MaxDefense != (mode == 1 ? 123 : expected) || target.Location != (CardLocation)location
+                || gains.Length != (notified ? 1 : 0) || (notified && gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId)
+                || (mode == 1 && target.BuffsBySource[(sourceId, false)].Defense != value)
+                || (mode == 2 && target.BuffsBySource[(sourceId, false)].DefenseSetValue != value)
+                || (mode == 3 && !target.BuffsBySource[(sourceId, false)].HasSuppressLedgerEntry)
+                || (mode == 5 && target.BuffsBySource.Count != 0))
+                return $"有效对象不能仅因区域被IsAlive额外拒绝 {side}/{mode}/{location}/{sourceId}/{value}/{skip}/{native}: {target.Defense}/{target.MaxDefense}";
+        }
+        return null;
+    }
+
+    private static string? DefensePublicExplicitSourceHealthGuards(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2, 3, 5 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (int health in new[] { -3, 0, 7 })
+        foreach (bool covert in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, CardLocation.BoardFrontline, 0); target.Keywords.Clear(); if (covert) target.Keywords.Add(Keyword.Covert);
+            target.Defense = health; target.MaxDefense = 123;
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, DefenseEmptyDetail = 0 };
+            bool accepted = sourceId > 0 && health > 0 && CardApi.CanCardBeBuffed(target);
+            string before = state.SnapshotJson();
+            InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, 3, mode, false, false);
+            if ((!accepted && (state.SnapshotJson() != before || state.ActionLog.Sum(x => x.SubActions.Count) != 0))
+                || (accepted && (target.Defense != (mode == 1 ? 10 : 3) || target.MaxDefense != (mode == 1 ? 123 : 3))))
+                return $"公开防御显式来源须检查原ID而非非空source，并拒绝非正旧总防御 {side}/{mode}/{sourceId}/{health}/{covert}";
+        }
+        return null;
+    }
+
+    private static string? DefenseSetRetainedObjectEvents(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196", own = "OnAfterDefenseIsSet", other = "OnAfterOtherCardDefenseIsSet";
+        using var programs = InstallDefenseSetEventProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var location in new[] { CardLocation.NotAvailable, CardLocation.Discard })
+        foreach (bool native in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, location, 0); target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" }; target.Defense = 7; target.MaxDefense = 123;
+            var observer = state.CreateWithId(probe, side, 30, CardLocation.Discard, 0); observer.Keywords.Clear();
+            observer.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = new[] { other } };
+            for (int i = 0; i < 2; i++) state.CreateWithId("card_unit_51e_regiment", side, 100 + i, side.DeckOf(), i);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, 3, 2, false, native);
+            var events = trace.Where(x => x.StartsWith(own + " → ") || x.StartsWith(other + " → ")).ToArray();
+            if (target.Location != location || target.Defense != 3 || target.MaxDefense != 3 || events.Length != 2
+                || !events[0].StartsWith($"{own} → {probe}#60") || !events[1].StartsWith($"{other} → {probe}#30")
+                || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditDefenseSetSubject"), target)
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainDefense") != 1)
+                return $"有效保留对象设值应先通知再自身/T6，不应因区域或压制跳过 {side}/{location}/{native}/{sourceId}/{suppressed}";
+        }
+        return null;
+    }
+
+    private static string? DefensePublicMode2Routing(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (int health in new[] { -3, 0, 7 })
+        foreach (int value in new[] { -4, 0, 3, 105 })
+        foreach (bool temporary in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            string? expected = null;
+            foreach (int route in new[] { 0, 1, 2 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+                var target = state.CreateWithId(PlainUnit, side, 60, (CardLocation)location, 0); target.Keywords.Clear(); target.Defense = health; target.MaxDefense = 123;
+                target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, Defense = 2, DefenseSetValue = 0, DefenseEmptyDetail = 0 };
+                target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, Defense = 3 };
+                if (route == 0) InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, value, 2, skip, true);
+                else if (route == 1) engine.Api.SetDefenseValue(target, value, source, instigatorId: sourceId);
+                else engine.Api.ChangeDefense(target, value, source, temporary: temporary, changeType: 2, instigatorId: sourceId, skipAction: skip);
+                string actual = state.SnapshotJson() + System.Text.Json.JsonSerializer.Serialize(state.ActionLog);
+                if (route == 0) expected = actual;
+                else if (actual != expected) return $"公开ChangeDefense2/SetDefenseValue必须与原生绝对入口的字段、账本和事件一致 {side}/{location}/{sourceId}/{health}/{value}/{temporary}/{skip}/{route}";
+            }
         }
         return null;
     }

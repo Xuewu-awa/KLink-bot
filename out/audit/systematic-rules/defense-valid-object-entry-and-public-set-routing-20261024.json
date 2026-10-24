@@ -1,0 +1,256 @@
+{
+  "rule": "RULE-381",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "4bbfb6e79b81bcb4313cfada3ed9412005c2a1c5",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-381",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_bytes": 12010,
+    "redecoded_statements": 412,
+    "model_cases": 4800,
+    "model_digest": "903b532504142349ec3ef1aff5b1f96946d70fd8df7027876ae82623650f8aa4",
+    "worker_nodes_exact": 24,
+    "worker_fields_exact": [
+      "CardFunctionsNotifier",
+      "CardID",
+      "isSuppressed",
+      "maxDefense"
+    ],
+    "new_tests": 4,
+    "regression_combinations": {
+      "valid_locations": 1920,
+      "public_guards": 192,
+      "retained_set_events": 32,
+      "mode2_three_routes": 3840,
+      "total": 5984
+    },
+    "selftest_passed": 798,
+    "selftest_total": 798,
+    "scope": "Retained valid-managed objects independent of zone. NativeUObjectIsValid/lifetime and complete DestroyCard behavior NOT certified. Mode2 routing follows native absolute branch."
+  },
+  "finding": "Extra managedIsAlive locationfilter silently rejected retained validCardInstance inDiscard8/NotAvailable0 after native-named entry had accepted it. Ordinarypublic1 andSetDefenseValue also acceptedexplicitnonpositiveinstigatorIDs/nonpositiveoldhealth because they used a nonnullsource or lacked nativeoldtotalgate. Separately publicChangeDefense(type2) still used additiveDelta,unlike native2 absolute branch andSetDefenseValue.",
+  "authority": "Full5743B ChangeDefense +6267B ChangeBuffsFromCards re-decoded against12010B/412statements,headers/FNames/rawhashes andcurrentPEsha. Entry calls IsValid(card),CanCardBeBuffed,raw suppliedsourceID>0,andgetTotalDefense>0;no direct cardLocation branch in main. Mode2 selects absolute984path. This is CONDITIONAL on a validObject: model explicitly supplies IsValid=true,doesnotprove nativeIsValid ignores all state or everydiscard/unavailable object isvalid.",
+  "managed_mapping": "CardInstance.IsAlive checks location !=Discard &&location !=NotAvailable. That zoneavailabilitypredicateisnotasubstitutefornativeUObjectvalidity. A managedinstance retainedbyGameState is modeledvalidindependentofzone; no nativependingkill/GCflag representation introduced. ExistingCovertbuffabilitylocationtable stillapplies throughCanCardBeBuffed. FullDestroyCard availability/garbage handling remains separatelyopen.",
+  "changes": [
+    "Knownordinary1/SetValue2 sharedmutationguard checks resolvedsourceID>0,oldclampedDefense>0 andbuffability ratherthan IsAlive. Legacyothermode compatibilitygate retained. SetDefenseValue repeats that guardbefore numeric/ledger/callbacks so rejectedset never fires own/T6.",
+    "Suppress3/veteranSet5 absolutehelper drops only extraIsAlivefilter andretainspositiveID/oldtotal/buffability. Numeric/events/qqout semantics fromearlieraudits remain. Positivevalidretainedobjects canmodifydefensewithoutchangingzone.",
+    "PublicChangeDefense with explicitchangeType2 nowdelegatesrawamounttoSetDefenseValue;0/equal/negative/overcap no longer interpretedasadditivedeltas. temporary/skip flags do not reinterpret nativeabsolute mode2. Native-named route andexplicitSetDefenseValue use thesame existinghelper. Omitted-ID conveniencefallbacks preserved,notclaimedas nativeABI certification."
+  ],
+  "models": {
+    "total": 4800,
+    "execution": "Whole main1/2/3/5 +wholeledger across10locationcodes,source-1/0/20/self60/missing9999,oldhealth-3/0/7,request-4/0/3/105,skip. IsValidtrue,buffabletrue,actionprocess true;locations1/2drive deckgetter. Explicitly assert positive old/source gates,numeric write calls independent ofzone,acceptedordinaryzero qqpreservation,absoluteclamp andqqfalse.",
+    "controlled": "Objectvalidityexplicitlyassumed,notderivedfromzone. Buffabilitytruefornormalobjects;source/map/array/valuecopy/enum/frame locals/crypto/notifier/callbacks/destructioncontrolled. DestroyStub maymoveobjects8 regardlessofinitialzone;thisisnotproofrealDestroyCarddoes. Managedpositive-retainedtestsavoidlethaldestinationassumptions. No nativeUObjectlifetime/FFrame/TMap/crypto implementation certification."
+  },
+  "regressions": {
+    "new_tests": 4,
+    "total_combinations": 5984,
+    "valid_locations_native_and_public": 1920,
+    "explicit_public_guards": 192,
+    "retained_set_own_t6": 32,
+    "mode2_three_route_vectors": 3840,
+    "before": "794/797Releasepass,3newtestsfailedonoldzonefilter/explicitguards/missingretainedsetcallbacks. Firstfailedfixturepertest,notall5984baselinevectorsindividuallyfailed.",
+    "after_guards": "797/797Releasepass afterfirst3fixes. Addedfourthmode2routingtestthen797/798pass,1newfailure,provingseparateadditiveSetValuebug.",
+    "final": "798/798Releasepass,exit0.",
+    "details": "1920normalvalidunitobjects across2sides,4modes,10zones,normal/self/missing IDs,positive3/105,skip andnative/publicroutecomparefields/typedledgers/sourceidentity/notifications/unchangedzone.192publicguardsdeliberatelypassnonnullsourceCard20withrawinvalidID tocatchfallback.32retainedDiscard/NotAvailable Set2caseswithrealown/T6probesverifycallbackorder/heldtarget,suppressionandnative/publicpaths.3840vectors eachrun3freshengines(native2,SetDefenseValue,publicChangeDefense2) andcomparefullSnapshotJson+serializedActionLog acrosszones,nonpositive/positivehealth,rawsourceIDs,negative/zero/positive/overcaprequest,temp/skip. They proveadapterequivalenceusing sharedlogic,notindependentnativeDestroyCardimplementation."
+  },
+  "set_defense_alias": {
+    "edited": false,
+    "status": "deferred-no-proven-PvP-ABI",
+    "cached_index_callers": [
+      {
+        "owner": "ExecuteUbergraph_BP_Board",
+        "file": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json"
+      },
+      {
+        "owner": "CreateHistoryCard",
+        "file": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\UI\\History\\BP_Widget_HistoryEntry.functions.json"
+      }
+    ],
+    "scope": "Cachedparsedindex shows SetDefensecalls inBP_Board.ExecuteUbergraphandUIHistory.CreateHistoryCard. Index/parsedfilesaretraceableclues,notanexhaustivecurrentclientinventoryorproofallSetDefensenamesvisual. No kernelaliassemanticrewriteperformedfromthisclue;UIexcludedbyuserscope."
+  },
+  "worker": {
+    "job": "20261024-172140-rule381-defense-entry-52906936",
+    "status": "completed",
+    "raw_exact_main_statements": 24,
+    "raw_exact_unique_fields": [
+      "CardFunctionsNotifier",
+      "CardID",
+      "isSuppressed",
+      "maxDefense"
+    ],
+    "normalization": false,
+    "extractor_executed": true,
+    "scope": "Primaryindependentlymatchedoriginalentrynodesandfullbodyfieldinventory;absenceofdirectLocationfieldaloneisnot nativeIsValidsemanticsproof.",
+    "write_scope_deviation": "Worker self-reported writing a throwawayverification script toTEMP outsideallowedpacket then deletingit. Thisexceededpacketwriteinstruction;notcountedascompliantisolatedexecution. Originaloutputs independentlyvalidated andsafeextractor rerun byprimary. No broad no-other-files guarantee inferredfromworkerclaim."
+  },
+  "remaining": [
+    "NativeUObjectIsValid,pendingkill/GC/lifetimeflagmapping,identityregistrationanddisposed-managed-objectrepresentationremainopen. Conditionalvalid-objecttestscannotcertifyallnativeunavailable/discardobjects.",
+    "FullDestroyCard availability/HQ/endgame/removalpolicy,lethalretainedobjecttransitions,arbitrarycallbackreentrancy/registration/objectreplacementandotherdirectattributeadaptersremainpending. Omitted-ID convenience fallback maynotrecordsourceexactlyasnative supplied-ID ABI andisnotmigratedhere.",
+    "SetDefensevisualaliasnotrepurposedwithoutauthoritativePvPsignature/body;cached2callersnotexhaustivecurrentuniverse. Genericnonbytecoercion,nativeTMap/tuplealiases/FFrame/crypto,legacyledger/importmetadata,turnendtemporaryorchestrationandsuppressionrestore remainopen.",
+    "Complete single-card logic andpausedcard-versionmigrationremainunresolved;fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule381.py",
+      "sha256": "4a695705a04454a85be3663d1e8b06185bd6a4d852b430c2604ff577e15c362a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule381-main.py",
+      "sha256": "7fd5a967c3f28ab2e41ccaa970495c51ed5610a1f689a58d3518ce30e00c0ce8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule381-tests.py",
+      "sha256": "bf3acf71128cb708f43f40280061b35a132d9880545ece3174418e4dc4d795a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule381-mode2-tests.py",
+      "sha256": "494f1d1afdf10655044ede39c07228c4fe2af187a7ec4b59da84c914aa5e9033"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule381.py",
+      "sha256": "9bba67c04b60bcc46388aaacbd9b9c26a2dfc44ffd373de6c4b3acfb3a9a5217"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule381-mode2.py",
+      "sha256": "1fd0454098fe19daa529069cd94ce56db47e431b5c4592bb53f2e56a82b16108"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule381-verify.py",
+      "sha256": "9462d08a147cffe138de8c1f8c4286a84d29bbd728872339257fa79c1298b989"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule381.py",
+      "sha256": "5cb32c58156b82568f5633cd02c78c63f76b02134780cb79a943a4dabb48d433"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-verified-20261024.json",
+      "sha256": "cbe27052b0fe5ced6ae5e8c7a948266a10aa1c071731c4bcea9bb01f06c82acc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-selftest-before.log",
+      "sha256": "fb638fb330358a1bdc08dfd65420434db0f37daee8b4d968ffac458b57fdcdd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-after-guards.log",
+      "sha256": "f92d119a0bfef70535f2bda863f8afabacbc36578807675a911f824ef9bf9e3e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-after-guards-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-route-before.log",
+      "sha256": "5febde3c65bec243b9bf48139904af8cd3ad58b26561d8fa6bd4b739df1d6477"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-route-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-selftest.log",
+      "sha256": "4fb92f922b46b9f461520f4fd31f841e61831eb052f6d5101aac546664d8a4f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule381-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\blueprint-function-index.json",
+      "sha256": "ab0d458475b5e69e7a92d4c433c38ad54281ee4e6b9cb5dd1087a69bc1be8849"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-valid-object-location-entry-model-20261024.json",
+      "sha256": "4b22fd34ec25a6f0b79152766eff50015fb80c8011b6359567a67c4cb3631db7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\task.txt",
+      "sha256": "1b297287a039ab24beaf9437984e8f15889380fbaba0f8a1c09a926c3a475d26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\functions.json",
+      "sha256": "aede5dd7636ba8080ed2dbb345a6ec31815ed6a532a90e8b572b156cf31d2bf5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\extract.py",
+      "sha256": "62a3a09145d0a76f13f6cc770b7a600d741b95fbc5fb38c36cfb812be1c4fbc6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\nodes.json",
+      "sha256": "19deff238caf27e8e3225972f973d42af0c173f7d210df31ff5dc75ab2052065"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\fields.json",
+      "sha256": "465ebfc746856ac23f6a9e5142d2ed1a2157731f728a18f6faab87d7c85abb1d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\primary-nodes.json",
+      "sha256": "d98c6ba9910cc37255a5c385259890ec3721e62a9eb1a68f106617b374ed9742"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\primary-cases.json",
+      "sha256": "6dc4b85b2e1b09b9dbc5c2a4ba7149ecec2036a10cb05a8ced6bd7d5f9c6c7e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule381\\set-defense-visual-index.json",
+      "sha256": "528c4011e06d5f3d8896bdca3b7f18cc5d4d6a9001ce82a7c0384f61202f0517"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-172140-rule381-defense-entry-52906936\\job.json",
+      "sha256": "d8248ac57ed256196c07e27833d6e95dc8c8585788413a889c5a9af9e9044535"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-172140-rule381-defense-entry-52906936\\answer.txt",
+      "sha256": "9ecded1d051e3c3dc43de103eadf719d4e64a8c35ad827b0aaee7480572443ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "b4f3003f60e0fc3fafdf8978e25f97b7a7bb68f3bacb8e0ac632fcf6ad492691"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "57ac99b582d7bc68d3982cc5cde4974f04283e7e5c9afb9bfa51fe603e47b61b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json",
+      "sha256": "73b7c91507fd7711d5ca3b5348e9de8c5315d28d07409dc42a04f00cc5c5480f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\UI\\History\\BP_Widget_HistoryEntry.functions.json",
+      "sha256": "cd7571503c4d043ea3f9930d2e1d016cd0839d4beb6e0c638abcedbcaeae95b8"
+    }
+  ]
+}

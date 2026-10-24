@@ -2611,6 +2611,13 @@ public sealed partial class CardApi
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
     {
+        // RULE-381: an explicit SetValue enum denotes an absolute request,
+        // including0 and equality; do not reinterpret it as an additive delta.
+        if (changeType == 2)
+        {
+            SetDefenseValue(target, delta, source, instigatorId);
+            return;
+        }
         // RULE-377: main always supplies customDetail="" to the ledger.
         if (changeType is 6 or 7 or 8)
         {
@@ -2654,7 +2661,13 @@ public sealed partial class CardApi
                                    int? defenseSetValue = null, int? instigatorId = null, bool skipAction = false)
     {
         int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
-        if (!target.IsAlive || (delta == 0 && defenseSetValue is null) || !CanCardBeBuffed(target))
+        // RULE-381: a supplied managed card models a valid object independently
+        // of its zone. Known ordinary/set entries check positive source/health;
+        // only legacy modes retain the old availability-based compatibility gate.
+        bool rejectedEntry = changeType is 1 or 2
+            ? sourceId <= 0 || Math.Clamp(target.Defense, 0, 99) <= 0
+            : !target.IsAlive;
+        if (rejectedEntry || (delta == 0 && defenseSetValue is null) || !CanCardBeBuffed(target))
         {
             return;
         }
@@ -2846,7 +2859,7 @@ public sealed partial class CardApi
     // without SetValue's own/T6 callbacks or ordinary gain T7 callbacks.
     private void SetSuppressionDefenseValue(CardInstance target, int value, int sourceId, int changeType = 3)
     {
-        if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)
+        if (sourceId <= 0 || !CanCardBeBuffed(target)
             || Math.Clamp(target.Defense, 0, 99) <= 0) return;
         RecordAbsoluteDefenseLedger(target, sourceId, value, changeType: changeType);
         target.Defense = target.MaxDefense = Math.Clamp(value, 0, 99);
@@ -2961,7 +2974,11 @@ public sealed partial class CardApi
     /// </summary>
     public void SetDefenseValue(CardInstance target, int value, CardInstance? source, int? instigatorId = null)
     {
-        if (!target.IsAlive || !CanCardBeBuffed(target))
+        // RULE-381: reject explicit nonpositive IDs and nonpositive old total
+        // defense before ledger/numeric changes or own/T6 callbacks. A retained
+        // valid object is not rejected merely for discard/unavailable location.
+        int sourceId = instigatorId ?? source?.CardId ?? target.CardId;
+        if (sourceId <= 0 || Math.Clamp(target.Defense, 0, 99) <= 0 || !CanCardBeBuffed(target))
         {
             return;
         }
