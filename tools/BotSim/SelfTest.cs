@@ -978,6 +978,8 @@ internal static class SelfTest
         new("销毁历史回执：空查找标量默认0，保留重复与非正ID门", MissingDeathHistoryReceipts),
         new("GetCardFromID：公共/派发/VM共享非正ID门与有效保留对象", CardLookupIdBoundary),
         new("GetCardFromID：生成对象兼容入口按ID重取，移除/替换不返回旧引用", CardLookupSpawnAliasIdentity),
+        new("单体移除：显式ID/单位门与false输出，无上下文回退", RemoveSingleTargetContract),
+        new("单体移除：前置、移动、后置、通知顺序及非死亡语义", RemoveSinglePhaseContract),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34513,6 +34515,87 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? RemoveSingleTargetContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        foreach (int kind in Enumerable.Range(0, 3))
+        foreach (int mode in Enumerable.Range(0, 9))
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (int receiverMode in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            int id = mode == 2 ? 0 : mode == 3 ? -7 : 60;
+            var target = state.CreateWithId(PlainUnit, side, id, zone, 27);
+            target.Definition = new CardDefinition { Name = target.Name, Type = kind == 0 ? "infantry" : kind == 1 ? "order" : "location" };
+            foreach (var c in new[] { source, decoy, target }) { c.Keywords.Clear(); c.Keywords.Add(Keyword.Suppressed); }
+            object? input = mode == 1 ? 777 : mode == 4 ? null : mode == 7
+                ? new CardInstance { CardId = id, Name = target.Name, Definition = target.Definition, Owner = side.Opposite() } : id;
+            object?[] args = mode == 5 ? Array.Empty<object?>() : new object?[] { input, 20, mode == 8 ? decoy : true };
+            object? receiver = receiverMode switch { 0 => null, 1 => source, _ => decoy };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = hasSelf ? mode == 6 ? target : source : null, Target = decoy, Controller = side };
+            var result = engine.Api.InvokeByName("RemoveCardFromBoard", receiver, args, ctx, out bool handled);
+            bool removed = kind == 0 && mode is 0 or 6 or 7 or 8;
+            var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionRemoveCardFromBoard").ToArray();
+            if (!handled || result is not false || target.Location != (removed ? CardLocation.Discard : zone)
+                || target.LocationNumber != 27 || source.Location != side.HqOf() || decoy.Location != side.Opposite().HqOf()
+                || notices.Length != (removed ? 1 : 0) || state.DestroyedCardIdsAll.Count != 0 || state.UnitDestroyedThisTurn)
+                return $"移除须按第一ID查表并过单位门，不能扫描后参/回退上下文：{side}/{zone}/{kind}/{mode}/{hasSelf}/{receiverMode}";
+            if (removed) {
+                string oldName = zone switch { CardLocation.BoardHqLeft => "Board_HQLeft", CardLocation.BoardHqRight => "Board_HQRight", CardLocation.BoardFrontline => "Board_Frontline", CardLocation.HandLeft => "Hand_Left", CardLocation.HandRight => "Hand_Right", _ => "Discard" };
+                if (!notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", 20), ActionValue2.Str("oldLocation", oldName) }))
+                    return "移除通知参数/顺序错误";
+            }
+        }
+        return null;
+    }
+
+    private static string? RemoveSinglePhaseContract(CardDatabase db)
+    {
+        using var before = InstallSelectionDrawProbe(PlainUnit, "OnLeaveBoardOrOwner");
+        using var after = InstallSelectionDrawProbe(PlainUnit, "OnAfterLeaveBoard");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HqOf(), CardLocation.BoardFrontline })
+        foreach (bool moveBefore in new[] { false, true })
+        foreach (bool moveAfter in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var target = state.CreateWithId(PlainUnit, side, 60, zone, 27); target.Keywords.Clear();
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_51e_regiment", side, 101, side.DeckOf(), 1);
+            var events = new List<string>(); bool bad = false; int draws = 0;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, old, next, owner, reason) => {
+                if (ReferenceEquals(card, target)) { events.Add("move"); bad |= old != zone || next != CardLocation.Discard || reason != CardMoveReason.Removed; }
+                moved?.Invoke(card, old, next, owner, reason);
+            };
+            using var probe = InstallDrawReentryProbe(state, () => {
+                draws++; events.Add(draws == 1 ? "before" : "after");
+                bad |= state.ActionLog.SelectMany(a => a.SubActions).Any(a => a.Name == "ZActionRemoveCardFromBoard");
+                if (draws == 1) {
+                    bad |= target.Location != zone;
+                    if (moveBefore) state.Move(target, side.DeckOf(), 27, notifyMoved: false, normalizeLocation: false);
+                } else {
+                    bad |= target.Location != CardLocation.Discard;
+                    if (moveAfter) state.Move(target, side.HandOf(), 27, notifyMoved: false, normalizeLocation: false);
+                }
+            }, markerSide: side.Opposite());
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var result = engine.Api.InvokeByName("RemoveCardFromBoard", null, new object?[] { 60, 20, null }, ctx, out bool handled);
+            var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionRemoveCardFromBoard").ToArray();
+            if (!handled || result is not false || bad || !events.SequenceEqual(new[] { "before", "move", "after" }) || draws != 2
+                || target.Location != (moveAfter ? side.HandOf() : CardLocation.Discard) || notices.Length != 1
+                || state.DestroyedCardIdsAll.Count != 0 || state.UnitDestroyedThisTurn)
+                return $"移除流程顺序/保存入口区域错误：{side}/{zone}/{moveBefore}/{moveAfter}, events={string.Join(',',events)}";
+            string oldName = zone switch { CardLocation.BoardHqLeft => "Board_HQLeft", CardLocation.BoardHqRight => "Board_HQRight", CardLocation.BoardFrontline => "Board_Frontline", CardLocation.HandLeft => "Hand_Left", CardLocation.HandRight => "Hand_Right", _ => "Discard" };
+            if (notices[0].Values.Single(v => v.Name == "oldLocation").Text != oldName) return "后续回调不能改写移除通知入口区域";
+        }
+        return null;
     }
 
     private static string? CardLookupIdBoundary(CardDatabase db)

@@ -1247,16 +1247,7 @@ public sealed partial class CardApi
             ["findPairOfUnits"] = (c, r, a) => EvalArray(r, a).Take(2).ToList(),
 
             // ---------------- 卡牌移动 / 生成（meteor 等）----------------
-            ["RemoveCardFromBoard"] = (c, r, a) =>
-            {
-                var target = TargetCard(c, r, a);
-                if (target is not null && !target.IsHq)
-                {
-                    c.State.Move(target, CardLocation.Discard);
-                }
-
-                return null;
-            },
+            ["RemoveCardFromBoard"] = (c, r, a) => DoRemoveSingleFromBoard(c, a),
             ["RemoveMultipleCardsFromBoard"] = (c, r, a) =>
             {
                 foreach (var card in EvalArray(r, a))
@@ -6654,63 +6645,10 @@ public sealed partial class CardApi
     // ==================== 参数提取小工具 ====================
 
     /// <summary>
-    /// 取出「被作用的那张卡」。
-    ///
-    /// ⚠️ **顺序至关重要：先看参数，再看接收者。**
-    ///
-    /// 这类原语（`DamageCard` / `ChangeAttack` / `DestroyCard` …）在字节码里的形状是
-    /// <c>Context{cardFunction}.DamageCard(目标, 数值, 来源, …)</c> —— 接收者是
-    /// `cardFunction`（**施法者自己**），而**真正的目标是 `Parameters[0]`**。
-    /// 实测（card_unit_10_5_cm_lefh）：
-    /// <code>
-    /// DamageCard(
-    ///   [0] LocalVariable CallFunc_GetLocationCardBySide_card  ← 目标（敌方 HQ）
-    ///   [1] IntConst 2                                          ← 伤害
-    ///   [2] InstanceVariable cardID                             ← 来源，不是目标
-    ///   …
-    /// )
-    /// </code>
-    ///
-    /// 旧实现写成 <c>AsCard(receiver) ?? args…</c>，于是**每个显式指定目标的原语
-    /// 都会打到施法者自己身上** —— 表现为 10.5cm lefh 的「对敌方 HQ 造成 2 点伤害」
-    /// 打掉了自己 2 点防御（3→1），而敌方 HQ 纹丝不动。
-    ///
-    /// 注意 `Parameters[0]` 也可能是 `InstanceVariable cardID`（自我引用），
-    /// 那种情况下 <see cref="AsCard"/> 取不到卡，自然回退到接收者 —— 仍然正确。
-    ///
-    /// ## ★★ 2026-10-02：`Parameters[0]` 的**整数 cardID 形状**必须认（对局 `773639` #45 的根因）
-    ///
-    /// 上面那句"取不到卡就回退到接收者"**在目标是别人时不成立**。实测
-    /// `card_event_fog_of_war`（IR i=10）：
-    /// <code>
-    /// RemoveCardFromBoard(cardID@K2Node_Event_targetCard, cardID@self, out qqq)
-    /// </code>
-    /// 两个实参**都是 int**（`cardID` 是 `BaseCardObject.h` 上的 int 成员），
-    /// 而接收者是 `cardFunction` = **施法者自己**（见 `KismetVm.Frame` 的
-    /// `_locals["cardFunction"] = ctx.Self`）。于是旧实现返回的是**雾战这张指令自己**，
-    /// `RemoveCardFromBoard` 把"弃牌堆里的自己"再 Move 到弃牌堆 —— **静默空转**：
-    /// 不报错、不记缺口、目标纹丝不动。
-    ///
-    /// 后果链（`out/_server-replays/replay-773639`）：
-    /// <code>
-    /// #25 t7 R ML {"0":"60"}   ; bot 把 card_unit_1st_airborne#60 推上前线 ⇒ 归属=Right
-    /// #29 t7 L PC {"0":"19","2":"60"}  ; 人类打 19=card_event_fog_of_war，目标 #60
-    ///                          ; 客户端：移除成功 ⇒ 前线空 ⇒ 归属释放
-    ///                          ; 我们：空转 ⇒ #60 一直挂在前线（审计① 到 #64 t13 才离场）
-    /// #45 t9 L ML {"0":"21"}   ; 人类推前线 ⇒ 被互斥门拒（归属仍是 Right）
-    /// </code>
-    /// 审计 ⑤b 首个人类失败点 = `#45 t9 ML：移动被拒：前线被对面占着（前线归属=Right，本单位=Left）`。
-    ///
-    /// 权威签名（`ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:4202`）：
-    /// `["RemoveCardFromBoard"] = new[] { "cardID", "discarderID", "qqq" }` ——
-    /// 第 0 个参数**就是 int 卡 ID**，同族还有 `DestroyCard` / `DamageCard` 等
-    /// （全部 10 个 `TargetCard` 调用点的第 0 参都是"目标卡"）。
-    ///
-    /// 修法：把「参数」这一段拆成两步 —— 先扫**卡对象**（老行为，一个字没改），
-    /// 再单独看 `args[0]` 的**整数卡 ID**。只看 `[0]`、不看 `[1..]`，是因为
-    /// 那些位置在蓝图的签名里是 `instigatorID` / 数值，扫下去会把"伤害 3 点"
-    /// 当成"cardID=3"（`HealCard(0, 3)` 这种非指向性调用会凭空挑中 3 号卡）。
-    /// 指向**自己**的卡 ID 也跳过 —— 那一支本来就该回退到接收者（老行为）。
+    /// Legacy convenience selector for the remaining adapters: object arguments,
+    /// then an integer target, then receiver/context fallback. Each native API
+    /// needs its own signature audit; this helper is not a native lookup contract.
+    /// RemoveCardFromBoard uses DoRemoveSingleFromBoard instead (RULE-402).
     /// </summary>
     private static CardInstance? TargetCard(EffectContext c, object? receiver, object?[] args)
     {
@@ -6732,6 +6670,34 @@ public sealed partial class CardApi
         }
 
         return AsCard(receiver) ?? c.Target ?? c.Self;
+    }
+
+    // RULE-402: the native single wrapper takes explicit ID/source and returns
+    // qqq=false. Keep object-input compatibility by ID, never context fallback.
+    private object DoRemoveSingleFromBoard(EffectContext c, object?[] args)
+    {
+        int id = IdOf(args.ElementAtOrDefault(0));
+        var target = GetCardFromID(id);
+        if (target is null || !IsUnit(target)) return false;
+        int instigatorId = IntArg(args, 1);
+        var oldLocation = target.Location;
+        c.Engine.FireLeaveTrigger(target, CardLocation.Discard, method: 2, oldLocation: oldLocation);
+        // CardLocationMoved resolves the ID after before-leave callbacks.
+        if (GetCardFromID(id) is { } moving)
+        {
+            c.State.Move(moving, CardLocation.Discard, moving.LocationNumber,
+                moveReason: CardMoveReason.Removed, notifyMoved: false, normalizeLocation: false);
+            RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
+            if (oldLocation.IsBoard())
+                c.State.CardMoved?.Invoke(moving, oldLocation, CardLocation.Discard, false, CardMoveReason.Removed);
+        }
+        if (GetCardFromID(id) is { } leaving)
+            c.Engine.FireAfterLeaveTrigger(leaving, CardLocation.Discard, oldLocation);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        c.Engine.FireSubAction("ZActionRemoveCardFromBoard", new[] {
+            ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", instigatorId), ActionValue2.Str("oldLocation", oldName)
+        });
+        return false;
     }
 
     internal static CardInstance? AsCard(object? v) => v as CardInstance;

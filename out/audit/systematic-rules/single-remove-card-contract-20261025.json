@@ -1,0 +1,114 @@
+{
+  "rule": "RULE-402",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "a2165f8ce4eedb191e369d4f51d3cbb82a557ae5",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-402",
+    "fresh_blueprint_bodies": 5,
+    "fresh_bytes": 2146,
+    "empty_declarations": 2,
+    "worker_call_nodes": 23,
+    "composed_single_wrapper_core_models": 320,
+    "new_headless_scenarios": {
+      "target_contract": 972,
+      "phase_order": 16,
+      "total": 988
+    },
+    "baseline": "2/828 failures",
+    "final": "828/828 pass",
+    "kernel_changed": true,
+    "model_boundary": "Complete single230byte wrapper and ApplyRemove1009byte AST with Destroyed/converting/skipAddAction/combat false. Stable positive-ID lookup, IsUnit, movement/leave helpers and notifier supplied as controlled primitives; optional helper mutations are synthetic probes. UI GetBoard/MoveCardZBeforeDiscard no-op by task scope. No full helper native lifetimes, same-ID replacement, null reentry or UI transitive isolation certification.",
+    "limits": [
+      "Single-wrapper valid retained-object lifecycle and controlled relocation hooks only. Missing/replaced map targets during callback reentry, concurrent mutation/GC and pending-kill semantics remain uncertified.",
+      "Existing FireLeave/Move/Refresh/After adapters are reused; model treats them as primitives. Sixteen actual headless VM hook fixtures support selected ordering, not complete native callback equivalence.",
+      "UI GetBoard/MoveCardZBeforeDiscard excluded by user task; no full transitive UI isolation proof.",
+      "Object alias first-input compatibility resolves by ID; noninteger malformed/out-placeholder cases are headless robustness probes, not native ABI claims.",
+      "RemoveMultipleCardsFromBoard captured/inventoried but intentionally unchanged; it has independent per-unit filtering and unconditional original-list notification, still needs integration.",
+      "Initial fixture/internal-enum and helper namespace compile errors corrected and archived; neither counts as a rule regression."
+    ]
+  },
+  "findings": [
+    "Native RemoveCardFromBoard looks up explicit first ID, calls IsUnit on that result, invokes ApplyRemoveCardFromBoard only for units, and always sets qqq=false. Invalid/missing/nonunit target reaches a client logger rather than receiver/self/target fallback. Logging is outside headless rule scope.",
+    "Previous dispatcher used shared TargetCard scanning object arguments and receiver/context fallback, accepted all non-HQ objects, returned null, and only State.Move. This could move an unrelated context card or nonunit and omitted before/after hooks, removal reason, saved-location behavior and removal notification.",
+    "For the single-wrapper false flags, complete Apply AST saves OldLocation, invokes before-leave with method2, CardLocationMoved toDiscard with reason11 and skip move-notification true, traverses the visual branch, then after-leave and NotifyRemoveCardFromBoard. The visual step is excluded by user scope. Removal is not destruction and does not execute destruction/history/death-flag work.",
+    "Native RemoveMultipleCardsFromBoard iterates explicit IDs, applies per-item IsUnit gating, invokes Apply with skipAddAction=true, then notifies its original input ID list unconditionally. This distinct path was captured and remains pending integration; it was not patched via the single wrapper."
+  ],
+  "changes": [
+    "Dedicated single-removal adapter takes first ID (retaining local object->ID compatibility), resolves current map and requires IsUnit. Return false for all exits; no argument scan/context fallback.",
+    "Reuse existing before-leave, quiet movement, location refresh/movement callback and after-leave adapters, retaining entry OldLocation and current location number. Re-fetch by ID after callbacks; null/replacement reentry parity remains open.",
+    "Emit ZActionRemoveCardFromBoard after after-leave with cardID,raw instigatorID and saved oldLocation name; do not generate destroy notifications or death history/turn flag.",
+    "Replace obsolete replay-based RemoveCardFromBoard narrative on the general TargetCard helper with a current scope note. General helper body and batch dispatcher behavior remain unchanged; no replay used as authority."
+  ],
+  "validation": [
+    "Fresh five complete Blueprint bodies2146bytes plus two empty declarations checked against guarded client exe hash; raw/header lengths,FNames,symbol headers,hashes and complete ASTs independently revalidated.",
+    "320 composed whole single-wrapper230byte and Apply1009byte AST models verify unit/ID gates,false output,method/reason/flags,ordered helper calls and saved notification location with controlled callback changes. UI/no native helper or lifecycle execution claims beyond the stated boundary.",
+    "972 headless target-contract cases span two sides,three zones,three types,nine argument modes,two self contexts and three receivers;16 actual VM draw-hook phase cases cover side/zone and before/after controlled relocation. No unrelated context target movement or destruction bookkeeping allowed.",
+    "Old kernel with valid new tests:2/828 fail; patched Release full selftest:828/828 pass. Initial fixture/internal-enum and helper namespace build errors archived and excluded. Later method placement/XML-comment edits have no semantic change.",
+    "DeepSeek extracted23 nested calls from three captured functions. Its function field is a name wrapper and preorder count is per-function; primary independently reproduced that exact format and matched all nodes/containing statements, rather than assuming per-statement numbering."
+  ],
+  "limits": [
+    "Single-wrapper valid retained-object lifecycle and controlled relocation hooks only. Missing/replaced map targets during callback reentry, concurrent mutation/GC and pending-kill semantics remain uncertified.",
+    "Existing FireLeave/Move/Refresh/After adapters are reused; model treats them as primitives. Sixteen actual headless VM hook fixtures support selected ordering, not complete native callback equivalence.",
+    "UI GetBoard/MoveCardZBeforeDiscard excluded by user task; no full transitive UI isolation proof.",
+    "Object alias first-input compatibility resolves by ID; noninteger malformed/out-placeholder cases are headless robustness probes, not native ABI claims.",
+    "RemoveMultipleCardsFromBoard captured/inventoried but intentionally unchanged; it has independent per-unit filtering and unconditional original-list notification, still needs integration.",
+    "Initial fixture/internal-enum and helper namespace compile errors corrected and archived; neither counts as a rule regression."
+  ],
+  "next_work": [
+    "Integrate the separately audited RemoveMultipleCardsFromBoard per-ID gates and original-list notification.",
+    "Audit null/replacement reentry and other adapters approximating ApplyRemoveCardFromBoard, including any legacy comments that incorrectly omit ordinary after-leave hooks."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule402-remove-card-functions-native-20261025.json",
+      "sha256": "876e12a1f85b2f71556de887d329968edafe7ad09fa7b4be47eb4d353a4762f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule402-remove-card-notification-native-20261025.json",
+      "sha256": "a0d0719b3b72dcfe7059ff1590acc949a4cba051bea82875f3538bc5c4367d84"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule402-removal.py",
+      "sha256": "f231431fc1e8699c4abeb349472ee340cdac2e4cae3bc43e683f90f83b8eb0ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule402-notification.py",
+      "sha256": "0bbaeff3532ffade02e019f31c758da2c0590741d13320c3d78c6e93ec5114ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule402-single-removal.py",
+      "sha256": "fb6338c266520220ca96d0e2c6d2bda881a3a785033503810564eb32c17b70eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule402-single-removal-model-20261025.json",
+      "sha256": "dd513fa285df118582a65fa4ff08bff8fb6e550bde79e0454795b39a077c4654"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule402.py",
+      "sha256": "465b515e6c3794b6b6827c9d1b66bf8665191184c9a95e3beedf610ebb885849"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule402-selftest-before.log",
+      "sha256": "b6261f4dcd94536d36f0cb013970bec11c26b93403c1f99b7a426b854fb76ee5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule402-selftest-after.log",
+      "sha256": "e4ac22eec80053b65047e3377bf2e12ca47e47e769f1a0414d459536920026bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule402-test-fixture-build-error.log",
+      "sha256": "d3dc6d0a34745263d3a3bff8866663adfbff67b83717f575ba8eab55f6cbdeb5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule402-helper-build-error.log",
+      "sha256": "dc9d020ff433fa2826224367178f383a5c1bb7882e0459501706d11458d2f84a"
+    }
+  ],
+  "deepseek_job": "20261025-065408-rule402-removal-calls-6fb74372"
+}
