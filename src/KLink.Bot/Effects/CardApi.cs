@@ -2611,6 +2611,12 @@ public sealed partial class CardApi
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
     {
+        // RULE-377: main always supplies customDetail="" to the ledger.
+        if (changeType is 6 or 7)
+        {
+            RecordDefenseEmptyDetail(target, instigatorId ?? source?.CardId ?? target.CardId, changeType);
+            return;
+        }
         // RULE-376: native mode0 mutates only the temporary source ledger.
         // The convenience temporary+ordinary call also denotes that native mode.
         if (changeType == 0 || (temporary && changeType == 1))
@@ -2765,6 +2771,19 @@ public sealed partial class CardApi
             TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
             RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
+    }
+
+    // RULE-377: customAdd writes fresh-frame0, customRemove deletes defense_.
+    // Main6/7 rejects numeric changes after this ledger mutation. Zero requests
+    // do not bypass these custom modes; preserve unrelated typed source keys.
+    private void RecordDefenseEmptyDetail(CardInstance target, int sourceId, int changeType)
+    {
+        if (sourceId <= 0 || Math.Clamp(target.Defense, 0, 99) <= 0 || !CanCardBeBuffed(target)) return;
+        PruneEmptySourceBuffSlots(target, sourceId);
+        var buff = GetOrCreateBuff(target, sourceId);
+        buff.DefenseEmptyDetail = changeType == 6 ? 0 : null;
+        if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+        else SynchronizeBuffTarget(target, sourceId);
     }
 
     // RULE-376: main487 calls ledger1/0 before rejecting numeric mode0.

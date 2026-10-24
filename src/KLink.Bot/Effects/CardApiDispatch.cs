@@ -4232,6 +4232,14 @@ public sealed partial class CardApi
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
     {
+        // RULE-377: modes6/7 mutate the empty-detail ledger, then qqq=false.
+        if (IntArg(a, 3) is 6 or 7)
+        {
+            var card = TargetCard(c, r, a);
+            if (card is not null) RecordDefenseEmptyDetail(card, IntArg(a, 1), IntArg(a, 3));
+            return false;
+        }
+
         // RULE-376: temporary-give is ledger-only, then native qqq=false.
         if (IntArg(a, 3) == ChangeTypeTempBuffGive)
         {
@@ -4527,7 +4535,7 @@ public sealed partial class CardApi
     /// `ChangeKreditCost` 的 changeType 取值（实测只出现这三种）。
     ///
     /// ⚠️ 这几个常量是**逐字的 `EChangeType` 枚举值**，所以同名的 4 也被
-    /// `ChangeAttack`（撤销该来源的攻 buff）/ `ChangeDefense`（非法值，no-op）复用 ——
+    /// `ChangeAttack`（撤销该来源的攻 buff）/ `ChangeDefense`（先清临时账本，再拒绝数值变化）复用 ——
     /// 名字里的 "Cost" 只是它当初的落点，别再按"只属于费用"来理解。
     /// </summary>
     private const int ChangeTypeTempBuffGive = 0;  // 临时相对费用加减
