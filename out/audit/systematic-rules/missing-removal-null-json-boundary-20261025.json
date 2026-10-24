@@ -1,0 +1,106 @@
+{
+  "rule": "RULE-404",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "46b2f93d8ddc65162cc12512f4802a3f1ae52de0",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-404",
+    "fresh_bodies": 9,
+    "fresh_bytes": 8035,
+    "empty_declarations": 2,
+    "selected_helper_models": 67,
+    "worker_call_nodes": 138,
+    "model_boundary": "67 selected actual-AST helper paths, not whole removal-chain execution. Scalar null side/Location/locationNumber are supplied zero under prior native scalar-clear evidence. JSON calls and diagnostic continuation are opaque; hand getter output is controlled. No customJson struct default/native JSON/no-op proof, no CardLocationMoved/Apply core composition, no live match/state/GC/concurrency/diagnostic abort certification.",
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Fresh9 nonempty Blueprint bodies8035bytes and2 empty CardFunctionsStub declarations. Captured raw script sizes/hashes, reflected names and decoded AST independently checked against saved headers/symbols and installed executable SHA256. No fresh live-match transition assertion.",
+    "Before/after leave helpers reject OldLocation=0 before card lookup or leave/pincer callbacks. RefreshLocationStatus only dispatches locations3,4,5,6,7; affected locations0 and8 reach neither RearrangeLocation nor UpdateGuarded.",
+    "SetCardLocationAndLocNumber relooks up CardID and checks IsValid. Under controlled missing lookup it only calls DirectClientLogger; no Location or locationNumber assignment reached. Diagnostics completion/side effects remain opaque.",
+    "SetRightLeftMostWhenPlayed has no validity guard. A null card yields scalar side=0,Location=0,locationNumber=0. For destination8 its location/side mapping gate succeeds, and JSON_SetBool(null,WasLeftMostWhenPlayedFromHandKey,true) is reached. Then GetCardsInHandBySide(0) and rightmost JSON_SetBool/JSON_Clear may run; hand output is controlled in models, not universally certified empty.",
+    "JSON_SetBool reads card.customJson, invokes JsonMakeBool/JsonMakeField and assigns back card.customJson. It has no direct persistence or notification call. This does not establish native JSON purity, aliasing or null struct initialization. Scalar zero evidence cannot be substituted for customJson struct default semantics.",
+    "CardLocationMoved decoded control flow was inspected: missing-old0 to discard8 passes through right/left helper, guarded location setter and RefreshLocationStatus. The selected endpoint does not qualify board move event/frontline update. This chain and ApplyRemoveCardFromBoard were not executed as a composed model in RULE-404."
+  ],
+  "validation": [
+    "67 selected helper AST executions:12 before/after gate cases,5 refresh input orders/subsets,30 null-card right/left helper cases across10 destinations and3 controlled hand outputs,20 invalid location-setter cases. Fail closed on unhandled executed opcode/call. JSON calls remain opaque and explicitly recorded.",
+    "9 nonempty bodies re-decoded from raw bytecode using runtime-kismet-subset-297.py and compared exactly with saved AST; script lengths match reflected header and hashes. Empty stub decode errors are declarations, not successful function bodies.",
+    "No production or tests changed; no new simulator test run. RULE-403 previous830/830 result is historical and is not represented as a new RULE-404 run.",
+    "DeepSeek extracted138 calls in a private packet. Primary independently traversed saved AST preorder and compared every containing function, owner, enclosing byte offset, called name and complete node exactly; no worker semantic judgment adopted. Job20261025-072622-rule404-calls-9a622e60 completed exit0."
+  ],
+  "limits": [
+    "Shared simulator removal core still returns early for missing targets. Full equivalence remains unresolved; do not mark RULE-403 null-core boundary closed.",
+    "Null customJson FStructProperty ClearValue/CppStructOps construction, JsonMakeField aliasing and native JSON effects unresolved. JSON_Clear is an opaque modeled call, not newly acquired or implemented here.",
+    "GetCardsInHandBySide native body captured but not executed in these models; supplied hand arrays are controlled. No proof all possible client side0 queries are empty.",
+    "Diagnostics, pendingkill/GC/concurrency, actual interface binding and UI/transitive effect isolation not certified. UI/campaign/tutorial excluded from headless scope.",
+    "No complete card certification or exhaustive unimplemented-card-logic list follows from these selected helper checks."
+  ],
+  "next_work": [
+    "Trace current-build customJson reflected struct metadata into ClearValue/CppStructOps default initialization and match current JsonMakeField/JsonMakeBool native function bodies.",
+    "Acquire JSON_Clear if required by the actual side0 hand path; distinguish detached JSON allocation from shared-state mutation before deciding a missing-core adapter change.",
+    "After native JSON boundary is understood, compose actual Apply/CardLocationMoved/helpers for missing positiveID with skipAddAction=true and certify or repair only the proven PvP effect difference."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-missing-removal-helpers-native-20261025.json",
+      "sha256": "9da2208aef15e27c03e1a15c4272ac7ad148b2b46bfbe734456afa4cf04f477e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-location-setters-native-20261025.json",
+      "sha256": "4e2d1f24318eaccc2e321871944e6ff4770dda3ac430ab337e9d3bc49b837073"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-null-json-hand-native-20261025.json",
+      "sha256": "0a7469d0701857e7cd6ffb1877aa21150704075d0804f7538d5366495b49a821"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule404-null-removal.py",
+      "sha256": "63247a71c59db6f2e59fae1e2ea36388aa05661799199402f87008cbddc95a09"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-null-removal-model-20261025.json",
+      "sha256": "342dbb685ec3d385eae23a23699194d0cde8053a73d90375edcc2df4bb5dee3e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule404.py",
+      "sha256": "355517f79b25c7636f144736026063bc8f8e104a6a99bf55a1d927fde2ada259"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-verified-20261025.json",
+      "sha256": "ee945fa73854c05dba9e743859dca790f70c845e8d54cdb76fed2e00cf088b60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule404-removal-helpers.py",
+      "sha256": "116c55b3063266af3226a1ecd55e16f4cbb40e88516098243f05c1c575193c05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule404-location-setters.py",
+      "sha256": "a5d0945f3543ff55ba9c82df52d65662ec1cf5fe7d0c4e137732d22edc1ab205"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule404-null-json.py",
+      "sha256": "ceb0bccff1c92d16fa9af51c60b7263c5599b23fab757a1613a80ef8f36fb30d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-verified-worker-20261025.json",
+      "sha256": "b8c2e22909b006946ef1823d41afd6df334bc081b7bfad7fda4a7ac6b9771437"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-worker-packet\\input.json",
+      "sha256": "0feb80d0df89b710c2694ecd969f9bbe451b082950f0869fdfabffabc12491c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-worker-packet\\task.txt",
+      "sha256": "373afcb6c64a9f5253c3d4047d2ddfd2143f0749e0c6ad4723888f47d12d74a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule404-worker-packet\\calls.json",
+      "sha256": "5c26f9f18218e3c83514d3f9bf516ecd940e8abff74ed2fdbc5fd55851f04d43"
+    }
+  ]
+}
