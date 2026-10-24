@@ -1,0 +1,133 @@
+{
+  "rule": "RULE-399",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "6143e0445fe06e74535e87230bbbf85640f3b748",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-399",
+    "focused_native_bytes": 938,
+    "callback_completion_bytes": 38,
+    "callback_execute_bytes": 212,
+    "callback_execute_pdata_fragments": 5,
+    "callback_execute_reachable_instructions": 59,
+    "cached_dispatch_bytes": 38,
+    "cached_dispatch_target_rva": "0x4520950",
+    "snapshot_counter_delegate_count": 0,
+    "model_cases": 8,
+    "worker_calls": 37,
+    "worker_branches": 30,
+    "model_boundary": "Captured 38-byte slot58 handler executed in Unicorn with synthetic object/result/actor and a RET broadcast sink. Checks signed count gate, parameter-field gate, target delegate address and -1 broadcast argument. Not actual completion status semantics, broadcaster/subscriber execution, weak-object lifetime or slot60 full execution.",
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_validation": "RULE-395 Release823/823; source unchanged",
+    "limits": [
+      "Constructed callback vtable slot58/60 identification and instruction paths, not a proof of every ABI method/table extent or actual completion invocation/registration lifecycle.",
+      "Completion field+10 is tested for nonzero; semantic success/error interpretation is unresolved. Slot60 weak/validity helpers remain external primitives and were not emulated.",
+      "Count0 describes one selected live acquisition; other phases/subscribers/native binding sources remain open.",
+      "Cached dispatch resolved slot48 to4520950, which further calls transport slot50 and returned-object slot8; full request/response/transport behavior remains unresolved.",
+      "Only selected read buffers repeated; no atomic GC/concurrency guarantee, client function calls, process writes or actual requests."
+    ]
+  },
+  "findings": [
+    "Independently matched the counter backend construction LEA at4b0b0ca to static vtable RVA7e47550 and matched selected relocated live table slots to PE addresses. Reading thirteen selected entries does not prove full table extent or ABI method names.",
+    "Vtable slot58 points to4ae7d00: a38byte handler. It tests qword[param+10]!=0, reads captured actor at callback+20, tests signed count atactor+300>0, then tail jumps to380a0f0 with rcx=actor+2f8 and edx=-1. Param+10 semantic meaning is not mapped to success/error status.",
+    "Slot60 points to4aec2e0. The first pdata fragment is only7bytes; following direct CFG captures212bytes over5fragments and59reachable instructions. After external weak/lifetime helper checks, it contains the same gated broadcast inline and returns a boolean. No double-execution inference from two slots or full weak-object semantics claim.",
+    "Current selected native DailyMissions actor reflected property OnAchievementCounterSet is at2f8. Its active delegate count is0 in this acquisition. It differs from OnDailyMissionsCardDestroyed and DestroyedCountChanged. This observed empty list explains suppression at the examined count gate only, not universal PvP absence.",
+    "Captured650byte accessor4af79d0 selects between alternate creation and cached-pointer branches. In the selected live sample its private byte658 is0 and cached pointer660 is nonnull; object-vtable slot48 resolves to4520950. That38byte wrapper further calls transport slot50 and returned-object slot8; request/response/native target effects remain open.",
+    "No new demonstrated PvP rule mismatch. Full transport and achievement/profile/UI lifecycle remain an archived conditional boundary; next audit priority returns to PvP local receipt lookup/null/replacement semantics rather than reproducing the whole network library."
+  ],
+  "validation": [
+    "All selected captured code bytes matched live memory and installed PE; independent Capstone/length/SHA checks, relocation checks, reflected property offset and recorded repeated pointer/header/array reads revalidated. Independently reconstructed slot60 and cached-dispatch direct CFGs.",
+    "Eight offline Unicorn cases execute the actual38byte slot58 handler with synthetic callback/result/actor objects, completion-field zero/nonzero and signed counts-1/0/1/3. A RET sink records exact target address and -1 argument; objects remain unchanged in this bounded test. No real subscribers, weak helpers, actual requests or live function calls.",
+    "DeepSeek mechanical four-function instruction extraction exactly matched37 call nodes,30 branch nodes and memory-operand lists. Primary selected targets, verified all results and made scope decisions.",
+    "No production/test changes and no new selftest run. Latest applicable source validation remains RULE-395 Release823/823.",
+    "All RULE-399 acquisitions used separate prechecked output paths; no earlier evidence artifact was overwritten this round."
+  ],
+  "limits": [
+    "Constructed callback vtable slot58/60 identification and instruction paths, not a proof of every ABI method/table extent or actual completion invocation/registration lifecycle.",
+    "Completion field+10 is tested for nonzero; semantic success/error interpretation is unresolved. Slot60 weak/validity helpers remain external primitives and were not emulated.",
+    "Count0 describes one selected live acquisition; other phases/subscribers/native binding sources remain open.",
+    "Cached dispatch resolved slot48 to4520950, which further calls transport slot50 and returned-object slot8; full request/response/transport behavior remains unresolved.",
+    "Only selected read buffers repeated; no atomic GC/concurrency guarantee, client function calls, process writes or actual requests."
+  ],
+  "next_work": [
+    "Return primary attention to local PvP receipt object lookup, missing/null objects, replacements and reentry.",
+    "Reopen full save/request transport or completion registration only if evidence links it to rule-state mutation; do not claim it is globally certified as inert."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-request-callback-targets-20261025.json",
+      "sha256": "6d74d65d52c50da8fceb366eb1d57e27087331328d8739878592c59f104c8ac6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-callback-leaves-20261025.json",
+      "sha256": "a706161369ceb8d6c17321381a84726dd57910baaeb159aa132baf872509ca39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-callback-extended-slots-20261025.json",
+      "sha256": "214330fc4e540c14aabfb4bb835b8d657948eefcb085262a013f3e55afcdd40f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-callback-execute-cfg-20261025.json",
+      "sha256": "ade82864a5f64f4249ec104bb874422c4f00ab89a45816cc4623b0d30bf17ec9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-daily-receiver-live-20261025.json",
+      "sha256": "fe877d01ed765f87b210757579dde42672340a7c17dc1ae76ac462a1abcf9ba7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-counter-subscribers-live-20261025.json",
+      "sha256": "76502135c4ef4f5b153e86fddca9cdb85d196a1c109942917d308ccd33ec062f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule399-request-dispatch-cfg-20261025.json",
+      "sha256": "0f4334ef7707a19c40d8098bbec27c419e1a202894740b1a4fd888dd8244b4db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-callback-targets.py",
+      "sha256": "54d4f2845d395c3dc549ec00a940010f038f76ed1ac421a208d4b076ce049914"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-callback-leaves.py",
+      "sha256": "7d962dd73a878dc9f987b45cd24b6ceb206c2f29d03a6da92b359f3e332773d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-extended-slots.py",
+      "sha256": "a3bdeb34ab749cdd80461b3f57691c67a4ab669457bb761de01753132458c4fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-execute-cfg.py",
+      "sha256": "6152c472529f4e6487ff8c7ef190eb0dc69330bde28a1696e915008e544ef770"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-live-chain.py",
+      "sha256": "e1a224a556d8af24047f92ea665fbe50ea1a4cc9fac2694cc276bc3e03ce2ad7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-counter-subscribers.py",
+      "sha256": "a324a45542c8ec9f63fc4a6151652f6853d5bf0ca4f51225554e84c7b2c8a50b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule399-dispatch-cfg.py",
+      "sha256": "dc190da2da5ae72f73d1314bd516a122a949e63b4c8eb19e1489ead18b282c62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-model-rule399.py",
+      "sha256": "ac4ff3228f6dc56534e2475a601c93eae176d16cb2653f0eef33cc2d3868bddd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule399-callback-gate-model-20261025.json",
+      "sha256": "eeb4bd1bac655b9903a98b998a4c18c1f0cf67766592b3feb55c5e964cf15ace"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule399.py",
+      "sha256": "03cb1b380af095423ae7fdb1afe4cec0757c6d578f33c928a71b9cf7b335541a"
+    }
+  ],
+  "deepseek_job": "20261025-062718-rule399-callback-instructions-3366e6d0"
+}
