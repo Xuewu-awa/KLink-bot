@@ -1,0 +1,70 @@
+{
+  "rule": "RULE-395",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "c20ced6650e1bf5b17a300d5f17ebce2df48aa4b",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-395",
+    "fresh_functions": 11,
+    "fresh_bytes": 34116,
+    "fresh_statements": 1142,
+    "unchanged_receiver_bodies": 5,
+    "local_pvp_receiver_models": 576,
+    "history_models": 1024,
+    "count_queries": 15360,
+    "worker_source_coordinates_verified": 21,
+    "new_regression_scenarios": {
+      "boundary": 32,
+      "payload_selection": 8,
+      "combat_order": 8,
+      "total": 48
+    },
+    "baseline": "3/823 failures with new tests and old kernel",
+    "intermediate": "21/823 old fixture failures after kernel change; all three new tests pass",
+    "final": "823/823",
+    "model_boundary": "Five complete receiver ASTs executed only in local=true PvP context with valid retained lookup keys deliberately distinct from object CardID fields, controlled history/delegate/daily/getter primitives. One supplied delegate callback changes a later target side; not observed game subscribers or real mutable-ID behavior. No full physical remote branch/engine/container/actual scheduling simulation.",
+    "source_checks": "Targeted structural checks supplement executed headless tests; not full equivalence proof."
+  },
+  "findings": [
+    "ExecuteDestroyed previously published destruction history synchronously during generation. Client action/autoplay generation precedes local DoSubActions, whose five receivers have six gated history sites.",
+    "Attack double-death history is attacker first, then defender. Generation destruction effects are defender first, then attacker; moving publication avoids reversing effects or running them twice.",
+    "Explicit batch destroy history follows its pruned cardsToDestroy notification. Batch damage history follows aligned damageReceiverIDs/destroyed flags, even when later callbacks prune physical death processing.",
+    "Batch damage early victory returns can skip destruction callbacks/output IDs after its damage notification has already captured death flags; receipt history cannot be inferred from that final output list."
+  ],
+  "changes": [
+    "Queue destruction-history work from the five emitted notification names. Preserve ID order and duplicate occurrences, and honor per-entry or role death flags.",
+    "Drain using current object CardID/Owner and current State.Turn. Use UpdateDestroyedCardsIDs only; retain its duplicate global/per-side and unique per-turn behavior.",
+    "Remove immediate history write from ExecuteDestroyed, preserving generation effects and UnitDestroyedThisTurn. Receipt processing emits no additional subactions and does not reset this flag.",
+    "Use the existing local receipt queue alongside Gotcha/frontline/end-turn entries. Existing high-level drain points remain; standalone callers explicitly drain.",
+    "Add three headless tests covering 48 scenarios; update 21 previous fixtures to explicit receipt boundaries and correct notification-driven expected histories. The after-defense callback asserts history is still empty; no automatic flush added inside callbacks."
+  ],
+  "validation": [
+    "Fresh 11 whole runtime Blueprint bodies: 34116 bytes, 1142 decoded statements; script/header/FName/symbol/hash/executable guards verified. Five receiver bodies exactly match the independently modeled RULE-393 capture.",
+    "Reran 576 controlled local=true PvP receiver AST models and 1024 history models with 15360 count queries. Their controlled native/container/delegate primitives do not certify actual engine scheduling.",
+    "New tests against old kernel: 3/823 fail. After production patch all three pass but 21 older synchronous-history fixtures fail; after reviewed receipt-boundary updates Release selftest passes 823/823.",
+    "DeepSeek extracted 21 failing-method source contexts in a private packet. All returned method/line/text coordinates independently checked against its source snapshot. Primary chose all semantic changes and owns integration/publishing."
+  ],
+  "limits": [
+    "Only the destruction-history publication portion of valid retained-object local receipts is integrated. DestroyedCountChanged and daily notifier callbacks are not dispatched by this adapter; no full receiver equivalence claim.",
+    "Native remote physical-mutation branches, null/default context behavior, released/replaced objects, GC and arbitrary callback reentry remain uncertified. Missing headless lookups are skipped; this is not certified as native null behavior.",
+    "Attack history holds the selected dead-role references at receipt entry. Native receivers hold both roles before their additional notifications. Since those notifications are not integrated here, transitive callback/lifetime equivalence remains open.",
+    "The existing local queue models selected rule-bearing receipts, not all ResolveSubAction/DoSubActions behavior or nested shared-local-mode overwrite semantics.",
+    "Owner and turn mutations in new tests are controlled dataflow probes, not claims that the captured live match produced those transitions.",
+    "Standalone rule APIs require an explicit ApplyPendingLocalRuleReceipts boundary. Normal high-level actions already drain after generation/autoplay. Future callers must preserve this contract.",
+    "Single-card version migration remains paused; fully certified cards remains 0. Historical replays were not used as authority."
+  ],
+  "evidence": {
+    "capture": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule395-receipt-lifecycle-native-20261025.json",
+    "capture_sha256": "6f32df9ac4622ea9b7b46a168b3c10f67143bf85918da116877a45a33e0bd453",
+    "verifier": "D:\\Codex Workshop\\kards-install-review\\verify-rule395.py",
+    "baseline_log": "D:\\Codex Workshop\\kards-install-review\\rule395-selftest-before.log",
+    "intermediate_log": "D:\\Codex Workshop\\kards-install-review\\rule395-old-fixtures.log",
+    "final_log": "D:\\Codex Workshop\\kards-install-review\\rule395-selftest.log",
+    "worker_job": "20261025-022116-rule395-receipt-fixtures-542534b2"
+  }
+}

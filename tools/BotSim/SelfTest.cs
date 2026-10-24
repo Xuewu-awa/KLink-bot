@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.Effects;
@@ -972,6 +972,9 @@ internal static class SelfTest
         new("销毁数量按显式阵营查询，无效阵营不回退到接收者/控制方", NativeDestroyedHistoryCountSide),
         new("批量伤害通知七字段：筛选、重复目标和逐次阵亡标记", BatchDamageNoticePayload),
         new("批量伤害通知采样：旧区域先取，旧防御在受伤前回调后取", BatchDamageNoticeSampling),
+        new("销毁历史回执：生成阶段不可见，处理时读取归属和回合且不重放死亡", DeathHistoryReceiptBoundary),
+        new("批量历史按通知处理：显式销毁裁剪弃牌，伤害保留逐项阵亡", DeathHistoryReceiptPayloadSelection),
+        new("战斗历史回执：死亡回调无新历史，双亡按攻击者优先发布", CombatHistoryReceiptOrdering),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -12876,6 +12879,7 @@ internal static class SelfTest
             victim.Defense = 3; victim.MaxDefense = maximum;
             var trace = new List<string>(); engine.Api.TriggerTrace = trace;
             engine.Api.ChangeDefense(victim, delta, sourcePresent ? source : null);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             bool dies = 3 + delta <= 0;
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             int destroy = Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit");
@@ -12908,6 +12912,7 @@ internal static class SelfTest
             victim.Defense = 9;
         });
         engine.Api.ChangeDefense(victim, -5, source);
+        engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
         var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
         var gain = actions.Single(x => x.Name == "ZActionGainDefense");
         if (!called || earlyGain || observedMax != 8 || victim.Location != CardLocation.Discard
@@ -15422,14 +15427,18 @@ internal static class SelfTest
                 targets.Add(unit); targets.Add(survivor); if (reverse) targets.Reverse();
                 if (finishedBefore) state.Finish(client, "preexisting");
                 var ids = (IReadOnlyList<int>)dispatch.Invoke(engine.Api, [targets, 1, source])!;
+                engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
                 bool victory = mode != 0;
+                // Notification death flags survive the early victory return that skips death callbacks.
+                var expectedHistory = targets.Where(c => c == unit || c == clientHq && mode is 1 or 3
+                    || c == opponentHq && mode is 2 or 3).Select(c => c.CardId).ToArray();
                 Side winner = finishedBefore ? client : !victory ? Side.NotAvailable
                     : mode is 1 or 3 or 4 ? client.Opposite() : client;
                 string reason = finishedBefore ? "preexisting" : victory ? "Victory_DestroyHQ" : "";
                 int[] expectedIds = victory ? Array.Empty<int>() : new[] { 60 };
                 CardLocation clientPlace = mode is 1 or 3 or 4 ? CardLocation.Discard : client.HqOf();
                 CardLocation opponentPlace = mode is 2 or 3 or 5 ? CardLocation.Discard : client.Opposite().HqOf();
-                if (!ids.SequenceEqual(expectedIds) || !state.DestroyedCardIdsAll.SequenceEqual(expectedIds)
+                if (!ids.SequenceEqual(expectedIds) || !state.DestroyedCardIdsAll.SequenceEqual(expectedHistory)
                     || state.IsFinished != (finishedBefore || victory) || state.Winner != winner || state.WinnerReason != reason
                     || clientHq.Location != clientPlace || opponentHq.Location != opponentPlace || unit.Location != CardLocation.Discard
                     || unit.BlueprintVariables.ContainsKey("_auditHqAfter") != !victory
@@ -15556,13 +15565,14 @@ internal static class SelfTest
                     }
                 };
                 var ids = Run(engine, new[] { first, last }, 1, source);
+                engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
                 var wantedIds = new[] { 60, 61 }.Where(id => (mask & (id == 60 ? 1 : 2)) == 0).ToArray();
                 var wantedEvents = new List<string> { "1:60", "1:61" };
                 if (phase == 2 || (mask & 1) == 0) wantedEvents.Add("2:60");
                 if ((mask & 2) == 0) wantedEvents.Add("2:61");
                 wantedEvents.AddRange(wantedIds.Select(id => $"3:{id}"));
                 bool refreshed = wantedIds.Length > 0;
-                if (!ids.SequenceEqual(wantedIds) || !state.DestroyedCardIdsAll.SequenceEqual(wantedIds)
+                if (!ids.SequenceEqual(wantedIds) || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 60, 61 })
                     || !events.SequenceEqual(wantedEvents) || first.Location != CardLocation.Discard || last.Location != CardLocation.Discard
                     || survivor.LocationNumber != (refreshed ? frontline ? 0 : 1 : 20) || survivor.IsBeingGuarded != !refreshed
                     || state.FrontlineOwner != side)
@@ -33995,6 +34005,7 @@ internal static class SelfTest
         var destroyedUnit = PutOnBoard(state, unit, Side.Left, 901, 1);
         engine.Destroy(destroyedUnit);
 
+        engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
         object? ids = engine.Api.InvokeByName("GetDestroyedCardsIDsByTurn", null,
             new object?[] { state.Turn }, new EffectContext
             {
@@ -34501,6 +34512,83 @@ internal static class SelfTest
         return true;
     }
 
+    private static string? DeathHistoryReceiptBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in Enumerable.Range(0, 4))
+        foreach (bool changeOwner in new[] { false, true })
+        foreach (bool changeTurn in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 4;
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var card = state.CreateWithId(PlainUnit, side, 30, side.HqOf(), 2); card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed); card.Defense = card.MaxDefense = 1;
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (route == 0) engine.Api.DestroyCard(card, source);
+            else if (route == 1) engine.Api.InvokeByName("DestroyMultipleCards", source, new object?[] { new List<CardInstance> { card }, 20, null }, context, out _);
+            else if (route == 2) engine.Api.DealDamage(card, 3, source);
+            else engine.Api.InvokeByName("DamageMultipleCards", null, new object?[] { new List<CardInstance> { card }, 3, 20, null }, context, out _);
+            if (card.Location != CardLocation.Discard || state.DestroyedCardIdsAll.Count != 0 || state.DestroyedCardsIdsByTurn(4).Count != 0)
+                return $"规则生成尚未处理回执，不应发布死亡历史：{side}/{route}";
+            if (changeOwner) card.Owner = side.Opposite();
+            if (changeTurn) state.Turn = 9;
+            state.SetUnitDestroyedThisTurn(false); int actionCount = state.ActionLog.Count;
+            engine.ApplyPendingLocalRuleReceipts(); engine.ApplyPendingLocalRuleReceipts();
+            var owner = changeOwner ? side.Opposite() : side;
+            if (!state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }) || !state.DestroyedCardsIdsBySide(owner).SequenceEqual(new[] { 30 })
+                || state.DestroyedCardsIdsBySide(owner.Opposite()).Count != 0 || !state.DestroyedCardsIdsByTurn(state.Turn).SequenceEqual(new[] { 30 })
+                || changeTurn && state.DestroyedCardsIdsByTurn(4).Count != 0 || state.UnitDestroyedThisTurn || state.ActionLog.Count != actionCount)
+                return $"历史应按回执时对象归属/回合写一次，且不再次执行死亡：{side}/{route}/{changeOwner}/{changeTurn}";
+        }
+        return null;
+    }
+
+    private static string? DeathHistoryReceiptPayloadSelection(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool reverse in new[] { false, true })
+        foreach (bool damage in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var a = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 2);
+            var b = state.CreateWithId(PlainUnit, side, 61, CardLocation.Discard, 77);
+            foreach (var card in new[] { a, b }) { card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed); card.Defense = card.MaxDefense = 1; }
+            var targets = reverse ? new[] { b, a } : new[] { a, b };
+            engine.Api.InvokeByName(damage ? "DamageMultipleCards" : "DestroyMultipleCards", null,
+                damage ? new object?[] { targets.ToList(), 3, 20, null } : new object?[] { targets.ToList(), 20, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (state.DestroyedCardIdsAll.Count != 0) return "批量生成阶段不应抢先记死亡历史";
+            engine.ApplyPendingLocalRuleReceipts();
+            var expected = damage ? targets.Select(x => x.CardId).ToArray() : new[] { 60 };
+            if (!state.DestroyedCardIdsAll.SequenceEqual(expected)) return $"历史必须来自实际通知，而非后续裁剪后的死亡循环：{side}/{reverse}/{damage}";
+        }
+        return null;
+    }
+
+    private static string? CombatHistoryReceiptOrdering(CardDatabase db)
+    {
+        using var death = InstallSelectionDrawProbe(PlainUnit, "OnDestroyed");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mask in Enumerable.Range(0, 4))
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side; state.Turn = 4; state.SetKredits(side, 20);
+            var attacker = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var defender = state.CreateWithId(PlainUnit, side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            foreach (var card in new[] { attacker, defender }) { card.Keywords.Clear(); card.Keywords.Add(Keyword.Destruction); card.Attack = 3; card.EnteredPlayOnTurn = -1; }
+            attacker.Defense = attacker.MaxDefense = (mask & 1) != 0 ? 1 : 10;
+            defender.Defense = defender.MaxDefense = (mask & 2) != 0 ? 1 : 10;
+            state.CreateWithId("card_unit_51e_regiment", side, 50, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_51e_regiment", side.Opposite(), 51, side.Opposite().DeckOf(), 0);
+            int callbacks = 0; bool early = false;
+            using var draw = InstallDrawReentryProbe(state, () => { callbacks++; early |= state.DestroyedCardIdsAll.Count != 0; state.SetUnitDestroyedThisTurn(false); }, markerSide: side.Opposite());
+            if (!engine.Attack(attacker, defender, out string reason)) return "历史战斗装置攻击被拒：" + reason;
+            var expected = new List<int>(); if ((mask & 1) != 0) expected.Add(20); if ((mask & 2) != 0) expected.Add(30);
+            if (early || callbacks != expected.Count || !state.DestroyedCardIdsAll.SequenceEqual(expected) || state.UnitDestroyedThisTurn)
+                return $"死亡回调中不可见本次历史，回执双方阵亡先攻击者：{side}/{mask};callbacks={callbacks};ids={string.Join(",",state.DestroyedCardIdsAll)};early={early}";
+        }
+        return null;
+    }
+
     private static string? BatchDamageNoticePayload(CardDatabase db)
     {
         string[] names = { "NotAvailable", "Deck_Left", "Deck_Right", "Hand_Left", "Hand_Right", "Board_HQLeft", "Board_HQRight", "Board_Frontline", "Discard", "Deck" };
@@ -34666,13 +34754,14 @@ internal static class SelfTest
             if (native) engine.Api.InvokeByName("DestroyMultipleCards", source, new object?[] { targets.Cast<object?>().ToList(), 20, null },
                 new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
             else engine.DestroyMultiple(targets, source);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             string locations = saved.Length == 0 ? " " : string.Join(";", saved.Select(x => names[(int)x.Old]));
             string ids = string.Join(";", saved.Select(x => x.Card.CardId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyMultipleUnits").ToArray();
             if (notices.Length != 1 || !notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("destroyerID", 20),
                 ActionValue2.Str("cardsToDestroy", ids), ActionValue2.Str("destroyedLocations", locations) })
                 || targets.Any(x => x.Location != CardLocation.Discard)
-                || !state.DestroyedCardIdsAll.SequenceEqual(targets.Select(x => x.CardId)))
+                || !state.DestroyedCardIdsAll.SequenceEqual(saved.Select(x => x.Card.CardId)))
                 return $"批量通知必须按筛后映射同时生成位置/ID，空位置为单空格：{side}/{unitZone}/{hqZone}/{reverse}/{native}";
         }
         return null;
@@ -34762,11 +34851,12 @@ internal static class SelfTest
                 if (!handled) return "DestroyMultipleCards native dispatch missing";
             }
             else engine.DestroyMultiple(ordered, source);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             if (hq.Location != CardLocation.Discard || unit.Location != CardLocation.Discard
                 || hq.LocationNumber != 27 || unit.LocationNumber != 29 || hq.Defense != health || hq.MaxDefense != health
                 || !ReferenceEquals(state.Hq(side), hq) || !state.UnitDestroyedThisTurn || state.IsFinished
                 || state.GetHQDamagedAmountThisTurn(side) != 0
-                || !state.DestroyedCardIdsAll.SequenceEqual(ordered.Select(x => x.CardId)))
+                || !state.DestroyedCardIdsAll.SequenceEqual(ordered.Where(x => x != hq || location != CardLocation.Discard).Select(x => x.CardId)))
                 return $"批量显式摧毁必须保留HQ输入与顺序且不伪造伤害/立即判胜：{side}/{reverse}/{native}/{suppressed}/{health}/{location}";
             foreach (string trigger in new[] { "OnOtherCardLeaveBoardOrOwner", "OnAfterOtherCardLeaveBoardOrOwner", "OnOtherCardLocationMoved", "OnOtherCardDestroyed" })
             {
@@ -34801,6 +34891,7 @@ internal static class SelfTest
             CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => hq };
             if (native) engine.Api.InvokeByName("DestroyCard", source, new object?[] { hq, killer }, new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
             else engine.Api.DestroyCard(hq, killer);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var notice = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             if (hq.Location != CardLocation.Discard || hq.LocationNumber != 27 || hq.Defense != health || hq.MaxDefense != health
                 || !ReferenceEquals(state.Hq(side), hq) || state.IsFinished || state.GetHQDamagedAmountThisTurn(side) != 0
@@ -34832,6 +34923,7 @@ internal static class SelfTest
             int sourceId = sourceMode switch { 0 => 20, 1 => hq.CardId, _ => 9999 };
             int request = mode == 1 ? below ? -9 : -7 : below ? -4 : 0;
             InvokeExplicitDefenseMode(engine, state, side, hq, source, sourceId, request, mode, skip, native);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var deaths = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray(); var gains = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
             bool notified = mode != 1 || !skip;
             if (hq.Location != CardLocation.Discard || hq.Defense != (mode == 1 ? 7 + request : 0) || hq.MaxDefense != (mode == 1 ? 123 : 0)
@@ -34882,6 +34974,7 @@ internal static class SelfTest
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
             if (native) engine.Api.InvokeByName("DestroyCard", source, new object?[] { target, killer }, ctx, out _);
             else engine.Api.DestroyCard(target, killer);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var flag = engine.Api.InvokeByName("GetUnitDestroyedThisTurn", null, Array.Empty<object?>(), ctx, out bool handled);
             if (!handled || flag is not true || !state.UnitDestroyedThisTurn || target.Location != CardLocation.Discard
                 || !state.DestroyedCardIdsAll.SequenceEqual(initial ? new[] { 999, 60 } : new[] { 60 }))
@@ -34987,6 +35080,7 @@ internal static class SelfTest
             target.Defense = 7; target.MaxDefense = 123;
             int request = mode == 1 ? belowZero ? -9 : -7 : belowZero ? -4 : 0;
             InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, request, mode, skip, native);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var death = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
@@ -35041,13 +35135,14 @@ internal static class SelfTest
                     state.Move(target, CardLocation.BoardFrontline, 27, notifyMoved: false, normalizeLocation: false);
                 } else if (callbacks == 2) {
                     badAfter = mode != 2 || target.Location != CardLocation.Discard
-                        || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 60 })
+                        || state.DestroyedCardIdsAll.Count != 0
                         || current.Count(x => x.Name == "ZActionDestroyUnit") != 1
                         || current.Count(x => x.Name == "ZActionGainDefense") != 1;
                 }
             }, markerSide: side.Opposite());
             int request = mode == 1 ? -9 : -4;
             InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, request, mode, skip, native);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var death = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
@@ -35124,6 +35219,7 @@ internal static class SelfTest
                     new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
             }
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var notices = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             int Count(string trigger) => Convert.ToInt32(victim.BlueprintVariables.GetValueOrDefault("_retained_" + trigger));
             if (notices.Length != repeats || victim.Location != CardLocation.Discard || victim.LocationNumber != 27
@@ -35163,6 +35259,7 @@ internal static class SelfTest
             else if (route == 1) engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, killer },
                 new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
             else engine.Destroy(victim, killer);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             bool accepted = route != 2 || location.IsBoard();
             int expected = accepted && !suppressed ? 1 : 0;
             var vars = victim.BlueprintVariables;
@@ -35203,6 +35300,7 @@ internal static class SelfTest
             else if (route == 1) engine.Api.DestroyCard(victim, hasSource ? source : null);
             else engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, hasSource ? source : null },
                 new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             bool expected = old.IsBoard();
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             if (moves != (expected ? 1 : 0)
@@ -35254,6 +35352,7 @@ internal static class SelfTest
             }, markerSide: side.Opposite());
             engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, source },
                 new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             bool expected = removalOld.IsBoard();
             var notice = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionDestroyUnit");
             string initialName = startsOnBoard
@@ -35292,6 +35391,7 @@ internal static class SelfTest
             object? receiver = receiverMode switch { 0 => null, 1 => executor, _ => decoy };
             engine.Api.InvokeByName("DestroyCard", receiver, args,
                 new EffectContext { Engine = engine, State = state, Self = hasSelf ? executor : null, Target = decoy, Controller = side }, out bool handled);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             bool destroyed = targetMode == 0;
             var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             if (!handled || notices.Length != (destroyed ? 1 : 0)
@@ -35338,6 +35438,7 @@ internal static class SelfTest
             engine.Api.InvokeByName("DestroyCard", executor,
                 sourceMode == 4 ? new object?[] { victim } : new object?[] { victim, killer },
                 new EffectContext { Engine = engine, State = state, Self = executor, Target = source, Controller = side }, out bool handled);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             var v = observer.BlueprintVariables;
             if (!handled || !called || early || notices.Length != 1 || victim.Location != CardLocation.Discard
@@ -35375,6 +35476,7 @@ internal static class SelfTest
                 state.Move(victim, CardLocation.BoardFrontline, 0, notifyMoved: false);
             });
             engine.Destroy(victim, sourcePresent ? source : null);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var destroy = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
             var expected = new[] {
@@ -35407,6 +35509,7 @@ internal static class SelfTest
             victim.Defense = victim.MaxDefense = 3;
             engine.Api.DealDamage(victim, amount, sourcePresent ? source : null, isRedirected: redirected,
                 isFightDefenderDamage: fightNotice);
+            engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var damage = actions.Where(x => x.Name == "ZActionDamageCard").ToArray();
             bool killed = amount == 7;
@@ -35455,12 +35558,13 @@ internal static class SelfTest
             engine.Api.DestroyCard(secondary, source);
         });
         engine.Api.DealDamage(victim, 7, source);
+        engine.ApplyPendingLocalRuleReceipts(); // Complete the local action receipt phase before final history checks.
         var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
         var destroys = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
         if (!called || destroys.Length != 1 || destroys[0].Values.Single(x => x.Name == "cardID").Value != 40
             || actions.Count(x => x.Name == "ZActionDamageCard") != 1
             || victim.Location != CardLocation.Discard || secondary.Location != CardLocation.Discard
-            || !state.DestroyedCardIdsAll.OrderBy(x => x).SequenceEqual(new[] { 30, 40 }))
+            || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30, 40 }))
             return "伤害致死不得屏蔽连锁效果针对另一个目标的独立摧毁动作";
         return null;
     }

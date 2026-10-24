@@ -830,7 +830,7 @@ public sealed class MatchEngine
         ExecuteAutoPlayCards();
         // ZActionEndTurn is appended after generation/auto-play. Its receiver
         // clears all cards not owned by the ending side before the next start.
-        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.EndTurn, 0, false, side));
+        _pendingLocalRuleReceipts.Enqueue(new(LocalReceiptKind.EndTurn, 0, false, side));
         ApplyPendingLocalRuleReceipts();
 
         RecordAction("XActionEndOfTurn", side, new Dictionary<string, object?>
@@ -1101,8 +1101,10 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
-    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter, EndTurn }
-    private readonly Queue<(LocalReceiptKind Kind, int CardId, bool Flag, Side EndingSide)> _pendingLocalRuleReceipts = new();
+    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter, EndTurn, DestroyHistory, AttackHistory }
+    private sealed record LocalRuleReceipt(LocalReceiptKind Kind, int CardId = 0, bool Flag = false,
+        Side EndingSide = Side.NotAvailable, int[]? HistoryLookupIds = null);
+    private readonly Queue<LocalRuleReceipt> _pendingLocalRuleReceipts = new();
 
     /// <summary>Compatibility entry for callers of the original Gotcha-only receiver.</summary>
     public void ApplyPendingGotchaPlayReceipts()
@@ -1110,8 +1112,8 @@ public sealed class MatchEngine
 
     /// <summary>
     /// Apply the currently modeled rule-bearing local receipts in production order.
-    /// The modeled receipts are Gotcha play, frontline-limiter and end-turn
-    /// activation cleanup, not all of BP_OnlineMatch.ResolveSubAction. Normal actions call
+    /// The modeled receipts include destruction history, Gotcha play,
+    /// frontline-limiter and end-turn activation cleanup, not the full dispatcher. Normal actions call
     /// this after autoplay and before deferred selection replies; standalone API
     /// callers must explicitly finish their local receipt batch.
     /// </summary>
@@ -1134,6 +1136,20 @@ public sealed class MatchEngine
                 // unconditional integer Set_Add/Remove, without object lookup.
                 if (receipt.Flag) State.FrontlineLimiters.Remove(receipt.CardId);
                 else State.FrontlineLimiters.Add(receipt.CardId);
+                continue;
+            }
+            if (receipt.Kind is LocalReceiptKind.DestroyHistory or LocalReceiptKind.AttackHistory)
+            {
+                var ids = receipt.HistoryLookupIds!;
+                // Attack resolves both role references at receipt entry. Batch
+                // receivers instead look up each token immediately before use.
+                var held = receipt.Kind == LocalReceiptKind.AttackHistory
+                    ? ids.Select(State.ById).ToArray() : null;
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    var target = held is null ? State.ById(ids[i]) : held[i];
+                    if (target is not null) State.UpdateDestroyedCardsIDs(target.CardId, target.Owner);
+                }
                 continue;
             }
             var card = State.ById(receipt.CardId);
@@ -1164,7 +1180,7 @@ public sealed class MatchEngine
             ActionValue2.Int("instigatorID", limiterId),
             ActionValue2.Bool("remove", remove),
         });
-        _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.FrontlineLimiter, limiterId, remove, Side.NotAvailable));
+        _pendingLocalRuleReceipts.Enqueue(new(LocalReceiptKind.FrontlineLimiter, limiterId, remove, Side.NotAvailable));
     }
 
     private void NotifyPlayFromHand(CardInstance card, int instigatorId,
@@ -1192,7 +1208,7 @@ public sealed class MatchEngine
         else if (chooseOneIndex is >= 0)
             values.Add(ActionValue2.Int("chooseOneIndex", chooseOneIndex.Value));
         FireSubAction("ZActionPlayCardFromHand", values);
-        if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue((LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly, Side.NotAvailable));
+        if (Api.IsGotcha(card)) _pendingLocalRuleReceipts.Enqueue(new(LocalReceiptKind.GotchaPlay, card.CardId, playedDirectly, Side.NotAvailable));
     }
 
     private bool _processingAutoPlayCards;
@@ -3310,11 +3326,9 @@ public sealed class MatchEngine
         // RULE-386: native i=137 sets this in the action process before the
         // target lookup/T24 query. It does not filter the destroyed card's type.
         State.SetUnitDestroyedThisTurn(true);
-        // The headless engine currently records history here before destruction
-        // callbacks. RULE-301: combat receipt bookkeeping occurs later in the
-        // client; aligning generation/receipt phases remains pending. Do not
-        // also append the same death when adding receipt processing.
-        State.RecordDestroyedCard(card.CardId, card.Owner, Api.IsUnit(card));
+        // RULE-395: death effects run during generation; history is published
+        // later by the notification-derived local receipts. A death helper alone
+        // is not a second history event (and a pruned batch entry has none).
         // Capture T24 before OnDestroyed can create/remove subscribers (i=225).
         var destructionRecipients = Api.CaptureRegisteredTriggerSnapshot("OnDestructionEffectTriggered");
         // Native i=667/893 calls the saved object directly, even if an earlier
@@ -3402,10 +3416,46 @@ public sealed class MatchEngine
 
     /// <summary>产生并记录一个子动作（对应游戏里的 CreateAction_AddSubAction / AddSubAction*）。</summary>
     internal void FireSubAction(string name, IEnumerable<ActionValue2> values)
-        => State.ActionLog.Add(new GameAction(
+    {
+        var snapshot = values.ToList();
+        State.ActionLog.Add(new GameAction(
             ++_actionId, "SubAction", State.ActiveSide, State.Turn,
-            new[] { new SubAction(name, values.ToList()) },
+            new[] { new SubAction(name, snapshot) },
             new Dictionary<string, object?>()));
+        QueueDestroyedHistoryReceipt(name, snapshot);
+    }
+
+    private void QueueDestroyedHistoryReceipt(string name, IReadOnlyList<ActionValue2> values)
+    {
+        int Value(string key) => values.LastOrDefault(x => x.Name == key)?.Value ?? 0;
+        string Text(string key) => values.LastOrDefault(x => x.Name == key)?.Text ?? "";
+        static int[] Integers(string text) => text.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Select(token => int.TryParse(token, System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out int parsed) ? parsed : 0).ToArray();
+        int[] ids;
+        switch (name)
+        {
+            case "ZActionDestroyUnit": ids = new[] { Value("cardID") }; break;
+            case "ZActionDestroyMultipleUnits": ids = Integers(Text("cardsToDestroy")); break;
+            case "ZActionDamageCard": ids = Value("destroyed") != 0 ? new[] { Value("cardID") } : Array.Empty<int>(); break;
+            case "ZActionDamageMultipleCards":
+                var receivers = Integers(Text("damageReceiverIDs"));
+                var destroyed = Integers(Text("destroyed"));
+                ids = receivers.Where((_, i) => i < destroyed.Length && destroyed[i] != 0).ToArray();
+                break;
+            case "ZActionAttackCard":
+                var roles = new List<int>();
+                if (Value("attackerDestroyed") != 0) roles.Add(Value("attackerCardID"));
+                if (Value("defenderDestroyed") != 0) roles.Add(Value("defenderCardID"));
+                ids = roles.ToArray();
+                break;
+            default: return;
+        }
+        if (ids.Length > 0)
+            _pendingLocalRuleReceipts.Enqueue(new(
+                name == "ZActionAttackCard" ? LocalReceiptKind.AttackHistory : LocalReceiptKind.DestroyHistory,
+                HistoryLookupIds: ids));
+    }
 
     /// <summary>该动作名是否是「效果」而不是纯查询 —— 用于统计未实现的效果调用。</summary>
     public IReadOnlyDictionary<string, int> UnimplementedCalls => State.UnimplementedCalls;
