@@ -4295,14 +4295,17 @@ public sealed partial class CardApi
         var target = TargetCard(c, r, a);
         if (target is null)
         {
-            return null;
+            return remainingMode is 1 or 2 ? false : null;
         }
 
         // RULE-307: the native entry checks the supplied ID and old defense,
         // not the identity of the card executing this Blueprint. Do not use the
         // permissive SourceCardIdArg fallback here: zero/negative IDs must stop.
         int instigatorId = IntArg(a, 1);
-        if (instigatorId <= 0 || target.Defense <= 0) return null;
+        if (instigatorId <= 0 || target.Defense <= 0)
+            return remainingMode is 1 or 2 ? false : null;
+        // RULE-379: guards precede the ordinary zero-request early return.
+        if (remainingMode is 1 or 2 && !CanCardBeBuffed(target)) return false;
         var source = State.ById(instigatorId);
 
         // 与 `DoChangeAttack` 相同，`ChangeDefense` 的共享实现会执行
@@ -4319,11 +4322,14 @@ public sealed partial class CardApi
         if (IntArg(a, 3) == ChangeTypeSetValueReal)
         {
             SetDefenseValue(target, value, source, instigatorId: instigatorId);
-            return null;
+            return false;
         }
 
         ChangeDefense(target, value, source, changeType: IntArg(a, 3), instigatorId: instigatorId, skipAction: TruthyArg(a, 4));
-        return null;
+        // RULE-379: action-process ordinary nonzero requests write false,
+        // including cancellation/rewrite-to-nonpositive exits. Accepted zero
+        // requests pop the flow without writing qqq, so preserve the old slot.
+        return remainingMode == 1 && value != 0 ? false : null;
     }
 
     private object? DoSetDefense(EffectContext c, object? r, object?[] a)

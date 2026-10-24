@@ -619,6 +619,9 @@ internal static class SelfTest
         new("防御8/9/default：拒绝时false，接受后的输出有区别", DefenseRemainingByteGuardOutputs),
         new("防御8/9/default：公开适配不改生命或触发增防", DefenseRemainingBytePublicAdapters),
         new("防御9至255：全部字节/空壳/原输出保持", DefenseDefaultByteSweep),
+        new("防御1/2：接受分支输出，普通零请求保持旧值", DefenseOrdinarySetAcceptedOutputs),
+        new("防御1/2：入口拒绝写false优先于普通零请求", DefenseOrdinarySetGuardOutputs),
+        new("防御普通1：自身/T16/T17取消和非正改写的输出", DefenseOrdinaryCallbackOutputs),
         new("防御零键：普通/绝对账本与克隆复制快照", DefenseZeroKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -7948,6 +7951,102 @@ internal static class SelfTest
             if (!handled || !Equals(raw, mode == 9 ? false : null) || !Equals(output.GetValueOrDefault("__qqq"), mode == 9 ? false : incoming)
                 || state.SnapshotJson() != before || state.ActionLog.Sum(x => x.SubActions.Count) != 0)
                 return $"防御9至255须保留空壳/反向列表，9写false、默认保持原输出 {side}/{mode}/{shell}/{sourceId}/{incoming}";
+        }
+        return null;
+    }
+
+    private static object? ReadDefenseOutputVm(MatchEngine engine, GameState state, Side side, CardInstance? target, int sourceId, int amount, int mode, bool skip, bool incoming)
+    {
+        var args = new[] { "__target", "__source", "__request", "__mode", "__skip", "__qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+        var program = new KismetProgram(new[] { new KismetStep(0, "call", "ChangeDefense", args, new[] { 5 }, null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+        var output = engine.Api.Vm.RunLocalProgramMulti(program, new EffectContext { Engine = engine, State = state, Controller = side },
+            new Dictionary<string, object?> { ["__target"] = target, ["__source"] = sourceId, ["__request"] = amount, ["__mode"] = mode, ["__skip"] = skip, ["__qqq"] = incoming }, "__qqq");
+        return output.GetValueOrDefault("__qqq");
+    }
+
+    private static string? DefenseOrdinarySetAcceptedOutputs(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2 })
+        foreach (bool incoming in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int amount in new[] { -4, 0, 3, 105 })
+        foreach (bool deck in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool vm in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, deck ? side.DeckOf() : side.HandOf(), 0); target.Keywords.Clear(); target.Defense = 7; target.MaxDefense = 123;
+            string before = state.SnapshotJson();
+            object? actual = vm ? ReadDefenseOutputVm(engine, state, side, target, sourceId, amount, mode, skip, incoming)
+                : engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, amount, mode, skip, null }, new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            bool untouched = mode == 1 && amount == 0;
+            object? expected = vm ? (untouched ? incoming : false) : (untouched ? null : false);
+            if (!Equals(actual, expected) || (untouched && state.SnapshotJson() != before))
+                return $"防御普通1零请求保持输出，其他非零/设值2应写false {side}/{mode}/{incoming}/{sourceId}/{amount}/{deck}/{skip}/{vm}: {actual}";
+        }
+        return null;
+    }
+
+    private static string? DefenseOrdinarySetGuardOutputs(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2 })
+        foreach (bool incoming in new[] { false, true })
+        foreach (bool valid in new[] { false, true })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (int health in new[] { -3, 0, 7 })
+        foreach (bool covert in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (int amount in new[] { -4, 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, CardLocation.BoardFrontline, 0); target.Keywords.Clear(); if (covert) target.Keywords.Add(Keyword.Covert);
+            target.Defense = health; target.MaxDefense = 123;
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, HasZeroDefenseEntry = true, DefenseEmptyDetail = 0 };
+            bool accepted = valid && sourceId > 0 && health > 0 && CardApi.CanCardBeBuffed(target);
+            string before = state.SnapshotJson();
+            object? actual = ReadDefenseOutputVm(engine, state, side, valid ? target : null, sourceId, amount, mode, skip, incoming);
+            bool untouched = accepted && mode == 1 && amount == 0;
+            if (!Equals(actual, untouched ? incoming : false) || ((!accepted || untouched) && state.SnapshotJson() != before))
+                return $"防御1/2拒绝门应先写false，普通零请求仅在接受后保持输出 {side}/{mode}/{incoming}/{valid}/{sourceId}/{health}/{covert}/{skip}/{amount}: {actual}";
+        }
+        return null;
+    }
+
+    private static string? DefenseOrdinaryCallbackOutputs(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var programs = InstallDefenseChainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int flavor in Enumerable.Range(0, 7))
+        foreach (bool incoming in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            CardInstance Observer(int id, string trigger, bool registered, int delta, bool stop) {
+                var card = state.CreateWithId(probe, side, id, CardLocation.Discard, 0);
+                card.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = registered ? new[] { trigger } : Array.Empty<string>() };
+                card.Keywords.Clear(); card.BlueprintVariables["_auditChainDelta"] = delta; card.BlueprintVariables["_auditChainStop"] = stop; return card;
+            }
+            Observer(30, "OnBeforeOtherCardGainDefense", flavor is 2 or 4 or 5 or 6, flavor == 4 ? -3 : flavor == 5 ? -5 : 0, flavor == 2);
+            Observer(50, "OnBeforeOtherCardGainDefenseAfterAdd", flavor == 3, 0, flavor == 3);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" }; target.Keywords.Clear(); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            target.BlueprintVariables["_auditChainStop"] = flavor == 1; target.Defense = 7; target.MaxDefense = 123;
+            for (int i = 0; i < 6; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.DeckOf(), i);
+            var actual = ReadDefenseOutputVm(engine, state, side, target, sourceId, 3, 1, skip, incoming);
+            bool applied = skip || ((suppressed || flavor != 1) && flavor is not (2 or 3 or 4 or 5));
+            if (!Equals(actual, false) || target.Defense != (applied ? 10 : 7) || target.MaxDefense != 123
+                || target.BuffsBySource[(sourceId, false)].Defense != 3
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionGainDefense") != (!skip && applied ? 1 : 0))
+                return $"防御普通正请求取消/改写至非正/正常应用均写false且不回滚账本 {side}/{flavor}/{incoming}/{suppressed}/{skip}/{sourceId}: {actual}";
         }
         return null;
     }
