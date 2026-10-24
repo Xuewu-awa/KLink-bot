@@ -1,0 +1,174 @@
+{
+  "rule": "RULE-393",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "0a7ca83e50dbb51bb45688f73aa97159e9d44ccd",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-393",
+    "fresh_functions": 5,
+    "fresh_bytes": 16780,
+    "fresh_statements": 495,
+    "worker_exact_nodes": 41,
+    "contracts": [
+      {
+        "function": "ReceiveActionDestroyUnit",
+        "at": 739,
+        "gate": "one named cardID; no destroyed flag",
+        "lookup": "target re-fetched by action cardID immediately before history",
+        "order": "history,delegate,daily"
+      },
+      {
+        "function": "ReceiveActionDestroyMultipleUnits",
+        "at": 868,
+        "gate": "each nonempty semicolon token, duplicates retained",
+        "lookup": "fresh per-token target lookup",
+        "order": "per-ID history,delegate,daily"
+      },
+      {
+        "function": "ReceiveActionDamageCard",
+        "at": 1787,
+        "gate": "parsed _destroyed true",
+        "lookup": "held toCard after owned-dealer damage notification",
+        "order": "history,delegate,daily"
+      },
+      {
+        "function": "ReceiveActionDamageMultipleCards",
+        "at": 2464,
+        "gate": "aligned _destroyed[index] true",
+        "lookup": "held _tmpReceiver fetched per receiverID iteration",
+        "order": "per-ID history,delegate,daily"
+      },
+      {
+        "function": "ReceiveActionAttackCard",
+        "at": 2087,
+        "gate": "parsed attackerDestroyed true",
+        "lookup": "held attacker reference looked up before notifications",
+        "order": "attacker history,daily,delegate"
+      },
+      {
+        "function": "ReceiveActionAttackCard",
+        "at": 3955,
+        "gate": "parsed defenderDestroyed true",
+        "lookup": "held defender reference looked up before notifications",
+        "order": "defender history,daily,delegate after attacker branch"
+      }
+    ],
+    "local_pvp_models": 576,
+    "model_boundary": "Five complete receiver ASTs executed only in local=true PvP context with valid retained lookup keys deliberately distinct from object CardID fields, controlled history/delegate/daily/getter primitives. One supplied delegate callback changes a later target side; not observed game subscribers or real mutable-ID behavior. No full physical remote branch/engine/container/actual scheduling simulation.",
+    "source_level_mismatch": "Native local attack receipt writes attacker before defender; current generation DestroyCombatPair calls ExecuteDestroyed defender before attacker and each immediately records. This is a source/order comparison, not a new executed headless regression.",
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_validation": "RULE391 Release818/818; source unchanged",
+    "limits": [
+      "Remote=false physical mutation branches not modeled.",
+      "Lookup key != object CardID marker and later side mutation are controlled dataflow probes, not observed valid live identities/subscribers.",
+      "All six publication sites still await queue integration; no generated history moved this round."
+    ]
+  },
+  "findings": [
+    "Fresh5complete OnlineMatch death/damage/attack receive bodies16780bytes/495statements contain6history calls. Every selected UpdateDestroyedCardsIDs call reads CardID andside from its resolved target object, not a stored side snapshot. Actual held-reference vs per-ID lookup timing differs byreceiver and is recorded in the six-site contract table.",
+    "SingleDestroy records its named target regardless of destroyed flag; batchDestroy iteratesparsedIDtokens in order, retaining duplicates. SingleDamage requiresparsed_destroyed; batchDamage requires aligned_destroyed[index]. Attack requiresattackerDestroyed/defenderDestroyed separately and recordsattacker beforedefender whenbothtrue. Receipt-side history is not simply a replay of generation-side death callback order.",
+    "Most receivers recordhistory thenbroadcastDestroyedCountChanged thennotifyDaily. Attack instead recordshistory,notifiesDaily,thenbroadcasts the shareddelegate. In batchreceivers this sequence is interleaved perID, so a supplied callback can affect the next target side read. Daily/realdelegate semantics not certified.",
+    "Source comparison exposes a remaining both-die order discrepancy: currentDestroyCombatPair iteratesdefender,attacker andExecuteDestroyed immediatelyRecordDestroyedCard for each; native localAttack receipt ordersattacker,defender. This is a directly checked source/control-flow comparison, not a newly executed headless counterexample test.",
+    "Empty batchDestroy payload producesnohistory update in modeledreceipt, unlike current generation-side all-target recording. Pending integration must use actual notification tokens/flags, not merelyqueue everyExecuteDestroyed target. Prior RULE389/390 closed-headless history assertions preserve current compatibility and are not native receipt-order certification."
+  ],
+  "validation": [
+    "All5raw functions redecoded withhash/length/headerFName/symbolheader checks andguardedcurrentexeSHA.",
+    "DeepSeek extracted41exactlookup/history/notifier/delegate nodes, matched primary preorder extraction; sixhistorycall parameter trees and gates independently inspected.",
+    "576offline local=true PvP cases execute the five complete receiver ASTs on selectedlocalbranches:6scenariokinds includingemptybatch,4destructionmasks,2inputorders,2controlledcallbackmodes,2sides,3currentlocations. Modelchecksdeathgates,historyorder,duplicateIDs,ID/sidefieldreads,delegatecountandno physicalmovement.",
+    "Model stable lookup keys are deliberately different from objectCardIDfields as an unambiguous dataflow marker. A supplieddelegate changes a later target side to test read timing; neither inconsistentIDs nor this subscriber mutation is claimed observed or reachable in currentgame. Emptybatch96cases yieldnohistory.",
+    "No source/test modifications or newselftest run. Latestsource validation remains RULE391Release818/818, not a newRULE393verification or a proofthat knownhistory gapsarefixed."
+  ],
+  "integration_requirements": [
+    "Queue receipt lookupIDs/flags from actual emitted subactions in action order, ratherthan precomputed owner snapshots or allgenerationdeathcalls.",
+    "Resolve objects at receiver-specific lookup points; attack retains both entry references, batchlookup occurs pertoken/receiver iteration. ReadCardID/side atwritepoint after any preceding callback defined by thatreceiver.",
+    "Keepattackattacker-first history whilepreserving separatelyverified generationdeath-effectorder. Do not invert generationeffects merelytofixhistoryorder.",
+    "Retain duplicates inglobal/per-side history,per-turnAddUnique,emptybatchno-update andparseddeathgates. Avoid addinga seconddeath-effectexecution.",
+    "Before removingoldRecordDestroyedCard calls, implementandverify everyemittedsingle/batchdamage/destruction/attack receipt payload andcallback boundary, includingautomaticplays andnestedactioncontexts. Update older synchronoushistory tests to test the actual generation/receipt boundary."
+  ],
+  "unresolved": [
+    "No history queue integration or publication-time fix thisround; knownboth-dieorder gap remains.",
+    "Only local=true PvP branch modeled. Remote physicaldamage/removal/encryption paths,campaign/achievement branches,nativeopaque helpersand actualdelegate/daymission behavior remain unmodeled.",
+    "Valid retained lookup primitive excludesNoObject/nullcontext/GC/replacement/concurrentmutation. Arbitrary alias/duplicate-objectidentity,containerbehavior andsharedflag nestedlifetimes require further checks.",
+    "No universal post-actionHQ/serveradjudication or allsingle-card parity claim. Versionmigrationpaused;fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule393-local-death-receipts-native-20261025.json",
+      "sha256": "15260d07bd014cdaca5656013cbd252b0ed43bd830eaaeff91edf0b5a4dbe6e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule393-local-receipts.py",
+      "sha256": "d99156cde812a30766d885609f04ef586f6a603dbb0eb46a70fdd609553f06fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule393-local-receipts.py",
+      "sha256": "3d4186d1c1d46c1d2f588e83b8a76f5442db003c85a7076cb10c09d8a748cca8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule393.py",
+      "sha256": "fbd33d98a77920f723999dcc6dc5dd9fe776d259c8eb3227b216fbafead4d5f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule393.py",
+      "sha256": "c8561ccd74898a475914db57c5f1038f5a0b2b98ce9514560093c74bede841a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule393-local-receipt-model.json",
+      "sha256": "11fa9b2cd67cdfbed6d8d54e44c0e3b2caf628fc3be1abedeeaed5b53f099f22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule393-history-receipt-contracts.json",
+      "sha256": "aa1d71fbe23986f1a111e3fb721eeccd2e35f40fb4168607d3f86cab71a845ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule393-verified-20261025.json",
+      "sha256": "3a86da54a476d0223548c1e901676dd464bcbcc4f7606c7ddf58a646433278ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule393\\task.txt",
+      "sha256": "37e9bb300908e238f098dc016c13f9bed0a6255f7a8130af9796a452b451669e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule393\\functions.json",
+      "sha256": "f363c5f697f4f428567f378ea88fd888d8093bc60458257bf4fbd5e683356355"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule393\\nodes.json",
+      "sha256": "e64eb222c6b1c7bb6928c737ab659f432abad56ff9b4ee7ca34f4a4f891c385b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule393\\primary-nodes.json",
+      "sha256": "8a99d391bcb49cb3314e0136b7d98e666774a2c8e7250c04f6b358721cc1cfb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule393\\extract.py",
+      "sha256": "e59fb9b24d0dec912c335799c18c34baa10c93c7bc2b9d19ddb139ee3ca28dd0"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-014859-rule393-history-inputs-4a262118\\job.json",
+      "sha256": "3c2e63bb7e2233075d4181922c29fb5a4982de402055c012dd330349a0846b0c"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-014859-rule393-history-inputs-4a262118\\answer.txt",
+      "sha256": "3667165690eec1531f319271779c696eb8753dbcb5d00dd668ca1b4e748642d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "a24ca2237e7f50a841c23295e813398b93211cefee9e9d7598cefaf260a560e4"
+    }
+  ]
+}
