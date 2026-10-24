@@ -4255,13 +4255,13 @@ public sealed partial class CardApi
             return false;
         }
 
-        // RULE-336: mode3's action-process exits explicitly write qqq=false.
+        // RULE-336/375: modes3/5 use absolute values and write qqq=false.
         // Return the out value even when a guard rejects the numeric change.
-        if (IntArg(a, 3) == 3)
+        if (IntArg(a, 3) is 3 or 5)
         {
             var suppressedTarget = TargetCard(c, r, a);
             if (suppressedTarget is not null)
-                SetSuppressionDefenseValue(suppressedTarget, IntArg(a, 2), IntArg(a, 1));
+                SetSuppressionDefenseValue(suppressedTarget, IntArg(a, 2), IntArg(a, 1), IntArg(a, 3));
             return false;
         }
         var target = TargetCard(c, r, a);

@@ -2611,9 +2611,9 @@ public sealed partial class CardApi
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
     {
-        if (changeType == 3)
+        if (changeType is 3 or 5)
         {
-            SetSuppressionDefenseValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId);
+            SetSuppressionDefenseValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId, changeType);
             return;
         }
         ApplyDefenseDelta(target, delta, source, temporary, fireGainDefenseEvent: true,
@@ -2781,19 +2781,21 @@ public sealed partial class CardApi
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
         }
         if (changeType == 2) original.DefenseSetValue = value;
-        else original.HasSuppressLedgerEntry = true;
-        target.BuffsBySource[key] = original;
+        else if (changeType == 3) original.HasSuppressLedgerEntry = true;
+        // RULE-375: veteranSet clears permanent/SetValue keys globally but
+        // never restores the cached original source or creates a veteranSet key.
+        if (changeType is 2 or 3) target.BuffsBySource[key] = original;
         SynchronizeBuffTarget(target, sourceId);
     }
 
-    // RULE-336: ChangeDefense3 uses the absolute-value path, regardless of
+    // RULE-336/375: ChangeDefense3/5 use the absolute-value path, regardless of
     // skipAction/deck. In the headless action process it notifies before death,
     // without SetValue's own/T6 callbacks or ordinary gain T7 callbacks.
-    private void SetSuppressionDefenseValue(CardInstance target, int value, int sourceId)
+    private void SetSuppressionDefenseValue(CardInstance target, int value, int sourceId, int changeType = 3)
     {
         if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)
             || Math.Clamp(target.Defense, 0, 99) <= 0) return;
-        RecordAbsoluteDefenseLedger(target, sourceId, value, changeType: 3);
+        RecordAbsoluteDefenseLedger(target, sourceId, value, changeType: changeType);
         target.Defense = target.MaxDefense = Math.Clamp(value, 0, 99);
         _engine.FireSubAction("ZActionGainDefense", new[]
         {
@@ -2801,7 +2803,7 @@ public sealed partial class CardApi
             ActionValue2.Int("gained", value),
             ActionValue2.Int("newDefenseValue", Math.Clamp(target.Defense, 0, 99)),
             ActionValue2.Int("instigatorID", sourceId),
-            ActionValue2.Str("changeType", "Suppress"),
+            ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
         if (Math.Clamp(target.Defense, 0, 99) == 0) _engine.Destroy(target, State.ById(sourceId));
     }
