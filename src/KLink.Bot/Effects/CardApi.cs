@@ -2589,8 +2589,15 @@ public sealed partial class CardApi
         if (source is not null || instigatorId is > 0)
         {
             var buff = GetOrCreateBuff(target, sourceId, temporary);
-            buff.Attack += delta;
+            buff.Attack = unchecked(buff.Attack + delta);
             buff.Duration = duration;
+            // RULE-371: ordinary nonzero accumulation deletes a sum-zero key;
+            // it must not leave an empty source slot or reverse target relation.
+            if (changeType is 0 or 1)
+            {
+                buff.HasZeroAttackEntry = false;
+                if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, temporary));
+            }
         }
 
         int changed = target.Attack - previousAttack;

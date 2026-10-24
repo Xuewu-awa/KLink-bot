@@ -4167,6 +4167,7 @@ public sealed partial class CardApi
         {
             var buff = target.BuffsBySource[candidate];
             buff.Attack = 0;
+            buff.HasZeroAttackEntry = false;
             buff.AttackSetValue = null;
             if (changeType == 3) buff.HasSuppressLedgerEntry = false;
             // The native loop does not synchronize foreign source arrays.
@@ -4202,14 +4203,21 @@ public sealed partial class CardApi
         if (sourceId <= 0 || !CanCardBeBuffed(target)) return;
         // RULE-325: only attack_tempBuffGive, preserving permanent attack.
         var key = (sourceId, true);
-        if (!target.BuffsBySource.TryGetValue(key, out var buff)) return;
+        if (!target.BuffsBySource.TryGetValue(key, out var buff)
+            || (buff.Attack == 0 && !buff.HasZeroAttackEntry))
+        {
+            // Native ledger synchronizes even when the selected key is absent.
+            SynchronizeBuffTarget(target, sourceId);
+            return;
+        }
         int removed = buff.Attack;
-        // A zero-valued native key is not distinguishable from absence in the
-        // compact ledger. Do not erase unrelated fields or invent events.
-        if (removed == 0) return;
+        // RULE-371: remove a present zero key before the main numeric/event
+        // gate. Other fields, opposite slots and foreign sources survive.
         buff.Attack = 0;
+        buff.HasZeroAttackEntry = false;
         if (buff.IsEmpty) RemoveBuffEntry(target, key);
         else SynchronizeBuffTarget(target, sourceId);
+        if (removed == 0) return;
 
         // Native mode 4 ignores the caller's amount and adjusts only the
         // independent temporary component, including values hidden by total caps.
