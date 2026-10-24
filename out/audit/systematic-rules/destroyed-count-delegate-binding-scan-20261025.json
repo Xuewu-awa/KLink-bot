@@ -1,0 +1,356 @@
+{
+  "rule": "RULE-396",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "1aa49c0dcf51b540dc81a0b95719f1dc9ff61944",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-396",
+    "loaded_functions_scanned": 30853,
+    "scanned_script_bytes": 8115146,
+    "matching_functions": 25,
+    "matched_script_bytes": 164094,
+    "full_decode_count": 13,
+    "incomplete_campaign_graphs": 12,
+    "known_pvp_broadcasters": 5,
+    "scenario_binding_prefixes": 19,
+    "scenario_binding_islands": 1,
+    "custom_event_wrappers": 20,
+    "full_campaign_graphs_with_star_updates": [
+      "card_location_usa_scen5_C",
+      "card_location_usa_scen4_C",
+      "card_location_usa_scen3_C",
+      "card_location_british_scen2_C",
+      "card_location_british_scen5_C",
+      "card_location_soviet_scen5_C",
+      "card_location_german_scen4_C",
+      "card_location_japan_scen3_C"
+    ],
+    "worker_exact_delegate_nodes": 21,
+    "current_snapshot": {
+      "turn": 3,
+      "delegate_count": 0
+    },
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_validation": "RULE-395 Release823/823; source unchanged",
+    "limits": [
+      "Exact current FProperty pointer search over loaded exact-Function-class objects only. No unloaded assets, native offset-based binding or alternate name/pointer forms exclusion.",
+      "Nonmatching scripts were not double-read; scan and later selected reads are not atomic whole-process snapshots.",
+      "Twelve campaign graph remainder syntax failures retained. Nineteen entry prefixes, one bounded binding island (not a reachability proof) and all 18-byte wrappers were independently parsed; no full callback semantics claim.",
+      "No current PvP subscriber observed is not an all-phase or all-match absence proof. DailyMissions and native/transitive callback effects remain separate open work."
+    ]
+  },
+  "findings": [
+    "Searched exact current DestroyedCountChanged FProperty pointer bytes in all 30853 readable exact-Function-class objects discovered in current GUObject slots, totaling 8115146 script bytes. Zero recorded object/function read errors. This is a loaded-set scan, not all-asset or native-binding completeness.",
+    "Twenty-five matching functions contain 164094 bytes: five known OnlineMatch receiver broadcasters and twenty card_location_*_scen* event graphs under national specialCards package paths. Full decode succeeded for thirteen; twelve scenario remainders failed with unsupported syntax/assertions and remain explicitly incomplete.",
+    "Nineteen scenario entry prefixes decode BindDelegate(CustomEvent, Self) followed by AddMulticastDelegate(DestroyedCountChanged). Soviet scenario2 places the equivalent binding near its graph end; only a bounded two-node island is decoded there, without a certified path from graph entry.",
+    "All twenty CustomEvent wrappers are complete eighteen-byte bodies calling their corresponding event graphs with entrypoint integers. The eight fully decoded scenario graphs contain GetDestroyedCardsCountBySide and UpdateCampaignStarStatus/GiveStarForCampaign/ShowCampaignMessage calls. This supports campaign use for that subset; it is not full semantic classification of all callbacks.",
+    "Fresh current turn3 exact-class non-CDO CardFunctions instance has an empty delegate list. Object slot/index/class and repeated selected field reads were validated. No currently bound PvP subscriber is observed; all-phase, native, unloaded and transitive binding effects remain unproven."
+  ],
+  "decision": "No kernel change: do not introduce guessed PvP delegate behavior from campaign/scenario bindings or infer universal absence from a zero-count sample. RULE-395 history publication is retained; complete notifier/callback parity remains open.",
+  "validation": [
+    "Matched raw script lengths/header FNames/symbol headers/SHA256, exact pointer hit offsets and full successful AST decodes independently checked against guarded current executable hash. Five PvP receiver bodies exactly equal RULE-395 capture.",
+    "All owner paths/superclass chains captured read-only. Independently decoded nineteen binding prefixes, one bounded binding island and twenty wrappers. No campaign decoder repair or complete campaign execution claimed.",
+    "DeepSeek mechanical extraction returned twenty-one delegate nodes from thirteen fully decoded graphs and listed twelve incomplete graphs. Primary preorder extraction matched every node and incomplete owner/function pair exactly. Worker outputs did not determine scope or implementation decisions.",
+    "No production or test source changes; no new selftest run. Latest applicable source validation remains RULE-395 Release823/823."
+  ],
+  "limits": [
+    "Exact current FProperty pointer search over loaded exact-Function-class objects only. No unloaded assets, native offset-based binding or alternate name/pointer forms exclusion.",
+    "Nonmatching scripts were not double-read; scan and later selected reads are not atomic whole-process snapshots.",
+    "Twelve campaign graph remainder syntax failures retained. Nineteen entry prefixes, one bounded binding island (not a reachability proof) and all 18-byte wrappers were independently parsed; no full callback semantics claim.",
+    "No current PvP subscriber observed is not an all-phase or all-match absence proof. DailyMissions and native/transitive callback effects remain separate open work."
+  ],
+  "next_work": [
+    "Trace DailyMissions actual interface receiver and assess rule-bearing transitive effects.",
+    "Check native offset-based and unloaded binding sources if evidence requires broader delegate exclusion.",
+    "Retain null/lifecycle/reentry and complete ResolveSubAction parity as open issues."
+  ],
+  "matched_functions": [
+    {
+      "owner": "BP_OnlineMatch_C",
+      "owner_path": "/Game/Blueprints/Logic/BP_OnlineMatch/BP_OnlineMatch_C",
+      "function": "ReceiveActionDestroyMultipleUnits",
+      "script_size": 3033,
+      "script_sha256": "abc00f59cb40294b84cb5997d9891f10b488f2168a8a8d3f6109665862555a95",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "owner_path": "/Game/Blueprints/Logic/BP_OnlineMatch/BP_OnlineMatch_C",
+      "function": "ReceiveActionDamageMultipleCards",
+      "script_size": 4831,
+      "script_sha256": "35e12ea0b4b5ffcc9c11f2e0311d37dc15c341aef8288246dc19a80cf55227b8",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "owner_path": "/Game/Blueprints/Logic/BP_OnlineMatch/BP_OnlineMatch_C",
+      "function": "ReceiveActionDestroyUnit",
+      "script_size": 1928,
+      "script_sha256": "8a74e964023ed2002fc24a62805d702a19bb2c45aaea7f5c3d260a824f6b8676",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "owner_path": "/Game/Blueprints/Logic/BP_OnlineMatch/BP_OnlineMatch_C",
+      "function": "ReceiveActionDamageCard",
+      "script_size": 2828,
+      "script_sha256": "6ac1a774c6b3eb52a3696512d77cce44fb0fc737515b0b1ced662996f4b2effa",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "owner_path": "/Game/Blueprints/Logic/BP_OnlineMatch/BP_OnlineMatch_C",
+      "function": "ReceiveActionAttackCard",
+      "script_size": 4160,
+      "script_sha256": "7a6ad0b480f13584914aeadcef7e8ef3b7adfa505ba568c9adce53e6d1de3e16",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_usa_scen5_C",
+      "owner_path": "/Game/Blueprints/Cards/USA/specialCards/card_location_usa_scen5/card_location_usa_scen5_C",
+      "function": "ExecuteUbergraph_card_location_usa_scen5",
+      "script_size": 5913,
+      "script_sha256": "04e797642f9940552b53c1b508f99462d7581bf8a246944632615b0fad2891ab",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_usa_scen4_C",
+      "owner_path": "/Game/Blueprints/Cards/USA/specialCards/card_location_usa_scen4/card_location_usa_scen4_C",
+      "function": "ExecuteUbergraph_card_location_usa_scen4",
+      "script_size": 7721,
+      "script_sha256": "24c8ed4a0e5ba1d3a9dd9519902d7b5841207c413338491498123a1b9f92b09f",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_usa_scen3_C",
+      "owner_path": "/Game/Blueprints/Cards/USA/specialCards/card_location_usa_scen3/card_location_usa_scen3_C",
+      "function": "ExecuteUbergraph_card_location_usa_scen3",
+      "script_size": 7364,
+      "script_sha256": "601c35c88e2b9d8918ed6d82753ec2c15a8cf8ecca042f0a80b0018433a89155",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_usa_scen2_C",
+      "owner_path": "/Game/Blueprints/Cards/USA/specialCards/card_location_usa_scen2/card_location_usa_scen2_C",
+      "function": "ExecuteUbergraph_card_location_usa_scen2",
+      "script_size": 5831,
+      "script_sha256": "0b948962fc1a97e37cbba628e06b646fe01b7be93a1fd35b99bde993b785c7f3",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 2542",
+      "decoder_offset": 2543
+    },
+    {
+      "owner": "card_location_usa_scen1_C",
+      "owner_path": "/Game/Blueprints/Cards/USA/specialCards/card_location_usa_scen1/card_location_usa_scen1_C",
+      "function": "ExecuteUbergraph_card_location_usa_scen1",
+      "script_size": 5660,
+      "script_sha256": "f18c002fdee2a156118322dde5000830cc72afc79cde56caa6951b1ff88f4ce1",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 1553",
+      "decoder_offset": 1554
+    },
+    {
+      "owner": "card_location_british_scen2_C",
+      "owner_path": "/Game/Blueprints/Cards/Britain/specialCards/card_location_british_scen2/card_location_british_scen2_C",
+      "function": "ExecuteUbergraph_card_location_british_scen2",
+      "script_size": 7176,
+      "script_sha256": "cbc690869863f563424fcb4f5288760da1fd21ae9d047697b85657bed13b65f1",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_british_scen4_C",
+      "owner_path": "/Game/Blueprints/Cards/Britain/specialCards/card_location_british_scen4/card_location_british_scen4_C",
+      "function": "ExecuteUbergraph_card_location_british_scen4",
+      "script_size": 7314,
+      "script_sha256": "9a125cc34fcd8037ab6ba8c6469d8c559692574e6d720b0ad8977a6779a6c5d2",
+      "decode_complete": false,
+      "decode_error": "('unsupported TextConst subtype', 3)",
+      "decoder_offset": 916
+    },
+    {
+      "owner": "card_location_british_scen5_C",
+      "owner_path": "/Game/Blueprints/Cards/Britain/specialCards/card_location_british_scen5/card_location_british_scen5_C",
+      "function": "ExecuteUbergraph_card_location_british_scen5",
+      "script_size": 10132,
+      "script_sha256": "28be61f12f4d55d228f2f5ac42b690713b80c142513cf5033035c6a5f11887ce",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_soviet_scen5_C",
+      "owner_path": "/Game/Blueprints/Cards/Soviet/specialCards/card_location_soviet_scen5/card_location_soviet_scen5_C",
+      "function": "ExecuteUbergraph_card_location_soviet_scen5",
+      "script_size": 5364,
+      "script_sha256": "2df6f4182eba57977bdc00883fd747c8ab9ddf40c9a9e05ad5fffd3a798b6aa5",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_soviet_scen4_C",
+      "owner_path": "/Game/Blueprints/Cards/Soviet/specialCards/card_location_soviet_scen4/card_location_soviet_scen4_C",
+      "function": "ExecuteUbergraph_card_location_soviet_scen4",
+      "script_size": 9283,
+      "script_sha256": "752e77453dec725d03f1d9b87b0f3ec31978144a4a09c44310a138cf5e31f5b7",
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 2559
+    },
+    {
+      "owner": "card_location_soviet_scen2_C",
+      "owner_path": "/Game/Blueprints/Cards/Soviet/specialCards/card_location_soviet_scen2/card_location_soviet_scen2_C",
+      "function": "ExecuteUbergraph_card_location_soviet_scen2",
+      "script_size": 7212,
+      "script_sha256": "eb8fb02391eaf9fd1dd257e5185f005ba1332c3076f5b558ab2dde73eb443d28",
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 817
+    },
+    {
+      "owner": "card_location_german_scen1_C",
+      "owner_path": "/Game/Blueprints/Cards/Germany/specialCards/card_location_german_scen1/card_location_german_scen1_C",
+      "function": "ExecuteUbergraph_card_location_german_scen1",
+      "script_size": 6525,
+      "script_sha256": "2db35557c12e7b08f9c1f33a8ef068daac2a1d09629c0d1d6ff6a40932c5fff6",
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 897
+    },
+    {
+      "owner": "card_location_german_scen2_C",
+      "owner_path": "/Game/Blueprints/Cards/Germany/specialCards/card_location_german_scen2/card_location_german_scen2_C",
+      "function": "ExecuteUbergraph_card_location_german_scen2",
+      "script_size": 5696,
+      "script_sha256": "79bf4fe2c4690b2ae7dab1a2247b3ee57051b68a31c8911251d18b122d6eefc5",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 2365",
+      "decoder_offset": 2366
+    },
+    {
+      "owner": "card_location_german_scen3_C",
+      "owner_path": "/Game/Blueprints/Cards/Germany/specialCards/card_location_german_scen3/card_location_german_scen3_C",
+      "function": "ExecuteUbergraph_card_location_german_scen3",
+      "script_size": 15738,
+      "script_sha256": "373120d6d0baae973aadd00d4e09979c59fc8ed94dd4c2b957e68f3a6090037e",
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 3977
+    },
+    {
+      "owner": "card_location_german_scen4_C",
+      "owner_path": "/Game/Blueprints/Cards/Germany/specialCards/card_location_german_scen4/card_location_german_scen4_C",
+      "function": "ExecuteUbergraph_card_location_german_scen4",
+      "script_size": 6092,
+      "script_sha256": "a14c3941802a7d82fdf7894af2a7a62f685bd1e19768ca61af04117deba90051",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_german_scen5_C",
+      "owner_path": "/Game/Blueprints/Cards/Germany/specialCards/card_location_german_scen5/card_location_german_scen5_C",
+      "function": "ExecuteUbergraph_card_location_german_scen5",
+      "script_size": 8081,
+      "script_sha256": "d0daa1a264894390fcfa9c47e4acfbe6aba6446510614257bfe19c38a0c3cb7d",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 5247",
+      "decoder_offset": 5248
+    },
+    {
+      "owner": "card_location_japan_scen4_C",
+      "owner_path": "/Game/Blueprints/Cards/Japan/specialCards/card_location_japan_scen4/card_location_japan_scen4_C",
+      "function": "ExecuteUbergraph_card_location_japan_scen4",
+      "script_size": 7344,
+      "script_sha256": "f040f6d5f8d8bc07deec184573de7a01416b5ead95b5797fc7923274379f5bfe",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 4671",
+      "decoder_offset": 4672
+    },
+    {
+      "owner": "card_location_japan_scen3_C",
+      "owner_path": "/Game/Blueprints/Cards/Japan/specialCards/card_location_japan_scen3/card_location_japan_scen3_C",
+      "function": "ExecuteUbergraph_card_location_japan_scen3",
+      "script_size": 5195,
+      "script_sha256": "fada065d06cf8f1502f8a395c73fb9b4526f525046b9fa5da59803f00bd42dad",
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_location_japan_scen2_C",
+      "owner_path": "/Game/Blueprints/Cards/Japan/specialCards/card_location_japan_scen2/card_location_japan_scen2_C",
+      "function": "ExecuteUbergraph_card_location_japan_scen2",
+      "script_size": 7506,
+      "script_sha256": "18f8d2d791704d316d21dec2adab4539318e3e66d8a1802ebbd0574867c40fe2",
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 1956
+    },
+    {
+      "owner": "card_location_japan_scen1_C",
+      "owner_path": "/Game/Blueprints/Cards/Japan/specialCards/card_location_japan_scen1/card_location_japan_scen1_C",
+      "function": "ExecuteUbergraph_card_location_japan_scen1",
+      "script_size": 6167,
+      "script_sha256": "e2f4349d0481debc735fa9fcf769f2325306639dd0fcb2dd64af5230c6ef00fd",
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 34 at 542",
+      "decoder_offset": 543
+    }
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule396-destroy-delegate-references-20261025.json",
+      "sha256": "34c458b76215adb2ec712d5ac988169cefd1415a03100cc5501635e57b297dad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule396-destroy-delegate-owners-20261025.json",
+      "sha256": "704e1492ce0ce3808ef1001e42a0d4ef48d92d9a72852934679d007df5ab1022"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule396-history-delegate-live-20261025.json",
+      "sha256": "d3e663df5e1367b09b133bba866427fee3f73d323a8784a0ea957140909ff420"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule396-delegate-references.py",
+      "sha256": "8570342495d66c70bc00c2ad38817e9d0e42efa10a1d69e1c6423bca7fe9115d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule396-delegate-owners.py",
+      "sha256": "606f645bdd622bf32dcc8f26d22eca097fbcd29f79b6b60b778c107d827cc7e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule396-live-delegate.py",
+      "sha256": "c55a79354deb269735f4a3a0d0299ae916baa0ded4e4472fae706329c43dabe3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule396.py",
+      "sha256": "d5ba55955d6d02ad9eb0ca2795059374a7c06842b5ceaac4c7ffd9535af8efe5"
+    }
+  ],
+  "deepseek_job": "20261025-022845-rule396-delegates-b101a770"
+}
