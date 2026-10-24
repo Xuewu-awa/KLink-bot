@@ -1,0 +1,137 @@
+{
+  "rule": "RULE-406",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "d8b4f00d3541d9d1bcf1753719f538257347bf0c",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-406",
+    "fresh_native_query_functions": 1,
+    "opcode": 15,
+    "native_cfg_roots": 9,
+    "native_cfg_bytes": 2253,
+    "native_query_cases": 16,
+    "native_null_destination_let_cases": 6,
+    "json_clear_ast_cases": 8,
+    "worker_edges": 136,
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Current JsonHasField native UFunction resolves to4519070. Its360byte whole wrapper tests the input JSON object pointer; null input takes xor al,al and writes false without calling field-search4517cb0.16 offline cases cover parameter routes, reference/temporary input, key lengths0/8 and old result byte0/255. String preparation/free and engine parameter stepping are controlled hooks.",
+    "JSON_Clear243byte body is reused from RULE-405 and independently re-decoded.8 selected AST cases combine the now-proven16zero customJson default with native null-query false. Found is false and neither JsonRemoveField nor card.customJson assignment is reached. This is composed evidence with supplied scalar/native primitive result, not full VM opcode execution.",
+    "EX_Let opcode15 initializer atde479b installs15a41e0; current live dispatch slot and installed PE bytes agree. JSON_SetBool destination assignment byte114 is exactly0f and binds the same captured customJson property pointer, tying this opcode to the relevant assignment.",
+    "Whole1106byte EX_Let handler on a controlled null destination takes its diagnostic path, allocates/initializes stack temporary, evaluates supplied RHS there, then destroys the temporary.6 offline cases cover null or refcount2/5 supplied JSON and two controlled returning-diagnostic return values0/1; return values are controlled variants, not proof of diagnostic abort handling. Protected synthetic card bytes remain unchanged; supplied shared references decrement once.",
+    "Current selected FStructProperty initialization and destruction slots route through ScriptStruct virtual slots2f8 and300 to1472510/14676e0. Actual initializer/default constructor/destructor and non-last shared reference cleanup are executed in Let cases; alignment comes from current struct metadata. Stack probe, standard memset, security-cookie check and diagnostics/text helpers are explicit hooks.",
+    "9 fresh CFG roots2253bytes include opcode/query/property-slot/struct-lifetime ranges. These are selected code roots, not9 recovered card rules or a full implementation inventory. Previously captured native ranges reused by models were rechecked against the installed PE."
+  ],
+  "validation": [
+    "Fresh read-only captures compare emitted native bytes with current process and installed PE, guarded by PID24220 and executable SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305. No live match transition or stable battle object assertion.",
+    "Native raw lengths/hashes, all saved CFG instructions, opcode initializer target/slot and reflected UFunction/native pointer independently checked. Reused JSON_Clear AST re-decoded from raw bytes. JSON_SetBool actual opcode/property binding checked.",
+    "Verifier reran16 native null-query cases,6 controlled null-destination Let cases and8 JSON_Clear AST cases against saved results. Every executed nontrivial game branch outside declared hooks uses captured code; this is offline emulation only.",
+    "DeepSeek private packet extracted136 jump/call/return nodes across9 CFG roots. Primary independently compared containing root, instruction RVA, mnemonic, operand and direct target for every node. Job20261025-073657-rule406-cfg-edges-d89fe0d9 completed exit0.",
+    "No production or test source changes and no new simulator selftest run. Earlier830/830 is not a RULE-406 test result."
+  ],
+  "limits": [
+    "The selected JSON_Clear null branch and null-destination assignment continuation are narrowed, but full Apply/CardLocationMoved/SetRightLeftMostWhenPlayed/JSON helper composition remains unproven; shared missing-target core early return remains an explicit boundary.",
+    "Left Context and right expression opcode executions are supplied hooks in native Let model. Prior native null-default evidence is composed conceptually, not by executing one continuous full VM sequence.",
+    "Diagnostics/name/text helpers are modeled as returning; their actual abort/error handling and global side effects are not certified. Diagnostic return0/1 cases do not replace an abort-mode model.",
+    "Last-reference virtual destruction, JsonMakeBool allocation/OOM, arbitrary nonnull JSON, side0 hand population, object lifetime/pendingkill/GC/concurrency and actual engine parameter marshalling remain outside these cases.",
+    "UI/campaign/tutorial excluded; transitive UI isolation not certified. No process writes, injection, function calls or historical replay authority. No card fully certified."
+  ],
+  "next_work": [
+    "Trace JSON bool/object shared-controller last-reference destruction with current vtable identity and bytes, distinguishing allocator cleanup from PvP callbacks.",
+    "Compose actual missing-positive-ID Apply/CardLocationMoved/selected helpers, including the proven empty JSON and assignment branches, with explicit diagnostic/GC/UI boundaries.",
+    "Only alter the simulator missing-target early return if the composed PvP evidence establishes a rule-visible difference; otherwise record bounded equivalence without inventing behavior."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule406-json-query-functions-native-20261025.json",
+      "sha256": "f69d7dd04a8435bb59d818265a5f838066de43dfb266d2de4eb5586a1afd66ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule406-json-query-let-native-20261025.json",
+      "sha256": "1e7a9fc44e9146ed14901cceade9a3ee5d3ff6f6cfa4208d926a7848911041e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule406-json-property-ops-native-20261025.json",
+      "sha256": "cd30d8b76cf6b61f2957206107628281e28dc3c3259382305aa231e0a763ea6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule406-json-struct-lifetime-native-20261025.json",
+      "sha256": "f65b860fabd321eab2b145d8d2d3955df6f41cd72f1cb0d09aa5d8c152c821f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-struct-functions-native-20261025.json",
+      "sha256": "832c34c90a18889f3938b07d376ad33dcabc36d93a0d9ab56ad0f06b3fe876cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-native-targets-20261025.json",
+      "sha256": "b4c6a5dad46b9fded1aaef46c01b4b20cd557d8f78b8cbf5c13d46c8035ddce5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-helper-cfg-20261025.json",
+      "sha256": "3def9c238d325ad74765ed56fd5ed7f6361e352aa4e48e85f8722b790d6541e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-null-json-hand-native-20261025.json",
+      "sha256": "0a7469d0701857e7cd6ffb1877aa21150704075d0804f7538d5366495b49a821"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule406-json-query.py",
+      "sha256": "e797579592798aa2a6343e4465f885202b4e21b9d75a18988bdbc4620ed82476"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule406-json-let-native.py",
+      "sha256": "128ee87a63b9b2fbadc0bde5885baad4e7744138fc9000611b2918b8ebc4d844"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule406-json-property-ops.py",
+      "sha256": "15881d290fce0cc6ddb2d88af6160e8c0dcb9573d7cc7a3149e88f6ba405d615"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule406-json-struct-lifetime.py",
+      "sha256": "8b2323cc58e1b1475784cb6200771c6cb38ecf1f8ef5185a3a4d6dabe2ed964a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule406-query-let.py",
+      "sha256": "2ebd14a2b63fa96d6a6f52b2185758fab61c22c582c3052f8ccd5e0e96995c8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule406-json-clear.py",
+      "sha256": "de870a4fec0f242fbd00ff6cc1a80cf8977444b29db6360b51dad6671be76b66"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-query-let-model-20261025.json",
+      "sha256": "7257059278c2707e87756ad4ffc2a8792978d7caaf0a9e11ebb830ed98563c60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-json-clear-model-20261025.json",
+      "sha256": "f32e9de749adb7c3a163c22ba7812ec9042de7626db5260d686b87151cc903e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule406.py",
+      "sha256": "27b67e1db085cf3a6297e414f816e2e0db5d6e4f3d4fb6da965a92df27a642f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-verified-20261025.json",
+      "sha256": "bb88079f4a38f1d4d5f2cfd75d41d021a3e396d051dafa29331bfdbb5ce84ae9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-worker-packet\\input.json",
+      "sha256": "3fa1392c77330e4711d307c85338ffabb1d0d954fa05ba5a281072908ee08fcc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-worker-packet\\task.txt",
+      "sha256": "655758e3a15df07aeeeda2358e15c2df542d650d754cfa41219235e071add795"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule406-worker-packet\\edges.json",
+      "sha256": "1fc2b66003c1370e1afa7db377fa2cbd368ef69c4cf8f656e620ba79033ade45"
+    }
+  ]
+}
