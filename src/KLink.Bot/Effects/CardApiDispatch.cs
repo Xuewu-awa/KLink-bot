@@ -5074,10 +5074,12 @@ public sealed partial class CardApi
 
     private object? DoDestroyCard(EffectContext c, object? r, object?[] a)
     {
-        var target = TargetCard(c, r, a);
+        // RULE-382: native DestroyCard takes two object parameters. Neither
+        // the receiver nor the executing effect supplies a missing argument.
+        var target = AsCard(a.ElementAtOrDefault(0));
         if (target is not null)
         {
-            DestroyCard(target, c.Self);
+            DestroyCard(target, AsCard(a.ElementAtOrDefault(1)));
         }
 
         return null;

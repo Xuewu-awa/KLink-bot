@@ -1,0 +1,190 @@
+{
+  "rule": "RULE-382",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "419a77874b9af319b1aac6e1ecc3a30b11f0b4cc",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-382",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_bytes": 1448,
+    "redecoded_statements": 57,
+    "destroy_statements": 17,
+    "variables": [
+      "CallFunc_IsActionProcess_ActionProcess",
+      "CallFunc_IsValid_ReturnValue",
+      "CallFunc_IsValid_ReturnValue_1",
+      "CardFunctionsNotifier",
+      "CardID",
+      "Location",
+      "_cardID",
+      "_destroyerID",
+      "_location",
+      "card",
+      "destroyerCard"
+    ],
+    "model_cases": 960,
+    "case_sha256": "209865eae7105e115c6cf0d6bf604eda1c770e6ac7d3dbb4cced36229a28de6d",
+    "limits": "Whole439B DestroyCard and1009B ApplyRemoveCardFromBoard; validity/lookup/movement/events/action context modeled as declared primitives. Synthetic all-zone and nonpositive-ID paths establish shell flow only, not full movement/UObject lifetime/HQ/client receive semantics. Native object inputs, no integer-ID ABI asserted.",
+    "worker_exact_nodes": 17,
+    "worker_exact_variables": 11,
+    "new_tests": 2,
+    "regression_cases": {
+      "explicit_arguments": 540,
+      "source_callbacks": 60,
+      "total": 600
+    },
+    "selftest_passed": 800,
+    "selftest_total": 800,
+    "initial_probe_correction": "Initial callback test reused the draw marker for the later observer; corrected the callback to observe only its first before-destroy occurrence. Diagnostic confirmed correct killer40 but early=true from second marker. Not a kernel timing fix."
+  },
+  "findings": [
+    "Native-named DestroyCard ignored supplied destroyerCard and substituted effect-context Self.",
+    "Shared TargetCard scanned every argument for an object and fell back to receiver/Target/Self; null or omitted victim could therefore destroy a source or unrelated contextual card."
+  ],
+  "authority": "Re-decoded complete439B DestroyCard and1009B ApplyRemoveCardFromBoard, verified raw hashes/symbol header names/current installed PE. DestroyCard indices0/43 validate card/destroyerCard;86 caches explicit source CardID or408 uses0;135/184 cache victimID/location;270 before-callback;304 notification;367 removal with cachedIDs. No Self expression exists in17 statements.",
+  "changes": [
+    "Strict positional object parsing in DoDestroyCard only: a[0] target, a[1] source; missing/null object maps null.",
+    "Existing public DestroyCard and MatchEngine.Destroy implementation are unchanged. No global TargetCard or TriggerDestruction semantics changed."
+  ],
+  "validation": [
+    "960 whole decoded function-model scenarios with explicitly mocked validity/lookup/events/movement and nested removal shell; raw nonpositive IDs/all10zone values included as synthetic control-flow boundaries.",
+    "Worker17 unchanged statements and11 variable names exactly compared with independently rebuilt primary outputs; no semantic decisions delegated.",
+    "540 headless argument combinations cover2sides,valid/null/omitted victim,5source modes,3receivers,present/absent Self,3sourcezones. Valid victim on support board.",
+    "60 integration cases verify second-argument killer reaches actual T39 observer, pre-callback notification location remains cached and removal rereads location after before-callback relocation; compare death history and action.",
+    "Initial2/800 failures; after code change one callback-test failure diagnosed as two probes sharing same marker. Probe made first-occurrence-only, then Release800/800. Initial baseline probe weakness disclosed, not counted as a production timing defect."
+  ],
+  "unresolved": [
+    "UObject IsValid/GC/pendingkill and wrapper-to-real-object lifetime equivalence. Retained managed objects inDiscard/NotAvailable source zones are conditional valid-object test fixtures.",
+    "Victim discard/unavailable acceptance, HQ treatment, nonpositive victim/source raw-ID downstream semantics, alias objects not found in lookup, callback invalidation, action-process=false and receive/reconnect paths are not certified by this change.",
+    "Public DestroyCard still has HQ-to-damage adapter and MatchEngine.Destroy still has IsAlive/HQ gates; entire nested rule implementation remains pending.",
+    "Native CardID mutation during callbacks and full client notification/receipt lifecycle not proven; managed CardId is init-only.",
+    "No integer-ID overload for native DestroyCard claimed. Complete single-card logic remains uncertified; version migration paused."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-generation-native-20261021.json",
+      "sha256": "103f933a98e2521252af520567ab1bb3ad2126df0cd4ff80b09f722b90954f01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule382.py",
+      "sha256": "801629258e81482ce4add25a856b6380ecd52e5a90e2517d0fe6f1a6fc6167a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule382-tests.py",
+      "sha256": "1437762f45bcf244af3841e6668c1d26c5ca0276505751d82d28ba9de76f4794"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule382.py",
+      "sha256": "4c3e77f60c89c1e79516d4d3227363bacf91ba1d3c083a8096a0f27a0a04a794"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule382.py",
+      "sha256": "67aa432ae4171b6c82a62232ff794303d081675252eaa49455cbf00272f78027"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule382.py",
+      "sha256": "1357cb1e2f98641a8811e050f9fda99b340f83377ffba21458038d1b2496bb29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-model-20261024.json",
+      "sha256": "a2792a9d2f48ef2fedd9e61612556cf0469c072d2f0de5049345081df9eda3a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-verified-20261024.json",
+      "sha256": "23f766772b256b687b5d32938d8fa7e6a59ce1b6861b132c8856f551a3154c9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-selftest-before.log",
+      "sha256": "3b5cefb0fb6a7eb7b7ef0796e020021b563d1ac563be7b205a5b13d61190f855"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-initial-after.log",
+      "sha256": "d056b84f106c8dd39e62a67d15be0d10b762529c815992767002803f8666bfd5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-diagnostic.log",
+      "sha256": "d37ca9907c97ab0462ae47003544281675da874903e138271d6ef82511af4bc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-selftest.log",
+      "sha256": "ffc3cceed5c5330c94570adfb0c1946df0d0058e4bfff7bf608077dd6a4f014e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule382-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule302-removal-routing.py",
+      "sha256": "9256acce90c7eb441ff61668bda1ccaf0540c498a57d4638c84ccf5063caab6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\task.txt",
+      "sha256": "d75345128e70b9e39356421497e65772753657add3b39c368b4d5f3c51dc9ff7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\function.json",
+      "sha256": "f6b51a0193054c8fddb07660863ce0bd2982767d6df5e71e5bcf4b8f2c60172c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\extract.py",
+      "sha256": "b84463eab1edf7239663eb41c88d2d30bba77a1b86832e1cec5e3f25c9ed5568"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\nodes.json",
+      "sha256": "86ad411c870098f1e41e2299ceb4477891412e3b387cf5f4430f7e9d9492e0a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\variables.json",
+      "sha256": "f154540019fa0fa345bed7bb8361b341d6d47c28096aca6ffa3dc25105c0aed4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\primary-nodes.json",
+      "sha256": "86ad411c870098f1e41e2299ceb4477891412e3b387cf5f4430f7e9d9492e0a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\primary-variables.json",
+      "sha256": "f154540019fa0fa345bed7bb8361b341d6d47c28096aca6ffa3dc25105c0aed4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule382\\primary-cases.json",
+      "sha256": "26d13263838dfdad4de5183bee55ee1fc190364de0ed9b4faf41a3bffed66f81"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-203609-rule382-destroy-inputs-1384e53d\\job.json",
+      "sha256": "5a0fb0c90186a56b51c4618dc135b1b66bde292c30fe313a2d7f62a2547b1ec8"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-203609-rule382-destroy-inputs-1384e53d\\answer.txt",
+      "sha256": "2e050aa186eac98eb3309101e4f24b98099a80f880996c1e01b7d661548e5c93"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "3915adbb3b3485b6cb8181fd9ba12a6fc85f3d067d9ec227d050d11f358af2e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "1e4a51179b5cf9df9c9625f8c8f9a5b987649fd500c0549f84b2a68aa9382843"
+    }
+  ]
+}

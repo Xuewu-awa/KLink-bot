@@ -952,6 +952,8 @@ internal static class SelfTest
         new("攻击通知在受伤前回调后取防御，位置仍保留回调前快照", AttackSubActionSnapshotTiming),
         new("战斗单方或双方阵亡由攻击动作携带结果，不额外发送摧毁/移除动作", CombatDeathActionRouting),
         new("效果摧毁记录目标/来源和回调前旧位置，并先于离场动作", DestroyActionPayloadAndTiming),
+        new("原生DestroyCard严格按两个对象参数取目标和来源", DestroyExplicitObjectArguments),
+        new("显式摧毁来源贯穿回调与旧位置通知", DestroyExplicitSourceCallbacks),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -34418,6 +34420,92 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static string? DestroyExplicitObjectArguments(CardDatabase db)
+    {
+        // RULE-382: receiver/context are deliberately different from both inputs.
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int targetMode in Enumerable.Range(0, 3)) // object / explicit null / omitted
+        foreach (int sourceMode in Enumerable.Range(0, 5)) // distinct / executor / victim / null / omitted
+        foreach (int receiverMode in Enumerable.Range(0, 3))
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (CardLocation sourceZone in new[] { side.Opposite().HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var executor = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var victim = state.CreateWithId(PlainUnit, side, 30, side.HqOf(), 2);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 40, sourceZone, 1);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 60, side.Opposite().HqOf(), 2);
+            foreach (var card in new[] { executor, victim, source, decoy }) { card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed); }
+            CardInstance? suppliedSource = sourceMode switch { 0 => source, 1 => executor, 2 => victim, _ => null };
+            object? target = targetMode == 0 ? victim : null;
+            object?[] args = targetMode == 2 ? Array.Empty<object?>()
+                : sourceMode == 4 ? new object?[] { target } : new object?[] { target, suppliedSource };
+            object? receiver = receiverMode switch { 0 => null, 1 => executor, _ => decoy };
+            engine.Api.InvokeByName("DestroyCard", receiver, args,
+                new EffectContext { Engine = engine, State = state, Self = hasSelf ? executor : null, Target = decoy, Controller = side }, out bool handled);
+            bool destroyed = targetMode == 0;
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            if (!handled || notices.Length != (destroyed ? 1 : 0)
+                || victim.Location != (destroyed ? CardLocation.Discard : side.HqOf())
+                || executor.Location != side.HqOf() || source.Location != sourceZone || decoy.Location != side.Opposite().HqOf()
+                || !state.DestroyedCardIdsAll.SequenceEqual(destroyed ? new[] { 30 } : Array.Empty<int>()))
+                return $"显式目标/null/省略参数不能扫描来源或回退上下文：{side}/{targetMode}/{sourceMode}/{receiverMode}/{hasSelf}/{sourceZone}";
+            if (destroyed && !notices[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("cardID", 30), ActionValue2.Int("destroyerCardID", suppliedSource?.CardId ?? 0),
+                ActionValue2.Str("destroyedLocation", side == Side.Left ? "Board_HQLeft" : "Board_HQRight") }))
+                return $"摧毁来源必须来自第二对象参数，null/省略为0：{sourceMode}/{hasSelf}/{sourceZone}";
+        }
+        return null;
+    }
+
+    private static string? DestroyExplicitSourceCallbacks(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        using var death = InstallCombatPayloadProbes(onlyDestroyed: true);
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceMode in Enumerable.Range(0, 5))
+        foreach (bool relocate in new[] { false, true })
+        foreach (CardLocation sourceZone in new[] { side.Opposite().HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var executor = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var victim = state.CreateWithId(name, side, 30, side.HqOf(), 2);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 40, sourceZone, 1);
+            var observer = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HqOf(), 3);
+            foreach (var card in new[] { executor, victim, source, observer }) card.Keywords.Clear();
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { "OnOtherCardDestroyed" } };
+            state.CreateWithId("card_unit_51e_regiment", side, 50, side.DeckOf(), 0);
+            CardInstance? killer = sourceMode switch { 0 => source, 1 => executor, 2 => victim, _ => null };
+            bool called = false, early = false;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                // The later death observer also spawns this shared marker;
+                // only the first spawn belongs to the before-destroy draw.
+                if (called) return;
+                called = true;
+                early = state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionDestroyUnit");
+                if (relocate) state.Move(victim, CardLocation.BoardFrontline, 0, notifyMoved: false);
+            });
+            engine.Api.InvokeByName("DestroyCard", executor,
+                sourceMode == 4 ? new object?[] { victim } : new object?[] { victim, killer },
+                new EffectContext { Engine = engine, State = state, Self = executor, Target = source, Controller = side }, out bool handled);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            var v = observer.BlueprintVariables;
+            if (!handled || !called || early || notices.Length != 1 || victim.Location != CardLocation.Discard
+                || notices[0].Values.Single(x => x.Name == "destroyerCardID").Value != (killer?.CardId ?? 0)
+                || notices[0].Values.Single(x => x.Name == "destroyedLocation").Text != (side == Side.Left ? "Board_HQLeft" : "Board_HQRight")
+                || Convert.ToInt32(v.GetValueOrDefault("_auditDeathPayloadSerial")) != 1
+                || !ReferenceEquals(v.GetValueOrDefault("_auditPayloadCard"), victim)
+                || !ReferenceEquals(v.GetValueOrDefault("_auditPayloadKiller"), killer)
+                || Convert.ToInt32(v.GetValueOrDefault("_auditPayloadOld")) != (int)(relocate ? CardLocation.BoardFrontline : side.HqOf())
+                || !Equals(v.GetValueOrDefault("_auditPayloadCombat"), false)
+                || !Equals(v.GetValueOrDefault("_auditPayloadRepeat"), false)
+                || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }))
+                return $"显式摧毁来源/回调前通知位置/回调后离场位置错误：{side}/{sourceMode}/{relocate}/{sourceZone}; handled={handled}, before={called}, early={early}, notices={notices.Length}, victim={victim.Location}, observer={string.Join(",", v.Select(x => x.Key + "=" + x.Value))}";
         }
         return null;
     }
