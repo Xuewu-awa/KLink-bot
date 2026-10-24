@@ -1,0 +1,244 @@
+{
+  "rule": "RULE-380",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "5298fb5942e45d1eaa9f0483fc816e5b20ff6216",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-380",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_bytes": 12010,
+    "redecoded_statements": 412,
+    "full_main_ledger_cases": 1176,
+    "main_digest": "01b6614564bb1dcf7fde107453a289e35ab0323310cb63ebd7eef851ff548c5b",
+    "native_vectors": 186,
+    "native_calls": 558,
+    "crc_calls": 506,
+    "worker_nodes_exact": 25,
+    "worker_accessor_instructions_exact": 19,
+    "new_tests": 3,
+    "regression_combinations": {
+      "arithmetic": 1920,
+      "before_callback": 192,
+      "destruction_callback": 240,
+      "total": 2352
+    },
+    "corrected_existing_assertions": 3,
+    "selftest_passed": 794,
+    "selftest_total": 794
+  },
+  "finding": "Ordinary ChangeDefense1 arithmetic used raw storedDefense instead of clamped getTotalDefense. This gives wrong results for rawover99 or callback-mutatednegative values. Notification newDefenseValue also used raw field,including lethal negative or callback-writtenovercap values;native rereadsgetTotalDefense at4042/4191,clamping0..99 without rewritingrawstorage.",
+  "authority": "Full5743B ChangeDefense+6267B ChangeBuffsFromCards re-decoded against12010B/412statements,rawhashes/symbol/FNameheaders/currentPEsha. Revalidated captured3nativeget/setbackends againstcurrentPEbytes,pdatafragments andCapstoneinstructions. getTotalDefense61B/19instructions calls rawgetter then cmovs0 andcmovg99. DirectPE correspondence is separate from controlled blueprintprimitives. No new live memory read/processwrite/injection/clientfunctioninvocation.",
+  "semantics": "Ordinary negative branch2084 reads clamped total,2125addsrawrequest,2171writesrawsum;2239checks clamped total>0 before2328/2396updatesmaxDefense byrawrequest. Lethalpath2507Destroysbefore4042getter/4083notification;skip suppressesnotificationafterdestruction. Positive2643reads afterbeforecallbacks,2684adds request thenclamps1..99 before2777write;max compares freshlyreadtotal. Rawrequests/sourceledger remainunmodified by arithmeticclamping. Preserve rawDestroycallbackfields but notification exposes clamped reread,not cachedlethalrawsum.",
+  "changes": [
+    "Read clamped currentdefense only for ordinary1 arithmetic,afterbeforecallbacks;explicituncheckedint32sum. Positive applies1..99clamp;negative storesrawsum. Maximum subtraction usesuncheckedaddition onlywhenpositive afterdecrease;do not derive numericfields fromsourceledger.",
+    "For typed1/2notifications read Math.Clamp(currentrawDefense,0,99) at emissiontime,afterlethalDestroyCardreturns. Do not clamp/writeback callback-ownedrawfield. Otherlegacy nonbyte andspecialmode numericbranches retained.",
+    "Correct3existingexpectedexpressions using exactsameauthoritativegettersemantics:DefenseDecreaseSkipNotification(payloadclamp),DefenseDecreaseSkipDestroyCallbacks(postcallbackpayloadclamp),DefenseGainClampAfterCallbacks(clampcurrentbeforeaddition). Existing storedrawvalue/death/order assertions remain. No replay evidence used to overwrite authoritativeclientbehavior."
+  ],
+  "models": {
+    "full_main_ledger_cases": 1176,
+    "arithmetic": 960,
+    "before_callback": 96,
+    "destruction_callback": 120,
+    "execution": "Wholemain1+wholeledger across rawhealth1/7/99/105/INTMAX,max-10/3/123/INTMAX,amount-9/-4/0/3/INTMAX/INTMIN,normal/missing source,skip/deck. Before-own/T16/T17 controlledmutation[-3,0,105,INTMAX] withrequest3/INTMAX. Destroycallbackmutation[-3,0,9,105,INTMAX],max37 withlethalrequests-105/INTMIN. Assert rawfields/max/location,notifyclampedpayload,originalrequestandqqq/ordering.",
+    "native_emulation": {
+      "vectors": 186,
+      "calls": 558,
+      "crc_calls": 506,
+      "scope": "FullcapturedsetAndEncryptDefense,getAndDecryptDefense,getTotalDefense inUnicorn onsyntheticobjectmemory,realzlibCRC32,securitycookieRETstub.160normaland26zero-divisorsentinelvectors;settercheckswhole4096Bobject,gettersnontmutating;zero-divisorraw100,total99. ReusedcaptureexecutedagainandnewRULE380artifactwritten. No clientprocessfunctions called."
+    },
+    "controlled": "Fullmain interpreter usescontrolledUObjectvalidity,buffability,enum/source,map/array,valuecopy,frame0,crypto setter,Destroyeffects,notifierandcallbacks. Add_IntInt explicitlymodeledint32wrapping;not a newlycapturednativearithhelperproof. Nativegetterscalarsemantics independentlysupportedbyactualPEexecution,butallphysicalUObject/FFrame/lifetime/CRCerrorpathsnotcertified."
+  },
+  "regressions": {
+    "new_tests": 3,
+    "total_new_combinations": 2352,
+    "arithmetic": 1920,
+    "before_callbacks": 192,
+    "destruction_callbacks": 240,
+    "before": "791/794Releasepass,3newtestsfail;existingunclampedexpectationsstillpassoldbehavior. Firstfailingfixturepertest,notclaimedall2352baselinefixturesindividuallyfailed.",
+    "after_code_before_old_expectation_correction": "791/794pass:all3newtestspass,but3oldtestswithstaleunclampedexpectationsfail. Fullintermediatelogretained.",
+    "final": "794/794Releasepass,exit0.",
+    "details": "1920bothsideunitfixtures retainrawhealthseparatefromdisplay,verifyintegerboundaries,zero-noop,ledgeroriginalrequest,maxchange,skip/deckanddeathcounts.192actualown/T16/T17programreentryfixtures mutatecurrentrawafterentrybeforearithmetic;noextrabeforequeryorrollback.240actualOnBeforeDestroyedreentryfixturesobservelethalrawsum/noearlynotification,setrawrestoredDefenseandmax37,thenverifyonecompleteddestructionandnotificationclampwithoutoverwritingrawfields. Correctedold3testsretainallotherassertions."
+  },
+  "worker": {
+    "job": "20261024-170626-rule380-defense-numeric-406ab6e5",
+    "status": "completed",
+    "raw_exact_main_statements": 25,
+    "raw_exact_accessor_instructions": 19,
+    "normalization": false,
+    "extractor_executed": true,
+    "scope": "PrivatepacketoriginalASTandcapturedgetTotalDefensebackend. Primaryindependentlyselectscompleteoriginaltop-levelstatementswithactualtargetcalls(notvariablenamesubstrings),comparesobjects/owner/orderandinstructionarray. Codeintegration,semantics,testsandpublishremainprimary."
+  },
+  "remaining": [
+    "Prioritynext:publicconvenience/nativeentrysourceandavailabilityguards(IsAlive versusUObjectIsValid),DoSetDefenseadapterrawdeltaandotherdirectwrites. Thisunitordinaryarithmetic/notificationauditdoesnotcertifyentiredefensekernel.",
+    "HQendgame/destructionpolicy,arbitrarynestedcallbacks/objectreplacement/triggerregistration,otherfunctionsnotificationgettersandtypedmodeinteractionsstillseparatelypending. Callbacksideeffectsmodeledorcontrolledprobesarenotnaturalclientscenarioexhaustion.",
+    "FullnativeTMapordering/compacttuplealiases,FFrameinitialization/outABI,encryptionintegrity/CRCfailurebehavior,legacyopaqueledger/importmetadata,turnendtemporaryorchestrationandsuppressionrestoretailsremainopen. Nativeemulationusescontrolledbuffersandkey/offsetvectors;notarbitraryoverflow/allfaultpathsproof.",
+    "Complete single-card logic andpausedcard-versionmigrationremainunresolved;fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule380-worker.py",
+      "sha256": "aae81929190a66beb807c02748a3f6955b71b7018d74bcd1c7ae7a8a5e8ebd05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule380-model.py",
+      "sha256": "9cf2858db24ec2d5a7709d3be0c7aa6d0eba0bd3b11fb7ff4ac3a4f05c4f46f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule380-main.py",
+      "sha256": "e33856975db202589c8ebb73cbf3b8b8a3fe4df36e95769b79dd1eaca41f9a25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule380-native-accessors.py",
+      "sha256": "d118f6ae2a39d4a83c4ca542fb7df975f6499818a5f400f102a5765f19356795"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule380-tests.py",
+      "sha256": "ddfdf80e7f195f591151903cecc828e27dd9becffcc2eea3f566cf2a0e09ad26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule380.py",
+      "sha256": "1ef9829cf131ec639229f6b8c6569d66c50b1fa0c961ededea463083fcf107e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\correct-rule380-prior-expectations.py",
+      "sha256": "001f6750f92e7f52eed002f93ed351fa230dcb6d564f801bd528333dc5b7a7a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule380-verify.py",
+      "sha256": "1551e90396bb3fbc11e3ab7cce0b1e40ee439677861d57b8282963e6f1c63bad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule380.py",
+      "sha256": "fd61700d32bbe505593b47820962142fc235082abab55048f2d07f6b7a909547"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-verified-20261024.json",
+      "sha256": "acc188160acf603f2fa42de0bd293f73dd2430f82ebf3c2d3eb03024fbc2ffcd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest-before.log",
+      "sha256": "38b8bda8583e9a0244974cba723c60ab761441c21acbf5dfed6219a12346e9d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest-after-code.log",
+      "sha256": "808d818c4a6c7cc27ac5ddfb16054c0a26b55f61d489a5cb3dd552c2d293113d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest-after-code-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest.log",
+      "sha256": "2fc6d65a81f3e0ed0a6473aa2112e224098a5f77e9a73e57b8f76338d2f8a0fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-clamped-arithmetic-notification-model-20261024.json",
+      "sha256": "ebf9d741cce1deb812920d2e87deb01d94874e074a31bcc6cf7778d5e3763578"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-accessors-emulation-20261024-rule380.json",
+      "sha256": "f037fdea598b15f3ead76d427c215bdcc61081886ff25828932e0a14bc0789db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\task.txt",
+      "sha256": "7bde63fb2fc7a55f022dc2887975a57b58ead9220c6a6a345347a3452afd28b8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\functions.json",
+      "sha256": "aede5dd7636ba8080ed2dbb345a6ec31815ed6a532a90e8b572b156cf31d2bf5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\accessor.json",
+      "sha256": "c905589ac717bdfdacbcfeb363d6a6ee0985a52fcb4c7d822c2fbf2fa63d539b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\extract.py",
+      "sha256": "54e4acc68d4c0d94cb8b3525e8dece0224bc2229453111c41126cf285cd06cce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\nodes.json",
+      "sha256": "7fe7a241e9ac84555a9476149946469625d57c5b04a8a9f2a8747928d59f2f65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\instructions.json",
+      "sha256": "0b13c490fa05aeee3fb93fa42d961510c113c49873d7501f6c82bb1ab778c498"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\primary-nodes.json",
+      "sha256": "7fe7a241e9ac84555a9476149946469625d57c5b04a8a9f2a8747928d59f2f65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule380\\primary-cases.json",
+      "sha256": "c150425d31027ea14755766948d178dacd5c9c7fbad8dfe953c5b70e40cee1d2"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-170626-rule380-defense-numeric-406ab6e5\\job.json",
+      "sha256": "0d055c09676b5448f5064f52a0e0037406f75446476a1b64bbfe180ec143f46e"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-170626-rule380-defense-numeric-406ab6e5\\answer.txt",
+      "sha256": "ce9db552411ccc5bdba39853724b8e3b9dc8b5d35ff47551eba47ab819b16953"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "303542d443540924df5fdb8dbdd99f760af66ebc8845e824952baf4622cb2b7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "030707d48e8f54ec67c885d6020fd1c8f58d75c2f23fe935be0dadc85056e015"
+    }
+  ]
+}

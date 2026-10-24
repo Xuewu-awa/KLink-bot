@@ -622,6 +622,9 @@ internal static class SelfTest
         new("防御1/2：接受分支输出，普通零请求保持旧值", DefenseOrdinarySetAcceptedOutputs),
         new("防御1/2：入口拒绝写false优先于普通零请求", DefenseOrdinarySetGuardOutputs),
         new("防御普通1：自身/T16/T17取消和非正改写的输出", DefenseOrdinaryCallbackOutputs),
+        new("防御数值：原生总值限幅、unchecked相加和独立通知值", DefenseNativeArithmeticBoundary),
+        new("正增防：自身/T16/T17改值后重新限幅读取", DefenseBeforeMutationNativeRead),
+        new("致死减防：保留回调原值，销毁后通知限幅重读", DefenseDestroyNotificationNativeRead),
         new("防御零键：普通/绝对账本与克隆复制快照", DefenseZeroKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -8051,6 +8054,98 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? DefenseNativeArithmeticBoundary(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int health in new[] { 1, 7, 99, 105, int.MaxValue })
+        foreach (int maximum in new[] { -10, 3, 123, int.MaxValue })
+        foreach (int amount in new[] { -9, -4, 0, 3, int.MaxValue, int.MinValue })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, deck ? side.DeckOf() : side.HandOf(), 0); target.Keywords.Clear();
+            target.Defense = health; target.MaxDefense = maximum;
+            engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, amount, 1, skip, null }, new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            int sum = unchecked(Math.Clamp(health, 0, 99) + amount);
+            int value = amount == 0 ? health : amount < 0 ? sum : Math.Clamp(sum, 1, 99);
+            bool dead = amount < 0 && value <= 0;
+            int max = amount == 0 || dead ? maximum : amount < 0 ? unchecked(maximum + amount) : Math.Max(maximum, value);
+            bool notified = amount != 0 && !skip && (amount < 0 || !deck);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (target.Defense != value || target.MaxDefense != max || (target.Location == CardLocation.Discard) != dead
+                || gain.Length != (notified ? 1 : 0) || actions.Count(x => x.Name == "ZActionDestroyUnit") != (dead ? 1 : 0)
+                || (amount != 0 && target.BuffsBySource[(sourceId, false)].Defense != amount)
+                || (amount == 0 && target.BuffsBySource.Count != 0)
+                || (notified && (gain[0].Values.Single(x => x.Name == "gained").Value != amount || gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != Math.Clamp(value, 0, 99))))
+                return $"防御算术须先读取限幅总值再unchecked相加，通知另读限幅值 {side}/{health}/{maximum}/{amount}/{sourceId}/{skip}/{deck}: {target.Defense}/{target.MaxDefense}";
+        }
+        return null;
+    }
+
+    private static string? DefenseBeforeMutationNativeRead(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var programs = InstallDefenseChainProbes();
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mutation in new[] { -3, 0, 105, int.MaxValue })
+        foreach (int maximum in new[] { -10, 123 })
+        foreach (int amount in new[] { 3, int.MaxValue })
+        foreach (string phase in new[] { "own", "t16", "t17" })
+        foreach (int sourceId in new[] { 20, 9999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1);
+            target.Definition = new CardDefinition { Name = probe, Type = "fighter" }; target.Keywords.Clear(); if (phase != "own") target.Keywords.Add(Keyword.Suppressed);
+            target.BlueprintVariables["_auditChainStop"] = false; target.Defense = 7; target.MaxDefense = maximum;
+            var observer = state.CreateWithId(probe, side, 30, CardLocation.Discard, 0);
+            string hook = phase == "t16" ? "OnBeforeOtherCardGainDefense" : "OnBeforeOtherCardGainDefenseAfterAdd";
+            observer.Definition = new CardDefinition { Name = probe, Type = "fighter", UsedTriggers = phase == "own" ? Array.Empty<string>() : new[] { hook } };
+            observer.Keywords.Clear(); observer.BlueprintVariables["_auditChainDelta"] = 0; observer.BlueprintVariables["_auditChainStop"] = false;
+            for (int i = 0; i < 3; i++) state.CreateWithId("card_unit_51e_regiment", side, 100 + i, side.DeckOf(), i);
+            int calls = 0;
+            using var draw = InstallDrawReentryProbe(state, () => { calls++; target.Defense = mutation; target.MaxDefense = maximum; });
+            engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, amount, 1, false, null }, new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            int expected = Math.Clamp(unchecked(Math.Clamp(mutation, 0, 99) + amount), 1, 99);
+            var gain = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (calls != 1 || target.Defense != expected || target.MaxDefense != Math.Max(maximum, expected)
+                || target.BuffsBySource[(sourceId, false)].Defense != amount || gain.Length != 1 || gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != expected)
+                return $"自身/T16/T17回调后须重新getTotalDefense限幅再相加 {side}/{mutation}/{maximum}/{amount}/{phase}/{sourceId}: calls={calls},def={target.Defense}";
+        }
+        return null;
+    }
+
+    private static string? DefenseDestroyNotificationNativeRead(CardDatabase db)
+    {
+        const string probe = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(probe, "OnBeforeDestroyed");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int health in new[] { 3, 99, 105 })
+        foreach (int amount in new[] { -105, int.MinValue })
+        foreach (int restored in new[] { -3, 0, 9, 105, int.MaxValue })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(probe, side, 60, side.HqOf(), 1); target.Keywords.Clear(); target.Defense = health; target.MaxDefense = 123;
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            int calls = 0; bool early = false; int observed = 0;
+            using var draw = InstallDrawReentryProbe(state, () => { calls++; observed = target.Defense; early |= state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionGainDefense"); target.Defense = restored; target.MaxDefense = 37; });
+            engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, amount, 1, skip, null }, new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray(); var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            if (calls != 1 || early || observed != unchecked(Math.Clamp(health, 0, 99) + amount) || target.Defense != restored || target.MaxDefense != 37 || target.Location != CardLocation.Discard
+                || actions.Count(x => x.Name == "ZActionDestroyUnit") != 1 || gain.Length != (skip ? 0 : 1)
+                || (!skip && (gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != Math.Clamp(restored, 0, 99)
+                    || Array.IndexOf(actions, gain[0]) <= Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit"))))
+                return $"致死通知应在完整销毁后限幅重读，但不得改写回调留下的原始防御 {side}/{health}/{amount}/{restored}/{sourceId}/{skip}: calls={calls},def={target.Defense}";
+        }
+        return null;
+    }
+
     private static string? DefenseMode4LedgerOnly(CardDatabase db)
     {
         foreach (var side in new[] { Side.Left, Side.Right })
@@ -11734,7 +11829,7 @@ internal static class SelfTest
                     || x.StartsWith("OnAfterGainDefense") || x.StartsWith("OnAfterOtherCardGainDefense")))
                 return $"减防skip错误 side={side}, location={location}, skip={skip}, source={sourceExists}, suppressed={suppressed}, max={maximum}, delta={delta}";
             if (!skip && (gains[0].Values.Single(x => x.Name == "gained").Value != delta
-                || gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != 10 + delta
+                || gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != Math.Clamp(10 + delta, 0, 99)
                 || gains[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId))
                 return "减防通知须保留负请求、新防御及原始来源ID";
             if (lethal && (destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceExists ? 20 : 0)
@@ -11773,7 +11868,7 @@ internal static class SelfTest
             if (calls != 1 || !sawLethal || target.Location != CardLocation.Discard || target.Defense != rewrittenDefense
                 || destroys.Length != 1 || gains.Length != (skip ? 0 : 1)
                 || destroys[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceExists ? 20 : 0)
-                || (!skip && (gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != rewrittenDefense
+                || (!skip && (gains[0].Values.Single(x => x.Name == "newDefenseValue").Value != Math.Clamp(rewrittenDefense, 0, 99)
                     || Array.IndexOf(actions, destroys[0]) >= Array.IndexOf(actions, gains[0]))))
                 return $"致死减防skip须在销毁回调后决定通知 side={side}, skip={skip}, source={sourceExists}, current={rewrittenDefense}, calls={calls}";
         }
@@ -12098,7 +12193,7 @@ internal static class SelfTest
                 if (current.HasValue) target.Defense = current.Value;
             });
             engine.Api.ChangeDefense(target, 2, source, instigatorId: 20);
-            int expected = Math.Clamp((current ?? old) + rewritten, 1, 99);
+            int expected = Math.Clamp(unchecked(Math.Clamp(current ?? old, 0, 99) + rewritten), 1, 99);
             var gains = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionGainDefense").ToArray();
             if (calls != 1 || !original || target.Defense != expected || target.MaxDefense != Math.Max(maximum, expected)
                 || target.BuffsBySource[(20, false)].Defense != 2 || gains.Length != 1

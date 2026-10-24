@@ -2686,6 +2686,9 @@ public sealed partial class CardApi
         // completes DestroyCard before NotifyGainDefense (i=2507 -> i=4083).
         // SetDefenseValue uses a different native branch and is audited separately.
         bool additiveDecrease = fireGainDefenseEvent && delta < 0;
+        // RULE-380: native ordinary arithmetic reads getTotalDefense AFTER
+        // before-callbacks. The raw stored field may lie outside0..99.
+        int defenseBeforeNumericWrite = changeType == 1 ? Math.Clamp(target.Defense, 0, 99) : target.Defense;
         if (defenseSetValue is { } absolute)
         {
             // RULE-305: native SetValue overwrites both values even at zero delta.
@@ -2696,15 +2699,15 @@ public sealed partial class CardApi
             // RULE-311: read current defense after all before-gain callbacks.
             // Native i=2643..2777 clamps the sum to 1..99; requested gain and
             // original-request ledger remain independent of the actual gain.
-            target.Defense = Math.Clamp(target.Defense + delta, 1, 99);
+            target.Defense = Math.Clamp(unchecked(defenseBeforeNumericWrite + delta), 1, 99);
         }
         else
         {
-            target.Defense += delta;
+            target.Defense = unchecked(defenseBeforeNumericWrite + delta);
         }
         if (additiveDecrease)
         {
-            if (target.Defense > 0) target.MaxDefense += delta;
+            if (target.Defense > 0) target.MaxDefense = unchecked(target.MaxDefense + delta);
         }
         else
         {
@@ -2732,7 +2735,9 @@ public sealed partial class CardApi
         {
             ActionValue2.Int("cardID", target.CardId),
             ActionValue2.Int("gained", defenseSetValue ?? delta),
-            ActionValue2.Int("newDefenseValue", target.Defense),
+            // Native4083/4232 reads total defense at notification time, after
+            // a lethal decrease's DestroyCard callbacks. Keep raw storage intact.
+            ActionValue2.Int("newDefenseValue", changeType is 1 or 2 ? Math.Clamp(target.Defense, 0, 99) : target.Defense),
             ActionValue2.Int("instigatorID", sourceId),
             ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
