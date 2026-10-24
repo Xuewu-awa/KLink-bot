@@ -3230,7 +3230,8 @@ public sealed class MatchEngine
     /// </summary>
     public void DestroyMultiple(IReadOnlyList<CardInstance> cards, CardInstance? destroyer)
     {
-        var targets = cards.Where(x => !x.IsHq).ToArray();
+        // Native ApplyDestroyMultipleCards has no Type/HQ input filter.
+        var targets = cards.ToArray();
         var ids = targets.Select(x => x.CardId).ToArray();
         var locations = new Dictionary<int, CardLocation>();
         var affected = new HashSet<CardLocation>();
@@ -3243,7 +3244,7 @@ public sealed class MatchEngine
         foreach (var card in targets)
         {
             if (card.Location == CardLocation.Discard) locations.Remove(card.CardId);
-            else FireLeaveTrigger(card, CardLocation.Discard, method: 1);
+            else FireLeaveTrigger(card, CardLocation.Discard, method: 1, includeLocationCards: true);
         }
         foreach (var card in targets)
         {
@@ -3257,7 +3258,7 @@ public sealed class MatchEngine
         for (int i = 0; i < targets.Length; i++)
             ExecuteLocationMovedEvents(targets[i], locations.GetValueOrDefault(targets[i].CardId), CardLocation.Discard, false, CardMoveReason.Destroyed);
         for (int i = 0; i < targets.Length; i++)
-            FireAfterLeaveTrigger(targets[i], CardLocation.Discard, locations.GetValueOrDefault(targets[i].CardId));
+            FireAfterLeaveTrigger(targets[i], CardLocation.Discard, locations.GetValueOrDefault(targets[i].CardId), includeLocationCards: true);
         for (int i = 0; i < targets.Length; i++)
             ExecuteDestroyed(targets[i], destroyer, locations.GetValueOrDefault(targets[i].CardId), ids, false);
         if (affected.Contains(CardLocation.BoardFrontline)) RefreshFrontlineOwner(null);

@@ -1966,8 +1966,8 @@ public sealed partial class CardApi
             // ── `DestroyMultipleCards(cardsToDestroy, destroyerCardID, out)`（20 点）─
             // 出处：直译产物同名函数体 —— 数组非空就调
             //   `ApplyDestroyMultipleCards(self, destroyerCardID, out cardsToDestroy)`。
-            // `ApplyDestroyMultipleCards` 也是缺失键，本内核没有；但它做的事就是
-            // 「逐张 Destroy」。这里直接按顺序逐张 `DestroyCard`（同序，避免额外依赖）。
+            // The headless engine supplies the phased batch adapter.
+            // 保留输入，并由引擎执行批量阶段；不等价于逐张单独 DestroyCard。
             ["DestroyMultipleCards"] = (c, r, a) => DoDestroyMultipleCards(c, r, a),
             ["SalvageMultipleUnits"] = (c, r, a) => DoSalvageMultipleUnits(c, r, a),
 
@@ -5608,9 +5608,9 @@ public sealed partial class CardApi
     ///
     /// 出处：直译产物 <c>_deps/BP_CardFunctions.g.cs</c> 同名函数体：
     /// 数组长度 &gt; 0 时调 <c>ApplyDestroyMultipleCards(self, destroyerCardID, out cardsToDestroy)</c>。
-    /// `ApplyDestroyMultipleCards` 本身也是缺失键，但它的语义就是「逐张 Destroy」
-    /// （参考实现 `EngineHost.cs` 里同名的也是这个形状），所以这里直接逐张走
-    /// <see cref="CardApi.DestroyCard"/> —— 少一层名字依赖，行为一致。
+    /// 委托给引擎的批量摧毁适配器，按前置、离场、移位、刷新及死亡阶段处理。
+    /// RULE-389：原生批量函数不按 Type/HQ 剔除输入；实际输入含总部时也保留。
+    /// 批量通知和接收阶段的完整对应仍待核对。
     ///
     /// ⚠️ 数组元素**两种形状都有**（卡对象 / 整数 cardID），用 <see cref="AsCardOrId"/>
     /// 统一（同 `DiscardCardFromHand` 的理由）。

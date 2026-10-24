@@ -964,6 +964,7 @@ internal static class SelfTest
         new("死亡标记在自身和观察者回调前写入且不覆盖回调重置", DeathTurnFlagCallbackTiming),
         new("原生死亡回合标记setter与getter共享状态", DeathTurnFlagSetter),
         new("显式销毁总部走移除和死亡通知而非伪造伤害", ExplicitHqDestroyRouting),
+        new("批量显式摧毁保留总部及分阶段离场/移动/死亡回调", BatchExplicitHqDestruction),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34491,6 +34492,55 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    // ApplyDestroyMultipleCards is a removal helper, not the batch damage
+    // victory path. Closed controlled callbacks intentionally do not end a match.
+    private static string? BatchExplicitHqDestruction(CardDatabase db)
+    {
+        using var probes = InstallHqRemovalObserverProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool reverse in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int health in new[] { 0, 7, 35 })
+        foreach (CardLocation location in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var hq = state.Hq(side); hq.Location = location; hq.LocationNumber = 27; hq.Defense = hq.MaxDefense = health; hq.Keywords.Clear();
+            if (suppressed) hq.Keywords.Add(Keyword.Suppressed);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            var unit = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 29); unit.Keywords.Clear(); unit.Keywords.Add(Keyword.Suppressed);
+            var observer = MakeHqRemovalObserver(state, side);
+            var ordered = reverse ? new[] { unit, hq } : new[] { hq, unit };
+            if (native)
+            {
+                var list = ordered.Select(x => x == hq ? (object?)x.CardId : x).ToList();
+                engine.Api.InvokeByName("DestroyMultipleCards", source, new object?[] { list, source.CardId, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                if (!handled) return "DestroyMultipleCards native dispatch missing";
+            }
+            else engine.DestroyMultiple(ordered, source);
+            if (hq.Location != CardLocation.Discard || unit.Location != CardLocation.Discard
+                || hq.LocationNumber != 27 || unit.LocationNumber != 29 || hq.Defense != health || hq.MaxDefense != health
+                || !ReferenceEquals(state.Hq(side), hq) || !state.UnitDestroyedThisTurn || state.IsFinished
+                || state.GetHQDamagedAmountThisTurn(side) != 0
+                || !state.DestroyedCardIdsAll.SequenceEqual(ordered.Select(x => x.CardId)))
+                return $"批量显式摧毁必须保留HQ输入与顺序且不伪造伤害/立即判胜：{side}/{reverse}/{native}/{suppressed}/{health}/{location}";
+            foreach (string trigger in new[] { "OnOtherCardLeaveBoardOrOwner", "OnAfterOtherCardLeaveBoardOrOwner", "OnOtherCardLocationMoved", "OnOtherCardDestroyed" })
+            {
+                bool leave = trigger is "OnOtherCardLeaveBoardOrOwner" or "OnAfterOtherCardLeaveBoardOrOwner";
+                int expected = leave ? 1 + (location.IsBoard() ? 1 : 0) : 2;
+                var last = leave && !location.IsBoard() ? unit : ordered[^1];
+                string key = "_hq_" + trigger;
+                if (Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault(key)) != expected
+                    || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), last))
+                    return $"批量HQ回调数量/主体错误：{trigger}/{side}/{reverse}/{native}/{location}";
+            }
+            if (state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionDamageCard"))
+                return "显式批量HQ销毁不能产生伪伤害";
+        }
+        return null;
     }
 
     private static string? ExplicitHqDestroyRouting(CardDatabase db)

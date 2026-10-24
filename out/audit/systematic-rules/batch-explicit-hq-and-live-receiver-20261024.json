@@ -1,0 +1,216 @@
+{
+  "rule": "RULE-389",
+  "date": "2026-10-24",
+  "branch": "DinkyPuffer",
+  "base_commit": "f9146c9b783901ac31b88d5289e6d6724ff0b097",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "verified": {
+    "rule": "RULE-389",
+    "live_reference_cycle": {
+      "online": "0x1ca9067ba40",
+      "cardfunctions": "0x1cb0a6f2320",
+      "notifier": "0x1cb1814a740",
+      "logic": "0x1cb11888020",
+      "gamestate": "0x1cb0f415950",
+      "turn": 1,
+      "closed_reference_cycle": true
+    },
+    "capture_boundary": "Current exact-class non-CDO objects and selected stable reference fields; per-object GUObject item/index checks. Not atomic, pending-kill safety, all subclasses, interface scheduling or actual function invocation.",
+    "function_counts": [
+      {
+        "owner": "cardfunctions",
+        "functions": 294,
+        "raw_bytes": 305318,
+        "decoded": 293,
+        "decoded_bytes": 301312,
+        "statements": 10496
+      },
+      {
+        "owner": "notifier",
+        "functions": 99,
+        "raw_bytes": 6744,
+        "decoded": 99,
+        "decoded_bytes": 6744,
+        "statements": 303
+      }
+    ],
+    "syntax_failures": [
+      {
+        "owner": "cardfunctions",
+        "name": "GetNewLocationNumbers",
+        "error": "unsupported opcode 3b at 3293"
+      }
+    ],
+    "hq_finish_direct_callers_in_successfully_decoded_cardfunctions": [
+      "CardPlayedFromHand",
+      "ExecuteAttackCard",
+      "ApplyDamageToCard",
+      "ApplyDamageToMultipleCards",
+      "DrawTopCardFromDeck"
+    ],
+    "worker_exact_rows": 392,
+    "worker_statements": 10799,
+    "model_cases": 160,
+    "model_bytes": 3530,
+    "regression_cases": 144,
+    "selftest": {
+      "before": "1/813 failed",
+      "after": "813/813 passed"
+    },
+    "limits": [
+      "One failed whole-body function is not counted as a negative call-site proof.",
+      "Only exact current receiver classes and stable selected fields; no atomicity, GC or scheduling certification.",
+      "Batch model has two valid distinct IDs, controlled callbacks/refresh/notifier/lookup/setter and source; not all alias/duplicate/reentrant/invalid-object cases.",
+      "Batch destroy notification/receipt parity and global full-match HQ removal adjudication remain open."
+    ]
+  },
+  "findings": [
+    "Current turn1 non-CDO objects form a closed reference cycle: OnlineMatch.cardFunctions -> CardFunctions.CardFunctionsNotifier -> Notifier.OnlineMatchReceiver.object -> sameOnlineMatch. OnlineMatch/CardFunctions/Logic all reference the sameGameState. Five objects have currentGUObject item/index and stable selected fields; runtime property metadata agrees with SDK offsets. This closes the specific current receiver-identity gap fromRULE388, not engine scheduling or future object lifetime.",
+    "Reacquired full selected CardFunctions andNotifier class children:393functions/312062rawbytes.392whole syntax decodes/308056bytes/10799statements verified. GetNewLocationNumbers0x3b remains a failed body, so no exhaustive negative statement is made about that function. Syntax counts are not semantic certification.",
+    "Five direct HQ_DestroyedEndMatch callers in successfully decoded CardFunctions bodies:CardPlayedFromHand,ExecuteAttackCard,ApplyDamageToCard,ApplyDamageToMultipleCards,DrawTopCardFromDeck. DestroyCard andApplyDestroyMultipleCards do not directly call it. This is a bounded direct-reference inventory, not all transitive/native/server finish routes.",
+    "NotifyDestroyUnit andNotifyEndMatchByDestroyingHQ useOnlineMatchReceiver, butNotifyOnCardDestroyed usesDailyMissionsReceiver. The latter cannot be presented as an online match-finish callback. Daily mission implementation is outside the PvP scope.",
+    "Native DestroyMultipleCards only guards nonempty input then forwards IDs toApplyDestroyMultipleCards. The full3530-byte batch body has noType/HQ exclusion. The headless DestroyMultiple prefilteredIsHq, and its default before/after leave adapters also excludedHQ. This silently omitted explicit HQ inputs.",
+    "Initial compact trace hid assignment destinations, causing a temporary suspicion of loop-index mismatch. Inspecting full Let.Variable nodes resolved that suspicion; whole-function execution uses actual assignment destinations. No client loop-index bug is asserted."
+  ],
+  "changes": [
+    "RemoveIsHq prefilter fromDestroyMultiple, retaining incoming target order.",
+    "Explicit batch before/after leave calls opt into location cards, using the existing RULE387 scoped adapter option. Shared defaults/legacy single-death and damage victory paths remain untouched.",
+    "Keep current phased removal and no invented damage/Finish in this helper; update stale dispatch comments that incorrectly called the batch implementation repeated singleDestroyCard."
+  ],
+  "validation": [
+    "Fresh read-only receiver snapshot validates property headers/names/offsets, object class/index/item, references and repeated selected buffers; complete function raw hashes/names/lengths/symbols and decoder outputs rechecked.",
+    "DeepSeek private input inventory392functions/10799statements independently recomputed exactly. Worker disclosed using and deleting a temporary checker outside its requested private write directory; this is a scope deviation, not treated as permission or proof of isolation. Only independently reproduced output accepted.",
+    "160 offline whole3530-byte AST cases cover10HQlocations,4other-cardlocations,2inputorders andType1/2marker. Every distinct valid target is moved, refreshed before movement/after-leave/death phases, andoldDiscard is pruned from notification map while still receiving default-old-location later calls. Lookup/setter/notifications/refresh/callbacks are controlled primitives; model does not execute engine or gameplay subscribers.",
+    "Final mixedHQ/unit regression144cases:2sides*2orders*2entryroutes*2suppression*3health*3HQzones. Checkboth removals/retained numbers,unchangedHQHP,historyorder,savedHQref,turnflag,T46/T8/T47/T39counts+subject,andno syntheticdamage/immediateFinish under closed probes. Entry routes include object/intID mixed arrays.",
+    "Original production plus final mixed fixture failed1/813; patched Release813/813. Baseline is the completed preliminary-mixed log, whose original fixture was restored exactly; an intermediate singleton diagnostic run is not counted as the final regression proof."
+  ],
+  "unresolved": [
+    "Full batch notifier/action/receipt correspondence is still incomplete. In particular headless DestroyMultiple still does not emit the native NotifyDestroyMultipleUnits payload at its native phase; this round fixes HQ filtering/leave scope only, not all batch parity.",
+    "No universal end-of-action HQ-survival checker or server simultaneous-loss adjudication proved. Passing closed helper tests withoutFinish is not evidence that a full match may continue withoutHQ.",
+    "Reentrancy, callback-driven reference/owner/location mutation, duplicate/aliasIDs, invalid objects,GC and all real subscriber combinations not fully certified.",
+    "Runtime interface object is verified for this one currently loaded match. Interface execution internals/latent dispatch/wall-clock order and other receiver subclasses remain unverified.",
+    "One selected whole-body decode failure plus earlierRULE388five failures remain. Card version migration paused;fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-online-receiver-links-20261024.json",
+      "sha256": "65bba2a85e8e79ed8153b21f7585e24ef1af13835fb73624c624fd93dee67325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-cardfunctions-native-20261024.json",
+      "sha256": "78f99bedad6b412ed9794d909d2c8f1125f8a3ae5392bba1b8187d109e9c59d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-notifier-native-20261024.json",
+      "sha256": "3ccf4c48769405f6b00af9640bfa85d6ec5614cc59c9744cb57bcce5fb06de7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-online-native-20261024.json",
+      "sha256": "68d2bc581144164d128da03c57ff3521d19724db82723916aaa002edb6248896"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule389-receiver-links.py",
+      "sha256": "16d7d86063d09b33f16c9bfbff2c0bb721f3855514858cf5130bb2d6c0a586b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule389-function-classes.py",
+      "sha256": "b60560b8e1387dd1cf2a9996042d16e824f4ad9bfb233bcfd2db1e112f48526a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule389-batch.py",
+      "sha256": "0673cb14ada01be1acc77df9cc837895d97ede4ce8eee09d1cb8ca81e2fb14eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule389.py",
+      "sha256": "bdc9e0f85332121b39ec9482f07cbc8bf3e9dd1184048d200cc967c2eed6f002"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule389.py",
+      "sha256": "53c40d38555ec4cc0f514298223db987177f2f518c87210f829a9d19603855e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-batch-model-cases.json",
+      "sha256": "b9c58d02232ee23e67840d8542384cbb2262ff7850c4e6f4e8a613b2074c58b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-verified-20261024.json",
+      "sha256": "387866ce1c05e35e99336ebce052d78ee9deb6fb5d030f5388c8acf2e3b2325d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule389-tests.py",
+      "sha256": "5f57ed58e8974edb42a0d1d440553e70ae40c445b389d1ff1bd5e26e460a097d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-preliminary-mixed-before.log",
+      "sha256": "f48b7f3b79e069d35302c49e4cdaf3d4f5d480c8789cefa958426767f1fa2455"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-preliminary-mixed-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-selftest.log",
+      "sha256": "037b753aff8d58cba3b1a6a3014363c87816079a984ef480cde46dacb31cc81e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-live-attack-fields.py",
+      "sha256": "7295b704f391f80901674bbce6c0bd2a4dc5f52b31a5a61e11555462d9506946"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule389\\task.txt",
+      "sha256": "8165f7c31f59e1884189b4b03631055def888cf1ca8b69f4e9ae37d5ed07509d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule389\\functions.json",
+      "sha256": "fe63b24e2ffe8e576624ee8fa880d19dcc40bb633e6a4c1752871d453be171bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule389\\inventory.json",
+      "sha256": "32a8f50938d9f43dd5b0761fefae61819be70f6b7738b1d4516414e2de861672"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule389\\primary-inventory.json",
+      "sha256": "32a8f50938d9f43dd5b0761fefae61819be70f6b7738b1d4516414e2de861672"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule389\\extract.py",
+      "sha256": "745583654e48d5bae2492bdd4977117486f2f769cac50a36a68695bdc9972a50"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-222916-rule389-hq-callers-4b25ef37\\job.json",
+      "sha256": "9a9dbce64e3984fa1ebccc4bfb48284222a0c6e3f5f86961d9e60fbd5b2d3a39"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-222916-rule389-hq-callers-4b25ef37\\answer.txt",
+      "sha256": "275d547c20ce85567759d5250730329650ced48dffff426102590e0cbc0c4726"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "51669f9ea01cc2d94d6f3119a626f275b3de4998913d5b85798f26b699474d60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "993233addd8d6a50dea3c7616edd08a201cf33504c25119a535d77c3d54a84bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "77724af28a029d16c749ef9d1212466ccb7796155b7d4ab16bc749ce75cb551b"
+    }
+  ]
+}
