@@ -2611,6 +2611,13 @@ public sealed partial class CardApi
     public void ChangeDefense(CardInstance target, int delta, CardInstance? source, bool temporary = false,
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
     {
+        // RULE-376: native mode0 mutates only the temporary source ledger.
+        // The convenience temporary+ordinary call also denotes that native mode.
+        if (changeType == 0 || (temporary && changeType == 1))
+        {
+            RecordTemporaryDefenseChange(target, delta, instigatorId ?? source?.CardId ?? target.CardId);
+            return;
+        }
         if (changeType is 3 or 5)
         {
             SetSuppressionDefenseValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId, changeType);
@@ -2758,6 +2765,17 @@ public sealed partial class CardApi
             TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
             RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
+    }
+
+    // RULE-376: main487 calls ledger1/0 before rejecting numeric mode0.
+    // Its amount0 branch returns without pruning slots or syncing reverse IDs.
+    private void RecordTemporaryDefenseChange(CardInstance target, int amount, int sourceId)
+    {
+        if (sourceId <= 0 || Math.Clamp(target.Defense, 0, 99) <= 0 || !CanCardBeBuffed(target) || amount == 0) return;
+        PruneEmptySourceBuffSlots(target, sourceId);
+        // The ordinary-key update implements unchecked accumulation, clears
+        // explicit-zero presence and removes a zero sum, preserving other keys.
+        RecordDefenseBuffChange(target, sourceId, amount, temporary: true, changeType: 1, isSet: false);
     }
 
     // RULE-335/336: type1 modes2/3 cache the ORIGINAL source struct, clean

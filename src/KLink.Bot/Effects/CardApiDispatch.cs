@@ -4232,6 +4232,14 @@ public sealed partial class CardApi
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
     {
+        // RULE-376: temporary-give is ledger-only, then native qqq=false.
+        if (IntArg(a, 3) == ChangeTypeTempBuffGive)
+        {
+            var card = TargetCard(c, r, a);
+            if (card is not null) RecordTemporaryDefenseChange(card, IntArg(a, 2), IntArg(a, 1));
+            return false;
+        }
+
         // RULE-374: native i487 mutates the ledger BEFORE mode4 reaches
         // the incorrect-type diagnostic at3734 and writes qqq=false at3815.
         // Mode4 never changes current/max defense or invokes rule events.
