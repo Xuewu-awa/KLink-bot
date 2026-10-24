@@ -968,6 +968,8 @@ internal static class SelfTest
         new("批量销毁通知：保留筛后映射、参数顺序与空区域占位", BatchDestroyNoticePayload),
         new("批量销毁通知：离场前后位置分离，先通知后移动/死亡", BatchDestroyNoticeTiming),
         new("批量销毁空数组：直接helper通知，非空包装入口短路", BatchDestroyNoticeEmpty),
+        new("原生销毁历史更新不写回合死亡标记，保留重复与逐回合去重", NativeDestroyedHistoryUpdate),
+        new("销毁数量按显式阵营查询，无效阵营不回退到接收者/控制方", NativeDestroyedHistoryCountSide),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34495,6 +34497,64 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? NativeDestroyedHistoryUpdate(CardDatabase db)
+    {
+        foreach (bool initialFlag in new[] { false, true })
+        foreach (int sideValue in new[] { 0, 1, 2, 255 })
+        foreach (bool enumArg in new[] { false, true })
+        foreach (bool receiver in new[] { false, true })
+        foreach (Side controller in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, Side.Left, 20, Side.Left.HqOf(), 1); source.Keywords.Clear();
+            var context = new EffectContext { Engine = engine, State = state, Self = source, Controller = controller };
+            state.SetUnitDestroyedThisTurn(initialFlag);
+            int[] values = { -7, 0, 60, 60, 60, 61 }; int[] turns = { 4, 4, 4, 4, 5, 4 };
+            for (int i = 0; i < values.Length; i++)
+            {
+                state.Turn = turns[i];
+                engine.Api.InvokeByName("UpdateDestroyedCardsIDs", receiver ? source : null,
+                    new object?[] { values[i], enumArg ? (object)(Side)sideValue : sideValue }, context, out bool handled);
+                if (!handled || state.UnitDestroyedThisTurn != initialFlag)
+                    return $"原生历史更新必须独立于死亡标记：{initialFlag}/{sideValue}/{enumArg}/{receiver}/{controller}/{i}";
+            }
+            object? all = engine.Api.InvokeByName("GetDestroyedCardsIDs", receiver ? source : null, new object?[] { null }, context, out bool allHandled);
+            object? byTurn = engine.Api.InvokeByName("GetDestroyedCardsIDsByTurn", null, new object?[] { 4, null }, context, out bool turnHandled);
+            if (!allHandled || !turnHandled || all is not List<int> allIds || byTurn is not List<int> turnIds
+                || !allIds.SequenceEqual(values) || !turnIds.SequenceEqual(new[] { -7, 0, 60, 61 })
+                || !state.DestroyedCardsIdsByTurn(5).SequenceEqual(new[] { 60 }) || state.DestroyedCardsIdsByTurn(99).Count != 0
+                || state.DestroyedCardsIdsBySide(Side.Left).Count != (sideValue == 1 ? 6 : 0)
+                || state.DestroyedCardsIdsBySide(Side.Right).Count != (sideValue == 2 ? 6 : 0))
+                return $"销毁历史必须全局保留重复、按回合去重并只记有效侧：{sideValue}/{enumArg}/{receiver}/{controller}";
+            allIds.Clear(); turnIds.Clear();
+            if (!state.DestroyedCardIdsAll.SequenceEqual(values) || !state.DestroyedCardsIdsByTurn(4).SequenceEqual(new[] { -7, 0, 60, 61 }))
+                return "原生历史getter返回数组副本，修改出参不能清空原状态";
+        }
+        return null;
+    }
+
+    private static string? NativeDestroyedHistoryCountSide(CardDatabase db)
+    {
+        foreach (Side controller in new[] { Side.Left, Side.Right })
+        foreach (bool receiver in new[] { false, true })
+        foreach (bool enumArg in new[] { false, true })
+        foreach (int sideValue in new[] { 0, 1, 2, 3, 255 })
+        foreach (int initialCount in new[] { 0, 7 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, Side.Left, 20, Side.Left.HqOf(), 1); source.Keywords.Clear();
+            state.RecordDestroyedCard(30, Side.Left, true); state.RecordDestroyedCard(31, Side.Left, true); state.RecordDestroyedCard(31, Side.Left, true);
+            state.RecordDestroyedCard(40, Side.Right, true);
+            object? result = engine.Api.InvokeByName("GetDestroyedCardsCountBySide", receiver ? source : null,
+                new object?[] { enumArg ? (object)(Side)sideValue : sideValue, initialCount },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = controller }, out bool handled);
+            int expected = sideValue == 1 ? 3 : sideValue == 2 ? 1 : initialCount;
+            if (!handled || Convert.ToInt32(result) != expected || state.DestroyedCardsIdsBySide((Side)sideValue).Count != (sideValue == 1 ? 3 : sideValue == 2 ? 1 : 0))
+                return $"数量查询不能把无效显式side替换成Controller或receiver.Owner：{controller}/{receiver}/{enumArg}/{sideValue}; got={result}";
+        }
+        return null;
     }
 
     private static string? BatchDestroyNoticePayload(CardDatabase db)

@@ -228,9 +228,11 @@ public sealed class GameState
 
     public List<int> DestroyedCardIdsAll { get; } = new();
     private readonly List<int>[] _destroyedBySide = { new(), new(), new() };
-    public IReadOnlyList<int> DestroyedCardsIdsBySide(Side side) => _destroyedBySide[(int)side];
+    public IReadOnlyList<int> DestroyedCardsIdsBySide(Side side)
+        => side is Side.Left or Side.Right ? _destroyedBySide[(int)side] : Array.Empty<int>();
 
-    public void RecordDestroyedCard(int cardId, Side side, bool isUnit)
+    // Native history bookkeeping does not write UnitDestroyedThisTurn.
+    public void UpdateDestroyedCardsIDs(int cardId, Side side)
     {
         // UpdateDestroyedCardsIDs appends every death globally/per side, but
         // uses AddUnique in the current turn's list. Discarding is not death.
@@ -246,11 +248,14 @@ public sealed class GameState
         {
             ids.Add(cardId);
         }
+    }
 
-        if (isUnit)
-        {
-            UnitDestroyedThisTurn = true;
-        }
+    // Compatibility convenience for existing generation paths. Receipt-time
+    // history publication is audited separately; do not call both paths per death.
+    public void RecordDestroyedCard(int cardId, Side side, bool isUnit)
+    {
+        UpdateDestroyedCardsIDs(cardId, side);
+        if (isUnit) UnitDestroyedThisTurn = true;
     }
 
     public void SetUnitDestroyedThisTurn(bool value) => UnitDestroyedThisTurn = value;

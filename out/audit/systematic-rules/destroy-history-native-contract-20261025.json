@@ -1,0 +1,231 @@
+{
+  "rule": "RULE-391",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "2cb642ab883cb53f462dd5c101ca80168fde2dc0",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "verified": {
+    "rule": "RULE-391",
+    "fresh_functions": 4,
+    "fresh_bytes": 988,
+    "fresh_statements": 35,
+    "worker_scope_decoded_functions": 707,
+    "worker_exact_call_sites": [
+      {
+        "owner": "cardfunctions",
+        "name": "GetDestroyedCardsIDsByTurn",
+        "at": 0,
+        "call": "GetDestroyedCardsIDsByTurn"
+      },
+      {
+        "owner": "cardfunctions",
+        "name": "GetDestroyedCardsIDsThisBattle",
+        "at": 0,
+        "call": "GetDestroyedCardsIDs"
+      },
+      {
+        "owner": "cardfunctions",
+        "name": "GetDestroyedCardsCountBySide",
+        "at": 0,
+        "call": "GetDestroyedCardsCountBySide"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionDestroyMultipleUnits",
+        "at": 868,
+        "call": "UpdateDestroyedCardsIDs"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionDamageMultipleCards",
+        "at": 2464,
+        "call": "UpdateDestroyedCardsIDs"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionDestroyUnit",
+        "at": 739,
+        "call": "UpdateDestroyedCardsIDs"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionDamageCard",
+        "at": 1787,
+        "call": "UpdateDestroyedCardsIDs"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionAttackCard",
+        "at": 2087,
+        "call": "UpdateDestroyedCardsIDs"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionAttackCard",
+        "at": 3955,
+        "call": "UpdateDestroyedCardsIDs"
+      }
+    ],
+    "model_cases": 1024,
+    "model_count_queries": 15360,
+    "regression_cases": {
+      "update": 64,
+      "count": 80,
+      "total": 144
+    },
+    "selftest": "818/818",
+    "boundary": "Whole four Blueprint bodies, controlled Array/Map operations and default intList on absent map key; valid fresh invocation/explicit initialized out count. Not actual container/engine execution or generation/receipt scheduling.",
+    "limits": [
+      "No history publication rescheduling or full receipt lifecycle repair; existing generation convenience retains its flag behavior.",
+      "Call inventory excludes3undecoded whole bodies from selected prior CardFunctions/Online snapshots and all other classes/native/server routes.",
+      "Count invalid-side preserves supplied out-count value under modeled numeric argument shape; all VM alias/non-numeric/ref lifetime cases not certified."
+    ]
+  },
+  "findings": [
+    "Fresh four BP_GameState_Battle functions988bytes/35statements:UpdateDestroyedCardsIDs,GetDestroyedCardsIDs,GetDestroyedCardsIDsByTurn,GetDestroyedCardsCountBySide. Complete bodies redecoded and header/name/length/SHA verified against the guarded current executable capture.",
+    "UpdateDestroyedCardsIDs appends every supplied ID to global history, AddUnique to the current-turn intList and Map_Add writes it back, then appends to side history only for1/2. No object lookup, cardType test, positive-ID validation or UnitDestroyedThisTurn write exists in the selected full helper. Native-name UpdateDestroyedCardsIDs andGetDestroyedCardsIDs bindings were absent from the headless adapter.",
+    "GetDestroyedCardsCountBySide has only side1/2 branches. Other byte values jump toReturn without writing count. Headless SideArg(r,a,0,Controller) incorrectly replaced explicit integer0/invalid inputs with controller/receiver side; typed invalid side could also reach an out-of-range array index. Fresh-output0 is only a special case: supplied prior out-count must remain unchanged for invalid sides.",
+    "Bounded call inventory across707successfully decoded functions yields9matching nodes:3CardFunctions getter wrappers plus6UpdateDestroyedCardsIDs sites in5online receipt functions (single/batchDestroy,single/batchDamage,Attack twice). CardFunctions/Online prior snapshots retain3whole-body decode failures, excluded from negative proof. This is not an all-class/native/server exhaustive history writer list."
+  ],
+  "changes": [
+    "Extract pure GameState.UpdateDestroyedCardsIDs history helper and expose exact native-name dispatch. Preserve global/per-side duplicates, per-turn uniqueness, suppliedID including0/negative and currentTurn keys, with no death-flag write.",
+    "Keep existing RecordDestroyedCard convenience as history helper plus its prior isUnit flag behavior, preserving generation-path compatibility. Do not schedule an extra receipt write or move current publication phase.",
+    "Add GetDestroyedCardsIDs native-name array-copy getter; existing GetDestroyedCardsIDsThisBattle adapter remains.",
+    "Use explicit side for count query with no receiver/controller fallback. Invalid sides return the supplied numeric out-count (default0); direct state side-history query returns empty for invalid sides rather than indexing outside the array."
+  ],
+  "validation": [
+    "Whole4-function988-byte AST model1024cases coversall256sidebytes,2initialflags and2baseTurns. Sequence includesnegative/zeroIDs andduplicates across turns;15360count queries also coverprior out-count0/7/-1. Array/Map/default-intList behavior controlled; not engine execution or phase scheduling.",
+    "DeepSeek bounded private packet707functions yields9call sites, independently recomputed exactly byprimary. Worker reports outputs/checks only within assigned directory; semantic judgments kept primary.",
+    "Two headless regressions144cases:64update scenarios varyinitialflag,side0/1/2/255,int-vs-enumshape,null-vs-cardreceiver,andcontroller;80count scenarios varyexplicitside0/1/2/3/255,int/enumshape,receiver,controller,priorcount0/7. Checkglobal/turn/sideIDs,flagindependence,gettercopy isolation andinvalid-state query boundary.",
+    "Initial baseline fixture was extended after full-body review established invalid-side output is untouched. Preliminary baseline retained separately. Final fixture on unchanged production source failed2/818; patched Release818/818passed. Existing816tests continue to pass."
+  ],
+  "unresolved": [
+    "Generation-vs-receipt history visibility remains incorrect or unproven for some paths: headless ExecuteDestroyed still publishes through compatibility RecordDestroyedCard before its own callbacks, whereas selected client receipt sites update later. This round supplies the pure helper contract but does NOT claim to fix that temporal gap.",
+    "Need trace all local/remote action receipt lifecycles, delegate recipients and reentrant actions before rescheduling history globally; do not double-enqueue history or death.",
+    "Count adapter matches modeled numeric input/out argument shapes; arbitrary VM aliasing, uninitialized storage,non-numeric arguments,native ref lifetime and all generic side parsers not certified.",
+    "NativeArray/Map storage, duplicate-object identity,GC/pendingkill/concurrent mutations, all other classes/server routes and3excludedwhole-body failures remain. No replay authority, client write/injection/function invocation.",
+    "Single-card version migration paused, fullycertifiedcards0; no universal end-of-action HQ or all simultaneous-loss adjudication claim."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule391-destroy-history-native-20261025.json",
+      "sha256": "6379f42ba24d6cbf4ac5f289187079ffa250cc221f4bfc11c7a5e739183f1a51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-cardfunctions-native-20261024.json",
+      "sha256": "78f99bedad6b412ed9794d909d2c8f1125f8a3ae5392bba1b8187d109e9c59d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-online-native-20261024.json",
+      "sha256": "68d2bc581144164d128da03c57ff3521d19724db82723916aaa002edb6248896"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule391-history.py",
+      "sha256": "416f86cde3c9706a4b8adc16acfdd49eb2e7f90df3766740074ffee3401131a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule391-tests.py",
+      "sha256": "24731a9dcb380c0dd58c9be11c4bfbf7aaf0293e663e52e1f58b06422743b2e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule391-history.py",
+      "sha256": "5bc28d38914f7126802174bbf949f28ece16c3c7a8b77fa5af95e39d18e6691a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule391-history.py",
+      "sha256": "dbabbaaa738741455f421084f9b2adfbc066d3a12d5d9a44b55d59f6a3692d1d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule391.py",
+      "sha256": "53fd74a0114d18ba979875b58300df1bbe67aae3ac62676b7c79dfb5e7fd5c8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule391.py",
+      "sha256": "13181b2aa03e8a9cab0927b883a33bc23c1fcd03552c9c4b589ac9e7d8bac921"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-history-model.json",
+      "sha256": "068eeae355b201bf246cbd789a97218ac87ca4e17f7e6443e33e8bb76ddec9f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-verified-20261025.json",
+      "sha256": "7ac5cb5f5f6a62947222940b10dea592cd49f5397714e43e3a8b05e33771152c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-selftest-before.log",
+      "sha256": "81c53d2fbb1cae5e2af1c4bb4ba75ad47158f6c1d6cc20dba1c5c56b2e21283d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-selftest.log",
+      "sha256": "b4962e62fc9c01438c54a8ed5f50f0d53aa4e6b9c87b310bb77f8d21d5b67a76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-preliminary-before.log",
+      "sha256": "81c53d2fbb1cae5e2af1c4bb4ba75ad47158f6c1d6cc20dba1c5c56b2e21283d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule391-preliminary-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule391\\task.txt",
+      "sha256": "19e778f7c1ff8019f234847e695608d82c455f12cdb7b4a223abf4038d4db27f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule391\\functions.json",
+      "sha256": "8879dcc3c6af23b2afa406e9aa90c4705ce0c6b7745853a9ff2c636445376bf7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule391\\calls.json",
+      "sha256": "37bd07f7357ec57a04e06d5c43ccc3dcb68a9a735c286205045b2a1159e08c3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule391\\primary-calls.json",
+      "sha256": "a79539c0b15a751c2d468833207422214adf29d5967e4c727d83c8e83c3aab7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule391\\extract.py",
+      "sha256": "85e3488a83dfa7716f210ef7142e09c1f8e9dc3ad8662efbac436208795c1a4c"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-013113-rule391-history-sites-db63ddf2\\job.json",
+      "sha256": "39c9835d2e29ac5eb594405f62f9430e2569154e3944b772b80afdc26ee30edf"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-013113-rule391-history-sites-db63ddf2\\answer.txt",
+      "sha256": "ef0db68fb2ce054cef04fffffa6a26fc30915fff964728b01db3459445494174"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "ca38828d348c1bf98a7fcb7aa30915ce7028319cf4fd95bbeb94f232de10fe6b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "8635a91f50f613951064170c02ba268e9748204a5582ebef71495b902c38a42c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "198f94c5ac422c387a4cc196ba040e249478b5f5bad1ef72a2ac418e1e74cee2"
+    }
+  ]
+}

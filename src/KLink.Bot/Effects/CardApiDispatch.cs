@@ -1196,7 +1196,14 @@ public sealed partial class CardApi
             ["UpdateCampaignStarStatus"] = (c, r, a) => null,
 
             // ---------------- 近似实现（语义未验证，保守处理）----------------
-            ["GetDestroyedCardsCountBySide"] = (c, r, a) => c.State.DestroyedCardsIdsBySide(SideArg(r, a, 0, c.Controller)).Count,
+            ["GetDestroyedCardsCountBySide"] = (c, r, a) =>
+            {
+                // Native switch has only left/right arms; other byte values
+                // leave the caller's count output unchanged. No receiver fallback.
+                var side = SideArg(null, a, 0);
+                return side is Side.Left or Side.Right
+                    ? c.State.DestroyedCardsIdsBySide(side).Count : IntArg(a, 1);
+            },
             ["isBuffedByCard"] = (c, r, a) => IsBuffedByCard(c, r, a),
             ["GetUnitTypeCountOnBoard"] = (c, r, a) => GetUnitTypeCountOnBoard(SideArg(r, a, 0, c.Controller)),
             ["checkAndUpdateBuffOnCard"] = (c, r, a) => DoCheckAndUpdateBuffOnCard(c, r, a),
@@ -1325,6 +1332,12 @@ public sealed partial class CardApi
             // IR 实测：10 个调用点里 3 个无 recv（隐式 self），旧实现 `AsCard(r)` ⇒ 恒 false。
             ["IsDamaged"] = (c, r, a) => SelfArg(c, r, a) is { } d && d.Defense < d.MaxDefense,
             ["IsBuffed"] = (c, r, a) => AsCard(r) is { } b && b.BuffsBySource.Count > 0,
+            ["UpdateDestroyedCardsIDs"] = (c, r, a) =>
+            {
+                c.State.UpdateDestroyedCardsIDs(IntArg(a, 0), SideArg(null, a, 1));
+                return null;
+            },
+            ["GetDestroyedCardsIDs"] = (c, r, a) => c.State.DestroyedCardIdsAll.ToList(),
             ["GetDestroyedCardsIDsThisBattle"] = (c, r, a) => c.State.DestroyedCardIdsAll.ToList(),
             ["GetDestroyedCardsIDsByTurn"] = (c, r, a) =>
                 c.State.DestroyedCardsIdsByTurn(IntArg(a, 0, c.State.Turn)).ToList(),
