@@ -1,0 +1,234 @@
+{
+  "rule": "RULE-388",
+  "date": "2026-10-24",
+  "branch": "DinkyPuffer",
+  "base_commit": "5e28db352c3fe2d046ef4e3b4c7116e40d417fa8",
+  "read_only_client_access": true,
+  "kernel_changed": false,
+  "fully_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "verified": {
+    "rule": "RULE-388",
+    "counts": [
+      {
+        "owner": "online",
+        "functions": 412,
+        "bytes": 347898,
+        "decoded": 410,
+        "decoded_nonempty": 410,
+        "decoded_bytes": 345675,
+        "statements": 11609
+      },
+      {
+        "owner": "controller",
+        "functions": 77,
+        "bytes": 41183,
+        "decoded": 76,
+        "decoded_nonempty": 76,
+        "decoded_bytes": 17437,
+        "statements": 641
+      },
+      {
+        "owner": "logic",
+        "functions": 181,
+        "bytes": 123251,
+        "decoded": 179,
+        "decoded_nonempty": 179,
+        "decoded_bytes": 71610,
+        "statements": 2613
+      },
+      {
+        "owner": "cardfunctions-selected",
+        "functions": 2,
+        "bytes": 774,
+        "decoded": 2,
+        "decoded_nonempty": 2,
+        "decoded_bytes": 774,
+        "statements": 30
+      },
+      {
+        "owner": "notifier-selected",
+        "functions": 1,
+        "bytes": 58,
+        "decoded": 1,
+        "decoded_nonempty": 1,
+        "decoded_bytes": 58,
+        "statements": 3
+      },
+      {
+        "owner": "gamestate-selected",
+        "functions": 2,
+        "bytes": 44,
+        "decoded": 2,
+        "decoded_nonempty": 2,
+        "decoded_bytes": 44,
+        "statements": 6
+      }
+    ],
+    "syntax_errors": [
+      {
+        "owner": "online",
+        "name": "SendStartOfTurnEvent",
+        "offset": 688,
+        "error": "unsupported opcode 3b at 687"
+      },
+      {
+        "owner": "online",
+        "name": "ReceiveActionSelectCardToDrawPending",
+        "offset": 604,
+        "error": "unsupported opcode 3b at 603"
+      },
+      {
+        "owner": "controller",
+        "name": "ExecuteUbergraph_MatchController",
+        "offset": 10553,
+        "error": ""
+      },
+      {
+        "owner": "logic",
+        "name": "LoadAllStaticCards",
+        "offset": 2776,
+        "error": "unsupported opcode 12 at 2775"
+      },
+      {
+        "owner": "logic",
+        "name": "ExecuteUbergraph_BP_Logic",
+        "offset": 19435,
+        "error": "unsupported opcode 13 at 19434"
+      }
+    ],
+    "worker_inventory_exact_rows": 486,
+    "worker_job": "20261024-222032-rule388-action-finish-inventory-0d5f1d9a",
+    "full_hq_helper_model_cases": 8,
+    "full_hq_helper_model_bytes": 335,
+    "model_boundary": "Controlled retained valid references, side primitive, notifier and state functions; no engine/latent/server execution.",
+    "verified_chain": [
+      "HQ_DestroyedEndMatch -> NotifyEndMatchByDestroyingHQ -> OnlineMatchReceiver.HandleEndMatchByDestroyingHQ -> EndMatchWithDelay -> Delay(.2, resume6555) -> EndMatch -> EndMatchFromAction",
+      "ActionEndMatch dispatch -> ReceiveActionEndMatch -> EndMatchFromAction"
+    ],
+    "chain_boundary": "Syntactic function/entry/latent-continuation links, assuming OnlineMatchReceiver implements the captured class. No live scheduling or dynamic receiver identity certification.",
+    "not_proven": "Universal post-action HQ-survival checker; dynamic receiver identity; server simultaneous-loss rules; full downstream native/UI effects. Five whole-body syntax failures retained explicitly.",
+    "production_code_changed": false
+  },
+  "findings": [
+    "Fresh read-only acquisition: BP_OnlineMatch 412 functions/347898 bytes, MatchController 77/41183, BP_Logic 181/123251; additional selected cardfunction/notifier/gamestate functions 5/876. Total 675 raw functions/513208 bytes. Complete syntax re-decode succeeds for670 nonempty functions/435598 bytes/14902 top-level statements, NOT semantic certification of670 functions.",
+    "ValidateHQDefenseMatched is called before action-name dispatch (Ubergraph3259 before3273/3305). Its own full body compares saved action data with client-side HQ defense and reports mismatch; it contains no direct victory/finish call. Transitive reporting/getter/engine side effects are not thereby globally certified.",
+    "OnXActionFinished full body enumerates visual card actors and then, when needed, battle-card keys for CanCardDoAnything; updates HUD/operable/highlight state. It has no direct HQ-survival check or finish call. Its opaque callees do not provide a proof that no downstream check exists anywhere.",
+    "HQ_DestroyedEndMatch first issues NotifyOnCardDestroyed for the opposite-side saved HQ, even when already finished. It then reads GetMatchFinished; if false sets true before checking IsActionProcess. Only an action-process call emits NotifyEndMatchByDestroyingHQ. Controlled whole-helper AST model covers8 combinations of two winning sides/alreadyFinished/actionProcess.",
+    "NotifyEndMatchByDestroyingHQ forwards via OnlineMatchReceiver interface. Captured BP_OnlineMatch HandleEndMatchByDestroyingHQ stores parameters and enters Ubergraph29819 -> EndMatchWithDelay(arg0) wrapper ->26852 Delay literal0.2s -> latent resume6555 EndMatch then6587 EndMatchFromAction. The wrapper delay parameter is not the literal used at this entry. These are syntax and declared latent continuation links, not observed wall-clock scheduling or validated receiver identity.",
+    "Separately ActionEndMatch is selected at3391 ->4591 ReceiveActionEndMatch; that function reads winner_side/reason from supplied action data, clearsAITimer and callsEndMatchFromAction. This is a received result, not a fresh HQ-defense/location winner computation.",
+    "The selected explicit DestroyCard remains distinct from HQ_DestroyedEndMatch; this round provides no basis to insert a universal after-every-action HQ check or change simultaneous-loss ordering. RULE-269 client-first batch ordering remains limited to its proven batch path."
+  ],
+  "validation": [
+    "Fresh function script/header buffers read twice with stability assertions; installed executable SHA256 matched all captures. Offline verifier repeats symbol/header/name/length/hash checks and decoder output matching for successful functions, and reproduces all5 failure positions. These are stable selected buffers, not an atomic process snapshot or future lifetime guarantee.",
+    "DeepSeek private packet mechanical inventory486 rows independently reproduced exactly, including12250 statements and recursive call sets. Does not delegate semantics/integration/publishing.",
+    "Eight full335-byte HQ helper AST-model cases check unconditional notification, finished guard, flag-before-action condition and action-gated end notification. References, side lookup, notifier and state primitives controlled; no actual Kismet execution.",
+    "Production sources and tests unchanged; no redundant full selftest rerun. Most recent source validation remains previous RULE-387 Release812/812, not newly claimed as a RULE-388 test run."
+  ],
+  "unresolved": [
+    "Five whole-body syntax failures remain explicit: SendStartOfTurnEvent/ReceiveActionSelectCardToDrawPending opcode0x3b, MatchController ubergraph assertion at10553, LoadAllStaticCards0x12, BP_Logic ubergraph0x13. Failed bodies are excluded from successful byte/statement counts. Some prior event-path captures decoded selected paths; this round does not replace that with whole-body certification.",
+    "Need validate actual runtime OnlineMatchReceiver and delegate targets before describing the static chain as the current battle execution path.",
+    "Need trace explicit HQ-removal downstream hooks and native action lifecycle; no universal automatic victory checker proven. Cannot conclude full matches can continue withoutHQ, or that no checker exists.",
+    "Server/end-result authority and all simultaneous-loss cases remain unresolved. Headless semantic Finish currently combines phases; this round does not certify equivalence of every notification/network/receipt phase.",
+    "No full individual-card certification, container/GC/invalid object semantics or every opaque call target certified. UI/campaign/tutorial were encountered only to bound the finish chain and are not being implemented."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-online-native-20261024.json",
+      "sha256": "68d2bc581144164d128da03c57ff3521d19724db82723916aaa002edb6248896"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-controller-native-20261024.json",
+      "sha256": "25afe82e0f468577ba2defe4a20c76e65ba4cdb4d21b29810d30b3ad6c00dff9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-logic-native-20261024.json",
+      "sha256": "ba2e02a3557675e05302312457de30c42c80687ace981c33ab6910dd027499b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-cardfunctions-selected-native-20261024.json",
+      "sha256": "71010af53ef63b6e1b07bbe77db53014dd5cf4291d456fb34ca586f798e6953c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-notifier-selected-native-20261024.json",
+      "sha256": "4193628168bd2b3617d12fb2231118280a527d1324da1b50388b0f7c83b08f99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule388-gamestate-selected-native-20261024.json",
+      "sha256": "3aa4098db7d93b99489bd835abc9ae9589e4fcd8603f7d0c0e805d91a1b5d994"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule388-action-classes.py",
+      "sha256": "9aca8e27df51ecf681439afffff2c8aab2eeda5ac0bdd289b4acada14b897aa0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule388-logic.py",
+      "sha256": "b823cf3ae257df68c7efc4aa4b3fb7d52e5c473e848195427b6a390698562509"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule388-finish-chain.py",
+      "sha256": "8a303bc895f144c98b49cf0aecffa716e8f366527ae99e8cf009d0fc63e79307"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule388.py",
+      "sha256": "3b4267871473a68274b7c1ee1f8d8b7a3f9fa84d7e57599987b73b84ebe965b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule388-verified-20261024.json",
+      "sha256": "9ab0b8d20870328dcf4a6365d27fa48312d96076cc9c1644109de7721f1a51d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule388-hq-helper-model.json",
+      "sha256": "bc1af219aa75dd6f326fd45fcb9ddf85270e5f5cc1fa4e7cfdb11847fa958ee8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule388.py",
+      "sha256": "8ddd61e5cab6cc5e778fddbb55701df18875cfad17e2a2d3887bac359b689d44"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule290-action-helpers.py",
+      "sha256": "f2c7142728b8fb780bca10be6aa117a784b3231451cbb6db5d7c508a50d0b7b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule388\\task.txt",
+      "sha256": "6efa303bdad00bba327edec97452091683886f5d091bdfda5185999b855f0947"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule388\\functions.json",
+      "sha256": "73d4bc1e992eaacf86789791c318189e3da480e9d89a9deedb1dca5c36da4bd3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule388\\inventory.json",
+      "sha256": "fefc53bec83a7aeda62dd8c65d23d4b7897181075b3b329efd8b9733380ae7dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule388\\primary-inventory.json",
+      "sha256": "7d0d02c83b8e6bbf55245d93b26a9382e77ebb63f75148cb057e2fe33bc92860"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule388\\extract.py",
+      "sha256": "97d66367a3efd2303594225d0c1d4db2b576b0447a383042448c019fbca11cfc"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-222032-rule388-action-finish-inventory-0d5f1d9a\\job.json",
+      "sha256": "50e735037aa816009f70d07c6935255466474dca1b6363b9635ee6aa09969991"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-222032-rule388-action-finish-inventory-0d5f1d9a\\answer.txt",
+      "sha256": "60d3606e36e071a925128a96320538d21d2b1ca055121b667cac59e8680331aa"
+    }
+  ]
+}
