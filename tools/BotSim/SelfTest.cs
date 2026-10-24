@@ -965,6 +965,9 @@ internal static class SelfTest
         new("原生死亡回合标记setter与getter共享状态", DeathTurnFlagSetter),
         new("显式销毁总部走移除和死亡通知而非伪造伤害", ExplicitHqDestroyRouting),
         new("批量显式摧毁保留总部及分阶段离场/移动/死亡回调", BatchExplicitHqDestruction),
+        new("批量销毁通知：保留筛后映射、参数顺序与空区域占位", BatchDestroyNoticePayload),
+        new("批量销毁通知：离场前后位置分离，先通知后移动/死亡", BatchDestroyNoticeTiming),
+        new("批量销毁空数组：直接helper通知，非空包装入口短路", BatchDestroyNoticeEmpty),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34492,6 +34495,93 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? BatchDestroyNoticePayload(CardDatabase db)
+    {
+        string[] names = { "NotAvailable", "Deck_Left", "Deck_Right", "Hand_Left", "Hand_Right", "Board_HQLeft", "Board_HQRight", "Board_Frontline", "Discard", "Deck" };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation unitZone in new[] { CardLocation.NotAvailable, side.HandOf(), side.HqOf(), CardLocation.BoardFrontline, CardLocation.Discard })
+        foreach (CardLocation hqZone in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        foreach (bool reverse in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            var unit = state.CreateWithId(PlainUnit, side, 60, unitZone, 27); unit.Keywords.Clear(); unit.Keywords.Add(Keyword.Suppressed);
+            var hq = state.Hq(side); hq.Location = hqZone; hq.LocationNumber = 29; hq.Keywords.Clear();
+            var targets = reverse ? new[] { hq, unit } : new[] { unit, hq };
+            var saved = targets.Select(x => (Card: x, Old: x.Location)).Where(x => x.Old != CardLocation.Discard).ToArray();
+            if (native) engine.Api.InvokeByName("DestroyMultipleCards", source, new object?[] { targets.Cast<object?>().ToList(), 20, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.DestroyMultiple(targets, source);
+            string locations = saved.Length == 0 ? " " : string.Join(";", saved.Select(x => names[(int)x.Old]));
+            string ids = string.Join(";", saved.Select(x => x.Card.CardId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyMultipleUnits").ToArray();
+            if (notices.Length != 1 || !notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("destroyerID", 20),
+                ActionValue2.Str("cardsToDestroy", ids), ActionValue2.Str("destroyedLocations", locations) })
+                || targets.Any(x => x.Location != CardLocation.Discard)
+                || !state.DestroyedCardIdsAll.SequenceEqual(targets.Select(x => x.CardId)))
+                return $"批量通知必须按筛后映射同时生成位置/ID，空位置为单空格：{side}/{unitZone}/{hqZone}/{reverse}/{native}";
+        }
+        return null;
+    }
+
+    private static string? BatchDestroyNoticeTiming(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        using var leave = InstallSelectionDrawProbe(name, "OnLeaveBoardOrOwner");
+        using var moved = InstallSelectionDrawProbe(name, "OnCardLocationMoved");
+        using var death = InstallSelectionDrawProbe(name, "OnDestroyed");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool withSource in new[] { false, true })
+        foreach (bool beforeMove in new[] { false, true })
+        foreach (bool leaveMove in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, side.Opposite().HqOf(), 1); source.Keywords.Clear();
+            var victim = state.CreateWithId(name, side, 30, side.HqOf(), 2); victim.Keywords.Clear(); victim.Keywords.Add(Keyword.Destruction);
+            for (int i = 0; i < 4; i++) state.CreateWithId("card_unit_51e_regiment", side, 50 + i, side.DeckOf(), i);
+            int draws = 0; string? failure = null;
+            using var probe = InstallDrawReentryProbe(state, () => {
+                draws++;
+                var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyMultipleUnits").ToArray();
+                if (draws <= 2 && notices.Length != 0) failure = "通知早于离场前回调完成";
+                if (draws == 1 && beforeMove) state.Move(victim, CardLocation.BoardFrontline, 0, notifyMoved: false);
+                if (draws == 2 && leaveMove) state.Move(victim, side.HandOf(), 9, notifyMoved: false);
+                if (draws >= 3 && (notices.Length != 1 || victim.Location != CardLocation.Discard)) failure = "移动/死亡阶段必须已经有唯一批量通知和弃牌位置";
+            }, markerSide: side.Opposite());
+            engine.DestroyMultiple(new[] { victim }, withSource ? source : null);
+            var result = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyMultipleUnits").ToArray();
+            string old = beforeMove ? "Board_Frontline" : side == Side.Left ? "Board_HQLeft" : "Board_HQRight";
+            if (failure is not null || draws != 4 || result.Length != 1 || !result[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("destroyerID", withSource ? 20 : 0), ActionValue2.Str("cardsToDestroy", "30"), ActionValue2.Str("destroyedLocations", old) }))
+                return $"批量通知时机/保存位置错误：{side}/{withSource}/{beforeMove}/{leaveMove}; draws={draws}; {failure}";
+            engine.ApplyPendingLocalRuleReceipts();
+            if (!state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }) || draws != 4 || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionDestroyMultipleUnits") != 1)
+                return "局部回执不能重复摧毁、重复记入历史或重发通知";
+        }
+        return null;
+    }
+
+    private static string? BatchDestroyNoticeEmpty(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool native in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            if (native) engine.Api.InvokeByName("DestroyMultipleCards", source, new object?[] { new List<object?>(), 20, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.DestroyMultiple(Array.Empty<CardInstance>(), source);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDestroyMultipleUnits").ToArray();
+            if (notices.Length != (native ? 0 : 1) || !native && !notices[0].Values.SequenceEqual(new[] {
+                ActionValue2.Int("destroyerID", 20), ActionValue2.Str("cardsToDestroy", ""), ActionValue2.Str("destroyedLocations", " ") })
+                || state.DestroyedCardIdsAll.Count != 0 || state.UnitDestroyedThisTurn)
+                return $"空批次必须区分helper与非空包装门：{side}/{native}";
+        }
+        return null;
     }
 
     // ApplyDestroyMultipleCards is a removal helper, not the batch damage

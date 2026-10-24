@@ -1,0 +1,269 @@
+{
+  "rule": "RULE-390",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "2ed6dd7501ab4a6c5eca39efbf35d5c9dc4888bd",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "fully_certified_cards": 0,
+  "verified": {
+    "rule": "RULE-390",
+    "fresh_functions": 7,
+    "fresh_bytes": 6181,
+    "redecoded_functions": [
+      {
+        "name": "ReceiveActionDestroyMultipleUnits",
+        "bytes": 3033,
+        "statements": 86
+      },
+      {
+        "name": "AddSubActionDestroyMultipleUnits",
+        "bytes": 360,
+        "statements": 11
+      },
+      {
+        "name": "ActionValueLocationArray",
+        "bytes": 883,
+        "statements": 33
+      },
+      {
+        "name": "CreateAction_AddSubAction",
+        "bytes": 847,
+        "statements": 27
+      },
+      {
+        "name": "ActionValueIntArray",
+        "bytes": 873,
+        "statements": 33
+      },
+      {
+        "name": "ActionValueInt",
+        "bytes": 131,
+        "statements": 6
+      },
+      {
+        "name": "HandleDestroyMultipleUnits",
+        "bytes": 54,
+        "statements": 5
+      },
+      {
+        "name": "ApplyDestroyMultipleCards",
+        "bytes": 3530,
+        "statements": 117
+      },
+      {
+        "name": "DestroyMultipleCards",
+        "bytes": 165,
+        "statements": 7
+      },
+      {
+        "name": "NotifyDestroyMultipleUnits",
+        "bytes": 58,
+        "statements": 3
+      }
+    ],
+    "redecoded_bytes": 9934,
+    "worker_exact_rows": 7,
+    "worker_statements": 201,
+    "payload_model_cases": 320,
+    "serializer_extra_cases": 5,
+    "modeled_serializer_builder_bytes": 2247,
+    "prior_batch_model_bytes": 3530,
+    "regression_cases": {
+      "payload": 120,
+      "timing": 16,
+      "empty": 4,
+      "total": 140
+    },
+    "selftest": "816/816",
+    "payload_field_order": [
+      "destroyerID",
+      "cardsToDestroy",
+      "destroyedLocations"
+    ],
+    "empty_payload": {
+      "cardsToDestroy": "",
+      "destroyedLocations": " "
+    },
+    "receipt_boundary": "Local=true skips location mutation but not receipt history/delegate/daily notification; remote=false reads old location and sets Discard, then joins bookkeeping. Neither route directly invokes death-effect helper. PvP campaign/achievement/native opaque callees are not semantically certified.",
+    "limits": [
+      "Whole four bodies; map key/value order controlled, GetEnumeratorUserFriendlyName supplied raw current enum identifiers without namespace, CreateAction_AddSubAction context gate opaque. Prior batch callbacks controlled. Not engine execution or all sparse container layouts.",
+      "Fresh enum is raw identifier table only; GetEnumeratorUserFriendlyName implementation itself not newly restored.",
+      "Headless FireSubAction is a log abstraction, not all current-action/reconnect/network envelope gates.",
+      "History remains generated in ExecuteDestroyed; no extra destruction/history receipt enqueue introduced. Full receive-phase ordering still pending."
+    ]
+  },
+  "findings": [
+    "Native ApplyDestroyMultipleCards emits NotifyDestroyMultipleUnits at1171, after all before-destroy and before-leave callbacks, before any batch SetCardLocationAndLocNumber movement. Headless DestroyMultiple omitted this notification entirely.",
+    "Notifier forwards via OnlineMatchReceiver toHandleDestroyMultipleUnits; its wrapper entersOnlineMatch ubergraph14314, which invokesAddSubActionDestroyMultipleUnits. Builder enumerates the saved/pruned map into keys andvalues. Final SetArray at267 orders fields destroyerID,cardsToDestroy,destroyedLocations, despite constructing the location helper first.",
+    "ActionValueIntArray joins decimalIDs with semicolons and empty input becomes emptyText. ActionValueLocationArray joins location labels but empty input becomes a single space. Both store numericValue=-1. The scalar destroyer stores its integer and emptyText.",
+    "The saved map is captured after each before-destroy callback; a card already inDiscard when entering its before-leave iteration is removed from that map. Later before-leave moves do not rewrite saved map values. Payload must not be reconstructed from all targets or their post-move current locations.",
+    "DestroyMultipleCards nonempty wrapper and directApplyDestroyMultipleCards empty input differ: wrapper skips; directhelper still emits an empty-map notice. The headless native-name wrapper previously always called the helper; adding notification requires preserving this nonempty gate.",
+    "ReceiveActionDestroyMultipleUnits copies instanceResolveSubActionsFromLocal into skipChangesToCards. Local=true skips location mutation, while false reads current oldLocation, collects affected location and setsDiscard; both then update destroyed history, invoke delegate/daily notifier and perform later refresh/other conditional work. Neither selected receive body directly calls full death-effect execution. This does not make the opaque callees globally side-effect free."
+  ],
+  "changes": [
+    "Emit one ZActionDestroyMultipleUnits at the native batch boundary using the existing saved/pruned location map; exact final field order and empty serializer distinctions preserved.",
+    "Retain input order and existing physical/death phases. Null direct helper source becomes destroyerID0.",
+    "Native-name DestroyMultipleCards now forwards only nonempty resolved target arrays, preserving valid-input wrapper empty semantics.",
+    "No added receipt queue, secondDestroy, duplicate history or guessedFinish. Existing history timing remains unchanged and explicitly pending."
+  ],
+  "validation": [
+    "Fresh read-only acquisition7whole functions6181bytes; redecoded those plus3RULE389dependencies for10unique bodies9934bytes. All script/header lengths, SHA256, symbol/header names, decoder ASTs and guarded executable hash checked. Prior receiver snapshot is reused as prior evidence, not claimed newly sampled this round.",
+    "Current enum raw UEnum entries0..9 match existing identifier table; MAX10 excluded from tested gameplay range. This captures raw identifiers, not the complete native GetEnumeratorUserFriendlyName formatting implementation. Older native-schema-reference has version_verified_against_current_exe=false and is not used as current enum authority.",
+    "DeepSeek7-function201statement call inventory exactly reproduced by primary recursive traversal. Worker reports writes only within assigned private packet, including checker. No semantic judgment delegated.",
+    "320 composed payload models execute whole2247bytes across builder and3serializer functions, using prior160whole3530-byte batch models with source0/40.5extra serializer boundaries cover empty arrays, signed32 endpoints and gameplay enum identifiers. Native map order, lookup/callback/refresh and enum-format primitives remain controlled.",
+    "3headless regressions140cases:120HQ/unit payload mappings,16VM callback timing/move mutations with source presence variations,4empty wrapper/helper cases. Tests check exact record order/values/text, notification absence before leave completes, presence before movement/death and no duplicate destruction/history when existing local receipts are drained.",
+    "Initial implementation/test drafts inferred parameter order from helper-construction order; composed model caught final SetArray differing order. Preliminary logs retained but excluded from final proof. Corrected final fixtures were rerun against pristine productionHEAD:3/816failed, then restored corrected authored source:Release816/816passed. Only authored2production files temporarily substituted; user untracked audit file preserved."
+  ],
+  "unresolved": [
+    "Full destruction history/delegate receipt phase ordering remains pending; headless ExecuteDestroyed currently records history before effects. Adding notifier does not certify phase equivalence.",
+    "Headless FireSubAction logs the semantic event without implementing every current-action/reconnect/network envelope gate inCreateAction_AddSubAction. The847byte gate was structurally decoded, not fully implemented or modeled here.",
+    "Native unordered/sparse map iteration for every allocation, duplicate/alias/invalidID, pendingkill/GC, reentrant map/reference/owner changes and all real observers remain unverified. Valid retained distinct targets are the tested boundary; adapter filtering of invalid nonempty lists is not certified.",
+    "Actual native enum friendly formatting under arbitrary metadata/localization/invalid values remains open; controlled model uses current raw gameplay identifiers after namespace removal and existing adapter mapping.",
+    "No universal post-action HQ winner checker or all server simultaneous-loss rules proved. No full individual-card certification; prior whole-body parser gaps and paused version migration remain open."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule390-batch-notify-receipt-native-20261024.json",
+      "sha256": "35ce83e5508a6a36a211c09017e91cf818c0d9ee06ed2330d8cc632825c57b5f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule390-location-enum-native-20261024.json",
+      "sha256": "57fed6e0f652581ecffebe1d056bddddb3428cc26c5d2ba48d9e75f06fd30dd4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-cardfunctions-native-20261024.json",
+      "sha256": "78f99bedad6b412ed9794d909d2c8f1125f8a3ae5392bba1b8187d109e9c59d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-notifier-native-20261024.json",
+      "sha256": "3ccf4c48769405f6b00af9640bfa85d6ec5614cc59c9744cb57bcce5fb06de7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-online-receiver-links-20261024.json",
+      "sha256": "65bba2a85e8e79ed8153b21f7585e24ef1af13835fb73624c624fd93dee67325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule390-batch-notify.py",
+      "sha256": "a3cf982251bd142e0d894330c8648a66513b8e628146f455ee035320f414ac87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule390-location-enum.py",
+      "sha256": "77b837249ee9c75de33ad2b15ad8a7a3970ad81ce81349b9a58ccf3cb07a9f74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule390-tests.py",
+      "sha256": "b17cc9bc73d74faa9bc3af527ebf378c813daf6535c3813d6f2650d36a3c841f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule390-notification.py",
+      "sha256": "857dd3857cc1b55780ae43017e3a2fff1e41b4adba4762897774e875ce9dc820"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule390-notify.py",
+      "sha256": "235f39221f22a00e365665405e31a5bd94f9aae5d59c5c793afb3e58f8b65e36"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule390.py",
+      "sha256": "496d88c2751c7bd2e703b3ef5b71bdb81174a53401aaa3cdbbc0a8ad0b859867"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule390.py",
+      "sha256": "cb16f3b2f1e6a9f0200a74956e0857be4a144c55f296dd7b5e425eaf1035da97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-notify-model.json",
+      "sha256": "eef5e3c36d122fde71b1443d59a8d7a02c80b8464ba24392823f2df121fc26fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-verified-20261024.json",
+      "sha256": "fe86e983b3b84e17f40fdbd9f5cc978c0fbbc55d585256b5cbca7743f601a523"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule389-batch-model-cases.json",
+      "sha256": "b9c58d02232ee23e67840d8542384cbb2262ff7850c4e6f4e8a613b2074c58b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-selftest-before.log",
+      "sha256": "24fdbf3b1374568f4a8720a8d7ef83da6384c9eeb4930500b23701f515f1baf7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-selftest.log",
+      "sha256": "124273d0ff19900c7ca8f7f3ea60de1ad2bd254b2beb083f75dd4e225cce3db5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-preliminary-order-selftest-before.log",
+      "sha256": "24fdbf3b1374568f4a8720a8d7ef83da6384c9eeb4930500b23701f515f1baf7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-preliminary-order-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-preliminary-order-selftest.log",
+      "sha256": "124273d0ff19900c7ca8f7f3ea60de1ad2bd254b2beb083f75dd4e225cce3db5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule390-preliminary-order-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule390\\task.txt",
+      "sha256": "eada0c39e535b613d8effcfccc7c5424c353e7c308053198caafb7c98607084e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule390\\functions.json",
+      "sha256": "abbefedc8638dfa19cd7bfe4ece1fc55c8150ba01790defd48b317bbccf12294"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule390\\inventory.json",
+      "sha256": "31f7216a6a158dcd9ff8cba6ecdc9e38356b5144ee3778fcd704bbc6ebb848d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule390\\primary-inventory.json",
+      "sha256": "31f7216a6a158dcd9ff8cba6ecdc9e38356b5144ee3778fcd704bbc6ebb848d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule390\\extract.py",
+      "sha256": "431bcebe80ed726d575217947e6e05e9660472d61ad7eedc9c6def48b6e9bcb9"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-224109-rule390-batch-notification-faac53cc\\job.json",
+      "sha256": "93916f89922eefcdb52c563a57e2d90eea6e8b0ea2844c99e0ceadfc51498728"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-224109-rule390-batch-notification-faac53cc\\answer.txt",
+      "sha256": "fc6b149a62212cf84ced4c1e019459ce133b7a21364390354ad2d4124323483b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "a24ca2237e7f50a841c23295e813398b93211cefee9e9d7598cefaf260a560e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "bc5c30ad86c9f3714d23fea28e7e08f9e32a23f3ec3ec8312fd6878191389146"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "49079794a2bd1ec9f175a8dddc399b346ba55d11cb9c5d6437a810f1bd13677e"
+    }
+  ]
+}

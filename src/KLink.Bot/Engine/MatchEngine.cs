@@ -3246,6 +3246,21 @@ public sealed class MatchEngine
             if (card.Location == CardLocation.Discard) locations.Remove(card.CardId);
             else FireLeaveTrigger(card, CardLocation.Discard, method: 1, includeLocationCards: true);
         }
+        // ApplyDestroyMultipleCards i=1171 notifies after every before-leave
+        // callback, before any batch movement. Keep the saved/pruned map: a
+        // later callback changing a card's location must not rewrite the payload.
+        var wireLocations = locations.Values.Select(location =>
+        {
+            Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)location, out string name);
+            return name;
+        });
+        FireSubAction("ZActionDestroyMultipleUnits", new[] {
+            ActionValue2.Int("destroyerID", destroyer?.CardId ?? 0),
+            ActionValue2.Str("cardsToDestroy", string.Join(";", locations.Keys.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            // Native ActionValueLocationArray uses one space for an empty array;
+            // ActionValueIntArray uses the empty string, both with numeric -1.
+            ActionValue2.Str("destroyedLocations", locations.Count == 0 ? " " : string.Join(";", wireLocations)),
+        });
         foreach (var card in targets)
         {
             // The batch Blueprint uses SetCardLocationAndLocNumber, not CardLocationMoved.

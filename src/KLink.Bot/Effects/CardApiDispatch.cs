@@ -5610,7 +5610,7 @@ public sealed partial class CardApi
     /// 数组长度 &gt; 0 时调 <c>ApplyDestroyMultipleCards(self, destroyerCardID, out cardsToDestroy)</c>。
     /// 委托给引擎的批量摧毁适配器，按前置、离场、移位、刷新及死亡阶段处理。
     /// RULE-389：原生批量函数不按 Type/HQ 剔除输入；实际输入含总部时也保留。
-    /// 批量通知和接收阶段的完整对应仍待核对。
+    /// RULE-390：通知按保存映射生成；接收阶段的完整对应仍待核对。
     ///
     /// ⚠️ 数组元素**两种形状都有**（卡对象 / 整数 cardID），用 <see cref="AsCardOrId"/>
     /// 统一（同 `DiscardCardFromHand` 的理由）。
@@ -5621,7 +5621,8 @@ public sealed partial class CardApi
         var destroyer = AsCardOrId(c, a.ElementAtOrDefault(1)) ?? c.Self;
         var targets = list.Cast<object?>().Select(v => AsCardOrId(c, v))
             .OfType<CardInstance>().ToArray();
-        c.Engine.DestroyMultiple(targets, destroyer);
+        // Native DestroyMultipleCards forwards only a nonempty input array.
+        if (targets.Length > 0) c.Engine.DestroyMultiple(targets, destroyer);
         return 0;
     }
 
