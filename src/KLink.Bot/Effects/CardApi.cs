@@ -2612,11 +2612,14 @@ public sealed partial class CardApi
                               int changeType = 1, int? instigatorId = null, bool skipAction = false)
     {
         // RULE-377: main always supplies customDetail="" to the ledger.
-        if (changeType is 6 or 7)
+        if (changeType is 6 or 7 or 8)
         {
-            RecordDefenseEmptyDetail(target, instigatorId ?? source?.CardId ?? target.CardId, changeType);
+            RecordDefenseEmptyDetail(target, instigatorId ?? source?.CardId ?? target.CardId, changeType, delta);
             return;
         }
+        // RULE-378: remaining UByte modes never modify numerical defense.
+        // Mode9's diagnostic and the untouched out slots have no void-API state.
+        if (changeType is >= 9 and <= byte.MaxValue) return;
         // RULE-376: native mode0 mutates only the temporary source ledger.
         // The convenience temporary+ordinary call also denotes that native mode.
         if (changeType == 0 || (temporary && changeType == 1))
@@ -2774,14 +2777,22 @@ public sealed partial class CardApi
     }
 
     // RULE-377: customAdd writes fresh-frame0, customRemove deletes defense_.
-    // Main6/7 rejects numeric changes after this ledger mutation. Zero requests
+    // Main6/7 reject numeric changes;8 pops the default numeric flow. Zero requests
     // do not bypass these custom modes; preserve unrelated typed source keys.
-    private void RecordDefenseEmptyDetail(CardInstance target, int sourceId, int changeType)
+    private void RecordDefenseEmptyDetail(CardInstance target, int sourceId, int changeType, int amount = 0)
     {
         if (sourceId <= 0 || Math.Clamp(target.Defense, 0, 99) <= 0 || !CanCardBeBuffed(target)) return;
         PruneEmptySourceBuffSlots(target, sourceId);
         var buff = GetOrCreateBuff(target, sourceId);
-        buff.DefenseEmptyDetail = changeType == 6 ? 0 : null;
+        if (changeType == 6) buff.DefenseEmptyDetail = 0;
+        else if (changeType == 7) buff.DefenseEmptyDetail = null;
+        else
+        {
+            // RULE-378: combatModify uses the same empty-detail key but
+            // accumulates the raw request, including zero, with int32 wrapping.
+            int sum = unchecked((buff.DefenseEmptyDetail ?? 0) + amount);
+            buff.DefenseEmptyDetail = sum == 0 ? null : sum;
+        }
         if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
         else SynchronizeBuffTarget(target, sourceId);
     }

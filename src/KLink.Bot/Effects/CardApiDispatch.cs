@@ -4232,6 +4232,18 @@ public sealed partial class CardApi
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
     {
+        // RULE-378: accepted8/default preserve the incoming qqq out slot;
+        // accepted9 and every rejected guard explicitly write false.
+        int remainingMode = IntArg(a, 3);
+        if (remainingMode is >= 8 and <= byte.MaxValue)
+        {
+            var card = TargetCard(c, r, a);
+            int sourceId = IntArg(a, 1);
+            if (card is null || sourceId <= 0 || Math.Clamp(card.Defense, 0, 99) <= 0 || !CanCardBeBuffed(card)) return false;
+            if (remainingMode == 8) RecordDefenseEmptyDetail(card, sourceId, remainingMode, IntArg(a, 2));
+            return remainingMode == 9 ? false : null;
+        }
+
         // RULE-377: modes6/7 mutate the empty-detail ledger, then qqq=false.
         if (IntArg(a, 3) is 6 or 7)
         {

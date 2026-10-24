@@ -615,6 +615,10 @@ internal static class SelfTest
         new("防御6/7：目标/来源/生命/可增益门", DefenseCustomGuardOut),
         new("防御6/7：公开适配不改生命或发增防事件", DefenseCustomPublicAdapters),
         new("防御空detail：零存在、克隆/复制/快照及绝对账本保留", DefenseEmptyDetailPresenceLifecycle),
+        new("防御mode8：只累加空detail键，零和删除且保持输出", DefenseMode8LedgerOnly),
+        new("防御8/9/default：拒绝时false，接受后的输出有区别", DefenseRemainingByteGuardOutputs),
+        new("防御8/9/default：公开适配不改生命或触发增防", DefenseRemainingBytePublicAdapters),
+        new("防御9至255：全部字节/空壳/原输出保持", DefenseDefaultByteSweep),
         new("防御零键：普通/绝对账本与克隆复制快照", DefenseZeroKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
@@ -7800,6 +7804,150 @@ internal static class SelfTest
             if (target.Snapshot().DefenseEmptyDetailsBySource.Count != 0 || snap.DefenseEmptyDetailsBySource.Count != 1
                 || copy.BuffsBySource[(20, temporary)].DefenseEmptyDetail != raw)
                 return "重置应清新空键记录，旧快照/复制件须独立";
+        }
+        return null;
+    }
+
+    private static string? DefenseMode8LedgerOnly(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int shell in Enumerable.Range(0, 4))
+        foreach (int mask in Enumerable.Range(0, 8))
+        foreach (int? entry in new int?[] { null, 0, -3, 4, int.MaxValue, int.MinValue })
+        foreach (int request in new[] { -4, 0, 3, int.MaxValue, int.MinValue })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            CardBuff Slot(bool temporary)
+            {
+                var key = (sourceId, temporary);
+                if (!target.BuffsBySource.TryGetValue(key, out var b)) target.BuffsBySource[key] = b = new CardBuff { SourceCardId = sourceId, Temporary = temporary };
+                return b;
+            }
+            if ((shell & 1) != 0) Slot(false);
+            if ((shell & 2) != 0) Slot(true);
+            if ((mask & 1) != 0) Slot(false).HasZeroDefenseEntry = true;
+            if ((mask & 2) != 0) Slot(false).DefenseSetValue = 0;
+            if ((mask & 4) != 0) Slot(true).HasZeroKreditCostEntry = true;
+            if (entry.HasValue) { Slot(false).DefenseEmptyDetail = entry.Value; }
+            var foreignPerm = new CardBuff { SourceCardId = 30 }; var foreignTemp = new CardBuff { SourceCardId = 30, Temporary = true };
+            target.BuffsBySource[(30, false)] = foreignPerm; target.BuffsBySource[(30, true)] = foreignTemp;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 }); target.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            target.Defense = 7; target.MaxDefense = 123; target.BaseAttack = 37; target.TemporaryAttack = -9;
+            var current = new Dictionary<string, int>();
+            if ((mask & 1) != 0) current["defense_permBuff"] = 0;
+            if ((mask & 2) != 0) current["defense_SetValue"] = 0;
+            if ((mask & 4) != 0) current["kredit_tempBuffGive"] = 0;
+            int sum = unchecked((entry ?? 0) + request); if (sum != 0) current["defense_"] = sum;
+            var expected = new Dictionary<int, Dictionary<string, int>> { [30] = new() }; if (current.Count != 0) expected[sourceId] = current;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            object? raw = engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, request, 8, skip, null }, ctx, out bool handled);
+            var reverse = state.ById(sourceId)?.CardsBuffedByThisCard;
+            if (!handled || raw is not null || !KreditZeroKeyFixtureMapsEqual(CaptureDefenseZeroFixtureLedger(target), expected)
+                || (reverse is not null && !reverse.SequenceEqual(current.Count != 0 ? new[] { 888, 60, 60 } : new[] { 888 }))
+                || target.BuffsBySource.Any(x => x.Key.SourceCardId == sourceId && x.Value.IsEmpty)
+                || target.BuffsBySource.Values.Any(x => x.HasNonOrdinaryDefenseEntry)
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreignPerm) || !ReferenceEquals(target.BuffsBySource[(30, true)], foreignTemp)
+                || target.Defense != 7 || target.MaxDefense != 123 || target.BaseAttack != 37 || target.TemporaryAttack != -9 || state.ActionLog.Sum(x => x.SubActions.Count) != 0)
+                return $"防御mode8须只累加空detail账本且保留输出 {side}/{shell}/{mask}/{entry}/{request}/{sourceId}/{skip}: {raw}";
+            string settled = state.SnapshotJson();
+            var args = new[] { "__target", "__source", "__request", "__mode", "__skip", "__qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+            var program = new KismetProgram(new[] { new KismetStep(0, "call", "ChangeDefense", args, new[] { 5 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> { ["__target"] = target, ["__source"] = sourceId, ["__request"] = 0, ["__mode"] = 8, ["__skip"] = skip, ["__qqq"] = true }, "__qqq");
+            if (!Equals(output.GetValueOrDefault("__qqq"), true) || state.SnapshotJson() != settled || state.ActionLog.Sum(x => x.SubActions.Count) != 0) return "防御mode8零请求也应处理零和/空记录，但不得覆盖原true输出槽";
+
+        }
+        return null;
+    }
+
+    private static string? DefenseRemainingByteGuardOutputs(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 8, 9, 10, 127, 255 })
+        foreach (bool incoming in new[] { false, true })
+        foreach (bool valid in new[] { false, true })
+        foreach (int sourceId in new[] { -1, 0, 20 })
+        foreach (int health in new[] { -3, 0, 7 })
+        foreach (bool covert in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, CardLocation.BoardFrontline, 0); target.Keywords.Clear(); if (covert) target.Keywords.Add(Keyword.Covert);
+            target.Defense = health; target.MaxDefense = 123; target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, DefenseEmptyDetail = 9 };
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 });
+            bool processed = valid && sourceId > 0 && Math.Clamp(health, 0, 99) > 0 && CardApi.CanCardBeBuffed(target);
+            string before = state.SnapshotJson();
+            object? raw = engine.Api.InvokeByName("ChangeDefense", null, new object?[] { valid ? target : null, sourceId, 123, mode, skip, null }, new EffectContext { Engine = engine, State = state, Controller = side }, out bool handled);
+            object? expectedRaw = !processed || mode == 9 ? false : null;
+            var args = new[] { "__target", "__source", "__request", "__mode", "__skip", "__qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+            var program = new KismetProgram(new[] { new KismetStep(0, "call", "ChangeDefense", args, new[] { 5 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, new EffectContext { Engine = engine, State = state, Controller = side },
+                new Dictionary<string, object?> { ["__target"] = valid ? target : null, ["__source"] = sourceId, ["__request"] = 0, ["__mode"] = mode, ["__skip"] = skip, ["__qqq"] = incoming }, "__qqq");
+            if (!handled || !Equals(raw, expectedRaw) || !Equals(output.GetValueOrDefault("__qqq"), !processed || mode == 9 ? false : incoming)
+                || target.BuffsBySource[(sourceId, false)].DefenseEmptyDetail != (processed && mode == 8 ? 132 : 9)
+                || target.Defense != health || target.MaxDefense != 123 || (!processed && state.SnapshotJson() != before)
+                || state.ActionLog.Sum(x => x.SubActions.Count) != 0) return $"防御余下字节门/输出错误 {side}/{mode}/{incoming}/{valid}/{sourceId}/{health}/{covert}/{skip}";
+
+        }
+        return null;
+    }
+
+    private static string? DefenseRemainingBytePublicAdapters(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(name, "OnBeforeGainDefense");
+        using var own = InstallSelectionDrawProbe(name, "OnAfterGainDefense");
+        using var other = InstallSelectionDrawProbe(name, "OnAfterOtherCardGainDefense");
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int initial in new[] { -3, 0, 4, int.MaxValue })
+        foreach (int mode in new[] { 8, 9, 10, 127, 255 })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (int request in new[] { -4, 0, 3, int.MaxValue, int.MinValue })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 1); target.Keywords.Clear(); target.Defense = 7; target.MaxDefense = 123;
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, DefenseEmptyDetail = initial };
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.ChangeDefense(target, request, source, changeType: mode, instigatorId: sourceId);
+            int value = mode == 8 ? unchecked(initial + request) : initial; bool kept = mode != 8 || value != 0;
+            target.BuffsBySource.TryGetValue((sourceId, false), out var buff);
+            if ((buff is not null) != kept || (buff is not null && (buff.DefenseEmptyDetail != value || buff.Defense != 0 || buff.HasNonOrdinaryDefenseEntry))
+                || target.Defense != 7 || target.MaxDefense != 123 || trace.Count != 0 || state.ActionLog.Sum(x => x.SubActions.Count) != 0)
+                return $"公开防御custom须只增删空明细键 {side}/{initial}/{mode}/{sourceId}/{request}";
+        }
+        return null;
+    }
+
+    private static string? DefenseDefaultByteSweep(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(9, 247))
+        foreach (int shell in Enumerable.Range(0, 4))
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool incoming in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            if ((shell & 1) != 0) target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId };
+            if ((shell & 2) != 0) target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true };
+            target.Defense = 7; target.MaxDefense = 123; source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 }); target.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            string before = state.SnapshotJson(); var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            var raw = engine.Api.InvokeByName("ChangeDefense", null, new object?[] { target, sourceId, 123, mode, false, null }, ctx, out bool handled);
+            var args = new[] { "__target", "__source", "__request", "__mode", "__skip", "__qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+            var program = new KismetProgram(new[] { new KismetStep(0, "call", "ChangeDefense", args, new[] { 5 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+            var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> { ["__target"] = target, ["__source"] = sourceId, ["__request"] = -999, ["__mode"] = mode, ["__skip"] = true, ["__qqq"] = incoming }, "__qqq");
+            if (!handled || !Equals(raw, mode == 9 ? false : null) || !Equals(output.GetValueOrDefault("__qqq"), mode == 9 ? false : incoming)
+                || state.SnapshotJson() != before || state.ActionLog.Sum(x => x.SubActions.Count) != 0)
+                return $"防御9至255须保留空壳/反向列表，9写false、默认保持原输出 {side}/{mode}/{shell}/{sourceId}/{incoming}";
         }
         return null;
     }
