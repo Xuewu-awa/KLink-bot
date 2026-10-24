@@ -604,6 +604,8 @@ internal static class SelfTest
         new("攻击抵消：普通零和删除本键及空来源", AttackOrdinaryZeroCancellation),
         new("攻击零键：普通/绝对模式及克隆复制快照", AttackZeroKeyLifecycle),
         new("模式4空壳：攻击/费用清理本来源无键槽并保持幂等", Mode4EmptySourceShells),
+        new("行动费零键：撤销清键/空壳与幂等性", OperationExplicitZeroWithdrawal),
+        new("行动费零键：普通/绝对改费与克隆复制快照", OperationZeroKeyLifecycle),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7531,6 +7533,104 @@ internal static class SelfTest
                 || card.BlueprintVariables.ContainsKey("kredits") || card.BlueprintVariables.ContainsKey("kreditsBuff")
                 || !Equals(result.GetValueOrDefault("cost"), next) || !Equals(result.GetValueOrDefault("buff"), nextBuff))
                 return $"VM公开费用写入混用/影子冲突 {side}/{value}/{buff}/{current}";
+        }
+        return null;
+    }
+
+    private static Dictionary<int, Dictionary<string, int>> CaptureOperationZeroKeyFixtureLedger(CardInstance target)
+    {
+        var result = new Dictionary<int, Dictionary<string, int>>();
+        foreach (var (key, buff) in target.BuffsBySource)
+        {
+            if (!result.TryGetValue(key.SourceCardId, out var map)) result[key.SourceCardId] = map = new();
+            if (buff.OperationCost != 0 || buff.HasZeroOperationCostEntry) map[key.Temporary ? "operationCost_tempBuffGive" : "operationCost_permBuff"] = buff.OperationCost;
+            if (buff.OperationCostSetValue.HasValue) map["operationCost_SetValue"] = buff.OperationCostSetValue.Value;
+            if (buff.KreditCost != 0 || buff.HasZeroKreditCostEntry) map[key.Temporary ? "kredit_tempBuffGive" : "kredit_permBuff"] = buff.KreditCost;
+            if (buff.HasSuppressLedgerEntry) map["Suppress"] = 0;
+        }
+        return result;
+    }
+
+    private static string? OperationExplicitZeroWithdrawal(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (int shell in Enumerable.Range(0, 4))
+        foreach (int mask in Enumerable.Range(0, 8))
+        foreach (int? entry in new int?[] { null, 0, -3, 4 })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            CardBuff Slot(bool temporary)
+            {
+                var key = (sourceId, temporary);
+                if (!target.BuffsBySource.TryGetValue(key, out var b)) target.BuffsBySource[key] = b = new CardBuff { SourceCardId = sourceId, Temporary = temporary };
+                return b;
+            }
+            if ((shell & 1) != 0) Slot(false);
+            if ((shell & 2) != 0) Slot(true);
+            if ((mask & 1) != 0) Slot(false).HasZeroOperationCostEntry = true;
+            if ((mask & 2) != 0) Slot(false).OperationCostSetValue = 0;
+            if ((mask & 4) != 0) Slot(true).HasZeroKreditCostEntry = true;
+            if (entry.HasValue) { Slot(true).OperationCost = entry.Value; Slot(true).HasZeroOperationCostEntry = entry == 0; }
+            var foreignPerm = new CardBuff { SourceCardId = 30 }; var foreignTemp = new CardBuff { SourceCardId = 30, Temporary = true };
+            target.BuffsBySource[(30, false)] = foreignPerm; target.BuffsBySource[(30, true)] = foreignTemp;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 }); target.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            target.BaseOperationCost = 7; target.TemporaryOperationCost = -4; target.BaseAttack = 37; target.TemporaryAttack = -9; target.BaseKreditCost = 105; target.TemporaryKreditCost = 23;
+            var current = new Dictionary<string, int>();
+            if ((mask & 1) != 0) current["operationCost_permBuff"] = 0;
+            if ((mask & 2) != 0) current["operationCost_SetValue"] = 0;
+            if ((mask & 4) != 0) current["kredit_tempBuffGive"] = 0;
+            var expected = new Dictionary<int, Dictionary<string, int>> { [30] = new() }; if (current.Count != 0) expected[sourceId] = current;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            engine.Api.InvokeByName("ChangeOperationCost", null, new object?[] { target, sourceId, 123, 4, true, skip, false }, ctx, out bool handled);
+            int adjusted = -4 - (entry ?? 0); bool changed = entry.HasValue && entry.Value != 0;
+            var reverse = state.ById(sourceId)?.CardsBuffedByThisCard;
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionChangeOperationCost").ToArray();
+            if (!handled || !KreditZeroKeyFixtureMapsEqual(CaptureOperationZeroKeyFixtureLedger(target), expected)
+                || (reverse is not null && !reverse.SequenceEqual(mask == 0 ? new[] { 888 } : new[] { 888, 60, 60 }))
+                || target.BuffsBySource.Any(x => x.Key.SourceCardId == sourceId && x.Value.IsEmpty)
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreignPerm) || !ReferenceEquals(target.BuffsBySource[(30, true)], foreignTemp)
+                || target.BaseOperationCost != 7 || target.TemporaryOperationCost != adjusted || target.BaseAttack != 37 || target.TemporaryAttack != -9 || target.BaseKreditCost != 105 || target.TemporaryKreditCost != 23
+                || notices.Length != (changed && !skip ? 1 : 0)) return $"行动费零键/空壳撤销错误 {side}/{shell}/{mask}/{entry}/{sourceId}/{skip}";
+            string settled = state.SnapshotJson(); int noticesBefore = state.ActionLog.Sum(x => x.SubActions.Count);
+            engine.Api.InvokeByName("ChangeOperationCost", null, new object?[] { target, sourceId, -999, 4, false, skip, false }, ctx, out _);
+            if (state.SnapshotJson() != settled || state.ActionLog.Sum(x => x.SubActions.Count) != noticesBefore) return "行动费再次撤销必须幂等，不随isBuff或请求值改变";
+        }
+        return null;
+    }
+
+    private static string? OperationZeroKeyLifecycle(CardDatabase db)
+    {
+        var copyMethod = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool temporary in new[] { false, true })
+        foreach (int mode in new[] { 0, 1, 2, 3, 5 })
+        foreach (int amount in new[] { -2, 0, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            var zero = new CardBuff { SourceCardId = 20, Temporary = temporary, HasZeroOperationCostEntry = true }; target.BuffsBySource[(20, temporary)] = zero;
+            var clone = zero.Clone(); var snapshot = target.Snapshot(); var copy = (CardInstance)copyMethod.Invoke(null, new object[] { target })!;
+            if (zero.IsEmpty || !clone.HasZeroOperationCostEntry || !copy.BuffsBySource[(20, temporary)].HasZeroOperationCostEntry || !snapshot.OperationCostZeroEntrySources.SequenceEqual(new[] { $"20/{temporary}" })) return "行动费零键须保留于克隆/复制/快照";
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, HasZeroOperationCostEntry = true };
+            target.BuffsBySource[(30, true)] = new CardBuff { SourceCardId = 30, Temporary = true, HasZeroOperationCostEntry = true };
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60 }); target.BaseOperationCost = 7; target.TemporaryOperationCost = -4;
+            string originalKey = temporary ? "operationCost_tempBuffGive" : "operationCost_permBuff";
+            var initial = new Dictionary<string, int> { [originalKey] = 0 }; var current = new Dictionary<string, int>(initial); var other = new Dictionary<string, int> { ["operationCost_permBuff"] = 0, ["operationCost_tempBuffGive"] = 0 };
+            int basis = 7, temp = -4;
+            if (mode <= 1 && amount != 0) { current[mode == 0 ? "operationCost_tempBuffGive" : "operationCost_permBuff"] = amount; if (mode == 0) temp += amount; else basis = Math.Clamp(basis + amount, 0, 99); }
+            if (mode is 2 or 3 or 5) { current.Remove("operationCost_permBuff"); other.Remove("operationCost_permBuff"); basis = Math.Clamp(amount, 0, 99); if (mode is 2 or 3) current = new(initial) { [mode == 2 ? "operationCost_SetValue" : "Suppress"] = mode == 2 ? amount : 0 }; }
+            var expected = new Dictionary<int, Dictionary<string, int>> { [30] = other }; if (current.Count != 0) expected[20] = current;
+            engine.Api.InvokeByName("ChangeOperationCost", null, new object?[] { target, 20, amount, mode, true, true, false }, new EffectContext { Engine = engine, State = state, Controller = side }, out _);
+            if (!KreditZeroKeyFixtureMapsEqual(CaptureOperationZeroKeyFixtureLedger(target), expected) || target.BaseOperationCost != basis || target.TemporaryOperationCost != temp
+                || !source.CardsBuffedByThisCard.SequenceEqual(current.Count == 0 ? new[] { 888 } : new[] { 888, 60 }) || target.BuffsBySource.Values.Any(x => x.OperationCost != 0 && x.HasZeroOperationCostEntry)) return $"行动费零键普通/绝对生命周期错误 {side}/{temporary}/{mode}/{amount}";
+            clone.HasZeroOperationCostEntry = false; if (!clone.IsEmpty || !copy.BuffsBySource[(20, temporary)].HasZeroOperationCostEntry) return "克隆零键标记须独立";
+            target.ResetAttributes();
+            if (target.Snapshot().OperationCostZeroEntrySources.Length != 0 || snapshot.OperationCostZeroEntrySources.Length != 1 || !copy.BuffsBySource[(20, temporary)].HasZeroOperationCostEntry) return "重置须清零键且不污染既有快照/复制件";
         }
         return null;
     }

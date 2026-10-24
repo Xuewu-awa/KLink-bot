@@ -987,6 +987,9 @@ public sealed class CardInstance
             KreditCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.KreditCostSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.KreditCostSetValue!.Value),
+            OperationCostZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroOperationCostEntry && kv.Value.OperationCost == 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
             OperationCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.OperationCostSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.OperationCostSetValue!.Value),
@@ -1086,8 +1089,10 @@ public sealed class CardBuff
     // Null means absent; zero is a present entry, not a numerical fee buff.
     public int? KreditCostEmptyDetail { get; set; }
 
-    /// <summary>行动费用相对**卡面行动费用**的偏移量。</summary>
+    /// <summary>普通临时/永久来源的行动费贡献；旧手工适配器可能仍保留模板偏移。</summary>
     public int OperationCost { get; set; }
+    // RULE-373: explicit zero-valued ordinary operation-cost key.
+    public bool HasZeroOperationCostEntry { get; set; }
 
     // RULE-344: independent raw operationCost_SetValue key, including zero.
     public int? OperationCostSetValue { get; set; }
@@ -1131,7 +1136,7 @@ public sealed class CardBuff
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
-                           && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry;
+                           && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry && !HasZeroOperationCostEntry;
 
     /// <summary>
     /// 深拷贝 —— `CardApi.SuppressUnit` 要把这条 buff 整个摘走、并在解除时原样装回，
@@ -1153,6 +1158,7 @@ public sealed class CardBuff
         KreditCostSetValue = KreditCostSetValue,
         KreditCostEmptyDetail = KreditCostEmptyDetail,
         OperationCost = OperationCost,
+        HasZeroOperationCostEntry = HasZeroOperationCostEntry,
         OperationCostSetValue = OperationCostSetValue,
         HeavyArmor = HeavyArmor,
         Fury = Fury,
@@ -1219,6 +1225,7 @@ public sealed record CardSnapshot(
     public Dictionary<string, int> KreditCostEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public string[] KreditCostZeroEntrySources { get; init; } = [];
     public string[] AttackZeroEntrySources { get; init; } = [];
+    public string[] OperationCostZeroEntrySources { get; init; } = [];
     public Dictionary<string, int> OperationCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);

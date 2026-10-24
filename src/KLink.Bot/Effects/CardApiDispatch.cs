@@ -4665,6 +4665,8 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
+            // RULE-373: prune only current-source keyless compact slots.
+            PruneEmptySourceBuffSlots(target, sourceId);
             // RULE-340: native type3/mode4 removes only tempBuffGive for this
             // source, never a permanent/absolute fallback. amountRemoved is
             // the negated ledger amount, independent of the caller's request.
@@ -4673,6 +4675,7 @@ public sealed partial class CardApi
             {
                 int amountRemoved = unchecked(-existing.OperationCost);
                 existing.OperationCost = 0;
+                existing.HasZeroOperationCostEntry = false;
                 existing.OperationCostSetsAbsoluteValue = false;
                 if (existing.IsEmpty)
                 {
@@ -4712,7 +4715,9 @@ public sealed partial class CardApi
         {
             valueChanged = amount != 0;
             var buff = GetOrCreateBuff(target, sourceId, temporary);
-            buff.OperationCost += amount;
+            buff.OperationCost = unchecked(buff.OperationCost + amount);
+            // Nonzero ordinary accumulation removes a zero sum, never creates a zero key.
+            buff.HasZeroOperationCostEntry = false;
             buff.OperationCostSetsAbsoluteValue = false;
             // Native ordinary accumulation removes the chosen key when its
             // sum is zero. Keep any other represented fields/source slot.
@@ -4757,7 +4762,11 @@ public sealed partial class CardApi
             var buff = target.BuffsBySource[candidate];
             // Preserve opaque pre-migration absolute-offset compatibility data.
             // Known native paths no longer create that ambiguous old flag.
-            if (!buff.OperationCostSetsAbsoluteValue) buff.OperationCost = 0;
+            if (!buff.OperationCostSetsAbsoluteValue)
+            {
+                buff.OperationCost = 0;
+                buff.HasZeroOperationCostEntry = false;
+            }
             buff.OperationCostSetValue = null;
             if (changeType == ChangeTypeOperationCostSuppress) buff.HasSuppressLedgerEntry = false;
             if (buff.IsEmpty) target.BuffsBySource.Remove(candidate);
