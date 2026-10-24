@@ -3180,7 +3180,11 @@ public sealed class MatchEngine
         State.Move(card, CardLocation.Discard, locationNumber: card.LocationNumber,
             moveReason: CardMoveReason.Destroyed, notifyMoved: false, normalizeLocation: false);
         Api.RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
-        State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Destroyed);
+        // RULE-383: CardLocationMoved i=410..578 requires either endpoint to
+        // be on the board. Use the saved removal location, not a callback's
+        // later location; the destination here is always Discard.
+        if (oldLocation.IsBoard())
+            State.CardMoved?.Invoke(card, oldLocation, CardLocation.Discard, false, CardMoveReason.Destroyed);
         FireAfterLeaveTrigger(card, CardLocation.Discard, oldLocation);
         ExecuteDestroyed(card, destroyer, oldLocation, batch, destroyedInCombat);
     }

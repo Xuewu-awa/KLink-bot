@@ -1,0 +1,207 @@
+{
+  "rule": "RULE-383",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "232a0571adfdcf812ca8b4e45c6627acf0535062",
+  "kernel_changed": true,
+  "fresh_live_capture": true,
+  "read_only": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-383",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "fresh_read_only_functions": 10,
+    "redecoded_bytes": 9606,
+    "redecoded_statements": 362,
+    "modeled_functions": [
+      "DestroyCard",
+      "ApplyRemoveCardFromBoard",
+      "CardLocationMoved",
+      "SetCardLocationAndLocNumber",
+      "GetCardFromID"
+    ],
+    "modeled_bytes": 3258,
+    "worker_nodes": 67,
+    "model_cases": 1280,
+    "case_sha256": "a5adcde2fc2f6ce7dc58e2a93cff013c7d72eb2fad067ca52b4456712a1f89d3",
+    "limits": "Five whole bodies; explicit validity/registered lookup/notification/event/refresh/left-right helper primitives. Before/leave callbacks use controlled zones; board-only leave mutation supplied as callback behavior, not newly certified helper. Native non-action modeled but headless non-action API not certified. No HQ/GC/container/client-receipt certification.",
+    "worker_exact_nodes": 67,
+    "new_tests": 2,
+    "regression_cases": {
+      "board_boundary": 192,
+      "callback_removal_snapshot": 64,
+      "total": 256
+    },
+    "selftest_passed": 802,
+    "selftest_total": 802
+  },
+  "finding": "Single Destroy unconditionally invoked CardMoved after moving any accepted target toDiscard. The complete native CardLocationMoved requires action context and old/new in explicit board set5/6/7 before ExecuteOnCardLocationMoved. Accepted hand/deck targets therefore erroneously ran own/T47 movement effects.",
+  "authority": "New read-only PID24220 capture:10complete functions9606B/362statements, re-decoded with symbol headers/raw/currentPE hash checks. CardLocationMoved set5/6/7 at5; branch377..568 checks action and OR(old in board,new in board); event578. ApplyRemove oldLocation read105 precedes before-leave258; DestroyCard entry location184 precedes before-destroy270. Setter94 writes discard and210 bypasses number write323.",
+  "changes": [
+    "In single MatchEngine.Destroy only, call State.CardMoved when cached oldLocation.IsBoard(); newLocation is alwaysDiscard.",
+    "Retain cached removal location after before-destroy but before before-leave callbacks. Keep notification entry location, movement/refresh itself, leave/death flow and history unchanged.",
+    "No global GameState.Move/ExecuteLocationMovedEvents/explicit ExecuteOnCardLocationMoved adapter gate added; batch/combat and HQ/IsAlive policies unchanged."
+  ],
+  "validation": [
+    "1280 offline executions of5full captured bodies totaling3258B; nested DestroyCard/ApplyRemove/CardLocationMoved/setter/GetCardFromID. Controlled validity/registered lookup and event/helper implementations; native non-action varied only as model input.",
+    "DeepSeek67mechanically selected complete nodes independently matched primary extraction exactly; semantics/integration/publishing owned by primary.",
+    "192actual headless combinations:2sides x8accepted targetzones x2suppression x2sourcepresences x3entries(engine/publicAPI/native-name). Compare own/T47 VM effects, movement-hook counts, discard numbering, action and death history.",
+    "64actual callback cases move target during before-destroy and during before-leave. Verify movement gate/payload uses cached removal location, while destruction notification uses earlier entry location. Shared marker filtered by movement phase.",
+    "Test preparation initially failed to compile because LiveRuleTables is internal; replaced the test access with explicit known enum labels. Right-side fixture then consumed its own marker on second draw; moved marker to opposite deck and scoped temporary compiled IR cache. Final corrected fixtures rerun against unpatched kernel2/802failed; patched Release802/802. Marker/cache corrections affect tests only."
+  ],
+  "unresolved": [
+    "HQ-to-damage adapter and Destroy IsAlive/HQ rejection remain unverified; no claim that all nonboard native targets have valid lifetime/lookup.",
+    "Discard/NotAvailable targets, detached/alias card objects, nonpositive IDs, GC/pendingkill and callback invalidation require further dependency/runtime evidence.",
+    "Other5newlycaptured event bodies are syntactically re-decoded, not entirely semantically certified; mock callbacks/refresh/left-right helper primitives do not replace full implementations.",
+    "Non-action/receive/reconnect orchestration, complete native container ordering, full single-card restoration and paused version migration remain unresolved."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-dependencies-native-20261024.json",
+      "sha256": "d2fe3289d83f20907823ec2c0ca66125be153b2686cbe24a45b98774ee2a49d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-removal-generation-native-20261021.json",
+      "sha256": "103f933a98e2521252af520567ab1bb3ad2126df0cd4ff80b09f722b90954f01"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule383-destroy-dependencies.py",
+      "sha256": "004d260d6f25f7fc189949d66a0e25294c30f1aa39dda3d7410b26cf0759b4d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule290-action-helpers.py",
+      "sha256": "f2c7142728b8fb780bca10be6aa117a784b3231451cbb6db5d7c508a50d0b7b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule383.py",
+      "sha256": "d475dbb49df798069388ed651cfa7f03ef2d4bcff3c3b5390af24fc0d36d0be1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule383-tests.py",
+      "sha256": "bbeef1715c096fc1b1d50c41e4823d339f8920b45a96d6352468f404d382da29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule383.py",
+      "sha256": "2c311842dffd1c1c5894d746d497cad3ab4aa4b13d3549726c8594e453ce0a85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule383.py",
+      "sha256": "d2926ba4d5a4a57aa41a432c9dec9d89457ee76b02c2bb43d658d2a7b73dbe15"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule383.py",
+      "sha256": "7b41d4ea7afb0268baff587c015ef563b89eac024db02325809f439440457551"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-model-20261024.json",
+      "sha256": "0a174e7dd432cec3555dd58b38578d59ce5f09e2afac00c125f9837e682aa89b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-verified-20261024.json",
+      "sha256": "1f00cefb4748935204d00f66b546345a15f37d786608a34366d5175b2af7e4c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-test-build-initial.log",
+      "sha256": "d391abce84645d5a11c8226d4e711a699a8d5217a10624971923dc937398447a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-selftest-before.log",
+      "sha256": "b89f44cf7f6f7285f6cbd60786f7838c8635304354fda803e35073d9a246e388"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-selftest.log",
+      "sha256": "c6400ff6ee48838b9d2cd1483dfe26a3443e191d6a026660a31912915bf3a776"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\set-rule383-patch.py",
+      "sha256": "5b05d361e73fc2b8fa7b7a6e7ce84ebb2b1342ea24a0ef5c84b726dd9fc9d9c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-initial-before.log",
+      "sha256": "b89f44cf7f6f7285f6cbd60786f7838c8635304354fda803e35073d9a246e388"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-initial-after.log",
+      "sha256": "f41aa37199b04d41857b3ef36876f617c3b8e9eac4e1ee806491e68f16d2cade"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule383-marker-cache-before.log",
+      "sha256": "ddb754e7a816c83594529d58f674b04b15aa46012604acf7ae31b8c691b2cd1d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\task.txt",
+      "sha256": "3767d021e884d983e2c5b0c38c2da465f2612d8a90cd39aef488668ef0ae1800"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\functions.json",
+      "sha256": "f93998badb13a098e7ddc90ee8bb27671f6fe0068f8d1f7f322e4f74242a33bf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\extract.py",
+      "sha256": "e5de935dc060c449ef285ab570f578ed587c93091d5ea772243959dfa92cd4b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\nodes.json",
+      "sha256": "c62a942116dfa42a5c69b08b6d9f14ff5b9829ee4ba1a2b0e1919bd7e49bd235"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\primary-nodes.json",
+      "sha256": "783f1ca58e425f658491fae0afbe693ee24d01135e7637e16439b5cc9406371a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule383\\primary-cases.json",
+      "sha256": "86ffcb1faf5404c24228618174fe35d7ef760c3106f945800c9152adea34257b"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-205104-rule383-movement-gates-11c1db21\\job.json",
+      "sha256": "1ee73c9fc83c7170b44cef3eb6484845877800cc9a9e2ad3581591d9d03acd84"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-205104-rule383-movement-gates-11c1db21\\answer.txt",
+      "sha256": "35c6e0b1ab58434ad9226ff1fb3f136d96e20fb955b5c70e334221d077820fa3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "c469fe75464f59873ef5c169b4b87f862e9b18e9002f2c7e775a9f021cff5319"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\LiveRuleTables.cs",
+      "sha256": "fa54fb5563557461ef0a364a81d1d0d2479fd3e3e4fc0858798f4c2309e33179"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "5b1a2024efda54174df9834975de7dafa013b00d327454d8e714bcee71ebb666"
+    }
+  ]
+}

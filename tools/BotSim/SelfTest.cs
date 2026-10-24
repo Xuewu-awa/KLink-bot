@@ -954,6 +954,8 @@ internal static class SelfTest
         new("效果摧毁记录目标/来源和回调前旧位置，并先于离场动作", DestroyActionPayloadAndTiming),
         new("原生DestroyCard严格按两个对象参数取目标和来源", DestroyExplicitObjectArguments),
         new("显式摧毁来源贯穿回调与旧位置通知", DestroyExplicitSourceCallbacks),
+        new("单体销毁只在离开战场时派发移动事件", DestroyMovementBoardBoundary),
+        new("单体销毁移动门使用离场前保存的位置", DestroyMovementRemovalSnapshot),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -24708,16 +24710,22 @@ internal static class SelfTest
     // in the other deck. The existing creation callback runs the test mutation.
     // These temporary programs do not claim live card effects; cleanup is deterministic.
     private static IDisposable InstallDrawReentryProbe(GameState state, Action onDraw,
-        string probe = "card_unit_51e_regiment")
+        string probe = "card_unit_51e_regiment", Side markerSide = Side.Right)
     {
         const string marker = "card_unit_routed_troops";
         const string trigger = "OnCardDrawnFromDeck";
         if (KismetLibrary.Default?.Find(probe)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
             || KismetLibrary.Default.FindProgram(probe, trigger) is not null)
             throw new InvalidOperationException("无法安全安装抽牌重入探针");
+        // Scope compiled IR as well as its source when changing the marker side.
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(KismetLibrary.Default)!;
+        KismetProgram? previous = null;
+        if (cache.TryGetValue(probe, out var programs)) programs.Remove(trigger, out previous);
         locals.Add(trigger, new[] {
             new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] {
-                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = marker },
+                new KismetExpr { Int = (int)markerSide }, new KismetExpr { Str = marker },
                 new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
             }, Array.Empty<int>(), null, null, -1, null, null),
             new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
@@ -24725,9 +24733,16 @@ internal static class SelfTest
         state.CardCreated = card =>
         {
             created?.Invoke(card);
-            if (card.Name == marker && card.Location == CardLocation.DeckRight) onDraw();
+            if (card.Name == marker && card.Location == markerSide.DeckOf()) onDraw();
         };
-        return new AuditProbeCleanup(() => { state.CardCreated = created; locals.Remove(trigger); });
+        return new AuditProbeCleanup(() => {
+            state.CardCreated = created; locals.Remove(trigger);
+            if (cache.TryGetValue(probe, out var current))
+            {
+                current.Remove(trigger);
+                if (previous is not null) current[trigger] = previous;
+            }
+        });
     }
 
     private sealed class AuditProbeCleanup(Action cleanup) : IDisposable
@@ -34420,6 +34435,100 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static string? DestroyMovementBoardBoundary(CardDatabase db)
+    {
+        using var movement = InstallMovementObserverProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation old in new[] { CardLocation.DeckLeft, CardLocation.DeckRight, CardLocation.HandLeft, CardLocation.HandRight,
+            CardLocation.BoardHqLeft, CardLocation.BoardHqRight, CardLocation.BoardFrontline, CardLocation.Deck })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool hasSource in new[] { false, true })
+        foreach (int route in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var victim = state.CreateWithId("card_unit_typhoon_mk_ib", side, 30, old, 20);
+            victim.Definition = new CardDefinition { Name = victim.Name, Type = "infantry", UsedTriggers = new[] { "OnCardLocationMoved" } };
+            victim.Keywords.Clear(); if (suppressed) victim.Keywords.Add(Keyword.Suppressed);
+            var observer = state.CreateWithId("card_event_honorifics", side.Opposite(), 60, side.Opposite().HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "order", UsedTriggers = new[] { "OnOtherCardLocationMoved" } };
+            observer.Keywords.Clear();
+            var discarded = state.CreateWithId(PlainUnit, side, 70, CardLocation.Discard, 77);
+            int moves = 0; var prior = state.CardMoved;
+            state.CardMoved = (card, from, to, changed, reason) => {
+                if (ReferenceEquals(card, victim)) moves++;
+                prior?.Invoke(card, from, to, changed, reason);
+            };
+            if (route == 0) engine.Destroy(victim, hasSource ? source : null);
+            else if (route == 1) engine.Api.DestroyCard(victim, hasSource ? source : null);
+            else engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, hasSource ? source : null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool expected = old.IsBoard();
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (moves != (expected ? 1 : 0)
+                || Equals(victim.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true) != (expected && !suppressed)
+                || Equals(observer.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true) != expected
+                || victim.Location != CardLocation.Discard || victim.LocationNumber != 20 || discarded.LocationNumber != 77
+                || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 })
+                || actions.Count(x => x.Name == "ZActionDestroyUnit") != 1
+                || actions.Any(x => x.Name == "ZActionRemoveCardFromBoard"))
+                return $"销毁移动事件须以旧/新区域含战场为门，不能阻止实际销毁：{side}/{old}/{suppressed}/{hasSource}/{route}, moves={moves}";
+        }
+        return null;
+    }
+
+    private static string? DestroyMovementRemovalSnapshot(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        using var movement = InstallMovementObserverProbes();
+        using var before = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        using var leave = InstallSelectionDrawProbe(name, "OnLeaveBoardOrOwner");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool startsOnBoard in new[] { false, true })
+        foreach (CardLocation removalOld in new[] { side.HandOf(), side.DeckOf(), side.HqOf(), CardLocation.BoardFrontline })
+        foreach (CardLocation afterLeave in new[] { side.HandOf(), side.DeckOf(), side.HqOf(), CardLocation.BoardFrontline })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            CardLocation initial = startsOnBoard ? side.HqOf() : side.HandOf();
+            var victim = state.CreateWithId(name, side, 30, initial, 20); victim.Keywords.Clear();
+            victim.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { "OnCardLocationMoved", "OnBeforeDestroyed", "OnLeaveBoardOrOwner" } };
+            var observer = state.CreateWithId("card_event_honorifics", side.Opposite(), 60, side.Opposite().HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "order", UsedTriggers = new[] { "OnOtherCardLocationMoved" } }; observer.Keywords.Clear();
+            state.CreateWithId("card_unit_51e_regiment", side, 50, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_51e_regiment", side, 51, side.DeckOf(), 1);
+            int draws = 0, moves = 0; bool moving = false, badPayload = false; var prior = state.CardMoved;
+            state.CardMoved = (card, from, to, changed, reason) => {
+                if (ReferenceEquals(card, victim)) {
+                    moves++; moving = true;
+                    badPayload |= from != removalOld || to != CardLocation.Discard || changed || reason != CardMoveReason.Destroyed;
+                }
+                prior?.Invoke(card, from, to, changed, reason);
+            };
+            using var draw = InstallDrawReentryProbe(state, () => {
+                // Movement probes share the marker, so only observe pre-move draws.
+                if (moving) return;
+                draws++;
+                if (draws == 1) state.Move(victim, removalOld, 20, notifyMoved: false, normalizeLocation: false);
+                else if (draws == 2 && removalOld.IsBoard()) state.Move(victim, afterLeave, 20, notifyMoved: false, normalizeLocation: false);
+            }, markerSide: side.Opposite());
+            engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, source },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            bool expected = removalOld.IsBoard();
+            var notice = state.ActionLog.SelectMany(x => x.SubActions).Single(x => x.Name == "ZActionDestroyUnit");
+            string initialName = startsOnBoard
+                ? side == Side.Left ? "Board_HQLeft" : "Board_HQRight"
+                : side == Side.Left ? "Hand_Left" : "Hand_Right";
+            if (draws != (expected ? 2 : 1) || moves != (expected ? 1 : 0) || badPayload
+                || Equals(victim.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true) != expected
+                || Equals(observer.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true) != expected
+                || notice.Values.Single(x => x.Name == "destroyedLocation").Text != initialName
+                || victim.Location != CardLocation.Discard || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 30 }))
+                return $"移动门应使用摧毁前回调之后/离场回调之前的位置，通知仍保存入口位置：{side}/{initial}/{removalOld}/{afterLeave}, draws={draws}, moves={moves}";
         }
         return null;
     }
