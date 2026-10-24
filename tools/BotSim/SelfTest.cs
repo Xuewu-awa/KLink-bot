@@ -970,6 +970,8 @@ internal static class SelfTest
         new("批量销毁空数组：直接helper通知，非空包装入口短路", BatchDestroyNoticeEmpty),
         new("原生销毁历史更新不写回合死亡标记，保留重复与逐回合去重", NativeDestroyedHistoryUpdate),
         new("销毁数量按显式阵营查询，无效阵营不回退到接收者/控制方", NativeDestroyedHistoryCountSide),
+        new("批量伤害通知七字段：筛选、重复目标和逐次阵亡标记", BatchDamageNoticePayload),
+        new("批量伤害通知采样：旧区域先取，旧防御在受伤前回调后取", BatchDamageNoticeSampling),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34497,6 +34499,95 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? BatchDamageNoticePayload(CardDatabase db)
+    {
+        string[] names = { "NotAvailable", "Deck_Left", "Deck_Right", "Hand_Left", "Hand_Right", "Board_HQLeft", "Board_HQRight", "Board_Frontline", "Discard", "Deck" };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool reverse in new[] { false, true })
+        foreach (bool withSource in new[] { false, true })
+        foreach (int immuneMode in Enumerable.Range(0, 4))
+        foreach (int amount in new[] { 0, 3 })
+        foreach (bool duplicate in new[] { false, true })
+        foreach (int firstDefense in new[] { 2, 4, 105 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var a = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 2);
+            var b = state.CreateWithId(PlainUnit, side, 61, CardLocation.BoardFrontline, 0);
+            var c = state.CreateWithId(PlainUnit, side.Opposite(), 62, side.Opposite().HandOf(), 0);
+            a.Defense = a.MaxDefense = firstDefense; b.Defense = b.MaxDefense = 6; c.Defense = c.MaxDefense = 10;
+            foreach (var card in new[] { a, b, c }) { card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed); }
+            if (immuneMode == 1) b.Keywords.Add(Keyword.Immune);
+            if (immuneMode == 2) foreach (var card in new[] { a, b, c }) card.Keywords.Add(Keyword.Immune);
+            if (immuneMode == 3) a.Keywords.Add(Keyword.Immune);
+            var targets = new List<CardInstance> { a, b, c }; if (duplicate) targets.Add(a); if (reverse) targets.Reverse();
+            string locations = string.Join(";", targets.Select(x => names[(int)x.Location]));
+            var hp = new Dictionary<int, int> { [60] = firstDefense, [61] = 6, [62] = 10 };
+            var ids = new List<int>(); var olds = new List<int>(); var flags = new List<string>();
+            foreach (var card in targets)
+            {
+                if (amount == 0 || card.Keywords.Contains(Keyword.Immune)) continue;
+                int readable = Math.Clamp(hp[card.CardId], 0, 99);
+                ids.Add(card.CardId); olds.Add(readable); hp[card.CardId] = readable - amount; flags.Add(hp[card.CardId] <= 0 ? "1" : "0");
+            }
+            engine.Api.InvokeByName("DamageMultipleCards", null, new object?[] { targets, amount, withSource ? 20 : 0, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDamageMultipleCards").ToArray();
+            if (!handled || notices.Length != (ids.Count == 0 ? 0 : 1)) return "无实际受伤对象时不能发批量伤害通知";
+            if (ids.Count == 0) continue;
+            string Join(IEnumerable<int> values) => string.Join(";", values.Select(x => x.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            var expected = new[] { ActionValue2.Int("damage", amount), ActionValue2.Int("attackerID", withSource ? 20 : 0),
+                ActionValue2.Str("damageReceiverIDs", Join(ids)), ActionValue2.Str("damageReceived", Join(Enumerable.Repeat(amount, ids.Count))),
+                ActionValue2.Str("destroyed", string.Join(";", flags)), ActionValue2.Str("receiverLocations", locations), ActionValue2.Str("oldDefense", Join(olds)) };
+            if (!notices[0].Values.SequenceEqual(expected))
+                return $"批量伤害需精确七字段，区域保留原输入采样、其他数组按实际受伤者：{side}/{reverse}/{withSource}/{immuneMode}/{amount}/{duplicate}/{firstDefense}";
+        }
+        return null;
+    }
+
+    private static string? BatchDamageNoticeSampling(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(name, "OnReceiveDamage");
+        using var after = InstallSelectionDrawProbe("card_unit_typhoon_mk_ib", "OnOtherCardDealDamage");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool changeBefore in new[] { false, true })
+        foreach (bool changeAfter in new[] { false, true })
+        foreach (bool withSource in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 2); target.Keywords.Clear(); target.Defense = target.MaxDefense = 8;
+            var observer = state.CreateWithId("card_unit_typhoon_mk_ib", side, 80, CardLocation.Discard, 77); observer.Keywords.Clear();
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "order", UsedTriggers = new[] { "OnOtherCardDealDamage" } };
+            for (int i = 0; i < 2; i++) state.CreateWithId("card_unit_51e_regiment", side, 50 + i, side.DeckOf(), i);
+            int draws = 0; string? failure = null;
+            using var probe = InstallDrawReentryProbe(state, () => {
+                draws++;
+                var actions = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDamageMultipleCards").ToArray();
+                if (draws == 1)
+                {
+                    if (actions.Length != 0) failure = "批量通知不能早于受伤前回调";
+                    if (changeBefore) { target.Defense = 13; state.Move(target, side.HandOf(), 9, notifyMoved: false); }
+                }
+                else if (draws == 2)
+                {
+                    if (actions.Length != 1 || target.Defense != (changeBefore ? 10 : 5)) failure = "受伤后回调应看到通知及已扣防御";
+                    if (changeAfter) { target.Defense = 99; state.Move(target, CardLocation.Discard, 17, notifyMoved: false); }
+                }
+            }, markerSide: side.Opposite());
+            engine.Api.InvokeByName("DamageMultipleCards", null, new object?[] { new List<CardInstance> { target }, 3, withSource ? 20 : 0, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            var notice = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDamageMultipleCards").ToArray();
+            var expected = new[] { ActionValue2.Int("damage", 3), ActionValue2.Int("attackerID", withSource ? 20 : 0),
+                ActionValue2.Str("damageReceiverIDs", "60"), ActionValue2.Str("damageReceived", "3"), ActionValue2.Str("destroyed", "0"),
+                ActionValue2.Str("receiverLocations", side == Side.Left ? "Board_HQLeft" : "Board_HQRight"), ActionValue2.Str("oldDefense", changeBefore ? "13" : "8") };
+            if (failure is not null || draws != 2 || notice.Length != 1 || !notice[0].Values.SequenceEqual(expected))
+                return $"区域/防御/通知采样阶段错误：{side}/{changeBefore}/{changeAfter}/{withSource};draws={draws};{failure}";
+        }
+        return null;
     }
 
     private static string? NativeDestroyedHistoryUpdate(CardDatabase db)

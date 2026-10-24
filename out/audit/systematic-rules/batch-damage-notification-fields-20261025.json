@@ -1,0 +1,239 @@
+{
+  "rule": "RULE-394",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "beeb8cfdb76aea16f40300c4b422beeab635be19",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-394",
+    "fresh_functions": 9,
+    "fresh_bytes": 16846,
+    "fresh_statements": 563,
+    "worker_exact_nodes": 16,
+    "field_order": [
+      "damage",
+      "attackerID",
+      "damageReceiverIDs",
+      "damageReceived",
+      "destroyed",
+      "receiverLocations",
+      "oldDefense"
+    ],
+    "model_cases": 1536,
+    "boolean_boundary_cases": 3,
+    "modeled_builder_serializer_bytes": 3246,
+    "apply_acquisition_frontier": "Entry through NotifyDamageMultipleCards, or early all-zero return, using original whole AST/flow stack including distant loop continuations. Stops before damage effects/destruction.",
+    "model_limits": "T37 returns supplied amount and controlled location change; T38 empty; pre-damage mutation controlled; native getters/clamp/setter/container/enum-format/notification are controlled primitives. No native crypto execution, all after-damage/death/network/receipt semantics or arbitrary callback/lifetime certification.",
+    "native_defense_clamp": "Prior three native accessors PE bytes/pdata/instructions rechecked; getTotalDefense0..99 exact clamp asserted, not a fresh process capture or new full crypto emulation.",
+    "new_regression_cases": {
+      "payload": 384,
+      "timing": 16,
+      "total": 400
+    },
+    "selftest": "820/820",
+    "limits": [
+      "No history publication phase integration or double-death history order fix.",
+      "Original location array deliberately survives receiver filtering; no inferred array alignment repair.",
+      "Initial timing probe chose wrong target receive hook and is excluded; final T36 observer fixture rerun on pristine source before patched run.",
+      "No full after-damage/death/GC/network/client-receipt certification; validity and runtime enums constrained by existing verified adapter."
+    ]
+  },
+  "findings": [
+    "Headless ZActionDamageMultipleCards containedonlyattackerID/damage. ClientAddSubActionDamageMultipleCards emitssevenfields in finalSetArray order:damage,attackerID,damageReceiverIDs,damageReceived,destroyed,receiverLocations,oldDefense. Missing arrays prevent faithful downstream death receipts.",
+    "ApplyDamageToMultipleCards appends locationArr at509aftereachT37calculation, beforeT38 andbefore-receivecallbacks. Itszero-damage filtering removes indicesonlyfromdamageReceivedArr/receiverIDs, notlocationArr. Originalinput location array is intentionallyretained evenwhen it no longer alignsone-to-one with survivingIDs; this round replicates selectedclient syntax instead of inventing alignment.",
+    "OldDefenseArr is sampled after allbefore-receivecallbacks, perreceiveroccurrence. The nativegetTotalDefense backend clamps0..99 before subtraction. HeadlesspreviousrawDefense subtraction diverged fornegative/over99 reads, including repeateddeadtarget. Rechecked prior3accessors PE bytes/pdata/instructions against unchangedcurrentexe; no newcryptoimplementation claim.",
+    "ReceiverDestroyed is appended peroccurrence immediatelyafterthatdeduction. It must not be derived from finaldeadmap membership because duplicateIDs can surviveonehit then dieonanother. NotifyDamageMultipleCards occurs4495beforeafter-damage/death callbacks; later callbackHP/location mutations must not rewrite emitted values.",
+    "ExecuteBeforeReceiveDamage calls thetargetOnReceiveDamage hook despite the helpername. After-notice ExecuteOnCardDealDamageEffects usesdealer/T36observerhooks, not another targetOnReceiveDamage. Fresh955/1825bytehelpers independently confirmedfinalprobeplacement."
+  ],
+  "changes": [
+    "Emit allsevenfields at existingnotificationboundary usinginvariantdecimal/separatedID,damage,oldDefense lists;booleanflags as0/1strings andnumericTextfields=-1.",
+    "Sampleinputlocations immediatelyaftereachdamagecalculation, preservingtheentirearray acrosszero/immunityfiltering.",
+    "Readclamped0..99currentdefenseafterallbefore-receivecallbacks, recordoldvalue, subtractperoccurrence,andcaptureitsdeathflag.",
+    "Keepdamage/death/turnflag/history algorithms outside thisspecific read/notification change; noqueue,duplicatehistory,Finish orcombatdeath-orderrepair inserted."
+  ],
+  "validation": [
+    "Fresh9whole Blueprintfunctions16846bytes/563statements acquiredread-only and redecodedwithrawhash/headerFName/symbol/length/exeSHAchecks. TheseincludeApplyDamageToMultipleCards,6builder/serializer/wrapperfunctions,and2callbackhelpers. Fullsyntaxdecodeisnotfullsemanticcertification.",
+    "DeepSeek16array/notificationnodes independentlymatchedexactAST/offset/order. Workerinterpretednameascalledopcode ratherthancontainingfunction; primarycomparedthatprojectionandindependentlyreboundeachrowtoitscontainingfunction. No rawworkerfunctionattributionacceptedwithoutrecheck.",
+    "1536composedacquisition/payloadmodels executeactualApplyAST/flowstackfromentrytonotificationorearlyallzeroReturn, thenfivewholebuilder/serializerbodies3246bytes. Covers8immunitymasks,order,duplicates,3initialdefensesincluding105,controlledbeforeHP/locationmutation,controlledcalculationlocationmutation,amount0/3,source0/40. T37/T38,getter/setter,container,enumandcallbackprimitivescontrolled; prefixstopsbeforedeath/effectsuffix.",
+    "3boolean-arrayboundarymodels coverempty,false/trueformat. NonemptyclientApplynotificationonlyisregressed; arbitraryenumfriendlyformattingandnativecryptoarenotmodeled.",
+    "Twoheadlessregressions400cases:384payloadmappingcases cover2sides,reverse,sourcepresence,4immunitypatterns,0/3damage,duplicates,2/4/105defense;16samplingcases useactualVMdrawprobesbeforeHPdeductionandafter-noticeT36observation, varyingcallbackHP/locationchanges. Checkexactrecordorder/value/text,peroccurrenceoldHP/deathflag,originalinputlocationsandnoallzero-notification.",
+    "InitialtimingfixtureusednonexistentOnBeforeReceiveDamage andmistookOnReceiveDamageforafterhook. IntermediateT36fixturestillhadwrongbeforehook. These failures arefixturediagnostics,notrulebugsorrepairproof. Freshhelperinspectionfixedbeforeprobe=OnReceiveDamage andafterprobe=T36observer; finalfixtureonpristineproductionHEADfailed2/820,restoredpatchedsourcepassedRelease820/820. Preliminarylogsretainedseparately. OnlyauthoredCardApi temporarilyreplaced;protecteduseruntrackedfilepreserved."
+  ],
+  "unresolved": [
+    "Historypublicationphaseandcombatboth-diehistoryorderremainpending. Completingnotificationdoesnotmeanthereceiptqueueisimplemented.",
+    "Fullbatchdamageafter-calculation/death/salvage/observertransitivebehavior,allnativeidentity/GC/replacementandmutableinputarraysremainuncertified. Stable validtargetreferences andcontrolledfixtures aretestedboundary.",
+    "Nativearray/map/order,allcallbackmutations,arbitraryintegeroverflows/negativecalculateddamage/invalidIDs,wireenvelope/currentaction/reconnect/networkgatesremainopen.",
+    "Rawenumidentifiermappingreusesguardedexistingtable;nativefriendly-displayformat/localization/invalidenumsemanticsnotnewlyrestored. Nophysicalgamecallorwriteperformed.",
+    "Cardsversionmigrationpaused,fullycertifiedcards0;noallPvPorserveradjudicationclaim."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule394-batch-damage-builder-native-20261025.json",
+      "sha256": "18050d978e604a8211c948cc5f6de0475576a04cbaead062352e117b2906eea8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule394-batch-damage-apply-native-20261025.json",
+      "sha256": "cf76977aa9f58dcb154bc07caa981b72ce33634335c124429640ba84e57a1abe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule390-location-enum-native-20261024.json",
+      "sha256": "57fed6e0f652581ecffebe1d056bddddb3428cc26c5d2ba48d9e75f06fd30dd4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule394-batch-damage.py",
+      "sha256": "63e206d9db4eaf5b0523645af6946eb5004c2a37d4d261ee8cd3af59982b4ea2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule394-apply.py",
+      "sha256": "c65da788ee3245f4ec00fea00290bcb9c412b7b2eaa3345e31ced551e49d12ae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule394-tests.py",
+      "sha256": "993188aa9d71fa3a976d3fc7a43da25b4c5906c53c82b39d9530bc5af233edaa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\apply-rule394-payload.py",
+      "sha256": "d54cdd8416461a2970265edbe2f8c5f73e231f45978539b79d9c13e3c3190c2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule394-payload.py",
+      "sha256": "a14343d44e4fbee64eb7c1bb8c930da05b041172cb0b78d027cea04d3631e90e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule394.py",
+      "sha256": "5ba2ea602c41dd4989c3d8f519753ab7f023667dbd93cb31208eb14f3aaf30aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule394.py",
+      "sha256": "56f7530d1c200ecedbb36e26e6fa0d1f13a1cb9292f6aae4d74a96b1d90c52c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-payload-model.json",
+      "sha256": "d5d10468d8f06412734d2b1942aa5c1f623b7502dea9c1e991f44011cba3a7a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-verified-20261025.json",
+      "sha256": "661e5b672f0be06eb34ec46306e40d5b1913b17c51dce1809aca5cb953f0aefd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule390-notify.py",
+      "sha256": "235f39221f22a00e365665405e31a5bd94f9aae5d59c5c793afb3e58f8b65e36"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule334-defense-accessors-verified-20261023.json",
+      "sha256": "fc3243f845d49450262f8c00799b22a14c3198f91086f5d42be76a2efb2d12bf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-selftest-before.log",
+      "sha256": "95bf9da303227418e26209a5cb727dab2619e10f1cabff39775989ab966784d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-selftest.log",
+      "sha256": "c0ecbaa655984e4d3d1a5f6b9e01920eeaf62022ff44b7b9302e8b6c78d5162d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-preliminary-before.log",
+      "sha256": "1f2ce39094bd5bd0091707af425a6f3b7acb5ecdb9029fd869767e75dcd3941b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-preliminary-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-initial-fixture-selftest-before.log",
+      "sha256": "1f2ce39094bd5bd0091707af425a6f3b7acb5ecdb9029fd869767e75dcd3941b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-initial-fixture-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-initial-fixture-selftest.log",
+      "sha256": "6849856b5431c4411e1367b0e8f40ea095fbd72dc140d675513841aa493ba548"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-initial-fixture-selftest-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-second-fixture-selftest-before.log",
+      "sha256": "f4f88d1b834bedcc9ab58d72630b9e0cbb89d08201d5232a87b5bad05ac36716"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-second-fixture-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-second-fixture-selftest.log",
+      "sha256": "6ac0d7f72cc44c5ef83b44ad112085b27b27f923056dd18abeaa3dd4df24736a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule394-second-fixture-selftest-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule394\\task.txt",
+      "sha256": "9713bef18ad5cc611c5016a7eeb943701bc50c0442aeea91e4ea6d0a3d8a5e97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule394\\functions.json",
+      "sha256": "00c64ea8e6e47f35196d3666cef40d61a3abb0a4b1a708e5d80e85dc4c7df8cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule394\\nodes.json",
+      "sha256": "cec5eef040ef645e6ef155c957278b5c01445d262158a06c8e06cf2d7c292758"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule394\\primary-nodes.json",
+      "sha256": "c249fb218c8d1d76009d856b145988969e4a84d7743e6698f0dbc03fe1848b00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule394\\extract.py",
+      "sha256": "ed7734618e7e8ec0d145edd87c418b568587d6d43bf8958dc937a3c4c470e867"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-015806-rule394-batch-damage-arrays-7f6e1d3d\\job.json",
+      "sha256": "aa2a6b48e10f615df337b2bba4a4bb7bff2f23b319aabd4347cffdecd3e5dd30"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-015806-rule394-batch-damage-arrays-7f6e1d3d\\answer.txt",
+      "sha256": "26345f4af72c75e2da9db602cd84874532992d689105ecc15bdac7cc4507d0b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "72f04a8fa8fa2602a322f738bccad285638a06d65467cd554f7ff0d0f3db40dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "86c00b08fc31b67e9e214937acb71abf0af1d743c5dd5f9e8d15a69d8cdce369"
+    }
+  ]
+}

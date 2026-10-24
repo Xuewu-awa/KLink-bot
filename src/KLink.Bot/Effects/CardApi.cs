@@ -2076,8 +2076,16 @@ public sealed partial class CardApi
     /// <summary>ApplyDamageToMultipleCards uses whole-batch phases, never repeated DamageCard calls.</summary>
     internal IReadOnlyList<int> DealDamageMultiple(IReadOnlyList<CardInstance> targets, int amount, CardInstance? source)
     {
-        var damage = targets.Select(card => ExecuteOnDealDamageAddDamage(source, card, amount,
-            fromAttack: false, fromFight: false, isDefenderDamage: false)).ToArray();
+        var damage = new int[targets.Count];
+        var notificationLocations = new CardLocation[targets.Count];
+        for (int i = 0; i < targets.Count; i++)
+        {
+            damage[i] = ExecuteOnDealDamageAddDamage(source, targets[i], amount,
+                fromAttack: false, fromFight: false, isDefenderDamage: false);
+            // Native i=509 samples after this receiver's calculation. This array
+            // retains all input positions, even when zero-damage IDs are removed.
+            notificationLocations[i] = targets[i].Location;
+        }
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i];
@@ -2106,10 +2114,17 @@ public sealed partial class CardApi
         foreach (var hit in receivers) ExecuteBeforeReceiveDamage(hit.Card, source, hit.Damage, false);
         var destroyed = new Dictionary<int, (CardInstance Card, CardLocation Location)>();
         var affectedLocations = new HashSet<CardLocation>();
+        var oldDefenses = new List<int>();
+        var receiverDestroyed = new List<bool>();
         foreach (var hit in receivers)
         {
+            // Native i=3577/3618 reads getTotalDefense after all pre-damage
+            // callbacks, once per occurrence (including duplicate receiver IDs).
+            int oldDefense = Math.Clamp(hit.Card.Defense, 0, 99);
+            oldDefenses.Add(oldDefense);
             // Do not recheck immunity or board location after the pre-damage events.
-            hit.Card.Defense -= hit.Damage;
+            hit.Card.Defense = oldDefense - hit.Damage;
+            receiverDestroyed.Add(hit.Card.Defense <= 0);
             if (hit.Card.IsHq) State.UpdateHQDamagedAmountThisTurn(hit.Card.Owner, hit.Damage);
             if (hit.Card.Defense <= 0)
             {
@@ -2119,7 +2134,16 @@ public sealed partial class CardApi
         }
         _engine.FireSubAction("ZActionDamageMultipleCards", new[]
         {
-            ActionValue2.Int("attackerID", source?.CardId ?? 0), ActionValue2.Int("damage", amount),
+            ActionValue2.Int("damage", amount), ActionValue2.Int("attackerID", source?.CardId ?? 0),
+            ActionValue2.Str("damageReceiverIDs", string.Join(";", receivers.Select(hit => hit.Card.CardId.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            ActionValue2.Str("damageReceived", string.Join(";", receivers.Select(hit => hit.Damage.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+            ActionValue2.Str("destroyed", string.Join(";", receiverDestroyed.Select(dead => dead ? "1" : "0"))),
+            ActionValue2.Str("receiverLocations", string.Join(";", notificationLocations.Select(location =>
+            {
+                Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)location, out string name);
+                return name;
+            }))),
+            ActionValue2.Str("oldDefense", string.Join(";", oldDefenses.Select(value => value.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
         });
         foreach (var hit in receivers) ExecuteOnCardDealDamageEffects(hit.Card, source, hit.Damage, false, false, false);
         foreach (var hit in destroyed.Values) _engine.BeforeDestroyed(hit.Card, source, false);
