@@ -4232,6 +4232,29 @@ public sealed partial class CardApi
 
     private object? DoChangeDefense(EffectContext c, object? r, object?[] a)
     {
+        // RULE-374: native i487 mutates the ledger BEFORE mode4 reaches
+        // the incorrect-type diagnostic at3734 and writes qqq=false at3815.
+        // Mode4 never changes current/max defense or invokes rule events.
+        if (IntArg(a, 3) == ChangeTypeTempBuffRemove)
+        {
+            var card = TargetCard(c, r, a);
+            int sourceId = IntArg(a, 1);
+            if (card is not null && sourceId > 0 && Math.Clamp(card.Defense, 0, 99) > 0 && CanCardBeBuffed(card))
+            {
+                PruneEmptySourceBuffSlots(card, sourceId);
+                var key = (sourceId, true);
+                if (card.BuffsBySource.TryGetValue(key, out var buff))
+                {
+                    buff.Defense = 0;
+                    buff.HasZeroDefenseEntry = false;
+                    if (buff.IsEmpty) RemoveBuffEntry(card, key);
+                    else SynchronizeBuffTarget(card, sourceId);
+                }
+                else SynchronizeBuffTarget(card, sourceId);
+            }
+            return false;
+        }
+
         // RULE-336: mode3's action-process exits explicitly write qqq=false.
         // Return the out value even when a guard rejects the numeric change.
         if (IntArg(a, 3) == 3)
@@ -4264,23 +4287,6 @@ public sealed partial class CardApi
         //   实测调用点：`card_unit_no_9_commando` i=53（防设成 1）、
         //   `card_unit_meteor` i=432（防设成 defTotal×2）。
         int value = IntArg(a, 2);
-
-        // ★ `changeType == 4`：蓝图 `ChangeDefense`（起始 `:7543`）**没有**撤销分支 ——
-        //   :7646 `localChangeType == 4 → L_0E96`，而 :7906 `L_0E96` 是
-        //   `DirectClientLogger("change type incorrect for \"Change Defense\"")`（:7907）
-        //   + `qqq = False`（:7909）+ return（:7911），也就是**非法值，什么都不改**。
-        //   对照 `ChangeAttack`（:6591）：那里的 ct=4 有专门的 `L_096F` 撤销分支。
-        //   ⇒ 两个函数的 ct=4 **语义不一致**，所以这里对齐的是 no-op，
-        //     **不是** `RemoveAttackBuff` —— 对称地挂一个撤销会和蓝图相反。
-        //
-        // 为什么把它显式写出来（而不是省掉）：`ChangeAttack` 的 ct=4 修好之后，
-        //   很容易有人「顺手对称」地给这里也挂一个 `RemoveAttackBuff`。
-        // 当前卡池 `ChangeDefense` 的 changeType 分布是 `{1:333, 2:10}`，
-        //   **ct=4 有 0 个调用点** ⇒ 这条是**行为中性**的预防性对齐（A/B 一格都不会动）。
-        if (IntArg(a, 3) == ChangeTypeTempBuffRemove)
-        {
-            return null;
-        }
 
         if (IntArg(a, 3) == ChangeTypeSetValueReal)
         {

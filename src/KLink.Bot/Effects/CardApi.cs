@@ -2772,6 +2772,7 @@ public sealed partial class CardApi
         {
             var buff = target.BuffsBySource[candidate];
             buff.Defense = 0;
+            buff.HasZeroDefenseEntry = false;
             buff.DefenseSetValue = null;
             if (changeType == 3) buff.HasSuppressLedgerEntry = false;
             // Opaque legacy nonordinary presence is not a typed SetValue key.
@@ -2820,7 +2821,8 @@ public sealed partial class CardApi
                                          bool temporary, int changeType, bool isSet)
     {
         var buff = GetOrCreateBuff(target, sourceId, temporary);
-        buff.Defense += amount;
+        buff.Defense = unchecked(buff.Defense + amount);
+        if (changeType == 1 && !isSet) buff.HasZeroDefenseEntry = false;
         if (changeType != 1) buff.HasNonOrdinaryDefenseEntry = true;
         // RULE-308: keep other represented native keys and source slots.
         if (changeType == 1 && !isSet && buff.Defense == 0 && buff.IsEmpty)

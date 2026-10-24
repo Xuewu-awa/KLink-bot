@@ -1,0 +1,227 @@
+{
+  "rule": "RULE-374",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-374",
+    "date": "2026-10-24",
+    "fresh_live_capture": false,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "blueprint_functions_redecoded": 2,
+    "blueprint_bytes": 12010,
+    "blueprint_statements": 412,
+    "reference_model_cases": {
+      "mode4_main_with_ledger": 768,
+      "mode4_guard_out": 72,
+      "zero_key_ledger_lifecycle": 18,
+      "total": 858
+    },
+    "worker_raw_exact_nodes": 15,
+    "new_regression_combinations": {
+      "mode4_ledger_vm": 1536,
+      "mode4_guards": 144,
+      "zero_key_lifecycle": 36,
+      "total": 1716
+    },
+    "baseline": "Zero-key representation/clone/snapshot present, old mutation behavior:772/775pass,3new failures.",
+    "release_selftest": {
+      "passed": 775,
+      "total": 775,
+      "exit_code": 0
+    },
+    "scope": "Defense mode4 mutates temporary ledger before rejecting numeric change and writing qqqfalse. Preserve current/max defense and no rule notifications/hooks/death. Canonical ordinary zero presence for mode1 and typed2/3 ledger helpers. Containers/enum/validity/getters/buffability/source/frame primitives controlled; modes0/5/6/7/8/default, physical TMap/full ABI and full card logic pending."
+  },
+  "finding": "ChangeDefense mode4 is rejected only by the NUMERIC switch, after common ChangeBuffsFromCards type1 has already executed. Native487 calls ledger, switch789 routes4 to3734 incorrect-type diagnostic,3815 explicitly writes qqqfalse. Existing dispatch treated4 as whole-operation no-op and returnednull, missing ledger cleanup/source synchronization and leaving VM out slots stale. Numeric defense/max must remain unchanged, unlike attack/fee withdrawal.",
+  "authority": "Full5743B ChangeDefense +6267B common ledger re-decoded from reused client capture,12010B/412statements; raw script hashes/FNames/symbol headers and current executable SHA validated. Source/positive-defense/buffability guards checked in main. No new live read, game function call, injection or write. ClientLogger diagnostic itself omitted as non-rule headless concern, not counted as a rule event.",
+  "models": {
+    "total": 858,
+    "mode4_main_with_full_ledger": 768,
+    "mode4_guard_out": 72,
+    "zero_key_ledger_lifecycle": 18,
+    "digests": {
+      "main": "59f852bde313d2abf840fdd601321b6d30ae1d97356349f588e7ce21386caa31",
+      "guards": "0dfe38d5380625a545a03c6b57ec31ededae8c3bfec96027e59c2cef154f36f5",
+      "lifecycle": "a01b65a6c462a8f9b941b87cafa7ae7df66b4fdbc4ee38a03656214dfac9df11"
+    },
+    "execution": "Complete main4 invokes complete ledger1/4 across empty shells/ordinary zero keys/other keys/negative and positive stored temporary amounts/normal/self/missing source/skip. Defense7/max123 unchanged and no gain/destroy/after-hook calls, despite removal amount. qqq initializedtrue then explicitly false. Guard model includes null target, source-1/0/20, health-3/0/7, buffability and skip. Lifecycle uses direct full ledger1/2/3 for temporary/permanent zero keys, not main2/3 numerical/death paths.",
+    "controlled": "Object validity, buffability, total-defense getter, enum-friendly names, source lookup, map/array value-copy primitives, diagnostic sink and fresh locals controlled. No actual native container/UE IsValid/FFrame/crypto/log sink implementation or full callback/lifetime certification."
+  },
+  "changes": [
+    "Native-named dispatch4 now checks valid target, supplied positive source, positive total defense and buffability; prunes only current-source empty compact slots, removes temporary ordinary defense amount/zero presence and synchronizes reverse relation. Returnsfalse on both accepted and guard exits. No health/max write, notification, destruction, recalc or defense rule callback introduced.",
+    "Add logical HasZeroDefenseEntry to ordinary source contribution, IsEmpty, Clone and deterministic DefenseZeroEntrySources snapshot. Ordinary1 nonzero update clears marker and retains sum0 cleanup. Absolute2/3 cleanup clears permanent zero marker, then existing cached-original-current-source writeback may restore original zero field. Legacy HasNonOrdinaryDefenseEntry remains separate and unverified.",
+    "Correct dispatch and existing permanent-only test comments: incorrect-type numeric branch does not imply no ledger effect. Existing permanent-only test body unchanged; only new tests exercise temporary keys/out slots and guards."
+  ],
+  "regressions": {
+    "new_tests": 3,
+    "mode4_ledger_vm": 1536,
+    "guard_out": 144,
+    "zero_key_lifecycle": 36,
+    "total": 1716,
+    "before": "Zero-key schema/clone/snapshot support added, mutation logic still old:772/775pass,3new failures. Null returns and unchanged source ledger, missingfalse guard output, stale zero marker on ordinary mutation.",
+    "after": "775/775Release selftests pass,exit0.",
+    "coverage": "Both sides, permanent/temp/both empty shells, permanent defense0/defense_SetValue0/temporary kredit0, absent/0/-3/4 temporary defense, normal/self/missing sources, duplicate reverse IDs and foreign empty object preservation. Direct mode4 followed by real VM call with oldqqqtrue verifies false writeback and settled snapshot/action idempotence. Guards are direct dispatch checks; actual CanCardBeBuffed table reused.36lifecycle fixtures cover public1 and direct private2/3ledger helpers plus logical clone/copy/snapshot/reset isolation."
+  },
+  "worker": {
+    "job": "20261024-155949-rule374-defense-mode4-out-71753776",
+    "status": "completed",
+    "exit_code": 0,
+    "raw_exact_nodes": 15,
+    "normalization": false,
+    "extractor_executed": true,
+    "boundary": "Private packet exact decoded functions. Primary independently traversed and matched original node/owner/statement/order.12qqq writes+2diagnostics+1ledger call. No worker rule or publishing authority.",
+    "notes": "Worker prose incorrectly said all selected call nodes were nested; ledger call487 is top-level. That depth claim rejected, while original15objects pass exact independent comparison."
+  },
+  "engineering_diagnostics": "Initial schema insertion matched CardInstance.Defense instead of CardBuff.Defense, causing compile errors. Corrected class-scoped insertion; initial build log retained. Canonical before/after regression logs were then generated. Initial reference driver newline typo also fixed before model execution; neither is a game-rule finding.",
+  "remaining": [
+    "Priority next: ChangeDefense0 and5 and other enum branches. Native switch visibly routes0 to diagnostic and5 into absolute branch, while existing adapters remain separate/unfinished; complete ledger/numeric/out proof and integration not done here. Do not extend mode4 behavior by symmetry.",
+    "Legacy nonordinary defense flags, unknown/nonbyte paths, temporary public adapters, global cleanup/import metadata and suppression save/restore tail remain open. Only represented canonical ordinary zero keys are certified in this slice.",
+    "Full native TMap ordering/aliases, UE object validity/lifetime, crypto integrity, arbitrary frame/out ABI, all callback reentrancy, remote paths, construction/static lookup and complete single-card logic remain unresolved. No exhaustive natural-client zero-key creation inventory, fully certified cards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-mode4-ledger-only-model-20261024.json",
+      "sha256": "8acf651d9d8de6f808e343d8238639190918c99f90a05a7aeb3e200cb421a2fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-mode4-guard-out-model-20261024.json",
+      "sha256": "570b55520b0a02cf38f78a28b62d15d3e521a98436d84f6b238082c478789e66"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-zero-key-lifecycle-ledger-model-20261024.json",
+      "sha256": "69ef694df67730c4a7d3c658c064726981b7db9041180d03cdc3e782ec7eaf03"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule374-mode4.py",
+      "sha256": "0ba0886b5b3a4f0bfbfa6fb08f9f65eaa2691f4381ff92ade1e5d9bc1dfd43cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule374-guards.py",
+      "sha256": "5b8f66021ef0b4289193c4eff73e7160d60d27f86606d5816532c18ae7216e30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule374-lifecycle.py",
+      "sha256": "8e3e231a7b5d8d0721d59e59f2fe8845213ae1644d1428b042db49a389b0d9ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule374.py",
+      "sha256": "4f575eee19946ddbed2e29e217a54a5ca5937d8e2d435757b6a0df0267241e02"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-verified-20261024.json",
+      "sha256": "d821dc3087f31c6bdbded433add99c5c7dfd085185ef596d0be21de33ab68ed1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule374-schema.py",
+      "sha256": "edada464c27c75eadf61aaa72c194cc4fb402cda332657cebe80a982fc90e276"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule374-behavior.py",
+      "sha256": "3c172dfffa3b8b9ad008433d6790f1d79b7f176397b90850b31efc142c268bed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule374-tests.py",
+      "sha256": "bad7ee28c8a85260e428923fc77a632d89ced21c792641db6862a19e46ecff45"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-schema-initial-build.log",
+      "sha256": "c3569905b88cbadc1a6062295087d947a4624f548de393d41dd1fe1c4316b791"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-155949-rule374-defense-mode4-out-71753776\\job.json",
+      "sha256": "5b55d2b67dad2241619b2d1bd7d82b2f8507e2fa22247a807f481489b7aa8a32"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-155949-rule374-defense-mode4-out-71753776\\answer.txt",
+      "sha256": "052be621b29fb519c7c6207638662b4cf4be00f4753dcf9cd124243a33fdeb6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "1ed472f8e9929f2566493ede5e5ac4087062e8a690185958d4422d3afc566b0a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "01b32d6b204e63d9625276463a56c953f54be92485c5b053241f433124501f95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "sha256": "678f5ebe4e2372df98af128232d933ec62e604c1875c8a6ee49493fa41fb5918"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "95700c7a059f30b87adf3150868b555d487b8651fd0d04ca7fedfffd456ad2ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\task.txt",
+      "sha256": "21b0e80279941e41e4cf582fa0f88d996f2c41d90e47b74543ddf750b53ab3ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\functions.json",
+      "sha256": "51a2ac8e9eb52a17b4aae658b166622229352bc8aed2b03aab324eb8bcb1a0a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\extract.py",
+      "sha256": "44851f4f062a1da0865a737d1846866e817b103a30a4db133d3caa1ec5b11612"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\nodes.json",
+      "sha256": "f3fd88c468f411415385e001bd84f25d8bfc859be9ccc819f9044e97dffc136e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\primary-nodes.json",
+      "sha256": "10393ef3581607bd87e9de997ecc8a6d0c13397610c376f5f5de7a0f3a3859bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\primary-cases.json",
+      "sha256": "b94982cbd933f9a607376154afb711bee34e6004ab63a8560cd6b3dfd1bdaee1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\primary-guards.json",
+      "sha256": "bf9f7cfee82cdee0d57f44b84672a339272489175f56dfb8370cdb002096efc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule374\\primary-lifecycle.json",
+      "sha256": "2f1e78ec8b0d863666f126cc5453d6c09a58cb6a0a8a10ce37f0515cc915355a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-selftest-before.log",
+      "sha256": "749e8caefaee831f44d14a928a51ec06db3234ea5177d9c944b4c7453917e6ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-selftest.log",
+      "sha256": "b4b9d1f8af70951d00a913ed99ba6a67ea78259f61679d6df7bd97098b7ebcb5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule374-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}
