@@ -1,0 +1,144 @@
+{
+  "rule": "RULE-400",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "c3f8bcd177bbcac962aa8c23fecc4b21a43d303b",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-400",
+    "blueprint_bodies": 8,
+    "blueprint_bytes": 17186,
+    "native_context_handler_bytes": 2824,
+    "native_zeroing_import": "VCRUNTIME140.dll:memset",
+    "native_scalar_properties": 3,
+    "scalar_suffix_cases": 24,
+    "receiver_models": 4608,
+    "worker_nodes": 35,
+    "history_sites": 6,
+    "new_headless_scenarios": 120,
+    "baseline": "1/824 failure",
+    "final": "824/824 pass",
+    "scalar_boundary": "Actual EX_Context null-clear suffix executed offline from159c2fb to epilogue159ca0e using captured scalar property/class flags. Standard memset supplied as zeroing hook. Does not execute prior exception diagnostics, exception abort settings, full opcode entry, virtual property-clear fallback, object lifetime or game functions.",
+    "receiver_boundary": "Five complete local=true PvP receiver ASTs with eight controlled missing-key masks, stable retained map values and controlled history/delegate/daily primitives. Scalar zero null-context default is supplied from the independently emulated native suffix after nonfatal diagnostics. Delegate side mutation and lookup-key/object-ID difference are controlled probes. No real GC, abort settings, native containers or full receiver scheduling certification.",
+    "kernel_changed": true,
+    "limits": [
+      "Behavior covers normal continuation after script diagnostics. Diagnostic helper callbacks, abort settings, pending-kill/GC and concurrency are not emulated or certified.",
+      "Zero/negative synthetic map keys and controlled removal/replacement cases are probes, not observed live PvP transitions.",
+      "The positive-ID guard is applied to the local destruction-history adapter only; other GetCardFromID adapters remain to be audited.",
+      "Missing-object delegate/daily effects and complete receipt lifecycle remain open. Scalar null defaults do not certify arbitrary struct/property defaults."
+    ]
+  },
+  "findings": [
+    "Both BP_CardFunctions and BP_Logic GetCardFromID wrappers forward to FetchCardFromCardID. Fetch returns null forID<=0 and missing map keys; on a hit its AST repeats Map_Find before assigning output. CardFunctionsStub same-name declaration has zero script and is not the Blueprint override; Native flag was not assumed.",
+    "Five local death receivers have six unconditional-history-call sites inside their existing destruction gates. Target CardID/side are separate object-context scalar reads; absence of a lookup target does not add a new IsValid gate before UpdateDestroyedCardsIDs.",
+    "Current installed EX_Context initializer resolves thunk15a34e0 to handler159bf30, independently verified through live opcode dispatch. These differ from the earlier-build addresses and were not copied from old labels. Handler raw extent2824bytes captured read-only and matched to PE.",
+    "After normal return from script diagnostics, the null-context suffix skips the expression and zeros scalar output when property flags match1000000200. Three selected CardID/side metadata records have that exact mask and FProperty cast bit, sizes4/1. Thus a missing target supplies0/NotAvailable to history in this continuation scope. Script-abort/diagnostic callback semantics remain outside the proof.",
+    "The RULE-395 adapter instead skipped missing targets and directly queried nonpositive synthetic keys. It now uses a positive-ID receipt lookup gate and publishes default0/NotAvailable for missing lookups. Existing history helper retains duplicate global IDs, per-turn uniqueness and no per-side append for invalid side. No extra death effect or UnitDestroyedThisTurn update is introduced."
+  ],
+  "changes": [
+    "Limit the receipt lookup to positive IDs; attack retains selected references at receipt entry, batch receipts still look up each token in sequence.",
+    "Replace missing-target skip with UpdateDestroyedCardsIDs(target?.CardId ??0,target?.Owner ??NotAvailable).",
+    "Add one120-scenario headless regression covering five notification routes,two sides,six lookup/removal/replacement modes,two destruction-flag states. Includes duplicate batch/attack IDs, zero/negative synthetic entries and repeated drain with no additional actions/death flags."
+  ],
+  "validation": [
+    "Eight complete nonempty Blueprint bodies17186bytes and the empty reflected stub were independently checked for raw/header lengths,FNames,symbol names,hashes and decoded AST. Five receivers exactly retain the selected known bytecode contracts.",
+    "Opcode initializer/thunk/handler bytes independently checked against current PE and runtime dispatch; actual scalar property/class flags validated.24 Unicorn cases execute only the native null-clear suffix using standard-zeroing memset hook, two skip lengths,four prefills and three scalar metadata records. Exception diagnostic execution and virtual clear fallback are not emulated.",
+    "4608 controlled local=true PvP receiver AST models exercise eight missing-key masks with selected gates,order,side mutation and retained-object cases. Null scalar defaults are supplied from the independently verified suffix; container/getter/delegate/daily primitives remain controlled.",
+    "DeepSeek mechanical lookup/history extraction produced35 exact nested call nodes including six history sites. Every owner/function,statement/preorder index and node matches primary extraction; no semantic judgment delegated.",
+    "New headless regression on old kernel reproduces1/824 failure. Patched Release selftest passes824/824. Subsequent file encoding normalization preserves original BOM policy only, with no semantic source changes.",
+    "The null suffix zeroing call target6eabda7 is independently resolved through its RIP-relative thunk, PE import descriptor and name thunk to VCRUNTIME140.dll:memset; zeroing hook semantics are not inferred from a guessed callee label."
+  ],
+  "limits": [
+    "Behavior covers normal continuation after script diagnostics. Diagnostic helper callbacks, abort settings, pending-kill/GC and concurrency are not emulated or certified.",
+    "Zero/negative synthetic map keys and controlled removal/replacement cases are probes, not observed live PvP transitions.",
+    "The positive-ID guard is applied to the local destruction-history adapter only; other GetCardFromID adapters remain to be audited.",
+    "Missing-object delegate/daily effects and complete receipt lifecycle remain open. Scalar null defaults do not certify arbitrary struct/property defaults."
+  ],
+  "next_work": [
+    "Audit positive-ID/null lookup behavior in other GetCardFromID adapters before extending this receipt-specific fix.",
+    "Continue diagnostic continuation/abort distinctions, actual object removal/replacement/lifetime and delegate reentry timing; do not generalize scalar defaults to struct/JSON defaults."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-card-lookup-native-20261025.json",
+      "sha256": "6236df8f12b43b30a5725fd709b02208dc7aa775e51b464ff863f2387283fa66"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-card-fetch-native-20261025.json",
+      "sha256": "e60514c5e8c4749844445fbd7f1bca77b217ab9b120c294a0b89c237e92cb148"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-local-death-receipts-native-20261025.json",
+      "sha256": "69f4c658e51a97d7adfadbd39956d41280c06a70239bcea3903cf75f5de78735"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-context-opcode-native-20261025.json",
+      "sha256": "8cbae034210b40b9c6b9455cda20eeaab6e165abf098547d27a2f8187aa3553d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-history-null-properties-20261025.json",
+      "sha256": "9d92a5e17aa7060afc5c6c7b5abcf230c2cd4edfcfb4cc276f1086548e19db88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-lookup.py",
+      "sha256": "d56a61e0aeef96e91ffa79ae223ffa88155cbc006b3c99940917004f21d437b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-fetch.py",
+      "sha256": "2b8b13a8b94a2c7aec6cc096e55445d447070d7aba64d7fb2df93097a0287d60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-receivers.py",
+      "sha256": "2bf0c1f70ce7ec83e08f49fb0bf0a7b913d501a54b955026d04f7aebdfee2e46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-context-opcode.py",
+      "sha256": "0a527d5b1a3d11f87416ab7450677d2e12111494db9554aa10bc28c68e39fae5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-null-properties.py",
+      "sha256": "6bd7fb6e11d53446a69d3fc6a9522d79ddb3de936c481597d42c2467f33c3c63"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-prepare-rule400.py",
+      "sha256": "36c6e1661a7056efe14bb5e2b890cff29baefc8adbb57a91872b5ffa0df5ac47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule400-receipts.py",
+      "sha256": "924d74abe28cf26e04913784248a8d75cf2818a5696d15273150df73592e6fdd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule400-null-suffix-model-20261025.json",
+      "sha256": "05bba5565db3c5a07d2ded00246947888151c1f69a7b8ab9674a48c9045cf30c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule400-local-receipt-model.json",
+      "sha256": "361eafec2f0da6eabc8517af36ccb1523e16fefd2f446afe3375e85a2ee43562"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule400.py",
+      "sha256": "90f76d53afaa2b88be5fcfe31cad16a32c9f9c72f87535008151183762152a29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule400-selftest-before.log",
+      "sha256": "217c4fe21d82c183d16172f87e50da0914f5668abaab74fd478efe9d5dbb492d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule400-selftest-after.log",
+      "sha256": "3f31bf3f916d224610988aaac4b791fb82e32f6160290ece63c7e342dc28b9aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule400-memset-import.py",
+      "sha256": "187ad173c444d70e68d36016d8ab006cef51d498a930eed8896e96b924509c3a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-null-memset-import-20261025.json",
+      "sha256": "12d8733672bafac910e0acca347941b0457875668c4814f76f58aaee12d70350"
+    }
+  ],
+  "deepseek_job": "20261025-063544-rule400-receipt-lookups-bf2495e2"
+}

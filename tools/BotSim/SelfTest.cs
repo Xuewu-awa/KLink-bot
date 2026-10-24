@@ -975,6 +975,7 @@ internal static class SelfTest
         new("销毁历史回执：生成阶段不可见，处理时读取归属和回合且不重放死亡", DeathHistoryReceiptBoundary),
         new("批量历史按通知处理：显式销毁裁剪弃牌，伤害保留逐项阵亡", DeathHistoryReceiptPayloadSelection),
         new("战斗历史回执：死亡回调无新历史，双亡按攻击者优先发布", CombatHistoryReceiptOrdering),
+        new("销毁历史回执：空查找标量默认0，保留重复与非正ID门", MissingDeathHistoryReceipts),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34510,6 +34511,47 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? MissingDeathHistoryReceipts(CardDatabase db)
+    {
+        var fire = typeof(MatchEngine).GetMethod("FireSubAction", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in Enumerable.Range(0, 5))
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (bool destroyed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 4;
+            int id = mode switch { 0 => 0, 1 => -7, 2 => 777, _ => 60 };
+            CardInstance? original = mode == 2 ? null : state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 0);
+            string text = id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var values = route switch {
+                0 => new[] { ActionValue2.Int("cardID", id) },
+                1 => new[] { ActionValue2.Str("cardsToDestroy", text + ";" + text) },
+                2 => new[] { ActionValue2.Int("cardID", id), ActionValue2.Bool("destroyed", destroyed) },
+                3 => new[] { ActionValue2.Str("damageReceiverIDs", text + ";" + text), ActionValue2.Str("destroyed", destroyed ? "1;1" : "0;0") },
+                _ => new[] { ActionValue2.Int("attackerCardID", id), ActionValue2.Int("defenderCardID", id),
+                    ActionValue2.Bool("attackerDestroyed", destroyed), ActionValue2.Bool("defenderDestroyed", destroyed) }
+            };
+            string[] names = { "ZActionDestroyUnit", "ZActionDestroyMultipleUnits", "ZActionDamageCard", "ZActionDamageMultipleCards", "ZActionAttackCard" };
+            fire.Invoke(engine, new object?[] { names[route], values });
+            // Controlled map/lifetime probes, not claims these transitions occurred in a live PvP match.
+            if (mode is 3 or 4) state.Remove(original!);
+            if (mode == 4) state.CreateWithId(PlainUnit, side.Opposite(), id, CardLocation.Discard, 0);
+            if (state.DestroyedCardIdsAll.Count != 0) return "回执之前不可发布历史";
+            int count = route >= 2 && !destroyed ? 0 : route is 1 or 3 or 4 ? 2 : 1;
+            int expectedId = mode >= 4 ? 60 : 0;
+            Side expectedSide = mode == 4 ? side.Opposite() : mode == 5 ? side : Side.NotAvailable;
+            int actionCount = state.ActionLog.Count;
+            engine.ApplyPendingLocalRuleReceipts(); engine.ApplyPendingLocalRuleReceipts();
+            if (!state.DestroyedCardIdsAll.SequenceEqual(Enumerable.Repeat(expectedId, count))
+                || !state.DestroyedCardsIdsByTurn(4).SequenceEqual(count == 0 ? Array.Empty<int>() : new[] { expectedId })
+                || state.DestroyedCardsIdsBySide(Side.Left).Count != (expectedSide == Side.Left ? count : 0)
+                || state.DestroyedCardsIdsBySide(Side.Right).Count != (expectedSide == Side.Right ? count : 0)
+                || state.UnitDestroyedThisTurn || state.ActionLog.Count != actionCount)
+                return $"空/非正查找应记0和无归属，替换须按当前对象，保留通知门/重复：{side}/{route}/{mode}/{destroyed}; history={string.Join(',', state.DestroyedCardIdsAll)}";
+        }
+        return null;
     }
 
     private static string? DeathHistoryReceiptBoundary(CardDatabase db)

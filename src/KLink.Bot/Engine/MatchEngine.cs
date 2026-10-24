@@ -1143,12 +1143,16 @@ public sealed class MatchEngine
                 var ids = receipt.HistoryLookupIds!;
                 // Attack resolves both role references at receipt entry. Batch
                 // receivers instead look up each token immediately before use.
+                // FetchCardFromCardID rejects nonpositive IDs even if a synthetic
+                // map happens to contain one. Normal nonfatal EX_Context handling
+                // clears CardID/side scalar results when the lookup is null.
+                CardInstance? LookupHistoryCard(int id) => id > 0 ? State.ById(id) : null;
                 var held = receipt.Kind == LocalReceiptKind.AttackHistory
-                    ? ids.Select(State.ById).ToArray() : null;
+                    ? ids.Select(LookupHistoryCard).ToArray() : null;
                 for (int i = 0; i < ids.Length; i++)
                 {
-                    var target = held is null ? State.ById(ids[i]) : held[i];
-                    if (target is not null) State.UpdateDestroyedCardsIDs(target.CardId, target.Owner);
+                    var target = held is null ? LookupHistoryCard(ids[i]) : held[i];
+                    State.UpdateDestroyedCardsIDs(target?.CardId ?? 0, target?.Owner ?? Side.NotAvailable);
                 }
                 continue;
             }
