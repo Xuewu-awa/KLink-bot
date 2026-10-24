@@ -1,0 +1,129 @@
+{
+  "rule": "RULE-392",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "f6a7ce7b068d247082c0cac2f337d75d61dcbce1",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "single_card_version_migration": "paused",
+  "historical_replays_authoritative": false,
+  "verified": {
+    "rule": "RULE-392",
+    "fresh_functions": 11,
+    "fresh_bytes": 34116,
+    "fresh_statements": 1142,
+    "worker_exact_rows": 14,
+    "current_delegate": {
+      "turn": 3,
+      "count": 0,
+      "cardfunctions": "0x1cb0e9deaa0"
+    },
+    "model_cases": 72,
+    "model_function_bytes": 2682,
+    "model_boundary": "Decoded AST execution with actual flow stack, repeated Array_Length and by-reference input indexing; controlled ResolveSubAction callback, empty board effects, empty AllMatchActions, non-replay context. Nested call and append supplied by test primitive, NOT observed gameplay behavior. No full dispatcher/receivers/native/UI/scheduling semantics modeled.",
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_selftest": "RULE-391 Release818/818, unchanged source",
+    "open": "History publication phase remains uncorrected. DoSubActions and actual receiver queue order/shared flag/dynamic target state must be preserved before integration; current empty delegate is not an all-phase absence proof."
+  },
+  "findings": [
+    "Fresh11whole OnlineMatch functions34116bytes/1142statements structurally decoded and verified:twoOpponent action generation wrappers,twoXAction receive wrappers,DoSubActions,ResolveSubAction,andfive death/damage/attackreceivers. Whole syntax decode is not whole semantic certification.",
+    "OpponentActionsPlayCard andOpponentActionsAttackCard complete their generation helper, thenExecuteAutoPlayCards,clearcurrentActionName,StopActionProcess,DoSubActions(subActions,true),visual queue andcleanup. Actual execution order proven from Push/Pop execution flow, not byte-offset ordering: generation calls reside at larger byte offsets than the autoplay suffix.",
+    "XAction receive wrappers AddActionEnd thenDoSubActions using passedreceiveFromLocal. DoSubActions stores that flag in shared instanceResolveSubActionsFromLocal, resolves ordered subactions viaArrayGetByRef, reevaluates inputArray_Length at each iteration, then unconditionally writesfalse before returning visual actions. Selected additional UI/replay/snapshot work remains opaque.",
+    "BatchDestroy receive copies the shared flag; true skips only old-location capture/setDiscard path, then stillUpdateDestroyedCardsIDs,DestroyedCountChanged broadcast andDailyMissions notification. This corroborates that merely skipping all local receipts after generation would omit requiredhistory work.",
+    "Previous battle CardFunctions address failedReadProcessMemory299. A current object-table scan initially foundnoactiveinstance, so no zero-delegate conclusion was drawn from stale/default data. After userloadedbattle, fresh exact-class non-CDO instance atturn3 hadDestroyedCountChanged arraycount0. CurrentGUObject item/index,class,propertyoffsets andselectedfields rechecked. Empty observed list excludes subscribers only at this instant, not all phases/matches/other callbacks.",
+    "72controlled DoSubActions models show inserted nestedcalls reset sharedflag tofalse without restoringoutervalue. Callback-appended input elements are traversed because length is reevaluated. These are supplied nested/append test conditions, NOT observed in-client nested gameplay or proof those callbacks are reachable."
+  ],
+  "validation": [
+    "All11functionraw hashes,headerlengths,FNames/symbolheaders anddecoderASTs independently rechecked against guardedexecutableSHA. Freshfunction capture and laterinstance snapshot are separate acquisitions, not an atomic whole-process trace.",
+    "DeepSeekprivate11functionpacket yielded14requested call/write nodes, primarypreorder extraction matchedexactly. The requested nonexistentOnUnitDestroyed signature produced no row; actualdelegate name was independently read asDestroyedCountChanged__DelegateSignature. No absence of other delegate calls inferred from the restricted query.",
+    "72AST flow models varyinputcount0/1/3,localmode,previoussharedflag,callbackappend,andno/false/true nestedmode. ActualDoSubActionsflowstack andArrayLength/byref access modeled,ResolveSubAction is an opaque suppliedcallback; boardeffect list andAllMatchActions empty,nonReplay. No completefive-receiver/dispatcher/native/scheduler simulation claimed.",
+    "Production source/tests unchanged; no redundant newselftest run. Latest source validation remains RULE391Release818/818, not presented as a newRULE392run."
+  ],
+  "integration_decision": "No kernel patch this round. Do not relocate all current RecordDestroyedCard calls to a generic end-of-effects callback: actual native queue order, mode overwrite, per-receipt object state and all five receiver gates must be preserved and tested first.",
+  "unresolved": [
+    "History publication phase remains uncorrected: headless ExecuteDestroyed records before own callbacks; selected client lifecycle publishes inreceipts aftergeneration/autoplay. Rule391purehelper does not close thisgap.",
+    "Need model each ofsixhistoryupdate sites withdeathconditions,side/IDlookup timing,callback mutations,nested actions andlocal/remote modes; then integrate receipts withoutdoublehistory orreplaying deatheffects.",
+    "CurrentDestroyedCountChanged list empty cannot prove no rule-affecting subscriber everexists. Native/subclassdelegatebindings,otherdelegates,DailyMissions/transitiveeffects remain scoped separately.",
+    "NativeArray/Map aliasing,reentrantcontext lifetime,allinputmutations,invalidobjects,GC/concurrency andserveradjudication remain open. No single-card/fullPvP1:1 claim."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule392-receipt-lifecycle-native-20261025.json",
+      "sha256": "35eaa20a2d331c57e8aff099cf24cb7c39a398fc7b34b11eb0b40db030b06742"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule392-history-delegate-live-20261025.json",
+      "sha256": "dd067bf37252012f04a08c9272ea753e926f63337fbacaf5a805e35d2d3a2ecc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule392-receipts.py",
+      "sha256": "3c208dc5a971c04af11a1aff0ad79badf291cbf738cf3528297eb3f640dad0f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule392-history-delegate.py",
+      "sha256": "e615edf5fa3741728b525086ede6b6953c09aad431bc887eeb7ccab76f01bee3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule392-receipts.py",
+      "sha256": "c1937d40e9c12c5ac2792e8338a631a9e4834f8ed413c295038ceab8d62a9032"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule392.py",
+      "sha256": "2bfe6a810242228b4556d99c40ab9226be665d0ecf09040e634047ae8027d08e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule392.py",
+      "sha256": "6a5eaae04f1959bc523bd1695f40ce2af526856aeee7981d8493dd24b449c34d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule392-receipt-model.json",
+      "sha256": "3ddbc1bc21d95042007c6fa7f92ee54801eebe334c49a359b3a3e158929de696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule392-verified-20261025.json",
+      "sha256": "127dbe4dc1a6b549c48671996770cdeda22153496594b3721bc102b12c42703f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule328-live-attack-fields.py",
+      "sha256": "7295b704f391f80901674bbce6c0bd2a4dc5f52b31a5a61e11555462d9506946"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule392\\task.txt",
+      "sha256": "1fdbd2813e3169995419c3ad75747e632a4cd96351c31daf3fe3e2c9e69f1e60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule392\\functions.json",
+      "sha256": "67780d807b25d91bb3dc68364f283ae243a014ebc3f964f8f5248b588cf87de0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule392\\inventory.json",
+      "sha256": "6b85a1004e50d9061955895abdace076abcd03c6532dba1115b81d10da517aa4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule392\\primary-inventory.json",
+      "sha256": "d6e302aead932cb5adf8c615fabbb17f97e74653d1db29c868413df4ceb9be13"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule392\\extract.py",
+      "sha256": "29983abc453ff068be7e71e7ceb5745f3d441cb186f4403ebd40baa7b42e8cb0"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-014010-rule392-receipt-order-eaab1b92\\job.json",
+      "sha256": "0c4185af362eaa31dd5c7303efb1f2108f5a86b8617ae9b61a9fb53b3e862518"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-014010-rule392-receipt-order-eaab1b92\\answer.txt",
+      "sha256": "06bfa4e93df37738d45d0fd4fa5362d08e6546ca74bd64a4be720ddb4a0bb06e"
+    }
+  ]
+}
