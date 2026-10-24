@@ -3155,8 +3155,17 @@ public sealed class MatchEngine
     /// <summary>ApplyRemoveCardFromBoard + ExecuteOnCardDestroyedFunction.</summary>
     public void Destroy(CardInstance card, CardInstance? destroyer = null, bool destroyedInCombat = false,
                         bool recordDestroyAction = true)
+        => DestroyCore(card, destroyer, destroyedInCombat, recordDestroyAction, requireAvailable: true);
+
+    // RULE-384: native DestroyCard validates the object, not its zone. This
+    // entry also permits a retained card already in Discard/NotAvailable.
+    internal void DestroyFromCardFunction(CardInstance card, CardInstance? destroyer)
+        => DestroyCore(card, destroyer, false, true, requireAvailable: false);
+
+    private void DestroyCore(CardInstance card, CardInstance? destroyer, bool destroyedInCombat,
+                             bool recordDestroyAction, bool requireAvailable)
     {
-        if (!card.IsAlive || card.IsHq) return;
+        if ((requireAvailable && !card.IsAlive) || card.IsHq) return;
         var batch = new[] { card.CardId };
         // DestroyCard i=184 captures the action location before before-destroy
         // callbacks. ApplyRemoveCardFromBoard later reads the removal location.
@@ -3260,7 +3269,7 @@ public sealed class MatchEngine
                 namedArgs: new Dictionary<string, object?>
                 {
                     ["killer"] = killer, ["attacker"] = killer, ["TriggerNotDestroyed"] = triggered,
-                });
+                }, recipientSnapshot: new[] { card }, includeUnavailableRecipients: true);
         // i=176 queries after the self callback. The returned T15 array has
         // no location filter and is not re-filtered during observer callbacks.
         var observers = Api.CaptureRegisteredTriggerSnapshot("OnBeforeOtherCardDestroyed")

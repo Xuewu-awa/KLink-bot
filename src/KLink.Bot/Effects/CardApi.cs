@@ -3510,7 +3510,7 @@ public sealed partial class CardApi
             return;
         }
 
-        _engine.Destroy(target, source);
+        _engine.DestroyFromCardFunction(target, source);
     }
 
     /// <summary>DiscardCardFromHand(cardID, 0, false, true), used by blocked direct play.</summary>

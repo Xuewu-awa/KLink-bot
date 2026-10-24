@@ -956,6 +956,8 @@ internal static class SelfTest
         new("显式摧毁来源贯穿回调与旧位置通知", DestroyExplicitSourceCallbacks),
         new("单体销毁只在离开战场时派发移动事件", DestroyMovementBoardBoundary),
         new("单体销毁移动门使用离场前保存的位置", DestroyMovementRemovalSnapshot),
+        new("显式销毁接受仍注册的弃牌和不可用对象并允许再次执行", DestroyRetainedObjects),
+        new("有效保留对象的自身摧毁前回调不受区域过滤", DestroyRetainedBeforeCallback),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -34435,6 +34437,119 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallRetainedDestroyProbes()
+    {
+        const string name = "card_unit_arado_ar_196";
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var saved = new List<(string Trigger, KismetProgram? Previous)>();
+        foreach (string trigger in new[] { "OnBeforeDestroyed", "OnDestroyed", "OnAfterDestroyed" })
+        {
+            if (KismetLibrary.Default.FindProgram(name, trigger) is not null)
+                throw new InvalidOperationException("无法安全安装保留对象销毁探针：" + trigger);
+            KismetProgram? previous = null;
+            if (cache.TryGetValue(name, out var programs)) programs.Remove(trigger, out previous);
+            saved.Add((trigger, previous));
+            string count = "_retained_" + trigger, killer = count + "_killer";
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = count, Scope = "instance" }, new KismetExpr { Int = 1 } } },
+                    null, -1, count, null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_killer" },
+                    null, -1, killer, null) { DestinationScope = "instance" },
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        }
+        return new AuditProbeCleanup(() => {
+            foreach (var item in saved) {
+                locals.Remove(item.Trigger);
+                if (cache.TryGetValue(name, out var current)) {
+                    current.Remove(item.Trigger);
+                    if (item.Previous is not null) current[item.Trigger] = item.Previous;
+                }
+            }
+        });
+    }
+
+    private static string? DestroyRetainedObjects(CardDatabase db)
+    {
+        using var own = InstallRetainedDestroyProbes();
+        using var death = InstallCombatPayloadProbes(onlyDestroyed: true);
+        string[] locationNames = { "NotAvailable", "Deck_Left", "Deck_Right", "Hand_Left", "Hand_Right", "Board_HQLeft", "Board_HQRight", "Board_Frontline", "Discard", "Deck" };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { CardLocation.NotAvailable, CardLocation.Discard, side.HandOf(), side.HqOf() })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int sourceMode in Enumerable.Range(0, 3))
+        foreach (int route in Enumerable.Range(0, 2))
+        foreach (int repeats in new[] { 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var victim = state.CreateWithId("card_unit_arado_ar_196", side, 30, location, 27);
+            victim.Definition = new CardDefinition { Name = victim.Name, Type = "infantry", UsedTriggers = new[] { "OnBeforeDestroyed", "OnDestroyed", "OnAfterDestroyed" } };
+            victim.Keywords.Clear(); victim.Keywords.Add(Keyword.Destruction); if (suppressed) victim.Keywords.Add(Keyword.Suppressed);
+            var observer = state.CreateWithId("card_unit_typhoon_mk_ib", side.Opposite(), 60, side.Opposite().HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { "OnOtherCardDestroyed" } }; observer.Keywords.Clear();
+            CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => victim };
+            int moves = 0; var prior = state.CardMoved;
+            state.CardMoved = (card, from, to, changed, reason) => { if (ReferenceEquals(card, victim)) moves++; prior?.Invoke(card, from, to, changed, reason); };
+            for (int i = 0; i < repeats; i++) {
+                if (route == 0) engine.Api.DestroyCard(victim, killer);
+                else engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, killer },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            }
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var notices = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            int Count(string trigger) => Convert.ToInt32(victim.BlueprintVariables.GetValueOrDefault("_retained_" + trigger));
+            if (notices.Length != repeats || victim.Location != CardLocation.Discard || victim.LocationNumber != 27
+                || !ReferenceEquals(state.ById(30), victim) || moves != (location.IsBoard() ? 1 : 0)
+                || !state.DestroyedCardIdsAll.SequenceEqual(Enumerable.Repeat(30, repeats))
+                || !state.DestroyedCardsIdsBySide(side).SequenceEqual(Enumerable.Repeat(30, repeats))
+                || !state.DestroyedCardIdsByTurn[state.Turn].SequenceEqual(new[] { 30 })
+                || Count("OnDestroyed") != (suppressed ? 0 : repeats) || Count("OnAfterDestroyed") != repeats
+                || Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditDeathPayloadSerial")) != repeats
+                || !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditPayloadKiller"), killer)
+                || Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditPayloadOld")) != (int)(repeats == 1 ? location : CardLocation.Discard))
+                return $"有效正ID保留对象的显式销毁不得按区域去重/拒绝：{side}/{location}/{suppressed}/{sourceMode}/{route}/{repeats}, notices={notices.Length}";
+            for (int i = 0; i < repeats; i++)
+                if (!notices[i].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 30), ActionValue2.Int("destroyerCardID", killer?.CardId ?? 0),
+                    ActionValue2.Str("destroyedLocation", locationNames[(int)(i == 0 ? location : CardLocation.Discard)]) }))
+                    return "重复显式销毁仍须每次读取通知旧位置和显式来源";
+        }
+        return null;
+    }
+
+    private static string? DestroyRetainedBeforeCallback(CardDatabase db)
+    {
+        using var own = InstallRetainedDestroyProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { CardLocation.NotAvailable, CardLocation.Discard, side.HqOf() })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int sourceMode in Enumerable.Range(0, 3))
+        foreach (int route in Enumerable.Range(0, 3)) // public API / native-name / existing internal-death adapter
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var victim = state.CreateWithId("card_unit_arado_ar_196", side, 30, location, 27);
+            victim.Definition = new CardDefinition { Name = victim.Name, Type = "infantry", UsedTriggers = new[] { "OnBeforeDestroyed" } };
+            victim.Keywords.Clear(); if (suppressed) victim.Keywords.Add(Keyword.Suppressed);
+            CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => victim };
+            if (route == 0) engine.Api.DestroyCard(victim, killer);
+            else if (route == 1) engine.Api.InvokeByName("DestroyCard", source, new object?[] { victim, killer },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.Destroy(victim, killer);
+            bool accepted = route != 2 || location.IsBoard();
+            int expected = accepted && !suppressed ? 1 : 0;
+            var vars = victim.BlueprintVariables;
+            if (Convert.ToInt32(vars.GetValueOrDefault("_retained_OnBeforeDestroyed")) != expected
+                || expected != 0 && !ReferenceEquals(vars.GetValueOrDefault("_retained_OnBeforeDestroyed_killer"), killer)
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionDestroyUnit") != (accepted ? 1 : 0)
+                || !state.DestroyedCardIdsAll.SequenceEqual(accepted ? new[] { 30 } : Array.Empty<int>()))
+                return $"保留对象自身摧毁前回调仅按抑制跳过，旧内部死亡适配器仍保留可用性门：{side}/{location}/{suppressed}/{sourceMode}/{route}";
         }
         return null;
     }
