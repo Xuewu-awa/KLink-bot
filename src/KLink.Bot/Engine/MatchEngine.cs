@@ -3288,6 +3288,9 @@ public sealed class MatchEngine
     internal void ExecuteDestroyed(CardInstance card, CardInstance? killer, CardLocation location,
                                   IReadOnlyList<int> batch, bool combat)
     {
+        // RULE-386: native i=137 sets this in the action process before the
+        // target lookup/T24 query. It does not filter the destroyed card's type.
+        State.SetUnitDestroyedThisTurn(true);
         // The headless engine currently records history here before destruction
         // callbacks. RULE-301: combat receipt bookkeeping occurs later in the
         // client; aligning generation/receipt phases remains pending. Do not

@@ -960,6 +960,9 @@ internal static class SelfTest
         new("有效保留对象的自身摧毁前回调不受区域过滤", DestroyRetainedBeforeCallback),
         new("防御致死沿原生销毁入口处理有效保留对象", DefenseLethalRetainedRouting),
         new("防御致死回调恢复数值后仍保持各模式通知顺序", DefenseLethalCallbackRouting),
+        new("死亡执行阶段标记不按单位类型过滤", DeathTurnFlagAnyCard),
+        new("死亡标记在自身和观察者回调前写入且不覆盖回调重置", DeathTurnFlagCallbackTiming),
+        new("原生死亡回合标记setter与getter共享状态", DeathTurnFlagSetter),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -34439,6 +34442,115 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static string? DeathTurnFlagAnyCard(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string type in new[] { "infantry", "order" })
+        foreach (CardLocation location in new[] { CardLocation.NotAvailable, CardLocation.Discard, side.HandOf(), side.HqOf() })
+        foreach (bool destruction in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int sourceMode in Enumerable.Range(0, 3))
+        foreach (bool initial in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            if (initial) state.RecordDestroyedCard(999, side, isUnit: true);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var target = state.CreateWithId(PlainUnit, side, 60, location, 27);
+            target.Definition = new CardDefinition { Name = target.Name, Type = type }; target.Keywords.Clear();
+            if (destruction) target.Keywords.Add(Keyword.Destruction); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => target };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (native) engine.Api.InvokeByName("DestroyCard", source, new object?[] { target, killer }, ctx, out _);
+            else engine.Api.DestroyCard(target, killer);
+            var flag = engine.Api.InvokeByName("GetUnitDestroyedThisTurn", null, Array.Empty<object?>(), ctx, out bool handled);
+            if (!handled || flag is not true || !state.UnitDestroyedThisTurn || target.Location != CardLocation.Discard
+                || !state.DestroyedCardIdsAll.SequenceEqual(initial ? new[] { 999, 60 } : new[] { 60 }))
+                return $"执行死亡函数后应设置回合标记，不能按IsUnit过滤：{side}/{type}/{location}/{destruction}/{suppressed}/{sourceMode}/{initial}/{native}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallDeathTurnFlagProbes(bool resetInOwn)
+    {
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var saved = new List<(string Name, string Trigger, IDictionary<string, IReadOnlyList<KismetStep>> Locals, KismetProgram? Previous)>();
+        foreach (var spec in new[] { ("card_unit_arado_ar_196", "OnBeforeDestroyed"), ("card_unit_arado_ar_196", "OnDestroyed"),
+            ("card_unit_arado_ar_196", "OnAfterDestroyed"), ("card_unit_typhoon_mk_ib", "OnOtherCardDestroyed") })
+        {
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(spec.Item1)!.Locals!;
+            if (KismetLibrary.Default.FindProgram(spec.Item1, spec.Item2) is not null) throw new InvalidOperationException("无法安全安装死亡回合标记探针");
+            KismetProgram? previous = null; if (cache.TryGetValue(spec.Item1, out var programs)) programs.Remove(spec.Item2, out previous);
+            saved.Add((spec.Item1, spec.Item2, locals, previous));
+            var steps = new List<KismetStep> {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Call = "GetUnitDestroyedThisTurn", Args = Array.Empty<KismetExpr>() }, null, -1, "_flag_" + spec.Item2, null) { DestinationScope = "instance" } };
+            if (resetInOwn && spec.Item2 == "OnDestroyed")
+                steps.Add(new KismetStep(steps.Count, "call", "SetUnitDestroyedThisTurn", new[] { new KismetExpr { Bool = false } }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(spec.Item2, steps);
+        }
+        return new AuditProbeCleanup(() => { foreach (var item in saved) {
+            item.Locals.Remove(item.Trigger);
+            if (cache.TryGetValue(item.Name, out var current)) { current.Remove(item.Trigger); if (item.Previous is not null) current[item.Trigger] = item.Previous; }
+        } });
+    }
+
+    private static string? DeathTurnFlagCallbackTiming(CardDatabase db)
+    {
+        foreach (bool reset in new[] { false, true })
+        {
+            using var probes = InstallDeathTurnFlagProbes(reset);
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (string type in new[] { "infantry", "order" })
+            foreach (CardLocation location in new[] { CardLocation.NotAvailable, side.HandOf(), side.HqOf() })
+            foreach (bool suppressed in new[] { false, true })
+            foreach (bool destruction in new[] { false, true })
+            foreach (int sourceMode in Enumerable.Range(0, 3))
+            foreach (bool initial in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db);
+                if (initial) state.RecordDestroyedCard(999, side, isUnit: true);
+                var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+                var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, location, 27);
+                target.Definition = new CardDefinition { Name = target.Name, Type = type, UsedTriggers = new[] { "OnBeforeDestroyed", "OnDestroyed", "OnAfterDestroyed" } };
+                target.Keywords.Clear(); if (destruction) target.Keywords.Add(Keyword.Destruction); if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+                var observer = state.CreateWithId("card_unit_typhoon_mk_ib", side.Opposite(), 80, side.Opposite().HqOf(), 1);
+                observer.Definition = new CardDefinition { Name = observer.Name, Type = "fighter", UsedTriggers = new[] { "OnOtherCardDestroyed" } }; observer.Keywords.Clear();
+                CardInstance? killer = sourceMode switch { 0 => null, 1 => source, _ => target };
+                engine.Api.DestroyCard(target, killer);
+                bool selfFired = !suppressed && destruction, finalFlag = !(reset && selfFired);
+                var v = target.BlueprintVariables;
+                if ((!suppressed && (!v.ContainsKey("_flag_OnBeforeDestroyed") || !Equals(v["_flag_OnBeforeDestroyed"], initial)))
+                    || suppressed && v.ContainsKey("_flag_OnBeforeDestroyed")
+                    || (selfFired && !Equals(v.GetValueOrDefault("_flag_OnDestroyed"), true))
+                    || !selfFired && v.ContainsKey("_flag_OnDestroyed")
+                    || !Equals(observer.BlueprintVariables.GetValueOrDefault("_flag_OnOtherCardDestroyed"), finalFlag)
+                    || !Equals(v.GetValueOrDefault("_flag_OnAfterDestroyed"), finalFlag) || state.UnitDestroyedThisTurn != finalFlag)
+                    return $"死亡标记须在before之后/死亡回调之前写入，回调重置后不得再覆盖：{reset}/{side}/{type}/{location}/{suppressed}/{destruction}/{sourceMode}/{initial}";
+            }
+        }
+        return null;
+    }
+
+    private static string? DeathTurnFlagSetter(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool initial in new[] { false, true })
+        foreach (bool value in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); if (initial) state.RecordDestroyedCard(999, side, isUnit: true);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = null, Controller = side };
+            engine.Api.InvokeByName("SetUnitDestroyedThisTurn", null, new object?[] { value }, ctx, out bool set);
+            var result = engine.Api.InvokeByName("GetUnitDestroyedThisTurn", null, Array.Empty<object?>(), ctx, out bool get);
+            if (!set || !get || !Equals(result, value) || state.UnitDestroyedThisTurn != value
+                || !state.DestroyedCardIdsAll.SequenceEqual(initial ? new[] { 999 } : Array.Empty<int>()) || state.ActionLog.Count != 0)
+                return "死亡回合标记setter须直接覆盖bool状态，不增删死亡记录或通知";
         }
         return null;
     }

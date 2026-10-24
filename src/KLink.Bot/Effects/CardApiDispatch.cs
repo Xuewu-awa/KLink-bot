@@ -1328,6 +1328,11 @@ public sealed partial class CardApi
             ["GetDestroyedCardsIDsThisBattle"] = (c, r, a) => c.State.DestroyedCardIdsAll.ToList(),
             ["GetDestroyedCardsIDsByTurn"] = (c, r, a) =>
                 c.State.DestroyedCardsIdsByTurn(IntArg(a, 0, c.State.Turn)).ToList(),
+            ["SetUnitDestroyedThisTurn"] = (c, r, a) =>
+            {
+                c.State.SetUnitDestroyedThisTurn(TruthyArg(a, 0));
+                return null;
+            },
             ["GetUnitDestroyedThisTurn"] = (c, r, a) => c.State.UnitDestroyedThisTurn,
             ["ShuffleDeckBySide"] = (c, r, a) =>
             {

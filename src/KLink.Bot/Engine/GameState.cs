@@ -253,6 +253,8 @@ public sealed class GameState
         }
     }
 
+    public void SetUnitDestroyedThisTurn(bool value) => UnitDestroyedThisTurn = value;
+
     public void ResetDestroyedThisTurn() => UnitDestroyedThisTurn = false;
 
     public int Kredits(Side s) => _kredits[(int)s];

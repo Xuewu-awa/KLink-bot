@@ -1,0 +1,203 @@
+{
+  "rule": "RULE-386",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "65c906a8e93297194552cfc0269ea1b63962fb11",
+  "kernel_changed": true,
+  "fresh_live_capture": true,
+  "read_only": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-386",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_functions": 2,
+    "redecoded_bytes": 2782,
+    "redecoded_statements": 92,
+    "worker_nodes": 25,
+    "modeled_full_bodies": [
+      "ExecuteOnCardDestroyedFunction",
+      "SetUnitDestroyedThisTurn"
+    ],
+    "model_cases": 1156,
+    "setter_cases": 4,
+    "death_cases": 1152,
+    "digest": "036107ded644d87f7cd839ded827c7e8c495a069459c842129c2455fd89dceea",
+    "scope": "Whole death body +22B setter, valid target identity and controlled no-salvage/no-external-repeat callbacks/query. Native fields not Type: synthetic kind marker varies only as no-read witness. NullContext skipped with initialized output locals. No complete HQ destruction/loss/retention/GC proof.",
+    "worker_exact_nodes": 25,
+    "worker_prose_count_correction": "Worker prose said102+3 top-level statements; source and decoder show89+3=92. Reject that prose count; accepted25extracted statements exactly match primary.",
+    "new_tests": 3,
+    "regression_cases": {
+      "type_entry": 768,
+      "callback_visibility_and_reset": 576,
+      "setter": 8,
+      "total": 1352
+    },
+    "selftest_passed": 809,
+    "selftest_total": 809
+  },
+  "findings": [
+    "ExecuteDestroyed inherited UnitDestroyedThisTurn updates solely from RecordDestroyedCard(isUnit). Non-unit objects accepted into explicit destruction therefore failed to set the native action-stage flag.",
+    "Native SetUnitDestroyedThisTurn22B directly overwrites its bool field, but headless native-name dispatch lacked this setter."
+  ],
+  "authority": "Complete2760B ExecuteOnCardDestroyedFunction: sourceID<=0 goes1000(NoObject) then1011Jump104, so still checks ActionProcess and sets flag137. Set137 occurs before target lookup174/T24query225/self667/T39query1016/after2636, with no IsUnit/type test. New readonly PID24220 complete22B setter writes UnitDestroyedThisTurn=InUnitDestroyed. CurrentPE/hash/raw/symbol-header decode verified2782B/92statements.",
+  "changes": [
+    "Add native bool-state setter and native-name dispatch, sharing GetUnitDestroyedThisTurn state.",
+    "Set flagtrue at ExecuteDestroyed entry before existing history/callbacks for all accepted card types in the headless action path.",
+    "Keep history generation/receipt compatibility bookkeeping, turn-reset behavior, numeric damage, HQ and availability policies unchanged."
+  ],
+  "validation": [
+    "1156offline cases:4whole22B setter cases and1152whole2760B death-body executions, varying source0/existing/self/missing, prior flag, intrinsic destruction, suppression, action, callback reset, frozen location and synthetic kind marker. Controlled valid lookup/query/callback/primitives; no salvage or external repeat.",
+    "Type marker is not read by captured body: direct instance fields are CardID,GameStateRef,hasDestruction,hasSalvage,isSuppressed,side. Marker variation is a no-read witness, not full HQ-entry or class-polymorphism certification.",
+    "768regression combinations exercise accepted non-HQ infantry/order objects over4zones, destruction/suppression, null/other/selfkiller, initialflag andpublic/native entries; assert flag/getter, discard and history.",
+    "576actual VM callback cases verify before-destroy sees the old flag, own/T39/after see the flag written at death-entry; OnDestroyed may call native setterfalse and later observers/after must retainfalse.",
+    "8setter cases cross2sides, initialbool andnewbool; verify no action/history mutation.",
+    "Original806/809passed with3new failures; patchedRelease809/809passed. DeepSeek25nodes exactly matched primary. Worker prose incorrectly said102+3source statements; independent raw/input check89+3corrects it, no reliance on that claim."
+  ],
+  "unresolved": [
+    "This turn began with HQ-flow inspection but does not change/certify public HQ-to-damage adapter, engine HQ rejection, HQ leave gates or full victory adjudication.",
+    "Full ExecuteDestroyed salvage/external-repeat, null-context FFrame inheritance/nonzero stale locals, invalid target lookup/GC and native container/query ordering remain open. Modeled NullContext skips use initialized output locals.",
+    "History still generated in the headless action phase; native receipt/reconnect phase alignment remains pending. RecordDestroyedCard standalone compatibility behavior is unchanged.",
+    "Explicit bool ABI is tested; general nonbool/default coercions and every external caller are not certified.",
+    "Complete single-card restoration and paused version migration remain unresolved; fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-dependencies-native-20261024.json",
+      "sha256": "d2fe3289d83f20907823ec2c0ca66125be153b2686cbe24a45b98774ee2a49d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\death-turn-flag-setter-native-20261024.json",
+      "sha256": "1af7e8ea585cbac92c78ee1a4b94386dbb84593d2de7625a368cb254692ad203"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule386-flag-setter.py",
+      "sha256": "7c002dc5f0ea749b6833763c6af119923b8dcb752db91e7fc72c78f5f5a47c32"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule384-lookup.py",
+      "sha256": "3c46184890266bebda442d5a8c27ab378d8658a6bd6c8cae23cb947ba6134b84"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule290-action-helpers.py",
+      "sha256": "f2c7142728b8fb780bca10be6aa117a784b3231451cbb6db5d7c508a50d0b7b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule386.py",
+      "sha256": "5552e3368e501652a4159942e17c405338e4fc3d2906c83e5dbcf220e6acd64d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule386-tests.py",
+      "sha256": "9bb16355c642ef1fb9234acb7cc7441d5bc2932781688f7e33333362b3cc7b20"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule386.py",
+      "sha256": "6f056d2aba2b7828aecdc6f46e183766db419b38f1247cf48832850bbd0575d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule386.py",
+      "sha256": "d0e351394727dc12a11e7f609f08c4f62a2d6f5e824d63818c3d7d2573dfc49b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule386.py",
+      "sha256": "9ba6aabf1a547b68844d9073967a374f5a7f9eed2209b3b438f8ad914bc7fcfc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-model-20261024.json",
+      "sha256": "94af07667584690a6bccce8a9ab22b6b89b9d6cec975c50c368c72647d79f132"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-verified-20261024.json",
+      "sha256": "6d76e207cfbbcdf312083d0b1078fb2b29d7b377e7ab4997e8ae608ff54e29be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-selftest-before.log",
+      "sha256": "d89b2f2a426de71719333023cc9e8e18d45b2c6eee684d5abb2f9058ccb95dbe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-selftest.log",
+      "sha256": "6006789af42b205307d84511505bb759fbea31337f167bf5e88be6745f365132"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule386-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\task.txt",
+      "sha256": "43fe0a0a0f5e5db26965c91a260fce115367fa3b63e2721afa206709aca41caa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\functions.json",
+      "sha256": "44d5384fdde2d4ceadb252093981f8856b4f505313da1a1f1068c1093cd87124"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\extract.py",
+      "sha256": "6ad8ab780d31860ab80e87e2bafee981a5807c03aa25424de89976863fffa30f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\nodes.json",
+      "sha256": "fd0b5e820163d8d347b38426f79af868f82b30a197fce9633c2b8322bf9dd19f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\primary-nodes.json",
+      "sha256": "fd0b5e820163d8d347b38426f79af868f82b30a197fce9633c2b8322bf9dd19f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule386\\primary-cases.json",
+      "sha256": "5d68eb8e19d9f0b1e6b65263c1cced7dd2f35d462c361725df0d3bcc6c3756db"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-214411-rule386-death-turn-flag-ab82753c\\job.json",
+      "sha256": "a5889cb8b6af52620806537ac54169bcb60f48c146ebe78b72251257bf499d4f"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-214411-rule386-death-turn-flag-ab82753c\\answer.txt",
+      "sha256": "04b80e94f2bb3eba436aa67f3631a7e0eb43a484e8a54d5af3b837b69274362f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "sha256": "d82de028c385a5d6b6713150e97093bd17de1b87c7dc8702e4afa78bd197afaf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "sha256": "0fe96c7e0faa275a89cc177c6e02dade26ff7d65d978e49868360a05a60e4349"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "6c6ea16faf33b8597f3fdd1f42db50491255f0c0eb085e61ca0d50be75127ce0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "7eb6ef306fc67079cfbbfed87c808b89ab27d61b8e3900c9cb434a91a45398fc"
+    }
+  ]
+}
