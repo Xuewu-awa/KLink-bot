@@ -108,5 +108,16 @@
       "sha256": "f63f70b6258ccae04001f4ef873d38271079b2beda6bbcccaa19c0d1319f6004"
     }
   ],
-  "deepseek_job": "20261025-023644-rule397-daily-calls-0f39857d"
+  "deepseek_job": "20261025-023644-rule397-daily-calls-0f39857d",
+  "evidence_availability_updates": [
+    {
+      "recorded_date": "2026-10-25",
+      "affected_path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-receiver-live-20261025.json",
+      "original_reported_sha256": "5418695e53146f50a09be5479a01e19e2b1bc63cd79cdaaa3cbc5f9cc9af67a2",
+      "original_bytes_available": false,
+      "replacement_path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-daily-receiver-live-20261025.json",
+      "replacement_sha256": "95f825db3353a86ac86f7b626dcc30426c88050012788183b709fa9cfef8f0f2",
+      "reason": "Primary reran legacy capture-rule397-live-chain.py during RULE-398, overwriting its fixed output path before making a new-version copy. Original acquisition digest remains historical; replacement is a later sample and must not be presented as the original bytes."
+    }
+  ]
 }

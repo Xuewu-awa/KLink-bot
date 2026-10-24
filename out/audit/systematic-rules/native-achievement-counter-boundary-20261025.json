@@ -1,0 +1,119 @@
+{
+  "rule": "RULE-398",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "d176360bff6899f0ba120caac0d1360555bc23b9",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-398",
+    "wrapper_bytes": 268,
+    "backend_bytes": 986,
+    "backend_pdata_fragments": 6,
+    "cfg_reachable_instructions": 239,
+    "indirect_calls": 5,
+    "worker_call_nodes": 43,
+    "worker_branch_nodes": 31,
+    "offline_gate_return_cases": 12,
+    "offline_request_prefix_cases": 6,
+    "current_private_numeric_gate": 61,
+    "model_boundary": "Execute captured backend machine code in Unicorn only through gate<=1 cleanup return (cleanup callees supplied RET hooks) or gate>1 first external construction helper. Synthetic objects/stack/arrays; no complete cleanup/string/request/native callback semantics or game function calls. Unchanged synthetic objects are a prefix property, not full-path proof.",
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_validation": "RULE-395 Release823/823; source unchanged",
+    "limits": [
+      "CFG completeness here is intraprocedural direct-branch extent only; direct callees and virtual call targets remain semantic frontiers.",
+      "Private gate field name/type and request-transport abstraction are not conclusively mapped; literal setmany is verified, profile-save interpretation is an inference.",
+      "Live owner snapshot validates selected repeated identities/pointers, not atomic GC safety or all inherited native layouts.",
+      "Prefix Unicorn tests use synthetic objects and stub cleanup calls; active gate61 follows the request path, which is not fully emulated.",
+      "RULE-397 mutable external snapshot was overwritten by repeat sampling; original reported digest is retained as historical, supersession explicitly recorded."
+    ]
+  },
+  "findings": [
+    "Current native UFunction entry atRVA4a5e930 identifies a268-byte exec wrapper. Its call at4a5ea02 reaches backend4b0ade0. Current header and captured machine bytes match the installed executable exactly.",
+    "The initial backend pdata record spans only55bytes and ends in a jump. Direct-branch CFG expansion recovers986bytes across6 contiguous pdata fragments,239reachable instructions, with no unresolved indirect jumps/external tail jumps. This is intraprocedural extent only, not transitive semantic completeness.",
+    "Backend reads actor+2a8, then that object+2f8, and compares signed dword at resulting object+4a8 to1. Values<=1 follow cleanup return; larger values build strings and reach indirect calls. Verified UTF16 literals include brackets/comma and {\"action\": \"setmany\", \"setmany\": %s}. Interpretation as an achievement save/request path is supported by call context and literal, but request abstraction and all virtual targets are not yet mapped.",
+    "Fresh selected live chain is BP_DailyMissions dailyMissionsComActor->DailyMissions->BP_KardsSession_C->BP_KardsGameInstance_C. Session inheritance to KardsSession and reflected game_instance offset2f8 were checked. Private numeric gate is61, so this sample follows the request-building path. Its private semantic field name was not inferred; no credential/string contents were collected.",
+    "Five indirect call sites remain in backend, including reference-count cleanup-shaped sequences and the virtual slot48 call. Targets and transitive callback/reentry effects are not certified. No newly demonstrated PvP rule discrepancy warrants a kernel patch."
+  ],
+  "validation": [
+    "Independent PE length/hash/pdata and Capstone instruction verification for wrapper/backend, and independent239-node direct CFG reconstruction. All captured native bytes were checked read-only against live process memory before recording.",
+    "DeepSeek mechanical extraction of43call sites and31branch sites, plus memory-operand instructions, exactly matches primary extraction from wrapper/backend. No worker semantic conclusion used.",
+    "Unicorn executes captured backend code offline over synthetic actor/session/game-instance/array objects:12gate<=1 cases with cleanup RET hooks and6gate>1 cases stopped at first external construction helper. No actual request, process write or game function call. Unchanged synthetic objects are only a prefix property.",
+    "No production or test changes, no new selftest run. Latest applicable source verification remains RULE-395 Release823/823."
+  ],
+  "limits": [
+    "CFG completeness here is intraprocedural direct-branch extent only; direct callees and virtual call targets remain semantic frontiers.",
+    "Private gate field name/type and request-transport abstraction are not conclusively mapped; literal setmany is verified, profile-save interpretation is an inference.",
+    "Live owner snapshot validates selected repeated identities/pointers, not atomic GC safety or all inherited native layouts.",
+    "Prefix Unicorn tests use synthetic objects and stub cleanup calls; active gate61 follows the request path, which is not fully emulated.",
+    "RULE-397 mutable external snapshot was overwritten by repeat sampling; original reported digest is retained as historical, supersession explicitly recorded."
+  ],
+  "evidence_lifecycle": {
+    "recorded_date": "2026-10-25",
+    "affected_path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-receiver-live-20261025.json",
+    "original_reported_sha256": "5418695e53146f50a09be5479a01e19e2b1bc63cd79cdaaa3cbc5f9cc9af67a2",
+    "original_bytes_available": false,
+    "replacement_path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-daily-receiver-live-20261025.json",
+    "replacement_sha256": "95f825db3353a86ac86f7b626dcc30426c88050012788183b709fa9cfef8f0f2",
+    "reason": "Primary reran legacy capture-rule397-live-chain.py during RULE-398, overwriting its fixed output path before making a new-version copy. Original acquisition digest remains historical; replacement is a later sample and must not be presented as the original bytes."
+  },
+  "next_work": [
+    "Map the virtual request dispatch and its completion callback before treating the native save boundary as isolated from PvP state.",
+    "Preserve full receiver/delegate/reentry and invalid-object/null-context work as open; do not count native byte acquisition as full rules restoration."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-daily-receiver-live-20261025.json",
+      "sha256": "95f825db3353a86ac86f7b626dcc30426c88050012788183b709fa9cfef8f0f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-set-achievement-counters-native-20261025.json",
+      "sha256": "ba30452956c563fb5726d8c70ab3d9451efa4532ebb85eeee20508c05538d47e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-set-achievement-counters-backend-20261025.json",
+      "sha256": "34db7be34883f35ba8e3405674eb9fc5aedf0504f0ca151ed593739547ee01ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-set-achievement-counters-cfg-20261025.json",
+      "sha256": "f2a2be6fa83fbf9baee4aa98b82c7dd1e65ed4d4f9e4d0ed3756e18304f99135"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-counter-literals-20261025.json",
+      "sha256": "4c284c0dbf3396a3e6e9e89b911c661112b34f88bad5f455d1010515f206054a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule398-native-counter-owner-chain-20261025.json",
+      "sha256": "5bc418d1ff3d38135688517e5363092de834db2460e3140e015c036555814fc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule398-native-counters.py",
+      "sha256": "325e9e269ec93a622f19d121a0d4accbfd381bed87309f319bc47a15dc913549"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule398-backend-cfg.py",
+      "sha256": "5083da4068c6e51e48c9b67ca884db62f5bfa1490e60af9ad75a1a9223d1f8d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule398-owner-chain.py",
+      "sha256": "02705b83642dadc1b37d2cfd48d1c193a5f3eb38e8cef9d3d181252a6ebf9649"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule398-native-gate.py",
+      "sha256": "acd50f587b62e373076f3f3b5531e013630c9fdd12ed7bd6527a53043860b167"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule398.py",
+      "sha256": "c67c7350ac971f8fe417d3201020780c060c6ff69a2c9d67d2f5471ccc240618"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule398-native-gate-emulation-20261025.json",
+      "sha256": "40df719e5fc4fb15562d34265cfff14fd42d56de25a9869b8fb9e82badaef2f9"
+    }
+  ],
+  "deepseek_job": "20261025-024319-rule398-native-instructions-cf413081"
+}
