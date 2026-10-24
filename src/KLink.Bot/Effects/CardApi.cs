@@ -6024,6 +6024,17 @@ public sealed partial class CardApi
         return buff;
     }
 
+    // RULE-372: compact permanent/temporary slots project to one native
+    // BuffMap. Keyless slots are not a relation; keep all represented keys,
+    // including explicit zeros, and leave other sources untouched.
+    private void PruneEmptySourceBuffSlots(CardInstance target, int sourceId)
+    {
+        var emptyKeys = target.BuffsBySource.Where(x => x.Key.SourceCardId == sourceId && x.Value.IsEmpty)
+            .Select(x => x.Key).ToArray();
+        foreach (var key in emptyKeys) target.BuffsBySource.Remove(key);
+        // The caller synchronizes once after its selected-key mutation.
+    }
+
     // ChangeBuffsFromCards i=2471..3024: only a currently valid source object
     // owns the array. Do not rebuild it from ID relations on reads.
     private void SynchronizeBuffTarget(CardInstance target, int sourceId)

@@ -4201,6 +4201,7 @@ public sealed partial class CardApi
     private void RemoveAttackBuffWithEvents(CardInstance target, int sourceId, bool skipAction)
     {
         if (sourceId <= 0 || !CanCardBeBuffed(target)) return;
+        PruneEmptySourceBuffSlots(target, sourceId);
         // RULE-325: only attack_tempBuffGive, preserving permanent attack.
         var key = (sourceId, true);
         if (!target.BuffsBySource.TryGetValue(key, out var buff)
@@ -4362,6 +4363,7 @@ public sealed partial class CardApi
 
         if (changeType == ChangeTypeTempBuffRemove)
         {
+            PruneEmptySourceBuffSlots(target, sourceId);
             // RULE-354: native type2/mode4 withdraws only the source's
             // temporary kredit contribution; never fall back to a permanent
             // slot or recalculate an unrelated/absent contribution.

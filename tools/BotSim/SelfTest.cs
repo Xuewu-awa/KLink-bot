@@ -603,6 +603,7 @@ internal static class SelfTest
         new("攻击零键：撤销清键/来源关系与零事件门", AttackExplicitZeroWithdrawal),
         new("攻击抵消：普通零和删除本键及空来源", AttackOrdinaryZeroCancellation),
         new("攻击零键：普通/绝对模式及克隆复制快照", AttackZeroKeyLifecycle),
+        new("模式4空壳：攻击/费用清理本来源无键槽并保持幂等", Mode4EmptySourceShells),
         new("到期队列：类型/来源/目标分层快照与回调修改", ExpiryQueueSnapshotMutation),
         new("到期队列：登记去重、原始ID、嵌套副本、清空和状态快照", ExpiryQueueProtocol),
         new("到期队列：只按登记来源及当前反向数组撤销，不延迟到重新进场", ExpiryQueueEligibility),
@@ -7534,6 +7535,77 @@ internal static class SelfTest
         return null;
     }
 
+    private static Dictionary<int, Dictionary<string, int>> CaptureEmptyShellFixtureLedger(CardInstance target)
+    {
+        var result = new Dictionary<int, Dictionary<string, int>>();
+        foreach (var (key, buff) in target.BuffsBySource)
+        {
+            if (!result.TryGetValue(key.SourceCardId, out var map)) result[key.SourceCardId] = map = new();
+            if (buff.Attack != 0 || buff.HasZeroAttackEntry) map[key.Temporary ? "attack_tempBuffGive" : "attack_permBuff"] = buff.Attack;
+            if (buff.KreditCost != 0 || buff.HasZeroKreditCostEntry) map[key.Temporary ? "kredit_tempBuffGive" : "kredit_permBuff"] = buff.KreditCost;
+            if (buff.KreditCostSetValue.HasValue) map["kredit_SetValue"] = buff.KreditCostSetValue.Value;
+            if (buff.OperationCost != 0) map[key.Temporary ? "operationCost_tempBuffGive" : "operationCost_permBuff"] = buff.OperationCost;
+        }
+        return result;
+    }
+
+    private static string? Mode4EmptySourceShells(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool fee in new[] { false, true })
+        foreach (int shell in Enumerable.Range(0, 4))
+        foreach (int mask in Enumerable.Range(0, 8))
+        foreach (int? entry in new int?[] { null, 0, -3, 4 })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            CardBuff Slot(bool temporary)
+            {
+                var key = (sourceId, temporary);
+                if (!target.BuffsBySource.TryGetValue(key, out var b)) target.BuffsBySource[key] = b = new CardBuff { SourceCardId = sourceId, Temporary = temporary };
+                return b;
+            }
+            if ((shell & 1) != 0) Slot(false);
+            if ((shell & 2) != 0) Slot(true);
+            if ((mask & 1) != 0) Slot(false).HasZeroAttackEntry = true;
+            if ((mask & 2) != 0) Slot(false).KreditCostSetValue = 0;
+            if ((mask & 4) != 0) Slot(true).OperationCost = 2;
+            if (entry.HasValue) { var b = Slot(true); if (fee) { b.KreditCost = entry.Value; b.HasZeroKreditCostEntry = entry == 0; } else { b.Attack = entry.Value; b.HasZeroAttackEntry = entry == 0; } }
+            var foreignPerm = new CardBuff { SourceCardId = 30 };
+            var foreignTemp = new CardBuff { SourceCardId = 30, Temporary = true };
+            target.BuffsBySource[(30, false)] = foreignPerm; target.BuffsBySource[(30, true)] = foreignTemp;
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 }); target.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            target.BaseAttack = target.BaseKreditCost = 7; target.TemporaryAttack = target.TemporaryKreditCost = -4;
+            target.PublicAttack = target.PublicKreditCost = 37; target.AttackBuff = target.PublicKreditCostBuff = -9; target.MaxAttack = 123;
+            var current = new Dictionary<string, int>();
+            if ((mask & 1) != 0) current["attack_permBuff"] = 0;
+            if ((mask & 2) != 0) current["kredit_SetValue"] = 0;
+            if ((mask & 4) != 0) current["operationCost_tempBuffGive"] = 2;
+            var expected = new Dictionary<int, Dictionary<string, int>> { [30] = new() }; if (current.Count != 0) expected[sourceId] = current;
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            string function = fee ? "ChangeKreditCost" : "ChangeAttack";
+            engine.Api.InvokeByName(function, null, new object?[] { target, sourceId, 123, 4, skip, null }, ctx, out bool handled);
+            int adjusted = -4 - (entry ?? 0); bool changed = entry.HasValue && entry.Value != 0;
+            var reverse = state.ById(sourceId)?.CardsBuffedByThisCard;
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == (fee ? "ZActionSetKreditCost" : "ZActionGainAttack")).ToArray();
+            if (!handled || !KreditZeroKeyFixtureMapsEqual(CaptureEmptyShellFixtureLedger(target), expected)
+                || (reverse is not null && !reverse.SequenceEqual(mask == 0 ? new[] { 888 } : new[] { 888, 60, 60 }))
+                || target.BuffsBySource.Any(x => x.Key.SourceCardId == sourceId && x.Value.IsEmpty)
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreignPerm) || !ReferenceEquals(target.BuffsBySource[(30, true)], foreignTemp)
+                || target.BaseAttack != 7 || target.BaseKreditCost != 7 || target.TemporaryAttack != (fee ? -4 : adjusted) || target.TemporaryKreditCost != (fee ? adjusted : -4)
+                || target.PublicAttack != 37 || target.AttackBuff != -9 || target.PublicKreditCost != 37 || target.PublicKreditCostBuff != -9 || target.MaxAttack != 123
+                || notices.Length != (changed && (fee || !skip) ? 1 : 0))
+                return $"模式4无键空槽清理错误 {side}/{fee}/{shell}/{mask}/{entry}/{sourceId}/{skip}";
+            string settled = state.SnapshotJson(); int noticeCount = state.ActionLog.Sum(x => x.SubActions.Count);
+            engine.Api.InvokeByName(function, null, new object?[] { target, sourceId, -999, 4, skip, null }, ctx, out _);
+            if (state.SnapshotJson() != settled || state.ActionLog.Sum(x => x.SubActions.Count) != noticeCount) return "空壳清理后再次撤销须幂等，不重复改数值/通知";
+        }
+        return null;
+    }
+
     private static Dictionary<int, Dictionary<string, int>> CaptureAttackZeroKeyFixtureLedger(CardInstance target)
     {
         var result = new Dictionary<int, Dictionary<string, int>>();
@@ -10243,7 +10315,8 @@ internal static class SelfTest
             }
             if (suppressed) target.Keywords.Add(Keyword.Suppressed);
             target.Attack = previous; target.OperationCost = 7;
-            target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = stored, Defense = residual ? 2 : 0 };
+            // RULE-372: stored0 represents a present native key, removed even without numeric change.
+            target.BuffsBySource[(id, true)] = new CardBuff { SourceCardId = id, Temporary = true, Attack = stored, HasZeroAttackEntry = stored == 0, Defense = residual ? 2 : 0 };
             if (permanent) target.BuffsBySource[(id, false)] = new CardBuff { SourceCardId = id, Temporary = false, Attack = 5 };
             if (sourceExists) source.CardsBuffedByThisCard.Add(60);
             engine.Api.InvokeByName("ChangeAttack", target, new object?[] { target, id, 123, 4, skip, null },
@@ -10257,11 +10330,11 @@ internal static class SelfTest
             bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_changedAmount"), delta)
                 && Equals(card.BlueprintVariables.GetValueOrDefault("_auditAttack_instigatorID"), id);
             if (target.Attack != next || target.OperationCost != 7
-                || target.BuffsBySource.ContainsKey((id, true)) != (!changed || residual)
+                || target.BuffsBySource.ContainsKey((id, true)) != residual
                 || (residual && (target.BuffsBySource[(id, true)].Defense != 2 || target.BuffsBySource[(id, true)].Attack != 0))
                 || target.BuffsBySource.ContainsKey((id, false)) != permanent
                 || (permanent && target.BuffsBySource[(id, false)].Attack != 5)
-                || (sourceExists && source.CardsBuffedByThisCard.Contains(60) != (!changed || residual || permanent))
+                || (sourceExists && source.CardsBuffedByThisCard.Contains(60) != (residual || permanent))
                 || actions.Length != (notify ? 1 : 0) || (notify && !actions[0].Values.SequenceEqual(values))
                 || (changed && (!Payload(watcher) || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditAttack_cardChanged"), target))) || (!changed && watcher.BlueprintVariables.ContainsKey("_auditAttack_changedAmount"))
                 || (changed && !suppressed && !Payload(target))
