@@ -976,6 +976,8 @@ internal static class SelfTest
         new("批量历史按通知处理：显式销毁裁剪弃牌，伤害保留逐项阵亡", DeathHistoryReceiptPayloadSelection),
         new("战斗历史回执：死亡回调无新历史，双亡按攻击者优先发布", CombatHistoryReceiptOrdering),
         new("销毁历史回执：空查找标量默认0，保留重复与非正ID门", MissingDeathHistoryReceipts),
+        new("GetCardFromID：公共/派发/VM共享非正ID门与有效保留对象", CardLookupIdBoundary),
+        new("GetCardFromID：生成对象兼容入口按ID重取，移除/替换不返回旧引用", CardLookupSpawnAliasIdentity),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34511,6 +34513,77 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? CardLookupIdBoundary(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HandOf(), side.DeckOf(), side.HqOf(), CardLocation.Discard, CardLocation.NotAvailable })
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (int receiverMode in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            foreach (int id in new[] { int.MinValue, -7, 0, 60, int.MaxValue })
+                state.CreateWithId(PlainUnit, side, id, zone, 0);
+            object? receiver = receiverMode switch { 0 => null, 1 => source, _ => decoy };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = hasSelf ? source : null, Target = decoy, Controller = side };
+            int actions = state.ActionLog.Count; long random = state.Random.ConsumedCount;
+            foreach (int id in new[] { int.MinValue, -7, 0, 1, 2, 60, 777, int.MaxValue })
+            {
+                CardInstance? expected = id > 0 ? state.ById(id) : null;
+                var direct = engine.Api.GetCardFromID(id);
+                var dispatched = engine.Api.InvokeByName("GetCardFromID", receiver, new object?[] { id, source }, ctx, out bool handled);
+                var steps = new[] {
+                    new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr {
+                        Call = "GetCardFromID", Context = new KismetExpr { Var = "__receiver" }, Args = new[] { new KismetExpr { Var = "__id" } }
+                    }, null, -1, "__got", null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                };
+                var vm = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                    new Dictionary<string, object?> { ["__receiver"] = receiver, ["__id"] = id, ["__got"] = decoy }, "__got");
+                if (!handled || !ReferenceEquals(direct, expected) || !ReferenceEquals(dispatched, expected)
+                    || !ReferenceEquals(vm.GetValueOrDefault("__got"), expected) || state.ActionLog.Count != actions || state.Random.ConsumedCount != random)
+                    return $"ID查询须拒绝非正键、保留正ID对象且不回退上下文：{side}/{zone}/{hasSelf}/{receiverMode}/{id}";
+            }
+        }
+        return null;
+    }
+
+    private static string? CardLookupSpawnAliasIdentity(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (int receiverMode in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 30, side.Opposite().HqOf(), 1); decoy.Keywords.Clear();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = hasSelf ? source : null, Target = decoy, Controller = side };
+            var raw = engine.Api.InvokeByName("SpawnCardInHandBySide", null, new object?[] { (int)side, PlainUnit, 20 }, ctx, out bool spawnedHandled);
+            if (!spawnedHandled || raw is not CardInstance spawned) return "本地生成原语对象返回装置失败";
+            CardInstance alias = spawned; CardInstance? expected = spawned;
+            // Controlled transitions verify the headless object-input bridge; native input remains integer-only.
+            if (mode is 1 or 2) { state.Remove(spawned); expected = null; }
+            if (mode == 2) expected = state.CreateWithId(PlainUnit, side.Opposite(), spawned.CardId, CardLocation.Discard, 0);
+            if (mode == 3) alias = new CardInstance { CardId = spawned.CardId, Owner = side.Opposite(), Name = PlainUnit, Definition = spawned.Definition };
+            if (mode is 4 or 5) { alias = state.CreateWithId(PlainUnit, side, mode == 4 ? 0 : -7, CardLocation.Discard, 0); expected = null; }
+            object? receiver = receiverMode switch { 0 => null, 1 => source, _ => decoy };
+            int actions = state.ActionLog.Count;
+            var actual = engine.Api.InvokeByName("GetCardFromID", receiver, new object?[] { alias, decoy }, ctx, out bool handled);
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Call = "GetCardFromID",
+                    Context = new KismetExpr { Var = "__receiver" }, Args = new[] { new KismetExpr { Var = "__alias" } } }, null, -1, "__got", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+            var vm = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["__receiver"] = receiver, ["__alias"] = alias, ["__got"] = decoy }, "__got");
+            if (!handled || !ReferenceEquals(actual, expected) || !ReferenceEquals(vm.GetValueOrDefault("__got"), expected) || state.ActionLog.Count != actions)
+                return $"生成对象兼容入口须按正ID重查当前表，不泄漏旧引用：{side}/{mode}/{hasSelf}/{receiverMode}";
+        }
+        return null;
     }
 
     private static string? MissingDeathHistoryReceipts(CardDatabase db)

@@ -1,0 +1,113 @@
+{
+  "rule": "RULE-401",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "a611b6082d07f535538b6b405ce813dc941170e6",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-401",
+    "fresh_blueprint_bodies": 3,
+    "fresh_script_bytes": 406,
+    "empty_stub_declarations": 1,
+    "composed_native_ast_models": 96,
+    "worker_spawn_methods": 6,
+    "worker_return_lines": 16,
+    "new_regression_scenarios": {
+      "integer_query_combinations": 480,
+      "actual_spawn_bridge_scenarios": 72,
+      "total": 552
+    },
+    "queried_routes": [
+      "public int API",
+      "InvokeByName dispatch",
+      "nested Kismet VM expression"
+    ],
+    "baseline": "2/826 failures on old kernel",
+    "final": "826/826 pass",
+    "kernel_changed": true,
+    "model_boundary": "Execute two whole76byte wrappers composed with whole254byte Fetch AST, supplied valid GameStateRef and stable Map_Find primitive. Synthetic nonpositive keys, absent/null/current map values and preinitialized out slots. No concurrent map changes between the repeated finds, missing GameStateRef, object lifetime, native container or noninteger input ABI claim.",
+    "limits": [
+      "Native integer-input lookup semantics are certified only in the stable map/valid GameStateRef model scope. Bool/string coercions and object input are headless bridge behavior, not a claimed native ABI.",
+      "Object alias->ID relookup preserves local spawn compatibility; controlled removal/replacement/detached/nonpositive cases are not observed live PvP histories.",
+      "Repeated native Map_Find interleavings, missing GameStateRef, GC/concurrency and all callers transitive effects remain open.",
+      "General AsCardOrId behavior and State.ById remain unchanged; do not claim all other ID/object-taking APIs audited.",
+      "Initial test fixture omitted required Definition and failed to build; corrected before recording valid old-kernel regression; compiler error excluded from rule failure counts."
+    ]
+  },
+  "findings": [
+    "Native BP_CardFunctions and BP_Logic GetCardFromID take integer ID and forward to FetchCardFromCardID. Fetch checks ID<=0 first, returns null for nonpositive or absent keys, and returns the current map value for positive hits without a zone/unit/owner filter. Empty CardFunctionsStub declaration is not substituted for its Blueprint overrides.",
+    "Public CardApi.GetCardFromID directly queried State.ById, allowing synthetic nonpositive registered keys. Dispatcher used shared AsCardOrId, which returned a supplied CardInstance directly, bypassing the current map and positive-ID gate. That could leak detached/removed/replaced aliases in the headless compatibility path.",
+    "Some simplified local spawn primitives return CardInstance objects to later ID-consuming IR paths; deleting object-input compatibility would risk breaking those existing flows. Six spawn adapter methods and sixteen return-containing source lines were independently inventoried. This source inventory alone is not semantic/native return-type certification; real hand-spawn integration tests establish the retained bridge behavior."
+  ],
+  "changes": [
+    "Public GetCardFromID now rejects ID<=0 before querying the current battle map.",
+    "Dispatcher GetCardFromID converts its first argument through existing IdOf and calls the canonical public getter. Integer input and local spawn-object compatibility now relookup by ID; no stale object shortcut, receiver/self/target fallback, zone or side filter.",
+    "Leave State.ById, general AsCardOrId and other object-taking APIs unchanged. Existing bool/string-to-int compatibility conversions are retained and not claimed as native ABI proof.",
+    "Add two regressions:480 integer/context combinations across public/dispatcher/nested VM routes, plus72 real hand-spawn compatibility scenarios with controlled removal/replacement/detached/zero/negative aliases. Preserve pure-query action/random behavior."
+  ],
+  "validation": [
+    "Fresh three full Blueprint bodies406bytes and one empty reflected stub acquired read-only and independently checked for raw/header length,FName/symbol identity,SHA and whole AST decode under current executable SHA.",
+    "96 composed full getter/fetch AST models cover both wrappers,eight signed IDs,three map modes and initialized output slots using a stable Map_Find primitive. Positive hit uses two finds,positive miss one,nonpositive zero. Null map values and synthetic keys are controlled probes.",
+    "DeepSeek extracted six DoSpawn method source ranges and sixteen return-containing lines in a private snapshot. Primary extraction matched every method,boundary,line and text; implementation/compatibility judgment remained primary.",
+    "Corrected a test-fixture required Definition initializer before establishing baseline; the failed build is archived and excluded. Old kernel with valid new tests:2/826 failures. Patched Release full selftest:826/826 pass."
+  ],
+  "limits": [
+    "Native integer-input lookup semantics are certified only in the stable map/valid GameStateRef model scope. Bool/string coercions and object input are headless bridge behavior, not a claimed native ABI.",
+    "Object alias->ID relookup preserves local spawn compatibility; controlled removal/replacement/detached/nonpositive cases are not observed live PvP histories.",
+    "Repeated native Map_Find interleavings, missing GameStateRef, GC/concurrency and all callers transitive effects remain open.",
+    "General AsCardOrId behavior and State.ById remain unchanged; do not claim all other ID/object-taking APIs audited.",
+    "Initial test fixture omitted required Definition and failed to build; corrected before recording valid old-kernel regression; compiler error excluded from rule failure counts."
+  ],
+  "next_work": [
+    "Continue normal PvP receiver object lifetime/replacement/reentry ordering and audit remaining ID-taking adapters by their actual signatures.",
+    "Keep noninteger input coercion, missing GameStateRef and native map interleavings outside the current lookup proof."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule401-card-lookup-native-20261025.json",
+      "sha256": "7e03b6f69d4d426d087337be7a446f7690696f60f1cd1adbbfed76670160ad47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule401-card-fetch-native-20261025.json",
+      "sha256": "fb85c4fa8f940cbbc2219be082455d4daec5190d6eb45f3669f9893ea135cd62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule401-lookup.py",
+      "sha256": "7854b53fe1b4e4b0eba7ea6a86b29abd6df10e5efd11cb2dcc9dff7ba8addfc6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule401-fetch.py",
+      "sha256": "ff4fd405ac401f9ada0785056f793424fba66b8f1bff5e2f7279989130dd704d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule401-lookup.py",
+      "sha256": "8fcdc23873157fa9044f1f2b908600d860ac08166cec5b0299dd862cabeccb47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule401-lookup-model-20261025.json",
+      "sha256": "1b2e4161641753452c424946a3ca94f9ad58924402c28cef67fb135f75030da3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule401.py",
+      "sha256": "9da49f81ec615de8311c88297f0b65cf02f9734131a7705bf3fcabb1c8ce8f2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule401-selftest-before.log",
+      "sha256": "89a9cfde80bfdd80be50573a9dafa015410560023132e28719122bf08d2a6d30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule401-selftest-after.log",
+      "sha256": "72689239ee09a4da287d3d7d1c1a02304e61ca8b9c9adb16fe0bf084d7cb4f85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule401-test-fixture-build-error.log",
+      "sha256": "126a961c94c5c6bc8320eea78503fc95a451ee0ee4095260d07411377f304280"
+    }
+  ],
+  "deepseek_job": "20261025-064315-rule401-spawn-return-inventory-c6d8d59d",
+  "worker_snapshot_sha256": "8635a91f50f613951064170c02ba268e9748204a5582ebef71495b902c38a42c"
+}

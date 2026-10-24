@@ -259,11 +259,10 @@ public sealed partial class CardApi
             // GameState.GetOpponentSide reads the stored opponent field. It is
             // distinct from the card-relative GetOppositeSide above (RULE-270).
             ["GetOpponentSide"] = (c, r, a) => (int)c.State.OpponentSide,
-            // The Blueprint signature takes an integer card ID, but a few local
-            // event paths receive the freshly spawned CardInstance directly from
-            // a simplified spawn primitive.  Accept both representations here;
-            // the native path remains the integer-ID case.
-            ["GetCardFromID"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)),
+            // Native input is an integer ID. Keep the headless spawn-object
+            // compatibility bridge, but resolve its ID against the current map;
+            // never return a detached/stale alias or bypass the positive-ID gate.
+            ["GetCardFromID"] = (c, r, a) => GetCardFromID(IdOf(a.ElementAtOrDefault(0))),
             // `Get{Left,Right}MostCardInHand(self, out found, out card)`。
             // GameState.Hand uses the same location-number ordering as the client.
             ["GetLeftMostCardInHand"] = (c, r, a) => GetEdgeCardInHand(c, r, a, rightMost: false),

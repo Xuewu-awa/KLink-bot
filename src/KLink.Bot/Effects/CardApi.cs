@@ -5358,7 +5358,8 @@ public sealed partial class CardApi
     public int GetTurnNumber() => State.Turn;
     public bool DoesSideControlTheFrontline(Side s) => State.FrontlineOwner == s;
 
-    public CardInstance? GetCardFromID(int cardId) => State.ById(cardId);
+    /// <summary>Native FetchCardFromCardID rejects nonpositive IDs before querying the battle map.</summary>
+    public CardInstance? GetCardFromID(int cardId) => cardId > 0 ? State.ById(cardId) : null;
     /// <summary>Fresh CardFunctions wrapper outputs are null/zero outside sides 1 and 2.</summary>
     public CardInstance? GetLocationCardBySide(Side s)
         => s is Side.Left or Side.Right ? State.Hq(s) : null;
