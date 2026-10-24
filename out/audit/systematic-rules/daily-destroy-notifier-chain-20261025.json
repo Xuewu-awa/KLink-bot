@@ -1,0 +1,112 @@
+{
+  "rule": "RULE-397",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "a091ec681a5d1017f60cb150545d3ae18ed0abb9",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-397",
+    "fresh_functions": 13,
+    "fresh_script_bytes": 40344,
+    "complete_blueprint_bodies": 12,
+    "native_empty_script_frontier": "DailyMissions:SetAchievementCounters",
+    "worker_call_nodes": 71,
+    "worker_persistent_writes": 4,
+    "live_chain": [
+      "BP_CardFunctions_C",
+      "U_CardFunctionsNotifier_C",
+      "BP_DailyMissions_C"
+    ],
+    "current_turn": 2,
+    "achievement_count": 9,
+    "legacy_delegate_count": 1,
+    "legacy_delegate_handler": "AchievementsOnCardDestroyedEvent",
+    "legacy_delegate_graph_trace": [
+      0,
+      5,
+      29113,
+      29820
+    ],
+    "controlled_loop_models": 512,
+    "model_boundary": "Actual whole event-graph AST entry/prologue/flow stack and destruction achievement loop/control branches. IsChinaISBN, qualification predicate, completion helper and container copy/equality behavior are controlled primitives. No live game function execution, actual achievement definitions, network/native sinks, alias/reentry or rule-state isolation certification.",
+    "kernel_changed": false,
+    "new_selftest_run": false,
+    "latest_source_validation": "RULE-395 Release823/823; source unchanged",
+    "limits": [
+      "No new PvP rule mutation identified in the examined direct Blueprint chain; this is not proof of transitive absence through all native/UI/network callbacks.",
+      "Achievement row contents were not collected. Counts9/1 apply only to the captured actual turn2 instance.",
+      "Actual interface handler reaches achievement bookkeeping directly; bound legacy delegate handler only captures persistent-frame arguments then exits its graph. Do not infer the delegate is necessarily broadcast by this interface path.",
+      "Native SetAchievementCounters machine body, UI ShowAchievementCompleted and SetFeaturedAchievements callback/reentry effects remain open.",
+      "No rule source change, client process writes, injections, game function calls or replay authority."
+    ]
+  },
+  "findings": [
+    "NotifyOnCardDestroyed forwards destroyerCard and TargettedCard to DailyMissionsReceiver.HandleOnCardDestroyed. The three-byte interface declaration is not its implementation. Actual BP_DailyMissions handler saves two frame arguments then invokes graph entry29334, which calls Achievements_OnCardDestroyed, whose wrapper invokes graph entry29114.",
+    "Entry29114 checks IsChinaISBN; otherwise clears temporary removals and iterates OnCardDestroyedAchievements. Qualification helper reads match/card ownership/type/cost information. Qualifying rows increment counter, set IsDirty, write the row back, and call CheckIfAchievementCompleted. Completed rows are removed after the iteration.",
+    "CheckIfAchievementCompleted calls achievement completion utility, UpdateAchievementCounter, native DailyMissions.SetAchievementCounters and temporary removal append only when AchievementFinished is true and ISBN gate permits. Other captured utilities reach profile/UI/session sinks including ShowAchievementCompleted and SetFeaturedAchievements; these transitive calls remain outside a proof of isolation from game rules.",
+    "Initial live re-enumeration found zero active CardFunctions instances; no old pointer or CDO value was used as a live receiver. After user loaded a match, fresh turn2 CardFunctions->notifier->interface UObject resolves to BP_DailyMissions_C, with nine achievement rows by header count.",
+    "This daily receiver has one OnDailyMissionsCardDestroyed binding to itself, AchievementsOnCardDestroyedEvent. This is a different delegate from RULE-396 DestroyedCountChanged. The bound wrapper saves two persistent-frame arguments then invokes graph entry29113; graph prologue/ComputedJump/PopExecutionFlow returns directly via29820. No achievement-loop body is reached by this current bound graph entry. Its mere binding does not establish that the examined interface path broadcasts it."
+  ],
+  "decision": "Retain RULE-395 history-only local adapter. No demonstrated PvP rules correction from the examined notification chain; do not insert achievement/profile/UI work into the headless engine based on function names alone. Native/transitive reentry and source mutation exclusions remain open.",
+  "validation": [
+    "Fresh thirteen UFunctions captured read-only, with40344 script bytes across twelve complete Blueprint bodies. Native SetAchievementCounters has zero script bytes and Native flag; it is an explicitly recorded native frontier, not a fully recovered machine implementation.",
+    "Raw/header lengths, FNames/symbol headers, hashes and whole decoded nonempty bodies independently checked. Actual receiver chain object/index/slot/class, reflected offsets, weak delegate serial/name and repeated selected reads validated.",
+    "512 controlled actual-event-graph AST models from the real prologue vary ISBN gate, zero through three achievement rows and independent qualification/completion masks. They verify increment/writeback/removal ordering under supplied primitives; they do not execute native sinks, actual row definitions or arbitrary callbacks.",
+    "DeepSeek extracted71 call nodes and4 persistent-frame write statements from the initial six non-graph functions. Every containing function, statement/preorder index and full node matches primary extraction. Later sink/delegate-handler captures and semantic judgment are primary work.",
+    "No production/test changes or new selftest run. Latest applicable source validation remains RULE-395 Release823/823."
+  ],
+  "limits": [
+    "No new PvP rule mutation identified in the examined direct Blueprint chain; this is not proof of transitive absence through all native/UI/network callbacks.",
+    "Achievement row contents were not collected. Counts9/1 apply only to the captured actual turn2 instance.",
+    "Actual interface handler reaches achievement bookkeeping directly; bound legacy delegate handler only captures persistent-frame arguments then exits its graph. Do not infer the delegate is necessarily broadcast by this interface path.",
+    "Native SetAchievementCounters machine body, UI ShowAchievementCompleted and SetFeaturedAchievements callback/reentry effects remain open.",
+    "No rule source change, client process writes, injections, game function calls or replay authority."
+  ],
+  "next_work": [
+    "Inspect native SetAchievementCounters body and directly referenced profile/UI callback boundaries only as needed to decide whether notification can affect PvP rules.",
+    "Continue the outstanding valid-object, null-context, replacement/GC and nested local-receipt semantics audit."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-destroy-chain-native-20261025.json",
+      "sha256": "f15adefee38daf076e9728a41a89ca1ea4929815e179620015e3cdcec3ee70c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-destroy-achievements-native-20261025.json",
+      "sha256": "394213d1ea1ec1b6034d5411839f92c42b20316f7461c604322ba4c8449cbf05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-destroy-predicates-native-20261025.json",
+      "sha256": "fa14d839e4439e77bc7b62949047de5e5cebb50c95a394c77ad6b9b41592cfc8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-achievement-sinks-native-20261025.json",
+      "sha256": "fec89466b87facb8c4f24cf688936381861532c8dbac0497b6b528e87cad31d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-delegate-handler-native-20261025.json",
+      "sha256": "0e54bd904153214c0742d74ca6868258fbb9edecd0ce2bad3ac611391067d64f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule397-daily-receiver-live-20261025.json",
+      "sha256": "5418695e53146f50a09be5479a01e19e2b1bc63cd79cdaaa3cbc5f9cc9af67a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule397-daily-chain.py",
+      "sha256": "e05592b65e8d6331c1bbcc626c4bf8c6e76132ccecd7a4293dfe7c68fbacd1bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule397.py",
+      "sha256": "f1eb592c29d22580f321ee8e6e5e0231b75bce10b8a93cdb5ee35bb79ea71eda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule397-daily-destroy-model.json",
+      "sha256": "f63f70b6258ccae04001f4ef873d38271079b2beda6bbcccaa19c0d1319f6004"
+    }
+  ],
+  "deepseek_job": "20261025-023644-rule397-daily-calls-0f39857d"
+}
