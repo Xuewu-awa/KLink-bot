@@ -958,6 +958,8 @@ internal static class SelfTest
         new("单体销毁移动门使用离场前保存的位置", DestroyMovementRemovalSnapshot),
         new("显式销毁接受仍注册的弃牌和不可用对象并允许再次执行", DestroyRetainedObjects),
         new("有效保留对象的自身摧毁前回调不受区域过滤", DestroyRetainedBeforeCallback),
+        new("防御致死沿原生销毁入口处理有效保留对象", DefenseLethalRetainedRouting),
+        new("防御致死回调恢复数值后仍保持各模式通知顺序", DefenseLethalCallbackRouting),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
         new("伤害后连锁直接摧毁仍记录动作，只关闭原受伤目标的重复动作", DamageDeathKeepsNestedDestroyAction),
         new("伤害动作保留受伤前回调前的位置与回调后的旧防御", DamageActionSnapshotTiming),
@@ -34437,6 +34439,98 @@ internal static class SelfTest
                 || (defender.Location == CardLocation.Discard) != defenderDies
                 || state.DestroyedCardIdsAll.Count != (attackerDies ? 1 : 0) + (defenderDies ? 1 : 0))
                 return "省略重复动作不能省略实际阵亡或重复记入死亡历史";
+        }
+        return null;
+    }
+
+    private static string? DefenseLethalRetainedRouting(CardDatabase db)
+    {
+        string[] names = { "NotAvailable", "Deck_Left", "Deck_Right", "Hand_Left", "Hand_Right", "Board_HQLeft", "Board_HQRight", "Board_Frontline", "Discard", "Deck" };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2, 3, 5 })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool native in new[] { false, true })
+        foreach (bool belowZero in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0); source.Keywords.Clear();
+            var target = state.CreateWithId(PlainUnit, side, 60, (CardLocation)location, 27); target.Keywords.Clear();
+            target.Defense = 7; target.MaxDefense = 123;
+            int request = mode == 1 ? belowZero ? -9 : -7 : belowZero ? -4 : 0;
+            InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, request, mode, skip, native);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var death = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            int rawDefense = mode == 1 ? 7 + request : 0;
+            bool notified = mode != 1 || !skip;
+            int killerId = sourceId == 9999 ? 0 : sourceId;
+            if (death.Length != 1 || target.Location != CardLocation.Discard || target.LocationNumber != 27
+                || target.Defense != rawDefense || target.MaxDefense != (mode == 1 ? 123 : 0)
+                || gain.Length != (notified ? 1 : 0) || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 60 })
+                || !death[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("destroyerCardID", killerId),
+                    ActionValue2.Str("destroyedLocation", names[location]) })
+                || actions.Any(x => x.Name is "ZActionDamageCard" or "ZActionRemoveCardFromBoard"))
+                return $"四种已知防御致死分支须对有效保留对象实际销毁：{side}/{mode}/{location}/{sourceId}/{skip}/{native}/{request}";
+            if (notified) {
+                int di = Array.FindIndex(actions, x => x.Name == "ZActionDestroyUnit"), gi = Array.FindIndex(actions, x => x.Name == "ZActionGainDefense");
+                if ((di < gi) != (mode == 1) || gain[0].Values.Single(x => x.Name == "gained").Value != request
+                    || gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != 0
+                    || gain[0].Values.Single(x => x.Name == "instigatorID").Value != sourceId)
+                    return "普通减防先销毁后通知；2/3/5先通知后销毁，原始来源与请求须保留";
+            }
+        }
+        return null;
+    }
+
+    private static string? DefenseLethalCallbackRouting(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var before = InstallSelectionDrawProbe(name, "OnBeforeDestroyed");
+        using var set = InstallSelectionDrawProbe(name, "OnAfterDefenseIsSet");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 1, 2, 3, 5 })
+        foreach (CardLocation location in new[] { CardLocation.NotAvailable, CardLocation.Discard, side.HandOf(), side.HqOf() })
+        foreach (bool skip in new[] { false, true })
+        foreach (int sourceId in new[] { 20, 60, 9999 })
+        foreach (bool native in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0); source.Keywords.Clear();
+            var target = state.CreateWithId(name, side, 60, location, 27); target.Keywords.Clear();
+            target.Definition = new CardDefinition { Name = name, Type = "infantry", UsedTriggers = new[] { "OnBeforeDestroyed", "OnAfterDefenseIsSet" } };
+            target.Defense = 7; target.MaxDefense = 123;
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_51e_regiment", side, 101, side.DeckOf(), 1);
+            int callbacks = 0; bool badBefore = false, badAfter = false;
+            using var draw = InstallDrawReentryProbe(state, () => {
+                callbacks++;
+                var current = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+                if (callbacks == 1) {
+                    badBefore = current.Any(x => x.Name == "ZActionDestroyUnit")
+                        || current.Count(x => x.Name == "ZActionGainDefense") != (mode == 1 ? 0 : 1);
+                    target.Defense = 13;
+                    state.Move(target, CardLocation.BoardFrontline, 27, notifyMoved: false, normalizeLocation: false);
+                } else if (callbacks == 2) {
+                    badAfter = mode != 2 || target.Location != CardLocation.Discard
+                        || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 60 })
+                        || current.Count(x => x.Name == "ZActionDestroyUnit") != 1
+                        || current.Count(x => x.Name == "ZActionGainDefense") != 1;
+                }
+            }, markerSide: side.Opposite());
+            int request = mode == 1 ? -9 : -4;
+            InvokeExplicitDefenseMode(engine, state, side, target, source, sourceId, request, mode, skip, native);
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var death = actions.Where(x => x.Name == "ZActionDestroyUnit").ToArray();
+            var gain = actions.Where(x => x.Name == "ZActionGainDefense").ToArray();
+            bool notified = mode != 1 || !skip;
+            if (callbacks != (mode == 2 ? 2 : 1) || badBefore || badAfter || death.Length != 1
+                || target.Location != CardLocation.Discard || target.Defense != 13
+                || gain.Length != (notified ? 1 : 0) || !state.DestroyedCardIdsAll.SequenceEqual(new[] { 60 })
+                || death[0].Values.Single(x => x.Name == "destroyerCardID").Value != (sourceId == 9999 ? 0 : sourceId)
+                || notified && gain[0].Values.Single(x => x.Name == "newDefenseValue").Value != (mode == 1 ? 13 : 0))
+                return $"致死分支不能按原区域拒绝，回调恢复数值后仍完成销毁并保持模式通知顺序：{side}/{mode}/{location}/{skip}/{sourceId}/{native}, callbacks={callbacks}";
         }
         return null;
     }

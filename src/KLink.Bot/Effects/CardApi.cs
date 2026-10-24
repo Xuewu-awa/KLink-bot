@@ -2737,7 +2737,7 @@ public sealed partial class CardApi
 
         if (additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
-            _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
+            DestroyAfterDefenseChange(target, instigatorId.HasValue ? State.ById(sourceId) : source, changeType);
         }
 
         // RULE-315: i=2507 destroys lethal decreases before i=2445 checks
@@ -2763,8 +2763,18 @@ public sealed partial class CardApi
         // Keep the separately audited set/decrease paths and engine sweep intact.
         if (!positiveGain && !additiveDecrease && target.Defense <= 0 && !target.IsHq)
         {
-            _engine.Destroy(target, instigatorId.HasValue ? State.ById(sourceId) : source);
+            DestroyAfterDefenseChange(target, instigatorId.HasValue ? State.ById(sourceId) : source, changeType);
         }
+    }
+
+    private void DestroyAfterDefenseChange(CardInstance target, CardInstance? source, int changeType)
+    {
+        // RULE-385: these native modes call DestroyCard after accepting a
+        // valid object; its current zone is not an additional availability gate.
+        if (changeType is 1 or 2 or 3 or 5)
+            _engine.DestroyFromCardFunction(target, source);
+        else
+            _engine.Destroy(target, source);
     }
 
     private void ExecuteAfterGainDefense(CardInstance target, int amount)
@@ -2871,7 +2881,7 @@ public sealed partial class CardApi
             ActionValue2.Int("instigatorID", sourceId),
             ActionValue2.Str("changeType", DefenseChangeTypeName(changeType)),
         });
-        if (Math.Clamp(target.Defense, 0, 99) == 0) _engine.Destroy(target, State.ById(sourceId));
+        if (Math.Clamp(target.Defense, 0, 99) == 0) DestroyAfterDefenseChange(target, State.ById(sourceId), changeType);
     }
 
     // SuppressMultipleUnits5363..5558/5658: write maxDefense first. The

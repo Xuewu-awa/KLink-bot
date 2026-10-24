@@ -1,0 +1,187 @@
+{
+  "rule": "RULE-385",
+  "date": "2026-10-24",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "6039a2e9cd785bd01190cc1d8c7fc465d2007d0b",
+  "kernel_changed": true,
+  "fresh_live_capture": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-385",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_functions": 5,
+    "redecoded_bytes": 13712,
+    "redecoded_statements": 481,
+    "model": {
+      "rule": "RULE-385",
+      "cases": 960,
+      "digest": "7810b3cbaf0d290cb6c759d6bb79955fa44abc752e2a4edca514baecbbce63f5",
+      "scope": "Whole ChangeDefense and ledger plus nested439B DestroyCard/1009B removal bodies. Conditional valid registered non-HQ object. Map/crypto/stat accessors, trigger queries, notifier and lifecycle callbacks are controlled primitives; before-destroy may restoreDefense13 and moveFrontline7. No native GC/HQ/death receipt certification."
+    },
+    "worker_exact_nodes": 10,
+    "new_tests": 2,
+    "regression_cases": {
+      "lethal_routing": 1920,
+      "callback_timing": 384,
+      "total": 2304
+    },
+    "selftest_passed": 806,
+    "selftest_total": 806
+  },
+  "finding": "Known defense modes1/2/3/5 accepted a valid retained object and wrote lethal defense, but still used engine.Destroy availability gate. This silently skipped real explicit destruction inDiscard8/NotAvailable0 although native ChangeDefense invokes DestroyCard, whose retained-object entry was repaired inRULE384.",
+  "authority": "Whole5743B ChangeDefense: notify1310 before GetCardFromID1480/Destroy1512 for absolute modes; ordinary lethal lookup2475/Destroy2507 before ordinary notice4083. SetValue own/T6 follow destruction; mode3/5 bypass those events. Native DestroyCard439B/removal1009B and current254B lookup reverified,5functions13712B total including6267B ledger; no replay authority.",
+  "changes": [
+    "Known native defense modes1/2/3/5 route lethal handling to engine.DestroyFromCardFunction via scoped DestroyAfterDefenseChange helper.",
+    "All3existing lethal call sites use helper; unknown/legacy modes retain engine.Destroy behavior. Numeric/ledger/gate/notification order and suppression/skip controls unchanged.",
+    "No change to public HQ-to-damage adapter or existing engine HQ rejection; tested non-HQ units with positive IDs retained in lookup."
+  ],
+  "validation": [
+    "960full ChangeDefense+ledger executions with nested complete DestroyCard/ApplyRemove bodies cover4modes x10zones x3sourceIDs x2requests x2skip x2before-death restorations. Native getters/crypto/map/event/notifier primitives controlled; callback may restoreDefense13 and moveFrontline.",
+    "DeepSeek10complete enclosing call statements independently matched primary extraction exactly.",
+    "1920regression cases verify actual destruction, raw numerical storage/max, source lookup including missing positive source, notification old zone/payload/order, death history and absence of duplicate damage/removal notices across public/native-name entries.",
+    "384integration cases execute actual temporary VM before-destroy and SetValue-self callbacks with opposite-deck markers; verify restoredDefense13 is read in later ordinary notice, while absolute notices remain earlier0 and SetValue-self follows destruction.",
+    "Original804/806passed with both new tests failing; final Release806/806passed."
+  ],
+  "unresolved": [
+    "Only known native modes1/2/3/5 and retained valid positive-ID non-HQ objects covered. Source-less convenience/legacy modes remain separate unverified adapters.",
+    "HQ behavior, GC/pendingkill/lookup retention maintenance, detached/alias/missing victim objects, callback invalidation and native ID mutation remain open.",
+    "Destruction-generated history vs native receive bookkeeping/reconnect sequencing, arbitrary repeated recursion and complete callback/container semantics remain open.",
+    "Complete single-card restoration and paused version migration remain unresolved; fullycertifiedcards0."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-before-callback-chain-native-20261022.json",
+      "sha256": "a88eb4338395b46967bbc2245331f6773c3fec342b89c75884d4704fc31f18be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-dependencies-native-20261024.json",
+      "sha256": "d2fe3289d83f20907823ec2c0ca66125be153b2686cbe24a45b98774ee2a49d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\destroy-id-lookup-native-20261024.json",
+      "sha256": "701f8c0942fa2d82e79ebe913ba9415da62fd0d7c42079454d2864d2cea0a470"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule385.py",
+      "sha256": "27bb4cccf576d210dcd942ae1250e6b6c58c5b6ebd53a57b4b41f165c55caa45"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\add-rule385-tests.py",
+      "sha256": "ca41382035d981c731adcc9c8295996628cccea388b554b3ae835e9120402e39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-rule385-model.py",
+      "sha256": "0c5852c6c1f35d9bf920456151106e63254bab13fc1eeb04f9667455db37c831"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule385-main.py",
+      "sha256": "1e7049372105e4845f522dbc1d08de6b5362dc1af9a96f2ca166df2e35475c1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule385.py",
+      "sha256": "c4322c822366a1f50307995ef65b5a5da56f97473c4308144892cec4ba9ed09b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule385.py",
+      "sha256": "a0f0d245fa87ebb9f918d40c06f46dc85e67d9d9e9dec66ca712aa601e18b9b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-model-20261024.json",
+      "sha256": "c3f75d107893ea022e1a6c0836caffad7b9e91e7dec9daf133c4e7219af9c1c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-verified-20261024.json",
+      "sha256": "ea4062c8c73e41e62346db21bc559c8e899bb2680f3b7909fb5cfb24d411995b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-selftest-before.log",
+      "sha256": "d3d482257a70feab9b68f519c990bb55cdd0780d3bbbfb18d1db263b054e6f15"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-selftest-before-exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-selftest.log",
+      "sha256": "24ab1a392af9ce44deff9c32a481e258d06fbc221963e533867d921678c903a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule385-selftest-exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule381-main.py",
+      "sha256": "7fd5a967c3f28ab2e41ccaa970495c51ed5610a1f689a58d3518ce30e00c0ce8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule302-removal-routing.py",
+      "sha256": "9256acce90c7eb441ff61668bda1ccaf0540c498a57d4638c84ccf5063caab6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-297.py",
+      "sha256": "ad04addc323aac50102bef7e479c9266ec618db3f1b516d253aad10b06b00e4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\task.txt",
+      "sha256": "7d983bb59d052c95a0724a9a6671be6a0ce000cf8445c513de65c12f7b23ad34"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\functions.json",
+      "sha256": "53ddf58a255c925161e1c6a47d4ec5082e3f8e883064b9d19082eb8da868b015"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\extract.py",
+      "sha256": "9d8b666ec3d69fbf78b4ad6551f3d6e270ba0ddc4ebc4955249f41d1c39e6173"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\nodes.json",
+      "sha256": "58f95b61401938f7c82a0ab5c4606000a915f6cdfff6503b6791b55c2ddd9ea0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\primary-nodes.json",
+      "sha256": "58f95b61401938f7c82a0ab5c4606000a915f6cdfff6503b6791b55c2ddd9ea0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\worker-packets\\rule385\\primary-cases.json",
+      "sha256": "c4471b1200a02fe07742efae5229af93cee93c3f49e410e6c31349eea2fbba56"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-213028-rule385-defense-death-routing-e80d8932\\job.json",
+      "sha256": "874285216b453162a5d20f8131147cefd88e2302a1a2c164e77547e6e651aa2e"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261024-213028-rule385-defense-death-routing-e80d8932\\answer.txt",
+      "sha256": "f76793665f714007244dda45aeeec30714bc9364091bdfe25e630314bd7fa7b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "sha256": "f052fa50603a4190f7c8837f6317ff8bae479d4e51539cb78f80195d5b937b20"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "sha256": "d2d4b6fc26a924ae08c9f8f4598ff8c31a3621c695196261c9dcbd60b705e354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "sha256": "d39041074a2be296f6cfb8ee20d1310814a8431532d896f9df232d5b9c624cba"
+    }
+  ]
+}
