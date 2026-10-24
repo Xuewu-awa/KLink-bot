@@ -1,0 +1,130 @@
+{
+  "rule": "RULE-405",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "a0245bc386d0ed2fd3597c663179c7ff8a556ea6",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-405",
+    "native_ufunctions": 4,
+    "blueprint_bodies": 1,
+    "blueprint_bytes": 243,
+    "stub_declarations": 1,
+    "native_captured_ranges": 46,
+    "native_range_bytes": 4164,
+    "split_pdata_cfg_roots": 4,
+    "split_pdata_cfg_bytes": 844,
+    "null_property_models": 12,
+    "jsonmakefield_models": 32,
+    "worker_cfg_edges": 49,
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Current customJson FStructProperty points at BlueprintJsonObject through property+0x70. ScriptStruct+0xb8 points at the captured CppStructOps object. Reflected property element size, UScriptStruct size and ops size are16. Property virtual slot+0x130 resolves to RVA1580b60, which forwards to1462bf0 with count1.",
+    "Actual selected initialization chain queries ops capability descriptor twice: flags2004 selects destruction then explicit default construction rather than memset. Ops slot+0x10 points at13fa7b0, which writes both qwords zero. This is evidence specific to BlueprintJsonObject/current build, not inference from scalar zero clearing.",
+    "12 offline executions from property entry or reused EX_Context null-clear suffix produce16zero bytes and preserve surrounding canaries. Controlled old temporary is empty or has shared reference count2/5; real non-last-reference decrement is executed. The last-reference virtual destructor branch is deliberately not modeled.",
+    "Current native JsonMakeField UFunction entry RVA4519920 has467bytes. It checks the input object pointer before invoking map mutation13cab10. With16zero input,32 whole-wrapper cases skip that mutation and return16zero through actual146byte shared-copy helper238fb50. Cases cover bytecode/compiled parameter routes, temporary/reference inputs, empty/nonempty controlled key, null/valid supplied value and empty/shared old result.",
+    "JSON_Clear243byte Blueprint body has JsonHasField(card.customJson,key), conditional JsonRemoveField and assignment back to card.customJson; it has no direct persistence or notification call. Native JsonHasField and the null-object assignment opcode remain to be traced before composing the full helper chain.",
+    "Initial pdata ranges for several helpers ended before reachable branches. Four selected direct intraprocedural CFGs were collected across those fragments and checked against PE bytes.46 captured ranges4164bytes overlap and include branch targets; they are not46 distinct complete functions or a unique-coverage total."
+  ],
+  "validation": [
+    "All saved native ranges and CFG instructions independently checked against current installed PE SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 and re-disassembled. Fresh live collector compared every emitted native range with read-only process bytes.",
+    "JSON_Clear raw length/hash/reflected name and complete AST independently re-decoded. Four zero-script native BlueprintJsonLibrary declarations identified by native function flag and entry pointers; their empty script decode errors are not treated as failures to recover native bodies. One empty CardFunctionsStub declaration distinguished.",
+    "44 native offline cases independently rerun by verifier against immutable saved model outcomes. Engine parameter stepping, FString preparation/free and security-cookie check are explicit controlled hooks. No client memory writes, injection or game function invocation.",
+    "DeepSeek extracted49 jump/call/return instructions from four private CFGs. Primary independently rebuilt all rows including containing root, instruction address, mnemonic, operand and direct target; every row matched. Job20261025-073143-rule405-cfg-edges-7f898592 completed exit0.",
+    "No production/test source changes; no new simulator selftest claimed. RULE-403830/830 remains an earlier result."
+  ],
+  "limits": [
+    "Closes selected null customJson default-construction uncertainty and null-input JsonMakeField mutation gate only. Does not close RULE-403/404 full missing-removal-core equivalence.",
+    "Last-reference shared controller destruction, actual engine parameter marshalling, diagnostic abort/error state, arbitrary old output memory and object/GC/concurrency behavior remain outside44cases.",
+    "JsonMakeBool allocation/OOM, JsonHasField null query, JSON_Clear null branch, and native EX_Let/null destination assignment are not certified here. JsonMake/JsonRemoveField entries are captured, not semantically certified.",
+    "No complete Apply/CardLocationMoved/helper composition; no proof that all side0 hand queries are empty. UI/transitive isolation and live match transitions not certified.",
+    "Candidate ops table sampling included qwords beyond the virtual method table. Code-address filtering excluded data addresses; only slots actually used by captured initializer and verified model are semantically identified. No meaning assigned to the other sampled slots.",
+    "46 native ranges overlap and include short terminal-bounded windows and pdata fragments. Do not interpret them as46 complete implementations; four CFG-root captures are the stronger selected control-flow evidence.",
+    "No card fully certified; no exhaustive missing-card-logic list follows from these selected native checks."
+  ],
+  "next_work": [
+    "Acquire current native JsonHasField null-input path and trace JSON_Clear alongside the now-proven16zero JSON default.",
+    "Trace current EX_Let struct assignment when the destination card Context is null; distinguish skipped destination writes from struct temporary cleanup.",
+    "Then compose missing-positive-ID Apply/CardLocationMoved/selected helpers with skipAddAction=true before deciding whether to keep or change shared core early-return behavior."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-struct-functions-native-20261025.json",
+      "sha256": "832c34c90a18889f3938b07d376ad33dcabc36d93a0d9ab56ad0f06b3fe876cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-native-targets-20261025.json",
+      "sha256": "b4c6a5dad46b9fded1aaef46c01b4b20cd557d8f78b8cbf5c13d46c8035ddce5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-helper-cfg-20261025.json",
+      "sha256": "3def9c238d325ad74765ed56fd5ed7f6361e352aa4e48e85f8722b790d6541e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-field-class-20261025.json",
+      "sha256": "de05543c8ade99ae563ce60ba5f3b69fbffa368fa706d203cf68c9fdcc8790d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-context-opcode-native-20261025.json",
+      "sha256": "8cbae034210b40b9c6b9455cda20eeaab6e165abf098547d27a2f8187aa3553d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule405-json-struct.py",
+      "sha256": "d2a9e02827fe36d162918836cbcd4e964c7865230915dbcbc104b2b43ed40cd0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule405-json-native.py",
+      "sha256": "f5d5bcd498d32e9102b1524114879c2bf2a1e63e266acae21ea1d8ce676e752e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule405-json-cfg.py",
+      "sha256": "88f78db2b2493eed10ffcff0e6d4acdf848fa4c2d7d7c3a7c570b4a93a109687"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule405-json-field-class.py",
+      "sha256": "b29fb258d6fa5d78388ae194d6f07f6d85c077832df5993be6d2379bcfe7fb04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule405-null-json.py",
+      "sha256": "15294ba8d8c7029264cc613d4a978961f9965c39252dfbc186d393aa1746b3d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule405-jsonmakefield.py",
+      "sha256": "22fb5f132c6b44c79bef251342f0d19a9a75397841f3163b304afe948ec0ddb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-null-json-model-20261025.json",
+      "sha256": "55d1a0dba104b4f2bab4ae8db1fdf06c557724c06625fd229feca1afb7578e22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-jsonmakefield-model-20261025.json",
+      "sha256": "54114ab1ee78a84fd7499aae31ce1942f04aac1e306b33ce50c2aded8267f5c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule405.py",
+      "sha256": "72945db9ca8406cfe0e8b9448fc2debd71ce79d8c5d2c6675a2a1efcac6f4e97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-verified-20261025.json",
+      "sha256": "66a2f6f86237b786cc960467b74f19e165487d2d0d8af61ae5b0382a5a6bacc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-worker-packet\\input.json",
+      "sha256": "6bc329eb7a759b2b5e81bbfc2535be7db3053b049d477cdf34242f1b33a41806"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-worker-packet\\task.txt",
+      "sha256": "7564dede50069b71d4f97111ce51d1e1b765c402ab720c184327e2cfbed53e42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule405-worker-packet\\edges.json",
+      "sha256": "fa3062ffa39bfbf98e53549ffd0a4a78e58f9dcb925083ebcd6028b6cb5e0a1e"
+    }
+  ]
+}
