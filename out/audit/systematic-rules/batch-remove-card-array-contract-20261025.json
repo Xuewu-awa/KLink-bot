@@ -1,0 +1,140 @@
+{
+  "rule": "RULE-403",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "f2ae223e4bec095e595da1c2cb87a07e80ebb5b2",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-403",
+    "fresh_blueprint_bodies": 6,
+    "fresh_script_bytes": 2928,
+    "empty_declarations": 2,
+    "input_array_parameter_flags": "0x8000196",
+    "modeled_batch_builder_serializer_bytes": 1631,
+    "composed_models": 1152,
+    "reused_native_no_property_suffix_cases": 2,
+    "worker_call_nodes": 22,
+    "new_headless_scenarios": {
+      "contract": 864,
+      "vm_array_mutations": 14,
+      "total": 878
+    },
+    "baseline": "2/830 failures",
+    "final": "830/830 pass",
+    "kernel_changed": true,
+    "model_boundary": "Whole579byte batch wrapper,179byte builder,873byte serializer. GetCard/IsUnit/array/string/scalar constructors are controlled primitives; Apply1009byte core is opaque with supplied list/type/map mutations. Null Context skips IsUnit and retains the previous out slot, including calls into missing/nonpositive core inputs. Does not certify native core-null effects, helper callbacks, object lifetime, actual interface binding, UI/network or noninteger object bridge ABI.",
+    "limits": [
+      "Native batch IsUnit out slot persists across null targets. The adapter preserves this gate, but shared core still returns early for missing targets; full native missing-core helper side effects remain unresolved.",
+      "Controlled Apply primitive supplies mutations; no full native core/weak reference/GC/concurrency or interface binding proof.",
+      "Actual VM mutation fixtures are synthetic callback probes, not observed client match transitions. Object-list compatibility is not native integer-array ABI proof.",
+      "Initial fixed-per-batch location-number assertion was invalid because earlier removals refresh remaining target positions; removed that assertion, retaining prior single-item number regression. Intermediate failure logs retained.",
+      "UI/transport excluded by task scope and no replay authority, process writes, injection or game function invocation."
+    ]
+  },
+  "findings": [
+    "Native batch input CardIDs has reflected flags8000196 including const/reference/out metadata and belongs to the exact batch UFunction. Its loop repeatedly reads current Array_Length and indexed items; this is not a prefiltered snapshot iteration.",
+    "Native IsUnit executes on each valid looked-up object. A null object Context has no RValue property and skips the call, preserving the old out-bool slot. Consequently a missing positiveID after a unit can still enter ApplyRemoveCardFromBoard. The adapter preserves this gate but native missing-core side effects remain unresolved.",
+    "Qualified per-item Apply receives Destroyed=false,converting=false,skipAddAction=true,combat=false. No per-item single removal notification; after the loop the original caller array is passed to one batch notification and qqq=false. Here original means the supplied array, including any controlled callback changes, not an immutable pre-call copy.",
+    "Builder emits cardIDs then instigatorID. ActionValueIntArray returns Value=-1/Text empty for empty input, or semicolon-separated signed integers without trailing delimiter; duplicates/nonunits/missing/nonpositive input IDs survive notification serialization."
+  ],
+  "changes": [
+    "Replace EvalArray receiver/argument scanning and raw Move loop with a dedicated explicit-first-IList adapter. Preserve local object-list-to-ID compatibility; do not claim native noninteger-array ABI.",
+    "Use index/count loop against the supplied list, preserve stale IsUnit out slot on null lookup, and relookup targets as callbacks change later types or map membership.",
+    "Share the single-item removal core, suppress per-item notifications, then emit one batch notification of the current supplied list and return false. Existing before/move/after behavior and non-destruction bookkeeping preserved for verified retained targets.",
+    "Refactor single-item guard/core separation; missing target core still returns early as an explicit unresolved boundary rather than fabricating native helper effects."
+  ],
+  "validation": [
+    "Fresh six complete Blueprint bodies2928bytes and two empty declarations independently checked for raw/header lengths,FName/symbol identity,hashes and AST decode. Reflected input flags and exact UFunction ownership checked; shared core bytes equal RULE-402 capture.",
+    "1152 composed actual579byte batch/179byte builder/873byte serializer AST models preserve array aliasing,dynamic count,order,duplicates,stale out slot and supplied list/type/map changes. Apply core is opaque in this model; its exact arguments and missing-target entries are recorded, not interpreted as certified native side effects.",
+    "Reused current-build EX_Context bytes from RULE-400 rechecked against installed PE; two Unicorn suffix cases with no RValue property leave old output0/1 unchanged and skip expression. No fresh opcode acquisition or diagnostic/abort proof claimed.",
+    "864 headless contract scenarios plus14 nested-VM callback mutation scenarios cover append,remove,insert,clear,replace later ID,change later type and remove later target. Mutations are controlled tests, not observed live matches.",
+    "Initial fixed location-number assertion was invalid for sequential refresh of later targets and removed; existing single-item number tests retained. Final corrected fixtures rerun against original source still fail2/830, then patched source restored/rebuilt and all830/830 pass. Intermediate logs retained; final trailing-whitespace edit is nonsemantic.",
+    "DeepSeek returned22 call nodes using called function names and statement ordinals. Primary independently matched complete nodes/traversal projection and rebound them to containing function names/byte offsets in primary-calls.json; raw worker function attribution not used as rule judgment."
+  ],
+  "limits": [
+    "Native batch IsUnit out slot persists across null targets. The adapter preserves this gate, but shared core still returns early for missing targets; full native missing-core helper side effects remain unresolved.",
+    "Controlled Apply primitive supplies mutations; no full native core/weak reference/GC/concurrency or interface binding proof.",
+    "Actual VM mutation fixtures are synthetic callback probes, not observed client match transitions. Object-list compatibility is not native integer-array ABI proof.",
+    "Initial fixed-per-batch location-number assertion was invalid because earlier removals refresh remaining target positions; removed that assertion, retaining prior single-item number regression. Intermediate failure logs retained.",
+    "UI/transport excluded by task scope and no replay authority, process writes, injection or game function invocation."
+  ],
+  "next_work": [
+    "Audit full ApplyRemoveCardFromBoard continuation for missing positive IDs after the stale IsUnit gate, including movement/refresh and leave helpers.",
+    "Keep actual list alias reachability, callbacks, pending-kill/GC, native containers and interface/notification binding boundaries open."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule403-remove-card-functions-native-20261025.json",
+      "sha256": "8ce6cdf36e8867ff89a5c41d87214039060275620c18854d4070cb956c0d4531"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule403-batch-remove-notification-native-20261025.json",
+      "sha256": "69b66fe722dd2db92a3c22f8a153072c07cb4bca33993df90d5756768ed62d6c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule403-int-array-value-native-20261025.json",
+      "sha256": "36cb56904bafef3c57ec2fad7a1cfc676aa37589fc6bade62eb65d7b0327cc8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule403-removal.py",
+      "sha256": "980102eeb327ef2357e0c04f5f83649bc82cdb48e9076bd2f73e95953bf9d24c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule403-notification.py",
+      "sha256": "2c13a93fdf145b7df644ce7a7e9f82bd2fee12c793281b4b972f12542ffd971e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule403-array-value.py",
+      "sha256": "20d2d5243471b60ed07f80afb927dabfd8ca874bcc2932e724d23af52ca8b6f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule403-batch-removal.py",
+      "sha256": "f148402f48c7a9418ca03136c90bc60e1f3f100a3ba08619cfa630ee13844480"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-batch-removal-model-20261025.json",
+      "sha256": "7e1c405c44b792d71d398ed60381d229b61bb0f3477589b1079aa656fe940355"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule403-null-slot.py",
+      "sha256": "ff748c9f5a23d7de771d34a2f4dfd82c2aa326fb82566cb6261d6c0e00be1ce3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-null-call-out-slot-model-20261025.json",
+      "sha256": "cdc73238bf930d4b883a73cce10fd0bcb1ea260fac18bcf5c63f5373a67caa10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule403.py",
+      "sha256": "47e50375a2b15cb66c31065420f4816248126e40545334b3da9a79de568d12b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-selftest-before.log",
+      "sha256": "5b0b2193ded8110c969ca3502919772c0ec21dfc613347f68ef9da0957b641a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-selftest-final-fixture-before.log",
+      "sha256": "315c4cd054727a90d9ade3b624744c6c8c15395c807fcd1096375b88c0a8f259"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-selftest-after.log",
+      "sha256": "788e91587bdf38255010513a477e6a090985056b92ba3602829310d4831f0d85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-initial-adapter-selftest.log",
+      "sha256": "d6bfe8ae961e6bdff4c08b72151ace71ed09926caaaa69f81dce743aba3f92b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule403-number-fixture-selftest.log",
+      "sha256": "d6bfe8ae961e6bdff4c08b72151ace71ed09926caaaa69f81dce743aba3f92b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\baseline-rule403-final-fixture.py",
+      "sha256": "b30d21093141cf5bc2d3723cd4f124128dd33921d35ddaa378f8c34326baa2ab"
+    }
+  ],
+  "deepseek_job": "20261025-070627-rule403-batch-removal-calls-57cdc68c"
+}

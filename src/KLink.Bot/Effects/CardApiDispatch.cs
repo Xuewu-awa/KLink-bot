@@ -1248,18 +1248,7 @@ public sealed partial class CardApi
 
             // ---------------- 卡牌移动 / 生成（meteor 等）----------------
             ["RemoveCardFromBoard"] = (c, r, a) => DoRemoveSingleFromBoard(c, a),
-            ["RemoveMultipleCardsFromBoard"] = (c, r, a) =>
-            {
-                foreach (var card in EvalArray(r, a))
-                {
-                    if (!card.IsHq)
-                    {
-                        c.State.Move(card, CardLocation.Discard);
-                    }
-                }
-
-                return null;
-            },
+            ["RemoveMultipleCardsFromBoard"] = (c, r, a) => DoRemoveMultipleFromBoard(c, a),
             ["SpawnCardInDeckBySide"] = (c, r, a) => DoSpawnInDeck(c, r, a),
             ["SpawnCardInDeck"] = (c, r, a) => DoSpawnInDeck(c, r, a),
 
@@ -6674,12 +6663,19 @@ public sealed partial class CardApi
 
     // RULE-402: the native single wrapper takes explicit ID/source and returns
     // qqq=false. Keep object-input compatibility by ID, never context fallback.
-    private object DoRemoveSingleFromBoard(EffectContext c, object?[] args)
+    private object DoRemoveSingleFromBoard(EffectContext c, object?[] args, bool skipAddAction = false)
     {
         int id = IdOf(args.ElementAtOrDefault(0));
         var target = GetCardFromID(id);
         if (target is null || !IsUnit(target)) return false;
-        int instigatorId = IntArg(args, 1);
+        ApplySingleRemovalById(c, id, IntArg(args, 1), skipAddAction);
+        return false;
+    }
+
+    private void ApplySingleRemovalById(EffectContext c, int id, int instigatorId, bool skipAddAction)
+    {
+        // Full native continuation on a missing target remains an open boundary.
+        if (GetCardFromID(id) is not { } target) return;
         var oldLocation = target.Location;
         c.Engine.FireLeaveTrigger(target, CardLocation.Discard, method: 2, oldLocation: oldLocation);
         // CardLocationMoved resolves the ID after before-leave callbacks.
@@ -6693,9 +6689,32 @@ public sealed partial class CardApi
         }
         if (GetCardFromID(id) is { } leaving)
             c.Engine.FireAfterLeaveTrigger(leaving, CardLocation.Discard, oldLocation);
-        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
-        c.Engine.FireSubAction("ZActionRemoveCardFromBoard", new[] {
-            ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", instigatorId), ActionValue2.Str("oldLocation", oldName)
+        if (!skipAddAction)
+        {
+            Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+            c.Engine.FireSubAction("ZActionRemoveCardFromBoard", new[] {
+                ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", instigatorId), ActionValue2.Str("oldLocation", oldName)
+            });
+        }
+    }
+
+    // RULE-403: CardIDs is a by-reference array. Re-read its count/items after
+    // callbacks; final notification serializes that array, not filtered targets.
+    private object DoRemoveMultipleFromBoard(EffectContext c, object?[] args)
+    {
+        var ids = args.ElementAtOrDefault(0) as System.Collections.IList ?? Array.Empty<int>();
+        int instigatorId = IntArg(args, 1);
+        bool isUnit = false;
+        for (int i = 0; i < ids.Count; i++)
+        {
+            // A null native Context skips IsUnit and leaves its out slot intact.
+            if (GetCardFromID(IdOf(ids[i])) is { } target) isUnit = IsUnit(target);
+            if (isUnit) ApplySingleRemovalById(c, IdOf(ids[i]), instigatorId, skipAddAction: true);
+        }
+        string encoded = string.Join(";", ids.Cast<object?>().Select(value =>
+            IdOf(value).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        c.Engine.FireSubAction("ZActionRemoveMultipleCardsFromBoard", new[] {
+            ActionValue2.Str("cardIDs", encoded), ActionValue2.Int("instigatorID", instigatorId)
         });
         return false;
     }

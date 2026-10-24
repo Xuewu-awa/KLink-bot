@@ -980,6 +980,8 @@ internal static class SelfTest
         new("GetCardFromID：生成对象兼容入口按ID重取，移除/替换不返回旧引用", CardLookupSpawnAliasIdentity),
         new("单体移除：显式ID/单位门与false输出，无上下文回退", RemoveSingleTargetContract),
         new("单体移除：前置、移动、后置、通知顺序及非死亡语义", RemoveSinglePhaseContract),
+        new("批量移除：逐ID单位门、重复及完整数组通知", RemoveBatchContract),
+        new("批量移除：VM数组回调改动后重读长度/项并通知当前输入", RemoveBatchMutableInputs),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
         new("总部显式销毁修复不改变旧死亡及伤害入口", HqLegacyDeathDamageBoundary),
         new("单体伤害致死由伤害动作承载，不额外发送直接摧毁动作", DamageDeathActionRouting),
@@ -34515,6 +34517,89 @@ internal static class SelfTest
                 || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault(key + "_subject"), hq)) return false;
         }
         return true;
+    }
+
+    private static string? RemoveBatchContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        foreach (bool reverse in new[] { false, true })
+        foreach (bool objects in new[] { false, true })
+        foreach (int receiverMode in Enumerable.Range(0, 3))
+        foreach (int pattern in Enumerable.Range(0, 4))
+        foreach (int sourceId in new[] { 0, 20, 999 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 30, side.Opposite().HqOf(), 1);
+            var first = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 27);
+            var second = state.CreateWithId(PlainUnit, side, 61, zone, 29);
+            var order = state.CreateWithId("card_event_honorifics", side, 70, side.HqOf(), 31);
+            var zero = state.CreateWithId(PlainUnit, side, 0, side.HqOf(), 33);
+            var negative = state.CreateWithId(PlainUnit, side, -7, side.HqOf(), 35);
+            foreach (var card in new[] { source, decoy, first, second, order, zero, negative }) { card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed); }
+            int hqId = state.Hq(side).CardId;
+            var ids = pattern switch { 0 => Array.Empty<int>(), 1 => new[] { 60, 61, 70, hqId, 0, -7, 777, 60 },
+                2 => new[] { 60, 60 }, _ => new[] { 777, 0, -7, 70, hqId } };
+            if (reverse) Array.Reverse(ids);
+            object input = objects ? ids.Select(id => (object?)state.ById(id) ?? id).ToList() : ids.ToList();
+            object? receiver = receiverMode switch { 0 => null, 1 => source, _ => new List<CardInstance> { decoy } };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Target = decoy, Controller = side };
+            var result = engine.Api.InvokeByName("RemoveMultipleCardsFromBoard", receiver, new object?[] { input, sourceId, true }, ctx, out bool handled);
+            var actions = state.ActionLog.SelectMany(a => a.SubActions).ToArray();
+            var notices = actions.Where(a => a.Name == "ZActionRemoveMultipleCardsFromBoard").ToArray();
+            string encoded = string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            if (!handled || result is not false || first.Location != (ids.Contains(60) ? CardLocation.Discard : side.HqOf())
+                || second.Location != (ids.Contains(61) ? CardLocation.Discard : zone)
+                || source.Location != side.HqOf() || decoy.Location != side.Opposite().HqOf() || order.Location != side.HqOf()
+                || zero.Location != side.HqOf() || negative.Location != side.HqOf() || state.Hq(side).Location != side.HqOf()
+                || notices.Length != 1 || !notices[0].Values.SequenceEqual(new[] { ActionValue2.Str("cardIDs", encoded), ActionValue2.Int("instigatorID", sourceId) })
+                || actions.Any(a => a.Name is "ZActionRemoveCardFromBoard" or "ZActionDestroyUnit") || state.DestroyedCardIdsAll.Count != 0 || state.UnitDestroyedThisTurn)
+                return $"批量移除须逐项筛单位但通知完整输入，单体通知关闭：{side}/{zone}/{reverse}/{objects}/{receiverMode}/{pattern}/{sourceId}";
+        }
+        return null;
+    }
+
+    private static string? RemoveBatchMutableInputs(CardDatabase db)
+    {
+        using var before = InstallSelectionDrawProbe(PlainUnit, "OnLeaveBoardOrOwner");
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 7))
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 1); source.Keywords.Clear();
+            var first = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 27); first.Keywords.Clear();
+            var second = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 29); second.Keywords.Clear(); second.Keywords.Add(Keyword.Suppressed);
+            var third = state.CreateWithId(PlainUnit, side, 62, side.HqOf(), 31); third.Keywords.Clear(); third.Keywords.Add(Keyword.Suppressed);
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            var ids = new List<int> { 60, 61 }; bool called = false; var moves = new List<int>(); var prior = state.CardMoved;
+            state.CardMoved = (card, old, next, owner, reason) => { if (card.CardId is >= 60 and <= 62) moves.Add(card.CardId); prior?.Invoke(card, old, next, owner, reason); };
+            using var draw = InstallDrawReentryProbe(state, () => {
+                called = true;
+                if (mode == 0) ids.Add(62);
+                else if (mode == 1) ids.RemoveAt(0);
+                else if (mode == 2) ids.Insert(0, 62);
+                else if (mode == 3) ids.Clear();
+                else if (mode == 4) ids[1] = 62;
+                else if (mode == 5) second.Definition = new CardDefinition { Name = second.Name, Type = "order" };
+                else state.Remove(second);
+            }, markerSide: side.Opposite());
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            var steps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Call = "RemoveMultipleCardsFromBoard",
+                    Args = new[] { new KismetExpr { Var = "__ids" }, new KismetExpr { Int = 20 } } }, null, -1, "__qqq", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+            var output = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx,
+                new Dictionary<string, object?> { ["__ids"] = ids, ["__qqq"] = true }, "__ids", "__qqq");
+            int[] expectedMoves = mode == 0 ? new[] { 60, 61, 62 } : mode == 2 ? new[] { 60, 61 } : mode == 4 ? new[] { 60, 62 } : new[] { 60 };
+            var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionRemoveMultipleCardsFromBoard").ToArray();
+            if (!called || output.GetValueOrDefault("__qqq") is not false || !ReferenceEquals(output.GetValueOrDefault("__ids"), ids)
+                || !moves.SequenceEqual(expectedMoves) || notices.Length != 1 || notices[0].Values.Single(v => v.Name == "cardIDs").Text != string.Join(";", ids)
+                || state.ActionLog.SelectMany(a => a.SubActions).Any(a => a.Name == "ZActionRemoveCardFromBoard") || state.DestroyedCardIdsAll.Count != 0 || state.UnitDestroyedThisTurn)
+                return $"批量移除须重读当前数组/目标类型并在循环后通知：{side}/{mode}, moves={string.Join(',',moves)}";
+        }
+        return null;
     }
 
     private static string? RemoveSingleTargetContract(CardDatabase db)
