@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("JSON数组追加：权威AST参考的Found出参、缺失/错误类型及空对象", JsonAddArrayNativeReference),
         new("JSON整数读取：原生范围检查、半数远离零取整及类型门", JsonIntegerNativeReference),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
         new("数组RemoveItem：删除全部匹配，返回是否移除，保序且再次调用为false", ArrayRemoveItemAllMatches),
@@ -21312,6 +21313,48 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonAddArrayNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-add-array-reference-20261025.json")));
+        int cases = 0, failures = 0; string? first = null;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool byId in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            string kind = row.GetProperty("kind").GetString()!;
+            CardInstance? card = kind == "null-card" ? null : self;
+            if (card is not null)
+            {
+                engine.Api.JsonSetInt(card, "keep", 19);
+                if (kind == "number") engine.Api.JsonSetInt(card, "v", 3);
+                if (kind == "string") engine.Api.JsonSetString(card, "v", "70");
+                if (kind == "boolean") engine.Api.JsonSetBool(card, "v", true);
+                if (kind == "empty-array") engine.Api.JsonSetIntArray(card, "v", Array.Empty<int>());
+                if (kind == "int-array") engine.Api.JsonSetIntArray(card, "v", new[] { 0, -7, 70, 70 });
+            }
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            object? target = byId ? card?.CardId ?? 777 : card;
+            object? result = engine.Api.InvokeByName("JSON_AddToIntArray", self,
+                new object?[] { target, "v", row.GetProperty("value").GetInt32(), null }, ctx, out bool handled);
+            bool fieldsMatch = card is null ? self.CustomJson.Count == 0
+                : card.CustomJson.Count == 2 && engine.Api.JsonGetInt(card, "keep") == 19
+                    && card.CustomJson.HasType("v", CardJsonType.IntArray)
+                    && engine.Api.JsonGetIntArray(card, "v").SequenceEqual(row.GetProperty("final").GetProperty("v")
+                        .EnumerateArray().Select(x => x.GetInt32()));
+            if (!handled || !Equals(result, row.GetProperty("found").GetBoolean()) || !fieldsMatch
+                || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields"))
+            {
+                failures++; first ??= $"{kind}/{side}/{byId}: found={result ?? "null"}, fields={fieldsMatch}";
+            }
+            cases++;
+        }
+        return failures != 0 ? $"JSON追加参考 {failures}/{cases} failures; {first}"
+            : cases == 84 ? null : $"JSON追加参考 cases={cases}";
     }
 
     private static string? JsonIntegerNativeReference(CardDatabase db)

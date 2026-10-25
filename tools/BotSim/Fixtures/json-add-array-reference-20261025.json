@@ -1,0 +1,323 @@
+{
+  "rule": "RULE-413",
+  "script_sha256": "301e46fbac2c7d880d248aa9627da9fc356ee236e9fb4dd82133c07145c20ccf",
+  "script_bytes": 490,
+  "boundary": "21 actual captured JSON_AddToIntArray AST executions. JSON object/type tests, conversion/make,array-add,context-null store behavior are controlled primitives. Ordinary int arrays only; mixed conversion matrix audited separately. No claim of full native JSON construction/serialization/refcount execution.",
+  "cases": [
+    {
+      "kind": "missing",
+      "value": -7,
+      "initial": {
+        "keep": 19
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "missing",
+      "value": 0,
+      "initial": {
+        "keep": 19
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0
+        ]
+      }
+    },
+    {
+      "kind": "missing",
+      "value": 70,
+      "initial": {
+        "keep": 19
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          70
+        ]
+      }
+    },
+    {
+      "kind": "number",
+      "value": -7,
+      "initial": {
+        "keep": 19,
+        "v": 3
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "number",
+      "value": 0,
+      "initial": {
+        "keep": 19,
+        "v": 3
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0
+        ]
+      }
+    },
+    {
+      "kind": "number",
+      "value": 70,
+      "initial": {
+        "keep": 19,
+        "v": 3
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          70
+        ]
+      }
+    },
+    {
+      "kind": "string",
+      "value": -7,
+      "initial": {
+        "keep": 19,
+        "v": "70"
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "string",
+      "value": 0,
+      "initial": {
+        "keep": 19,
+        "v": "70"
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0
+        ]
+      }
+    },
+    {
+      "kind": "string",
+      "value": 70,
+      "initial": {
+        "keep": 19,
+        "v": "70"
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          70
+        ]
+      }
+    },
+    {
+      "kind": "boolean",
+      "value": -7,
+      "initial": {
+        "keep": 19,
+        "v": true
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "boolean",
+      "value": 0,
+      "initial": {
+        "keep": 19,
+        "v": true
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0
+        ]
+      }
+    },
+    {
+      "kind": "boolean",
+      "value": 70,
+      "initial": {
+        "keep": 19,
+        "v": true
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          70
+        ]
+      }
+    },
+    {
+      "kind": "empty-array",
+      "value": -7,
+      "initial": {
+        "keep": 19,
+        "v": []
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "empty-array",
+      "value": 0,
+      "initial": {
+        "keep": 19,
+        "v": []
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0
+        ]
+      }
+    },
+    {
+      "kind": "empty-array",
+      "value": 70,
+      "initial": {
+        "keep": 19,
+        "v": []
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          70
+        ]
+      }
+    },
+    {
+      "kind": "int-array",
+      "value": -7,
+      "initial": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70
+        ]
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70,
+          -7
+        ]
+      }
+    },
+    {
+      "kind": "int-array",
+      "value": 0,
+      "initial": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70
+        ]
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70,
+          0
+        ]
+      }
+    },
+    {
+      "kind": "int-array",
+      "value": 70,
+      "initial": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70
+        ]
+      },
+      "found": true,
+      "final": {
+        "keep": 19,
+        "v": [
+          0,
+          -7,
+          70,
+          70,
+          70
+        ]
+      }
+    },
+    {
+      "kind": "null-card",
+      "value": -7,
+      "initial": null,
+      "found": true,
+      "final": null
+    },
+    {
+      "kind": "null-card",
+      "value": 0,
+      "initial": null,
+      "found": true,
+      "final": null
+    },
+    {
+      "kind": "null-card",
+      "value": 70,
+      "initial": null,
+      "found": true,
+      "final": null
+    }
+  ]
+}
