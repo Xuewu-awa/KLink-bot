@@ -128,5 +128,16 @@
       "bytes": 2804913,
       "sha256": "0d6ad09366089fd67146450717a89297ed3d15d909a38b0ce411e46f69ef2036"
     }
+  ],
+  "coverage_corrections": [
+    {
+      "date": "2026-10-26",
+      "by_rule": "RULE-433",
+      "original_untriggered_callback_mutation_cases": 8,
+      "reason": "DrawCard moves with notifyMoved:false, so the original draw+CardMoved probe never mutated the source in phase2.",
+      "correction": "Use ForceCardChangeLocation and require mutated==(phase!=3). All32 lifecycle scenarios including8 real callback-phase mutations pass in the860-case full suite.",
+      "reference_ast_model": "The earlier32 symbolic ID-map cases did mutate their model; this correction concerns headless probe coverage, not the captured cache-node evidence.",
+      "report": "out/audit/systematic-rules/generated-selection-binding-and-completion-snapshot-20261026.json"
+    }
   ]
 }

@@ -240,6 +240,8 @@ internal static class SelfTest
         new("手牌答复生命周期：选择/答复重查ID、回调后缓存与等待载荷", HandReplySourceLifecycle),
         new("手牌目标0：真实Kurmark回调不得把空答复推断为自身ID", HandReplyZeroTargetPayload),
         new("手牌目标生命周期：正ID不重验类别，回调按ID读取当前对象", HandReplyTargetLifecycle),
+        new("生成选择整数载荷：目标ID与大写来源槽独立绑定", GeneratedSelectionIntegerPayload),
+        new("生成/预报完成：接收者快照、逐次查目标与实时自身排除", GeneratedCompletionLifetime),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21406,6 +21408,127 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? GeneratedSelectionIntegerPayload(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer";
+        using var probe = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        var old = locals["OnHandTargetSelected"];
+        KismetStep Mark(int i, string key, string input) => new(i, "call", "JSON_SetInt",
+            new[] { new KismetExpr { Self = true }, new KismetExpr { Str = key }, new KismetExpr { Var = input } },
+            Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = i };
+        locals["OnHandTargetSelected"] = new[] {
+            Mark(0, "audit_target", "K2Node_Event_handTargetCardID"),
+            Mark(1, "audit_source", "K2Node_Event_InstigatorID"),
+            old[0] with { Index = 2, ByteOffset = 2 }, old[1] with { Index = 3, ByteOffset = 3 }
+        };
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int id in new[] { 60, 160 })
+        foreach (bool effect in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(name, side, id, CardLocation.Discard, 0);
+            state.CreateWithId("card_event_aans", side, 200, side.DeckOf(), 0);
+            var created = engine.Api.DevelopChosenCard(source, PlainUnit, effect);
+            if (created is null || created.CardId == id
+                || engine.Api.JsonGetInt(source, "audit_target") != created.CardId
+                || engine.Api.JsonGetInt(source, "audit_source") != id
+                || created.Location != (effect ? CardLocation.Discard : side.HandOf())
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return $"generated ABI {side}/{id}/{effect}: source={engine.Api.JsonGetInt(source, "audit_source")},target={created?.CardId}";
+            cases++;
+        }
+        return cases == 8 ? null : $"generated ABI cases={cases}";
+    }
+
+    private static string? GeneratedCompletionLifetime(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer";
+        using var own = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        using var develop = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardDeveloped");
+        using var forecast = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardForecasted");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(PlainUnit)!.Locals!;
+        foreach (string trigger in new[] { "OnOtherCardDeveloped", "OnOtherCardForecasted" })
+        {
+            var old = locals[trigger];
+            KismetStep Mark(int i, KismetExpr card, string key, KismetExpr value) => new(i, "call", "JSON_SetInt",
+                new[] { card, new KismetExpr { Str = key }, value }, Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = i };
+            locals[trigger] = new[] {
+                Mark(0, new KismetExpr { Self = true }, trigger, new KismetExpr { Int = 1 }),
+                Mark(1, new KismetExpr { Self = true }, "audit_source", new KismetExpr { Var = "K2Node_Event_instigatorID" }),
+                Mark(2, new KismetExpr { Var = "K2Node_Event_cardDeveloped" }, "audit_payload", new KismetExpr { Int = 1 }),
+                old[0] with { Index = 3, ByteOffset = 3 }, old[1] with { Index = 4, ByteOffset = 4 }
+            };
+        }
+        // Force movement explicitly emits CardMoved; the draw path disables it.
+        KismetStep Signal(int index, int id) => new(index, "call", "ForceCardChangeLocation", new[] {
+            new KismetExpr { Int = id }, new KismetExpr { Int = 0 },
+            new KismetExpr { Int = (int)CardLocation.Discard }, new KismetExpr { Int = 0 }
+        }, Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = index };
+        var ownLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default.Find(name)!.Locals!;
+        ownLocals["OnHandTargetSelected"] = new[] { Signal(0, 90), ownLocals["OnHandTargetSelected"][1] };
+        foreach (string trigger in new[] { "OnOtherCardDeveloped", "OnOtherCardForecasted" }) {
+            var body = locals[trigger].ToArray(); body[3] = Signal(3, 91); locals[trigger] = body;
+        }
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int tags in new[] { 1, 2, 3, 0 })
+        foreach (int mutation in new[] { 1, 2, 0 })
+        foreach (bool suppressLater in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(name, side, 60, CardLocation.Discard, 0);
+            source.Definition = new CardDefinition { Name = name, Type = "infantry" };
+            source.RemovedGameplayTags.Add("ability.develop"); source.RemovedGameplayTags.Add("ability.forecast");
+            if ((tags & 1) != 0) engine.Api.AddCustomGameplayTag(source, "ability.develop");
+            if ((tags & 2) != 0) engine.Api.AddCustomGameplayTag(source, "ability.forecast");
+            CardDefinition Registered() => new() { Name = PlainUnit, Type = "infantry",
+                UsedTriggers = new[] { "OnOtherCardDeveloped", "OnOtherCardForecasted" } };
+            var first = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 1); first.Definition = Registered();
+            var second = state.CreateWithId(PlainUnit, side, 71, side.HqOf(), 2); second.Definition = Registered();
+            var setupSignal = state.CreateWithId("card_event_aans", side, 90, side.DeckOf(), 0);
+            var mutationSignal = state.CreateWithId("card_event_aans", side, 91, side.DeckOf(), 1);
+            CardInstance? original = null, replacement = null; bool setup = false, mutationTriggered = false;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (newLocation != CardLocation.Discard) return;
+                if (card == setupSignal) {
+                    setup = true; original = state.Hand(side).Single(x => x.Name == PlainUnit);
+                    original.Definition = Registered();
+                }
+                else if (card == mutationSignal) {
+                    mutationTriggered = true;
+                    if (suppressLater) second.Keywords.Add(Keyword.Suppressed);
+                    if (mutation != 0) {
+                        state.Remove(original!);
+                        if (mutation == 1) {
+                            replacement = state.CreateWithId(PlainUnit, side, original!.CardId, side.HandOf(), 0);
+                            replacement.Definition = Registered();
+                        }
+                    }
+                }
+            };
+            var created = engine.Api.DevelopChosenCard(source, PlainUnit);
+            string? trigger = (tags & 1) != 0 ? "OnOtherCardDeveloped" : (tags & 2) != 0 ? "OnOtherCardForecasted" : null;
+            bool active = trigger is not null; int expectedCalls = active ? mutation == 0 ? 2 : 3 : 0;
+            bool Seen(CardInstance? card, string key) => card is not null && engine.Api.JsonGetInt(card, key) == 1;
+            int observedCalls = (Seen(first, trigger ?? "unused") ? 1 : 0) + (Seen(second, trigger ?? "unused") ? 1 : 0)
+                + (Seen(original, trigger ?? "unused") ? 1 : 0);
+            if (created is null || !ReferenceEquals(created, original) || !setup || mutationTriggered != active || observedCalls != expectedCalls
+                || active && (!Seen(first, trigger!) || !Seen(second, trigger!)
+                    || engine.Api.JsonGetInt(second, "audit_source") != 60)
+                || Seen(original, trigger ?? "unused") != (active && mutation != 0)
+                || replacement is not null && (!Seen(replacement, "audit_payload") || Seen(replacement, trigger ?? "unused"))
+                || active && Seen(first, trigger == "OnOtherCardDeveloped" ? "OnOtherCardForecasted" : "OnOtherCardDeveloped")
+                || engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"completion {side}/{tags}/{mutation}/{suppressLater}: callbacks={observedCalls}/{expectedCalls},mutation={mutationTriggered},newPayload={Seen(replacement, "audit_payload")},oldRecipient={Seen(original, trigger ?? "unused")}";
+            cases++;
+        }
+        return cases == 48 ? null : $"completion cases={cases}";
+    }
+
     private static string? HandReplyZeroTargetPayload(CardDatabase db)
     {
         int cases = 0;
@@ -21488,7 +21611,11 @@ internal static class SelfTest
         var handSteps = sourceLocals["OnHandTargetSelected"];
         sourceLocals["OnHandTargetSelected"] = new[] {
             Mark(0, new KismetExpr { Self = true }, "audit_hand_seen"),
-            handSteps[0] with { Index = 1, ByteOffset = 1 }, handSteps[1] with { Index = 2, ByteOffset = 2 }
+            new KismetStep(1, "call", "ForceCardChangeLocation", new[] {
+                new KismetExpr { Int = 100 }, new KismetExpr { Int = 0 },
+                new KismetExpr { Int = (int)CardLocation.Discard }, new KismetExpr { Int = 0 }
+            }, Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = 1 },
+            handSteps[1] with { Index = 2, ByteOffset = 2 }
         };
         observerLocals["OnOtherCardPlayedFromHand"] = new[] {
             Mark(0, new KismetExpr { Var = "cardPlayed" }, "audit_wait_seen"),
@@ -21531,7 +21658,7 @@ internal static class SelfTest
             var moved = state.CardMoved;
             state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
                 moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
-                if (card == drawn && newLocation == side.HandOf() && phase == 2) Mutate();
+                if (card == drawn && newLocation == CardLocation.Discard && phase == 2) Mutate();
             };
             bool played;
             try { played = engine.PlayCard(original); }
@@ -21541,7 +21668,7 @@ internal static class SelfTest
             bool answered = expectedPolicy is not null;
             CardInstance? expectedWait = wait ? answered ? expectedReply : null : original;
             string label = $"{side}/wait={wait}/phase={phase}/replace={replace}";
-            if (!played || policies != (answered ? 1 : 0) || !ReferenceEquals(policySource, expectedPolicy))
+            if (!played || mutated != (phase != 3) || policies != (answered ? 1 : 0) || !ReferenceEquals(policySource, expectedPolicy))
                 return $"{label}: policy未按当前ID取卡，source={policySource?.CardId},calls={policies}";
             bool Marked(CardInstance? card, string key) => card is not null && engine.Api.JsonGetInt(card, key) == 1;
             if (Marked(original, "audit_hand_seen") != ReferenceEquals(original, expectedReply)

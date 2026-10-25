@@ -3327,9 +3327,8 @@ public sealed partial class CardApi
     /// 把玩家选中的**卡池模板卡**落实成一张新卡 —— 对应 `OpponentActionsCardToDrawSelected`
     /// 里的 `CreateCard(...)` + `OnHandTargetSelected(...)`（出处见本节顶部注释第 4 条）。
     ///
-    /// 新卡先按蓝图落在挑牌方的**手牌**（`side==1 → 3 HandLeft`、`side==2 → 4 HandRight`；
-    /// `isEffect` 为真时是 8 = 弃牌堆，本函数只走非 isEffect 那条），
-    /// 再由那张卡自己的 `OnHandTargetSelected` 决定最终去向。
+    /// 新卡按 isEffect 先落在弃牌堆或选择方手牌，
+    /// 随后由选择卡的 OnHandTargetSelected 决定新卡的最终去向。
     /// </summary>
     public CardInstance? DevelopChosenCard(CardInstance? selecting, string cardName, bool isEffect = false)
     {
@@ -3350,31 +3349,50 @@ public sealed partial class CardApi
     private CardInstance? DevelopChosenCardCore(CardInstance selecting, string cardName, bool isEffect)
     {
         if (State.Database.Find(cardName) is null) return null;
+        int selectingId = selecting.CardId;
         Side side = selecting.Owner;
         CardLocation location = isEffect ? CardLocation.Discard : side.HandOf();
         int locationNumber = isEffect ? 0 : State.NextLocationNumber(side, side.HandOf());
         var created = State.Create(cardName, side, location, locationNumber, selecting.IsGold);
 
-        // 事件契约（docs/event-contracts.json）：[Int handTargetCardID, Int instigatorID]
+        // Both callback inputs are integers, independent of event object aliases.
+        int createdId = created.CardId;
         FireTrigger("OnHandTargetSelected", selecting, side,
-                    eventArgs: new object?[] { created.CardId, selecting.CardId },
-                    eventSubject: created);
+                    eventArgs: new object?[] { createdId, selectingId },
+                    eventSubject: created,
+                    namedArgs: new Dictionary<string, object?> {
+                        ["handTargetCardID"] = createdId,
+                        ["instigatorID"] = selectingId
+                    });
 
         // `OpponentActionsCardToDrawSelected` 在处理 Develop 选牌时，
-        // 先让新卡执行 `OnHandTargetSelected`，再调用
+        // 先让选择卡执行 `OnHandTargetSelected`，再调用
         // `DevelopAndForecastCheck(cardTriggeringDraw, tmpTargetCardID, tmpSourceCard)`。
         // 后者对旁观卡广播这两个事件参数；不能把它并入创建钩子，
         // 否则接收者会在新卡决定最终落点之前观察到错误状态。
         string? completion = HasGameplayTag(selecting, "ability.develop") ? "OnOtherCardDeveloped"
             : HasGameplayTag(selecting, "ability.forecast") ? "OnOtherCardForecasted" : null;
-        if (completion is not null) FireTrigger(completion, created, side,
-                    eventArgs: new object?[] { created, selecting.CardId },
-                    eventSubject: created,
-                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        ["cardDeveloped"] = created,
-                        ["instigatorID"] = selecting.CardId,
+        if (completion is not null && Blueprint.KismetLibrary.Default is { } library)
+        {
+            // The client materializes registered recipients once. Each iteration
+            // resolves TargetId for exclusion, then again for the event argument.
+            var recipients = CaptureRegisteredTriggerSnapshot(completion);
+            foreach (var observer in recipients)
+            {
+                if (ReferenceEquals(observer, GetCardFromID(createdId))) continue;
+                var currentTarget = GetCardFromID(createdId);
+                if (library.FindProgram(observer.Name, completion) is null) continue;
+                TriggerTrace?.Add($"{completion} → {observer.Name}#{observer.CardId}（eventCard={currentTarget?.Name ?? "null"}#{currentTarget?.CardId}）");
+                // Invoke saved references directly: later suppression, removal or
+                // a changed registration does not rebuild the recipient array.
+                RunTriggerProgram(library, observer, observer.Name, completion, currentTarget,
+                    eventArgs: new object?[] { currentTarget, selectingId },
+                    namedArgs: new Dictionary<string, object?> {
+                        ["cardDeveloped"] = currentTarget,
+                        ["instigatorID"] = selectingId
                     });
+            }
+        }
 
         return created;
     }

@@ -1,0 +1,155 @@
+{
+  "rule": "RULE-433",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "e99366f5725fa3cb095881bb56c1336ff1956cef",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-433",
+    "functions_redecoded": 4,
+    "script_bytes_redecoded": 19914,
+    "helper_ast_cases": 48,
+    "helper_cases_equivalent": 24,
+    "worker_exact_rows": 14,
+    "generated_integer_cases": 8,
+    "completion_lifecycle_cases": 48,
+    "prior_rule431_callback_cases_strengthened": 8,
+    "baseline": "858 passed,2 failed /860",
+    "final": "860/860 pass",
+    "fully_certified_cards": 0,
+    "boundary": "Full two captured helper ASTs with controlled gameplay-tag/query/ID-map/callbacks. Materialized recipient references, per-receiver lookup and argument identity verified; not Unreal TSet iteration-order or object-GC certification. Headless scenarios are controlled probes, not real M36 card effects."
+  },
+  "findings": [
+    "当前采集四份函数19914字节，含PlayerMoves13890、OpponentActionsCardToDrawSelected3601、两份DevelopAndForecastCheck1206/1217，均完整重解码。PlayerMoves10469及对手函数1291均在缓存选择卡上调用OnHandTargetSelected(新卡ID,来源ID)，随后进入完成通知；回调接收者不是新卡自身。",
+    "生成入口旧本地代码没有给OnHandTargetSelected提供具名整数，InstigatorID大小写变体等槽会按对象推断成新卡ID。受控事件ABI测试观察到来源60读成新卡1001。现生成前固定来源ID和生成ID，按handTargetCardID/instigatorID显式绑定，并修正“让新卡执行回调”的过时注释。牌库单候选和多候选scry入口已有各自具名绑定，本轮未把它们改成同一来源ID（单候选原0契约保留）。",
+    "两份完成helper先读取缓存来源上的develop/forecast标签，develop优先；快照查询T40或T67。随后每个接收者先按TargetId查当前目标作对象引用排除，真正回调前再次按TargetId查目标参数；接收者数组在整轮中固定，不按后来抑制/移除/注册状态重新筛选。在线helper偏移335/618/731/793/906/1035/1148与本地helper对应偏移346/629/742/804/917/1046/1159均已定位。",
+    "旧生成完成FireTrigger固定持有created对象并按遍历时状态筛选，导致目标被同ID替换后后续通知仍拿旧对象，或遗漏数组中已移除但仍缓存的接收者。现使用CaptureRegisteredTriggerSnapshot一次取集合，对每个缓存接收者按目标ID分别做排除/参数查询，并直接执行其当前程序。已缓存的旧目标若不再等于当前目标对象，也可以成为接收者；不能只比较整数ID或按NotAvailable再次屏蔽。",
+    "新增8个生成整数ABI场景（双方、来源60/160、手牌/弃牌目的地）及48个完成通知场景（双方、无标签/develop/forecast/两者、目标不变/替换/移除、后续接收者抑制有无）。显式移动信号保证回调内变更真实发生，核对缓存接收者、逐次新/空目标、当前目标自排除、develop优先、固定来源ID和无新增接收者。M36/Arado事件程序及注册信息为受控探针，不当作真实卡牌效果。"
+  ],
+  "coverage_correction": {
+    "affected_rule": "RULE-431",
+    "previous_headless_callback_mutation_cases_not_triggered": 8,
+    "cause": "DrawCard uses State.Move(...notifyMoved:false). The previous draw+CardMoved hook did not mutate the ID map in phase2.",
+    "fix": "Replace the signal with ForceCardChangeLocation and require mutated==(phase!=3). The corrected32-case lifecycle test, including8 real phase2 mutations, passes in the860-case suite.",
+    "reference_model_status": "The original32 symbolic ID-map models did simulate the intended mutations and their native cache-node evidence remains valid.",
+    "record_updated": "out/audit/systematic-rules/hand-reply-source-lifecycle-20261026.json"
+  },
+  "validation": [
+    "采集守卫PID24220、模块及执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305；结束前重复读取所有保留函数头/脚本及解析所需元数据，稳定匹配。无游戏进程写入、注入、目标函数调用或自动对局操作。",
+    "两份完成helper完整AST各运行24组，共48组；标签getter、注册查询、对象表与回调突变受控。相同24组输入两实现的查询/查找/回调轨迹完全一致，T40/T67选择、引用排除及每位接收者实时目标均符合。没有把19914字节完整解码称为所有四函数语义认证。",
+    "DeepSeek任务20261026-022909-rule433-completion-lookups-a35aeeed完成、退出0；14条查找/查询/排除/通知行与原始AST逐字段相等，无嵌套偏移添写。",
+    "测试初版误向只读IsSuppressed赋值而编译失败，已改Keywords受控标记；该日志只作诊断，不当作规则差异。后续误用抽牌CardMoved信号，初步side字段归因被局部side仍无信号的结果否定；最终从MatchEngine.DrawCard的notifyMoved:false定位原因并改强制移动。早期callbacks0/3日志不当作有效规则证据。",
+    "最终完全相同测试布景在旧代码下858通过、2失败/860，退出1：来源整数60变1001，完成通知callbacks2/3且mutationTrue、新目标未收到载荷。修复后全套860/860通过、退出0。新增56场景，另补强旧RULE-431的8个实际突变场景。",
+    "全套通过后只修正生成函数支持isEffect两目的地的注释，并更正旧审计记录，没有再改执行逻辑或测试布景，未重复已通过全套测试。BOM状态保持，既有受保护未跟踪文件未动。"
+  ],
+  "limits": [
+    "原生注册集合的UE TSet迭代顺序与本地CardId顺序仍未全局证明；参考模型使用受控接收者序列，不声称已关闭全局触发顺序。",
+    "移除/同ID替换/后续抑制和临时事件注册均为无头受控回调，没有真实PvP复用或原生UObject释放/PendingKill/GC有效性观测。这里认证非空缓存对象引用与函数参数契约，不是所有对象销毁语义。",
+    "完整创建/选择协议、源对象在创建期间替换、全局等待列表、额外次数JSON转换、跨侧候选池仍需继续核查。生成返回旧created引用的兼容API也不代表客户端返回对象协议。",
+    "原生标签getter和FetchAllCardsWithEventTrigger本轮作为受控辅助使用；C#快照复用既有注册/抑制查询方法，未重新穷尽该基础原语所有语义。完整认证卡数仍为0。"
+  ],
+  "next_work": [
+    "继续审计extra_play_triggers的JSON数值转换及来源/等待全局状态，保留生成完成快照与普通广播的区别。",
+    "核对源对象在创建与答复之间的生命周期、创建完成委托和后续额外触发，避免把本轮目标引用修复扩展成完整生成协议已还原。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule433-generated-completion-functions-native-20261026.json",
+      "bytes": 5009290,
+      "sha256": "1da8cfd7a195f55a62d5cd60deb126770af781740f978a51cf46da02ee992ee7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule433-generated.py",
+      "bytes": 2461,
+      "sha256": "426b033ea64e6fdb20adf4c02b262b1af6d41e515dbff8f00efdbd49b7ebd4e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule433.py",
+      "bytes": 7652,
+      "sha256": "4a03a11fc145c67ea53eb332a096c8769b39f1240ce07eaf7f96d5c99b3c1bf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-verified-20261026.json",
+      "bytes": 69295,
+      "sha256": "3f423ba51c2cab86c0694efb62bbe7cc3aff7b85e84466970fdc3b04cb7dbe2f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-worker\\input.json",
+      "bytes": 35939,
+      "sha256": "198ff6cac4b954436a9be59cfb85b3f43dba7c9c2234923f82e5e859618dce7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-worker\\result.json",
+      "bytes": 11331,
+      "sha256": "ed2dd2eb7d0daa2c7524f5a48ca26a785dd98ea3c167aa9c7bd49b55e34d02db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-initial-build-failure.log",
+      "bytes": 277,
+      "sha256": "b3c87d43a871131ed3a7789999e2453ab963e84374fab67e08ce255fbf25dd27"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-initial-build-failure.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-pre-probe-correction-selftest.log",
+      "bytes": 76005,
+      "sha256": "fbde0a3520e0d78d2ac0fe6f5c351ef8c728dabe37fe80f62ce018e4c67a39ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-diagnostic-selftest.log",
+      "bytes": 76319,
+      "sha256": "f9d0e2f64cbc1741b3f459094a985df4270c9ad410549c8a6197a97f9b8829ee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-step-diagnostic-selftest.log",
+      "bytes": 76792,
+      "sha256": "a8e23406994c17b7e93902bf180f354349effe90eb8acf9282f8069828768425"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-pre-notification-correction-selftest.log",
+      "bytes": 76005,
+      "sha256": "fbde0a3520e0d78d2ac0fe6f5c351ef8c728dabe37fe80f62ce018e4c67a39ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-baseline-selftest.log",
+      "bytes": 76019,
+      "sha256": "2b2fe00819e894de02707ec55c846a1a895e9a789bd70e390958ab283091d601"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-final-selftest.log",
+      "bytes": 75864,
+      "sha256": "9533f7ab99760c59c217d4c49ec3e600f8bd2d7188c7e72dcddee659f08ac01d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule433-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 396303,
+      "sha256": "8dbaf92934ed85a17f2e1b65e6e51a2f411e5d65f2a543c1d6abe2302037b971"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 2819176,
+      "sha256": "9836329143d7608bb2371bc343832b0577cd79fba8a3506a5b3daf74ec10ba42"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\systematic-rules\\hand-reply-source-lifecycle-20261026.json",
+      "bytes": 10381,
+      "sha256": "0f72a0228405b71cbca622d746e9411222371864cb442f8f56013b8bba0e9f47"
+    }
+  ]
+}
