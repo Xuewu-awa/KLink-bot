@@ -2357,22 +2357,26 @@ public sealed partial class CardApi
     {
         // The Blueprint queues cardSelectingHandTarget, then resolves that ID.
         // Its receiver is the CardFunctions service, not the selecting card.
-        var selecting = GetCardFromID(IdOf(a.ElementAtOrDefault(0)));
+        int selectingId = IdOf(a.ElementAtOrDefault(0));
+        var selecting = GetCardFromID(selectingId);
         if (selecting is null)
         {
             return 0;
         }
 
-        var hand = c.State.Hand(selecting.Owner)
-            .Where(x => IsHandTargetValid(selecting, x))
-            .ToList();
-
+        CardInstance? replyCard = null;
         _engine.ResolveHandSelection(selecting, () =>
         {
+            // Automatic choice resolves the queued ID before building candidates.
+            var policyCard = GetCardFromID(selectingId);
+            if (policyCard is null) return false; // No local answer can be generated.
+            var hand = c.State.Hand(policyCard.Owner)
+                .Where(x => IsHandTargetValid(policyCard, x))
+                .ToList();
             CardInstance? chosen;
             if (c.Engine.PickHandTargetId is { } reply)
             {
-                int? id = reply(selecting, hand);
+                int? id = reply(policyCard, hand);
                 if (id is null) return false;
                 chosen = hand.FirstOrDefault(x => x.CardId == id);
                 if (id != 0 && chosen is null) return false;
@@ -2380,18 +2384,22 @@ public sealed partial class CardApi
             else
             {
                 chosen = hand.Count == 0 ? null
-                    : c.Engine.ChooseHandTarget is { } botPick ? botPick(selecting, hand)
-                    : c.Engine.PickHandTarget is { } replayPick ? replayPick(selecting, hand)
+                    : c.Engine.ChooseHandTarget is { } botPick ? botPick(policyCard, hand)
+                    : c.Engine.PickHandTarget is { } replayPick ? replayPick(policyCard, hand)
                     : hand[0];
                 if (hand.Count > 0 && (chosen is null || !hand.Contains(chosen))) return false;
             }
             // BP_Logic.autoPickHandTargets sends ID 0 when no valid target exists.
-            c.Engine.RecordHandTargetPick(selecting.CardId, chosen?.CardId ?? 0);
-            FireTrigger("OnHandTargetSelected", selecting, selecting.Owner,
-                eventArgs: new object?[] { chosen?.CardId ?? 0, selecting.CardId },
-                eventSubject: chosen);
+            c.Engine.RecordHandTargetPick(selectingId, chosen?.CardId ?? 0);
+            // PlayerMoves resolves again when executing the answer, then shares
+            // this cached object with the callback, extra trigger and AfterWait.
+            replyCard = GetCardFromID(selectingId);
+            if (replyCard is not null)
+                FireTrigger("OnHandTargetSelected", replyCard, replyCard.Owner,
+                    eventArgs: new object?[] { chosen?.CardId ?? 0, selectingId },
+                    eventSubject: chosen);
             return true;
-        }, updateExtraTriggers: false, updateExtraBeforeWait: true);
+        }, updateExtraTriggers: false, updateExtraBeforeWait: true, replySource: () => replyCard);
         return 0; // Blueprint i45 writes the int32 qqq output, even on cancellation.
     }
 

@@ -21,28 +21,32 @@ public sealed class MatchEngine
     // A selection response occurs after the requesting Blueprint has returned.
     // Keep this order in headless play while resolving the choice synchronously.
     private Queue<Action>? _pendingSelections;
-    private readonly Dictionary<int, Action> _waitPlayContinuations = new();
+    private readonly Dictionary<int, Action<CardInstance?>> _waitPlayContinuations = new();
 
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
-        bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false)
+        bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
+        Func<CardInstance?>? replySource = null)
     {
         void Complete()
         {
             if (!resolve()) return; // No reply is different from a reply selecting card ID 0.
+            // The hand reply supplies its pre-callback cache, including null.
+            // Looking up the ID here would observe later callback mutations.
+            var responseCard = replySource is null ? selecting : replySource();
             // PlayerMoves hand replies call this helper before AfterWait and
             // autoplay; card-to-draw replies keep their separate later phase.
             if (updateExtraBeforeWait)
             {
-                if (selecting.ExtraPlayTriggers > 0)
+                if (responseCard is not null && responseCard.ExtraPlayTriggers > 0)
                 {
-                    selecting.ExtraPlayTriggers--;
-                    Api.RunCardEffect(selecting, null);
+                    responseCard.ExtraPlayTriggers--;
+                    Api.RunCardEffect(responseCard, null);
                 }
                 else
                     Api.ResolveTriggerQueue();
             }
             if (_waitPlayContinuations.Remove(selecting.CardId, out var continuation))
-                continuation(); // Complete the waiting play before this reply's autoplay phase.
+                continuation(responseCard); // Complete the waiting play before this reply's autoplay phase.
             // Reply actions consume after their own callback / AfterWait, but
             // CardToDrawSelected i=1677 precedes HandleExtraPlayTriggers i=1737.
             if (consumeAutoPlay) ExecuteAutoPlayCards();
@@ -1836,8 +1840,9 @@ public sealed class MatchEngine
             eventArgs: new object?[] { 1 },
             namedArgs: new Dictionary<string, object?> { ["Method"] = 1 });
 
-        void ContinuePlay(bool waited)
+        void ContinuePlay(bool waited, CardInstance? responseCard)
         {
+            var played = waited ? responseCard : card;
             // AfterWait uses the current active gotchas and the pre-deployment
             // T51/T43 snapshot. Immediate play uses the captured after-play list.
             if (waited) State.StopFurtherActions = false;
@@ -1856,15 +1861,15 @@ public sealed class MatchEngine
                 if (State.StopFurtherActions) break;
                 if (!cardsDone.Add(observer.CardId)) continue;
                 Api.FireTrigger("OnOtherCardPlayedFromHand", observer, observer.Owner,
-                    selfProgramName: "OnOtherCardPlayedFromHand", eventSubject: card,
-                    eventArgs: new object?[] { card },
-                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = card });
+                    selfProgramName: "OnOtherCardPlayedFromHand", eventSubject: played,
+                    eventArgs: new object?[] { played },
+                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = played });
                 Api.FireTrigger("OnOtherCardEnterPlay", observer, observer.Owner,
-                    selfProgramName: "OnOtherCardEnterPlay", eventSubject: card,
-                    eventArgs: new object?[] { card, 1 },
-                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = card, ["Method"] = 1 });
+                    selfProgramName: "OnOtherCardEnterPlay", eventSubject: played,
+                    eventArgs: new object?[] { played, 1 },
+                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = played, ["Method"] = 1 });
             }
-            Api.GiveAlpineBonus(card);
+            if (played is not null) Api.GiveAlpineBonus(played);
         }
 
         // CardPlayedFromHand i=6069/6162/6367 resolves the target for each
@@ -1873,10 +1878,11 @@ public sealed class MatchEngine
         // it is a separate field prepared before movement (RULE-193).
         bool waitsForTarget = card.Definition.WaitForHandTarget;
         bool ownEffectReturned = false, inlineReply = false;
+        CardInstance? inlineReplyCard = null;
         if (waitsForTarget)
-            _waitPlayContinuations[card.CardId] = () => {
-                if (!ownEffectReturned) inlineReply = true;
-                else ContinuePlay(waited: true);
+            _waitPlayContinuations[card.CardId] = responseCard => {
+                if (!ownEffectReturned) { inlineReply = true; inlineReplyCard = responseCard; }
+                else ContinuePlay(waited: true, responseCard);
             };
         cardsDone.Add(card.CardId);
 
@@ -1888,12 +1894,12 @@ public sealed class MatchEngine
         if (inlineReply && effectExecuted)
         {
             _waitPlayContinuations.Remove(card.CardId);
-            ContinuePlay(waited: true);
+            ContinuePlay(waited: true, inlineReplyCard);
         }
         else if (!waitsForTarget || !effectExecuted)
         {
             _waitPlayContinuations.Remove(card.CardId);
-            ContinuePlay(waited: false);
+            ContinuePlay(waited: false, card);
         }
         // The inline singleton/empty-selection paths already consumed the
         // continuation. Multiple-choice paths retain it for the queued reply.

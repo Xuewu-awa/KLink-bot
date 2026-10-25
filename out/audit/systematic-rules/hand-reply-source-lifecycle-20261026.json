@@ -1,0 +1,132 @@
+{
+  "rule": "RULE-431",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "cfb16ce95b93404d10add68c892f32e82478de04",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-431",
+    "current_functions_revalidated": 3,
+    "script_bytes_redecoded": 18516,
+    "identity_model_cases": 32,
+    "reply_cache_cases": 28,
+    "missing_policy_lookup_boundaries": 4,
+    "headless_lifecycle_cases": 32,
+    "worker_exact_rows": 11,
+    "baseline": "855 passed,1 failed /856",
+    "final": "856/856 pass",
+    "fully_certified_cards": 0,
+    "boundary": "Captured selector lookup and reply cache nodes with controlled ID map mutations. Not full automatic selection, every callback, null-context/persistent-frame semantics, or proof of legal PvP replacement reachability."
+  },
+  "findings": [
+    "当前重新只读核对autoPickHandTargets2597字节、PlayerMoves事件图13890字节和AfterWaitCardPlayFromHand2029字节，共18516字节，UFunction头/脚本均与保留捕获一致。自动选择在947按队列ID查对象，979存入局部；答复执行又在8804按tmpSourceCardID查对象，8858缓存tmpSourceCard_fromlogic。两次查找是不同阶段，不能从请求开始一直保留原对象。",
+    "本地答复8877在缓存对象上执行OnHandTargetSelected(targetID,sourceID)，8977额外触发helper和9240 AfterWait均直接使用同一缓存字段；8858到9330这段外层AST没有再次GetCardFromID。回调内部若改变对象表，不能因此把后续阶段切到新的同ID对象。AfterWait在1843/1888把传入cardPlayed直接交给观察者，974也对该参数GiveAlpineBonus，不能再用最初出牌对象替代。",
+    "旧DoSelectTargetFromHand虽在请求开始按显式ID查找，候选列表和闭包仍捕获该时点对象；ResolveHandSelection额外效果及Action等待延续也保留旧对象。现延迟选择开始时重新按ID定位policy卡并构造候选；策略返回有效答案后，答复开始前再次按ID定位reply卡并在回调前缓存，之后额外触发和等待续行均使用这个缓存，包括null。记录的来源ID仍为请求ID。",
+    "等待延续由Action改为Action<CardInstance?>并接收答复缓存对象；ContinuePlay的waited路径使用该载荷派发观察者参数，非等待路径继续使用原出牌对象。同步内联回复另存inlineReplyCard，不再在等待回调后偷偷回退到原卡。空答复对象不执行Alpine对象操作；合法声明事件的cardPlayed载荷可为空。",
+    "新增32个受控生命周期场景：双方、等待/非等待、请求返回前/策略返回前/目标回调内/不变四时点、同ID替换或移除。检查策略接收对象引用、目标回调写入对象、额外效果对象/计数、等待观察者的cardPlayed载荷及答复记录。请求前后替换取新对象；回调内替换仍使用答复缓存的旧对象。测试临时安装M36及观察者程序和受控效果，不宣称真实M36拥有这些事件或合法PvP一定发生ID复用。",
+    "32组身份参考中28组执行实际捕获的答复查找/缓存/回调/尾部参数节点；另4组在自动策略查找已返回null时仅记录边界，不模拟客户端自动发包。本地这4组取消生成答复，不回退到已移除对象。此行为不能扩展为整个客户端无效源ID协议已还原。"
+  ],
+  "validation": [
+    "当前采集受PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305守卫；三份函数头/脚本二次稳定读取均匹配。无游戏进程写入、注入、目标函数调用或自动对局操作。",
+    "verify-rule431.py重解码18516字节，核对查找/缓存/回调/AfterWait关键节点并执行32组身份模型；明确使用受控对象表和回调突变，不是完整UE事件图执行。",
+    "DeepSeek私有任务20261026-015213-rule431-selector-cache-8815552f完成、退出0；提取11条含查找或缓存对象的原始顶层行，主agent完整结构比对一致，未给嵌套节点添加偏移。",
+    "同一最终测试布景在旧生产下855通过、1失败/856，退出1；首错为有效ID60在请求返回前替换后，策略仍收到旧引用（两对象ID相同，测试按ReferenceEquals区分）。修复后完整selftest856/856通过、退出0；原有等待、内联抽牌和额外触发用例均保留。",
+    "回归后只补充“答复缓存不可在回调后重新查询”的注释，未再改执行逻辑或测试布景，未为纯注释重复全套测试。三份源码的原BOM状态均保持。"
+  ],
+  "limits": [
+    "同ID替换/移除是无头状态表上的受控重入测试，没有当前真实对局发生ID复用或客户端对象替换的观测，也未审计转换/创建原语的完整合法可达性。此次关闭的是已捕获接口在这些条件下的对象身份契约。",
+    "策略开始前已无选择卡时，本地取消答复；并未证明原生autoPick在空来源/持久局部状态下产生何种最终网络包。初始无效请求仍沿RULE-429早退。",
+    "空来源在既有事件声明参数中保持null，不认证所有本地隐式Target/Trigger上下文或UE空Context/持久帧行为；整段AfterWait、全局等待列表、其他观察者被替换以及多重嵌套等待仍未全面核对。",
+    "候选仍按当前policy卡Owner取手牌，跨侧与客户端活动方候选来源的差异未关闭。本轮未审计已选目标卡本身被替换时的隐式事件上下文。",
+    "未认证整张M36、任何转换链或全部PvP回调，完整认证卡牌数仍为0。"
+  ],
+  "next_work": [
+    "核对选择目标卡在策略和回调之间被移除/替换时，显式target ID与本地eventSubject/Target上下文的对应。",
+    "继续审计extra_play_triggers的完整JSON数值转换及全局等待列表/嵌套等待的接收者重新查找边界。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule431-revalidated-sources-native-20261026.json",
+      "bytes": 1783,
+      "sha256": "045219ec4d5450ea02f5854eeb7305490bccdcc970a58f8cb907a8b4d4322937"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule426-hand-selection-functions-native-20261025.json",
+      "bytes": 4570736,
+      "sha256": "2329e703f3e3a4c4d8bfe036d731c54b4dc6596a8cdca8f605a31245b2718f08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-player-moves-functions-native-20261026.json",
+      "bytes": 4918196,
+      "sha256": "857f22471713a1c37e40dfd312c6999e9bc3469bbbddcfe4520f3174886d2e9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-hand-reply-functions-native-20261026.json",
+      "bytes": 4697452,
+      "sha256": "8fe62ee3e0ff53ee938fe87db177cc11c364e90ad09aaa28b81b898b16123b23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule431-revalidate.py",
+      "bytes": 1671,
+      "sha256": "f26bdad2faa9e6066233d6ca4f0959ece26eec0cfb60a52c930ee20aafd62755"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule431.py",
+      "bytes": 6366,
+      "sha256": "b643157d08160ad4f1fe2ae7e8a5558afce657975f4c625b056fded81b35ecdf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-verified-20261026.json",
+      "bytes": 19082,
+      "sha256": "cee8b4c4b19276f61c899c34f70d9945483960c850e6d42b79ddc07ca855c249"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-worker\\input.json",
+      "bytes": 17324,
+      "sha256": "851c6bfd2c3c3a188e6e378738578807e0f33fb1028ddea77ead99a86f1108d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-worker\\result.json",
+      "bytes": 6252,
+      "sha256": "7bb58a3041219c9021c8d0b53f2a88d5336b81c4aec01ee84e305d3830a8e1ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-baseline-selftest.log",
+      "bytes": 75630,
+      "sha256": "8e2ef8d250412d4e3eadccbfb3fb27a524f3ec87b4725a81931a59ea45752efd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-final-selftest.log",
+      "bytes": 75542,
+      "sha256": "69aa6b6bc299f9a40eef7590fee5b545165a217cab1350c0737a5eb3d1a673f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule431-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 195390,
+      "sha256": "19c3682875f34b5390c673b83d1f7f04704b61a8b6a908e2e41efc4a241fca55"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 394892,
+      "sha256": "7278bd21ce714a38f0fae4a42686d2d3b4c53a81211f63be19a68ab32fc7b539"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 2804913,
+      "sha256": "0d6ad09366089fd67146450717a89297ed3d15d909a38b0ce411e46f69ef2036"
+    }
+  ]
+}

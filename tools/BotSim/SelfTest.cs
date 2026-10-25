@@ -237,6 +237,7 @@ internal static class SelfTest
         new("Kurmark验证器：反制与typed真标记、已激活候选及取消选择", KurmarkValidatorReference),
         new("手牌选择身份：显式ID优先于receiver/Self，回调归属与无效ID早退", HandSelectionExplicitIdIdentity),
         new("手牌答复前段：额外选择与触发队列先于AfterWait及自动出牌", HandReplyExtraBeforeWait),
+        new("手牌答复生命周期：选择/答复重查ID、回调后缓存与等待载荷", HandReplySourceLifecycle),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21401,6 +21402,92 @@ internal static class SelfTest
                 || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
         }
         return null;
+    }
+
+    private static string? HandReplySourceLifecycle(CardDatabase db)
+    {
+        const string sourceName = "card_unit_m36_destroyer";
+        using var handProbe = InstallSelectionDrawProbe(sourceName, "OnHandTargetSelected");
+        using var waitProbe = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardPlayedFromHand");
+        var sourceLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(sourceName)!.Locals!;
+        var observerLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default.Find(PlainUnit)!.Locals!;
+        KismetStep Mark(int index, KismetExpr card, string key) => new(index, "call", "JSON_SetInt",
+            new[] { card, new KismetExpr { Str = key }, new KismetExpr { Int = 1 } },
+            Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = index };
+        var handSteps = sourceLocals["OnHandTargetSelected"];
+        sourceLocals["OnHandTargetSelected"] = new[] {
+            Mark(0, new KismetExpr { Self = true }, "audit_hand_seen"),
+            handSteps[0] with { Index = 1, ByteOffset = 1 }, handSteps[1] with { Index = 2, ByteOffset = 2 }
+        };
+        observerLocals["OnOtherCardPlayedFromHand"] = new[] {
+            Mark(0, new KismetExpr { Var = "cardPlayed" }, "audit_wait_seen"),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+        };
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool wait in new[] { false, true })
+        foreach (int phase in Enumerable.Range(0, 4))
+        foreach (bool replace in new[] { true, false })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var original = state.CreateWithId(sourceName, side, 60, side.HandOf(), 0);
+            original.Definition = new CardDefinition { Name = sourceName, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = wait };
+            original.Keywords.Clear(); original.KreditCost = 0; original.ExtraPlayTriggers = 1;
+            var observer = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry", UsedTriggers = new[] { "OnOtherCardPlayedFromHand" } };
+            state.CreateWithId("card_event_aans", side, 80, side.HandOf(), 1);
+            var drawn = state.CreateWithId("card_event_aans", side, 100, side.DeckOf(), 0);
+            CardInstance? replacement = null, policySource = null; bool requested = false, mutated = false;
+            var repeated = new List<CardInstance>(); int policies = 0;
+            void Mutate()
+            {
+                if (mutated) return; mutated = true; state.Remove(original);
+                if (replace) {
+                    replacement = state.CreateWithId(sourceName, side, 60, side.HqOf(), 2);
+                    replacement.ExtraPlayTriggers = 1;
+                }
+            }
+            CardEffectScripts.Register(sourceName, ctx => {
+                if (requested) { repeated.Add(ctx.Self!); return; }
+                requested = true;
+                engine.Api.InvokeByName("selectTargetFromHand", original, new object?[] { 60 }, ctx, out _);
+                if (phase == 0) Mutate();
+            });
+            engine.PickHandTargetId = (card, _) => {
+                policies++; policySource = card; if (phase == 1) Mutate(); return 80;
+            };
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card == drawn && newLocation == side.HandOf() && phase == 2) Mutate();
+            };
+            bool played;
+            try { played = engine.PlayCard(original); }
+            finally { CardEffectScripts.Unregister(sourceName); }
+            CardInstance? expectedPolicy = phase == 0 ? replacement : original;
+            CardInstance? expectedReply = phase <= 1 ? replacement : original;
+            bool answered = expectedPolicy is not null;
+            CardInstance? expectedWait = wait ? answered ? expectedReply : null : original;
+            string label = $"{side}/wait={wait}/phase={phase}/replace={replace}";
+            if (!played || policies != (answered ? 1 : 0) || !ReferenceEquals(policySource, expectedPolicy))
+                return $"{label}: policy未按当前ID取卡，source={policySource?.CardId},calls={policies}";
+            bool Marked(CardInstance? card, string key) => card is not null && engine.Api.JsonGetInt(card, key) == 1;
+            if (Marked(original, "audit_hand_seen") != ReferenceEquals(original, expectedReply)
+                || Marked(replacement, "audit_hand_seen") != (replacement is not null && ReferenceEquals(replacement, expectedReply))
+                || Marked(original, "audit_wait_seen") != ReferenceEquals(original, expectedWait)
+                || Marked(replacement, "audit_wait_seen") != (replacement is not null && ReferenceEquals(replacement, expectedWait)))
+                return $"{label}: 回调或等待阶段的缓存对象身份错误";
+            if (repeated.Count != (expectedReply is null ? 0 : 1)
+                || repeated.Count == 1 && !ReferenceEquals(repeated[0], expectedReply)
+                || original.ExtraPlayTriggers != (ReferenceEquals(expectedReply, original) ? 0 : 1)
+                || replacement is not null && replacement.ExtraPlayTriggers != (ReferenceEquals(expectedReply, replacement) ? 0 : 1)
+                || (engine.LastHandTarget is not null) != answered
+                || engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"{label}: 额外效果/回复错误地重查或保留旧对象，repeats={repeated.Count}";
+            cases++;
+        }
+        return cases == 32 ? null : $"source lifecycle cases={cases}";
     }
 
     private static string? HandReplyExtraBeforeWait(CardDatabase db)
