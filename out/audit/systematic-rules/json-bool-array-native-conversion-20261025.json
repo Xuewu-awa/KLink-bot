@@ -1,0 +1,292 @@
+{
+  "rule": "RULE-420",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "ca3286ea81ad4a90d97f07af1b3d687e7c785076",
+  "kernel_changed": false,
+  "test_fixture_added": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-420",
+    "code_addresses": 16,
+    "code_bytes": 1534,
+    "type_vtables": 6,
+    "native_bool_vectors": 54,
+    "native_bool_executions": 648,
+    "bool_array_ast_executions": 315,
+    "cached_locale_values": [
+      "真",
+      "False",
+      "是",
+      "否"
+    ],
+    "worker_branches": 38,
+    "worker_comparisons": 19,
+    "worker_exact_match": true,
+    "worker_job": "20261025-200503-rule420-remove-branches-f72e4de8",
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "native_entry_points": {
+    "bool_wrapper": "0x4518880",
+    "string_wrapper": "0x4518ca0",
+    "bool_accessor": "0x13bc9d0",
+    "string_accessor": "0x13bcb90",
+    "bool_virtual_slot": "0x68",
+    "string_virtual_slot": "0x58",
+    "string_bool_adapter": "0x11eb7d0",
+    "string_bool_parser": "0x1301f70",
+    "ascii_comparator": "0x1215790",
+    "ftext_string_accessor": "0x127c610",
+    "observed_ftext_virtual_target": "0x127c550"
+  },
+  "type_slots": [
+    {
+      "name": "number",
+      "rva": "0x70c4c20",
+      "bool_slot_target": "0x13cbd10",
+      "string_slot_target": "0x13cd160"
+    },
+    {
+      "name": "boolean",
+      "rva": "0x70c4cd0",
+      "bool_slot_target": "0x13cbd00",
+      "string_slot_target": "0x13cd130"
+    },
+    {
+      "name": "array",
+      "rva": "0x70c4d80",
+      "bool_slot_target": "0x11acd30",
+      "string_slot_target": "0x11acd30"
+    },
+    {
+      "name": "null",
+      "rva": "0x70c4ee0",
+      "bool_slot_target": "0x11acd30",
+      "string_slot_target": "0x11acd30"
+    },
+    {
+      "name": "object",
+      "rva": "0x70c4e30",
+      "bool_slot_target": "0x11acd30",
+      "string_slot_target": "0x11acd30"
+    },
+    {
+      "name": "string",
+      "rva": "0x70c4ff0",
+      "bool_slot_target": "0x13cbce0",
+      "string_slot_target": "0x13cd110"
+    }
+  ],
+  "findings": [
+    "布尔包装入口对无效 JsonValue 引用输出 false；有效对象经虚表 +0x68 转换。Null/Array/Object 使用失败 stub，初始化为 false 的输出保持不变。Boolean 读取 +0x10；Number 与零比较，正负零和 NaN 为 false，其他所测非零值为 true。非有限数值只作运行时探索，不是合法 JSON 序列化证明。",
+    "字符串经 0x11eb7d0 → 0x1301f70 转换为布尔值。先按 ASCII 大小写不敏感比较 True/Yes/On 及本地化真值，再比较 False/No/Off 及本地化假值，最后依据系统 CRT _wtoi 的整数前缀结果。不能替换为 bool.Parse 或“非空字符串即真”。",
+    "当前 holder +0x50/+0x58/+0x60/+0x68 的缓存文字依次为 真、False、是、否。FText 虚表 getter 0x127c550 返回 shared+8 或 inline+0x20 的 FString，指针链与原始文字一致。本轮未调用 FText 刷新；这组混合语言缓存不能推广到其他语言、刷新后状态或所有未来会话。",
+    "648 次离线原生布尔转换 = 54 组输入 × 两种参数读取模式 × 两种借用引用形式 × 三套别名。两套别名为合成输入，一套取当前缓存。完整包装入口、取值函数、类型虚函数、字符串解析器和 ASCII 比较器均执行；引擎 Step、诊断、已初始化 TLS/本地化状态及 FText 返回值仍受控。_wtoi 仅在 Python 进程调用同文件同 RVA 的系统 CRT。",
+    "315 次 BoolArray AST 执行 = 15 种初始状态 × 七种操作 × 三套别名。覆盖缺失、四种非数组类型、十组混合数组、重复元素、无匹配、空数组和替换。Get 输出转换值但 Found=false；Set=false；Add=true；Remove 删除首个转换后匹配项并保留其余原始类型，删空后保留空数组，Found 表示数组字段存在，而非是否删到元素。",
+    "StringArray 删除图有 effects 专用分支，涉及冒号切分和 instigator ID。普通路径选择首个转换字符串相等项；选中后删空会调用 JSON_Clear。Found 来自保存的 JsonFound。这些是完整解码的分支结构证据，尚未参考执行字符串格式化、ParseIntoArray 和完整特殊分支。",
+    "字符串转换虚表已定位：Boolean 0x13cd130、String 0x13cd110、Number 0x13cd160；Null/Array/Object 共享失败 stub。Number 调用的 0x11e9cf0 格式化函数、字符串复制分配和本地化刷新仍待验证。八个接口仍未接入本地模拟器；RULE-419 的无直接引用结论仅限其保留的已加载语料，本轮没有新增已证实的 PvP 单卡缺陷。"
+  ],
+  "validation": [
+    "16 个唯一代码地址合计 1,534 字节、六张类型虚表及六个固定词条只读采集自 PID 24220，与安装 PE 校验一致，执行程序 SHA256 为 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305。包括通用引擎辅助函数和未执行的字符串转换库存，不代表 16 条独立 PvP 规则完成认证。",
+    "主 agent 重跑 648 次原生转换与 315 次 AST 参考执行，完整结果 JSON 均一致。转换输出哨兵字节保留。没有游戏进程函数调用、写入、注入或自动操作对局。",
+    "两个删除脚本从 RULE-419 原始字节与符号表重新解码一致。DeepSeek 私有包提取 38 个分支节点、19 个比较节点，主 agent 比对完整节点及外层语句偏移，全部一致，无修补。任务 20261025-200503-rule420-remove-branches-f72e4de8 正常完成，退出码 0。",
+    "探索阶段修正了两处测试模型问题：本地化 holder 顺序应为 true0/false0/true1/false1；JSON 数字 0 与 0.0 应共享数值查找键。通过结果在修正后生成，没有据此声称游戏或模拟器存在缺陷。",
+    "未修改规则源码或 BotSim 测试，未新增完整 selftest 运行；上一轮 845/845 不当作本轮新验证。JSON 容器／数组操作采用受控原语，引用控制器为空，尚不证明真实分配、GC 和序列化生命周期。"
+  ],
+  "limits": [
+    "字符串数值格式化、本地化 FText 刷新、TLS 初始化、共享引用释放、OOM、诊断及数组分配语义尚未完整验证。",
+    "布尔原生执行使用借用引用、受控参数读取和本地化输入；缓存文字快照不能证明语言切换后的结果。",
+    "BoolArray AST 使用有效 JSON map 和普通 ASCII 键 v，尚不认证无效 JSON、空卡对象、畸形数据或完整键比较行为。",
+    "StringArray 的 effects 分支尚未参考执行，也未证实有实际 PvP 调用。完整认证卡牌仍为 0。"
+  ],
+  "next_work": [
+    "转向有实际 PvP 调用证据的 JSON 反序列化／赋值路径，优先处理可达的规则缺口。",
+    "如确认相关调用，补齐原生字符串格式化、ParseIntoArray 与 effects ID 删除的参考执行，再实现 StringArray 接口。",
+    "保持本地化快照与已加载语料无引用结论的范围限制，不把它们推广为全游戏证明。"
+  ],
+  "reference_boundaries": {
+    "native": "Actual full4518880wrapper,13bc9d0accessor,all six type virtual slots,string11eb7d0/1301f70parser and native ASCII-only comparator executed in offline Unicorn. Engine parameter Step,diagnostic FString,TLS already-initialized localization and four FText-to-FString results supplied as two controlled sets plus one captured current cached-string set. Refresh lifecycle remains unexecuted. _wtoi hook calls same-file/same-RVA Windows CRT in Python process only. Null shared controllers;no GC/OOM/destruction/live culture proof. NaN/infinity are exploratory runtime numeric payloads,not valid serialized JSON.",
+    "blueprint": "Four actual captured BoolArray Blueprint ASTs with native boolean result lookup from648offline converter executions. Native localization inputs controlled,JSON fields/type/copy/make and array operations modeled. No full native JSON allocator/serializer/GC or actual PvP caller demonstrated. Keys nonempty ASCII v,ordinary valid JSON map only;no global invalid/null lifecycle certification."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-ftext-accessor-native-20261025.json",
+      "bytes": 1995,
+      "sha256": "28570091970fc235a26919f0f4db79546e65c17689bdd5ed4d4d30d11c82d91d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-json-accessors-native-20261025.json",
+      "bytes": 6842,
+      "sha256": "769b19e31b4d0d78eae25a4e48edeae37b43e5d9dce4d50b0f1f89860cb0a586"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-json-converter-bodies-native-20261025.json",
+      "bytes": 24845,
+      "sha256": "c57dbd2f95ede5b970b4630f7b55a4700d9d3a9b15fe312e70bbeb5690441289"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-json-converters-native-20261025.json",
+      "bytes": 4489006,
+      "sha256": "c00c98d8aaf03b97fcea7594fef1467a45d9dc3615071cb59e2291f6cc7284c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-json-type-slots-native-20261025.json",
+      "bytes": 18773,
+      "sha256": "73f0a9ae3cf742121d2860ff163e8aad810f7a16ec48967aed76f06c5f3391d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-live-locale-objects-native-20261025.json",
+      "bytes": 4580,
+      "sha256": "b563ef049218a973be7d1d6dd4cf606796ea7f4f01785585bef453922090047c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-live-locale-strings-native-20261025.json",
+      "bytes": 1558,
+      "sha256": "8e9b52f998089a97f352f7e4e9fc96c4b317a0e0f0f4e1cce857eb3eca379181"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-string-bool-data-native-20261025.json",
+      "bytes": 5679,
+      "sha256": "4b3afa477ddcdd5a99b8885a4222cc78f5eb6fb24dd27a0499c5a1e7bb9e946c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-string-bool-helper-native-20261025.json",
+      "bytes": 1576,
+      "sha256": "c7c07f34fb864a4511b2540c52f1fcf5b27267762d5d350ce5627805b65cf08b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule420-string-bool-parser-native-20261025.json",
+      "bytes": 20239,
+      "sha256": "7f69cf20e572f3fc4ab09d5f19a3f056a4bcf56739bb16245c32841c2a260ace"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-json-array-interfaces-native-20261025.json",
+      "bytes": 4729003,
+      "sha256": "9a0f9cd29113673be3731d130507ad99422186bcc5d69dd2869f250eef0adb29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-accessors.py",
+      "bytes": 2715,
+      "sha256": "27e13e1c4d86dc5d90b4f95930a8dfc7f833357fe959ce7f621a6b5f470c8959"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-converter-bodies.py",
+      "bytes": 2936,
+      "sha256": "f4482ddf7431220bd3ff5ceab07fad8aad7b7db26e389df8a3ec2e0b2228744d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-converters.py",
+      "bytes": 2383,
+      "sha256": "a86609b26a8a925be580fa26f210c16a05ac485c81fb24c1d67837c6f1da10df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-data.py",
+      "bytes": 4130,
+      "sha256": "d108ac627ad93a65aff81a1aa50be4ea1b64431aadc1d779cdf5090f49aa8a86"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-ftext.py",
+      "bytes": 2748,
+      "sha256": "cecf7a1cb07af50fd02ddd51b24d409c9c18371505ec0b4d4b88c1c8f4de7ca5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-live-locale-strings.py",
+      "bytes": 3658,
+      "sha256": "6f4e2749c1d4899a7fa929b7e8b1bf74998199fc1b7d508f66f6d713bdcdf89b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-live-locale.py",
+      "bytes": 3590,
+      "sha256": "f22bb95498f5e6470d71ecefafc22ce6737853e2eb85efc6837b9d5bbe28ef1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-slots.py",
+      "bytes": 3410,
+      "sha256": "48a699e8f09ce7acf5be9e26c95ab3bc382f5b3ba4004ada069377503494c8d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-string-bool-parser.py",
+      "bytes": 2709,
+      "sha256": "8e23a4dd36dc59c31cf5ccb2252bd91e98e54bc0c3056e7c496033ff7f3fb98f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule420-string-bool.py",
+      "bytes": 2709,
+      "sha256": "6fb8c31bf9afd920caa43b255ff7de677557b18c905b9132cc49dacd183c4215"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule420-bool-array-ast.py",
+      "bytes": 6203,
+      "sha256": "9c73adec3672952133acfcbd4b4a2263d54defb029ba544808e74dadf570c7da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule420-bool-array-snapshot-ast.py",
+      "bytes": 6249,
+      "sha256": "8f5102653512292542c8b9426dbc060120f8d38d4bce7c24ac409aa6edde930d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule420-bool-snapshot.py",
+      "bytes": 7347,
+      "sha256": "900e490755aee74f7d9c804e8012590ab45939837fb9549002fba13b37ee96d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule420-bool.py",
+      "bytes": 7028,
+      "sha256": "add97da2fa87437c0ccbed9680498fe2ef07d5bb8f74e2c5c950a832743e7bc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-bool-array-ast-model-20261025.json",
+      "bytes": 164373,
+      "sha256": "60911f4b1030a6b6acd4e630761b3bc37a528feb236ec93258dca920341bf504"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-bool-array-snapshot-ast-model-20261025.json",
+      "bytes": 267235,
+      "sha256": "2e6c22cec1e5b5a26dbe1292e71cd70a6ec194a11cea7ed40dc8ab7e4491e0b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-bool-native-model-20261025.json",
+      "bytes": 137429,
+      "sha256": "8a010ec53ba5f72dfe1f7223631cef04985aeed4a05dc3a0efba4d0f5dfd15b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-bool-native-snapshot-model-20261025.json",
+      "bytes": 215248,
+      "sha256": "a6b1196c758e123f502541d0beeea8cfec8c6343cf498a49bd19cc961277d5c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-verified-20261025.json",
+      "bytes": 495,
+      "sha256": "fc688f2fa32cf280aca0e65cdb5c62b9a88e9e5b3ef48b889e2edb5ae50ee78c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule420.py",
+      "bytes": 6184,
+      "sha256": "f8c807d8502daea4fb9a9e5fe3dccc8427df9d7f91aca47f55ad239661375eff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-worker-packet\\input.json",
+      "bytes": 56101,
+      "sha256": "7d1de1b9527bd6eae2de642885853b6ad120bebe3e7b11a052be7eeb7f9154b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-worker-packet\\output.json",
+      "bytes": 14985,
+      "sha256": "45e2e2de29683302cf278bfdfb5862f26821bda4bb5f6fc1ec3636ed461ae2a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule420-worker-packet\\task.txt",
+      "bytes": 660,
+      "sha256": "327cf9744e1a53804bc4bc53fdb567e652375e75d4edd82c1c396134e75732ec"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-200503-rule420-remove-branches-f72e4de8\\job.json",
+      "bytes": 732,
+      "sha256": "7dd7cb708c7bcf93f9120755bf47c5e26ee7e5e983cd8227884a55a64d7db84f"
+    }
+  ]
+}
