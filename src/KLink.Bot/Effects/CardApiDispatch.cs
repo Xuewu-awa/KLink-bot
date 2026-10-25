@@ -6679,14 +6679,19 @@ public sealed partial class CardApi
         var oldLocation = target.Location;
         c.Engine.FireLeaveTrigger(target, CardLocation.Discard, method: 2, oldLocation: oldLocation);
         // CardLocationMoved resolves the ID after before-leave callbacks.
-        if (GetCardFromID(id) is { } moving)
+        var moving = GetCardFromID(id);
+        if (moving is not null)
         {
+            // CardLocationMoved i=109 reads the post-callback hand position,
+            // including a replacement object now mapped to the same ID.
+            SetHandEdgesWhenPlayed(moving);
             c.State.Move(moving, CardLocation.Discard, moving.LocationNumber,
                 moveReason: CardMoveReason.Removed, notifyMoved: false, normalizeLocation: false);
-            RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
-            if (oldLocation.IsBoard())
-                c.State.CardMoved?.Invoke(moving, oldLocation, CardLocation.Discard, false, CardMoveReason.Removed);
         }
+        // i=348 runs even if the before-leave callback removed the target.
+        RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
+        if (moving is not null && oldLocation.IsBoard())
+            c.State.CardMoved?.Invoke(moving, oldLocation, CardLocation.Discard, false, CardMoveReason.Removed);
         if (GetCardFromID(id) is { } leaving)
             c.Engine.FireAfterLeaveTrigger(leaving, CardLocation.Discard, oldLocation);
         if (!skipAddAction)

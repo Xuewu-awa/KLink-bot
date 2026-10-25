@@ -1,0 +1,131 @@
+{
+  "rule": "RULE-408",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "022313facd7eec1826e7cb637cb32817ff380d98",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-408",
+    "fresh_blueprint_bodies": 5,
+    "fresh_script_bytes": 4851,
+    "empty_stub_declarations": 1,
+    "cdo_keys": {
+      "WasLeftMostWhenPlayedFromHandKey": "WasLeftMostCardWhenPlayedFromHand",
+      "WasRightMostWhenPlayedFromHandKey": "WasRightMostWhenPlayedFromHandKey"
+    },
+    "movement_ast_models": 112,
+    "worker_call_nodes": 61,
+    "new_headless_scenarios": {
+      "hand_edges": 80,
+      "reentry_mapping": 24,
+      "total": 104
+    },
+    "baseline": "2/832 failures",
+    "final": "832/832 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "CardLocationMoved calls SetRightLeftMostWhenPlayed at109 before location assignment, including when a before-leave callback moved the looked-up card into hand or replaced its ID mapping. The helper checks the current object location/side; destinationDiscard8 is permitted. It sets or clears both JSON edge keys according to the current slot.",
+    "Fresh BP_CardFunctions_C CDO FString values confirm the left key is WasLeftMostCardWhenPlayedFromHand and the right key is WasRightMostWhenPlayedFromHandKey. Reflected StrProperty offsets and CDO class identity checked; do not substitute the left property variable name as its string value.",
+    "The native edge helper initializes greatestIndex=0 and calls GetCardsInHandBySide. The captured797byte getter excludes IsForecastCard, checks physical hand membership and side, preserving registration order. Existing shared headless helper wrongly counted weather cards and allowed a wholly negative maximum.",
+    "CardLocationMoved reaches RefreshLocationStatus({savedOldLocation,8}) at348 even if its post-callback ID lookup is null or the guarded location setter only logs invalid target. This can compress remaining old-area slots and refresh guarded caches after a callback removes the target. The old adapter placed refresh inside the valid-moving-target branch.",
+    "Native movement does not re-run IsUnit on the replacement after the outer wrapper gate. Controlled same-ID opposite-side order replacement is moved by the current mapping; the old original remains unavailable. Notification keeps the original saved old area and the explicit source999.",
+    "A remaining call-coverage gap is confirmed: with old board location and post-callback missing target, native still invokes ExecuteOnCardLocationMoved when action-process is true and UpdateFrontlineIfNeeded for old frontline. Current adapter still gates these behind a nonnull moving object; this round does not implement or certify their null-subject observer/raw-instigator semantics."
+  ],
+  "changes": [
+    "Call SetHandEdgesWhenPlayed on the relooked-up current target before moving it to Discard in shared single/batch removal core.",
+    "Always refresh saved old area and Discard after the guarded location write; keep movement event ordering after refresh and preserve discard location number.",
+    "Use filtered GetCardsInHandBySide and Math.Max(0,...) in the shared edge helper, matching native weather filtering and zero-based maximum. This shared-helper correction also applies to its existing normal-play caller.",
+    "Add two regression entries with104 scenario combinations:80 direct hand-edge cases and24 nested-VM move/replacement/deletion cases. Temporary synthetic programs are test fixtures, not claims about live card effects."
+  ],
+  "validation": [
+    "Fresh5 nonempty Blueprint bodies4851bytes and1 empty Stub declaration independently checked for reflected names, raw/header lengths, SHA256 and exact re-decode. Client executable SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 guarded read-only captures.2 CDO strings independently decoded from saved FString bytes.",
+    "112 actual AST models compose CardLocationMoved, SetRightLeftMostWhenPlayed, SetCardLocationAndLocNumber and GetCardsInHandBySide. Controlled battle arrays include opposite-side and weather objects, hand slots-3/-1/0/2/5, board/nonexistent targets, old support/frontline areas and action flags. JSON commands, refresh internals, movement/frontline callbacks and diagnostics are recorded opaque primitives.",
+    "80 headless hand-edge scenarios exercise both sides, single/batch,5 slots,2 stale-key states and optional higher-slot weather card.24 actual nested-VM reentry scenarios cover both sides, support/frontline, single/batch and move/same-ID opposite-side nonunit replacement/delete. Checks include current-object identity, slots/guard cache, edge key removal, notifications and no death history.",
+    "Initial reentry fixture incorrectly expected support-line survivors to start at slot0; real HQ occupies slot0. Corrected expected support slots to1/2, retained intermediate logs, and prioritized deletion case so old-code failure independently exposes missing refresh. Final expanded fixture rerun against both original production files under try/finally restoration fails2/832; restored patched files rebuild and pass832/832 with exit0.",
+    "DeepSeek extracted61 nested calls from the private4-function packet. Primary independently matched all containing names, byte offsets, called names and complete nodes. Job20261025-113611-rule408-removal-calls-ed129b5f completed exit0."
+  ],
+  "limits": [
+    "Target deletion after before-leave still leaves native movement/after-leave observer and frontline-helper call coverage unresolved; this round repairs refresh and marker effects only. Missing-target helper payloads and raw instigator preservation need the next audit.",
+    "Initial-target missing equivalence remains bounded as in RULE-407. No arbitrary GC/pendingkill/concurrency/diagnostic abort/UI transitive proof.",
+    "Model forecast/hand predicates and battle arrays are controlled; tag/predicate native internals and full continuous VM are not recertified. CDO defaults are selected-current-instance authority, not all override-instance mutation proof.",
+    "VM callbacks are synthetic test probes, not observed live transitions. Existing self/observer helper semantics beyond tested fixtures are not claimed complete.",
+    "No historical replay authority, process writes, injection or game function invocation. No card fully certified and single-card version migration remains paused."
+  ],
+  "next_work": [
+    "Trace ExecuteOnCardLocationMoved and ExecuteOnAfterLeaveBoardOrOwnerEvents with saved old board location and null lookup, especially observer exclusion and scalar/object payload defaults.",
+    "Audit UpdateFrontlineIfNeeded under deleted target while preserving raw CardID60; repair missing owner recomputation/notification without leaking a detached object into callback context.",
+    "Extend actual VM probes to these observer and ownership-change paths, then compare same-ID replacement semantics at movement/after callback boundaries."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule408-removal-reentry-native-20261025.json",
+      "sha256": "621bb0fbd194c17aa0484b6f87434ba9a10614c914faaf62a6050588835ec75e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule408-hand-query-native-20261025.json",
+      "sha256": "857e7ce906e7b9772468890ed9d7edd21f36a94235e553a1225c33d00e97fd7c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule408-removal-reentry.py",
+      "sha256": "1b0d2d4f56c2db3a5f2be95ae0a63cfc0a0658981749e356630f86e658da782c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule408-hand-query.py",
+      "sha256": "e2e5a0f54ed2d457bb4fa5f004045c78249543c145f7246cbe04b25cdc664c1d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule408-movement.py",
+      "sha256": "685631f84d20b86d63940f351a8d2fd7baa04064c64ccf698c28200a04af0909"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-filtered-movement-model-20261025.json",
+      "sha256": "005307da2c72de99bf5e4035b89b80265f94b53d08e982431ee02cefba6d7018"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule408.py",
+      "sha256": "9f9fa6021169264973d635bce44438a494cbd4416be0858aed15c2b214b25bc7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-verified-20261025.json",
+      "sha256": "e4a092b7efc74eaac56efc51e2b9b4157dacdff0111b32f156abbecf988664cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\baseline-rule408-complete.py",
+      "sha256": "bfda988b3c31ff2895b520c3ca161e3225fabb23da53b1c012d8762d03c27cde"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-selftest-complete-before.log",
+      "sha256": "8d0003eb3c0e48f8696c99576475d94145b465dc950c9c3b538b8ddb40c234fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-selftest-complete-before.exit.txt",
+      "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-selftest-complete-after.log",
+      "sha256": "292f12753e581b3f810c3d449f39745d088c6aff7e5b61fa745eda0052ab1b53"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-selftest-complete-after.exit.txt",
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-worker-packet\\input.json",
+      "sha256": "4e24f93b2a3c91c089a6d5c2e66a2ca8098bd02580cae3be8a4d1efcbfe1b89c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-worker-packet\\task.txt",
+      "sha256": "960c059c2e5d1079500928fd7ce47e9f137a17be08f057fdb30f3a0415eed638"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule408-worker-packet\\calls.json",
+      "sha256": "4248fd3789631396ded1e831b53562fb3f2ee0d6410a8f28a231e4c04850f7a6"
+    }
+  ]
+}

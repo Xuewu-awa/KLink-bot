@@ -414,8 +414,10 @@ public sealed partial class CardApi
         const string left = "WasLeftMostCardWhenPlayedFromHand", right = "WasRightMostWhenPlayedFromHandKey";
         if (card.LocationNumber == 0) JsonSetBool(card, left, true);
         else JsonClear(card, left);
-        int greatest = State.CardsUnordered().Where(x => x.Owner == card.Owner && x.Location == card.Owner.HandOf())
-            .Select(x => x.LocationNumber).DefaultIfEmpty(0).Max();
+        // Native helper starts greatestIndex at zero and queries the filtered
+        // hand list; forecast/weather cards do not contribute to its maximum.
+        int greatest = Math.Max(0, GetCardsInHandBySide(card.Owner)
+            .Select(x => x.LocationNumber).DefaultIfEmpty(0).Max());
         if (card.LocationNumber == greatest) JsonSetBool(card, right, true);
         else JsonClear(card, right);
     }
