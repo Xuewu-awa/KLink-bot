@@ -245,7 +245,7 @@ public sealed class MatchEngine
         if (manageLocation && moveReason != CardMoveReason.Convert
             && (oldLocation == CardLocation.BoardFrontline || newLocation == CardLocation.BoardFrontline))
         {
-            RefreshFrontlineOwner(card);
+            RefreshFrontlineOwnerById(card.CardId);
         }
     }
 
@@ -256,6 +256,15 @@ public sealed class MatchEngine
     public void ExecuteOnCardLocationMoved(CardInstance card, CardLocation oldLocation,
                                            CardLocation newLocation, bool changeOwner = false,
                                            CardMoveReason moveReason = CardMoveReason.Uncategorized)
+        => ExecuteOnCardLocationMovedCore(card, card.CardId, oldLocation, newLocation, changeOwner, moveReason);
+
+    // Native helper retains CardID for exclusion even when its lookup is null.
+    internal void ExecuteOnCardLocationMovedById(int cardId, CardLocation oldLocation,
+        CardLocation newLocation, bool changeOwner, CardMoveReason moveReason)
+        => ExecuteOnCardLocationMovedCore(Api.GetCardFromID(cardId), cardId, oldLocation, newLocation, changeOwner, moveReason);
+
+    private void ExecuteOnCardLocationMovedCore(CardInstance? card, int cardId, CardLocation oldLocation,
+        CardLocation newLocation, bool changeOwner, CardMoveReason moveReason)
     {
         Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
             (int)moveReason, out string reasonName);
@@ -269,7 +278,7 @@ public sealed class MatchEngine
             ["MoveReason"] = reasonName,
         };
 
-        if (!card.IsSuppressed)
+        if (card is not null && !card.IsSuppressed)
         {
             Api.FireTrigger("OnCardLocationMoved", card, card.Owner,
                 eventArgs: new object?[] { (int)oldLocation, (int)newLocation, changeOwner, reasonName },
@@ -281,7 +290,7 @@ public sealed class MatchEngine
         // Native i=125 queries T47 after the own hook; its direct loop has
         // no physical-zone filter, repeated suppression check or stop flag.
         Api.ExecuteMovementObservers("OnOtherCardLocationMoved", card, args, named,
-            oldLocation: oldLocation, newLocation: newLocation);
+            oldLocation: oldLocation, newLocation: newLocation, subjectCardId: cardId);
     }
 
     /// <summary>Native T49: own hook, query observers, stop check before each saved item.</summary>
@@ -2353,6 +2362,12 @@ public sealed class MatchEngine
     /// 见 `CardApi.SpawnOnBattlefield` 里的注释与出处）。
     /// </summary>
     internal void RefreshFrontlineOwner(CardInstance? subject)
+        => RefreshFrontlineOwnerCore(subject, subject?.CardId ?? 0);
+
+    internal void RefreshFrontlineOwnerById(int subjectId)
+        => RefreshFrontlineOwnerCore(Api.GetCardFromID(subjectId), subjectId);
+
+    private void RefreshFrontlineOwnerCore(CardInstance? subject, int subjectId)
     {
         // 必须在 `UpdateFrontlineOwner()` **之前**读：这正是蓝图 si=5 取
         // `oldFrontlineOwnerSide` 的时机，也是"变了才发"的比较基准。
@@ -2363,7 +2378,7 @@ public sealed class MatchEngine
             return;
         }
 
-        Api.ExecuteFrontlineOwnershipChange(subject, oldOwner);
+        Api.ExecuteFrontlineOwnershipChange(subject, oldOwner, subjectId);
     }
 
     // ==================== 离场触发点 ====================
@@ -2409,6 +2424,22 @@ public sealed class MatchEngine
                 eventArgs: new object?[] { card, (int)goingToLocation, method },
                 goingToLocation: goingToLocation, namedArgs: named,
                 recipientSnapshot: new[] { observer }, includeUnavailableRecipients: true);
+    }
+
+    // Explicit removal supplies an ID; its after helper re-resolves it after
+    // movement/frontline callbacks. A null own receiver still leaves T8 active.
+    internal void FireAfterLeaveTriggerById(int cardId, CardLocation goingToLocation, CardLocation oldLocation)
+    {
+        if (cardId <= 0 || !oldLocation.IsBoard()) return;
+        if (Api.GetCardFromID(cardId) is { } card)
+        {
+            FireAfterLeaveTrigger(card, goingToLocation, oldLocation, includeLocationCards: true);
+            return;
+        }
+        Api.ExecuteMovementObservers("OnAfterOtherCardLeaveBoardOrOwner", null,
+            new object?[] { null, (int)oldLocation }, new Dictionary<string, object?> {
+                ["goingToLocation"] = (int)goingToLocation, ["OldLocation"] = (int)oldLocation, ["cardLeaving"] = null,
+            }, subjectCardId: cardId);
     }
 
     /// <summary>BP_CardFunctions after helper: observers see OldLocation, self sees destination.</summary>

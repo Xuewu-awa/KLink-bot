@@ -6692,8 +6692,12 @@ public sealed partial class CardApi
         RefreshLocationStatus(new[] { oldLocation, CardLocation.Discard });
         if (moving is not null && oldLocation.IsBoard())
             c.State.CardMoved?.Invoke(moving, oldLocation, CardLocation.Discard, false, CardMoveReason.Removed);
-        if (GetCardFromID(id) is { } leaving)
-            c.Engine.FireAfterLeaveTrigger(leaving, CardLocation.Discard, oldLocation);
+        else if (oldLocation.IsBoard())
+        {
+            c.Engine.ExecuteOnCardLocationMovedById(id, oldLocation, CardLocation.Discard, false, CardMoveReason.Removed);
+            if (oldLocation == CardLocation.BoardFrontline) c.Engine.RefreshFrontlineOwnerById(id);
+        }
+        c.Engine.FireAfterLeaveTriggerById(id, CardLocation.Discard, oldLocation);
         if (!skipAddAction)
         {
             Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);

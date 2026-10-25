@@ -1,0 +1,145 @@
+{
+  "rule": "RULE-409",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "5bac705930d6745d690f344284986859054b2cac",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-409",
+    "fresh_blueprint_bodies": 4,
+    "fresh_script_bytes": 4277,
+    "native_suppression_clear_bytes": 16,
+    "null_suppression_suffix_models": 8,
+    "observer_ast_models": 72,
+    "worker_call_nodes": 79,
+    "new_headless_scenarios": {
+      "movement_after": 32,
+      "frontline_only": 8,
+      "total": 40
+    },
+    "baseline": "2/834 failures",
+    "final": "834/834 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "ExecuteOnCardLocationMoved856bytes resolves CardID once into cardToMove. Null isSuppressed reads false, own null Context skips its call, then T47 snapshot is still queried. Observer exclusion compares recipient.CardID to the raw input CardID, not cardToMove.CardID; callbacks receive cached null cardToMove.",
+    "ExecuteOnAfterLeaveBoardOrOwnerEvents963bytes retains its action/positiveID/old-board gates and independently re-resolves cardLeaving after movement/frontline stages. Null own Context/pincer query does not suppress T8 query; observer exclusion uses raw cardLeaving. A target recreated by an earlier movement observer can therefore be nonnull for T8 while later T47 recipients still see the cached null movement subject.",
+    "UpdateFrontlineIfNeeded1099bytes recomputes an empty frontline to side0 even with absent instigator object. T27 receives raw integer Instigator, fixed old ownership read at helper entry and freshly read new ownership before each callback. T47 callbacks can change the ownership seen at that later helper entry; T27 callbacks can change later recipients newSide.",
+    "Current isSuppressed FBoolProperty metadata has element size1.8 actual EX_Context null-clear suffix executions select checked standard memset1 and produce false with surrounding canaries intact. The captured16byte virtual bit-clear fallback was not reached; no claim that it was executed.",
+    "Old removal core skipped movement/frontline and after-leave helpers when its relookup was null. Old object-based frontline adapter also derived a missing instigator ID as0. New ID-aware routes preserve raw ID while passing null object payloads and re-querying the after-stage subject."
+  ],
+  "changes": [
+    "Add internal ID-aware movement callback entry and nullable observer dispatch with explicit raw exclusion ID; retain existing object-based public movement entry for existing callers.",
+    "Continue movement observers and old-frontline recomputation after before-leave removes the target. Use ID-aware frontline recomputation in native-style managed movement, preserving integer instigator even if a callback removed or replaced its object.",
+    "Add ID-aware after-leave entry. Requery target after movement/frontline stages; for null target dispatch T8 directly through saved observers without substituting observer/self or detached original as event subject. Explicit removal opts into native location-card handling for re-resolved replacement.",
+    "Keep existing frontend ownership object API but add explicit raw-ID override for integer event fields. This prevents0 replacing original CardID60 while keeping nullable event context separate.",
+    "Add2 selftest entries with40 synthetic nested-VM scenarios:32 movement/frontline/after cases and8 frontline-only cases."
+  ],
+  "validation": [
+    "Fresh4 complete Blueprint bodies4277bytes independently checked against saved reflected names/header lengths/hashes and exact raw re-decode. Fresh bool-property/class/vtable and native16byte fallback capture plus reused EX_Context/memset import rechecked against current installed PE SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305.",
+    "72 actual AST compositions of movement856/frontline1099/after963 bodies use controlled snapshot arrays, initially absent lookups, optional callback recreation and reentrant owner changes. Raw subject entry in snapshots verifies exclusion; cached movement subject remains null while after relookup can be replacement.8 native suffix cases check actual bool default under captured metadata; standard memset is a checked hook.",
+    "40 headless scenarios cover both sides, single/batch, support/frontline, same-ID recreation by first T47 observer, ownership mutation before/within T27, and removal of later T47 observer. Saved T47 recipient still runs after removal; later T27/T8 queries exclude it. Frontline-only tests verify raw60 instead of0 or supplied effect-source999.",
+    "Initial movement/after probe used stale compiled programs from earlier temporary tests even though their source had been removed. Corrected fixture now scopes/restores compiled local cache as well as source. Intermediate failed logs retained. Final identical fixture rerun against all3 original production files under try/finally restoration fails2/834; restored patched files rebuild and pass834/834 with exit0.",
+    "DeepSeek private4-function packet delivered79 call nodes. Primary independently compared all containing names, enclosing byte offsets, called names and complete nodes. Job20261025-115010-rule409-observer-calls-2025faf6 completed exit0."
+  ],
+  "limits": [
+    "This repairs selected valid-entry/then-deleted-target observer and frontend owner paths. Does not certify every removal/own-hook/weak pointer/GC/concurrency path or all card semantics.",
+    "AST queries, arrays, enum text, EnumCompareSide inequality branch, callback mutations and skipped pincer out defaultfalse are explicit controlled primitives; no full native query implementation or continuous engine VM proof. Source registrations use controlled fixtures, not observed live card behavior.",
+    "Native bool clear model starts after diagnostics and uses checked memset; diagnostic prefix/abort, arbitrary frame initialization, native virtual fallback execution and live calls are not certified.",
+    "Native TSet iteration/insertion-history equivalence remains open; scenario recipient order is controlled. Snapshot preservation tests do not prove arbitrary runtime observer order.",
+    "Nullable target context and raw integer IDs are deliberately separate; existing object-based public event callers retain their previous object identity contract. Native movement/after invocation for initially missing core still has the RULE-407 bounded boundary.",
+    "No historical replay authority, process writes, injection or game-function invocation. UI/campaign/tutorial excluded, single-card migration paused, no card fully certified."
+  ],
+  "next_work": [
+    "Extend valid-target own movement/after-leave callback reentry, including removal/replacement of the cached own object and pincer cleanup before recipient queries.",
+    "Check remaining ID-based dispatcher routes against cached-object wrappers so normal movement/frontline adapters do not silently reintroduce zero instigator or stale event subjects.",
+    "Continue event-query/snapshot and primitive coverage without treating these selected cases as complete card certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule409-missing-subject-observers-native-20261025.json",
+      "sha256": "865c2b2652921d3e696d4cf474c411720235bfc4e382da1a8c06291bea17e801"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule409-null-suppression-property-native-20261025.json",
+      "sha256": "dcb4f76d00facad27892eae0a2bd7db288ccddf859446d6e47a150e12ddec328"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-context-opcode-native-20261025.json",
+      "sha256": "8cbae034210b40b9c6b9455cda20eeaab6e165abf098547d27a2f8187aa3553d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule400-null-memset-import-20261025.json",
+      "sha256": "12d8733672bafac910e0acca347941b0457875668c4814f76f58aaee12d70350"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule409-observers.py",
+      "sha256": "1446df1b51a67525d57dec1083fd348266763f8b7a79d2e302fc56bf5d478fda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule409-null-suppression.py",
+      "sha256": "773b7f8f92306e8aefa39dc42b1f6ab9b13bd9f3ba26d9c8f3b4ceb023c01838"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule409-null-suppression.py",
+      "sha256": "f35338cace3841a954432d363ac51638674523fa4867f523c623ddc11d31066b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule409-observers.py",
+      "sha256": "40406821d695b5a8a6aa8e6d0913e5e27d03d54380592e418f3442475e63ff8f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-null-suppression-model-20261025.json",
+      "sha256": "df9bb432abe0c7140ec2bd29e363fba8c500891decd1c78c7b9ba6406abc5c6d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-observer-model-20261025.json",
+      "sha256": "f59c7395928fbbbf680cc3fb07e55b124db7396d3b29551f2153640b8a81497f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule409.py",
+      "sha256": "041ad3b7b0b378d90a4ce4187590b8429ea4e9c6e91be4c75e4312afae3bf34d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-verified-20261025.json",
+      "sha256": "beefd01dafecb1fbf7e94f7db59ff62a389358e59057b0ef5ae82938b3d65de1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\baseline-rule409-final-fixture.py",
+      "sha256": "fee60c23a7e11d3980244e9d4c3c4c4f5402623ab0c0ca62796f2fbda8906d4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-selftest-final-before.log",
+      "sha256": "a4b02c25445e27cb1a9680cf99b325ebef56a3a4e51ff28ea8974e89bd958a69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-selftest-final-before.exit.txt",
+      "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-selftest-final-after.log",
+      "sha256": "829045db63cc1f8a9ac98e2338bb5078c0daf9b271a8dc3257ed39e7185c9df2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-selftest-final-after.exit.txt",
+      "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-worker-packet\\input.json",
+      "sha256": "bb82b94d5ed2a594ac00de847828ae7afe6f20aba7e36cad1fe0db45e89656e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-worker-packet\\task.txt",
+      "sha256": "fe32a6f61cc172ec1c7fd00ec4a4bc3c70207f04d3d2727a2bf991aea105b512"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule409-worker-packet\\calls.json",
+      "sha256": "df20f788b2f19ae70942d920f6ab12599d005cabe702e12c5699ed58550632f9"
+    }
+  ]
+}

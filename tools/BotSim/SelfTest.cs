@@ -982,6 +982,8 @@ internal static class SelfTest
         new("单体移除：前置、移动、后置、通知顺序及非死亡语义", RemoveSinglePhaseContract),
         new("普通移除：手牌左右端标记在换区前更新", RemoveHandEdgeContract),
         new("普通移除重入：移动/同ID替换/删除后重取目标并刷新入口区域", RemoveReentryMappingContract),
+        new("移除目标消失：移动和后置观察者接收空对象并重新查询后置主体", RemovedSubjectObservers),
+        new("移除目标消失：前线归属重算保留原始卡ID并逐项读取新归属", RemovedSubjectFrontline),
         new("批量移除：逐ID单位门、重复及完整数组通知", RemoveBatchContract),
         new("批量移除：VM数组回调改动后重读长度/项并通知当前输入", RemoveBatchMutableInputs),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
@@ -34637,6 +34639,118 @@ internal static class SelfTest
                 if (!notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", 20), ActionValue2.Str("oldLocation", oldName) }))
                     return "移除通知参数/顺序错误";
             }
+        }
+        return null;
+    }
+
+    private static IDisposable InstallRemovedSubjectProbes()
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        var installed = new List<string>();
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var saved = new Dictionary<string, KismetProgram?>();
+        foreach (var spec in new[] {
+            ("OnOtherCardLocationMoved", new[] { "cardMoved", "oldLocation", "newLocation" }),
+            ("OnAfterOtherCardLeaveBoardOrOwner", new[] { "cardLeaving", "OldLocation" }),
+            ("OnFrontlineOwnershipChange", new[] { "instigator", "oldSide", "newSide" }) })
+        {
+            if (KismetLibrary.Default.FindProgram(name, spec.Item1) is not null)
+                throw new InvalidOperationException("无法安全安装空主体观察探针：" + spec.Item1);
+            // Prior temporary probes can leave compiled locals after removing
+            // their source. Scope that cache as well as the replacement source.
+            KismetProgram? previous = null;
+            if (cache.TryGetValue(name, out var programs)) programs.Remove(spec.Item1, out previous);
+            saved[spec.Item1] = previous;
+            var steps = new List<KismetStep>();
+            void Store(string field, KismetExpr expr) => steps.Add(new KismetStep(steps.Count, "set", null,
+                Array.Empty<KismetExpr>(), Array.Empty<int>(), expr, null, -1, field, null) { DestinationScope = "instance" });
+            Store("_r409Serial", new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "_r409Serial", Scope = "instance" }, new KismetExpr { Int = 1 } } });
+            Store("_r409Kind", new KismetExpr { Str = spec.Item1 });
+            foreach (string field in spec.Item2)
+                Store("_r409_" + spec.Item1 + "_" + field, new KismetExpr { Var = "K2Node_Event_" + field });
+            steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(spec.Item1, steps); installed.Add(spec.Item1);
+        }
+        return new AuditProbeCleanup(() => {
+            foreach (string trigger in installed) {
+                locals.Remove(trigger);
+                if (cache.TryGetValue(name, out var programs)) { programs.Remove(trigger); if (saved[trigger] is { } previous) programs[trigger] = previous; }
+            }
+        });
+    }
+
+    private static string? RemovedSubjectObservers(CardDatabase db) => RemovedSubjectContract(db, false);
+    private static string? RemovedSubjectFrontline(CardDatabase db) => RemovedSubjectContract(db, true);
+    private static string? RemovedSubjectContract(CardDatabase db, bool onlyFrontline)
+    {
+        using var probes = InstallRemovedSubjectProbes();
+        using var before = InstallSelectionDrawProbe(PlainUnit, "OnLeaveBoardOrOwner");
+        const string movement = "OnOtherCardLocationMoved", after = "OnAfterOtherCardLeaveBoardOrOwner", front = "OnFrontlineOwnershipChange";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in onlyFrontline ? new[] { CardLocation.BoardFrontline } : new[] { side.HqOf(), CardLocation.BoardFrontline })
+        foreach (bool batch in new[] { false, true })
+        foreach (int mode in onlyFrontline ? new[] { 0, 2 } : new[] { 0, 1, 2, 3 })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side; state.FrontlineOwner = side;
+            var original = state.CreateWithId(PlainUnit, side, 60, zone, 1); original.Keywords.Clear();
+            state.CreateWithId("card_unit_51e_regiment", side, 100, side.DeckOf(), 0);
+            var watchers = new[] { 80, 81 }.Select(id => {
+                var w = state.CreateWithId("card_unit_typhoon_mk_ib", side.Opposite(), id, CardLocation.Discard, id);
+                w.Definition = new CardDefinition { Name = w.Name, Type = "order", UsedTriggers = onlyFrontline ? new[] { front } : new[] { movement, after, front } };
+                w.Keywords.Clear(); return w;
+            }).ToArray();
+            bool removed = false; CardInstance? replacement = null; var seen = new Dictionary<int, int>(); var calls = new List<(int, string)>();
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                var w = watchers.FirstOrDefault(w => Convert.ToInt32(w.BlueprintVariables.GetValueOrDefault("_r409Serial")) > seen.GetValueOrDefault(w.CardId));
+                if (w is null) return;
+                seen[w.CardId] = Convert.ToInt32(w.BlueprintVariables["_r409Serial"]);
+                string kind = Convert.ToString(w.BlueprintVariables["_r409Kind"])!; calls.Add((w.CardId, kind));
+                if (w.CardId != 80) return;
+                if (kind == movement) {
+                    if (mode == 1) {
+                        replacement = state.CreateWithId(PlainUnit, side.Opposite(), 60, side.Opposite().HandOf(), 3);
+                        replacement.Keywords.Clear(); replacement.Keywords.Add(Keyword.Suppressed);
+                    }
+                    if (mode == 2 && zone == CardLocation.BoardFrontline) state.FrontlineOwner = side.Opposite();
+                    if (mode == 3) state.Remove(watchers[1]);
+                }
+                if (kind == front && mode == 2) state.FrontlineOwner = side;
+            };
+            using var draw = InstallDrawReentryProbe(state, () => { if (!removed) { removed = true; state.Remove(original); } }, markerSide: side.Opposite());
+            var ctx = new EffectContext { Engine = engine, State = state, Self = original, Controller = side };
+            var result = engine.Api.InvokeByName(batch ? "RemoveMultipleCardsFromBoard" : "RemoveCardFromBoard", null,
+                new object?[] { batch ? (object)new[] { 60 } : 60, 999 }, ctx, out bool handled);
+            var expected = new List<(int, string)>();
+            if (!onlyFrontline) expected.AddRange(new[] { (80, movement), (81, movement) });
+            int[] laterIds = !onlyFrontline && mode == 3 ? new[] { 80 } : new[] { 80, 81 };
+            if (zone == CardLocation.BoardFrontline) expected.AddRange(laterIds.Select(id => (id, front)));
+            if (!onlyFrontline) expected.AddRange(laterIds.Select(id => (id, after)));
+            if (!removed || !handled || result is not false || !calls.SequenceEqual(expected))
+                return $"空主体须依次派发T47/T27/T8且保留当前查询快照：{onlyFrontline}/{side}/{zone}/{batch}/{mode}, calls={string.Join(',', calls)}";
+            foreach (var w in watchers) {
+                object? Value(string trigger, string field) => w.BlueprintVariables.GetValueOrDefault("_r409_" + trigger + "_" + field);
+                if (!onlyFrontline && (Value(movement, "cardMoved") is not null || Convert.ToInt32(Value(movement, "oldLocation")) != (int)zone
+                    || Convert.ToInt32(Value(movement, "newLocation")) != (int)CardLocation.Discard)) return "移动观察者须接收缓存的空对象及保存的区域";
+                if (!onlyFrontline && laterIds.Contains(w.CardId) && (!ReferenceEquals(Value(after, "cardLeaving"), mode == 1 ? replacement : null)
+                    || Convert.ToInt32(Value(after, "OldLocation")) != (int)zone)) return "后置阶段须重新查主体，不能沿用移动阶段的空值或旧对象";
+                if (zone == CardLocation.BoardFrontline && laterIds.Contains(w.CardId)) {
+                    Side expectedOld = !onlyFrontline && mode == 2 ? side.Opposite() : side;
+                    Side expectedNew = mode == 2 && w.CardId == 81 ? side : Side.NotAvailable;
+                    if (Convert.ToInt32(Value(front, "instigator")) != 60 || Convert.ToInt32(Value(front, "oldSide")) != (int)expectedOld
+                        || Convert.ToInt32(Value(front, "newSide")) != (int)expectedNew) return "前线事件须保留原始60，固定重算前归属并逐项读取当前归属";
+                }
+            }
+            Side finalOwner = zone == CardLocation.BoardFrontline ? mode == 2 ? side : Side.NotAvailable : side;
+            if (state.FrontlineOwner != finalOwner || !ReferenceEquals(state.ById(60), replacement)
+                || replacement is not null && replacement.Location != side.Opposite().HandOf()) return "前线归属或重建对象位置错误";
         }
         return null;
     }

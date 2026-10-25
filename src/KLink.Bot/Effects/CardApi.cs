@@ -367,13 +367,13 @@ public sealed partial class CardApi
 
     // UpdateFrontlineIfNeeded queries T27 once. i=870 reads current ownership
     // anew for every callback; earlier callbacks may change it through reentry.
-    internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner)
+    internal void ExecuteFrontlineOwnershipChange(CardInstance? instigator, Side oldOwner, int? instigatorIdOverride = null)
     {
         const string trigger = "OnFrontlineOwnershipChange";
         var recipients = CaptureRegisteredTriggerSnapshot(trigger);
         var library = Blueprint.KismetLibrary.Default;
         if (library is null) return;
-        int instigatorId = instigator?.CardId ?? 0;
+        int instigatorId = instigatorIdOverride ?? instigator?.CardId ?? 0;
         foreach (var observer in recipients)
         {
             if (library.FindProgram(observer.Name, trigger) is null) continue;
@@ -388,20 +388,22 @@ public sealed partial class CardApi
         }
     }
 
-    // T47 and T49 both invoke a saved registered snapshot and exclude only
-    // the subject ID. T49 alone checks stopFurtherActions before each item.
-    internal void ExecuteMovementObservers(string trigger, CardInstance moved,
+    // T47/T49 and null-subject T8 invoke a saved registered snapshot and
+    // exclude the raw subject ID. T49 alone checks stopFurtherActions.
+    internal void ExecuteMovementObservers(string trigger, CardInstance? moved,
         IReadOnlyList<object?> args, IReadOnlyDictionary<string, object?> named,
-        bool stopFurtherActions = false, CardLocation? oldLocation = null, CardLocation? newLocation = null)
+        bool stopFurtherActions = false, CardLocation? oldLocation = null, CardLocation? newLocation = null,
+        int? subjectCardId = null)
     {
         var recipients = CaptureRegisteredTriggerSnapshot(trigger);
         var library = Blueprint.KismetLibrary.Default;
         if (library is null) return;
+        int excludedId = subjectCardId ?? moved?.CardId ?? 0;
         foreach (var observer in recipients)
         {
             if (stopFurtherActions && State.StopFurtherActions) break;
-            if (observer.CardId == moved.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
-            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={moved.Name}#{moved.CardId}）");
+            if (observer.CardId == excludedId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={moved?.Name ?? "null"}#{excludedId}）");
             RunTriggerProgram(library, observer, observer.Name, trigger, moved, eventArgs: args, namedArgs: named,
                 oldLocation: oldLocation, newLocation: newLocation);
         }
