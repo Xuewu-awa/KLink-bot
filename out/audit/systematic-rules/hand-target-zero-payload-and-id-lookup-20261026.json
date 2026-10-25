@@ -1,0 +1,120 @@
+{
+  "rule": "RULE-432",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "bc617da1216c3b1dec6fc3d7d5f4c8b44b86807a",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-432",
+    "current_functions_revalidated": 3,
+    "script_bytes_redecoded": 15501,
+    "wrapper_and_callback_ast_cases": 15,
+    "zero_id_guard_cases": 3,
+    "headless_zero_target_cases": 16,
+    "headless_target_lifecycle_cases": 24,
+    "worker_exact_rows": 5,
+    "baseline": "857 passed,1 failed /858",
+    "final": "858/858 pass",
+    "fully_certified_cards": 0,
+    "boundary": "Captured54-byte event wrapper and selected Kurmark callback with controlled JSON primitives and target-ID lookup. Invalid/zero/raw integer input tests are not legal PvP reachability or full notification protocol certification. Implicit event Target/Trigger contexts remain outside this proof."
+  },
+  "findings": [
+    "当前重新只读核对PlayerMoves13890字节、Kurmark事件包装54字节及完整事件图1557字节，共15501字节，函数头/脚本与保留捕获一致。PlayerMoves8877传入的是两个整数tmpTargetCardID/tmpSourceCardID；Kurmark包装在0/18逐个复制到handTargetCardID/InstigatorID帧槽，36跳1014，目标ID不应根据任何事件对象重新推断。",
+    "Kurmark回调1014比较handTargetCardID>0，1048为false则退出；正数1058追加追踪ID，1135按该ID查询当前目标对象，1189设置目标标记，1263/1309调用目标/来源持久化。目标0不能写来源追踪或标记。正目标ID被替换成非反制单位时，此回调没有再次IsGotcha验证；对象移除时仍追加原ID，而对象写入跳过。",
+    "旧手牌回调只提供EventArgs，没有具名整数载荷。Frame.ResolveEventVar对末尾CardID的变量按Trigger/Target或Self推断；当chosen为空时FireTrigger又把事件对象回退到来源，因此原始目标0被错误解析为来源60。旧代码真实Kurmark回调于是追加[60]并把来源标为is_kurmark_target。问题出在参数绑定，不应修改Kurmark的原生回调规则。",
+    "现仅给DoSelectTargetFromHand回调补上handTargetCardID和instigatorID具名整数，保留现有位置参数，目标0不会再被对象回退覆盖。全局VM推断、其他事件及现有eventSubject兼容上下文不作推测性重写。",
+    "新增16个零答复场景：双方、有无有效反制候选、额外次数0/1、直接接口/实际OnPlayedFromHand路径；核对回复目标ID0、qqq0、重复次数消费及来源/候选均不产生错误标记或持久化。另24个真实Kurmark目标生命周期场景：双方、目标不变/同ID换成普通单位/移除、ID策略/对象策略、直接/事件路径；均按原正ID追踪和当前表对象写标记，保持来源CurrentTarget为另一对象。",
+    "正ID替换/移除的24例在旧代码已通过，确认显式GetCardFromID路径本来能读取当前对象；本轮没有因此添加错误的回调前类别重验，也没有把来源CurrentTarget改成被选手牌。隐式eventSubject/Target在所有卡中的等价性仍不由这些结果证明。"
+  ],
+  "validation": [
+    "PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305守卫，三份函数头及脚本当前二次稳定读取均匹配。无游戏进程写入、注入、目标函数调用或自动对局操作。",
+    "verify-rule432.py重解码15501字节并核对整数调用参数与事件包装；执行15组包装/回调AST参考，覆盖-1/0/60/80/INT_MAX及原目标/换单位/移除三种表状态。JSON/对象查找辅助受控，持久化只记录调用参数，不当作完整通知序列化证明。目标0的3组均不进入任何JSON/Persist调用；显式60则确实会标记来源，支持绑定错误的因果区分。",
+    "DeepSeek任务20261026-021200-rule432-target-id-418b185d完成、退出0；提取5条含目标参数的原始AST行，与输入完整结构比对一致。",
+    "同一最终测试布景在旧代码下857通过、1失败/858，退出1；首错为无候选、零次数、直接ID0答复产生tracked60/selfMarkedTrue。24组正ID生命周期场景旧代码已通过。修复后完整selftest858/858通过、退出0；本轮共40个新增场景，未重跑已通过的全套测试。"
+  ],
+  "limits": [
+    "目标被同ID替换/移除使用无头受控策略回调，不是已观测的真实PvP对象复用；不能据此认证转换/创建原语的合法可达性或完整单卡。",
+    "15个AST参考只认证此包装及所选Kurmark回调的控制/参数/操作序列，JSON辅助和持久化协议并非本轮完整实现验证。INT_MAX和显式来源ID测试是输入边界，不代表合法手牌选择。",
+    "修复的是此手牌答复生产入口的具名整数绑定；其他OnHandTargetSelected生产路径、全局VM其他事件推断、隐式Target/Trigger别名、目标在回调内部再次变化等仍需逐项核对。",
+    "来源CurrentTarget未改写不等于所有事件上下文均1:1；跨侧候选池、空源协议、多重等待仍未关闭，完整认证卡数仍为0。"
+  ],
+  "next_work": [
+    "核对其他OnHandTargetSelected生产路径的参数绑定，区分生成/抽牌选择及其来源ID契约。",
+    "继续审计extra_play_triggers的完整JSON数值转换及全局等待队列语义，避免仅用整数/单等待样本代替全部规则。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule432-revalidated-sources-native-20261026.json",
+      "bytes": 1827,
+      "sha256": "ca18510eff0fcdad0de498db8ade5619476c4b012a8c54f51723a5370439feb6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-player-moves-functions-native-20261026.json",
+      "bytes": 4918196,
+      "sha256": "857f22471713a1c37e40dfd312c6999e9bc3469bbbddcfe4520f3174886d2e9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule426-kurmark-functions-native-20261025.json",
+      "bytes": 3494378,
+      "sha256": "eedb797ee6a2dd619e2ef05cd838a6533569e24a7dfaa9f276f0653024dd4675"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule432-revalidate.py",
+      "bytes": 1683,
+      "sha256": "05fd790c8c877a0e4bdd60c0877658b625aaa43fdccef8eaa1d14dad43805765"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule432.py",
+      "bytes": 6266,
+      "sha256": "5604b28b3661280da73f77fbc62cb5aa3204ddcc5f306958eb52c3b2569f2efe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-verified-20261026.json",
+      "bytes": 7791,
+      "sha256": "58ae59c93be4c266d9f56dd41f3fa4414b232c64789276b55cfbbcff92b6466b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-worker\\input.json",
+      "bytes": 5913,
+      "sha256": "88c4d8b6c11fc3bb2751b6be8d563cb8b3188cabefbf2b900f54642d6e5b1468"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-worker\\result.json",
+      "bytes": 3222,
+      "sha256": "260c343c19e2b24bc0d2d1c2b4ee5092058dd3c6380349e709bf29b6c851cca6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-baseline-selftest.log",
+      "bytes": 75779,
+      "sha256": "40091f34736360302c4244b603967d978d8f9b9fb374c168d481654f9ed77a80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-final-selftest.log",
+      "bytes": 75707,
+      "sha256": "9718208ef79a4026624d80d80499bc75ee72c3687a56b4dcb1249e654c98d316"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule432-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 395259,
+      "sha256": "83dc17308c668d0f76394c4720933437169602ffa5b458bc398935c1d14a67fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 2809980,
+      "sha256": "4405910378fd1481615c04f41aaab50eb8c9040543046b0130502de72e58afd0"
+    }
+  ]
+}

@@ -2397,7 +2397,13 @@ public sealed partial class CardApi
             if (replyCard is not null)
                 FireTrigger("OnHandTargetSelected", replyCard, replyCard.Owner,
                     eventArgs: new object?[] { chosen?.CardId ?? 0, selectingId },
-                    eventSubject: chosen);
+                    eventSubject: chosen,
+                    // These are integer parameters. ID 0 must survive even
+                    // when the event has no target object to infer an ID from.
+                    namedArgs: new Dictionary<string, object?> {
+                        ["handTargetCardID"] = chosen?.CardId ?? 0,
+                        ["instigatorID"] = selectingId
+                    });
             return true;
         }, updateExtraTriggers: false, updateExtraBeforeWait: true, replySource: () => replyCard);
         return 0; // Blueprint i45 writes the int32 qqq output, even on cancellation.

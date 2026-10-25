@@ -238,6 +238,8 @@ internal static class SelfTest
         new("手牌选择身份：显式ID优先于receiver/Self，回调归属与无效ID早退", HandSelectionExplicitIdIdentity),
         new("手牌答复前段：额外选择与触发队列先于AfterWait及自动出牌", HandReplyExtraBeforeWait),
         new("手牌答复生命周期：选择/答复重查ID、回调后缓存与等待载荷", HandReplySourceLifecycle),
+        new("手牌目标0：真实Kurmark回调不得把空答复推断为自身ID", HandReplyZeroTargetPayload),
+        new("手牌目标生命周期：正ID不重验类别，回调按ID读取当前对象", HandReplyTargetLifecycle),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21402,6 +21404,75 @@ internal static class SelfTest
                 || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
         }
         return null;
+    }
+
+    private static string? HandReplyZeroTargetPayload(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool hasCandidate in new[] { false, true })
+        foreach (int extra in new[] { 0, 1 })
+        foreach (bool throughEvent in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            source.ExtraPlayTriggers = extra;
+            CardInstance? candidate = hasCandidate ? state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0) : null;
+            int replies = 0;
+            engine.PickHandTargetId = (_, _) => { replies++; return 0; };
+            if (throughEvent) engine.Api.RunCardEffect(source, null);
+            else {
+                var output = engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { 60, 77 },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                if (!handled || !Equals(output, 0)) return "空手牌答复未保留整数输出";
+            }
+            if (replies != extra + 1 || source.ExtraPlayTriggers != 0
+                || engine.LastHandTarget is not { SelectingCardId: 60, ChosenCardId: 0 }
+                || source.CustomJson.ContainsKey("suppressionException") || source.CustomJson.ContainsKey("is_kurmark_target")
+                || candidate is not null && candidate.CustomJson.ContainsKey("is_kurmark_target")
+                || state.ActionLog.SelectMany(a => a.SubActions).Any(a => a.Name == "ZActionPersistCustomFields")
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return $"zero target {side}/{hasCandidate}/{extra}/{throughEvent}: replies={replies},tracked={string.Join(",", engine.Api.JsonGetIntArray(source, "suppressionException"))},selfMarked={engine.Api.JsonGetBool(source, "is_kurmark_target")}";
+            cases++;
+        }
+        return cases == 16 ? null : $"zero target cases={cases}";
+    }
+
+    private static string? HandReplyTargetLifecycle(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mutation in Enumerable.Range(0, 3))
+        foreach (bool objectPolicy in new[] { false, true })
+        foreach (bool throughEvent in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0);
+            var other = state.CreateWithId(PlainUnit, side, 90, side.HqOf(), 2);
+            source.CurrentTarget = other; CardInstance? replacement = null; int policies = 0; bool offered = false;
+            void Mutate(IReadOnlyList<CardInstance> candidates)
+            {
+                policies++; offered = candidates.Count == 1 && ReferenceEquals(candidates[0], target);
+                if (mutation == 0) return;
+                state.Remove(target);
+                if (mutation == 1) replacement = state.CreateWithId(PlainUnit, side, 80, side.HandOf(), 0);
+            }
+            if (objectPolicy) engine.ChooseHandTarget = (_, cards) => { Mutate(cards); return target; };
+            else engine.PickHandTargetId = (_, cards) => { Mutate(cards); return 80; };
+            if (throughEvent) engine.Api.RunCardEffect(source, null);
+            else engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { 60 },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (policies != 1 || !offered || engine.LastHandTarget is not { SelectingCardId: 60, ChosenCardId: 80 }
+                || !engine.Api.JsonGetIntArray(source, "suppressionException").SequenceEqual(new[] { 80 })
+                || engine.Api.JsonGetBool(target, "is_kurmark_target") != (mutation == 0)
+                || replacement is not null && !engine.Api.JsonGetBool(replacement, "is_kurmark_target")
+                || source.CustomJson.ContainsKey("is_kurmark_target") || other.CustomJson.ContainsKey("is_kurmark_target")
+                || !ReferenceEquals(source.CurrentTarget, other) || engine.Api.Vm.FaultedPrograms != 0)
+                return $"target lifecycle {side}/{mutation}/{objectPolicy}/{throughEvent}: old={engine.Api.JsonGetBool(target, "is_kurmark_target")},new={replacement is not null && engine.Api.JsonGetBool(replacement, "is_kurmark_target")}";
+            cases++;
+        }
+        return cases == 24 ? null : $"target lifecycle cases={cases}";
     }
 
     private static string? HandReplySourceLifecycle(CardDatabase db)
