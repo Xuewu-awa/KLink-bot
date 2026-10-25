@@ -20,6 +20,7 @@
     <None Update="Fixtures/pincer-removal-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/json-integer-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/json-add-array-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/json-mixed-array-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

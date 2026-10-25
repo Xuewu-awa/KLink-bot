@@ -1,0 +1,175 @@
+{
+  "rule": "RULE-414",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "eb0c80e43a618aaffd343d45385b69687f8cbab0",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-414",
+    "fresh_blueprint_bodies": 4,
+    "fresh_script_bytes": 3055,
+    "empty_stub_declarations": 4,
+    "reused_native_array_executions": 56,
+    "reused_native_integer_executions": 304,
+    "actual_ast_operation_cases": 52,
+    "actual_ast_post_get_cases": 52,
+    "new_headless_kismet_cases": 208,
+    "new_selftest_entries": 1,
+    "worker_source_lines": 70,
+    "baseline": "1/841 failure;196/208 new cases failed",
+    "final": "841/841 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0,
+    "operations": {
+      "get": 7,
+      "add": 7,
+      "set": 7,
+      "remove": 31
+    }
+  },
+  "findings": [
+    "Current Get819,Set615,Remove1131,Add490byte array Blueprint bodies freshly captured/redecoded and byte-identical to RULE-413. Set writes Found=false at offset522 after constructing/replacing the array. Existing dispatcher returnednull, preserving a stale output slot; fixed scalar returnfalse.",
+    "Compose all4 real Blueprint AST bodies with RULE-413 native element-conversion results, keyed by represented JSON value AND type.52 selected operations:7get,7add,7set,31remove. Each operation followed by actual Get AST, another52executions. Conversion results include Number half-away/int32-range default0,String CRT decimal-prefix/saturation,Boolean0/1,and structured/null default0.",
+    "Get projects an integer list without changing source JSON. Add appends a Number while preserving all previous elements/types. Remove uses first converted-integer equality but deletes the original JSON element by index. Set replaces all members with supplied Number values; its Found out isfalse even after success. Typed Array found flags otherwise follow captured AST.",
+    "CardCustomJson now recognizes full valid JSON array text only under existing explicit Array/IntArray tag5. Ordinary integer writers retain legacy comma projection. Full-array read returns per-element native-compatible integer projections; append/remove preserve remaining JsonElements. Type remains separate and is never inferred for a String-tagged bracketed value.",
+    "Persistence now emits original full-array JSON values rather than converted ints. Immutable string backing means CopyFrom and existing snapshot values/types preserve nested elements without shared mutable nodes; no separate hidden array dictionary or snapshot schema added.",
+    "Existing ordinary Array producers use JsonSetIntArray. These remain compatible. Full arrays can be represented through existing typed Set(key,json,IntArray); this is a simulator representation capability, not proof of a named live-card mixed-array producer or implementation of all generic native JSON functions."
+  ],
+  "validation": [
+    "Current PID24220/module/exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 guarded fresh capture; independent byte/hash/header checks and exact decoder comparison4bodies3055bytes plus4empty Stub declarations. No game writes,injection or live function calls.",
+    "Reuse RULE-413 verified native array/type-slot/CRT evidence; rerun its complete56array/304integer offline model and strict-compare outputs. Not reported as new live native captures. RULE-41452AST operation results and52post-get results independently regenerated/compared; reference fixture equals AST outcome after removing trace paths.",
+    "208real headless Kismet scenarios=52reference rows x2sides x2object/ID routes. Calls use explicit out metadata and seed Found to its opposite; Get also seeds stale integer-list output. Check Get/Add/Set/Remove writeback,integer results,field type,sibling field,preservation of unchanged raw reads/no-match removes,and no implicit persistence.",
+    "Every scenario checks local CopyFrom and pre-operation snapshot isolation; then explicitly persists and compares semantic JSON types/nested values to native-AST reference. Mutating copied backing afterward must not alter source or snapshot. These local storage checks do not certify native card-copy callbacks or snapshot import APIs.",
+    "Before production changes fulltest1/841failure;196/208new scenarios fail. Patched fulltest841/841pass,exit0. Fixture LF and production diff checks pass. Scalar Number getter delegates to shared same-semantics helper; prior340numeric/culture/type scenarios still pass in full suite.",
+    "DeepSeek private pre-patch4file packet produced70exact source-reference lines; primary recreated inventory and compared filenames,line numbers and full text. Job20261025-141640-rule414-array-storage-refs-787a7460 completed exit0. Worker did not edit source or decide semantics."
+  ],
+  "changes": [
+    "CardCustomJson.TryGetJsonArray validates/owns cloned JsonElement from full Array text; SetJsonArray serializes preserved elements to immutable backing. Legacy CSV remains supported.",
+    "CardApi adds type-specific element conversion, saturating ASCII CRT-style decimal-prefix string parser and shared Number converter; Get/Add/Remove handle full arrays and PersistCustomFields serializes their actual types.",
+    "JSON_SetIntArray dispatcher returnsfalse to write native Found. JSON_AddToIntArray returntrue from RULE-413 verified through real Kismet writeback for selected populated/empty-array cases.",
+    "Add portable52row composed-authority fixture and1selftest entry208scenarios; record evidence and boundaries."
+  ],
+  "limits": [
+    "Selected represented-value matrix, not exhaustive Unicode/locale/IEEE754 conversion coverage. String implementation covers ASCII CRT whitespace/sign/decimal-prefix and saturation verified by selected current CRT probes; other locale-dependent digit/space behavior remains uncertified.",
+    "Full arrays use System.Text.Json valid-JSON/default-depth limits. Malformed encodings,invalid shared pointers,nonfinite text and deeper-than-default trees are not certified native-compatible inputs.",
+    "Persistence checks semantic JSON, not exact native text/number spelling/ordering/escaping. Raw full-array strings remain snapshot payloads; canonical semantic state hashes across different JSON spellings are not established.",
+    "AST JSON-map/type/copy/make/array primitives controlled. Native allocator/refcount destruction,GC,diagnostic aborts,concurrency and actual native serializer not executed by these compositions.",
+    "Generic top-level Null/Object fields and complete BlueprintJson library remain separate work. No named-card mixed-array reachability proof and no full PvP/card certification. Version migration paused and fully certified cards0."
+  ],
+  "next_work": [
+    "Audit remaining scalar JSON setter/getter out contracts and full Kismet writeback for missing/wrong-type/null-card contexts.",
+    "Inspect native JSON textual serialization and generic JSON producers/imports before claiming all JSON value types supported; preserve explicit type/provenance boundaries.",
+    "Continue wider PvP primitive and per-card mapping audit without treating selected array matches as exhaustive restoration."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule414-json-array-blueprints-native-20261025.json",
+      "bytes": 4586961,
+      "sha256": "3404f0763bce6294619f9fff3a14a6acc70f772abdb8a5e6899f6cbcedc54d12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule413-json-array-blueprints-native-20261025.json",
+      "bytes": 4586961,
+      "sha256": "3404f0763bce6294619f9fff3a14a6acc70f772abdb8a5e6899f6cbcedc54d12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule413-mixed-array-model-20261025.json",
+      "bytes": 35736,
+      "sha256": "5972574f4b364da9adb0009d45d0b1debbf30f3e16ce74c31e346028bb9f44d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule413-mixed-array.py",
+      "bytes": 8316,
+      "sha256": "678917ac9e642c512ed4183a0abee544223857c2638b56659b5674df7cb8ee97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule413.py",
+      "bytes": 5559,
+      "sha256": "aa565198f64f9d151abfb0dbe31f9d47182d0e3f86873ddfa8499d6f0c6e6943"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule413-verified-20261025.json",
+      "bytes": 557,
+      "sha256": "8ccca2239cea304c3f17c688c511cfa20a42fb862014d513b98790c794642919"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule414-array-blueprints.py",
+      "bytes": 2512,
+      "sha256": "f0cbd1e0abd107a36131fb5835bdfdbaeab86fafecf163a14d4badc47cfd50bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule414-array-composed.py",
+      "bytes": 5743,
+      "sha256": "9bded588e1b74b883482a2ae3aa9f9eccd6d9781c6ca75a0b8acaa5895024331"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-array-composed-model-20261025.json",
+      "bytes": 158608,
+      "sha256": "aef30d3b2e22ffbdb5d8048c0dbf0ed10ccead5162d8548ef6dab34e759591c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule414.py",
+      "bytes": 4186,
+      "sha256": "1ae8aee1265bab784117e630912bee926a733157980d493c425919c4d9ef3e23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-verified-20261025.json",
+      "bytes": 608,
+      "sha256": "e124e2dd88385626ba94c9cf07d9a021d4a85aaf8db24c111914007d37acc923"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-baseline-selftest.log",
+      "bytes": 74369,
+      "sha256": "c9019d2ca1ed9c80610fb3c8c9c83b59cc7a8808b24d3cd0564b6c27057f74ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-patched-selftest.log",
+      "bytes": 74293,
+      "sha256": "a64fe3b749c368d3fef82e9dd436a425ccc8a586d97cf5ec78b9a1916ad213ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-patched-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-worker-packet\\CardCustomJson.cs",
+      "bytes": 1784,
+      "sha256": "2aaf96b1104d4fa0fcc57af117dce21711bc626ea3ee46e4b6e8de9dd5c09207"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-worker-packet\\CardInstance.cs",
+      "bytes": 75078,
+      "sha256": "0deadce39eecb9db612a15b79bb18a4a3dc281382055c0d9ca2c4ed99dc69b1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-worker-packet\\CardApi.cs",
+      "bytes": 326408,
+      "sha256": "d96aa5a62ad87c4f1cfb212fc538dc3b984e8a04a27b004bc40dbb27eb697783"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-worker-packet\\CardApiDispatch.cs",
+      "bytes": 402969,
+      "sha256": "20dcc6bb838057b6bd4f870dcbbc0c5620791d0cad9ceb3c043440d2ab5f478f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule414-worker-packet\\references.json",
+      "bytes": 11092,
+      "sha256": "3b2d99573f07aadd8509312da04655008208efdf63b2f339758f8bc2da096ed4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-mixed-array-reference-20261025.json",
+      "bytes": 26617,
+      "sha256": "7a72ad4e54f283b04121153f95a54ce33b6f5ecedb7b6aa6a3616f1f1ba65389"
+    }
+  ]
+}

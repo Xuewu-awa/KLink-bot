@@ -1165,7 +1165,8 @@ public sealed partial class CardApi
             ["JSON_GetIntArray"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x
                 ? new object?[] { JsonGetIntArray(x, StrArg(a, 1)), x.CustomJson.HasType(StrArg(a, 1), CardJsonType.IntArray) }
                 : new object?[] { new List<int>(), false },
-            ["JSON_SetIntArray"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return null; },
+            // The current Blueprint explicitly writes Found=false after replacing the array.
+            ["JSON_SetIntArray"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetIntArray(x, StrArg(a, 1), AsIntList(a.ElementAtOrDefault(2))); return false; },
             // The Blueprint writes Found=true after append, even for a null card context.
             ["JSON_AddToIntArray"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonAddToIntArray(x, StrArg(a, 1), IntArg(a, 2)); return true; },
             // `JSON_RemoveFromIntArray(card, key, value, out found)`：调用点使用

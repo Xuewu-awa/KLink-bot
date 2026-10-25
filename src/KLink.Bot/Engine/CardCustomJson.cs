@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.Json;
 
 namespace KLink.Bot.Engine;
 
@@ -29,6 +30,27 @@ public sealed class CardCustomJson : IReadOnlyDictionary<string, string>
         _values[key] = value;
         _types[key] = type;
     }
+    // Array keeps its EJson tag separately. Ordinary int arrays may retain the
+    // legacy comma projection; full JSON arrays preserve heterogeneous members.
+    internal bool TryGetJsonArray(string key, out JsonElement array)
+    {
+        array = default;
+        if (!HasType(key, CardJsonType.IntArray) || !_values.TryGetValue(key, out string? raw)
+            || !raw.TrimStart().StartsWith("[", StringComparison.Ordinal))
+            return false;
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            if (doc.RootElement.ValueKind != JsonValueKind.Array) return false;
+            array = doc.RootElement.Clone();
+            return true;
+        }
+        catch (JsonException) { return false; }
+    }
+
+    internal void SetJsonArray(string key, IEnumerable<JsonElement> values)
+        => Set(key, JsonSerializer.Serialize(values), CardJsonType.IntArray);
+
     public bool Remove(string key)
     {
         _types.Remove(key);

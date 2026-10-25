@@ -5011,7 +5011,8 @@ public sealed partial class CardApi
                 {
                     CardJsonType.Number => double.Parse(pair.Value, System.Globalization.CultureInfo.InvariantCulture),
                     CardJsonType.Boolean => pair.Value == "1",
-                    CardJsonType.IntArray => JsonGetIntArray(card, pair.Key),
+                    CardJsonType.IntArray => card.CustomJson.TryGetJsonArray(pair.Key, out var array)
+                        ? (object)array : JsonGetIntArray(card, pair.Key),
                     _ => pair.Value,
                 };
             }
@@ -5042,7 +5043,34 @@ public sealed partial class CardApi
                 System.Globalization.CultureInfo.InvariantCulture, out double value)
             || !double.IsFinite(value) || value < int.MinValue || value > int.MaxValue)
             return 0;
-        return (int)Math.Round(value, MidpointRounding.AwayFromZero);
+        return JsonNumberToInt(value);
+    }
+
+    private static int JsonNumberToInt(double value)
+        => !double.IsFinite(value) || value < int.MinValue || value > int.MaxValue
+            ? 0 : (int)Math.Round(value, MidpointRounding.AwayFromZero);
+
+    private static int JsonArrayElementToInt(System.Text.Json.JsonElement value)
+        => value.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.Number => value.TryGetDouble(out double number) ? JsonNumberToInt(number) : 0,
+            System.Text.Json.JsonValueKind.String => JsonStringToInt(value.GetString() ?? ""),
+            System.Text.Json.JsonValueKind.True => 1,
+            _ => 0,
+        };
+
+    // FJsonValueString's int32 slot calls _wtoi, not the Number rounding slot.
+    // Parse an ASCII decimal prefix after CRT whitespace, saturating at int32.
+    private static int JsonStringToInt(string text)
+    {
+        int i = 0;
+        while (i < text.Length && (text[i] == ' ' || text[i] is >= '\t' and <= '\r')) i++;
+        bool negative = i < text.Length && text[i] == '-';
+        if (i < text.Length && text[i] is '+' or '-') i++;
+        long limit = negative ? 2147483648L : int.MaxValue, number = 0;
+        while (i < text.Length && text[i] is >= '0' and <= '9')
+            number = Math.Min(limit, number * 10 + text[i++] - '0');
+        return (int)(negative ? -number : number);
     }
 
     public void JsonSetInt(CardInstance card, string key, int value) => card.CustomJson.Set(key, value.ToString(System.Globalization.CultureInfo.InvariantCulture), CardJsonType.Number);
@@ -5078,7 +5106,7 @@ public sealed partial class CardApi
         => !string.IsNullOrEmpty(key) && card.CustomJson.Remove(key);
 
     // ---- 卡牌私有 JSON 的数组变体（JSON_GetIntArray / JSON_AddToIntArray）----
-    // 存成逗号分隔字符串，既省内存又天然确定性（字典遍历顺序不影响它）。
+    // 普通整数保留逗号投影；完整 JSON 数组保留每个元素的类型和顺序。
 
     private const char JsonListSeparator = ',';
 
@@ -5088,6 +5116,9 @@ public sealed partial class CardApi
         {
             return new List<int>();
         }
+
+        if (card.CustomJson.TryGetJsonArray(key, out var array))
+            return array.EnumerateArray().Select(JsonArrayElementToInt).ToList();
 
         var result = new List<int>();
         foreach (string part in raw.Split(JsonListSeparator, StringSplitOptions.RemoveEmptyEntries))
@@ -5106,6 +5137,13 @@ public sealed partial class CardApi
 
     public void JsonAddToIntArray(CardInstance card, string key, int value)
     {
+        if (card.CustomJson.TryGetJsonArray(key, out var array))
+        {
+            var elements = array.EnumerateArray().ToList();
+            elements.Add(System.Text.Json.JsonSerializer.SerializeToElement(value));
+            card.CustomJson.SetJsonArray(key, elements);
+            return;
+        }
         var list = JsonGetIntArray(card, key);
         list.Add(value);
         JsonSetIntArray(card, key, list);
@@ -5217,8 +5255,17 @@ public sealed partial class CardApi
             return false;
         }
 
-        list.RemoveAt(index);
-        JsonSetIntArray(card, key, list);
+        if (card.CustomJson.TryGetJsonArray(key, out var array))
+        {
+            var elements = array.EnumerateArray().ToList();
+            elements.RemoveAt(index);
+            card.CustomJson.SetJsonArray(key, elements);
+        }
+        else
+        {
+            list.RemoveAt(index);
+            JsonSetIntArray(card, key, list);
+        }
         return true;
     }
 
