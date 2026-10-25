@@ -1,0 +1,95 @@
+{
+  "rule": "RULE-427",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "30a136220977622f53b94b902e67849b77ee9cc8",
+  "kernel_changed": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "scripted_functions": 7,
+    "script_bytes": 3747,
+    "receive_ast_executions": 42,
+    "picker_prefix_ast_executions": 32,
+    "caller_candidates": 4,
+    "fully_decoded_callers": 2,
+    "incomplete_caller_graphs": [
+      "BP_Logic_C",
+      "MatchController_C"
+    ],
+    "worker_picker_steps": 11,
+    "worker_receive_statements": 26,
+    "worker_status": "completed",
+    "worker_exit_code": 0
+  },
+  "findings": [
+    "NotifySelectHandTargetPending49字节传递cardBeingPlayed；HandleSelectHandTargetPending36字节写入事件帧并以入口11770调用OnlineMatch事件图。完整解码的OnlineMatch图在11770把同一ID传给AddSubActionSelectHandTargetPending，11793退出该分支。",
+    "AddSubActionSelectHandTargetPending320字节在0封装cardBeingPlayed整数，69创建ZActionSelectHandTargetPending子动作。124之后IsClientPlaying只门控两个面板标记；所选封装路径没有取卡所属方的节点。这不是整个上游调用链无所有权约束的证明。",
+    "ReceiveActionSelectHandTargetPending671字节逐项识别ASCII cardBeingPlayed键；重复键最后一个匹配值生效。323调用IsLocalClientTurn，true在360追加pendingCardsSelectingHandTargets，false在429追加enemyPendingCardsSelectingHandTargets；不按请求卡所属方分队。无匹配键案例只证明保留给定初始局部值，不证明真实帧必然是0或残留值。",
+    "autoPickHandTargets2597字节：存在有效选择面板且pendingKill为false时162跳至1805面板分支；其余路径220读取endingTurnForOpponent，239据false/true分别复制本方/敌方待选队列。405在选中队列为空时返回2594，不清队列；非空时415与478清空两侧队列，再清两个面板标记并进入699之后循环。未把面板、等待队列或自动策略照搬到无头规则。",
+    "自动无面板分支998取GetPlayingSide，1027经HandLocationFromSide，1082取该位置的候选；BP_CardFunctions.GetPlayingSide71字节转发GameStateRef.GetPlayingSide。这里只证明参数来源，未认证本轮未采集的原生getter完整实现。",
+    "保留的18375份加载脚本中，按三个目标的FName对及函数指针筛出4个候选：selectTargetFromHand、BP_Logic事件图、BP_OnlineMatch事件图、MatchController事件图；本轮采集时重新核对候选当前字节。离线重扫候选集与保留语料一致。完整解码的是71字节包装和29897字节OnlineMatch图；另外两图不完整，不把候选计作全部真实调用或正常PvP路径。",
+    "本地DoSelectTargetFromHand仍取selecting.Owner手牌。新证据把队列按本地回合与自动处理角色分类的逻辑定位清楚，但没有证明请求源Owner必须等于活动方，也没有证明正常PvP存在不相等请求。因此保留源码差异为未决项，没有依据将通用候选池改为活动方。"
+  ],
+  "validation": [
+    "PID24220、模块和执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305约束只读采集；稳定性重复读取。无进程写入、注入、游戏函数调用或自动对局操作。",
+    "新增tools/audit-hand-selection-queues.py，离线核对脚本长度/哈希、7份非空脚本重解码结果、4个调用候选与保留语料字节；完整调用图重解码一致。空脚本只视为原生声明。",
+    "运行实际捕获接收函数AST42组：本地回合真假、局部整数初值0/77/-1、7组键值含大小写/缺失/重复/无关项；32组自动选择前段AST：处理侧、受控面板有效性、pendingKill和4种两侧队列组合含重复ID。全部通过。GetBoard/IsValid/IsLocalClientTurn受控，自动段在699或外部前沿停止，未运行完整自动选牌、UE原生VM或网络。",
+    "最初离线校验误按函数短名计数，将接口和实现HandleSelectHandTargetPending合并；已改成(owner,name)唯一键，并核对7份脚本，不涉及生产修复。",
+    "DeepSeek私有任务20261026-005934-rule427-queue-b22930fc提取11条自动选牌语句和26条接收函数语句，主agent逐条与原始AST完整匹配；参考执行及规则判断由主agent完成。",
+    "本轮未改C#规则代码或测试布景，因此未重复完整selftest；上一轮记录853/853通过，不能称为本轮新跑。"
+  ],
+  "limits": [
+    "BP_Logic大型事件图在19434遇到不支持的opcode13；MatchController事件图解码断言失败。本轮不扩展解析器，不对两图剩余控制流及调用可达性下结论。",
+    "保留加载脚本的精确字节候选扫描不覆盖未加载资产、原生调用、动态构造函数名、或命中常量但非调用的情况。",
+    "GetPlayingSide、IsLocalClientTurn、动作执行/重连/对手超时的完整状态链仍待核对；没有当前真实跨侧请求快照。",
+    "缺键测试初值人为给定；列表复制采用Blueprint值语义模型，未作别名/并发/重入认证。完整认证卡数仍为0。"
+  ],
+  "next_work": [
+    "定位BP_Logic与MatchController事件图里的精确autoPickHandTargets调用表达式及其控制前沿，先恢复必要语法再追踪正常回合/对手超时路径。",
+    "核对实际选择面板候选来源，以及选择器显式ID与隐式receiver的身份契约，继续判断通用无头选择接口是否需要分场景修复。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule427-hand-queue-functions-native-20261026.json",
+      "bytes": 4609778,
+      "sha256": "0d50094669601c26a775263bfba67a1bd3fbaf62210afb101c3cb599cf8dd893"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule427-hand-queue-callers-native-20261026.json",
+      "bytes": 1293968,
+      "sha256": "dfe8fb09d60bf86e0800e19e8c7381a2f4643892b31a0e54cf8cc6395131afe1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule427-hand-queue.py",
+      "bytes": 2525,
+      "sha256": "52344447aae5f4db38ebeb612488e98859d63a8f470ad01410244ee83cf9e559"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule427-callers.py",
+      "bytes": 3504,
+      "sha256": "d42f3aac046313526bb47f49f80c02122a47077b8dd68a0d374e30a351cdec72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule427-queue-model-20261026.json",
+      "bytes": 45135,
+      "sha256": "2699f81e9963cecdadf0f46f00b20465f014978efa51a9d6b507bd03d90b28a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule427-worker\\result.json",
+      "bytes": 66323,
+      "sha256": "3ffe509ae56a09c155fb4db899ab3d822ce1bb1536560f3afcadc97910150173"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule427-worker-verification-20261026.json",
+      "bytes": 144,
+      "sha256": "33e36d822b553f131db26329908565d5151ea3f96e1342d3b22ab010e48dd2ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\audit-hand-selection-queues.py",
+      "bytes": 13353,
+      "sha256": "09162674ac14c6d8e4c743d3482c8c7e200993379f339f8e23649ff4acd3d419"
+    }
+  ]
+}
