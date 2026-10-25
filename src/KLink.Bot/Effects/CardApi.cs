@@ -4470,9 +4470,9 @@ public sealed partial class CardApi
         }
 
         // ---- ①c 清 customJson：只保留 `suppressionException`（L_0925-0B38）----
-        // `suppressionException` 是**卡自己的**恢复机制：抑制会洗掉整个 customJson，
-        // 唯独把它原样写回，卡（如 `card_unit_gordon_highlanders`）才能在抑制后
-        // 把自己保存的状态读回来。IR 里这个键出现 26 次。
+        // Preserve the existing value and type for later registered events.
+        // Audited card users store Boolean flags, one card ID, or an ID array;
+        // this field is not an automatic unsuppression or whole-object backup.
         // `customName1/2` 也存在 customJson 里（见 `CardApiDispatch.SuffixAdd`），
         // 所以这一句同时完成了蓝图 L_0851/L_0886 的 `customName1/2 = None`。
         // Native i2341 checks field presence; empty strings and empty arrays

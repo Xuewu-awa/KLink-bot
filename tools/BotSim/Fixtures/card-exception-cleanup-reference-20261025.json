@@ -1,0 +1,7684 @@
+{
+  "rule": "RULE-423",
+  "cases": [
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 1,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {
+        "suppressionException": true
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": false,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": false,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {
+        "suppressionException": 41
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-true",
+      "seed_type": 4,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-string",
+      "seed_type": 2,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": ""
+      },
+      "after_suppression": {
+        "suppressionException": ""
+      },
+      "final": {
+        "suppressionException": ""
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": true
+      },
+      "after_suppression": {
+        "suppressionException": true
+      },
+      "final": {},
+      "kredits": 7,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": true,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {},
+      "after_suppression": {},
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing",
+      "seed_type": 0,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": false
+      },
+      "after_suppression": {
+        "suppressionException": false
+      },
+      "final": {
+        "suppressionException": false
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "bool-false",
+      "seed_type": 4,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "own-hq",
+      "seed_type": 3,
+      "seed_raw": "41",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 1
+      },
+      "after_suppression": {
+        "suppressionException": 1
+      },
+      "final": {
+        "suppressionException": 1
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "opponent-hq",
+      "seed_type": 3,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 77
+      },
+      "after_suppression": {
+        "suppressionException": 77
+      },
+      "final": {
+        "suppressionException": 77
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "missing-card",
+      "seed_type": 3,
+      "seed_raw": "77",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 0
+      },
+      "after_suppression": {
+        "suppressionException": 0
+      },
+      "final": {
+        "suppressionException": 0
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "number-zero",
+      "seed_type": 3,
+      "seed_raw": "0",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": "1"
+      },
+      "after_suppression": {
+        "suppressionException": "1"
+      },
+      "final": {
+        "suppressionException": "1"
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "numeric-string",
+      "seed_type": 2,
+      "seed_raw": "1",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": false,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": []
+      },
+      "after_suppression": {
+        "suppressionException": []
+      },
+      "final": {
+        "suppressionException": []
+      },
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": true
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": false,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "owner": 2,
+      "active_same": true,
+      "seed": "empty-array",
+      "seed_type": 5,
+      "seed_raw": "",
+      "producer": true,
+      "suppress": true,
+      "initial_suppressed": false,
+      "after_producer": {
+        "suppressionException": 41
+      },
+      "after_suppression": {
+        "suppressionException": 41
+      },
+      "final": {},
+      "kredits": 10,
+      "hq_smokescreen": {
+        "1": true,
+        "41": false
+      }
+    }
+  ],
+  "boundary": "Actual captured two-card Ubergraph AST entry execution,using captured wrapper entry offsets;producer(optional),audited RULE-422 actual suppression JSON slice(optional),two OnStartOfTurn callbacks. Typed scalar/map,side activity,kredit adjustment,HQ lookup/giver smoke and persist are controlled primitives. Only direct callback composition,not whole game turn/reveal/movement/native getter lifecycle or complete five-card certification.",
+  "registrations": [
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "used": [
+        "OnStartOfTurn"
+      ],
+      "exceptions": [
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_kurmark_aufklarungs",
+      "used": [
+        "OnEndOfTurn"
+      ],
+      "exceptions": [
+        "OnEndOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_infantry_regiment_36",
+      "used": [
+        "OnEndOfTurn",
+        "OnOtherCardReset"
+      ],
+      "exceptions": [
+        "OnEndOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "used": [
+        "OnStartOfTurn"
+      ],
+      "exceptions": [
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_ki_45_dragon_slayer",
+      "used": [
+        "OnOtherCardCreatedAlterCard"
+      ],
+      "exceptions": []
+    }
+  ]
+}

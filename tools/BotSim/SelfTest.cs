@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("实卡例外状态：五卡CDO与海军旅/陆战队抑制后回合清理", CardSuppressionExceptionCleanupReference),
         new("抑制JSON：按字段存在保留空字符串及空数组，保持类型和持久化", SuppressionJsonPresenceReference),
         new("卡牌JSON初始化和重置：独立可写对象、五键选择性清理与幂等", JsonInitializationResetNativeReference),
         new("窃取侧临时副本：JSON语义独立复制与原ID持久化分离", JsonCopyIndependenceReference),
@@ -21319,6 +21320,87 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? CardSuppressionExceptionCleanupReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "card-exception-cleanup-reference-20261025.json")));
+        foreach (var row in doc.RootElement.GetProperty("registrations").EnumerateArray())
+        {
+            var (_, state) = EmptyBoard(db);
+            string name = row.GetProperty("card").GetString()!;
+            var card = state.CreateWithId(name, Side.Left, 60, CardLocation.BoardHqLeft, 1);
+            string[] used = row.GetProperty("used").EnumerateArray().Select(x => x.GetString()!).ToArray();
+            string[] exceptions = row.GetProperty("exceptions").EnumerateArray().Select(x => x.GetString()!).ToArray();
+            if (!card.Definition.UsedTriggers.OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(used.OrderBy(x => x, StringComparer.Ordinal))
+                || !card.SuppressionExceptionTriggers.OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(exceptions.OrderBy(x => x, StringComparer.Ordinal)))
+                return "当前五卡CDO注册或抑制例外不一致：" + name;
+        }
+        static bool Matches(CardApi api, CardInstance card, System.Text.Json.JsonElement expected)
+        {
+            if (card.CustomJson.Count != expected.EnumerateObject().Count()) return false;
+            foreach (var field in expected.EnumerateObject())
+            {
+                var type = field.Value.ValueKind switch {
+                    System.Text.Json.JsonValueKind.String => CardJsonType.String,
+                    System.Text.Json.JsonValueKind.Number => CardJsonType.Number,
+                    System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False => CardJsonType.Boolean,
+                    _ => CardJsonType.IntArray,
+                };
+                if (!card.CustomJson.HasType(field.Name, type)) return false;
+                if (type == CardJsonType.IntArray) { if (api.JsonGetIntArray(card, field.Name).Count != 0) return false; }
+                else if (card.CustomJson[field.Name] != (type == CardJsonType.String ? field.Value.GetString()
+                    : type == CardJsonType.Boolean ? field.Value.GetBoolean() ? "1" : "0" : field.Value.GetRawText())) return false;
+            }
+            return true;
+        }
+        int cases = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            var (engine, state) = EmptyBoard(db);
+            string name = row.GetProperty("card").GetString()!;
+            Side side = (Side)row.GetProperty("owner").GetInt32();
+            state.ActiveSide = row.GetProperty("active_same").GetBoolean() ? side : side.Opposite();
+            state.SetKredits(side, 10); state.SetKredits(side.Opposite(), 10);
+            var card = state.CreateWithId(name, side, 60, name == "card_unit_1st_marines" ? CardLocation.BoardFrontline : side.HqOf(), 1);
+            if (row.GetProperty("initial_suppressed").GetBoolean()) card.Keywords.Add(Keyword.Suppressed);
+            if (row.GetProperty("seed_type").GetInt32() is int type && type != 0)
+                card.CustomJson.Set("suppressionException", row.GetProperty("seed_raw").GetString()!, (CardJsonType)type);
+            if (name == "card_unit_1st_marines")
+            {
+                engine.Api.GiveSmokescreen(state.ById(1)!, 60);
+                engine.Api.GiveSmokescreen(state.ById(41)!, 60);
+            }
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            if (row.GetProperty("producer").GetBoolean())
+            {
+                string callback = name == "card_unit_1st_marines" ? "OnMoveToFrontline" : "OnCardRevealed";
+                var program = KismetLibrary.Default?.FindProgram(name, callback);
+                if (program is null) return "缺少实卡生产事件：" + name + "/" + callback;
+                engine.Api.Vm.Run(program, ctx);
+            }
+            if (!Matches(engine.Api, card, row.GetProperty("after_producer"))) return $"实卡字段生产差异：{name}/{cases}";
+            if (row.GetProperty("suppress").GetBoolean()) engine.Api.SuppressUnit(card, 60);
+            if (!Matches(engine.Api, card, row.GetProperty("after_suppression"))) return $"实卡抑制后字段差异：{name}/{cases}";
+            for (int repeat = 0; repeat < 2; repeat++)
+                engine.Api.FireTrigger("OnStartOfTurn", null, state.ActiveSide, eventArgs: new object?[] { state.Turn });
+            bool expectedSuppressed = row.GetProperty("initial_suppressed").GetBoolean() || row.GetProperty("suppress").GetBoolean();
+            if (!Matches(engine.Api, card, row.GetProperty("final")) || card.IsSuppressed != expectedSuppressed
+                || state.Kredits(side) != row.GetProperty("kredits").GetInt32() || state.Kredits(side.Opposite()) != 10)
+                return $"实卡回合清理差异：{name}/{cases}, kredits={state.Kredits(side)}, json={string.Join(',', card.CustomJson.Keys)}";
+            if (name == "card_unit_1st_marines" && (state.ById(1)!.HasSmokescreen != row.GetProperty("hq_smokescreen").GetProperty("1").GetBoolean()
+                || state.ById(41)!.HasSmokescreen != row.GetProperty("hq_smokescreen").GetProperty("41").GetBoolean()))
+                return $"实卡正ID总部烟幕清理差异：{name}/{cases}";
+            if (engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnsupportedInstructions != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"实卡回调存在VM缺口：{name}/{cases}";
+            engine.Api.PersistCustomFields(card);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            var saved = JsonNode.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal));
+            if (!JsonNode.DeepEquals(saved, JsonNode.Parse(row.GetProperty("final").GetRawText()))) return $"实卡清理后持久化不一致：{name}/{cases}";
+            cases++;
+        }
+        return cases == 320 ? null : $"实卡例外 cases={cases}";
     }
 
     private static string? SuppressionJsonPresenceReference(CardDatabase db)

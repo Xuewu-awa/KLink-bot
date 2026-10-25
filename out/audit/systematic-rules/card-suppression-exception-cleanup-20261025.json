@@ -1,0 +1,288 @@
+{
+  "rule": "RULE-423",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "b39756dbce027beacd2f5eb8e1e70991a7b145fb",
+  "kernel_changed": false,
+  "production_comments_changed": true,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-423",
+    "retained_scripts_scanned": 18375,
+    "literal_users": 6,
+    "card_literal_users": 5,
+    "card_field_calls": 21,
+    "captured_card_functions": 22,
+    "captured_card_script_bytes": 8439,
+    "card_ubergraph_bytes": 6813,
+    "live_cdos": 5,
+    "registered_triggers": 6,
+    "suppression_exceptions": 4,
+    "headless_scenarios": 320,
+    "reference_card_ast_events": 800,
+    "reference_suppression_json_slices": 160,
+    "worker_exact_match": true,
+    "worker_job": "20261025-204628-rule423-card-exception-users-152532aa",
+    "final": "847/847 pass",
+    "kernel_changed": false,
+    "production_comments_changed": true,
+    "fully_certified_cards": 0
+  },
+  "card_uses": [
+    {
+      "card": "card_unit_92nd_naval_brigade",
+      "used": [
+        "OnStartOfTurn"
+      ],
+      "exceptions": [
+        "OnStartOfTurn"
+      ],
+      "type": "Boolean",
+      "role": "揭示时记录，己方回合开始扣回3点并清除；检查typed Found，不检查布尔值为true。",
+      "callbacks": [
+        "OnCardRevealed",
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_kurmark_aufklarungs",
+      "used": [
+        "OnEndOfTurn"
+      ],
+      "exceptions": [
+        "OnEndOfTurn"
+      ],
+      "type": "IntArray",
+      "role": "记录手牌目标ID；回合结束处理直接出手及目标标记清理，再清除本字段。仅解码/登记，未参考执行完整出手链。",
+      "callbacks": [
+        "OnHandTargetSelected",
+        "OnEndOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_infantry_regiment_36",
+      "used": [
+        "OnEndOfTurn",
+        "OnOtherCardReset"
+      ],
+      "exceptions": [
+        "OnEndOfTurn"
+      ],
+      "type": "IntArray",
+      "role": "记录倒计时手牌ID；回合结束递减及完成后移除ID，其他卡重置时也有清理入口。后者不在其抑制例外中。本轮未参考执行完整倒计时链。",
+      "callbacks": [
+        "OnPlayedFromHand",
+        "OnEndOfTurn",
+        "OnOtherCardReset"
+      ]
+    },
+    {
+      "card": "card_unit_1st_marines",
+      "used": [
+        "OnStartOfTurn"
+      ],
+      "exceptions": [
+        "OnStartOfTurn"
+      ],
+      "type": "Number/card ID",
+      "role": "进入前线时保存总部ID；回合开始按该目标所属方是否行动来清理字段与烟幕，不直接按陆战队当前所属方判断。",
+      "callbacks": [
+        "OnMoveToFrontline",
+        "OnStartOfTurn"
+      ]
+    },
+    {
+      "card": "card_unit_ki_45_dragon_slayer",
+      "used": [
+        "OnOtherCardCreatedAlterCard"
+      ],
+      "exceptions": [],
+      "type": "Boolean",
+      "role": "记录升级/同名卡状态，参与创建、进入战场、重置和生成手牌等入口。本轮只做结构/用途核查，不认证完整老兵共享逻辑。",
+      "callbacks": [
+        "OnPlayedFromHand",
+        "OnEnterPlay",
+        "OnOtherCardCreatedAlterCard",
+        "OnCardReset",
+        "OnCardSpawnedInHand"
+      ]
+    }
+  ],
+  "findings": [
+    "对 RULE-419 保留的 18,375 段脚本按 suppressionException 精确 ANSI／UTF16 字面量扫描，只有公共抑制函数和五张实卡 Ubergraph 命中。六段候选重新读取当前内存，字节与保留语料一致，全部完整解码。此范围不包含未加载资产、原生构造键和动态拼接键。",
+    "五张实卡共 21 处直接字段调用：两种 ID 数组、一个卡牌 ID、两种布尔标记。所选写入没有顶层 Null/Object 或整份 JSON 备份，不能据此排除其他路径仍有类型缺口。删除没有证据支持的 Gordon 示例和旧计数注释，改为当前证据支持的字段用途；不声称 Gordon 全游戏不可能间接使用该键。",
+    "22 个当前卡牌函数合计 8,439 字节，包含五个 Ubergraph 6,813 字节、15 个事件包装及两个其他函数。完整解码仅证明结构；ShouldHighlightInHand 不实现为训练规则，IsValidHandTarget 及未选中事件也不算完整参考执行。",
+    "五个当前类默认对象的 usedTriggers 共六项、suppressionExceptionTriggers 共四项，与当前 UEnum 原始表及包装 UFunction 名称对应。OnStartofTurn 的枚举拼写按实际 OnStartOfTurn 包装规范化。四卡为后续清理注册例外，Ki-45 没有例外。类默认数据不是实际对局实例或行为观测。",
+    "两卡参考组合 320 场景：海军旅 192、陆战队 128。包含双方、活动方、字段类型、生产回调有无、抑制有无、海军旅已有抑制状态；执行生产事件及两次回合开始共 800 个卡牌 AST 事件，交叉 160 次 RULE-422 抑制 JSON 切片。JSON、指挥点、总部查找、烟幕等使用明确受控原语。",
+    "海军旅：OnCardRevealed 在未抑制时设置 Boolean true；OnStartOfTurn 检查己方活动及 Boolean 类型 Found，故已有 false 字段也扣3点，随后清除并持久化。抑制例外允许之后清理；重复回调不再扣费。",
+    "陆战队：移动事件保存正 ID 总部；回合开始仅在字段为 Number、目标存在且目标所属方活动时清除标记，并移除自己提供的烟幕。保留对手总部 ID 的场景可以在陆战队自身非活动方时清理。重复回调及缺失／错误类型／无效ID不重复移除。",
+    "本地新增回归使用真实卡定义、真实 IR 生产回调、正常抑制 API 及正式 OnStartOfTurn 派发，复核五卡 CDO 注册和 320 组合的字段、类型、指挥点、总部烟幕、VM缺口计数及最终持久化。所选行为与参考一致，没有新增规则行为修复。"
+  ],
+  "validation": [
+    "当前 PID 24220、模块及执行程序 SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 守卫的只读采集。原始脚本、符号表、类头／继承链、CDO位、TArray头／字节、UEnum表均独立复核。没有进程写入、注入、游戏函数调用或自动操作对局。",
+    "重跑原始语料检查工具，校验全压缩语料及逐脚本哈希，再独立重做字面量筛选并核对六个候选。卡牌元数据与五卡脚本重解码一致；对所选生产／清理入口的四个包装偏移逐项核对。",
+    "主 agent 重跑 320 参考场景，结果经 JSON 字典键序列化规范化后与保留产物完全一致；对仓库 fixture 和五卡注册表完整比对。原生分配和局部共享引用不是该模型的验证对象。",
+    "DeepSeek 私有任务返回五卡 21 处字段调用，主 agent 对完整节点及语句偏移逐项核对一致，无修补。任务 20261025-204628-rule423-card-exception-users-152532aa 退出码0。",
+    "新增测试最初将测试辅助方法 Opposite 拼为 Opponent，编译失败；修正测试后完整 selftest 847/847 通过，退出码0，原846项仍通过。不把测试编译错误当作产品缺陷；无生产行为差异，不构造修复前失败基线。",
+    "生产文件差异严格等于三行注释替换，已对固定基线 b39756dbce027beacd2f5eb8e1e70991a7b145fb 比较。当前测试通过后仅修订注释，没有改变规则代码。"
+  ],
+  "limits": [
+    "字面量使用清单仅限保留的已加载语料，不能称 suppressionException 全游戏调用穷尽清单；未加载、原生和动态键仍未排除。",
+    "仅两卡的所选回调组合完成参考及本地对照，不认证整场移动、揭示、回合初始化、全部指挥点／烟幕原语或这五张卡的全部逻辑。",
+    "Kurmark 完整出手、步兵倒计时、Ki-45 老兵／同名卡状态链仅登记/解码，尚未完成同等级对照；当前活卡完整认证数仍为0。",
+    "CDO采集模板的通用scope文字沿用旧版，实际代码按这五类和CDO位筛选，结果不含实际对局卡牌。以原始头、枚举、数组及筛选条件为准。",
+    "本轮未封闭顶层Null/Object表示、无效JSON、原生对象别名、OOM、GC或语言/版本迁移等既有边界。"
+  ],
+  "next_work": [
+    "对步兵第36团的倒计时手牌列表完成真实 DecrementCountdown、丢弃和 OnOtherCardReset 重入对照，覆盖删至空数组后抑制。",
+    "单独核对 Kurmark 回合末出手与反制激活序号门；不将当前手牌目标判定或出手实现预先认证。",
+    "后续核对 Ki-45 同名卡共享标志与 MakeVeteran 路径，保持选定回调认证和完整单卡认证的区别。"
+  ],
+  "reference_boundary": "Actual captured two-card Ubergraph AST entry execution,using captured wrapper entry offsets;producer(optional),audited RULE-422 actual suppression JSON slice(optional),two OnStartOfTurn callbacks. Typed scalar/map,side activity,kredit adjustment,HQ lookup/giver smoke and persist are controlled primitives. Only direct callback composition,not whole game turn/reveal/movement/native getter lifecycle or complete five-card certification.",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-card-trigger-cdos-native-20261025.json",
+      "bytes": 3443188,
+      "sha256": "f80bce7c41b0fc8c9a2e7d5668de05a05b9b9fb3b52bf15ff93d0f94c75550da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-card-wrappers-native-20261025.json",
+      "bytes": 3680400,
+      "sha256": "a15e12dfa5bea9f5fcd79469102226a3fca52a575cd719a30fc46108de98edee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-exception-literal-users-native-20261025.json",
+      "bytes": 392702,
+      "sha256": "48ad1a8852483f90067150c79f4ba9d00039e91ad3e3d10784705b0b2dae59a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-trigger-enum-native-20261025.json",
+      "bytes": 3140240,
+      "sha256": "805b6e4f07890be573f11032a9213ca37ff1a4c344fccbefa8d21430331a4333"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-json-array-callers-native-20261025.json",
+      "bytes": 8682399,
+      "sha256": "a87aeb9558dfe0301ce455fc55f5c3eb03e59036a46029fd1ba01bf2f324f963"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-script-corpus-20261025.bin.gz",
+      "bytes": 2734804,
+      "sha256": "0407b163e0c202c1bef0d7086a4e01e216042d2bde1b5e223a43f3cd4adb9a96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-json-array-caller-proof-20261025.json",
+      "bytes": 89460,
+      "sha256": "b5c25fc5a685eb6971c651380ad3e3b9f09f0e909de47a5879c64b939a4224e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-json-array-interfaces-native-20261025.json",
+      "bytes": 4729003,
+      "sha256": "9a0f9cd29113673be3731d130507ad99422186bcc5d69dd2869f250eef0adb29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule415-json-scalars-native-20261025.json",
+      "bytes": 4552836,
+      "sha256": "94a543904f37d4bc5a7d0e8678f6cfb837dcf7635af412fef78693067a7dbd1a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule422-suppression-functions-native-20261025.json",
+      "bytes": 4716841,
+      "sha256": "110cd6adb09e245de720a9c8907a60e9962d3ef36ab73ee3f3d5ac69dfae362b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule423-card-cdos.py",
+      "bytes": 2660,
+      "sha256": "0074eb647cea60fb8189e8623885516a52e163e7c75715ed28fc95932baf75d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule423-card-wrappers.py",
+      "bytes": 2577,
+      "sha256": "04e8b0c4a74ca240ceffe11842323107f4c56b269a0dd9e95bb1092ec08f3e26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule423-enum.py",
+      "bytes": 2838,
+      "sha256": "f18894b7db398fcfc4db4a8107711bdcf2217b00ec0fab008eb5e8ccbdf59b52"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule423-exception-users.py",
+      "bytes": 3317,
+      "sha256": "97dfc31617938f74f5279faee9e15f0a961c944d800df7315b5516a1cf36da23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule423-card-cleanup.py",
+      "bytes": 8830,
+      "sha256": "cb4a46bf5d0253e2b1efb0931baa66fa1811b336a9668040551f1ed265435df7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-card-cleanup-ast-model-20261025.json",
+      "bytes": 389676,
+      "sha256": "9de5879e10c7228035971df972b3ca6eb19fb288a7d6db6bae73ac696f426342"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-card-cleanup-reference-20261025.json",
+      "bytes": 170864,
+      "sha256": "d619c958bdb96b681d40bc0ccc17c1516b51bb37508fd4cfe7fdd73a36120a00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-verified-20261025.json",
+      "bytes": 672,
+      "sha256": "203167e9afc57c3d61ba065cdb55c7e5ed0f65d8e5bd2f04754c457409433ea3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule423.py",
+      "bytes": 7935,
+      "sha256": "f8a44ee13214cb2c53ea8dd2d173f0570e510f3fe45b1428c4409f4f4d308a97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule422-suppression-json.py",
+      "bytes": 6018,
+      "sha256": "458e0f9cea55c47b30cbd8955abf9d3c4bc97c5645f958ed155884ad71acd473"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-selftest.log",
+      "bytes": 74804,
+      "sha256": "f97ceec2ac2fb87df74fe13ceeba66bd4913e9dce94d11dfe2479d1a4b24eac4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-initial-compile.log",
+      "bytes": 1022,
+      "sha256": "101496f947ab9a0d195f7773454e9f97eb312b0c89bdb261f02ddb962871c2bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-initial-compile.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-worker-packet\\input.json",
+      "bytes": 97096,
+      "sha256": "e4bba3c6cdb788515fe5e7ab2f316c8ea5c7e90f526f4a6a466b0dedcf875fcb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-worker-packet\\output.json",
+      "bytes": 13110,
+      "sha256": "5bb4494f14986cc5b2ba300ffd8f14fdc24ba5829f142ac53cf5a232d85cead7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule423-worker-packet\\task.txt",
+      "bytes": 494,
+      "sha256": "fab219822ff18599098168fbb371be42ab4aac240d77ca9cc8943485bc3f3593"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-204628-rule423-card-exception-users-152532aa\\job.json",
+      "bytes": 742,
+      "sha256": "4ed6b0efae4db074e4dd130d754b9059d043fc5457335addebf4290524f33a95"
+    }
+  ]
+}
