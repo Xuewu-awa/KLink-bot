@@ -1,0 +1,179 @@
+{
+  "rule": "RULE-412",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "8e8fb120afe143dd2ada5be5762fb7eef1f24050",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-412",
+    "fresh_blueprint_bodies": 3,
+    "fresh_script_bytes": 2211,
+    "native_fragments_verified": 11,
+    "offline_native_number_cases": 112,
+    "portable_numeric_reference_rows": 28,
+    "headless_scenarios": 340,
+    "new_selftest_entries": 1,
+    "baseline": "1/839 failure;44/340 new scenarios failed",
+    "final": "839/839 pass",
+    "worker_nodes": 6,
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Fresh JSON_GetInt261byte Blueprint checks EJson::Number=3 before calling Conv_JsonValueToInteger; found=true after this call even if int32 conversion fails. Wrong top-level types/missing field return0,false. No change to this existing typed dispatch gate.",
+    "Current JsonMakeInt and JsonMakeFloat both construct the Number class at13bb790. Constructor-derived vtable +0x30 targets13cc690; its +0x50 numeric getter13cc860 reads stored double. Converter wrapper4518a50 initializes output0, calls integer slot and copies output regardless of the slot success flag.",
+    "Integer slot accepts double in inclusive[-2147483648,2147483647] BEFORE rounding. Outside this range it does not write its initialized result, yielding0. Accepted values call12ca2f0 then cvttsd2si. This helper uses PE-proven CRT modf and compares fractional parts with +/-0.5, producing nearest integer with ties away from zero.",
+    "Previous headless JsonGetInt used int.TryParse and incorrectly returned0 for fractional and exponent-form Number projections. It now parses invariant double, checks finite/range and applies MidpointRounding.AwayFromZero. Example0.5=>1,1.5=>2,-1.5=>-2,1e2=>100;2147483647.5 remains0, rather than rounding or clipping.",
+    "Boolean vtable currently shares integer conversion13cc690, with getter13cc840 converting Boolean to double0/1. This does not bypass JSON_GetInt Number gate; no top-level bool-to-int acceptance was added. Boolean/mixed-array full converter models remain outside this round."
+  ],
+  "validation": [
+    "Guarded current installed exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305, PID24220/module and fresh UFunction headers. Read-only native captures matched executable bytes; relocated vtable entries compared by RVA. No process writes, injection or game function invocation.",
+    "Independently re-decoded3 nonempty Blueprint bodies2211bytes and checked native raw hashes/disk equality, vtable relocation, constants, PE import descriptor/lookup/name for modf.11 captured native records include a repeated shared integer slot; count is not11 distinct rule implementations.",
+    "112 offline Unicorn executions of complete integer wrapper +Number getter +shared integer slot +round helper:28 represented double values x2 engine parameter-stepping routes x2 borrowed-reference aliases. Engine Step and CRT modf controlled hooks; null shared controllers avoid lifetime handling. Results and guard bytes checked.",
+    "Portable28row fixture comes from captured native-byte execution, not headless implementation.340 headless scenarios cover28values x3 top-level types x2sides x2cultures plus4missing-key cases; check direct getter, dispatcher result/found, unchanged fields and no persistence.",
+    "Before production patch, full test1/839 failure with44/340 new scenarios failing. After patch839/839 pass, exit0. Fixture and complete model outcome independently regenerated/compared; portable fixture uses LF.",
+    "DeepSeek private packet mechanically extracted6 integer/array conversion sites. Primary independently compared each complete statement, owner, function and byte offset. Job20261025-125156-rule412-json-calls-f4dfb5cb completed exit0; no worker semantic judgment used."
+  ],
+  "limits": [
+    "Numbers are supplied as represented doubles to native conversion. Native JSON textual parser/serializer, every IEEE754 value, NaN/Infinity input acceptance and allocator/diagnostic/GC/concurrency behavior are not certified.",
+    "Engine argument stepping and CRT modf are explicit model hooks; actual CRT machine code, transient shared-ref destruction and live gameplay transitions were not executed by these reference cases.",
+    "Current integer-array projection remains comma-separated int text. Fractional numeric members, Boolean/String/Null/Object/nested-array conversion and element type retention need further evidence and may require a richer JSON representation. This scalar fix does not claim those array differences resolved.",
+    "Wrong-type synthetic fields test the top-level Number gate only. They do not assert those malformed field combinations are valid client-generated JSON. No individual card fully certified; no full PvP equivalence claim."
+  ],
+  "next_work": [
+    "Capture String/Null/Array/Object conversion vtables and actual +0x50 behavior; model mixed array elements through integer conversion before changing storage or array getters.",
+    "Inspect all producers/copy/persistence consumers before replacing comma-separated array projection, preserving actual JSON element types and remove-first conversion semantics.",
+    "Continue wider PvP primitive audit; card version migration remains paused."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-conversions-native-20261025.json",
+      "bytes": 4564963,
+      "sha256": "105e5f60557b20c07dd2c280dc866012ca6a0863417cceb19bc7cf3821177017"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-makers-native-20261025.json",
+      "bytes": 4489879,
+      "sha256": "39e77e54aa04ed8fa7c4d0e75bd7dd0ef134ddfae67e9cf5d11ac704cde228a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-converter-native-20261025.json",
+      "bytes": 35383,
+      "sha256": "732b3fd7ae4da6c5dde780e9a9f43b8fcb9932257c0e18955df18f6c719a77ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-maker-bodies-native-20261025.json",
+      "bytes": 60843,
+      "sha256": "7266c7b8df46d7ce20287cebfa0148dd7f508c57b189a3f562ca2de0e1b718c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-number-slots-native-20261025.json",
+      "bytes": 11218,
+      "sha256": "22d13d8eb27743f1ad875fd0ea861b5bd147cf3310a3e3cc7f1770b9510446cc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-json-round-native-20261025.json",
+      "bytes": 8350,
+      "sha256": "30ba22bcd6ee4993522c7f3c96fb4048a069caf7b79d43488cf528057027a82d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule412-modf-import-20261025.json",
+      "bytes": 480,
+      "sha256": "d8937690eefdc14696b2196e816e6eef3716dfdbff42b2b7894eed7060753d72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-json-conversions.py",
+      "bytes": 2550,
+      "sha256": "cd482e757fa79225866f4fe2c65b172850aafb92fb78635db5eeab8e885a2afb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-makers.py",
+      "bytes": 2416,
+      "sha256": "cbb88a168cd6ee400525d317771176cb579c0e66e1d6a19f90cd82ec4a968cb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-converters.py",
+      "bytes": 2900,
+      "sha256": "57db7443662d63ab4f85df2ac230e7a64b945d108a5769f54f08588d196782b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-maker-bodies.py",
+      "bytes": 2901,
+      "sha256": "163026461d6bbabf970bae0fbf45a98df0e0a3c3b20e2f93ebc20677ae7a0522"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-slots.py",
+      "bytes": 3364,
+      "sha256": "4456fb724b5f88f3fcfce794bf5a5583e59c8c7917a4972558efd2823c0bdd49"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-round.py",
+      "bytes": 3433,
+      "sha256": "0f4b852aa0cd8463070f5fdc706a8a3989a86199d279e57034a3c86e37b0fc43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule412-import.py",
+      "bytes": 2591,
+      "sha256": "aad0dbed52ffe84bd84260f1a52baa04e9aa0d64da086afab1e83f14d02820f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule412-json-integer.py",
+      "bytes": 4327,
+      "sha256": "44f925dfb49b7b60606298ff451e18f86cd1086e9388fa2228b8880cdcd1d0ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule412.py",
+      "bytes": 5314,
+      "sha256": "57e24a9230cc418abb85d8a074ab961d2faf49d954be6243bb0dad4bf77da589"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-json-integer-model-20261025.json",
+      "bytes": 15930,
+      "sha256": "4cce5aa05938792dc2733a8724e714e3d059023e5c3f65b872c3bedfc91e6142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-verified-20261025.json",
+      "bytes": 434,
+      "sha256": "4b1eccc3b3297de32d032a5ceee16dfea1da8cc38f6fbd3b0cba9f8745ce1dd6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-baseline-selftest.log",
+      "bytes": 74198,
+      "sha256": "2d8c1d15d8952bdcb40b4697516e56eeb6ef85f971b58a5585de4929f5793177"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-patched-selftest.log",
+      "bytes": 74120,
+      "sha256": "6cceb1f36a4e9b3ce37934c572d721e8ed326472414aa36356f64eaa39fb6664"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-patched-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-integer-reference-20261025.json",
+      "bytes": 1824,
+      "sha256": "4ecde1a5e8e4e886c9e8e9deae5fb0dfb95f71b15ee6de7b676f6a6e2124480b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-worker-packet\\input.json",
+      "bytes": 33683,
+      "sha256": "1740a045c9808f03c9d8721a14d5bffcad6fb3d670407709549bd945fec1fb49"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-worker-packet\\result.json",
+      "bytes": 7382,
+      "sha256": "c5ec058ce3a5676e75f3be54e2e382353a551374f609ca64aa7a005088dc9005"
+    }
+  ]
+}

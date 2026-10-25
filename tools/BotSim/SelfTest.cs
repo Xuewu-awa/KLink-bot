@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("JSON整数读取：原生范围检查、半数远离零取整及类型门", JsonIntegerNativeReference),
         new("持久化通知：名称字段、JSON类型、转义及刷新开关", PersistCustomFieldsPayload),
         new("数组RemoveItem：删除全部匹配，返回是否移除，保序且再次调用为false", ArrayRemoveItemAllMatches),
         new("数组Remove：按下标只删一项，越界不改数组，区别于按值删除", ArrayRemoveUsesIndex),
@@ -21311,6 +21312,51 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonIntegerNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-integer-reference-20261025.json")));
+        var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
+        int cases = 0, failures = 0; string? first = null;
+        try
+        {
+            foreach (string culture in new[] { "en-US", "fr-FR" })
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+                var (engine, state) = EmptyBoard(db);
+                var card = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+                var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+                foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+                foreach (CardJsonType type in new[] { CardJsonType.Number, CardJsonType.String, CardJsonType.Boolean })
+                {
+                    string text = row.GetProperty("text").GetString()!;
+                    int expected = type == CardJsonType.Number ? row.GetProperty("result").GetInt32() : 0;
+                    card.CustomJson.Set("auditNumber", text, type);
+                    int direct = engine.Api.JsonGetInt(card, "auditNumber");
+                    object? result = engine.Api.InvokeByName("JSON_GetInt", card,
+                        new object?[] { card, "auditNumber" }, ctx, out bool handled);
+                    if (direct != expected || !handled || result is not object?[] values || values.Length != 2
+                        || !Equals(values[0], expected) || !Equals(values[1], type == CardJsonType.Number)
+                        || card.CustomJson["auditNumber"] != text || card.CustomJson.TypeOf("auditNumber") != type)
+                    {
+                        failures++; first ??= $"{culture}/{side}/{type}/{text}: got {direct}, expected {expected}";
+                    }
+                    cases++;
+                }
+                object? absent = engine.Api.InvokeByName("JSON_GetInt", card,
+                    new object?[] { card, "absent" }, ctx, out bool absentHandled);
+                if (!absentHandled || absent is not object?[] a || !Equals(a[0], 0) || !Equals(a[1], false)
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields"))
+                    return "JSON整数读取改变了字段、found缺省值或触发持久化";
+                cases++;
+            }
+        }
+        finally { System.Globalization.CultureInfo.CurrentCulture = originalCulture; }
+        return failures != 0 ? $"JSON整数参考 {failures}/{cases} failures; {first}"
+            : cases == 340 ? null : $"JSON整数参考 cases={cases}";
     }
 
     private static string? PersistCustomFieldsPayload(CardDatabase db)

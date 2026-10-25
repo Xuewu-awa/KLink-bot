@@ -5033,7 +5033,17 @@ public sealed partial class CardApi
     // ---- 卡牌私有 JSON（JSON_* 一族，被 19~21 套牌需要）----
 
     public int JsonGetInt(CardInstance card, string key)
-        => card.CustomJson.HasType(key, CardJsonType.Number) && card.CustomJson.TryGetValue(key, out string? v) && int.TryParse(v, out int i) ? i : 0;
+    {
+        // Native FJsonValue int conversion checks the double before rounding.
+        // Half values round away from zero; failed/out-of-range reads keep zero.
+        if (!card.CustomJson.HasType(key, CardJsonType.Number)
+            || !card.CustomJson.TryGetValue(key, out string? raw)
+            || !double.TryParse(raw, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double value)
+            || !double.IsFinite(value) || value < int.MinValue || value > int.MaxValue)
+            return 0;
+        return (int)Math.Round(value, MidpointRounding.AwayFromZero);
+    }
 
     public void JsonSetInt(CardInstance card, string key, int value) => card.CustomJson.Set(key, value.ToString(System.Globalization.CultureInfo.InvariantCulture), CardJsonType.Number);
 
