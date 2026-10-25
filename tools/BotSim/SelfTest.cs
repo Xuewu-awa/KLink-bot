@@ -235,6 +235,7 @@ internal static class SelfTest
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("Kurmark验证器：反制与typed真标记、已激活候选及取消选择", KurmarkValidatorReference),
+        new("手牌选择身份：显式ID优先于receiver/Self，回调归属与无效ID早退", HandSelectionExplicitIdIdentity),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21399,6 +21400,72 @@ internal static class SelfTest
                 || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
         }
         return null;
+    }
+
+    private static string? HandSelectionExplicitIdIdentity(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int receiverKind in Enumerable.Range(0, 4))
+        foreach (bool hasSelf in new[] { false, true })
+        foreach (bool vm in new[] { false, true })
+        foreach (int requestId in new[] { 60, 0, -1, 999 })
+        foreach (int reply in Enumerable.Range(0, 3))
+        {
+            if (requestId != 60 && reply != 0) continue;
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var selecting = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            var decoy = state.CreateWithId(PlainUnit, side, 61, side.HqOf(), 2);
+            var target = state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0);
+            state.CreateWithId(PlainUnit, side, 81, side.HandOf(), 1);
+            object? receiver = receiverKind == 0 ? selecting : receiverKind == 1 ? decoy
+                : receiverKind == 2 ? "Default__BP_CardFunctions_C" : null;
+            var context = new EffectContext { Engine = engine, State = state,
+                Self = hasSelf ? decoy : null, Controller = side };
+            int calls = 0; CardInstance? callbackSource = null; int[] offered = Array.Empty<int>();
+            engine.PickHandTargetId = (source, cards) => {
+                calls++; callbackSource = source; offered = cards.Select(card => card.CardId).ToArray();
+                return reply == 0 ? (int?)null : reply == 1 ? 999 : 80;
+            };
+            object? output;
+            if (vm)
+            {
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "selectTargetFromHand", new KismetExpr[] {
+                        new() { Int = requestId }, new() { Var = "qqq", Scope = "local" }
+                    }, new[] { 1 }, null, null, -1, null, null) {
+                        Receiver = new KismetExpr { Var = "receiver", Scope = "local" }
+                    },
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                }, 0);
+                output = engine.Api.Vm.RunLocalProgramMulti(program, context,
+                    new Dictionary<string, object?> { ["receiver"] = receiver, ["qqq"] = 77 }, "qqq")["qqq"];
+            }
+            else
+            {
+                output = engine.Api.InvokeByName("selectTargetFromHand", receiver, new object?[] { requestId, 77 }, context, out bool handled);
+                if (!handled) return "显式ID手牌选择未进入派发表";
+            }
+            string label = $"{side}/receiver={receiverKind}/self={hasSelf}/vm={vm}/id={requestId}/reply={reply}";
+            if (!Equals(output, 0)) return $"{label}: qqq未写整数0";
+            if (requestId == 60)
+            {
+                if (calls != 1 || !ReferenceEquals(callbackSource, selecting) || !offered.SequenceEqual(new[] { 80 }))
+                    return $"{label}: 显式ID未控制选择卡/验证器，calls={calls},source={callbackSource?.CardId},offered={string.Join(",", offered)}";
+            }
+            else if (calls != 0) return $"{label}: 无效ID错误回退到receiver/Self";
+            bool chosen = requestId == 60 && reply == 2;
+            if (chosen ? engine.LastHandTarget is not { SelectingCardId: 60, ChosenCardId: 80 } : engine.LastHandTarget is not null)
+                return $"{label}: 选择回执归属错误";
+            if (!engine.Api.JsonGetIntArray(selecting, "suppressionException").SequenceEqual(chosen ? new[] { 80 } : Array.Empty<int>())
+                || selecting.CustomJson.ContainsKey("suppressionException") != chosen
+                || engine.Api.JsonGetBool(target, "is_kurmark_target") != chosen
+                || decoy.CustomJson.ContainsKey("suppressionException")) return $"{label}: 实际Kurmark回调状态归属错误";
+            if (engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"{label}: VM故障或未实现调用";
+            cases++;
+        }
+        return cases == 192 ? null : $"手牌显式ID cases={cases}";
     }
 
     private static string? KurmarkDiscardBeforeEndCleanup(CardDatabase db)

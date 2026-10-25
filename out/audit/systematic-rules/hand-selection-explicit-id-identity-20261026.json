@@ -1,0 +1,120 @@
+{
+  "rule": "RULE-429",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "6ba2c6abfa22090aa1d78521b7c673fa9221334b",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-429",
+    "date": "2026-10-26",
+    "loaded_card_callers_redecoded": 33,
+    "reference_function_records_redecoded": 9,
+    "exact_card_id_arguments": 33,
+    "exact_worker_rows": 33,
+    "headless_identity_cases": 192,
+    "baseline": "853 passed,1 failed /854",
+    "final": "854/854 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0,
+    "boundary": "Loaded exact-reference corpus only. Explicit-ID identity contract plus same-side headless selection. Invalid IDs only prove headless rejection without receiver fallback; no full client invalid-notification/queue lifecycle proof. All observed33 card callers use own CardID; not33 demonstrated live card regressions."
+  },
+  "findings": [
+    "客户端selectTargetFromHand71字节在0把显式cardSelectingHandTarget传给NotifySelectHandTargetPending，45写qqq整数0。通知/入队链在RULE-427保留原ID；autoPickHandTargets在888从待选ID数组取元素，947 GetCardFromID，979赋给_cardSelectingHandTarget，1541在该对象上执行IsValidHandTarget，1673/2414把该对象CardID写入答复。CardFunctions receiver不是选择卡身份来源。",
+    "本地DoSelectTargetFromHand旧代码AsCard(r)??c.Self忽略参数0。显式ID与接收者或Self不相同时会把候选验证、选择回执和回调错误归到另一张卡；非正/缺失对象ID还会回退到不相关卡。现GetCardFromID(IdOf(a[0]))按当前状态表解析显式ID，未找到对象则沿既有返回0路径结束，不从receiver/Self补卡。",
+    "保留加载语料按selectTargetFromHand精确FName对与函数指针筛出33个单卡图，当前字节重新读取一致，33份图均完整重解码。逐个真实AST调用都是cardFunction接收者、参数0为本卡CardID、参数1为qqq局部槽。现有正常自卡调用的ID通常与Self一致；不能把33个引用声称为33张已证实发生此错误的实战卡牌。",
+    "新增192个同侧身份场景：双方、4种接收者（显式选择卡/不同普通单位/服务标记/null）、Self为不同普通单位或null、直接派发及真实VM调用。有效ID60含取消/null、无效答复999、有效选择80；无效选择卡ID0/-1/999只运行一次策略布景并核对不调用策略。有效请求必须使用Kurmark验证器，只提供反制80而非普通单位81；有效答复必须记SelectingCardId60/ChosenCardId80并执行真实Kurmark追踪/标记回调。",
+    "ID60有效场景96组，无效选择卡ID场景96组。所有组合核对int32 qqq覆盖旧槽77为0、回调对象身份、候选列表、取消/无效答复无追踪、有效答复源及目标状态、decoy不承接追踪字段，且VM无故障或未实现调用。ActiveSide始终等于Owner，不借此认证跨侧候选池。",
+    "清理该方法已过时的注释：移除把过去回放当作规则依据的叙述、已不符合当前实现的“局部验证器未收录/硬编码镜像”说明，以及把选择事件源说成被选卡的错误表述。改为记录当前显式ID、局部验证器、事件源和仍未决的候选池边界。"
+  ],
+  "validation": [
+    "只读采集PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305受既有守卫约束；从保留加载语料筛选候选后核对当前函数头/脚本字节，结束前重复稳定性读取。无进程写入、注入、游戏函数调用或自动对局操作。",
+    "verify-rule429.py重解码33份单卡调用图及9份引用函数记录，校验长度/哈希/AST和关键参数节点。DeepSeek私有任务20261026-012340-rule429-id-arguments-6e8e40d8完成、退出0；33行接收者/参数/出参提取与原始捕获AST逐字段一致。",
+    "同一最终测试布景在旧生产代码下853通过、1失败/854，退出码1。首个失败为显式ID0却回退到接收者，未把它冒称为有效异卡ID的实机观测。修复后同一套selftest全部854项通过、退出码0，新测试聚合192个场景。",
+    "全套回归后只调整方法注释，没有再改执行逻辑或测试布景；未因纯注释变动重复全套测试。SelfTest.cs保留原UTF8 BOM；未触碰受保护的既有未跟踪采集文件。"
+  ],
+  "limits": [
+    "有效异卡ID测试是有权威参数/查找链依据的无头接口回归，未证明普通单卡调用实际会传入与Self不同的ID；当前33个采集调用均用自身CardID。",
+    "无效ID只认证无头适配不制造另一张选择卡及固定出参0；没有还原/认证客户端无效ID通知、等待队列、面板空上下文或最终网络答复的全生命周期。测试中的null receiver属于本地派发/VM适配场景，不是对原生空Context调用行为的证明。",
+    "保留语料精确引用扫描不覆盖未加载资产、原生或动态命名调用；33不是全部可能调用者的穷尽证明。",
+    "跨侧候选来源、完整自动选牌/面板/超时/重连协议仍未决。本轮未改手牌所属方策略、回调调度或整张卡逻辑，完整认证卡数仍为0。"
+  ],
+  "next_work": [
+    "继续核对真实选择面板的候选来源和自动抽牌选择对待选状态的副作用，划清普通合法选牌与客户端自动决策边界。",
+    "核对OnHandTargetSelected答复的instigatorID到选择卡查找及回调接收契约，将请求身份修复与答复身份逐项闭合。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule429-selection-callers-native-20261026.json",
+      "bytes": 554339,
+      "sha256": "901fe60b9d8088433d25077a0b9b169aebcca326f239259af93e42d3538b1956"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule426-hand-selection-functions-native-20261025.json",
+      "bytes": 4570736,
+      "sha256": "2329e703f3e3a4c4d8bfe036d731c54b4dc6596a8cdca8f605a31245b2718f08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule427-hand-queue-functions-native-20261026.json",
+      "bytes": 4609778,
+      "sha256": "0d50094669601c26a775263bfba67a1bd3fbaf62210afb101c3cb599cf8dd893"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule429-callers.py",
+      "bytes": 3401,
+      "sha256": "750d75a3115704ecdb55bf242bd9bcc83d27f5ad7a229f3a617bc416d6b99c68"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule429.py",
+      "bytes": 4494,
+      "sha256": "576b99dba147c8bb8622dc8389d759dec3a6b9383b931b6d03d6970b16d45d26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-verified-20261026.json",
+      "bytes": 698,
+      "sha256": "5c23b1a9a2e4302a44b46e1dc22bb08e8e4d078a8fcecb5c370346dc554ef7c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-worker\\input.json",
+      "bytes": 35868,
+      "sha256": "29e03637af266f82fb1760eed7cd805ba19a2961827bbf8cd52d2da26f7b33e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-worker\\result.json",
+      "bytes": 13245,
+      "sha256": "db881bec6d391afeff070bab2f331b1253d123f7634a07e73e3dc9ede5bdd8a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-baseline-selftest.log",
+      "bytes": 75457,
+      "sha256": "1f1c20e046a1e9e26b7b2da1fd055d396e8a37526ddd96a44f66cf8d02f7c73b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-final-selftest.log",
+      "bytes": 75367,
+      "sha256": "4368710931aa7be90295338366c801c82365ade32f510b959105b73673f38c24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule429-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 394255,
+      "sha256": "b38ff768e7b994c20c0f0a18cdf4ad4974b60cff934ce4871a77ca48fe5f0211"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 2793686,
+      "sha256": "a791bf6b21d9949f05b77c6c8c5b08f8a261b3f33d43828ab105c4b0b7b3aeca"
+    }
+  ]
+}

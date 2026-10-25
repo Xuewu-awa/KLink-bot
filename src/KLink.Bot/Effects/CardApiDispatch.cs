@@ -2342,46 +2342,22 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `selectTargetFromHand` —— 「**从手牌里挑一张**」。
+    /// Selects a hand target for the explicit cardSelectingHandTarget ID.
+    /// The client queues this ID and later resolves the selecting card from it;
+    /// the CardFunctions receiver does not identify that card.
     ///
-    /// 用它的典型卡是 `card_unit_gordon_highlanders`：
-    /// 「Deployment: Choose an order in hand. Set its cost to 0 and put it on top of your deck.」
-    ///
-    /// ## ⚠️ 旧实现是空壳
-    ///
-    /// <code>
-    /// ["selectTargetFromHand"] = (c, r, a) => c.Target,   // ← 什么都不做
-    /// </code>
-    ///
-    /// 既不问玩家、也不触发 `OnHandTargetSelected`。而客户端那边会发一条
-    /// `HT`（`XActionHandTargetSelected`）说明选了哪张 —— 我们的 `ReplayRunner`
-    /// **也没处理 `HT`**。两条路都断 ⇒ 那张手牌**既没被设成 0 费、也没回牌库**。
-    ///
-    /// **实测**（雪雾 2026-10-01，对局 781364）：
-    /// <code>
-    /// #155 t25 L PC  {"0":"10", …}   card_unit_gordon_highlanders
-    /// #156 t25 L HT  {"0":"10","1":"7"}      ← 选了手牌 7
-    /// #157 t25 L PC  …                        ← 从 t25 起状态漂开
-    /// </code>
-    /// 之后 t27 一片动作应用失败（移动被拒、半场已满…）。
-    ///
-    /// ## 契约
-    ///
-    /// 与 `DrawChosenCardToHand` 一致：选中后对**被选中的卡**派发
-    /// `OnHandTargetSelected(chosen.CardId, selecting.CardId)`
-    /// （事件契约 `docs/event-contracts.json`：`[Int handTargetCardID, Int instigatorID]`）。
-    /// `gordon_highlanders` 自己的 `OnHandTargetSelected` 程序就在这次广播里跑，
-    /// 做 `ChangeKreditCost` + `MoveCardToTopOfOwnersDeck`。
-    ///
-    /// 候选限制来自调用卡各自的原生 `IsValidHandTarget`，不是统一的规则：原始卡蓝图中
-    /// 20 张调用卡有这个独立导出（例如 Gordon=order、4th Fallschirmjager=unit/费用门、
-    /// Emergency Measures=subtype.spitfire）；另 13 张没有，允许选择整手牌。当前 card-ir
-    /// 没收录这类独立校验导出，因此 `IsHandTargetValid` 镜像这些已核实的原生谓词；
-    /// 没有校验函数的牌默认放行整手牌。
+    /// The headless adapter builds candidates from the selecting owner's hand
+    /// and runs that card's exported IsValidHandTarget through RunOwnLocal.
+    /// Cross-side candidate sourcing remains under audit (RULE-427/428).
+    /// A reply records both IDs and dispatches OnHandTargetSelected with the
+    /// selecting card as source and the chosen card as event subject.
+    /// Cancellation sends no reply; the wrapper's int32 qqq output is still 0.
     /// </summary>
     private object? DoSelectTargetFromHand(EffectContext c, object? r, object?[] a)
     {
-        var selecting = AsCard(r) ?? c.Self;
+        // The Blueprint queues cardSelectingHandTarget, then resolves that ID.
+        // Its receiver is the CardFunctions service, not the selecting card.
+        var selecting = GetCardFromID(IdOf(a.ElementAtOrDefault(0)));
         if (selecting is null)
         {
             return 0;
