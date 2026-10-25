@@ -1,0 +1,1740 @@
+{
+  "rule": "RULE-417",
+  "cases": [
+    {
+      "source_id": 0,
+      "operation": "set",
+      "initial": {},
+      "found": true,
+      "final_copy": {
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 0,
+      "operation": "append",
+      "initial": {},
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            70
+          ]
+        }
+      }
+    },
+    {
+      "source_id": 0,
+      "operation": "remove",
+      "initial": {},
+      "found": false,
+      "final_copy": {}
+    },
+    {
+      "source_id": 0,
+      "operation": "clear",
+      "initial": {},
+      "found": false,
+      "final_copy": {}
+    },
+    {
+      "source_id": 1,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 1,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70
+          ]
+        }
+      }
+    },
+    {
+      "source_id": 1,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 1,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "flag": {
+          "type": "Boolean",
+          "value": false
+        },
+        "text": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 2,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 2,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 2,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 2,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": []
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 3,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 3,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648,
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 3,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 3,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            0,
+            -7,
+            70,
+            70,
+            2147483647,
+            -2147483648
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 4,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 4,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0,
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 4,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 4,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            1.5,
+            -1.5,
+            0.49,
+            0.5,
+            2147483647.5,
+            -2147483648.5,
+            100.0
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 5,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 5,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649",
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 5,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 5,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            "1.5",
+            "-1.5",
+            "42tail",
+            "tail42",
+            "  +7",
+            "",
+            "1e2",
+            "0x10",
+            "2147483648",
+            "-2147483649"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 6,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 6,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false,
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 6,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 6,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            true,
+            false
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 7,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 7,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            },
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 7,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 7,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            null,
+            {},
+            [],
+            [
+              1
+            ],
+            {
+              "a": 1
+            }
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 8,
+      "operation": "set",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 8,
+      "operation": "append",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5",
+            70
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 8,
+      "operation": "remove",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 8,
+      "operation": "clear",
+      "initial": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "values": {
+          "type": "Array",
+          "value": [
+            70,
+            "70suffix",
+            true,
+            null,
+            70.5,
+            {},
+            [
+              70
+            ],
+            "1.5"
+          ]
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "source_id": 9,
+      "operation": "set",
+      "initial": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        },
+        "field": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "source_id": 9,
+      "operation": "append",
+      "initial": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        },
+        "values": {
+          "type": "Array",
+          "value": [
+            70
+          ]
+        }
+      }
+    },
+    {
+      "source_id": 9,
+      "operation": "remove",
+      "initial": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      },
+      "found": false,
+      "final_copy": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      }
+    },
+    {
+      "source_id": 9,
+      "operation": "clear",
+      "initial": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "counter": {
+          "type": "Number",
+          "value": 1.5
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      },
+      "found": true,
+      "final_copy": {
+        "Field": {
+          "type": "Number",
+          "value": 7
+        },
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "é": {
+          "type": "String",
+          "value": "lower"
+        },
+        "É": {
+          "type": "String",
+          "value": "upper"
+        }
+      }
+    }
+  ],
+  "boundary": "40 controlled semantic JSON text-roundtrip+mutation cases composed from fresh native CopyData serialize/parse call path,32native empty-copy/parser executions,and prior RULE-413/415/416 mutation/key contracts. Actual nonempty native lexer/serializer not executed for expected fields. Local valid-object semantic independence reference only, not byte formatting or complete card-copy rules."
+}

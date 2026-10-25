@@ -23,6 +23,7 @@
     <None Update="Fixtures/json-mixed-array-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/json-scalar-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/json-key-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/json-copy-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

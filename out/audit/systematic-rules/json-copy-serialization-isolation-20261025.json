@@ -1,0 +1,213 @@
+{
+  "rule": "RULE-417",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "f7c8efdd2988cc06561e6d2d08e61ab44ae01e26",
+  "kernel_changed": false,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-417",
+    "fresh_native_ufunctions": 4,
+    "native_body_records": 22,
+    "distinct_captured_native_addresses": 20,
+    "unique_native_body_bytes": 15041,
+    "switch_entries": 16,
+    "owned_controller_tables": 3,
+    "native_copy_block_executions": 32,
+    "semantic_reference_rows": 40,
+    "new_headless_copy_scenarios": 80,
+    "worker_call_instructions": 56,
+    "worker_raw_extra_noncall_instructions": 608,
+    "new_selftest_entries": 1,
+    "final": "844/844 pass",
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Fresh CopyData UFunction wrapper4a7fc80133bytes calls backend4adc3402397bytes. At4adc8b1 source+0x518 is passed to4517890 object-to-string;4adc8cf then calls45179f0 string-to-object; result is moved into destination+0x518. No direct shared assignment of source JSON pointer. Fresh reflected conversion wrappers bind these same helpers. CopyData also explicitly copies CardID+0x264.",
+    "Serializer helper4517890 returns zero FString for null input object. Parser adapter45179f0 starts output shared ref at0, creates a reader and calls object Deserialize13b0510. Failed parse leaves output null; a valid parsed object gets its own shared ref. Thus null/invalid source and nonnull empty object are different native states.",
+    "Resolved9parser and7serializer jump-table targets, not just fall-through CFG. Parser ObjectStart path calls actual fresh object factory13b2f20, allocating0x60bytes(controller+object) and initializing an empty object map; parse frame has its own0x48factory. Nested object/array and scalar cases were captured but not all executed.",
+    "32offline actual CopyData JSON block/parse executions show nonnull empty sources yield fresh object pointers on every copy; null source yields null result. Source memory unchanged; destination source-adjacent scalar+0x1b8 correctly copied too. Tokenizer/serializer and allocator/selected cleanup remain controlled, so these results do not certify full text conversion or destructor semantics.",
+    "Existing CopyForStealSide uses immutable-string field copying into a fresh CardCustomJson. No new production mismatch found for selected valid JSON semantic independence.80local integration cases verify separate mutations for empty/scalar/int/fraction/string/bool/nested-array/object/member-spelling fixtures.",
+    "Current simulator has no invalid-JSONObject state flag; every CardCustomJson is a usable dictionary. This does not express the native null-versus-valid-empty distinction. PvP reachability and OnCreateCard/CreateCopy/Reset initialization chain still need evidence before changing defaults or write behavior.",
+    "Ephemeral copy retains original CardID while source remains indexed. Explicit object mutation affects copy; local ID-based PersistCustomFields(copy) resolves original and serializes original JSON. This integration assertion composes prior notifier/index behavior with the captured ID copy; it is not full native copied-card delegate/lifetime certification."
+  ],
+  "validation": [
+    "Current PID24220/module/exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 guarded read-only captures.4reflected native functions have zero script/native flags; not missing Blueprint bodies.22native body records/20distinct addresses15041unique bytes checked against PE, live captures and SHA.",
+    "Three owned-controller vtables compared by relocation; parser9/serializer7jump table entries checked against PE and decoded target PCs. Initial partial CFG captures preserved; resolved versions remove the known switch frontier. Captured address count is not a claim of20fully recovered native implementations/transitive behavior. Reused collector metadata retains older labels in some files; exact header/exe/file hashes identify sources.",
+    "16native configurations x2copy attempts=32block executions. Vary source-null/non-null,old borrowed destination presence,same/different destination address and allocation fill0/A5. Actual parse adapter,object Deserialize wrapper,token driver/result movement,object/frame factories and CopyData assignment code execute. Source stays intact; nonnull outputs have distinct new payload/controller addresses.",
+    "Explicit hooks: source serializer produces representative empty-object text or empty input; reader constructor/token/key callback supplies ObjectStart/ObjectEnd/EOF; FString-empty/array-empty helpers,allocation/free and selected controller cleanup controlled. Original full lexer/serializer and shared cleanup not executed. Repeated-target cases reinitialize target input and do not certify destruction of a prior owned clone.",
+    "40semantic roundtrip/mutation references use controlled text roundtrip,prior RULE-413numeric conversion and RULE-415/416mutation/key contracts. Do not present nonempty expected fields as actual native lexer/serializer outputs.",
+    "80real headless cases=40rows x2sides. Reflectively invoke actual private CopyForStealSide; verify independent object,existing owner/ID protocol,unchanged state map; run explicit-object Kismet Set/Add/Remove/Clear; compare copy/source typed semantic fields and snapshot isolation. Explicit notifier via copy ID must still persist indexed original. Subsequent source-only write must not appear on held copy or previous snapshot.",
+    "Full selftest844/844pass,exit0. No production source changed and no artificial baseline failure claimed. Portable fixture checked against reference model; native/reference models rerun and strict-compared.",
+    "DeepSeek packet returned all664instructions under calls instead of filtering: raw output rejected as a call-only list. Primary verified exact source instruction equality,filtered608non-calls and independently compared56remaining calls in calls-reviewed.json. Job20261025-145908-rule417-json-copy-calls-25cbedd0 completed exit0; no raw worker semantic conclusion accepted."
+  ],
+  "limits": [
+    "Valid empty native copy path plus controlled semantic nonempty reference, not full native JSON text parsing/writing. Number spelling/escape normalization,all duplicate-key text cases,invalid/non-object roots and nonfinite values not certified.",
+    "Null-object state remains unrepresented by simulator; client card initialization/PvP reachability not established this round. No speculative production validity flag/default change.",
+    "Controller cleanup hooks suppress real nested destruction; allocator policy,GC,concurrency,OOM,diagnostic aborts and complete CopyData helpers not certified.",
+    "Local immutable JSON field isolation is not certification of every native scalar/array/object lifetime or every card-copy mechanism. Owner inversion/callback routing remain existing behavior; this round focuses JSON data copy.",
+    "No historical replay authority,UI/campaign/tutorial work or paused single-card migration. Fully certified cards0; no exhaustive PvP restoration claim."
+  ],
+  "next_work": [
+    "Trace CreateCopy/OnCreateCard/ResetCardAttributes and normal PvP card creation to determine when customJson changes from null to valid JsonMake object.",
+    "If null JSON can reach live PvP rule callbacks, add explicit validity semantics with concrete initialization/native-query/mutation evidence; avoid equating valid empty and invalid defaults.",
+    "Continue bounded native lexer/serializer cases and wider PvP/card mapping."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-copy-functions-native-20261025.json",
+      "bytes": 4490774,
+      "sha256": "fbd1e40a29a8d28d29be99de10f47e6891b28d8b87153004ad29896b7ca9f6fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-copy-wrappers-native-20261025.json",
+      "bytes": 46361,
+      "sha256": "9ee37938ab9051ff5d0668704e88da1b2c985e4b47e3ce8b7290467f248ec3fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-copy-backends-native-20261025.json",
+      "bytes": 113778,
+      "sha256": "e4375a75eb08ddc0af6901502702716fe87722bcc638ee7c3067f35cec7c3f33"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-serializer-native-20261025.json",
+      "bytes": 70408,
+      "sha256": "06760445988b8509211543307a6937dc4853ec316a59c8686fb189cea1b93601"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-dom-constructors-native-20261025.json",
+      "bytes": 70408,
+      "sha256": "b5ad258dc21347726093526b38f8e11aed5e0e698b52b5289581678a82a43d5f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-dom-allocation-native-20261025.json",
+      "bytes": 38529,
+      "sha256": "68e1c58a9591bf51dad8dc12e95d50fcaf9df316e17d0579792499fd3062b733"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-serializer-switches-native-20261025.json",
+      "bytes": 327632,
+      "sha256": "cc4dcd071327d7c9f1a15d2e1b5b6b1272188fdab3b8482606e657f585a1ca5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-container-factories-native-20261025.json",
+      "bytes": 14420,
+      "sha256": "7b84807089046b2fe6672249b0d8bfe13454be11b914511cf4558be95293ccf6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-owned-tables-native-20261025.json",
+      "bytes": 13078,
+      "sha256": "4f754c31c34b5a51dcbcd72826630425be3d7afd58654dd10f01915d698eabac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-copy-functions.py",
+      "bytes": 2486,
+      "sha256": "855684aa41ada48d4d92f33d259932c51d65e199ed349deb86bb9dbdca1a3ed3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-copy-wrappers.py",
+      "bytes": 2892,
+      "sha256": "ce224f86472668426ada9e29f3e251dc5d95af48b3cf47e4cc6f2d0c81ae6a2f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-copy-backends.py",
+      "bytes": 2863,
+      "sha256": "b6c772e25aba365f83ea94e15f5c0139a5a2e994a23ccd28c3b9fb95ad0d7fe5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-parser-serializer.py",
+      "bytes": 2916,
+      "sha256": "5cbe2a265f5766f89f52049aa8216ed63c747563fa2428ed561e90ed1045b78d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-dom.py",
+      "bytes": 2915,
+      "sha256": "995fb238fccc5d2b72c137c395df20698816c2953fa60a91be883b06b86c6f4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-dom-allocation.py",
+      "bytes": 2903,
+      "sha256": "e81932fccd83109408ef138d7fa772e4450d92120ef477228564485a4a5e6e25"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-switches.py",
+      "bytes": 3402,
+      "sha256": "da3f1502e82bdb47494182b93ab8af1317deb38accefdd7454974584b6bde256"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-factories.py",
+      "bytes": 2918,
+      "sha256": "663503aee21bdd6c25c770c38b0f441a97eec0a47ab6b9dca62d248e0016386e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule417-parser-owned-tables.py",
+      "bytes": 3545,
+      "sha256": "cef2d4096fa5e91fea32ebf5be82889c6f06b0210a3be4b886057bb70466ad5d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule417-json-copy.py",
+      "bytes": 6250,
+      "sha256": "0987b20d12c6747efc52bdca80c1e837becf9f0a9e24b8ae6caf1a081c4cabda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule417-copy-reference.py",
+      "bytes": 2586,
+      "sha256": "328421be76d9a946b0471da71840951016026b76034da9c2edd42c5921848754"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-json-copy-native-model-20261025.json",
+      "bytes": 24622,
+      "sha256": "481bd52ee8dee5f669d30289720d201bb8e69018915d28cdfd835b24e1c465a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-json-copy-reference-model-20261025.json",
+      "bytes": 34707,
+      "sha256": "16b143230eb5d9776e8e0aea25109fd5eba334d903c35c87a34de17046a96b98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule417.py",
+      "bytes": 5299,
+      "sha256": "c4e052e9a932d1ed84ee590e3ba7a3c5eca99120347df33ec08ec6d745db32f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-verified-20261025.json",
+      "bytes": 542,
+      "sha256": "3064e40ab28d616d8d59f755fcca82681c2af8f37353cf860849813863ec7d52"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-selftest.log",
+      "bytes": 74540,
+      "sha256": "4321a1cd7969f3260e250062471abf1bf551a13bfe9ba1a37860cc3536ccaee4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-worker-packet\\input.json",
+      "bytes": 105386,
+      "sha256": "6b2c7cbbfc651575582bfeac195855a0e6c74de4f5c976f2f3b607ad0a4b005f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-worker-packet\\calls.json",
+      "bytes": 98950,
+      "sha256": "fbafdaaaffdec5aedaa7e0b8840fbc9b7dfc71f2f1f5d5bc167c059baa629a24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule417-worker-packet\\calls-reviewed.json",
+      "bytes": 8207,
+      "sha256": "96741c5285fdf2a8a79312f8c73daddb855640b9a7b4d60082678d76e7e18d78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-copy-reference-20261025.json",
+      "bytes": 32969,
+      "sha256": "d3049d3964a14e586ed320092ec9a0db52b6bcb703a09dd025c22f7f78f8e167"
+    }
+  ]
+}

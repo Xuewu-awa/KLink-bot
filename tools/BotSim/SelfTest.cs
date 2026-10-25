@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("窃取侧临时副本：JSON语义独立复制与原ID持久化分离", JsonCopyIndependenceReference),
         new("JSON键：原生空键、ASCII折叠、Unicode区别及覆盖拼写参考", JsonKeyNativeReference),
         new("JSON标量：权威AST与真实VM的三种写出、类型门、清除及空对象", JsonScalarNativeReference),
         new("混合JSON数组：权威AST组合、真实VM出参及复制快照持久化", JsonMixedArrayNativeReference),
@@ -21316,6 +21317,103 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonCopyIndependenceReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-copy-reference-20261025.json")));
+        var method = typeof(CardApi).GetMethod("CopyForStealSide",
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        if (method is null) return "未找到窃取侧临时复制入口";
+        static bool EqualJson(System.Text.Json.JsonElement a, System.Text.Json.JsonElement b)
+        {
+            if (a.ValueKind != b.ValueKind) return false;
+            return a.ValueKind switch
+            {
+                System.Text.Json.JsonValueKind.Number => a.GetDouble() == b.GetDouble(),
+                System.Text.Json.JsonValueKind.String => a.GetString() == b.GetString(),
+                System.Text.Json.JsonValueKind.Array => a.GetArrayLength() == b.GetArrayLength()
+                    && a.EnumerateArray().Zip(b.EnumerateArray()).All(p => EqualJson(p.First, p.Second)),
+                System.Text.Json.JsonValueKind.Object => a.EnumerateObject().Count() == b.EnumerateObject().Count()
+                    && a.EnumerateObject().All(p => b.TryGetProperty(p.Name, out var v) && EqualJson(p.Value, v)),
+                _ => a.GetRawText() == b.GetRawText(),
+            };
+        }
+        static System.Text.Json.JsonElement Plain(System.Text.Json.JsonElement fields)
+            => System.Text.Json.JsonSerializer.SerializeToElement(fields.EnumerateObject()
+                .ToDictionary(p => p.Name, p => p.Value.GetProperty("value")));
+        System.Text.Json.JsonElement Fields(CardInstance c)
+        {
+            var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var p in c.CustomJson)
+            {
+                if (c.CustomJson.TypeOf(p.Key) == CardJsonType.IntArray)
+                {
+                    string raw = p.Value.TrimStart().StartsWith("[", StringComparison.Ordinal) ? p.Value : "[" + p.Value + "]";
+                    using var array = System.Text.Json.JsonDocument.Parse(raw); values[p.Key] = array.RootElement.Clone();
+                }
+                else values[p.Key] = c.CustomJson.TypeOf(p.Key) switch {
+                    CardJsonType.Number => double.Parse(p.Value, System.Globalization.CultureInfo.InvariantCulture),
+                    CardJsonType.Boolean => p.Value == "1", _ => p.Value,
+                };
+            }
+            return System.Text.Json.JsonSerializer.SerializeToElement(values);
+        }
+        int cases = 0, failures = 0; string? first = null;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1); source.CustomJson.Clear();
+            foreach (var p in row.GetProperty("initial").EnumerateObject())
+            {
+                var v = p.Value.GetProperty("value"); string type = p.Value.GetProperty("type").GetString()!;
+                source.CustomJson.Set(p.Name, type == "String" ? v.GetString()! : type == "Boolean" ? (v.GetBoolean() ? "1" : "0") : v.GetRawText(),
+                    type switch { "Number" => CardJsonType.Number, "Boolean" => CardJsonType.Boolean,
+                        "Array" => CardJsonType.IntArray, _ => CardJsonType.String });
+            }
+            var before = source.Snapshot();
+            if (method.Invoke(null, new object?[] { source }) is not CardInstance copy) return "复制未返回卡对象";
+            bool ok = !ReferenceEquals(copy, source) && copy.CardId == source.CardId && copy.Owner == side.Opposite()
+                && ReferenceEquals(state.ById(source.CardId), source) && EqualJson(Fields(copy), Plain(row.GetProperty("initial")));
+            string op = row.GetProperty("operation").GetString()!;
+            string fn = op switch { "set" => "JSON_SetBool", "append" => "JSON_AddToIntArray",
+                "remove" => "JSON_RemoveFromIntArray", _ => "JSON_Clear" };
+            string key = op == "set" ? "field" : op == "clear" ? "counter" : "values";
+            var target = new KismetExpr { Var = "target", Scope = "local" };
+            var found = new KismetExpr { Var = "found", Scope = "local" };
+            var args = op == "clear" ? new[] { target, new KismetExpr { Str = key }, found }
+                : new[] { target, new KismetExpr { Str = key }, op == "set" ? new KismetExpr { Bool = false }
+                    : new KismetExpr { Int = op == "append" ? 70 : 0 }, found };
+            var program = new KismetProgram(new[] {
+                new KismetStep(0, "call", fn, args, op == "clear" ? new[] { 2 } : new[] { 3 }, null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            }, 0);
+            bool expectedFound = row.GetProperty("found").GetBoolean();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = copy, Controller = copy.Owner };
+            var result = new KismetVm(engine.Api).RunLocalProgram(program, ctx,
+                new Dictionary<string, object?> { ["target"] = copy, ["found"] = !expectedFound }, "found");
+            ok &= Equals(result, expectedFound) && EqualJson(Fields(copy), Plain(row.GetProperty("final_copy")))
+                && EqualJson(Fields(source), Plain(row.GetProperty("initial"))) && source.Owner == side
+                && source.CustomJson.Count == before.CustomJson.Count
+                && before.CustomJson.All(p => source.CustomJson.TryGetValue(p.Key, out var v) && v == p.Value)
+                && !state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields");
+            // The ephemeral object keeps the original ID. This notifier resolves
+            // the indexed original, whereas the explicit object call above mutates the copy.
+            engine.Api.PersistCustomFields(copy);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            using var persisted = System.Text.Json.JsonDocument.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal));
+            ok &= action.Values[0].Value == source.CardId && EqualJson(persisted.RootElement, Plain(row.GetProperty("initial")));
+            var heldCopy = Fields(copy);
+            engine.Api.JsonSetInt(source, "source_only", 7);
+            ok &= EqualJson(Fields(copy), heldCopy) && !copy.CustomJson.ContainsKey("source_only")
+                && !before.CustomJson.ContainsKey("source_only") && ReferenceEquals(state.ById(source.CardId), source);
+            if (!ok) { failures++; first ??= $"source={row.GetProperty("source_id")}/{op}/{side}, found={result}"; }
+            cases++;
+        }
+        return failures != 0 ? $"JSON复制参考 {failures}/{cases} failures; {first}"
+            : cases == 80 ? null : $"JSON复制参考 cases={cases}";
     }
 
     private static string? JsonKeyNativeReference(CardDatabase db)
