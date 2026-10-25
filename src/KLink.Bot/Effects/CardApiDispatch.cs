@@ -866,19 +866,20 @@ public sealed partial class CardApi
             //    （见 KismetVm.ExecuteCall 里"多输出原语"那段）。
             //    只回 value 的话 `found` 永远是 null，而卡蓝图里判的是
             //    `BooleanAND(value, found)` —— 于是**所有** `JSON_Get*` 的结果都是假。
-            //    `found` 的语义是"这个键存在吗"（客户端看的是 JSON 里有没有这个字段）。
+            //    `found` 的语义是"这个键存在且 JSON 类型匹配吗"。
             ["JSON_GetInt"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x
                 ? new object?[] { JsonGetInt(x, StrArg(a, 1)), x.CustomJson.HasType(StrArg(a, 1), CardJsonType.Number) }
                 : new object?[] { 0, false },
-            ["JSON_SetInt"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetInt(x, StrArg(a, 1), IntArg(a, 2)); return null; },
+            // Scalar setters unconditionally write Found=true under normal Blueprint continuation.
+            ["JSON_SetInt"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetInt(x, StrArg(a, 1), IntArg(a, 2)); return true; },
             ["JSON_GetBool"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x
                 ? new object?[] { JsonGetBool(x, StrArg(a, 1)), x.CustomJson.HasType(StrArg(a, 1), CardJsonType.Boolean) }
                 : new object?[] { false, false },
-            ["JSON_SetBool"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetBool(x, StrArg(a, 1), TruthyArg(a, 2)); return null; },
+            ["JSON_SetBool"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetBool(x, StrArg(a, 1), TruthyArg(a, 2)); return true; },
             ["JSON_GetString"] = (c, r, a) => AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x
                 ? new object?[] { JsonGetString(x, StrArg(a, 1)), x.CustomJson.HasType(StrArg(a, 1), CardJsonType.String) }
                 : new object?[] { "", false },
-            ["JSON_SetString"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetString(x, StrArg(a, 1), StrArg(a, 2)); return null; },
+            ["JSON_SetString"] = (c, r, a) => { if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } x) JsonSetString(x, StrArg(a, 1), StrArg(a, 2)); return true; },
             // ⚠️ 必须**返回非 null** —— VM 只在 `result is not null` 时写 out 槽
             //    （`KismetVm.cs:669`），而 `found` 是 `JSON_Clear` 的第 3 个实参（有 46 张卡读它）。
             //    语义见 `CardApi.JsonClear` 的注释（蓝图只删**指定那一个键**）。

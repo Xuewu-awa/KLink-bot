@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("JSON标量：权威AST与真实VM的三种写出、类型门、清除及空对象", JsonScalarNativeReference),
         new("混合JSON数组：权威AST组合、真实VM出参及复制快照持久化", JsonMixedArrayNativeReference),
         new("JSON数组追加：权威AST参考的Found出参、缺失/错误类型及空对象", JsonAddArrayNativeReference),
         new("JSON整数读取：原生范围检查、半数远离零取整及类型门", JsonIntegerNativeReference),
@@ -21314,6 +21315,91 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonScalarNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-scalar-reference-20261025.json")));
+        static bool EqualJson(System.Text.Json.JsonElement a, System.Text.Json.JsonElement b)
+        {
+            if (a.ValueKind != b.ValueKind) return false;
+            return a.ValueKind switch
+            {
+                System.Text.Json.JsonValueKind.Number => a.GetDouble() == b.GetDouble(),
+                System.Text.Json.JsonValueKind.String => a.GetString() == b.GetString(),
+                System.Text.Json.JsonValueKind.Array => a.GetArrayLength() == b.GetArrayLength()
+                    && a.EnumerateArray().Zip(b.EnumerateArray()).All(p => EqualJson(p.First, p.Second)),
+                System.Text.Json.JsonValueKind.Object => a.EnumerateObject().Count() == b.EnumerateObject().Count()
+                    && a.EnumerateObject().All(p => b.TryGetProperty(p.Name, out var v) && EqualJson(p.Value, v)),
+                _ => a.GetRawText() == b.GetRawText(),
+            };
+        }
+        static CardJsonType Type(string name) => name switch { "Number" => CardJsonType.Number,
+            "Boolean" => CardJsonType.Boolean, "Array" => CardJsonType.IntArray, _ => CardJsonType.String };
+        static object? Value(System.Text.Json.JsonElement v) => v.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.String => v.GetString(),
+            System.Text.Json.JsonValueKind.True => true,
+            System.Text.Json.JsonValueKind.False => false,
+            System.Text.Json.JsonValueKind.Number => v.GetInt32(),
+            _ => null,
+        };
+        int cases = 0, failures = 0; string? first = null;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool byId in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            bool missingCard = row.GetProperty("state").GetString() == "null-card";
+            engine.Api.JsonSetInt(self, "keep", 19);
+            if (!missingCard)
+                foreach (var field in row.GetProperty("initial").EnumerateObject())
+                {
+                    var v = field.Value.GetProperty("value"); var type = Type(field.Value.GetProperty("type").GetString()!);
+                    self.CustomJson.Set(field.Name, type == CardJsonType.String ? v.GetString()!
+                        : type == CardJsonType.Boolean ? (v.GetBoolean() ? "1" : "0") : v.GetRawText(), type);
+                }
+            var before = self.CustomJson.ToDictionary(x => x.Key, x => x.Value);
+            string fn = row.GetProperty("function").GetString()!; bool get = fn.StartsWith("JSON_Get", StringComparison.Ordinal);
+            bool clear = fn == "JSON_Clear", expectedFound = row.GetProperty("found").GetBoolean();
+            var target = new KismetExpr { Var = "target", Scope = "local" };
+            var found = new KismetExpr { Var = "found", Scope = "local" };
+            var value = new KismetExpr { Var = "value", Scope = "local" };
+            var input = new KismetExpr { Var = "input", Scope = "local" };
+            KismetExpr[] args = clear ? new[] { target, new KismetExpr { Str = "probe" }, found }
+                : new[] { target, new KismetExpr { Str = "probe" }, get ? value : input, found };
+            var program = new KismetProgram(new[] {
+                new KismetStep(0, "call", fn, args, clear ? new[] { 2 } : get ? new[] { 2, 3 } : new[] { 3 },
+                    null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            }, 0);
+            var seed = new Dictionary<string, object?> {
+                ["target"] = byId ? (missingCard ? 777 : self.CardId) : missingCard ? null : self,
+                ["input"] = Value(row.GetProperty("payload")), ["found"] = !expectedFound, ["value"] = "stale",
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            var output = new KismetVm(engine.Api).RunLocalProgramMulti(program, ctx, seed, "value", "found");
+            bool ok = Equals(output["found"], expectedFound);
+            if (get) ok &= EqualJson(System.Text.Json.JsonSerializer.SerializeToElement(output["value"]), row.GetProperty("result"));
+            if (get || clear && !expectedFound)
+                ok &= before.Count == self.CustomJson.Count && before.All(p => self.CustomJson.TryGetValue(p.Key, out var v) && p.Value == v);
+            var expected = missingCard ? System.Text.Json.JsonSerializer.SerializeToElement(
+                new { keep = new { type = "Number", value = 19 } }) : row.GetProperty("final");
+            ok &= expected.EnumerateObject().Count() == self.CustomJson.Count
+                && expected.EnumerateObject().All(p => self.CustomJson.HasType(p.Name, Type(p.Value.GetProperty("type").GetString()!)));
+            ok &= !state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields");
+            engine.Api.PersistCustomFields(self);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            using var persisted = System.Text.Json.JsonDocument.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal));
+            var fields = expected.EnumerateObject().ToDictionary(x => x.Name, x => x.Value.GetProperty("value"));
+            ok &= EqualJson(persisted.RootElement, System.Text.Json.JsonSerializer.SerializeToElement(fields));
+            if (!ok) { failures++; first ??= $"{row.GetProperty("state")}/{fn}/{side}/{byId}, found={output["found"]}"; }
+            cases++;
+        }
+        return failures != 0 ? $"JSON标量参考 {failures}/{cases} failures; {first}"
+            : cases == 400 ? null : $"JSON标量参考 cases={cases}";
     }
 
     private static string? JsonMixedArrayNativeReference(CardDatabase db)

@@ -1,0 +1,2553 @@
+{
+  "rule": "RULE-415",
+  "source_scripts": [
+    {
+      "name": "JSON_GetString",
+      "size": 258,
+      "sha256": "96b9fa76295b2a74eab1aaaac06394c9320f7e81a5ac2a22e3a3523fbb135809"
+    },
+    {
+      "name": "JSON_GetBool",
+      "size": 233,
+      "sha256": "cf0faf36dadf57cbe0c3e4b946a2b86cc611673232cdc276d02815a5cfa15608"
+    },
+    {
+      "name": "JSON_GetInt",
+      "size": 261,
+      "sha256": "0227ce65feed686f7e96ee62ced86fbcad2c765becd77f7c5e8ab04ec208c74e"
+    },
+    {
+      "name": "JSON_SetString",
+      "size": 177,
+      "sha256": "a4be109d2d47a7679130fb2c595294a493e8d605fba7cd11c356eaac02101c94"
+    },
+    {
+      "name": "JSON_SetInt",
+      "size": 177,
+      "sha256": "ad4246145fb693899546f12a054e97d17d18157348eac7a66bb66a75af4e027d"
+    },
+    {
+      "name": "JSON_SetBool",
+      "size": 177,
+      "sha256": "0fa31e0d8370d949076d28c16705c0912cf8040240cd6f8a6ef83f4f588fdf28"
+    },
+    {
+      "name": "JSON_Clear",
+      "size": 243,
+      "sha256": "1d0d58ab0cf4565f42b86e43af4444feb490370ffa681516a6e59b9768a367b4"
+    }
+  ],
+  "boundary": "100 exact captured seven-scalar-Blueprint AST executions. Explicit controlled typed JSON map/make/remove, Boolean/String conversion and null-context skip primitives. Fraction/overflow number conversion reuses RULE-412 native fixture. Not native JSON allocator, serializer, diagnostics/GC or exhaustive locale/float/card certification.",
+  "cases": [
+    {
+      "state": "missing",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "missing",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      },
+      "found": false,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": -7,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "number",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": 2,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "fraction",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 1.5
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "overflow",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483648
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "false",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": true,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "true",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "empty-string",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": "中文\"quote\"/\\/\n",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "string",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "中文\"quote\"/\\/\n"
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": false,
+      "result": "",
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": false,
+      "result": false,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": false,
+      "result": 0,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": ""
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "String",
+          "value": "新值\"quote\"/\\/\n"
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": -7
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Number",
+          "value": 2147483647
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": false
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Boolean",
+          "value": true
+        }
+      }
+    },
+    {
+      "state": "array",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        },
+        "probe": {
+          "type": "Array",
+          "value": [
+            0,
+            1.5,
+            "70tail",
+            false,
+            null
+          ]
+        }
+      },
+      "found": true,
+      "result": null,
+      "final": {
+        "keep": {
+          "type": "Number",
+          "value": 19
+        }
+      }
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_GetString",
+      "payload": null,
+      "initial": null,
+      "found": false,
+      "result": "",
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_GetBool",
+      "payload": null,
+      "initial": null,
+      "found": false,
+      "result": false,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_GetInt",
+      "payload": null,
+      "initial": null,
+      "found": false,
+      "result": 0,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetString",
+      "payload": "",
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetString",
+      "payload": "新值\"quote\"/\\/\n",
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetInt",
+      "payload": -7,
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetInt",
+      "payload": 2147483647,
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetBool",
+      "payload": false,
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_SetBool",
+      "payload": true,
+      "initial": null,
+      "found": true,
+      "result": null,
+      "final": null
+    },
+    {
+      "state": "null-card",
+      "function": "JSON_Clear",
+      "payload": null,
+      "initial": null,
+      "found": false,
+      "result": null,
+      "final": null
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "rule": "RULE-415",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "b46fee1f053a25e5b9b000cc2ce3a26c98252154",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-415",
+    "fresh_blueprint_bodies": 7,
+    "fresh_script_bytes": 1526,
+    "empty_stub_declarations": 7,
+    "actual_ast_cases": 100,
+    "new_headless_kismet_cases": 400,
+    "new_selftest_entries": 1,
+    "worker_output_assignments": 16,
+    "baseline": "1/842 failure;240/400 new cases failed",
+    "final": "842/842 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0,
+    "operations": {
+      "JSON_GetString": 10,
+      "JSON_GetBool": 10,
+      "JSON_GetInt": 10,
+      "JSON_SetString": 20,
+      "JSON_SetInt": 20,
+      "JSON_SetBool": 20,
+      "JSON_Clear": 10
+    }
+  },
+  "findings": [
+    "Fresh seven scalar JSON Blueprint bodies1526bytes: GetString258,GetBool233,GetInt261,SetString177,SetInt177,SetBool177,Clear243. Seven empty CardFunctionsStub declarations are metadata, not failed implementations.",
+    "Each scalar setter has a linear body: make typed value,make field,assign card.customJson via Context,write Found=true at offset163. No branch conditions gate this output. Under normal null-context skip continuation, Found remains true even with absent card. All3headless handlers previously returnednull; change returns totrue to update scalar out slot.",
+    "GetString/GetBool/GetInt use explicit String2/Boolean4/Number3 typed-field gates. Matching type returns value,true; missing/wrong type/null-card produces emptystring/false/0,false. Number overflow may yield0,true because found measures type presence, not numeric conversion success.",
+    "Clear checks generic key presence, removes just that key when found,returns prior existence. Selected missing/all supported field types/null-card cases match existing headless behavior. No Clear production change in this round.",
+    "Seven actual captured AST bodies generated100selected cases:30get,60set,10clear over10field/object states. Covers missing,integer,fraction,overflow,false,true,empty-string,escaped Unicode string,array,null-card; setters include2payloads each. Full headless Kismet matrix verifies both out values and field semantics."
+  ],
+  "validation": [
+    "Read-only current PID24220/module/exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 guarded capture. Independent exact header/script length/name/hash checks and re-decode7bodies1526bytes plus7empty Stubs. No injection,target writes or game function calls.",
+    "Independently rerun100actual AST cases and compare complete outcomes; portable fixture exactly equals model without visited paths. Numeric fraction/overflow uses prior RULE-412 native reference; typed JSON map/make/remove,Boolean/String conversion and null-context continuation are controlled primitives.",
+    "400real Kismet scenarios=100fixture rows x2sides x2object/ID routes. Construct caller IR with explicit output metadata. Seed Found to opposite expected value and Value to stale string; verify actual VM output-slot replacement,JSON field types/content,read/no-op raw preservation,sibling field and absence of implicit persistence.",
+    "Explicitly persist self after each scenario and compare semantic JSON fields/types to AST final state. Null-card calls must leave self keep=19 unchanged. Selected strings include empty and Unicode/quote/backslash/newline; no native serialized-byte equivalence claim.",
+    "Before production patch1/842failure;240/400new cases fail because3setter out slots retainfalse. Field data already matches. Patched full selftest842/842pass,exit0. Other160new scenarios and entire previous suite pass.",
+    "DeepSeek private seven-function packet extracted16complete LocalOutVariable assignments. Primary independently compared all function names,statement offsets and full nodes. Job20261025-142737-rule415-json-scalar-outs-987793e8 completed exit0; no worker semantic conclusions used."
+  ],
+  "changes": [
+    "JSON_SetInt/JSON_SetBool/JSON_SetString dispatcher returns true to honor native Found output, including normal null-card continuation.",
+    "Correct adjacent Get Found comment to describe matching JSON type rather than mere field presence.",
+    "Add portable100case authoritative-AST reference,1selftest entry400Kismet scenarios and evidence ledger."
+  ],
+  "limits": [
+    "Controlled JSON object/type/make/remove and Boolean/String conversion model; not offline execution of all native JSON helpers or allocator/shared-reference lifetimes.",
+    "Null Context expectation assumes normal continuation after diagnostics. Abort configurations,GC,concurrency and runtime pointer invalidation unverified.",
+    "Selected key is probe. Empty/embedded-NUL/non-ASCII field names and all native key-query hashing/equality contracts remain open. Existing JsonClear empty-key guard was not certified or changed.",
+    "No exhaustive float/locale/Unicode-string or generic top-level Null/Object proof; arrays included as wrong-type/existence controls only. Native JSON textual formatting/ordering/escaping not certified.",
+    "Constructed caller programs test real Kismet machinery but are not named-card ability/producer certification. No historical replay authority; no UI/campaign/tutorial or paused single-card migration work. Fully certified cards0."
+  ],
+  "next_work": [
+    "Audit native JsonHasField/JsonHasTypedField/JsonMakeField for empty and unusual field names before deciding whether JsonClear extra empty-key guard differs.",
+    "Continue generic JSON value/conversion/serializer contracts with explicit native evidence, then remaining PvP primitive/card coverage.",
+    "Preserve distinction between selected interface regression coverage and exhaustive game/card restoration."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule415-json-scalars-native-20261025.json",
+      "bytes": 4552836,
+      "sha256": "94a543904f37d4bc5a7d0e8678f6cfb837dcf7635af412fef78693067a7dbd1a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule415-json-scalars.py",
+      "bytes": 2534,
+      "sha256": "f59735cd47c271fcc3780f3405c930828c326fad0e6cc59c34d04c2c220e8970"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule415-json-scalars.py",
+      "bytes": 5587,
+      "sha256": "59ea034c4fc914b0d1caec637b17ce373ebb7500c9e9b51d45a56bb28f68878e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-json-scalars-model-20261025.json",
+      "bytes": 62536,
+      "sha256": "ff2dc2d33b97095b254adbdbd625c20abb35d7b4f5d4fb8e6dbaaa9198fe3db3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule415.py",
+      "bytes": 3707,
+      "sha256": "e4622e6c249b0e6a570e04aa67b92449dd183c49a4b37d777603e047419bac8f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-verified-20261025.json",
+      "bytes": 595,
+      "sha256": "ec126ee0ab654e30dbc5ede8e2cbe2ff8e3856e118b1cff7b304f3bb83145d56"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-baseline-selftest.log",
+      "bytes": 74467,
+      "sha256": "3c58084a7b1dcb9e08ee6075cc0f3e69351cd025c88ea6c0edffa9ea18aef491"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-patched-selftest.log",
+      "bytes": 74382,
+      "sha256": "00a0843af240a0e049d476e07b134cccbe8af44e99490df328ed8d78b754fd40"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-patched-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-json-integer-fixture-20261025.json",
+      "bytes": 1824,
+      "sha256": "4ecde1a5e8e4e886c9e8e9deae5fb0dfb95f71b15ee6de7b676f6a6e2124480b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule412-verified-20261025.json",
+      "bytes": 434,
+      "sha256": "4b1eccc3b3297de32d032a5ceee16dfea1da8cc38f6fbd3b0cba9f8745ce1dd6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-worker-packet\\input.json",
+      "bytes": 24512,
+      "sha256": "55712ef68461dcffd046d3b04b5772b5b7671615d1a13574d126870591311d9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule415-worker-packet\\outputs.json",
+      "bytes": 4669,
+      "sha256": "dfc65c5a3cbac0a5176932c31ff4c3ed5f6696ec88dad7882afe246ab6db2ece"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-scalar-reference-20261025.json",
+      "bytes": 49556,
+      "sha256": "73ccc8805ea8479437a43dff8953110b4f1504bc84948902f0fca199b800ce86"
+    }
+  ]
+}
