@@ -1570,7 +1570,13 @@ public sealed class MatchEngine
     /// </summary>
     public bool PlayCardDirectlyFromHand(CardInstance card, bool toFrontline,
                                          int instigatorID, int locationNumber)
+        => PlayCardDirectlyFromHand(card, toFrontline, instigatorID, locationNumber, out _);
+
+    // Keep the engine success result separate from the Blueprint int32& qqq.
+    internal bool PlayCardDirectlyFromHand(CardInstance card, bool toFrontline,
+                                          int instigatorID, int locationNumber, out bool wroteQqq)
     {
+        wroteQqq = false;
         if (card.Location != card.Owner.HandOf() || !card.IsAlive)
         {
             return false;
@@ -1595,6 +1601,7 @@ public sealed class MatchEngine
         {
             // i=1260/1391 -> i=1302: source=0, skipSubAction=false, ForceDiscard=true.
             Api.ForceDiscardHandCardForBlockedDirectPlay(card);
+            wroteQqq = true; // Native i1363 writes integer zero after discard.
             return false;
         }
 

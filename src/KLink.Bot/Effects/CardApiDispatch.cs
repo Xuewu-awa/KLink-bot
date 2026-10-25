@@ -533,9 +533,10 @@ public sealed partial class CardApi
                 bool toFrontline = TruthyArg(a, 1);
                 int instigatorID = IntArg(a, 2, c.Self?.CardId ?? 0);
                 int locationNumber = IntArg(a, 4, -1);
-                bool success = card is not null
-                    && c.Engine.PlayCardDirectlyFromHand(card, toFrontline, instigatorID, locationNumber);
-                return success;
+                if (card is null) return null;
+                c.Engine.PlayCardDirectlyFromHand(card, toFrontline, instigatorID, locationNumber, out bool wroteQqq);
+                // Null means no output-slot write; only the blocked branch writes 0.
+                return wroteQqq ? (object)0 : null;
             },
             ["ForceEndTurn"] = (c, r, a) =>
             {

@@ -1,0 +1,178 @@
+{
+  "rule": "RULE-425",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "38e1cf02890a1419ca55018c203726854bee268f",
+  "kernel_changed": true,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-425",
+    "direct_blueprint_bytes": 3490,
+    "kurmark_functions": 5,
+    "kurmark_script_bytes": 2015,
+    "reference_ast_scenarios": 48,
+    "headless_output_scenarios": 96,
+    "headless_kurmark_scenarios": 48,
+    "qqq_explicit_writes": 1,
+    "worker_qqq_uses": 1,
+    "worker_predecessors": 3,
+    "worker_exact_match": true,
+    "worker_job": "20261025-213014-rule425-direct-hand-output-13cb6aed",
+    "baseline": "849 passed,2 failed /851",
+    "final": "851/851 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "当前 PlayCardDirectlyFromHand 蓝图3490字节完整解码，SDK原型qqq为int32&，不是bool成功返回值。全图只有1363一处写qqq，值为IntConst0，位于1302强制弃牌之后。成功、反制激活／取消、无效对象和非手牌退出等所选路径不写该槽。",
+    "旧派发返回引擎bool成功，VM将其覆盖到qqq，错误混同了内部状态判据与蓝图整数出参。引擎原public bool接口保留；内部重载另报告是否经过阻挡弃牌写出路径。派发仅该分支返回整数0，其余返回本地适配器的null不写槽标记。null不表示客户端qqq为JSON null。",
+    "48次捕获全图AST参考执行：双方、八种路径、三个初始整数槽值。执行真实控制流和输出赋值，位置／容量／反制查询／移动／入场／加密等外部原语受控。所选粗粒度位置及激活状态作为回归检查，不据此认证所有出手语义。",
+    "96本地输出组合交叉直接派发与真实VM，验证未写槽保留-7/0/77、阻挡写整数0而非false，并检查所选物理效果及免费路径。原最小端到端测试的成功布尔预期按SDK／字节码纠正，位置、槽位、指挥点和反制激活断言继续保留。",
+    "Kurmark当前五函数共2015字节重新采集并完整解码。回合末从JSON_GetIntArray取得列表快照，GetCardFromID后仅在gotchaActivated<=0尝试直接出手；之后无论是否尝试出手均清除目标is_kurmark_target，实际清除时才持久化目标；最后清除自己suppressionException并持久化。qqq不作为该回调分支判据。",
+    "48个本地Kurmark组合：双方、活动方、抑制有无、激活序号0/1/3、单ID或重复／缺失混合ID。定点执行真实OnHandTargetSelected生产事件，经过正常抑制及正式回合末派发两次。已激活反制保持序号，未激活只出手一次；重复ID不会再次取消激活，缺失目标不阻止源列表清理。目标与源各一次持久化。该生产回调测试不认证完整手牌选择器或整场回合调度。"
+  ],
+  "validation": [
+    "PID24220、模块和安装执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305守卫的只读采集；SDK签名和qqq唯一赋值独立核对。无游戏进程写入、注入、函数调用或自动对局操作。",
+    "主agent独立重解码两个当前脚本包，重跑48参考场景并完整匹配产物和仓库fixture。Kurmark回合清理状态预期来自所选原始图，48场景为本地回归，不冒充原生客户端运行观测。",
+    "初次新增矩阵漏设FrontlineOwner，物理创建前线单位并未自动建立控制状态，导致一个测试布景失败。补齐状态后，用固定基线38e1cf02890a1419ca55018c203726854bee268f恢复两个原生产文件、运行最终fixture，再在finally恢复修复稿；最终基线849通过2失败／851，修复后851/851通过。旧布景失败日志另存，未据此修改生产前线判定。",
+    "最终两次运行使用相同可执行断言和fixture；其间仅修正一处测试说明注释。生产仅分离输出写入标记，不重写原出手成功判据和物理流程。未人为构造额外失败或将内部引擎bool删除。",
+    "DeepSeek私有任务提取qqq的一处使用和三个相关前驱跳转，主agent完整比对节点及外层偏移一致，无修补。任务20261025-213014-rule425-direct-hand-output-13cb6aed退出码0。"
+  ],
+  "limits": [
+    "实际赋值语法和参考执行验证所选出参契约，不认证原生VM全部参数／局部变量初始化、共享槽别名或所有重入生命周期。",
+    "参考图依赖受控外部原语；本轮不认证全部直接出手合法性、卡牌死亡边界、动态容量、移动／入场或加密字段实现。",
+    "Kurmark场景核对目标生产回调和回合末清理，未完成全部IsValidHandTarget、选择协议、非反制目标、出手取消或所有重入分支；不能标记整卡完整还原。",
+    "CDO抑制例外复用RULE-423的同版本只读证据，五函数本轮重新采集；不将默认数据和本地对局作为当前原生实战对象证明。完整认证卡牌仍为0。"
+  ],
+  "next_work": [
+    "继续核对Kurmark目标选择验证器与真实反制出手失败／取消后的清理时序。",
+    "核对其他读取PlayCardDirectlyFromHand整数输出的调用者，优先处理真实规则影响。",
+    "后续核对Ki-45共享标志和MakeVeteran，不将已清理字段测试扩展为整卡认证。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule425-direct-hand-functions-native-20261025.json",
+      "bytes": 4592854,
+      "sha256": "a1e96d9540ddd5288de58da13eca4b9e39c02110a573f81261cf9c37ffa39dc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule425-kurmark-functions-native-20261025.json",
+      "bytes": 3494378,
+      "sha256": "8d4abdb6d732ba4e8e27bc96f34be9fac23afc2a8bcb450e7ca7e14de1f31e8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-card-trigger-cdos-native-20261025.json",
+      "bytes": 3443188,
+      "sha256": "f80bce7c41b0fc8c9a2e7d5668de05a05b9b9fb3b52bf15ff93d0f94c75550da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule425-direct-hand.py",
+      "bytes": 2374,
+      "sha256": "e6d82c63d71c8e85f70ba319aaa2b45c544c7f31fcf2ca1e683972b65480ce54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule425-kurmark.py",
+      "bytes": 2457,
+      "sha256": "30080435d03a52db80ab1cf837840df22c57a646afb410f79e65739842cb7c48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule425-direct-output.py",
+      "bytes": 6873,
+      "sha256": "3cadaefe043916a2bfcb7d6d8b60d15f2a1afcfae1bc8b7fef5e1eacd15f6169"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-direct-output-ast-model-20261025.json",
+      "bytes": 34400,
+      "sha256": "5fed62b8c5f34b9b3793ab7fed42435f09f62b772598af0a20a0c4c05b5ba010"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-direct-output-reference-20261025.json",
+      "bytes": 8360,
+      "sha256": "b293304965773fdba637800556cb4f452ca7e1a12388bf60fd9a86f71e28ecba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-verified-20261025.json",
+      "bytes": 543,
+      "sha256": "a5300febea96cb1013ec4172262097e54550ce11a57b14e94eee24fc5f78cbe1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule425.py",
+      "bytes": 4744,
+      "sha256": "06b103c6b0b5c9e75eb76f73732b0aa84f1889cd29a1284e3a886c5214f46161"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\baseline-rule425-final-fixture.py",
+      "bytes": 845,
+      "sha256": "8d12aecd6cdc7bdb4ba18e6ea5f62cb9b134d8b54d8327e0743941d3b1ee43ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-baseline-selftest.log",
+      "bytes": 75270,
+      "sha256": "5ba80fc946bb588fd4991df78f5ba29c005def91f1c9b3d1c0edaeb1601ce26c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-initial-patched-selftest.log",
+      "bytes": 75185,
+      "sha256": "567a4a4b57e277e0abde09d6c6b1a6ce16402b5472045f2b97d92afbf49c7358"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-initial-patched-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-final-fixture-baseline-selftest.log",
+      "bytes": 75267,
+      "sha256": "aeafb8517993012e53ba6032e4dda72691008de49f61ee07afd21274bcf34e95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-final-fixture-baseline-selftest.exit.txt",
+      "bytes": 1,
+      "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-final-selftest.log",
+      "bytes": 75124,
+      "sha256": "21d48efb0b538997b275cb34ebb51cbb45a4877a88d16724b0c78e61b23ad6be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-worker-packet\\input.json",
+      "bytes": 43445,
+      "sha256": "3958bfa089ac2d53d62ad523f71a7d0cd4038bf1c4113ae5eb5407e4dd4f6cc4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-worker-packet\\output.json",
+      "bytes": 454,
+      "sha256": "a27b0e1b99c043f207948e7e0fd9ec2ef63f135018b7f151115039810417f6d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule425-worker-packet\\task.txt",
+      "bytes": 545,
+      "sha256": "0d1ef2e8a122d651a260dc6f982cbdb83df740951b64fcd63b7cfc55de2dd123"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-213014-rule425-direct-hand-output-13cb6aed\\job.json",
+      "bytes": 737,
+      "sha256": "c25cf606d5ca1a88121cabeed101fc14f8ca6d9dbf1d1b069432f6688ad821f7"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+      "bytes": 31655,
+      "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+    }
+  ]
+}

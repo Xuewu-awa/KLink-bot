@@ -234,6 +234,8 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
+        new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
         new("倒计时原语：类型门、固定false输出、缺失ID持久化与VM出参", CountdownNativeReference),
         new("36步兵团：倒计时弃牌、重置例外与空列表抑制保留", Infantry36CountdownCleanup),
         new("实卡例外状态：五卡CDO与海军旅/陆战队抑制后回合清理", CardSuppressionExceptionCleanupReference),
@@ -21324,6 +21326,94 @@ internal static class SelfTest
         return cases == 32 ? null : $"reset array cases={cases}";
     }
 
+    private static string? DirectHandIntegerOutputReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "direct-hand-output-reference-20261025.json")));
+        int count = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (bool vm in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            Side side = (Side)row.GetProperty("owner").GetInt32(); state.ActiveSide = side.Opposite();
+            string scenario = row.GetProperty("scenario").GetString()!;
+            CardInstance? card = null;
+            if (scenario != "null")
+            {
+                card = state.CreateWithId(scenario.StartsWith("gotcha", StringComparison.Ordinal) ? "card_event_interception" : PlainUnit,
+                    side, 60, scenario == "not-hand" ? side.HqOf() : side.HandOf(), 0);
+                card.GotchaActivated = scenario == "gotcha-active" ? 3 : 0;
+            }
+            if (scenario == "full-support")
+                for (int i = 0; i < GameState.HalfBoardCapacity - 1; i++) state.CreateWithId(PlainUnit, side, 100 + i, side.HqOf(), i + 1);
+            if (scenario == "enemy-frontline") {
+                state.CreateWithId(PlainUnit, side.Opposite(), 80, CardLocation.BoardFrontline, 0);
+                state.FrontlineOwner = side.Opposite();
+            }
+            bool front = scenario is "unit-frontline" or "enemy-frontline";
+            int seed = row.GetProperty("seed").GetInt32();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = state.Hq(side), Controller = side };
+            if (vm)
+            {
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "PlayCardDirectlyFromHand", new KismetExpr[] {
+                        new() { Var = "card", Scope = "local" }, new() { Bool = front }, new() { Int = 90 },
+                        new() { Var = "qqq", Scope = "local" }, new() { Int = -1 }
+                    }, new[] { 3 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                    new Dictionary<string, object?> { ["card"] = card, ["qqq"] = seed }, "qqq");
+                if (!Equals(output["qqq"], row.GetProperty("qqq").GetInt32())) return $"整数输出槽差异 {scenario}/{seed}/{side}";
+            }
+            else
+            {
+                object? result = engine.Api.InvokeByName("PlayCardDirectlyFromHand", null,
+                    new object?[] { card, front, 90, seed, -1 }, ctx, out bool handled);
+                if (!handled || (row.GetProperty("written").GetBoolean() ? result is not int v || v != 0 : result is not null))
+                    return $"直接接口将qqq误作成功布尔 {scenario}/{side}";
+            }
+            if (card is not null && ((int)card.Location != row.GetProperty("location").GetInt32()
+                || card.GotchaActivated != row.GetProperty("activation").GetInt32())) return $"出手输出适配改变物理效果 {scenario}/{side}";
+            if (state.Kredits(side) != 0 || engine.Api.Vm.FaultedPrograms != 0) return "免费出手消耗指挥点或VM故障";
+            count++;
+        }
+        return count == 96 ? null : $"直接出手整数输出 cases={count}";
+    }
+
+    private static string? KurmarkEndTurnCleanup(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int activation in new[] { 0, 1, 3 })
+        foreach (bool duplicateMissing in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = active ? side : side.Opposite();
+            var owner = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0); target.GotchaActivated = activation;
+            var producer = KismetLibrary.Default?.FindProgram(owner.Name, "OnHandTargetSelected");
+            if (producer is null) return "缺少Kurmark实际手牌目标事件";
+            engine.Api.Vm.Run(producer, new EffectContext { Engine = engine, State = state, Self = owner, Controller = side,
+                EventArgs = new object?[] { 80, 60 }, NamedArgs = new Dictionary<string, object?> { ["handTargetCardID"] = 80, ["instigatorID"] = 60 } });
+            if (!engine.Api.JsonGetIntArray(owner, "suppressionException").SequenceEqual(new[] { 80 })
+                || !engine.Api.JsonGetBool(target, "is_kurmark_target")) return "Kurmark生产未建立实际ID列表与目标标记";
+            if (duplicateMissing) { engine.Api.JsonAddToIntArray(owner, "suppressionException", 77); engine.Api.JsonAddToIntArray(owner, "suppressionException", 80); }
+            if (suppressed) engine.Api.SuppressUnit(owner, 60);
+            state.ActionLog.Clear();
+            for (int repeat = 0; repeat < 2; repeat++) engine.Api.FireTrigger("OnEndOfTurn", null, state.ActiveSide, eventArgs: new object?[] { state.Turn });
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            if (target.GotchaActivated != (activation == 0 ? 1 : activation) || target.Location != side.HandOf()
+                || owner.CustomJson.ContainsKey("suppressionException") || target.CustomJson.ContainsKey("is_kurmark_target")
+                || notices.Count(x => x.Name == "ZActionPlayCardFromHand") != (activation == 0 ? 1 : 0)
+                || notices.Count(x => x.Name == "ZActionPersistCustomFields" && x.Values[0].Value == 80) != 1
+                || notices.Count(x => x.Name == "ZActionPersistCustomFields" && x.Values[0].Value == 60) != 1
+                || engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"Kurmark回合末清理差异 side={side},active={active},supp={suppressed},activation={activation},dup={duplicateMissing}";
+        }
+        return null;
+    }
+
     private static string? CountdownNativeReference(CardDatabase db)
     {
         using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
@@ -39428,7 +39518,7 @@ internal static class SelfTest
     /// <summary>
     /// `PlayCardDirectlyFromHand` 的最小端到端回归：
     /// 不扣 kredit、不要求当前行动方；单位可直接进前线；显式 locationNumber
-    /// 参与目标位置排序；无效卡回写 false。
+    /// 参与目标位置排序；qqq 为整数引用，未赋值路径保留输出槽。
     /// </summary>
     private static string? PlayCardDirectlyFromHand(CardDatabase db)
     {
@@ -39458,7 +39548,7 @@ internal static class SelfTest
             "PlayCardDirectlyFromHand", support,
             new object?[] { support, false, 9001, null, 1 },
             ctx, out bool handled);
-        if (!handled || result is not true)
+        if (!handled || result is not null)
         {
             return $"免费从手牌直接打出应成功且 handled=true，实际 handled={handled}, result={result ?? "null"}";
         }
@@ -39483,7 +39573,7 @@ internal static class SelfTest
             "PlayCardDirectlyFromHand", frontline,
             new object?[] { frontline, true, 9002, null, 1 },
             ctx, out bool frontlineHandled);
-        if (!frontlineHandled || frontlineResult is not true
+        if (!frontlineHandled || frontlineResult is not null
             || frontline.Location != CardLocation.BoardFrontline
             || frontline.LocationNumber != 1 || frontExisting.LocationNumber != 0)
         {
@@ -39495,9 +39585,9 @@ internal static class SelfTest
             "PlayCardDirectlyFromHand", frontline,
             new object?[] { frontline, false, 9003, null, -1 },
             ctx, out bool invalidHandled);
-        if (!invalidHandled || invalid is not false)
+        if (!invalidHandled || invalid is not null)
         {
-            return $"不在手牌的卡应回写 qqq=false：handled={invalidHandled}, result={invalid ?? "null"}";
+            return $"不在手牌的卡不应写 qqq：handled={invalidHandled}, result={invalid ?? "null"}";
         }
 
         var gotcha = state.CreateWithId(gotchaDef.Name, Side.Left, 4,
@@ -39506,7 +39596,7 @@ internal static class SelfTest
             "PlayCardDirectlyFromHand", gotcha,
             new object?[] { gotcha, false, 9004, null, -1 },
             ctx, out bool gotchaHandled);
-        if (!gotchaHandled || gotchaResult is not true || gotcha.GotchaActivated != 1)
+        if (!gotchaHandled || gotchaResult is not null || gotcha.GotchaActivated != 1)
         {
             return $"直接出牌必须接通 Gotcha 激活序号：handled={gotchaHandled}, result={gotchaResult ?? "null"}, "
                  + $"activated={gotcha.GotchaActivated}";

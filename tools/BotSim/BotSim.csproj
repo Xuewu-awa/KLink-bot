@@ -28,6 +28,7 @@
     <None Update="Fixtures/suppression-json-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/card-exception-cleanup-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/countdown-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/direct-hand-output-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,438 @@
+{
+  "rule": "RULE-425",
+  "cases": [
+    {
+      "owner": 1,
+      "scenario": "null",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "null",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "null",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "not-hand",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "not-hand",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "not-hand",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-support",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-support",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-support",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 5,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-frontline",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-frontline",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "unit-frontline",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-idle",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 3,
+      "activation": 1
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-idle",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 3,
+      "activation": 1
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-idle",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 3,
+      "activation": 1
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-active",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 3,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-active",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 3,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "gotcha-active",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 3,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "full-support",
+      "seed": -7,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "full-support",
+      "seed": 0,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "full-support",
+      "seed": 77,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "enemy-frontline",
+      "seed": -7,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "enemy-frontline",
+      "seed": 0,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 1,
+      "scenario": "enemy-frontline",
+      "seed": 77,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "null",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "null",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "null",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": null,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "not-hand",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "not-hand",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "not-hand",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-support",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-support",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-support",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 6,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-frontline",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-frontline",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "unit-frontline",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 7,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-idle",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 4,
+      "activation": 1
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-idle",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 4,
+      "activation": 1
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-idle",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 4,
+      "activation": 1
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-active",
+      "seed": -7,
+      "written": false,
+      "qqq": -7,
+      "location": 4,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-active",
+      "seed": 0,
+      "written": false,
+      "qqq": 0,
+      "location": 4,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "gotcha-active",
+      "seed": 77,
+      "written": false,
+      "qqq": 77,
+      "location": 4,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "full-support",
+      "seed": -7,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "full-support",
+      "seed": 0,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "full-support",
+      "seed": 77,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "enemy-frontline",
+      "seed": -7,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "enemy-frontline",
+      "seed": 0,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    },
+    {
+      "owner": 2,
+      "scenario": "enemy-frontline",
+      "seed": 77,
+      "written": true,
+      "qqq": 0,
+      "location": 8,
+      "activation": 0
+    }
+  ],
+  "boundary": "Captured full3490B Blueprint AST executed with controlled validity/location/capacity/counter lookup,notification,movement,entry,crypto/static-cost helpers. Verifies output-write control flow and selected coarse card states,not entire helper internals,reentry or all direct-play rules. Native reference qqq is int32 and retained unless explicit1363store occurs."
+}
