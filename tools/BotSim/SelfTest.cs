@@ -234,6 +234,8 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("倒计时原语：类型门、固定false输出、缺失ID持久化与VM出参", CountdownNativeReference),
+        new("36步兵团：倒计时弃牌、重置例外与空列表抑制保留", Infantry36CountdownCleanup),
         new("实卡例外状态：五卡CDO与海军旅/陆战队抑制后回合清理", CardSuppressionExceptionCleanupReference),
         new("抑制JSON：按字段存在保留空字符串及空数组，保持类型和持久化", SuppressionJsonPresenceReference),
         new("卡牌JSON初始化和重置：独立可写对象、五键选择性清理与幂等", JsonInitializationResetNativeReference),
@@ -21322,6 +21324,102 @@ internal static class SelfTest
         return cases == 32 ? null : $"reset array cases={cases}";
     }
 
+    private static string? CountdownNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "countdown-reference-20261025.json")));
+        int count = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool vm in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HandOf(), 0);
+            foreach (var field in row.GetProperty("initial").EnumerateObject())
+                target.CustomJson.Set(field.Name, field.Value[1].GetString()!, (CardJsonType)field.Value[0].GetInt32());
+            bool set = row.GetProperty("operation").GetString() == "set";
+            int id = row.GetProperty("card_id").GetInt32(), value = row.GetProperty("value").GetInt32();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            bool finished = true, found = true, qqq = true;
+            if (vm)
+            {
+                KismetExpr Local(string name) => new() { Var = name, Scope = "local" };
+                var args = set ? new[] { new KismetExpr { Int = id }, new KismetExpr { Int = value }, Local("qqq") }
+                    : new[] { new KismetExpr { Int = id }, Local("finished"), Local("found") };
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", set ? "SetCountdown" : "DecrementCountdown", args, set ? new[] { 2 } : new[] { 1, 2 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx,
+                    new Dictionary<string, object?> { ["qqq"] = true, ["finished"] = true, ["found"] = true }, "qqq", "finished", "found");
+                qqq = Equals(output["qqq"], true); finished = Equals(output["finished"], true); found = Equals(output["found"], true);
+            }
+            else
+            {
+                object? result = engine.Api.InvokeByName(set ? "SetCountdown" : "DecrementCountdown", source,
+                    set ? new object?[] { id, value, null } : new object?[] { id, null, null }, ctx, out bool handled);
+                if (!handled) return "倒计时入口未派发";
+                if (set) qqq = Equals(result, true);
+                else if (result is object?[] outputs && outputs.Length == 2) { finished = Equals(outputs[0], true); found = Equals(outputs[1], true); }
+                else return "倒计时双出参形状错误";
+            }
+            if (set ? qqq != row.GetProperty("qqq").GetBoolean()
+                : finished != row.GetProperty("finished").GetBoolean() || found != row.GetProperty("found").GetBoolean())
+                return $"倒计时出参差异 op={row.GetProperty("operation")},kind={row.GetProperty("kind")},id={id},vm={vm}";
+            var expected = row.GetProperty("final");
+            if (target.CustomJson.Count != expected.EnumerateObject().Count() || source.CustomJson.Count != 0
+                || expected.EnumerateObject().Any(p => !target.CustomJson.HasType(p.Name, (CardJsonType)p.Value[0].GetInt32())
+                    || target.CustomJson[p.Name] != p.Value[1].GetString())) return $"倒计时字段被错误改写 case={count}";
+            var notices = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionPersistCustomFields").ToArray();
+            int[] ids = row.GetProperty("persist").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+            if (!notices.Select(x => x.Values[0].Value).SequenceEqual(ids)
+                || id != 60 && notices.Any(x => x.Values[1].Text != "None" || x.Values[2].Text != "None" || x.Values[3].Text != ""))
+                return $"倒计时通知ID/缺失上下文差异 case={count}";
+            count++;
+        }
+        return count == 320 ? null : $"倒计时 case={count}";
+    }
+
+    private static string? Infantry36CountdownCleanup(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool active in new[] { false, true })
+        foreach (bool resetFirst in new[] { false, true })
+        foreach (int timer in new[] { 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.ActiveSide = active ? side : side.Opposite();
+            var owner = state.CreateWithId("card_unit_infantry_regiment_36", side, 60, side.HqOf(), 1);
+            var first = state.CreateWithId(PlainUnit, side, 80, side.HandOf(), 0);
+            var second = state.CreateWithId(PlainUnit, side, 81, side.HandOf(), 1);
+            engine.Api.JsonSetIntArray(owner, "suppressionException", new[] { 80, 81 });
+            engine.Api.JsonSetInt(first, "countdown_timer", timer); engine.Api.JsonSetInt(second, "countdown_timer", timer);
+            if (suppressed) engine.Api.SuppressUnit(owner, 60);
+            if (resetFirst) engine.Api.ResetCardInBattle(first);
+            int[] pending = resetFirst && !suppressed ? new[] { 81 } : new[] { 80, 81 };
+            if (!engine.Api.JsonGetIntArray(owner, "suppressionException").SequenceEqual(pending)) return "36团重置事件抑制门不符";
+            for (int pass = 0; pass < 2; pass++)
+                engine.Api.FireTrigger("OnEndOfTurn", null, state.ActiveSide, eventArgs: new object?[] { state.Turn });
+            int[] expected = !active ? pending : resetFirst && suppressed ? new[] { 80 } : Array.Empty<int>();
+            if (!owner.CustomJson.HasType("suppressionException", CardJsonType.IntArray)
+                || !engine.Api.JsonGetIntArray(owner, "suppressionException").SequenceEqual(expected)
+                || second.Location != (active ? CardLocation.Discard : side.HandOf())
+                || first.Location != (active && !resetFirst ? CardLocation.Discard : side.HandOf()))
+                return $"36团倒计时/弃牌清理差异 side={side},supp={suppressed},active={active},reset={resetFirst},timer={timer}";
+            if (expected.Length == 0)
+            {
+                engine.Api.SuppressUnit(owner, 60);
+                engine.Api.FireTrigger("OnEndOfTurn", null, state.ActiveSide, eventArgs: new object?[] { state.Turn });
+                if (!owner.CustomJson.HasType("suppressionException", CardJsonType.IntArray)
+                    || engine.Api.JsonGetIntArray(owner, "suppressionException").Count != 0) return "36团自然删空的数组被抑制丢失";
+            }
+            if (engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0) return "36团链存在VM执行缺口";
+        }
+        return null;
+    }
+
     private static string? CardSuppressionExceptionCleanupReference(CardDatabase db)
     {
         using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
@@ -37705,9 +37803,9 @@ internal static class SelfTest
             "SetCountdown", source, new object?[] { target.CardId, 3, null }, ctx,
             out bool handled);
 
-        if (!handled || result is not true)
+        if (!handled || result is not false)
         {
-            return $"SetCountdown 应报告成功（handled={handled}, result={result ?? "null"}）";
+            return $"SetCountdown 的 qqq 应固定为 false（handled={handled}, result={result ?? "null"}）";
         }
 
         if (engine.Api.JsonGetInt(target, "countdown_timer") != 3)

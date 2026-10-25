@@ -1,0 +1,182 @@
+{
+  "rule": "RULE-424",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "787e93b2da49e02f62697f1a42be05981da029c7",
+  "kernel_changed": true,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-424",
+    "blueprint_bytes": 524,
+    "blueprint_functions": 2,
+    "countdown_ast_cases": 80,
+    "native_subtract_bytes": 191,
+    "native_subtract_executions": 36,
+    "headless_primitive_scenarios": 320,
+    "real_infantry_chain_scenarios": 32,
+    "worker_calls": 11,
+    "worker_outputs": 5,
+    "worker_exact_match": true,
+    "worker_job": "20261025-211219-rule424-countdown-contracts-97dea254",
+    "baseline": "847 passed,2 failed /849",
+    "final": "849/849 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "当前 BP_CardFunctions_C.DecrementCountdown 396字节在0查CardID、32调用JSON_GetInt、90按其typed Found分支。只有Number字段进入递减、写回和通知；371/382失败分支输出false/false。旧模拟器按ContainsKey判断，会把字符串、Boolean或Array当作数值零减为-1并改写类型。现改为HasType(Number)。",
+    "SetCountdown 128字节在32尝试写入，90无条件按原始CardID持久化，114将qqq写为false。旧实现目标存在时返回true，缺失时提前返回而不通知；现固定输出false并保留缺失／零／负ID通知。目标通过正ID查询，缺失不写到施动卡或其他卡。",
+    "两接口共80次捕获AST参考执行：15种倒计时状态交叉四种ID，以及五种设置值交叉四种ID。涵盖Number零／负值／边界／半整数／越界、错误类型、缺失字段、缺失目标和原ID通知。JSON标量转换复用RULE-412/415已审计契约，其原语在此显式受控。",
+    "为确认int32边界，另采集KismetMathLibrary.Subtract_IntInt当前原生入口0x3deb5b0，191字节与PE一致。36次离线Unicorn执行两种参数模式，包含INT_MIN-1实际环绕为INT_MAX。只有引擎参数初始化／读取受控，减法和输出存储运行真实指令。代码明确unchecked以对应此行为，不声称原来默认编译行为必然不同。",
+    "本地80参考行交叉双方与直接API／真实VM出参路径，共320场景。验证双输出、qqq固定false、原字段类型和值、施动卡隔离、通知数量及原始ID、缺失上下文None名字和空JSON。Persist的UI刷新标志仍按无头范围省略。",
+    "实卡第36步兵团预置追踪ID数组及Number计时器后新增32组合：双方、是否抑制、是否己方活动、先重置手牌与否、倒计时1/2。实际ResetCardInBattle、两次正式OnEndOfTurn和弃牌链核对CDO例外差别：回合末可在抑制后处理，OnOtherCardReset则不能。抑制后某个已重置且无计时器的ID可留在列表中，不能额外发明清理。",
+    "无重置或未抑制重置路径自然删至空数组后，再执行抑制及回合末，字段保持IntArray且仍为空，真实覆盖RULE-422修复的后续组合。核对四个实卡函数当前字节与RULE-423原始脚本一致，但没有完整认证该卡所有效果或所有重入时序。"
+  ],
+  "validation": [
+    "PID24220／模块／安装执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305守卫只读采集。两个非空卡函数和原生Subtract入口独立核对；同名StoreOffer.SetCountdown为不相关原生UI库存，不作为规则实现。无进程写入、注入、目标函数调用或对局操作。",
+    "最终测试先在旧生产代码运行：847通过、2失败／849。新原语回归复现numeric-string被递减，原SetCountdown测试依据权威固定false输出修正预期后也失败。未修改fixture后才修生产，修复后同一套完整测试849/849通过、退出码0。",
+    "主agent独立重解码524字节蓝图，重跑80AST及36原生减法执行，完整结果与保留模型一致。320本地参考场景与fixture完整核对；32实卡链是依据已解码分支和CDO构造的最终状态回归，不冒充32场原生客户端对局。",
+    "DeepSeek私有任务提取11个调用节点、5处输出赋值，主agent与原始AST节点／语句偏移完整匹配，无修补。任务20261025-211219-rule424-countdown-contracts-97dea254退出码0。"
+  ],
+  "limits": [
+    "本轮修复两个倒计时原语的类型门、输出和缺失通知，不认证所有Countdown使用卡牌或整个第36步兵团。",
+    "真实弃牌／重置回归验证所选状态和抑制门，不证明所有取消、重入、批次顺序或异常上下文。",
+    "JSON数值转换复用既有证据，容器、字段、通知参考原语受控；没有新增原生JSON分配、GC、别名或畸形数据生命周期证明。",
+    "Native Persist刷新UI标志不在无头规则范围内，不能以本轮结果宣称每个协议字段完全相同；单卡版本迁移仍暂停，完整认证卡牌仍为0。"
+  ],
+  "next_work": [
+    "继续核对Kurmark回合末直接出手、反制激活序号门和手牌目标标记清理。",
+    "后续独立核对第36步兵团抽牌生产入口及重置／弃牌取消的复杂重入顺序。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule424-countdown-functions-native-20261025.json",
+      "bytes": 4508119,
+      "sha256": "395db48d536b77764bfb0f3f3ce5f98c0f980cc51796243c661e06b9b566e54b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule424-infantry-bytecode-revalidation-native-20261025.json",
+      "bytes": 6275,
+      "sha256": "56078490a3b3e170ee7333c761a37cdcdd5fe9a1c29f1409d586bb62442efd08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule424-subtract-body-native-20261025.json",
+      "bytes": 8503,
+      "sha256": "7fe460f2444f06bcef05b8b6932fb43e816db0ceae1a46e2301281ad184c0d9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule424-subtract-function-native-20261025.json",
+      "bytes": 4488099,
+      "sha256": "f1167aef5f91b847418bb848c791f672950e1188ca8ce91ba034831de356dcc7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-card-wrappers-native-20261025.json",
+      "bytes": 3680400,
+      "sha256": "a15e12dfa5bea9f5fcd79469102226a3fca52a575cd719a30fc46108de98edee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-card-trigger-cdos-native-20261025.json",
+      "bytes": 3443188,
+      "sha256": "f80bce7c41b0fc8c9a2e7d5668de05a05b9b9fb3b52bf15ff93d0f94c75550da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule423-trigger-enum-native-20261025.json",
+      "bytes": 3140240,
+      "sha256": "805b6e4f07890be573f11032a9213ca37ff1a4c344fccbefa8d21430331a4333"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule424-countdown.py",
+      "bytes": 2379,
+      "sha256": "c08ee372d901dfe5cae901a1bdd3eb9e2df003ebab2e897a2bf6fd1c8630193c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule424-subtract-body.py",
+      "bytes": 2704,
+      "sha256": "bf1e47f1b617063f702e1b7538558c63c8cfe445beac436e1587d53841857e17"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule424-subtract.py",
+      "bytes": 2357,
+      "sha256": "282f484de8d051f4f52ab6f95876057fec513bc0980144d8080757809677db41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule424-countdown.py",
+      "bytes": 6359,
+      "sha256": "b96340132249dfcda82b1738b16cf23bd58cff884a1a58fb35077c5f716245d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule424-subtract.py",
+      "bytes": 2412,
+      "sha256": "fd6cea76cff230b87aa403ed6d852136d9e2476c3b109702bccb55966bdbcda4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-countdown-ast-model-20261025.json",
+      "bytes": 42257,
+      "sha256": "09a5f6023d115a7d873ef537e398ada7d808f96413915fda08a70a6e26812802"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-countdown-reference-20261025.json",
+      "bytes": 31108,
+      "sha256": "8616c435fc5ee37b4fd8b57f206f75d8ffcd9de379167fd0ffbe38d7d000d2e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-subtract-native-model-20261025.json",
+      "bytes": 4060,
+      "sha256": "9e8bc1f526e5719e405f5db973b78dd28fc4c568ed2f423b9f1be2bb4e08c3a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-verified-20261025.json",
+      "bytes": 542,
+      "sha256": "24e0ca3a3bed31f0bcc92e739c9466a6ac2e5cf77d71563719ad87c0e7ab3b96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule424.py",
+      "bytes": 5945,
+      "sha256": "ed836a6c92b7892e2d9d9d555d4bf4d7c5eceb339e6ed2a1de3dbf2beb8b7925"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-baseline-selftest.log",
+      "bytes": 75118,
+      "sha256": "7d675448079a25006aebee0b19249b076e61e0ae43c0c988a95ac72a3ec50c6b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-final-selftest.log",
+      "bytes": 74966,
+      "sha256": "0e08a2d2e9c281735ddd177e4a968879201004ed0468a11ba9c69cf009dde17a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-worker-packet\\input.json",
+      "bytes": 7842,
+      "sha256": "37be19efcf44536791c22f1e6eb824f8bbe666906eddc2337c084de36d3af3e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-worker-packet\\output.json",
+      "bytes": 7455,
+      "sha256": "3ea3260315d49dbd779bbd75686f44b4a97e2aa500b1d30e7dff298b17079cf8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule424-worker-packet\\task.txt",
+      "bytes": 480,
+      "sha256": "4a9317af8c2f62bc4c80bdba05903da1b2d9c644844c0b7e853467deba6e00fd"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-211219-rule424-countdown-contracts-97dea254\\job.json",
+      "bytes": 741,
+      "sha256": "13dd602aba15f604da22ac4572a3764820ceca7147d3b0136f0d41834f2754a6"
+    }
+  ]
+}

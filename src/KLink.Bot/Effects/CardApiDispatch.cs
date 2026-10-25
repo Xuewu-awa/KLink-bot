@@ -1429,36 +1429,29 @@ public sealed partial class CardApi
 
                 return null;
             },
-            // BP_CardFunctions::DecrementCountdown(cardID, out countdownFinished,
-            // out countdownFound): decrement only when countdown_timer exists, persist
-            // the new value, and report finished when the decremented value is <= 0.
+            // JSON_GetInt's Found requires EJson::Number, not just field presence.
+            // The write and notification run only through that typed gate.
             ["DecrementCountdown"] = (c, r, a) =>
             {
-                var target = AsCardOrId(c, a.ElementAtOrDefault(0));
-                if (target is null || !target.CustomJson.ContainsKey("countdown_timer"))
-                {
+                int cardId = IdOf(a.ElementAtOrDefault(0));
+                var target = GetCardFromID(cardId);
+                if (target is null || !target.CustomJson.HasType("countdown_timer", CardJsonType.Number))
                     return new object?[] { false, false };
-                }
 
-                int remaining = JsonGetInt(target, "countdown_timer") - 1;
+                int remaining = unchecked(JsonGetInt(target, "countdown_timer") - 1);
                 JsonSetInt(target, "countdown_timer", remaining);
-                PersistCustomFields(target);
+                PersistCustomFields(cardId);
                 return new object?[] { remaining <= 0, true };
             },
-            // `SetCountdown(cardID, countdown, out qqq)` 是 BP_CardFunctions 的
-            // 纯包装：解析目标卡、写入卡牌私有 JSON 的 `countdown_timer`，再持久化。
-            // 目标在 a[0]，不能退回 receiver（receiver 是施动卡的 cardFunction）。
+            // SetCountdown's qqq is always false (i114); it still persists the
+            // original ID when GetCardFromID finds no target (i90).
             ["SetCountdown"] = (c, r, a) =>
             {
-                var target = AsCardOrId(c, a.ElementAtOrDefault(0));
-                if (target is null)
-                {
-                    return false;
-                }
-
-                JsonSetInt(target, "countdown_timer", IntArg(a, 1));
-                PersistCustomFields(target);
-                return true;
+                int cardId = IdOf(a.ElementAtOrDefault(0));
+                if (GetCardFromID(cardId) is { } target)
+                    JsonSetInt(target, "countdown_timer", IntArg(a, 1));
+                PersistCustomFields(cardId);
+                return false;
             },
             ["Array_Reverse"] = (c, r, a) =>
             {

@@ -1,0 +1,1804 @@
+{
+  "rule": "RULE-424",
+  "cases": [
+    {
+      "operation": "decrement",
+      "kind": "missing",
+      "card_id": 60,
+      "initial": {},
+      "value": 0,
+      "final": {},
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "missing",
+      "card_id": 77,
+      "initial": {},
+      "value": 0,
+      "final": {},
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "missing",
+      "card_id": 0,
+      "initial": {},
+      "value": 0,
+      "final": {},
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "missing",
+      "card_id": -1,
+      "initial": {},
+      "value": 0,
+      "final": {},
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "two",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "two",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "two",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "two",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "one",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "finished": true,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "one",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "one",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "one",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "zero",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-1"
+        ]
+      },
+      "finished": true,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "zero",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "zero",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "zero",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-3"
+        ]
+      },
+      "finished": true,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "min",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "finished": false,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "min",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "min",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "min",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "max",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483646"
+        ]
+      },
+      "finished": false,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "max",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "max",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "max",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "half",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "half",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "half",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "half",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative-half",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-3"
+        ]
+      },
+      "finished": true,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative-half",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative-half",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "negative-half",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-1.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "overflow",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "-1"
+        ]
+      },
+      "finished": true,
+      "found": true,
+      "qqq": null,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "decrement",
+      "kind": "overflow",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "overflow",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "overflow",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          3,
+          "2147483647.5"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "numeric-string",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "numeric-string",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "numeric-string",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "numeric-string",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          "2"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "empty-string",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "empty-string",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "empty-string",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "empty-string",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          2,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "false",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "false",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "false",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "false",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "0"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "true",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "true",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "true",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "true",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          4,
+          "1"
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "array",
+      "card_id": 60,
+      "initial": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "array",
+      "card_id": 77,
+      "initial": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "array",
+      "card_id": 0,
+      "initial": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "decrement",
+      "kind": "array",
+      "card_id": -1,
+      "initial": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "value": 0,
+      "final": {
+        "countdown_timer": [
+          5,
+          ""
+        ]
+      },
+      "finished": false,
+      "found": false,
+      "qqq": null,
+      "persist": []
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 60,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2147483648,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ],
+        "countdown_timer": [
+          3,
+          "-2147483648"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 60,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ],
+        "countdown_timer": [
+          3,
+          "-2"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 60,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ],
+        "countdown_timer": [
+          3,
+          "0"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 60,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ],
+        "countdown_timer": [
+          3,
+          "2"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 60,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2147483647,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ],
+        "countdown_timer": [
+          3,
+          "2147483647"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        60
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 77,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2147483648,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        77
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 77,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        77
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 77,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        77
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 77,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        77
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 77,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2147483647,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        77
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 0,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2147483648,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        0
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 0,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        0
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 0,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        0
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 0,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        0
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": 0,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2147483647,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        0
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": -1,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2147483648,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        -1
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": -1,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": -2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        -1
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": -1,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 0,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        -1
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": -1,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        -1
+      ]
+    },
+    {
+      "operation": "set",
+      "kind": "set",
+      "card_id": -1,
+      "initial": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "value": 2147483647,
+      "final": {
+        "keep": [
+          2,
+          "unchanged"
+        ]
+      },
+      "finished": null,
+      "found": null,
+      "qqq": false,
+      "persist": [
+        -1
+      ]
+    }
+  ],
+  "boundary": "Actual captured DecrementCountdown396B and SetCountdown128B ASTs. GetCardFromID and typed JSON scalar hooks reuse RULE-412/415 contracts;Subtract_IntInt modeled wrapping int32. Persist captured as original-ID notifications;UI refresh flag not modeled. No native numeric helper execution added here,GC/serializer or whole-card countdown lifecycle proof."
+}
