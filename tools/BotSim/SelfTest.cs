@@ -236,6 +236,7 @@ internal static class SelfTest
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
         new("Kurmark验证器：反制与typed真标记、已激活候选及取消选择", KurmarkValidatorReference),
         new("手牌选择身份：显式ID优先于receiver/Self，回调归属与无效ID早退", HandSelectionExplicitIdIdentity),
+        new("手牌答复前段：额外选择与触发队列先于AfterWait及自动出牌", HandReplyExtraBeforeWait),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21400,6 +21401,78 @@ internal static class SelfTest
                 || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
         }
         return null;
+    }
+
+    private static string? HandReplyExtraBeforeWait(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int extra in new[] { -2, -1, 0, 1, 2 })
+        foreach (int reply in Enumerable.Range(0, 3))
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            if (extra != -2) source.ExtraPlayTriggers = extra; // -2 represents an absent JSON key.
+            for (int i = 0; i < 3; i++) state.CreateWithId("card_event_interception", side, 80 + i, side.HandOf(), i);
+            var queued = state.CreateWithId(PlainUnit, side, 90, CardLocation.Discard, 0);
+            state.TriggerQueue.Add(queued);
+            int requests = 0, queueCalls = 0;
+            var order = new List<string>();
+            engine.PickHandTargetId = (_, cards) => {
+                requests++; order.Add("reply");
+                return reply == 0 ? cards[0].CardId : reply == 1 ? (int?)null : 999;
+            };
+            CardEffectScripts.Register(PlainUnit, _ => { queueCalls++; order.Add("queue"); });
+            try { engine.Api.RunCardEffect(source, null); }
+            finally { CardEffectScripts.Unregister(PlainUnit); }
+            int repeats = reply == 0 ? Math.Max(extra, 0) : 0;
+            int[] chosen = reply == 0 ? Enumerable.Range(80, repeats + 1).ToArray() : Array.Empty<int>();
+            if (requests != repeats + 1 || queueCalls != (reply == 0 ? 1 : 0)
+                || source.ExtraPlayTriggers != (reply == 0 ? (extra == -2 ? 0 : Math.Min(extra, 0)) : extra == -2 ? 0 : extra)
+                || source.CustomJson.ContainsKey("extra_play_triggers") != (extra != -2)
+                || !engine.Api.JsonGetIntArray(source, "suppressionException").SequenceEqual(chosen)
+                || !order.SequenceEqual(Enumerable.Repeat("reply", repeats + 1).Concat(reply == 0 ? new[] { "queue" } : Array.Empty<string>()))
+                || state.TriggerQueue.Count != (reply == 0 ? 0 : 1)
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return $"hand repeat {side}/{extra}/{reply}: requests={requests},queue={queueCalls},extra={source.ExtraPlayTriggers},order={string.Join(",", order)}";
+            cases++;
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 2; state.ActiveSide = side;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var source = state.CreateWithId("card_unit_gordon_highlanders", side, 20, side.HandOf(), 0);
+            state.CreateWithId("card_unit_dornier_do_18g", side, 30, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_convoy_175", side, 31, side.HandOf(), 1);
+            var resistance = state.CreateWithId("card_event_resistance_new", side, 60, side.DeckOf(), 0);
+            state.CreateWithId("card_unit_432_infantry_regiment", side, 61, side.DeckOf(), 1);
+            var queued = state.CreateWithId(PlainUnit, side, 90, CardLocation.Discard, 0);
+            var order = new List<string>(); bool queueState = false;
+            engine.PickHandTargetId = (_, _) => {
+                order.Add("reply"); state.TriggerQueue.Add(queued);
+                engine.DrawCard(side, instigatorId: source.CardId); return target.CardId;
+            };
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (card == source && newLocation == CardLocation.BoardFrontline) order.Add("wait");
+                if (card == resistance && newLocation == CardLocation.Discard) order.Add("auto");
+            };
+            CardEffectScripts.Register(PlainUnit, _ => {
+                order.Add("queue"); queueState = source.Location == side.HqOf()
+                    && target.Location == side.DeckOf() && resistance.Location == side.HandOf();
+            });
+            bool played;
+            try { played = engine.PlayCard(source); }
+            finally { CardEffectScripts.Unregister(PlainUnit); }
+            if (!played || !queueState || !order.SequenceEqual(new[] { "reply", "queue", "wait", "auto" })
+                || source.Location != CardLocation.BoardFrontline || target.Location != side.HandOf()
+                || resistance.Location != CardLocation.Discard || state.TriggerQueue.Count != 0
+                || state.GetAutoPlayCards().Length != 0 || engine.Api.Vm.FaultedPrograms != 0)
+                return $"hand reply stages {side}: queueState={queueState},order={string.Join(",", order)}";
+            cases++;
+        }
+        return cases == 32 ? null : $"hand reply stages cases={cases}";
     }
 
     private static string? HandSelectionExplicitIdIdentity(CardDatabase db)

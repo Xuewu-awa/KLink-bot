@@ -1,0 +1,172 @@
+{
+  "rule": "RULE-430",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "b7f96d974c9fcdb668ec4ce385417a6d7110966b",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-430",
+    "script_functions_redecoded": 12,
+    "script_bytes": 24009,
+    "composed_ast_cases": 16,
+    "native_integer_cases": 8,
+    "headless_regression_cases": 32,
+    "worker_call_nodes": 26,
+    "worker_added_nested_offsets_removed": 20,
+    "baseline": "854 passed,1 failed /855",
+    "final": "855/855 pass",
+    "boundary": "Selected local hand-reply AST8671..9403 and114-byte helper; controlled callbacks/getters/Update return. Missing-source model uses fresh false out local, not whole invalid-ID protocol. Native JSON conversion helpers controlled separately; not full allocator/serialization proof."
+  },
+  "findings": [
+    "本地PlayerMoves手牌答复图8750创建动作，8804按tmpSourceCardID查选择卡，8858缓存对象，8877调用该对象OnHandTargetSelected(tmpTargetCardID,tmpSourceCardID)。8977紧接HandleExtraPlayTriggersAfterSelectHandCard，之后才在9240可选AfterWait、9294自动出牌、9330结束动作、9366清目标ID、9389推进队列。确认目标ID与instigator/source ID的参数顺序及回调对象身份，不把目标卡当回调接收者。",
+    "HandleExtraPlayTriggersAfterSelectHandCard当前114字节：0调用card.UpdateExtraPlayTriggers(out triggerNext)，41根据结果分支；true在55调用card.OnPlayedFromHand(NoObject)，false在97调用ResolveTriggerQueue。该前置步骤不只处理正额外次数，零/无计数时也负责释放触发队列。",
+    "原生UpdateExtraPlayTriggers的UFunction exec入口RVA0x4a84620直接调用0x4b0ff90；当前磁盘代码与只读内存字节一致。实现从customJson(+0x518)读取extra_play_triggers，cvttsd2si提取整数，正数分支写入原整数-1，返回条件基于原整数>0，因此1写0仍返回true。8组离线Unicorn执行覆盖键不存在及整数-2/-1/0/1/2/17/INT_MAX，返回和写入均符合；JSON/name/分配辅助明确受控，未声称全面类型转换认证。",
+    "旧手牌适配调用ResolveHandSelection(updateExtraTriggers:false)，既没有执行这一前置重触发，也没有走零次分支的ResolveTriggerQueue。现新增独立updateExtraBeforeWait阶段，仅手牌答复开启：回调完成后，正次数减一并以null目标再次执行出牌效果，否则释放触发队列；随后恢复原等待动作和自动出牌。抽牌选择既有的后置额外触发阶段保留原顺序。",
+    "OpponentActionsHandTargetSelected2286字节在571同样按cardSelectingTarget取对象，644回调，848可选AfterWait，902自动出牌；该函数没有同名额外触发helper。两份客户端路径不可按相邻调用文字合并。本轮修复针对无头主动决策对应的本地PlayerMoves阶段，不补写一套对手网络协议。",
+    "新增32个场景：30个真实Kurmark选择/回调场景，双方、额外键缺失/整数-1/0/1/2、有效选择/取消/无效答复。正次数要求重复选择不同未标记反制，最终清零；无计数有效答复仍须释放待处理触发队列，取消或无效答复不执行答复尾部。另2个双方Gordon+Dornier+RESISTANCE场景核对实际目标回调→触发队列→AfterWait移动→自动出牌，队列探针运行时源仍在支援线、目标已回牌库、自动牌尚在手。",
+    "12份非空Blueprint函数共24009字节均完整重解码；本地手牌前段与114字节helper组合16个AST参考执行，控制动作处理/等待/源对象存在/Update返回条件，顺序与参数全部符合。原生integer8例与C#32场景分开计数，不将受控helper回调误称整个原生对局执行。"
+  ],
+  "validation": [
+    "PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305守卫；当前脚本/函数头和原生CFG保留字节稳定读取，原生代码磁盘与内存一致。无游戏进程写入、注入、目标函数调用或自动对局操作。Unicorn只在离线虚拟内存中执行。",
+    "最终测试布景在旧生产下854通过、1失败/855，退出1，首错是缺失额外次数键时有效回复没有释放触发队列（requests1、queue0）。修复后同一完整selftest855/855通过、退出0；含先前手牌显式ID和抽牌自动出牌阶段测试。",
+    "回归后仅纠正ResolveHandSelection旧注释中把所有额外触发统一描述为AfterWait之后的问题，未再改执行代码或测试布景，未为纯注释重复整套测试。SelfTest.cs保留UTF8 BOM。",
+    "DeepSeek任务20261026-013706-rule430-reply-calls-c1c4f780完成、退出0，提取26个调用节点。主agent发现其中20个嵌套call_node被额外附加了顶层StatementIndex，不能声称原样复制；保留原结果，派生verified-result移除这些附加字段后逐节点与捕获AST完全匹配。调用关系与规则结论由主agent核对。",
+    "原生仿真初版把FName构造辅助的ANSI键常量按UTF16解释导致键名断言失败；按实际字节改为ASCII解码后8例通过，没有因此修改游戏规则代码。"
+  ],
+  "limits": [
+    "原生仿真只核对整数Number输入下的计数分支，name/JSON存在查询/数值读取/分配写回辅助受控；错误类型、小数、溢出或完整分配器/别名语义仍未认证。",
+    "16个组合AST参考将回调、GetCardFromID、动作处理/等待getter及Update结果显式受控；null源使用fresh false局部初值，不代表所有UE持久帧/无效ID协议。未执行整个PlayerMoves队列或AfterWait2029字节内部所有规则。",
+    "32场景中触发队列探针采用受控手写效果，只观察时点；Kurmark选择及Gordon/Dornier/RESISTANCE关键流程使用当前真实程序。正额外次数与完整等待/多重网络回复组合尚未穷尽。",
+    "本轮未处理等待期间选择卡移除/替换的重新查找边界；客户端本地答复在8804取一次对象，之后回调/helper/AfterWait共用该缓存，而本地选择闭包还需核对请求至答复之间的对象生命周期。",
+    "跨侧候选池、选择面板、重连/超时和完整卡牌认证仍未完成，完整认证卡牌数为0。"
+  ],
+  "next_work": [
+    "核对请求后、答复前选择卡被移除/替换或转换时的身份重新查找边界，并区分回调之后客户端保留的缓存对象。",
+    "继续审计额外触发JSON数值转换及正次数与等待重入组合；保持手牌前置与抽牌后置阶段的区别。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-hand-reply-functions-native-20261026.json",
+      "bytes": 4697452,
+      "sha256": "8fe62ee3e0ff53ee938fe87db177cc11c364e90ad09aaa28b81b898b16123b23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-player-moves-functions-native-20261026.json",
+      "bytes": 4918196,
+      "sha256": "857f22471713a1c37e40dfd312c6999e9bc3469bbbddcfe4520f3174886d2e9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-extra-hand-triggers-native-20261026.json",
+      "bytes": 4491767,
+      "sha256": "d5a5e126aef4b6c671e67b9f2daa0582b10f1d45c49195485ffa98f6c4dcf7c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-update-extra-declaration-native-20261026.json",
+      "bytes": 4488104,
+      "sha256": "935685865193877e9d8e23eb5bda65c94fd5a9c154b2bcbcc4b90789a52b7b6c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule430-update-extra-impl-native-20261026.json",
+      "bytes": 19898,
+      "sha256": "c998510aae1d36fb54d3697f009c4871e70c1bd5b7f4ef618a0da814148e9123"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule430-hand-replies.py",
+      "bytes": 2721,
+      "sha256": "486619b75a3d59b66828e840ecbcf37d29a5c730e8bd83822359bc575d0324d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule430-player-moves.py",
+      "bytes": 2409,
+      "sha256": "50bf3d4c7fe53ca5c210e08dee99d4a6390f3e1ed1c8bd3d1c8547ec0c30e556"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule430-extra.py",
+      "bytes": 2388,
+      "sha256": "8f21d2c89f1853a636bdb2ee51f03b8a38e8391d67c0c3b59de4da8bbf6b74d0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule430-update.py",
+      "bytes": 2379,
+      "sha256": "7a28e8c71117061b6440f12d89564884a5fc54a2672c6f733947f433bbaed6d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule430-update-impl.py",
+      "bytes": 2882,
+      "sha256": "67fc32cb1bd0ca2f3820bf37c92f69c749c22a3ea6ea5d431015c44833e30409"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule430-update.py",
+      "bytes": 3521,
+      "sha256": "d3e73d6debf2786e7d3cf063679165637ed1f0b86d31f9e8eb77b873c6522ca9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-update-native-emulation-20261026.json",
+      "bytes": 1857,
+      "sha256": "f54e264a9281655bfdb7182588d6ba23d26e5913f6b961cb8af752df8c3d5fc3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule430.py",
+      "bytes": 7671,
+      "sha256": "9e69a42edd53b1b7d9931ce0251b5467b258a51dc544541dcb6500f079d4bbca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-verified-20261026.json",
+      "bytes": 24390,
+      "sha256": "c9818ec9cef106bdd7332a9ecdb688db0ee64430689023930979aebd0bf1ecda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-worker\\input.json",
+      "bytes": 17839,
+      "sha256": "a5947f23c2faa98bfde108b991807556140ed9de7e5488fc173970a054dd5285"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-worker\\result.json",
+      "bytes": 11646,
+      "sha256": "f1ab19b302978ffde38545efa09f2f1312ef39a8f6df6f569c2ae14926a92125"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-worker\\verified-result.json",
+      "bytes": 11382,
+      "sha256": "94ecb3806fb58d79cb229fc233b5cb34d5750fd24fb8520c7e9029c10d69d551"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-baseline-selftest.log",
+      "bytes": 75518,
+      "sha256": "cb516dcc18fe66440c7f1617403600a00e821d1c6b8f896633e38cda1384bc28"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-final-selftest.log",
+      "bytes": 75453,
+      "sha256": "5aa8f5dc0f2ae5ff25fc305b5f010a6e728674438e26ffd8fa48450bc12a91dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule430-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 194790,
+      "sha256": "45a7753de84d60c37adb99a03eed4ba7406d90b683455e6526bfe6cf07798156"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 394284,
+      "sha256": "f1e61940221b6abca81296703337d6bb150eafa366d66d48f76ec9c6c165c148"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 2798712,
+      "sha256": "4d1129ddbe3952488be411ad58a3cd9523e5668fcef6e4eb83bea56eb188aa77"
+    }
+  ]
+}

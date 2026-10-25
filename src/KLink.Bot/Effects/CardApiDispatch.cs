@@ -2391,7 +2391,7 @@ public sealed partial class CardApi
                 eventArgs: new object?[] { chosen?.CardId ?? 0, selecting.CardId },
                 eventSubject: chosen);
             return true;
-        }, updateExtraTriggers: false);
+        }, updateExtraTriggers: false, updateExtraBeforeWait: true);
         return 0; // Blueprint i45 writes the int32 qqq output, even on cancellation.
     }
 

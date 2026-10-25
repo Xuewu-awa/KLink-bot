@@ -24,13 +24,25 @@ public sealed class MatchEngine
     private readonly Dictionary<int, Action> _waitPlayContinuations = new();
 
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
-        bool defer = true, bool consumeAutoPlay = true)
+        bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false)
     {
         void Complete()
         {
             if (!resolve()) return; // No reply is different from a reply selecting card ID 0.
+            // PlayerMoves hand replies call this helper before AfterWait and
+            // autoplay; card-to-draw replies keep their separate later phase.
+            if (updateExtraBeforeWait)
+            {
+                if (selecting.ExtraPlayTriggers > 0)
+                {
+                    selecting.ExtraPlayTriggers--;
+                    Api.RunCardEffect(selecting, null);
+                }
+                else
+                    Api.ResolveTriggerQueue();
+            }
             if (_waitPlayContinuations.Remove(selecting.CardId, out var continuation))
-                continuation(); // BP_OnlineMatch: AfterWait before HandleExtraPlayTriggers.
+                continuation(); // Complete the waiting play before this reply's autoplay phase.
             // Reply actions consume after their own callback / AfterWait, but
             // CardToDrawSelected i=1677 precedes HandleExtraPlayTriggers i=1737.
             if (consumeAutoPlay) ExecuteAutoPlayCards();
