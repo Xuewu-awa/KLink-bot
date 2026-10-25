@@ -100,6 +100,7 @@ pak-filelist-live.txt
 !/tools/AotProbe/
 !/tools/LiveEnumProbe/
 !/tools/audit-rule-evidence.py
+!/tools/audit-json-array-callers.py
 
 # ---------------------------------------------------------------------------
 # 构建产物

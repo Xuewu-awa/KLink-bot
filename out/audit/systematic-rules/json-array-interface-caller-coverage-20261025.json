@@ -1,0 +1,231 @@
+{
+  "rule": "RULE-419",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "4615d0a73eda688c74627326b608c66327bc7df8",
+  "kernel_changed": false,
+  "test_fixture_added": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "findings": [
+    "Eight BoolArray/StringArray interfaces each have one nonempty BP_CardFunctions_C implementation plus an empty CardFunctionsStub declaration. Total nonempty Blueprint bytecode7552bytes; all eight independently redecoded exactly. The local simulator has none of these eight dispatch names.",
+    "Loaded reflected function inventory:31431Function/DelegateFunction/SparseDelegateFunction objects,18375nonempty scripts,8114329script bytes. Initial exact target FName-pair and UFunction-pointer scan returned0raw candidate functions and0read errors. This is a direct-reference inventory of the captured loaded set, not a whole-game reachability proof.",
+    "Second read revalidated all18375script sizes/hashes and stable headers,retained each function header and raw script in a hashed gzip corpus. Independent offline replay returned0raw hits for all eight names. Positive controls JSON_GetInt107andJSON_Clear141raw-hit function bodies each include an independently decoded actual-call example. Raw-hit counts are function bodies,not exact call counts or cards.",
+    "Blueprint Found-assignment syntax: GetBoolArray writesFalse at664and718;GetStringArray False683/True726;SetBoolArray/SetStringArray False522;AddToBoolArray/AddToStringArray True476. RemoveBoolArray assigns typed-field-presence local at740;RemoveStringArray assigns JsonFound at430/822/2583. Do not infer element conversion or removal-match success semantics from output variable names.",
+    "No newly demonstrated named-card PvP defect in this captured direct-reference set. Keep all eight missing interfaces explicitly unresolved rather than implementing guessed bool/string native conversion. Native/unloaded/dynamically constructed-name callers remain possible. Production rules unchanged."
+  ],
+  "validation": [
+    "Fresh capture guards PID24220,current module identity and executable SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305. Installed executable hash independently rechecked. No process writes,injection,target function calls or game state manipulation.",
+    "New stdlib tool tools/audit-json-array-callers.py checks interface sizes/hashes,process identity,full gzip hash,per-function raw bytes and headers,FName identities,unique addresses,corpus accounting,exact target/control patterns,negative scans and positive examples. Requires retained local evidence;does not silently substitute a newer live snapshot.",
+    "Eight implementation ASTs and two positive-control ASTs independently redecoded from captured raw bytes and symbol/FName maps with runtime-kismet-subset-297.py. Complete syntax decoding is not complete semantic execution.",
+    "No production or BotSim test changes. Previous RULE-418845/845is historical validation of unchanged production;no new full selftest claimed for this evidence-only audit.",
+    "DeepSeek private packet extracted108call nodes and12Found assignments across8functions. Primary compared complete nodes and enclosing offsets against source AST: exact match,0repairs. Job20261025-193629-rule419-array-contracts-76403046completed exit0. This is mechanical extraction,not independent rule authority."
+  ],
+  "limits": [
+    "Zero direct references is restricted to captured loaded function scripts. No exclusion of unloadedPakassets,native C++calls,dynamic name construction,reflection dispatch or future versions.",
+    "No bytecode control-flow/native converter reference execution yet for these eight functions. Found output assignments are syntax evidence,not all-path behavior certification under malformed/null state.",
+    "GUI,campaign,tutorial and other loaded content are included in the scanning corpus but not certified for simulator implementation. No new fully certified cards;total remains0."
+  ],
+  "next_work": [
+    "Trace native bool/string JSON value converters and array removal control flow before implementing any of the eight unresolved interfaces;raise priority if authoritative reachable PvP callers emerge.",
+    "Trace explicit JSON string deserialization/assignment paths and legitimate callback inputs after successful constructor initialization.",
+    "Continue broader PvP primitive and individual card mapping;keep paused single-card version migration separate."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-json-array-interfaces-native-20261025.json",
+      "bytes": 4729003,
+      "sha256": "9a0f9cd29113673be3731d130507ad99422186bcc5d69dd2869f250eef0adb29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-json-array-callers-native-20261025.json",
+      "bytes": 8682399,
+      "sha256": "a87aeb9558dfe0301ce455fc55f5c3eb03e59036a46029fd1ba01bf2f324f963"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-json-array-caller-proof-20261025.json",
+      "bytes": 89460,
+      "sha256": "b5c25fc5a685eb6971c651380ad3e3b9f09f0e909de47a5879c64b939a4224e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-script-corpus-20261025.bin.gz",
+      "bytes": 2734804,
+      "sha256": "0407b163e0c202c1bef0d7086a4e01e216042d2bde1b5e223a43f3cd4adb9a96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule419-array-interfaces.py",
+      "bytes": 2714,
+      "sha256": "cc4fff3518c998eb590ff299f1e5c1234b90af35a13818edf2ad8be64a9b6180"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule419-callers.py",
+      "bytes": 3683,
+      "sha256": "fac058c3d701f4ce51d683bcfbe88a3c83a594211326fa13f513ea129db3880c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule419-caller-proof.py",
+      "bytes": 3848,
+      "sha256": "48be3e6253882919c831a92ac6e8a887f0e9f18b2728741905db7f10e39472c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule419.py",
+      "bytes": 2382,
+      "sha256": "5549eb8f38369d0640c86960068b55b5e316403c54af882a65792a4630a8fdbc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule415-json-scalars-native-20261025.json",
+      "bytes": 4552836,
+      "sha256": "94a543904f37d4bc5a7d0e8678f6cfb837dcf7635af412fef78693067a7dbd1a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule419-verified-20261025.json",
+      "bytes": 2861,
+      "sha256": "9042ff4296a7aacb545c2be11b56b31080caf31db8cb062168db6923bb1587f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule419-worker-packet\\input.json",
+      "bytes": 112623,
+      "sha256": "578dd0179f9b13632f985f72a1d70bbf497d6033cc31f9fb661324377eb34f86"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule419-worker-packet\\output.json",
+      "bytes": 57433,
+      "sha256": "a549013ce2483a25f228ca12c937e4a37883472d7d821f1d4cf99bd32f285d76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule419-worker-packet\\task.txt",
+      "bytes": 685,
+      "sha256": "1b5154f14c58598fa3afea4e61a7be8eb0c08278f6756f1c4f34ca35014230c9"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-193629-rule419-array-contracts-76403046\\job.json",
+      "bytes": 733,
+      "sha256": "fd530b9ec751437502bfaea72ce349ba902e95f1426b3dc049cbf7598dc907e8"
+    }
+  ],
+  "verified": {
+    "rule": "RULE-419",
+    "scripts": 18375,
+    "script_bytes": 8114329,
+    "implementation_count": 8,
+    "implementation_bytes": 7552,
+    "raw_hit_functions": {
+      "JSON_AddToBoolArray": 0,
+      "JSON_AddToStringArray": 0,
+      "JSON_GetBoolArray": 0,
+      "JSON_GetStringArray": 0,
+      "JSON_RemoveFromBoolArray": 0,
+      "JSON_RemoveFromStringArray": 0,
+      "JSON_SetBoolArray": 0,
+      "JSON_SetStringArray": 0
+    },
+    "positive_controls": {
+      "JSON_GetInt": 107,
+      "JSON_Clear": 141
+    },
+    "found_assignments": {
+      "JSON_AddToBoolArray": [
+        {
+          "statement_index": 476,
+          "expression": {
+            "Inst": "True"
+          }
+        }
+      ],
+      "JSON_AddToStringArray": [
+        {
+          "statement_index": 476,
+          "expression": {
+            "Inst": "True"
+          }
+        }
+      ],
+      "JSON_GetBoolArray": [
+        {
+          "statement_index": 664,
+          "expression": {
+            "Inst": "False"
+          }
+        },
+        {
+          "statement_index": 718,
+          "expression": {
+            "Inst": "False"
+          }
+        }
+      ],
+      "JSON_GetStringArray": [
+        {
+          "statement_index": 683,
+          "expression": {
+            "Inst": "False"
+          }
+        },
+        {
+          "statement_index": 726,
+          "expression": {
+            "Inst": "True"
+          }
+        }
+      ],
+      "JSON_RemoveFromBoolArray": [
+        {
+          "statement_index": 740,
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_JsonHasTypedField_ReturnValue"
+          }
+        }
+      ],
+      "JSON_RemoveFromStringArray": [
+        {
+          "statement_index": 430,
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "JsonFound"
+          }
+        },
+        {
+          "statement_index": 822,
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "JsonFound"
+          }
+        },
+        {
+          "statement_index": 2583,
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "JsonFound"
+          }
+        }
+      ],
+      "JSON_SetBoolArray": [
+        {
+          "statement_index": 522,
+          "expression": {
+            "Inst": "False"
+          }
+        }
+      ],
+      "JSON_SetStringArray": [
+        {
+          "statement_index": 522,
+          "expression": {
+            "Inst": "False"
+          }
+        }
+      ]
+    },
+    "kernel_changed": false,
+    "fully_certified_cards": 0,
+    "scope": "Captured loaded scripts only; unloaded/native/dynamic dispatch not excluded. Found assignments are syntax evidence, not complete semantic execution.",
+    "independent_redecodes": 10,
+    "worker_calls": 108,
+    "worker_found_assignments": 12,
+    "worker_exact_match": true,
+    "worker_job": "20261025-193629-rule419-array-contracts-76403046"
+  }
+}
