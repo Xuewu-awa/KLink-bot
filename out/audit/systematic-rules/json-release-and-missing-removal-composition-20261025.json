@@ -1,0 +1,142 @@
+{
+  "rule": "RULE-407",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "13ef0ac2507524bc953880cffe54127baacdb86f",
+  "kernel_changed": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-407",
+    "native_cfg_roots": 7,
+    "native_cfg_bytes": 697,
+    "last_reference_cases": 16,
+    "native_creation_release_cases": 5,
+    "composed_missing_removal_cases": 24,
+    "composed_blueprint_bodies": 9,
+    "composed_blueprint_bytes": 7391,
+    "worker_edges": 43,
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Current JsonMake and JsonMakeBool allocation-path RIP-relative LEAs identify separate empty-object and bool shared-controller vtables at70cae90/70cae60. Bool value constructor13bb750 identifies value vtable70c4cd0. Live pointer entries match relocated installed PE vtables.",
+    "Bool controller strong-payload destroy13dafc0 dispatches through value slot+a0, whose current target13bc8b0 writes the base vtable and conditionally requests free of24bytes. Controller delete11b41d0 similarly requests24byte free. Initial exploratory slot0 capture is an ordinary accessor, not the bool deleting destructor, and is not used as destruction proof; final capture selects+a0 from actual dispatch instruction.",
+    "Empty object controller13dafe0 clears the empty map using134cfa0 and requests free of80byte payload. Exact constructor empty layout has no populated entry/resizing path. Native allocator free123aac0 forwards through allocator virtual slot48; allocator internals remain a declared hook boundary.",
+    "16 actual shared-release cases cover bool false/true, empty object and null payload, strong counts1/2 and weak counts1/2. Non-last strong release only decrements; last strong release destroys payload, then last weak release deletes controller. Freed-address requests and non-last reference counts are checked; no protected synthetic card bytes change.",
+    "5 whole native creation-to-release cases execute JsonMakeBool418bytes or JsonMake364bytes, native constructors and reference moves, then release the exact result through captured destructors. Actual-created controllers start strong1/weak1 and end0/0 with payload then controller free requests. Successful allocation/free and bool parameter stepping/preparation are controlled hooks.",
+    "24 composed actual AST paths cover ApplyRemoveCardFromBoard and8 selected helpers7391bytes with stable missing positiveID77, Destroyed/converting=false and skipAddAction=true. Across action-process flags, controlled side0 hand outputs, excluded-board presence and source0/999, no rule mutator or notifier is reached. Before/after leave gates, refresh, null JSON helpers, location setter and skipped null assignment are composed. JSON/native/null defaults are supplied proven primitive results rather than continuously executing the VM.",
+    "Under the stated projection the adapter early-return has no observed missing PvP state/notification effect. This is bounded evidence supporting current behavior, not unconditional full native missing-core equivalence."
+  ],
+  "validation": [
+    "7 selected native CFG roots697bytes, allocation-path anchors and relocated vtables independently checked against installed PE and current read-only process capture. Reused native ranges also rechecked. Native identity guarded by PID24220 and SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305.",
+    "9 composed Blueprint bodies independently re-decoded from raw bytecode with reflected name/header length/hash checks. Selected interpreter fails closed on unhandled executed calls/opcodes or any unexpected rule-effect call.",
+    "Verifier reran16 shared-release,5 actual-created-result release and24 composed AST cases and compared complete saved outcomes. Native controller/vtable identity is checked separately from synthetic payload fixtures.",
+    "DeepSeek private packet extracted43 jump/call/return instructions across7 final destruction CFG roots. Primary independently rebuilt and compared every row. Job20261025-112836-rule407-destroy-edges-ff169992 completed exit0.",
+    "No production/test source changes and no new simulator selftest run. Previous830/830 result is not claimed as a RULE-407 run."
+  ],
+  "limits": [
+    "Heap allocation/free internals, failures, custom allocator callbacks and concurrency remain outside native models; free hook records checked addresses without actually freeing model memory. No populated JSON map destruction or arbitrary JSON value kinds certified.",
+    "Composed AST model uses stable absent lookups and successful JSON primitives. Native null defaults, JsonMakeField/query and null assignment are supplied from previous bounded models, not one uninterrupted engine VM execution.",
+    "GetCardsInHandBySide is a controlled read-result primitive, including empty/nonempty synthetic side0 outputs. Getter transitive purity is not certified. Returning diagnostics and excluded GetBoard/MoveCardZBeforeDiscard UI are opaque; their global/abort/transitive effects remain unproved.",
+    "No missing nonpositive-ID/general Destroyed or converting path, actual lifetime/pendingkill/GC/map replacement races, interface dispatch or runtime match transition proof follows from these cases.",
+    "Normal stable-missing projection supports current early-return but remaining exceptional/opaque boundaries are retained separately. No card fully certified; no exhaustive unimplemented-card list claimed; UI/campaign/tutorial remain excluded and card-version migration paused."
+  ],
+  "next_work": [
+    "Retain remaining allocator/diagnostic/GC/UI and side0-getter-purity boundaries explicitly; do not guess simulator behavior for them.",
+    "Return to valid-target removal and callback reentry: compare map deletion/replacement, saved OldLocation and later lookups using authority evidence and actual VM probes.",
+    "Change rules only for an evidenced state/notification difference; keep the bounded missing-target result distinct from full card or full-system certification."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule407-json-controller-native-20261025.json",
+      "sha256": "1dc257690a17c4bba34e889a33bebb43ff33cbe8509dbff285dc9eac3df19950"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule407-json-destroy-native-20261025.json",
+      "sha256": "8fcb4b59ad6108383770244a569360d57f103d2345aa609c1fb65ebbbeeb8b4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-native-targets-20261025.json",
+      "sha256": "b4c6a5dad46b9fded1aaef46c01b4b20cd557d8f78b8cbf5c13d46c8035ddce5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-helper-cfg-20261025.json",
+      "sha256": "3def9c238d325ad74765ed56fd5ed7f6361e352aa4e48e85f8722b790d6541e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule403-remove-card-functions-native-20261025.json",
+      "sha256": "8ce6cdf36e8867ff89a5c41d87214039060275620c18854d4070cb956c0d4531"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-missing-removal-helpers-native-20261025.json",
+      "sha256": "9da2208aef15e27c03e1a15c4272ac7ad148b2b46bfbe734456afa4cf04f477e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-location-setters-native-20261025.json",
+      "sha256": "4e2d1f24318eaccc2e321871944e6ff4770dda3ac430ab337e9d3bc49b837073"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule404-null-json-hand-native-20261025.json",
+      "sha256": "0a7469d0701857e7cd6ffb1877aa21150704075d0804f7538d5366495b49a821"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-struct-functions-native-20261025.json",
+      "sha256": "832c34c90a18889f3938b07d376ad33dcabc36d93a0d9ab56ad0f06b3fe876cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule407-json-controllers.py",
+      "sha256": "c5e127152ee0f0c65ccc0eb0fb8048d4519ea6613f0533dc39b0f2176df8ab00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule407-json-destroy.py",
+      "sha256": "4039677ac83cd38aa806ae3942e14297bf51d597b7dc953c4ad70bf8ec65d192"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule407-json-release.py",
+      "sha256": "f1401ce74ce8b6970594431ce90012ff74e6c06d65672ee73abaa2e8e0fc8b08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule407-json-allocation.py",
+      "sha256": "6a2622900afa803b91763312a34f2df2c6e1db25bf6f66e948ad258be6971bb3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule407-missing-removal.py",
+      "sha256": "7d1bf6a0310c3887c7a716c9a3e969eaff1680fbebf6a3662841dfd686db49f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-json-release-model-20261025.json",
+      "sha256": "a69ddb622a61af6b497e64f3a8cd74aeb0ea9f81372e0a81882439e0b97d78d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-json-allocation-model-20261025.json",
+      "sha256": "db22e34cb07cf28495bb34e1b2836d973e2e117e049f7622dc67e70e907093f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-missing-removal-model-20261025.json",
+      "sha256": "e3faf37cc0da3e127eca06408348df006e7460be1bc9209a879f42b4869d31e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule407.py",
+      "sha256": "e4db8a2c56c9970593cf9a391f02352af704a13298b3bda3dde2b0d32dd4a782"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-verified-20261025.json",
+      "sha256": "09aceefa56b325a392ec9189ebb83b8c612e8f60b1c7c4a418922b5751f0123c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-worker-packet\\input.json",
+      "sha256": "13c286c50c41ba60af5dc573a298343c8f617839c169230025aaf880c4d50ddc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-worker-packet\\task.txt",
+      "sha256": "52c4310c148f571afb09a1c45b812547ec03bb7c8c4c4031b4e6e033046505d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule407-worker-packet\\edges.json",
+      "sha256": "456afec4685969023b637b15a341b95ecbc9b00b06cead2ce6b68e9dc9fa7a67"
+    }
+  ]
+}
