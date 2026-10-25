@@ -454,15 +454,11 @@ public sealed class CardInstance
     public int SuppressedOnTurn { get; set; } = -1;
 
     /// <summary>
-    /// 被抑制时**摘掉**的关键词（供解除时还原）—— 对应蓝图的
-    /// `customJson.suppressionException`（`BP_CardFunctions.g.cs:35946-35960`：
-    /// 抑制前把 `customJson` 备份进 `suppressionException` 字段，解除时再写回去）。
-    ///
-    /// ⚠️ 为什么必须记：`SuppressUnit` 会摘 `Guard`/`Blitz`/`Fury`/`HeavyArmor`
-    /// 等（见 `CardApi.SuppressStrips`）。**只摘不还原** = 单位被抑制一次就永久变白板。
-    /// 由 `CardApi.RestoreAfterSuppression` 逐条加回。
-    ///
-    /// `null` = 从未被抑制过。
+    /// 仅供显式兼容还原适配器使用的本地关键词快照。
+    /// 正常 PvP 没有调用 RestoreAfterSuppression 的到期还原路径。
+    /// 此快照不对应 customJson.suppressionException：客户端保留的是该字段
+    /// 已有的单个 JSON 值，不会在这里自动备份整份 JSON 或全部关键词。
+    /// null 表示尚未保存本地兼容快照。
     /// </summary>
     public List<string>? SuppressStrippedKeywords { get; set; }
 

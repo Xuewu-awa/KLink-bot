@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("抑制JSON：按字段存在保留空字符串及空数组，保持类型和持久化", SuppressionJsonPresenceReference),
         new("卡牌JSON初始化和重置：独立可写对象、五键选择性清理与幂等", JsonInitializationResetNativeReference),
         new("窃取侧临时副本：JSON语义独立复制与原ID持久化分离", JsonCopyIndependenceReference),
         new("JSON键：原生空键、ASCII折叠、Unicode区别及覆盖拼写参考", JsonKeyNativeReference),
@@ -21318,6 +21319,63 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? SuppressionJsonPresenceReference(CardDatabase db)
+    {
+        using var probes = InstallSuppressionEntryProbes();
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "suppression-json-reference-20261025.json")));
+        int cases = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (bool upper in new[] { false, true })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int entry in Enumerable.Range(0, 3))
+        foreach (bool alreadySuppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var other = state.CreateWithId(PlainUnit, side, 70, side.DeckOf(), 0);
+            target.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry", Attack = 2, Defense = 4, OperationCost = 1 };
+            target.Keywords.Clear();
+            if (alreadySuppressed) target.Keywords.Add(Keyword.Suppressed);
+            other.CustomJson.Set("keep", "7", CardJsonType.Number);
+            string key = upper ? "SUPPRESSIONEXCEPTION" : "suppressionException";
+            string name = row.GetProperty("case").GetString()!;
+            bool present = name != "missing";
+            var type = (CardJsonType)row.GetProperty("json_type").GetInt32();
+            string raw = row.GetProperty("raw").GetString()!;
+            if (present) target.CustomJson.Set(key, raw, type);
+            var snapshot = target.Snapshot();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            for (int repeat = 0; repeat < 2; repeat++)
+            {
+                target.CustomJson.Set("noise", "9", CardJsonType.Number);
+                target.CustomJson["customName1"] = "old1";
+                target.CustomJson["customName2"] = "old2";
+                if (entry == 0) engine.Api.SuppressUnit(target, 20);
+                else engine.Api.InvokeByName(entry == 1 ? "SuppressUnit" : "SuppressMultipleUnits", null,
+                    new object?[] { entry == 1 ? (object)60 : new[] { 60 }, 20, null }, ctx, out _);
+                if (!target.IsSuppressed || target.CustomJson.Count != (present ? 1 : 0)
+                    || target.CustomJson.ContainsKey(key) != present
+                    || present && (target.CustomJson.Keys.Single() != "suppressionException"
+                        || target.CustomJson[key] != raw || target.CustomJson.TypeOf(key) != type)
+                    || other.CustomJson.Count != 1 || other.CustomJson["keep"] != "7"
+                    || snapshot.CustomJson.Count != (present ? 1 : 0)
+                    || present && (snapshot.CustomJson[key] != raw || snapshot.CustomJsonTypes[key] != type))
+                    return $"抑制JSON保留差异 case={name},upper={upper},side={side},entry={entry},initial={alreadySuppressed},repeat={repeat}";
+                engine.Api.PersistCustomFields(target);
+                var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+                var saved = JsonNode.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal))!.AsObject();
+                if (saved.Count != (present ? 1 : 0)
+                    || present && (!saved.ContainsKey("suppressionException")
+                        || !JsonNode.DeepEquals(saved["suppressionException"], JsonNode.Parse(row.GetProperty("native_value").GetRawText()))))
+                    return $"抑制后持久化类型/值错误 case={name},entry={entry},repeat={repeat}";
+            }
+            cases++;
+        }
+        return cases == 288 ? null : $"抑制JSON cases={cases}";
     }
 
     private static string? JsonInitializationResetNativeReference(CardDatabase db)

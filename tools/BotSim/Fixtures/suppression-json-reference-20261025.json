@@ -1,0 +1,143 @@
+{
+  "rule": "RULE-422",
+  "script_sha256": "6661b1ce6a5e825856328438eb7c76f4c9460116c147a35bce4a3c059bdacc0f",
+  "cases": [
+    {
+      "case": "missing",
+      "json_type": 0,
+      "raw": "",
+      "native_value": null,
+      "supported_local_type": true,
+      "final": {}
+    },
+    {
+      "case": "empty-string",
+      "json_type": 2,
+      "raw": "",
+      "native_value": "",
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": ""
+      }
+    },
+    {
+      "case": "space-string",
+      "json_type": 2,
+      "raw": " ",
+      "native_value": " ",
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": " "
+      }
+    },
+    {
+      "case": "saved-string",
+      "json_type": 2,
+      "raw": "saved",
+      "native_value": "saved",
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": "saved"
+      }
+    },
+    {
+      "case": "numeric-string",
+      "json_type": 2,
+      "raw": "0",
+      "native_value": "0",
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": "0"
+      }
+    },
+    {
+      "case": "number-zero",
+      "json_type": 3,
+      "raw": "0",
+      "native_value": 0,
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": 0
+      }
+    },
+    {
+      "case": "bool-false",
+      "json_type": 4,
+      "raw": "0",
+      "native_value": false,
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": false
+      }
+    },
+    {
+      "case": "bool-true",
+      "json_type": 4,
+      "raw": "1",
+      "native_value": true,
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": true
+      }
+    },
+    {
+      "case": "empty-array-legacy",
+      "json_type": 5,
+      "raw": "",
+      "native_value": [],
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": []
+      }
+    },
+    {
+      "case": "empty-array-rich",
+      "json_type": 5,
+      "raw": "[]",
+      "native_value": [],
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": []
+      }
+    },
+    {
+      "case": "mixed-array",
+      "json_type": 5,
+      "raw": "[1,\"\",false,null,{}]",
+      "native_value": [
+        1,
+        "",
+        false,
+        null,
+        {}
+      ],
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": [
+          1,
+          "",
+          false,
+          null,
+          {}
+        ]
+      }
+    },
+    {
+      "case": "legacy-array",
+      "json_type": 5,
+      "raw": "1,2",
+      "native_value": [
+        1,
+        2
+      ],
+      "supported_local_type": true,
+      "final": {
+        "suppressionException": [
+          1,
+          2
+        ]
+      }
+    }
+  ],
+  "boundary": "Actual captured SuppressMultipleUnits JSON slice2341..2921 including4428..4505 absent branch. JSON field presence/lookup/make/copy modeled with ASCII folding already independently audited in RULE-416. Fourteen values xkeyspelling xveteran-state. This is value/type/control-flow reference,not native JSON allocation/alias/refcount execution or full suppression/callback certification. Local C# regression intentionally excludes top-levelNull/Object types currently unrepresented and veteran phase outside selected fix."
+}

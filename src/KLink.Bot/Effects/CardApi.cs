@@ -4475,10 +4475,12 @@ public sealed partial class CardApi
         // 把自己保存的状态读回来。IR 里这个键出现 26 次。
         // `customName1/2` 也存在 customJson 里（见 `CardApiDispatch.SuffixAdd`），
         // 所以这一句同时完成了蓝图 L_0851/L_0886 的 `customName1/2 = None`。
-        target.CustomJson.TryGetValue("suppressionException", out string? exception);
-        var exceptionType = exception is null ? CardJsonType.String : target.CustomJson.TypeOf("suppressionException");
+        // Native i2341 checks field presence; empty strings and empty arrays
+        // are still values that must survive the clear (i2536..2703).
+        bool hasException = target.CustomJson.TryGetValue("suppressionException", out string exception);
+        var exceptionType = hasException ? target.CustomJson.TypeOf("suppressionException") : CardJsonType.String;
         target.CustomJson.Clear();
-        if (!string.IsNullOrEmpty(exception))
+        if (hasException)
         {
             target.CustomJson.Set("suppressionException", exception, exceptionType);
         }

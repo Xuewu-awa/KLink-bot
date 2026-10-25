@@ -1,0 +1,145 @@
+{
+  "rule": "RULE-422",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "a3f85e8fe2dfa56f280c3175e08bfeb94f912f17",
+  "kernel_changed": true,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-422",
+    "blueprint_scripts": 2,
+    "blueprint_bytes": 8165,
+    "ast_slice_executions": 56,
+    "local_supported_vectors": 12,
+    "headless_scenarios": 288,
+    "headless_suppression_executions": 576,
+    "worker_calls": 7,
+    "worker_branches": 3,
+    "worker_exact_match": true,
+    "worker_job": "20261025-203108-rule422-suppression-json-b1e6e860",
+    "baseline": "845 passed,1 failed /846",
+    "final": "846/846 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "problem": "抑制使用非空字符串判断是否保留 suppressionException，导致存在但为空的字符串和本地旧格式空数组被误删。客户端按字段存在性决定保留。",
+  "fix": "保存 TryGetValue 的布尔结果及原类型，清空后按存在性重写原始值；允许空字符串和空数组，同时保持缺失字段仍缺失。",
+  "findings": [
+    "当前 BP_CardFunctions_C.SuppressMultipleUnits 的 8,101 字节和 SuppressUnit 的 64 字节全部解码，另有两个空 Stub。语句 2341 对 suppressionException 调用 JsonHasField，2414 按存在性分支；2428 保存原始 JsonValue，2536/2564 创建并赋入新对象，2613/2703 把原值写回。没有按字符串长度或元素数量过滤。缺失分支 4428/4456 创建空对象，然后回到 2752。",
+    "原模拟器先取得 string 投影，再以 !string.IsNullOrEmpty(exception) 判断。空字符串投影和旧 CSV 形式空数组投影都是空串，因此合法且存在的字段被丢弃。非空字符串、数值零及布尔 false 原本可保留，但仍需回归确保类型没有混同。",
+    "修复只改变 JSON 清理阶段的保留门槛：保存字段是否存在与原 CardJsonType，清空后按存在性写回。新键按客户端字面量规范为 suppressionException；其他字段照常清除。未引入自动解除抑制或整份 JSON 自动备份。",
+    "56 次捕获 AST 切片参考执行覆盖 14 种状态 × 两种键拼写 × 两种 veteran 前置状态。包括缺失、空／空白／普通／数值外观字符串、零、布尔、空／混合数组及 Null/Object 字段值。JSON 容器原语受控，校验值、类型和分支，不是原生分配／共享引用执行。",
+    "本地回归采用当前支持的 12 种状态，交叉键大小写、双方、三个真实入口和初始抑制状态，合计 288 场景。每场执行两次抑制，共 576 次；检查保留原值及原类型、无关字段清理、快照和另一张卡隔离、最终持久化 JSON 的语义类型。Null/Object 顶层字段值目前无法完整表示，未作为本地已修复范围。",
+    "修正 CardInstance.SuppressStrippedKeywords 的旧注释：它是兼容还原适配器的本地快照，不是客户端 suppressionException 的整份 JSON／关键词备份。没有修改兼容适配器或增加产品调用路径。"
+  ],
+  "validation": [
+    "当前 PID 24220／模块／执行程序 SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 守卫下只读采集。完整脚本原始字节、哈希、符号表与独立重解码一致；没有写入游戏进程、注入或调用游戏函数。",
+    "先加入最终回归用例，再运行旧生产源码：845 通过、1 失败，总数 846；失败精确为 empty-string、原始键、左方、直接入口、此前未抑制、第一次调用。修复后同一用例与既有测试全部 846/846 通过，退出码 0。",
+    "首次补丁文本匹配因 CRLF 与 LF 不同而中止，未改源码却额外启动了一次相同失败复测。该日志另存为 rule422-unapplied-patch-retry-selftest，不计作修复后验证；实际修复后的依据仅为 rule422-final-selftest。",
+    "主 agent 重跑 56 次 AST 切片，完整结果与保存模型一致；仓库 fixture 与经过筛选的 12 条参考值完全一致。修复前版本固定为 a3f85e8fe2dfa56f280c3175e08bfeb94f912f17，避免用提交后的 HEAD 冒充旧代码。",
+    "DeepSeek 私有任务提取七个调用节点、三个跳转／条件节点，主 agent 比对完整 AST 与外层语句偏移一致，无修补。任务 20261025-203108-rule422-suppression-json-b1e6e860 退出码 0。"
+  ],
+  "limits": [
+    "本轮认证的是抑制 JSON 字段保留条件，不是 SuppressMultipleUnits 全部 8,101 字节或全部单卡抑制回调。",
+    "原生 JsonMake 会分配新对象；本地使用现有字典清理／重写。本轮验证值与类型、快照隔离，不认证所有 JSON 对象别名、原生分配、引用计数、GC 或无效结构体生命周期。",
+    "Null/Object 顶层字段值和完整 veteran 转换／恢复回调仍不在本地修复覆盖内。数组中的嵌套 Null/Object 值以原始富数组 JSON 保留并测试。",
+    "回归用受控普通单位和空回调隔离原语，不能称某张实卡已完整认证；当前完整认证卡牌数仍为 0。"
+  ],
+  "next_work": [
+    "追踪实际单卡 OnSuppressed 对 suppressionException 的写入和读取，区分保存单值、嵌套对象与字符串编码，检查当前类型表示缺口的真实影响。",
+    "独立核对 veteran JSON 标记保留后清除及属性转换顺序，继续使用当前客户端证据。",
+    "继续验证共享 JSON 对象／复制与规则回调之间的别名边界，不把值语义一致当作生命周期完全一致。"
+  ],
+  "reference_boundary": "Actual captured SuppressMultipleUnits JSON slice2341..2921 including4428..4505 absent branch. JSON field presence/lookup/make/copy modeled with ASCII folding already independently audited in RULE-416. Fourteen values xkeyspelling xveteran-state. This is value/type/control-flow reference,not native JSON allocation/alias/refcount execution or full suppression/callback certification. Local C# regression intentionally excludes top-levelNull/Object types currently unrepresented and veteran phase outside selected fix.",
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule422-suppression-functions-native-20261025.json",
+      "bytes": 4716841,
+      "sha256": "110cd6adb09e245de720a9c8907a60e9962d3ef36ab73ee3f3d5ac69dfae362b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule422-suppression.py",
+      "bytes": 2386,
+      "sha256": "79676a7c790b2c32a1d8a000310e7c167e260325451ecfbb34aaa78cd7c9be92"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule422-suppression-json.py",
+      "bytes": 6018,
+      "sha256": "458e0f9cea55c47b30cbd8955abf9d3c4bc97c5645f958ed155884ad71acd473"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-suppression-json-ast-model-20261025.json",
+      "bytes": 32714,
+      "sha256": "a112a080e9e7bf8a67ec9797a68e83ebf3469032cc4ef41f9d4e17aeeed35b08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-suppression-json-reference-20261025.json",
+      "bytes": 3488,
+      "sha256": "c25c3158934cece4c0146e2417136a0a73145923ec723d770e4ebe69ecd6b1c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule422.py",
+      "bytes": 4524,
+      "sha256": "d50eacd76dff9afbd4899b0e944b6d198c211c3330dd4213609fa1b0f14675c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-verified-20261025.json",
+      "bytes": 496,
+      "sha256": "01b82c31750103df687151b4654f157abd9d09223aa87faba9f799d779ae9ff7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-baseline-selftest.log",
+      "bytes": 74820,
+      "sha256": "c6a91ae466cfc3755047780ecd9d7fa8be32ef0b0c23acc364466091a6750d98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-unapplied-patch-retry-selftest.log",
+      "bytes": 74820,
+      "sha256": "c6a91ae466cfc3755047780ecd9d7fa8be32ef0b0c23acc364466091a6750d98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-unapplied-patch-retry-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-final-selftest.log",
+      "bytes": 74723,
+      "sha256": "3d1f34fd378cf36248244cb815523b71c6cdb2bcb1f8d4b63078c8f7df71c733"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-worker-packet\\input.json",
+      "bytes": 7099,
+      "sha256": "98881f5d701ce988ff98c3dca031ab8fe62565e2d360c0e15b6d23942cf6dc7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-worker-packet\\output.json",
+      "bytes": 4302,
+      "sha256": "0e6c0b06189ce57500857287b9e360c8712ac50e4fdc74320b7a2e05fb262d8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule422-worker-packet\\task.txt",
+      "bytes": 488,
+      "sha256": "99732c372c278dbbc479a3ab6d16c76c59886508a32da1ecbef93db5f357cf6b"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-203108-rule422-suppression-json-b1e6e860\\job.json",
+      "bytes": 733,
+      "sha256": "e3d2c5dddaa9cf0739bd09e433bb295fbbbcc97b29a8a2f377f077507b4b21e3"
+    }
+  ]
+}
