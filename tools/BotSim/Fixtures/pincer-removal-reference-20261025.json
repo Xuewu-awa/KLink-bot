@@ -1,0 +1,6025 @@
+{
+  "rule": "RULE-411",
+  "source_kind": "authoritative captured Blueprint AST with controlled primitives",
+  "source_scripts": [
+    {
+      "name": "RemovePincerEffects",
+      "size": 1678,
+      "sha256": "8fe51e821882e2dc543a7cfb0128402ced660225464dfc6d599de0e0280e9c88"
+    },
+    {
+      "name": "JSON_GetIntArray",
+      "size": 819,
+      "sha256": "fca2514ac4ab21c56f3074a19d10175dd9a6e9a2ed2dba8e742cffc79e67fa88"
+    },
+    {
+      "name": "JSON_GetInt",
+      "size": 261,
+      "sha256": "0227ce65feed686f7e96ee62ced86fbcad2c765becd77f7c5e8ab04ec208c74e"
+    },
+    {
+      "name": "JSON_RemoveFromIntArray",
+      "size": 1131,
+      "sha256": "28d1d55cbc6fad1ad12a0bc7c1320f0ad7362a84854daa98cf2e6c568f297ee8"
+    }
+  ],
+  "boundary": "48 actual1678byte RemovePincerEffects +819byte JSON_GetIntArray +261byte JSON_GetInt +1131byte JSON_RemoveFromIntArray AST compositions. Controlled JSON native conversion/typing/make/clear, positive ID lookup, callbacks and persistence object projection. Covers populated duplicate/invalid/missing giver IDs, staged map deletion/replacement and membership mutation. Not native serialization formatting, JSON numeric edge conversion, full query/GC/diagnostics or runtime pointer validity proof.",
+  "cases": [
+    {
+      "side": 1,
+      "mode": 0,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 0,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 1,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 1,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 2,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 2,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 3,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 3,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 4,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L1",
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "L1",
+          "id": 60,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 4,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L1",
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "L1",
+          "id": 60,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 5,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 5,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 6,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 6
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 6,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "G1",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 6
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 7,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 7,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 8,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 8
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 8,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "G1",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 8
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 9,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 9,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 10,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 10,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 11,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "auditMarker": 11
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 11
+          }
+        }
+      ]
+    },
+    {
+      "side": 1,
+      "mode": 11,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "auditMarker": 11
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 11
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 0,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 0,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 1,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 1,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 2,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 2,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ],
+            "auditMarker": 2
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 3,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 3,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 4,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L1",
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "L1",
+          "id": 60,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 4,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "H0",
+          "argument": "H0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "H0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 81,
+          "token": "H0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L1",
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "L1",
+          "id": 60,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              81,
+              81,
+              0,
+              -7,
+              777
+            ],
+            "pincer_receiver": "mapped-kept",
+            "auditMarker": 4
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 5,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 5,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 6,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 6
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 6,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "G1",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 6
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 6
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 7,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 7,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 80,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 8,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 8
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 8,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G1",
+          "argument": "G1",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G1",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 80,
+          "token": "G1",
+          "fields": {
+            "auditMarker": 8
+          }
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": false,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "G1",
+          "id": 80,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 8
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 9,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 9,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 10,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 10,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R0",
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": null,
+          "fields": null
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": false,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "pincer_givers": [
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 11,
+      "duplicate": false,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "auditMarker": 11
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 11
+          }
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "mode": 11,
+      "duplicate": true,
+      "events": [
+        {
+          "receiver": "L0",
+          "argument": "R0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "L0",
+          "argument": "L0",
+          "persist_count": 0
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 1
+        },
+        {
+          "receiver": "G0",
+          "argument": "G0",
+          "persist_count": 2
+        },
+        {
+          "receiver": "G0",
+          "argument": "L0",
+          "persist_count": 2
+        }
+      ],
+      "persist": [
+        {
+          "id": 70,
+          "token": "R1",
+          "fields": {
+            "auditMarker": 11
+          }
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 80,
+          "token": "G0",
+          "fields": {}
+        },
+        {
+          "id": 0,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": -7,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 777,
+          "token": null,
+          "fields": null
+        },
+        {
+          "id": 60,
+          "token": "L0",
+          "fields": {}
+        }
+      ],
+      "objects": [
+        {
+          "token": "L0",
+          "id": 60,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "R0",
+          "id": 70,
+          "mapped": false,
+          "fields": {
+            "pincer_givers": [
+              60,
+              60,
+              999
+            ]
+          }
+        },
+        {
+          "token": "G0",
+          "id": 80,
+          "mapped": true,
+          "fields": {}
+        },
+        {
+          "token": "H0",
+          "id": 81,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60
+          }
+        },
+        {
+          "token": "I0",
+          "id": 0,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9000
+          }
+        },
+        {
+          "token": "IN",
+          "id": -7,
+          "mapped": true,
+          "fields": {
+            "pincer_receiver": 60,
+            "auditMarker": 9007
+          }
+        },
+        {
+          "token": "R1",
+          "id": 70,
+          "mapped": true,
+          "fields": {
+            "auditMarker": 11
+          }
+        }
+      ]
+    }
+  ]
+}

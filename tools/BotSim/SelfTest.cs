@@ -909,6 +909,7 @@ internal static class SelfTest
             TriggerDeploymentDispatch),
         new("Pincer施加：直接回调接收者/参数/写入顺序，保留重复赠予者", PincerApplyCallbackRouting),
         new("Pincer身份重入：保留调用对象，逐阶段查号及映射快照和持久化", PincerCallbackIdentityRequery),
+        new("Pincer移除重入：与权威AST参考逐项核对删除/替换、重复/非法ID及保存对象", PincerRemovalNativeReference),
         new("Pincer移除：离场方及赠予方双回调、重复项、类型和空字段清理", PincerRemoveCallbackRouting),
         new("出牌时序：自身 OnPlayedFromHand 返回后才建立 Pincer 关系",
             PincerFollowsPlayedFromHand),
@@ -37351,6 +37352,97 @@ internal static class SelfTest
             cases++;
         }
         return cases == 48 ? null : $"Pincer remove cases={cases}";
+    }
+
+    private static string? PincerRemovalNativeReference(CardDatabase db)
+    {
+        using var probe = InstallPincerCallbackProbe();
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "pincer-removal-reference-20261025.json")));
+        int cases = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            Side side = (Side)row.GetProperty("side").GetInt32(); int mode = row.GetProperty("mode").GetInt32();
+            bool duplicate = row.GetProperty("duplicate").GetBoolean();
+            var (engine, state) = EmptyBoard(db); var actors = new List<CardInstance>();
+            var tokens = new Dictionary<CardInstance, string>(); var named = new Dictionary<string, CardInstance>();
+            CardInstance Create(string token, int id, bool replacement = false) {
+                string name = token.StartsWith('L') ? "card_unit_typhoon_mk_ib" : "card_unit_brewster_f2a";
+                Side owner = replacement ? side.Opposite() : side;
+                var where = mode % 3 == 0 ? owner.HqOf() : mode % 3 == 1 ? CardLocation.Discard : CardLocation.NotAvailable;
+                var c = state.CreateWithId(name, owner, id, where, 2); c.CustomJson.Clear(); c.Keywords.Clear();
+                if (mode % 2 == 1) c.Keywords.Add(Keyword.Suppressed);
+                actors.Add(c); tokens[c] = token; named[token] = c; return c;
+            }
+            void Remove(int id) { if (state.ById(id) is { } c) state.Remove(c); }
+            var leaving = Create("L0", 60); var receiver = Create("R0", 70); var giver = Create("G0", 80); var other = Create("H0", 81);
+            var invalid = Create("I0", 0); var negative = Create("IN", -7);
+            engine.Api.JsonSetInt(leaving, "pincer_receiver", 70);
+            engine.Api.JsonSetIntArray(leaving, "pincer_givers", duplicate ? new[] { 80, 80, 0, -7, 777 } : new[] { 80, 0, -7, 777 });
+            engine.Api.JsonSetIntArray(receiver, "pincer_givers", new[] { 60, 60, 999 });
+            foreach (var c in new[] { giver, other, invalid, negative }) engine.Api.JsonSetInt(c, "pincer_receiver", 60);
+            engine.Api.JsonSetInt(invalid, "auditMarker", 9000); engine.Api.JsonSetInt(negative, "auditMarker", 9007);
+            var expectedEvents = row.GetProperty("events").EnumerateArray().ToArray(); int count = 0; string? failure = null;
+            CapturePincerCallbacks(state, actors, (r, kind, arg) => {
+                int i = count++;
+                if (i >= expectedEvents.Length) { failure = "unexpected callback"; return; }
+                var expected = expectedEvents[i]; int persisted = state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionPersistCustomFields");
+                string? actualArg = arg is null ? null : tokens.GetValueOrDefault(arg);
+                string? expectedArg = expected.GetProperty("argument").ValueKind == System.Text.Json.JsonValueKind.Null ? null : expected.GetProperty("argument").GetString();
+                if (kind != "OnPincerEffectRemoved" || tokens[r] != expected.GetProperty("receiver").GetString()
+                    || actualArg != expectedArg || persisted != expected.GetProperty("persist_count").GetInt32()) failure = "callback identity/order/persist timing";
+                int n = count;
+                if (n == 1 && mode == 1) Remove(70);
+                if (n == 1 && mode is 2 or 11) {
+                    Remove(70); var fresh = Create("R1", 70, true);
+                    if (mode == 11) engine.Api.JsonSetString(fresh, "pincer_givers", "wrong-type");
+                    else engine.Api.JsonSetIntArray(fresh, "pincer_givers", new[] { 60, 60, 999 });
+                    engine.Api.JsonSetInt(fresh, "auditMarker", mode);
+                }
+                if (n == 2 && mode == 3) Remove(60);
+                if (n == 2 && mode == 4) {
+                    Remove(60); var fresh = Create("L1", 60, true);
+                    engine.Api.JsonSetIntArray(fresh, "pincer_givers", new[] { 81, 81, 0, -7, 777 });
+                    engine.Api.JsonSetString(fresh, "pincer_receiver", "mapped-kept"); engine.Api.JsonSetInt(fresh, "auditMarker", mode);
+                }
+                if (n == 3 && mode == 5 || n == 4 && mode == 7) Remove(80);
+                if (n == 3 && mode == 6 || n == 4 && mode == 8) {
+                    Remove(80); var fresh = Create("G1", 80, true);
+                    engine.Api.JsonSetInt(fresh, "pincer_receiver", 60); engine.Api.JsonSetInt(fresh, "auditMarker", mode);
+                }
+                if (n == 3 && mode == 9) engine.Api.JsonSetIntArray(leaving, "pincer_givers", new[] { 81 });
+                if (n == 3 && mode == 10) Remove(60);
+            });
+            engine.Api.RemovePincerEffects(leaving);
+            if (failure is not null || count != expectedEvents.Length) return $"Pincer native reference {side}/{mode}/{duplicate}: {failure ?? "callback count"}";
+            var notices = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionPersistCustomFields").ToArray();
+            var expectedNotices = row.GetProperty("persist").EnumerateArray().ToArray();
+            if (notices.Length != expectedNotices.Length) return "Pincer保存次数与参考不符";
+            for (int i = 0; i < notices.Length; i++) {
+                var expected = expectedNotices[i];
+                if (notices[i].Values.Single(v => v.Name == "cardID").Value != expected.GetProperty("id").GetInt32()) return "接收者缺失保存0，给予者缺失保留原ID";
+                string text = notices[i].Values.Single(v => v.Name == "customJson").Text ?? "";
+                if (expected.GetProperty("fields").ValueKind == System.Text.Json.JsonValueKind.Null) {
+                    if (text != "" || notices[i].Values.Where(v => v.Name is "customName1" or "customName2").Any(v => v.Text != "None")) return "缺失映射保存不得泄漏旧对象字段";
+                } else {
+                    using var json = System.Text.Json.JsonDocument.Parse(text.Replace("\\\"", "\"", StringComparison.Ordinal));
+                    if (!System.Text.Json.JsonElement.DeepEquals(json.RootElement, expected.GetProperty("fields"))) return $"Pincer保存的当前映射JSON错误：{side}/{mode}/{duplicate}/notice{i}";
+                }
+            }
+            foreach (var expected in row.GetProperty("objects").EnumerateArray()) {
+                var c = named[expected.GetProperty("token").GetString()!]; var fields = new Dictionary<string, object?>();
+                foreach (var pair in c.CustomJson) fields[pair.Key] = c.CustomJson.TypeOf(pair.Key) switch {
+                    CardJsonType.Number => int.Parse(pair.Value, System.Globalization.CultureInfo.InvariantCulture),
+                    CardJsonType.IntArray => engine.Api.JsonGetIntArray(c, pair.Key),
+                    _ => pair.Value,
+                };
+                if (ReferenceEquals(state.ById(c.CardId), c) != expected.GetProperty("mapped").GetBoolean()
+                    || !System.Text.Json.JsonElement.DeepEquals(System.Text.Json.JsonSerializer.SerializeToElement(fields), expected.GetProperty("fields")))
+                    return $"Pincer持有对象/映射最终字段错误：{side}/{mode}/{duplicate}/{tokens[c]}";
+            }
+            cases++;
+        }
+        return cases == 48 ? null : $"Pincer native reference cases={cases}";
     }
 
     private static string? PincerCallbackIdentityRequery(CardDatabase db)
