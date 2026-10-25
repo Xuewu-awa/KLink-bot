@@ -1,0 +1,3021 @@
+{
+  "rule": "RULE-418",
+  "reset_keys": [
+    "effects",
+    "handbuff",
+    "veteran",
+    "countdown_timer",
+    "extra_play_triggers"
+  ],
+  "cases": [
+    {
+      "mask": 0,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 0
+    },
+    {
+      "mask": 0,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 0
+    },
+    {
+      "mask": 0,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 0
+    },
+    {
+      "mask": 0,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 0
+    },
+    {
+      "mask": 1,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 1,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 1,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 1,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 2,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 2,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 2,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 2,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 3,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 3,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 3,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 3,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 4,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 4,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 4,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 4,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 5,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 5,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 5,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 5,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 6,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 6,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 6,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 6,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 7,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 7,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 7,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 7,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 8,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 8,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 8,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 8,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 9,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 9,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 9,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 9,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 10,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 10,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 10,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 10,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 11,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 11,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 11,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 11,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 12,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 12,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 12,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 12,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 13,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 13,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 13,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 13,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 14,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 14,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 14,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 14,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 15,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 15,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 15,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 15,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 16,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 16,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 16,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 16,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 1
+    },
+    {
+      "mask": 17,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 17,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 17,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 17,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 18,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 18,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 18,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 18,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 19,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 19,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 19,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 19,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 20,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 20,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 20,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 20,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 21,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 21,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 21,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 21,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 22,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 22,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 22,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 22,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 23,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 23,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 23,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 23,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 24,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 24,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 24,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 24,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 2
+    },
+    {
+      "mask": 25,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 25,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 25,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 25,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 26,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 26,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 26,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 26,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 27,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 27,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 27,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 27,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 28,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 28,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 28,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 28,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 3
+    },
+    {
+      "mask": 29,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 29,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 29,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 29,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 30,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 30,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 30,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 30,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 4
+    },
+    {
+      "mask": 31,
+      "upper": false,
+      "json_type": 3,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 5
+    },
+    {
+      "mask": 31,
+      "upper": false,
+      "json_type": 4,
+      "initial": [
+        "effects",
+        "handbuff",
+        "veteran",
+        "countdown_timer",
+        "extra_play_triggers",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 5
+    },
+    {
+      "mask": 31,
+      "upper": true,
+      "json_type": 3,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 5
+    },
+    {
+      "mask": 31,
+      "upper": true,
+      "json_type": 4,
+      "initial": [
+        "EFFECTS",
+        "HANDBUFF",
+        "VETERAN",
+        "COUNTDOWN_TIMER",
+        "EXTRA_PLAY_TRIGGERS",
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "second_remaining": [
+        "effects_extra",
+        "pincer_receiver",
+        ""
+      ],
+      "removed": 5
+    }
+  ],
+  "boundary": "Actual constructor JSON zeroing/final initialization slices +277byte factory/shared move execute with successful allocator hook. Actual five-key ResetCardAttributes string/hash/map-find/destructor/sparse deletion chain executes256times; only free hooked, borrowed JSON value cells type3/4. Synthetic single-bucket maps. Not full constructor/ResetCardAttributes,OOM,engine archetype/CDO property copying,GC or invalid-object reset certification."
+}

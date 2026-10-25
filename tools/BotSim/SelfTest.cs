@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("卡牌JSON初始化和重置：独立可写对象、五键选择性清理与幂等", JsonInitializationResetNativeReference),
         new("窃取侧临时副本：JSON语义独立复制与原ID持久化分离", JsonCopyIndependenceReference),
         new("JSON键：原生空键、ASCII折叠、Unicode区别及覆盖拼写参考", JsonKeyNativeReference),
         new("JSON标量：权威AST与真实VM的三种写出、类型门、清除及空对象", JsonScalarNativeReference),
@@ -21317,6 +21318,55 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonInitializationResetNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-init-reset-reference-20261025.json")));
+        int cases = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            var other = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 2);
+            var heldJson = card.CustomJson;
+            if (card.CustomJson.Count != 0 || other.CustomJson.Count != 0 || ReferenceEquals(card.CustomJson, other.CustomJson))
+                return "普通建卡未得到独立空JSON";
+            engine.Api.JsonSetInt(card, "ctor_probe", 7);
+            if (engine.Api.JsonGetInt(card, "ctor_probe") != 7 || other.CustomJson.ContainsKey("ctor_probe")
+                || !engine.Api.JsonClear(card, "ctor_probe") || card.CustomJson.Count != 0)
+                return "初始JSON不可立即写入或与其他对象共享";
+            CardJsonType type = row.GetProperty("json_type").GetInt32() == 3 ? CardJsonType.Number : CardJsonType.Boolean;
+            string raw = "0";
+            foreach (var key in row.GetProperty("initial").EnumerateArray())
+                card.CustomJson.Set(key.GetString()!, raw, type);
+            var before = card.Snapshot();
+            string[] expected = row.GetProperty("remaining").EnumerateArray().Select(x => x.GetString()!).ToArray();
+            for (int repeat = 0; repeat < 2; repeat++)
+            {
+                card.ResetAttributes();
+                if (!ReferenceEquals(card.CustomJson, heldJson) || other.CustomJson.Count != 0
+                    || !card.CustomJson.Keys.OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(x => x, StringComparer.Ordinal))
+                    || expected.Any(k => card.CustomJson[k] != raw || card.CustomJson.TypeOf(k) != type)
+                    || before.CustomJson.Count != row.GetProperty("initial").GetArrayLength()
+                    || before.CustomJson.Any(p => p.Value != raw || before.CustomJsonTypes[p.Key] != type))
+                    return $"JSON选择性重置差异：mask={row.GetProperty("mask")}, upper={row.GetProperty("upper")}, type={type}, side={side}, repeat={repeat}";
+            }
+            if (state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields"))
+                return "原生属性重置适配器隐式持久化了JSON";
+            engine.Api.PersistCustomFields(card);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            using var saved = System.Text.Json.JsonDocument.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal));
+            if (saved.RootElement.EnumerateObject().Count() != expected.Length
+                || expected.Any(k => !saved.RootElement.TryGetProperty(k, out var v)
+                    || (type == CardJsonType.Number ? v.ValueKind != System.Text.Json.JsonValueKind.Number || v.GetInt32() != 0
+                        : v.ValueKind != System.Text.Json.JsonValueKind.False)))
+                return "重置后持久化未保留无关键的名称、类型或数值";
+            cases++;
+        }
+        return cases == 256 ? null : $"JSON初始化/重置 cases={cases}";
     }
 
     private static string? JsonCopyIndependenceReference(CardDatabase db)

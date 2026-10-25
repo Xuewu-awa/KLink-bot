@@ -1,0 +1,247 @@
+{
+  "rule": "RULE-418",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "89f3d0c8d9fb89fde8439d869a81d711ebb47d77",
+  "kernel_changed": false,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-418",
+    "fresh_code_addresses": 10,
+    "code_bytes": 3875,
+    "creation_blueprint_bytes": 2929,
+    "constructor_executions": 8,
+    "reset_executions": 256,
+    "reference_rows": 128,
+    "new_headless_scenarios": 256,
+    "local_reset_invocations": 512,
+    "observed_default_card_objects": 2020,
+    "observed_nondefault_objects_after_loading": 2931,
+    "verified_match_cards": 82,
+    "match_private_json_objects": 82,
+    "match_null_json_objects": 0,
+    "worker_calls": 39,
+    "worker_redundant_offsets_restored": 3,
+    "final": "845/845 pass",
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "BaseCardObject reflected class header+0xb0 points to constructor thunk4a7db60, matching static-class registration LEA. Nonnull object initializer thunk dispatches to4aba330. Constructor first zeroes customJson+0x518/+0x520, then at4aba7fd calls4517df0 and moves a fresh valid empty object into the field. Null reflected struct defaults are not the completed successful card-constructor result.",
+    "Empty-object helper277bytes allocates0x50map and0x18shared controller, initializes empty map counts/free list/flags capacity and valid object reference. Native successful constructor JSON slices produce independently allocated objects under0/A5allocation fills. No need to replace current ordinary writable-dictionary default with an invalid-object default.",
+    "Current CreateCopy174byte backend constructs a BaseCardObject via engine construction, then calls CopyData. RULE-417 serialize/parse independence remains applicable. OnCreateCard default is a non-native Blueprint event with empty script; its159ce30pointer is generic engine script execution, not a card-specific initializer. Its26loaded derived wrappers include campaign/other content not certified here.",
+    "Fresh CreateCardObject2929byte graph obtains static card class and SpawnObject, then ordinary-new-ID branch AddCardToAllCardsInBattle at2876 jumps to OnCreateCard at2610. Duplicate-ID path logs before same own hook. No explicit customJson assignment in selected creation graph. Graph decoded/inventoried, not fully executed/certified across all branches.",
+    "ResetCardAttributes current backend1566bytes calls removal for exactly effects,handbuff,veteran,countdown_timer,extra_play_triggers. It mutates existing JSON map, preserving unrelated fields and map identity rather than reconstructing an empty object.",
+    "Before match load,2020loaded card-named CDOs and1non-CDO all had nonnull JSON. CDOs shared an empty map. After user-loaded match,2931non-CDO candidates all had separate nonnull maps, but this catalog/UI-inclusive group is not treated as2931PvP battle cards.",
+    "Fresh active BP_GameState_Battle sparse-map allocation bits identify82actual AllCardsInBattle entries.82/82entry IDs match each card CardID+0x264;82JSONobject references are nonnull with nonnull controllers,mutually distinct and not shared with CDO map. This is a read-only snapshot of this match, not exhaustive future lifecycle coverage.",
+    "Existing normal card initialization and five-key local reset match selected native/snapshot evidence. Production source unchanged. Raw invalid-object state remains a real lower-level distinction but is not established as a defect in normal constructor defaults or a reachable valid-PvP callback input."
+  ],
+  "validation": [
+    "Current PID24220/module/exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 guarded read-only capture. No target writes/injection/game calls. User manually loaded AI match upon request; all game-state changes were user actions.",
+    "10captured code addresses3875bytes include generic OnCreateCard engine dispatcher and registration thunks, not10independent certified rule implementations. Raw code/header/native flag/class pointer/string/controller-table provenance checked against PE/live memory. Constructor conditional tail and Reset wrapper tail targets captured separately. Reused collector payload labels may be old; file/header/exe hashes establish source identity.",
+    "Current CreateCardObject2929bytes independently redecoded using captured FNames/properties. Node offsets show insertion-before-own-hook ordinary branch and absence of direct customJson store. Campaign/UI branches not modeled.",
+    "8actual constructor JSON initialization executions: zeroing slice4aba6b8..4aba6d4 plus final slice4aba7e3..4aba850 and actual277byte factory/shared move. Successful allocator hooked; check nonnull unique payload/control,strong/weak1,empty-map layout under0/A5fill. This is not entire UObject/archetype initialization execution.",
+    "256actual reset JSON block executions:128vectors=all32five-key subsets xlower/upper spelling xNumber/Boolean borrowed cells; each repeated twice. Execute actual literal length/hash/FString compare,map unlink,key destructor and sparse free bookkeeping; only free hooked. Preserve effects_extra,pincer_receiver,empty key and card object bytes,check idempotence. Synthetic single-bucket maps; no real value-controller destruction.",
+    "Fresh whole-object snapshots independently checked for header/FName/class-super/JSON pointer fields. Active match proof uses allocated-bit map entries,not stale object names or all non-CDOs. CDOpointer sharing is kept separate from actual82runtimecard private pointers.",
+    "256headless cases=128reference vectors x2sides,each creates2ordinary cards,checks initial independence/write/clear,then resets twice(512local resets),checks exact surviving key names/types/raw values,map object identity,other-card isolation,pre-reset snapshot and semantic persistence. Full845/845pass,exit0; prior844tests pass. No production diff/no artificial failing baseline.",
+    "DeepSeek private creation graph packet returned39calls with3redundant inner StatementIndex fields omitted. Primary restored those only from validated enclosing offsets and compared every complete node to source; raw/reviewed outputs preserved. Job20261025-152820-rule418-create-card-calls-349a4fd3 completed exit0."
+  ],
+  "limits": [
+    "Successful native constructor slices plus current82-card match snapshot, not proof every derived UObject archetype/deserialization/callback path always retains valid JSON.",
+    "Malformed parse,explicit invalid assignment,OOM,real shared-control destruction,GC,concurrency and all reset/helper semantics remain unverified. Do not collapse invalid struct and empty object globally.",
+    "CDO aliasing and catalog/non-CDO objects are not modeled as live training battle entities. Local card definition templates remain immutable simulation data; no claim arbitrary default-object mutation semantics restored.",
+    "Reset test covers JSON primitive slice,not complete side/keyword/crypto/buff/reset callback lifecycle. Creation graph is redecoded/inventoried rather than full branch/reference execution.",
+    "No per-card full certification;historical replays excluded;UI/campaign/tutorial functionality and paused card-version migration not implemented here."
+  ],
+  "next_work": [
+    "Check uncovered JSON BoolArray/StringArray interfaces against actual nonempty implementations and PvP caller reachability,prioritizing real rule gaps over default-struct speculation.",
+    "Trace explicit JSON string deserialization/assignment paths to determine whether an invalid card JSON can reach legitimate callbacks after construction.",
+    "Continue broader PvP primitive/per-card mapping without treating snapshots or selected matches as exhaustive restoration."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-json-init-functions-native-20261025.json",
+      "bytes": 4544827,
+      "sha256": "ca8864b57fe71c4f3f5cd255cb8b514616a474a6f64304a9deef2187a4ad54b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-json-init-wrappers-native-20261025.json",
+      "bytes": 15494,
+      "sha256": "ccbf9da2c7904671df90a4fdb427fbdb9402671de61f968ba69e4078c47f45fc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-json-create-reset-native-20261025.json",
+      "bytes": 66776,
+      "sha256": "49d0be09a41efc7753f88b9453ed5a77280116e4e51a0be89333df5314a9cb09"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-basecard-static-class-native-20261025.json",
+      "bytes": 6024,
+      "sha256": "c40b8fd7c8c12393a951a4037b568f1e5cc2a6df5144a2b2185e2f1867610071"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-basecard-constructor-registration-native-20261025.json",
+      "bytes": 2811,
+      "sha256": "31054cb6ac83c25ed6e53e003fb4de806d615fe1c9fac8250fefb7663d199690"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-basecard-constructor-native-20261025.json",
+      "bytes": 43582,
+      "sha256": "2d4a112986b9c0010d8255bbf9d5ef0046b718f0c17113e4d1c2f16992b9e9ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-json-empty-object-helper-native-20261025.json",
+      "bytes": 12884,
+      "sha256": "6582f02b7584b83093c173150b0e3804ba3149d585f3dafcaa01bca113ea3858"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-basecard-class-constructor-pointer-native-20261025.json",
+      "bytes": 1799,
+      "sha256": "80acb41af4a7450c5a1c84cfbec988668d6ed1c0e88e2a9a5b7c185060eb1001"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-reset-json-keys-controller-native-20261025.json",
+      "bytes": 1246,
+      "sha256": "c7b0c486218e4a562adee32baa69a4ce2d3691c8872d87905e89be38870cc3ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-card-json-defaults-native-20261025.json",
+      "bytes": 5926548,
+      "sha256": "06fc705c3dfad01862b66f796f1afcd0bd9c57cf2ecae13dbd551dbb92429c5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-card-json-battle-native-20261025.json",
+      "bytes": 7777902,
+      "sha256": "e3060357b22fc6ca412bc602029e70ee2c120011b1c49f74b5aad3aca92494f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-match-card-json-native-20261025.json",
+      "bytes": 3501686,
+      "sha256": "bda89c09bf1ed0a77cb2624dabd93c8c383ed017e73a817c2563b8ea7d8d623c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule418-create-card-blueprint-native-20261025.json",
+      "bytes": 4585013,
+      "sha256": "4e73d4f5549d50d8670ace21107390908c990a0dbd74588c4b19d0131cab60d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-init-functions.py",
+      "bytes": 2438,
+      "sha256": "e001bec1fbc1e94be908e1e98217ae7aa337c368f5748519f4f79c2cd72ea42a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-init-wrappers.py",
+      "bytes": 3154,
+      "sha256": "92d0064d9444bc9f45df1a050961f41c8a1f1e1496f9cf06e402084a479a8283"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-create-reset.py",
+      "bytes": 3058,
+      "sha256": "ad0b594a3e2fe4b5e139dff1cda20aa55bedf618912712746043b1499c03f906"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-staticclass.py",
+      "bytes": 2857,
+      "sha256": "177e46efdb58ab2aac2cece095b7aea36826fbe7f1fac24e3d76925f4a803bcf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-ctor-registration.py",
+      "bytes": 3053,
+      "sha256": "3937a54fbc62d6fd9489337432ffe3b7322c70b728a4ca0f781f553cc3275ef6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-constructor.py",
+      "bytes": 3049,
+      "sha256": "38f9586fcf5540e6402584ddd49132b41a673237d75c2b90bdb18e9ed971877d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-json-empty.py",
+      "bytes": 2935,
+      "sha256": "859e1f52fab24eb02da2ac016480318af9cdbdd4c9b053024e493fccbda70211"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-class-constructor-pointer.py",
+      "bytes": 3224,
+      "sha256": "90e670fe6fba0cf62de2a5d4554b4f6e1705ffbc00cb3fe11319314c2268194c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-reset-strings.py",
+      "bytes": 3835,
+      "sha256": "133381cd9e8602f1e9b1248b933e47ecf006fc273448b6436ec1f44795952695"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-json-defaults.py",
+      "bytes": 2623,
+      "sha256": "8f20e8e8befe993b2c5adea868db2a2fd76138534ac350cc9217bf3d7e6b73b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-json-battle.py",
+      "bytes": 2621,
+      "sha256": "dfbeb14471e5887ddedc0d890a4d333327b4bf0878d5cdb99a8ff8513188fc6f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-match-json.py",
+      "bytes": 2732,
+      "sha256": "ceea8e5a295d63742ffec5867a059649dcec68f2480ae67d6e9765bdb711ba18"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule418-create-card.py",
+      "bytes": 2408,
+      "sha256": "c17d788bd3f5d8b04d87839e0e24e67d0bde6c45cee76772e2e0e62cce847322"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule418-json-init-reset.py",
+      "bytes": 6214,
+      "sha256": "ff2d393a90c16b1dc0c9e1bc39cc3b5cac018be2816555d606110f06f6ed6de8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-json-init-reset-model-20261025.json",
+      "bytes": 61191,
+      "sha256": "b3ce6b42780b08047db766f9b794b76afe5a266d452c3e9f640ea57b857c53da"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule418.py",
+      "bytes": 7972,
+      "sha256": "1754ae4aa1ca264d9b0c0a2a1ebc25124347025336fbd44bba9605a37ad25ae6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-verified-20261025.json",
+      "bytes": 622,
+      "sha256": "b03b55b71651539f0b8b347c1d7bb53a12fdede373d671573e1e041ba6d07076"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-selftest.log",
+      "bytes": 74630,
+      "sha256": "fbe465bf22d38af314a8176b2755e0f295c68e10d61c554ed8d9e3fe66bba9f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-worker-packet\\input.json",
+      "bytes": 38763,
+      "sha256": "e1cc9a63d30fff05e777fa15cc1f07ed46839aa3c43c0904e65c3a7a22e1f5fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-worker-packet\\calls.json",
+      "bytes": 15127,
+      "sha256": "4427a89975af60eeb81d1fb67fd16554d864f13262960d4b2e9b69d4d62802f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule418-worker-packet\\calls-reviewed.json",
+      "bytes": 15891,
+      "sha256": "b00dd33b5f77f8be8d2a3d6a1bc50618e85605ab3b12a87191b965438bd9c262"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-init-reset-reference-20261025.json",
+      "bytes": 56326,
+      "sha256": "d3b8bf81fe5d224820951738c722914145099af4cdfdbace2dd877ab331fc53f"
+    }
+  ]
+}
