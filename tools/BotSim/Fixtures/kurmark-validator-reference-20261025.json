@@ -1,0 +1,1518 @@
+{
+  "rule": "RULE-426",
+  "cases": [
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 1,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "null",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "counter",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": true
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "unit",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "missing",
+      "type": 0,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "false",
+      "type": 4,
+      "raw": "0",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "true",
+      "type": 4,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "number",
+      "type": 3,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "string",
+      "type": 2,
+      "raw": "1",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "empty-string",
+      "type": 2,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 0,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 1,
+      "valid": false
+    },
+    {
+      "owner": 2,
+      "kind": "order",
+      "marker": "array",
+      "type": 5,
+      "raw": "",
+      "activation": 3,
+      "valid": false
+    }
+  ],
+  "boundary": "Actual332B validator AST. IsGotcha and typed JSON_GetBool hooks explicit;null context uses fresh false local. No selection UI/reason-string certification or complete native VM/frame lifecycle proof. Activation and side varied but not read by this graph."
+}

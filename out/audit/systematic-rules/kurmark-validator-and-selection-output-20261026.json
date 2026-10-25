@@ -1,0 +1,181 @@
+{
+  "rule": "RULE-426",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "6f1d1e4ef6ea2737f98ffd1df0556949e0fc74b6",
+  "kernel_changed": true,
+  "test_fixture_added": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-426",
+    "date": "2026-10-26",
+    "validator_bytes": 332,
+    "selection_wrapper_bytes": 71,
+    "auto_picker_bytes": 2597,
+    "validator_ast_executions": 168,
+    "wrapper_ast_executions": 6,
+    "headless_validator_scenarios": 168,
+    "headless_same_side_selection_scenarios": 8,
+    "headless_discard_cleanup_scenarios": 16,
+    "worker_calls": 2,
+    "worker_outputs": 6,
+    "worker_exact_match": true,
+    "worker_job": "20261025-220337-rule426-kurmark-validator-05a19281",
+    "baseline": "852 passed,1 failed /853",
+    "final": "853/853 pass",
+    "cross_side_hand_source": "unresolved scope/reachability",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Kurmark当前332字节IsValidHandTarget只检查目标IsGotcha和JSON_GetBool(is_kurmark_target)的value。只有Boolean true被视作已选；Boolean false、Number1、String1、空字符串和Array均不构成此标记。函数不读取激活序号、所属方或位置；外层候选池限制不能塞入此验证器。",
+    "168次捕获AST参考：双方、四种目标种类含null、七种标记类型和序号0/1/3；null Context显式以fresh false局部初值建模。实际局部IR与参考一致，并核对前后快照证明验证器未改写候选既有键／类型或激活值。Reason说明文字按UI范围不认证或修改。",
+    "八个同侧候选／答复组合显式令活动方等于选择卡所属方，实际选择接口排除单位、指令、真标记反制、对方手牌与牌库。已激活反制及错误类型标记反制仍可列入；取消／无效ID不制造追踪字段，有效选择经真实回调记录目标ID并标记。直接接口与VM旧整数槽77均参与检查。",
+    "当前selectTargetFromHand包装71字节在0通知待选ID，45无条件把qqq写为IntConst0；SDK也声明int32&。旧适配返回null不写槽，与此不符。现正常完成和未定位选择器早退均返回整数0作为本地出参写入；不改选择策略。六次包装AST参考覆盖通知上下文有无及三种ID，通知及异步生命周期显式受控。",
+    "16个实际Kurmark清理组合：双方、活动方、源抑制有无、重复ID。真实目标生产回调之后，调用正常DiscardCard使目标先进入弃牌；回合末两次派发，目标不能直接出手但标记仍清除，源列表亦清除，目标和源各持久化一次，无PlayCardFromHand通知。与当前回合末图316之后无成功门的结构一致。",
+    "发现待核实的跨侧来源边界：当前autoPickHandTargets2597字节在998调用GetPlayingSide，1027经HandLocationFromSide，1082按该位置取候选；本地DoSelectTargetFromHand从selecting.Owner手牌取候选。普通同侧条件等价，但跨侧请求是否可达、该自动策略与无头规则的职责尚待确认。本轮不据局部代码把通用候选池改为活动方。"
+  ],
+  "validation": [
+    "只读采集受PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305约束。Kurmark五函数2015字节和选择／自动选择两函数2668字节独立重解码一致。无进程写入、注入、目标函数调用或自动对局操作。",
+    "主agent重跑168验证器AST及6选择包装AST，完整结果与保留模型一致；仓库fixture与参考值完整比对。实际同侧选择与弃牌后清理测试不是原生对局观测，未认证完整自动决策／网络UI协议。",
+    "新增测试最初错误假定反制建卡CustomJson为空，既有初始化元数据导致布景断言失败；诊断明确got=True/want=True。改为与前快照完整比较键、类型和值，不据此改变生产验证器。初始及诊断日志保留。",
+    "最终用例在旧生产下852通过、1失败／853，精确复现选择包装qqq未写整数0。修复后同一套完整selftest853/853通过、退出码0。192个新增场景为168局部验证、8同侧选择答复、16弃牌后清理。",
+    "DeepSeek私有任务提取2个调用及6处输出赋值，主agent完整比较节点／偏移一致，无修补。任务20261025-220337-rule426-kurmark-validator-05a19281退出码0。采集和任务文件沿用开始时20261025标签，本轮结论日期按客户端为2026-10-26。"
+  ],
+  "limits": [
+    "跨侧候选来源的源码形态差异仍未关闭，不能称所有选择行为1:1；自动选牌策略是否覆盖合法跨侧PvP请求仍需调用链与状态证据。",
+    "只验证已定位有效选择卡的输出、所选同侧候选和取消答复；未证明非法ID通知、完整等待队列、网络提交或异步重入生命周期。",
+    "Null局部状态按明确fresh初值测试，不扩展为原生VM所有持久帧行为；Reason属于UI未实现。",
+    "完整Kurmark验证器、选择协议、变换目标、取消出手等全生命周期尚未认证，完整认证卡牌数仍为0。"
+  ],
+  "next_work": [
+    "优先追踪NotifySelectHandTargetPending到autoPickHandTargets的排队与侧别绑定，确认跨侧源请求是否可达。",
+    "核对选择器CardID参数和隐式receiver之间的身份契约，再决定候选池定位是否需修复。",
+    "保留出手失败清理与完整单卡认证的范围区别，继续其他未核对PvP原语。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule426-hand-selection-functions-native-20261025.json",
+      "bytes": 4570736,
+      "sha256": "2329e703f3e3a4c4d8bfe036d731c54b4dc6596a8cdca8f605a31245b2718f08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule426-kurmark-functions-native-20261025.json",
+      "bytes": 3494378,
+      "sha256": "eedb797ee6a2dd619e2ef05cd838a6533569e24a7dfaa9f276f0653024dd4675"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule426-hand-selection.py",
+      "bytes": 2398,
+      "sha256": "dc86bce7bb85ab7eac0fb507b0338c6340742c2ab2d0edc2a7ac1ddc4267aac2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule426-kurmark.py",
+      "bytes": 2457,
+      "sha256": "8a1f74742f8c13d729858ffe379443d79a259568eeb4b03f37b5106d3e2003fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule426-selection-wrapper.py",
+      "bytes": 4341,
+      "sha256": "8e7e1cbbcd99d7dac4c35e4f7bcbeae7e63b5e4c3f085b3400038b9e6cb4786e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule426-validator.py",
+      "bytes": 4857,
+      "sha256": "cf1368836cbd6be7143f1e55bc2b810a488fdcac27780864dd2fc56658ae2007"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-selection-wrapper-ast-model-20261025.json",
+      "bytes": 1359,
+      "sha256": "148da5ad4b5bb2ca452ea38299f456b8f7fc84cb2151869ca5b2c15c0d16c23c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-validator-ast-model-20261025.json",
+      "bytes": 47641,
+      "sha256": "1fbfdb5cd73c7b02f27ea38c658ac192e2fcb3f0837fe8f88e5247561852425e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-validator-reference-20261025.json",
+      "bytes": 26989,
+      "sha256": "5e32a2f86836c9ad456bbdfb337dc9e2898d7ba16f4f1de32134046c21f434e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-verified-20261026.json",
+      "bytes": 682,
+      "sha256": "00c8cf1c5dc6bebd5bc5bde20f346c661af47a975e97e22083bac03260fd8c6c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule426.py",
+      "bytes": 4577,
+      "sha256": "7560f27761ea3a98c47a456fc1f310c87e901a4b26bfb3633c45900cc54b28c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-selftest.log",
+      "bytes": 75310,
+      "sha256": "70c9150eb1a5148c41cf5414c1225ffd46af75952a0a0bcb4d8d8fb54c0ad35d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-diagnostic-selftest.log",
+      "bytes": 75369,
+      "sha256": "30ef8cab4a44325380e4a14448e1566f3f064e837abf45594cb35746633d56e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-diagnostic-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-final-fixture-baseline-selftest.log",
+      "bytes": 75317,
+      "sha256": "bfbcddec1edd17e48248adb701230a26351136ae0526e0f1ce038c10f70728a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-final-fixture-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-final-selftest.log",
+      "bytes": 75276,
+      "sha256": "4f682e46d8164ee5bfd6b9d0db77aa2b62ee77fe56eb9ae3af553ed050cb3838"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-worker-packet\\input.json",
+      "bytes": 3370,
+      "sha256": "37a4d1393ea245e0f4c1ef0ea9af1de9c2ccec1293d5b0709a607007edf20f5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-worker-packet\\output.json",
+      "bytes": 2841,
+      "sha256": "a413188ec34359a4414054ac49765bf9086817b262612537024fb64df9e3f846"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule426-worker-packet\\task.txt",
+      "bytes": 470,
+      "sha256": "5d3ba6ed61270d6c61afdbf72bbf919f75bcef4aa904ac181da04d12934d70e5"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-220337-rule426-kurmark-validator-05a19281\\job.json",
+      "bytes": 736,
+      "sha256": "06452b26a009b4fb23c0c54d2b64dd35bce4c6995240836f6276c5689d1903c8"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+      "bytes": 31655,
+      "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+    }
+  ]
+}

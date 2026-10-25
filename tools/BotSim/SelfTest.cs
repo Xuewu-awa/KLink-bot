@@ -234,6 +234,8 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("Kurmark验证器：反制与typed真标记、已激活候选及取消选择", KurmarkValidatorReference),
+        new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
         new("倒计时原语：类型门、固定false输出、缺失ID持久化与VM出参", CountdownNativeReference),
@@ -21324,6 +21326,111 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? KurmarkValidatorReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "kurmark-validator-reference-20261025.json")));
+        var program = KismetLibrary.Default?.FindLocalProgram("card_unit_kurmark_aufklarungs", "IsValidHandTarget");
+        if (program is null) return "缺少Kurmark实际局部验证器";
+        int count = 0;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            var (engine, state) = EmptyBoard(db); Side side = (Side)row.GetProperty("owner").GetInt32();
+            var owner = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            string kind = row.GetProperty("kind").GetString()!; CardInstance? candidate = null;
+            if (kind != "null")
+            {
+                candidate = state.CreateWithId(kind == "counter" ? "card_event_interception" : kind == "unit" ? PlainUnit : "card_event_aans", side, 80, side.HandOf(), 0);
+                candidate.GotchaActivated = row.GetProperty("activation").GetInt32();
+                int type = row.GetProperty("type").GetInt32();
+                if (type != 0) candidate.CustomJson.Set("is_kurmark_target", row.GetProperty("raw").GetString()!, (CardJsonType)type);
+            }
+            var before = candidate?.Snapshot();
+            var result = engine.Api.Vm.RunLocalProgramMulti(program,
+                new EffectContext { Engine = engine, State = state, Self = owner, Controller = side },
+                new Dictionary<string, object?> { ["targetedCard"] = candidate, ["CallFunc_IsGotcha_isIt"] = false,
+                    ["isIt"] = !row.GetProperty("valid").GetBoolean() }, "isIt");
+            if (!Equals(result["isIt"], row.GetProperty("valid").GetBoolean()) || owner.CustomJson.Count != 0
+                || candidate is not null && (candidate.GotchaActivated != row.GetProperty("activation").GetInt32()
+                    || candidate.CustomJson.Count != before!.CustomJson.Count
+                    || candidate.CustomJson.Any(p => !before.CustomJson.TryGetValue(p.Key, out var raw)
+                        || raw != p.Value || before.CustomJsonTypes[p.Key] != candidate.CustomJson.TypeOf(p.Key)))
+                || engine.Api.Vm.FaultedPrograms != 0) return $"Kurmark验证器差异 case={count},got={result.GetValueOrDefault("isIt")},want={row.GetProperty("valid")},type={candidate?.Definition.Type},json={candidate?.CustomJson.Count},activation={candidate?.GotchaActivated},fault={engine.Api.Vm.FaultedPrograms}";
+            count++;
+        }
+        if (count != 168) return $"Kurmark验证器 cases={count}";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int reply in Enumerable.Range(0, 4))
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var owner = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            for (int i = 0; i < 8; i++)
+            {
+                var card = state.CreateWithId(i == 4 ? PlainUnit : i == 5 ? "card_event_aans" : "card_event_interception",
+                    i == 6 ? side.Opposite() : side, 80 + i, i == 6 ? side.Opposite().HandOf() : i == 7 ? side.DeckOf() : side.HandOf(), i);
+                if (i == 0) card.GotchaActivated = 3;
+                if (i == 1) { card.GotchaActivated = 1; engine.Api.JsonSetBool(card, "is_kurmark_target", false); }
+                if (i == 2) engine.Api.JsonSetBool(card, "is_kurmark_target", true);
+                if (i == 3) engine.Api.JsonSetInt(card, "is_kurmark_target", 1);
+            }
+            int[] offered = Array.Empty<int>();
+            engine.PickHandTargetId = (_, cards) => { offered = cards.Select(c => c.CardId).ToArray(); return reply == 0 ? (int?)null : reply == 1 ? 999 : reply == 2 ? 80 : 81; };
+            var context = new EffectContext { Engine = engine, State = state, Self = owner, Controller = side };
+            if (reply % 2 == 0)
+            {
+                var output = engine.Api.InvokeByName("selectTargetFromHand", owner, new object?[] { 60, 77 }, context, out bool handled);
+                if (!handled || output is not int n || n != 0) return "手牌选择包装器qqq未写整数0";
+            }
+            else
+            {
+                var call = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "selectTargetFromHand", new KismetExpr[] { new() { Int = 60 }, new() { Var = "qqq", Scope = "local" } }, new[] { 1 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(call, context, new Dictionary<string, object?> { ["qqq"] = 77 }, "qqq");
+                if (!Equals(output["qqq"], 0)) return "手牌选择包装器VM整数输出未覆盖旧槽";
+            }
+            if (!offered.SequenceEqual(new[] { 80, 81, 83 })) return "Kurmark同侧候选池过滤差异";
+            int[] expected = reply < 2 ? Array.Empty<int>() : new[] { reply == 2 ? 80 : 81 };
+            if (!engine.Api.JsonGetIntArray(owner, "suppressionException").SequenceEqual(expected)
+                || owner.CustomJson.ContainsKey("suppressionException") != (reply >= 2)
+                || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
+        }
+        return null;
+    }
+
+    private static string? KurmarkDiscardBeforeEndCleanup(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool active in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool duplicate in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = active ? side : side.Opposite();
+            var owner = state.CreateWithId("card_unit_kurmark_aufklarungs", side, 60, side.HqOf(), 1);
+            var target = state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0);
+            var program = KismetLibrary.Default?.FindProgram(owner.Name, "OnHandTargetSelected");
+            if (program is null) return "缺少实际Kurmark生产入口";
+            engine.Api.Vm.Run(program, new EffectContext { Engine = engine, State = state, Self = owner, Controller = side,
+                EventArgs = new object?[] { 80, 60 }, NamedArgs = new Dictionary<string, object?> { ["handTargetCardID"] = 80, ["instigatorID"] = 60 } });
+            if (duplicate) engine.Api.JsonAddToIntArray(owner, "suppressionException", 80);
+            if (suppressed) engine.Api.SuppressUnit(owner, 60);
+            engine.Api.DiscardCard(target, owner);
+            if (target.Location != CardLocation.Discard || !engine.Api.JsonGetBool(target, "is_kurmark_target")) return "弃牌布景没有保留待清理标记";
+            state.ActionLog.Clear();
+            for (int i = 0; i < 2; i++) engine.Api.FireTrigger("OnEndOfTurn", null, state.ActiveSide, eventArgs: new object?[] { state.Turn });
+            var notices = state.ActionLog.SelectMany(a => a.SubActions).ToArray();
+            if (target.Location != CardLocation.Discard || target.GotchaActivated != 0
+                || target.CustomJson.ContainsKey("is_kurmark_target") || owner.CustomJson.ContainsKey("suppressionException")
+                || notices.Any(a => a.Name == "ZActionPlayCardFromHand")
+                || notices.Count(a => a.Name == "ZActionPersistCustomFields" && a.Values[0].Value == 80) != 1
+                || notices.Count(a => a.Name == "ZActionPersistCustomFields" && a.Values[0].Value == 60) != 1
+                || engine.Api.Vm.FaultedPrograms != 0 || engine.Api.Vm.UnimplementedCalls.Count != 0)
+                return $"Kurmark出手早退后清理不符 side={side},active={active},supp={suppressed},dup={duplicate}";
+        }
+        return null;
     }
 
     private static string? DirectHandIntegerOutputReference(CardDatabase db)

@@ -2384,7 +2384,7 @@ public sealed partial class CardApi
         var selecting = AsCard(r) ?? c.Self;
         if (selecting is null)
         {
-            return null;
+            return 0;
         }
 
         var hand = c.State.Hand(selecting.Owner)
@@ -2416,7 +2416,7 @@ public sealed partial class CardApi
                 eventSubject: chosen);
             return true;
         }, updateExtraTriggers: false);
-        return null; // selectTargetFromHand has no return value.
+        return 0; // Blueprint i45 writes the int32 qqq output, even on cancellation.
     }
 
     private bool IsHandTargetValid(CardInstance selecting, CardInstance candidate)
