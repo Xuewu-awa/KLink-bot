@@ -1,0 +1,136 @@
+{
+  "rule": "RULE-428",
+  "date": "2026-10-26",
+  "branch": "DinkyPuffer",
+  "base_commit": "0271827e14910123409c34b0a3e4b5669417ae18",
+  "kernel_changed": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "target_function_records": 4,
+    "target_script_bytes": 99389,
+    "logic_graph_bytes": 45675,
+    "controller_graph_bytes": 23746,
+    "online_graph_bytes": 29897,
+    "wrapper_reference_candidates": 110,
+    "actual_event_wrappers": 108,
+    "graph_self_reference_candidates": 2,
+    "function_records_redecoded": 114,
+    "unique_functions_redecoded": 112,
+    "ordinary_call_prefix_cases": 80,
+    "opponent_call_prefix_cases": 40,
+    "controller_call_prefix_cases": 8,
+    "total_prefix_cases": 128,
+    "worker_job": "20261026-011319-rule428-calls-4d53bca1",
+    "worker_status": "completed",
+    "worker_exit_code": 0,
+    "worker_exact_call_nodes": 3,
+    "worker_exact_jumpifnot_nodes": 6,
+    "worker_exact_ending_assignments": 1
+  },
+  "findings": [
+    "补齐RULE-427的两幅大型事件图语法阻断：BP_Logic45675字节、MatchController23746字节均线性解析至EndOfScript，继承解码器检查显式Jump/JumpIfNot目标均在语句边界。只称语法完整，仍有不透明委托操作及名称字段，不能称整图语义或所有动态控制流已还原。",
+    "类转换opcode13复用RULE-222同一PID/执行程序的MetaCastVM证据；本轮从实际VM分发表读取opcode61和62目标，各保留768字节窗口。61前缀推进12字节名称操作数后做两次表达式分派；62前缀做两次表达式分派。新解析器对62仅保存两个操作数，对61非零名称附加字保留全部三个原始uint32并标为未解析，不猜附加字的编号意义或虚函数实际行为。",
+    "三个autoPickHandTargets顶层调用语句已明确：BP_Logic43361与44593、MatchController2686（调用操作码实际在Context内2708）。不再将原始FName命中等同真实调用；此次逐一找到已对齐AST表达式。",
+    "EndTurnFromLogic包装以42163进入事件图。42163/42168依次压入42188与43283，42173先调用autoPickCardToDraw，42187弹到43283；GetBoard之后43329根据chooseOneActive决定是否43361调用autoPickHandTargets，随后弹回42188。结束回合的reason和PlayState检查在后面。附近43011的JumpIfNot不是这次自动调用的必经门；不能按文件相邻位置当成支配条件。",
+    "EndTurnForOpponent包装入口44526：仅PlayState等于原始字节4才继续，44571置bIgnoreKreditValidation真、44582置endingTurnForOpponent真，44593自动手牌选择，然后44607处理抽牌选择；其他值进入44908错误报告前沿。枚举SDK名称为NewEnumerator，不据名称臆译全部状态。",
+    "MatchController在2606调用IsMyTurn，2626为假跳1603，为真经GetLogic在2686调用自动手牌选择；逻辑对象为null的Context不会调用。readyToSetBoardAfterReconnect包装入口15983跳到373，但373至2606之间还有其他条件与动作路径，本轮只认证2606开始的局部段，未认证完整重连路径。",
+    "对两幅事件图的FName/函数指针引用候选再采集110条，其中108条为事件包装、2条为事件图自身引用，不能一律叫110个包装。与4条目标记录合计114份重解码记录、112个唯一函数地址；重复两图身份与脚本哈希一致。",
+    "新证据表明自动选牌用于结束回合及控制器恢复相关的具体客户端入口；它仍从活动方手牌取候选。本地通用选择接口从选择卡Owner取候选的差异保持未决。没有证明正常PvP请求的选择卡Owner一定等于活动方，也没有证明合法跨侧请求实际发生，因此不修改候选池。"
+  ],
+  "validation": [
+    "只读采集受PID24220、模块与执行程序SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305约束；从保留语料筛选后重读当前候选字节及元数据，采集结束重读稳定性。无进程写入、注入、游戏函数调用或自动对局操作。",
+    "工具tools/audit-auto-hand-callers.py离线核对脚本长度/哈希和114份AST重解码结果、三处调用位置、三个事件包装入口；重反汇编opcode61/62窗口并核对捕获反汇编，以及两个表达式分派与12字节名称推进形态。窗口范围不是.pdata完整函数边界证书。",
+    "实际捕获AST前段共128组通过：结束己方回合80组（chooseOneActive、ending标记、5状态、两reason、两side），代对手回合40组（5状态、两ending、两ignore、两side），控制器局部8组（IsMyTurn、逻辑对象有无、ending标记）。GetBoard/GetLogic/IsMyTurn受控，autoPickCardToDraw只记调用不模拟副作用；三个前沿之后均不执行。",
+    "DeepSeek私有窗口提取3个完整调用语句、6条JumpIfNot和1条ending标记赋值，与原始输入逐条完全匹配。明确不把窗口内JumpIfNot视为支配条件；worker按字面未提取PopExecutionFlowIfNot，由主agent直接核对43329并执行流栈建模。",
+    "本轮未修改C#规则或测试布景，未重复整套selftest；上一轮853/853仅为历史结果。新的语法/调用前段审计均实际运行通过。"
+  ],
+  "limits": [
+    "语法解析完成不等于全图语义验证：opcode62的委托操作和BindDelegate非零附加名称字仍为不透明结构；原有cast tag等语义边界亦不因解析成功自动消失。",
+    "控制器模型从2606开始，不证明从真实重连实例、入口15983至2606的所有分支条件成立；同样不认证完整超时、网络、回合推进或IsMyTurn原生实现。",
+    "autoPickCardToDraw在参考前段模型中无副作用；实际函数若修改面板或队列，必须另行展开验证。状态/side/reason布景有些未在所选前段读取，不能把重复不变案例作为更多原生路径覆盖。",
+    "仅有当前加载保留语料与当前字节一致性证据，不覆盖所有未加载资产、间接构造函数名或原生调用者。跨侧正常PvP可达性仍未决，完整认证卡牌数仍为0。"
+  ],
+  "next_work": [
+    "优先核对selectTargetFromHand显式cardSelectingHandTarget ID与本地隐式receiver/Self的身份契约；当前本地适配从receiver/Self取选择卡，需确认参数是否可指向其他卡。",
+    "核对真实选择面板候选来源及autoPickCardToDraw对面板/队列的副作用；仅在规则证据充分时修改通用候选池，避免扩大为整套UI实现。"
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule428-hand-queue-callers-final-native-20261026.json",
+      "bytes": 2733153,
+      "sha256": "d5113c38e1a375ebc5ea2e1a9adf0e5d3442ffccf1819c03b6f95681b9c017ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule428-event-wrappers-native-20261026.json",
+      "bytes": 2072040,
+      "sha256": "475f1cdf8e70de72707d600fa851f1f10f321d79e6c0a6e7a0fd3303a11332f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule428-op61-vm-window-native-20261026.json",
+      "bytes": 30684,
+      "sha256": "62a91bfdce0eef8a571c6b0ff5898c26b84429be0a4b4676f9cb5910d09acc71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule428-op62-vm-window-native-20261026.json",
+      "bytes": 26241,
+      "sha256": "abb36bcc758adaf7bf86a650b4a7044b61b722cbe533745b3056fd7a0aedff89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\class-load-20261019.json",
+      "bytes": 2775289,
+      "sha256": "8e80dd91b792771e3de42f5d16b8d3b81af51f6433621ddfc0c819d3ed262135"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-428.py",
+      "bytes": 1016,
+      "sha256": "d66a0debd080b3cb347b5291e19aea7674f0011cea2c4d7094b14226cdb084c1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule428-final.py",
+      "bytes": 3575,
+      "sha256": "661e37d05893e47eee5a40805de51272bf485cc562f9a85aa8eaf133d6c5ee4f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule428-wrappers.py",
+      "bytes": 3446,
+      "sha256": "382bb28c54e7440b4c65a4e9407b45774d9f7000d9c9c46104ae2a3e7149c430"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule428-op61.py",
+      "bytes": 2442,
+      "sha256": "f0b2c335cd67419a0d9f9d8667fb9bc5eb0c3b79760891f7df3d3ede844dc43c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule428-op62.py",
+      "bytes": 2442,
+      "sha256": "cb9d87dfb399bfdca9d84a4be38129858d7a2ea7db079dfdc8e94c39389dbf2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule428-call-prefix-model-20261026.json",
+      "bytes": 51796,
+      "sha256": "ca01c3354239737257c4cbac990e66a2563419d07f869b23b6c0542749d28482"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule428-worker\\input.json",
+      "bytes": 16114,
+      "sha256": "43c9bd789901872ba7dcd45e51f1ba98fecab0c9a49a9f101cc581b7c9005559"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule428-worker\\result.json",
+      "bytes": 2769,
+      "sha256": "f38888dab9b51eadd5a4219b235f5401d2648d30619349e3e468ea96526c5e62"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule428-worker-verification-20261026.json",
+      "bytes": 198,
+      "sha256": "c216eca6cf46cd20066ddd74871612a7a8f60d2f5d9802f9e5485e273fdb0e73"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\audit-auto-hand-callers.py",
+      "bytes": 11540,
+      "sha256": "00a9111f751ad44769274697f18b361eb589d936445545d0c470e23bc56425c5"
+    }
+  ]
+}
