@@ -1,0 +1,251 @@
+{
+  "rule": "RULE-421",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "9b5ddf7342fd20515578050666fdbf7f4f7cbca0",
+  "kernel_changed": false,
+  "test_fixture_added": false,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-421",
+    "fresh_code_addresses": 2,
+    "fresh_code_bytes": 363,
+    "receiver_blueprint_bytes": 1825,
+    "dispatcher_blueprint_bytes": 9812,
+    "native_parser_wrapper_executions": 32,
+    "receiver_ast_executions": 1084,
+    "callback_nonempty_loaded_implementations": 0,
+    "loaded_noncdo_online_match_instances": 0,
+    "worker_calls": 23,
+    "worker_card_assignments": 3,
+    "worker_exact_match": true,
+    "worker_job": "20261025-201748-rule421-receive-calls-8500a629",
+    "kernel_changed": false,
+    "fully_certified_cards": 0
+  },
+  "parser_reference_candidates": [
+    {
+      "owner": "BP_KardsSession_C",
+      "name": "HandleSocketKnockoutEvents",
+      "script_size": 1294,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveActionPersistCustomFields",
+      "script_size": 1825,
+      "decode_complete": true
+    },
+    {
+      "owner": "RewardFunctions_C",
+      "name": "ConvertJsonRewardtoClientRewardString",
+      "script_size": 2642,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_EntryPointHome_C",
+      "name": "ExecuteUbergraph_BP_EntryPointHome",
+      "script_size": 7184,
+      "decode_complete": false
+    },
+    {
+      "owner": "MSSDK_AuthenticateDirect_C",
+      "name": "ExecuteUbergraph_MSSDK_AuthenticateDirect",
+      "script_size": 1029,
+      "decode_complete": false
+    }
+  ],
+  "findings": [
+    "对保留的 RULE-419 已加载脚本语料扫描 Conv_StringToJsonObject 的精确 FName 对和 UFunction 指针，得到五个候选。对局相关 ReceiveActionPersistCustomFields 完整解码为 1,825 字节；其他候选包括会话事件、奖励和入口／认证图，其中后两图解码未完成。不能据此宣称全游戏解析调用已穷尽。候选脚本在当前进程逐字节重读一致。",
+    "进一步扫描接收函数及回调引用，完整解码 ResolveSubAction 的 9,812 字节。语句 976 比较 ActionPersistCustomFields，1032 分支到 6861，后者调用 ReceiveActionPersistCustomFields(SubAction.Values)。本轮只确认该分派分支，未完整执行其他子动作或网络协议。",
+    "接收函数先遍历全部 ActionData，按字段名区分 cardID、customName1、customName2、RefreshEffectBar、customJson；重复字段最后一次赋值覆盖前值。customJson 在 1691 将反斜杠双引号替换为双引号，1746 调用解析器，1783 保存结果，1810 无条件设 _receivedJson=true，没有额外成功检查。",
+    "遍历完成后，793 检查 ResolveSubActionsFromLocal；为 true 时经 807 PopExecutionFlow 直接返回，跳过 808 取卡、881/930 名字赋值、993 JSON 赋值及 1042 回调。解析发生在该检查之前，故本地开关不阻止字段解析本身。为 false 时才进入接收写入。缺少 customJson 字段时保留旧 JSON；有字段且解析结果无效时，会把无效结构体写入。",
+    "32 次实际离线原生包装入口 0x4518de0 执行，包含 0x45179f0 适配器、Deserialize 对象包装／驱动、工厂与 0x122a770 共享引用移动。受控 token 流分别为有效空对象与无 token 失败，输出分别为独立有效空对象和无效引用，覆盖参数读取模式、旧输出有无、两种分配填充及重复执行。没有执行真实 lexer，因此不能把任意畸形文本结果包装成已验证事实。",
+    "1,084 次实际接收 AST 参考执行：缺失 JSON、有效空对象、无 token 失败三类全部字段排列，再加重复 JSON／ID、无 ID、空动作、未知字段；各组合覆盖本地开关和目标卡有无。确认解析即使在本地开关开启或找不到卡时仍执行；卡牌写入和回调则按相应分支跳过。解析、FName 转换、数组、卡查询及回调采用明确受控原语。",
+    "当前反射函数精确名称枚举只找到 BaseCardObject 的空 OnCustomFieldsReceiveChanges 事件：flags=0x0c020800，不含 Native 标志，0x159ce30 为通用脚本执行入口。当前未发现加载的派生实现，不能把这次调用直接视为已证实的卡牌规则触发器；未加载／原生动态路径仍未排除。",
+    "当前只读对象枚举仅有 Default__BP_OnlineMatch_C，ResolveSubActionsFromLocal=false、Logic=null。它是默认对象，不用于判断实际对局开关。未请求用户重复加载对局，也未伪造运行时实例证据。",
+    "本地 CardApi.PersistCustomFields 输出子动作；MatchEngine.FireSubAction 记录子动作并处理指定的历史回执，没有 ReceiveActionPersistCustomFields 接收赋值入口。本轮确认远端接收边界可以表示无效 JSON，但没有证明正常 PvP 生产数据触发它，也没有证明其进入本地规则回调。继续保留无效结构体状态的实现缺口，不因此改变普通构造后的有效空字典默认值。"
+  ],
+  "validation": [
+    "只读采集受 PID 24220、模块身份和安装执行程序 SHA256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305 约束。新增两个代码地址合计 363 字节与 PE 一致；复用 RULE-417 的 14 个代码地址、跳转表和引用控制器表重新校验 PE／重定位一致。",
+    "接收／分派两个相关脚本从原始字节与符号表独立重解码一致；原生 32 次、AST 1,084 次模型均由主 agent 重跑，完整结果 JSON 与保留输出一致。未写入游戏进程、注入、调用游戏函数或改变对局。",
+    "DeepSeek 私有任务提取 23 个调用节点、三处卡牌成员赋值，主 agent 与完整源 AST、语句偏移逐项比较一致，无修补。任务 20261025-201748-rule421-receive-calls-8500a629 退出码 0。worker 结果不作独立权威。",
+    "接收模型初次执行补齐 LetObj 语法支持后通过，没有因此修改生产代码。JSON 解析结果仅借助原生有效空对象／无 token 失败参考，未执行任意非空 JSON 的 lexer。未混同默认对局对象与实际对局。",
+    "规则源码和 BotSim 测试未变，未新增完整 selftest 运行。上一轮规则源码 845/845 记录不作为本轮新测试。单卡版本迁移继续暂停，完整认证卡牌数保持 0。"
+  ],
+  "limits": [
+    "语料只覆盖当时已加载函数，无法排除未加载资产、原生写入和动态反射；两个非核心候选图解码未完成。",
+    "真实 JSON lexer 的错误文本行为、非对象根、非空 DOM、OOM、引用释放与线程并发尚未在本轮完整验证。",
+    "仅有对局默认对象，不能确认实际会话开关；空基类事件库存不能替代所有未来派生类与规则回调语义认证。",
+    "本地模拟器仍不区分所有有效／无效 JSON 结构体状态；本轮没有建立正常无头 PvP 路径因此出错的证据，不声称此差异全局无影响。"
+  ],
+  "next_work": [
+    "回到正常 PvP 调用的 JSON 清空／恢复及 suppressionException 路径，核对无效、空对象和缺失字段的分支范围。",
+    "若取得实际远端对局实例，再只读验证开关与接收链，不用类默认值代替运行时证据。",
+    "必要时单独取得真实 lexer 的错误／非对象根参考，保留协议接收逻辑与无头训练内核的范围区别。"
+  ],
+  "reference_boundaries": {
+    "native": "32 actual4518de0Blueprint wrapper executions including45179f0parse adapter,Deserialize object wrapper,driver/factories and122a770shared move. Reader/token stream controlled as valid-empty-object versus no-token failure;this does not execute lexer on malformed JSON strings. Engine parameter Step and initializer,allocator/free,FString and selected controller cleanup hooked. Borrowed input and empty previous controllers;no complete GC/destruction or valid-PvP malformed producer proof.",
+    "receiver": "Actual captured receiver AST,all field permutations for absent/empty-object/no-token-failure JSON plus duplicates/missingID/unknown/empty packets,each with local flag and target presence. JSON parser outputs controlled as valid-empty versus no-token failure based on native wrapper reference;no actual malformed-text lexer execution. Name conversion,ASCII switch comparison,Array ops,lookup and callback observed via explicit hooks;no FName interning,UI/network/fullPvP producer certification."
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-json-parser-callers-native-20261025.json",
+      "bytes": 205430,
+      "sha256": "f7704c494440db13e63bae2dd0559827cdaece9848b5429cc5422650ae86387b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-json-parser-wrapper-native-20261025.json",
+      "bytes": 11264,
+      "sha256": "d66428423b71a48988b7323a4cbca23b9b94e60f1d15766c56f8f8467cf140eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-json-receive-callers-native-20261025.json",
+      "bytes": 232043,
+      "sha256": "b9b9a352d5557bf835339b988939690417b7115c68ac56b06b80fbc9be9f8347"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-json-receive-functions-native-20261025.json",
+      "bytes": 4539970,
+      "sha256": "16c8d08595386385b00595ace89cd0072feb0d321c1c08d4f3089719bcf79a59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-json-shared-move-native-20261025.json",
+      "bytes": 6754,
+      "sha256": "8d2d2c91b160554e32b0d89955d674743631ae349edc9aa7f6291011af4ced7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule421-online-match-flags-native-20261025.json",
+      "bytes": 3434868,
+      "sha256": "0fb0ac735028c85eadf7c5afc4d17884d8d2b9785ccb1a4db7456403e5d1a08c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-copy-functions-native-20261025.json",
+      "bytes": 4490774,
+      "sha256": "fbd1e40a29a8d28d29be99de10f47e6891b28d8b87153004ad29896b7ca9f6fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-copy-backends-native-20261025.json",
+      "bytes": 113778,
+      "sha256": "e4375a75eb08ddc0af6901502702716fe87722bcc638ee7c3067f35cec7c3f33"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-serializer-native-20261025.json",
+      "bytes": 70408,
+      "sha256": "06760445988b8509211543307a6937dc4853ec316a59c8686fb189cea1b93601"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-serializer-switches-native-20261025.json",
+      "bytes": 327632,
+      "sha256": "cc4dcd071327d7c9f1a15d2e1b5b6b1272188fdab3b8482606e657f585a1ca5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-container-factories-native-20261025.json",
+      "bytes": 14420,
+      "sha256": "7b84807089046b2fe6672249b0d8bfe13454be11b914511cf4558be95293ccf6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-dom-allocation-native-20261025.json",
+      "bytes": 38529,
+      "sha256": "68e1c58a9591bf51dad8dc12e95d50fcaf9df316e17d0579792499fd3062b733"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule417-json-parser-owned-tables-native-20261025.json",
+      "bytes": 13078,
+      "sha256": "4f754c31c34b5a51dcbcd72826630425be3d7afd58654dd10f01915d698eabac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-json-array-callers-native-20261025.json",
+      "bytes": 8682399,
+      "sha256": "a87aeb9558dfe0301ce455fc55f5c3eb03e59036a46029fd1ba01bf2f324f963"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule419-loaded-script-corpus-20261025.bin.gz",
+      "bytes": 2734804,
+      "sha256": "0407b163e0c202c1bef0d7086a4e01e216042d2bde1b5e223a43f3cd4adb9a96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-match-flags.py",
+      "bytes": 3578,
+      "sha256": "24e7fd716e2612bd4e07fc640c1dbb9e95298e1fef1c1da50e6cb28b9b0322be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-parser-callers.py",
+      "bytes": 3430,
+      "sha256": "f2d4794a8e7aec1ef7b3d6c25ea8a985b6720522e19d873491d7b4c1ba4f0539"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-parser-wrapper.py",
+      "bytes": 2710,
+      "sha256": "8df05b664472ae47311242a0fa7bc8fe7cdf6e72ce3188d4a99786eaa89aefcf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-receive-callers.py",
+      "bytes": 3474,
+      "sha256": "7abd7f2acf0beb266c6ebeca024d1292803d84ac796560c5053ed89a85f6a091"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-receive-functions.py",
+      "bytes": 2441,
+      "sha256": "4ee0b6e6ee8bd237de9c434c12be7e64fe2bf2b778fca9378a03aad6cf4632ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule421-shared-move.py",
+      "bytes": 2707,
+      "sha256": "fed8b75a6ec0870a57c6387fd4c5ec28d602971138cd51f1009217b40079291d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule421-parser-wrapper.py",
+      "bytes": 7015,
+      "sha256": "d2fb454a63db2564ea8e8dc3aaebd33a18a9d5a553473f618c3f219c6691d0b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule421-receive-ast.py",
+      "bytes": 7384,
+      "sha256": "5f54524219ec9495e619f3a5716d06e3dbb3728af95853ee842b68a6dea6dd5c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-parser-wrapper-native-model-20261025.json",
+      "bytes": 25074,
+      "sha256": "e41425ee8e15c7fca7921a783028dac011064b2bd6218ab942c2043ea4f8b9fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-receive-ast-model-20261025.json",
+      "bytes": 2675032,
+      "sha256": "3f62f3b6a7593f743f335167e488462aa33b356c7d477d925b14c120da27b733"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-verified-20261025.json",
+      "bytes": 548,
+      "sha256": "5be22719bf91382287a18ab286e27c9c809b3ef50bc9104ad41d457a7cadf196"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule421.py",
+      "bytes": 6574,
+      "sha256": "b47d8c1730e69425df23e7c166ca77e24a742ca885d78d0d05734c9664975c29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-worker-packet\\input.json",
+      "bytes": 22059,
+      "sha256": "82f212c41458868edd85d88b1c35113bb8bf75d20b6006f2f1b9167ff489928c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-worker-packet\\output.json",
+      "bytes": 13629,
+      "sha256": "404ed84688aa0310c178ba886f7fe8a31ac8e4ef0936ac9d9786dad120296cc5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule421-worker-packet\\task.txt",
+      "bytes": 567,
+      "sha256": "ee4abbe7dd1b06c90adbf3460a3198e71896dbfaaae78ca851fae6616a7169ce"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261025-201748-rule421-receive-calls-8500a629\\job.json",
+      "bytes": 727,
+      "sha256": "5349f7d5df8ee0dc044c5e6ed9a96cd91e7761320fc4d8bb33f899b61c23613b"
+    }
+  ]
+}
