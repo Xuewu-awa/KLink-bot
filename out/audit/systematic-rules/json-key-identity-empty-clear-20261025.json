@@ -1,0 +1,221 @@
+{
+  "rule": "RULE-416",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "5069f3e7d23afcbeb7456aaeaec4febf2cd1d702",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-416",
+    "fresh_clear_script_bytes": 243,
+    "native_wrappers": 4,
+    "native_body_addresses": 19,
+    "native_body_bytes": 4568,
+    "native_tables_bytes": 1152,
+    "native_key_scenarios": 256,
+    "exploratory_nul_scenarios": 64,
+    "clear_ast_cases": 16,
+    "portable_reference_rows": 48,
+    "new_headless_kismet_scenarios": 192,
+    "worker_call_instructions": 48,
+    "baseline": "1/843 failure;88/192 new scenarios failed",
+    "final": "843/843 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Current native JsonHasField360,JsonHasTypedField549,JsonMakeField467,JsonRemoveField362byte wrappers do not reject empty names. FString Num0 and Num1(empty-terminator) both yield view length0. Actual TMap lookup accepts stored empty key; full removal path unlinks bucket and frees sparse slot. Remove extra empty-key prohibition in headless JsonClear.",
+    "Actual CRC helper folds ASCII lowercase to uppercase; bounded/unbounded FString comparators1215a10/1215790 use128byte ASCII lowercase table when differing characters are bothASCII. Non-ASCII differences remain raw UTF16 differences. Thus Field/field are equal, while é/É,Ä/ä and i/İ are distinct. Existing Ordinal dictionaries incorrectly split ASCII variants; OrdinalIgnoreCase would incorrectly merge non-ASCII pairs.",
+    "Set insertion13b0860 moves incoming key/value to temporary entry, finds duplicates with real FString comparison, destructs old key and copies32bytes including incoming key into existing entry. Native actual-wrapper model proves replacement retains new input spelling. CardCustomJson.Set now removes equivalent old entry before setting incoming key/value/type, preserving latest spelling across persistence/snapshot.",
+    "CardCustomJson values/types share a dedicated ASCII-only folding comparer; non-ASCII UTF16 units remain exact. Local hash is consistent deterministic FNV over folded units rather than pretending to reproduce native CRC bucket layout. Self-CopyFrom guard avoids invalidating its own enumeration after replace semantics changed.",
+    "Exploratory64embedded-NUL single-bucket cases confirm native comparisons may stop at NUL despite hashing/full-length metadata including trailing units. Full embedded-NUL behavior can depend on bucket layout. This round does not implement that anomaly; ordinary non-NUL key policy and empty keys are the certified selected scope."
+  ],
+  "validation": [
+    "Guarded read-only current PID24220/module, exe SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305. Fresh four native reflected wrappers and243byte Clear Blueprint; one empty Stub. Header/native-flag/native-pointer/name/length/hash checked and Clear independently redecoded. No process writes/injection/game calls.",
+    "19captured native body addresses4568bytes plus1152bytes CRC/ASCII tables matched installed executable and read-only live bytes. Full128byte character table independently checked: onlyA-Z change tolowercase. PE import descriptor/lookup/thunk/name proves memcpy/memmove hooks. Known shared helpers counted as captured addresses, not19independent new PvP implementations. Reused collector metadata may retain older RULE labels; source file/header/exe hashes establish identity.",
+    "256offline native scenarios=16stored/query key pairs x2engine stepping routes x2borrowed aliases x2empty FString encodings x2operation groups. Query/remove group runs Has,typedNumber/Boolean,Remove,Has-after. Make group executes insertion/replacement thentyped queries. Actual CRC,TMap equality/chains,duplicate lookup,element destructor,hash unlink and sparse free/bitmap code run. Guards,counts,bits,retained sibling entry,key spelling and type checked.",
+    "Native models explicitly control engineStep/property prep,FString allocation,sparse slot reservation,free and proven CRT byte-copy thunks. Synthetic two-entry one-bucket maps and null-controller value cells avoid allocator/rehash/shared-lifetime certification. Native comparison is not replaced by a Python dictionary lookup.",
+    "16actual Clear AST executions compose native Has/Remove results. Portable48row GetInt/Clear/SetBool reference uses prior RULE-415 scalar value/out contracts and native key identity/spelling; Number0/Booleanfalse modeled cells. Reference regeneration matches complete outcomes and fixture.",
+    "192real Kismet scenarios=48reference rows x2sides x2object/ID routes. Opposite Found/stale value seeds verify writeback. Compare exact key spellings/types,raw read/no-op preservation,sibling fields,CopyFrom/pre-operation snapshot isolation,self-copy safety,absence of implicit persistence,and explicitly persisted semantic JSON with exact member names.",
+    "Before production patch1/843failure;88/192new cases fail. Patched entire selftest843/843pass,exit0. Existing ordinary/numeric/mixed JSON suites also pass.",
+    "DeepSeek private four-wrapper packet extracted48call instructions; primary compared function names and every instruction object. Job20261025-143929-rule416-key-native-calls-e6e506ab completed exit0. No worker semantic or publishing responsibility."
+  ],
+  "changes": [
+    "Use ASCII-only key comparer for both CardCustomJson maps; replace incoming key spelling on update; guard self-copy.",
+    "Permit JsonClear empty string keys while retaining null-input fallback.",
+    "Add portable48row native-key reference and1test entry192Kismet cases; document embedded-NUL boundary."
+  ],
+  "limits": [
+    "No full embedded-NUL emulation. Exploratory single-bucket result is not a universal key-equivalence rule; hash/bucket interaction and textual parser paths need further evidence.",
+    "Only selected non-NUL key pairs/one-bucket map layouts are end-to-end checked. Multiple bucket growth/rehash,corrupt entries/null payloads,real shared-controller destruction,GC,diagnostic aborts and concurrency unverified.",
+    "Native JSON value cells are borrowed synthetic type/payload cells; constructors/native scalar conversion are not reexecuted here. Get/Set scalar graph contracts reused. No named-card unusual-key producer proof.",
+    "Persistence checks semantic values and member spelling, not exact native field order/format. Local CopyFrom/snapshot checks do not certify client card-copy shared-object aliasing.",
+    "Local metadata custom-name/gameplay-tag fields still cohabit the backing store; arbitrary reserved-name casing/domain collisions are not certified by this matrix. Private unused JsonHasKey still has old length gate; source search found only its declaration and no active call path, so it is not changed here.",
+    "No historical replay authority/UI/campaign/tutorial work. Version migration paused; fully certified cards0 and no exhaustive PvP restoration claim."
+  ],
+  "next_work": [
+    "Inventory actual rule Blueprint JSON key producers/consumers for affected ASCII spelling differences; distinguish real card coverage from generic primitive coverage.",
+    "Resolve embedded-NUL hashing/comparison across bucket layouts and native parser behavior before any broader key policy.",
+    "Audit default/invalid JSON object handling and separation of local metadata from actual JSON fields; continue wider PvP/card mapping."
+  ],
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-key-functions-native-20261025.json",
+      "bytes": 4501105,
+      "sha256": "b813757b9521a2a12ec620754c0b56fa274c7b0874ac35393d0ba815028bb5c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-key-wrappers-native-20261025.json",
+      "bytes": 77390,
+      "sha256": "74a1170468856cc044b5a87a769c12424d6e8f96664245fbdd29c09bb5ac0462"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-key-helpers-native-20261025.json",
+      "bytes": 49053,
+      "sha256": "415839db250e241c595bcdd97e3e528c38dc30535a00ba15013d314299a51532"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-map-helpers-native-20261025.json",
+      "bytes": 47037,
+      "sha256": "bed11735dfe21c0e438a33fd4ca051ccf33b44e5459fbbbbc09dd0fbaf224d75"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-map-mutation-native-20261025.json",
+      "bytes": 21002,
+      "sha256": "730eb03521098297a7058731451619f6403dc58e9fac5fd55cb436355c71f7ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-string-sparse-native-20261025.json",
+      "bytes": 12519,
+      "sha256": "537a27729b63ba954410b8f66bdd84566face4facc2f5152d70d651e1b6d217d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-key-tables-native-20261025.json",
+      "bytes": 3036,
+      "sha256": "1223820da13181336e70664bc3435d833da70e12667c7886573b4048f2f19e84"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule416-json-mutation-imports-native-20261025.json",
+      "bytes": 8581,
+      "sha256": "50076d3e467e518bd826fa742f9ae087d760ef7abad08b2689dbf8fe9d898c19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-keys.py",
+      "bytes": 2500,
+      "sha256": "9a7017ac195f2b763d12e18059f86908840b8218b67fdb8d5f7a1ceed7196cd6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-key-wrappers.py",
+      "bytes": 2865,
+      "sha256": "c9ce038cb63682b28e4860666660ee8215f3f82e620a4f65adcde22af2831dc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-key-helpers.py",
+      "bytes": 2773,
+      "sha256": "fb44e18e8da93cbaea66961c6cd775d7dc40549bb658411587cac77c49852c19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-map-helpers.py",
+      "bytes": 2762,
+      "sha256": "40a259381141333416a1bca45427d5d504f6b98620c048557af2dc3ae5eb79ae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-map-mutation.py",
+      "bytes": 2753,
+      "sha256": "422bdec082727a7a9a16de0a6bfdf9662641af9848c4717a6b242ff32059780d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-string-sparse.py",
+      "bytes": 2744,
+      "sha256": "ffe43c855fb60ce747ebf15403a706a29d0e4e32874fa38622d283b59dcf23c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-key-tables.py",
+      "bytes": 2899,
+      "sha256": "ed067e22551740b9d2baba879e887d002590f64303ad7b85e6734a2e54b1492d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule416-mutation-imports.py",
+      "bytes": 3579,
+      "sha256": "ef854c5a4f92ffda2340f5333dc002fcf7051ac089eb0069c47dca2b89e4a9a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule416-json-keys.py",
+      "bytes": 7870,
+      "sha256": "28261ea80d3e9d924b40e04ec05c18d7259c338322fb214add867feddc76546d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule416-key-nul-probe.py",
+      "bytes": 7837,
+      "sha256": "f996416c0234d78d1ab42b78ef3becfadaf278b753437880b47bf1ad7ddf0887"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule416-key-reference.py",
+      "bytes": 3636,
+      "sha256": "3113d7b5b591c5a9e5557695943645a10588fa4cb08045845f52cf4474e17c3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule416.py",
+      "bytes": 5722,
+      "sha256": "ecfc6303cbd9938e608bcac927934d9222e312a6465fc15c1ecb838ae8dff228"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-json-key-native-model-20261025.json",
+      "bytes": 77998,
+      "sha256": "eed6b2132e4c04124d172198056ed569484ec80680c4936f24eb89ead6da94d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-json-key-nul-probe-20261025.json",
+      "bytes": 20692,
+      "sha256": "208996eb8a8eda5bab9bdae978038cfcd6a303dc9a677a9b46b85996e76b005d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-json-key-reference-model-20261025.json",
+      "bytes": 28132,
+      "sha256": "648497902261f1a008c3e1c1000c940f500e37353377a93bd0e1a699c42a7934"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-verified-20261025.json",
+      "bytes": 531,
+      "sha256": "b5747ee631deb6e5fddc43eb028ad0068cb0f7bf30f56a37db0d374cb6a30731"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-baseline-selftest.log",
+      "bytes": 74534,
+      "sha256": "7a7161ae815194e9714521d5b7e5f93324d5ccee88428ddba4824147177bcaa2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-patched-selftest.log",
+      "bytes": 74463,
+      "sha256": "06d0c78ca6193489389d4c3b83474e1cfdf8e0d8eb29d21fb8900c240f8929e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-patched-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-worker-packet\\input.json",
+      "bytes": 71311,
+      "sha256": "a308f81a18efacc59fced9ed73e16cd85f4d9cbc571e37ba7c1595acd11f919d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule416-worker-packet\\calls.json",
+      "bytes": 6780,
+      "sha256": "4f000f3881ce4250a6977b54b2c598247d2fc8bbb2a6416d8b1664e21f6b2139"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\json-key-reference-20261025.json",
+      "bytes": 24811,
+      "sha256": "a40023b871bb638315c85f9445464e95b5e7e28c044388454df5950ecf0e56f1"
+    }
+  ]
+}

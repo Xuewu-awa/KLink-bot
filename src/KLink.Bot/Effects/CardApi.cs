@@ -5103,7 +5103,7 @@ public sealed partial class CardApi
     /// `JSON_SetBool → JSON_Clear → JSON_GetBool` 三段 —— 整张表被清 ⇒ 兄弟键一起丢。
     /// </summary>
     public bool JsonClear(CardInstance card, string key)
-        => !string.IsNullOrEmpty(key) && card.CustomJson.Remove(key);
+        => key is not null && card.CustomJson.Remove(key);
 
     // ---- 卡牌私有 JSON 的数组变体（JSON_GetIntArray / JSON_AddToIntArray）----
     // 普通整数保留逗号投影；完整 JSON 数组保留每个元素的类型和顺序。

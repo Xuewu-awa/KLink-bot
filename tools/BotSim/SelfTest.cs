@@ -234,6 +234,7 @@ internal static class SelfTest
         new("原生HasCustomAbility：键存在但空数组为false，非空来源无需有效对象", HasCustomAbilityNonemptySources),
         new("destruction账本：过零、负值累积、其他字段保留及快照重置", DestructionLedgerLifecycle),
         new("主动亡语移除：只有非空自定义来源才调用Remove，通知带目标ID", TriggerDestructionRemovalGate),
+        new("JSON键：原生空键、ASCII折叠、Unicode区别及覆盖拼写参考", JsonKeyNativeReference),
         new("JSON标量：权威AST与真实VM的三种写出、类型门、清除及空对象", JsonScalarNativeReference),
         new("混合JSON数组：权威AST组合、真实VM出参及复制快照持久化", JsonMixedArrayNativeReference),
         new("JSON数组追加：权威AST参考的Found出参、缺失/错误类型及空对象", JsonAddArrayNativeReference),
@@ -21315,6 +21316,67 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"reset array cases={cases}";
+    }
+
+    private static string? JsonKeyNativeReference(CardDatabase db)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "json-key-reference-20261025.json")));
+        int cases = 0, failures = 0; string? first = null;
+        foreach (var row in doc.RootElement.GetProperty("cases").EnumerateArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool byId in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
+            foreach (var field in row.GetProperty("initial").EnumerateObject()) engine.Api.JsonSetInt(self, field.Name, 0);
+            var copy = new CardCustomJson(); copy.CopyFrom(self.CustomJson);
+            var snapshot = self.Snapshot(); var before = self.CustomJson.ToDictionary(x => x.Key, x => x.Value);
+            string op = row.GetProperty("operation").GetString()!, key = row.GetProperty("query").GetString()!;
+            bool get = op == "get", clear = op == "clear", expectedFound = row.GetProperty("found").GetBoolean();
+            string fn = get ? "JSON_GetInt" : clear ? "JSON_Clear" : "JSON_SetBool";
+            var target = new KismetExpr { Var = "target", Scope = "local" };
+            var found = new KismetExpr { Var = "found", Scope = "local" };
+            var value = new KismetExpr { Var = "value", Scope = "local" };
+            KismetExpr[] args = clear ? new[] { target, new KismetExpr { Str = key }, found }
+                : new[] { target, new KismetExpr { Str = key }, get ? value : new KismetExpr { Bool = false }, found };
+            var program = new KismetProgram(new[] {
+                new KismetStep(0, "call", fn, args, clear ? new[] { 2 } : get ? new[] { 2, 3 } : new[] { 3 },
+                    null, null, -1, null, null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            }, 0);
+            var seed = new Dictionary<string, object?> {
+                ["target"] = byId ? self.CardId : self, ["found"] = !expectedFound, ["value"] = "stale",
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            var output = new KismetVm(engine.Api).RunLocalProgramMulti(program, ctx, seed, "value", "found");
+            var expected = row.GetProperty("final");
+            bool ok = Equals(output["found"], expectedFound)
+                && (!get || Equals(output["value"], row.GetProperty("value").GetInt32()))
+                && self.CustomJson.Keys.OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(
+                    expected.EnumerateObject().Select(x => x.Name).OrderBy(x => x, StringComparer.Ordinal))
+                && expected.EnumerateObject().All(p => self.CustomJson.HasType(p.Name,
+                    p.Value.GetProperty("type").GetString() == "Number" ? CardJsonType.Number : CardJsonType.Boolean));
+            if (get || clear && !expectedFound) ok &= before.Count == self.CustomJson.Count
+                && before.All(p => self.CustomJson.TryGetValue(p.Key, out var v) && v == p.Value);
+            ok &= snapshot.CustomJson.Keys.OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(before.Keys.OrderBy(x => x, StringComparer.Ordinal))
+                && before.All(p => copy.TryGetValue(p.Key, out var v) && v == p.Value && snapshot.CustomJson[p.Key] == p.Value)
+                && !state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionPersistCustomFields");
+            engine.Api.PersistCustomFields(self);
+            var action = state.ActionLog.SelectMany(x => x.SubActions).Last(x => x.Name == "ZActionPersistCustomFields");
+            var actualJson = JsonNode.Parse(action.Values[3].Text.Replace("\\\"", "\"", StringComparison.Ordinal));
+            var fields = new JsonObject();
+            foreach (var p in expected.EnumerateObject()) fields.Add(p.Name, JsonNode.Parse(p.Value.GetProperty("value").GetRawText()));
+            ok &= JsonNode.DeepEquals(actualJson, fields);
+            string current = System.Text.Json.JsonSerializer.Serialize(self.CustomJson.ToDictionary(x => x.Key, x => x.Value));
+            copy.Set(key, "copy", CardJsonType.String); copy.CopyFrom(copy);
+            ok &= current == System.Text.Json.JsonSerializer.Serialize(self.CustomJson.ToDictionary(x => x.Key, x => x.Value))
+                && before.All(p => snapshot.CustomJson[p.Key] == p.Value);
+            if (!ok) { failures++; first ??= $"pair={row.GetProperty("pair_id")}/{op}/{side}/{byId}, found={output["found"]}"; }
+            cases++;
+        }
+        return failures != 0 ? $"JSON键参考 {failures}/{cases} failures; {first}"
+            : cases == 192 ? null : $"JSON键参考 cases={cases}";
     }
 
     private static string? JsonScalarNativeReference(CardDatabase db)

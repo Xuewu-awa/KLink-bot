@@ -9,8 +9,8 @@ public enum CardJsonType { String = 2, Number = 3, Boolean = 4, IntArray = 5 }
 
 public sealed class CardCustomJson : IReadOnlyDictionary<string, string>
 {
-    private readonly Dictionary<string, string> _values = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, CardJsonType> _types = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _values = new(JsonKeyComparer.Instance);
+    private readonly Dictionary<string, CardJsonType> _types = new(JsonKeyComparer.Instance);
 
     public string this[string key]
     {
@@ -27,6 +27,9 @@ public sealed class CardCustomJson : IReadOnlyDictionary<string, string>
 
     public void Set(string key, string value, CardJsonType type)
     {
+        // Native TMap replacement copies the incoming FString key as well as its value.
+        _values.Remove(key);
+        _types.Remove(key);
         _values[key] = value;
         _types[key] = type;
     }
@@ -59,8 +62,34 @@ public sealed class CardCustomJson : IReadOnlyDictionary<string, string>
     public void Clear() { _values.Clear(); _types.Clear(); }
     public void CopyFrom(CardCustomJson source)
     {
+        if (ReferenceEquals(this, source)) return;
         foreach (var pair in source) Set(pair.Key, pair.Value, source.TypeOf(pair.Key));
     }
+    // Current native JSON keys fold ASCII letters only. OrdinalIgnoreCase would
+    // also merge non-ASCII pairs that the client's FString comparator distinguishes.
+    private sealed class JsonKeyComparer : IEqualityComparer<string>
+    {
+        public static readonly JsonKeyComparer Instance = new();
+        private static char Fold(char c) => c is >= 'a' and <= 'z' ? (char)(c - 32) : c;
+        public bool Equals(string? x, string? y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null || x.Length != y.Length) return false;
+            for (int i = 0; i < x.Length; i++)
+                if (Fold(x[i]) != Fold(y[i])) return false;
+            return true;
+        }
+        public int GetHashCode(string value)
+        {
+            unchecked
+            {
+                uint hash = 2166136261;
+                foreach (char c in value) hash = (hash ^ Fold(c)) * 16777619;
+                return (int)hash;
+            }
+        }
+    }
+
     public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
