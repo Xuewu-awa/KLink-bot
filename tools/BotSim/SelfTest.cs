@@ -984,6 +984,9 @@ internal static class SelfTest
         new("普通移除重入：移动/同ID替换/删除后重取目标并刷新入口区域", RemoveReentryMappingContract),
         new("移除目标消失：移动和后置观察者接收空对象并重新查询后置主体", RemovedSubjectObservers),
         new("移除目标消失：前线归属重算保留原始卡ID并逐项读取新归属", RemovedSubjectFrontline),
+        new("夹击活动谓词：检查JSON关系字段存在性而非关键词或内容类型", ActivePincerPresenceContract),
+        new("离场夹击清理：仅活动关系执行，前后阶段重新检查", LeavePincerGateContract),
+        new("自身移动/后置回调重入：观察者保留缓存主体并在自身事件后查询资格", OwnLeaveIdentityContract),
         new("批量移除：逐ID单位门、重复及完整数组通知", RemoveBatchContract),
         new("批量移除：VM数组回调改动后重读长度/项并通知当前输入", RemoveBatchMutableInputs),
         new("总部防御致死使用已知原生销毁路径", HqDefenseLethalRouting),
@@ -34638,6 +34641,125 @@ internal static class SelfTest
                 string oldName = zone switch { CardLocation.BoardHqLeft => "Board_HQLeft", CardLocation.BoardHqRight => "Board_HQRight", CardLocation.BoardFrontline => "Board_Frontline", CardLocation.HandLeft => "Hand_Left", CardLocation.HandRight => "Hand_Right", _ => "Discard" };
                 if (!notices[0].Values.SequenceEqual(new[] { ActionValue2.Int("cardID", id), ActionValue2.Int("instigatorID", 20), ActionValue2.Str("oldLocation", oldName) }))
                     return "移除通知参数/顺序错误";
+            }
+        }
+        return null;
+    }
+
+    private static void SeedPincerPresence(CardInstance card, int kind)
+    {
+        card.CustomJson.Clear();
+        if (kind == 1) card.CustomJson.Set("pincer_givers", "", CardJsonType.IntArray);
+        if (kind == 2) card.CustomJson.Set("pincer_givers", "999", CardJsonType.IntArray);
+        if (kind == 3) card.CustomJson.Set("pincer_receiver", "999", CardJsonType.Number);
+        if (kind == 4) card.CustomJson.Set("pincer_receiver", "x", CardJsonType.String);
+        if (kind == 5) card.CustomJson.Set("pincer_givers", "0", CardJsonType.Boolean);
+    }
+
+    private static string? ActivePincerPresenceContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool keyword in new[] { false, true })
+        foreach (int kind in Enumerable.Range(0, 6))
+        foreach (bool receiver in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0); card.Keywords.Clear();
+            if (keyword) card.Keywords.Add(Keyword.Pincer);
+            SeedPincerPresence(card, kind);
+            var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 70, CardLocation.Discard, 0); decoy.Keywords.Clear();
+            var ctx = new EffectContext { Engine = engine, State = state, Self = receiver ? decoy : card, Controller = side };
+            var result = engine.Api.InvokeByName("hasActivePincerEffect", receiver ? card : null, Array.Empty<object?>(), ctx, out bool handled);
+            if (!handled || result is not bool active || active != (kind != 0))
+                return $"活动夹击应按pincer_givers/receiver字段存在性：{side}/{keyword}/{kind}/{receiver}";
+        }
+        return null;
+    }
+
+    private static string? LeavePincerGateContract(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HqOf(), CardLocation.BoardFrontline })
+        foreach (bool batch in new[] { false, true })
+        foreach (int kind in new[] { 0, 1, 4, 5 })
+        foreach (bool keyword in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = state.CreateWithId(PlainUnit, side, 60, zone, 2); card.Keywords.Clear(); card.Keywords.Add(Keyword.Suppressed);
+            if (keyword) card.Keywords.Add(Keyword.Pincer);
+            SeedPincerPresence(card, kind);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            engine.Api.InvokeByName(batch ? "RemoveMultipleCardsFromBoard" : "RemoveCardFromBoard", null,
+                new object?[] { batch ? (object)new[] { 60 } : 60, 999 }, ctx, out _);
+            int expected = kind == 0 ? 0 : kind == 4 ? 2 : 1;
+            int persisted = state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionPersistCustomFields"
+                && a.Values.Any(v => v.Name == "cardID" && v.Value == 60));
+            if (card.Location != CardLocation.Discard || persisted != expected || card.CustomJson.ContainsKey("pincer_givers")
+                || card.CustomJson.ContainsKey("pincer_receiver") != (kind == 4))
+                return $"离场前后须各自检查活动夹击，不能无条件保存字段：{side}/{zone}/{batch}/{kind}/{keyword}, persisted={persisted}/{expected}";
+        }
+        return null;
+    }
+
+    private static IDisposable InstallOwnLeaveIdentityProbes()
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var saved = new Dictionary<string, KismetProgram?>();
+        foreach (string trigger in new[] { "OnCardLocationMoved", "OnAfterLeaveBoard" }) {
+            if (KismetLibrary.Default.FindProgram(name, trigger) is not null) throw new InvalidOperationException("无法安装自身离场身份探针");
+            KismetProgram? prior = null; if (cache.TryGetValue(name, out var programs)) programs.Remove(trigger, out prior); saved[trigger] = prior;
+            locals.Add(trigger, new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1, "_r410Own", null) { DestinationScope = "instance" },
+                new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        }
+        return new AuditProbeCleanup(() => { foreach (var entry in saved) { locals.Remove(entry.Key); if (cache.TryGetValue(name, out var programs)) { programs.Remove(entry.Key); if (entry.Value is { } prior) programs[entry.Key] = prior; } } });
+    }
+
+    private static string? OwnLeaveIdentityContract(CardDatabase db)
+    {
+        using var observers = InstallRemovedSubjectProbes(); using var own = InstallOwnLeaveIdentityProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation zone in new[] { side.HqOf(), CardLocation.BoardFrontline })
+        foreach (bool after in new[] { false, true })
+        foreach (bool replace in new[] { false, true })
+        foreach (bool suppressInOwn in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            string trigger = after ? "OnAfterOtherCardLeaveBoardOrOwner" : "OnOtherCardLocationMoved";
+            var card = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, CardLocation.Discard, 2); card.Keywords.Clear();
+            var watchers = new[] { 80, 81 }.Select(id => {
+                var w = state.CreateWithId(card.Name, side.Opposite(), id, CardLocation.Discard, 3);
+                w.Definition = new CardDefinition { Name = w.Name, Type = "order", UsedTriggers = new[] { trigger } }; w.Keywords.Clear(); return w;
+            }).ToArray();
+            bool mutated = false; CardInstance? replacement = null; var seen = new Dictionary<int, int>(); var calls = new List<int>(); var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made); if (made.Name != "card_unit_routed_troops") return;
+                if (!mutated) {
+                    mutated = true; state.Remove(card);
+                    if (replace) {
+                        replacement = state.CreateWithId(card.Name, side.Opposite(), 60, side.Opposite().HandOf(), 0);
+                        replacement.Definition = new CardDefinition { Name = card.Name, Type = "order", UsedTriggers = new[] { trigger } }; replacement.Keywords.Clear();
+                    }
+                    if (suppressInOwn) watchers[1].Keywords.Add(Keyword.Suppressed);
+                    return;
+                }
+                var w = watchers.FirstOrDefault(w => Convert.ToInt32(w.BlueprintVariables.GetValueOrDefault("_r409Serial")) > seen.GetValueOrDefault(w.CardId));
+                if (w is null) return;
+                seen[w.CardId] = Convert.ToInt32(w.BlueprintVariables["_r409Serial"]); calls.Add(w.CardId);
+                if (w.CardId == 80) watchers[1].Keywords.Add(Keyword.Suppressed);
+            };
+            if (after) engine.FireAfterLeaveTrigger(card, CardLocation.Discard, zone);
+            else engine.ExecuteOnCardLocationMoved(card, zone, CardLocation.Discard, false, CardMoveReason.Removed);
+            if (!mutated || !Equals(card.BlueprintVariables.GetValueOrDefault("_r410Own"), true)
+                || !calls.SequenceEqual(suppressInOwn ? new[] { 80 } : new[] { 80, 81 }) || !ReferenceEquals(state.ById(60), replacement)
+                || replacement is not null && replacement.BlueprintVariables.ContainsKey("_r409Serial")) return "自身回调之后查询观察者，但排除同ID替代卡且不重筛快照资格";
+            foreach (int id in calls) {
+                var w = watchers.Single(w => w.CardId == id); string field = after ? "cardLeaving" : "cardMoved";
+                if (!ReferenceEquals(w.BlueprintVariables.GetValueOrDefault("_r409_" + trigger + "_" + field), card)) return "观察者必须接收进入辅助函数时缓存的原对象，不能重定向为替代对象或null";
             }
         }
         return null;

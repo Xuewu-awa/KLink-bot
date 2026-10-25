@@ -1,0 +1,162 @@
+{
+  "rule": "RULE-410",
+  "date": "2026-10-25",
+  "branch": "DinkyPuffer",
+  "base_commit": "f7b55d1c6b26219890a14169d17d47291359c0d9",
+  "kernel_changed": true,
+  "read_only_client_access": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "single_card_version_migration": "paused",
+  "verified": {
+    "rule": "RULE-410",
+    "fresh_blueprint_bodies": 4,
+    "fresh_blueprint_bytes": 4478,
+    "native_ufunction_declarations": 1,
+    "native_code_ranges": 4,
+    "native_code_bytes": 571,
+    "native_predicate_models": 80,
+    "leave_cleanup_ast_models": 96,
+    "worker_call_nodes": 80,
+    "new_headless_scenarios": {
+      "predicate": 48,
+      "leave_gates": 64,
+      "cached_subject_identity": 32,
+      "total": 144
+    },
+    "baseline": "2/837 failures",
+    "final": "837/837 pass",
+    "kernel_changed": true,
+    "fully_certified_cards": 0
+  },
+  "findings": [
+    "Current BaseCardObject.hasActivePincerEffect native UFunction wrapper147bytes at4a85a80 calls173byte predicate4b13f30. It reads customJson at+518, checking pincer_givers then pincer_receiver through object adapter4517da0 and field-presence4517cb0. No keyword field or JSON value type/array length is checked.",
+    "Field-presence returns true for a found entry with nonnull FJsonValue pointer, including empty arrays, false booleans, strings, numbers and JSON-null values. A missing object, missing entry or corrupt null value pointer returns false. Headless CardCustomJson represents valid typed fields, so key presence is the appropriate adapter; corrupt native pointer entries are not representable by this dictionary.",
+    "Blueprint before981byte and after963byte helpers call RemovePincerEffects only when hasActivePincerEffect out-bool is true. Headless helpers formerly called cleanup unconditionally; cleanup1678byte tail clears pincer_givers and always persists the leaving ID, causing two extra target saves for a normal no-link before/after removal.",
+    "An empty givers array still activates cleanup: before stage clears the key and persists once, after stage rechecks and skips. A string receiver field also activates the predicate; numeric receiver cleanup is skipped, the string remains and both phases persist. This distinguishes presence predicate from cleanup typed-field getters.",
+    "For selected valid subjects, own movement/after callbacks cache the original object before observer queries. Deleting/replacing its mapping in the own callback must not redirect observer object payloads, while a newly registered same-ID replacement is excluded by ID. Query after own callback sees suppression changes; later changes after snapshot do not refilter saved recipients. Existing headless cached-subject behavior matched32 new scenarios and was retained."
+  ],
+  "changes": [
+    "Add HasActivePincerEffect as valid-JSON relation-key presence and route hasActivePincerEffect dispatcher through it instead of checking Keyword.Pincer.",
+    "Guard before-leave and after-leave pincer cleanup separately with the native predicate, eliminating inactive cleanup/persist side effects while retaining active-field cleanup and phase rechecks.",
+    "Add3 selftest entries with144 scenarios:48 predicate,64 single/batch leave gate and32 own-callback cached-subject/query timing cases. Existing callback identity logic is unchanged."
+  ],
+  "validation": [
+    "Fresh4 nonempty Blueprint bodies4478bytes plus1 native UFunction declaration, and4 native code ranges571bytes independently re-decoded/disassembled and hash-checked against installed executable SHA256b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305. Direct call chain, actual field offset and two RIP-relative key string addresses checked.",
+    "80 offline executions compose actual native wrapper/predicate/object adapter/field-presence hashing code using actual PE CRC table. Engine out-bool stepping, ANSI-to-FString conversion/free and hashed-map lookup are controlled hooks. Covers missing/corrupt/valid field entries, null object, short-circuiting, compiled/bytecode parameter route, external/scratch out slot and old output0/1. Native R8 result is unused; existing headless return-bool adaptation remains distinct from full native ABI.",
+    "96 selected actual before/after/cleanup AST models cover absent/empty-givers/string-receiver fields, held-object deletion/replacement, suppression before query and later suppression after snapshot, support/frontline old area. Typed JSON/persist/predicate/query and callbacks are controlled primitives; populated relationship callback branches not certified.",
+    "Headless144 scenarios verify field presence independently of keyword/receiver route, exact target persistence counts0/1/2, and cached own-object payload plus same-ID exclusion and query timing. Identical tests on original kernel fail2/837; patched kernel passes837/837 with exit0. Final edit only moved explanatory comments to the correct method documentation; no semantic change after successful run.",
+    "DeepSeek private4-function packet delivered80 call nodes. Primary independently compared all containing names, statement byte offsets, called names and complete nodes. Job20261025-121145-rule410-pincer-calls-e2df6b18 completed exit0.",
+    "Initial exploratory key text in query capture was incorrectly decoded as UTF16. Raw bytes were retained; canonical field-test capture decodes the ANSI literals correctly and is the only key-text source used by models/verifier. JSON tuple/list serialization shape was made explicit in model source; rerun outcomes match saved JSON exactly."
+  ],
+  "limits": [
+    "Native map lookup/equality/collisions, ANSI/FString allocation and engine parameter marshalling are controlled hooks; no arbitrary JSON serializer, object lifetime/GC/concurrency or diagnostic proof.",
+    "Key-presence adapter assumes valid project JSON fields; corrupt TSharedPtr-null map entries are outside CardCustomJson representation. JSON type names supplied in native model are semantic fixture labels; field code checks pointer presence only.",
+    "Only no-link/empty-givers/string-receiver cleanup branches are composed. Populated receiver/giver callback identity, reentrant relationship updates and all native pincer mutations remain for later audit.",
+    "Own-subject tests use temporary synthetic programs with source and compiled-cache restoration; they are not observed live card effects. Native TSet iteration order and arbitrary eligibility histories remain unproven.",
+    "No historical replay authority, process writes, injection or game function invocation. UI/campaign/tutorial excluded, card migration paused and no card fully certified."
+  ],
+  "next_work": [
+    "Audit populated pincer relationship cleanup callbacks that delete/replace receiver or leaving object, preserving held argument versus per-stage ID lookups and persist payloads.",
+    "Extend before/after own-callback tests to relationships created or removed during pincer callbacks, and check old-location gating across shared callers.",
+    "Continue rule-event/primitive coverage without treating selected cached-subject equivalence as complete card restoration."
+  ],
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule410-pincer-leave-gates-native-20261025.json",
+      "sha256": "661f55c564c8a79e1cc7dbd60c574efff3b60f6f08e7fcaa884ad6b7beb33be2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule410-active-pincer-native-20261025.json",
+      "sha256": "454fff5c616a407b675003a5a2754b499bee87e5423d74e17c98ea4936b12b19"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule410-active-pincer-body-native-20261025.json",
+      "sha256": "76b958459948c7598b8344a89662318cbadb59b4101c6e343787c88f7daf0710"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule410-pincer-json-query-native-20261025.json",
+      "sha256": "1442aefb9fe4a51831e19065dc3c9b930ac82113c069b2d48374539e79d70ad5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule410-pincer-json-field-test-native-20261025.json",
+      "sha256": "5226af925a6085564b67585c92ef938f4c40e81ac9430647275d44ccdfce254a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule405-json-struct-functions-native-20261025.json",
+      "sha256": "832c34c90a18889f3938b07d376ad33dcabc36d93a0d9ab56ad0f06b3fe876cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule410-pincer-gates.py",
+      "sha256": "d62faec3d224e2fbb5f21331bab60d6d3d3823486f1c727452666881822259e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule410-active-pincer.py",
+      "sha256": "77cc919ca4600247fc72d79028a14ccc429f5455bcc5ea7e93ef148893b42507"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule410-active-pincer-body.py",
+      "sha256": "aaab1126961c37fd277d6e12dc61f5dceb99e97ba0c6a8f726fdb39412d4997b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule410-pincer-json-query.py",
+      "sha256": "e004d8f625e42083a84f4f6fcf158adcf64ed8bd9be3a8fd17c3763f6ad95c2f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule410-pincer-field-test.py",
+      "sha256": "e7a9552212623e0f8cbb142f3479a374c684c1827f5edd0e932c2b61f1b94132"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule410-active-pincer.py",
+      "sha256": "13ca85610a6347ece467ba58213f4d5f56084d3294246020bf6df0cfa8ba8a46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule410-leave-gates.py",
+      "sha256": "d6402d97eafaf18b37849d5b94277a110cba11cae79ca82b68f75edc140abe4b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-active-pincer-model-20261025.json",
+      "sha256": "9504e0922a4e677ee02cac762e1279a9f69b1dcc7ae8ae5ae8ce94930fda2fb7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-leave-gates-model-20261025.json",
+      "sha256": "4f9f5e6b09eb628a3510abb44e145f3f94c299c2f09cefbe0e9afdce4718703a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule410.py",
+      "sha256": "72dab728a438b9f507c8c572997670ae16763a6ad2fbc74ef4dcc46a5409b164"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-verified-20261025.json",
+      "sha256": "ce2979a0f176453dd99cee54ec522eae1da28098c48f78798bf62ca9a4ca70a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-selftest-before.log",
+      "sha256": "5250352d18158f0ab766b3b2db90c9ae883d28f4d3dd0f6d13d68fe61a9488e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-selftest-before.exit.txt",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-selftest-after.log",
+      "sha256": "68e6144b23321b8b15115552c53ef73d21f92f6001f4c5db203280c1a7c5537c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-selftest-after.exit.txt",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-worker-packet\\input.json",
+      "sha256": "3a5498c8ac22f19bf229324a928f5d0f43748a8d40a2c981b50eea4b3c3f59f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-worker-packet\\task.txt",
+      "sha256": "cf55d2d85e611803e94586a4126bebd5d9c194842f113c1e7e7592fbd8af76bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule410-worker-packet\\calls.json",
+      "sha256": "207d79f9c0a87a41b86bccc405e68e16a9021bf8c067b7d1b02800de1f49aada"
+    }
+  ]
+}

@@ -1852,7 +1852,7 @@ public sealed partial class CardApi
                 return null;
             },
             ["hasActivePincerEffect"] = (c, r, a)
-                => SelfArg(c, r, a) is { } x && x.Keywords.Contains(Keyword.Pincer),
+                => SelfArg(c, r, a) is { } x && HasActivePincerEffect(x),
 
             // RULE-329: the native base getter excludes encrypted temporary attack.
             ["getAndDecryptAttack"] = (c, r, a) => SelfArg(c, r, a)?.BaseAttack ?? 0,

@@ -2403,7 +2403,7 @@ public sealed class MatchEngine
         }
 
         FireSubActionWithCard("ZActionLeaveBoardOrOwner", card, (int)goingToLocation);
-        Api.RemovePincerEffects(card);
+        if (Api.HasActivePincerEffect(card)) Api.RemovePincerEffects(card);
         var named = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["cardLeaving"] = card, ["goingToLocation"] = (int)goingToLocation,
@@ -2447,7 +2447,7 @@ public sealed class MatchEngine
                                       bool includeLocationCards = false)
     {
         if ((!includeLocationCards && card.IsHq) || !oldLocation.IsBoard()) return;
-        Api.RemovePincerEffects(card);
+        if (Api.HasActivePincerEffect(card)) Api.RemovePincerEffects(card);
         var afterNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["goingToLocation"] = (int)goingToLocation,

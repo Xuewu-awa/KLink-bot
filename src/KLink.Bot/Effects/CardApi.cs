@@ -5145,6 +5145,11 @@ public sealed partial class CardApi
         PersistCustomFields(cardId);
     }
 
+    // Native hasActivePincerEffect checks JSON field presence, including empty
+    // arrays or differently typed values. The printed Pincer keyword is separate.
+    internal bool HasActivePincerEffect(CardInstance card)
+        => card.CustomJson.ContainsKey("pincer_givers") || card.CustomJson.ContainsKey("pincer_receiver");
+
     /// <summary>
     /// RemovePincerEffects: typed receiver field, two callbacks on the leaving
     /// object, then per-stage ID queries; duplicate giver IDs are not collapsed.
