@@ -1,0 +1,181 @@
+{
+  "rule_id": "RULE-464",
+  "date": "2026-10-27",
+  "base_commit": "c48dac5abaab4d72d8dc58a616e9b2d1ece7a5a4",
+  "status": "已修复未揭示Covert压制时绕过装甲拒绝门的兼容清理；尾部揭示仍待接入核对",
+  "scope": "压制1806装甲子调用的隐藏判定与已发现循环/尾部顺序；不认证完整压制、尾部RevealCard语义或第二次压制。",
+  "findings": [
+    "新采集SuppressMultipleUnits8101字节和ChangeHeavyArmor1846字节；并复读共用账本6267字节，头/脚本和独立解码全部一致。",
+    "1806传当前_card、原始来源、amount0、mode3、skip=true，装甲入口在改账本/字段之前以IsUnrevealedCovertCard拒绝隐藏目标。该判定应读取到达装甲阶段的当前状态，不是整个压制入口时缓存的可见性。",
+    "旧兼容清理门只检查正来源，仍把隐藏目标的基础遮罩设true并清除装甲。现正来源且非未揭示Covert才启用旧清理；拒绝时原遮罩、永久/临时装甲、空detail元数据保留，也不保存未移除装甲供手动恢复重复加回。",
+    "新增直接SuppressUnit和真实VM批量各228组，共456组：双方、存在/缺失正来源、正负零永久/临时装甲、3种已有压制/遮罩及可选旧恢复；另含已揭示Covert及非Covert对照，确保没有把所有Covert都拒绝。测试只调用一次压制，不把尚未修复的尾部揭示状态当成第二次调用前提。",
+    "同一908项测试旧906通过2失败，修复908/908。手动恢复仅为旧兼容适配器，不作为原生PvP解除压制机制。",
+    "5760组原始前缀控制流运行至1855，并在1806调用完整装甲/账本AST。覆盖原始隐蔽/揭示状态，以及受控OnSuppressed隐藏或揭示突变；只有实际调用自己回调时才突变。非正来源或到达时仍隐藏均不进账本、不改原始分量；已揭示对照正常进入模式3。其他移除/观察者API受控。",
+    "256组独立循环/尾部流模型保留原始跳转栈，以阶段标记替代清理和数值体。证明先处理所有输入ID，再在1117检查动作处理，1150检查缓存最后_card是否仍隐藏，1205按其当前CardID和原来源调用RevealCard；不是每次循环末尾揭示。含重复和不同顺序、在场/不在场对象；此模型只确认调用顺序，不执行RevealCard函数体。",
+    "尾部1268在动作处理路径写qqq=false；该批量输出与当前DoSuppressMultipleUnits返回null的差异作为新增待办保留，本轮没有修改批量出参。",
+    "DeepSeek机械提取隐藏查询、揭示、装甲及自己回调4个调用节点，独立深遍历逐项全等核验。OnSuppressed物理位置6194并不代表在装甲之后执行；结论来自跳转/执行栈模型，不能按字节偏移直接排序。"
+  ],
+  "verification": {
+    "rule": "RULE-464",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "SuppressMultipleUnits",
+        "bytes": 8101,
+        "sha256": "6661b1ce6a5e825856328438eb7c76f4c9460116c147a35bce4a3c059bdacc0f"
+      },
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    ],
+    "worker_exact_call_nodes": 4,
+    "armor_phase_cases": 5760,
+    "armor_digest_sha256": "eb02713a1de87ec48eaa0ab3b1cb2af605fa34a913774da159bd309ae6862ba1",
+    "loop_tail_control_cases": 256,
+    "tail_digest_sha256": "46d962b5433690df35475ef208059baa17f2af21651f42d2eaff649afc1ddc3e",
+    "limits": "Armor model runs actual prefix and complete writer/ledger with controlled callbacks, including own visibility mutation. Tail model replaces cleanup/numeric phases with markers; valid cached objects only, no null/ID replacement or actual RevealCard body. No complete suppression/reveal certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 228,
+    "total_profiles": 456,
+    "baseline": {
+      "total": 908,
+      "passed": 906,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 908,
+      "passed": 908,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "在现有来源清理门上加当前IsUnrevealedCovertCard拒绝；不调整尾部揭示或其他阶段。"
+  },
+  "unresolved": [
+    "批量尾部揭示仍未完整接入/核对；最后缓存对象为null、离场、ID变化/重用、别名及RevealCard自身查找/守卫未由本轮模型认证。",
+    "批量SuppressMultipleUnits动作处理路径的qqq=false尚未接通，不能将该出参当作本轮已修复。",
+    "可见正来源压制仍清除临时装甲，与原生只设基础保留临时的独立分量逻辑不等价。",
+    "当前兼容移除能力顺序、回调重入及T58/T11全链未完全认证；本轮当前判定不等于阶段位置完全对齐。",
+    "0..5非零装甲独立字段/累计/模式4/typed SetValue和通知，生命周期及老兵装甲继续开放。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "仅客户端本体、SDK/解包资产和只读内存字节码；不采用旧回放或names.txt权威。",
+    "离线AST和受控回调，不写游戏进程、不注入、不调用真实游戏函数。",
+    "单卡版本迁移继续暂停，模块指纹不变。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule464-veteran-query-headers-20261027.json",
+      "bytes": 4763667,
+      "sha256": "4b23ed27323bf348d3d79176708a10e55229e440537e0d1fc2909899020a9b50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule464-suppression-covert.py",
+      "bytes": 2376,
+      "sha256": "cf19621ccf6beac8aa8bfcd7f5f23e17939d1867b4e306615f00b3009e82e17b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule464.py",
+      "bytes": 8025,
+      "sha256": "6f89694debc3bf8c40aa4f78707c11af1793dddd8a3d11b1953b5e013346330b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-covert-suppression-verification-20261027.json",
+      "bytes": 1332,
+      "sha256": "d01fdf415536d9c15f8403efd4a30a123edc2684e00878edd987e6f6e67abc1f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-worker\\input.json",
+      "bytes": 99963,
+      "sha256": "c139b94d19e685c0623343235fab4cb80148d35ffcc14c3f000c5f1148c85c1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-worker\\output.json",
+      "bytes": 1877,
+      "sha256": "942cd8dfc4d335d1f8e93deb0eefc495aaba0312d2d30b41a4004796eb56b0f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-worker\\task.txt",
+      "bytes": 493,
+      "sha256": "f6da1d4396ec7ad8709dcd0eeb12270089e137ccae188783d75a876e1d110bb5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "bytes": 9079,
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-baseline-selftest.log",
+      "bytes": 79659,
+      "sha256": "0d1129396a3a57b37d8efbec095ffe2a86b63b40062068022c84706a153203f5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-final-selftest.log",
+      "bytes": 79537,
+      "sha256": "97e61922b92b59e6fdfaba4d1dfde346de10002bb1969e38545e5f68d51c5175"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule464-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

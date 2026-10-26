@@ -4481,7 +4481,10 @@ public sealed partial class CardApi
         //    现在算会把 `Keyword.HeavyArmor` 又挂回去。真正的重算在 ③ 之后统一做一次。
         // RULE-463: the native armor call receives the raw instigator ID.
         // Its nonpositive-source rejection must also gate legacy cleanup.
-        bool applyArmorSuppression = (instigatorId ?? target.CardId) > 0;
+        // RULE-464: the armor subcall also rejects unrevealed Covert at this
+        // phase. Its later batch reveal must not retroactively admit cleanup.
+        bool applyArmorSuppression = (instigatorId ?? target.CardId) > 0
+            && !IsUnrevealedCovertCard(target);
         if (applyArmorSuppression) target.HeavyArmorZeroedBySuppress = true;
 
         // Suppression removes the five custom-effect keys; other keys retain
