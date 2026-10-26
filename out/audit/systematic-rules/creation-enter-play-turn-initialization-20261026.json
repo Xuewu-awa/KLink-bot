@@ -1,0 +1,279 @@
+{
+  "rule_id": "RULE-446",
+  "date": "2026-10-26",
+  "base_commit": "13e78b86284a4d492d02d87e8e5a3259fbcefde1",
+  "status": "已修复两条建卡入口创建回调前的进场回合初值；保留回调改写及批量当前回合赋值",
+  "scope": "BP_CardFunctions.CreateCardObject中enterPlayOnTurn的显式初值及OnCreateCard时序；对照GameState.Create/CreateWithId。排除UI/商城/战役、单卡版本迁移及完整空名建卡恢复。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "enter_play_property_offset": "0x270",
+    "property_header_revalidated_bytes": 104,
+    "assignment_index": 1850,
+    "assignment_value": 0,
+    "own_creation_hook_index": 2610,
+    "batch_creation_call_index": 2217,
+    "batch_mapped_lookup_index": 2429,
+    "batch_current_turn_query_index": 2480,
+    "batch_current_turn_assignment_index": 2503
+  },
+  "findings": [
+    "当前CreateCardObject在1850向新对象enterPlayOnTurn写IntConst0；FProperty头+0x44验证字段偏移0x270。Fury真路径1805写attackLeft2后落到1850，假路径2670写1并在2715跳回1850，两者均经过初始回合赋值。",
+    "保留Push/Pop执行流栈的控制流展开共83个状态、90条边、最大栈深3。移除1850后的可达图59状态/62边不能再到2610显式OnCreateCard。只证明本函数正常返回helper边界下该赋值支配该回调，不把所有外部helper、重入或异常路径提升为认证。",
+    "旧GameState.Create和CreateWithId均未显式赋值，沿用CardInstance默认-1；自身创建回调及创建修正因此读到-1。现仅在这两条新对象初始化器中填EnteredPlayOnTurn=0，在InitializeFromDefinition及回调之前完成，未更改所有手工CardInstance或通用模板包装的默认值。",
+    "不在自身回调之后重新清零。受控回调写37时，后续创建修正及返回对象保留37。批量生成则按当前权威3073字节函数，在CreateCard之后重新按ID查映射对象、查询当前回合并于2503赋值；原有后续当前回合更新未修改。",
+    "两个既有重入测试把未进入批量当前回合阶段的值写成-1，这次改为权威初值0。128组外层/内层通知与进场顺序、96组创建对象/映射替换/归属/位置检查仍保留，不把0和当前回合7混同。",
+    "新增两项测试各48组：双方、自动/显式ID入口、回合0/1/7和手牌/牌库/弃牌/支援阵地。分别检查创建前初值和自身回调改写后保留。探针只控制观察与写入，不声称PlainUnit实际具有该卡牌效果。"
+  ],
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Engine/GameState.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "两处对象初始化显式EnteredPlayOnTurn=0；不新增回调后重置，不改后续批量赋值。",
+    "test_change": "新增96组初值/改写检查，并纠正224组既有时序/映射测试的三个初始值预期。"
+  },
+  "verification": {
+    "rule": "RULE-446",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "sha256": "e3eeb2cbfadc5f129a3f2eee711dcf3319126105da5a219ac0996f29ec8bf565"
+      },
+      {
+        "name": "CreateCard",
+        "bytes": 3115,
+        "sha256": "5c6f1e39f163b4b86a28539d3f12017d4a09322d4ee7695bd8cd3f1be8d61db3"
+      },
+      {
+        "name": "SpawnMultipleCardsOnBattlefield",
+        "bytes": 3073,
+        "sha256": "c5756637dc7074f870b84810ef76c85da502221f3f291713642b798906fd3c75"
+      }
+    ],
+    "total_script_bytes": 9117,
+    "all_headers_scripts_and_redecode_equal": true,
+    "enter_play_property_offset": "0x270",
+    "property_header_revalidated_bytes": 104,
+    "worker_input_rows": 84,
+    "worker_exact_rows": 5,
+    "control_flow": {
+      "rule": "RULE-446",
+      "assignment_index": 1850,
+      "value": 0,
+      "assignment_indices": [
+        1850
+      ],
+      "own_hook_index": 2610,
+      "normal_graph": {
+        "states": 83,
+        "edges": 90,
+        "max_flow_stack": 3,
+        "own_creation_hook_reachable": true
+      },
+      "graph_stopped_at_assignment": {
+        "states": 59,
+        "edges": 62,
+        "max_flow_stack": 3,
+        "own_creation_hook_reachable": false
+      },
+      "assignment_dominates_own_hook": true,
+      "fury_false_jump": 2670,
+      "fury_false_join": 1850,
+      "boundary": "Expanded syntactic Blueprint control-flow states preserve Push/Pop flow stack; helper calls treated as returning normally. Proves the explicit zero assignment dominates reaching own creation hook within this function, not all helper semantics/reentrancy/exceptions or entire UObject construction."
+    },
+    "source_bom_profiles_preserved": true,
+    "final_tests_baseline": {
+      "total": 876,
+      "passed": 872,
+      "failed": 4,
+      "exit": 1
+    },
+    "final_tests_fixed": {
+      "total": 876,
+      "passed": 876,
+      "failed": 0,
+      "exit": 0
+    },
+    "new_test_scenarios": 96,
+    "updated_existing_scenarios": 224,
+    "no_game_writes": true
+  },
+  "control_flow_reference": {
+    "rule": "RULE-446",
+    "assignment_index": 1850,
+    "value": 0,
+    "assignment_indices": [
+      1850
+    ],
+    "own_hook_index": 2610,
+    "normal_graph": {
+      "states": 83,
+      "edges": 90,
+      "max_flow_stack": 3,
+      "own_creation_hook_reachable": true
+    },
+    "graph_stopped_at_assignment": {
+      "states": 59,
+      "edges": 62,
+      "max_flow_stack": 3,
+      "own_creation_hook_reachable": false
+    },
+    "assignment_dominates_own_hook": true,
+    "fury_false_jump": 2670,
+    "fury_false_join": 1850,
+    "boundary": "Expanded syntactic Blueprint control-flow states preserve Push/Pop flow stack; helper calls treated as returning normally. Proves the explicit zero assignment dominates reaching own creation hook within this function, not all helper semantics/reentrancy/exceptions or entire UObject construction."
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-162934-rule446-creation-turn-assignment-39c54f4b",
+    "input_rows": 84,
+    "exact_matching_rows": 5,
+    "independent_full_elements_and_order_equal": true,
+    "task": "私有AST包按字段/调用名精确筛选，允许本包解析，不访问游戏/git/网络或操纵进程。语义和修复由主agent判定。"
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim -c Release -- selftest",
+    "final_tests_on_old_core": {
+      "total": 876,
+      "passed": 872,
+      "failed": 4,
+      "exit_code": 1
+    },
+    "final_tests_on_fixed_core": {
+      "total": 876,
+      "passed": 876,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "new_entries": 2,
+    "new_scenarios": 96,
+    "updated_existing_scenarios": 224,
+    "diagnostic_history": "首次新增测试在旧核2失败；首次修复后新测试通过而两个旧-1预期失败。纠正旧预期后，将同一最终测试再次置于HEAD旧GameState运行，得到4失败；finally恢复修复字节后最终876/876通过。所有日志分开保留。",
+    "baseline_source_restore": "临时仅恢复HEAD的GameState.cs，执行后finally恢复修复字节，未更改用户未跟踪审计文件。"
+  },
+  "limitations": [
+    "本轮关闭所列初值及时序差异，不认证所有创建字段、完整trigger注册/加密/构造helper语义或所有卡的OnCreateCard。",
+    "控制流图将helper当正常返回，不以它取代外部调用的完整语义和运行时重入验证。",
+    "CreateWithId的重复ID导入保护、非法名称/创建失败及原生重复ID映射差异未在本轮修改。",
+    "空名生成选择完整恢复、通用对象构造/通知和UE4SS后置边界沿既有报告保留，完整单卡认证仍为0。"
+  ],
+  "next_steps": [
+    "继续核对CreateCardObject的行动额度、公开/加密字段刷新及触发注册在创建回调前的可见状态",
+    "沿显式卡牌创建、T35与进场流程继续逐项对照，不把本轮回归通过作为全PvP规则完成证明"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule446-creation-initialization-native-20261026.json",
+      "bytes": 4708803,
+      "sha256": "ad1165111d0e7a1531eea48d55589cebb674a034f9da327c0bc16ae54afcc3dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule446-batch-turn-caller-native-20261026.json",
+      "bytes": 4582021,
+      "sha256": "16584a7089a1865bce5575e27c568d3eb65272033f1a04986a9c3678a6262ceb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule446-creation.py",
+      "bytes": 2383,
+      "sha256": "00cdc67122dff6a13c6e234fe3ae72cc869b36e512d442b2439980108a0fd2c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule446-batch.py",
+      "bytes": 2373,
+      "sha256": "73c9513e85a94d574e07e19619a3a24650105388fca193a20515e8b87a0fbea3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule446-control-flow.py",
+      "bytes": 2633,
+      "sha256": "0e2a285fa95e282b9241b296e5fab73499531aa0d82856d1ee7f8001d62be96a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule446.py",
+      "bytes": 3777,
+      "sha256": "c374f576ba592d21a9ab2e18c8b051300ab8b6ced3f1318e55ef29832b0925e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule446-final-tests-baseline.py",
+      "bytes": 705,
+      "sha256": "17ff736ec0b67897c70ad8d94f44a83f2d86865dd15d2c81db06146cd362b72c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-creation-control-flow-verification-20261026.json",
+      "bytes": 833,
+      "sha256": "b3d9ce4f5526a859abcd6e5d0161f19ba9574a53cf216e34ba40138a13fc49b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-verification-20261026.json",
+      "bytes": 2101,
+      "sha256": "950cb331840e9ab98b4913c2be256217f14ea690a8210ee1d9310231ff48805d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-worker\\task.txt",
+      "bytes": 568,
+      "sha256": "a71b95921ba972ff63fa9305ef5848a3710a1eb58eef61d3bd5edf5ac8992f3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-worker\\input.json",
+      "bytes": 35729,
+      "sha256": "000995049f3ace4bae616108325383025140cc3b3e39b60f2aaabb335442bd99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-worker\\result.json",
+      "bytes": 2123,
+      "sha256": "cf5074a281c9ed83aab663b0fe81e9e180bfe6804bbfce7f919e77d57388b708"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-baseline-selftest.log",
+      "bytes": 77343,
+      "sha256": "1671c941787a679c548dd57f2760a06169587368279bf966b7b9739481a93895"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-selftest.log",
+      "bytes": 77410,
+      "sha256": "5f00fac0e8d94145362cc21b6bb8aca5cc04a5b95f0e3ab57f3ff3ba9049075c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-tests-baseline.log",
+      "bytes": 77618,
+      "sha256": "4a8fdbd6ed53fdbe997edb7da396c140966b65fa6cc5804bc9c9998646e31935"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-tests-baseline.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-updated-tests-selftest.log",
+      "bytes": 77137,
+      "sha256": "fc6e14d1e679413c1d9ed345a17676eacaef0869690c52c2f74f940e342c6d31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule446-final-updated-tests-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    }
+  ]
+}

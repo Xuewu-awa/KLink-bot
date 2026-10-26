@@ -784,6 +784,8 @@ public sealed class GameState
             SalvagedCardId = salvagedCardId,
             Location = location,
             LocationNumber = locationNumber,
+            // RULE-446: CreateCardObject initializes this before OnCreateCard.
+            EnteredPlayOnTurn = 0,
             Attack = def.Attack,
             Defense = def.Defense,
             MaxDefense = def.Defense,
@@ -852,6 +854,8 @@ public sealed class GameState
             SalvagedCardId = salvagedCardId,
             Location = location,
             LocationNumber = locationNumber,
+            // RULE-446: CreateCardObject initializes this before OnCreateCard.
+            EnteredPlayOnTurn = 0,
             Attack = def.Attack,
             Defense = def.Defense,
             MaxDefense = def.Defense,

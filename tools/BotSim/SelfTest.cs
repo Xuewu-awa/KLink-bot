@@ -624,6 +624,8 @@ internal static class SelfTest
         new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
         new("建卡初始化费用：内部基础/临时费重建自公开模板字段", InitializeKreditPairFromDefinition),
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
+        new("建卡进场回合：两入口在自身回调和修正阶段前初始化为0", db => CreationTurnPhase(db, false)),
+        new("建卡进场回合：保留自身回调改写并交给修正阶段", db => CreationTurnPhase(db, true)),
         new("生成候选判据：四张卡只比较基础费，忽略双方临时费", SpawnCheckUsesBaseKredit),
         new("生成候选判据：空池及多个候选的顺序边界", SpawnCheckBaseKreditPoolOrder),
         new("反制接收已付费用：当前总费限幅/溢出及跳过分支", GotchaReceiptStoresTotalKredit),
@@ -9139,6 +9141,49 @@ internal static class SelfTest
                 return $"初始化费用必须从模板公开两字段重建 {side}/{basis}/{temp}/{salvaged}/{dirty}";
         }
         return null;
+    }
+
+    // RULE-446: CreateCardObject i=1850 assigns zero before its own hook.
+    // A controlled hook writes another turn to detect resets in later phases;
+    // it does not assert that PlainUnit has that live card effect.
+    private static string? CreationTurnPhase(CardDatabase db, bool mutate)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool explicitId in new[] { false, true })
+        foreach (int turn in new[] { 0, 1, 7 })
+        foreach (CardLocation location in new[] { side.HandOf(), side.DeckOf(), CardLocation.Discard, side.HqOf() })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = turn;
+            int own = 0, modifiers = 0; string? fault = null;
+            int expectedAfterOwn = mutate ? 37 : 0;
+            var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+            state.CardCreated = card => {
+                if (card.Name == PlainUnit)
+                {
+                    own++;
+                    if (card.EnteredPlayOnTurn != 0)
+                        fault = $"own hook saw {card.EnteredPlayOnTurn}, expected0";
+                    if (mutate) card.EnteredPlayOnTurn = expectedAfterOwn;
+                }
+                priorOwn?.Invoke(card);
+            };
+            state.CardCreationModifiers = card => {
+                if (card.Name == PlainUnit)
+                {
+                    modifiers++;
+                    if (own != 1 || card.EnteredPlayOnTurn != expectedAfterOwn)
+                        fault ??= $"modifier saw {card.EnteredPlayOnTurn}, expected{expectedAfterOwn}, own={own}";
+                }
+                priorModifiers?.Invoke(card);
+            };
+            var created = explicitId ? state.CreateWithId(PlainUnit, side, 60, location, 3)
+                : state.Create(PlainUnit, side, location, 3);
+            if (fault is not null || own != 1 || modifiers != 1 || created.EnteredPlayOnTurn != expectedAfterOwn)
+                return $"{side}/explicit={explicitId}/turn={turn}/{location}/mutate={mutate}: {fault}; hooks={own}/{modifiers}, final={created.EnteredPlayOnTurn}";
+            cases++;
+        }
+        return cases == 48 ? null : $"creation turn cases={cases}";
     }
 
     private static string? CreationCallbacksSeeKreditPair(CardDatabase db)
@@ -41323,7 +41368,7 @@ internal static class SelfTest
                     if (!nested)
                     {
                         nested = true;
-                        if (outer.Count != 1 || made.EnteredPlayOnTurn != -1) failure = "创建回调重入应发生在首张进场回合设置之前";
+                        if (outer.Count != 1 || made.EnteredPlayOnTurn != 0) failure = "创建回调重入应发生在首张进场回合设置之前";
                         if (changeSourceGold) source.IsGold = false;
                         inside = true;
                         var result = engine.Api.InvokeByName("SpawnMultipleCardsOnBattlefield", source,
@@ -41342,7 +41387,7 @@ internal static class SelfTest
                     int notices = state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSpawnMultipleCards");
                     if (inside)
                     {
-                        if (!inner.Contains(subject) || outer.Count != 1 || outer[0].EnteredPlayOnTurn != -1 || notices != 1)
+                        if (!inner.Contains(subject) || outer.Count != 1 || outer[0].EnteredPlayOnTurn != 0 || notices != 1)
                             failure = "内层进场前不应提前设置外层回合、发送外层通知或继续外层创建";
                     }
                     else if (!outer.Contains(subject) || notices != 2) failure = "外层进场应在内层返回和外层通知之后";
@@ -41428,7 +41473,7 @@ internal static class SelfTest
             foreach (var original in originals)
             {
                 var current = state.ById(original.CardId)!; bool wasReplaced = replaced.Contains(original.CardId);
-                if (current.EnteredPlayOnTurn != 7 || original.EnteredPlayOnTurn != (wasReplaced ? -1 : 7)
+                if (current.EnteredPlayOnTurn != 7 || original.EnteredPlayOnTurn != (wasReplaced ? 0 : 7)
                     || original.CardSeen || current.CardSeen != wasReplaced || current.IsGold == wasReplaced)
                     return $"creation turn lookup case={cases}: mapped turn vs retained CreateCard cardSeen receiver incorrect";
                 if (wasReplaced && (current.Owner != (oppositeOwner ? side.Opposite() : side)
