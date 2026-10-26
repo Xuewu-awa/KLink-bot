@@ -21,16 +21,16 @@
     },
     {
       "id": "VET-03",
-      "status": "确认差异，未修复",
+      "status": "已由RULE-452修复查询投影；完整老兵化仍未修复",
       "authority": "原生IsVeteran RVA4afbb40，104字节本地体",
       "simulator": "IsVeteran派发表只读Keyword.Veteran，忽略ignoreSuppress",
-      "effect": "原生ignoreSuppress=false且+33a非零时返回false；其余读取+518 JSON的veteran布尔查询结果。离线JSON返回值为受控边界，未认证JSON helper全部类型转换。"
+      "effect": "原生ignoreSuppress=false且+33a非零时返回false；其余检查+518 JSON的veteran非空条目存在性，值为false或其他有效JSON类型仍可成立。详见RULE-452更正。"
     },
     {
       "id": "VET-04",
-      "status": "确认缺失，未修复",
+      "status": "RULE452已补现有晋升分支JSON标记；模板数值及能力等仍未修复",
       "authority": "MakeVeteran724 JSON_SetBool、766升级模板、867/983/1058/1189属性变更、1264..1713原始能力、1786..1947攻击额度",
-      "simulator": "当前没有上述模板数值/JSON标记/能力替换处理，只设置关键字后发送事件",
+      "simulator": "原先缺JSON老兵标记，RULE452已于现有晋升分支补写；模板数值、原始能力及剩余攻击调整仍缺失。",
       "effect": "老兵化的攻防、行动费、装甲、原始能力及剩余攻击不能认定已恢复。具体变化模式和来源账本必须逐项对应，不能简单把Definition换成_vet。"
     },
     {
@@ -42,7 +42,7 @@
     }
   ],
   "findings": [
-    "当前getHasVeteranUpgrade/getStaticVeteranUpgrade本地实现分别166/167字节，均沿卡Name字符串及_vet后缀进入查询；原生IsVeteran本地实现104字节，读取独立抑制字段及JSON布尔查询，不读取托管关键词。三入口包装加实现共981字节均与当前进程及磁盘采集相同。",
+    "当前getHasVeteranUpgrade/getStaticVeteranUpgrade本地实现分别166/167字节，均沿卡Name字符串及_vet后缀进入查询；原生IsVeteran本地实现104字节，读取独立抑制字段及JSON条目存在性查询（RULE-452更正），不读取托管关键词。三入口包装加实现共981字节均与当前进程及磁盘采集相同。",
     "JSON键veteran、升级后缀_vet为ANSI字面量，已按原生RIP相对地址读取保存；未把错误UTF16解释作为结论。",
     "DeepSeek从MakeVeteran完整节点机械提取38条资格门/尾段节点，主agent精确比较完整对象与顺序。主agent执行捕获IsVeteran机器码8组，字符串构造、JSON查询及释放为受控外部边界；未在游戏中调用函数。",
     "资格门24组AST模型使用受控原生查询结果和总防御-1/0/1，验证在场且有升级且总防御>0且非已有老兵；不把升级缓存查询或完整JSON语义视为已关闭。",
@@ -111,7 +111,7 @@
     "scope": "Native IsVeteran branches with controlled JSON/string/free boundaries; AST eligibility with query values supplied. Not full JSON primitive, upgrade cache, MakeVeteran or complete creation certification."
   },
   "next_dependencies": [
-    "解析原生JSON布尔查询RVA4517da0的实际类型/缺失规则，并映射到现有CustomJson实现。",
+    "RULE-452已采集并离线连执行RVA4517da0/4517cb0，确认条目存在性；完整底层JSON映射查找及任意无效数据仍未认证。",
     "确认升级存在检查RVA4b37340及静态模板取回RVA4b2e080的当前缓存/未命中行为。",
     "逐项实现并验证MakeVeteran属性变化模式、原始能力、来源账本、Fury额度及抑制/事件门，再接通CreateCard中990..1036阶段。"
   ],
@@ -222,5 +222,6 @@
       "bytes": 1377,
       "sha256": "f6c521b967afce8b92d1026da0a16a15e2d9f897c89a11eb3eec6c10655198b4"
     }
-  ]
+  ],
+  "correction_rule452": "原报告把RVA4517da0称为JSON布尔查询，现更正为JSON对象非空、键查找命中及共享JSON值指针非空的存在性查询，不读取布尔载荷。原8组仅把外部返回作为受控bool验证IsVeteran分支；RULE452执行实际72+179字节JSON依赖及104字节原语64组补证。"
 }

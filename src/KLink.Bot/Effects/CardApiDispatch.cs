@@ -193,9 +193,10 @@ public sealed partial class CardApi
             // IR 实测：75 个调用点里 **70 个没有 recv**（`{"bool": false}` + out 槽），
             // 旧实现读 `AsCard(r)` ⇒ r 为 null ⇒ **恒 false**（41 张卡的老兵判据全反）。
             // 正确写法与 `getTotalAttack`/`getTotalDefense` 同形：`SelfArg`（兜底 c.Self）。
-            // `ignoreSuppress`（a[0]）的语义**读不出来**（`BaseCardObject.h` 只有签名），
-            // 不实现、也不假装实现。
-            ["IsVeteran"] = (c, r, a) => SelfArg(c, r, a) is { } v && v.Keywords.Contains(Keyword.Veteran),
+            // RULE-452: native +0x33a gates the JSON key-presence query unless
+            // ignoreSuppress is true. The value's payload/type is not read.
+            ["IsVeteran"] = (c, r, a) => SelfArg(c, r, a) is { } v
+                && (TruthyArg(a, 0) || !v.IsSuppressed) && v.CustomJson.ContainsKey("veteran"),
             // The veteran upgrade queries are backed by the card data's explicit
             // `_vet` variants.  `CardDatabase.Find` intentionally falls back from
             // `foo_vet` to `foo`, so use an exact-name scan here; otherwise every

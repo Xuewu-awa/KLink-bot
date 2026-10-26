@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("老兵查询：JSON条目存在性、抑制与ignoreSuppress，直接入口", db => VeteranQueryPresence(db, false)),
+        new("老兵查询：JSON条目存在性、抑制与ignoreSuppress，VM出参", db => VeteranQueryPresence(db, true)),
         new("战场生成打捞：创建回调前收到打捞数值、标识和阵营", db => BattlefieldSpawnSalvage(db, false)),
         new("战场生成打捞：创建回调改写在后续落场阶段保留", db => BattlefieldSpawnSalvage(db, true)),
         new("战场生成入口：生成者正ID和非None卡名门及失败输出0", BattlefieldSpawnWrapperGate),
@@ -32151,6 +32153,7 @@ internal static class SelfTest
         }
 
         probe.Keywords.Add(Keyword.Veteran);
+        engine.Api.JsonSetBool(probe, "veteran", true); // RULE-452: native query state is JSON, not the keyword.
         if (!(bool)(engine.Api.InvokeByName("IsVeteran", null, new object?[] { false, null }, ctx, out _) ?? false))
         {
             return "隐式 self 的 IsVeteran 恒 false（旧实现读 recv，而 recv 是 null）——老兵卡的所有分支都会走错";
@@ -32494,6 +32497,47 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-452: native IsVeteran tests a nonnull JSON value entry, not its
+    // boolean payload or the managed keyword. CustomJson stores valid values.
+    private static string? VeteranQueryPresence(CardDatabase db, bool vm)
+    {
+        var values = new (CardJsonType Type, string Value)?[] { null,
+            (CardJsonType.Boolean, "0"), (CardJsonType.Boolean, "1"),
+            (CardJsonType.Number, "0"), (CardJsonType.Number, "1"),
+            (CardJsonType.String, ""), (CardJsonType.String, "false"),
+            (CardJsonType.IntArray, ""), (CardJsonType.IntArray, "1") };
+        int cases = 0;
+        foreach (var value in values)
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool ignore in new[] { false, true })
+        foreach (bool keyword in new[] { false, true })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string key in new[] { "veteran", "VeTeRaN" })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0);
+            if (value.HasValue) target.CustomJson.Set(key, value.Value.Value, value.Value.Type);
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (keyword) target.Keywords.Add(Keyword.Veteran);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+            bool expected = value.HasValue && (!suppressed || ignore); object? actual;
+            if (!vm) {
+                actual = engine.Api.InvokeByName("IsVeteran", target, new object?[] { ignore, null }, ctx, out bool handled);
+                if (!handled) return "IsVeteran not handled";
+            }
+            else {
+                var call = new KismetStep(0, "call", "IsVeteran", new[] { new KismetExpr { Bool = ignore }, new KismetExpr { Var = "seen" } },
+                    new[] { 1 }, null, null, -1, null, null) { Receiver = new KismetExpr { Self = true } };
+                actual = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] { call }, 0), ctx, null, "seen").GetValueOrDefault("seen");
+            }
+            if (!Equals(actual, expected)) return $"presence/ignore query {value}/{suppressed}/{ignore}/{keyword}/{side}/{key}/vm={vm}: {actual}, expected{expected}";
+            if (target.CustomJson.Count != (value.HasValue ? 1 : 0) || target.Keywords.Contains(Keyword.Veteran) != keyword)
+                return "read-only veteran query mutated JSON or keyword";
+            cases++;
+        }
+        return cases == 288 ? null : $"veteran query profiles={cases}";
     }
 
     // RULE-450: isolate salvage forwarding from shared board placement.
@@ -44391,6 +44435,7 @@ internal static class SelfTest
         var plain = PlaceUnit(state, infantry, Side.Right, 51, 1);
         var vet = PlaceUnit(state, infantry, Side.Right, 52, 2);
         vet.Keywords.Add(Keyword.Veteran);
+        engine.Api.JsonSetBool(vet, "veteran", true); // RULE-452: native query state is JSON, not the keyword.
 
         // ① 非老兵必须被拒
         var no = engine.Api.CanTarget(card, plain);

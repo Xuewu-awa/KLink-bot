@@ -4749,6 +4749,10 @@ public sealed partial class CardApi
     {
         if (target.Keywords.Add(Keyword.Veteran))
         {
+            // RULE-452: native MakeVeteran i=724 writes this marker before
+            // later effects/notifications query IsVeteran. Other upgrade
+            // eligibility, template changes and event gates remain open.
+            JsonSetBool(target, "veteran", true);
             _engine.FireSubAction("ZActionMakeVeteran", new[]
             {
                 ActionValue2.Int("cardID", target.CardId),

@@ -1,0 +1,220 @@
+{
+  "rule_id": "RULE-452",
+  "date": "2026-10-26",
+  "base_commit": "0ddad575adaa0bc3f1915756b416bc222de308de",
+  "status": "已修复IsVeteran条目存在性/抑制参数及现有晋升分支标记写入，并更正RULE451的JSON依赖命名",
+  "scope": "原生IsVeteran及其JSON存在性依赖投影，现有MakeVeteran已进入分支的标记写入；不认证完整老兵升级。",
+  "correction": "RULE451把RVA4517da0称为JSON布尔查询不准确。真实72字节包装转入179字节存在性查询，检查JSON根对象、命中条目以及条目共享值指针非空，不读取JSON值的类型或布尔载荷。旧8组仅以外部受控bool验证原语分支，不能证明helper语义。本轮连执行实际三段机器码补证。",
+  "findings": [
+    "IsVeteran本地体104字节：ignoreSuppress=false且+33a抑制标记非零时返回false；其余以+518的JSON及veteran键调用存在性查询。JSON依赖4517da0为72字节，解包根共享指针及FString视图；4517cb0为179字节，哈希后查映射，检查返回条目+0x10处共享JSON值指针非零。不存在布尔载荷读取。",
+    "因此正常存在的veteran=false、number0、空字符串、数组以及有效JSON null对象都能使查询成立；不存在或无效共享值指针返回false。CardCustomJson仅建模有效值，ContainsKey投影到有效条目存在性；不声称托管字典能表示原生空shared_ptr或任意损坏结构。",
+    "派发表现改为SelfArg取对象，再判断ignoreSuppress或未抑制，并检查CustomJson.ContainsKey。原先仅查Keyword.Veteran且忽略ignoreSuppress。原生不查托管关键字；保留隐式self回退及显式接收者机制。",
+    "当前MakeVeteran724的JSON_SetBool(veteran,true)是原生明确写入点。旧托管晋升只加关键词，查询修正后两个实际操作/Landwehr测试暴露写入端脱节；现于已有关键词晋升分支进入后、通知之前补JsonSetBool。该补丁不新增或认证其升级资格门、模板数值及事件门。",
+    "新增两项各288组，共576组：缺失、Boolean0/1、Number0/1、空String/false字符串、空/非空数组，双方、抑制/ignore参数、关键字真假、两种键大小写；直接派发表与真实VM出参均检查返回及只读性。大小写遵循已有CardCustomJson映射比较器，底层映射查找本轮仍为受控边界。",
+    "两个既有隐式self/目标门测试只手工设关键词作为老兵布景，现补显式JSON标记，原断言保留。未修改Landwehr及行动费事件的预期，修复晋升标记写入后它们恢复通过。",
+    "离线Unicorn执行104+72+179共355字节真实查询链，使用当前1024字节CRC表；FString构造/释放及映射查找受控，共64组根对象/映射结果/值种类/抑制/ignore输入验证。JSON载荷指针不被进一步解引用，是本地链不依赖类型值的证据；并非完整JSON解析器执行。",
+    "另采集升级存在缓存136字节、静态卡缓存及未命中分支387字节，分别确认有缓存链及未命中构造路径。仅捕获/复读，未完整模拟其容器、名称和加载生命周期，故不宣称getHasVeteranUpgrade/getStaticVeteranUpgrade全面等价。",
+    "新测试最初有一处KismetStep接收者属性名编译错误，已改为Receiver并保留日志；此错误不算规则失败。最终同一887项测试旧生产实现885通过、2失败，修正后887/887；仅修查询时的4项旧测试失败诊断单独保留。"
+  ],
+  "verification": {
+    "rule": "RULE-452",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "bodies": [
+      {
+        "rva": "0x4517da0",
+        "bytes": 72,
+        "sha256": "703724b1d0be76e2299e176cdeb610767c691824dbc971875a51203935c6104a"
+      },
+      {
+        "rva": "0x4b37340",
+        "bytes": 136,
+        "sha256": "4f78df2a2d2dcfd5a9c620b0cf1a30ec1e34392580d23634c61992a0fbde3d44"
+      },
+      {
+        "rva": "0x4b2e080",
+        "bytes": 387,
+        "sha256": "816f051a8ee1fed89c1495396c0c1708c989128290e0631cf1469f07b49c7602"
+      },
+      {
+        "rva": "0x4517cb0",
+        "bytes": 179,
+        "sha256": "1dac3bd67121730558e3eb766f2575b7161816e74472f7e4d288d6cf73b38dff"
+      },
+      {
+        "rva": "0x4afbb40",
+        "bytes": 104,
+        "sha256": "f58ace708094b43b85f7a80c92e74991e17b6ca2f529efd25cdbf24439b12dff"
+      }
+    ],
+    "total_native_bytes": 878,
+    "native_presence_chain_bytes": 355,
+    "offline_native_chain_cases": 64,
+    "worker_exact_rows": 16,
+    "worker_input_rows": 54,
+    "all_selected_live_bytes_equal": true,
+    "correction": "RULE-451 called the JSON dependency a boolean query. Native4517da0/4517cb0 actually tests nonnull JSON object + key lookup + nonnull shared value; payload type/value is not read.",
+    "scope": "Captured three-body IsVeteran/presence chain runs offline with real CRC table and controlled map lookup/FString/free; lookup implementation and arbitrary malformed JSON are not certified. Cache bodies captured only, not fully emulated.",
+    "no_game_writes": true,
+    "new_simulator_scenarios": 576,
+    "baseline": {
+      "total": 887,
+      "passed": 885,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 887,
+      "passed": 887,
+      "failed": 0
+    },
+    "source_bom_preserved": true,
+    "fully_certified_cards": 0
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "原生状态查询使用JSON有效条目存在性与ignoreSuppress；现有晋升分支在通知前写JSON老兵标记。",
+    "corrected_prior_report": "out/audit/systematic-rules/veteran-upgrade-native-chain-and-gaps-20261026.json"
+  },
+  "limitations": [
+    "MakeVeteran入口资格、模板攻防/行动费/装甲/原始能力变化、Fury额度、IsActionProcess及抑制事件门仍未修复。不得称整个老兵化机制已还原。",
+    "CreateCard中老兵化与T35的阶段仍待接通；本轮仅修查询和已进入托管晋升分支的标记。",
+    "没有以本轮受控映射查找认证任意JSON对象、null shared_ptr托管表示或升级缓存生命周期。",
+    "完整卡牌认证数仍0，整体PvP审计未完成；没有游戏进程写入/注入/实际函数调用，不使用旧回放权威。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule452-json-and-upgrade-cache-native-20261026.json",
+      "bytes": 21170,
+      "sha256": "e8ffd8536729a3e76610af015417d49857321470e27103e04b66ca727682b5be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule452-json-bool-value-native-20261026.json",
+      "bytes": 7534,
+      "sha256": "36d15a5e5f3cfa1f86133f7b34d75855be85ba827cc6f8537b706ced7f63f4be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-IsVeteran-native-20261026.json",
+      "bytes": 11986,
+      "sha256": "8ba6f9abacfc323d3e903a41548ab2fd2040fcb7608add7a778d3af2a0d0a645"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-salvage-creation-native-20261026.json",
+      "bytes": 4704738,
+      "sha256": "1cc1ca92381b8b7ce17d5662e4e23d309b1f7e0ba697ba09a6122f9df3a8158c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule452-dependencies.py",
+      "bytes": 2437,
+      "sha256": "0e1b8bcd432447cd50779f777912318442edc001508431d1ad5d4cc029069dbd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule452-json-bool-value.py",
+      "bytes": 2410,
+      "sha256": "00f632f0b9f719901c921d8e27c85d230de4afc4da885d4b2c08f9bbd4c8bb12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule452-native.py",
+      "bytes": 5767,
+      "sha256": "400444e1278016873c5dccef3751072485398e28cd3a845b57ab9d554b3876b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-native-verification-20261026.json",
+      "bytes": 3784,
+      "sha256": "3b346f090ab926a94fc6af3727fde6c9eaa6cd961dff06b0e3a0d58b3090d2f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-verification-20261026.json",
+      "bytes": 1819,
+      "sha256": "dfddf05e5a098b48b28dfb80c12b276127a57baff6ce32ee5e2c7f3678f7091c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-native-presence-reference-20261026.json",
+      "bytes": 12859,
+      "sha256": "7c05301ff56a20ad79e6d2daf02c61b47a037d024f2b01b55eaae210f83c3dd9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule452-final-tests.py",
+      "bytes": 821,
+      "sha256": "4caabf71c37c78a0ca62fe25753f0ff11b5986656869eacbf8cfe28f40258716"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-baseline-selftest.log",
+      "bytes": 78193,
+      "sha256": "bd18cdfba1981827a6b6ce565521cddf4606ffe16c7dc565eaa6b015a41c1685"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-selftest.log",
+      "bytes": 78437,
+      "sha256": "c12c6310129a1cd17e791867811cc6edc9074e874359cc51412e6a8e82db0790"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-tests-baseline-selftest.log",
+      "bytes": 78190,
+      "sha256": "6bf1fa2bffd827c848cd3a45ffe042bc168f5225353f0f8dc023f498ea3c7130"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-tests-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-updated-tests-selftest.log",
+      "bytes": 78014,
+      "sha256": "e5b12b530dda9fa3b1a3db1324139316a577630678e1d9b0dcd94ce2419b7f10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-final-updated-tests-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-test-compile-error.log",
+      "bytes": 242,
+      "sha256": "12ce22410ae077406c1b3402e6429e708fc726ca0436b267b4382aeffdab954c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-test-compile-error.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-worker\\task.txt",
+      "bytes": 384,
+      "sha256": "f32519f7f1440047d9d69863f0f1f3325ccd1fe7e402f396d53d8164d31be1d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-worker\\input.json",
+      "bytes": 4877,
+      "sha256": "910debb6881ad229cc0a7e652ddd170c9847b711d9c8c188487bb9873ac15fc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule452-worker\\result.json",
+      "bytes": 1431,
+      "sha256": "1073e0334131abdf10e09dab9038b1a435bd4074f0e6804c5a570776c26c1bba"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-213704-rule452-json-presence-tail-333f1dba\\job.json",
+      "bytes": 730,
+      "sha256": "0a694ec067c54835ee912511e3d6db40bc30e22c6978c16ea962bda32383b22a"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-213704-rule452-json-presence-tail-333f1dba\\answer.txt",
+      "bytes": 1303,
+      "sha256": "0e568b4e54f93a82204b3b137e9ecf4c2d31b3316a0c350f8a9a9ac0accf64d7"
+    }
+  ]
+}
