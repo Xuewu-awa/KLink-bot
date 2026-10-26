@@ -1,0 +1,376 @@
+{
+  "rule_id": "RULE-444",
+  "date": "2026-10-26",
+  "base_commit": "95d8f3db15536fe40440beb57a55f5c1fc597552",
+  "status": "越过构造后尾部检查，完成限定profile的PostConstruct返回及清理；真实分配登记/finalizer仍开放",
+  "scope": "当前原生PostConstruct尾部0x1515d90及标志清理，使用只读实证的对象表布局与离线隔离对象表，不在游戏里分配/登记对象。仅BaseCardObject普通实例profile，不推广派生蓝图类、UI/战役或单卡版本迁移。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "tail_helper_rva": "0x1515d90",
+    "pointer_predicate_rva": "0x1308c00",
+    "tls_predicate_rva": "0x12f5070",
+    "object_flags_cleanup_rva": "0x1412820",
+    "post_construct_rva": "0x15c12b0",
+    "object_array_rva": "0x91f91d0"
+  },
+  "findings": [
+    "上一轮尾部未知helper0x1308c00完整7字节仅执行指针非空判断，RDX传入的字符串/位置参数不参与该函数。它不验证对象索引或对象表一致性，不能把非空判断等同于完整对象有效性验证。",
+    "尾部函数对非空对象先检查公开标志0x3400、0x40000000，再以对象+0xc的索引查询对象表item+8的0x10000000位，并读取当前TLS块+0xa1c；仅当各跳过条件均不成立且allow参数为true时尾转对象虚表+0x290。多数跳过分支返回true，而不是返回false判定无效。",
+    "当前BaseCardObject CDO索引28732，对象表元素数143133。按chunk(index>>16)、24字节stride定位的item首指针等于该CDO，item+8读得0x40000000；结束再核对对象头、slot、类及虚表一致。此事实证明所用布局与这个已登记对象一致，不是实测新的fallback插入或新对象内部标志默认值。",
+    "离线对象表使用独立目录/slot，把合法索引映射到合成对象；不沿用真实CDO指针作为合成对象的slot对象。尾部128组合交叉非空、四种公开标志、内部位、线程位、allow和受控虚调用返回，全部与给定参考公式及原生执行一致，4例触发受控+0x290调用。只测试合法索引，不宣称任意未登记/越界索引可安全查询。",
+    "实际PostConstruct尾部调用0x1515d90时allow=false；在该路径不会触发+0x290。尾部随后调用真实21字节标志helper清除对象0x200位，再把initializer.Object清为0并返回。这些清理已进入本轮离线执行，不再像RULE-443那样停在检查入口。",
+    "复用并扩展基础类构造矩阵至16组：flags0/0x1000000/0x200/0x1000200×copyTransients0/1×重复实例。16组构造都通过；其中8个copyTransients0 profile完成实际属性初始化、完整PostConstruct及返回，最终仅预期0x200位被清除，initializer.Object为0，JSON两指针保持原值。copyTransients1仍仅验证构造本身。",
+    "16组产生32次成功且新鲜的受控堆分配，JSON后备/控制块引用计数仍为1/1。不是实际客户端对象分配或完整生命周期证明。原始存储分配、上下文登记、finalizer、UE4SS后置和GC没有执行。"
+  ],
+  "verification": {
+    "rule": "RULE-444",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_ranges": [
+      {
+        "source": "rule439-base-card-defaults-native-20261026.json",
+        "rva": "0x4a7db60",
+        "bytes": 13
+      },
+      {
+        "source": "rule439-base-card-defaults-native-20261026.json",
+        "rva": "0x4aba330",
+        "bytes": 1326
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15b5af0",
+        "bytes": 436
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15c12b0",
+        "bytes": 1260
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15bef20",
+        "bytes": 879
+      },
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x3bae430",
+        "bytes": 90
+      },
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x15bcd00",
+        "bytes": 117
+      },
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x4517df0",
+        "bytes": 277
+      },
+      {
+        "source": "rule443-uobject-constructor-native-20261026.json",
+        "rva": "0x15b58e0",
+        "bytes": 89
+      },
+      {
+        "source": "rule443-constructor-members-native-20261026.json",
+        "rva": "0x1516f30",
+        "bytes": 34
+      },
+      {
+        "source": "rule443-constructor-members-native-20261026.json",
+        "rva": "0x122a770",
+        "bytes": 123
+      },
+      {
+        "source": "rule443-member-container-constructors-native-20261026.json",
+        "rva": "0x1264700",
+        "bytes": 59
+      },
+      {
+        "source": "rule443-member-container-constructors-native-20261026.json",
+        "rva": "0x11e9430",
+        "bytes": 94
+      },
+      {
+        "source": "rule443-postinit-tail-helper-native-20261026.json",
+        "rva": "0x1515d90",
+        "bytes": 175
+      },
+      {
+        "source": "rule443-object-flags-helper-native-20261026.json",
+        "rva": "0x1412820",
+        "bytes": 21
+      },
+      {
+        "source": "rule443-postinit-virtual-targets-native-20261026.json",
+        "rva": "0x11ad330",
+        "bytes": 3
+      },
+      {
+        "source": "rule443-postinit-virtual-targets-native-20261026.json",
+        "rva": "0x15c17a0",
+        "bytes": 71
+      },
+      {
+        "source": "rule444-tail-predicates-native-20261026.json",
+        "rva": "0x1308c00",
+        "bytes": 7
+      },
+      {
+        "source": "rule444-tail-predicates-native-20261026.json",
+        "rva": "0x12f5070",
+        "bytes": 29
+      }
+    ],
+    "total_native_ranges": 19,
+    "total_native_bytes": 5103,
+    "new_predicate_ranges": 2,
+    "new_predicate_bytes": 36,
+    "all_live_disk_equal": true,
+    "cdo_index": 28732,
+    "captured_array_count": 143133,
+    "current_array_count": 143133,
+    "cdo_slot_and_class_stable": true,
+    "worker_exact_cases": 128,
+    "native_tail_matrix_cases": 128,
+    "controlled_virtual_calls": 4,
+    "constructor_profiles": 16,
+    "full_post_construct_profiles": 8,
+    "controlled_heap_allocations": 32,
+    "no_game_writes": true
+  },
+  "index_layout_reference": {
+    "rule": "RULE-444",
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "cdo": "0x7ff495b945f8",
+    "object_header_hex": "28550312f77f0000310000003c70000040ce3d95f47f00007f97190000000000402f4a95f47f0000",
+    "object_index": 28732,
+    "object_array_rva": "0x91f91d0",
+    "object_array_header_hex": "85740000847400008574000000000000200eba90ca0100000000000000000000000021001d2f02002100000003000000",
+    "array_count": 143133,
+    "chunk": "0x1caf26b0008",
+    "slot_address": "0x1caf27585a8",
+    "slot_hex": "f845b995f47f00000000004000000000f23c000000000000",
+    "slot_internal_flags": "0x40000000",
+    "layout": {
+      "object_index_offset": "0xc",
+      "item_stride": 24,
+      "item_internal_flags_offset": 8,
+      "chunk_shift": 16
+    },
+    "boundary": "A current registered BaseCardObject CDO validates this layout. It is not a newly allocated fallback object or direct observation of insertion."
+  },
+  "tail_matrix_reference": {
+    "cases": 128,
+    "dimensions": {
+      "present": [
+        false,
+        true
+      ],
+      "flags": [
+        0,
+        13312,
+        1073741824,
+        16777216
+      ],
+      "internal": [
+        0,
+        268435456
+      ],
+      "tls": [
+        0,
+        1
+      ],
+      "allow": [
+        false,
+        true
+      ],
+      "reply": [
+        0,
+        1
+      ]
+    },
+    "callback_called": "present && !(flags & 0x3400) && !(flags & 0x40000000) && !(internal & 0x10000000) && tls==0 && allow",
+    "result": "callback_called ? reply : int(present)",
+    "controlled_virtual_calls": 4,
+    "boundary": "Exact captured game tail helper and pointer/TLS predicates executed with isolated registry and thread fixtures. Virtual +0x290 callback return is controlled, not the native method implementation. Only valid synthetic object indices are used; no claim of safe unregistered/index-out-of-range behavior.",
+    "full_cases_file": "D:\\Codex Workshop\\kards-install-review\\rule444-tail-matrix-emulation-20261026.json"
+  },
+  "construction_reference": {
+    "profiles": 16,
+    "full_post_construct_profiles": 8,
+    "full_profiles_are_subset": true,
+    "controlled_allocations": 32,
+    "flags_cleanup_mask": "0x200",
+    "boundary": "Actual game constructors, property initializer, full PostConstruct including object-index tail check and final flag/context cleanup executed offline. TLS/current-initializer, empty text, heap allocation and an isolated object-table fixture are controlled. Registered CDO snapshot validates layout only; each synthetic object uses a consistent synthetic item at that index, not a live inserted object. Context registration/finalizer/UE4SS post callbacks/GC are not executed. Copy-transients=true profiles execute constructor only, not post-copy.",
+    "full_cases_file": "D:\\Codex Workshop\\kards-install-review\\rule444-construction-through-tail-emulation-20261026.json",
+    "full_post_initializer_object_cleared": true,
+    "full_post_json_pointers_preserved": true
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-153438-rule444-tail-reference-matrix-3be3d23c",
+    "task": "按主agent给定公式批量枚举128行预期，不自行判读规则；允许局部生成工具，禁止git/网络/游戏访问/进程操纵",
+    "exact_matrix_equal": true,
+    "independent_validation": "主agent用itertools重新生成全部128行、检查JSON类型与顺序，再与实际原生离线执行比较。worker输出不作为独立权威来源。"
+  },
+  "validation": {
+    "tail_cases": 128,
+    "constructor_profiles": 16,
+    "full_post_construct_profiles": 8,
+    "new_predicate_ranges": 2,
+    "new_predicate_bytes": 36,
+    "total_revalidated_ranges": 19,
+    "total_revalidated_bytes": 5103,
+    "all_live_disk_equal": true,
+    "simulator_source_changed": false,
+    "full_selftest_run_this_round": false,
+    "last_source_validation": "1375410的874/874为历史结果，本轮未重跑C#全套。"
+  },
+  "limitations": [
+    "隔离对象表、线程TLS、空文本、原始堆分配为受控fixture。借已验证合法索引构建一致slot不等于已恢复StaticAllocateObject的真实插入、序列号、回收或并发行为。",
+    "仅验证当前CDO所在chunk的布局及矩阵中的合法索引，不扩大为所有跨chunk边界/槽位复用/无效指针认证。",
+    "尾部allow=true的4个虚调用只提供受控返回值，不认证原生虚方法+0x290的实现；完整PostConstruct路径的allow=false不调用它。",
+    "构造上下文登记15b9a70及finalizer15b5af0、真实存储分配和UE4SS后置回调尚未接入该执行模型。",
+    "JSON指针在所执行链上保持，不等于真实客户端最终返回对象、所有容器深浅复制、析构或GC已完全认证。空名选择恢复及完整单卡语义仍未关闭，未修改规则内核。"
+  ],
+  "next_steps": [
+    "核对StaticAllocateObject中新对象存储/索引登记与标志初始化，再接入上下文登记/finalizer",
+    "结合已完成的PostConstruct返回路径继续核对实际返回链和空名CreateCardObject，不把工具hook行为当游戏规则"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-base-card-defaults-native-20261026.json",
+      "bytes": 50276,
+      "sha256": "2a4ed949115868e8b9c8f4ae0db46625455058d28cfa51cc479420338e1db8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-parent-and-json-constructors-native-20261026.json",
+      "bytes": 23043,
+      "sha256": "b608055f82e16d8359f180f4728d0f6928de1ab6dff209d8bd18819131fe605f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-uobject-constructor-native-20261026.json",
+      "bytes": 4726,
+      "sha256": "f0c07cfaa27669884a13ef7f7b2d22fe979a27c4f1f86e32a02f620649806484"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-constructor-members-native-20261026.json",
+      "bytes": 8776,
+      "sha256": "98acce24f68eb6ff702b5adf96bc195963ccbd4abf8b31bb094b73df0ff18f2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-member-container-constructors-native-20261026.json",
+      "bytes": 8670,
+      "sha256": "a60bba90cfcb0855161c8919cc57840b7f8944ca6a3dedd7b97bfbe3935de75b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-postinit-tail-helper-native-20261026.json",
+      "bytes": 9728,
+      "sha256": "b7b2a0dd1fd82c13add51af007280b017bce8153db97601d78ba330626b0fa95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-object-flags-helper-native-20261026.json",
+      "bytes": 1976,
+      "sha256": "b2dd0d0a32065783a4c4e8584a55bd5b3fa8d767eae98ce9c94a823ae129b14f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-postinit-virtual-targets-native-20261026.json",
+      "bytes": 4887,
+      "sha256": "685af6de787d5e484148577e3a97389fa52a9f240889dd8914a0c1c26053f2e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule444-tail-predicates-native-20261026.json",
+      "bytes": 2542,
+      "sha256": "5082ad9e39803683d6e12f8b9ac59655e3c2eab6780fbcbcec1deb908f4a94b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule444-object-index-layout-native-20261026.json",
+      "bytes": 1212,
+      "sha256": "dcf6d9ba38c597ec98fb929f1cc1f832311bc9f8d31cf10f0b7bea643904abc7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-property-copy-class-metadata-20261026.json",
+      "bytes": 1268,
+      "sha256": "0d847d6401265fd0cefe367fff79bcd4d1a3875d3e2abf142e778b2dc7aa917b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-constructor-environment-20261026.json",
+      "bytes": 458,
+      "sha256": "69d750c714428c0b93a470fb2e8fa53657de86f98270f29ebee87a18aaa29a7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule444-predicates.py",
+      "bytes": 3282,
+      "sha256": "f7498958202355532a0572325a4d82552f519ec3b59b0821552d4bd7930e6eed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule444-index.py",
+      "bytes": 4076,
+      "sha256": "c625fbc248e69f6e8bb982d290c21e30bac358281755db8be340732442f5a4fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule444-construction.py",
+      "bytes": 7815,
+      "sha256": "c47013724b43bbb4f6d96f857dfa244035310de83ceaa47abf424eb5dc8ca1c1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule444-tail-matrix.py",
+      "bytes": 6730,
+      "sha256": "201bd191312679ce2b562b80d52deffd55a6d9ee8195144f6ca4f332e869ab95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule444.py",
+      "bytes": 4541,
+      "sha256": "cb75429ff169f030b634abbb6a26ed5647f19315c641a56ec7afc22ab68cb579"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-construction-through-tail-emulation-20261026.json",
+      "bytes": 13652,
+      "sha256": "196ceea6c8707e5f42284ef08eee247956fcd84bc8e6504d8bb2e2d3d7cdeec0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-tail-matrix-emulation-20261026.json",
+      "bytes": 34410,
+      "sha256": "5a3a700153d49866a04c40af69e0ad04d1a8e029795fa510d16c4b0be9fc8775"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-primary-tail-reference-20261026.json",
+      "bytes": 23041,
+      "sha256": "f1725b4039ea4300c7a87617370ce72ab944c189ccc5e288612f97511684d123"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-final-verification-20261026.json",
+      "bytes": 3200,
+      "sha256": "dd907862a4c79c3799e26e9ad72f4c2dcafed9a5aa77b0758f9b646e6e231d23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-worker\\task.txt",
+      "bytes": 797,
+      "sha256": "a8ad3114ba2a5aaba44e48ce9da51a97938cef622bc78788dd6549cee675032b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule444-worker\\result.json",
+      "bytes": 14845,
+      "sha256": "33715b6338e8be97ce1d8257f5cb3fc74934dfd4ec32a4863f3a3e509a75d8cf"
+    }
+  ]
+}
