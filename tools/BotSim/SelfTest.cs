@@ -852,6 +852,8 @@ internal static class SelfTest
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
+        new("压制非正来源：装甲入口拒绝后不得兼容清零", db => SuppressionRejectedArmorSource(db, false)),
+        new("压制非正来源：真实VM批量路径与手动恢复不重复装甲", db => SuppressionRejectedArmorSource(db, true)),
         new("重甲普通零请求：保留数值、账本、名单且不通知", db => HeavyArmorOrdinaryZeroNoOp(db, false)),
         new("装甲入口：显式目标与正来源、隐蔽拒绝及直接输出", db => HeavyArmorEntryGuards(db, false)),
         new("装甲未使用字节模式：9到255直接调用保持全状态", db => HeavyArmorUnusedModes(db, false)),
@@ -32514,6 +32516,63 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-463: suppression1806 forwards the raw instigator to armor mode3.
+    private static string? SuppressionRejectedArmorSource(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_rule463_fixture";
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9, HeavyArmor = 2 };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -1, 0 })
+        foreach (int permanent in new[] { -3, 0, 2 })
+        foreach (int temporary in new[] { -2, 0, 3 })
+        foreach (int prior in Enumerable.Range(0, 3))
+        foreach (bool repeat in new[] { false, true })
+        foreach (bool restore in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var target = state.CreateWithId(name, side, 60, CardLocation.BoardFrontline, 0);
+            var decoy = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var perm = new CardBuff { SourceCardId = 30, HeavyArmor = permanent, HeavyArmorEmptyDetail = 0 };
+            var temp = new CardBuff { SourceCardId = 40, Temporary = true, HeavyArmor = temporary, DefenseEmptyDetail = 0 };
+            target.BuffsBySource[(30, false)] = perm; target.BuffsBySource[(40, true)] = temp;
+            if (prior > 0) target.Keywords.Add(Keyword.Suppressed);
+            target.HeavyArmorZeroedBySuppress = prior == 2;
+            int armor = target.HeavyArmor;
+            for (int call = 0; call < (repeat ? 2 : 1); call++)
+            {
+                if (!vm) engine.Api.SuppressUnit(target, sourceId);
+                else {
+                    var args = new[] { "ids", "source", "qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                    var program = new KismetProgram(new[] {
+                        new KismetStep(0, "call", "SuppressMultipleUnits", args, new[] { 2 }, null, null, -1, null, null),
+                        new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                    engine.Api.Vm.RunLocalProgramMulti(program, new EffectContext { Engine = engine, State = state, Self = decoy, Controller = side },
+                        new Dictionary<string, object?> { ["ids"] = new[] { target.CardId }, ["source"] = sourceId, ["qqq"] = true }, "qqq");
+                }
+                if (!target.IsSuppressed || target.HeavyArmor != armor || target.HeavyArmorZeroedBySuppress != (prior == 2)
+                    || !target.BuffsBySource.TryGetValue((30, false), out var p) || !ReferenceEquals(p, perm) || p.HeavyArmor != permanent || p.HeavyArmorEmptyDetail != 0
+                    || !target.BuffsBySource.TryGetValue((40, true), out var t) || !ReferenceEquals(t, temp) || t.HeavyArmor != temporary || t.DefenseEmptyDetail != 0
+                    || (target.SuppressStrippedBuffs?.Any(x => x.Value.HeavyArmor != 0) ?? false)
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionAddHeavyArmor"))
+                    return $"nonpositive suppression armor {side}/{sourceId}/{permanent}/{temporary}/{prior}/{repeat}/{restore}/call{call}/vm={vm}";
+            }
+            if (restore)
+            {
+                // Legacy compatibility only, not a native PvP unsuppression claim.
+                engine.Api.RestoreAfterSuppression(target);
+                if (target.HeavyArmor != Math.Clamp(2 + permanent + temporary, 0, 3)
+                    || perm.HeavyArmor != permanent || temp.HeavyArmor != temporary || target.IsSuppressed)
+                    return "legacy restore must not double-add armor that suppression never removed";
+            }
+            cases++;
+        }
+        return cases == 432 ? null : $"suppression armor source profiles={cases}";
     }
 
     // RULE-461: fresh-frame customAdd0; customRemove; int32 combatModify.

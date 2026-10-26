@@ -4479,7 +4479,10 @@ public sealed partial class CardApi
         // 所以必须同时把**卡面重甲**遮住（L_070E 的 ChangeHeavyArmor(0)）。
         // ⚠️ 这里**不**立刻重算：此刻重甲的 buff 还在（要到 ③ 才摘），
         //    现在算会把 `Keyword.HeavyArmor` 又挂回去。真正的重算在 ③ 之后统一做一次。
-        target.HeavyArmorZeroedBySuppress = true;
+        // RULE-463: the native armor call receives the raw instigator ID.
+        // Its nonpositive-source rejection must also gate legacy cleanup.
+        bool applyArmorSuppression = (instigatorId ?? target.CardId) > 0;
+        if (applyArmorSuppression) target.HeavyArmorZeroedBySuppress = true;
 
         // Suppression removes the five custom-effect keys; other keys retain
         // foreign sources. Preserve the old snapshot for the legacy restore adapter.
@@ -4578,12 +4581,15 @@ public sealed partial class CardApi
             // Manual legacy restore must not double-add a contribution that
             // native operation mode3 left in place (especially temporary).
             saved.OperationCost = key.Temporary ? 0 : saved.OperationCost - (live?.OperationCost ?? 0);
+            // This compatibility restore must not re-add armor we never removed.
+            if (!applyArmorSuppression) saved.HeavyArmor = 0;
             if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.DefenseSetValue.HasValue || saved.HeavyArmor != 0 || saved.OperationCost != 0)
                 target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, saved));
         }
         foreach (var key in target.BuffsBySource.Keys.ToArray())
         {
             var buff = target.BuffsBySource[key];
+            if (!applyArmorSuppression) continue;
             if (buff.HeavyArmor == 0) continue;
             buff.HeavyArmor = 0;
             if (buff.IsEmpty) RemoveBuffEntry(target, key);
