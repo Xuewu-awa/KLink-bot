@@ -1,0 +1,579 @@
+{
+  "rule_id": "RULE-443",
+  "date": "2026-10-26",
+  "base_commit": "d4c2b48b16347f68a9ab01c5525c61c0cea38e42",
+  "status": "补齐基础类及父类构造的上下文修改，验证新JSON后备分配和移动；构造后尾部/登记仍开放",
+  "scope": "缺失静态名对应的原生BaseCardObject构造路径。仅离线执行捕获代码，不分配真实游戏对象、不调用客户端函数；不推广派生蓝图类、UI/战役或单卡版本迁移。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "base_class_thunk_rva": "0x4a7db60",
+    "base_card_constructor_rva": "0x4aba330",
+    "parent_constructor_rva": "0x3bae430",
+    "uobject_constructor_rva": "0x15b58e0",
+    "json_constructor_rva": "0x4517df0",
+    "shared_control_move_rva": "0x122a770",
+    "post_init_virtual_rva": "0x15c17a0",
+    "tail_boundary_rva": "0x1515d90",
+    "sdk_custom_json_offset": "0x518",
+    "sdk_custom_json_size": "0x10"
+  },
+  "findings": [
+    "当前类构造thunk先取initializer.Object再进入BaseCardObject C++构造；后者经TLS current-initializer服务取得上下文，再调用父类构造。SDK独立给出BaseCardObject继承UPrimaryDataAsset及customJson偏移0x518/大小0x10。",
+    "UObject父类构造在0x15b5924写回initializer.Object，在0x15b592f清initializer+0x13。不能假定类构造前后整个上下文逐字节不变。八组离线执行的0x20字节上下文只有这两次直接写入，Object值保持同一指针，+0x13从1变0；Template、+0x10复制开关、+0x11及+0x14保持输入值。",
+    "RULE-442明确是在绕过类构造、保持上下文的受控边界下验证来源选择。本轮补上实际原生基础类/父类构造，发现+0x13变化；四个默认复制profile的相关来源/开关仍保持，因而可继续本类CDO的空复制链。此结论仍不包含构造上下文登记及finalizer可能造成的变化。",
+    "JSON构造器实际请求0x50字节后备存储和0x18字节引用控制块；设置可观察的空表头、容量/空闲标记以及强弱计数1/1，并关联控制块+0x10到后备对象。没有以“全零内存”替代有效JSON，也没有把malloc未写的padding和未使用位图认定为全零。",
+    "实际共享控制移动函数0x122a770把临时控制指针转移到目标并清空来源。基础卡构造把临时JSON迁移到成员+0x518/+0x520；八个同时保留的合成对象得到16次受控分配，分别持有自己的后备/控制指针，计数1/1。这里的地址唯一性基于成功且新鲜的受控分配器，不是实测客户端GC/真实堆生命周期。",
+    "八组交叉flags0/0x1000000、copyTransients0/1及重复实例。四个copyTransients0实例随后执行来源选择、实际属性初始化及构造后对象/类虚调用；对象和JSON指针保持。copyTransients1只验证构造本身，不声称复制路径语义相同。",
+    "当前对象PostInitProperties虚目标0x15c17a0会调用类虚表+0x3a0，并在全局hook存在时尾转当前ret0目标。当前类+0x370/+0x380/+0x388/+0x3a0均指向0x11ad330的ret0；对这些空实现只断言不执行字段写入，不断言它们返回数值false或0。",
+    "扩展执行在PostConstruct尾部0x1515d90前停止。该检查继续依赖对象分类/真实对象表索引等数据，后面还有清对象标志0x200和清initializer.Object；没有把尾部当作空函数。已采集175字节检查体及21字节标志helper供继续审计，不宣称执行了完整PostConstruct返回。"
+  ],
+  "verification": {
+    "rule": "RULE-443",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "new_native_ranges": [
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x3bae430",
+        "bytes": 90
+      },
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x15bcd00",
+        "bytes": 117
+      },
+      {
+        "source": "rule443-parent-and-json-constructors-native-20261026.json",
+        "rva": "0x4517df0",
+        "bytes": 277
+      },
+      {
+        "source": "rule443-uobject-constructor-native-20261026.json",
+        "rva": "0x15b58e0",
+        "bytes": 89
+      },
+      {
+        "source": "rule443-constructor-members-native-20261026.json",
+        "rva": "0x1516f30",
+        "bytes": 34
+      },
+      {
+        "source": "rule443-constructor-members-native-20261026.json",
+        "rva": "0x122a770",
+        "bytes": 123
+      },
+      {
+        "source": "rule443-member-container-constructors-native-20261026.json",
+        "rva": "0x1264700",
+        "bytes": 59
+      },
+      {
+        "source": "rule443-member-container-constructors-native-20261026.json",
+        "rva": "0x11e9430",
+        "bytes": 94
+      },
+      {
+        "source": "rule443-member-support-native-20261026.json",
+        "rva": "0x127c630",
+        "bytes": 202
+      },
+      {
+        "source": "rule443-member-support-native-20261026.json",
+        "rva": "0x11acd70",
+        "bytes": 118
+      },
+      {
+        "source": "rule443-member-support-native-20261026.json",
+        "rva": "0x11e3ce0",
+        "bytes": 34
+      },
+      {
+        "source": "rule443-postinit-virtual-targets-native-20261026.json",
+        "rva": "0x11ad330",
+        "bytes": 3
+      },
+      {
+        "source": "rule443-postinit-virtual-targets-native-20261026.json",
+        "rva": "0x15c17a0",
+        "bytes": 71
+      },
+      {
+        "source": "rule443-postinit-tail-helper-native-20261026.json",
+        "rva": "0x1515d90",
+        "bytes": 175
+      },
+      {
+        "source": "rule443-object-flags-helper-native-20261026.json",
+        "rva": "0x1412820",
+        "bytes": 21
+      }
+    ],
+    "new_native_bytes": 1507,
+    "support_ranges_revalidated": [
+      {
+        "source": "rule439-base-card-defaults-native-20261026.json",
+        "rva": "0x4a7db60",
+        "bytes": 13
+      },
+      {
+        "source": "rule439-base-card-defaults-native-20261026.json",
+        "rva": "0x4aba330",
+        "bytes": 1326
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15b5af0",
+        "bytes": 436
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15c12b0",
+        "bytes": 1260
+      },
+      {
+        "source": "rule441-post-initialization-native-20261026.json",
+        "rva": "0x15bef20",
+        "bytes": 879
+      }
+    ],
+    "support_bytes": 3914,
+    "all_live_disk_equal": true,
+    "class_and_virtuals_stable": true,
+    "constructor_global_guards": {
+      "0x910970b": "00",
+      "0x91e5600": "00"
+    },
+    "worker_input_rows": 246,
+    "worker_exact_rows": 144,
+    "no_game_writes": true
+  },
+  "native_reference": {
+    "rule": "RULE-443",
+    "constructor_cases": [
+      {
+        "flags": "0x0",
+        "copy_transients": false,
+        "instance": 0,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40002000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x50000000",
+        "json_control": "0x50001000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": true,
+        "post_construct_through_virtual_hooks": true,
+        "post_construct_tail_boundary": "0x1515d90",
+        "post_copy_object_unchanged": true
+      },
+      {
+        "flags": "0x0",
+        "copy_transients": false,
+        "instance": 1,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40003000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x50002000",
+        "json_control": "0x50003000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": true,
+        "post_construct_through_virtual_hooks": true,
+        "post_construct_tail_boundary": "0x1515d90",
+        "post_copy_object_unchanged": true
+      },
+      {
+        "flags": "0x0",
+        "copy_transients": true,
+        "instance": 0,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40004000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x50004000",
+        "json_control": "0x50005000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": false,
+        "post_construct_through_virtual_hooks": false,
+        "post_construct_tail_boundary": null,
+        "post_copy_object_unchanged": null
+      },
+      {
+        "flags": "0x0",
+        "copy_transients": true,
+        "instance": 1,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40005000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x50006000",
+        "json_control": "0x50007000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": false,
+        "post_construct_through_virtual_hooks": false,
+        "post_construct_tail_boundary": null,
+        "post_copy_object_unchanged": null
+      },
+      {
+        "flags": "0x1000000",
+        "copy_transients": false,
+        "instance": 0,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40006000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x50008000",
+        "json_control": "0x50009000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": true,
+        "post_construct_through_virtual_hooks": true,
+        "post_construct_tail_boundary": "0x1515d90",
+        "post_copy_object_unchanged": true
+      },
+      {
+        "flags": "0x1000000",
+        "copy_transients": false,
+        "instance": 1,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40007000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x5000a000",
+        "json_control": "0x5000b000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": true,
+        "post_construct_through_virtual_hooks": true,
+        "post_construct_tail_boundary": "0x1515d90",
+        "post_copy_object_unchanged": true
+      },
+      {
+        "flags": "0x1000000",
+        "copy_transients": true,
+        "instance": 0,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40008000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x5000c000",
+        "json_control": "0x5000d000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": false,
+        "post_construct_through_virtual_hooks": false,
+        "post_construct_tail_boundary": null,
+        "post_copy_object_unchanged": null
+      },
+      {
+        "flags": "0x1000000",
+        "copy_transients": true,
+        "instance": 1,
+        "context_changes": [
+          {
+            "address": "0x40000000",
+            "offset": "0x0",
+            "size": 8,
+            "value": "0x40009000",
+            "instruction": "0x15b5924"
+          },
+          {
+            "address": "0x40000013",
+            "offset": "0x13",
+            "size": 1,
+            "value": "0x0",
+            "instruction": "0x15b592f"
+          }
+        ],
+        "json_backing": "0x5000e000",
+        "json_control": "0x5000f000",
+        "strong_count": 1,
+        "weak_count": 1,
+        "post_copy_executed": false,
+        "post_construct_through_virtual_hooks": false,
+        "post_construct_tail_boundary": null,
+        "post_copy_object_unchanged": null
+      }
+    ],
+    "allocation_calls": 16,
+    "fresh_json_allocations_unique": true,
+    "post_copy_cases": 4,
+    "boundary": "Actual class thunk, BaseCardObject C++ constructor, PrimaryDataAsset and UObject constructors, JSON constructor and shared-control move code executed offline. TLS current-initializer and empty per-thread scratch state, empty FText service and raw heap allocation are controlled. Four default-copy profiles execute PostConstruct through actual object/class virtual targets with empty subobject/instancing queues, stopping before tail helper0x1515d90. The tail object-index/classification check, final flags cleanup and return are not executed. Storage is synthetic zeroed object memory; allocation failures/GC/UE4SS post callbacks/context registration/finalizer are not executed. Member/service implicit global side effects are not certified. This tests constructor-to-default-copy only for stated profile, not complete returned live object."
+  },
+  "synthetic_pointer_values": true,
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-151820-rule443-constructor-store-inventory-ea8da027",
+    "input_rows": 246,
+    "exact_matching_rows": 144,
+    "matching_calls": 21,
+    "matching_direct_rdi_stores": 123,
+    "independent_full_element_and_order_equal": true,
+    "task": "私有构造指令包按call或指定mov前缀机械筛选，允许本地文件解析，不访问游戏/git/网络或操纵进程。主agent负责执行与语义判断。"
+  },
+  "validation": {
+    "constructor_profiles": 8,
+    "extended_default_copy_profiles": 4,
+    "extended_profiles_are_subset": true,
+    "controlled_heap_allocations": 16,
+    "post_construct_stops_before": "0x1515d90",
+    "new_native_ranges": 15,
+    "new_native_bytes": 1507,
+    "support_native_bytes_revalidated": 3914,
+    "all_code_live_disk_equal": true,
+    "simulator_source_changed": false,
+    "full_selftest_run_this_round": false,
+    "last_source_validation": "1375410的874/874仅为历史结果，本轮没有重复C#全套。"
+  },
+  "limitations": [
+    "离线TLS当前initializer和空线程scratch、空FText服务、原始内存分配受控；合成对象初始存储清零，未执行真实游戏分配和对象登记。",
+    "本轮没有执行上下文登记15b9a70/finalizer15b5af0或UE4SS后置回调，因此不能把构造及复制的阶段结果直接认定为客户端最终返回值。",
+    "构造后子对象/实例化队列为空，当前类/全局hook限定；不推广其他类、配置/子对象、失败分配、析构及GC。",
+    "已观察新后备分配和移动，不等于完整JSON修改/共享/深复制/销毁生命周期全部认证。",
+    "101字段最终值、最终JSON归属和空名选择恢复仍开放；没有据受控结果改规则源码。"
+  ],
+  "next_steps": [
+    "核对当前存储分配及对象索引登记，再推进0x1515d90及构造后尾部清理",
+    "核对上下文登记/finalizer与实际TLS状态及UE4SS后置链，之后再决定是否补足缺失名的完整无头建卡行为"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-parent-and-json-constructors-native-20261026.json",
+      "bytes": 23043,
+      "sha256": "b608055f82e16d8359f180f4728d0f6928de1ab6dff209d8bd18819131fe605f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-uobject-constructor-native-20261026.json",
+      "bytes": 4726,
+      "sha256": "f0c07cfaa27669884a13ef7f7b2d22fe979a27c4f1f86e32a02f620649806484"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-constructor-members-native-20261026.json",
+      "bytes": 8776,
+      "sha256": "98acce24f68eb6ff702b5adf96bc195963ccbd4abf8b31bb094b73df0ff18f2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-member-container-constructors-native-20261026.json",
+      "bytes": 8670,
+      "sha256": "a60bba90cfcb0855161c8919cc57840b7f8944ca6a3dedd7b97bfbe3935de75b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-member-support-native-20261026.json",
+      "bytes": 16451,
+      "sha256": "2e8b4f927f9ba94772ab9d22d83667a88b2fa0c709e1cd5f4e32712bc8a0ebac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-postinit-virtual-targets-native-20261026.json",
+      "bytes": 4887,
+      "sha256": "685af6de787d5e484148577e3a97389fa52a9f240889dd8914a0c1c26053f2e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-postinit-tail-helper-native-20261026.json",
+      "bytes": 9728,
+      "sha256": "b7b2a0dd1fd82c13add51af007280b017bce8153db97601d78ba330626b0fa95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-object-flags-helper-native-20261026.json",
+      "bytes": 1976,
+      "sha256": "b2dd0d0a32065783a4c4e8584a55bd5b3fa8d767eae98ce9c94a823ae129b14f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule443-constructor-environment-20261026.json",
+      "bytes": 458,
+      "sha256": "69d750c714428c0b93a470fb2e8fa53657de86f98270f29ebee87a18aaa29a7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-base-card-defaults-native-20261026.json",
+      "bytes": 50276,
+      "sha256": "2a4ed949115868e8b9c8f4ae0db46625455058d28cfa51cc479420338e1db8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-property-copy-class-metadata-20261026.json",
+      "bytes": 1268,
+      "sha256": "0d847d6401265fd0cefe367fff79bcd4d1a3875d3e2abf142e778b2dc7aa917b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-constructors.py",
+      "bytes": 3310,
+      "sha256": "a5dd903b96be207ab647fd8ca4619874e54065286a65863995a25b11f70c380d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-uobject.py",
+      "bytes": 3271,
+      "sha256": "66f6e5fd6c5ac0f47d5aef467670f445b774c05caa65ec67a86cb209a25488de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-members.py",
+      "bytes": 3286,
+      "sha256": "5b820991e86d9906aa6bbc74a279cc9ab7e980acb9b993043b21467ddf5c8349"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-containers.py",
+      "bytes": 3296,
+      "sha256": "59b2c2d473b9140f7b35af445ef581b9557bdfebc204a2f337bcbb391c5d3780"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-support.py",
+      "bytes": 3296,
+      "sha256": "45febd64a2add0ec8a3ac97b6de0d531b18c13b7810ad339e5e84e134d1e0805"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-environment.py",
+      "bytes": 3107,
+      "sha256": "bb9fc7d77c7e731e747f7abec61cd2aabf4bcd9096d19381d9390afb9b4fb4b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-postinit-virtual.py",
+      "bytes": 3680,
+      "sha256": "2ec91c4e3493ac6c4ed3db98d67e0684234699f04a9347c7b3d01c470abbc763"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-tail.py",
+      "bytes": 3272,
+      "sha256": "6802305da1614b8afceb41c4cb8cf661a7e0919ca5b95e0af4f3f93f0af02078"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule443-flags.py",
+      "bytes": 3271,
+      "sha256": "477804fa716b35a62cd963433fab1f94e8edaa0de3da9f84ab154c57ea397b55"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule443-constructor.py",
+      "bytes": 7468,
+      "sha256": "fe92611e112b5c5d603ba2b69ab41bf920fd2b366d25d0205e6d581d236609ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule443.py",
+      "bytes": 3451,
+      "sha256": "453cfbce8eced7ec23136bd6a1e0b555a1ef6e85a354b782656cddd0dcbcfa98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule443-constructor-context-json-emulation-20261026.json",
+      "bytes": 7348,
+      "sha256": "30847f769ab2f0ae623e047525bc590f30b9e4430dafcfffe041de350b4e4beb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule443-final-verification-20261026.json",
+      "bytes": 3150,
+      "sha256": "cc04c86b64e680dc766edca330f7cc5a88294ad0be3b743fac851d50ced0b98a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule443-worker\\task.txt",
+      "bytes": 512,
+      "sha256": "f892afa3a9e98118624a19f09d2a147bb3f12f84da9a2ff199d290199ccc2252"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule443-worker\\input.json",
+      "bytes": 31487,
+      "sha256": "90b655bdb00de60477c7af3cf25cb1bc2c3818350a627fc44e9038c80cab18c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule443-worker\\result.json",
+      "bytes": 19415,
+      "sha256": "0e188599f17a46949c9b9262dd8d63d130b3414075ec13ce618dbbcca5b303ed"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "bytes": 227517,
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    }
+  ]
+}
