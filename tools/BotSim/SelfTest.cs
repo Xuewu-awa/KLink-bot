@@ -855,6 +855,8 @@ internal static class SelfTest
         new("重甲普通零请求：保留数值、账本、名单且不通知", db => HeavyArmorOrdinaryZeroNoOp(db, false)),
         new("装甲入口：显式目标与正来源、隐蔽拒绝及直接输出", db => HeavyArmorEntryGuards(db, false)),
         new("装甲未使用字节模式：9到255直接调用保持全状态", db => HeavyArmorUnusedModes(db, false)),
+        new("装甲6/7/8：空detail独立账本、零值存在性和来源关系", db => HeavyArmorEmptyDetailModes(db, false)),
+        new("装甲6/7/8：真实VM保留出参且不改数值或通知", db => HeavyArmorEmptyDetailModes(db, true)),
         new("装甲未使用字节模式：9到255真实VM保留输入出参", db => HeavyArmorUnusedModes(db, true)),
         new("装甲入口：真实VM拒绝输出false，合法零请求保留输入", db => HeavyArmorEntryGuards(db, true)),
         new("重甲普通零请求：真实VM保留输入出参和完整状态", db => HeavyArmorOrdinaryZeroNoOp(db, true)),
@@ -32512,6 +32514,78 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-461: fresh-frame customAdd0; customRemove; int32 combatModify.
+    private static string? HeavyArmorEmptyDetailModes(CardDatabase db, bool vm)
+    {
+        int cases = 0;
+        foreach (int mode in new[] { 6, 7, 8 })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int mask in Enumerable.Range(0, 8))
+        foreach (int? previous in new int?[] { null, -3, 0, 5, int.MaxValue })
+        foreach (int amount in new[] { -3, 0, 3, int.MaxValue })
+        foreach (int relation in Enumerable.Range(0, 3))
+        foreach (bool skip in new[] { false, true })
+        foreach (bool incoming in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_kv_ii", side, 60, side.HandOf(), 0);
+            var permanent = new CardBuff { SourceCardId = sourceId, HeavyArmor = (mask & 1) != 0 ? 2 : 0,
+                AttackSetValue = (mask & 4) != 0 ? 0 : null, HeavyArmorEmptyDetail = previous };
+            var temporary = new CardBuff { SourceCardId = sourceId, Temporary = true, HeavyArmor = (mask & 2) != 0 ? -1 : 0 };
+            target.BuffsBySource[(sourceId, false)] = permanent;
+            target.BuffsBySource[(sourceId, true)] = temporary;
+            var foreign = new CardBuff { SourceCardId = 30, HeavyArmorEmptyDetail = 0, DefenseSetValue = 0 };
+            target.BuffsBySource[(30, false)] = foreign;
+            source.CardsBuffedByThisCard.Add(888);
+            if (relation >= 1) source.CardsBuffedByThisCard.Add(60);
+            if (relation == 2) source.CardsBuffedByThisCard.Add(60);
+            int[] reverseBefore = source.CardsBuffedByThisCard.ToArray();
+            target.Defense = 0; target.Keywords.Remove(Keyword.HeavyArmor);
+            int armor = target.HeavyArmor, attack = target.Attack, operation = target.OperationCost, kredit = target.KreditCost;
+            string keywords = string.Join(",", target.Keywords.Order());
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (!vm) {
+                var output = engine.Api.InvokeByName("ChangeHeavyArmor", source,
+                    new object?[] { target, sourceId, amount, mode, skip, incoming }, ctx, out bool handled);
+                if (!handled || output is not null) return "armor ledger-only direct call must preserve output";
+            } else {
+                var args = new[] { "target", "source", "amount", "mode", "skip", "qqq" }
+                    .Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "ChangeHeavyArmor", args, new[] { 5 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> {
+                    ["target"] = target, ["source"] = sourceId, ["amount"] = amount, ["mode"] = mode, ["skip"] = skip, ["qqq"] = incoming }, "qqq").GetValueOrDefault("qqq");
+                if (!Equals(output, incoming)) return "armor ledger-only VM must preserve incoming out slot";
+            }
+            int sum = unchecked((previous ?? 0) + amount);
+            int? expected = mode == 6 ? 0 : mode == 7 || sum == 0 ? null : sum;
+            bool keepPermanent = (mask & 5) != 0 || expected.HasValue, keepTemporary = (mask & 2) != 0;
+            bool retained = keepPermanent || keepTemporary;
+            var reverseExpected = sourceId != 20 ? reverseBefore : retained
+                ? (reverseBefore.Contains(60) ? reverseBefore : reverseBefore.Append(60).ToArray()) : reverseBefore.Where(x => x != 60).ToArray();
+            target.BuffsBySource.TryGetValue((sourceId, false), out var current);
+            var snapshot = target.Snapshot().HeavyArmorEmptyDetailsBySource;
+            if ((current is not null) != keepPermanent || (current?.HeavyArmorEmptyDetail) != expected
+                || (keepPermanent && (current!.HeavyArmor != permanent.HeavyArmor || current.AttackSetValue != permanent.AttackSetValue
+                    || current.Clone().HeavyArmorEmptyDetail != expected))
+                || target.BuffsBySource.ContainsKey((sourceId, true)) != keepTemporary
+                || (keepTemporary && !ReferenceEquals(target.BuffsBySource[(sourceId, true)], temporary))
+                || !ReferenceEquals(target.BuffsBySource[(30, false)], foreign) || foreign.HeavyArmorEmptyDetail != 0
+                || snapshot.ContainsKey($"{sourceId}/False") != expected.HasValue
+                || (expected.HasValue && snapshot[$"{sourceId}/False"] != expected.Value)
+                || !source.CardsBuffedByThisCard.SequenceEqual(reverseExpected)
+                || target.HeavyArmor != armor || target.Attack != attack || target.Defense != 0 || target.OperationCost != operation || target.KreditCost != kredit
+                || string.Join(",", target.Keywords.Order()) != keywords || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any())
+                return $"armor detail {mode}/{side}/{sourceId}/{mask}/{previous}/{amount}/{relation}/{skip}/{incoming}/vm={vm}";
+            cases++;
+        }
+        return cases == 23040 ? null : $"armor detail profiles={cases}";
     }
 
     // RULE-460: the ledger dispatch ends at8, and the numeric dispatch at5.

@@ -1051,6 +1051,9 @@ public sealed class CardInstance
             KreditCostZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroKreditCostEntry && kv.Value.KreditCost == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
+            HeavyArmorEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmorEmptyDetail.HasValue)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmorEmptyDetail!.Value),
             DefenseEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.DefenseEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.DefenseEmptyDetail!.Value),
@@ -1180,6 +1183,9 @@ public sealed class CardBuff
 
     /// <summary>重甲点数（可叠加的数值，不是布尔）。</summary>
     public int HeavyArmor { get; set; }
+    // RULE-461: heavyArmor_ ledger key; null is absent, zero is present.
+    // This metadata is not a numerical armor contribution.
+    public int? HeavyArmorEmptyDetail { get; set; }
 
     /// <summary>combat_fury amount in this source's buff ledger; independent of the ability source array.</summary>
     public int Fury { get; set; }
@@ -1212,7 +1218,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !DefenseEmptyDetail.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry && !HasZeroOperationCostEntry && !HasZeroDefenseEntry;
 
@@ -1241,6 +1247,7 @@ public sealed class CardBuff
         HasZeroOperationCostEntry = HasZeroOperationCostEntry,
         OperationCostSetValue = OperationCostSetValue,
         HeavyArmor = HeavyArmor,
+        HeavyArmorEmptyDetail = HeavyArmorEmptyDetail,
         Fury = Fury,
         Blitz = Blitz,
         Smokescreen = Smokescreen,
@@ -1305,6 +1312,7 @@ public sealed record CardSnapshot(
     public Dictionary<string, int> KreditCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> KreditCostEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DefenseEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> HeavyArmorEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public string[] KreditCostZeroEntrySources { get; init; } = [];
     public string[] AttackZeroEntrySources { get; init; } = [];
     public string[] OperationCostZeroEntrySources { get; init; } = [];

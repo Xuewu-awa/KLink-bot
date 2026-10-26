@@ -4889,6 +4889,24 @@ public sealed partial class CardApi
         // Modes6..8 have ledger semantics and must not be folded into this gate.
         if (changeType is >= 9 and <= byte.MaxValue) return null;
 
+        if (changeType is 6 or 7 or 8)
+        {
+            // RULE-461: the wrapper supplies empty customDetail, so these
+            // mutate heavyArmor_ only. No numeric writes or notifications.
+            PruneEmptySourceBuffSlots(target, sourceId);
+            var detail = GetOrCreateBuff(target, sourceId);
+            if (changeType == 6) detail.HeavyArmorEmptyDetail = 0; // fresh local
+            else if (changeType == 7) detail.HeavyArmorEmptyDetail = null;
+            else
+            {
+                int sum = unchecked((detail.HeavyArmorEmptyDetail ?? 0) + amount);
+                detail.HeavyArmorEmptyDetail = sum == 0 ? null : sum;
+            }
+            if (detail.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+            else SynchronizeBuffTarget(target, sourceId);
+            return null;
+        }
+
         // RULE-458: ordinary zero requests leave both the ledger and numeric
         // state untouched, without pruning sources, recalculating or notifying.
         // Other modes still process zero (notably absolute set and removal).

@@ -1,0 +1,177 @@
+{
+  "rule_id": "RULE-461",
+  "date": "2026-10-27",
+  "base_commit": "385825e2428cdc044dc3ee8b8fc285d4681ae15b",
+  "status": "装甲6/7/8空detail账本已实现，模式6限定新调用帧零值；非零数值写入迁移仍开放",
+  "scope": "ChangeHeavyArmor显式传空customDetail，经type4账本键heavyArmor_操作；不计入装甲数值，保留输入qqq，不通知。不是通用非空detail接口或所有持久帧初始化认证。",
+  "findings": [
+    "完整外层1846字节及账本6267字节再次复读、独立重解码一致。外层646传type4和空customDetail；账本2307..2439拼heavyArmor_，6到6195、7到5862、8到3025。外层737..1007没有6/7/8数值分支，因此这些模式仅账本操作。",
+    "模式6在6195存Temp_int_Variable_1，不存请求amount。本轮模型供应-7/0/5证明存帧值；生产适配遵循新调用帧0，任意持久帧值初始化仍不认证，沿用RULE-360相同边界。模式7删键并计算相反数移除量，但装甲外层不消费该量；模式8按int32累计，和为0删键，零请求也处理。",
+    "新增nullable CardBuff.HeavyArmorEmptyDetail：null缺键、0存在；该字段不参与HeavyArmor getter累计。接入IsEmpty、Clone及HeavyArmorEmptyDetailsBySource快照字典，防止零值键被当空来源清理或复制丢失。",
+    "入口门通过后，6/7/8先清除当前来源的无键兼容空壳，仅改当前来源永久槽的empty-detail元数据，保留原装甲、临时条目、其他种类及外来源；清空时删来源，随后只同步当前来源反向数组，保留已有重复ID，不额外补齐外来源。",
+    "新增直接派发及真实KismetVm两项各23040组，共46080组：三模式、双方、来源存在性、8种临时/永久/其他键组合、缺失/负/零/正/上界初值、正负零及上界请求、3种反向名单、skip及出参输入。核对账本/来源保留、零键存在性、克隆和快照；实际装甲、攻防/费用、关键字不重算，无动作或回调。",
+    "基线已先加入独立元数据字段/克隆/快照支架，但仍保留旧写入分支；相同904项测试902通过2失败。替换6/7/8处理后904/904。本报告不把该基线称为完整未修改HEAD。",
+    "完整账本AST8640组显式变化customAdd帧值；完整外层调用账本AST1920组使用新帧0，确认没有数值写入或通知、输入qqq保持。容器/查询/有效性API受控，无真实游戏函数调用。",
+    "DeepSeek从两份代码私有副本提取新字段的10条引用行，主agent独立逐行全等核验，并确认副本与最终工作树逐字节一致。该清单是两文件文本范围，不证明所有生命周期或动态写入已经穷尽。"
+  ],
+  "verification": {
+    "rule": "RULE-461",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    ],
+    "ledger_AST_cases": 8640,
+    "ledger_case_digest_sha256": "e0d3898938c97928e92653cfddaae134348b6e0c19e04b978e30250ab1404a8c",
+    "full_outer_inner_AST_cases": 1920,
+    "integrated_digest_sha256": "6ed41293a0d6b7bacdff6277fc551ddef413cc2a8a0acf4a3bf1e9e583350f1f",
+    "worker_exact_reference_rows": 10,
+    "frame_values": [
+      -7,
+      0,
+      5
+    ],
+    "production_add_frame": 0,
+    "scope": "Type4 empty customDetail modes6/7/8. Full ledger uses varied controlled frame local for6; integrated model supplies fresh0. Numeric fields untouched; output retained. No claim about arbitrary persistent frame initialization or generic nonempty-detail APIs.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 23040,
+    "total_profiles": 46080,
+    "baseline": {
+      "total": 904,
+      "passed": 902,
+      "failed": 2,
+      "scope": "旧dispatch分支+新元数据字段支架"
+    },
+    "fixed": {
+      "total": 904,
+      "passed": 904,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "src/KLink.Bot/Engine/CardInstance.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "新增独立empty-detail账本元数据及6/7/8处理；不改0..5非零数值路径。"
+  },
+  "unresolved": [
+    "模式6任意持久帧局部变量初始化、generic非空customDetail及通用账本out参数ABI未认证。",
+    "0..5非零装甲独立基础/临时分量、普通累计、模式4临时来源、typed SetValue及零值键存在性仍未完整迁移。",
+    "非零通知回调、光环移除、压制恢复、创建/重置/复制/VM字段及老兵装甲阶段仍待串联；本轮Clone保留不等于整个创建/复制生命周期认证。",
+    "前轮UObject有效性及原始能力位映射边界继续保留。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "仅游戏本体、SDK、只读内存及既有权威字节码；不采用旧回放或names.txt权威。",
+    "离线AST运行，无游戏进程写入、注入或真实函数调用。",
+    "单卡版本迁移暂停，模块指纹保持。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule461.py",
+      "bytes": 5681,
+      "sha256": "67d5ad22f57086d34bddb0d5c10ced947e9a9d21d346511c98703f698a297d95"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-ledger-model.py",
+      "bytes": 3528,
+      "sha256": "13db8d7a21834ff2f336dee634ed4cdd0f6ecf926de0f2bc2375131eee2e5697"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-empty-detail-verification-20261027.json",
+      "bytes": 1228,
+      "sha256": "3096cfc9d51c6b58f44f4f95bfadb209fefa0cd1c655ac7b82f8f2fb29997bd1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-worker\\CardInstance.cs",
+      "bytes": 78259,
+      "sha256": "a1bcccb4176bac6527c549950032bc183c43fefee8ff65163206087247a07e99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-worker\\CardApiDispatch.cs",
+      "bytes": 400274,
+      "sha256": "f2b3ddabd064099276c40b722169b89f471320cbdbafb5ba6086003ad73d06f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-worker\\output.json",
+      "bytes": 1755,
+      "sha256": "cc5dc733a7391826526ca9b6fab2c4c20165a95a2f9f5e269a5444121af9d98d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-worker\\task.txt",
+      "bytes": 538,
+      "sha256": "3a2704cd3c51b6dd2273dcfc16127990660c8af4194562b122b4114f7999614d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-baseline-selftest.log",
+      "bytes": 79375,
+      "sha256": "9b93ced8344a6057f3ad5ccf2bd867be19c8c97338b403f8c31990a98d5d7298"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-final-selftest.log",
+      "bytes": 79261,
+      "sha256": "4a22bce83476aa9819c11b088fcc95075d640fc236d6afe7e97173ca97554c98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule461-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}
