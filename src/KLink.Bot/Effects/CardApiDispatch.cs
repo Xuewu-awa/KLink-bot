@@ -2142,9 +2142,16 @@ public sealed partial class CardApi
             // 牌库族的候选 = 牌库里的实例（蓝图 `FilterCardsToScry` 取前 3 张）。
             var deckCandidates = ScryCandidates(selecting, selectingId);
             if (deckCandidates is null) return 0; // Explicitly unsupported object/default-output path.
+            void CompleteInlineWait()
+            {
+                // selectCardToDraw i3235/3290/3322: read the flag first, then
+                // resolve the source ID afresh after draw and its callback.
+                if (State.ShouldExecuteWaitPlayFromHand)
+                    ExecuteAfterWaitCardPlayFromHand(GetCardFromID(selectingId));
+            }
             if (deckCandidates.Count == 0)
             {
-                _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
+                CompleteInlineWait();
                 return 0;
             }
             if (deckCandidates.Count == 1)
@@ -2152,21 +2159,18 @@ public sealed partial class CardApi
                 var only = deckCandidates[0];
                 // i=2990 passes the selecting ID into the specific-draw helper;
                 // i=3131 resolves the callback receiver again, whose second arg is 0.
-                _engine.ResolveHandSelection(selecting, () =>
+                if (GetCardFromID(selectingId) is { } atDraw)
+                    _engine.DrawSpecificCardFromDeck(atDraw.Owner, only.CardId, selectingId, cardSeen: false);
+                if (GetCardFromID(selectingId) is { } receiver
+                    && Blueprint.KismetLibrary.Default is { } library
+                    && library.FindProgram(receiver.Name, "OnHandTargetSelected") is not null)
                 {
-                    if (State.ById(selectingId) is { } atDraw)
-                        _engine.DrawSpecificCardFromDeck(atDraw.Owner, only.CardId, selectingId, cardSeen: false);
-                    if (State.ById(selectingId) is { } receiver
-                        && Blueprint.KismetLibrary.Default is { } library
-                        && library.FindProgram(receiver.Name, "OnHandTargetSelected") is not null)
-                    {
-                        TriggerTrace?.Add($"OnHandTargetSelected → {receiver.Name}#{receiver.CardId}（eventCard={only.Name}#{only.CardId}）");
-                        RunTriggerProgram(library, receiver, receiver.Name, "OnHandTargetSelected", only,
-                            eventArgs: new object?[] { only.CardId, 0 },
-                            namedArgs: new Dictionary<string, object?> { ["handTargetCardID"] = only.CardId, ["instigatorID"] = 0 });
-                    }
-                    return true;
-                }, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
+                    TriggerTrace?.Add($"OnHandTargetSelected → {receiver.Name}#{receiver.CardId}（eventCard={only.Name}#{only.CardId}）");
+                    RunTriggerProgram(library, receiver, receiver.Name, "OnHandTargetSelected", only,
+                        eventArgs: new object?[] { only.CardId, 0 },
+                        namedArgs: new Dictionary<string, object?> { ["handTargetCardID"] = only.CardId, ["instigatorID"] = 0 });
+                }
+                CompleteInlineWait();
                 return only.CardId;
             }
 
@@ -2195,9 +2199,8 @@ public sealed partial class CardApi
 
         if (candidates.Count == 0)
         {
-            // selectCardToDraw reaches GetExecuteWaitPlayFromHand / AfterWait
-            // even when its generated pool is empty.
-            _engine.ResolveHandSelection(selecting, () => true, updateExtraTriggers: false, defer: false, consumeAutoPlay: false);
+            // Generated i3425 sends an empty pending offer and returns. There
+            // is no inline callback or AfterWait here; do not invent a reply.
             return 0;
         }
         _engine.ResolveHandSelection(selecting, () =>

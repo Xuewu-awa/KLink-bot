@@ -17,7 +17,7 @@
     "Each own-effect parameter and the subsequent Pincer parameter independently resolves the original targetCardID. GetCardFromID delegates to FetchCardFromCardID, which returns NoObject for nonpositive or missing IDs.",
     "The headless core snapshots the ID before callbacks, resolves it for early weather, each own invocation and subsequent Pincer, and leaves the separately prepared currentTarget field unchanged.",
     "Deployment multiplicity queries T23 only when the original integer ID equals0 (5782/5816/5830); a missing positive target or negative ID is not a non-targeted deployment.",
-    "Inline selection continuation is held until the own effect returns and Pincer completes. Four additional empty/singleton cases observe that T43 callbacks run once, after both stages.",
+    "WITHDRAWN by RULE-437 (2026-10-26): Inline selection continuation is held until the own effect returns and Pincer completes. Four additional empty/singleton cases observe that T43 callbacks run once, after both stages.",
     "64 controlled identity cases cover both sides, deployment/nondeployment, Pincer/noPincer and eight target/map states. The own callback replaces the mapping again to verify Pincer uses its own lookup.20 multiplier cases exercise real B26 IR, zero/negative/missing/normal IDs and wait/nonwait modes. The old real T28 Pincer timing test is corrected."
   ],
   "tests": {
@@ -40,5 +40,15 @@
   ],
   "fully_semantically_verified_cards": 0,
   "evidence": "D:\\Codex Workshop\\kards-install-review\\target-requery-evidence-20261018.json",
-  "evidence_sha256": "ffeca3920194b74305e8c67118b80dc5c61a81dece92b4b1bc7a8107e79cd913"
+  "evidence_sha256": "ffeca3920194b74305e8c67118b80dc5c61a81dece92b4b1bc7a8107e79cd913",
+  "coverage_corrections": [
+    {
+      "date": "2026-10-26",
+      "rule": "RULE-437",
+      "affected_cases": 4,
+      "reason": "Old tests certified the adapter assumption, not selector live-flag timing. Inline deck0/1 reads the current flag within own call stack; no deferred continuation exists in the client. Generated0 notifies pending and does not enter this gate.",
+      "replacement_report": "out/audit/systematic-rules/inline-selection-wait-timing-and-empty-generated-offer-20261026.json",
+      "retained": "Independent own-return -> Pincer flow, target ID requery and multiplicity gates. Historical test-run counts remain as historical results."
+    }
+  ]
 }

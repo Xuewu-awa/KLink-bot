@@ -169,7 +169,9 @@ internal static class SelfTest
         new("出牌反制：SECRET OPERATIVES在反制阶段读取本次目标", HandPlayCounterReadsCurrentTarget),
         new("出牌目标：自身效果及随后Pincer独立按ID读取，非正ID无对象", HandPlayTargetRequery),
         new("部署倍数：原始目标ID为0才查询，不以查号结果代替", HandPlayTargetIdDeploymentGate),
-        new("内联选牌：自身返回和Pincer完成后才续行旁观者", HandPlayInlinePincerBoundary),
+        new("内联选牌：初始等待false不补发通知，Pincer后外层设置等待true", HandPlayInlinePincerBoundary),
+        new("内联选择：牌库空/单候选实时读等待门，生成空池不造答复", InlineSelectionStandaloneWait),
+        new("内联选择组合：等待处理在自身栈内，外层Pincer后重新设标志", InlineSelectionOuterWait),
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
@@ -21417,6 +21419,126 @@ internal static class SelfTest
 
 
 
+
+    private static string? InlineSelectionStandaloneWait(CardDatabase db) => InlineSelectionWaitReference(db, composed: false);
+    private static string? InlineSelectionOuterWait(CardDatabase db) => InlineSelectionWaitReference(db, composed: true);
+
+    private static string? InlineSelectionWaitReference(CardDatabase db, bool composed)
+    {
+        string name = composed ? "card_unit_typhoon_mk_ib" : "card_unit_m36_destroyer";
+        using var callback = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        using var pool = InstallSelectionDrawProbe(name, "GetChooseSpawnCards");
+        using var filter = InstallSelectionDrawProbe(name, "FilterCardsToScry");
+        using var played = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardPlayedFromHand");
+        using var entered = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardEnterPlay");
+        KismetStep Signal(int id, int i) => new(i, "call", "ForceCardChangeLocation", new[] {
+            new KismetExpr { Int = id }, new KismetExpr { Int = 0 }, new KismetExpr { Int = (int)CardLocation.Discard },
+            new KismetExpr { Int = 0 } }, Array.Empty<int>(), null, null, -1, null, null);
+        KismetStep Return(int i) => new(i, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        locals["OnHandTargetSelected"] = new[] { Signal(85, 0), Return(1) };
+        locals["FilterCardsToScry"] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1, "isValid", null), Return(1) };
+        locals["GetChooseSpawnCards"] = new[] {
+            new KismetStep(0, "call", "Array_Clear", new[] { new KismetExpr { Var = "cards", Scope = "local" } }, Array.Empty<int>(), null, null, -1, null, null),
+            Signal(86, 1),
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "audit_keep_order", Scope = "instance" }, null, -1, "keepOrder", null),
+            Return(3) };
+        var otherLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default.Find(PlainUnit)!.Locals!;
+        foreach (var (trigger, id) in new[] { ("OnOtherCardPlayedFromHand", 90), ("OnOtherCardEnterPlay", 91) })
+            otherLocals[trigger] = new[] {
+                new KismetStep(0, "call", "JSON_SetInt", new[] { new KismetExpr { Var = "K2Node_Event_cardPlayed" },
+                    new KismetExpr { Str = "wait_seen" }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                Signal(id, 1), Return(2) };
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "inline-selection-wait-reference-20261026.json")))!;
+        int cases = 0;
+        foreach (var row in fixture[composed ? "outer_cases" : "standalone_cases"]!.AsArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool registered in composed ? new[] { false } : new[] { false, true })
+        {
+            int route = row!["route"]!.GetValue<int>(), cb = row["callback"]!.GetValue<int>();
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side; state.Turn = 4;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var source = state.CreateWithId(name, side, 60, composed || registered ? side.HandOf() : CardLocation.Discard, 0);
+            source.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = composed || registered };
+            source.Keywords.Clear(); source.KreditCost = 0;
+            if (composed) source.Keywords.Add(Keyword.Pincer);
+            source.BlueprintVariables["audit_keep_order"] = row["keep_order"]!.GetValue<bool>();
+            var target = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 1);
+            var observer = state.CreateWithId(PlainUnit, side, 80, side.HqOf(), 2);
+            observer.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry",
+                UsedTriggers = new[] { "OnOtherCardPlayedFromHand", "OnOtherCardEnterPlay" } };
+            observer.Keywords.Clear();
+            var selected = route == 1 ? state.CreateWithId(PlainUnit, side, 71, side.DeckOf(), 0) : null;
+            var signals = new[] { 85, 86, 90, 91 }.ToDictionary(id => id,
+                id => state.CreateWithId("card_event_aans", side, id, CardLocation.Discard, 0));
+            // Signal objects stay out of the offered deck until explicitly pulsed.
+            foreach (var signal in signals.Values) signal.Location = side.HandOf();
+            if (row["full"]!.GetValue<bool>())
+                while (state.Hand(side).Count < GameState.HandCapacity)
+                    state.Create("card_event_aans", side, side.HandOf(), state.Hand(side).Count);
+            var trace = new List<string>(); int pools = 0; string? failure = null;
+            bool ownReturned = false, inCase = false; CardInstance? replacement = null;
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (!inCase || newLocation != CardLocation.Discard || !signals.TryGetValue(card.CardId, out var expected) || !ReferenceEquals(card, expected)) return;
+                card.Location = side.HandOf(); // Controlled signal re-arm, no new event.
+                if (card.CardId == 86) { pools++; return; }
+                if (card.CardId == 85) {
+                    if (selected is null || selected.Location != side.HandOf()) failure = "singleton callback before draw";
+                    trace.Add("draw"); trace.Add("callback");
+                    if (cb >= 0) state.ShouldExecuteWaitPlayFromHand = cb != 0;
+                    if (row["replace"]!.GetValue<bool>()) {
+                        state.Remove(source); replacement = state.CreateWithId(name, side, 60, CardLocation.Discard, 0);
+                        replacement.Definition = new CardDefinition { Name = name, Type = "infantry" };
+                    }
+                } else {
+                    trace.Add(card.CardId == 90 ? "played" : "enter");
+                    if (composed && (ownReturned || engine.Api.JsonGetInt(source, "pincer_receiver") != 0)) failure = "inline observer ran after own return/Pincer";
+                }
+            };
+            object? InvokeSelection()
+            {
+                var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+                return engine.Api.InvokeByName("selectCardToDraw", source, new object?[] { 60, route != 2, row["effect"]!.GetValue<bool>() }, ctx, out _);
+            }
+            CardEffectScripts.Register(name, ctx => {
+                if (!composed) return;
+                trace.Add("own_begin"); InvokeSelection();
+                if (engine.Api.JsonGetInt(source, "pincer_receiver") != 0) failure = "Pincer before own return";
+                ownReturned = true; trace.Add("own_end");
+            });
+            try {
+                if (registered && !engine.PlayCard(source)) return "waiting setup could not play";
+                // The setup play removed its own card from the full hand.
+                if (registered && row["full"]!.GetValue<bool>())
+                    while (state.Hand(side).Count < GameState.HandCapacity)
+                        state.Create("card_event_aans", side, side.HandOf(), state.Hand(side).Count);
+                state.ShouldExecuteWaitPlayFromHand = row["initial"]!.GetValue<bool>();
+                state.AddWaitPlayFromHandCards(80); inCase = true;
+                if (composed) {
+                    if (!engine.PlayCard(source, target)) return "outer play failed";
+                    if (engine.Api.JsonGetInt(source, "pincer_receiver") != 70) failure = "missing Pincer";
+                    trace.Add("pincer");
+                } else InvokeSelection();
+            }
+            finally { CardEffectScripts.Unregister(name); }
+            var expectedTrace = row["phase_trace"]!.AsArray().Select(x => x!.GetValue<string>()).ToArray();
+            var afterSources = row["after_sources"]!.AsArray().Select(x => x!.GetValue<string>()).ToArray();
+            if (failure is not null || !trace.SequenceEqual(expectedTrace) || pools != row["pool_calls"]!.GetValue<int>()
+                || state.ShouldExecuteWaitPlayFromHand != row["flag_after"]!.GetValue<bool>()
+                || state.GetWaitPlayFromHandCards().Length != row["wait_count_after"]!.GetValue<int>()
+                || engine.Api.JsonGetInt(source, "wait_seen") != (afterSources.Contains("old") ? 1 : 0)
+                || replacement is not null && engine.Api.JsonGetInt(replacement, "wait_seen") != (afterSources.Contains("new") ? 1 : 0)
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return $"inline outer={composed}/{side}/registered={registered}/route={route}/initial={row["initial"]}/cb={cb}/replace={row["replace"]}: {failure},trace={string.Join(",", trace)} expected={string.Join(",", expectedTrace)},flag={state.ShouldExecuteWaitPlayFromHand}/{row["flag_after"]},pools={pools}/{row["pool_calls"]}";
+            cases++;
+        }
+        return cases == (composed ? 20 : 120) ? null : $"inline cases {cases}";
+    }
+
     private static string? GlobalWaitReplyWithoutOwner(CardDatabase db) => GlobalWaitReplyReference(db, registeredWait: false);
     private static string? GlobalWaitReplyWithOwner(CardDatabase db) => GlobalWaitReplyReference(db, registeredWait: true);
 
@@ -24386,8 +24508,11 @@ internal static class SelfTest
             bool played;
             try { played = engine.PlayCard(source, target); }
             finally { CardEffectScripts.Unregister(name); }
-            if (!played || observations != 1 || failure is not null)
-                return $"inline Pincer {side}/{singleton}: {failure ?? "missing/duplicate continuation"}, observers={observations}";
+            // RULE-437 corrects RULE-194's unsupported deferred-inline assumption.
+            if (!played || observations != 0 || failure is not null || !ownReturned
+                || engine.Api.JsonGetInt(source, "pincer_receiver") != target.CardId
+                || !state.ShouldExecuteWaitPlayFromHand || !state.GetWaitPlayFromHandCards().Contains(80))
+                return $"inline Pincer {side}/{singleton}: {failure ?? "unexpected continuation/flag"}, observers={observations}";
         }
         return null;
     }

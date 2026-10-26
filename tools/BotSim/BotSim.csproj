@@ -33,6 +33,7 @@
     <None Update="Fixtures/extra-play-trigger-number-reference-20261026.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/after-wait-id-reference-20261026.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/global-wait-reply-reference-20261026.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/inline-selection-wait-reference-20261026.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

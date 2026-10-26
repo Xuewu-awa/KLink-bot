@@ -1,0 +1,879 @@
+{
+  "rule": "RULE-437",
+  "standalone_cases": [
+    {
+      "route": 0,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": -1,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 0,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 0,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 1,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "new"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": false,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": true,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": true,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": true,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": true,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 0,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": -1,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "new"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 0,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 0,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback"
+      ],
+      "after_sources": [],
+      "flag_after": false,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 1,
+      "replace": true,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [
+        "draw",
+        "callback",
+        "played",
+        "enter"
+      ],
+      "after_sources": [
+        "new"
+      ],
+      "flag_after": false,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": false,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": true,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": false,
+      "full": true,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": true,
+      "effect": false,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": true,
+      "effect": true,
+      "composed": false,
+      "phase_trace": [],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          true
+        ]
+      ],
+      "pool_calls": 1
+    }
+  ],
+  "outer_cases": [
+    {
+      "route": 0,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 0,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": false,
+      "callback": 1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "played",
+        "enter",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": true,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": false,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    },
+    {
+      "route": 0,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "played",
+        "enter",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": true,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "played",
+        "enter",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": true,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 0,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 1,
+      "initial": true,
+      "callback": 1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "draw",
+        "callback",
+        "played",
+        "enter",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [
+        "old"
+      ],
+      "flag_after": true,
+      "wait_count_after": 0,
+      "notices": [],
+      "pool_calls": 0
+    },
+    {
+      "route": 2,
+      "initial": true,
+      "callback": -1,
+      "replace": false,
+      "keep_order": true,
+      "full": false,
+      "effect": false,
+      "composed": true,
+      "phase_trace": [
+        "own_begin",
+        "own_end",
+        "pincer"
+      ],
+      "after_sources": [],
+      "flag_after": true,
+      "wait_count_after": 1,
+      "notices": [
+        [
+          60,
+          false,
+          [],
+          false
+        ]
+      ],
+      "pool_calls": 1
+    }
+  ],
+  "boundary": "Entire3567-byte selector AST for deck0/1 and generated0 only, controlled deck/filter/pool/draw/notifier/AfterWait. Outer composed subgraph6162 onward with own-repeat0, Pincer and waiting=true, valid source/target; not all CardPlayedFromHand or real scheduling."
+}

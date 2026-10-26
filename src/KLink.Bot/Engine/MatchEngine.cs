@@ -21,8 +21,6 @@ public sealed class MatchEngine
     // A selection response occurs after the requesting Blueprint has returned.
     // Keep this order in headless play while resolving the choice synchronously.
     private Queue<Action>? _pendingSelections;
-    // Only the inline empty/singleton adapter is keyed by source ID.
-    private readonly Dictionary<int, Action<CardInstance?>> _inlineWaitPlayContinuations = new();
 
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
         bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
@@ -46,17 +44,10 @@ public sealed class MatchEngine
                 else
                     Api.ResolveTriggerQueue();
             }
-            if (defer)
-            {
-                // RULE-436: ordinary reply gates use the single current flag,
-                // independent of the ID that originally began waiting. Discard
-                // obsolete inline adapters before callbacks can enqueue replies.
-                _inlineWaitPlayContinuations.Clear();
-                if (State.ShouldExecuteWaitPlayFromHand)
-                    Api.ExecuteAfterWaitCardPlayFromHand(responseCard);
-            }
-            else if (_inlineWaitPlayContinuations.Remove(selecting.CardId, out var continuation))
-                continuation(responseCard); // Inline empty/singleton compatibility path, audited separately.
+            // Ordinary replies consult the current global flag. Inline deck
+            // selection performs its own fresh-ID lookup inside the requester.
+            if (State.ShouldExecuteWaitPlayFromHand)
+                Api.ExecuteAfterWaitCardPlayFromHand(responseCard);
             // Reply actions consume after their own callback / AfterWait, but
             // CardToDrawSelected i=1677 precedes HandleExtraPlayTriggers i=1737.
             if (consumeAutoPlay) ExecuteAutoPlayCards();
@@ -1856,13 +1847,8 @@ public sealed class MatchEngine
             eventArgs: new object?[] { 1 },
             namedArgs: new Dictionary<string, object?> { ["Method"] = 1 });
 
-        void ContinuePlay(bool waited, CardInstance? responseCard)
+        void ContinuePlay()
         {
-            if (waited)
-            {
-                Api.ExecuteAfterWaitCardPlayFromHand(responseCard);
-                return;
-            }
             var played = card;
             foreach (var observer in afterPlayGotchas.Concat(playedCardTriggerSnapshot))
             {
@@ -1884,34 +1870,16 @@ public sealed class MatchEngine
         // own invocation, then i=6157 -> 4469 -> 4561/4696/4728 applies Pincer.
         // Cancellation also reaches Pincer. Do not overwrite currentTarget:
         // it is a separate field prepared before movement (RULE-193).
-        bool waitsForTarget = card.Definition.WaitForHandTarget;
-        bool ownEffectReturned = false, inlineReply = false;
-        CardInstance? inlineReplyCard = null;
-        if (waitsForTarget)
-            _inlineWaitPlayContinuations[card.CardId] = responseCard => {
-                if (!ownEffectReturned) { inlineReply = true; inlineReplyCard = responseCard; }
-                else ContinuePlay(waited: true, responseCard);
-            };
         cardsDone.Add(card.CardId);
-
         bool effectExecuted = RunDeploymentEffect(card, targetCardId);
-        ownEffectReturned = true;
         if (card.Keywords.Contains(Keyword.Pincer) && ResolveTarget() is { } pincerTarget)
             Api.ApplyPincerEffects(card, pincerTarget);
 
-        State.ShouldExecuteWaitPlayFromHand = waitsForTarget && effectExecuted;
-        if (inlineReply && effectExecuted)
-        {
-            _inlineWaitPlayContinuations.Remove(card.CardId);
-            ContinuePlay(waited: true, inlineReplyCard);
-        }
-        else if (!waitsForTarget || !effectExecuted)
-        {
-            _inlineWaitPlayContinuations.Remove(card.CardId);
-            ContinuePlay(waited: false, card);
-        }
-        // Inline singleton/empty-selection paths may consume their adapter.
-        // Ordinary queued replies instead read the current global wait flag.
+        // RULE-437: inline selection has already read the old flag while own
+        // effects were on the stack. The outer Blueprint now reads this field
+        // again, after Pincer, and may set the global wait flag true afresh.
+        State.ShouldExecuteWaitPlayFromHand = card.Definition.WaitForHandTarget && effectExecuted;
+        if (!State.ShouldExecuteWaitPlayFromHand) ContinuePlay();
 
         CheckDeaths();
         return true;

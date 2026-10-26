@@ -1,0 +1,215 @@
+{
+  "rule_id": "RULE-437",
+  "date": "2026-10-26",
+  "status": "修复内联牌库选择的实时等待门/来源重查和生成空池分支；撤回RULE-194无依据的内联延后结论",
+  "base_commit": "9931cbaa202551e2be70f5df62e5aef27c4b7553",
+  "scope": "selectCardToDraw牌库0/1候选与生成0候选，及外层CardPlayedFromHand自身/Pincer/设等待标志片段；无UI渲染处理。",
+  "authority": {
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "CardFunctionsStub",
+        "name": "selectCardToDraw",
+        "script_size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "GetExecuteWaitPlayFromHand",
+        "script_size": 22,
+        "sha256": "3c94c6bf3e435cada22462ef8ab0fcfebda27cd32c0f40376cd600be3ac4555f"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "AfterWaitCardPlayFromHand",
+        "script_size": 2029,
+        "sha256": "d545414e1a31c097b7670057eb61c1ed505d0da7fb840bd567eb76202cb5eb50"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CardPlayedFromHand",
+        "script_size": 6936,
+        "sha256": "86bee9346d4ef36c52193cf5eb93e929475b65e2140de1c9667ebade73314100"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "selectCardToDraw",
+        "script_size": 3567,
+        "sha256": "2086e20d52840392ed13abde2ac808a84e3f27343fcf3d61d8d0cf40d8d40e65"
+      }
+    ],
+    "nonempty_script_bytes": 12554,
+    "declaration_only": "CardFunctionsStub.selectCardToDraw script_size0，是接口声明。解码器对空数组报list index out of range不计作实函数解析缺口；四个非空函数均已独立重解码匹配。"
+  },
+  "findings": [
+    "牌库候选0在i2394跳到i3235，单候选经i2903..3163立即抽牌并回调，二者都在i3235读取当前等待bool；false直接返回，true才i3290按选择者整数ID重新查对象，再i3322 AfterWait(source,0)。",
+    "单候选回调第二个整数参数为0。回调可改等待标志或替换源ID对应对象，等待门读取回调后的值，AfterWait接收后查到的新对象；不得沿用调用入口selecting引用。",
+    "生成空池经GetChooseSpawnCards和循环落到i3425 NotifySelectCardToDrawPending(...,false,empty,isEffect)，随后返回；没有跳到牌库i3235等待门。满手且非effect则更早i1663返回，不查询池。",
+    "外层CardPlayedFromHand在自身调用返回后，经i6146/6157到Pincer i4728，再i4850读取当时wait字段与OnPlayedFromHandExecuted，i4924设等待true并返回。没有“内联答复先保存、Pincer后补AfterWait”的代码。",
+    "初始flag false且内联回调没有把它开启时，牌库0/1不触发AfterWait；外层仍可在稍后设true而保留等待名单。初始/回调flag true则AfterWait在自身栈内执行，先于own return/Pincer；外层随后仍可设true。",
+    "旧内核按ID暂存内联续行，默认在自身/Pincer之后补执行；且把生成空池当成立即答复。现删除此字典及延后分支，牌库内联直接按实时flag和新查对象执行，生成空池返回并保留等待状态。"
+  ],
+  "history_correction": {
+    "rule": "RULE-194",
+    "report": "out/audit/systematic-rules/target-requery-20261018.json",
+    "withdrawn": "4个内联测试只验证旧适配器的自定行为，没有组合selector的实际flag门，不能作为客户端在Pincer后补执行的证据。",
+    "retained": "自身效果返回后到Pincer的控制流、各阶段目标ID重查和部署倍数ID门槛有独立证据；该更正不推翻这些独立结论。"
+  },
+  "validation": {
+    "runtime": "5个函数声明/实现头及4份非空脚本共12554字节采集守卫PID/模块/EXE哈希，捕获末尾稳定复读；结束前再次比对全部头/脚本及等待属性头。无游戏进程写入。",
+    "reference": {
+      "full_selector_ast": "3567字节完整AST，受控牌库、过滤器、空生成池、抽牌、通知和AfterWait；只取候选0/1及生成0的路径。",
+      "standalone_cases": 30,
+      "outer_cases": 10,
+      "outer_ast": "CardPlayedFromHand从6162执行到返回，triggerMultiple0、有效目标、Pincer=true、wait=true；OnPlayedFromHand嵌套运行上述完整selector。不是完整6936字节函数语义执行。",
+      "parameters": "初始flag2；单候选回调不改/设false/设true及替换源对象；生成空池含keepOrder/full/effect组合。"
+    },
+    "headless": {
+      "standalone_cases": 120,
+      "composed_cases": 20,
+      "corrected_old_cases": 4,
+      "formula": "30 selector参考×有/无已登记等待2×双侧2；10组合参考×双侧2；另修正旧Pincer内联4场景。",
+      "checks": "逐条轨迹、池查询次数、实时flag、等待名单剩余、原/新来源对象事件载荷、绘入手牌状态和Pincer前后。单候选draw轨迹由回调时实查已进入手牌确认，未误用DrawCard的无通知CardMoved。",
+      "test_setup": "脉冲源置于手牌以免混入牌库候选；满手案例在setup出牌后重新补齐手牌容量。初版基线前补齐手牌fixture的日志保留；最终基线和修复后使用相同执行布景。"
+    },
+    "deepseek": {
+      "rejected_job": "20261026-094135-rule437-inline-wait-19328ed0",
+      "rejected_reason": "错误按函数保留全部397行，未按行过滤；主agent比较失败后拒绝该结果，没有采信其“完成”自述。",
+      "accepted_job": "20261026-094804-rule437-inline-rows-874374cd",
+      "exact_rows": 10,
+      "verification": "把输入展平为397条指令后，仅保留10条。所有字段/顺序与主agent独立过滤结果完全相等。"
+    },
+    "baseline": {
+      "passed": 866,
+      "failed": 3,
+      "total": 869,
+      "exit_code": 1,
+      "examples": [
+        "纠正后的旧4例：初始false却晚发一次通知",
+        "已登记等待且当前flag false的牌库空候选仍被执行AfterWait",
+        "外层空候选产生own_begin,own_end,played,enter,pincer，期望own_begin,own_end,pincer且最终flag true"
+      ]
+    },
+    "fixed": {
+      "passed": 869,
+      "failed": 0,
+      "total": 869,
+      "exit_code": 0
+    },
+    "safety": "内存采集只读；参考解释离线。无注入、调用游戏函数、进程写入或自动对局操作。未用历史回放作权威，未改受保护未跟踪文件。"
+  },
+  "limits": [
+    "生成空池原生只发送空pending通知，本地返回而不虚构答复；空offer的后续自动/网络处理与挂起恢复未认证，不能由此推断真实客户端永远卡住。",
+    "完整selector语法重解码不等于所有过滤、随机、2/3+候选、标记、通知的语义证明；本轮空shuffle受控，不验证非空随机流。",
+    "抽牌与AfterWait在参考模型中受控；AfterWait循环本体验证见RULE-435。未覆盖抽牌回调中释放源对象、PendingKill/GC、空源和NullContext出参残留。",
+    "外层组合固定wait=true、重复0、正常返回；虽然实现改为Pincer后读取当时字段，未穷尽回调改wait属性、部署取消、多次自身执行、重复通知及所有嵌套PlayCard。",
+    "替换ID、手改flag及信号程序均为受控隔离场景，不证明合法PvP可达性，也不是对M36/Typhoon/Arado完整卡牌效果的认证。",
+    "既有headless返回整数及pending选择适配ABI未因本次原生void脚本改写，本轮不声称完整客户端选择返回/网络协议已还原；单卡版本迁移仍暂停。"
+  ],
+  "fully_certified_cards": 0,
+  "next_work": [
+    "继续核查生成空pending offer的后续动作与自动选择恢复",
+    "核查持久来源字段、内联回调到普通回复的跨层重入和等待属性变化"
+  ],
+  "source_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule437-inline-selection-native-20261026.json",
+      "bytes": 4819035,
+      "sha256": "ce2992314c0828f2b6a07ea5ca1ee6e2c8c3df6a3a25185599cf6c698660332c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule437-revalidated-native-20261026.json",
+      "bytes": 584,
+      "sha256": "a3b2b8ded4692457fae9b836fef437a09c44821b819568097442ed0c5b44bd7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule437-inline.py",
+      "bytes": 2434,
+      "sha256": "1698585e3ac2f7f8e6b8e8272fb52fd913d84f01453e6798504b956d01fc2cb6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\revalidate-rule437.py",
+      "bytes": 1443,
+      "sha256": "b46ba9d6968b9de94e799aae1296727796476d45b503c7b4b2a2e3080e50da00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule437.py",
+      "bytes": 8863,
+      "sha256": "eeb853e7c10d9b41d21abbcf82d00968a07bf011fa21dbe1dc7a21c1c1c8746f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-reference-20261026.json",
+      "bytes": 49236,
+      "sha256": "0e9633f97b31f470625fff3250929d9a178985d507e3a730c0fad58fc8aa796c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\input.json",
+      "bytes": 182376,
+      "sha256": "e2c3a2cbaeed2178fe74366b2e46530cd49642b8ea01534513d69fbc4af15664"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\task.txt",
+      "bytes": 729,
+      "sha256": "dc7771ed3248d409968a8cb7f66087fa190a454dc8204dddd1b0cb9950c302c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\result.json",
+      "bytes": 182376,
+      "sha256": "e2c3a2cbaeed2178fe74366b2e46530cd49642b8ea01534513d69fbc4af15664"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\rows-input.json",
+      "bytes": 189241,
+      "sha256": "ac4b7f45dee3c41c96ac2705e49c61720cc32390686f178e228cbb486a72d955"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\rows-task.txt",
+      "bytes": 823,
+      "sha256": "8a7931e89ab02f8e4906710300fe47304313ebcf5fb74ab6563366e06fbb1cf4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-worker\\result-rows.json",
+      "bytes": 7215,
+      "sha256": "fb455889d243be4cf430b7451ceb6ce56e0236e454ad3415ade47d0c5809fbb1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-baseline-selftest.log",
+      "bytes": 77078,
+      "sha256": "709d36c339bbcf0b5104e13085ab2a9d065025ebd9358a96f32327205482d3cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-fixed-selftest.log",
+      "bytes": 76620,
+      "sha256": "b07dfc9aa0ff4b5d2a15aa24fd480c7b1e5635621af622ae9000fe9e478dbbe0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule437-pre-full-hand-fixture-baseline.log",
+      "bytes": 77078,
+      "sha256": "709d36c339bbcf0b5104e13085ab2a9d065025ebd9358a96f32327205482d3cf"
+    }
+  ],
+  "repository_artifacts": [
+    "src/KLink.Bot/Engine/MatchEngine.cs",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "tools/BotSim/SelfTest.cs",
+    "tools/BotSim/BotSim.csproj",
+    "tools/BotSim/Fixtures/inline-selection-wait-reference-20261026.json"
+  ]
+}
