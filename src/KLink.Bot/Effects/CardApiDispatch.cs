@@ -5201,8 +5201,10 @@ public sealed partial class CardApi
     /// </code>
     /// 本实现读：`Frontline`、`locationNumber`（-1 = 追加到队尾）、`NewGiveBlitz`、
     /// `NewMakeVeteran`、`forceGoldCard`。
-    /// **不实现**：`campaignName`（战役）、`salvageFaction`（Salvage 关键字，P1 未建模）。
-    /// `spawnerID` 只用于"谁生成的"记账，当前内核没有对应字段，不假装实现。
+    /// `salvageFaction` follows the shared spawn's pre-creation struct selection.
+    /// Campaign-only behavior remains outside the headless PvP scope.
+    /// `spawnerID` participates in the entry guard and source gold lookup;
+    /// the complete shared notification payload remains under audit.
     /// </summary>
     private object? DoSpawnOnBattlefield(EffectContext c, object? r, object?[] a)
     {
@@ -5223,7 +5225,8 @@ public sealed partial class CardApi
             frontline: TruthyArg(a, 1),
             locationNumber: IntArg(a, 6, -1),
             newGiveBlitz: TruthyArg(a, 5),
-            forceGoldCard: gold);
+            forceGoldCard: gold,
+            salvageFaction: IntArg(a, 7));
 
         if (TruthyArg(a, 8))
         {

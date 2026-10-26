@@ -3524,10 +3524,16 @@ public sealed partial class CardApi
                                            bool frontline = true,
                                            int locationNumber = -1,
                                            bool newGiveBlitz = false,
-                                           bool forceGoldCard = false)
+                                           bool forceGoldCard = false,
+                                           int salvageFaction = 0)
     {
         CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
-        var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard);
+        // RULE-450: SpawnCardToBoard i=1468..1650 selects the salvage struct
+        // before CreateCard; it must already be visible to creation callbacks.
+        int salvage = unchecked((byte)salvageFaction);
+        var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard,
+            isSalvaged: salvage != 0,
+            salvageFaction: salvage == 0 ? null : salvage.ToString(System.Globalization.CultureInfo.InvariantCulture));
         card.EnteredPlayOnTurn = State.Turn;
 
         int slot = locationNumber >= 0

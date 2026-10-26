@@ -1,0 +1,181 @@
+{
+  "rule_id": "RULE-450",
+  "date": "2026-10-26",
+  "base_commit": "0f3a05b01550ea279012c24c6879f3afba35be5b",
+  "status": "已接通战场生成入口salvageFaction至建卡初始化，在创建回调前生效",
+  "scope": "SpawnCardOnBattlefield参数a[7]经SpawnCardToBoard的打捞结构体选择进入CreateCard；共享落场流程仅修复参数传递，不认证其全部阶段。",
+  "findings": [
+    "当前SpawnCardOnBattlefield297将salvageFaction作为SpawnCardToBoard第9个参数传下去；旧DoSpawnOnBattlefield未读取a[7]，共享SpawnOnBattlefield也没有相应参数，State.Create始终按普通卡创建。",
+    "当前SpawnCardToBoard1468比较salvageFaction==0，1499/1519/1555构造true/传入阵营/overrideCardID的结构体，1591构造false/0/0默认体，1631保存比较结果，1650的SwitchValue在零值选默认体、非零选打捞体并作为CreateCard第13参数。输入FProperty的ElementSize在+0x34为1，参数偏移28；头部已复读。",
+    "现为共享SpawnOnBattlefield追加默认0的salvageFaction参数，按byte归一后，在State.Create调用时传isSalvaged和阵营数字字符串。战场包装将a[7]传给它。其他未显式传入的新旧调用仍默认普通卡，本轮不替它们补参数或声称全部入口已接通。",
+    "实际攻防及费用初始化沿用RULE-447/448的已修复路径：打捞公开/当前/最大攻防1/1、基础费用封顶3、临时费用保留、当前阵营来自传入值。在自身创建回调及创建修正之前完成，之后不新增打捞数值重置。",
+    "新增两项各136组：双方、前线/支援线、金卡真假、0..12及255/256/257/-1的整数输入；后四项检查C#适配到单字节参数的归一，未声称客户端真实会产生这些整数。私有模板攻防7/9、基础费用6、临时费用4及行动费2/-1，保证旧普通路径不能偶然满足打捞断言。",
+    "第二项使用受控创建回调改写标识/元数据/当前阵营与公开/当前/最大攻防，检查后续修正及落场返回保留；回调内进场回合仍为0。MakeVeteran在模拟器测试中固定false，不把这些受控写入当作真实单卡效果。共272组。",
+    "DeepSeek从完整SpawnCardToBoard节点机械提取8条打捞选择节点，主agent独立逐元素验证全等。主agent对该八节点切片执行256字节值×两个overrideID×MakeVeteran真假共1024组，检查默认体/打捞体及参数转发；只在已经到达建卡阶段的前提下成立。",
+    "相同885项测试旧实现883通过、2失败，均在非零打捞输入的自身回调处暴露错误；修复后885/885。相关4份脚本共5805字节及740字节原生当前数值初始化体复读一致，未执行游戏函数。"
+  ],
+  "verification": {
+    "rule": "RULE-450",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "SpawnCardToBoard",
+        "bytes": 1917,
+        "sha256": "0719d50282a7313cbc5431b334393ba01ad8f4d80fdebcfc151c8ed1611c2069"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "SpawnCardOnBattlefield",
+        "bytes": 566,
+        "sha256": "b359529e02899a37cdc6994ba49fc7b3dd6ae6448e4f875819d9698d8eb3ecea"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "ApplySalvageChanges",
+        "bytes": 393,
+        "sha256": "f210c4543debcf2b22a73450e2dc5f77bcbfc8c8e1c3e20b7e376cec627e6db6"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "sha256": "e3eeb2cbfadc5f129a3f2eee711dcf3319126105da5a219ac0996f29ec8bf565"
+      }
+    ],
+    "total_script_bytes": 5805,
+    "live_headers_scripts_redecode_equal": true,
+    "salvage_parameter_layout": [
+      {
+        "name": "salvageFaction",
+        "offset": 28,
+        "element_size": 1
+      }
+    ],
+    "native_initialization_live_bytes": 740,
+    "worker_exact_rows": 8,
+    "worker_input_rows": 67,
+    "struct_selection_reference_profiles": 1024,
+    "new_simulator_scenarios": 272,
+    "baseline": {
+      "total": 885,
+      "passed": 883,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 885,
+      "passed": 885,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "no_game_writes": true,
+    "scope": "Eight-node salvage struct selection segment when creation stage is reached; MakeVeteran only forwarded in reference, simulator tests use false. Not full spawn/capacity/veteran/trigger/notification certification."
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "共享战场生成增加默认0的打捞参数；入口转发a[7]，建卡前归一字节并传打捞标识/阵营。"
+  },
+  "limitations": [
+    "本轮只接通SpawnCardOnBattlefield至共享生成的打捞参数。SpawnNextToCard等其他入口自己的参数、归属、编号和生命周期仍需逐一核对。",
+    "MakeVeteran在参考模型中仅验证被转发，模拟器仍沿用原有后置处理；不能据此认证老兵与打捞组合的完整顺序。",
+    "共享落场容量、完整通知、编号、重入及触发注册未闭合；overrideCardID在结构体模型中检查但本轮不新增完整ID覆盖建卡支持。",
+    "完整加密、引擎对象构造及全部单卡逻辑仍未认证；完整认证卡数保持0，不使用旧回放作权威，不改暂停中的版本迁移。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule450-salvage-creation-native-20261026.json",
+      "bytes": 4551048,
+      "sha256": "dada290a241b607b72e7acd1ef5f012623173fd4b28e796216367ae53fdd9929"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule449-salvage-creation-native-20261026.json",
+      "bytes": 4672067,
+      "sha256": "0289f4fd15dae4aebbf86cd5bb135e532b4bf12138fee13f2cb57e241c2ca8e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule447-salvage-creation-native-20261026.json",
+      "bytes": 4596685,
+      "sha256": "ec34eed3aab286d5bec248c5e6a301f212f52ebebcc9cc1e2ffb92bea4a752f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-initialization-cfg-bodies-20261026.json",
+      "bytes": 40215,
+      "sha256": "432aa13dcee7b440aacdafec9412ff9cf6ec5471d7eca8f901d6b3e87e540c9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule450-board-salvage.py",
+      "bytes": 2356,
+      "sha256": "2c9af8f3aaa54714b4d3f5b5f31b98b692c4b45e3bf7ff6a814cb8d8d3db59be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule450.py",
+      "bytes": 6822,
+      "sha256": "c93737df30676b091534a9fec226e026f092f5c6e11d913de7bcf51b3e60c016"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-final-verification-20261026.json",
+      "bytes": 1769,
+      "sha256": "b9fbdee38307a6e422fde0e5dc89f420ff2a87c42a4f6dc77367aa6612f38101"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-salvage-struct-reference-20261026.json",
+      "bytes": 149143,
+      "sha256": "5a2f905f61115f6a117236d856c448f49416c9ede723e337f0d8dc6018fd98b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-baseline-selftest.log",
+      "bytes": 78087,
+      "sha256": "be334f49889d32d1c32b89cb8fd6573de80784a68aa00d32cc74b0197addb855"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-final-selftest.log",
+      "bytes": 77855,
+      "sha256": "ca2cb5b83dca983f82f923ab09752956c51a7eff5e772bec67da6a05ddd932e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-worker\\task.txt",
+      "bytes": 395,
+      "sha256": "cb0259280add9c7ef9c58c9e562892bf3c3b4d1f1cb3c6f66ad857339c71a142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-worker\\input.json",
+      "bytes": 24309,
+      "sha256": "cab7bf9a7e3284d015eaa46e93a8a1ae77f73b8d76d7ebd56eb357d066ff35bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule450-worker\\result.json",
+      "bytes": 5106,
+      "sha256": "6525b55f6a866db9903d8a09d44eb19c5b4623425862b786d996a1c7fb47da0d"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-210013-rule450-board-salvage-nodes-c02bd10b\\job.json",
+      "bytes": 733,
+      "sha256": "d952ea5f8f85e97c81505e4e782d38b5069efce3438d1c501a5aaa4e612f0ee2"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-210013-rule450-board-salvage-nodes-c02bd10b\\answer.txt",
+      "bytes": 1451,
+      "sha256": "fddb381a23e47662bd06b4fae3509184d47fcb02bc1a886fc9555c40d4f76a54"
+    }
+  ]
+}

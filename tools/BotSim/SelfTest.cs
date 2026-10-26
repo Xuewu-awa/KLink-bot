@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("战场生成打捞：创建回调前收到打捞数值、标识和阵营", db => BattlefieldSpawnSalvage(db, false)),
+        new("战场生成打捞：创建回调改写在后续落场阶段保留", db => BattlefieldSpawnSalvage(db, true)),
         new("战场生成入口：生成者正ID和非None卡名门及失败输出0", BattlefieldSpawnWrapperGate),
         new("战场生成入口：来源金卡或强制金卡在创建回调前生效", BattlefieldSpawnWrapperGold),
         new("同形bug：SpawnCardOnBattlefield 的 Frontline 决定落点（半场 vs 前线）", SpawnFrontlineArg),
@@ -32492,6 +32494,57 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-450: isolate salvage forwarding from shared board placement.
+    // Callback mutations are controlled phase probes, not a PlainUnit effect.
+    private static string? BattlefieldSpawnSalvage(CardDatabase db, bool mutate)
+    {
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[PlainUnit] = new CardDefinition { Name = PlainUnit, Type = "infantry", Faction = "USA", FactionId = 5,
+            Attack = 7, Defense = 9, Kredits = 6, KreditsBuff = 4, OperationCost = 2, OperationCostBuff = -1 };
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        int cases = 0;
+        foreach (int input in Enumerable.Range(0, 13).Concat(new[] { 255, 256, 257, -1 }))
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool gold in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture); state.Turn = 7;
+            state.CreateWithId(PlainUnit, side.Opposite(), 20, CardLocation.Discard, 0);
+            int faction = unchecked((byte)input); bool salvaged = faction != 0;
+            int own = 0, modifiers = 0; string? fault = null;
+            bool Values(CardInstance card, bool changed) => card.IsSalvaged == (changed ? false : salvaged)
+                && card.FactionId == (changed ? 4 : salvaged ? faction : 5)
+                && card.PublicAttack == (changed ? 11 : salvaged ? 1 : 7)
+                && card.BaseAttack == (changed ? 13 : salvaged ? 1 : 7) && card.TemporaryAttack == 0
+                && card.MaxAttack == (changed ? 17 : salvaged ? 1 : 7)
+                && card.Defense == (changed ? 19 : salvaged ? 1 : 9)
+                && card.MaxDefense == (changed ? 23 : salvaged ? 1 : 9)
+                && card.PublicKreditCost == (salvaged ? 3 : 6) && card.BaseKreditCost == (salvaged ? 3 : 6)
+                && card.PublicKreditCostBuff == 4 && card.TemporaryKreditCost == 4
+                && card.BaseOperationCost == 2 && card.TemporaryOperationCost == -1 && card.IsGold == gold;
+            var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+            state.CardCreated = card => {
+                own++; if (!Values(card, false) || card.EnteredPlayOnTurn != 0) fault = "own callback did not see salvage initialization";
+                if (mutate) { card.IsSalvaged = false; card.SalvageFaction = "Japan"; card.FactionId = 4;
+                    card.PublicAttack = 11; card.Attack = 13; card.MaxAttack = 17; card.Defense = 19; card.MaxDefense = 23; }
+                priorOwn?.Invoke(card);
+            };
+            state.CardCreationModifiers = card => {
+                modifiers++; if (own != 1 || !Values(card, mutate) || card.EnteredPlayOnTurn != 0) fault ??= "modifier lost initialized/mutated salvage fields";
+                priorModifiers?.Invoke(card);
+            };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            var raw = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                new object?[] { (int)side, frontline, PlainUnit, 20, "", false, -1, input, false, gold, null }, ctx, out bool handled);
+            if (!handled || raw is not CardInstance made || own != 1 || modifiers != 1 || fault is not null || !Values(made, mutate)
+                || made.Owner != side || made.Location != (frontline ? CardLocation.BoardFrontline : side.HqOf()))
+                return $"salvage forwarding {input}/{side}/{frontline}/{gold}/mutate={mutate}: {fault}; hooks={own}/{modifiers}";
+            cases++;
+        }
+        return cases == 136 ? null : $"battlefield salvage profiles={cases}";
     }
 
     // RULE-449: observe only the wrapper's guard, output and gold forwarding.
