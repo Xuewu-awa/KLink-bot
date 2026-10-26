@@ -237,6 +237,9 @@ internal static class SelfTest
         new("Kurmark验证器：反制与typed真标记、已激活候选及取消选择", KurmarkValidatorReference),
         new("手牌选择身份：显式ID优先于receiver/Self，回调归属与无效ID早退", HandSelectionExplicitIdIdentity),
         new("手牌答复前段：额外选择与触发队列先于AfterWait及自动出牌", HandReplyExtraBeforeWait),
+        new("额外触发数值：原生类型转换、小数截断及int32边界", ExtraPlayTriggerNumberRead),
+        new("额外触发更新：手牌前段及生成后段消费一次并规范JSON类型", ExtraPlayTriggerNumberUpdate),
+        new("额外触发数字字符：全部UTF16代码单元与客户端CRT参考一致", ExtraPlayTriggerWideDigits),
         new("手牌答复生命周期：选择/答复重查ID、回调后缓存与等待载荷", HandReplySourceLifecycle),
         new("手牌目标0：真实Kurmark回调不得把空答复推断为自身ID", HandReplyZeroTargetPayload),
         new("手牌目标生命周期：正ID不重验类别，回调按ID读取当前对象", HandReplyTargetLifecycle),
@@ -21686,6 +21689,94 @@ internal static class SelfTest
             cases++;
         }
         return cases == 32 ? null : $"source lifecycle cases={cases}";
+    }
+
+
+    private static string? ExtraPlayTriggerWideDigits(CardDatabase db)
+    {
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "extra-play-trigger-number-reference-20261026.json")))!;
+        var reference = fixture["wide_digit_reference"]!["accepted"]!.AsArray()
+            .ToDictionary(row => row!["codepoint"]!.GetValue<int>(), row => row!);
+        var (_, state) = EmptyBoard(db);
+        var source = state.CreateWithId("card_unit_m36_destroyer", Side.Left, 60, CardLocation.Discard, 0);
+        for (int code = 0; code <= ushort.MaxValue; code++)
+        {
+            string raw = "1" + (char)code + "2";
+            int expected = reference.TryGetValue(code, out var row) ? (int)row["wrapped_value"]!.GetValue<double>()
+                : code is 0 or '.' ? 1 : 0;
+            source.CustomJson.Set("extra_play_triggers", raw, CardJsonType.String);
+            if (source.ExtraPlayTriggers != expected || source.CustomJson["extra_play_triggers"] != raw
+                || !source.CustomJson.HasType("extra_play_triggers", CardJsonType.String))
+                return $"wide digit U+{code:X4}: {source.ExtraPlayTriggers}/{expected}";
+        }
+        return null;
+    }
+
+    private static string? ExtraPlayTriggerNumberRead(CardDatabase db) => ExtraPlayTriggerNumberReference(db, update: false);
+    private static string? ExtraPlayTriggerNumberUpdate(CardDatabase db) => ExtraPlayTriggerNumberReference(db, update: true);
+
+    private static string? ExtraPlayTriggerNumberReference(CardDatabase db, bool update)
+    {
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "extra-play-trigger-number-reference-20261026.json")))!;
+        const string name = "card_unit_m36_destroyer", key = "extra_play_triggers";
+        int cases = 0;
+        foreach (var row in fixture["cases"]!.AsArray())
+        foreach (Side side in update ? new[] { Side.Left, Side.Right } : new[] { Side.Left })
+        foreach (bool generated in update ? new[] { false, true } : new[] { false })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+            source.Keywords.Clear();
+            string type = row!["type"]!.GetValue<string>();
+            string? raw = row["raw"]?.GetValue<string>();
+            CardJsonType tag = type switch {
+                "number" => CardJsonType.Number, "boolean" => CardJsonType.Boolean,
+                "array" => CardJsonType.IntArray, _ => CardJsonType.String
+            };
+            if (type != "missing") source.CustomJson.Set(key, raw!, tag);
+            int expected = row["count"]!.GetValue<int>();
+            bool trigger = row["trigger"]!.GetValue<bool>();
+            if (!update)
+            {
+                int observed = source.ExtraPlayTriggers;
+                if (observed != expected || source.CustomJson.ContainsKey(key) != (type != "missing")
+                    || type != "missing" && (source.CustomJson.TypeOf(key) != tag || source.CustomJson[key] != raw))
+                    return $"extra read {type}/{raw}: {observed}/{expected}, mutated={type != "missing" && source.CustomJson[key] != raw}";
+            }
+            else
+            {
+                state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0);
+                state.TriggerQueue.Add(state.CreateWithId(PlainUnit, side, 90, CardLocation.Discard, 0));
+                engine.PickHandTargetId = (_, _) => 80;
+                int effects = 0, queues = 0;
+                CardEffectScripts.Register(name, _ => effects++);
+                CardEffectScripts.Register(PlainUnit, _ => queues++);
+                try {
+                    if (generated) {
+                        if (engine.Api.DevelopChosenCard(source, PlainUnit) is null) return "missing generated output";
+                    } else {
+                        var output = engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { 60 },
+                            new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                        if (!handled || !Equals(output, 0) || engine.LastHandTarget is not { SelectingCardId: 60, ChosenCardId: 80 }) return "missing hand reply";
+                    }
+                }
+                finally { CardEffectScripts.Unregister(name); CardEffectScripts.Unregister(PlainUnit); }
+                string? expectedRaw = trigger ? (expected - 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : raw;
+                CardJsonType expectedTag = trigger ? CardJsonType.Number : tag;
+                int expectedAfter = trigger ? expected - 1 : expected;
+                if (effects != (trigger ? 1 : 0) || queues != (trigger ? 0 : 1)
+                    || state.TriggerQueue.Count != (trigger ? 1 : 0) || source.ExtraPlayTriggers != expectedAfter
+                    || source.CustomJson.ContainsKey(key) != (type != "missing")
+                    || type != "missing" && (source.CustomJson.TypeOf(key) != expectedTag || source.CustomJson[key] != expectedRaw)
+                    || engine.Api.Vm.FaultedPrograms != 0)
+                    return $"extra update {type}/{raw}/{side}/{generated}: effects={effects},queue={queues},after={source.ExtraPlayTriggers}/{expectedAfter}";
+            }
+            cases++;
+        }
+        int expectedCases = fixture["cases"]!.AsArray().Count * (update ? 4 : 1);
+        return cases == expectedCases ? null : $"extra cases {cases}/{expectedCases}";
     }
 
     private static string? HandReplyExtraBeforeWait(CardDatabase db)

@@ -1,0 +1,242 @@
+{
+  "rule_id": "RULE-434",
+  "date": "2026-10-26",
+  "status": "局部数值/更新契约已修复；客户端线程locale及合法PvP非整数写入可达性未认证",
+  "base_commit": "67bb1c62c151c3e1f9a73c8ab0ba6fb5346f3c47",
+  "scope": "BaseCardObject.UpdateExtraPlayTriggers → GetNumberField → FJsonValue TryGetNumber(+0x50)，以及手牌前段与生成选择后段的次数消费。单卡版本迁移继续暂停。",
+  "authoritative_build": {
+    "pid_at_capture": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_functions": [
+    {
+      "rva": "0x4a84620",
+      "bytes": 147,
+      "sha256": "67be8aecd5ee72670f6de2106e53610d415688444f8d2ce36dd6c82ca1e0e0b6"
+    },
+    {
+      "rva": "0x4b0ff90",
+      "bytes": 318,
+      "sha256": "58f81fc9c287f828c67ece40421c94e1cd787b8d03790ad1e319c917a94e2d1f"
+    },
+    {
+      "rva": "0x4517da0",
+      "bytes": 72,
+      "sha256": "703724b1d0be76e2299e176cdeb610767c691824dbc971875a51203935c6104a"
+    },
+    {
+      "rva": "0x13bec40",
+      "bytes": 385,
+      "sha256": "863a2d67e6515d33cabcfc2c0f813656317ae01cc3afd6bc6d6019b3195faa71"
+    },
+    {
+      "rva": "0x4517cb0",
+      "bytes": 179,
+      "sha256": "1dac3bd67121730558e3eb766f2575b7161816e74472f7e4d288d6cf73b38dff"
+    },
+    {
+      "rva": "0x11d96a0",
+      "bytes": 140,
+      "sha256": "7fb231766bf30f933ca60460249c0e497af3d80cdef9a09ff45544698ae20c9e"
+    },
+    {
+      "rva": "0x13cc860",
+      "bytes": 10,
+      "sha256": "f767b487d73fe1066315f614b528c6cdc3e851b3f35b882dc30d13191a3d70aa"
+    },
+    {
+      "rva": "0x13cc840",
+      "bytes": 23,
+      "sha256": "182a78c33816699f64749608d675353ccdf6f5f2f5e3ef53a33d47f2acd76b7a"
+    },
+    {
+      "rva": "0x11acd30",
+      "bytes": 3,
+      "sha256": "01cb47d078b4841b8408ec4fe278efa83115c6f6e101972987507d2b2b57dcf0"
+    },
+    {
+      "rva": "0x13cc460",
+      "bytes": 108,
+      "sha256": "b4594a97b1ea303f0f337769ad22a1cfa910f701bc751dee755857ad6edd7cac"
+    }
+  ],
+  "native_bytes": 1385,
+  "numeric_vtable_slot": "0x50/index10; derive from disk_hex/live_hex. Old bool_slot_target/string_slot_target metadata describes different slots and is not used for this rule.",
+  "findings": [
+    "HasField只检查有效对象及字段存在，无Number类型门。GetNumberField调用虚表+0x50：Number返回double；Boolean返回0/1；String经IsNumeric再调用wcstod；Array/Null/Object失败，返回初始化的0。",
+    "Update在0x4b1002c用CVTTSD2SI将double向零截断为int32，在0x4b10030检测原截断值是否大于0；正数写回Number(count-1)并返回true，非正数不写且保留原字段/类型。缺字段不取数。",
+    "旧ExtraPlayTriggers仅Number+int.TryParse；Number1.9、本机CRT数字字符串和Boolean true读取为0。已改为独立截断契约；没有改动JSON_GetInt独立舍入语义。",
+    "2147483647.9截断有效MaxValue；2147483648、巨大数及非有限double在离线MXCSR=0x1f80下得到int.MinValue，不消费。非有限Number属于内存形态探针，不声称合法JSON可达。",
+    "String IsNumeric允许起始符号与一个小数点，遇NUL停止，不要求至少一个数字，拒绝指数/空白。字符串1e2被拒绝，Number1e2得到100。",
+    "同文件同RVA的本机UCRT在65536代码单元中iswdigit接受313个字符，wcstod只解析其中18组十进制范围，其余接受但停止解析。原先所有数字可统一映射的假设被实测否定；实现分别固定两套范围，完整检查谓词后只解析有效前缀。"
+  ],
+  "validation": {
+    "offline_native": {
+      "executions": 55,
+      "boundary": "Actual Update, HasField wrappers/inner, GetNumberField, six type virtual slots and String IsNumeric executed offline. Controlled map lookup, allocation/construction/set/free/diagnostic helpers; CRT calls into same local ucrtbase file and exported symbol RVA, no calls into game. ASCII strings, two non-ASCII digit probes and embedded NUL under current local CRT locale only; nonfinite Number values are native-memory probes, not legal JSON reachability claims.",
+      "hooks": [
+        "FString构造",
+        "TMap查找",
+        "FString hash helper",
+        "JsonMakeInt/Set/free/diagnostic",
+        "PE导入确认且匹配本机文件与RVA的wcstod/iswdigit"
+      ]
+    },
+    "crt_wide_digits": {
+      "code_units": 65536,
+      "accepted": 313,
+      "parsed_decimal_runs": 18,
+      "sha256": "dedb7611e1abc1ff3852dcac3d4c93a048d729e25b061973b9969f22698f14ca",
+      "script": "D:\\Codex Workshop\\kards-install-review\\probe-rule434-wide-digits.py"
+    },
+    "deepseek": {
+      "job": "20261026-084951-rule434-number-ops-1763e4de",
+      "rows": 10,
+      "instructions": 37,
+      "verification": "结果与原始输入精确过滤后的完整JSON逐字段相等；只做机械提取，规则判断/修复/发布由主agent完成。"
+    },
+    "baseline": {
+      "passed": 860,
+      "failed": 3,
+      "total": 863,
+      "exit_code": 1,
+      "examples": [
+        "Number1.9读0而非1",
+        "同值手牌更新effects0、queue1，应执行一次效果",
+        "1+NUL+2读0而非1"
+      ]
+    },
+    "after_fix": {
+      "passed": 863,
+      "failed": 0,
+      "exit_code": 0,
+      "scalar_read_cases": 53,
+      "update_cases": 212,
+      "wide_string_read_cases": 65536
+    },
+    "test_fixtures": "53组支持形态含missing/Number/Boolean/String/Array；左右侧×手牌前段/生成后段；断言一次执行/队列分支、保留或规范类型及读操作不写入。宽字符测试对每个代码单元构造1+c+2；不是所有字符串组合穷尽。控制脚本M36仅计数，不认证该牌自身效果。",
+    "diagnostics": "初版更新测试错误期待接口输出80，实际既有契约固定输出0并通过LastHandTarget记录80；早期两份2失败日志不用于最终更新差异证据。修正测试并补全宽字符fixture后，最终基线860通过3失败，和修复后全套使用相同执行数据。最初宽字符探针的统一数字范围假设也已撤回，以最终独立复现表为准。",
+    "safety": "只读采集和本机离线执行；无游戏进程写入/注入/游戏函数调用/自动操作。未使用历史回放作权威。未改动受保护未跟踪文件。"
+  },
+  "limits": [
+    "本机UCRT与目标导入的文件SHA/RVA匹配，但未读取游戏线程实际locale及locale设置链；固定范围仅认证本机采样profile，不声称全部区域设置一致。",
+    "TMap布局/分配器/共享引用销毁通过受控helper替换；未认证真实对象失效、GC与并发修改。离线使用受控MXCSR；不把这个环境设置当游戏线程实测。",
+    "本地CardCustomJson没有顶层Null/Object；这两种native仅返回0的样本未加入C#可表示fixture。Number畸形字符串在原生FJsonValueNumber中不可表示，兼容解析不计入证明。",
+    "没有证明合法PvP卡牌会把extra_play_triggers写成非整数或非Number；这里修复状态读取契约，不宣称已在真实对局观察漏触发，也不新增单卡完整认证。",
+    "所有字符串组合、double全部位模式、跨运行库版本与区域设置未穷尽；全局等待列表、重入、多来源生命周期及TSet全局迭代顺序仍未关闭。"
+  ],
+  "fully_certified_cards": 0,
+  "next_work": [
+    "核查等待列表/来源字段跨选择重入时的保存与读取顺序",
+    "继续从现有权威Blueprint与原生实现核对选择回执和触发队列，不扩展到UI/战役/教程"
+  ],
+  "source_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule434-update-number-helpers-native-20261026.json",
+      "bytes": 40481,
+      "sha256": "0745ab440c68a980614ab1ef767a1477bf508690b026a223cb5cbb2cde8453aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule434-number-type-slots-native-20261026.json",
+      "bytes": 13828,
+      "sha256": "2f7ef3646f7929cee131a0e366ff5804884500e429d460f905472a5cf0da4b50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule434-update-number-predicates-native-20261026.json",
+      "bytes": 56276,
+      "sha256": "c4c18b739dc56f2056e53ddb14e939d255450b081ef4e18bdf5aea6538d6e5d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule434-number-imports-native-20261026.json",
+      "bytes": 1215,
+      "sha256": "ab491ef09017826f8eb40610dd2a1eb737476648a11c3ea825e412fbfc39c82c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule434-number-helpers.py",
+      "bytes": 2916,
+      "sha256": "880b992e98ed5725a35e0ed4645d3b6f3cdc204b101a78af3939c4b6a05697b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule434-number-slots.py",
+      "bytes": 3409,
+      "sha256": "ccf49ab1434168c1ed072b9a85b5975e710eb3955c8760620c0340e9565b3ee4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule434-number-predicates.py",
+      "bytes": 3009,
+      "sha256": "08fd1c4512298298b79fda86061ae2388de8364687de60b39f5f1452607714f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule434-imports.py",
+      "bytes": 2790,
+      "sha256": "6799717beabac10dec95a4270dbfd4cb2ff612fc4f9b66b7dae565105e15f6a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule434-update.py",
+      "bytes": 6800,
+      "sha256": "104cd5b0789cccb51c51546123f46d62013cea76af4a692a35990e2bde3743ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\probe-rule434-wide-digits.py",
+      "bytes": 2032,
+      "sha256": "265ed886ff5a1bae1ab6a572e2b489017f32674d6dec38e0364c1f7a37249f0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-native-emulation-20261026.json",
+      "bytes": 9830,
+      "sha256": "dc245f4febd661a4c05ecaa533ed6b0800afde6880a30209e357eb9f7c702d99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-crt-wide-digits-20261026.json",
+      "bytes": 49143,
+      "sha256": "af63f63ae74d4c684eda9c12b46f4d0360b942c4dcdab93f5258f2f5e3119267"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-corrected-baseline-selftest.log",
+      "bytes": 76260,
+      "sha256": "6edfd5e5cddaea57b2e8a94c839c42e39f5241e18b3590028a86dfb004f604d9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-corrected-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-fixed-selftest.log",
+      "bytes": 76112,
+      "sha256": "8adf1c2a5f18a55083d00c135aecabfd28fd83cfbf777cf80366f01d7f4f71a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-worker\\input.json",
+      "bytes": 55493,
+      "sha256": "f9ebdd062c114f77494175800cd6412983a9cd8167541e9fc344f055a3eb6c4e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-worker\\task.txt",
+      "bytes": 307,
+      "sha256": "e0ad0b5442ae739b2aa9a836a04f4e4fdcb9af5ec477e660b330eda61bb09114"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule434-worker\\result.json",
+      "bytes": 5750,
+      "sha256": "5e0eab0520c89613335b244cc6c443333e1104572e54e0a8060412a9336051ce"
+    }
+  ],
+  "repository_artifacts": [
+    "src/KLink.Bot/Engine/CardInstance.cs",
+    "tools/BotSim/SelfTest.cs",
+    "tools/BotSim/BotSim.csproj",
+    "tools/BotSim/Fixtures/extra-play-trigger-number-reference-20261026.json"
+  ]
+}

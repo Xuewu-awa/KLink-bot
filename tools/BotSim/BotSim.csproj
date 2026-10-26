@@ -30,6 +30,7 @@
     <None Update="Fixtures/countdown-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/direct-hand-output-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/kurmark-validator-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/extra-play-trigger-number-reference-20261026.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

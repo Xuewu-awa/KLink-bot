@@ -60,10 +60,54 @@ public sealed class CardInstance
     /// <summary>Native Set/UpdateExtraPlayTriggers: selections consume one repeat at a time.</summary>
     public int ExtraPlayTriggers
     {
-        get => CustomJson.HasType("extra_play_triggers", CardJsonType.Number)
-            && CustomJson.TryGetValue("extra_play_triggers", out var value)
-            && int.TryParse(value, out int count) ? count : 0;
+        get
+        {
+            const string key = "extra_play_triggers";
+            if (!CustomJson.TryGetValue(key, out var raw)) return 0;
+            if (CustomJson.HasType(key, CardJsonType.Boolean)) return raw == "1" ? 1 : 0;
+            if (!CustomJson.HasType(key, CardJsonType.Number) && !CustomJson.HasType(key, CardJsonType.String)) return 0;
+
+            ReadOnlySpan<char> value = raw.AsSpan();
+            if (CustomJson.HasType(key, CardJsonType.String))
+            {
+                // RULE-434: IsNumeric and wcstod use different digit sets.
+                // Pin the client's captured UCRT profile for deterministic play.
+                const string numericRuns = "\u0030\u0660\u06f0\u07c0\u0966\u09e6\u0a66\u0ae6\u0b66\u0be6\u0c66\u0ce6\u0d66\u0e50\u0ed0\u0f20\u1040\u1090\u17e0\u1810\u1946\u19d0\u1b50\u1bb0\u1c40\u1c50\ua620\ua8d0\ua900\uaa50\uff10";
+                const string parsedRuns = "\u0030\u0660\u06f0\u0966\u09e6\u0a66\u0ae6\u0b66\u0c66\u0ce6\u0d66\u0e50\u0ed0\u0f20\u1040\u17e0\u1810\uff10";
+                if (value.IsEmpty) return 0;
+                int nul = value.IndexOf('\0');
+                if (nul >= 0) value = value[..nul];
+                var normalized = value.ToArray();
+                int parseLength = value.Length;
+                int start = !value.IsEmpty && value[0] is '+' or '-' ? 1 : 0;
+                bool dot = false;
+                for (int i = start; i < value.Length; i++)
+                {
+                    char c = value[i];
+                    if (c == '.' && !dot) { dot = true; continue; }
+                    if (DigitInRuns(c, numericRuns) < 0 && c is not ('\u00b2' or '\u00b3' or '\u00b9')) return 0;
+                    int digit = DigitInRuns(c, parsedRuns);
+                    if (digit >= 0) normalized[i] = (char)('0' + digit);
+                    else parseLength = Math.Min(parseLength, i); // wcstod stops here; IsNumeric still checks the suffix.
+                }
+                value = normalized.AsSpan(0, parseLength);
+            }
+            if (!double.TryParse(value, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out double number)) return 0;
+            // CVTTSD2SI truncates; JSON_GetInt has a separate rounding contract.
+            // A double just above MaxValue can still truncate to a valid int32.
+            double truncated = Math.Truncate(number);
+            return !double.IsFinite(truncated) || truncated < int.MinValue || truncated > int.MaxValue
+                ? int.MinValue : (int)truncated;
+        }
         set => CustomJson.Set("extra_play_triggers", value.ToString(System.Globalization.CultureInfo.InvariantCulture), CardJsonType.Number);
+    }
+
+    private static int DigitInRuns(char c, string starts)
+    {
+        foreach (char start in starts)
+            if (c >= start && c - start < 10) return c - start;
+        return -1;
     }
 
     // ---- 数值（可被效果修改，所以与 Definition 分开）----
