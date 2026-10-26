@@ -5207,17 +5207,23 @@ public sealed partial class CardApi
     private object? DoSpawnOnBattlefield(EffectContext c, object? r, object?[] a)
     {
         var side = SideArg(r, a, 0, c.Controller);
-        string? cardName = a.Select(AsString).FirstOrDefault(s => s is not null && s.StartsWith("card_", StringComparison.Ordinal));
-        if (cardName is null)
+        int spawnerId = IntArg(a, 3);
+        string? cardName = StrArgOrNull(a, 2);
+        // RULE-449: wrapper i=0..114 guards both name and positive ID;
+        // i=438 explicitly writes output0 without entering SpawnCardToBoard.
+        if (spawnerId <= 0 || string.IsNullOrEmpty(cardName)
+            || string.Equals(cardName, "None", StringComparison.OrdinalIgnoreCase))
         {
-            return null;
+            return 0;
         }
 
+        // i=205/237 resolves the explicit source before the shared spawn call.
+        bool gold = (c.State.ById(spawnerId)?.IsGold ?? false) || TruthyArg(a, 9);
         var card = SpawnOnBattlefield(side, cardName,
             frontline: TruthyArg(a, 1),
             locationNumber: IntArg(a, 6, -1),
             newGiveBlitz: TruthyArg(a, 5),
-            forceGoldCard: TruthyArg(a, 9));
+            forceGoldCard: gold);
 
         if (TruthyArg(a, 8))
         {

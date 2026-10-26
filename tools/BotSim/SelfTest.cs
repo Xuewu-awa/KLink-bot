@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("战场生成入口：生成者正ID和非None卡名门及失败输出0", BattlefieldSpawnWrapperGate),
+        new("战场生成入口：来源金卡或强制金卡在创建回调前生效", BattlefieldSpawnWrapperGold),
         new("同形bug：SpawnCardOnBattlefield 的 Frontline 决定落点（半场 vs 前线）", SpawnFrontlineArg),
         new("同形bug：IsSameSideUnit 的形状是 `Context{卡}.IsSameSideUnit(side)`（旧写法按 `(卡,卡)` 读 ⇒ 19/19 恒 false）",
             SameSideUnitShape),
@@ -32492,6 +32494,70 @@ internal static class SelfTest
         return null;
     }
 
+    // RULE-449: observe only the wrapper's guard, output and gold forwarding.
+    // Shared board capacity/placement/callback semantics remain a separate audit.
+    private static string? BattlefieldSpawnWrapperGate(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -7, 0, 20, 999 })
+        foreach (string name in new[] { PlainUnit, "None" })
+        foreach (bool frontline in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, side.Opposite(), 20, CardLocation.Discard, 0);
+            int before = state.AllCards.Count, own = 0, modifiers = 0;
+            var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+            state.CardCreated = card => { own++; priorOwn?.Invoke(card); };
+            state.CardCreationModifiers = card => { modifiers++; priorModifiers?.Invoke(card); };
+            var ctx = new EffectContext { Engine = engine, State = state, Controller = side };
+            var raw = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                new object?[] { (int)side, frontline, name, sourceId, "", false, -1, 0, false, false, null }, ctx, out bool handled);
+            bool allowed = sourceId > 0 && name != "None";
+            if (!handled) return "wrapper not handled";
+            if (!allowed) {
+                if (!Equals(raw, 0) || state.AllCards.Count != before || own != 0 || modifiers != 0)
+                    return $"invalid wrapper input must return0 without creation {side}/{sourceId}/{name}/{frontline}: {raw}, hooks={own}/{modifiers}";
+            }
+            else if (raw is not CardInstance made || made.Owner != side || made.Location != (frontline ? CardLocation.BoardFrontline : side.HqOf())
+                || state.AllCards.Count != before + 1 || own != 1 || modifiers != 1)
+                return $"positive IDs including unresolved IDs must reach creation {side}/{sourceId}/{frontline}";
+            cases++;
+        }
+        return cases == 32 ? null : $"wrapper gate profiles={cases}";
+    }
+
+    private static string? BattlefieldSpawnWrapperGold(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool exists in new[] { false, true })
+        foreach (bool sourceGold in new[] { false, true })
+        foreach (bool forced in new[] { false, true })
+        foreach (bool mutate in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 20, CardLocation.Discard, 0, isGold: sourceGold);
+            var decoy = state.CreateWithId(PlainUnit, side, 21, CardLocation.Discard, 0, isGold: !sourceGold);
+            bool expected = (exists && sourceGold) || forced; int own = 0, modifiers = 0; string? fault = null;
+            var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+            state.CardCreated = card => {
+                own++; if (card.IsGold != expected) fault = "own callback saw wrong forwarded gold";
+                if (mutate) source.IsGold = !sourceGold;
+                priorOwn?.Invoke(card);
+            };
+            state.CardCreationModifiers = card => { modifiers++; if (own != 1 || card.IsGold != expected) fault ??= "modifier saw wrong gold"; priorModifiers?.Invoke(card); };
+            var ctx = new EffectContext { Engine = engine, State = state, Self = decoy, Controller = side };
+            var raw = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                new object?[] { (int)side, frontline, PlainUnit, exists ? 20 : 999, "", false, -1, 0, false, forced, null }, ctx, out bool handled);
+            if (!handled || raw is not CardInstance made || made.IsGold != expected || own != 1 || modifiers != 1 || fault is not null)
+                return $"gold must be captured from explicit ID OR force {side}/{frontline}/{exists}/{sourceGold}/{forced}/{mutate}: {fault}; hooks={own}/{modifiers}";
+            cases++;
+        }
+        return cases == 64 ? null : $"wrapper gold profiles={cases}";
+    }
+
     private static string? SpawnFrontlineArg(CardDatabase db)
     {
         const string card = "card_unit_arado_ar_196";
@@ -32504,10 +32570,11 @@ internal static class SelfTest
         //                        NewGiveBlitz, locationNumber, salvageFaction, NewMakeVeteran,
         //                        forceGoldCard, out spawnedCardID)
         static object?[] Args(int side, bool frontline, string name)
-            => new object?[] { side, frontline, name, 0, "", false, -1, 0, false, false, null };
+            => new object?[] { side, frontline, name, 20, "", false, -1, 0, false, false, null };
 
         {
             var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, Side.Left, 20, CardLocation.Discard, 0);
             var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
             var spawned = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
                 Args(1, false, card), ctx, out _) as CardInstance;
@@ -32525,6 +32592,7 @@ internal static class SelfTest
 
         {
             var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, Side.Left, 20, CardLocation.Discard, 0);
             var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
             var spawned = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
                 Args(1, true, card), ctx, out _) as CardInstance;
@@ -32542,6 +32610,7 @@ internal static class SelfTest
         // NewGiveBlitz（a[5]）也必须被读
         {
             var (engine, state) = EmptyBoard(db);
+            state.CreateWithId(PlainUnit, Side.Left, 20, CardLocation.Discard, 0);
             var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
             var args = Args(1, false, card);
             args[5] = true;

@@ -1,0 +1,181 @@
+{
+  "rule_id": "RULE-449",
+  "date": "2026-10-26",
+  "base_commit": "3c30b075411724696f39df318d9b1cf09828fd26",
+  "status": "已修复SpawnCardOnBattlefield生成者正ID门、失败输出及生成者金卡转发",
+  "scope": "566字节战场生成包装入口的正ID/非None卡名判定及gold参数；共享SpawnCardToBoard语义仅作为受控边界，不认证其完整行为。",
+  "findings": [
+    "当前SpawnCardOnBattlefield0比较spawnerID>0、34比较card_name!=None、76做AND、114失败跳438，438显式向spawnedCardID写0。旧模拟器未检查spawnerID；负数/零ID配有效卡名仍创建对象并发出创建回调。现按固定卡名参数槽a[2]和生成者a[3]判断，不再扫描其他字符串参数充当卡名。",
+    "205按显式spawnerID查对象，237将该对象isGoldCard与forceGoldCard做BooleanOR，297在进入共享生成函数前作为第六个参数传入。旧模拟器只传强制金卡参数，漏掉来源金卡。现先捕获该OR结果，再进入SpawnOnBattlefield，在自身创建回调及修正前即具有正确金卡标记。",
+    "当前GetCardFromID的76字节包装转交FetchCardFromCardID。后者对非正ID及正ID映射未命中均返回NoObject；正ID未命中分支为240。原入口不把对象存在性加入AND，故不额外禁止正但未解析ID；空上下文布尔读按默认false处理，仍可由forceGoldCard强制金卡。不回退到ctx.Self或按来源归属筛选。",
+    "新增32组门/输出检查覆盖双方、-7/0/20/999、有效卡名/None及前线/支援线；拒绝输入必须输出整数0、对象数量不变且两个创建回调均不执行。正但未解析ID仍允许进入共享创建。",
+    "新增64组金卡转发检查覆盖双方、前线/支援线、来源存在/缺失、来源金卡、强制金卡、回调内改变来源标记；ctx.Self为金卡状态相反的干扰对象，来源置于对方归属，确保只读显式ID。在自身回调、修正及返回对象处检查已捕获的gold，不随创建回调中来源变化而重取。受控回调不声称真实卡拥有该效果。",
+    "既有SpawnFrontlineArg的3个成功场景原先用spawnerID0，违反当前权威入口门。现仅改为显式20并预建来源，保留前线/支援线/Blitz原断言，未放宽成功预期。新增两项后，相同883项旧实现881通过、2失败，修复后883/883。",
+    "DeepSeek从22条完整原始节点机械提取8条，主agent逐元素验证全等。主agent执行完整包装控制流的256组空campaign输入，记录共享SpawnCardToBoard调用而不执行其内部；核对拒绝时不调用、输出0及允许时参数gold和目标区域。当前4段相关脚本共972字节复读重解码一致。"
+  ],
+  "verification": {
+    "rule": "RULE-449",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "SpawnCardOnBattlefield",
+        "bytes": 566,
+        "sha256": "b359529e02899a37cdc6994ba49fc7b3dd6ae6448e4f875819d9698d8eb3ecea"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "GetCardFromID",
+        "bytes": 76,
+        "sha256": "b8a81bdc345dc835903745f88c0a962394e49773677b03dfcfd020304085ea18"
+      },
+      {
+        "owner": "BP_Logic_C",
+        "name": "GetCardFromID",
+        "bytes": 76,
+        "sha256": "fc0f34312e97ae183c90adee43398603f635109a1c5db67d894060e5bf1b5044"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "FetchCardFromCardID",
+        "bytes": 254,
+        "sha256": "05ec55de90303d0c2e9841d53cf92788c69b26b72f8ecf44a39872cfcb056b72"
+      }
+    ],
+    "total_script_bytes": 972,
+    "live_headers_scripts_properties_redecode_equal": true,
+    "property_offsets": {
+      "isGoldCard": "0x30c"
+    },
+    "worker_exact_rows": 8,
+    "worker_input_rows": 22,
+    "empty_campaign_wrapper_reference_profiles": 256,
+    "new_simulator_scenarios": 96,
+    "baseline": {
+      "total": 883,
+      "passed": 881,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 883,
+      "passed": 883,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "no_game_writes": true,
+    "scope": "Full 566-byte wrapper control flow with empty campaign and recorded shared spawn boundary; source-map helper and support-line location behavior controlled. Not full shared board creation/capacity/salvage/veteran/notification certification."
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "固定卡名参数、正ID/None门、拒绝返回0；显式来源gold OR forceGold在共享创建前捕获。",
+    "new_scenarios": 96,
+    "updated_existing_scenarios": 3
+  },
+  "limitations": [
+    "战场入口仍未完整转发/认证salvageFaction；共享SpawnCardToBoard容量、落点编号、创建通知、老兵处理及重入生命周期仍待审计，不能称战场生成已1比1还原。",
+    "本轮另采集ConvertCard、SpawnNextToCard、SpawnCardInFrontline作线索，未据这些完整函数作全面语义结论。ConvertCard选择打捞模板元数据而非当前faction的节点已观察，后续继续核对。",
+    "不穷尽任意未知卡名、FName内部表示、UI、战役分支或函数异常路径；参考模型限定空campaign且外部共享函数受控。",
+    "未修改单卡版本资料，未使用旧回放作为权威。全部卡牌认证数仍0，整体审计未完成。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule449-salvage-creation-native-20261026.json",
+      "bytes": 4672067,
+      "sha256": "0289f4fd15dae4aebbf86cd5bb135e532b4bf12138fee13f2cb57e241c2ca8e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule449-source-lookup-native-20261026.json",
+      "bytes": 4495636,
+      "sha256": "064d7fd7c2eac32c5b29970bd1bd9e392a5bacc7149ca09a22c9f78f68d4ce78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule449-map-lookup-native-20261026.json",
+      "bytes": 4497601,
+      "sha256": "5fb9277c8f32b1fe26d2d93098738c6aa671bb3797aa76208fe67ee66f4a0e5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule449-conversion-salvage.py",
+      "bytes": 2417,
+      "sha256": "65bb883891d5c68c23d641980e2c5e2ee3c3112f0cd3dfe616c01d24a17d6757"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule449-source-lookup.py",
+      "bytes": 2347,
+      "sha256": "221ec19a6bca7eeb1cfedc32af1aa6c63d6b1480756e4630467fe9747e0d358d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule449-map-lookup.py",
+      "bytes": 2347,
+      "sha256": "d3722c593e73565457895ffbcb09387db71c495b31aa7bad2d31b0511da08d13"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule449.py",
+      "bytes": 7026,
+      "sha256": "0ec3632e387acfe8efb1fdb21007ccc78cea22a9a3e19a5155530dc7695cc030"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-final-verification-20261026.json",
+      "bytes": 1678,
+      "sha256": "9dcae163fcbd0b73d42c07f97a13e807bb7f7cd0259576ddde6802e14f149008"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-wrapper-reference-20261026.json",
+      "bytes": 97281,
+      "sha256": "79dcb9eba94edcd0ebf8fc7d959b66a48c040e6af7289ea2faf8b308022d55f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-baseline-selftest.log",
+      "bytes": 77991,
+      "sha256": "8c40586daed1668272e59c4676b28da26e47527547933f22582086915b316f33"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-final-selftest.log",
+      "bytes": 77701,
+      "sha256": "38538815f0d601ba21d083184464fd60e774249773d671bb809e74c762fe1783"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-worker\\task.txt",
+      "bytes": 435,
+      "sha256": "a55a9a440b6c4b1039362f72419dc533258a9d31f749f80cc137bde9860cf7c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-worker\\input.json",
+      "bytes": 7070,
+      "sha256": "9b36a51d73ad5fe9e4e102915c3fac252d8d81a7bab1257eefe3ac4ad08eb771"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule449-worker\\result.json",
+      "bytes": 4285,
+      "sha256": "9f5dee8f6e598926b1add2865a0f3fe8885ff80d2f887b50bab9b9a85ed63132"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-195512-rule449-spawn-wrapper-nodes-abb98dea\\job.json",
+      "bytes": 732,
+      "sha256": "7444930b63643e57cfcfb44fe19dfc1763c940f64de00d7112f98a8a1dbc2e4f"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-195512-rule449-spawn-wrapper-nodes-abb98dea\\answer.txt",
+      "bytes": 1163,
+      "sha256": "81a136efbf2afc6a594c11a3f94f730305f1b030c5a8bcbb56b32643766dad6f"
+    }
+  ]
+}
