@@ -4884,6 +4884,11 @@ public sealed partial class CardApi
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
+        // RULE-460: byte modes9..255 match neither ledger nor numeric cases.
+        // Guards above still reject; accepted calls preserve the output slot.
+        // Modes6..8 have ledger semantics and must not be folded into this gate.
+        if (changeType is >= 9 and <= byte.MaxValue) return null;
+
         // RULE-458: ordinary zero requests leave both the ledger and numeric
         // state untouched, without pruning sources, recalculating or notifying.
         // Other modes still process zero (notably absolute set and removal).

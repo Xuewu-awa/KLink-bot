@@ -1,0 +1,161 @@
+{
+  "rule_id": "RULE-460",
+  "date": "2026-10-27",
+  "base_commit": "057f7ff75394352535670791130f0d76b7bdf40d",
+  "status": "已修复装甲未使用字节模式9到255的误写及通知",
+  "scope": "仅有效入口下byte模式9..255无变化语义，保留RULE-459拒绝门；6..8有账本语义，明确不纳入此次跳过。",
+  "findings": [
+    "复读完整ChangeHeavyArmor1846字节及ChangeBuffsFromCards6267字节，头、脚本及独立重解码全部一致，模块指纹与前轮相同。",
+    "外层737..1007仅分派0..5；内层186..591仅分派0..8。对于9..255，内层在591弹栈直接到6264返回，不创建/删除/写回来源记录或同步名单；外层在1007弹栈到408，valueChanged保持false，在通知及能力广播前返回。",
+    "有效入口的qqq没有赋值，应保留调用者输入；不因非零amount或skip而改变。无效目标/非正来源/未揭示Covert仍先走RULE-459写false拒绝门。",
+    "旧DoChangeHeavyArmor默认分支把所有这些模式视为普通增益，覆盖永久装甲账本并重算、发送动作。现仅在9<=changeType<=255提前返回null，保留其他模式及入口验证。",
+    "新直接调用及真实KismetVm各23712组，共47424组，穷举247个模式字节、双方、存在/缺失正来源、正负零请求、skip、输入qqq布尔及有/无当前来源记录；同时布置临时、永久、其他种类零值键、重复反向名单和过期派生关键字，核对完整快照、账本值与引用身份、名单、回调及动作。",
+    "相同902项测试旧代码900通过2失败，修复后902/902。完整外层及内层AST2964组确认基础/临时值、完整账本和输入qqq保持，只经过账本调用而不进入通知。外部查找及有效性受控，未执行真实游戏函数。",
+    "DeepSeek机械抽取外层6对、内层9对比较/跳转，主agent独立按相邻AST节点及变量一致性逐项全等核验；worker仅机械提取，不作为语义权威。",
+    "模式6/7/8仍有customAdd/customRemove/combatModify的账本操作；虽外层没有相应数值分支，也不能与9..255合并为全状态无变化。其实现继续开放。"
+  ],
+  "verification": {
+    "rule": "RULE-460",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    ],
+    "worker_exact_dispatch_pairs": {
+      "writer": 6,
+      "ledger": 9
+    },
+    "full_writer_and_ledger_AST_cases": 2964,
+    "case_digest_sha256": "378b138fc7e4a92baa3e73271b76e758e88145ec89a6ec36a3337f36ac19c8f9",
+    "scope": "Modes9..255 only, each full outer writer calls the complete inner ledger AST. Controlled source lookup, enum/containers and validity predicates; outer local out slot initialized0. No numeric or notification branch reached. Modes6..8 are excluded and remain pending.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 23712,
+    "total_profiles": 47424,
+    "baseline": {
+      "total": 902,
+      "passed": 900,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 902,
+      "passed": 902,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "入口守卫之后新增byte模式9..255的null返回；未改6..8或其他模式。"
+  },
+  "unresolved": [
+    "6/7/8账本语义及输出需单独实现。",
+    "0..5的非零数值、独立基础/临时字段、typed SetValue、模式4临时来源仍未完整迁移。",
+    "非零通知及能力回调链、光环移除、压制恢复、创建/重置/复制/VM/快照迁移和老兵装甲阶段仍未完成。",
+    "整数小于0或大于255超出本轮byte ABI范围，未做截断规则假设。",
+    "完整UObject有效性和Covert原始能力写入桥接仍有前轮边界。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "仅客户端本体、SDK、只读内存及权威函数快照；无旧回放或names.txt权威。",
+    "所有模型离线运行；无游戏进程写入、注入或真实函数调用。",
+    "单卡版本迁移仍暂停。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule460.py",
+      "bytes": 4154,
+      "sha256": "db3cc5a9b4f245071da711d0c70e9667d848a597aebe657678dc601747dbb60a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-unused-mode-verification-20261027.json",
+      "bytes": 1066,
+      "sha256": "59d1a42c2872a0c5d14cf96748fe29e3cbc0ec904e37aa54ae68742b67761406"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-worker\\input.json",
+      "bytes": 116679,
+      "sha256": "66eed691f002be0758db84a59792afe4759d6122f4f849e2a53e7d9801d052a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-worker\\output.json",
+      "bytes": 1705,
+      "sha256": "df7ef093c53ab34505fc001e6aa2ab447d78bee783f2abafdfcc96dfcf621059"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-worker\\task.txt",
+      "bytes": 608,
+      "sha256": "fd7ec2abb737bcf031ae17a451f6a2ce1037394e3377693c1b68a720d2a3844e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-baseline-selftest.log",
+      "bytes": 79273,
+      "sha256": "ff9c6235194581fefde1878941635c16f31d6cd4b635853a361de86b33b98f60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-final-selftest.log",
+      "bytes": 79119,
+      "sha256": "ed7977d5b7773092dc1b59dfb89c3fda4c507f0eb6ee2d5fa30e83ee4b63bc54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule460-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

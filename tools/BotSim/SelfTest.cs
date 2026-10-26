@@ -854,6 +854,8 @@ internal static class SelfTest
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
         new("重甲普通零请求：保留数值、账本、名单且不通知", db => HeavyArmorOrdinaryZeroNoOp(db, false)),
         new("装甲入口：显式目标与正来源、隐蔽拒绝及直接输出", db => HeavyArmorEntryGuards(db, false)),
+        new("装甲未使用字节模式：9到255直接调用保持全状态", db => HeavyArmorUnusedModes(db, false)),
+        new("装甲未使用字节模式：9到255真实VM保留输入出参", db => HeavyArmorUnusedModes(db, true)),
         new("装甲入口：真实VM拒绝输出false，合法零请求保留输入", db => HeavyArmorEntryGuards(db, true)),
         new("重甲普通零请求：真实VM保留输入出参和完整状态", db => HeavyArmorOrdinaryZeroNoOp(db, true)),
         new("重甲总量：显式接收者和只读VM出参", db => HeavyArmorReadBounds(db, true)),
@@ -32510,6 +32512,59 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-460: the ledger dispatch ends at8, and the numeric dispatch at5.
+    private static string? HeavyArmorUnusedModes(CardDatabase db, bool vm)
+    {
+        int cases = 0;
+        foreach (int mode in Enumerable.Range(9, 247))
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int amount in new[] { -2, 0, 3 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool incoming in new[] { false, true })
+        foreach (bool recorded in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_kv_ii", side, 60, side.HandOf(), 0);
+            if (recorded) {
+                target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, HeavyArmor = 2, AttackSetValue = 0 };
+                target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, HeavyArmor = -1 };
+            }
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, DefenseSetValue = 0 };
+            target.Keywords.Remove(Keyword.HeavyArmor);
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            var original = target.BuffsBySource.ToDictionary(x => x.Key, x => x.Value);
+            string buffs = System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray());
+            string before = state.SnapshotJson();
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Target = source, Controller = side };
+            if (!vm) {
+                object? output = engine.Api.InvokeByName("ChangeHeavyArmor", source,
+                    new object?[] { target, sourceId, amount, mode, skip, incoming }, ctx, out bool handled);
+                if (!handled || output is not null) return "unused armor mode must preserve caller output";
+            }
+            else {
+                var args = new[] { "target", "source", "amount", "mode", "skip", "qqq" }
+                    .Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "ChangeHeavyArmor", args, new[] { 5 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                object? output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> {
+                    ["target"] = target, ["source"] = sourceId, ["amount"] = amount, ["mode"] = mode, ["skip"] = skip, ["qqq"] = incoming }, "qqq").GetValueOrDefault("qqq");
+                if (!Equals(output, incoming)) return "unused armor mode must retain incoming VM out slot";
+            }
+            if (state.SnapshotJson() != before || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any()
+                || System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray()) != buffs
+                || target.BuffsBySource.Count != original.Count
+                || original.Any(x => !target.BuffsBySource.TryGetValue(x.Key, out var current) || !ReferenceEquals(current, x.Value))
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 888, 60, 60 }))
+                return $"unused armor mode mutated state {mode}/{side}/{sourceId}/{amount}/{skip}/{incoming}/{recorded}/vm={vm}";
+            cases++;
+        }
+        return cases == 23712 ? null : $"unused armor mode profiles={cases}";
     }
 
     // RULE-459: guards precede every mode and the ordinary zero early exit.
