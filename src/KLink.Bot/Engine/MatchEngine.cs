@@ -21,7 +21,8 @@ public sealed class MatchEngine
     // A selection response occurs after the requesting Blueprint has returned.
     // Keep this order in headless play while resolving the choice synchronously.
     private Queue<Action>? _pendingSelections;
-    private readonly Dictionary<int, Action<CardInstance?>> _waitPlayContinuations = new();
+    // Only the inline empty/singleton adapter is keyed by source ID.
+    private readonly Dictionary<int, Action<CardInstance?>> _inlineWaitPlayContinuations = new();
 
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
         bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
@@ -45,8 +46,17 @@ public sealed class MatchEngine
                 else
                     Api.ResolveTriggerQueue();
             }
-            if (_waitPlayContinuations.Remove(selecting.CardId, out var continuation))
-                continuation(responseCard); // Complete the waiting play before this reply's autoplay phase.
+            if (defer)
+            {
+                // RULE-436: ordinary reply gates use the single current flag,
+                // independent of the ID that originally began waiting. Discard
+                // obsolete inline adapters before callbacks can enqueue replies.
+                _inlineWaitPlayContinuations.Clear();
+                if (State.ShouldExecuteWaitPlayFromHand)
+                    Api.ExecuteAfterWaitCardPlayFromHand(responseCard);
+            }
+            else if (_inlineWaitPlayContinuations.Remove(selecting.CardId, out var continuation))
+                continuation(responseCard); // Inline empty/singleton compatibility path, audited separately.
             // Reply actions consume after their own callback / AfterWait, but
             // CardToDrawSelected i=1677 precedes HandleExtraPlayTriggers i=1737.
             if (consumeAutoPlay) ExecuteAutoPlayCards();
@@ -1878,7 +1888,7 @@ public sealed class MatchEngine
         bool ownEffectReturned = false, inlineReply = false;
         CardInstance? inlineReplyCard = null;
         if (waitsForTarget)
-            _waitPlayContinuations[card.CardId] = responseCard => {
+            _inlineWaitPlayContinuations[card.CardId] = responseCard => {
                 if (!ownEffectReturned) { inlineReply = true; inlineReplyCard = responseCard; }
                 else ContinuePlay(waited: true, responseCard);
             };
@@ -1892,16 +1902,16 @@ public sealed class MatchEngine
         State.ShouldExecuteWaitPlayFromHand = waitsForTarget && effectExecuted;
         if (inlineReply && effectExecuted)
         {
-            _waitPlayContinuations.Remove(card.CardId);
+            _inlineWaitPlayContinuations.Remove(card.CardId);
             ContinuePlay(waited: true, inlineReplyCard);
         }
         else if (!waitsForTarget || !effectExecuted)
         {
-            _waitPlayContinuations.Remove(card.CardId);
+            _inlineWaitPlayContinuations.Remove(card.CardId);
             ContinuePlay(waited: false, card);
         }
-        // The inline singleton/empty-selection paths already consumed the
-        // continuation. Multiple-choice paths retain it for the queued reply.
+        // Inline singleton/empty-selection paths may consume their adapter.
+        // Ordinary queued replies instead read the current global wait flag.
 
         CheckDeaths();
         return true;

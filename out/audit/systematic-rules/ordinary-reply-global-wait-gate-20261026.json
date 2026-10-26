@@ -1,0 +1,187 @@
+{
+  "rule_id": "RULE-436",
+  "date": "2026-10-26",
+  "status": "普通答复的全局等待门已局部修复；内联空/单候选及嵌套请求调度未穷尽",
+  "base_commit": "82635359d2254256495ddbca5a0db072714f500f",
+  "scope": "BP_PlayerMoves普通手牌/生成答复的等待门及114字节HandleExtraPlayTriggersAfterSelectHandCard；不扩大到完整选择协议。",
+  "authority": {
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "GetExecuteWaitPlayFromHand",
+        "script_size": 22,
+        "sha256": "3c94c6bf3e435cada22462ef8ab0fcfebda27cd32c0f40376cd600be3ac4555f"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "HandleExtraPlayTriggersAfterSelectHandCard",
+        "script_size": 114,
+        "sha256": "d272f703e37cafa95d31e29d9eab8fb6f66e02f2a29587c581a7ea5909434374"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "AfterWaitCardPlayFromHand",
+        "script_size": 2029,
+        "sha256": "d545414e1a31c097b7670057eb61c1ed505d0da7fb840bd567eb76202cb5eb50"
+      },
+      {
+        "owner": "BP_PlayerMoves_C",
+        "name": "ExecuteUbergraph_BP_PlayerMoves",
+        "script_size": 13890,
+        "sha256": "cbe61ba857d7770c70af3eb11593ba6c1b9688288ede4c323e4833664bc59ff7"
+      }
+    ],
+    "syntax_redecoded_bytes": 16055
+  },
+  "findings": [
+    "普通手牌答复i8977先执行额外触发helper，i9135读取GameState.GetExecuteWaitPlayFromHand，i9180依据单一布尔值跳转；true才在i9240调用AfterWait(tmpSourceCard_fromlogic,tmpTargetCardID)，随后i9294执行autoplay。这里没有原等待卡ID与答复来源ID相等的条件。",
+    "普通生成答复i10695读取同一标志，i10740判断，i10800调用同样的AfterWait参数，i10854执行autoplay，i10936才执行额外触发helper。因此手牌helper可影响本次等待门，生成helper影响后续等待标志。",
+    "GetExecuteWaitPlayFromHand仅拷贝独立bool；AfterWait开头将其设false。旧ResolveHandSelection却仅按selecting.CardId查字典：无该键会漏掉global true，有旧键会忽略global false。",
+    "现普通答复在回调和手牌前段helper之后读取当前全局标志，true直接调用AfterWait，使用本次答复缓存对象，不再要求与原等待ID匹配；清除过期的内联适配记录，避免后续跨来源误用。",
+    "defer=false的空/单候选内联适配仍保留单独记录和原有顺序；字段改名_inlineWaitPlayContinuations表明其用途，不声称该兼容路径与客户端所有内联标志读取完全等价。"
+  ],
+  "validation": {
+    "runtime": "四份UFunction当前只读采集，PID24220、模块及EXE SHA256守卫；采集末尾复读所有保留数据。结束前再次复读4个函数头/脚本和等待标志属性头；字段Offset_Internal+0x44仍指向GameState+0x602。",
+    "reference": {
+      "gate_scenarios": 36,
+      "reply_steps": 72,
+      "hand_ast_range": "8877..9403(stop excluded)",
+      "generated_ast_range": "10695..11077(stop excluded)",
+      "extra_helper": "完整114字节AST，Update结果受控false，所以走ResolveTriggerQueue；本轮不重认证数值转换。",
+      "parameters": "手牌/生成 × 初始bool2 × 回调修改模式3(不改/false/true) × helper修改模式3；每组连续两次答复，保留前次flag供下一次。",
+      "boundary": "Only ordinary local hand-reply tail8877..9403 and generated-reply gate/tail10695..11077, with full114-byte extra helper. Draw callback injected before gate; action receipts/autoplay and AfterWait bodies controlled. No inline singleton/empty-pool semantics, global packet scheduling or legal PvP interleaving proof."
+    },
+    "headless": {
+      "scenarios": 288,
+      "reply_steps": 576,
+      "formula": "36参考场景 × 已有等待出牌记录/无记录2 × 原来源/另一来源2 × 左右侧2；各两次答复。",
+      "assertions": "逐步比较callback/helper/两个旁观事件完整轨迹、当前flag、名单清理、触发队列耗尽、事件参数指向本次来源且不误指向另一来源。脉冲用实际ForceCardChangeLocation通知，直接重装填位置仅为受控探针，不使用无通知抽牌作信号。",
+      "setup": "有记录时真实调用PlayCard创建等待记录但自有效果受控不发送选择；外部普通答复选择ID0或调用DevelopChosenCard，生成/预报标签关闭以隔离门控。并未通过真实网络产生重复包。"
+    },
+    "deepseek": {
+      "job": "20261026-093111-rule436-global-wait-gates-d5873f82",
+      "exact_rows": 8,
+      "statement_indices": [
+        8977,
+        9135,
+        9240,
+        9294,
+        10695,
+        10800,
+        10854,
+        10936
+      ],
+      "verification": "与原始顶层AST按四个精确函数名过滤所得JSON逐字段相同；未将worker自述当规则权威。"
+    },
+    "baseline": {
+      "passed": 865,
+      "failed": 2,
+      "total": 867,
+      "exit_code": 1,
+      "examples": [
+        "无原ID记录/flag初false/helper设true：只有callback,helper，缺played,enter且flag停true",
+        "有旧等待记录/flag已false：实际多执行played,enter"
+      ]
+    },
+    "fixed": {
+      "passed": 867,
+      "failed": 0,
+      "total": 867,
+      "exit_code": 0
+    },
+    "safety": "无游戏进程写入、注入、游戏函数调用、自动对局操作；参考执行完全离线。未将历史回放作为证据。保留受保护未跟踪文件。"
+  },
+  "limits": [
+    "参考模型只执行两个普通答复尾段与完整额外helper；生成callback在门前受控注入，AfterWait作为受控处理清flag并通知一位接收者，完整AfterWait循环另见RULE-435。本轮没有执行13890字节完整PlayerMoves语义。",
+    "IsActionProcess受控false，动作回执、autoplay和DoNextInQueue仅保留调用位置，未证明它们内部不会改变全局状态；全局选择挂起/队列调度仍有独立缺口。",
+    "C#新增场景对手牌与生成适配验证，不将其等同完整牌库抽取、多候选筛选、远端对手执行路径或空/单候选内联路径认证。",
+    "重复答复、不同来源、回调/helper改bool是受控无头状态场景，未证明合法PvP或网络会实际产生这些交错。未模拟完整双重PlayCard嵌套栈、活动内联帧及真正重入，清理内联记录是普通答复适配实现，不是发现了客户端有同样字典。",
+    "来源在创建/回调期间替换、无效对象/GC/NullContext、TSet全局顺序及单卡版本迁移仍未关闭。原始Source ID/目标ID与持久帧覆盖需要继续审计。"
+  ],
+  "fully_certified_cards": 0,
+  "next_work": [
+    "审计selectCardToDraw空池/单候选分支的实时全局等待门与外层CardPlayedFromHand设标志时机",
+    "继续核对真正嵌套出牌/选择请求中等待名单覆盖和持久来源字段的读写"
+  ],
+  "source_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule436-reply-gates-native-20261026.json",
+      "bytes": 4913860,
+      "sha256": "0b94dbea5bc91b1a603925ad012cc19973c03f3282d9cfb5ad98dcfe9a3caf76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule436-revalidated-native-20261026.json",
+      "bytes": 584,
+      "sha256": "49066a0744da21771154be17bfe96852f56dfbfe9f4c6be7d557a87c8d96f71d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule436-gates.py",
+      "bytes": 2620,
+      "sha256": "773f5a617d14fbb6ffbf3617e34481fb57835e41e9a88e84199842dee5603de4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\revalidate-rule436.py",
+      "bytes": 1427,
+      "sha256": "0c136abd61be84858a33cf59980e038590fca62575121332c29a3e9d0df87f96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule436.py",
+      "bytes": 6140,
+      "sha256": "72baad0f91d23f4e55ab89da7222e8cd8ee1cdfd9ddc73d167d0a60032e8598b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-reference-20261026.json",
+      "bytes": 77427,
+      "sha256": "14b007600feed609dbd57b81c90f78fbc107816ef6de83f53159a4f30a2223b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-worker\\input.json",
+      "bytes": 11362,
+      "sha256": "8962a4bb4204560216bc5b66fcc52bf25a1ff96317ce7c8bd7951569ab0ff58f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-worker\\task.txt",
+      "bytes": 609,
+      "sha256": "8ae9835f31407494f144aee63983db6069ff2dd2a76cb436a2847b34f2d0a7bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-worker\\result.json",
+      "bytes": 4382,
+      "sha256": "ec3bcc93b7d731741279af839439430acd1ace50bfb657efd09c0e1aa1003f1f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-baseline-selftest.log",
+      "bytes": 76768,
+      "sha256": "4424df7a6183a3b9da0c03222339d76d7ffb79bba59f1babc682d890d998af61"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-fixed-selftest.log",
+      "bytes": 76426,
+      "sha256": "bc7ee1749ecbdce894eec10bf281de4660cf66e3bef80634e3981d0fff750114"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule436-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ],
+  "repository_artifacts": [
+    "src/KLink.Bot/Engine/MatchEngine.cs",
+    "tools/BotSim/SelfTest.cs",
+    "tools/BotSim/BotSim.csproj",
+    "tools/BotSim/Fixtures/global-wait-reply-reference-20261026.json"
+  ]
+}

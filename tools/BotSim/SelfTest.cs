@@ -247,6 +247,8 @@ internal static class SelfTest
         new("生成/预报完成：接收者快照、逐次查目标与实时自身排除", GeneratedCompletionLifetime),
         new("等待状态：原始ID有序去重、复制读取及布尔标志独立", WaitStateStorageContract),
         new("等待后通知：实时ID查找、缓存双事件及循环重读名单", AfterWaitIdLifetime),
+        new("普通选择等待门：无原ID续行记录时仍按全局标志处理", GlobalWaitReplyWithoutOwner),
+        new("普通选择等待门：旧续行不覆盖当前标志与答复来源", GlobalWaitReplyWithOwner),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21413,6 +21415,104 @@ internal static class SelfTest
         return null;
     }
 
+
+
+    private static string? GlobalWaitReplyWithoutOwner(CardDatabase db) => GlobalWaitReplyReference(db, registeredWait: false);
+    private static string? GlobalWaitReplyWithOwner(CardDatabase db) => GlobalWaitReplyReference(db, registeredWait: true);
+
+    private static string? GlobalWaitReplyReference(CardDatabase db, bool registeredWait)
+    {
+        const string name = "card_unit_m36_destroyer";
+        using var callback = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        using var played = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardPlayedFromHand");
+        using var entered = InstallSelectionDrawProbe(PlainUnit, "OnOtherCardEnterPlay");
+        KismetStep Signal(int id, int index) => new(index, "call", "ForceCardChangeLocation", new[] {
+            new KismetExpr { Int = id }, new KismetExpr { Int = 0 }, new KismetExpr { Int = (int)CardLocation.Discard },
+            new KismetExpr { Int = 0 } }, Array.Empty<int>(), null, null, -1, null, null);
+        KismetStep Return(int i) => new(i, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null);
+        var ownLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        ownLocals["OnHandTargetSelected"] = new[] { Signal(85, 0), Return(1) };
+        var otherLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default.Find(PlainUnit)!.Locals!;
+        foreach (var (trigger, id) in new[] { ("OnOtherCardPlayedFromHand", 90), ("OnOtherCardEnterPlay", 91) })
+            otherLocals[trigger] = new[] {
+                new KismetStep(0, "call", "JSON_SetInt", new[] { new KismetExpr { Var = "K2Node_Event_cardPlayed" },
+                    new KismetExpr { Str = "wait_seen" }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                Signal(id, 1), Return(2)
+            };
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "global-wait-reply-reference-20261026.json")))!;
+        int cases = 0;
+        foreach (var row in fixture["cases"]!.AsArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool differentSource in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side; state.Turn = 4;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var owner = state.CreateWithId(name, side, 60, registeredWait ? side.HandOf() : CardLocation.Discard, 0);
+            var other = state.CreateWithId(name, side, 61, CardLocation.Discard, 0);
+            owner.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = registeredWait };
+            other.Definition = new CardDefinition { Name = name, Type = "infantry", Attack = 2, Defense = 5 };
+            foreach (var card in new[] { owner, other }) {
+                card.Keywords.Clear(); card.KreditCost = 0;
+                card.RemovedGameplayTags.Add("ability.develop"); card.RemovedGameplayTags.Add("ability.forecast");
+            }
+            var observer = state.CreateWithId(PlainUnit, side, 70, side.HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = PlainUnit, Type = "infantry",
+                UsedTriggers = new[] { "OnOtherCardPlayedFromHand", "OnOtherCardEnterPlay" } };
+            observer.Keywords.Clear();
+            var signals = new[] { 85, 90, 91 }.ToDictionary(id => id,
+                id => state.CreateWithId("card_event_aans", side, id, side.DeckOf(), id - 85));
+            var queued = state.CreateWithId(PlainUnit, side, 99, CardLocation.Discard, 0);
+            var selected = differentSource ? other : owner;
+            var trace = new List<string>();
+            int callbackMode = row!["callback"]!.GetValue<int>(), helperMode = row["queue"]!.GetValue<int>();
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (newLocation != CardLocation.Discard || !signals.TryGetValue(card.CardId, out var expected) || !ReferenceEquals(card, expected)) return;
+                trace.Add(card.CardId == 85 ? "callback" : card.CardId == 90 ? "played" : "enter");
+                if (card.CardId == 85 && callbackMode >= 0) state.ShouldExecuteWaitPlayFromHand = callbackMode != 0;
+                card.Location = side.DeckOf(); // Controlled signal re-arm; no extra movement event.
+            };
+            engine.PickHandTargetId = (_, _) => 0;
+            CardEffectScripts.Register(name, effectContext => { });
+            CardEffectScripts.Register(PlainUnit, effectContext => {
+                trace.Add("helper");
+                if (helperMode >= 0) state.ShouldExecuteWaitPlayFromHand = helperMode != 0;
+            });
+            try
+            {
+                if (registeredWait && !engine.PlayCard(owner)) return "waiting owner could not be played";
+                state.ShouldExecuteWaitPlayFromHand = row["initial"]!.GetValue<bool>();
+                foreach (var step in row["steps"]!.AsArray())
+                {
+                    trace.Clear();
+                    foreach (var card in new[] { owner, other }) card.CustomJson.Set("wait_seen", "0", CardJsonType.Number);
+                    state.AddWaitPlayFromHandCards(70); state.TriggerQueue.Add(queued);
+                    if (state.ShouldExecuteWaitPlayFromHand != step!["flag_before"]!.GetValue<bool>()) return "unexpected flag before reply";
+                    if (row["draw"]!.GetValue<bool>()) {
+                        if (engine.Api.DevelopChosenCard(selected, PlainUnit) is null) return "no generated reply";
+                    } else {
+                        var context = new EffectContext { Engine = engine, State = state, Self = selected, Controller = side };
+                        engine.Api.InvokeByName("selectTargetFromHand", selected, new object?[] { selected.CardId }, context, out bool handled);
+                        if (!handled || engine.LastHandTarget is not { ChosenCardId: 0 } record || record.SelectingCardId != selected.CardId) return "no hand reply";
+                    }
+                    bool after = step["after_wait"]!.GetValue<bool>();
+                    var expectedTrace = step["phase_trace"]!.AsArray().Select(x => x!.GetValue<string>()).ToArray();
+                    var notSelected = differentSource ? owner : other;
+                    if (!trace.SequenceEqual(expectedTrace) || state.ShouldExecuteWaitPlayFromHand != step["flag_after"]!.GetValue<bool>()
+                        || state.GetWaitPlayFromHandCards().Length != (after ? 0 : 1)
+                        || engine.Api.JsonGetInt(selected, "wait_seen") != (after ? 1 : 0)
+                        || engine.Api.JsonGetInt(notSelected, "wait_seen") != 0 || state.TriggerQueue.Count != 0
+                        || engine.Api.Vm.FaultedPrograms != 0)
+                        return $"global wait owner={registeredWait}/{side}/other={differentSource}/draw={row["draw"]}/initial={row["initial"]}/cb={callbackMode}/queue={helperMode}/reply={step["reply"]}: trace={string.Join(",", trace)} expected={string.Join(",", expectedTrace)},flag={state.ShouldExecuteWaitPlayFromHand}/{step["flag_after"]}";
+                }
+            }
+            finally { CardEffectScripts.Unregister(name); CardEffectScripts.Unregister(PlainUnit); }
+            cases++;
+        }
+        return cases == 144 ? null : $"global wait cases {cases}";
+    }
 
     private static string? WaitStateStorageContract(CardDatabase db)
     {

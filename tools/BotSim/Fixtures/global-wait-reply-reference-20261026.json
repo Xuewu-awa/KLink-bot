@@ -1,0 +1,1082 @@
+{
+  "rule": "RULE-436",
+  "boundary": "Only ordinary local hand-reply tail8877..9403 and generated-reply gate/tail10695..11077, with full114-byte extra helper. Draw callback injected before gate; action receipts/autoplay and AfterWait bodies controlled. No inline singleton/empty-pool semantics, global packet scheduling or legal PvP interleaving proof.",
+  "cases": [
+    {
+      "draw": false,
+      "initial": false,
+      "callback": -1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": -1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": -1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 0,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 0,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 0,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": false,
+      "callback": 1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": -1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": -1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": -1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 0,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 0,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 0,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": false,
+      "initial": true,
+      "callback": 1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper",
+            "played",
+            "enter"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": -1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": -1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": -1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 0,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 0,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 0,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": false,
+      "callback": 1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": -1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": -1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": -1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 0,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 0,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": false,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 0,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": false,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 1,
+      "queue": -1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 1,
+      "queue": 0,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": false,
+          "after_wait": true,
+          "flag_after": false,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    },
+    {
+      "draw": true,
+      "initial": true,
+      "callback": 1,
+      "queue": 1,
+      "steps": [
+        {
+          "reply": 0,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        },
+        {
+          "reply": 1,
+          "flag_before": true,
+          "after_wait": true,
+          "flag_after": true,
+          "phase_trace": [
+            "callback",
+            "played",
+            "enter",
+            "helper"
+          ]
+        }
+      ]
+    }
+  ]
+}
