@@ -1,0 +1,302 @@
+{
+  "rule_id": "RULE-448",
+  "date": "2026-10-26",
+  "base_commit": "da0a81526e0a8373e5443009ac0ff3e5b686809e",
+  "status": "已修复打捞当前阵营、VM成员读写与收缴来源取值，保留到快照及侧别临时复制",
+  "scope": "普通打捞创建显式faction字段及收缴复制的数据来源；对照三张生成指令的目标阵营读取。静态卡表和单卡版本迁移不变。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_faction_offset": "0x7c",
+    "salvage_metadata_offset": "0x339",
+    "sdk_faction_size": 1,
+    "sdk_line": 2346,
+    "helper_assignment_index": 50,
+    "helper_metadata_assignment_index": 108,
+    "salvage_source_assignment_index": 1698
+  },
+  "findings": [
+    "当前ApplySalvageChanges50将salvageInfo.salvageFaction写入新对象faction，108另写salvageFaction；这两个独立字段均在IsVeteran分支之前赋值。CreateCardObject818只有打捞标识为真才调用helper，且IsVeteran=False。",
+    "SalvageMultipleUnits1698读取GetCardFromID返回对象的当前faction构造打捞信息，1792再交给CreateCard。旧模拟器使用original.Definition.Faction；VM的faction成员也固定返回Definition.FactionId，普通实例写入被存到BlueprintVariables而显式成员读仍读静态值。",
+    "CardInstance现有独立FactionId，以字节保存当前值；普通建卡从模板初始化，打捞建卡从传入的数字或规范阵营名初始化。IsSalvaged和SalvageFaction随后改变不会隐式重算当前阵营。手工未初始化对象仍以模板字段兼容兜底。",
+    "VM裸instance读及显式上下文成员读统一读取当前字段，instance写入更新该字段并清理旧同名通用槽。收缴复制把来源当前阵营传给新对象；若来源静态名称仍映射到同一当前值，保留既有规范名称表示，否则使用数字表示。",
+    "Snapshot新增FactionId，CopyForStealSide复制当前阵营。旧身份纠正Reidentify对普通卡显式跟随新模板，打捞卡保留当前阵营；这仅维护既有兼容路径，不认证原生转换。ResetAttributes未新增阵营重置；本轮虽采集其完整本地CFG，但没有证明所有外部helper对阵营的影响。",
+    "三份当前CheckHasUnitToSpawn的562比较候选与targetCard.faction，stand_together_brothers的511固定比较ByteConst4；对应适配器的三个目标取值改读实例FactionId，静态候选仍读卡表。费用谓词保持原样。",
+    "新增两项各208组创建测试：0..12阵营、规范名/数字输入、打捞/普通、双方及两入口；检查自身回调与后续修正，并以受控VM写入验证当前字段独立及快照/侧别复制保留。第三项26组来源当前阵营收缴复制。合计442组，不声称PlainUnit拥有这些受控效果。",
+    "已有费用测试在创建后替换静态Definition以搭建苏联目标，原先因成员绑定静态而隐式改阵营。现补显式VM当前阵营写4，保持其原有费用/类型/候选断言；该测试包含3456组原有组合。",
+    "DeepSeek从200条原始顶层节点机械提取3条字段相关节点；主agent独立深度比较全等。主agent仅执行169组当前/静态阵营笛卡尔积上的实际两条赋值，证明当前值传到打捞信息再传到创建对象，未把该模型称为完整函数执行。"
+  ],
+  "verification": {
+    "rule": "RULE-448",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "CardFunctionsStub",
+        "name": "SalvageMultipleUnits",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "owner": "BaseCardObject",
+        "name": "ResetCardAttributes",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "ApplySalvageChanges",
+        "bytes": 393,
+        "sha256": "f210c4543debcf2b22a73450e2dc5f77bcbfc8c8e1c3e20b7e376cec627e6db6"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "sha256": "e3eeb2cbfadc5f129a3f2eee711dcf3319126105da5a219ac0996f29ec8bf565"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "SalvageMultipleUnits",
+        "bytes": 2937,
+        "sha256": "8df5c3b6f90c9ff6088ac47459bb33e966dde280468450f49a680f303cd12c0b"
+      },
+      {
+        "owner": "card_event_red_banner_C",
+        "name": "CheckHasUnitToSpawn",
+        "bytes": 1031,
+        "sha256": "b2650e3cda330356e22799565aac0df66a94f2745a872ac4d5a21cb31b6a4730"
+      },
+      {
+        "owner": "card_event_ural_factories_C",
+        "name": "CheckHasUnitToSpawn",
+        "bytes": 1031,
+        "sha256": "d9f494d2f668b49fde0690a479fadb051fa06dbf3c2998711219a411e1046190"
+      },
+      {
+        "owner": "card_event_refit_C",
+        "name": "CheckHasUnitToSpawn",
+        "bytes": 1031,
+        "sha256": "a77fd7f17cde896c3bd8c54e5d30ece709f56f2cb75b2cb42258436d15b395d5"
+      },
+      {
+        "owner": "card_event_stand_together_brothers_C",
+        "name": "CheckHasUnitToSpawn",
+        "bytes": 960,
+        "sha256": "07760ce06ee9b4e69a88459c78db895b9625a069cec7b02c095928b6b3f4d244"
+      }
+    ],
+    "total_script_bytes": 10312,
+    "live_headers_scripts_properties_redecode_equal": true,
+    "property_offsets": {
+      "faction": "0x7c",
+      "salvageFaction": "0x339"
+    },
+    "native_reset_bytes": 1592,
+    "native_reset_live_equal": true,
+    "worker_exact_rows": 3,
+    "worker_input_rows": 200,
+    "bounded_field_assignment_profiles": 169,
+    "query_nodes": [
+      {
+        "owner": "card_event_red_banner_C",
+        "index": 562
+      },
+      {
+        "owner": "card_event_ural_factories_C",
+        "index": 562
+      },
+      {
+        "owner": "card_event_refit_C",
+        "index": 562
+      },
+      {
+        "owner": "card_event_stand_together_brothers_C",
+        "index": 511
+      }
+    ],
+    "new_simulator_scenarios": 442,
+    "baseline": {
+      "total": 881,
+      "passed": 878,
+      "failed": 3
+    },
+    "fixed": {
+      "total": 881,
+      "passed": 881,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "no_game_writes": true,
+    "scope": "Two AST field assignments and current member predicates, not full salvage/copy/reset/native transitive semantics; reset body capture alone does not certify preservation across every helper"
+  },
+  "diagnostics": {
+    "initial_baseline": "878通过、3失败/881；第一新增项首先暴露快照缺字段，另两项分别暴露成员读写及复制差异。",
+    "first_fix": "880通过、1失败/881；旧费用测试依赖替换模板隐式改阵营，随后补显式当前字段布景。",
+    "final_same_tests": "旧生产实现878通过、3失败/881；修复后881/881。",
+    "canonical_representation_followup": "调整规范名保留条件为名称映射等于当前阵营，避免无效静态名称掩盖当前值；最终再次881/881。",
+    "compile_diagnostic": "补名称映射条件时一次缺命名空间编译失败，已修复并保留日志，不计入规则差异。"
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Engine/CardInstance.cs",
+      "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ]
+  },
+  "limitations": [
+    "仅覆盖当前阵营的数据链，未穷尽全部单卡阵营条件、生成候选、转换及复制来源。",
+    "重置原生函数本地CFG1592字节复读只确认代码一致；跨helper写入、完整加密与引擎构造语义未认证。",
+    "快照新增独立当前阵营字段；旧快照没有该信息，不能据旧静态卡表自动认定历史当前值。",
+    "整体触发登记、TSet顺序及全部PvP逻辑未完成穷尽认证；完整认证卡数仍为0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule448-salvage-creation-native-20261026.json",
+      "bytes": 4674384,
+      "sha256": "3e9d68a1cb0515de4202378cb1c66ec0fb500940d0304ebe60d06f57353c532f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule448-spawn-faction-queries-native-20261026.json",
+      "bytes": 4610525,
+      "sha256": "5c8b510b72488d90ebcd14db5cd936b17b0572199e61bd6522a861bdbd9bf763"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule448-reset-attributes-native-20261026.json",
+      "bytes": 46931,
+      "sha256": "d40be546b51972f865673a037a464192e2ec7968041251710e89d66c53f4b18b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule448-faction.py",
+      "bytes": 2423,
+      "sha256": "a217bb292afac190c6aa93681a4d12565afd1fe09a3dc0284786b526628a01b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule448-spawn-query.py",
+      "bytes": 2369,
+      "sha256": "40893a6788039ed15f2803e68f902f446fd4e1c2c0650b9db104f27cc79fe004"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule448-native-reset.py",
+      "bytes": 4037,
+      "sha256": "78b77ffa1a19623c0db9960934333d3f8e1a5aa243a26527e5ca7b0045eee6e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule448.py",
+      "bytes": 6428,
+      "sha256": "806a04b7488a392a7f85156a08a2578681a86834b998653c59b5633e1c0d329e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule448-final-tests.py",
+      "bytes": 912,
+      "sha256": "f59111180f92aaf9426f4d5835541a8e5e744abafb4919820fd03d91dfc6a8b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-verification-20261026.json",
+      "bytes": 3090,
+      "sha256": "8f9b78892ad2ea0f270ef5d21a322877abb04c9b66a6b4a9450c78c27f87d3ec"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-faction-flow-reference-20261026.json",
+      "bytes": 10769,
+      "sha256": "f69f78565baf2b69511b0922dd6df891896fc888b3c3c5282937969aa033f169"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-baseline-selftest.log",
+      "bytes": 77772,
+      "sha256": "9e33bb76728e3a3e90d66b0dc2ec2cc6f35f86a60cf6f05ae89957e02d0c8e29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-selftest.log",
+      "bytes": 77646,
+      "sha256": "0da8949b6bbd07d5d4d06d38a2fb2e01c1ac9f13e111f76a388a500fed823227"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-tests-baseline-selftest.log",
+      "bytes": 77769,
+      "sha256": "35fa50668108e2fa6c62ef77bf08a8e87f758d83282ee487280608057defae8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-tests-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-updated-tests-selftest.log",
+      "bytes": 77540,
+      "sha256": "1a1b9af5223484d4779f6879b4d880be9f9ac6a434072d554e5afcb231a9d33a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-updated-tests-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-canonical-selftest.log",
+      "bytes": 77543,
+      "sha256": "4fa0bf51a6ac4dd38f55a31077ccce64a1cb85e44cdcd05d25fd70d17f6fc1a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-final-canonical-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-canonical-compile-error.log",
+      "bytes": 257,
+      "sha256": "389d02e491fcc26bd16c3b281fd07e77c823eb09595b3b3fd937b34b04b186a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-canonical-compile-error.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-worker\\task.txt",
+      "bytes": 527,
+      "sha256": "9875548843c3f530d0fce5d73abd75ab1a3eeaf54614a8fcfeb6f5a3baaaec50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-worker\\input.json",
+      "bytes": 94816,
+      "sha256": "300fd4d062a76c03cd89ca78b74a397a5df55dceda58f3f0697d69b4171284ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule448-worker\\result.json",
+      "bytes": 2309,
+      "sha256": "abdb36e55b3d9a790c7a7b7fb1076aebb8c32cd8c5ac420184fb852667cd0c52"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-172439-rule448-faction-field-extraction-ae025c08\\job.json",
+      "bytes": 743,
+      "sha256": "dbede1ea9b6c5eff7365fe15b36e6351f2d183914af6be0faec3e3dc59e6aa1d"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-172439-rule448-faction-field-extraction-ae025c08\\answer.txt",
+      "bytes": 1592,
+      "sha256": "e9b18c8ff810ac6ae0df88c205f84ca7258ccba6c29e7850873d0d8857e7f4cd"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "bytes": 227517,
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    }
+  ]
+}

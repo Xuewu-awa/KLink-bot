@@ -2896,17 +2896,17 @@ public sealed partial class CardApi
         {
             case "card_event_red_banner":
                 expectedCost = unchecked(target.BaseKreditCost + 2);
-                expectedFaction = target.Definition.FactionId;
+                expectedFaction = target.FactionId;
                 requireTank = false;
                 break;
             case "card_event_ural_factories":
                 expectedCost = unchecked(target.BaseKreditCost + 1);
-                expectedFaction = target.Definition.FactionId;
+                expectedFaction = target.FactionId;
                 requireTank = false;
                 break;
             case "card_event_refit":
                 expectedCost = unchecked(target.BaseKreditCost + 3);
-                expectedFaction = target.Definition.FactionId;
+                expectedFaction = target.FactionId;
                 requireTank = true;
                 break;
             case "card_event_stand_together_brothers":

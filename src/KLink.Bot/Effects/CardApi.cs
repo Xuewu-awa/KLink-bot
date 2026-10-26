@@ -1344,6 +1344,7 @@ public sealed partial class CardApi
             OriginalOwner = source.OriginalOwner,
             UnderEnemyControl = source.UnderEnemyControl,
             Definition = source.Definition,
+            FactionId = source.FactionId,
             IsGold = source.IsGold,
             Location = source.Location,
             LocationNumber = source.LocationNumber,
@@ -3451,7 +3452,9 @@ public sealed partial class CardApi
             var copy = State.Create(original.Name, side, hand,
                 State.NextLocationNumber(side, hand), original.IsGold,
                 isSalvaged: true,
-                salvageFaction: original.Definition.Faction,
+                salvageFaction: original.FactionId == Cards.CardDatabase.FactionIdOf(original.Definition.Faction)
+                    ? original.Definition.Faction
+                    : original.FactionId.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 salvagedCardId: original.CardId);
             created.Add((original.CardId, copy));
         }

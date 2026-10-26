@@ -234,6 +234,15 @@ public sealed class CardInstance
     /// <summary>蓝图 `salvageFaction`：被打捞原卡的阵营名称。</summary>
     public string? SalvageFaction { get; set; }
 
+    // RULE-448: native +0x7c is a mutable byte, independent of both the
+    // static template and salvage metadata. Synthetic cards use the template.
+    private int? _factionId;
+    public int FactionId
+    {
+        get => _factionId ?? Definition.FactionId;
+        set => _factionId = unchecked((byte)value);
+    }
+
     /// <summary>蓝图 `salvagedCardID`：被打捞原卡的 cardID。</summary>
     public int SalvagedCardId { get; set; }
 
@@ -742,6 +751,9 @@ public sealed class CardInstance
     /// </summary>
     public void InitializeFromDefinition()
     {
+        FactionId = IsSalvaged
+            ? (int.TryParse(SalvageFaction, out int faction) ? faction : CardDatabase.FactionIdOf(SalvageFaction))
+            : Definition.FactionId;
         PublicKreditCost = IsSalvaged ? Math.Min(3, Definition.Kredits) : Definition.Kredits;
         PublicKreditCostBuff = Definition.KreditsBuff;
         BaseOperationCost = Definition.OperationCost;
@@ -874,6 +886,9 @@ public sealed class CardInstance
 
         Name = name;
         Definition = def;
+        // Legacy identity correction follows the new template for ordinary
+        // cards; salvaged cards retain their independent current faction.
+        if (!IsSalvaged) FactionId = def.FactionId;
         // Keep this identity-correction compatibility path's public template
         // field in sync; this is not certification of native conversion logic.
         PublicAttack = IsSalvaged ? 1 : def.Attack;
@@ -997,6 +1012,7 @@ public sealed class CardInstance
             MaxAttack = MaxAttack,
             TemporaryAttack = TemporaryAttack,
             PublicAttack = PublicAttack,
+            FactionId = FactionId,
             PublicKreditCost = PublicKreditCost,
             PublicKreditCostBuff = PublicKreditCostBuff,
             AttackBuff = AttackBuff,
@@ -1268,6 +1284,7 @@ public sealed record CardSnapshot(
     public int MaxAttack { get; init; }
     public int TemporaryAttack { get; init; }
     public int PublicAttack { get; init; }
+    public int FactionId { get; init; }
     public int AttackBuff { get; init; }
     public Dictionary<string, CardJsonType> CustomJsonTypes { get; init; } = new(StringComparer.Ordinal);
     public bool SelectTargetOnPlayedFromHand { get; init; }

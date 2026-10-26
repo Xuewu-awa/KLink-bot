@@ -624,6 +624,9 @@ internal static class SelfTest
         new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
         new("建卡初始化费用：内部基础/临时费重建自公开模板字段", InitializeKreditPairFromDefinition),
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
+        new("打捞当前阵营：两入口在创建回调前使用传入阵营", db => SalvagedCreationFaction(db, false)),
+        new("打捞当前阵营：回调改写与静态模板及打捞元数据分离", db => SalvagedCreationFaction(db, true)),
+        new("收缴复制：来源当前阵营传入新对象并保留到成员及快照", SalvageCopiesCurrentFaction),
         new("打捞创建数值：两入口在创建回调前具有1/1和对应最大值", db => SalvagedCreationStats(db, false)),
         new("打捞创建数值：保留自身回调改写且不重置费用或行动额度", db => SalvagedCreationStats(db, true)),
         new("建卡进场回合：两入口在自身回调和修正阶段前初始化为0", db => CreationTurnPhase(db, false)),
@@ -9081,6 +9084,8 @@ internal static class SelfTest
             var source = state.CreateWithId(name, side, 20, CardLocation.Discard, 0);
             var target = state.CreateWithId(PlainUnit, side, 60, side.HqOf(), 1);
             target.Definition = new CardDefinition { Name = PlainUnit, Type = "tank", FactionId = 4, Kredits = 37, KreditsBuff = -9 };
+            // RULE-448: replacing a template is not a native faction-field write.
+            WriteCurrentFaction(engine, state, target, 4);
             target.BaseKreditCost = basis; target.TemporaryKreditCost = temp;
             target.PublicKreditCost = 37; target.PublicKreditCostBuff = -9;
             var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
@@ -9143,6 +9148,91 @@ internal static class SelfTest
                 return $"初始化费用必须从模板公开两字段重建 {side}/{basis}/{temp}/{salvaged}/{dirty}";
         }
         return null;
+    }
+
+    // RULE-448: controlled VM writes model native faction field assignments;
+    // these probes do not claim that PlainUnit owns such an effect.
+    private static int ReadCurrentFaction(MatchEngine engine, GameState state, CardInstance card, bool member = true)
+    {
+        var expr = member ? new KismetExpr { Var = "faction", Context = new KismetExpr { Self = true } }
+            : new KismetExpr { Var = "faction", Scope = "instance" };
+        var step = new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), expr, null, -1, "__faction", null);
+        var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = card.Owner };
+        return Convert.ToInt32(engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] { step }, 0), ctx, null, "__faction").GetValueOrDefault("__faction"));
+    }
+
+    private static void WriteCurrentFaction(MatchEngine engine, GameState state, CardInstance card, int value)
+    {
+        var step = new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = value }, null, -1, "faction", null) { DestinationScope = "instance" };
+        engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] { step }, 0),
+            new EffectContext { Engine = engine, State = state, Self = card, Controller = card.Owner }, null);
+    }
+
+    private static string? SalvagedCreationFaction(CardDatabase db, bool mutate)
+    {
+        string[] factions = { "NotAvailable", "Germany", "Britain", "Japan", "Soviet", "USA", "France", "Italy", "Poland", "Finland", "Anzac", "Allies", "Neutral" };
+        int cases = 0;
+        foreach (int faction in Enumerable.Range(0, 13))
+        foreach (bool numeric in new[] { false, true })
+        foreach (bool salvaged in new[] { false, true })
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool explicitId in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); int own = 0, modifiers = 0; string? fault = null;
+            int expected = salvaged ? faction : db.Require(PlainUnit).FactionId;
+            int after = mutate ? (expected + 5) % 13 : expected;
+            var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+            state.CardCreated = card => {
+                if (card.Name == PlainUnit) {
+                    own++;
+                    if (ReadCurrentFaction(engine, state, card) != expected || ReadCurrentFaction(engine, state, card, false) != expected)
+                        fault = "own hook observed static or stale faction";
+                    if (mutate) {
+                        WriteCurrentFaction(engine, state, card, after);
+                        card.IsSalvaged = false; card.SalvageFaction = "Japan";
+                    }
+                }
+                priorOwn?.Invoke(card);
+            };
+            state.CardCreationModifiers = card => {
+                if (card.Name == PlainUnit) { modifiers++; if (own != 1 || ReadCurrentFaction(engine, state, card) != after || ReadCurrentFaction(engine, state, card, false) != after) fault ??= "modifier saw stale faction"; }
+                priorModifiers?.Invoke(card);
+            };
+            string input = numeric ? faction.ToString(System.Globalization.CultureInfo.InvariantCulture) : factions[faction];
+            var made = explicitId ? state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0, isSalvaged: salvaged, salvageFaction: input)
+                : state.Create(PlainUnit, side, CardLocation.Discard, 0, isSalvaged: salvaged, salvageFaction: input);
+            if (fault is not null || own != 1 || modifiers != 1 || ReadCurrentFaction(engine, state, made) != after)
+                return $"{faction}/{numeric}/{salvaged}/{side}/{explicitId}/mutate={mutate}: {fault}; hooks={own}/{modifiers}";
+            var snapshot = System.Text.Json.JsonSerializer.SerializeToElement(made.Snapshot());
+            if (!snapshot.TryGetProperty("FactionId", out var stored) || stored.GetInt32() != after)
+                return "snapshot must retain current faction independently of definition and salvage metadata";
+            var copyMethod = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+            var copy = (CardInstance)copyMethod.Invoke(null, new object[] { made })!;
+            if (ReadCurrentFaction(engine, state, copy) != after || copy.Definition.FactionId != made.Definition.FactionId)
+                return "side-copy lost current faction or changed shared static definition";
+            cases++;
+        }
+        return cases == 208 ? null : $"faction creation profiles={cases}";
+    }
+
+    private static string? SalvageCopiesCurrentFaction(CardDatabase db)
+    {
+        int cases = 0;
+        foreach (int faction in Enumerable.Range(0, 13))
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side.Opposite(), 60, CardLocation.Discard, 0);
+            var instigator = state.CreateWithId(PlainUnit, side, 61, CardLocation.Discard, 0);
+            WriteCurrentFaction(engine, state, source, faction);
+            var ids = engine.Api.SalvageMultipleUnits(new[] { source.CardId }, instigator.CardId);
+            if (ids.Count != 1 || state.ById(ids[0]) is not { } copy || ReadCurrentFaction(engine, state, copy) != faction)
+                return $"salvage must copy source current faction {faction}/{side}";
+            if (!copy.IsSalvaged || copy.SalvagedCardId != source.CardId || copy.Owner != side || copy.Definition != source.Definition)
+                return "salvage identity/source/ownership or static definition changed";
+            cases++;
+        }
+        return cases == 26 ? null : $"salvage faction profiles={cases}";
     }
 
     // RULE-447: controlled definitions avoid the old1-attack fixtures masking

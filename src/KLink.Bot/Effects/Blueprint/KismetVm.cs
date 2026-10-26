@@ -1382,7 +1382,7 @@ public sealed class KismetVm
             "originalSide" => (int)(card.OriginalOwner is Side.Left or Side.Right
                 ? card.OriginalOwner : card.Owner),
             "underEnemyControl" => card.UnderEnemyControl,
-            "faction" => card.Definition.FactionId,
+            "faction" => card.FactionId,
             "type" => card.Definition.TypeId,
             "rarity" => card.Definition.RarityId,
             "name" => card.Name,
@@ -1539,7 +1539,7 @@ public sealed class KismetVm
                 if (name.StartsWith("K2Node_Event_", StringComparison.Ordinal))
                     return ResolveEventVar(name);
                 if (name is "self" or "cardFunction") return _ctx.Self;
-                if (name is "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand" or "hasSmokescreen" or "hasGuard" or "isBeingGuarded")
+                if (name is "faction" or "customName1" or "customName2" or "chooseOneIndex" or "chooseOneCards" or "selectTargetOnPlayedFromHand" or "hasSmokescreen" or "hasGuard" or "isBeingGuarded")
                     return GetMember(_ctx.Self, name);
                 if (_ctx.Self?.BlueprintVariables.TryGetValue(name, out var saved) is true)
                     return saved; // Stored null must remain null.
@@ -1743,6 +1743,11 @@ public sealed class KismetVm
                     if (name is "customName1" or "customName2")
                     {
                         CardCustomNames.Assign(self, name, value?.ToString() ?? "None");
+                        self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name == "faction")
+                    {
+                        self.FactionId = ToInt(value);
                         self.BlueprintVariables.Remove(name);
                     }
                     else if (name == "hasEverAttacked")
