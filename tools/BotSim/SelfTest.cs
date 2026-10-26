@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
+        new("重甲总量：显式接收者和只读VM出参", db => HeavyArmorReadBounds(db, true)),
         new("老兵数值：攻击防御行动费使用模板模式5并保留临时分量", VeteranNumericTemplate),
         new("老兵数值：攻击回调先于防御行动费且不中止后续原语", VeteranNumericReentry),
         new("老兵升级尾段：双方广播、自身抑制门与回调先后", VeteranNotificationBranch),
@@ -32504,6 +32506,51 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-456: read-bound projection only. The current model still derives
+    // raw components from definition/ledgers; native writer independence is open.
+    private static string? HeavyArmorReadBounds(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_rule456_fixture";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (int basis in new[] { int.MinValue, -1, 0, 2, 3, 4, int.MaxValue })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9, HeavyArmor = basis };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (int permanent in new[] { -5, 0, 4 })
+            foreach (int temporary in new[] { -2, 0, 2, int.MaxValue })
+            foreach (bool zeroed in new[] { false, true })
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var target = state.CreateWithId(name, side, 60, CardLocation.Discard, 0);
+                var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 61, CardLocation.Discard, 0);
+                target.HeavyArmorZeroedBySuppress = zeroed;
+                target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, HeavyArmor = permanent };
+                target.BuffsBySource[(40, true)] = new CardBuff { SourceCardId = 40, Temporary = true, HeavyArmor = temporary };
+                string before = System.Text.Json.JsonSerializer.Serialize(target.Snapshot());
+                int expected = Math.Clamp(unchecked((zeroed ? 0 : basis) + permanent + temporary), 0, 3);
+                var ctx = new EffectContext { Engine = engine, State = state, Self = decoy, Controller = side };
+                object? actual;
+                if (!vm) actual = engine.Api.InvokeByName("getTotalHeavyArmor", target, new object?[] { null }, ctx, out _);
+                else {
+                    var step = new KismetStep(0, "call", "getTotalHeavyArmor", new[] { new KismetExpr { Var = "armor" } }, new[] { 0 }, null, null, -1, null, null)
+                        { Receiver = new KismetExpr { Var = "target", Scope = "local" } };
+                    actual = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] { step }, 0), ctx,
+                        new Dictionary<string, object?> { ["target"] = target }, "armor").GetValueOrDefault("armor");
+                }
+                if (!Equals(actual, expected) || target.HeavyArmor != expected)
+                    return $"heavy armor bound {basis}/{permanent}/{temporary}/{zeroed}/{side}/vm={vm}: {actual}/{target.HeavyArmor}, expected{expected}";
+                if (System.Text.Json.JsonSerializer.Serialize(target.Snapshot()) != before || target.BuffsBySource[(30, false)].HeavyArmor != permanent
+                    || target.BuffsBySource[(40, true)].HeavyArmor != temporary)
+                    return "read query must not clamp or mutate stored ledger components";
+                cases++;
+            }
+        }
+        return cases == 336 ? null : $"heavy armor read profiles={cases}";
     }
 
     private static string? VeteranNumericTemplate(CardDatabase db)

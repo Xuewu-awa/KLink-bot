@@ -1,0 +1,172 @@
+{
+  "rule_id": "RULE-456",
+  "date": "2026-10-26",
+  "base_commit": "37398285c3b9e827a0d9b6619bb66269d9740af7",
+  "status": "已修复重甲总量读取的int32溢出及0到3截断；模式5写入与老兵集成尚未完成",
+  "scope": "getTotalHeavyArmor最终读取边界；ChangeHeavyArmor模式5控制流证据及三文件基线写入盘点。不是完整装甲机制或全部写入穷尽审计。",
+  "findings": [
+    "当前getTotalHeavyArmor本地33字节读取+1e0和+1dc两个int32，相加后按有符号结果夹0..3；字段FProperty头确认heavyArmor偏移1dc、heavyArmorBuff偏移1e0，元素大小均4。旧托管HeavyArmor直接返回卡面/来源账本累加结果，可返回负数或大于3。",
+    "现仅将读取返回值夹0..3，并显式unchecked每次累加，保留原始账本不改写。当前raw分量仍由定义及账本兼容派生，尚非原生独立基础/临时字段；此补丁只是必要的输出边界修复，不称完整getter来源和写入均等价。",
+    "新增直接查询/真实VM出参两项各336组，共672组：七基础边界、三永久条目、四临时条目、旧清零遮罩及双方；检查显式接收者而非干扰Self、int32溢出后截断和读取零写入。两项在旧实现失败，原894项保持通过；修复后896/896。",
+    "原生33字节代码在385组输入上离线执行：336个对应投影布景及49个独立raw极值对；输出与int32相加后夹0..3一致，基础/临时原始字段未改动。包装146字节及脚本1846字节也已复读。",
+    "ChangeHeavyArmor模式5：先要求有效对象、正instigatorID及非未揭示Covert，再以type4/mode5调用ChangeBuffsFromCards；账本处理在比较基础值之前。1433比较旧heavyArmor与原始请求，若不同则夹请求0..3写基础值，临时heavyArmorBuff不变；即使夹取后与旧值相同，只要原始请求不同仍算valueChanged。",
+    "更新后408/418/441检查valueChanged及IsActionProcess，再451/492/530检查牌库/skipAction，满足通知路径才执行545通知和617能力变化。skip或在牌库分支544弹栈会一并跳过该能力回调。拒绝151写qqq=false；接受模式5没有向qqq显式赋值，保留传入槽值，不能将默认输出当成功布尔。",
+    "完整模式5脚本AST模型3840组包含守卫、原始相等/夹取、基础/临时、动作处理、牌库和skip分支，保留执行流栈。ChangeBuffsFromCards以非数值字段突变的账本边界供应，未将其type4语义视为本轮已认证；此3840组是参考模型，不是修复后C#写入测试。",
+    "现有DoChangeHeavyArmor仍按来源写账本、忽略上述多项模式/守卫/通知语义，不能直接用于老兵模式5。需要先引入独立基础/临时字段，并串联创建、重置、复制、光环、压制及恢复等路径；本轮未把新Getter截断冒充这种迁移。",
+    "DeepSeek从HEAD三份来源文件60条含HeavyArmor的基线行机械筛出11处赋值样式，主agent独立正则全等核验并逐行对照git show HEAD源快照。该清单只覆盖三个文件及赋值样式，不声称囊括动态VM/JSON及所有间接写入。"
+  ],
+  "verification": {
+    "rule": "RULE-456",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "script_bytes": 1846,
+    "script_sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf",
+    "native_getter_bytes": 33,
+    "native_wrapper_bytes": 146,
+    "raw_properties": {
+      "heavyArmor": {
+        "offset": "0x1dc",
+        "element_size": 4
+      },
+      "heavyArmorBuff": {
+        "offset": "0x1e0",
+        "element_size": 4
+      }
+    },
+    "all_selected_live_bytes_equal": true,
+    "native_read_cases": 385,
+    "writer_AST_mode5_cases": 3840,
+    "worker_exact_rows": 11,
+    "worker_input_rows": 60,
+    "new_simulator_scenarios": 672,
+    "baseline": {
+      "total": 896,
+      "passed": 894,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 896,
+      "passed": 896,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "scope": "Read saturation only fixed. Mode5 writer AST modeled with non-field-mutating ledger boundary; type4 ledger, independent raw fields and full write integration remain open. Inventory scope is three source files only.",
+    "no_game_writes": true
+  },
+  "remaining_counterexample": "必要但不充分：原生基础2永久加2先截为3，再临时-3后总量0；若兼容模型把卡面和两笔来源直接合并，会得1。说明仅修最终截断仍不能替代独立raw写入。",
+  "unfixed_writer_gaps": [
+    "正来源ID、Covert及拒绝输出门尚未按当前原语接通。",
+    "mode5账本type4处理、独立基础写入、临时保留及原始值比较尚未迁移。",
+    "skip/牌库/动作处理模式的通知与能力回调链仍不等价。",
+    "老兵ChangeHeavyArmor阶段1189仍未接入；原始能力、Fury额度及完整创建时序继续开放。"
+  ],
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Engine/CardInstance.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "累加显式int32 wrap，读取返回夹0..3；不改写账本，不新增伪模式5覆盖。"
+  },
+  "limitations": [
+    "原生独立raw字段、账本type4和生命周期迁移仍未完成；有效范围中的读值也可能因raw来源投影不同而与客户端不一致。",
+    "参考模型的IsValid/Covert/动作处理/牌库及账本helper为受控边界，未执行真实游戏函数。",
+    "完整卡牌认证数0，无旧回放权威、游戏进程写入或注入，不做单卡版本迁移。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-veteran-query-headers-20261026.json",
+      "bytes": 4488099,
+      "sha256": "554267dbb17dbc1d376a43a833fc4d9a18fbd27b5e9d2234f51c66d8b5f584a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-getTotalHeavyArmor-native-20261026.json",
+      "bytes": 7268,
+      "sha256": "4c8b7614171c6cf5322d0362fdab8199c76e999caba5f6b3a76e859d6461041d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule456-heavy-armor.py",
+      "bytes": 2356,
+      "sha256": "855f071f5089c0760c91189d587a8e92f93b008e0782eba19150683d70f446fc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule456-total-headers.py",
+      "bytes": 2354,
+      "sha256": "2d84010afd5970e05a0cfc606a584c925c0ccede1b593a63f94dd47d8305a53a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule456-getTotalHeavyArmor.py",
+      "bytes": 4169,
+      "sha256": "2341e14a5c6471a6903a5b3ff41b5d8b3165f0991af0681c9abd8c7b68bd1c72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule456.py",
+      "bytes": 8689,
+      "sha256": "675933a8f2f20daedb05e872b1595a40552b34daeeb00db7f7684fd997335546"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-final-verification-20261026.json",
+      "bytes": 1137,
+      "sha256": "551c987ee85d83543f0be4a8949b6f6c3ad702611cc6fd9e4a025e4dd341f46e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-heavy-armor-reference-20261026.json",
+      "bytes": 1079752,
+      "sha256": "0bf40db60a60a4ad7bdd67bb50c61d7afb59ad380173f541cf48ac7b27e66c69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-baseline-selftest.log",
+      "bytes": 78864,
+      "sha256": "c52df1275789e5d65d5758ec71eac8ea7261614b0389aaf7ea1e1bac288fc0ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-final-selftest.log",
+      "bytes": 78674,
+      "sha256": "0c0b2cffa24f292d19a3fd317a22755839c18a151001861257fbab4b09b978fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-worker\\task.txt",
+      "bytes": 473,
+      "sha256": "0b2ab543255ba3fcd61e21a6d05312e9781bcbde252fdb6f5aec2bc9fb986225"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-worker\\input.json",
+      "bytes": 24556,
+      "sha256": "c6aa3399491c245e0ec130d8be5b39d53b8b9e719959acee80e2339b111bd5b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule456-worker\\result.json",
+      "bytes": 3753,
+      "sha256": "0837cd43650136038c5032aebc91f838b81e8786e03371163d7d12e1a3cd369c"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-230818-rule456-heavy-armor-write-inventory-3590937c\\job.json",
+      "bytes": 748,
+      "sha256": "e2e3a01a6faa24a7d8ec72342bbedac882f137c464aa607e1041536f3efe99b3"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-230818-rule456-heavy-armor-write-inventory-3590937c\\answer.txt",
+      "bytes": 2765,
+      "sha256": "8fa0f1c831b08135937b9623d592269821ef35088ecb4d57004346b94a5b10db"
+    }
+  ]
+}

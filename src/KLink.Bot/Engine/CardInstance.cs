@@ -714,7 +714,8 @@ public sealed class CardInstance
     public bool IsInOwnHalf => Location == Owner.HqOf();
 
     /// <summary>
-    /// 重甲点数 —— 基础值（卡面自带）加上所有来源的临时加成。
+    /// 重甲总量的读取投影，按原生 int32 相加并截断到 0..3。
+    /// 当前原始分量仍从卡面/账本派生；独立基础与临时字段写入尚未完成。
     ///
     /// 为什么要单独算而不能只看 <see cref="Keywords"/>：`ChangeHeavyArmor(卡, 来源, +1)`
     /// 是可以叠加的数值（客户端另有 `getTotalHeavyArmor`），关键字只能表示「有没有」。
@@ -731,10 +732,13 @@ public sealed class CardInstance
             int total = HeavyArmorZeroedBySuppress ? 0 : Definition.HeavyArmor;
             foreach (var buff in BuffsBySource.Values)
             {
-                total += buff.HeavyArmor;
+                total = unchecked(total + buff.HeavyArmor);
             }
 
-            return total;
+            // RULE-456: native getTotalHeavyArmor adds int32 components and
+            // clips only the read result to0..3. Raw writer independence is
+            // still open; never clamp or rewrite the source ledger here.
+            return Math.Clamp(total, 0, 3);
         }
     }
 
