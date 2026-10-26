@@ -1,0 +1,192 @@
+{
+  "rule_id": "RULE-457",
+  "date": "2026-10-27",
+  "base_commit": "4f3874872233c8b60346f951fe629b89e6dba3c8",
+  "status": "完成装甲type4账本及六模式离线串联证据；独立字段及生产写入迁移尚未实施",
+  "scope": "ChangeBuffsFromCards完整6267字节、ChangeHeavyArmor完整1846字节。普通/设值/压制/移除/老兵六模式；不是全卡认证或C#写入修复。",
+  "verification": {
+    "rule": "RULE-457",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_and_live_equal": [
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      },
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      }
+    ],
+    "ledger_instance_properties": [
+      "CardID",
+      "buffsFromCards",
+      "cardsBuffedByThisCard",
+      "title"
+    ],
+    "worker_verified_calls": 31,
+    "worker_verified_variables": 112,
+    "game_writes": 0,
+    "injections": 0,
+    "real_game_function_calls": 0
+  },
+  "offline_models": {
+    "absolute": {
+      "rule": "RULE-457",
+      "cases": 69120,
+      "case_digest_sha256": "4ade9dcd994e8ef29cef95f5c32b79c1d66a863f9be6508bdba35d09e8b4c9fa",
+      "scope": "Full ChangeBuffsFromCards AST from entry, buffType4 and modes2/3/5. Controlled map/array/enum/source lookup helpers, explicit frame values -7/0/5. No simulation or live game function calls. Generic helper does not write numeric armor fields.",
+      "fully_certified_cards": 0
+    },
+    "relative": {
+      "cases": 4320,
+      "case_digest_sha256": "e42c4a175e55bb8ecc3eba40cc2beb03cd8bc0ff81ea15ed305c30c990d0468e"
+    },
+    "integrated": {
+      "cases": 276480,
+      "case_digest_sha256": "99047e1d17b399c153b9df3b0c274152cf10a9b15cb3ae3961a825e8399d71fb",
+      "scope": "Full ChangeHeavyArmor AST modes0..5 calls full type4 ChangeBuffsFromCards AST; map/array/enum/source lookup helpers and external notification callbacks controlled. Numeric armor fields, ledger preservation, rejection, skip/deck/action guards checked. This is offline AST validation, not C# simulator conformance."
+    }
+  },
+  "total_offline_cases": 349920,
+  "production_code_changed": false,
+  "new_simulator_tests": 0,
+  "previous_simulator_test_result": {
+    "rule": "RULE-456",
+    "passed": 896,
+    "total": 896,
+    "historical_only": true,
+    "rerun_this_round": false
+  },
+  "fully_certified_cards": 0,
+  "findings": [
+    "重新读取两份UFunction头及字节码，并独立重解码，与保存的AST全等；当前ChangeBuffsFromCards与20261022快照逐字节相同。游戏模块SHA256与RULE-456一致。",
+    "通用账本函数访问实例字段仅CardID、buffsFromCards、cardsBuffedByThisCard、title；没有直接写heavyArmor或heavyArmorBuff。数值与来源账本应分别维护。",
+    "buffType4的普通模式0/1分别累加临时/永久键，int32回绕后为零则删键；请求amount=0提前退出，不改账本、不修剪条目也不同步来源反向数组。",
+    "模式4查找并删除当前来源的heavyArmor_tempBuffGive，amountRemoved为旧记录的int32相反数；请求amount不参与移除量计算，永久及SetValue记录保留。存在的零值键也被移除，但数值阶段不会据此触发通知。",
+    "模式2/3/5先遍历所有来源移除heavyArmor_permBuff、heavyArmor_SetValue。键清空才删除来源，其他种类及临时装甲的零值键均可使来源保留。",
+    "模式2随后写回当前来源的原始完整结构并覆盖heavyArmor_SetValue，因此当前来源原有永久/其他键可重新出现；模式3还全局删未限定Suppress键，再将原始当前结构加Suppress写回。Suppress值来自帧变量，验证显式供应-7/0/5，不认证客户端帧初始化。",
+    "模式5不写回原始当前结构，不增设heavyArmor_veteranSet条目；只保留全局清理结果。这一清理发生在写入函数比较基础值之前，即使请求等于旧基础值也会执行。",
+    "函数尾仅同步当前来源的cardsBuffedByThisCard：来源存在且仍有记录时按Contains避免新增重复；记录消失时移除所有匹配目标ID。全局清理不对外来源逐个查找并修复其反向数组。",
+    "六模式完整写入AST调用完整账本AST共276480组，补齐上一轮将账本当受控空边界的缺口。仍控制基础容器、枚举名称、查找/有效性/隐藏/牌库/动作模式和通知回调，不执行客户端真实函数。qqq分别输入false/true，接受保留输入，拒绝显式false。",
+    "当前DoChangeHeavyArmor把普通写入统一放永久来源条目且覆盖amount；mode4也读永久条目。它缺少独立基础/临时字段及typed SetValue/零值存在性，不能直接接入MakeVeteran装甲阶段。",
+    "本轮DeepSeek机械提取范围3529..5702的31个调用和112个变量出现，主agent独立深度遍历逐项全等核验。未将worker解释作为权威证据。"
+  ],
+  "unresolved": [
+    "CardInstance仍由Definition加BuffsBySource派生装甲；必须改为独立BaseHeavyArmor和TemporaryHeavyArmor，并保留来源账本元数据，不能将移除键简单等同基础值回退。",
+    "创建/ResetAttributes/重识别/CopyForStealSide/快照及VM字段桥接需要核对原生字段并连贯迁移；本轮四文件文字盘点不是所有间接路径的穷尽证明。",
+    "ApplyAuraHeavyArmor、RemoveBuffFromSource、压制及恢复目前依赖旧账本派生；需要逐条替换，避免双加或清除临时装甲。",
+    "DoChangeHeavyArmor的正来源/Covert/零量/变化判断、skip和牌库通知门、能力变化回调和动作payload尚待实现及C#回归验证。",
+    "MakeVeteran装甲阶段1189、原始能力位、Fury和完整创建时序仍未接完，完整认证卡数0。"
+  ],
+  "source_reference_inventory": {
+    "scope": "四个指定源码文件内含HeavyArmor或heavyArmor的所有文本行，包含注释及读操作；不等同可达写入穷尽清单",
+    "rows": 62,
+    "files": [
+      "Engine/CardInstance.cs",
+      "Effects/CardApiDispatch.cs",
+      "Effects/CardApi.cs",
+      "Effects/Blueprint/KismetVm.cs"
+    ]
+  },
+  "model_limits": [
+    "Map/array API采用受控值复制模型，非UE原生容器内存实现认证。",
+    "GetEnumeratorUserFriendlyName的名称由SDK枚举名供应，未执行原生枚举显示名路径。",
+    "输入为构造场景；不构成当前对局事件广播、函数重入及真实对象销毁时序的证明。",
+    "本轮仅证据和文档，无生产修复，历史896/896不冒充本轮新增测试。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule457-armor-ledger.py",
+      "bytes": 2360,
+      "sha256": "31065125fa0bccf275665160fff14c7d1738678d45b5ee28856db6c7b79d8e90"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-absolute-ledger.py",
+      "bytes": 7078,
+      "sha256": "9469151deb9b90226b2a24a6fcf68b87792ccc2d2bb2e4052c9db9d68183abdd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-absolute-ledger-model-20261027.json",
+      "bytes": 428,
+      "sha256": "f1c0f78be33bdc80263ece8f66a9dc53980f9c592484636b91610b31d98b0a51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-relative-ledger-model-20261027.json",
+      "bytes": 116,
+      "sha256": "6e63f4d67aebb5f12b857ecd55b5ef7b5e3e0f16a79a92fd4372fe704dfb775f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-integrated-writer-model-20261027.json",
+      "bytes": 446,
+      "sha256": "f987435696db29ed81dce989cc4e6a7ed1bb48b6d996ac862e077d90c762b785"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-live-and-worker-verification-20261027.json",
+      "bytes": 750,
+      "sha256": "29b69a3c1b8f708da2e337fc2c4fe914f2de5318aa31560d07443fb84a5f93f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-heavy-armor-source-refs-20261027.txt",
+      "bytes": 9274,
+      "sha256": "937ec0341728b374b65d52918fdfb6852073ca6861b3d92b22ebc4c562606486"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-worker\\input.json",
+      "bytes": 82917,
+      "sha256": "8b33cc06548c4117657b3b885b7b5a80279868ee8004fc0ef7c3c7b9c2640a10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-worker\\output.json",
+      "bytes": 24794,
+      "sha256": "8a144e847247411dbcae89a0e1d88e4c27b4af9adddd0a51a0e360e0cb0534a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-worker\\task.txt",
+      "bytes": 618,
+      "sha256": "4a943bf28ec07ce92ffd3aa4855f53c9c34681098b10d1f43a1fc1daef129211"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-source-reference-inventory-20261027.json",
+      "bytes": 10709,
+      "sha256": "3a511d40632a4aec171000a0ff4a2b6ae4b5560e20b6c2b38db9625fd93ae390"
+    }
+  ]
+}
