@@ -854,6 +854,11 @@ internal static class SelfTest
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
         new("压制非正来源：装甲入口拒绝后不得兼容清零", db => SuppressionRejectedArmorSource(db, false)),
         new("批量压制输出：动作路径恒false，单卡包装保留原槽", db => SuppressionOutputContract(db, false)),
+        new("批量压制尾部：仅最后缓存对象参与揭示，直接路径", db => SuppressionTailReveal(db, false)),
+        new("批量压制尾部：真实VM、空/重复/无效ID及再次压制", db => SuppressionTailReveal(db, true)),
+        new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
+        new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
+        new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
         new("批量压制输出：真实VM后续分支与单卡输出隔离", db => SuppressionOutputContract(db, true)),
         new("隐蔽压制：装甲子调用拒绝后保留原有装甲", db => SuppressionHiddenArmorGuard(db, false)),
         new("隐蔽压制：VM路径、已揭示对照及兼容恢复", db => SuppressionHiddenArmorGuard(db, true)),
@@ -32522,6 +32527,129 @@ internal static class SelfTest
         return null;
     }
 
+    private static void RunSuppressionBatchProbe(MatchEngine engine, GameState state, int[] ids, int sourceId, Side side, bool vm)
+    {
+        if (!vm) { engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { ids, sourceId, true },
+            new EffectContext { Engine = engine, State = state, Controller = side }, out _); return; }
+        var args = new[] { "ids", "source", "qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+        var program = new KismetProgram(new[] {
+            new KismetStep(0, "call", "SuppressMultipleUnits", args, new[] { 2 }, null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+        engine.Api.Vm.RunLocalProgramMulti(program, new EffectContext { Engine = engine, State = state, Controller = side },
+            new Dictionary<string, object?> { ["ids"] = ids, ["source"] = sourceId, ["qqq"] = true }, "qqq");
+    }
+
+    private static string? SuppressionTailReveal(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_rule466_fixture";
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9, HeavyArmor = 2 };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -1, 20 })
+        foreach (int[] ids in new[] { Array.Empty<int>(), new[] { 60 }, new[] { 60, 61 }, new[] { 61, 60 }, new[] { 60, 60 }, new[] { 60, 9999 }, new[] { 9999, 60 }, new[] { 0, 60 }, new[] { 60, 0 } })
+        foreach (int hidden in Enumerable.Range(0, 4))
+        foreach (bool board in new[] { false, true })
+        foreach (bool immune in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var cards = new[] { state.CreateWithId(name, side, 60, board ? CardLocation.BoardFrontline : CardLocation.Discard, 0),
+                state.CreateWithId(name, side, 61, board ? side.HqOf() : CardLocation.Discard, 0) };
+            var zero = state.CreateWithId(name, side, 0, CardLocation.BoardFrontline, 3); zero.Keywords.Add(Keyword.Covert);
+            for (int i = 0; i < 2; i++) { if ((hidden & (1 << i)) != 0) cards[i].Keywords.Add(Keyword.Covert); if (immune) cards[i].CustomAbility = "cantBeSuppressed"; }
+            RunSuppressionBatchProbe(engine, state, ids, sourceId, side, vm);
+            int last = ids.LastOrDefault(); int revealId = (last is 60 or 61) && (hidden & (1 << (last - 60))) != 0 ? last : -1;
+            for (int i = 0; i < 2; i++) {
+                bool processed = board && !immune && ids.Contains(cards[i].CardId);
+                bool wasHidden = (hidden & (1 << i)) != 0;
+                int armor = processed && sourceId > 0 && !wasHidden ? 0 : 2;
+                if (cards[i].IsSuppressed != processed || cards[i].IsRevealed != (cards[i].CardId == revealId)
+                    || cards[i].Keywords.Contains(Keyword.Covert) != (wasHidden && cards[i].CardId != revealId) || cards[i].HeavyArmor != armor)
+                    return $"suppression tail {side}/{sourceId}/{string.Join(',',ids)}/{hidden}/{board}/{immune}/id{cards[i].CardId}/vm={vm}";
+            }
+            if (zero.IsSuppressed || zero.IsRevealed) return "native GetCardFromID rejects0 even if the headless test map contains it";
+            var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
+            var reveals = actions.Where(x => x.Name == "ZActionRevealCard").ToArray();
+            if (reveals.Length != (revealId > 0 ? 1 : 0) || (revealId > 0 && (reveals[0].Values[0].Value != revealId || reveals[0].Values[1].Value != sourceId))
+                || (revealId > 0 && Array.FindIndex(actions, x => x.Name == "ZActionRevealCard") <= Array.FindIndex(actions, x => x.Name == "ZActionSuppressMultipleUnits")))
+                return "tail must notify one reveal after the whole batch and preserve the raw source";
+            if (ids.SequenceEqual(new[] { 60 }) && (hidden & 1) != 0) {
+                RunSuppressionBatchProbe(engine, state, ids, sourceId, side, vm);
+                if (cards[0].HeavyArmor != (board && !immune && sourceId > 0 ? 0 : 2)
+                    || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRevealCard") != 1)
+                    return "a later separate suppression sees the prior tail reveal; duplicates in one batch do not";
+            }
+            cases++;
+        }
+        return cases == 576 ? null : $"tail reveal profiles={cases}";
+    }
+
+    private static string? SuppressionTailReplacement(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_arado_ar_196";
+        using var own = InstallSelectionDrawProbe(name, "OnSuppressed");
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -1, 20 })
+        foreach (bool rename in new[] { false, true })
+        foreach (bool cachedHidden in new[] { false, true })
+        foreach (bool replacementHidden in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var cached = state.CreateWithId(name, side, 60, CardLocation.BoardFrontline, 0); cached.Keywords.Add(Keyword.Covert);
+            state.CreateWithId("card_unit_51e_regiment", side, 90, side.DeckOf(), 0);
+            CardInstance? replacement = null; bool mutated = false;
+            using var probe = InstallDrawReentryProbe(state, () => {
+                if (mutated) return; mutated = true;
+                if (!cachedHidden) cached.Keywords.Remove(Keyword.Covert);
+                int id = rename ? 61 : 60;
+                if (!rename) state.Remove(cached); else typeof(CardInstance).GetProperty(nameof(CardInstance.CardId))!.SetValue(cached, id);
+                replacement = state.CreateWithId(PlainUnit, side, id, CardLocation.Discard, 0);
+                if (replacementHidden) replacement.Keywords.Add(Keyword.Covert); else replacement.Keywords.Remove(Keyword.Covert);
+                replacement.IsRevealed = false;
+            });
+            RunSuppressionBatchProbe(engine, state, new[] { 60 }, sourceId, side, vm);
+            if (!mutated || replacement is null) return "suppression own reentry probe did not run";
+            if (cached.IsRevealed || replacement.IsRevealed != cachedHidden
+                || (cachedHidden && replacement.Keywords.Contains(Keyword.Covert))
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionRevealCard") != (cachedHidden ? 1 : 0))
+                return $"tail cached predicate / fresh ID lookup {side}/{sourceId}/{rename}/{cachedHidden}/{replacementHidden}/vm={vm}";
+            cases++;
+        }
+        return cases == 32 ? null : $"tail replacement profiles={cases}";
+    }
+
+    private static string? RevealMovementSentinel(CardDatabase db)
+    {
+        using var probes = InstallRemovedSubjectProbes();
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation location in new[] { CardLocation.BoardFrontline, side.HandOf(), side.DeckOf() })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int sourceId in new[] { -1, 0, 20 })
+        foreach (bool mapZero in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId("card_unit_133rd_ironman", side, 60, location, 0); target.Keywords.Add(Keyword.Covert);
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var observer = state.CreateWithId("card_unit_typhoon_mk_ib", side, 61, side.DeckOf(), 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardLocationMoved" } };
+            if (mapZero) state.CreateWithId(PlainUnit, side, 0, CardLocation.Discard, 0);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.RevealCard(target, sourceId);
+            const string prefix = "_r409_OnOtherCardLocationMoved_";
+            if (!observer.BlueprintVariables.ContainsKey(prefix + "cardMoved") || observer.BlueprintVariables[prefix + "cardMoved"] is not null
+                || Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault(prefix + "oldLocation")) != 0
+                || Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault(prefix + "newLocation")) != (int)location
+                || Reached(trace, "OnCardLocationMoved", target))
+                return "RevealCard must route movement with CardID0, None old location, current new location, and null subject";
+            cases++;
+        }
+        return cases == 72 ? null : $"reveal movement profiles={cases}";
+    }
+
     // RULE-465: batch1268 assigns false; single64B stores it only in a local.
     private static string? SuppressionOutputContract(CardDatabase db, bool vm)
     {
@@ -35933,12 +36061,14 @@ internal static class SelfTest
 
         if (!Reached(trace, "OnCardRevealed", target)
             || !Reached(trace, "OnOtherCardRevealed", revealObserver)
-            || !Reached(trace, "OnOtherCardEnterPlay", state.ById(43)!)
-            || !Reached(trace, "OnCardLocationMoved", target))
+            || !Reached(trace, "OnOtherCardEnterPlay", state.ById(43)!))
         {
             return "揭示/入场事件未按蓝图到达主体与旁观订阅卡："
                  + string.Join(" | ", trace.Take(12));
         }
+
+        if (Reached(trace, "OnCardLocationMoved", target))
+            return "native RevealCard passes movement CardID0, not the revealed card";
 
         int selfReveal = trace.FindIndex(t => t.StartsWith($"OnCardRevealed → {target.Name}#{target.CardId}", StringComparison.Ordinal));
         int otherReveal = trace.FindIndex(t => t.StartsWith($"OnOtherCardRevealed → {revealObserver.Name}#{revealObserver.CardId}", StringComparison.Ordinal));

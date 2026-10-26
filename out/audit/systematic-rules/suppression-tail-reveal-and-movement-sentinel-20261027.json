@@ -1,0 +1,184 @@
+{
+  "rule_id": "RULE-466",
+  "date": "2026-10-27",
+  "base_commit": "faa0d0da97f22f4816b2237f60d6082ab712fad2",
+  "status": "已接通无头批量压制尾部有效对象揭示，并修正揭示移动通知的ID0参数",
+  "scope": "有效重新查找目标下，按最后缓存引用检查隐藏，再以其当前ID重新查找；不把它扩展成逐卡揭示或完整UObject失效/异常认证。",
+  "findings": [
+    "新采集/复读SuppressMultipleUnits8101字节、RevealCard1243字节及ExecuteOnCardLocationMoved856字节，头/脚本及独立重解码全等。",
+    "批量所有输入查找完成后，1117动作门和1150缓存_card隐藏检查才决定1205是否调用RevealCard。最后输入无效会把缓存覆盖为空，不能保留最后一个有效对象；输入0通过既有GetCardFromID非正拒绝，即使头部测试映射人为含0也不得处理。",
+    "RevealCard5重新按传入CardID查找并将结果缓存在cardRevealed，56/89写揭示位/清Covert，122刷掩护，200通知，后续揭示/入场再到移动通知。不再检查查找所得对象的Covert，所以缓存对象隐藏而同ID替代对象不隐藏时也会揭示替代对象。",
+    "现SuppressUnits保存每次GetCardFromID结果（包括最后空值），循环结束再检查缓存引用；从缓存对象读取当前ID并重新GetCardFromID，查到对象才调用现有RevealCard。揭示在整个批次之后，不改变批内重复对象压制时的隐蔽门；随后独立第二次压制可以观察到已揭示状态。",
+    "RevealCard1083对移动辅助函数显式传CardID0、OldLocation0、cardRevealed.Location、false、MoveReason12。旧代码传实际被揭示对象，会误发其自身OnCardLocationMoved并让旁观者收到错误主体。现调用既有ExecuteOnCardLocationMovedById(0,...)；查找0为null，T47观察者仍收到null主体及当前位置。",
+    "新增5项测试共1288场景：批量直接/VM各576，受控自己回调替换/改ID直接/VM各32，揭示移动72。覆盖空/无效/0/混合/重复/顺序列表、在场及免疫、来源正负、隐藏组合、同批与分批、缓存隐藏判定与新对象隐藏状态独立、合成映射0，以及移动null主体。改ID测试通过反射模拟原生可写ID，不扩展生产CardId的init-only接口。",
+    "修正1项历史测试的错误断言：RevealCardSemantics以前要求目标自身收到OnCardLocationMoved；当前原生常量0调用不支持该断言，改为要求不对揭示目标派发该自身事件。相同915项测试旧909通过6失败（5新增+1纠错），修复915/915。",
+    "644组离线串联：批量尾部576、替代对象32、直接揭示/移动36。执行完整RevealCard及完整移动辅助AST，批量清理/数值体按原继续地址跳过；观察者、回调、枚举名与null上下文默认值受控。验证查找顺序、缓存与新对象区分、移动参数0及事件顺序；不认证全部真实卡效果。",
+    "DeepSeek从三函数提取9个查找/揭示/移动关键调用，主agent独立递归逐项全等复核。"
+  ],
+  "verification": {
+    "rule": "RULE-466",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "RevealCard",
+        "bytes": 1243,
+        "sha256": "fda7bb663f3182b673b90fbe4199525cf963219903ef34c11becf942d96fdf87"
+      },
+      {
+        "name": "SuppressMultipleUnits",
+        "bytes": 8101,
+        "sha256": "6661b1ce6a5e825856328438eb7c76f4c9460116c147a35bce4a3c059bdacc0f"
+      },
+      {
+        "name": "ExecuteOnCardLocationMoved",
+        "bytes": 856,
+        "sha256": "a3ee4dc9cceda99c37697b6e8ad7874aa0d97fe6f39eb8f96c3356c77f0b8b04"
+      }
+    ],
+    "offline_cases": {
+      "batch_chain": 576,
+      "replacement_chain": 32,
+      "reveal_movement": 36
+    },
+    "case_digest_sha256": {
+      "batch_chain": "796fb816381e5359350042789e70a48d8a8a79e55e4a7227eea032c52891d96e",
+      "replacement_chain": "82e1c45614e7d6300bb3a5434c3399f26cecfb913845c0bae2cea8a3d0ca83da",
+      "reveal_movement": "2480125f50c4bcbaa588aa2289a7b1e876eb782736064f24f5975063cf1de328"
+    },
+    "worker_exact_calls": 9,
+    "scope": "Complete control flow of batch tail + complete RevealCard1243B + complete movement helper856B. Suppression cleanup/numeric bodies skipped, callbacks/queries/enum naming and null context defaults controlled. Valid relookup targets only; no certification of disappeared relookup object or UE lifetime/exceptions.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 5,
+    "new_profiles": {
+      "batch_direct": 576,
+      "batch_VM": 576,
+      "replacement_direct": 32,
+      "replacement_VM": 32,
+      "reveal_movement": 72,
+      "total": 1288
+    },
+    "corrected_existing_case": "RevealCardSemantics: movement input0 is not revealed card ID",
+    "baseline": {
+      "total": 915,
+      "passed": 909,
+      "failed": 6
+    },
+    "fixed": {
+      "total": 915,
+      "passed": 915,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "循环缓存每次正ID查找结果；尾部缓存隐藏检查后重新按当前ID找有效对象；揭示移动回调传原生常量0。"
+  },
+  "unresolved": [
+    "缓存对象仍存在但重新查找已消失时，当前头部适配跳过无目标揭示；原生RevealCard空上下文、通知/观察者、异常中断及默认局部残值未完全认证。",
+    "真正UObject pending-kill/GC、线程及对象生存期不是本轮托管引用/离线模型可证明的范围。",
+    "揭示观察者、入场及移动回调的全部重入/注册顺序、同ID或同对象候选、原始能力位映射仍有既有边界；本轮模型供应受控观察者。",
+    "正来源可见单位压制仍错误清除临时装甲；独立分量/累计/模式4/typed SetValue和通知，以及生命周期/老兵迁移仍待完成。",
+    "单卡版本迁移和非动作路由实现继续暂停/开放；本次针对无头动作路径。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "只读客户端/SDK/解包资产，无旧回放或names.txt权威。",
+    "不写进程、不注入、不调用真实游戏函数。",
+    "模型完整性限于声明函数及受控边界，不据此声称完整压制或所有PvP1:1。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule466-veteran-query-headers-20261027.json",
+      "bytes": 4744416,
+      "sha256": "d70bf2b454cd1f712211a33d5a88ce6e4bc067b25bddfb7e75e001393716d790"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule466-movement-helper-native-20261027.json",
+      "bytes": 4516610,
+      "sha256": "71491c32831f04c48cb9dcf5b17defd4b4057749ad848138d34f432b6be80fb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule466-suppression-reveal.py",
+      "bytes": 2370,
+      "sha256": "ce27e0c46fbb0b94bd01f8208eb8732f8712c194413a3a5ea965dc9e6eca8b3e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule466-movement-helper.py",
+      "bytes": 2364,
+      "sha256": "b81839b55ba0dbc47ba5461ee8dcf15e6b6edc2f42ac9b62ce40a0033214cb09"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule466.py",
+      "bytes": 9534,
+      "sha256": "3415e8a973ca483e04e438e44ab0a30dcd0bedf51d92f3ca11adfe497a0ed20e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-tail-reveal-verification-20261027.json",
+      "bytes": 1500,
+      "sha256": "bba9522fb58f7699235fe3acf193d70d1f1c6b000e97822b847ea99f05bcce52"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-worker\\input.json",
+      "bytes": 137068,
+      "sha256": "2869d7049e9557b9d2f6127c63601306879b153d7240ac2baec07d7e07a5e5fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-worker\\output.json",
+      "bytes": 4811,
+      "sha256": "e83950148aa68ca082defeb982008f2fddc353a1e1026b3eb8c9bdd3f6ff55ee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-worker\\task.txt",
+      "bytes": 515,
+      "sha256": "488024b3fb042644a14edd1644095f438dc71c3364226d3f3a22ff6c2419e1f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "bytes": 9079,
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-baseline-selftest.log",
+      "bytes": 80506,
+      "sha256": "664a03480c217f4ca5b7a43877d01ef109afea846b95f1807ce97e57d0dafa28"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-final-selftest.log",
+      "bytes": 80037,
+      "sha256": "ecdf2c2601fec14c48a159aeef35f099821d8d82664f1367a745c461bc6b155f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule466-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

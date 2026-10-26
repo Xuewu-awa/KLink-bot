@@ -2540,7 +2540,10 @@ public sealed partial class CardApi
             eventArgs: new object?[] { card, 4 }, eventSubject: card,
             broadcastName: true);
 
-        _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, card.Location);
+        // RULE-466: native reveal1083 passes the literal CardID0 sentinel,
+        // not the revealed object's ID. Observers receive the helper's lookup.
+        _engine.ExecuteOnCardLocationMovedById(0, CardLocation.NotAvailable,
+            card.Location, false, CardMoveReason.Uncategorized);
         return 0;
     }
 
@@ -4418,12 +4421,22 @@ public sealed partial class CardApi
             ActionValue2.Str("cardsToSuppress", string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
             ActionValue2.Int("instigatorID", instigatorId),
         });
+        CardInstance? lastCard = null;
         foreach (int id in ids)
-            if (State.ById(id) is { } target) SuppressUnitCore(target, instigatorId);
+        {
+            // Native caches every lookup, including a final missing result.
+            lastCard = GetCardFromID(id);
+            if (lastCard is { } target) SuppressUnitCore(target, instigatorId);
+        }
+        // RULE-466: tail1150 tests the cached object, then RevealCard5 looks
+        // up its current ID again. A replacement need not itself be Covert.
+        if (lastCard is { } cached && IsUnrevealedCovertCard(cached)
+            && GetCardFromID(cached.CardId) is { } current)
+            RevealCard(current, instigatorId);
     }
 
-    // Per-card compatibility body. Complete T58/T11 and trailing reveal still
-    // require separate native reconciliation.
+    // Per-card compatibility body. Callback phase ordering and independent
+    // armor fields remain open; valid-object batch tail routing is above.
     private void SuppressUnitCore(CardInstance target, int? instigatorId)
     {
         // RULE-347: native489..656 checks board && !cantBeSuppressed only.
