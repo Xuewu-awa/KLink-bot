@@ -4730,7 +4730,7 @@ public sealed partial class CardApi
     /// The own hook at2806 is only on the unsuppressed branch, then2842
     /// continues to the T32 query at2463. Both branches reach abilities2782;
     /// the execution-flow stack returns after that observer loop.
-    /// Template changes and the enclosing IsActionProcess boundary remain open.
+    /// Armor/raw ability changes and the enclosing IsActionProcess boundary remain open.
     /// </summary>
     public void MakeVeteran(CardInstance target)
     {
@@ -4743,9 +4743,17 @@ public sealed partial class CardApi
         {
             target.Keywords.Add(Keyword.Veteran);
             // RULE-452: native MakeVeteran i=724 writes this marker before
-            // later effects/notifications query IsVeteran. Other upgrade
-            // template changes and event gates remain open.
+            // later effects/notifications query IsVeteran. Armor/raw ability and outer action-mode stages remain open.
             JsonSetBool(target, "veteran", true);
+            // RULE-455: native i=766 caches the upgrade object, then i=867,
+            // 983 and1058 use absolute mode5 in this order. Each primitive
+            // retains its own guards/callbacks; do not stop the whole upgrade
+            // merely because an earlier callback changes the card's state.
+            var veteran = NativeStaticCardInstance(FindVeteranDefinition(State.Database, target)!);
+            var context = new EffectContext { Engine = _engine, State = State, Self = target, Controller = target.Owner };
+            DoChangeAttack(context, null, new object?[] { target, target.CardId, veteran.BaseAttack, 5, false, null });
+            DoChangeDefense(context, null, new object?[] { target, target.CardId, veteran.Defense, 5, false, null });
+            DoChangeOperationCost(context, null, new object?[] { target, target.CardId, veteran.BaseOperationCost, 5, false, false, false });
             _engine.FireSubAction("ZActionMakeVeteran", new[]
             {
                 ActionValue2.Int("cardID", target.CardId),

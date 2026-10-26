@@ -1,0 +1,214 @@
+{
+  "rule_id": "RULE-455",
+  "date": "2026-10-26",
+  "base_commit": "ce3b81ef0b2f6c185226db74314b8e5b7ae3bc1a",
+  "status": "已接通老兵攻击/防御/行动费模板模式5，并修复相邻生成老兵化与基础攻击复制的相对顺序",
+  "scope": "MakeVeteran724..1058三个数值调用及SpawnNextToCard老兵化/攻击复制相对顺序。装甲、原始能力、Fury及完整创建时序继续开放。",
+  "findings": [
+    "当前MakeVeteran于724写JSON标记，766/807缓存升级对象，826读取其getAndDecryptAttack并于867以自身ID和模式5 ChangeAttack，942/983同理读取/设置防御，1058以模板operationCost模式5 ChangeOperationCost。三者skip标志均false，目标ID在每个调用点读取；不是按差值统一加成，也不替换整张Definition。",
+    "旧托管主体在JSON标记后直接进入通知/事件，完全没有这三步。现缓存NativeStaticCardInstance升级投影，按原顺序调用现有DoChangeAttack/Defense/OperationCost的模式5实现，保留各原语自己的守卫、来源账本、通知及回调。不在整条链上额外加中途生命检查或重新读升级模板。",
+    "攻击更新当前基础和最大值，临时攻击分量保留；防御更新当前/最大值；行动费更新基础分量并保留临时分量。三个绝对模式清理相应永久类型账本，其他字段如现有装甲账本仍保留。本轮复用此前绝对模式原语的有界审计，不称重新穷尽了三个原语所有分支和外部调用。",
+    "新增288组私有模板场景：攻击-3/0/13/120、防御1/17/120、行动费-2/1/120、双方、临时分量-2/3、抑制真假；检查夹取、永久清理/临时保留、公开攻击不误同步、原名称/Definition不替换、无关装甲保持。装甲保持在此是未接通阶段边界，并非声明客户端升级应保留旧装甲。",
+    "新增4组真实VM回调重入探针：攻击回调发一次受控抽牌/创建标记通知，回调必须实际发生且看见新基础攻击13、旧防御8、旧行动费4及JSON标记。可选将防御改0，后续防御原语拒绝、最大防御保持21，而行动费仍到1、临时费-2保留。探针被严格回收，不把该行为当作Arado真实卡效果。",
+    "接通数值后，已有相邻生成测试暴露旧顺序错误：托管先复制攻击后MakeVeteran，新模板数值覆盖复制结果。Native SpawnNextToCard138在共享生成内传MakeVeteran，332起才复制；链上SpawnCardToBoard1650传至CreateCard1004。现托管至少将MakeVeteran移到复制之前；完整CreateCard/T35/落场通知阶段仍待单独接通。",
+    "Native复制两次读取getAndDecryptAttack，指向基础分量；旧托管用聚合Attack。现用unchecked基础差值，并保留永久模式1。原相邻测试增加来源临时攻击3，断言复制基础11、目标临时0，保留原位置、金卡、老兵和原位置卡顺延断言；不是把结果改成升级模板4来迁就旧顺序。",
+    "资格测试允许分支原先要求总通知只有1；数值原语现在合法增加通知，改为精确检查ZActionMakeVeteran仍只有1，拒绝时完整快照及全部通知零变化断言不变。",
+    "最终相同894项测试旧实现891通过、3失败，修复894/894。最初2/894失败以及仅数值接通后1个相邻顺序失败日志分别保留。DeepSeek10条原始数值阶段节点经主agent精确核验；caller八节点72组以原语契约为受控边界验证顺序及不中断后续调用。7段脚本共20172字节复读重解码一致。"
+  ],
+  "verification": {
+    "rule": "RULE-455",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "name": "ChangeDefense",
+        "bytes": 5743,
+        "sha256": "67861225bae1ae7bc490f6aa87b65b821f275aa347c5327b6720cad5b9aaefd5"
+      },
+      {
+        "name": "ChangeAttack",
+        "bytes": 2713,
+        "sha256": "4c18ce95ebdec0a1483aaa2f45c155fa37a05c58c7ab1ecf4ca4796c36bc3d54"
+      },
+      {
+        "name": "ChangeOperationCost",
+        "bytes": 3171,
+        "sha256": "dfa5c31c302ba6c77019a4c1136c0e201547d2ed999dc5348a25e41465716d4d"
+      },
+      {
+        "name": "MakeVeteran",
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      {
+        "name": "SpawnNextToCard",
+        "bytes": 589,
+        "sha256": "cdf9f24208b6c4cd813a2715da4d08789b734526ac04592d4cfe4141b83445ef"
+      },
+      {
+        "name": "SpawnCardToBoard",
+        "bytes": 1917,
+        "sha256": "0719d50282a7313cbc5431b334393ba01ad8f4d80fdebcfc151c8ed1611c2069"
+      },
+      {
+        "name": "CreateCard",
+        "bytes": 3115,
+        "sha256": "5c6f1e39f163b4b86a28539d3f12017d4a09322d4ee7695bd8cd3f1be8d61db3"
+      }
+    ],
+    "total_script_bytes": 20172,
+    "all_headers_scripts_redecode_equal": true,
+    "worker_exact_rows": 10,
+    "worker_input_rows": 81,
+    "caller_slice_reference_cases": 72,
+    "new_numeric_scenarios": 288,
+    "new_reentry_scenarios": 4,
+    "updated_copy_scenarios": 1,
+    "baseline": {
+      "total": 894,
+      "passed": 891,
+      "failed": 3
+    },
+    "fixed": {
+      "total": 894,
+      "passed": 894,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "scope": "Caller stage and relative copy order; existing mode5 primitive contracts are reused and their fresh scripts revalidated, not every transitive path re-certified. Armor/raw abilities/Fury/full creation timing still open.",
+    "no_game_writes": true
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "new_scenarios": 292,
+    "updated_copy_scenario": 1
+  },
+  "limitations": [
+    "ChangeHeavyArmor模式5尚未认证/接入；现有适配器按来源写入数值不能直接当作正确绝对升级使用。",
+    "原始Ambush/Blitz/Fury/Mobilize/Shock等字段、EffectType、Smokescreen/Guard处理和Fury攻击额度尚未接通。",
+    "CreateCard老兵化应在自身创建回调后、T35前，当前共享战场包装仍有后置阶段；本轮只修复相邻生成与复制的相对先后，不伪装完整阶段已闭合。",
+    "静态对象字段共享突变、ID映射替换、任意回调重入和外层IsActionProcess模式仍未穷尽。模板与原语投影沿用此前边界。",
+    "完整认证卡数0；不引用旧回放权威，不做单卡版本迁移，无游戏进程写入/注入/实际函数调用。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule455-salvage-creation-native-20261026.json",
+      "bytes": 4883529,
+      "sha256": "1f5ee64f1dcf8e186d8e3015af2bf11ef48bbab963e7f5ae71943d04ca1ee695"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule449-salvage-creation-native-20261026.json",
+      "bytes": 4672067,
+      "sha256": "0289f4fd15dae4aebbf86cd5bb135e532b4bf12138fee13f2cb57e241c2ca8e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule450-salvage-creation-native-20261026.json",
+      "bytes": 4551048,
+      "sha256": "dada290a241b607b72e7acd1ef5f012623173fd4b28e796216367ae53fdd9929"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-salvage-creation-native-20261026.json",
+      "bytes": 4704738,
+      "sha256": "1cc1ca92381b8b7ce17d5662e4e23d309b1f7e0ba697ba09a6122f9df3a8158c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule455-veteran-numeric.py",
+      "bytes": 2404,
+      "sha256": "4f4831e594ffffcf8a6185d1634dcaadb9e18b5e3002a4bf27ad6dd316ff9cc3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule455.py",
+      "bytes": 7350,
+      "sha256": "5318a14c392807f8eb6a512a2ba92bc53f6ab607a7320b4babf7d387502d9143"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-final-verification-20261026.json",
+      "bytes": 1945,
+      "sha256": "61ad1db5543d4d328d8885fd3b4bc0b7b0844b407b6717d5e8a2598280dad873"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-numeric-stage-reference-20261026.json",
+      "bytes": 39797,
+      "sha256": "688077a195ace8900d5afbf40079fe2705ce76c3aa2a5cb4e84a5909190eb5e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule455-final-tests.py",
+      "bytes": 821,
+      "sha256": "6cf1cccd53d27f7b13c155f13ae6d18777c5a4d7fc516a3e7b1b158cccafb43a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-baseline-selftest.log",
+      "bytes": 78713,
+      "sha256": "e8ad970b52784d307cc87dfd6c6b55a9eb1ee50c52de8fecf698758c1cade7e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-first-fixed-selftest.log",
+      "bytes": 78684,
+      "sha256": "6d6f3aced443e1b417f1706aaac65cb1de34372ec78cb5976848762fedbd4694"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-first-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-final-tests-baseline-selftest.log",
+      "bytes": 78850,
+      "sha256": "27573ebed6e06e4eced57a5d0d12164f375cfc651dd1091846c2133f97768140"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-final-tests-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-final-updated-tests-selftest.log",
+      "bytes": 78547,
+      "sha256": "24376d5f5bb22beef9ce1ea1210d35b9af95f023417e4ca8f66455ed46566302"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-final-updated-tests-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-worker\\task.txt",
+      "bytes": 373,
+      "sha256": "303a0734aa769a5bf811855a5ddcf5aae4fb095c87006f82456c6c18c027f7db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-worker\\input.json",
+      "bytes": 36626,
+      "sha256": "1fb795702936cb49c7efe929b6b4418fa867040aa7a83aff56c46adca9fdb0fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule455-worker\\result.json",
+      "bytes": 6295,
+      "sha256": "f707f0d892034f9b144c6dbb14391dd577638b8ebcf213927aa15548f3f2f341"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-225101-rule455-veteran-numeric-calls-e2688c9a\\job.json",
+      "bytes": 737,
+      "sha256": "47c4c5ccf7e0fa075f6a2228b79db7cea62c4ee4700aeaf81b04985f585e0978"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-225101-rule455-veteran-numeric-calls-e2688c9a\\answer.txt",
+      "bytes": 1276,
+      "sha256": "b2ffac3c69c2b1e101576643ca8b66a3223deae21be75899648e01758ac857cc"
+    }
+  ]
+}

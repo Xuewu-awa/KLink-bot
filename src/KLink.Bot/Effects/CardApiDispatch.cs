@@ -5377,18 +5377,19 @@ public sealed partial class CardApi
 
         spawned.LocationNumber = insertNumber;
 
+        // RULE-455: the shared native spawn upgrades before the copy stage.
+        if (TruthyArg(a, 7))
+        {
+            MakeVeteran(spawned);
+        }
+
         if (TruthyArg(a, 4))
         {
-            int delta = spawner.Attack - spawned.Attack;
+            int delta = unchecked(spawner.BaseAttack - spawned.BaseAttack);
             if (delta != 0)
             {
                 ChangeAttack(spawned, delta, spawned);
             }
-        }
-
-        if (TruthyArg(a, 7))
-        {
-            MakeVeteran(spawned);
         }
 
         return spawned.CardId;

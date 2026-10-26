@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("老兵数值：攻击防御行动费使用模板模式5并保留临时分量", VeteranNumericTemplate),
+        new("老兵数值：攻击回调先于防御行动费且不中止后续原语", VeteranNumericReentry),
         new("老兵升级尾段：双方广播、自身抑制门与回调先后", VeteranNotificationBranch),
         new("老兵升级资格：在场、升级存在、正防御及JSON状态，直接入口", db => VeteranEligibility(db, false)),
         new("老兵升级资格：抑制与关键字独立、拒绝不写状态，VM入口", db => VeteranEligibility(db, true)),
@@ -32504,6 +32506,81 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? VeteranNumericTemplate(CardDatabase db)
+    {
+        const string name = "card_unit_rule455_fixture";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (int attack in new[] { -3, 0, 13, 120 })
+        foreach (int defense in new[] { 1, 17, 120 })
+        foreach (int operation in new[] { -2, 1, 120 })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", FactionId = 5, Attack = 7, Defense = 9, Kredits = 6, OperationCost = 4 };
+            defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", FactionId = 5, Attack = attack, Defense = defense, OperationCost = operation };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int temporary in new[] { -2, 3 })
+            foreach (bool suppressed in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                card.BaseAttack = 2; card.TemporaryAttack = temporary; card.MaxAttack = 91;
+                card.Defense = 8; card.MaxDefense = 21; card.BaseOperationCost = 4; card.TemporaryOperationCost = temporary;
+                card.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Attack = 5, Defense = 6, OperationCost = 7, HeavyArmor = 2 };
+                card.BuffsBySource[(60, false)] = new CardBuff { SourceCardId = 60, Attack = 2, Defense = 2, OperationCost = 2, HeavyArmor = 1 };
+                card.BuffsBySource[(40, true)] = new CardBuff { SourceCardId = 40, Temporary = true, Attack = temporary, Defense = 3, OperationCost = temporary };
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                engine.Api.MakeVeteran(card);
+                if (card.BaseAttack != Math.Clamp(attack, 0, 99) || card.MaxAttack != Math.Clamp(attack, 0, 99)
+                    || card.TemporaryAttack != temporary || card.PublicAttack != 7
+                    || card.Defense != Math.Clamp(defense, 0, 99) || card.MaxDefense != Math.Clamp(defense, 0, 99)
+                    || card.BaseOperationCost != Math.Clamp(operation, 0, 99) || card.TemporaryOperationCost != temporary
+                    || card.PublicKreditCost != 6 || card.Name != name || !ReferenceEquals(card.Definition, defs[name]))
+                    return $"veteran numeric template {attack}/{defense}/{operation}/{side}/{temporary}/{suppressed}: attack={card.BaseAttack}/{card.MaxAttack}, defense={card.Defense}, op={card.BaseOperationCost}";
+                if (card.BuffsBySource.Where(x => !x.Key.Temporary).Any(x => x.Value.Attack != 0 || x.Value.Defense != 0 || x.Value.OperationCost != 0)
+                    || card.BuffsBySource[(40, true)].Attack != temporary || card.BuffsBySource[(40, true)].Defense != 3 || card.BuffsBySource[(40, true)].OperationCost != temporary
+                    || card.HeavyArmor != 3 || !engine.Api.JsonGetBool(card, "veteran"))
+                    return "mode5 must clean numeric permanent ledgers, preserve temporary entries and unrelated armor; armor upgrade remains unaudited";
+                cases++;
+            }
+        }
+        return cases == 288 ? null : $"numeric veteran profiles={cases}";
+    }
+
+    private static string? VeteranNumericReentry(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 7, Defense = 9, OperationCost = 4 };
+        defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", Attack = 13, Defense = 17, OperationCost = 1 };
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        using var program = InstallSelectionDrawProbe(name, "OnAfterChangeAttack");
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool zeroDefense in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+            state.CreateWithId("card_unit_51e_regiment", side, 120, side.DeckOf(), 0);
+            var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            card.BaseAttack = 2; card.TemporaryAttack = 3; card.Defense = 8; card.MaxDefense = 21; card.TemporaryOperationCost = -2;
+            int callbacks = 0; bool stateAtCallback = true;
+            using var reentry = InstallDrawReentryProbe(state, () => {
+                callbacks++; stateAtCallback &= card.BaseAttack == 13 && card.Defense == 8 && card.BaseOperationCost == 4 && engine.Api.JsonGetBool(card, "veteran");
+                if (zeroDefense) card.Defense = 0;
+            });
+            engine.Api.MakeVeteran(card);
+            if (callbacks != 1 || !stateAtCallback || card.BaseAttack != 13 || card.TemporaryAttack != 3
+                || card.Defense != (zeroDefense ? 0 : 17) || card.MaxDefense != (zeroDefense ? 21 : 17)
+                || card.BaseOperationCost != 1 || card.TemporaryOperationCost != -2)
+                return $"ordered numeric reentry {side}/{zeroDefense}: callbacks={callbacks}, seen={stateAtCallback}, def={card.Defense}/{card.MaxDefense}, op={card.BaseOperationCost}";
+            cases++;
+        }
+        return cases == 4 ? null : $"numeric reentry profiles={cases}";
+    }
+
     private static string? VeteranNotificationBranch(CardDatabase db)
     {
         const string root = "card_unit_rule454_tail";
@@ -32589,11 +32666,12 @@ internal static class SelfTest
                     }, 0), ctx, null);
                 }
                 int emitted = state.ActionLog.Sum(a => a.SubActions.Count) - actions;
+                int upgrades = state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionMakeVeteran");
                 if (!eligible) {
                     if (emitted != 0 || System.Text.Json.JsonSerializer.Serialize(target.Snapshot()) != before)
                         return $"rejected upgrade mutated state {upgrade}/{side}/{location}/{defense}/{json}/{suppressed}/{keyword}/vm={vm}";
                 }
-                else if (!target.Keywords.Contains(Keyword.Veteran) || !engine.Api.JsonGetBool(target, "veteran") || emitted != 1)
+                else if (!target.Keywords.Contains(Keyword.Veteran) || !engine.Api.JsonGetBool(target, "veteran") || upgrades != 1)
                     return $"eligible branch not entered {upgrade}/{side}/{location}/{defense}/{json}/{suppressed}/{keyword}/vm={vm}, events={emitted}";
                 cases++;
             }
@@ -42630,7 +42708,7 @@ internal static class SelfTest
         var (engine, state) = EmptyBoard(db);
         var spawner = state.CreateWithId(spawnerName, Side.Left, 100,
             CardLocation.BoardFrontline, 2, isGold: true);
-        spawner.Attack = 11;
+        spawner.Attack = 11; spawner.TemporaryAttack = 3; // Native copy reads the base component.
         var existing = state.CreateWithId(spawnerName, Side.Left, 101,
             CardLocation.BoardFrontline, 3);
         var ctx = new EffectContext
@@ -42652,7 +42730,7 @@ internal static class SelfTest
             || spawned.LocationNumber != 3
             || !spawned.IsGold
             || !spawned.Keywords.Contains(Keyword.Veteran)
-            || spawned.Attack != spawner.Attack)
+            || spawned.BaseAttack != spawner.BaseAttack || spawned.TemporaryAttack != 0)
         {
             return $"生成卡应在前线位置 3、继承金卡/老兵并复制攻击力，实际="
                  + $"{spawned?.Location}/{spawned?.LocationNumber}, gold={spawned?.IsGold}, "
