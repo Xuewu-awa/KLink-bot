@@ -1836,27 +1836,25 @@ public sealed class MatchEngine
             .Where(x => x.Definition.IsRegisteredFor("OnOtherCardPlayedFromHand"))
             .Concat(triggerCards.Where(x => x.Definition.IsRegisteredFor("OnOtherCardEnterPlay")))
             .ToArray();
+        // CardPlayedFromHand i2243/2527 stores IDs before own entry/deployment.
+        if (card.Definition.WaitForHandTarget)
+        {
+            State.ClearWaitPlayFromHandCards();
+            foreach (var recipient in playedCardTriggerSnapshot) State.AddWaitPlayFromHandCards(recipient.CardId);
+        }
         Api.FireTrigger("OnEnterPlay", card, card.Owner,
             eventArgs: new object?[] { 1 },
             namedArgs: new Dictionary<string, object?> { ["Method"] = 1 });
 
         void ContinuePlay(bool waited, CardInstance? responseCard)
         {
-            var played = waited ? responseCard : card;
-            // AfterWait uses the current active gotchas and the pre-deployment
-            // T51/T43 snapshot. Immediate play uses the captured after-play list.
-            if (waited) State.StopFurtherActions = false;
-            IEnumerable<CardInstance> gotchas = waited
-                ? Api.GetActiveGotchasOrdered().Select(State.ById).OfType<CardInstance>()
-                : afterPlayGotchas;
             if (waited)
             {
-                gotchas = gotchas.ToArray();
-                foreach (var gotcha in gotchas)
-                    if (!CardApi.CustomNameHasAttribute(gotcha, "customName1", "gotchaAfterPlayFromHand"))
-                        cardsDone.Add(gotcha.CardId);
+                Api.ExecuteAfterWaitCardPlayFromHand(responseCard);
+                return;
             }
-            foreach (var observer in gotchas.Concat(playedCardTriggerSnapshot))
+            var played = card;
+            foreach (var observer in afterPlayGotchas.Concat(playedCardTriggerSnapshot))
             {
                 if (State.StopFurtherActions) break;
                 if (!cardsDone.Add(observer.CardId)) continue;
@@ -1891,6 +1889,7 @@ public sealed class MatchEngine
         if (card.Keywords.Contains(Keyword.Pincer) && ResolveTarget() is { } pincerTarget)
             Api.ApplyPincerEffects(card, pincerTarget);
 
+        State.ShouldExecuteWaitPlayFromHand = waitsForTarget && effectExecuted;
         if (inlineReply && effectExecuted)
         {
             _waitPlayContinuations.Remove(card.CardId);

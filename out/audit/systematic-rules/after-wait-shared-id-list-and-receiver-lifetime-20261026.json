@@ -1,0 +1,259 @@
+{
+  "rule_id": "RULE-435",
+  "date": "2026-10-26",
+  "status": "等待名单与AfterWait接收者/循环契约局部修复；全局选择调度与重入仍未穷尽",
+  "base_commit": "93f771370a5c4fb1defa47e7470724572612d312",
+  "scope": "BP_GameState_Battle五个等待状态访问器；BP_CardFunctions.AfterWaitCardPlayFromHand完整2029字节AST及CardPlayedFromHand相关存储/设标志节点。",
+  "authority": {
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "ClearWaitPlayFromHandCards",
+        "address": "0x1cb14d1ec00",
+        "script_size": 44,
+        "sha256": "c0d07cea26d6496c2530b8ccc433c2817303d6f058032fe67b3ed1a874544ae7"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "GetWaitPlayFromHandCards",
+        "address": "0x1cb14d1eb00",
+        "script_size": 30,
+        "sha256": "2226e3f69c3c0d32aef6b280aeed42572a39451d58944c6192e888cdd86169fb"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "AddWaitPlayFromHandCards",
+        "address": "0x1cb14d1ea00",
+        "script_size": 71,
+        "sha256": "a401829fd58e23adcd3dd9e7959cd7fbfb43b9b79180d39c19574ab25a32a26b"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "SetExecuteWaitPlayFromHand",
+        "address": "0x1cb14d1e900",
+        "script_size": 22,
+        "sha256": "16ec2d8fbb95ac959f18c7d233e820ef84a791fab7da9a774543a748705c48dd"
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "GetExecuteWaitPlayFromHand",
+        "address": "0x1cb14d1e800",
+        "script_size": 22,
+        "sha256": "3c94c6bf3e435cada22462ef8ab0fcfebda27cd32c0f40376cd600be3ac4555f"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "AfterWaitCardPlayFromHand",
+        "address": "0x1cb1f5c9600",
+        "script_size": 2029,
+        "sha256": "d545414e1a31c097b7670057eb61c1ed505d0da7fb840bd567eb76202cb5eb50"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CardPlayedFromHand",
+        "address": "0x1cb1f5c9500",
+        "script_size": 6936,
+        "sha256": "86bee9346d4ef36c52193cf5eb93e929475b65e2140de1c9667ebade73314100"
+      }
+    ],
+    "syntax_redecoded_bytes": 9154
+  },
+  "findings": [
+    "当前反射属性头Offset_Internal位于+0x44：GameState等待标志+0x602、等待ID数组+0x608，与SDK对应；同名GetWait局部出参offset0不能当成员。类默认对象中标志false、数组Num/Capacity0，未将CDO零值冒充实际对局值。",
+    "AddWaitPlayFromHandCards是Array_AddUnique，保留原始整数与首次插入顺序；Get复制数组，Clear只清数组，Set/Get布尔标志是独立字段直接赋值。",
+    "CardPlayedFromHand i2243清全局名单，i2527将预先得到的otherCards对象CardID逐个加入；i4850..4966在自身效果/Pincer后设置是否等待。现加入全局状态保存，不再仅靠闭包持有的对象数组。",
+    "AfterWait i5清等待标志、i42清Stop；保存当前活动反制ID数组，先把没有gotchaAfterPlayFromHand属性的反制ID列入独立cardsDone，再加入当前出牌CardID。该done不复用开始出牌阶段的集合。",
+    "活动反制第二遍逐ID查对象；等待循环i1048每次条件重新复制全局数组，i1236每次取元素再读取一次，i1340按ID查当前对象。旧闭包持有旧引用，在无头受控ID替换后漏掉新对象。",
+    "i879先完成对象查找再检测Stop；每位接收者i1843/1888连续调用两个事件，保留同一个接收对象，不重筛注册/抑制/位置；第一个回调移除或替换对象不截断其第二个回调。随后才加入done。",
+    "完成或Stop路径统一清等待数组并调用Alpine；回调修改全局名单会影响后续循环，改变数组头可能跳过新头，追加尾元素可能在本次循环收到通知。"
+  ],
+  "changes": [
+    "GameState补独立等待布尔标志及AddUnique/复制Get/Clear数组；派发表补五个访问器和AfterWait适配入口。",
+    "等待出牌在自身进场/部署前保存接收者ID，在现有等待分支前镜像原生等待标志。等待继续处理改调专用AfterWait实现；普通即时出牌仍使用其独立流程。",
+    "AfterWait重新查ID、缓存双事件接收者、使用新done并循环重读共享名单，直接运行已保存对象的事件程序，不重复全局FireTrigger筛选。"
+  ],
+  "validation": {
+    "runtime": "PID/模块/EXE哈希守卫，只读采集7函数及解码所需属性/FName/符号，采集末尾稳定复读；结束前再次确认7个函数头/脚本与相关属性头完全一致。",
+    "reference": {
+      "full_afterwait_ast_cases": 36,
+      "gotcha_modes": [
+        "无活动反制",
+        "有afterPlay属性的活动反制",
+        "无该属性的活动反制（仅参考模型）"
+      ],
+      "mutations": [
+        "无修改",
+        "回调中替换下一个ID对象",
+        "移除下一个对象",
+        "抑制后续对象",
+        "清全局等待名单",
+        "追加新ID",
+        "重写数组头/尾",
+        "缩短数组头",
+        "设置Stop",
+        "替换当前接收者",
+        "重复Add当前ID",
+        "答复前替换下一个对象"
+      ],
+      "boundary": "Whole AfterWait AST with valid GameState and controlled objects, active gotcha IDs, TMap lookup and callbacks. Three gotcha modes and twelve mutations. No proof of legal PvP ID reuse, null gotcha out-parameter persistence, full nested reentry or actual UObject lifecycle."
+    },
+    "deepseek": {
+      "job": "20261026-091056-rule435-wait-state-7d2d3a4c",
+      "functions": 7,
+      "exact_rows": 15,
+      "verification": "15个原始顶层行及全部嵌套字段与主agent按字符串过滤所得JSON完全相等。仅机械提取，无规则裁决或源码写入。"
+    },
+    "headless": {
+      "integration_cases": 48,
+      "fixture_cases": 24,
+      "sides": 2,
+      "storage_test": "默认false、true赋值、-1/0/70/70/-1/71去重排序、修改返回数组不改内部、Clear保留独立bool及false赋值。",
+      "actual_reply_id": 0,
+      "mutation_signal": "JSON标记之后ForceCardChangeLocation信号；断言确实触发突变并逐条比较接收对象及两个事件轨迹，信号重新装填使用受控直接位置赋值。"
+    },
+    "baseline": {
+      "passed": 863,
+      "failed": 2,
+      "total": 865,
+      "exit_code": 1,
+      "examples": [
+        "缺少等待状态访问器",
+        "Left/gotcha0/mode1成功出牌且确实突变，旧轨迹只有old70/old72两对事件，漏掉new71两事件"
+      ]
+    },
+    "fixed": {
+      "passed": 865,
+      "failed": 0,
+      "total": 865,
+      "exit_code": 0
+    },
+    "diagnostics": "最初lambda参数名_与out _冲突导致测试编译失败，已更名。随后备用接收者占用半场导致successFalse、无答复；设置答复0并未解决，因为真正原因是含HQ的半场满，最终将不在等待初始名单的备用接收者73放弃牌区，成功出牌后重跑同布景基线。早期日志不算规则差异证据。属性元数据首次误用+0x4c读到指针高字，已依据现有采集器与当前属性头改+0x44，确认+0x602/+0x608及局部出参offset0，保存诊断文件。",
+    "safety": "无游戏进程写入、注入、游戏函数调用或自动对局操作。参考解释器完全离线。未使用历史回放作权威；保留原有受保护未跟踪文件。"
+  },
+  "limits": [
+    "36组参考模型覆盖当前AfterWait完整AST的受控分支；C#48场景覆盖其中24种双侧情况，未将没有afterPlay属性的反制过滤列为本轮C#新增场景。完整语法解码9154字节不等于CardPlayedFromHand全部语义认证。",
+    "反制枚举/排序、注册T51/T43的全局TSet顺序复用已有原语，本轮用受控ID顺序，不声称已关闭全局顺序缺口。",
+    "没有真实PvP发生ID复用、删除/替换接收者和全局名单重写的可达性证明；控制程序使用Arado探针与M36选择脚本，只认证调度契约，不认证这两张牌完整效果。",
+    "空活动反制对象的CustomName布尔出参残留、空GameState、UObject PendingKill/GC/释放与并发数组变化未建模；Null出牌仅沿用本地保护，没有完整空上下文/返回栈证明。",
+    "现有按选择卡ID保存continuation的适配器仍存在，尚未证明它与客户端单一全局等待标志在多来源交错、嵌套重入及来源字段改写时完全等价；本轮加入状态并修复AfterWait，不能据此关闭整个选择挂起协议。"
+  ],
+  "fully_certified_cards": 0,
+  "next_work": [
+    "继续核查全局等待标志与按ID continuation在不同来源、嵌套选择/重复回复间的行为差异",
+    "核查AfterWait在空接收者及重入后共享名单/标志被覆盖的实际节点语义"
+  ],
+  "source_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule435-wait-state-functions-native-20261026.json",
+      "bytes": 4740586,
+      "sha256": "c557dacbb9efb1ec906bee7d710e567e8da3df98e2c7b6880a6f11f21c798748"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule435-wait-state-default-native-20261026.json",
+      "bytes": 1056,
+      "sha256": "56bb228c5c3caf443000e96af6e5073ae64ed5bdc99b55f355dd9f4610a3634b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule435-revalidated-native-20261026.json",
+      "bytes": 812,
+      "sha256": "9193fec395961584e82345141cf1334b3a7f6bf71b600f1c786ef5f7d4d9c8f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule435-wait.py",
+      "bytes": 2746,
+      "sha256": "caa2ff120a39c3cc2b091f03385c9217459be2da0f443351ae6d007164b6df44"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule435-default.py",
+      "bytes": 1520,
+      "sha256": "5fbc241e27440fc701c9358f8afcd6eb1d2f94c393701fde6c0323b2c3151f55"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\revalidate-rule435.py",
+      "bytes": 1595,
+      "sha256": "2878b39a803ae810f5a11b74cb8b5544c4383dc91b7d6ec20e6ae756c69b4a7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule435.py",
+      "bytes": 7349,
+      "sha256": "6bfad3ad9e155410071c10f5002758f553c515f62c85ca20ba4741590d59a160"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-reference-20261026.json",
+      "bytes": 79782,
+      "sha256": "fecb0b2264798b99ae8bb77709c2add8893fbcf71300a2486e653536223cecf5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-worker\\input.json",
+      "bytes": 134507,
+      "sha256": "586db5ae2eafd028e756a7387880087e1183202e2c050682daad8f45613ab5b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-worker\\task.txt",
+      "bytes": 676,
+      "sha256": "fca03b552018730f5110f1b5d258d11f06fa58e411fcb0358fdf7accf856f8cd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-worker\\result.json",
+      "bytes": 9053,
+      "sha256": "824cd58839e27e14a7bc3f5a6207ea8fce6f5250b5b3639159f83c1bf9ea6228"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-baseline-selftest.log",
+      "bytes": 76745,
+      "sha256": "81fe9cc543b33054745f514bac7410a8243aa16031439385a86f98ed5cf42a93"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-fixed-selftest.log",
+      "bytes": 76270,
+      "sha256": "0d13435638e9e052167010b8bb308ee15f21f8f0b93ce43400d287502a86b938"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-test-compile-diagnostic.log",
+      "bytes": 278,
+      "sha256": "042505083546b35107342f107d59fce8e9487a480025d3bba1141e98ba1c82b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-no-reply-diagnostic.log",
+      "bytes": 76550,
+      "sha256": "69ec3bbbc235b764f8d1779d4071142a60f07bfc175ad0eeba05b1417f95cd64"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-full-board-diagnostic.log",
+      "bytes": 76571,
+      "sha256": "9007bc3dd6858b7d838f02db89f08cda7bfcce040ac84a8f17c74f3617566efe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule435-offset-parse-diagnostic.json",
+      "bytes": 812,
+      "sha256": "083619de1173566ac50ff71fcf8401c7fd1ba48c051bfccdd73db7d5a9f21123"
+    }
+  ],
+  "repository_artifacts": [
+    "src/KLink.Bot/Engine/GameState.cs",
+    "src/KLink.Bot/Engine/MatchEngine.cs",
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "tools/BotSim/SelfTest.cs",
+    "tools/BotSim/BotSim.csproj",
+    "tools/BotSim/Fixtures/after-wait-id-reference-20261026.json"
+  ]
+}

@@ -1,0 +1,952 @@
+{
+  "rule": "RULE-435",
+  "native_functions": 7,
+  "script_bytes": 9154,
+  "model_cases": 36,
+  "worker_rows": 15,
+  "boundary": "Whole AfterWait AST with valid GameState and controlled objects, active gotcha IDs, TMap lookup and callbacks. Three gotcha modes and twelve mutations. No proof of legal PvP ID reuse, null gotcha out-parameter persistence, full nested reentry or actual UObject lifecycle.",
+  "cases": [
+    {
+      "gotcha_mode": 0,
+      "mode": 0,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 1,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "new71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "new71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 2,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 3,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 4,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 5,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old73"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old73"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72,
+        73
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 6,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 7,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 8,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 9,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 10,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 0,
+      "mode": 11,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "new71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "new71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 0,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 1,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "new71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "new71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 2,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 3,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 4,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 5,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old73"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old73"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72,
+        73
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 6,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old73"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old73"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        73,
+        71
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 7,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 8,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 9,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 10,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    },
+    {
+      "gotcha_mode": 1,
+      "mode": 11,
+      "trace": [
+        [
+          "OnOtherCardPlayedFromHand",
+          "old70"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old70"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "new71"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "new71"
+        ],
+        [
+          "OnOtherCardPlayedFromHand",
+          "old72"
+        ],
+        [
+          "OnOtherCardEnterPlay",
+          "old72"
+        ],
+        [
+          "alpine",
+          "old60"
+        ]
+      ],
+      "lookup_ids": [
+        70,
+        70,
+        70,
+        71,
+        72
+      ],
+      "wait_after": [],
+      "flag_after": false,
+      "mutated": true
+    }
+  ]
+}

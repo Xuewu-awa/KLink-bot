@@ -245,6 +245,8 @@ internal static class SelfTest
         new("手牌目标生命周期：正ID不重验类别，回调按ID读取当前对象", HandReplyTargetLifecycle),
         new("生成选择整数载荷：目标ID与大写来源槽独立绑定", GeneratedSelectionIntegerPayload),
         new("生成/预报完成：接收者快照、逐次查目标与实时自身排除", GeneratedCompletionLifetime),
+        new("等待状态：原始ID有序去重、复制读取及布尔标志独立", WaitStateStorageContract),
+        new("等待后通知：实时ID查找、缓存双事件及循环重读名单", AfterWaitIdLifetime),
         new("Kurmark目标弃牌：不能出手时仍清标记和源列表", KurmarkDiscardBeforeEndCleanup),
         new("直接出手整数输出：非阻挡路径保留槽，阻挡弃牌写0", DirectHandIntegerOutputReference),
         new("Kurmark回合末：反制序号门、重复ID与缺失目标标记清理", KurmarkEndTurnCleanup),
@@ -21409,6 +21411,118 @@ internal static class SelfTest
                 || reply >= 2 && !engine.Api.JsonGetBool(state.ById(expected[0])!, "is_kurmark_target")) return "Kurmark取消或实际选择错误地生产追踪状态";
         }
         return null;
+    }
+
+
+    private static string? WaitStateStorageContract(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        object? Call(string fn, params object?[] args) => engine.Api.InvokeByName(fn, null, args, ctx, out _);
+        if (!Equals(Call("GetExecuteWaitPlayFromHand"), false)) return "missing/default waiting bool";
+        Call("SetExecuteWaitPlayFromHand", true);
+        foreach (int id in new[] { -1, 0, 70, 70, -1, 71 }) Call("AddWaitPlayFromHandCards", id);
+        if (Call("GetWaitPlayFromHandCards") is not int[] ids || !ids.SequenceEqual(new[] { -1, 0, 70, 71 }))
+            return "waiting IDs must preserve raw values and first insertion order";
+        ids[0] = 999;
+        if (Call("GetWaitPlayFromHandCards") is not int[] copied || copied[0] != -1) return "waiting array read aliases storage";
+        Call("ClearWaitPlayFromHandCards");
+        if (Call("GetWaitPlayFromHandCards") is not int[] empty || empty.Length != 0
+            || !Equals(Call("GetExecuteWaitPlayFromHand"), true)) return "clear must not reset the independent wait bool";
+        Call("SetExecuteWaitPlayFromHand", false);
+        return Equals(Call("GetExecuteWaitPlayFromHand"), false) && engine.Api.Vm.FaultedPrograms == 0
+            && engine.Api.Vm.UnimplementedCalls.Count == 0 ? null : "waiting setter/getter dispatch";
+    }
+
+    private static string? AfterWaitIdLifetime(CardDatabase db)
+    {
+        const string sourceName = "card_unit_m36_destroyer";
+        const string played = "OnOtherCardPlayedFromHand", entered = "OnOtherCardEnterPlay";
+        using var own = InstallSelectionDrawProbe(PlainUnit, played);
+        using var enter = InstallSelectionDrawProbe(PlainUnit, entered);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(PlainUnit)!.Locals!;
+        foreach (var (trigger, id) in new[] { (played, 90), (entered, 91) })
+            locals[trigger] = new[] {
+                new KismetStep(0, "call", "JSON_SetInt", new[] { new KismetExpr { Self = true },
+                    new KismetExpr { Str = trigger }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(1, "call", "ForceCardChangeLocation", new[] { new KismetExpr { Int = id },
+                    new KismetExpr { Int = 0 }, new KismetExpr { Int = (int)CardLocation.Discard }, new KismetExpr { Int = 0 } },
+                    Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+            };
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,
+            "Fixtures", "after-wait-id-reference-20261026.json")))!;
+        int cases = 0;
+        foreach (var row in fixture["cases"]!.AsArray())
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            int mode = row!["mode"]!.GetValue<int>(), gotchaMode = row["gotcha_mode"]!.GetValue<int>();
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side; state.Turn = 4;
+            state.SetMaxKredits(side, 10); state.SetKredits(side, 10);
+            var source = state.CreateWithId(sourceName, side, 60, side.HandOf(), 0);
+            source.Definition = new CardDefinition { Name = sourceName, Type = "infantry", Attack = 2, Defense = 5, WaitForHandTarget = true };
+            source.Keywords.Clear(); source.Keywords.Add(Keyword.Deployment); source.KreditCost = 0;
+            CardDefinition Registered(bool gotcha = false) => new() { Name = PlainUnit, Type = gotcha ? "gotcha" : "infantry",
+                UsedTriggers = new[] { played, entered } };
+            var known = new Dictionary<string, CardInstance>();
+            foreach (int id in new[] { 70, 71, 72, 73 }) {
+                var card = state.CreateWithId(PlainUnit, side, id, id == 73 ? CardLocation.Discard : side.HqOf(), id - 69);
+                card.Definition = id == 73 ? new CardDefinition { Name = PlainUnit, Type = "infantry" } : Registered(gotchaMode != 0 && id == 70);
+                card.Keywords.Clear(); known["old" + id] = card;
+            }
+            if (gotchaMode != 0) { known["old70"].GotchaActivated = 1; known["old70"].CustomJson["customName1"] = "gotchaAfterPlayFromHand"; }
+            state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 1);
+            var signalPlayed = state.CreateWithId("card_event_aans", side, 90, side.DeckOf(), 0);
+            var signalEntered = state.CreateWithId("card_event_aans", side, 91, side.DeckOf(), 1);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? Call(string fn, params object?[] args) => engine.Api.InvokeByName(fn, null, args, ctx, out _);
+            void Replace(int id) {
+                state.Remove(known["old" + id]);
+                var replacement = state.CreateWithId(PlainUnit, side, id, side.HqOf(), id - 69);
+                replacement.Definition = Registered(); replacement.Keywords.Clear(); known["new" + id] = replacement;
+            }
+            engine.PickHandTargetId = (_, _) => { if (mode == 11) Replace(71); return 0; };
+            bool mutated = false; string? failure = null;
+            var trace = new List<string>(); var seen = new HashSet<(string, string)>();
+            var moved = state.CardMoved;
+            state.CardMoved = (card, oldLocation, newLocation, ownerChange, reason) => {
+                moved?.Invoke(card, oldLocation, newLocation, ownerChange, reason);
+                if (newLocation != CardLocation.Discard || card != signalPlayed && card != signalEntered) return;
+                string trigger = card == signalPlayed ? played : entered;
+                var marked = known.Where(pair => engine.Api.JsonGetInt(pair.Value, trigger) == 1 && !seen.Contains((pair.Key, trigger))).ToArray();
+                if (marked.Length != 1) { failure = $"ambiguous callback signal {marked.Length}"; return; }
+                string token = marked[0].Key; seen.Add((token, trigger)); trace.Add(trigger + ":" + token);
+                card.Location = side.DeckOf(); // Re-arm this controlled signal without emitting another event.
+                if (trigger != played || mutated) return;
+                mutated = true;
+                if (mode == 1) Replace(71);
+                if (mode == 2) state.Remove(known["old71"]);
+                if (mode == 3) known["old71"].Keywords.Add(Keyword.Suppressed);
+                if (mode == 4) Call("ClearWaitPlayFromHandCards");
+                if (mode == 5) Call("AddWaitPlayFromHandCards", 73);
+                if (mode is 6 or 7) {
+                    Call("ClearWaitPlayFromHandCards");
+                    foreach (int id in mode == 6 ? new[] { 73, 71 } : new[] { 71, 72 }) Call("AddWaitPlayFromHandCards", id);
+                }
+                if (mode == 8) state.StopFurtherActions = true;
+                if (mode == 9) Replace(70);
+                if (mode == 10) Call("AddWaitPlayFromHandCards", 70);
+            };
+            CardEffectScripts.Register(sourceName, effectContext => engine.Api.InvokeByName("selectTargetFromHand", source,
+                new object?[] { 60 }, ctx, out _));
+            bool success;
+            try { success = engine.PlayCard(source); }
+            finally { CardEffectScripts.Unregister(sourceName); }
+            var expected = row["trace"]!.AsArray().Where(item => item![0]!.GetValue<string>() != "alpine")
+                .Select(item => item![0]!.GetValue<string>() + ":" + item[1]!.GetValue<string>()).ToArray();
+            if (!success || failure is not null || !mutated || !trace.SequenceEqual(expected) || engine.Api.Vm.FaultedPrograms != 0)
+                return $"after wait {side}/gotcha{gotchaMode}/mode{mode}: {failure}, trace={string.Join(",", trace)} expected={string.Join(",", expected)},mutated={mutated},success={success},reply={engine.LastHandTarget}";
+            var remaining = engine.Api.InvokeByName("GetWaitPlayFromHandCards", null, Array.Empty<object?>(), ctx, out bool handled);
+            // The separate storage test requires dispatch. Allow old code to reach the ID-lifetime baseline here.
+            if (handled && remaining is int[] ids && ids.Length != 0) return "wait array not cleared after completion";
+            cases++;
+        }
+        return cases == 48 ? null : $"after wait cases {cases}";
     }
 
     private static string? GeneratedSelectionIntegerPayload(CardDatabase db)

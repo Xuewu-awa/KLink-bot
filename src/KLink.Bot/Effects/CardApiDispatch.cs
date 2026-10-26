@@ -2080,6 +2080,13 @@ public sealed partial class CardApi
                 return null;
             },
             ["GetStopFurtherActions"] = (c, r, a) => GetStopFurtherActions(),
+            ["SetExecuteWaitPlayFromHand"] = (c, r, a) => { State.ShouldExecuteWaitPlayFromHand = TruthyArg(a, 0); return null; },
+            ["GetExecuteWaitPlayFromHand"] = (c, r, a) => State.ShouldExecuteWaitPlayFromHand,
+            ["AddWaitPlayFromHandCards"] = (c, r, a) => { State.AddWaitPlayFromHandCards(IntArg(a, 0)); return null; },
+            ["GetWaitPlayFromHandCards"] = (c, r, a) => State.GetWaitPlayFromHandCards(),
+            ["ClearWaitPlayFromHandCards"] = (c, r, a) => { State.ClearWaitPlayFromHandCards(); return null; },
+            ["AfterWaitCardPlayFromHand"] = (c, r, a) => { ExecuteAfterWaitCardPlayFromHand(AsCard(a.ElementAtOrDefault(0))); return null; },
+
             ["SetStopAttack"] = (c, r, a) => { State.StopAttack = TruthyArg(a, 0); return null; },
             ["GetStopAttack"] = (c, r, a) => State.StopAttack,
         };

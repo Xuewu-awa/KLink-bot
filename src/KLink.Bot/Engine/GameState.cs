@@ -46,6 +46,16 @@ public sealed class GameState
     public int[] GetAutoPlayCards() => _autoPlayerCardIds.ToArray();
     public void ClearAutoPlayCards() => _autoPlayerCardIds.Clear();
 
+    // RULE-435: independent Blueprint bool and ordered AddUnique ID array.
+    public bool ShouldExecuteWaitPlayFromHand { get; set; }
+    private readonly List<int> _waitPlayFromHandCards = new();
+    public void AddWaitPlayFromHandCards(int id)
+    {
+        if (!_waitPlayFromHandCards.Contains(id)) _waitPlayFromHandCards.Add(id);
+    }
+    public int[] GetWaitPlayFromHandCards() => _waitPlayFromHandCards.ToArray();
+    public void ClearWaitPlayFromHandCards() => _waitPlayFromHandCards.Clear();
+
     // RULE-325: type -> source IDs, append-if-absent with detached reads.
     // No ID/type validation: the native registration helper also accepts raw values.
     private readonly Dictionary<int, List<int>> _buffsToRemoveEndOfTurn = new();

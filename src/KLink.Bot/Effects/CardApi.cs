@@ -1533,6 +1533,52 @@ public sealed partial class CardApi
         return null;
     }
 
+    // RULE-435: AfterWait owns a fresh cardsDone list. Gotchas save IDs once;
+    // the shared wait array is re-read at each condition and element lookup.
+    internal void ExecuteAfterWaitCardPlayFromHand(CardInstance? played)
+    {
+        State.ShouldExecuteWaitPlayFromHand = false;
+        State.StopFurtherActions = false;
+        var active = GetActiveGotchasOrdered().ToArray();
+        var done = new HashSet<int>();
+        foreach (int id in active)
+            if (State.ById(id) is { } gotcha
+                && !CustomNameHasAttribute(gotcha, "customName1", "gotchaAfterPlayFromHand")) done.Add(id);
+        done.Add(played?.CardId ?? 0);
+
+        bool Invoke(int id)
+        {
+            var observer = State.ById(id); // Native lookup precedes the stop check.
+            if (State.StopFurtherActions) return false;
+            int observerId = observer?.CardId ?? 0;
+            if (done.Contains(observerId)) return true;
+            if (observer is not null && Blueprint.KismetLibrary.Default is { } library)
+            {
+                // Both calls retain this receiver even if the first removes or
+                // replaces it. Do not repeat registration/suppression queries.
+                RunTriggerProgram(library, observer, observer.Name, "OnOtherCardPlayedFromHand", played,
+                    eventArgs: new object?[] { played },
+                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = played });
+                RunTriggerProgram(library, observer, observer.Name, "OnOtherCardEnterPlay", played,
+                    eventArgs: new object?[] { played, 1 },
+                    namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = played, ["Method"] = 1 });
+            }
+            done.Add(observerId);
+            return true;
+        }
+        bool stopped = false;
+        foreach (int id in active)
+            if (!Invoke(id)) { stopped = true; break; }
+        if (!stopped)
+            for (int i = 0; i < State.GetWaitPlayFromHandCards().Length; i++)
+            {
+                int id = State.GetWaitPlayFromHandCards()[i];
+                if (!Invoke(id)) break;
+            }
+        State.ClearWaitPlayFromHandCards();
+        if (played is not null) GiveAlpineBonus(played);
+    }
+
     private void RunTriggerProgram(Blueprint.KismetLibrary library, CardInstance card, string cardName,
                                    string programName, CardInstance? trigger,
                                    IReadOnlyList<object?>? eventArgs = null,
