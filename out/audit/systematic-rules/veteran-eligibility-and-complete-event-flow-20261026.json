@@ -1,0 +1,233 @@
+{
+  "rule_id": "RULE-454",
+  "date": "2026-10-26",
+  "base_commit": "ddb749b281d5f6f4662291191b6019a8ed5d51ab",
+  "status": "已修复MakeVeteran资格门与动作尾段的自身抑制门、广播及先后；更正此前忽略2842的解释",
+  "scope": "MakeVeteran16..358资格门及2349..2921事件尾段在动作处理为真条件下的投影；不认证完整升级数值或外层动作处理模式。",
+  "correction": "RULE451及本轮中途解释遗漏2842从Own2806返回2463，曾误认为未压制跳过广播。完整保留执行流栈后：未压制先Own，再T32及能力；压制跳过Own但仍T32及能力；2805弹栈到2921返回。旧中途测试虽然通过但采用了错误预期，不作为最终证据。",
+  "findings": [
+    "当前MakeVeteran先调用IsLocatedOnBoard、getHasVeteranUpgrade、getTotalDefense及IsVeteran(false)，139..358要求在场、有升级、总防御>0、不是已有老兵。现以这四条件代替Keyword.Add返回值作为门；抑制会使IsVeteran(false)为false，所以已存JSON标记和已含托管关键词都不能单独阻止被抑制对象进入。",
+    "拒绝升级不改JSON/关键词/快照或发通知。允许升级保留此前RULE452标记写入；关键词作为旧托管兼容状态维护，不再作为原生资格判据。升级模板查询依赖RULE453当前名称追加后缀的有效静态条目投影。",
+    "新采集IsLocatedOnBoard本地17字节，+275字节值减5后作无符号<=2，即5/6/7为在场。getTotalDefense本地61字节将解密输入夹0..99，因此总防御>0与当前托管Defense>0在int32范围等价；解密助手仍为受控边界，不认证加密实现。包装及本地共371字节复读一致。",
+    "完整蓝图执行流展开80状态/87边，在2349处唯一栈为[2921]。2427未压制跳2806 Own回调，2842接2463；压制则直接2463。接收者循环2672压2847，2781弹至自增，再2534检查；退出后2782能力广播，2805弹2921。2842是Own回调的后续路径，不是反复重新查询的观察者循环。",
+    "现对未压制对象先发自身OnBecomingVeteran，再查询/派发T32和能力变化；压制对象跳过自身，但仍派发两类广播。原实现未压制才广播、能力变化无条件、最后自身回调，且旧XML承认不理解回边；这些错误注释已替换。外层IsActionProcess尚未建立完整模拟器模式，本轮仅复原其为真时的尾段顺序。",
+    "新增直接/VM两项各896组：是否有升级、双方、七种位置、四防御值、JSON存在/抑制/托管关键词真假，验证接受、拒绝及拒绝零写入。尾段新增16组资格/分支观察与4组真实7th_brigade_anzac自身回调/6th_brigade_nz观察者先后，共20组；合计1812组。",
+    "五个旧测试中部分以无升级单位或已有_vet名称要求升级，改为有明确升级的16th_infantry_brigade，不放宽原位置、金卡、攻击复制、Blitz及目标绑定断言。事件广播布景改为合法升级，并按完整流更正抑制广播/自身断言；Own抑制场景继续使用具有真实该程序的7th_brigade_anzac。",
+    "资格AST896组、完整尾段12组（动作处理真假×抑制真假×接收者0/1/2）通过，保留完整跳转和执行流栈；原生位置256组、总防御7个边界离线通过。资格模型中的升级/已有状态查询使用RULE452/453的受控证据组合，不声称执行整个原语的模板/属性变更。"
+  ],
+  "verification": {
+    "rule": "RULE-454",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "script_bytes": 2924,
+    "script_sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06",
+    "all_selected_live_bytes_equal": true,
+    "input_native_wrapper_and_body_bytes": 371,
+    "offline_board_location_cases": 256,
+    "offline_defense_clamp_cases": 7,
+    "gate_AST_cases": 896,
+    "complete_tail_AST_cases": 12,
+    "flow_states": 80,
+    "flow_edges": 87,
+    "tail_entry_stacks": [
+      [
+        2921
+      ]
+    ],
+    "worker_exact_rows": 12,
+    "worker_input_rows": 81,
+    "correction": "RULE451's tail interpretation omitted jump2842 and treated2806 as terminal. Complete stack-aware flow: unsuppressed own2806 then2842->T32; suppressed directlyT32; both abilities2782 then2805 popsReturn2921. IsActionProcess false skips entire event tail.",
+    "scope": "Input getters execute with decrypted defense supplied; upgrade cache and JSON query reuse RULE452/453 bounded evidence. Tail helper effects and receiver arrays controlled; simulator's external IsActionProcess gating/template stat changes/lifecycle remain open.",
+    "no_game_writes": true,
+    "new_simulator_scenarios": 1812,
+    "baseline": {
+      "total": 892,
+      "passed": 887,
+      "failed": 5
+    },
+    "fixed": {
+      "total": 892,
+      "passed": 892,
+      "failed": 0
+    },
+    "source_bom_preserved": true,
+    "fully_certified_cards": 0
+  },
+  "diagnostics": {
+    "initial_baseline": "889通过、2失败/891。",
+    "first_gate_fix": "新增资格测试通过；5个旧布景/预期失败。",
+    "superseded_interim": "中途892项通过基于遗漏2842的错误尾段预期，已废弃为语义证据，日志保留。",
+    "edit_diagnostic": "一次文本替换未匹配CRLF而中止，未完成源写入；规范化后完成，不算规则失败。",
+    "final_same_tests": "完整流修正后的相同892项：旧实现887通过、5失败；修复892/892。"
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "new_scenarios": 1812
+  },
+  "limitations": [
+    "模板攻防/行动费/装甲/原始能力变化、Fury额度及CreateCard老兵化时序仍未接通。不能称整套老兵化已还原。",
+    "IsActionProcess为false时的原生尾段跳过已在AST模型验证，但模拟器完整动作处理模式仍未实现，本轮未以一个常量或假设伪装为模式认证。",
+    "T32接收者集合顺序、回调中注册/删除/替换、完整外部helper及对象生命周期未穷尽，尾段模型使用受控接收者数组/效果。",
+    "完整卡牌认证数0；无游戏进程写入/注入/函数调用，无旧回放权威，无单卡版本迁移。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-salvage-creation-native-20261026.json",
+      "bytes": 4704738,
+      "sha256": "1cc1ca92381b8b7ce17d5662e4e23d309b1f7e0ba697ba09a6122f9df3a8158c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule454-veteran-query-headers-20261026.json",
+      "bytes": 4488983,
+      "sha256": "37f432728911cc02b869d8a4c5b4635c53ddd3f5f5c72f4c2ce65ad2344d6274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule454-IsLocatedOnBoard-native-20261026.json",
+      "bytes": 6884,
+      "sha256": "c3dac4bc9c70f16cb996eab883a77b779afac4b14236000e56a5b8a6a1be1e48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule454-getTotalDefense-native-20261026.json",
+      "bytes": 8534,
+      "sha256": "3f37e097f286ab47ed579b77099c78c76a9240fe5952792b54fc3336c4d06048"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule454-input-headers.py",
+      "bytes": 2370,
+      "sha256": "31d5221c30e209873d3a31e283328aadc5a9255c7971f223adeaada69da79c7c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule454-IsLocatedOnBoard.py",
+      "bytes": 4161,
+      "sha256": "ccbf704b23fbc8e8a704b529a25081d8458ff425fae294c962c8d55750365074"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule454-getTotalDefense.py",
+      "bytes": 4157,
+      "sha256": "ac97395ed3915445d0b74e2fa72b68ba91447d37e7c60f09cd5e6e4ef1090156"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule454.py",
+      "bytes": 9458,
+      "sha256": "9af1f47d2111aea998ee3904ef80decb89cbb2ff6bbdbf149afcf10ac8474cfd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-native-verification-20261026.json",
+      "bytes": 1203,
+      "sha256": "20d86afff00815563a572e3b572e4256311a954b47fe4290b3d533bb9508b4aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-final-verification-20261026.json",
+      "bytes": 1458,
+      "sha256": "7ee1ecbee08d3d42ac9c5e821d6f3633914072f0bf54285a49c656a2a1bc4910"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-gate-and-complete-tail-reference-20261026.json",
+      "bytes": 191263,
+      "sha256": "8bae6f277a67086b67b9319d84cae5a124bc0e4129518f315fc0af9141e1c77d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule454-final-tests.py",
+      "bytes": 726,
+      "sha256": "ec99dbe5c3f02cb63f19c653ca06174ccf002edd3317fec0c36eec913ac887ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule454-complete-flow-tests.py",
+      "bytes": 728,
+      "sha256": "d68fc86ab8cabae5862aa2f7821fff9d5f19fc58317a717a1cd8019315ec1e8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-baseline-selftest.log",
+      "bytes": 78535,
+      "sha256": "084fd08c1f883b75fcacc7ecae4a69d9b6a87ca85c7150cc45b73623b18c40b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-first-fixed-selftest.log",
+      "bytes": 78949,
+      "sha256": "17c236b77d95cfe431fe7aaad7544cf029bebe4e8870b67fcd66dcde370f7928"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-first-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-final-tests-baseline-selftest.log",
+      "bytes": 78877,
+      "sha256": "31fa82441e43c7e6b1ebeb8c3b35ca4d12d82daa907e462b276c524ac8a4e025"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-final-tests-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-final-updated-tests-selftest.log",
+      "bytes": 78395,
+      "sha256": "258a43210f6a8912c7a93bc8676cadd7c41c492d20b29bbf0c6501430eb4ff21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-final-updated-tests-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-complete-flow-baseline-selftest.log",
+      "bytes": 78864,
+      "sha256": "f6f433605eaeca5f272b47f7bf7a0d5039f53a5d9c25df8c30fddee367590e29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-complete-flow-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-complete-flow-fixed-selftest.log",
+      "bytes": 78383,
+      "sha256": "3584d7ac9a3a05642e1fbd1f31844834d53947dfd152d2bc531cb50eb426fbf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-complete-flow-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-worker\\task.txt",
+      "bytes": 365,
+      "sha256": "2db7e584e4bca0be39e409dae02dfe22839f02ce5adac14f772157809234d7d8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-worker\\input.json",
+      "bytes": 36626,
+      "sha256": "1fb795702936cb49c7efe929b6b4418fa867040aa7a83aff56c46adca9fdb0fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule454-worker\\result.json",
+      "bytes": 4979,
+      "sha256": "953d4875570b412327b5559a0149e9b114f7e3b5be7f8fc59a3a463729866afc"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-222236-rule454-veteran-eligibility-nodes-e7a25ef4\\job.json",
+      "bytes": 745,
+      "sha256": "13ae3b5b39970da995ca857ca2c039b612312e5cd6c11be00107815254112d44"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-222236-rule454-veteran-eligibility-nodes-e7a25ef4\\answer.txt",
+      "bytes": 1476,
+      "sha256": "3329e03ff35f1179c1f26244a59387b6c8ab5fba90f151a821295dbf8075f887"
+    }
+  ]
+}

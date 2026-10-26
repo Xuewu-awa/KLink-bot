@@ -4726,54 +4726,39 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// 让一张卡成为"老兵"（对应 `BP_CardFunctions::MakeVeteran`，81 条语句）。
-    ///
-    /// 蓝图控制流（UAssetCLI 的 **StatementIndex**；`out/bp-cardfn.json`）：
-    /// <code>
-    /// si=2427 JumpIfNot(card.isSuppressed) -> si=2806   ; 被压制 ⇒ 跳过整个广播段
-    /// si=2463 FetchAllCardsWithEventTrigger(32)         ; 32 = OnOtherCardBecomingVeteran
-    /// si=2736     item.OnOtherCardBecomingVeteran(card)
-    /// si=2842     Jump -> si=2463                       ; 循环回边
-    /// si=2782 ExecuteOnOtherCardsAbilitiesChanged(card) ; 能力集变了（同一段里，只一次）
-    /// si=2806 card.OnBecomingVeteran()                  ; ★ 自己：**压制与否都发**
-    /// </code>
-    /// 所以本内核的顺序是：广播（仅未被压制）→ 能力变化 → 自己。
-    ///
-    /// ⚠️ **没读懂的一处（不猜，照实说）**：si=2842 那条回边指向 si=2463（连订阅表都重取），
-    /// 而循环自增在 si=2847/2889 —— 两处读数在"什么条件下再跑一遍"上不自洽
-    /// （si=2672 的 `PushExecutionFlow(2847)` + si=2805 的 `PopExecutionFlow`
-    /// 也可能把流程直接送进出参段）。可观测的部分（广播一次 + 能力变化一次 + 自己一次）
-    /// 两种读法一致，所以按这一种实现。
+    /// Native MakeVeteran entry gate and event order (RULE-454).
+    /// The own hook at2806 is only on the unsuppressed branch, then2842
+    /// continues to the T32 query at2463. Both branches reach abilities2782;
+    /// the execution-flow stack returns after that observer loop.
+    /// Template changes and the enclosing IsActionProcess boundary remain open.
     /// </summary>
     public void MakeVeteran(CardInstance target)
     {
-        if (target.Keywords.Add(Keyword.Veteran))
+        // RULE-454: MakeVeteran i=16..358 requires an on-board living target,
+        // a current-name upgrade, and !IsVeteran(false). Suppression therefore
+        // bypasses the existing JSON marker; the managed keyword is no gate.
+        if (IsLocatedOnBoard(target) && target.Defense > 0
+            && FindVeteranDefinition(State.Database, target) is not null
+            && (target.IsSuppressed || !target.CustomJson.ContainsKey("veteran")))
         {
+            target.Keywords.Add(Keyword.Veteran);
             // RULE-452: native MakeVeteran i=724 writes this marker before
             // later effects/notifications query IsVeteran. Other upgrade
-            // eligibility, template changes and event gates remain open.
+            // template changes and event gates remain open.
             JsonSetBool(target, "veteran", true);
             _engine.FireSubAction("ZActionMakeVeteran", new[]
             {
                 ActionValue2.Int("cardID", target.CardId),
             });
 
-            // si=2427：被压制时**不广播** `OnOtherCardBecomingVeteran`（9 张订阅者）。
-            if (!target.Keywords.Contains(Keyword.Suppressed))
-            {
-                FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
-                    eventArgs: new object?[] { target },
-                    eventSubject: target,
-                    namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                    {
-                        ["card"] = target,
-                    });
-            }
-
-            // si=2782 ExecuteOnOtherCardsAbilitiesChanged(card)
+            // i=2427 false -> own hook2806 -> jump2842 -> T32 query2463.
+            // The suppressed branch enters T32 directly, skipping the own hook.
+            if (!target.IsSuppressed)
+                FireTrigger("OnBecomingVeteran", target, target.Owner);
+            FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
+                eventArgs: new object?[] { target }, eventSubject: target,
+                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal) { ["card"] = target });
             FireAbilitiesChanged(target);
-
-            FireTrigger("OnBecomingVeteran", target, target.Owner);
         }
     }
 

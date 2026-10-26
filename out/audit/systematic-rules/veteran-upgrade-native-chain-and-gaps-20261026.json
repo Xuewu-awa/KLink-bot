@@ -14,9 +14,9 @@
     },
     {
       "id": "VET-02",
-      "status": "确认差异，未修复",
+      "status": "RULE454已接通四条件资格门；模板和查询全生命周期边界保留",
       "authority": "MakeVeteran16/57/98/173及139..358门",
-      "simulator": "当前只以Keywords.Add(Veteran)返回值作为入口",
+      "simulator": "现判断在场、正防御、当前名称升级存在及!IsVeteran(false)，原始托管关键词不再决定是否进入。",
       "effect": "缺少在场、存在升级、总防御>0、IsVeteran(false)为假的共同门；是否有升级及已有老兵状态的底层语义仍需接通。"
     },
     {
@@ -35,10 +35,10 @@
     },
     {
       "id": "VET-05",
-      "status": "确认控制流差异，未修复",
-      "authority": "MakeVeteran2349/2372的IsActionProcess门；2427 JumpIfNot(isSuppressed)到2806；真侧2463..2782",
-      "simulator": "当前广播条件为!Suppressed、能力变化广播无该门，且没有完整对应IsActionProcess的外层门",
-      "effect": "捕获脚本在可达该尾段时，未压制跳过他人老兵/能力广播，压制侧进入；这与现有代码注释相反。必须结合完整门和接收者生命周期处理，不能继续以旧注释作权威。"
+      "status": "RULE454已修复自身抑制门、双方广播及先后；外层IsActionProcess未接通",
+      "authority": "2349/2372外层门；2427未压制到2806自身回调后2842跳2463；压制直接2463；两路径经2782再2805弹栈返回。",
+      "simulator": "现未压制先自身回调，再双方T32和能力广播；压制跳过自身，但仍两种广播。",
+      "effect": "原先所述未压制跳过广播不正确，原因是遗漏2842和2805的执行流栈；详见RULE454完整12组尾段及80状态展开。"
     }
   ],
   "findings": [
@@ -223,5 +223,6 @@
       "sha256": "f6c521b967afce8b92d1026da0a16a15e2d9f897c89a11eb3eec6c10655198b4"
     }
   ],
-  "correction_rule452": "原报告把RVA4517da0称为JSON布尔查询，现更正为JSON对象非空、键查找命中及共享JSON值指针非空的存在性查询，不读取布尔载荷。原8组仅把外部返回作为受控bool验证IsVeteran分支；RULE452执行实际72+179字节JSON依赖及104字节原语64组补证。"
+  "correction_rule452": "原报告把RVA4517da0称为JSON布尔查询，现更正为JSON对象非空、键查找命中及共享JSON值指针非空的存在性查询，不读取布尔载荷。原8组仅把外部返回作为受控bool验证IsVeteran分支；RULE452执行实际72+179字节JSON依赖及104字节原语64组补证。",
+  "correction_rule454": "原尾段解释遗漏Own回调后2842跳2463，误把2806视为终止。完整执行流栈表明：未压制先自身回调，再T32和能力广播；压制跳过自身，仍T32和能力广播。RULE454已修复该投影，外层IsActionProcess仍开放。"
 }

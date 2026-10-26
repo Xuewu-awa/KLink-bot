@@ -838,7 +838,7 @@ internal static class SelfTest
         new("事件层：受伤广播 fromCard/toCard/fromAttack/damage（真实 Panzer III 订阅）",
             ReceiveDamageEventPayload),
         new("事件层：战斗存活事件（OnSurvivedCombat / OnOtherCardSurvivedCombat），打 HQ 不发", EventLayerSurvivedCombat),
-        new("事件层：压制会挡住广播（OnOtherCardBecomingVeteran / OnOtherCardDestroyed），但不挡自己那一路",
+        new("事件层：老兵双方广播、压制跳过自身，销毁沿原分支",
             EventLayerSuppressionGate),
 
         // ---- P0 第 2 族：同形「接收者/参数位」bug（2026-09-27）----
@@ -851,6 +851,9 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("老兵升级尾段：双方广播、自身抑制门与回调先后", VeteranNotificationBranch),
+        new("老兵升级资格：在场、升级存在、正防御及JSON状态，直接入口", db => VeteranEligibility(db, false)),
+        new("老兵升级资格：抑制与关键字独立、拒绝不写状态，VM入口", db => VeteranEligibility(db, true)),
         new("老兵模板查询：当前卡名追加后缀并精确判断升级存在", db => VeteranUpgradeQueries(db, false)),
         new("老兵模板查询：静态命中投影、未命中新基础对象及身份", db => VeteranUpgradeQueries(db, true)),
         new("老兵查询：JSON条目存在性、抑制与ignoreSuppress，直接入口", db => VeteranQueryPresence(db, false)),
@@ -15496,7 +15499,7 @@ internal static class SelfTest
             ("OnAfterOtherCardSuppressed", "card_unit_adler_command_vehicle",
                 (e, s, p) => { e.Api.SuppressUnit(Plain(s, victim, 62)); return p; }),
             ("OnOtherCardBecomingVeteran", "card_unit_6th_brigade_nz",
-                (e, s, p) => { e.Api.MakeVeteran(Plain(s, victim, 63)); return p; }),
+                (e, s, p) => { var v = Plain(s, "card_unit_16th_infantry_brigade", 63); e.Api.SuppressUnit(v); e.Api.MakeVeteran(v); return p; }),
             ("OnOtherCardAbilitiesChanged", "card_unit_royal_west_kents",
                 (e, s, p) => { e.Api.GiveKeyword(Plain(s, victim, 64), Keyword.Blitz); return p; }),
             ("OnOtherCardLoseSmokescreen", "card_unit_hirosaki_regiment",
@@ -31863,12 +31866,12 @@ internal static class SelfTest
     {
         const string victim = "card_unit_arado_ar_196";
 
-        // ① 被压制 ⇒ 不广播 OnOtherCardBecomingVeteran，但自己那一路照发
+        // RULE-454: 压制跳过自身回调；两条路径都进入他人广播。
         {
             var (trace, gate, err) = Probe(db, "card_unit_6th_brigade_nz", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
-                    var v = s.CreateWithId(victim, Side.Right, 60, CardLocation.BoardHqRight, 0);
+                    var v = s.CreateWithId("card_unit_16th_infantry_brigade", Side.Right, 60, CardLocation.BoardHqRight, 0);
                     e.Api.SuppressUnit(v);
                     e.Api.MakeVeteran(v);
                     return p;   // ★ 断言看的是**旁观探针**，不是被压制的那张卡
@@ -31878,12 +31881,12 @@ internal static class SelfTest
                 return $"压制/老兵布景出错：{err}";
             }
 
-            if (Reached(trace, "OnOtherCardBecomingVeteran", gate))
+            if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
             {
-                return "被压制的卡不该广播 OnOtherCardBecomingVeteran（蓝图 MakeVeteran si=2427）";
+                return "被压制的合格升级卡应广播 OnOtherCardBecomingVeteran（蓝图 MakeVeteran si=2427）";
             }
 
-            // 被压制的那张卡自己仍然收到 OnBecomingVeteran —— 找一张有该程序的卡来验
+            // 被压制的卡跳过自身OnBecomingVeteran；使用有该程序的卡验证。
             var (trace2, _, err2) = Probe(db, "card_unit_7th_brigade_anzac", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
@@ -31896,19 +31899,19 @@ internal static class SelfTest
                 return $"压制/老兵布景出错(2)：{err2}";
             }
 
-            if (!trace2.Any(t => t.StartsWith("OnBecomingVeteran → ", StringComparison.Ordinal)))
+            if (trace2.Any(t => t.StartsWith("OnBecomingVeteran → ", StringComparison.Ordinal)))
             {
-                return "被压制的卡**自己**仍然应该收到 OnBecomingVeteran（蓝图 MakeVeteran si=2806）"
+                return "被压制的卡不应收到自身 OnBecomingVeteran（蓝图 MakeVeteran si=2806）"
                      + $"\n       实际派发记录：{string.Join(" | ", trace2)}";
             }
         }
 
-        // ② 没被压制 ⇒ 广播要发（证明 ① 的"没发"不是因为程序名写错/探针没订阅）
+        // ② 未压制时先自身回调，再由2842转入他人广播。
         {
             var (trace, gate, err) = Probe(db, "card_unit_6th_brigade_nz", CardLocation.BoardHqLeft,
                 (e, s, p) =>
                 {
-                    e.Api.MakeVeteran(s.CreateWithId(victim, Side.Right, 61, CardLocation.BoardHqRight, 0));
+                    e.Api.MakeVeteran(s.CreateWithId("card_unit_16th_infantry_brigade", Side.Right, 61, CardLocation.BoardHqRight, 0));
                     return p;
                 });
             if (err is not null)
@@ -31918,7 +31921,7 @@ internal static class SelfTest
 
             if (!Reached(trace, "OnOtherCardBecomingVeteran", gate))
             {
-                return "没被压制的卡**应该**广播 OnOtherCardBecomingVeteran"
+                return "未压制的升级卡也应广播 OnOtherCardBecomingVeteran"
                      + $"\n       实际派发记录：{string.Join(" | ", trace)}";
             }
         }
@@ -32272,7 +32275,7 @@ internal static class SelfTest
         // ① 目标在 a[0]、接收者是 cardFunction（= ctx.Self）—— 这是 IR 的真实形状。
         //    取证：`card_unit_266th_guards_rifles` i=1026（OnOtherCardPlayedFromHand）
         //    的 `MakeVeteran(K2Node_Event_cardPlayed)`。
-        string? unitName = FindType(db, "infantry");
+        string? unitName = db.All.Any(d => d.Name == "card_unit_16th_infantry_brigade_vet") ? "card_unit_16th_infantry_brigade" : null;
         if (unitName is null)
         {
             return "卡库里没有 infantry（无法测）";
@@ -32499,6 +32502,103 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? VeteranNotificationBranch(CardDatabase db)
+    {
+        const string root = "card_unit_rule454_tail";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[root] = new CardDefinition { Name = root, Type = "infantry", FactionId = 5, Attack = 7, Defense = 9 };
+        defs[root + "_vet"] = new CardDefinition { Name = root + "_vet", Type = "infantry", FactionId = 5, Attack = 11, Defense = 13 };
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool json in new[] { false, true })
+        foreach (bool keyword in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            state.CreateWithId("card_unit_6th_brigade_nz", side, 50, side.HqOf(), 0);
+            state.CreateWithId("card_unit_royal_west_kents", side, 51, side.HqOf(), 1);
+            var target = state.CreateWithId(root, side.Opposite(), 60, side.Opposite().HqOf(), 0);
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            if (json) engine.Api.JsonSetBool(target, "veteran", false);
+            if (keyword) target.Keywords.Add(Keyword.Veteran);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.MakeVeteran(target);
+            int veteran = trace.Count(x => x.StartsWith("OnOtherCardBecomingVeteran → card_unit_6th_brigade_nz#50", StringComparison.Ordinal));
+            int abilities = trace.Count(x => x.StartsWith("OnOtherCardAbilitiesChanged → card_unit_royal_west_kents#51", StringComparison.Ordinal));
+            int expected = suppressed || !json ? 1 : 0;
+            if (veteran != expected || abilities != expected)
+                return $"current native tail branch {side}/{suppressed}/{json}/{keyword}: T32={veteran}, abilities={abilities}";
+            cases++;
+        }
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.CreateWithId("card_unit_6th_brigade_nz", side, 50, side.HqOf(), 0);
+            var target = state.CreateWithId("card_unit_7th_brigade_anzac", side.Opposite(), 60, side.Opposite().HqOf(), 0);
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.MakeVeteran(target);
+            int own = trace.FindIndex(x => x.StartsWith("OnBecomingVeteran → card_unit_7th_brigade_anzac#60", StringComparison.Ordinal));
+            int other = trace.FindIndex(x => x.StartsWith("OnOtherCardBecomingVeteran → card_unit_6th_brigade_nz#50", StringComparison.Ordinal));
+            if (other < 0 || (suppressed ? own >= 0 : own < 0 || own >= other))
+                return $"own callback must precede broadcast and be suppressed independently {side}/{suppressed}: own={own}, other={other}";
+            cases++;
+        }
+        return cases == 20 ? null : $"veteran tail profiles={cases}";
+    }
+
+    // RULE-454: isolate the native entry gate. Admitted upgrades still use
+    // the existing partial body; this does not certify template stat changes.
+    private static string? VeteranEligibility(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_rule454_fixture";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (bool upgrade in new[] { false, true })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", FactionId = 5, Attack = 7, Defense = 9 };
+            if (upgrade) defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", FactionId = 5, Attack = 11, Defense = 13 };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (CardLocation location in new[] { CardLocation.NotAvailable, CardLocation.DeckLeft, CardLocation.HandRight,
+                         CardLocation.BoardHqLeft, CardLocation.BoardHqRight, CardLocation.BoardFrontline, CardLocation.Discard })
+            foreach (int defense in new[] { -3, 0, 1, 200 })
+            foreach (bool json in new[] { false, true })
+            foreach (bool suppressed in new[] { false, true })
+            foreach (bool keyword in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var target = state.CreateWithId(name, side, 60, location, 0); target.Defense = defense;
+                if (json) engine.Api.JsonSetBool(target, "veteran", false);
+                if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+                if (keyword) target.Keywords.Add(Keyword.Veteran);
+                bool eligible = location.IsBoard() && upgrade && defense > 0 && (suppressed || !json);
+                int actions = state.ActionLog.Sum(a => a.SubActions.Count);
+                string before = System.Text.Json.JsonSerializer.Serialize(target.Snapshot());
+                if (!vm) engine.Api.MakeVeteran(target);
+                else {
+                    var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+                    engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] {
+                        new KismetStep(0, "call", "MakeVeteran", new[] { new KismetExpr { Self = true }, KismetExpr.Empty }, new[] { 1 }, null, null, -1, null, null)
+                    }, 0), ctx, null);
+                }
+                int emitted = state.ActionLog.Sum(a => a.SubActions.Count) - actions;
+                if (!eligible) {
+                    if (emitted != 0 || System.Text.Json.JsonSerializer.Serialize(target.Snapshot()) != before)
+                        return $"rejected upgrade mutated state {upgrade}/{side}/{location}/{defense}/{json}/{suppressed}/{keyword}/vm={vm}";
+                }
+                else if (!target.Keywords.Contains(Keyword.Veteran) || !engine.Api.JsonGetBool(target, "veteran") || emitted != 1)
+                    return $"eligible branch not entered {upgrade}/{side}/{location}/{defense}/{json}/{suppressed}/{keyword}/vm={vm}, events={emitted}";
+                cases++;
+            }
+        }
+        return cases == 896 ? null : $"veteran gate profiles={cases}";
     }
 
     // RULE-453: vary the object's current FName independently of its source
@@ -39119,7 +39219,7 @@ internal static class SelfTest
                 Engine = engine, State = state, Self = spawner, Controller = Side.Left,
             };
 
-            var args = new object?[] { unit, 1, spawner.CardId, null, true, null, 0, -1, true };
+            var args = new object?[] { "card_unit_16th_infantry_brigade", 1, spawner.CardId, null, true, null, 0, -1, true };
             var result = engine.Api.InvokeByName("SpawnCardInFrontline", spawner, args, ctx, out bool handled);
             if (!handled || result is not CardInstance spawned)
             {
@@ -42521,7 +42621,7 @@ internal static class SelfTest
     private static string? SpawnNextToCard(CardDatabase db)
     {
         const string spawnerName = "card_unit_arado_ar_196";
-        const string spawnedName = "card_unit_brewster_f2a";
+        const string spawnedName = "card_unit_16th_infantry_brigade"; // RULE-454: must have an upgrade.
         if (db.Find(spawnerName) is null || db.Find(spawnedName) is null)
         {
             return $"卡库里缺 {spawnerName} 或 {spawnedName}";
