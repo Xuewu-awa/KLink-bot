@@ -853,6 +853,8 @@ internal static class SelfTest
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
         new("压制非正来源：装甲入口拒绝后不得兼容清零", db => SuppressionRejectedArmorSource(db, false)),
+        new("批量压制输出：动作路径恒false，单卡包装保留原槽", db => SuppressionOutputContract(db, false)),
+        new("批量压制输出：真实VM后续分支与单卡输出隔离", db => SuppressionOutputContract(db, true)),
         new("隐蔽压制：装甲子调用拒绝后保留原有装甲", db => SuppressionHiddenArmorGuard(db, false)),
         new("隐蔽压制：VM路径、已揭示对照及兼容恢复", db => SuppressionHiddenArmorGuard(db, true)),
         new("压制非正来源：真实VM批量路径与手动恢复不重复装甲", db => SuppressionRejectedArmorSource(db, true)),
@@ -32518,6 +32520,66 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-465: batch1268 assigns false; single64B stores it only in a local.
+    private static string? SuppressionOutputContract(CardDatabase db, bool vm)
+    {
+        const string name = "card_unit_rule465_fixture";
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9 };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (int[] ids in new[] { Array.Empty<int>(), new[] { 9999 }, new[] { 60 }, new[] { 60, 60 }, new[] { 60, 9999 }, new[] { -1, 0 }, new[] { 9999, 60 } })
+        foreach (bool board in new[] { false, true })
+        foreach (bool cant in new[] { false, true })
+        foreach (bool incoming in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var target = state.CreateWithId(name, side, 60, board ? CardLocation.BoardFrontline : CardLocation.Discard, 0);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            if (cant) target.CustomAbility = "cantBeSuppressed";
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            if (!vm) {
+                var output = engine.Api.InvokeByName("SuppressMultipleUnits", null, new object?[] { ids, sourceId, incoming }, ctx, out bool handled);
+                if (!handled || !Equals(output, false)) return $"batch suppression must explicitly return false, got {output}";
+            } else {
+                var args = new[] { "ids", "source", "qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "SuppressMultipleUnits", args, new[] { 2 }, null, null, -1, null, null),
+                    new KismetStep(1, "jumpIfNot", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, new KismetExpr { Var = "qqq", Scope = "local" }, 4, null, null),
+                    new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = 1 }, null, -1, "branch", null),
+                    new KismetStep(3, "jump", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, 5, null, null),
+                    new KismetStep(4, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = 2 }, null, -1, "branch", null),
+                    new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> { ["ids"] = ids, ["source"] = sourceId, ["qqq"] = incoming }, "qqq", "branch");
+                if (!Equals(output.GetValueOrDefault("qqq"), false) || !Equals(output.GetValueOrDefault("branch"), 2)) return "batch false output did not drive the following VM branch";
+            }
+            bool eligible = board && !cant;
+            if (target.IsSuppressed != (eligible && ids.Contains(60))
+                || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSuppressMultipleUnits") != 1)
+                return "batch false output must not bypass its normal mutation and front notification";
+            // A separate valid native wrapper call must not forward its inner
+            // batch local result into the wrapper's own caller-provided slot.
+            if (!vm) {
+                var output = engine.Api.InvokeByName("SuppressUnit", null, new object?[] { 60, sourceId, incoming }, ctx, out bool handled);
+                if (!handled || output is not null) return "single suppression wrapper must retain its output slot";
+            } else {
+                var args = new[] { "id", "source", "qqq" }.Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "SuppressUnit", args, new[] { 2 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                var output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> { ["id"] = 60, ["source"] = sourceId, ["qqq"] = incoming }, "qqq");
+                if (!Equals(output.GetValueOrDefault("qqq"), incoming)) return "single wrapper leaked inner batch output";
+            }
+            if (target.IsSuppressed != eligible || state.ActionLog.SelectMany(x => x.SubActions).Count(x => x.Name == "ZActionSuppressMultipleUnits") != 2)
+                return "single wrapper must still process its one-element batch";
+            cases++;
+        }
+        return cases == 448 ? null : $"suppression output profiles={cases}";
     }
 
     // RULE-464: armor1806 precedes the batch's trailing reveal check1150.

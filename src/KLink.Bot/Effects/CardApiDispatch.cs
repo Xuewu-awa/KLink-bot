@@ -6434,7 +6434,10 @@ public sealed partial class CardApi
         var ids = a.FirstOrDefault() is System.Collections.IEnumerable values and not string
             ? values.Cast<object?>().Select(IdOf).ToArray() : Array.Empty<int>();
         SuppressUnits(ids, IntArg(a, 1));
-        return null;
+        // RULE-465: batch1268 writes false on the headless action path,
+        // regardless of eligibility. The single-card wrapper keeps its own
+        // output untouched, so its separate handler must still return null.
+        return false;
     }
 
     // ECombatKeyword values from the shipped enum.  None (0) is a sentinel and

@@ -1,0 +1,154 @@
+{
+  "rule_id": "RULE-465",
+  "date": "2026-10-27",
+  "base_commit": "9d056aa0c429e196820d0cf9cea5246b6c8b6dc0",
+  "status": "已修复无头动作路径批量压制qqq=false；单卡包装输出保持原槽",
+  "scope": "SuppressMultipleUnits动作处理模式输出及SuppressUnit包装局部输出隔离；不是压制成功布尔，也非非动作路由或完整压制认证。",
+  "findings": [
+    "新采集/复读批量SuppressMultipleUnits8101字节和单卡SuppressUnit64字节，函数头/脚本与独立重解码全等。",
+    "批量在1117检查IsActionProcess。动作路径完成尾部隐藏检查/可能的RevealCard调用后，1268无条件将外层LocalOutVariable qqq写false，再跳8098返回；与目标是否存在、是否在场或能否被压制无关。非动作路径在1140弹栈，不执行该写入。",
+    "单卡64字节将CardID组成一元素数组，20调用批量并把第三参数存入LocalVariable CallFunc_SuppressMultipleUnits_qqq；自身从未对外层qqq赋值。因此不能把批量false传播到单卡外层输出。",
+    "旧DoSuppressMultipleUnits返回null，VM会保留调用者输入，若原槽true则后续蓝图分支与动作路径不符。现正常执行SuppressUnits后返回false；单卡处理器仍返回null。无头引擎已有约定是动作处理路径，此处不新增非动作路由。",
+    "新增直接调用/真实KismetVm两项各448场景，共896场景，每场景再核对单卡包装（合计1792次压制入口调用）。维度为双方、4来源、7组空/无效/有效/重复/混合ID、在场/不在场、免疫开关和输入布尔。检查批量输出及后续jumpIfNot分支、单卡保留输入、通知次数及符合资格目标确实被处理，证明false不是成功状态。",
+    "相同910项测试旧908通过2失败，修复910/910。该变化只影响输出返回，不实现尾部揭示，也不修改装甲清理或其他压制阶段。",
+    "448组完整批量控制流加完整单卡包装的离线模型，覆盖动作/非动作模式及上述输入类型。清理/数值阶段按原继续地址跳过，观察者为空；null上下文的三个谓词供应受控false，不认证UE异常处理或真实null局部值残留。动作批量false、非动作保留输入、单卡不透传内层输出均通过。",
+    "DeepSeek机械盘点输出写入及包装调用各1处；主agent独立递归逐项全等复核。单卡无外层赋值的结论来自完整64字节，不按函数名猜测与批量同构。"
+  ],
+  "verification": {
+    "rule": "RULE-465",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "SuppressMultipleUnits",
+        "bytes": 8101,
+        "sha256": "6661b1ce6a5e825856328438eb7c76f4c9460116c147a35bce4a3c059bdacc0f"
+      },
+      {
+        "name": "SuppressUnit",
+        "bytes": 64,
+        "sha256": "81cb2b7742509c936bf0e23c7d110264fd43ed722319a1c72f572fb9c266aea7"
+      }
+    ],
+    "full_flow_control_cases": 448,
+    "case_digest_sha256": "50bcb16dca4800aa9864f670cae7d7054d00d8802f5ac0906aba7efee872e6f5",
+    "worker_exact_output_assignments": 1,
+    "worker_exact_wrapper_calls": 1,
+    "scope": "Full batch control flow and complete single wrapper; cleanup/numeric phases skipped by original continuations. Empty/missing-ID null contexts supplied as controlled false predicate slots, observers empty, visible targets only. Batch action mode writes false; nonaction preserves input; wrapper keeps inner output local. No full UObject exception or suppression/reveal body certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 448,
+    "total_profiles": 896,
+    "total_suppression_entry_calls": 1792,
+    "baseline": {
+      "total": 910,
+      "passed": 908,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 910,
+      "passed": 910,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "仅批量绑定在执行后显式return false，单卡保持null。"
+  },
+  "unresolved": [
+    "非动作处理模式路由尚未作为模拟器模式实现；本次只映射既有无头动作路径，不能将其推广为客户端所有路由恒false。",
+    "批量尾部揭示、null/失效/ID重用对象及RevealCard本体完整链仍未接通/认证。",
+    "正来源可见目标的独立装甲分量、累计、临时移除、typed SetValue及通知仍待迁移。",
+    "压制阶段顺序、回调重入、原始能力位及生命周期/老兵装甲继续开放。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "权威为客户端、SDK/解包资产和只读内存；不采用旧回放或names.txt权威。",
+    "离线模型，无进程写入、注入或真实游戏函数调用。",
+    "单卡版本迁移暂停，模块指纹不变。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule465-veteran-query-headers-20261027.json",
+      "bytes": 4716841,
+      "sha256": "3762dc93b7a0aa596e103a8a7819b50269c3eaa8efc915b5bca36c9c9d19130d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule465-suppression-output.py",
+      "bytes": 2372,
+      "sha256": "f5410b5453302a33b8b4065345648252440cbc65b4ee8833c8e129b733f4cb37"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule465.py",
+      "bytes": 6894,
+      "sha256": "c1cc80544491f5f5454d33fe8f30adedf43c4e0b453a10747404970d95cd29a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-suppression-output-verification-20261027.json",
+      "bytes": 1173,
+      "sha256": "4122b1c290d831c35abc878b7f6047fe465c6690424d128bc1332e96c77ba040"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-worker\\input.json",
+      "bytes": 109416,
+      "sha256": "b341d39c8a475ea2d95595a9a182e07815448c2b7c45c39b0c4507e413662b7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-worker\\output.json",
+      "bytes": 994,
+      "sha256": "96ad8b96c6dcc9a1722f29ce695169e9335abd6c9ba8be57407b874ca2924a4f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-worker\\task.txt",
+      "bytes": 628,
+      "sha256": "e9e7f8179cb1471a54f1dd2c446aa674fdc221912fc7b15ef22cc7f8fbc8ffd4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule333-attack-phase.py",
+      "bytes": 9079,
+      "sha256": "7f048241783fa794b39fcbbbfdd0aa39cc6c4eb66067c0b33d37779ce3f89afd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-baseline-selftest.log",
+      "bytes": 79804,
+      "sha256": "f0a910ad83d613d16e8a52135e0b1f45c282ffff1c7787b2a46ec5b50fe740c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-final-selftest.log",
+      "bytes": 79683,
+      "sha256": "25e4df9d54d8097da423bfb3818cd106a86241200042ecb55b6ce6ee43dadd7c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule465-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}
