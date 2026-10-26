@@ -1,0 +1,821 @@
+{
+  "rule_id": "RULE-440",
+  "date": "2026-10-26",
+  "base_commit": "1375410e360a30a8ac97c40f03652e3ac8b722bc",
+  "status": "完成类检查及二次分配边界核对；完整属性复制、注册和回调未关闭，本轮不改模拟器规则",
+  "scope": "GetStaticCard miss -> GetObjectClass -> IsValidClass -> SpawnObject的原生局部链，及CreateCardObject后续写入与注册顺序。UI、商城/战役建卡及单卡版本迁移不在语义审计范围。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "object_class_getter_rva": "0x1518d90",
+    "get_object_class_exec_rva": "0x3ccb250",
+    "is_valid_class_exec_rva": "0x3dc1930",
+    "spawn_object_exec_rva": "0x3cd5ff0",
+    "spawn_object_implementation_rva": "0x3cbbb40",
+    "initialize_encryption_rva": "0x4af9a30",
+    "init_static_tags_implementation_rva": "0x4af98c0"
+  },
+  "findings": [
+    "GetObjectClass执行入口：空指针返回0；非空读取对象头+0x10类指针。离线执行用受控FFrame实参，分别核对脚本/编译属性两条参数通路；不能把受控实参读取称完整UE参数ABI认证。",
+    "IsValidClass入口的实际条件是非空且对象标志+0x8的0x40000000位未置位；0x80000000不会被本函数单独拒绝。只认证这段机器码条件，不将其推为所有UObject全局有效性、GC安全性或任意指针可读性。",
+    "SpawnObject实现先检查请求类的继承链含Object，随后要求Outer非空；类+0xe0若有约束类，再检查Outer实际类继承该约束。+0xe0按用途判读为ClassWithin，未在本轮取得字段符号。最初把0x1518d90猜作Class元类getter，经当前FName实读纠正为Object基类getter；未将猜测作为证据。",
+    "当前BaseCardObject的+0xe0约束指向Object；BP_CardFunctions_C默认对象的实际类满足该约束。此处使用CDO验证类关系，不是假称找到了当前对局的真实CardFunctions实例，也不证明实际对局对象寿命。",
+    "通过类和Outer检查后，SpawnObject用传入类及Outer初始化构造参数，设置Name键0和Flags掩码0x1000000，再调用0x15c6cd0分配边界。参数初始化helper受控，因此未把本轮没覆盖的参数默认内容认定为原生完整默认值。",
+    "四个未命中FName参考（键0两次及Number1/37）联通实际静态getter、取类入口、有效性入口和SpawnObject实现：每例两次分配边界。第一次的Outer为受控TransientPackage，第二次为捕获的BP_CardFunctions_C CDO，两个返回指针不同。适配器仅为第一返回对象提供已验证的BaseCardObject类槽，不提供其他属性；这不是实测游戏新对象内存。",
+    "因此CreateCardObject并非把GetStaticCard返回值直接登记成战斗卡。它取得其类，再请求生成另一个对象；静态引用的usedTriggers另用于触发注册。不能用上一轮静态miss对象投影替代第二对象及其完整初始化。",
+    "CreateCardObject在851挂cardFunction；980及1222按StaticCardRef.usedTriggers更新注册；1277起设置金卡/ID/双方归属/位置/位置号；1563 movementLeft=1，1608/1679从对象公开攻防复制max字段，1791后attackLeft依Fury为1或2，1850 enterPlayOnTurn=0；1966-2048设置密钥并初始化加密，2226初始化静态标签。版本平衡/Salvage/战役/图片分支不在本轮语义认证范围。",
+    "当前CreateCardObject尾段经AddCardToAllCardsInBattle后才OnCreateCard。登记函数要求CardID>0且不存在该键，重复键保留旧值；这与RULE-102已有结论方向一致，不据此修改用于布景/导入的CreateWithId冲突保护。完整原生map和注册历史语义仍开放。",
+    "BaseCardObject.OnCreateCard的当前UFunction执行入口为共享脚本分派器0x159ce30，script长度0；不能把捕获分派器当已获取所有单卡OnCreateCard实现。名称匹配扫描同时捕获的战役等重名函数不用于本轮规则结论。",
+    "InitializeEncryption初次按.pdata仅取得571字节且末尾仍为条件跳转，不能称完整函数；后改为CFG遍历取得740字节到ret，无未追踪跳转前沿。InitStaticGameplayTags取得357字节。只采集和复读代码，不宣称这两个初始化函数的所有外部调用语义已认证。"
+  ],
+  "property_writes": [
+    {
+      "index": 547,
+      "field": "Name"
+    },
+    {
+      "index": 646,
+      "field": "cardSet"
+    },
+    {
+      "index": 851,
+      "field": "cardFunction"
+    },
+    {
+      "index": 1277,
+      "field": "isGoldCard"
+    },
+    {
+      "index": 1318,
+      "field": "CardID"
+    },
+    {
+      "index": 1367,
+      "field": "side"
+    },
+    {
+      "index": 1416,
+      "field": "originalSide"
+    },
+    {
+      "index": 1465,
+      "field": "Location"
+    },
+    {
+      "index": 1514,
+      "field": "locationNumber"
+    },
+    {
+      "index": 1563,
+      "field": "movementLeft"
+    },
+    {
+      "index": 1608,
+      "field": "maxDefense"
+    },
+    {
+      "index": 1679,
+      "field": "maxAttack"
+    },
+    {
+      "index": 1805,
+      "field": "attackLeft"
+    },
+    {
+      "index": 1850,
+      "field": "enterPlayOnTurn"
+    },
+    {
+      "index": 2670,
+      "field": "attackLeft"
+    },
+    {
+      "index": 2822,
+      "field": "campaignName"
+    }
+  ],
+  "native_reference": {
+    "rule": "RULE-440",
+    "spawn_cases": [
+      {
+        "case": "valid1",
+        "allocated": true,
+        "result": "0x60000000",
+        "calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "parameters": {
+          "class_pointer": "0x7ff4953dce40",
+          "outer": "0x1cb2260ae10",
+          "name": 0,
+          "flags": "0x1000000"
+        }
+      },
+      {
+        "case": "valid2",
+        "allocated": true,
+        "result": "0x60001000",
+        "calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "parameters": {
+          "class_pointer": "0x7ff4953dce40",
+          "outer": "0x1cb2260ae10",
+          "name": 0,
+          "flags": "0x1000000"
+        }
+      },
+      {
+        "case": "null-class",
+        "allocated": false,
+        "result": "0x0",
+        "calls": [
+          "cookie"
+        ],
+        "parameters": null
+      },
+      {
+        "case": "null-outer",
+        "allocated": false,
+        "result": "0x0",
+        "calls": [
+          "ObjectStaticClass",
+          "cookie"
+        ],
+        "parameters": null
+      },
+      {
+        "case": "wrong-class-hierarchy",
+        "allocated": false,
+        "result": "0x0",
+        "calls": [
+          "ObjectStaticClass",
+          "cookie"
+        ],
+        "parameters": null
+      },
+      {
+        "case": "wrong-outer-type",
+        "allocated": false,
+        "result": "0x0",
+        "calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "cookie"
+        ],
+        "parameters": null
+      },
+      {
+        "case": "no-within-constraint",
+        "allocated": true,
+        "result": "0x60002000",
+        "calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "parameters": {
+          "class_pointer": "0x50003000",
+          "outer": "0x50002000",
+          "name": 0,
+          "flags": "0x1000000"
+        }
+      }
+    ],
+    "wrapper_cases": [
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x0",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x0",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x0",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x0",
+        "present": true,
+        "result": "0x1"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x40000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x40000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x40000000",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x40000000",
+        "present": true,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x80000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x80000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": false,
+        "flags": "0x80000000",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": false,
+        "flags": "0x80000000",
+        "present": true,
+        "result": "0x1"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x0",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x0",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x0",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x0",
+        "present": true,
+        "result": "0x1"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x40000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x40000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x40000000",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x40000000",
+        "present": true,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x80000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x80000000",
+        "present": false,
+        "result": "0x0"
+      },
+      {
+        "function": "GetObjectClass",
+        "compiled": true,
+        "flags": "0x80000000",
+        "present": true,
+        "result": "0x7ff4953dce40"
+      },
+      {
+        "function": "IsValidClass",
+        "compiled": true,
+        "flags": "0x80000000",
+        "present": true,
+        "result": "0x1"
+      }
+    ],
+    "combined_missing_name_cases": [
+      {
+        "key": "0x0",
+        "static_result": "0x60003000",
+        "spawn_result": "0x60004000",
+        "lookup_calls": [
+          "package",
+          "construction-check",
+          "BaseCardStaticClass",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "spawn_calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "allocations": [
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x40000000",
+            "name": 0,
+            "flags": "0x0"
+          },
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x1cb2260ae10",
+            "name": 0,
+            "flags": "0x1000000"
+          }
+        ]
+      },
+      {
+        "key": "0x0",
+        "static_result": "0x60005000",
+        "spawn_result": "0x60006000",
+        "lookup_calls": [
+          "package",
+          "construction-check",
+          "BaseCardStaticClass",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "spawn_calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "allocations": [
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x40000000",
+            "name": 0,
+            "flags": "0x0"
+          },
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x1cb2260ae10",
+            "name": 0,
+            "flags": "0x1000000"
+          }
+        ]
+      },
+      {
+        "key": "0x100000000",
+        "static_result": "0x60007000",
+        "spawn_result": "0x60008000",
+        "lookup_calls": [
+          "package",
+          "construction-check",
+          "BaseCardStaticClass",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "spawn_calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "allocations": [
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x40000000",
+            "name": 0,
+            "flags": "0x0"
+          },
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x1cb2260ae10",
+            "name": 0,
+            "flags": "0x1000000"
+          }
+        ]
+      },
+      {
+        "key": "0x2500000000",
+        "static_result": "0x60009000",
+        "spawn_result": "0x6000a000",
+        "lookup_calls": [
+          "package",
+          "construction-check",
+          "BaseCardStaticClass",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "spawn_calls": [
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "ObjectStaticClass",
+          "construction-check",
+          "params",
+          "allocate",
+          "cookie"
+        ],
+        "allocations": [
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x40000000",
+            "name": 0,
+            "flags": "0x0"
+          },
+          {
+            "class_pointer": "0x7ff4953dce40",
+            "outer": "0x1cb2260ae10",
+            "name": 0,
+            "flags": "0x1000000"
+          }
+        ]
+      }
+    ],
+    "allocation_calls": 11,
+    "boundary": "Native SpawnObject implementation and UFunction wrappers executed offline. Class hierarchy/within metadata captured from client; negative classes/objects controlled. Parameter ctor, allocator, constructor-check, security cookie and FFrame marshalling controlled. No UE allocation/property-copy/GC or full card callback execution certified."
+  },
+  "verification": {
+    "rule": "RULE-440",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_fragments": [
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x3dc1930",
+        "bytes": 164
+      },
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x3ccb250",
+        "bytes": 149
+      },
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x3cd5ff0",
+        "bytes": 218
+      },
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x4a81cb0",
+        "bytes": 26
+      },
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x4a81c90",
+        "bytes": 26
+      },
+      {
+        "source": "rule440-construction-entry-bodies-20261026.json",
+        "rva": "0x159ce30",
+        "bytes": 241
+      },
+      {
+        "source": "rule440-construction-implementation-bodies-20261026.json",
+        "rva": "0x3cbbb40",
+        "bytes": 519
+      },
+      {
+        "source": "rule440-construction-implementation-bodies-20261026.json",
+        "rva": "0x4af9a30",
+        "bytes": 571
+      },
+      {
+        "source": "rule440-construction-implementation-bodies-20261026.json",
+        "rva": "0x4af98c0",
+        "bytes": 357
+      },
+      {
+        "source": "rule440-initialization-cfg-bodies-20261026.json",
+        "rva": "0x4af9a30",
+        "bytes": 740
+      },
+      {
+        "source": "rule440-initialization-cfg-bodies-20261026.json",
+        "rva": "0x4af98c0",
+        "bytes": 357
+      },
+      {
+        "source": "rule440-uclass-getter-native-20261026.json",
+        "rva": "0x1518d90",
+        "bytes": 167
+      }
+    ],
+    "unique_native_bytes": 2607,
+    "all_disk_live_equal": true,
+    "metadata_segments_revalidated": 8,
+    "functions": [
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "redecoded": true
+      },
+      {
+        "owner": "KismetSystemLibrary",
+        "name": "IsValidClass",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "GameplayStatics",
+        "name": "GetObjectClass",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "GameplayStatics",
+        "name": "SpawnObject",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "BaseCardObject",
+        "name": "InitializeEncryption",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "BaseCardObject",
+        "name": "InitStaticGameplayTags",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "BaseCardObject",
+        "name": "OnCreateCard",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "UpdateCardFunctionTriggerMap",
+        "bytes": 460,
+        "redecoded": true
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "AddCardToAllCardsInBattle",
+        "bytes": 264,
+        "redecoded": true
+      }
+    ],
+    "blueprint_bytes": 3653,
+    "worker_input_rows": 84,
+    "worker_exact_matching_rows": 20,
+    "worker_context_writes": 16,
+    "boundary": "Re-decode is syntactic evidence; no full UObject construction/GC/property-copy or single-card certification."
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-135751-rule440-construction-fields-927b7471",
+    "input_rows": 84,
+    "output_rows": 20,
+    "context_writes": 16,
+    "exact_original_elements_and_order_verified": true,
+    "task": "私有AST包机械筛选，输出仅result.json；主agent重新JSON解析、精确筛选并比较全元素，不委派证据判断或发布"
+  },
+  "validation": {
+    "offline_native_spawn_cases": 7,
+    "offline_native_wrapper_cases": 24,
+    "offline_native_joined_cases": 4,
+    "total_controlled_cases": 35,
+    "allocation_boundary_calls": 11,
+    "unique_native_bytes_revalidated": 2607,
+    "blueprint_bytes_redecoded": 3653,
+    "simulator_source_changed": false,
+    "full_selftest_run_this_round": false,
+    "last_source_validation": "前一提交1375410的874/874，仅作为历史结果；本轮没有声称重跑C#全套测试。"
+  },
+  "limitations": [
+    "构造参数初始化、内存分配、构造合法性检查、安全cookie及FFrame实参读取均受控；没有执行游戏函数、没有向游戏写内存。",
+    "联通阶段只投影新对象类槽，未投影/认证属性复制、JSON和容器别名、PostInitProperties、GC或分配失败恢复。",
+    "当前证据表明建卡有第二次分配请求，不能断言实际客户端中两次分配必成功或最终对象一定完成战斗登记。",
+    "未修改当前空名生成选择行为；缺失卡名走到底的ID/事件/通知与重试恢复仍未关闭。",
+    "头字段/继承链的受控负面场景不是自然对局可达性证明。静态函数可分析不等于整场PvP或单卡已完全认证。"
+  ],
+  "next_steps": [
+    "跟进0x15c6cd0的构造、模板属性复制和PostInitProperties边界，特别是第二对象的JSON/容器归属",
+    "在可靠对象初始化模型基础上再核对空名CreateCardObject的注册/OnCreateCard/通知及ID后果"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-invalid-card-creation-native-20261026.json",
+      "bytes": 4713085,
+      "sha256": "af81dd23b1fe1ea4c126eddd8a8f49c926765de2c8ccd22f6dadc7a9086c7bac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-get-static-card-native-20261026.json",
+      "bytes": 29417,
+      "sha256": "55b2590678bbfe98d6771342c6257c9e9dc9e1aff39408da01f1a94ac8923d8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-static-cache-and-class-hooks-native-20261026.json",
+      "bytes": 403349,
+      "sha256": "f5522bc9a98bb1d4aa7b0a5dd50a9a63c87ea5d1e7bbc5307243fec4473cc25c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-object-construction-native-20261026.json",
+      "bytes": 4574190,
+      "sha256": "57940516c00d3b842c3cb4f18933127e367f82fa9f4c792829f0dd6749f6d6e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-construction-entry-bodies-20261026.json",
+      "bytes": 38179,
+      "sha256": "98bad1be7e0c1d32fc2e6b0d807468d09524e66fa9104eb4fee82901db41567c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-construction-implementation-bodies-20261026.json",
+      "bytes": 45133,
+      "sha256": "815feedde85e5fabb14b28f3bd10d39bfeb00d442b74085cb913d6996660160d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-initialization-cfg-bodies-20261026.json",
+      "bytes": 40215,
+      "sha256": "432aa13dcee7b440aacdafec9412ff9cf6ec5471d7eca8f901d6b3e87e540c9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-uclass-getter-native-20261026.json",
+      "bytes": 5835,
+      "sha256": "fa12bc222e44851c569856f318f1e6f0f7d658832332e3ae2bb06c3f1715a46c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-construction-class-metadata-20261026.json",
+      "bytes": 3050,
+      "sha256": "83d4dacdd6f2c1c0ba519e7aa97fedeeede88c714b0821de386dc8d94e2ea2fa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-construction.py",
+      "bytes": 2511,
+      "sha256": "64adf7a5c9da3c3c1cb81b8c3d3bb9734c28941f83f41c3e0f3ed34d8c7d8cdb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-native.py",
+      "bytes": 3303,
+      "sha256": "744730fb2aaee8ca64e981ed078d914fe3946f8cf69377788fce21a5d4f542eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-impl.py",
+      "bytes": 2900,
+      "sha256": "3443e15aabb17ea3fce5d7229e21fe50a2648feb1f0dc745ed326f2ca5d7444f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-initialization-cfg.py",
+      "bytes": 2862,
+      "sha256": "a707677a790b4ee1c8be556ebc2c7005ab469e07354d48ae8b9f38668124d0a4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-uclass.py",
+      "bytes": 2667,
+      "sha256": "ebb4599156dfbc8ddd4025f2e5565fe6ea4aa8e7e870964c0e0144ad84b034cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule440-metadata.py",
+      "bytes": 4121,
+      "sha256": "7708fba79933dd3ee253ee41d5916d0031feb3fb9b8e14a86f08389ce5957e31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule440-construction.py",
+      "bytes": 7764,
+      "sha256": "8c60e944e35aa997c91ee56af4791feb0fa400cc696db3da3e53354c716dc49e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule440.py",
+      "bytes": 4375,
+      "sha256": "0fe200501cff253bca5e980c5515704dfc3b9587b8a3784aa5a671a94a16e471"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule440-construction-native-emulation-20261026.json",
+      "bytes": 10018,
+      "sha256": "5f56ca0cb134bcb95d8fc4a8305401e2a8c315bb4282a82af6f2e0410a465ac2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule440-final-verification-20261026.json",
+      "bytes": 3324,
+      "sha256": "8b2b12565c1e2257131876e44da411027eff4ac72420d2ad37a0211d7b9f4df5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule440-worker\\task.txt",
+      "bytes": 587,
+      "sha256": "01af50170592d23baf17fd7d6232e66e1333a45c99ebd143201a502a4e3dd845"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule440-worker\\input.json",
+      "bytes": 35729,
+      "sha256": "000995049f3ace4bae616108325383025140cc3b3e39b60f2aaabb335442bd99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule440-worker\\result.json",
+      "bytes": 10213,
+      "sha256": "cafe7075615d32771ff019f4c308d21e89af777e2a5b3b05c4c994bd38d8f552"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "bytes": 30934,
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "bytes": 8173,
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    }
+  ]
+}
