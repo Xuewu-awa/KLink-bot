@@ -1,0 +1,282 @@
+{
+  "rule_id": "RULE-441",
+  "date": "2026-10-26",
+  "base_commit": "38ad18dbe63d38d9c5fe78129190ba0fc0263050",
+  "status": "识别当前分配入口UE4SS跳转；核对原生构造后复制的有限快速分支，最终JSON归属仍未关闭",
+  "scope": "原生分配入口到构造后初始化和InitProperties；只读核对实际UE4SS跳转及原始跳板。不是移除hook或修改客户端，也不扩展UI/战役/版本卡牌迁移。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "ue4ss_module": {
+      "name": "UE4SS.dll",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\UE4SS.dll",
+      "base": 140710450888704,
+      "size": 20684800
+    },
+    "ue4ss_file_sha256": "182f6a6cb6d2f2cbc2d16fa685d39c43ea9790484ec0c877cffbc03cf269a026",
+    "game_allocation_rva": "0x15c6cd0",
+    "construction_context_cleanup_rva": "0x15b5af0",
+    "post_construct_init_rva": "0x15c12b0",
+    "init_properties_rva": "0x15bef20",
+    "detour_target_rva": "0x461f60"
+  },
+  "findings": [
+    "初次复读0x15c6cd0与磁盘代码不一致，未忽略断言或谎称完全一致。782字节原始函数范围中，前14字节有12个字节不同；+14之后全部一致。现场入口ff25使用间接跳转，目标位于安装目录的UE4SS.dll。这里记录已有进程状态，没有添加、移除或修复客户端补丁。",
+    "UE4SS现有hook状态对象+0x20保存原始跳板。跳板前14字节与游戏磁盘原始入口相同，随后间接跳转回游戏入口+14。核对真实跳板、指针槽、DLL目标代码和文件指纹。没有执行客户端函数来取得这些指针。",
+    "UE4SS目标包装器的166字节完整到ret部分与DLL磁盘一致。控制流有条件跳过[hookObject+0x20]原调用，并可按栈上标志选替代返回值。本轮四个离线控制组合验证这种包装结构；前/后callback helper受控，不表示当前注册回调实际跳过或替换了对象。未审计活动回调列表或全部UE4SS逻辑。",
+    "规则目标是游戏行为，不能把工具hook的可选改写机制直接移植为游戏规则。RULE-439/440已明确把分配器作为受控边界，本轮没有推翻其查表和类门结论，但也不能用那些案例证明完整实际构造生命周期。",
+    "原始游戏分配实现仍可在磁盘路径看到登记构造上下文、调用类构造函数，再调用0x15b5af0；后者到0x15c12b0，后者在两个位置调用0x15bef20。三段当前代码436/1260/879字节全部与进程一致。这是当前原生链的代码证据，不是当前hook一定执行该路径的证明。",
+    "InitProperties从对象+0x10取得类，检查类标志&0x10000080；在copyTransients=false、传入类等于对象类、来源等于本类CDO时，选class+0x88构造后复制链。当前BaseCardObject flags=0x305000a0，+0x88=0，故该特定分支直接返回，无字段复制。source=null的对应快速分支也直接返回。",
+    "用实际当前类头/类标志/CDO指针及原生属性初始化代码，覆盖3种合成目标标志（0、0x1000000、0x400）×CDO/null来源共6例；目标0x678字节前后完全相同，写入监测无目标字段写入。此结果仅是函数在这些参数下的合同，不证明真实FObjectInitializer一定提供这些参数。",
+    "选择其他来源、其他类、copyTransients=true、蓝图类、配置/子对象以及完整PostInitProperties仍可能走不同链。没有把“此快速分支不复制”扩大成所有字段始终来自构造函数，更未认证最终JSON容器独立/共享、101字段最终状态或GC寿命。"
+  ],
+  "verification": {
+    "rule": "RULE-441",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "ue4ss_sha256": "182f6a6cb6d2f2cbc2d16fa685d39c43ea9790484ec0c877cffbc03cf269a026",
+    "original_allocator_bytes": 782,
+    "patched_prefix_span": 14,
+    "differing_bytes": 12,
+    "original_suffix_equal": true,
+    "trampoline_prefix_equal": true,
+    "trampoline_returns_to_original_plus14": true,
+    "detour_target_bytes_live_disk_equal": 166,
+    "accessor_fast_path_bytes_live_disk_equal": 73,
+    "postinit_functions": 3,
+    "postinit_bytes": 2575,
+    "postinit_all_live_disk_equal": true,
+    "class_flags": "0x305000a0",
+    "postconstruct_link": "0x0",
+    "worker_input_rows": 223,
+    "worker_exact_matches": 37,
+    "no_game_writes": true
+  },
+  "native_reference": {
+    "rule": "RULE-441",
+    "property_copy_cases": [
+      {
+        "flags": "0x0",
+        "source": "class CDO",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      },
+      {
+        "flags": "0x0",
+        "source": "null",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      },
+      {
+        "flags": "0x1000000",
+        "source": "class CDO",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      },
+      {
+        "flags": "0x1000000",
+        "source": "null",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      },
+      {
+        "flags": "0x400",
+        "source": "class CDO",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      },
+      {
+        "flags": "0x400",
+        "source": "null",
+        "same_class": true,
+        "copy_transients": false,
+        "destination_write_count": 0
+      }
+    ],
+    "detour_controlled_cases": [
+      {
+        "skip_original": false,
+        "override_result": false,
+        "returned": "0xbbbb",
+        "calls": [
+          "hook-state",
+          "callback-wrapper-init",
+          "callback-dispatch",
+          "callback-wrapper-cleanup",
+          "original-allocator",
+          "callback-dispatch"
+        ]
+      },
+      {
+        "skip_original": false,
+        "override_result": true,
+        "returned": "0xcccc",
+        "calls": [
+          "hook-state",
+          "callback-wrapper-init",
+          "callback-dispatch",
+          "callback-wrapper-cleanup",
+          "original-allocator",
+          "callback-dispatch"
+        ]
+      },
+      {
+        "skip_original": true,
+        "override_result": false,
+        "returned": "0xaaaa",
+        "calls": [
+          "hook-state",
+          "callback-wrapper-init",
+          "callback-dispatch",
+          "callback-wrapper-cleanup",
+          "callback-dispatch"
+        ]
+      },
+      {
+        "skip_original": true,
+        "override_result": true,
+        "returned": "0xcccc",
+        "calls": [
+          "hook-state",
+          "callback-wrapper-init",
+          "callback-dispatch",
+          "callback-wrapper-cleanup",
+          "callback-dispatch"
+        ]
+      }
+    ],
+    "trampoline_original_prefix_bytes": 14,
+    "trampoline_return": "0x7ff70b7e6cde",
+    "boundary": "Property-copy function executes exact game code using current BaseCardObject class flags/CDO/PostConstructLink, same class and copy-transients=false only. Destination is synthetic. UE4SS wrapper uses exact live code but hook-state accessor, callback helpers and original allocator are controlled. No claim that active callbacks currently skip or replace the allocator. No UObject construction/JSON/GC emulation."
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-145241-rule441-allocation-detour-calls-7b0a30f8",
+    "input_rows": 223,
+    "exact_matching_rows": 37,
+    "independent_json_filter_equal": true,
+    "task": "私有机器码指令包中按mnemonic机械筛选call和j开头指令",
+    "execution_scope_note": "worker答复称使用PowerShell解析文件，未遵守packet中禁止processes的字面限制；不采信其执行范围自述作为独立保证。主agent重新解析原始输入，核对37条完整元素及顺序全等；没有依赖worker的规则判断或执行保证。"
+  },
+  "validation": {
+    "controlled_property_copy_cases": 6,
+    "controlled_detour_cases": 4,
+    "total": 10,
+    "original_game_body_bytes": 782,
+    "patched_prefix_span": 14,
+    "differing_bytes": 12,
+    "unchanged_game_suffix_bytes": 768,
+    "unpatched_postinit_helper_bytes": 2575,
+    "ue4ss_wrapper_bytes": 166,
+    "accessor_fast_path_bytes": 73,
+    "simulator_source_changed": false,
+    "full_selftest_run_this_round": false,
+    "last_source_validation": "1375410提交的874/874为历史结果；本轮未重跑完整C#测试。"
+  },
+  "limitations": [
+    "UE4SS活动回调是否修改构造参数/跳过原函数/替换结果未核对；可选分支存在不等于当前实际发生。",
+    "原始分配函数入口已被hook，本轮原始磁盘函数只分析控制流，不把它当当前全函数内存一致的证据。",
+    "属性复制6例使用合成目标内存和限定参数；最终真实构造参数、默认来源、延迟初始化及其他分支仍开放。",
+    "最终BaseCardObject/JSON/容器归属、OnCreateCard及空名生成选择完整恢复仍未关闭，未改变相关无头规则。"
+  ],
+  "next_steps": [
+    "只读核对实际hook分派数据及参数转交，不调用/卸载UE4SS函数",
+    "解析原生FObjectInitializer构造参数和默认来源的实际选择，随后继续JSON/容器及PostInitProperties链"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-allocation-core-native-20261026.json",
+      "bytes": 33067,
+      "sha256": "84adc6993e35c92a055be998e5c685a67e4ea9b8fdf3207db52452a82bbc8c59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-allocation-detour-live-20261026.json",
+      "bytes": 34499,
+      "sha256": "b70428c6951b122e1bfd4c1cc2eefba3b9abc97815b87dff8f0d3ad8a777703d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-property-copy-class-metadata-20261026.json",
+      "bytes": 1268,
+      "sha256": "0d847d6401265fd0cefe367fff79bcd4d1a3875d3e2abf142e778b2dc7aa917b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule441-allocation.py",
+      "bytes": 3267,
+      "sha256": "b18e1d8d98fc112667de60cc2a47f2c94b9a2522dab586ce57b773441084dde3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule441-detour.py",
+      "bytes": 4708,
+      "sha256": "e29a97a4adca7ad6bc9c05395459494540d5860bd61cfe5275745e0d09897952"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule441-postinit.py",
+      "bytes": 3301,
+      "sha256": "20376ed26a7639ad44b9a030f5fbcd843d004dc1a03cc58227354ecb154b8f5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule441-property-metadata.py",
+      "bytes": 3774,
+      "sha256": "cb14b24bbf4e2cfec7d241249d9643dfd78c4286ca7befdafe99a63eac39f1d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule441-properties-and-detour.py",
+      "bytes": 5505,
+      "sha256": "769f690e9118c9d7fcfa47b27b5c081fb303d948adf05793252859b0393cdc21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule441.py",
+      "bytes": 3926,
+      "sha256": "e568cb303f69323256829a3c837390b49469b53aeb2682f57fd8819e802ad4e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule441-property-and-detour-emulation-20261026.json",
+      "bytes": 2808,
+      "sha256": "b173be074bbbd2acd10cdf247a3f2e3cfedcc4dd4faeda16a32f8ea3463c5fbd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule441-final-verification-20261026.json",
+      "bytes": 774,
+      "sha256": "a5b9d60f579a16b3d110bc6c8892ce8bac2fa62ef552d2e7619fa9015c7da700"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule441-worker\\task.txt",
+      "bytes": 414,
+      "sha256": "15735911d8a0f147f95c2cd93efcad6099ce7b9afb4f1b0b8e96f7f329ca8661"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule441-worker\\input.json",
+      "bytes": 44418,
+      "sha256": "b3cef2722c1e384d7ef262298e2fac14cda9098723c6a2dd455dbc0b00d127df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule441-worker\\result.json",
+      "bytes": 6814,
+      "sha256": "1b43b191fe533f57c5ada32e7f51d654772ea645802a7589301885407237353d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "bytes": 30934,
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "bytes": 8173,
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    }
+  ]
+}
