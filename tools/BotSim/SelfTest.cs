@@ -852,6 +852,8 @@ internal static class SelfTest
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
+        new("重甲普通零请求：保留数值、账本、名单且不通知", db => HeavyArmorOrdinaryZeroNoOp(db, false)),
+        new("重甲普通零请求：真实VM保留输入出参和完整状态", db => HeavyArmorOrdinaryZeroNoOp(db, true)),
         new("重甲总量：显式接收者和只读VM出参", db => HeavyArmorReadBounds(db, true)),
         new("老兵数值：攻击防御行动费使用模板模式5并保留临时分量", VeteranNumericTemplate),
         new("老兵数值：攻击回调先于防御行动费且不中止后续原语", VeteranNumericReentry),
@@ -32506,6 +32508,71 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-458: ChangeBuffsFromCards592..663 exits modes0/1 at amount0;
+    // ChangeHeavyArmor1008/1244 then exits before numeric writes or broadcasts.
+    private static string? HeavyArmorOrdinaryZeroNoOp(CardDatabase db, bool vm)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1 })
+        foreach (int sourceId in new[] { 20, 9999 })
+        foreach (int shape in Enumerable.Range(0, 6))
+        foreach (bool skip in new[] { false, true })
+        foreach (bool incoming in new[] { false, true })
+        foreach (CardLocation location in new[] { CardLocation.BoardFrontline, side.HandOf(), side.DeckOf() })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_kv_ii", side, 60, location, 0);
+            var permanent = new CardBuff { SourceCardId = sourceId };
+            var temporary = new CardBuff { SourceCardId = sourceId, Temporary = true };
+            if (shape == 1) permanent.HeavyArmor = 2;
+            if (shape == 2) temporary.HeavyArmor = -1;
+            if (shape == 4) permanent.AttackSetValue = 0;
+            if (shape == 5) { permanent.HeavyArmor = -3; temporary.HeavyArmor = 4; }
+            if (shape is 1 or 3 or 4 or 5) target.BuffsBySource[(sourceId, false)] = permanent;
+            if (shape is 2 or 5) target.BuffsBySource[(sourceId, true)] = temporary;
+            var foreign = new CardBuff { SourceCardId = 30, HeavyArmor = 1, DefenseSetValue = 0 };
+            target.BuffsBySource[(30, false)] = foreign;
+            target.Defense = 0; // armor's entry gate does not require positive health
+            target.Keywords.Remove(Keyword.HeavyArmor); // even a stale derived flag must not be recalculated
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            var original = target.BuffsBySource.ToDictionary(x => x.Key, x => x.Value);
+            string before = state.SnapshotJson();
+            string buffs = System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray());
+            int armor = target.HeavyArmor;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Controller = side };
+            object? output;
+            if (!vm)
+            {
+                output = engine.Api.InvokeByName("ChangeHeavyArmor", target,
+                    new object?[] { target, sourceId, 0, mode, skip, incoming }, ctx, out bool handled);
+                if (!handled || output is not null) return "ordinary zero armor direct call must be handled without assigning output";
+            }
+            else
+            {
+                var args = new[] { "target", "source", "amount", "mode", "skip", "qqq" }
+                    .Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "call", "ChangeHeavyArmor", args, new[] { 5 }, null, null, -1, null, null),
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> {
+                    ["target"] = target, ["source"] = sourceId, ["amount"] = 0, ["mode"] = mode, ["skip"] = skip, ["qqq"] = incoming }, "qqq").GetValueOrDefault("qqq");
+                if (!Equals(output, incoming)) return "ordinary zero armor must preserve incoming VM out slot";
+            }
+            if (state.SnapshotJson() != before || target.HeavyArmor != armor || target.Keywords.Contains(Keyword.HeavyArmor)
+                || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any()
+                || System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray()) != buffs
+                || target.BuffsBySource.Count != original.Count
+                || original.Any(x => !target.BuffsBySource.TryGetValue(x.Key, out var current) || !ReferenceEquals(current, x.Value))
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 888, 60, 60 }))
+                return $"zero armor mutated state {side}/{mode}/{sourceId}/{shape}/{skip}/{incoming}/{location}/vm={vm}";
+            cases++;
+        }
+        return cases == 576 ? null : $"zero armor profiles={cases}";
     }
 
     // RULE-456: read-bound projection only. The current model still derives

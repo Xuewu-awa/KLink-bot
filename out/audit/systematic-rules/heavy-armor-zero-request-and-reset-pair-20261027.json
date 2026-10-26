@@ -1,0 +1,149 @@
+{
+  "rule_id": "RULE-458",
+  "date": "2026-10-27",
+  "base_commit": "7bd56d45de1515ef27d5d3603a78115d9bf4c33c",
+  "status": "已修复普通模式0/1的零请求副作用；补齐重置装甲字段复制片段证据",
+  "scope": "ChangeHeavyArmor普通零请求的数据/账本/动作无变化；有效非隐藏目标、正来源ID的出参保持。非零写入及其他模式仍未完成独立字段迁移。",
+  "findings": [
+    "RULE-457完整字节码证据：ChangeBuffsFromCards普通模式0/1在amount0直接退出，不清空旧键、创建来源或同步反向名单。外层ChangeHeavyArmor1008及1244的零量分支设置valueChanged=false，随后408弹栈，不写装甲字段、不进入通知及能力变化。",
+    "旧DoChangeHeavyArmor为零请求创建永久来源条目，或覆盖现有HeavyArmor为0，并重算状态及无条件发送ZActionAddHeavyArmor。即使没有账本，零请求也会改变通知/派生关键字。",
+    "本次仅在普通模式0/1且amount0时提前返回null；保留原数值、所有来源对象及其键/值、来源反向名单、派生关键字原状，且不通知。模式2/3/4/5不会被此门拦下。",
+    "新增直接派发和真实KismetVm两项各576组。覆盖双方、临时/永久、存在及不存在的正来源ID、六种账本形状（含空壳、临时、永久、其他类型零SetValue）、skip、输入qqq布尔、战场/手牌/牌库；目标防御0，来源名单含重复项，派生装甲关键字故意过期，要求全部保留不重算。",
+    "同一898项测试在旧生产代码896通过2失败；5行修复后898/898，两新增测试共1152组完整通过。验证完整状态快照、账本序列化及引用身份、来源反向数组、TriggerTrace与动作日志。",
+    "当前ResetCardAttributes原生backend1566字节及包装经内存/磁盘逐字节复核；在RVA4b07b26..4b07b3e以四条mov将模板+1dc及+1e0分别复制到目标同偏移，不把临时分量强制清零。RDI来自静态查找返回值的类型映射沿用RULE-453/448；本轮仅模拟字段复制片段。",
+    "24字节复制片段离线执行100组，包括int32上下界及非零模板临时值，检查源对象只读和目标其他字节保持；不是整个重置函数、创建或复制生命周期的认证。",
+    "DeepSeek机械抽取原生重置体中相邻的同偏移int32读写，共10对，主agent独立正则解析全等验证，包含1dc/1e0。该提取不囊括所有原生字段写入。"
+  ],
+  "verification": {
+    "rule": "RULE-458",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_disk_equal_reset_bytes": 1566,
+    "live_verified_scripts": [
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      },
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      }
+    ],
+    "reset_slice": {
+      "rva": "0x4b07b26",
+      "bytes": 24,
+      "sha256": "5e43e5ac073ee96fd9adf818435b92d643e21b62542e6b7317cac24a0f993fde",
+      "cases": 100,
+      "case_digest_sha256": "7248c2368f39b237f2ba2a4c9ee24e12301284ea3d4f7315cc01a644e929becb"
+    },
+    "worker_exact_field_transfer_pairs": 10,
+    "scope": "Zero ordinary armor semantics reuse RULE-457 complete writer+ledger evidence. Reset validation emulates only four straight-line mov instructions, with RDI supplied as the template object and RBX as the destination; not a whole native reset or creation/copy certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 576,
+    "total_profiles": 1152,
+    "baseline": {
+      "total": 898,
+      "passed": 896,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 898,
+      "passed": 898,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "仅普通模式0/1的amount0提前返回；不新增伪独立字段，不改其他模式"
+  },
+  "unresolved": [
+    "装甲基础/临时独立字段及定义、创建、重置、重识别、复制、VM、快照迁移仍未实现。",
+    "非零普通增益仍覆盖来源，模式4仍读取永久来源，typed SetValue和零值存在性尚未迁移。",
+    "无效目标/非正来源/未揭示Covert拒绝输出、动作处理门及非零通知回调仍待修复；本轮未声称这些输入的qqq语义已等价。",
+    "光环移除、压制和恢复仍依赖旧账本派生，需独立验证后串联。",
+    "MakeVeteran装甲阶段、原始能力位、Fury及完整创建时序仍未完成。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "不采用过去回放、社区卡文或BP_CardFunctions.names.txt作为权威。",
+    "字段证据来自用户指定游戏本体、SDK与只读内存；Unicorn在离线构造对象上执行，不写游戏进程或调用真实游戏函数。",
+    "小版本单卡迁移仍暂停，本轮模块指纹与RULE-457一致。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule448-reset-attributes-native-20261026.json",
+      "bytes": 46931,
+      "sha256": "d40be546b51972f865673a037a464192e2ec7968041251710e89d66c53f4b18b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule458.py",
+      "bytes": 4794,
+      "sha256": "e826d3ad6d2a2e21f4870301fe9c65597a5714617c069caa598bf1fc364fddee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-native-and-worker-verification-20261027.json",
+      "bytes": 1203,
+      "sha256": "9b9b6e075951d9f70b8fda59140d1d8f453b8c955f338cd903e1aab600278bc4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-worker\\reset-instructions.json",
+      "bytes": 34206,
+      "sha256": "4a680398ba37755badfcbedea50ff9a40be7a594a6a0ced5295058af1783943c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-worker\\field-transfers.json",
+      "bytes": 2768,
+      "sha256": "db9988ebfe7057b9e50256939b6346072f1996f8c20b827e23e7154cb180b908"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-worker\\task.txt",
+      "bytes": 568,
+      "sha256": "e265bb1330ed87d4e73be691ddf7b5c7721830ff129857b12a15c40329415a00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\document-rule458.py",
+      "bytes": 7041,
+      "sha256": "33b1fe668bd77bae04a8bf653748e850a404886a5b9c522ed4fc93cf8cf97c08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-baseline-selftest.log",
+      "bytes": 78977,
+      "sha256": "45898e6781cb64402fa3922c13cc616c6ac7c8674c606b16eb8bf5683b9f4e89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-final-selftest.log",
+      "bytes": 78821,
+      "sha256": "2c4724868deba4a19db9df820b9f001055877c9da5c3b9af272824d823a6ebba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule458-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

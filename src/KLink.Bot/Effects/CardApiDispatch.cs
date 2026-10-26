@@ -4883,6 +4883,11 @@ public sealed partial class CardApi
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 
+        // RULE-458: ordinary zero requests leave both the ledger and numeric
+        // state untouched, without pruning sources, recalculating or notifying.
+        // Other modes still process zero (notably absolute set and removal).
+        if (amount == 0 && (changeType is 0 or 1)) return null;
+
         if (changeType == ChangeTypeTempBuffRemove)
         {
             if (target.BuffsBySource.TryGetValue((sourceId, false), out var existing))
