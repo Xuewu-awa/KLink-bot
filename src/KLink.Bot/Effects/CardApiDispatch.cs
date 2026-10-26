@@ -2960,11 +2960,12 @@ public sealed partial class CardApi
     //     （`JSON_GetBool(self, "oneChosen", …)`，`oneChosen` 是对局中会变的标志）、
     //     `bpf`、`the_rock_of_gibraltar`；
     //   · 调**未实现**函数的：`IsBomber`（bomber_mafia / ingenuity）、
-    //     `GetStaticCard`（bpf / ingenuity / 6 张 unit_*）、`IsGotcha`（15_aufklarungs）、
+    //     `IsGotcha`（15_aufklarungs）、
     //     `getAndDecryptAttack`（sea_embargo）、`GetMainNationForSide`（pilot_escape）、
     //     `getSkirmishBP` + `Get Start Of Turn Spawn Cards`（brawl_test1）。
     //     这些**不进缓存**是为了保住 `UnimplementedCalls` 计数 —— 缓存命中会跳过整段
     //     程序执行，未实现调用的统计会凭空消失，那是诊断口径，不该被缓存悄悄改掉。
+    //   · `GetStaticCard` 已实现，但未命中时分配新对象（RULE-439），仍不能缓存。
     //
     // 命中率：36 张定义了 `GetChooseSpawnCards` 的卡里 15 张可缓存，
     // 而**开销大的那 25 张（扫全池）里 15 张全在缓存内** —— 剩下 10 张恰好就是上面那些
@@ -3183,6 +3184,28 @@ public sealed partial class CardApi
         // This bool is the headless representation of the native0/1 movement
         // quota, not an assertion that the static object actually moved.
         card.HasMovedThisTurn = true;
+        return card;
+    }
+
+    // RULE-439: a native static-map miss requests a new BaseCardObject rather
+    // than returning null or storing a canonical static object. This is the
+    // headless identity/basic-default projection, not full UE post-init/GC or
+    // the later CreateCardObject battle registration and callback lifecycle.
+    internal static CardInstance NativeMissingStaticCardInstance()
+    {
+        var card = new CardInstance
+        {
+            CardId = 0,
+            Name = "None",
+            Definition = new CardDefinition { Name = "None" },
+            Owner = Side.NotAvailable,
+            Location = CardLocation.NotAvailable,
+            EnteredPlayOnTurn = 0,
+            HasMovedThisTurn = true,
+        };
+        // No static identity token, battle allocator or InitializeFromDefinition:
+        // the last would inject definition-derived JSON into a base object.
+        card.SetRemainingAttacks(0);
         return card;
     }
 

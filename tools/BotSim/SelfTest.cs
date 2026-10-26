@@ -276,6 +276,8 @@ internal static class SelfTest
         new("对象运算身份：战斗引用及空值相等/不等互补，同号不同对象不合并", ObjectOperatorBattleIdentity),
         new("对象运算身份：重复静态查询及卡池包装保留同一原生对象身份", ObjectOperatorStaticIdentity),
         new("GetStaticCard 原始规则状态：无归属、进场回合/行动额度/最大防御为0", NativeStaticCardRuleState),
+        new("GetStaticCard 未命中：非空新身份且不注册对局对象", MissingStaticCardIdentity),
+        new("GetStaticCard 未命中：候选卡程序不能复用新对象", MissingStaticCardPoolIdentity),
         new("静态候选池原始状态：缓存不带首位调用者阵营，所有过滤变体保留零额度", NativeStaticPoolRuleState),
         new("对象集合身份：同卡号对象分别追加/查找/移除，共用比较器回归", ObjectSetIdentity),
         new("AKITA实际IR：死亡killer与当前同号对象不同，不误删伤害候选", AkitaDistinctKillerIdentity),
@@ -21029,6 +21031,93 @@ internal static class SelfTest
                 return "static pool must not change battle ownership or emit actions";
         }
         return queries == 16 ? null : $"static pool queries={queries}";
+    }
+
+    // RULE-439: actual native getter/cache bytes execute under an offline
+    // allocator boundary. These probes cover returned identity and separation
+    // from battle allocation, not UE post-init/GC or full fallback CreateCard.
+    private static CardInstance? LookupStaticProbe(EffectContext ctx, string name)
+    {
+        var steps = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "GetStaticCard", Args = new[] { new KismetExpr { Name = name } } },
+                null, -1, "result", null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        return ctx.Engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, "result")["result"] as CardInstance;
+    }
+
+    private static string? MissingStaticCardIdentity(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string name in new[] { "", "None", "None_0", "None_36", "__rule439_missing_card__" })
+        {
+            if (db.Find(name) is not null) return $"missing-name probe unexpectedly exists: {name}";
+            var (engine, state) = EmptyBoard(db); state.Turn = 4;
+            var self = state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            var before = state.AllCards.ToArray(); int definitions = db.All.Count;
+            int actions = state.ActionLog.Count; long random = state.Random.ConsumedCount;
+            int id = state.NextCardId(side);
+            var first = LookupStaticProbe(ctx, name); var second = LookupStaticProbe(ctx, name);
+            if (first is null || second is null) return $"lookup returned null for missing FName '{name}'/{side}";
+            if (ReferenceEquals(first, second)) return "two misses reused the same object";
+            foreach (var (left, right, equal) in new (object?, object?, bool)[] {
+                (first, first, true), (first, second, false), (first, null, false), (first, self, false),
+            })
+            {
+                string? error = ProbeObjectOperators(ctx, new() { Var = "left" }, new() { Var = "right" }, equal,
+                    new Dictionary<string, object?> { ["left"] = left, ["right"] = right });
+                if (error is not null) return $"missing identity {name}/{side}: {error}";
+            }
+            var validSteps = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Math = "IsValid", Args = new[] { new KismetExpr { Var = "card" } } }, null, -1, "valid", null),
+                new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+            };
+            var valid = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(validSteps, 0), ctx,
+                new Dictionary<string, object?> { ["card"] = first }, "valid");
+            if (!Equals(valid["valid"], true)) return "new missing-name object must pass IsValid";
+            if (state.NextCardId(side) != id + 1 || !state.AllCards.SequenceEqual(before)
+                || db.All.Count != definitions || state.ActionLog.Count != actions || state.Random.ConsumedCount != random)
+                return "static miss changed battle allocator, registry, definitions, actions or RNG";
+            var known = LookupStaticProbe(ctx, PlainUnit);
+            string? knownError = ProbeObjectOperators(ctx, new() { Var = "left" }, new() { Var = "right" }, true,
+                new Dictionary<string, object?> { ["left"] = known, ["right"] = LookupStaticProbe(ctx, PlainUnit) });
+            if (known is null || knownError is not null) return "known lookup lost canonical identity";
+        }
+        return null;
+    }
+
+    private static string? MissingStaticCardPoolIdentity(CardDatabase db)
+    {
+        const string probe = "card_unit_m36_destroyer";
+        using var scope = InstallSelectionDrawProbe(probe, "GetChooseSpawnCards");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(probe)!.Locals!;
+        locals["GetChooseSpawnCards"] = new[] {
+            new KismetStep(0, "call", "Array_Add", new[] { new KismetExpr { Var = "cards", Scope = "local" },
+                new KismetExpr { Math = "GetStaticCard", Args = new[] { new KismetExpr { Name = "None" } } } },
+                Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1, "keepOrder", null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null),
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var self = state.CreateWithId(probe, side, 60, CardLocation.Discard, 0);
+            var ctx = new EffectContext { Engine = engine, State = state, Self = self, Controller = side };
+            long bypass = CardApi.GcsCacheBypassed;
+            var first = engine.Api.GetChooseSpawnCards(ctx, self, out _, out bool order1);
+            var second = engine.Api.GetChooseSpawnCards(ctx, self, out _, out bool order2);
+            if (first.Count != 1 || second.Count != 1 || first[0] is null || second[0] is null)
+                return $"candidate program dropped missing-name object: {first.Count}/{second.Count}";
+            if (!order1 || !order2 || CardApi.GcsCacheBypassed != bypass + 2)
+                return "allocation-containing candidate program must bypass memoization";
+            string? error = ProbeObjectOperators(ctx, new() { Var = "left" }, new() { Var = "right" }, false,
+                new Dictionary<string, object?> { ["left"] = first[0], ["right"] = second[0] });
+            if (error is not null) return $"candidate repeated lookup identity: {error}";
+        }
+        return null;
     }
 
     private static string? NativeStaticCardRuleState(CardDatabase db)

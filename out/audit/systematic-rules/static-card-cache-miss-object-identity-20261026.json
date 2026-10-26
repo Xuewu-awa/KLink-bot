@@ -1,0 +1,402 @@
+{
+  "rule_id": "RULE-439",
+  "date": "2026-10-26",
+  "base_commit": "687c5c77d892b5dab1a2877b791db19ea323cb0f",
+  "status": "修复静态卡查找未命中时的空引用与对象身份；完整空名战斗建卡链仍开放",
+  "scope": "FunctionLibrary.GetStaticCard原生查表和分配边界，以及调用它的CreateCardObject/CreateCard/GenerateNextCardID局部路径。排除UI渲染缓存建卡、商城建卡、单卡版本迁移。",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "getter_entry_rva": "0x4a8ad80",
+    "getter_implementation_rva": "0x4b2e080",
+    "native_cache_rva": "0x8fe9740",
+    "base_class_helper_rva": "0x4a790a0",
+    "base_constructor_thunk_rva": "0x4a7db60",
+    "base_constructor_rva": "0x4aba330",
+    "allocation_helper_rva": "0x15c6cd0"
+  },
+  "findings": [
+    "当前静态缓存含2020个索引槽、1个稀疏空洞、2019个已分配元素，None的FName键0缺失。按分配位图跳过空槽；2019个键的FName哈希、桶号及全部哈希链覆盖均核验，不能把空槽字节当有效键。",
+    "实际原生GetStaticCard及FName hash机器码在离线Unicorn中运行：None两次、None带Number1和37共4次未命中，各调用一次构造分配边界；真实已缓存键两次直接返回相同指针。getter不向静态cache写入新对象。分配器返回值为受控不透明指针，这不是在客户端中实际创建/观察新对象。",
+    "未命中路径取得当前BaseCardObject类并调用构造参数初始化及对象分配。类名、CDO类标记/指针、构造函数、三个虚表hook已核对。三个hook同指向0x11ad330的ret0字节c20000（无操作返回，不表示数值返回0）。CDO中的Name=None、Type/数值/side/location/额度为0，但CDO不是实测新分配对象的最终快照。",
+    "CreateCardObject在索引5调用GetStaticCard、53取对象类、82检查类有效性；无效分支733日志并779写NoObject。查表未命中不能直接等同于走无效类分支。后续SpawnObject、属性复制、事件和加入战斗表仍需继续核对。",
+    "CreateCard在overrideCardID非正时，经635/658生成ID，再于295调用CreateCardObject；GenerateNextCardID先增当回合创建数，再取ID。对象创建是否成功不能据此提前假设ID未消耗。该函数无头完整空名路径本轮未修复。",
+    "旧VM对空或数据库缺失名称直接返回null；现返回新BaseCardObject逻辑投影，每次独立引用，无canonical静态身份token、不入数据库/对局表、不消费战斗ID或随机数。已知名称仍保持原有canonical身份。null实参及旧CardInstance实参兼容路径未认证/未扩大修改。",
+    "GetChooseSpawnCards的PoolPureOps本来就不包含GetStaticCard，保留绕过缓存；只更新过时的未实现注释。实际测试两次候选程序执行保留不同未命中对象身份。"
+  ],
+  "native_reference": {
+    "cases": [
+      {
+        "key": "0x0",
+        "result": "0x50000000",
+        "allocated": true,
+        "calls": [
+          "package",
+          "construction-check",
+          "class",
+          "params",
+          "allocate",
+          "cookie"
+        ]
+      },
+      {
+        "key": "0x0",
+        "result": "0x50001000",
+        "allocated": true,
+        "calls": [
+          "package",
+          "construction-check",
+          "class",
+          "params",
+          "allocate",
+          "cookie"
+        ]
+      },
+      {
+        "key": "0x100000000",
+        "result": "0x50002000",
+        "allocated": true,
+        "calls": [
+          "package",
+          "construction-check",
+          "class",
+          "params",
+          "allocate",
+          "cookie"
+        ]
+      },
+      {
+        "key": "0x2500000000",
+        "result": "0x50003000",
+        "allocated": true,
+        "calls": [
+          "package",
+          "construction-check",
+          "class",
+          "params",
+          "allocate",
+          "cookie"
+        ]
+      },
+      {
+        "key": "0x8e477",
+        "result": "0x1cb08fb06a0",
+        "allocated": false,
+        "calls": [
+          "cookie"
+        ]
+      },
+      {
+        "key": "0x8e477",
+        "result": "0x1cb08fb06a0",
+        "allocated": false,
+        "calls": [
+          "cookie"
+        ]
+      }
+    ],
+    "cache_allocated_entries": 2019,
+    "sparse_holes": 1,
+    "controlled_helpers": [
+      "package",
+      "construction-check",
+      "class-return",
+      "parameter-initialization",
+      "allocator",
+      "cookie"
+    ],
+    "boundary": "Actual native GetStaticCard implementation and FName hash machine code with actual captured cache/hash contents. Only package/class/parameter initialization/allocation/check/cookie helpers controlled. Each miss issues an allocation for the verified BaseCardObject class; no real new game object or final property-copy/GC behavior observed."
+  },
+  "base_default_projection": {
+    "source": "已读取的BaseCardObject CDO与构造函数，仅用于基本无头默认形态；非最终新对象全字段认证",
+    "fields": {
+      "Name": {
+        "offset": "0x50",
+        "value": "None"
+      },
+      "Type": {
+        "offset": "0x68",
+        "value": 0
+      },
+      "attack": {
+        "offset": "0x6c",
+        "value": 0
+      },
+      "defense": {
+        "offset": "0x74",
+        "value": 0
+      },
+      "range": {
+        "offset": "0x78",
+        "value": 0
+      },
+      "faction": {
+        "offset": "0x7c",
+        "value": 0
+      },
+      "kredits": {
+        "offset": "0x80",
+        "value": 0
+      },
+      "operationCost": {
+        "offset": "0xb0",
+        "value": 0
+      },
+      "CardID": {
+        "offset": "0x264",
+        "value": 0
+      },
+      "movementLeft": {
+        "offset": "0x268",
+        "value": 0
+      },
+      "attackLeft": {
+        "offset": "0x26c",
+        "value": 0
+      },
+      "enterPlayOnTurn": {
+        "offset": "0x270",
+        "value": 0
+      },
+      "Location": {
+        "offset": "0x275",
+        "value": 0
+      },
+      "side": {
+        "offset": "0x276",
+        "value": 0
+      },
+      "originalSide": {
+        "offset": "0x277",
+        "value": 0
+      },
+      "locationNumber": {
+        "offset": "0x278",
+        "value": 0
+      },
+      "maxAttack": {
+        "offset": "0x2a4",
+        "value": 0
+      },
+      "maxDefense": {
+        "offset": "0x2a8",
+        "value": 0
+      },
+      "chooseOneIndex": {
+        "offset": "0x310",
+        "value": 0
+      },
+      "isReserved": {
+        "offset": "0x132",
+        "value": 0
+      },
+      "isInPermanentPool": {
+        "offset": "0x133",
+        "value": 0
+      }
+    },
+    "not_claimed": [
+      "UE对象分配失败/GC生命周期",
+      "PostInitProperties及最终属性复制",
+      "完整容器/JSON别名与所有字段",
+      "未命中对象最后进入对局的CreateCardObject全链"
+    ]
+  },
+  "verification": {
+    "rule": "RULE-439",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bodies": 6,
+    "native_bytes": 2066,
+    "native_live_disk_equal": true,
+    "cdo_and_class_headers_stable": true,
+    "class_hooks_revalidated": 3,
+    "static_cache_header_and_entries_stable": true,
+    "functions": [
+      {
+        "owner": "FunctionLibrary",
+        "name": "GetStaticCard",
+        "bytes": 0,
+        "redecoded": false
+      },
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "GenerateNextCardID",
+        "bytes": 76,
+        "redecoded": true
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "redecoded": true
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "CreateCard",
+        "bytes": 3115,
+        "redecoded": true
+      }
+    ],
+    "blueprint_bytes": 6120,
+    "worker_input_count": 207,
+    "worker_matches": 17,
+    "worker_exact_match": true,
+    "boundary": "Read-only revalidation. Full Blueprint decode is syntax evidence, not full semantic certification. Native allocator and UObject lifecycle remain controlled/uncertified in offline reference."
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261026-125519-rule439-missing-static-cards-b7080241",
+    "task": "私有扁平指令包按递归字符串值精确筛选，不做规则判断",
+    "actual_input_rows": 207,
+    "exact_matching_rows": 17,
+    "independent_check": "主agent重新JSON解析并递归筛选，完整元素、字段及顺序与输出全等。worker文字答复误称204个输入元素，未采用其计数。",
+    "write_scope": "仅私有result.json，不修改仓库"
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim -c Release -- selftest",
+    "same_final_tests_on_base_core": {
+      "total": 874,
+      "passed": 872,
+      "failed": 2,
+      "exit_code": 1
+    },
+    "fixed_core": {
+      "total": 874,
+      "passed": 874,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "new_entries": 2,
+    "controlled_scenarios": {
+      "direct": 10,
+      "candidate_program": 2
+    },
+    "coverage": [
+      "左右双方、空名称/None/Number后缀/不存在的合成名称",
+      "重复查找不同身份、自身相等、与null/对局对象不相等，双向等于/不等于",
+      "IsValid为true，保留已知卡canonical身份",
+      "静态查找不消耗战斗ID、RNG，不修改数据库/对局对象表/动作",
+      "候选程序重复执行产生新对象，并记录两次cache bypass"
+    ],
+    "not_evidence": "测试探针和合成名称用于回归控制，不是单卡规则权威。"
+  },
+  "limitations": [
+    "完整空名生成选择恢复仍未关闭。未更改RULE-437生成空池处理，也未假造ID0答复。",
+    "本轮确认正常成功分配边界下的非空结果与新身份；分配helper在离线参考中受控，不能将其当客户端实测对象内存或完整UE构造证明。",
+    "基础投影使用CDO的基本默认形态，不将其提升为真实新对象最终全字段、JSON容器共享性或各生命周期hook语义的证明；RULE-202未关闭边界仍保留。",
+    "已知卡数据库与当前原生静态缓存所有名称的穷尽对应、CardInstance类型实参、非法类型/null实参、通用GetObjectClass/SpawnObject链仍待核对。",
+    "Blueprint完整重解码仅证明当前6120字节语法一致；不等于所有分支语义均认证，也不等于卡牌规则全部完成。"
+  ],
+  "next_steps": [
+    "继续追踪SpawnObject后的BaseCardObject属性复制、JSON/容器归属与OnCreateCard链",
+    "核对生成空候选答复的最终ID、注册与回调结果，保留无法证明的分支"
+  ],
+  "fully_certified_cards": 0,
+  "no_game_writes": true,
+  "no_injection": true,
+  "no_game_function_calls": true,
+  "metadata_note": "当前Create捕获脚本从上一轮继承的RULE-438标签已纠正为RULE-439；原始函数/字节未变。",
+  "evidence_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-invalid-card-creation-native-20261026.json",
+      "bytes": 4713085,
+      "sha256": "af81dd23b1fe1ea4c126eddd8a8f49c926765de2c8ccd22f6dadc7a9086c7bac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-get-static-card-native-20261026.json",
+      "bytes": 29417,
+      "sha256": "55b2590678bbfe98d6771342c6257c9e9dc9e1aff39408da01f1a94ac8923d8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-base-card-defaults-native-20261026.json",
+      "bytes": 50276,
+      "sha256": "2a4ed949115868e8b9c8f4ae0db46625455058d28cfa51cc479420338e1db8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-static-cache-and-class-hooks-native-20261026.json",
+      "bytes": 403349,
+      "sha256": "f5522bc9a98bb1d4aa7b0a5dd50a9a63c87ea5d1e7bbc5307243fec4473cc25c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule439-create.py",
+      "bytes": 2416,
+      "sha256": "104ab941b5125f0b40cf5153fb572d8e58cfb86e7856361f5c1405a3c8d850d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule439-static.py",
+      "bytes": 3143,
+      "sha256": "b737a4c196e31e3f7fcef095a33dcaeed6b121086eaf1894e327dbfd56c78f38"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule439-defaults.py",
+      "bytes": 4508,
+      "sha256": "29583380a110997549d0fdad9875cf03463dcec6eed7aa8b94b30d5c8b69c0f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule439-cache.py",
+      "bytes": 4532,
+      "sha256": "5fcec21fe22a4e0b63124fd64858515bed456c305e4f53772bc42b044ddc20e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\emulate-rule439-static.py",
+      "bytes": 5126,
+      "sha256": "63e81dbef7473933cc10a1506d20bf87efc51aa0b1b26d06ccdc342883b23a0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule439.py",
+      "bytes": 4416,
+      "sha256": "cbbc5f1fd0ce52ec48809cabaf22577cc58f414f8dedd7b03f4852b4a335000d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-static-native-emulation-20261026.json",
+      "bytes": 1760,
+      "sha256": "c8a9abee1a56495e2284a2692b76a3d6b2c01004732de31c0345ef8c48e03413"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-final-verification-20261026.json",
+      "bytes": 1212,
+      "sha256": "8092893ab1a9a4331d0d275c8cf58378b2595e23207f7d8690b1bfc351819835"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-worker\\input.json",
+      "bytes": 94493,
+      "sha256": "87c721e6d221a59bebec65715f37d885ae7a0a5ab3a03c36acb3016d86f6afc7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-worker\\result.json",
+      "bytes": 9732,
+      "sha256": "60e9f2df2ab42d0b0392224012d2379d5d43e30c2308631863cf119c993c3874"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-worker\\verification.json",
+      "bytes": 251,
+      "sha256": "d8ca0b5e9a1af3287600a6fd2b3230a1f73ed6f862d85f9c02dbd0df0442123a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-baseline-selftest.log",
+      "bytes": 77088,
+      "sha256": "06436b6f8787d19cdc642fcbb491a3124b747b8b2ba1c5845cc47b35249096b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-final-selftest.log",
+      "bytes": 76979,
+      "sha256": "613e73904f188466bcd0c66dae9821eda8474f208d9d84ce3273ea198751500e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule439-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

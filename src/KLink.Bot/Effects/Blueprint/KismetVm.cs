@@ -1283,11 +1283,13 @@ public sealed class KismetVm
             //
             // A known-name lookup uses the native static-object projection: no side,
             // enterPlayOnTurn/quotas/maxDefense0, retaining canonical identity.
-            // Unknown names and the legacy object argument remain unaudited here.
+            // A missing FName requests a fresh BaseCardObject, without caching
+            // it or allocating a battle ID (RULE-439). The legacy object
+            // argument and full UE construction lifecycle remain unaudited.
             case "GetStaticCard":
                 {
                     string? cardName = a?.ToString();
-                    if (string.IsNullOrEmpty(cardName))
+                    if (cardName is null)
                     {
                         return null;
                     }
@@ -1300,7 +1302,7 @@ public sealed class KismetVm
                     }
 
                     var def = ctx.State.Database.Find(cardName);
-                    return def is null ? null : CardApi.NativeStaticCardInstance(def);
+                    return def is null ? CardApi.NativeMissingStaticCardInstance() : CardApi.NativeStaticCardInstance(def);
                 }
             default:
                 UnimplementedCalls[$"math:{fn}"] = UnimplementedCalls.GetValueOrDefault($"math:{fn}") + 1;
