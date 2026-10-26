@@ -1,0 +1,226 @@
+{
+  "rule_id": "RULE-451",
+  "date": "2026-10-26",
+  "base_commit": "ada50fd260551c3906735da3e7ffa4867eac937e",
+  "status": "完成老兵化调用链及三个原生查询采集、有限离线验证；确认差异清单，尚未修改模拟器实现",
+  "scope": "仅当前CreateCard/MakeVeteran及getHasVeteranUpgrade/getStaticVeteranUpgrade/IsVeteran；不是全部卡牌未还原逻辑的穷尽清单。",
+  "confirmed_gaps": [
+    {
+      "id": "VET-01",
+      "status": "确认差异，未修复",
+      "authority": "CreateCard295自身建卡、990/1004老兵化、1036取T35",
+      "simulator": "DoSpawnOnBattlefield在整个SpawnOnBattlefield返回后才MakeVeteran",
+      "effect": "创建修正及落场阶段可能看见尚未老兵化的状态；自身OnCreateCard则在老兵化之前，不能一律提前到最初构造。"
+    },
+    {
+      "id": "VET-02",
+      "status": "确认差异，未修复",
+      "authority": "MakeVeteran16/57/98/173及139..358门",
+      "simulator": "当前只以Keywords.Add(Veteran)返回值作为入口",
+      "effect": "缺少在场、存在升级、总防御>0、IsVeteran(false)为假的共同门；是否有升级及已有老兵状态的底层语义仍需接通。"
+    },
+    {
+      "id": "VET-03",
+      "status": "确认差异，未修复",
+      "authority": "原生IsVeteran RVA4afbb40，104字节本地体",
+      "simulator": "IsVeteran派发表只读Keyword.Veteran，忽略ignoreSuppress",
+      "effect": "原生ignoreSuppress=false且+33a非零时返回false；其余读取+518 JSON的veteran布尔查询结果。离线JSON返回值为受控边界，未认证JSON helper全部类型转换。"
+    },
+    {
+      "id": "VET-04",
+      "status": "确认缺失，未修复",
+      "authority": "MakeVeteran724 JSON_SetBool、766升级模板、867/983/1058/1189属性变更、1264..1713原始能力、1786..1947攻击额度",
+      "simulator": "当前没有上述模板数值/JSON标记/能力替换处理，只设置关键字后发送事件",
+      "effect": "老兵化的攻防、行动费、装甲、原始能力及剩余攻击不能认定已恢复。具体变化模式和来源账本必须逐项对应，不能简单把Definition换成_vet。"
+    },
+    {
+      "id": "VET-05",
+      "status": "确认控制流差异，未修复",
+      "authority": "MakeVeteran2349/2372的IsActionProcess门；2427 JumpIfNot(isSuppressed)到2806；真侧2463..2782",
+      "simulator": "当前广播条件为!Suppressed、能力变化广播无该门，且没有完整对应IsActionProcess的外层门",
+      "effect": "捕获脚本在可达该尾段时，未压制跳过他人老兵/能力广播，压制侧进入；这与现有代码注释相反。必须结合完整门和接收者生命周期处理，不能继续以旧注释作权威。"
+    }
+  ],
+  "findings": [
+    "当前getHasVeteranUpgrade/getStaticVeteranUpgrade本地实现分别166/167字节，均沿卡Name字符串及_vet后缀进入查询；原生IsVeteran本地实现104字节，读取独立抑制字段及JSON布尔查询，不读取托管关键词。三入口包装加实现共981字节均与当前进程及磁盘采集相同。",
+    "JSON键veteran、升级后缀_vet为ANSI字面量，已按原生RIP相对地址读取保存；未把错误UTF16解释作为结论。",
+    "DeepSeek从MakeVeteran完整节点机械提取38条资格门/尾段节点，主agent精确比较完整对象与顺序。主agent执行捕获IsVeteran机器码8组，字符串构造、JSON查询及释放为受控外部边界；未在游戏中调用函数。",
+    "资格门24组AST模型使用受控原生查询结果和总防御-1/0/1，验证在场且有升级且总防御>0且非已有老兵；不把升级缓存查询或完整JSON语义视为已关闭。",
+    "本轮没有修改模拟器源码，没有新增或重跑C#全套测试。885/885仅为RULE-450的历史结果，不能归作本轮测试。"
+  ],
+  "verification": {
+    "rule": "RULE-451",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "name": "CreateCard",
+        "bytes": 3115,
+        "sha256": "5c6f1e39f163b4b86a28539d3f12017d4a09322d4ee7695bd8cd3f1be8d61db3"
+      },
+      {
+        "name": "MakeVeteran",
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      }
+    ],
+    "total_script_bytes": 6039,
+    "native": [
+      {
+        "name": "getHasVeteranUpgrade",
+        "wrapper_bytes": 147,
+        "body_bytes": 166,
+        "body_rva": "0x4b13520"
+      },
+      {
+        "name": "getStaticVeteranUpgrade",
+        "wrapper_bytes": 182,
+        "body_bytes": 167,
+        "body_rva": "0x4b13760"
+      },
+      {
+        "name": "IsVeteran",
+        "wrapper_bytes": 215,
+        "body_bytes": 104,
+        "body_rva": "0x4afbb40"
+      }
+    ],
+    "total_native_bytes": 981,
+    "all_selected_live_bytes_equal": true,
+    "literals": {
+      "json_key": {
+        "rva": "0x7e42de8",
+        "value": "veteran",
+        "raw_hex": "7665746572616e006b00720065006400690074005f00740065006d0070004200"
+      },
+      "upgrade_suffix": {
+        "rva": "0x7e42cc8",
+        "value": "_vet",
+        "raw_hex": "5f766574000000006675727900000000736d6f6b6573637265656e00626c6974"
+      }
+    },
+    "worker_exact_rows": 38,
+    "worker_input_rows": 81,
+    "offline_native_IsVeteran_cases": 8,
+    "eligibility_AST_cases": 24,
+    "simulator_sources_changed": false,
+    "new_CSharp_test_run": false,
+    "last_historical_CSharp_result": "RULE-450 885/885",
+    "fully_certified_cards": 0,
+    "no_game_writes": true,
+    "scope": "Native IsVeteran branches with controlled JSON/string/free boundaries; AST eligibility with query values supplied. Not full JSON primitive, upgrade cache, MakeVeteran or complete creation certification."
+  },
+  "next_dependencies": [
+    "解析原生JSON布尔查询RVA4517da0的实际类型/缺失规则，并映射到现有CustomJson实现。",
+    "确认升级存在检查RVA4b37340及静态模板取回RVA4b2e080的当前缓存/未命中行为。",
+    "逐项实现并验证MakeVeteran属性变化模式、原始能力、来源账本、Fury额度及抑制/事件门，再接通CreateCard中990..1036阶段。"
+  ],
+  "limitations": [
+    "没有修复上述5类差异，不能声称老兵化已1比1还原，也不能据局部8/24组验证认证整卡。",
+    "当前尾段条件与现有注释不符，报告仅陈述采集字节的控制流；未将游戏意图或社区规则替代客户端证据。",
+    "未穷尽其他类覆写、服务器实现、全部原生调用、所有单卡升级以及错误/异常/重入路径。",
+    "完整认证卡数仍0。没有进程写入、注入、实际游戏函数调用，也未引用旧回放权威。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-salvage-creation-native-20261026.json",
+      "bytes": 4704738,
+      "sha256": "1cc1ca92381b8b7ce17d5662e4e23d309b1f7e0ba697ba09a6122f9df3a8158c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-veteran-query-headers-20261026.json",
+      "bytes": 4489875,
+      "sha256": "7c052a9e351c8400c97ed363f8e29a8018e16aa4ad515bf3cf94fead00eb387b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-getHasVeteranUpgrade-native-20261026.json",
+      "bytes": 11556,
+      "sha256": "e275ae851d6e9fe7d325dcd53896409f1cba23bcabe4b1d528267f570f55a3be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule451-getHasVeteranUpgrade.py",
+      "bytes": 4042,
+      "sha256": "7a7c2b0adccd8e8093add96120ff0bc22d91c7145982482d09eed289c583cf48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-getStaticVeteranUpgrade-native-20261026.json",
+      "bytes": 12670,
+      "sha256": "ab2636b77d46274611cdf6738daf7220baa23733e80e39d26aac59390dd7595b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule451-getStaticVeteranUpgrade.py",
+      "bytes": 4189,
+      "sha256": "4ecd5198b54a98b6bf60afed2be9dddfc6f8a45fc343b621805eb6137350c171"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-IsVeteran-native-20261026.json",
+      "bytes": 11986,
+      "sha256": "8ba6f9abacfc323d3e903a41548ab2fd2040fcb7608add7a778d3af2a0d0a645"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule451-IsVeteran.py",
+      "bytes": 3998,
+      "sha256": "f9ce671e7ddffbccc600d46002683c504b31b00e8777ebffa9196ddf62a10ff9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule451-creation-veteran.py",
+      "bytes": 2364,
+      "sha256": "2977c112212d374b42daf0f55a481a890f8842e63258722fe5988efb0a24dffd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule451-query-headers.py",
+      "bytes": 2394,
+      "sha256": "f6482b34d6c9da9684481627e135743b0ad19b79da8a96d7ad914af86e6db19e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule451.py",
+      "bytes": 7573,
+      "sha256": "f513e78ab6d96c70a92798d59028f172b63473259210d3268d29830b385968de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-final-verification-20261026.json",
+      "bytes": 1878,
+      "sha256": "ffef29a8615a1972a6140775ab6fb6e1acedd1b6a0362f062a2fde0adf3f3f2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-IsVeteran-offline-reference-20261026.json",
+      "bytes": 1358,
+      "sha256": "44f1a16a3a828e09748eff8c17db0338a64c0afc105f97cebb584dc1afe055c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-eligibility-reference-20261026.json",
+      "bytes": 2856,
+      "sha256": "c5eb71ec8b63e1949c2c6b7a009f4f61fb6353c02e2d85e218869a5a253ed179"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-worker\\task.txt",
+      "bytes": 398,
+      "sha256": "a10ac53d79525dd55d976838166c6e3758ce59ce188d7dcfa9aa1a92d560e38c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-worker\\input.json",
+      "bytes": 36626,
+      "sha256": "1fb795702936cb49c7efe929b6b4418fa867040aa7a83aff56c46adca9fdb0fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule451-worker\\result.json",
+      "bytes": 12190,
+      "sha256": "d892373933480e09b21dfddab755b210d25c127c2b80c14108b4255f0c28259b"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-211601-rule451-veteran-entry-and-tail-3fbaedaf\\job.json",
+      "bytes": 739,
+      "sha256": "208f84c194c387ed457eb99522c632728c83f9cd1a2b3bac4ce1fa4e6615d4d3"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-211601-rule451-veteran-entry-and-tail-3fbaedaf\\answer.txt",
+      "bytes": 1377,
+      "sha256": "f6c521b967afce8b92d1026da0a16a15e2d9f897c89a11eb3eec6c10655198b4"
+    }
+  ]
+}
