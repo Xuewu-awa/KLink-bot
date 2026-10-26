@@ -746,8 +746,15 @@ public sealed class CardInstance
         PublicKreditCostBuff = Definition.KreditsBuff;
         BaseOperationCost = Definition.OperationCost;
         TemporaryOperationCost = Definition.OperationCostBuff;
-        PublicAttack = Definition.Attack;
-        MaxAttack = Definition.Attack;
+        // RULE-447: CreateCardObject applies salvage before copying maxima and
+        // initializing current values, and before either creation callback.
+        PublicAttack = IsSalvaged ? 1 : Definition.Attack;
+        MaxAttack = PublicAttack;
+        if (IsSalvaged)
+        {
+            Attack = 1;
+            Defense = MaxDefense = 1;
+        }
         AttackBuff = 0;
         InitializeRuleAttributesFromDefinition();
         SelectTargetOnPlayedFromHand = Definition.SelectTargetOnPlayedFromHand;

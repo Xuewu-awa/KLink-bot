@@ -624,6 +624,8 @@ internal static class SelfTest
         new("直接出牌反制：提前返回保留当前和公开费用两分量", DirectGotchaPreservesKredit),
         new("建卡初始化费用：内部基础/临时费重建自公开模板字段", InitializeKreditPairFromDefinition),
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
+        new("打捞创建数值：两入口在创建回调前具有1/1和对应最大值", db => SalvagedCreationStats(db, false)),
+        new("打捞创建数值：保留自身回调改写且不重置费用或行动额度", db => SalvagedCreationStats(db, true)),
         new("建卡进场回合：两入口在自身回调和修正阶段前初始化为0", db => CreationTurnPhase(db, false)),
         new("建卡进场回合：保留自身回调改写并交给修正阶段", db => CreationTurnPhase(db, true)),
         new("生成候选判据：四张卡只比较基础费，忽略双方临时费", SpawnCheckUsesBaseKredit),
@@ -9141,6 +9143,62 @@ internal static class SelfTest
                 return $"初始化费用必须从模板公开两字段重建 {side}/{basis}/{temp}/{salvaged}/{dirty}";
         }
         return null;
+    }
+
+    // RULE-447: controlled definitions avoid the old1-attack fixtures masking
+    // initialization errors. Own-hook mutations test the subsequent phase.
+    private static string? SalvagedCreationStats(CardDatabase db, bool mutate)
+    {
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (int attack in mutate ? new[] { 7 } : new[] { 0, 3, 11 })
+        foreach (int defense in mutate ? new[] { 9 } : new[] { 0, 5 })
+        foreach (int kredits in mutate ? new[] { 7 } : new[] { 1, 7 })
+        foreach (bool fury in new[] { false, true })
+        {
+            var definitions = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            definitions[PlainUnit] = new CardDefinition { Name = PlainUnit, Type = "infantry", Faction = "USA",
+                Attack = attack, Defense = defense, Kredits = kredits, KreditsBuff = 4,
+                OperationCost = 2, OperationCostBuff = -1, Keywords = fury ? new[] { Keyword.Fury } : Array.Empty<string>() };
+            var fixtureDb = (CardDatabase)ctor.Invoke(new object[] { definitions, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool explicitId in new[] { false, true })
+            foreach (bool salvaged in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixtureDb); state.Turn = 7;
+                int expectedAttack = salvaged ? 1 : attack, expectedDefense = salvaged ? 1 : defense;
+                int expectedKredit = salvaged ? Math.Min(3, kredits) : kredits;
+                int own = 0, modifiers = 0; string? fault = null;
+                bool Values(CardInstance card, bool changed) => card.PublicAttack == (changed ? 17 : expectedAttack)
+                    && card.BaseAttack == (changed ? 13 : expectedAttack) && card.TemporaryAttack == 0
+                    && card.MaxAttack == (changed ? 19 : expectedAttack) && card.Defense == (changed ? 23 : expectedDefense)
+                    && card.MaxDefense == (changed ? 29 : expectedDefense)
+                    && card.PublicKreditCost == expectedKredit && card.BaseKreditCost == expectedKredit
+                    && card.PublicKreditCostBuff == 4 && card.TemporaryKreditCost == 4
+                    && card.BaseOperationCost == 2 && card.TemporaryOperationCost == -1
+                    && card.RemainingAttacks == (fury ? 2 : 1) && !card.HasMovedThisTurn
+                    && card.EnteredPlayOnTurn == 0 && card.IsSalvaged == salvaged;
+                var priorOwn = state.CardCreated; var priorModifiers = state.CardCreationModifiers;
+                state.CardCreated = card => {
+                    if (card.Name == PlainUnit) {
+                        own++; if (!Values(card, false)) fault = $"own values public/base/max={card.PublicAttack}/{card.BaseAttack}/{card.MaxAttack}, defense/max={card.Defense}/{card.MaxDefense}";
+                        if (mutate) { card.PublicAttack = 17; card.Attack = 13; card.MaxAttack = 19; card.Defense = 23; card.MaxDefense = 29; }
+                    }
+                    priorOwn?.Invoke(card);
+                };
+                state.CardCreationModifiers = card => {
+                    if (card.Name == PlainUnit) { modifiers++; if (own != 1 || !Values(card, mutate)) fault ??= "modifier observed incorrect creation/mutated values"; }
+                    priorModifiers?.Invoke(card);
+                };
+                var made = explicitId ? state.CreateWithId(PlainUnit, side, 60, CardLocation.Discard, 0,
+                    isSalvaged: salvaged, salvageFaction: salvaged ? "Britain" : null)
+                    : state.Create(PlainUnit, side, CardLocation.Discard, 0, isSalvaged: salvaged, salvageFaction: salvaged ? "Britain" : null);
+                if (fault is not null || own != 1 || modifiers != 1 || !Values(made, mutate))
+                    return $"{attack}/{defense}/{kredits}/{fury}/{side}/{explicitId}/{salvaged}/mutate={mutate}: {fault}; hooks={own}/{modifiers}";
+                cases++;
+            }
+        }
+        return cases == (mutate ? 16 : 192) ? null : $"salvage creation profiles={cases}";
     }
 
     // RULE-446: CreateCardObject i=1850 assigns zero before its own hook.

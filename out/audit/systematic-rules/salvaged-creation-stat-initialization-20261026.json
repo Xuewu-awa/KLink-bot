@@ -1,0 +1,174 @@
+{
+  "rule_id": "RULE-447",
+  "date": "2026-10-26",
+  "base_commit": "f59b873291073e57fef1de43743e2e138a65f514",
+  "status": "已修复普通打捞建卡在自身创建回调前的1/1攻防及最大值初始化",
+  "scope": "CreateCardObject明确以IsVeteran=False调用ApplySalvageChanges的普通打捞分支；两条模拟器建卡入口。单卡版本迁移保持暂停。",
+  "findings": [
+    "当前权威CreateCardObject795按salvageInfo.isSalvaged判定是否执行818的ApplySalvageChanges，第三参数为False。393字节helper先写打捞标识和阵营，IsVeteran=True时跳过攻防费用修改；普通建卡不会走该真分支。",
+    "helper185将公开attack写1，230将公开defense写1，275/331/345在公开kredits>3时写3。CreateCardObject1608复制defense到maxDefense、1679复制attack到maxAttack，2048 InitializeEncryption后才在2610进入自身创建回调。已复读3322字节脚本及740字节原生初始化体一致，不声称完整加密实现认证。",
+    "模拟器InitializeFromDefinition原先只按打捞封顶费用，却仍从模板赋PublicAttack/MaxAttack，GameState初始Attack/Defense/MaxDefense也沿用模板。RecalculateStats当前不再重算这些数值；普通打捞对象因此未变为1/1。已有打捞测试所用模板攻击为1且未充分断言攻防组件，遗漏此缺口。",
+    "现仅在InitializeFromDefinition内为打捞对象初始化PublicAttack/MaxAttack为1，并通过Attack=1设置BaseAttack=1/TemporaryAttack=0，以及Defense/MaxDefense=1；普通非打捞路径不变。既有费用封顶、临时费用、行动费用、关键词及行动额度保留，不在创建回调之后重新覆盖数值。",
+    "新增两项测试共208组：192组覆盖基础攻击0/3/11、防御0/5、基础费用1/7、打捞/普通、Fury真假、双方及自动/显式ID；16组验证自身回调分别改写公开攻击17、当前攻击13、最大攻击19、防御23/29后，后续修正与返回对象保留。全部检查费用/行动额度/进场回合及回调各一次。测试为受控私有卡表与观察回调，不声称真实卡具有这些受控效果。",
+    "主agent对实际helper的12个解码节点实现严格赋值/跳转解释，并执行两次最大值复制，192组结果与DeepSeek按给定公式生成的矩阵精确相同；另验证4组独立helper的IsVeteran真分支保留攻防费用。worker输出仅为机械对照，不构成权威资料。"
+  ],
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Engine/CardInstance.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "打捞对象在建卡初始化阶段写入1/1公开/当前/最大攻防；不恢复通用重算，不增加回调后重置。"
+  },
+  "verification": {
+    "rule": "RULE-447",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "functions": [
+      {
+        "name": "InitializeEncryption",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "ApplySalvageChanges",
+        "bytes": 393,
+        "sha256": "f210c4543debcf2b22a73450e2dc5f77bcbfc8c8e1c3e20b7e376cec627e6db6"
+      },
+      {
+        "name": "CreateCardObject",
+        "bytes": 2929,
+        "sha256": "e3eeb2cbfadc5f129a3f2eee711dcf3319126105da5a219ac0996f29ec8bf565"
+      }
+    ],
+    "total_script_bytes": 3322,
+    "live_headers_scripts_properties_redecode_equal": true,
+    "property_offsets": {
+      "attack": "0x6c",
+      "defense": "0x74",
+      "maxDefense": "0x2a8",
+      "maxAttack": "0x2a4"
+    },
+    "native_initialization_bytes": 740,
+    "native_initialization_sha256": "7e9ab4cd779a98c1c776a685bba13c1164fa3c07486e380514034e676255aad7",
+    "native_initialization_live_equal": true,
+    "worker_exact_rows": 192,
+    "helper_interpreter_distinct_traces": [
+      [
+        0,
+        50,
+        108,
+        166,
+        185,
+        230,
+        275,
+        331,
+        345,
+        390
+      ],
+      [
+        0,
+        50,
+        108,
+        166,
+        185,
+        230,
+        275,
+        331,
+        390
+      ]
+    ],
+    "standalone_veteran_cases": 4,
+    "new_simulator_scenarios": 208,
+    "baseline": {
+      "total": 878,
+      "passed": 876,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 878,
+      "passed": 878,
+      "failed": 0
+    },
+    "fully_certified_cards": 0,
+    "no_game_writes": true,
+    "scope": "393-byte helper interpreter and selected caller assignments; Fury and native numeric projection use existing scoped evidence, not full client execution or cryptographic validation"
+  },
+  "limitations": [
+    "未穷尽所有单卡创建回调、转换/重识别及所有打捞来源的行为；本轮不扩大为完整打捞机制认证。",
+    "阵营字段沿用已有逻辑，本轮未改变或全面认证。",
+    "Fury分支与原生当前值投影沿用既有有界证据；未把helper解释器称为完整CreateCardObject或加密执行。",
+    "引擎名称解析/对象存储、完整触发注册与所有卡牌逻辑的逐项认证仍未完成；完整认证卡数保持0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule447-salvage-creation-native-20261026.json",
+      "bytes": 4596685,
+      "sha256": "ec34eed3aab286d5bec248c5e6a301f212f52ebebcc9cc1e2ffb92bea4a752f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule440-initialization-cfg-bodies-20261026.json",
+      "bytes": 40215,
+      "sha256": "432aa13dcee7b440aacdafec9412ff9cf6ec5471d7eca8f901d6b3e87e540c9c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule447-salvage.py",
+      "bytes": 2401,
+      "sha256": "3e0803e6675845437847ed0ed164af6bdd879d07fde812c5fb601e03b00821f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule447.py",
+      "bytes": 6732,
+      "sha256": "035fa2b98697a694d2a624f650ee34238a80dac81a5fd8e58c3e054cc06f7904"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-final-verification-20261026.json",
+      "bytes": 1837,
+      "sha256": "199e12ac102f8b3006c8a75938c32714f66174feba2ce00d75ac4c2f7f662a63"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-worker\\task.txt",
+      "bytes": 793,
+      "sha256": "503c4dc7e54decf01192b7d855a530254acc7caface0d0d9a7b0ef8b6b71d5ee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-worker\\result.json",
+      "bytes": 57221,
+      "sha256": "27a5a5e5e399abeae6d80009a9d4156bd3459f5201ec4c3f0ec252b1462dee64"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-baseline-selftest.log",
+      "bytes": 77522,
+      "sha256": "d0d33b1fae210d00e1042340d1e25fdf31d52335d47a366a58a62cce11b1dcf5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-final-selftest.log",
+      "bytes": 77306,
+      "sha256": "6b1be58e36c17df45bb5b6673263e5982892bded875845adfb92842cddf6af96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule447-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-170027-rule447-salvage-creation-reference-e6f63521\\job.json",
+      "bytes": 747,
+      "sha256": "5cc51489bfd9ee7732a516bd6b8a68f2b3c3d98d2238bf65eb2c213256abe6a9"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-170027-rule447-salvage-creation-reference-e6f63521\\answer.txt",
+      "bytes": 1552,
+      "sha256": "8992e56507e6489623eaf3d8cb80fdaa82bf42353979da518cd91638dc0f09dd"
+    }
+  ]
+}
