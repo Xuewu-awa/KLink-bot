@@ -1,0 +1,559 @@
+{
+  "rule_id": "RULE-438",
+  "date": "2026-10-26",
+  "status": "修复无答复时丢队头及越过FIFO的问题，新增无头恢复入口；空生成候选最终恢复仍未关闭",
+  "base_commit": "a0b4f041e5d799692b44c495aca1a940b3444885",
+  "scope": "待选通知→OnlineMatch接收/子动作入队/接收动作map→autoPick的局部链，以及无头待选队列的暂停恢复。UI actor相关调用在参考模型中受控，不修改UI。",
+  "authority": {
+    "pid": 24220,
+    "game_module": {
+      "name": "kards-Win64-Shipping.exe",
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "base": 140699003650048,
+      "size": 164368384
+    },
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "redecoded_bytes": 39013,
+    "unique_functions_revalidated": 13,
+    "functions_in_reference": [
+      "ActionValueNameArray",
+      "AddSubActionSelectCardToDrawPending",
+      "CreateAction_CardToDrawSelected_End",
+      "ExecuteUbergraph_BP_OnlineMatch",
+      "HandleSelectCardToDrawPending",
+      "NotifySelectCardToDrawPending",
+      "ReceiveActionSelectCardToDrawPending",
+      "autoPickCardToDraw",
+      "resolveSelectCardToDrawPendingQueue"
+    ],
+    "opcode_3b_handler_rva": "0x15a6040",
+    "opcode_cfg_span": 1263,
+    "pending_map_offset": "BP_OnlineMatch+0x8f0",
+    "pending_map_type": "IntProperty -> StrProperty，实例及两个临时map属性已只读核对"
+  },
+  "findings": [
+    "NotifySelectCardToDrawPending经OnlineMatch接口转交Handle事件，持久帧11794调用AddSubActionSelectCardToDrawPending。Add先Array_Add请求；只有队长不大于1才CreateAction_AddSubAction并置chooseOneActive true。后来的选择不能先于队头展示/答复。",
+    "CreateAction_CardToDrawSelected_End的18字节包装明确进入OnlineMatch图29511，随后调用resolveSelectCardToDrawPendingQueue并SendAction；resolver起始先Array_Remove(0)再检查下一项。推进属于答复完成路径，不是没有答复也弹出。本轮没有把3309字节resolver完整语义认证。",
+    "旧EndEffectResolution先TryDequeue再调用返回void的selection，无答复时Complete直接return，最后队列统一置null，因此未收到首项答复仍会执行第二项，丢掉恢复信息。",
+    "现selection返回是否完成，使用TryPeek保留未完成队头，成功才出队；false停止本轮排空并保留其后项目，重复ID仍是不同请求。直接接口调用也建立可保留的队列。",
+    "新增PendingSelectionCount及ResumePendingSelections，当前策略可继续答复；正在执行效果时拒绝递归排空。暂停不执行后续forced-end消费；成功后恢复原尾部处理；异常沿用原清理，不保留中断的半次执行。",
+    "ActionValueNameArray对空数组写Value=-1、Text为单个空格，而非空字符串。Receive在新建空Split输出槽的受控参考条件下，将无分号文本转成2或3键的\":60\"待选map。autoPick随后可构造cardToDrawSelected:或effectSelected:空后缀动作；这不是完整恢复已证实。",
+    "autoPick若受控board在入动作后变为inactive，只入1次；若chooseOneActive保持true，局部计数0..8可入9次。不能把它称为真实客户端固定9次，也不能由此断言空名CreateCard成功或返回0。",
+    "初始Receive脚本在603遇0x3b失败。已读取当前GNatives[0x3b]及实际handler：目标表达式、4字节数量、两个表达式分派和0x3c终止；临时map/实例map均为int→FString。新增仅语法的成对map赋值解码，Receive1399字节完整可读，但不宣称原生分配/哈希/销毁实现全认证。"
+  ],
+  "validation": {
+    "native_reference": {
+      "redecoded_bytes": 39013,
+      "queue_cases": 24,
+      "empty_auto_cases": 4,
+      "methods": "完整Add795、ActionValueNameArray874、Receive1399、autoPick2552 AST；ActionValueInt/Bool、struct复制/map容器和actor/board状态受控。其他脚本只重解码及核对相关调用节点。",
+      "boundary": "Full Add795, ActionValueNameArray874, Receive1399 and autoPick2552 AST with controlled structs, local map assignment, actors destroyed as no-ops, board transition after enqueue controlled. No generic native map implementation proof, invalid-name CreateCard outcome, network or actual UI execution."
+    },
+    "queue_cases": [
+      {
+        "initial": 0,
+        "scry": false,
+        "effect": false,
+        "names": [],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": false,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": false,
+        "effect": true,
+        "names": [],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": false,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": true,
+        "effect": false,
+        "names": [],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": true,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": true,
+        "effect": true,
+        "names": [],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 0,
+        "scry": true,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 1,
+        "emitted": 1,
+        "active": true
+      },
+      {
+        "initial": 1,
+        "scry": false,
+        "effect": false,
+        "names": [],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": false,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": false,
+        "effect": true,
+        "names": [],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": false,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": true,
+        "effect": false,
+        "names": [],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": true,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": true,
+        "effect": true,
+        "names": [],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 1,
+        "scry": true,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 2,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": false,
+        "effect": false,
+        "names": [],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": false,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": false,
+        "effect": true,
+        "names": [],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": false,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": true,
+        "effect": false,
+        "names": [],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": true,
+        "effect": false,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": true,
+        "effect": true,
+        "names": [],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      },
+      {
+        "initial": 2,
+        "scry": true,
+        "effect": true,
+        "names": [
+          "card_a",
+          "card_b"
+        ],
+        "queue_length": 3,
+        "emitted": 0,
+        "active": false
+      }
+    ],
+    "empty_auto_cases": [
+      {
+        "effect": false,
+        "board_stays_active": false,
+        "name_array_text": " ",
+        "pending_map": {
+          "2": ":60"
+        },
+        "move_name": "cardToDrawSelected:",
+        "move_count": 1
+      },
+      {
+        "effect": false,
+        "board_stays_active": true,
+        "name_array_text": " ",
+        "pending_map": {
+          "2": ":60"
+        },
+        "move_name": "cardToDrawSelected:",
+        "move_count": 9
+      },
+      {
+        "effect": true,
+        "board_stays_active": false,
+        "name_array_text": " ",
+        "pending_map": {
+          "3": ":60"
+        },
+        "move_name": "effectSelected:",
+        "move_count": 1
+      },
+      {
+        "effect": true,
+        "board_stays_active": true,
+        "name_array_text": " ",
+        "pending_map": {
+          "3": ":60"
+        },
+        "move_name": "effectSelected:",
+        "move_count": 9
+      }
+    ],
+    "headless": {
+      "fifo_cases": 12,
+      "nested_cases": 6,
+      "direct_cases": 6,
+      "all_cases": 24,
+      "kinds": [
+        "手牌答复",
+        "多候选牌库抽取",
+        "生成选择"
+      ],
+      "checks": "首项null后第二项不被访问、重复ID分别保留、再次无答复仍暂停、答复后原序完成、回调中新增项排在既有项后、恢复不可重入、完成后恢复不重复回调。JSON读取使用正确的value/found双输出计数回调次数。",
+      "boundary": "公开恢复API是无头适配入口，不是声称客户端有同名方法。真实网络/超时/无效源以及服务端和训练调用方接入未认证。"
+    },
+    "deepseek": {
+      "job": "20261026-101326-rule438-pending-fifo-07358870",
+      "exact_rows": 19,
+      "verification": "19条原始指令行与独立精确函数名过滤结果完全相等；仅机械提取，主agent决定证据范围与修复。"
+    },
+    "baseline": {
+      "passed": 869,
+      "failed": 3,
+      "total": 872,
+      "exit_code": 1,
+      "examples": [
+        "FIFO测试无答复仍出现policy60,61，应只有60",
+        "嵌套测试同样提前处理61",
+        "独立调用无恢复记录/API"
+      ]
+    },
+    "fixed": {
+      "passed": 872,
+      "failed": 0,
+      "total": 872,
+      "exit_code": 0
+    },
+    "diagnostics": "重复请求计数探针初版把JSON_GetInt的object[]{value,found}作为单个Math参数，ToInt读成0，A计数恒1；错误日志不当作规则差异。已改成显式双输出局部槽后，对完全相同最终测试临时恢复HEAD版本MatchEngine，重跑基线869通过3失败，再恢复修复源码并全套872通过。临时替换有finally按字节恢复，不改其他源码及受保护文件。",
+    "runtime": "采集均守卫PID/模块/EXE SHA256并稳定复读；结束前复读13个唯一函数头/脚本、原生opcode指针和1263字节CFG范围，以及三份map属性及key/value字段头。",
+    "safety": "无游戏写入、注入、游戏函数调用或自动对局操作；解释模型离线，不使用历史回放作权威。"
+  },
+  "limits": [
+    "空pending的最终恢复未关闭：Split失败及fresh局部输出、空后缀FName、CreateCard/CreateCardObject/GetStaticCard、ID生成和无效类路径需要继续组合验证。本轮附加CreateCard边界采集未用于合成或修补该动作，生成空池行为保持RULE-437。",
+    "map解码为syntax-only：只在当前两份literal与当前VM编码相匹配，参考执行用Python容器；没有native map allocator/哈希/比较/销毁/GC的完整证明。",
+    "参考模型只受控解释少数完整函数。39013字节语法重解码（含3字节接口声明）不等于完整OnlineMatch、resolver、动作提交和chooseOneActive生命周期认证。",
+    "手牌案例是共用无头NoReply契约的适配验证，本轮直接采集的FIFO数组属于card-to-draw队列；不宣称各种选择共用客户端同一个存储。",
+    "保留的仍是捕获对象/候选的委托，不是完整客户端FSubAction及persistent-frame副本；候选在等待期间变化、来源失效、存档/克隆、回执/服务端输出及训练调用方如何停步仍需审计。",
+    "resolve=false还可能来自无效策略结果或辅助路径失败，恢复会重新验证/执行该闭包；不保证任意失败路径无副作用或可回滚。下一次外层效果结束也可能重试保留队列，不是独立计时器自动轮询。",
+    "暂停时forced-end尾部会延后，超时与强制回合结束的完整客户端优先级本轮未认证；异常仍清空原队列，不承诺异常后可恢复。",
+    "全部新增场景均为受控选择策略/程序，不是合法PvP重复请求/嵌套请求可达性证明，也不新增单卡完整认证。"
+  ],
+  "fully_certified_cards": 0,
+  "next_work": [
+    "组合核对空卡名动作到GetStaticCard/CreateCardObject的返回与ID增长，避免合成无证据的空答复",
+    "审计保留选择在源/候选变化及服务端/训练步进中的状态与回执表示",
+    "核对暂停选择与强制回合结束/超时的优先级"
+  ],
+  "source_manifest": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-pending-selection-chain-native-20261026.json",
+      "bytes": 4690948,
+      "sha256": "5f2100f8c09a12c054bbbfcf549cae53f91749045248e4470f4c387b1e915127"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-online-graph-native-20261026.json",
+      "bytes": 5366858,
+      "sha256": "4b2c05f3d129bfbdd2cf1d7b12dcaa2a771c1ae6434b92b6ce78868930f7f769"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-receive-pending-map-syntax-native-20261026.json",
+      "bytes": 4533080,
+      "sha256": "4e2198e6e8f96466f78c1f1a3463aaea5c378803e096d92281e7d3b0ff65be51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-name-array-value-native-20261026.json",
+      "bytes": 4518308,
+      "sha256": "9755e71325c735a25bed65984d634af78dd5ce3644d94b874d0126a8e3c86290"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-create-card-name-boundary-native-20261026.json",
+      "bytes": 4618809,
+      "sha256": "d04c94605e9bee511afb959454a17a1c7a7e8cc76301e065d26366d7182cd16c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-op3b-native-20261026.json",
+      "bytes": 44506,
+      "sha256": "f15d0d0d7b62a88161ee99c0d069a2d1d7a2fe4d101287c082a1646e8a4412a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-revalidated-native-20261026.json",
+      "bytes": 3802,
+      "sha256": "6c7be6c193c0e62b8f5fad558ebf4cf51fefd001359ca50d5bd7b550b1435589"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-pending.py",
+      "bytes": 2551,
+      "sha256": "1bc2b31126437c187d371b4d4ae6a6541e41cad9c638691e1c56356d9db787e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-online.py",
+      "bytes": 2363,
+      "sha256": "f6c05fdf780ff161ed6482b20adacddbddd2cde1e2c17a0477f016d4a89e6e0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-op3b.py",
+      "bytes": 3267,
+      "sha256": "e3ee3983f539c097e61c4f196544e87ab03122033c1ddd531c55f7cc2d8e54cf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-receive.py",
+      "bytes": 2396,
+      "sha256": "e5b7e456464af78332b464b3dff1e8419a14a954ee1b604415a618aad416243a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-names.py",
+      "bytes": 2360,
+      "sha256": "989ee326af7c5d68988cd69e2c1beaca36a884dc518bbbe2c1fd98c3de519ae7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-create.py",
+      "bytes": 2368,
+      "sha256": "5e9a9d151163eeffd4dabe4db81958a823a8f94aae07838e3a483286ee3a658f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule438.py",
+      "bytes": 9538,
+      "sha256": "fd8dfe551b68f6b017ac9d087612b36eae528b515cb55e4dc6a6f8c65820bf9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\revalidate-rule438.py",
+      "bytes": 2850,
+      "sha256": "c2a575cdc1ac5ac1454d6d1d5268e768fc69dd41dc39e41496593420c1298c99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-reference-20261026.json",
+      "bytes": 6363,
+      "sha256": "00d64a2e6d16758664aaa5c59d1a56e5baa72efd21b324a6d3073f2c343b0265"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-worker\\input.json",
+      "bytes": 99421,
+      "sha256": "012c15b26c71379af92e8ee2d6ee5a5ce37f7439147e231b9bb77c284c87d38b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-worker\\task.txt",
+      "bytes": 599,
+      "sha256": "eedc35e842092157b38deed30f1bc5048a284818e0c8edf75bc752a98b52e780"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-worker\\result.json",
+      "bytes": 9256,
+      "sha256": "81d8d588bcb27f5c0c6c2816d3496b6bdda4cf6f4fa8cfb91c7fb2f1be4b3a31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule438-final-baseline.py",
+      "bytes": 748,
+      "sha256": "2a31612dfd6b2535ae563ab005737bfbc77ac8b7b71be4a9fde6acbc57653805"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-final-fixture-baseline-selftest.log",
+      "bytes": 77071,
+      "sha256": "ff5023a898524721529171e42bcaf93ea33978778f18cafa0d52ccf3a9228949"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-final-fixture-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-fixed-selftest.log",
+      "bytes": 76836,
+      "sha256": "53d5a6fdbc26509c2ba356c93093e2b735f7dde439b3f92391a8abbe77eaf086"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-fixed-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-first-fixed-diagnostic.log",
+      "bytes": 76889,
+      "sha256": "a61ea7e57a5032e91c9f14150efecd935035ae75cab596429d68fb9c3bee8334"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-multi-output-probe-diagnostic.log",
+      "bytes": 76947,
+      "sha256": "47ec19dc14d5daaa43ac833f59cf2f72884c1571593be604c5ad8d70296d1e60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule438-pre-direct-baseline.log",
+      "bytes": 76928,
+      "sha256": "0169bd43fd9bf1755e072e94b505b8fc65f63b4f095e0460f8255a2053bf9d00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule438-pending-completion-entry-native-20261026.json",
+      "bytes": 4489388,
+      "sha256": "5dcef8af51609e53d29da2736b914362fcc1ba86d2c3a5797a066b5dd9dc088c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule438-completion.py",
+      "bytes": 2391,
+      "sha256": "e109402ca7a56bb7434b765c2c560253a9f1ba38ee25bf772c16fc205132bce3"
+    }
+  ],
+  "repository_artifacts": [
+    "src/KLink.Bot/Engine/MatchEngine.cs",
+    "tools/BotSim/SelfTest.cs"
+  ]
+}

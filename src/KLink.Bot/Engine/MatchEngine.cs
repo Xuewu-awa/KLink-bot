@@ -20,15 +20,17 @@ public sealed class MatchEngine
 {
     // A selection response occurs after the requesting Blueprint has returned.
     // Keep this order in headless play while resolving the choice synchronously.
-    private Queue<Action>? _pendingSelections;
+    private Queue<Func<bool>>? _pendingSelections;
+    /// <summary>Queued choices, including an unresolved head; zero after all replies complete.</summary>
+    public int PendingSelectionCount => _pendingSelections?.Count ?? 0;
 
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
         bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
         Func<CardInstance?>? replySource = null)
     {
-        void Complete()
+        bool Complete()
         {
-            if (!resolve()) return; // No reply is different from a reply selecting card ID 0.
+            if (!resolve()) return false; // No reply leaves this request at the queue head; ID 0 is a reply.
             // The hand reply supplies its pre-callback cache, including null.
             // Looking up the ID here would observe later callback mutations.
             var responseCard = replySource is null ? selecting : replySource();
@@ -65,9 +67,15 @@ public sealed class MatchEngine
                 // after their own End/receipt, including extra-trigger draws.
                 ExecuteQueuedAutoPlayActions();
             }
+            return true;
         }
-        if (defer && _pendingSelections is { } pending) pending.Enqueue(Complete);
-        else Complete();
+        if (!defer) { Complete(); return; }
+        if (_pendingSelections is { } pending) { pending.Enqueue(Complete); return; }
+        // Direct calls outside an effect still need an owned queue so an absent
+        // policy answer can be retained and resumed rather than silently lost.
+        BeginEffectResolution();
+        try { _pendingSelections!.Enqueue(Complete); }
+        finally { EndEffectResolution(); }
     }
 
     private int _effectResolutionDepth;
@@ -891,7 +899,7 @@ public sealed class MatchEngine
     internal void BeginEffectResolution()
     {
         if (_effectResolutionDepth == 0 && _pendingSelections is null)
-            _pendingSelections = new Queue<Action>();
+            _pendingSelections = new Queue<Func<bool>>();
         _effectResolutionDepth++;
     }
 
@@ -909,18 +917,36 @@ public sealed class MatchEngine
             // Keep a depth while draining: repeated and nested effects append
             // further responses instead of recursively resolving them inline.
             _effectResolutionDepth++;
+            bool blocked = false;
             try
             {
-                while (_pendingSelections is { } selections && selections.TryDequeue(out var selection))
-                    selection();
+                // RULE-438: retain the active request until it actually gets an
+                // answer. New requests append behind it; no later choice passes it.
+                while (_pendingSelections is { } selections && selections.TryPeek(out var selection))
+                {
+                    if (!selection()) { blocked = true; break; }
+                    selections.Dequeue();
+                }
             }
             finally
             {
-                _pendingSelections = null;
+                // Keep the previous exception cleanup: only an ordinary missing
+                // answer retains the queue, not an interrupted partial execution.
+                if (!blocked) _pendingSelections = null;
                 _effectResolutionDepth--;
             }
-            ConsumePendingForcedEndTurn();
+            if (!blocked) ConsumePendingForcedEndTurn();
         }
+    }
+
+    /// <summary>Retry the pending head with current choice policies; never recursively drain an active effect.</summary>
+    public bool ResumePendingSelections()
+    {
+        if (_effectResolutionDepth != 0) return false;
+        if (PendingSelectionCount == 0) return true;
+        BeginEffectResolution();
+        EndEffectResolution();
+        return PendingSelectionCount == 0;
     }
 
     private void ConsumePendingForcedEndTurn()

@@ -172,6 +172,9 @@ internal static class SelfTest
         new("内联选牌：初始等待false不补发通知，Pincer后外层设置等待true", HandPlayInlinePincerBoundary),
         new("内联选择：牌库空/单候选实时读等待门，生成空池不造答复", InlineSelectionStandaloneWait),
         new("内联选择组合：等待处理在自身栈内，外层Pincer后重新设标志", InlineSelectionOuterWait),
+        new("未答复选择：保留队头、阻塞后续并允许显式恢复", PendingChoiceFifoRecovery),
+        new("未答复选择：嵌套追加、重复暂停与重入保护", PendingChoiceNestedRecovery),
+        new("未答复选择：独立接口调用也保留请求并支持恢复", PendingChoiceStandaloneRecovery),
         new("自动打出手牌回复：有效目标及ID0消费，无回复不消费", AutoPlayHandReplyBoundary),
         new("自动打出内联选牌：无候选及单候选不提前消费", AutoPlayInlineSelectionBoundary),
         new("自动打出延迟手牌回复：先完成Gordon的AfterWait，再执行RESISTANCE", AutoPlayDeferredHandReply),
@@ -21419,6 +21422,102 @@ internal static class SelfTest
 
 
 
+
+
+    private static string? PendingChoiceFifoRecovery(CardDatabase db) => PendingChoiceRecoveryReference(db, nested: false);
+    private static string? PendingChoiceNestedRecovery(CardDatabase db) => PendingChoiceRecoveryReference(db, nested: true);
+    private static string? PendingChoiceStandaloneRecovery(CardDatabase db) => PendingChoiceRecoveryReference(db, nested: false, direct: true);
+
+    private static string? PendingChoiceRecoveryReference(CardDatabase db, bool nested, bool direct = false)
+    {
+        const string name = "card_unit_m36_destroyer";
+        using var callback = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        using var pool = InstallSelectionDrawProbe(name, "GetChooseSpawnCards");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        locals["OnHandTargetSelected"] = new[] {
+            new KismetStep(0, "call", "JSON_GetInt", new[] { new KismetExpr { Self = true }, new KismetExpr { Str = "answers" },
+                new KismetExpr { Var = "answer_count", Scope = "local" }, new KismetExpr { Var = "answer_found", Scope = "local" } },
+                new[] { 2, 3 }, null, null, -1, null, null),
+            new KismetStep(1, "call", "JSON_SetInt", new[] { new KismetExpr { Self = true }, new KismetExpr { Str = "answers" },
+                new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "answer_count", Scope = "local" }, new KismetExpr { Int = 1 } } } },
+                Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        locals["GetChooseSpawnCards"] = new[] {
+            new KismetStep(0, "call", "Array_Add", new[] { new KismetExpr { Var = "cards", Scope = "local" },
+                new KismetExpr { Call = "GetCardFromID", Args = new[] { new KismetExpr { Int = 80 } } } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "call", "Array_Add", new[] { new KismetExpr { Var = "cards", Scope = "local" },
+                new KismetExpr { Call = "GetCardFromID", Args = new[] { new KismetExpr { Int = 81 } } } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Bool = true }, null, -1, "keepOrder", null),
+            new KismetStep(3, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        var resume = typeof(MatchEngine).GetMethod("ResumePendingSelections", Type.EmptyTypes);
+        var countProperty = typeof(MatchEngine).GetProperty("PendingSelectionCount");
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int kind in new[] { 0, 1, 2 }) // hand, deck, generated
+        foreach (bool duplicate in nested || direct ? new[] { false } : new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var sources = new Dictionary<int, CardInstance>();
+            foreach (int id in new[] { 60, 61, 62 }) {
+                var card = state.CreateWithId(name, side, id, CardLocation.Discard, 0);
+                card.Definition = new CardDefinition { Name = name, Type = "infantry" }; card.Keywords.Clear();
+                card.RemovedGameplayTags.Add("ability.develop"); card.RemovedGameplayTags.Add("ability.forecast"); sources[id] = card;
+            }
+            foreach (var (id, cardName) in new[] { (80, PlainUnit), (81, "card_unit_routed_troops"), (82, "card_unit_432_infantry_regiment") })
+                state.CreateWithId(cardName, side, id, side.DeckOf(), id - 80);
+            var attempts = new List<int>(); bool allowFirst = false, allowNested = false, appended = false;
+            bool badReentry = false;
+            int Count() => countProperty?.GetValue(engine) is int n ? n : -1;
+            bool Resume() => resume?.Invoke(engine, null) is true;
+            void Request(int id) {
+                var card = sources[id];
+                engine.Api.InvokeByName(kind == 0 ? "selectTargetFromHand" : "selectCardToDraw", card,
+                    kind == 0 ? new object?[] { id } : new object?[] { id, kind == 1, false },
+                    new EffectContext { Engine = engine, State = state, Self = card, Controller = side }, out _);
+            }
+            bool Choose(CardInstance card) {
+                attempts.Add(card.CardId);
+                if (card.CardId == 60 && !allowFirst || card.CardId == 62 && !allowNested) return false;
+                if (nested && card.CardId == 60 && !appended) {
+                    appended = true; Request(62);
+                    int before = attempts.Count; badReentry |= Resume() || attempts.Count != before;
+                }
+                return true;
+            }
+            engine.PickHandTargetId = (card, _) => Choose(card) ? 0 : null;
+            engine.ChooseSpawnCard = (card, candidates) => !Choose(card) ? null
+                : kind == 1 ? candidates.FirstOrDefault(candidate => candidate.Location == side.DeckOf()) : candidates[0];
+            int[] requests = direct ? new[] { 60 } : duplicate ? new[] { 60, 60, 61 } : new[] { 60, 61 };
+            CardEffectScripts.Register(name, effectContext => { foreach (int id in requests) Request(id); });
+            try { if (direct) Request(60); else engine.Api.RunCardEffect(sources[60], null); }
+            finally { CardEffectScripts.Unregister(name); }
+            if (!attempts.SequenceEqual(new[] { 60 }) || sources.Values.Any(card => engine.Api.JsonGetInt(card, "answers") != 0))
+                return $"pending FIFO {side}/{kind}/{duplicate}/{nested}: later choice ran without first answer: {string.Join(",", attempts)}";
+            if (resume is null || countProperty is null || Count() != requests.Length) return "pending head/continuations were discarded or resume API missing";
+            int beforeRetry = attempts.Count;
+            if (Resume() || Count() != requests.Length || attempts.Count != beforeRetry + 1) return "retry without answer did not retain the head";
+            allowFirst = true;
+            bool completed = Resume();
+            if (nested)
+            {
+                if (completed || !appended || badReentry || Count() != 1
+                    || !attempts.SequenceEqual(new[] { 60, 60, 60, 61, 62 })
+                    || engine.Api.JsonGetInt(sources[60], "answers") != 1 || engine.Api.JsonGetInt(sources[61], "answers") != 1
+                    || engine.Api.JsonGetInt(sources[62], "answers") != 0) return "nested offer did not wait behind the existing offer";
+                if (Resume() || Count() != 1 || attempts[^1] != 62) return "nested unanswered retry was lost";
+                allowNested = true;
+                if (!Resume() || engine.Api.JsonGetInt(sources[62], "answers") != 1) return "nested reply could not resume";
+            }
+            else if (!completed || !attempts.SequenceEqual(new[] { 60, 60 }.Concat(requests))
+                || engine.Api.JsonGetInt(sources[60], "answers") != (duplicate ? 2 : 1)
+                || engine.Api.JsonGetInt(sources[61], "answers") != (direct ? 0 : 1)) return $"accepted replies {side}/{kind}/duplicate={duplicate}/direct={direct}: completed={completed},count={Count()},attempts={string.Join(",", attempts)},A={engine.Api.JsonGetInt(sources[60], "answers")},B={engine.Api.JsonGetInt(sources[61], "answers")}";
+            int finalAttempts = attempts.Count;
+            if (Count() != 0 || !Resume() || attempts.Count != finalAttempts || engine.Api.Vm.FaultedPrograms != 0
+                || engine.Api.Vm.UnimplementedCalls.Count != 0) return "completed selections replayed or VM faulted";
+            cases++;
+        }
+        return cases == (nested || direct ? 6 : 12) ? null : $"pending FIFO cases {cases}";
+    }
 
     private static string? InlineSelectionStandaloneWait(CardDatabase db) => InlineSelectionWaitReference(db, composed: false);
     private static string? InlineSelectionOuterWait(CardDatabase db) => InlineSelectionWaitReference(db, composed: true);
