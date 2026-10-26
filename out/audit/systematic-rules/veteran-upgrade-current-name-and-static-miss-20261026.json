@@ -1,0 +1,166 @@
+{
+  "rule_id": "RULE-453",
+  "date": "2026-10-26",
+  "base_commit": "b5b538a7d058c1cae45c5e1d770b30586316f9e3",
+  "status": "已修复老兵升级查询使用当前卡名及精确后缀，静态命中投影和未命中新对象",
+  "scope": "getHasVeteranUpgrade/getStaticVeteranUpgrade本地原语及静态缓存查找投影；尚未接通MakeVeteran资格门和数值主流程。",
+  "findings": [
+    "当前两个原生查询166/167字节本地实现，从对象+0x50的Name生成字符串，与字面量_vet拼接后转换为FName再查缓存；没有ResolveBaseName或读取托管Definition.Name。旧FindVeteranDefinition先剥Definition.Name后缀，导致当前Name不同或本身带_bal/_vet等后缀时查错升级。",
+    "现按card.Name+_vet做独立完整名称查找，不调用会回退变体的CardDatabase.Find；采用现有FName名称投影的忽略大小写比较。保留所有后缀，故foo_vet查foo_vet_vet，foo_bal查foo_bal_vet。未新增全局卡名归一或修改卡表。",
+    "原生存在检查RVA4b37340的136字节查询缓存键，静态取回RVA4b2e080的387字节查同一缓存，命中返回缓存对象指针；未命中进入已有基础类构造分支，不返回原卡模板。旧getStaticVeteranUpgrade却用card.Definition作为未命中回退，并创建带对局owner的通用模板。",
+    "现命中走既有NativeStaticCardInstance投影，保留定义的静态身份，owner/location/ID/最大值/额度为静态对象对应状态；未命中走RULE439的NativeMissingStaticCardInstance新基础对象投影，每次不同身份且不进战斗索引，不缓存为已知模板。完整UE构造仍在既有边界之外。",
+    "新增两项各96组，共192组：八种候选条目组合、双方及六种当前名称（基础、_bal、_vet、_alt、_gold、大写基础），私有卡表控制三种可存在升级，源Definition保持同一基础卡。检查存在结果、数据、静态原始字段、重复查询的对象相等/不等、未使用变体回退及未注册战斗对象。受控Name改变仅验证原语依赖，不作为正常战斗转换实现。",
+    "既有VeteranUpgradeHelpers的未命中预期原为原卡模板，已改为None基础对象；原正常升级名及不存在判据不放宽。最终相同889项测试旧实现886通过、3失败，修正后889/889。",
+    "离线执行两个查询和两个缓存函数共856字节，384个布景各重复调用两次：两类查询×八种卡表命中组合×六名称×四种合成缓存布局。布局覆盖空表、内联/外置hash、直接命中、碰撞链尾命中和链尾未命中。验证来源读取当前Name、拼接不剥后缀、存在检查不构造、命中指针保持、未命中静态查询两次请求构造且返回不同指针。",
+    "FString构造/拼接、FName转换/哈希及通用对象构造/清理为显式受控边界；缓存比较、链遍历、命中/未命中控制流执行真实机器码。未用受控构造证明所有默认字段或引擎名称生命周期；默认字段投影沿用RULE439。DeepSeek16条调用指令由主agent逐元素核验。"
+  ],
+  "verification": {
+    "rule": "RULE-453",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bodies": [
+      {
+        "rva": "0x4b13520",
+        "bytes": 166,
+        "sha256": "f97c1b69b985affc01ead6658bcb0d72e8f2a239d914845bd8f9d05237cd4f12"
+      },
+      {
+        "rva": "0x4b13760",
+        "bytes": 167,
+        "sha256": "e29986c6f524ebb8d157f23f449e50d6bcef1f8c94459a585180a271580e9339"
+      },
+      {
+        "rva": "0x4b37340",
+        "bytes": 136,
+        "sha256": "4f78df2a2d2dcfd5a9c620b0cf1a30ec1e34392580d23634c61992a0fbde3d44"
+      },
+      {
+        "rva": "0x4b2e080",
+        "bytes": 387,
+        "sha256": "816f051a8ee1fed89c1495396c0c1708c989128290e0631cf1469f07b49c7602"
+      }
+    ],
+    "total_native_bytes": 856,
+    "offline_query_cache_profiles": 384,
+    "offline_calls_per_profile": 2,
+    "worker_exact_rows": 16,
+    "worker_input_rows": 88,
+    "all_selected_live_bytes_equal": true,
+    "scope": "Native query bodies + cache contains/get hit and miss control flow with synthetic cache layout. FString/FName/hash and generic object construction/cleanup/cookie are controlled boundaries; base-object defaults use prior RULE439. Not complete engine/name/cache lifecycle certification.",
+    "no_game_writes": true,
+    "new_simulator_scenarios": 192,
+    "updated_existing_expectations": 1,
+    "baseline": {
+      "total": 889,
+      "passed": 886,
+      "failed": 3
+    },
+    "fixed": {
+      "total": 889,
+      "passed": 889,
+      "failed": 0
+    },
+    "source_bom_preserved": true,
+    "fully_certified_cards": 0
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "当前Name完整追加_vet并直接扫描完整键；命中使用原生静态投影，未命中使用新基础对象投影。"
+  },
+  "limitations": [
+    "MakeVeteran仍缺在场/生命/升级/已老兵的资格门接通、模板数值/能力更新、Fury额度及事件门；本轮只是将其依赖查询修正。",
+    "CreateCard中的老兵化阶段仍未接通；不能据查询正确称整个老兵机制已还原。",
+    "FName转换/哈希、实际缓存装载/更新、null缓存值、GC和通用构造完整生命周期未认证；存在性投影仅覆盖当前数据库中有效模板条目。",
+    "未进行暂停中的单卡版本迁移，也未宣称所有卡牌缓存均与更新客户端对齐。完整卡牌认证数0，无游戏进程写入/注入/实际函数调用。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-getHasVeteranUpgrade-native-20261026.json",
+      "bytes": 11556,
+      "sha256": "e275ae851d6e9fe7d325dcd53896409f1cba23bcabe4b1d528267f570f55a3be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule451-getStaticVeteranUpgrade-native-20261026.json",
+      "bytes": 12670,
+      "sha256": "ab2636b77d46274611cdf6738daf7220baa23733e80e39d26aac59390dd7595b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule452-json-and-upgrade-cache-native-20261026.json",
+      "bytes": 21170,
+      "sha256": "e8ffd8536729a3e76610af015417d49857321470e27103e04b66ca727682b5be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-base-card-defaults-native-20261026.json",
+      "bytes": 50276,
+      "sha256": "2a4ed949115868e8b9c8f4ae0db46625455058d28cfa51cc479420338e1db8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule453-native.py",
+      "bytes": 7382,
+      "sha256": "a79a4c50d407fb5535d01dddb75cbd56111417c423c8e901d627853707788777"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-native-verification-20261026.json",
+      "bytes": 1275,
+      "sha256": "8d3094874e37f4b829b2b281cd44fbf2e73afd9ed9e363f6df838920f720485d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-final-verification-20261026.json",
+      "bytes": 1568,
+      "sha256": "7aca4f56cda19eeac81cfcc9d5e58fdae80a2997e2ece60a0da8eb4f66104a7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-upgrade-cache-reference-20261026.json",
+      "bytes": 95877,
+      "sha256": "b0099ad203e183b1ce3e4495df32f49a89d4bf42c3bbb5d9bbcc31eae7a48dfc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-baseline-selftest.log",
+      "bytes": 78472,
+      "sha256": "29da8761a9ac2b8b936fb4b3f46783ce68c32be4ae709e09c79497a796b7eefe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-final-selftest.log",
+      "bytes": 78180,
+      "sha256": "eafaa71feac63d39e9f1b4f935f63fd1a4b07b274cb41ac8d1e957be4d6fdcb9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-worker\\task.txt",
+      "bytes": 375,
+      "sha256": "de82a67588e1d85937f4fa18f8524c24a504111edf22a26ff5ee6f2a1b42f5b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-worker\\input.json",
+      "bytes": 14709,
+      "sha256": "65642d2aa6a9f24f58e2dadd525b9a04b9a539543e23d13fdbd370fc2d22e619"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule453-worker\\result.json",
+      "bytes": 2653,
+      "sha256": "a1eb43ea684a2e3b19e389ded19d84d225dff3aca04a1dba829df5453a9d8768"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-220924-rule453-upgrade-query-calls-5757251d\\job.json",
+      "bytes": 732,
+      "sha256": "833149b97715a6b96fc4c6dd0e5450a140523b630c27d798d0909390e4af9363"
+    },
+    {
+      "path": "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261026-220924-rule453-upgrade-query-calls-5757251d\\answer.txt",
+      "bytes": 1316,
+      "sha256": "2178fa01d6706f570dd0efa80991ebca52610dfca3bf159282e7950cdbe57f85"
+    }
+  ]
+}

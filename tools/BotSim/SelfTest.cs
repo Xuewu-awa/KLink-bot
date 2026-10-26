@@ -851,6 +851,8 @@ internal static class SelfTest
             ImplicitSelfReceivers),
         new("同形bug：GiveKreditsBySide 的数额在 a[1]（旧写法把 side 当数额）", GiveKreditsAmountArg),
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
+        new("老兵模板查询：当前卡名追加后缀并精确判断升级存在", db => VeteranUpgradeQueries(db, false)),
+        new("老兵模板查询：静态命中投影、未命中新基础对象及身份", db => VeteranUpgradeQueries(db, true)),
         new("老兵查询：JSON条目存在性、抑制与ignoreSuppress，直接入口", db => VeteranQueryPresence(db, false)),
         new("老兵查询：JSON条目存在性、抑制与ignoreSuppress，VM出参", db => VeteranQueryPresence(db, true)),
         new("战场生成打捞：创建回调前收到打捞数值、标识和阵营", db => BattlefieldSpawnSalvage(db, false)),
@@ -16679,9 +16681,9 @@ internal static class SelfTest
         object? baseStatic = engine.Api.InvokeByName("getStaticVeteranUpgrade", plain,
             new object?[] { null }, ctx, out bool baseHandled);
         if (!baseHandled || baseStatic is not CardInstance baseCard
-            || baseCard.Name != noUpgradeCard)
+            || baseCard.Name != "None")
         {
-            return $"无升级卡应回退基础静态模板，handled={baseHandled}, result={baseStatic}";
+            return $"无升级卡应返回新基础对象，handled={baseHandled}, result={baseStatic}";
         }
 
         return null;
@@ -32497,6 +32499,62 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-453: vary the object's current FName independently of its source
+    // definition. These are controlled identity probes, not battle conversion.
+    private static string? VeteranUpgradeQueries(CardDatabase db, bool staticGetter)
+    {
+        const string root = "card_unit_rule453_fixture";
+        string[] keys = { root + "_vet", root + "_bal_vet", root + "_vet_vet" };
+        string[] inputs = { root, root + "_bal", root + "_vet", root + "_alt", root + "_gold", root.ToUpperInvariant() };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (int mask in Enumerable.Range(0, 8))
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[root] = new CardDefinition { Name = root, Type = "infantry", FactionId = 5, Attack = 7, Defense = 9, Kredits = 6 };
+            for (int i = 0; i < keys.Length; i++)
+                if ((mask & (1 << i)) != 0) defs[keys[i]] = new CardDefinition { Name = keys[i], Type = "infantry", FactionId = i + 1,
+                    Attack = 11 + i, Defense = 13 + i, Kredits = 3 + i };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (string currentName in inputs)
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var target = state.CreateWithId(root, side, 60, CardLocation.Discard, 0);
+                target.Name = currentName;
+                var expected = defs.Values.SingleOrDefault(x => string.Equals(x.Name, currentName + "_vet", StringComparison.OrdinalIgnoreCase));
+                var ctx = new EffectContext { Engine = engine, State = state, Self = target, Controller = side };
+                int count = state.AllCards.Count, fallbacks = fixture.VariantFallbacks;
+                string query = staticGetter ? "getStaticVeteranUpgrade" : "getHasVeteranUpgrade";
+                var first = engine.Api.InvokeByName(query, target, new object?[] { null }, ctx, out bool handled);
+                if (!handled) return "veteran query not handled";
+                if (!staticGetter) {
+                    if (!Equals(first, expected is not null)) return $"exact current-name suffix query {mask}/{side}/{currentName}: {first}";
+                }
+                else {
+                    var second = engine.Api.InvokeByName(query, target, new object?[] { null }, ctx, out _);
+                    if (first is not CardInstance a || second is not CardInstance c) return "static upgrade must return a projected object";
+                    if (a.Owner != Side.NotAvailable || a.Location != CardLocation.NotAvailable || a.CardId != 0 || a.EnteredPlayOnTurn != 0
+                        || a.RemainingAttacks != 0 || a.MaxAttack != 0 || a.MaxDefense != 0 || !a.HasMovedThisTurn)
+                        return $"static raw fields incorrectly inherited from battle owner {mask}/{side}/{currentName}";
+                    if (expected is not null) {
+                        if (!ReferenceEquals(a.Definition, expected) || a.Name != expected.Name || a.PublicAttack != expected.Attack || a.Defense != expected.Defense)
+                            return "cached static upgrade data mismatch";
+                    }
+                    else if (a.Name != "None" || a.Definition.TypeId != 0 || a.Attack != 0 || a.Defense != 0 || a.CustomJson.Count != 0 || ReferenceEquals(a, c))
+                        return "missing upgrade must yield independent base objects";
+                    string? error = ProbeObjectOperators(ctx, new() { Var = "a" }, new() { Var = "b" }, expected is not null,
+                        new Dictionary<string, object?> { ["a"] = a, ["b"] = c });
+                    if (error is not null) return "upgrade object identity: " + error;
+                }
+                if (state.AllCards.Count != count || fixture.VariantFallbacks != fallbacks || target.Name != currentName || target.Definition.Name != root)
+                    return "veteran query mutated battle/definition or used variant fallback";
+                cases++;
+            }
+        }
+        return cases == 96 ? null : $"upgrade query profiles={cases}";
     }
 
     // RULE-452: native IsVeteran tests a nonnull JSON value entry, not its

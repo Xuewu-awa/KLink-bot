@@ -214,12 +214,11 @@ public sealed partial class CardApi
                     return null;
                 }
 
-                // Cards without a distinct `_vet` definition keep their base
-                // static values when an external effect has already made them
-                // Veteran (for example 37mm M1 AA GUN).
-                CardDefinition definition = FindVeteranDefinition(c.State.Database, card)
-                    ?? card.Definition;
-                return TemplateInstance(definition, card.Owner);
+                // RULE-453: a miss follows native GetStaticCard's fresh base
+                // object path; it does not return the receiver's base template.
+                var definition = FindVeteranDefinition(c.State.Database, card);
+                return definition is null ? NativeMissingStaticCardInstance()
+                    : NativeStaticCardInstance(definition);
             },
             ["GetKreditsBySide"] = (c, r, a) => c.State.Kredits(SideArg(r, a, 0, c.Controller)),
             ["GetMaxKreditsBySide"] = (c, r, a) => c.State.MaxKredits(SideArg(r, a, 0, c.Controller)),
@@ -3212,10 +3211,11 @@ public sealed partial class CardApi
 
     private static CardDefinition? FindVeteranDefinition(CardDatabase database, CardInstance card)
     {
-        string baseName = CardDatabase.ResolveBaseName(card.Definition.Name);
-        string veteranName = $"{baseName}_vet";
+        // Native queries append to the object's current FName string, without
+        // stripping variant suffixes or substituting its source definition.
+        string veteranName = $"{card.Name}_vet";
         return database.All.FirstOrDefault(definition =>
-            string.Equals(definition.Name, veteranName, StringComparison.Ordinal));
+            string.Equals(definition.Name, veteranName, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
