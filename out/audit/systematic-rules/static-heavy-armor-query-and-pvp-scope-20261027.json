@@ -1,0 +1,219 @@
+{
+  "rule_id": "RULE-462",
+  "date": "2026-10-27",
+  "base_commit": "798ed0258dbabbd9c2f5d3e4cc07c528de091f87",
+  "status": "完成静态装甲查询及已发现UI调用支链分类；无生产变更",
+  "scope": "GetStaticHeavyArmor原生函数及当前已发现FindAndSetBubbleTypesToAdd调用链。不把显示接口缺失自动计为PvP规则缺口。",
+  "previous_pending_push": {
+    "commit": "798ed0258dbabbd9c2f5d3e4cc07c528de091f87",
+    "branch": "DinkyPuffer",
+    "push_succeeded": true,
+    "remote_sha_verified_at_turn_start": true
+  },
+  "findings": [
+    "本轮首先重试推送，上一轮798ed02已通过SSH推至origin/DinkyPuffer，ls-remote与本地完整SHA一致。",
+    "当前FunctionLibrary.GetStaticHeavyArmor包装198字节，完整后端28字节，RVA4b2e4d0：调用GetStaticCard(4b2e080)，读取返回对象+1dc的int32写出；不叠加+1e0临时分量、不做getTotalHeavyArmor的0..3夹取。",
+    "包装/后端及既有GetStaticCard387字节均从内存与磁盘复核一致。原生后端在84组输入中离线执行，覆盖原始极值、临时分量及标志干扰；静态查找返回指针受控，并未把它当成完整查找/构造链真实执行。",
+    "BaseCardObject类/CDO关联复核，当前CDO的+1dc/+1e0均0；这只是默认对象字段快照，不认证本轮新创建的未命中对象及其完整生命周期。",
+    "新采集BP_CardHelp_C.FindAndSetBubbleTypesToAdd完整5021字节并重解码。GetStaticHeavyArmor调用位置1297、1369，结果用于说明气泡分类；同函数访问bubbleTypes并调用Set_Add/Set_Clear/Set_Union及多项静态说明查询。未发现此函数调用装甲写入、伤害或对局动作处理器。",
+    "对当前parsed目录2559份*.functions.json进行字符串文件级扫描，仅BP_CardHelp.functions.json含此名称；其11个函数中真实调用节点仅2处，其余匹配为局部变量名。DeepSeek机械提取后由主agent独立遍历逐项深比较，且与当前运行时两处调用位置和参数角色一致。",
+    "根据用户排除UI的范围，已发现这条显示依赖不计入当前已证实PvP缺口。未证实任何PvP可达调用，不能将该结论扩张为全客户端无其他调用或所有静态查询都无关。",
+    "试验性VM查询接入及测试已撤回，最终生产与测试源码恢复既有提交，不补显示功能。本轮只提交范围审计与证据；试验日志不是本轮模拟器验收结果。"
+  ],
+  "verification": {
+    "rule": "RULE-462",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_wrapper_bytes": 198,
+    "native_backend_bytes": 28,
+    "native_backend_rva": "0x4b2e4d0",
+    "native_backend_sha256": "4afc3dac6a52eebefc84006dd7594bc8fab4e8bca13cff74a4fa4b9da93512eb",
+    "lookup_body_live_bytes": 387,
+    "native_backend_cases": 84,
+    "case_digest_sha256": "5d69e52a2cddaca85cbb8e658f50f96caaef6d10cd6e104312c58db9e2478be1",
+    "base_CDO_armor_pair": [
+      0,
+      0
+    ],
+    "live_bubble_function": {
+      "owner": "BP_CardHelp_C",
+      "name": "FindAndSetBubbleTypesToAdd",
+      "bytes": 5021,
+      "sha256": "da98c14beaf418d4e8001da333dcd6c392b251851d3e0c5a4d9705628ee7df25",
+      "native_query_calls": [
+        {
+          "statement_index": 1297,
+          "inst": "CallMath",
+          "parameters": [
+            {
+              "Inst": "InstanceVariable",
+              "Variable Name": "cardName"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_GetStaticHeavyArmor_heavyArmor"
+            }
+          ]
+        },
+        {
+          "statement_index": 1369,
+          "inst": "CallMath",
+          "parameters": [
+            {
+              "Inst": "InstanceVariable",
+              "Variable Name": "cardName"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_GetStaticHeavyArmor_heavyArmor"
+            }
+          ]
+        }
+      ],
+      "called_functions": [
+        "BooleanAND",
+        "BooleanOR",
+        "GetAllChildrenGameplayTagsAsStrings",
+        "GetStaticCard",
+        "GetStaticExtraHelpTextBubbleTypes",
+        "GetStaticHasAlpine",
+        "GetStaticHasAmbush",
+        "GetStaticHasBlitz",
+        "GetStaticHasFury",
+        "GetStaticHasGuard",
+        "GetStaticHasMobilize",
+        "GetStaticHasSmokescreen",
+        "GetStaticHeavyArmor",
+        "Greater_IntInt",
+        "HasBond",
+        "IsOwnedByClientSide",
+        "IsPinned",
+        "LessEqual_IntInt",
+        "NotEqual_ByteByte",
+        "NotEqual_IntInt",
+        "Not_PreBool",
+        "Set_Add",
+        "Set_Clear",
+        "Set_Union",
+        "getHasGameplayTag",
+        "getHasImmune",
+        "getHasShock",
+        "getHasSmokescreen",
+        "hasActiveCountdownEffect",
+        "hasActivePincerEffect"
+      ]
+    },
+    "scope": "Read-only capture and offline getter execution with controlled GetStaticCard return pointer. Known parsed calls belong to card-help bubble construction; no PvP caller proven. Not an exhaustive native caller graph, no new miss object execution, no rule implementation change.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "parsed_scope": {
+    "function_json_files": 2559,
+    "text_matched_files": 1,
+    "actual_call_nodes": 2,
+    "caller_function": "BP_CardHelp_C.FindAndSetBubbleTypesToAdd",
+    "worker_exact_call_nodes": 2
+  },
+  "implementation": {
+    "production_code_changed": false,
+    "test_code_changed": false,
+    "new_simulator_tests": 0,
+    "rerun_final_production_tests": false,
+    "last_accepted_simulator_result": {
+      "rule": "RULE-461",
+      "passed": 904,
+      "total": 904,
+      "historical_only": true
+    }
+  },
+  "unresolved": [
+    "完整客户端原生与未加载资产调用图仍未穷尽；若发现PvP依赖，应重新纳入此查询。",
+    "装甲0..5非零独立分量、累计、临时移除、typed SetValue以及通知仍未完整迁移。",
+    "光环、压制恢复、创建/重置/复制/VM字段和老兵装甲阶段仍待串联。",
+    "模式6任意持久帧局部变量初始化及既有UObject/原始能力位边界继续保留。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "只读客户端/SDK/解包资产与运行时字节码；不使用旧回放或names.txt权威。",
+    "解析目录扫描仅限定2559份函数文件，非完整pak或原生调用图穷尽证明。",
+    "无游戏写入、注入或真实函数调用，单卡版本迁移仍暂停。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule462-veteran-query-headers-20261027.json",
+      "bytes": 4488101,
+      "sha256": "36f01e420eff4528b55da8bf531f3abd013bdd72eba4062bb07a13e5a86482ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule462-GetStaticHeavyArmor-native-20261027.json",
+      "bytes": 8740,
+      "sha256": "55d45df3f331c16986c6fd7244acce6c0f0d1f9bbf924f2b416557f24d335807"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule462-bubble-functions-native-20261027.json",
+      "bytes": 4639619,
+      "sha256": "e93b7baa5dc2ee9b9c8c0828bd93c1ee515f27051acf92b1590696bfe37b17f4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-base-card-defaults-native-20261026.json",
+      "bytes": 50276,
+      "sha256": "2a4ed949115868e8b9c8f4ae0db46625455058d28cfa51cc479420338e1db8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule439-get-static-card-native-20261026.json",
+      "bytes": 29417,
+      "sha256": "55b2590678bbfe98d6771342c6257c9e9dc9e1aff39408da01f1a94ac8923d8d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule462-static-heavy-armor.py",
+      "bytes": 2355,
+      "sha256": "91e9ab06c519f32df432cd49be35a23838984fb489b4f86aa5dab3d8355edc8a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule462-static-heavy-armor-native.py",
+      "bytes": 4173,
+      "sha256": "326af188f833ce65530d90e81239f435e048d984e9ee943225a772f973a3bddd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule462-bubble-function.py",
+      "bytes": 2366,
+      "sha256": "2e41d159b78a1a3dcc43f9008f800e31666b7254057356b0981a248e9cea64b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule462.py",
+      "bytes": 5549,
+      "sha256": "ddf06797c720e061dcb2114462bc9b6543a05caa6819eed2281d40176e4ce0c1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-static-query-scope-verification-20261027.json",
+      "bytes": 2729,
+      "sha256": "6c64a55d567499c5a336eb1106eaf41c3d4d1b107eb93a7d0b708136c2659d06"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-parsed-file-inventory-20261027.json",
+      "bytes": 386155,
+      "sha256": "4e145827f2abcee4ad63292ed42fa506f4246431dbde39e1875b4ae2ef591d5d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-parsed-call-files-20261027.txt",
+      "bytes": 104,
+      "sha256": "d5f4ba50db1970f1446d16b92ad4cd0f9c245467f8cdd55f03f22f71bba0bb08"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-worker\\input.json",
+      "bytes": 847688,
+      "sha256": "3119bb9455121fae0a5bb6bda259c59edefd5c6eba43be5e9a967bdfd61cf767"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-worker\\output.json",
+      "bytes": 1179,
+      "sha256": "66c71323870db32d34b06752d40f6c808e9cb9ee88514b5179ea3f28ab395d9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule462-worker\\task.txt",
+      "bytes": 638,
+      "sha256": "bc631e557ca0eea2424ca0a10e99460c7db6b29a33a67936ddb349f1cd39e7a9"
+    }
+  ]
+}
