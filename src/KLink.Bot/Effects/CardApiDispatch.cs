@@ -4874,12 +4874,13 @@ public sealed partial class CardApi
     /// </summary>
     private object? DoChangeHeavyArmor(EffectContext c, object? r, object?[] a)
     {
-        if (TargetCard(c, r, a) is not { } target)
-        {
-            return null;
-        }
+        // RULE-459: the native entry validates the explicit object and supplied
+        // positive ID. Receiver/context and source lookup are not substitutes.
+        var target = AsCard(a.ElementAtOrDefault(0));
+        int sourceId = IntArg(a, 1);
+        if (target is null || sourceId <= 0 || IsUnrevealedCovertCard(target))
+            return false;
 
-        int sourceId = SourceCardIdArg(a, 1, c.Self);
         int amount = IntArg(a, 2);
         int changeType = IntArg(a, 3);
 

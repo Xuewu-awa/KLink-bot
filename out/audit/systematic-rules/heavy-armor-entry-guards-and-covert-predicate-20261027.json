@@ -1,0 +1,157 @@
+{
+  "rule_id": "RULE-459",
+  "date": "2026-10-27",
+  "base_commit": "875fbe58adf6f0524347c2197b726a5581b7baea",
+  "status": "已修复装甲显式目标、正来源及未揭示隐蔽入口门和拒绝输出；非零数值迁移仍开放",
+  "scope": "ChangeHeavyArmor初始守卫及其直接/VM输出；复读完整原生IsUnrevealedCovertCard。不是装甲全部模式的数值修复。",
+  "findings": [
+    "ChangeHeavyArmor1846字节入口先IsValid(card)，再要求instigatorID>0，然后调用IsUnrevealedCovertCard；任一拒绝均跳151将qqq写false并退出。该门在amount0早退及模式分派之前，不读取防御、不检查位置，也不要求来源对象查询成功。",
+    "新采集原生IsUnrevealedCovertCard包装147字节、完整后端26字节，后端RVA4afbb20仅测试hasCovert(+1ea)非零及isRevealed(+33b)为零。SDK字段名及宽度对应，代码全量内存/磁盘一致；36个字节边界组合离线执行符合谓词，源对象及输出以外字节保持。",
+    "旧DoChangeHeavyArmor用TargetCard扫描所有参数并回退receiver/Target/Self，导致显式null目标可能修改其他对象；SourceCardIdArg又将非正ID回退执行者ID，且完全未检查隐藏Covert，拒绝时还返回null而未显式写false。",
+    "现仅认参数0的CardInstance，直接读取参数1的ID；空目标、非正ID或未揭示Covert统一返回false。正ID不额外查询其是否存在；未添加IsAlive、位置或CanCardBeBuffed位置表等额外条件。RULE-458普通零请求门位于其后，接受路径仍返回null以保留VM输入槽。",
+    "新增直接派发及真实KismetVm两项各13392组，共26784组。覆盖双方、模式0/1/2/3/4/5及9、负/零/存在或缺失的正ID、空目标、Covert和揭示位、战场/手牌/牌库、skip、输入qqq布尔、正负零请求；拒绝所有模式，并验证合法普通零请求。非零接受及绝对接受路径刻意未作为已修复数值路径测试。",
+    "测试在receiver、Target和Self均为有效干扰对象时传显式null；核对完整状态快照、来源账本值和引用身份、重复反向名单、TriggerTrace和动作日志。目标防御置0，防止误引入其他数值原语的健康门。合法普通零请求包括已揭示Covert及缺失正来源对象。",
+    "相同900项测试在旧代码898通过2失败，修复后900/900。完整写入AST的1176个拒绝组合确认未进入账本、数值写入及通知边界；IsValid及日志等外部调用受控，不执行客户端真实函数。"
+  ],
+  "verification": {
+    "rule": "RULE-459",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "main_script_bytes": 1846,
+    "main_script_sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf",
+    "native_predicate_bytes": 26,
+    "native_predicate_rva": "0x4afbb20",
+    "native_predicate_sha256": "9f6b025514565969c2482bf15754f626f7732fa3c41d53d3e4a3b405ea2f57cf",
+    "native_wrapper_bytes": 147,
+    "native_cases": 36,
+    "native_digest_sha256": "e19334f1b0f1118345c213d8c08106eb5b83d0189d3bac7992683d9cc7467830",
+    "rejected_writer_AST_cases": 1176,
+    "rejected_writer_digest_sha256": "54abd78f382c60999909d3d5dea2d6215f7de5340a33ffbf1e7f06985000ad08",
+    "sdk_sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "fields": {
+      "hasCovert": "0x1ea",
+      "isRevealed": "0x33b"
+    },
+    "limits": "Native predicate executed offline in full; main writer rejection flow interpreted from complete saved AST with controlled IsValid/covert checks and logger. Object invalidation/pending-kill flags beyond managed null are not certified.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "profiles_per_case": 13392,
+    "total_profiles": 26784,
+    "baseline": {
+      "total": 900,
+      "passed": 898,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 900,
+      "passed": 900,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "将共享目标/来源回退替换为显式参数守卫；拒绝返回false；保留现有零请求门及其他写入分支"
+  },
+  "unresolved": [
+    "非零装甲仍依赖来源账本派生，独立基础/临时字段尚未迁移。",
+    "普通非零覆盖而非累计、模式4永久/临时来源、typed SetValue及零值存在性问题仍待修复。",
+    "原生IsValid中pending-kill/销毁状态与托管对象有效性的完整映射尚未证明；本轮空目标映射不等于所有UObject有效性状态穷尽。",
+    "hasCovert的所有原始写入、临时能力、压制恢复及关键词桥接的一致性仍属独立能力审计边界；本轮复用现有托管谓词。",
+    "动作处理/牌库/skip的非零通知回调链、创建/重置/复制/VM/快照迁移及MakeVeteran装甲阶段仍未完成。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "仅客户端本体、SDK、只读内存及已有权威函数快照；不使用旧回放或names.txt作为权威。",
+    "Unicorn和AST执行均在离线构造状态，无游戏进程写入、注入或真实函数调用。",
+    "单卡版本迁移仍暂停；本轮模块指纹与前轮一致。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule456-salvage-creation-native-20261026.json",
+      "bytes": 4544374,
+      "sha256": "232d845746fe4ab980b93d27f4577c95abd4515ba43fc2800f6ad06f64f1c3eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule459-veteran-query-headers-20261027.json",
+      "bytes": 4488103,
+      "sha256": "77b4879497688895b3ae18b91f378813cdd5c44db186ff74e9480bc297c09590"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule459-IsUnrevealedCovertCard-native-20261027.json",
+      "bytes": 7148,
+      "sha256": "eaf66fe55631a627b38784824129a1b12cbce2e95fde8d8f7b082aff12e05547"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule459-covert-header.py",
+      "bytes": 2358,
+      "sha256": "5d9a2a4316f9e8589eb7a1196455defe89fb3c93bc0697f3f495c745bf9cd54d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule459-covert-native.py",
+      "bytes": 4185,
+      "sha256": "0c89d575595546fa57f9c5fd020d82a5efe5006c3fdf1b46348a14732591a19f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule459.py",
+      "bytes": 5048,
+      "sha256": "931bcaa3497282f0be64f38a76a940d232bc20cc68842dfe48f4fb9cbdf9f52e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule459-native-and-guard-verification-20261027.json",
+      "bytes": 1212,
+      "sha256": "6d05c9dc610bc41c40268de6c7ef2e80fe5cccee3a526c774f80e826e6eac69f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule309-before-gain.py",
+      "bytes": 5982,
+      "sha256": "e4cbcfb69254869c32bd2cc19bba572869544bbcb577420f2d8071b2d5318de7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule459-baseline-selftest.log",
+      "bytes": 79113,
+      "sha256": "4dc398a266c8a6935da50265131c611f277697abf8ca66e62aaa36f5d79d30e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule459-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule459-final-selftest.log",
+      "bytes": 78976,
+      "sha256": "4bd0e89e65bec6b7f921ae1457647c461de089f4446a6177ae75f34fda5526f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule459-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

@@ -853,6 +853,8 @@ internal static class SelfTest
         new("同形bug：GetCardsOnBoardBySide 的 unitsOnly / GetAllCardsOnBoard 含 HQ", BoardQueryOptionalArgs),
         new("重甲总量：原生0到3截断及int32溢出，直接查询", db => HeavyArmorReadBounds(db, false)),
         new("重甲普通零请求：保留数值、账本、名单且不通知", db => HeavyArmorOrdinaryZeroNoOp(db, false)),
+        new("装甲入口：显式目标与正来源、隐蔽拒绝及直接输出", db => HeavyArmorEntryGuards(db, false)),
+        new("装甲入口：真实VM拒绝输出false，合法零请求保留输入", db => HeavyArmorEntryGuards(db, true)),
         new("重甲普通零请求：真实VM保留输入出参和完整状态", db => HeavyArmorOrdinaryZeroNoOp(db, true)),
         new("重甲总量：显式接收者和只读VM出参", db => HeavyArmorReadBounds(db, true)),
         new("老兵数值：攻击防御行动费使用模板模式5并保留临时分量", VeteranNumericTemplate),
@@ -32508,6 +32510,69 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    // RULE-459: guards precede every mode and the ordinary zero early exit.
+    private static string? HeavyArmorEntryGuards(CardDatabase db, bool vm)
+    {
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 0, 1, 2, 3, 4, 5, 9 })
+        foreach (int sourceId in new[] { -1, 0, 20, 9999 })
+        foreach (bool valid in new[] { false, true })
+        foreach (bool covert in new[] { false, true })
+        foreach (bool revealed in new[] { false, true })
+        foreach (CardLocation location in new[] { CardLocation.BoardFrontline, side.HandOf(), side.DeckOf() })
+        foreach (bool incoming in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (int amount in new[] { -1, 0, 2 })
+        {
+            bool accepted = valid && sourceId > 0 && (!covert || revealed);
+            // Accepted nonzero/absolute paths still await independent armor fields.
+            if (accepted && (amount != 0 || mode > 1)) continue;
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 20, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_kv_ii", side, 60, location, 0);
+            target.Defense = 0; target.IsRevealed = revealed;
+            if (covert) target.Keywords.Add(Keyword.Covert); else target.Keywords.Remove(Keyword.Covert);
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, HeavyArmor = 2, DefenseSetValue = 0 };
+            target.BuffsBySource[(sourceId, true)] = new CardBuff { SourceCardId = sourceId, Temporary = true, HeavyArmor = -1 };
+            source.CardsBuffedByThisCard.AddRange(new[] { 888, 60, 60 });
+            var original = target.BuffsBySource.ToDictionary(x => x.Key, x => x.Value);
+            string buffs = System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray());
+            string before = state.SnapshotJson();
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            // Valid receiver, Target and Self must not substitute an explicit null card.
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Target = source, Controller = side };
+            object? output;
+            if (!vm)
+            {
+                output = engine.Api.InvokeByName("ChangeHeavyArmor", source,
+                    new object?[] { valid ? target : null, sourceId, amount, mode, skip, incoming }, ctx, out bool handled);
+                if (!handled || !Equals(output, accepted ? null : false)) return $"armor direct guard output {valid}/{sourceId}/{covert}/{revealed}/{mode}: {output}";
+            }
+            else
+            {
+                var args = new[] { "target", "source", "amount", "mode", "skip", "qqq" }
+                    .Select(v => new KismetExpr { Var = v, Scope = "local" }).ToArray();
+                var call = new KismetStep(0, "call", "ChangeHeavyArmor", args, new[] { 5 }, null, null, -1, null, null)
+                    { Receiver = new KismetExpr { Var = "decoy", Scope = "local" } };
+                var program = new KismetProgram(new[] { call,
+                    new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) }, 0);
+                output = engine.Api.Vm.RunLocalProgramMulti(program, ctx, new Dictionary<string, object?> {
+                    ["target"] = valid ? target : null, ["source"] = sourceId, ["amount"] = amount,
+                    ["mode"] = mode, ["skip"] = skip, ["qqq"] = incoming, ["decoy"] = source }, "qqq").GetValueOrDefault("qqq");
+                if (!Equals(output, accepted ? incoming : false)) return $"armor VM guard output {valid}/{sourceId}/{covert}/{revealed}/{mode}: {output}";
+            }
+            if (state.SnapshotJson() != before || trace.Count != 0 || state.ActionLog.SelectMany(x => x.SubActions).Any()
+                || System.Text.Json.JsonSerializer.Serialize(target.BuffsBySource.Values.ToArray()) != buffs
+                || target.BuffsBySource.Count != original.Count
+                || original.Any(x => !target.BuffsBySource.TryGetValue(x.Key, out var current) || !ReferenceEquals(current, x.Value))
+                || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 888, 60, 60 }))
+                return $"armor guard mutated state {valid}/{sourceId}/{covert}/{revealed}/{mode}/{amount}/{location}/vm={vm}";
+            cases++;
+        }
+        return cases == 13392 ? null : $"armor guard profiles={cases}";
     }
 
     // RULE-458: ChangeBuffsFromCards592..663 exits modes0/1 at amount0;
