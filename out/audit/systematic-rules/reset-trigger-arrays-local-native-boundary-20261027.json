@@ -1,0 +1,182 @@
+{
+  "rule_id": "RULE-470",
+  "date": "2026-10-27",
+  "base_commit": "8141b81029986ba751d5728624446602e015b487",
+  "status": "原生重置数组局部保留已验证，托管例外补入仍为待核实差异，未改生产实现",
+  "findings": [
+    "新采集ResetCardAttributes原生包装26字节、完整本地CFG主体1566字节，运行时和安装PE一致；本地跳转无未读边界。不将完整本地CFG当作外部调用语义认证。",
+    "SDK将usedTriggers放在+0x148、suppressionExceptionTriggers放在+0x1c8。原生主体没有以这两个常量偏移访问字段的指令。仅此静态检查不排除别名/外部调用对字段的影响。",
+    "128组完整主体Unicorn离线模拟，供给静态模板、空引用计数/集合/标签列表布景；模板查找返回指定模板，其他外部调用跳过并返回RAX0。独立组合当前登记数组、当前例外数组、不同模板例外和打捞状态，头部及载荷无修改；同时检查攻击和防御写入以确认真正执行重置主体。",
+    "受控模型只证明本地指令及给定外部边界下数组保持；尤其RVA0x4af9a30收到整个卡对象，完整辅助链未在本轮模拟，不能推断完整重置已保留数组。全局CardFunctionTriggers也不是这两个实例数组，不能用此结果宣布登记表只增不减。",
+    "托管ResetAttributes调用InitializeRuleAttributesFromDefinition，后者向实例SuppressionExceptionTriggers补入定义例外，未清空既有例外。当前原生本地主体没有相应数组写入，因此登记候选差异；尚需传递辅助链及实际合法PvP实例例外变化可达性证据，不在本轮贸然删改。",
+    "代码调用点核查：生产Reidentify调用只在ReplayRunner校正路径，另有一处自测。不能把该兼容路径作为原生PvP转换证据；本轮未使用任何旧回放作为权威。",
+    "DeepSeek机械提取108条含rbx/rdi内存操作数字符串的指令和22条call；主agent按原输入独立筛选全对象/顺序一致，不将机械提取等同于语义写入分类。初次模拟防御布景误将7放在attackBuff偏移+0x70，断言正确中断；改为+0x74后128组通过，未归因游戏规则。"
+  ],
+  "verification": {
+    "rule": "RULE-470",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_backend_bytes": 1566,
+    "native_wrapper_bytes": 26,
+    "cfg_frontier": [],
+    "offline_profiles": 128,
+    "case_sha256": "1c2711afe87a2f99ec9a7cf3048459d492182f0e751b32088c09f943a9c8fe40",
+    "worker_exact_memory_operand_rows": 108,
+    "worker_exact_calls": 22,
+    "external_callsite_profiles": 1,
+    "modeled_external_calls": [
+      {
+        "rva": "0x4b079be",
+        "target": "0x144b2e080",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07a18",
+        "target": "0x144abaf80",
+        "rcx": "0x300208"
+      },
+      {
+        "rva": "0x4b07ad0",
+        "target": "0x144abaee0",
+        "rcx": "0x3000b8"
+      },
+      {
+        "rva": "0x4b07bf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c33",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c73",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cb3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07d83",
+        "target": "0x141555f20",
+        "rcx": "0x300158"
+      },
+      {
+        "rva": "0x4b07da8",
+        "target": "0x1411afc70",
+        "rcx": "0xc"
+      },
+      {
+        "rva": "0x4b07dc8",
+        "target": "0x1411ee250",
+        "rcx": "0x300168"
+      },
+      {
+        "rva": "0x4b07e55",
+        "target": "0x1436abdc0",
+        "rcx": "0x300030"
+      },
+      {
+        "rva": "0x4b07e84",
+        "target": "0x144abae50",
+        "rcx": "0x3005d0"
+      },
+      {
+        "rva": "0x4b07e9a",
+        "target": "0x1436abdc0",
+        "rcx": "0x3005e0"
+      },
+      {
+        "rva": "0x4b07ea2",
+        "target": "0x144af9a30",
+        "rcx": "0x300000"
+      }
+    ],
+    "scope": "Whole native ResetCardAttributes local body1566B under Unicorn, static-template lookup returns supplied template, all other external calls skipped with RAX0, empty mutable containers/optional refcounts/tag lists. Header and array payload sentinels unchanged. This certifies bounded local-body behavior, not helpers/transitive/native full reset semantics.",
+    "unresolved": [
+      "InitializeRuleAttributesFromDefinition currently unions definition suppression exceptions during managed reset; native local body does not touch those arrays. Need transitive helper/refresh proof and legal mutation reachability before production correction.",
+      "Global CardFunctionTriggers is not the same storage as per-card usedTriggers. No global registration-table lifecycle conclusion from local field preservation.",
+      "ReplayRunner-only Reidentify is implementation compatibility, not a native PvP transform authority."
+    ],
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_profiles": 128,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 919,
+    "reason": "本轮仅新增审计证据和离线工具；未修改C#生产代码/测试，919为RULE-469历史验证。"
+  },
+  "unresolved": [
+    "ResetCardAttributes外部辅助及整个卡对象接收者0x4af9a30的传递字段访问。",
+    "CopyData的字段复制/全局登记影响及动态原生/反射访问仍未完成；本轮未称已关闭复制路径。",
+    "实际合法PvP中实例抑制例外与模板不同的产生路径、克隆/重建后登记历史。",
+    "全局触发登记历史与物理TSet顺序、老兵装甲及完整卡牌语义仍开放。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule470-reset-trigger-arrays-native-20261027.json",
+      "bytes": 46931,
+      "sha256": "a8600f78fd297b8c881641d4efe238b3598407240ba01957d533923f7d374e2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule470-reset-native.py",
+      "bytes": 4041,
+      "sha256": "e074e642738324b230a677bef3d45bb9ec04afaa10996df18603eac876788369"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule470-reset-arrays.py",
+      "bytes": 6609,
+      "sha256": "da1a6cac85953eac2f8a67a420c92cdf4d32c091e9c918c0d10c45fdedbbda0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule470-reset-arrays-verification-20261027.json",
+      "bytes": 2947,
+      "sha256": "293b0d30e3636db6842d910f5e798d9d5b292fb297475b6c35aaa64d0ee0d429"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule470-worker\\input.json",
+      "bytes": 34206,
+      "sha256": "4a680398ba37755badfcbedea50ff9a40be7a594a6a0ced5295058af1783943c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule470-worker\\output.json",
+      "bytes": 14637,
+      "sha256": "a34d1a441fefa2472aecb9a10875d13366abec94a785336eae27e16d3efb0ddb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule470-worker\\task.txt",
+      "bytes": 468,
+      "sha256": "34209284b9c1e4d5c0e4213a79a4bf80ad1d4ddf75d343f7dc8b54bfe207e233"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "bytes": 78259,
+      "sha256": "a1bcccb4176bac6527c549950032bc183c43fefee8ff65163206087247a07e99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "bytes": 336337,
+      "sha256": "bf60fa181c9eeda03b6d4be7a5cd5c4f1f6862d6381fe695e3332877839af3f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Replay\\ReplayRunner.cs",
+      "bytes": 93365,
+      "sha256": "0e5e9e3bb48c44fccd0b47fef504f4d2f761006bbff42083c7d045101ab3b0de"
+    }
+  ]
+}
