@@ -1,0 +1,2443 @@
+{
+  "rule_id": "RULE-501",
+  "date": "2026-10-28",
+  "base_commit": "f52135e708b94dc791ee4190cb457ce6443ecb38",
+  "status": "文字子动作消费者与本地已解析门控已受控验证；全局派发/队列调度仍开放",
+  "findings": [
+    "重新读取当前已加载UFunction定义，选择两个已完整语法解码消费者：BP_VisualController.ExecuteSubActionAddNumberToText3069B、BP_OnlineMatch.ReceiveSubActionAppendNumberToCardText2161B。另保留AddNumberToText1633B及无脚本原生声明边界。所有执行为离线AST，不写入或调用游戏进程。",
+    "VisualController从投影SubAction的stringMap/intMap读取number/color/cardID，按有效颜色格式化并于2108写Text；之后获取可视卡牌、控件SetText及RequestRenderUpdate。没有仅凭类名排除：本轮以实际字段写入和调用节点确认其直接投影路径。",
+    "OnlineMatch接收路径遍历ActionData按Name取cardID/number/instigatorID/color。499处ResolveSubActionsFromLocal=false时转1503并于1540调用AddNumberToText；true时跳过该重算，随后只走显示更新路线。不能把两种上下文一律当成必重算，也未以当前测试flag推断真实对局flag值。",
+    "72配对场景/144消费者入口执行通过：空/正/负文字、颜色0/1/2、字段正反顺序、未知字段和本地解析flag两值。无可视卡牌对象供给，测试实际门控跳过控件分支；false时Receive调用实际AddNumberToText AST并与Visual文本结果一致，true时Receive保持输入文字哨兵，明确只是跳过行为测试，不声称这就是客户端完整合法投影。",
+    "供给服务查询、Map/Array、有效枚举、转换/SourceString本地化格式及无UI返回。委托API的IsActionProcess=false为测试配置，未验证真实上下文不会回发通知；未使用的额外输出槽供给0。非法颜色/不存在逻辑卡、存在widget的回调/绘制未执行，数值/owner哨兵保持只支持所测直接写入边界。",
+    "本轮按文字子动作字符串和指定消费者名做加载脚本候选搜索，不能把没有额外字符串字面命中当成没有FName索引/原生派发。实际全局队列分派、定时/事件循环、接口实例绑定和触发顺序仍未关闭。",
+    "DeepSeek提取2 AST索引时使用数组下标；主agent保留原件，按原AST另存规范化StatementIndex后逐字段精确核对。worker另披露在专用目录写临时探针后删除，偏离仅写output的约束；目录复查未留该文件，不作为隔离保证。当前证据未要求改动无头规则no-op，保留其显式客户端投影差异。未改产品规则、未重跑C#，929/929仅历史，完整认证卡数0。"
+  ],
+  "verification": {
+    "rule": "RULE-501",
+    "paired_cases": 72,
+    "consumer_executions": 144,
+    "profiles": [
+      {
+        "number": "",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (9)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "9",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "9",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>9</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  0
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 0,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (-4)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  1
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 1,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<green>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": false,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": false,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": true,
+        "extra_field": false,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": false,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "api-text",
+                [
+                  11,
+                  "-4",
+                  2
+                ]
+              ],
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "number": "-4",
+        "color": 2,
+        "reverse": true,
+        "extra_field": true,
+        "resolve_local": true,
+        "outcomes": [
+          {
+            "function": "ExecuteSubActionAddNumberToText",
+            "text": "Base (<red>-4</>)",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          },
+          {
+            "function": "ReceiveSubActionAppendNumberToCardText",
+            "text": "old",
+            "events": [
+              [
+                "visual-card-absent"
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "case_sha256": "cfe994ed56eb0371acafcd38f989feb4507c74cfba71546061f470af490c9fcc",
+    "scope": "Two actual decoded consumer control flows with valid cardID/color, complete payload, reversed order, unknown field and ResolveSubActionsFromLocal both values. UI card absent, services/map/array/conversion/localization helpers supplied; receive invokes actual AddNumberToText AST only when resolve-local=false, with IsActionProcess=false and unused output slot supplied0. No real client dispatcher/scheduler/interface binding or present-widget branches, invalid color/card, native/GC/global noninterference certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "consumer_index": [
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "call_names": [
+        "Map_Find",
+        "Conv_IntToByte",
+        "GetValidValue",
+        "Conv_StringToText",
+        "Format",
+        "TextIsEmpty",
+        "GetCardFromID",
+        "GetStaticText",
+        "GetBoard",
+        "GetVisualHandCardFromID",
+        "GetUserWidgetObject",
+        "SetText",
+        "RequestRenderUpdate"
+      ],
+      "text_write_indexes": [
+        2108
+      ],
+      "local_resolution_gate_indexes": [],
+      "api_call_indexes": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "call_names": [
+        "Array_Length",
+        "Less_IntInt",
+        "Array_Get",
+        "NotEqual_StriStri",
+        "GetBoard",
+        "GetVisualHandCardFromID",
+        "GetUserWidgetObject",
+        "GetLogic",
+        "GetCardFromID",
+        "SetText",
+        "RequestRenderUpdate",
+        "Conv_StringToText",
+        "AddNumberToText",
+        "Add_IntInt",
+        "Conv_IntToByte",
+        "GetValidValue"
+      ],
+      "text_write_indexes": [],
+      "local_resolution_gate_indexes": [
+        499
+      ],
+      "api_call_indexes": [
+        1540
+      ]
+    }
+  ],
+  "resolution_gate": {
+    "Inst": "JumpIfNot",
+    "Offset": 1503,
+    "Condition": {
+      "Inst": "InstanceVariable",
+      "Variable Name": "ResolveSubActionsFromLocal"
+    },
+    "StatementIndex": 499
+  },
+  "captured_functions": [
+    {
+      "owner": "CardFunctionsStub",
+      "name": "AddNumberToText",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticText",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "AddNumberToText",
+      "script_size": 1633,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "script_size": 2161,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "AddSubActionAppendNumberToCardText",
+      "script_size": 298,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "script_size": 3069,
+      "decode_complete": true,
+      "decode_status": null
+    }
+  ],
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "worker_job": "20261028-014435-rule501-consumer-ast-index-cdfaac41",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule501-text-consumers.py",
+      "bytes": 971,
+      "sha256": "a754823fc51fd3a729393c59dfca513f0c2c526b9e96cc480664c604f877cb48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule501-text-consumers-20261028.json",
+      "bytes": 4778782,
+      "sha256": "64bb54a8b30a19717e1b3874e5e0e83573185b6574563c0e5198a55e07078d21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule501-consumers.py",
+      "bytes": 6044,
+      "sha256": "067c6983ac5fd08fa215e5fe0ba86906602eabd177462d35ed816beaab215a58"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule501-consumer-verification-20261028.json",
+      "bytes": 49952,
+      "sha256": "ac105a841a332ebfde9ec5b4d3ba8685f0888011ef5545f71b27863728c0cbff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule500-text-and-queue.py",
+      "bytes": 7129,
+      "sha256": "66920b035d56dd7138e734338e15a960821efea2a058bf16e7f23a338d10a760"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule500-text-chain.py",
+      "bytes": 3047,
+      "sha256": "37f2cc61ab6b0ee7136efde349b86f94df9ef977de22f9fbdb8d5a8f8772b5ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule501-worker\\input.json",
+      "bytes": 73000,
+      "sha256": "cfb9b28ab8ca219135bd572a3a544122f2a1ee389028cac6749dc22b1039a50d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule501-worker\\output.json",
+      "bytes": 1123,
+      "sha256": "993c97e559fe504a505ac9266374af9b17ae14e95d3b33bc2f3074238a4e273b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule501-worker\\normalized-output.json",
+      "bytes": 1219,
+      "sha256": "e37cc7fd78f0d958a424d40d83b482fe99e4ff7de07610671b45e290affa00c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule501-worker\\task.txt",
+      "bytes": 992,
+      "sha256": "033bca02cfbd9142d9c6da0158d969ed5b399255876245f47abc8270b1f4c448"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "真实全局子动作分派、队列调度/事件循环和接口实例绑定，以及其与PvP规则触发的边界。",
+    "存在widget分支、非法载荷/卡牌处理及原生/反射消费者；按无头PvP范围保留优先级。",
+    "快照回灌和策略输入文字依赖；完整规则状态/合法动作与卡池逐项语义认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}

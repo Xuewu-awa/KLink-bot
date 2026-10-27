@@ -2090,5 +2090,6 @@
   ],
   "game_writes": 0,
   "real_game_function_calls": 0,
-  "fully_certified_cards": 0
+  "fully_certified_cards": 0,
+  "later_consumer_clarification_RULE501": "RULE501补测两个文字子动作消费者定义及ResolveSubActionsFromLocal门控。接收路径499处flag=false才到1503/1540重新调用AddNumberToText；true跳过重算。72配对场景/144入口执行在无可视卡牌对象和声明供给边界下通过；并非所有客户端模式均无条件重新写Text。真实全局派发、接口实例绑定、存在widget的分支、原生/GC及全局顺序仍未认证。"
 }
