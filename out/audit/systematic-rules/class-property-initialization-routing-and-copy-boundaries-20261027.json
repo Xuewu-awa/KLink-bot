@@ -1,0 +1,2039 @@
+{
+  "rule_id": "RULE-487",
+  "date": "2026-10-27",
+  "base_commit": "4c6dc369a9afd738961fa062ae35a4c3e8b608a9",
+  "status": "当前类属性链及InitProperties选链/调度分支已建立受控验证；真实构造参数与完整默认注入仍开放",
+  "findings": [
+    "选取15个Pincer默认非零卡类、普通Typhoon和BaseCardObject，共17类。当前类头、CDO指针、PropertyLink(+70)及PostConstructLink(+88)逐节点读取并再次核验，164个唯一FProperty头，所有链无环。",
+    "基础类当前flags305000a0，16个蓝图类flags440000；不得直接沿用此前基础类快照说明所有蓝图类构造。普通属性链136..140项，构造后链0..4项；hasPincer/CurrentTarget在全部17普通链中，在全部构造后链中均不出现。",
+    "当前InitProperties RVA15bef20的879B原始代码与原采集一致。类标志10000080掩码、实参class与目标实际class是否同一、prototype是否等于该class的CDO、transient-copy参数共同决定分支。原始循环还检查propertyflags、array_dim*element_size+offset与类properties_size。",
+    "17类×prototype是CDO/另一个对象×类实参为实际类/父类×transient-copy真假，共136组真实caller/循环机器码离线验证。17组取PostConstructLink、119组取普通PropertyLink；hasPincer和CurrentTarget各115组进入复制调用。计数只适用于这些供给参数和受控helper，不证明真实SpawnObject一定走某组。",
+    "所有memcpy、property-copy虚调用、initialize-nonnative、global/class hook均为显式跳过边界；initialize-nonnative返回false供给。验证复制调度顺序/属性清单，不验证实际字段写入结果、handler所有权、hook副作用和最终对象值。不得把115次调度当作115次真实默认赋值证明。",
+    "中间参考预期首次遗漏transient-copy分支可绕过一般properties_size检查，导致UberGraphFrame候选差异；已按原始15bf1a2..1eb分支修正后136组通过，未将该参考模型遗漏当作客户端或模拟器缺陷。",
+    "这进一步限定RULE-486的无直接CopyData偏移证据：hasPincer/CurrentTarget确有反射属性和可调度复制路径，不能由CopyData无直接引用推出它们始终保留构造前零值，也不能由CDO当前值推出所有副本最终值。",
+    "DeepSeek机械汇总17类链长、选定属性与构造后字段，经主agent精确核对完整JSON。产品规则未改，未重跑C#全套；929/929只保留为RULE-485历史结果。"
+  ],
+  "verification": {
+    "rule": "RULE-487",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "classes": 17,
+    "native_initializer_bytes": 879,
+    "global_hook_address": "0x7ff713406840",
+    "global_hook_hex": "102d708cca010000",
+    "parent_headers": [
+      {
+        "address": "0x7ff49536f040",
+        "header_hex": "70c32f11f77f000043000000aa07000040362895f47f0000aed302000000000008174a95f47f00000000000000000000c05e698fca010000020000000000000040923095f47f000000000000000000000000000000000000300000000800010000000000000000000000000000000000007d8a01cb010000007d8a01cb01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000050c0dc0df77f000000cd3c0bf77f000030d33c0bf77f0000000000000000000000000000a1004830000000000000000070002895f47f0000e30000000000000000000000000000000000000000000000000000000000000000000000000000009094a895f47f0000"
+      },
+      {
+        "address": "0x7ff4953dce40",
+        "header_hex": "70c32f11f77f0000430000002d0b000040362895f47f0000938a030000000000402f4a95f47f000000000000000000002095698fca010000030000000000000040f03695f47f0000203c9795f47f0000806ec501cb010000780600000800010000000000000000000000000000000000806ec501cb010000804bc501cb01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060dbc90ef77f000000cd3c0bf77f000030d33c0bf77f0000000000000000000000000000a0005030000000000000000070002895f47f0000e3000000000000000000000000000000000000000000000000000000000000000000000000000000f845b995f47f0000"
+      }
+    ],
+    "offline_routes": 136,
+    "case_sha256": "e7ce2eccbe8bc3749653f93a738eb6b507d5d7a7b1bdf1afa6c7ce924839a364",
+    "postconstruct_routes": 17,
+    "full_property_routes": 119,
+    "pincer_dispatch_routes": 115,
+    "target_dispatch_routes": 115,
+    "scope": "Actual879-byte InitProperties caller/loops with current17 class headers/property chains. Source-CDO/alternative, own/parent class and transient-copy argument matrix. All memcpy/property-copy/non-native-init/global/class hook calls controlled and skipped, so records dispatch routes ONLY, not copied values or complete construction. Does not establish actual SpawnObject invocation arguments or earlier constructor bulk initialization.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "class_summaries": [
+    {
+      "name": "BaseCardObject",
+      "flags": "0x305000a0",
+      "property_count": 136,
+      "postconstruct_count": 0,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": []
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "flags": "0x440000",
+      "property_count": 138,
+      "postconstruct_count": 2,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "affected_CardID"
+      ]
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "flags": "0x440000",
+      "property_count": 140,
+      "postconstruct_count": 4,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "tmpAttackerCardID",
+        "tempCard",
+        "survivor"
+      ]
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "flags": "0x440000",
+      "property_count": 139,
+      "postconstruct_count": 3,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "affected_CardID",
+        "tempCard"
+      ]
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "flags": "0x440000",
+      "property_count": 138,
+      "postconstruct_count": 2,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "tempCard"
+      ]
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "flags": "0x440000",
+      "property_count": 138,
+      "postconstruct_count": 2,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "affected_CardID"
+      ]
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "flags": "0x440000",
+      "property_count": 138,
+      "postconstruct_count": 2,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "tempCard"
+      ]
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "flags": "0x440000",
+      "property_count": 138,
+      "postconstruct_count": 2,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "pincer_unit_CardID"
+      ]
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "flags": "0x440000",
+      "property_count": 137,
+      "postconstruct_count": 1,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame"
+      ]
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "flags": "0x440000",
+      "property_count": 136,
+      "postconstruct_count": 0,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": []
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "flags": "0x440000",
+      "property_count": 140,
+      "postconstruct_count": 4,
+      "selected": [
+        {
+          "address": "0x1cb01c54280",
+          "header_hex": "20f22f11f77f000070704013f77f000041ce3d95f47f0000f0d9c301cb01000038f41700000000004500000000000000010000000100000005020040100018000000000058020000f0d9c301cb010000000000000000000000000000000000000000000000000000",
+          "name": "hasPincer",
+          "array_dim": 1,
+          "element_size": 1,
+          "flags": "0x18001040000205",
+          "offset": 600,
+          "property_next": "0x1cb01c3d9f0",
+          "postconstruct_next": "0x0"
+        },
+        {
+          "address": "0x1cb01c54b80",
+          "header_hex": "f0fa2f11f77f000010774013f77f000041ce3d95f47f0000608e5101cb0100003eaa15000000000045000000000000000100000008000000050200001000180000000000b0020000608e5101cb0100000051c501cb01000000000000000000000000000000000000",
+          "name": "CurrentTarget",
+          "array_dim": 1,
+          "element_size": 8,
+          "flags": "0x18001000000205",
+          "offset": 688,
+          "property_next": "0x1cb01518e60",
+          "postconstruct_next": "0x0"
+        }
+      ],
+      "postconstruct_names": [
+        "UberGraphFrame",
+        "affected_CardID",
+        "killer",
+        "Card Destroyed"
+      ]
+    }
+  ],
+  "routing_profiles": [
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 0,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "BaseCardObject",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 2,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 4,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 139,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 139,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 3,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 139,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 2,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 2,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 2,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 2,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 138,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 1,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 0,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": false,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": false,
+      "postconstruct_chain": false,
+      "copy_dispatches": 136,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": false,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 137,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": false,
+      "postconstruct_chain": true,
+      "copy_dispatches": 4,
+      "pincer_dispatched": false,
+      "current_target_dispatched": false
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "prototype_is_cdo": true,
+      "class_argument_is_actual": true,
+      "copy_transients": true,
+      "postconstruct_chain": false,
+      "copy_dispatches": 140,
+      "pincer_dispatched": true,
+      "current_target_dispatched": true
+    }
+  ],
+  "worker": {
+    "job_id": "20261027-180004-rule487-property-chain-summary-86cd2224",
+    "exact_classes": 17,
+    "property_headers": 164,
+    "role": "mechanical property-chain summary only"
+  },
+  "tests": {
+    "this_round_offline_routes": 136,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 929,
+    "previous_result_is_historical": true
+  },
+  "implementation": [],
+  "remaining": [
+    "真实SpawnObject/FObjectInitializer参数、native构造前后阶段和可能的早期POD默认写入未完全串通。",
+    "实际property-copy虚函数、memcpy及initialize-nonnative、global/class hook行为未在本模型执行，实际字段值与所有权仍待。",
+    "分配/GC、回调重入、模板突变与跨函数别名仍开放；完整CopyData和全部PvP/单卡未认证，完整认证卡数0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule487-construction-property-chains.py",
+      "bytes": 2947,
+      "sha256": "297670448da97dad2878d038033337c22a3213cebe098e2959998e62188b0510"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule487-construction-property-chains-20261027.json",
+      "bytes": 158433,
+      "sha256": "8accaedd6340c02acf2729e4dfe4f14b34d35c9730c5cce856f281fc25f4f068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule487-property-routing.py",
+      "bytes": 6738,
+      "sha256": "911adb82213e5f61b6095ff03308e4971134cb3ea8d22470bb94174e129b739f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule487-property-routing-verification-20261027.json",
+      "bytes": 44620,
+      "sha256": "17022d9f4189b152442f293c10b3d6c2d9456a426a493ac87399443774e9f48e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule487-worker\\input.json",
+      "bytes": 158431,
+      "sha256": "84ea44fb24f24023ccdf784db7b6ca9a103f82f97b560f62b0a17c0273f72c49"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule487-worker\\output.json",
+      "bytes": 21702,
+      "sha256": "1012d57d7154aff049615bf39e89b82e17c2bfabd14526ac2fb8426ed4b62469"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule487-worker\\task.txt",
+      "bytes": 522,
+      "sha256": "ab7b78b57caa372a442fa72ff9d6553d0b387f81fb242923b5317096f4d7de1c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    }
+  ]
+}
